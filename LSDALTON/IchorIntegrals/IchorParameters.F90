@@ -1,5 +1,5 @@
-MODULE IchorParametersModule
-  use IchorCommonModule
+MODULE IchorParametersMod
+  use IchorCommonMod
 !> Spherical Specification
 Integer,parameter :: SphericalParam = 1 !spherical harmonic basis set
 !Job Specification
@@ -42,18 +42,19 @@ integer,parameter :: GGemOperator   =2    ! The Gaussian geminal operator g
 integer,parameter :: GGemCouOperator=3    ! The Gaussian geminal divided by the Coulomb operator g/r12
 integer,parameter :: GGemGrdOperator=4    ! The double commutator [[T,g],g]
 integer,parameter :: GGemSqOperator =5    ! The Gaussian geminal operator squared g^2
-
+real(realk) :: IchorGPUmaxmem
 
 !public:: SphericalParam, IcorJobEri, IcorInputNoInput, IchorParNone,&
 !     & IchorScreen, IchorScreenNone, IchorDebugNone, IchorAlgoOS, IchorPermuteTTT,&
 !     & IchorPermuteFFT, IchorPermuteTTF, IchorPermuteTFF, IchorPermuteFTF, Ichor!PermuteFFF, IchorNofilestorage
 !private
 #ifdef VAR_OPENACC
-  integer,parameter :: maxnAsyncHandles=4
+  integer,parameter :: maxnAsyncHandles=16
 #else
   integer,parameter :: maxnAsyncHandles=1
 #endif
 CONTAINS
+
 subroutine determineScreening(IchorScreenSpec,CSscreen,ODscreen,QQRscreen)
   implicit none
   integer,intent(in) :: IchorScreenSpec
@@ -143,5 +144,4 @@ subroutine Determine_Operator_From_OpereratorSpec(Oper,Operparam)
 
 end subroutine Determine_Operator_From_OpereratorSpec
 
-
-END MODULE IchorParametersModule
+END MODULE IchorParametersMod

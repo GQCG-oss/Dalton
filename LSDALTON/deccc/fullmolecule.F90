@@ -45,13 +45,10 @@ contains
     implicit none
     type(fullmolecule), intent(inout) :: molecule
     type(lsitem), intent(inout) :: mylsitem
-    integer :: natoms,basis,i
-    integer :: r,iset,itype
-    logical :: status_info
-    real(realk) :: memory_use, tcpu, twall
-    
     !> Density Matrix 
     type(matrix), optional, intent(in) :: D  ! Needed for creating the hJir MO-matrix
+    real(realk) :: tcpu, twall
+    
     
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -125,19 +122,23 @@ contains
     type(matrix),intent(in) :: C
     !> Density Matrix 
     type(matrix),intent(in) :: D  ! Needed for creating the hJir MO-matrix
-
-    real(realk) :: memory_use, tcpu, twall
+    real(realk) :: tcpu, twall
+    integer :: nMO
     
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    ! Number of MOs (keep it general such that nMO can be different from nbasis for subsystems)
+    nMO = C%ncol
+
      ! Init basic info (molecular dimensions etc.)
-    call molecule_init_basics(molecule,mylsitem)
+    call molecule_init_basics(molecule,mylsitem,nMO=nMO)
 
     ! Copy Fock, density, MO, and overlap matrices to molecule structure
     call molecule_copy_FSC_matrices(molecule,F,S,C)
 
     ! Fock matrix in MO basis
     call molecule_mo_fock(molecule)
+
  
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule)
@@ -175,24 +176,35 @@ contains
   !> \author Marcin Ziolkowski/Kasper Kristensen
   !> \param molecule Full molecule info
   !> \param mylsitem Integral program input
-  subroutine molecule_init_basics(molecule,mylsitem)
+  subroutine molecule_init_basics(molecule,mylsitem,nMO)
 
     implicit none
     type(fullmolecule), intent(inout) :: molecule
     type(lsitem), intent(inout) :: mylsitem
-    integer :: natoms,basis,i
-    integer :: r,iset,itype
-    logical :: status_info
+    !> Number of MOs (need to be input only if it is different from nbasis which 
+    !> can be the case for subsystems)
+    integer,intent(in),optional :: nMO
     real(realk) :: memory_use, tcpu, twall
+    integer :: nMOintern
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    molecule%Edisp = 0.0_realk
+    molecule%Ect = 0.0_realk
+    molecule%Esub = 0.0_realk
+    nMOintern = 0
+    if(present(nMO)) nMOintern = nMO
 
     molecule%natoms = get_num_atoms(mylsitem)
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
     molecule%nauxbasis = get_num_aux_basis_functions(mylsitem)
     molecule%nocc = molecule%nelectrons/2
-    molecule%nunocc = molecule%nbasis - molecule%nocc
+    if(present(nMO)) then
+       molecule%nunocc = nMO - molecule%nocc
+    else
+       molecule%nunocc = molecule%nbasis - molecule%nocc
+    end if
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
     molecule%nCabsAO = 0
@@ -225,16 +237,33 @@ contains
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    write(DECinfo%output,'(/,a)') '-- Full molecular info --'
-    write(DECinfo%output,'(/,a,i6)') 'FULL: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
-    write(DECinfo%output,'(/,a,i6)') 'FULL: Number of electrons        : ',molecule%nelectrons
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of atoms            : ',molecule%natoms
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of basis func.      : ',molecule%nbasis
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of aux. basis func. : ',molecule%nauxbasis
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of core orbitals    : ',molecule%ncore
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of valence orbitals : ',molecule%nval
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%nocc
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%nunocc
+    if(nMOintern /= molecule%nbasis) then ! subsystem
+
+       write(DECinfo%output,'(/,a)') '-- Subsystem info --'
+       write(DECinfo%output,'(/,a,i6)') 'SUB: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
+       write(DECinfo%output,'(/,a,i6)') 'SUB: Number of electrons        : ',molecule%nelectrons
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of atoms            : ',molecule%natoms
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of basis func.      : ',molecule%nbasis
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of aux. basis func. : ',molecule%nauxbasis
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of core orbitals    : ',molecule%ncore
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of valence orbitals : ',molecule%nval
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of occ. orbitals    : ',molecule%nocc
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of virt. orbitals   : ',molecule%nunocc
+
+    else      ! full molecule
+
+       write(DECinfo%output,'(/,a)') '-- Full molecular info --'
+       write(DECinfo%output,'(/,a,i6)') 'FULL: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
+       write(DECinfo%output,'(/,a,i6)') 'FULL: Number of electrons        : ',molecule%nelectrons
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of atoms            : ',molecule%natoms
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of basis func.      : ',molecule%nbasis
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of aux. basis func. : ',molecule%nauxbasis
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of core orbitals    : ',molecule%ncore
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of valence orbitals : ',molecule%nval
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%nocc
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%nunocc
+
+    end if
     write(DECinfo%output,*)
 
   end subroutine molecule_init_basics
@@ -254,21 +283,18 @@ contains
     type(matrix),intent(in) :: S
     !> MO coefficients
     type(matrix),intent(in) :: C
-    integer :: nbasis,i
     real(realk),pointer :: basis(:,:)
 
-    nbasis = molecule%nbasis
-
     ! Fock matrix
-    call mem_alloc(molecule%fock,nbasis,nbasis)
+    call mem_alloc(molecule%fock,F%nrow,F%ncol)
     call mat_to_full(F, 1.0_realk, molecule%fock)
 
     ! Overlap matrix
-    call mem_alloc(molecule%overlap,nbasis,nbasis)
+    call mem_alloc(molecule%overlap,S%nrow,S%ncol)
     call mat_to_full(S, 1.0_realk, molecule%overlap)
 
     ! MO coefficient matrix
-    call mem_alloc(basis,nbasis,nbasis)
+    call mem_alloc(basis,C%nrow,C%ncol)
     call mat_to_full(C, 1.0_realk, basis)
     call molecule_generate_basis(molecule,basis)
     call mem_dealloc(basis)
@@ -581,7 +607,7 @@ contains
        ! Read overlap matrix from file
 !       write(DECinfo%output,*) 'Reading carmom matrices from file carmommatrix...'
 !       write(DECinfo%output,*)
-!       call dec_read_mat_array_from_file('carmommatrix',nbasis,nbasis,molecule%carmom,3)
+!       call dec_read_mat_tensor_from_file('carmommatrix',nbasis,nbasis,molecule%carmom,3)
 !    else
        ! Calculate carmom matrix from scratch
        write(DECinfo%output,*) 'Calculating carmom matrix for DEC calculation...'
@@ -903,16 +929,16 @@ contains
     !molecule%Co = C(1:nbasis,1:nocc)
     !molecule%Cv = C(1:nbasis,nocc+1:nbasis)
     do j = 1,nocc
-    do i = 1,nbasis
-    molecule%Co(i,j) = C(i,j)
-    enddo
+       do i = 1,nbasis
+          molecule%Co(i,j) = C(i,j)
+       enddo
     enddo
     k=nocc+1
     do j=1,nvirt
-    do i=1,nbasis
-    molecule%Cv(i,j) = C(i,k)
-    enddo
-    k=k+1
+       do i=1,nbasis
+          molecule%Cv(i,j) = C(i,k)
+       enddo
+       k=k+1
     enddo
     !write(*,*) 'Johannes after before (:,:)='
 

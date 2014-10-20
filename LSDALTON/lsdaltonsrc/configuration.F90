@@ -38,7 +38,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
      & check_cc_input
-use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT
+use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -57,7 +57,7 @@ use plt_driver_module
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
-use lsmpi_type, only: DFTSETFU
+use lsmpi_type, only: DFTSETFU,SPLIT_MPI_MSG,MAX_SIZE_ONE_SIDED
 #endif
 #ifdef BUILD_CGTODIFF
 use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
@@ -67,6 +67,8 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
+use LSparameters
+
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
      & config_free, set_final_config_and_print
@@ -140,6 +142,7 @@ implicit none
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
   config%doESGopt = .false.
+  config%GPUMAXMEM = 2.0E0_realk
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
 #ifdef MOD_UNRELEASED
@@ -151,7 +154,7 @@ implicit none
   !F12 calc?
   config%doF12=.false.
   config%doTestMPIcopy = .false.
-  config%type_array_debug = .false.
+  config%type_tensor_debug = .false.
   config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
@@ -909,9 +912,9 @@ subroutine DEC_meaningful_input(config)
      if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
      end if
-     if(DECinfo%FragmentExpansionRI .AND. (.NOT. config%integral%basis(AuxBasParam)))then
+     if(DECinfo%ccmodel.EQ.MODEL_RIMP2 .AND. (.NOT. config%integral%basis(AuxBasParam)))then
         WRITE(config%LUPRI,'(/A)') &
-             &     'You have specified .FRAGMENTEXPANSIONRI in the input but not supplied a fitting basis set'
+             &     'You have specified .RIMP2 in the input but not supplied a fitting basis set'
         CALL lsquit('MP2 RI input inconsitensy: add fitting basis set',config%lupri)
      endif
      ! DEC and response do not go together right now...
@@ -1081,12 +1084,34 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
-        CASE('.TIME');              call SET_LSTIME_PRINT(.TRUE.)
-        CASE('.GCBASIS');           config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
-        CASE('.NOGCBASIS');         config%decomp%cfg_gcbasis    = .false.
-        CASE('.FORCEGCBASIS');      config%INTEGRAL%FORCEGCBASIS = .true.
-        CASE('.TESTMPICOPY');       config%doTestMPIcopy         = .true.
-        CASE('.TYPE_ARRAY_DEBUG');  config%type_array_debug      = .true.
+        CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
+        CASE('.GCBASIS');               config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
+        CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
+        CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
+        CASE('.TYPE_TENSOR_DEBUG');     config%type_tensor_debug    = .true.
+           ! Max memory available on gpu measured in GB. By default set to 2 GB
+        CASE('.GPUMAXMEM');             
+           READ(LUCMD,*) config%GPUMAXMEM
+           IF(config%GPUMAXMEM.LT.0.0E0_realk)THEN
+              CALL LSQUIT('.GPUMAXMEM error: less than 0 GB supplied on input',-1)
+           ELSEIF(config%GPUMAXMEM.GT.100.0E0_realk)THEN
+              CALL LSQUIT('.GPUMAXMEM error: More than 100 GB supplied on input',-1)
+           ENDIF
+#ifdef VAR_MPI
+           call ls_mpibcast(SET_GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(config%GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
+#endif
+#ifdef VAR_MPI
+        CASE('.MAX_MPI_MSG_SIZE_NEL');
+           READ(LUCMD,*) SPLIT_MPI_MSG 
+           call ls_mpibcast(SET_SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+        CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  
+           READ(LUCMD,*) MAX_SIZE_ONE_SIDED
+           call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
+#endif
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'
@@ -2920,6 +2945,10 @@ ENDIF
 #endif
 
 #ifdef VAR_MPI
+
+if(mod(SPLIT_MPI_MSG,8)/=0)call lsquit("INPUT ERROR: MAX_MPI_MSG_SIZE_NEL has to be a multiple of 8",-1)
+
+
 IF(nthreads.EQ.1)THEN
  IF(infpar%nodtot.GT.1)THEN
   WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot, &
@@ -3757,7 +3786,7 @@ ENDIF
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
-
+   ls%setting%GPUMAXMEM = config%GPUMAXMEM
 end subroutine set_final_config_and_print
 
 SUBROUTINE TRIM_STRING(string,n,words)

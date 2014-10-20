@@ -14,7 +14,7 @@ module ccintegrals
   use matrix_operations
   use integralinterfaceDEC
   use screen_mod
-  use Integralparameters
+  use LSparameters
   use integralinterfaceMOD
   use II_XC_interfaceModule
 #ifdef VAR_ICHOR
@@ -502,7 +502,7 @@ contains
   !> where J(U) and K(U) are the coulomb and exchange transformations, respectively.
   !> \author Kasper Kristensen
   !> \date November 2010
-  subroutine dec_fock_transformation(FockU,U,MyLsitem,symmetric)
+  subroutine dec_fock_transformation(FockU,U,MyLsitem,symmetric,incl_h)
 
     implicit none
     !> Fock transformation on U matrix
@@ -513,9 +513,12 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
     !> Is U symmetric (true) or not (false)?
     logical, intent(in) :: symmetric
+    !> Include one-electron contribution to Fock matrix (default: not include)
+    logical,intent(in),optional :: incl_h
     real(realk) :: Edft(1),DFTELS
     logical :: doMPI 
     integer :: igrid
+    type(matrix) :: h
     ! Sanity check
     if(U%nrow /= U%ncol) then
        call lsquit('dec_fock_transformation:&
@@ -548,6 +551,18 @@ contains
        !       IF(DECinfo%FrozenCore)
        MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
     ENDIF
+
+
+    ! Add one-electron contribution
+    if(present(incl_h)) then
+       if(incl_h) then
+          call mat_init(h,U%nrow,U%ncol)
+          call mat_zero(h)
+          call ii_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
+          call mat_daxpy(1E0_realk,h,FockU)
+          call mat_free(h)
+       end if
+    end if
 
   end subroutine dec_fock_transformation
 
@@ -809,8 +824,8 @@ contains
     logical, intent(inout) :: mo_ccsd
     !> array with packed gmo on output:
     ! (intent in needed for the slaves)
-    type(array), intent(inout) :: govov
-    type(array), intent(inout) :: pgmo_diag, pgmo_up
+    type(tensor), intent(inout) :: govov
+    type(tensor), intent(inout) :: pgmo_diag, pgmo_up
 
     !> variables used for MO batch and integral transformation
     integer :: ntot ! total number of MO
@@ -1334,10 +1349,10 @@ contains
 #endif
 
     if (ccmodel==MODEL_RPA) then 
-       !call array_scatter(1.0E0_realk,gmo,0.0E0_realk,govov,i8*no*nv*no*nv)
+       !call tensor_scatter(1.0E0_realk,gmo,0.0E0_realk,govov,i8*no*nv*no*nv)
        if(master) then
           !  call print_norm(gmo,i8*no*no*nv*nv)
-          call array_convert(gmo,govov)
+          call tensor_convert(gmo,govov)
           !  call print_norm(govov)
        endif
        !call daxpy(ncopy,1.0E0_realk,gmo,1,govov%elm1,1)
@@ -1816,7 +1831,7 @@ contains
     !> logical for the type of arrays:
     logical, intent(in) :: mpi, local_moccsd
     !> gmo arrays:
-    type(array), intent(inout) :: pgmo_diag, pgmo_up
+    type(tensor), intent(inout) :: pgmo_diag, pgmo_up
 
     character(4) :: at
     integer :: pgmo_dims
@@ -1830,15 +1845,15 @@ contains
 
     ! Declare one array for the diagonal batches:
     pgmo_dims = ntot*(ntot+1)*dimMO*(dimMO+1)/4
-    call array_minit(pgmo_diag,[pgmo_dims,Nbat],2,local=mpi,atype=at,tdims=[pgmo_dims,1])
-    call array_zero(pgmo_diag)
+    call tensor_minit(pgmo_diag,[pgmo_dims,Nbat],2,local=mpi,atype=at,tdims=[pgmo_dims,1])
+    call tensor_zero(pgmo_diag)
 
     ! Declare one array for the upper diagonal batches if necesarry
     if (Nbat>1) then
       pgmo_dims = ntot*(ntot+1)*dimMO*dimMO/2
-      call array_minit(pgmo_up,[pgmo_dims,Nbat*(Nbat-1)/2],2,local=mpi,atype=at, &
+      call tensor_minit(pgmo_up,[pgmo_dims,Nbat*(Nbat-1)/2],2,local=mpi,atype=at, &
                 & tdims=[pgmo_dims,1])
-      call array_zero(pgmo_up)
+      call tensor_zero(pgmo_up)
     end if
 
   end subroutine init_gmo_arrays
@@ -1859,7 +1874,7 @@ contains
     real(realk), intent(inout) :: gmo(dimP*dimQ*ntot*ntot)
     real(realk), intent(in) :: gao(nb*nb*dimAlpha*dimGamma), Cov(nb,ntot)
     !> MPI related:
-    type(array), intent(in) :: pgmo_diag, pgmo_up
+    type(tensor), intent(in) :: pgmo_diag, pgmo_up
     logical, intent(inout)  :: gdi_lk, gup_lk
     integer, intent(in) :: win
     integer(kind=ls_mpik), intent(in) :: dest
@@ -2048,7 +2063,7 @@ contains
     real(realk), intent(in) :: gmo(:)
     !> array containing the previous contributions
     !  to this MO int. batch, packed.
-    type(array), intent(inout) :: pack_gmo
+    type(tensor), intent(inout) :: pack_gmo
     !> index corresponding to the current batch:
     integer, intent(in) :: tile
     !> dimensions of array:
@@ -2086,11 +2101,11 @@ contains
 
        ncopy = dimQ*(dimQ+1)/2 + (ntot*(ntot-1)/2 + ntot-1)*(dimQ*(dimQ+1)/2)
        ! accumulate tile
-       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
+          call tensor_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
        else
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
@@ -2115,11 +2130,11 @@ contains
 
        ncopy = (ntot*(ntot-1)/2 + ntot)*dimP*dimQ
        ! accumulate tile
-       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
+          call tensor_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
        else
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
@@ -2142,7 +2157,7 @@ contains
     real(realk), intent(inout) :: gmo(:)
     !> array containing the previous contributions
     !  to this MO int. batch, packed.
-    type(array), intent(in) :: pack_gmo
+    type(tensor), intent(in) :: pack_gmo
     !> index corresponding to the current batch:
     integer, intent(in) :: tile
     !> dimensions of array:
@@ -2167,11 +2182,11 @@ contains
        ! get batch from pdm:
        ncopy = ntot*(ntot+1)*dimP*(dimP+1)/4
 
-       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call array_get_tile(pack_gmo,tile,tmp,ncopy)
+          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
        else
           call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
@@ -2205,11 +2220,11 @@ contains
        ! get batch from pdm:
        ncopy = dimP*dimQ*ntot*(ntot+1)/2
 
-       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call array_get_tile(pack_gmo,tile,tmp,ncopy)
+          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
        else
           call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
@@ -2241,8 +2256,8 @@ contains
 
   subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective,order)
     implicit none
-    type(array),intent(inout)   :: integral
-    type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
+    type(tensor),intent(inout)   :: integral
+    type(tensor),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
     type(lsitem), intent(inout) :: mylsitem
     logical, intent(in) :: local
     logical, intent(inout) :: collective
@@ -2422,11 +2437,11 @@ contains
 
 
     if(.not.local)then
-       integral%access_type = ALL_ACCESS
-       trafo1%access_type   = ALL_ACCESS
-       trafo2%access_type   = ALL_ACCESS
-       trafo3%access_type   = ALL_ACCESS
-       trafo4%access_type   = ALL_ACCESS
+       integral%access_type = AT_ALL_ACCESS
+       trafo1%access_type   = AT_ALL_ACCESS
+       trafo2%access_type   = AT_ALL_ACCESS
+       trafo3%access_type   = AT_ALL_ACCESS
+       trafo4%access_type   = AT_ALL_ACCESS
 #ifdef VAR_MPI
        call time_start_phase( PHASE_COMM )
        call ls_mpibcast(MaxAllowedDimAlpha,infpar%master,infpar%lg_comm)
@@ -2640,7 +2655,7 @@ contains
              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
              call time_start_phase( PHASE_COMM )
-             call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize, order = order)
+             call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize, order = order)
              call time_start_phase( PHASE_WORK )
           endif
 
@@ -2692,12 +2707,12 @@ contains
     call lsmpi_barrier(infpar%lg_comm)
     if(collective)then
        call time_start_phase( PHASE_COMM )
-       call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm,SPLIT_MSG_REC)
-       call array_convert(work,integral, order = order )
+       call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm)
+       call tensor_convert(work,integral, order = order )
     endif
     call time_start_phase( PHASE_WORK )
 #else
-    call array_convert(work,integral, order = order )
+    call tensor_convert(work,integral, order = order )
 #endif
     if(collective) call mem_dealloc( work )
 
@@ -2707,11 +2722,11 @@ contains
     endif
 
     if(.not.local)then
-       integral%access_type = MASTER_ACCESS
-       trafo1%access_type = MASTER_ACCESS
-       trafo2%access_type = MASTER_ACCESS
-       trafo3%access_type = MASTER_ACCESS
-       trafo4%access_type = MASTER_ACCESS
+       integral%access_type = AT_MASTER_ACCESS
+       trafo1%access_type = AT_MASTER_ACCESS
+       trafo2%access_type = AT_MASTER_ACCESS
+       trafo3%access_type = AT_MASTER_ACCESS
+       trafo4%access_type = AT_MASTER_ACCESS
     endif
 
 
@@ -2748,7 +2763,7 @@ subroutine cc_gmo_data_slave()
   !> performed MO-based CCSD calculation ?
   logical :: mo_ccsd
   !> array with gmo on output:
-  type(array) :: pgmo_diag, pgmo_up, govov
+  type(tensor) :: pgmo_diag, pgmo_up, govov
   !> variables used for MO batch and integral transformation
   type(MObatchInfo) :: MOinfo
   !> LS item information
@@ -2787,7 +2802,7 @@ subroutine get_mo_integral_par_slave()
   use ccintegrals, only : get_mo_integral_par
 
   implicit none
-  type(array) :: integral,trafo1,trafo2,trafo3,trafo4
+  type(tensor) :: integral,trafo1,trafo2,trafo3,trafo4
   type(lsitem) :: mylsitem
   logical :: c
 

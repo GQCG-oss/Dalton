@@ -6,7 +6,7 @@ module lsmpi_type
 !      & ass_4D2to1,ass_8D2to1,ass_4D3to1,ass_8D3to1,&
 !      & ass_4D4to1,ass_8D4to1,ass_D2to1,ass_D3to1,ass_D4to1
   use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr
-  use Integralparameters
+  use LSparameters
   use memory_handling, only: mem_alloc,mem_dealloc, max_mem_used_global,&
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
        & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats, &
@@ -59,6 +59,7 @@ module lsmpi_type
           &           lsmpi_reduction_realk_wrapper8, &
           &           lsmpi_reduction_realkM4,lsmpi_reduction_realkM8, &
           &           lsmpi_reduction_realkT4,lsmpi_reduction_realkT8, &
+          &           lsmpi_reduction_realk4D4,lsmpi_reduction_realk4D8, &
           &           lsmpi_reduction_integer4,lsmpi_reduction_integer4_wrapper8, &
           &           lsmpi_reduction_integer8,lsmpi_reduction_integer8_wrapper8, &
           &           lsmpi_reduction_integer4M4,lsmpi_reduction_integer4M8,&
@@ -96,7 +97,7 @@ module lsmpi_type
           &           ls_mpi_buffer_integer4Q_wrapper4, ls_mpi_buffer_integer4Q_wrapper8,&
           &           ls_mpi_buffer_integer8Q_wrapper4, ls_mpi_buffer_integer8Q_wrapper8,&
           &           ls_mpi_buffer_realk, &
-          &           ls_mpi_buffer_realkV, ls_mpi_buffer_realkM, &
+          &           ls_mpi_buffer_realkV4,ls_mpi_buffer_realkV8, ls_mpi_buffer_realkM, &
           &           ls_mpi_buffer_realkT,&
           &           ls_mpi_buffer_logical, ls_mpi_buffer_logicalV,&
           &           ls_mpi_buffer_logicalM,ls_mpi_buffer_shortinteger, &
@@ -194,13 +195,9 @@ module lsmpi_type
 
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-  !integer,parameter     :: SPLIT_MPI_MSG     = 2147483640
-!  integer,parameter     :: SPLIT_MPI_MSG      = 1000000000
-  integer,parameter     :: SPLIT_MPI_MSG      = 100000000
-  !The recommended size of message chunks
-  integer,parameter     :: SPLIT_MSG_REC      =  100000000
+  integer     :: SPLIT_MPI_MSG      = 100000000
   !split mpi one sided communication into 100MB chunks
-  integer,parameter     :: MAX_SIZE_ONE_SIDED =  12500000
+  integer     :: MAX_SIZE_ONE_SIDED 
 
   !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
@@ -2066,26 +2063,46 @@ contains
       ENDIF
     end subroutine ls_mpi_buffer_realk
 
-    subroutine ls_mpi_buffer_realkV(buffer,nbuf,master)
+    subroutine ls_mpi_buffer_realkV4(buffer,nbuf,master)
       implicit none
-      integer :: nbuf
+      integer(kind=4) :: nbuf
       integer(kind=ls_mpik) :: master
       real(realk) :: buffer(:)
       integer :: I
       IF(AddToBuffer)THEN
-         IF(iDP + nbuf.GT. nDP)call increaselsmpibufferDP(nbuf*i8)	
+         IF(iDP + nbuf.GT. nDP)call increaselsmpibufferDP(nbuf*i8)
          DO I=1,nbuf
             lsmpibufferDP(iDP+I) = buffer(I)
          ENDDO
          iDP = iDP + nbuf
       ELSE
-         IF(iDP+nbuf .GT. nDP)call lsquit('ls_mpi_buffer_realkV: error using buffer',-1)
+         IF(iDP+nbuf .GT. nDP)call lsquit('ls_mpi_buffer_realkV4: error using buffer',-1)
          DO I=1,nbuf
             buffer(I) = lsmpibufferDP(iDP+I)
          ENDDO
          iDP = iDP + nbuf
       ENDIF
-    end subroutine ls_mpi_buffer_realkV
+    end subroutine ls_mpi_buffer_realkV4
+    subroutine ls_mpi_buffer_realkV8(buffer,nbuf,master)
+      implicit none
+      integer(kind=8) :: nbuf
+      integer(kind=ls_mpik) :: master
+      real(realk) :: buffer(:)
+      integer :: I
+      IF(AddToBuffer)THEN
+         IF(iDP + nbuf.GT. nDP)call increaselsmpibufferDP(nbuf*i8)
+         DO I=1,nbuf
+            lsmpibufferDP(iDP+I) = buffer(I)
+         ENDDO
+         iDP = iDP + nbuf
+      ELSE
+         IF(iDP+nbuf .GT. nDP)call lsquit('ls_mpi_buffer_realkV8: error using buffer',-1)
+         DO I=1,nbuf
+            buffer(I) = lsmpibufferDP(iDP+I)
+         ENDDO
+         iDP = iDP + nbuf
+      ENDIF
+    end subroutine ls_mpi_buffer_realkV8
 
     subroutine ls_mpi_buffer_realkM(buffer,nbuf1,nbuf2,master)
       implicit none
@@ -3338,6 +3355,37 @@ contains
     nullify(buf)
 #endif
   end subroutine lsmpi_reduction_realkT8
+
+  subroutine lsmpi_reduction_realk4D4(buffer,n1,n2,n3,n4,master,comm)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: comm   ! communicator
+    integer(kind=ls_mpik),intent(in) :: master
+    integer(kind=4) ::n1,n2,n3,n4
+    real(realk) :: buffer(n1,n2,n3,n4)
+#ifdef VAR_MPI
+    integer(kind=8) :: n
+    real(realk),pointer :: buf(:)
+    n=n1*n2*n3*n4
+    call ass_4D4to1(buffer,buf,[n1,n2,n3,n4])
+    call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
+    nullify(buf)
+#endif
+  end subroutine lsmpi_reduction_realk4D4
+  subroutine lsmpi_reduction_realk4D8(buffer,n1,n2,n3,n4,master,comm)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: comm   ! communicator
+    integer(kind=ls_mpik),intent(in) :: master
+    integer(kind=8) ::n1,n2,n3,n4
+    real(realk) :: buffer(n1,n2,n3,n4)
+#ifdef VAR_MPI
+    integer(kind=8) :: n
+    real(realk),pointer :: buf(:)
+    n=n1*n2*n3*n4
+    call ass_8D4to1(buffer,buf,[n1,n2,n3,n4])
+    call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
+    nullify(buf)
+#endif
+  end subroutine lsmpi_reduction_realk4D8
 
   subroutine lsmpi_reduce_realk_min(buffer,dest,comm)
     implicit none

@@ -10,16 +10,13 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Final HF energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-6)
 f.add(string = 'Nuclear repulsion',
-      rel_tolerance = 1.0e-8)
-
-f.add(string = 'CCSD occupied correlation energy :',
       rel_tolerance = 1.0e-6)
 
-f.add(from_string = ' (T) occupied correlation energy :',
+f.add(from_string = 'Print single and pair fragment energies',
       to_string   = 'Total CCSD(T) energy:',
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 # to ignore sign set                      ignore_sign = True   
 # to ignore numbers below 1.0e-4 set      ignore_below = 1.0e-4

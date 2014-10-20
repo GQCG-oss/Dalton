@@ -68,7 +68,7 @@ END SUBROUTINE LSlib_set_external_comm
 SUBROUTINE LSlib_exit_slave()
 use infpar_module,      only : infpar
 use lsmpi_type,         only : ls_mpibcast
-use Integralparameters, only : LSMPIQUIT
+use LSparameters, only : LSMPIQUIT
 use lslib_state
 implicit none
 

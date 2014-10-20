@@ -7,7 +7,7 @@ MODULE IntegralInterfaceIchorMod
   use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
-  use Integralparameters
+  use LSparameters
   use molecule_typetype, only: MOLECULEINFO, MOLECULE_PT, ATOMITEM
   use molecule_type, only: build_pointmolecule, DETERMINE_MAXCOOR, &
        & free_moleculeinfo, build_atomicmolecule, print_mol
@@ -724,10 +724,10 @@ CONTAINS
                                  write(lupri,'(A,ES16.8)')'DIFF                   ',&
                                       & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                                  call lsquit('ERROR',-1)
-                                 !                   ELSE
-                                 !                      write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
-                                 !                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
-                                 !                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+!                              ELSE
+!                                 write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
+!                                      & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
+!                                      & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                               ENDIF
                            ENDIF
                         ENDDO

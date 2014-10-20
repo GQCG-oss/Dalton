@@ -27,7 +27,7 @@ module dec_typedef_module
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
   !> how many real models in total are there, disregard MODEL_NONE
-  integer,parameter :: ndecmodels   = 5
+  integer,parameter :: ndecmodels   = 6
   !> Number of different fragment energies
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
@@ -35,6 +35,10 @@ module dec_typedef_module
   integer,parameter :: MODEL_CCSD   = 3
   integer,parameter :: MODEL_CCSDpT = 4
   integer,parameter :: MODEL_RPA    = 5
+  integer,parameter :: MODEL_RIMP2  = 6
+
+  ! Number of possible FOTs to consider in geometry optimization
+  integer,parameter :: nFOTs=8
 
 
   ! DEC fragment energies: MODIFY FOR NEW MODEL & MODIFY FOR NEW CORRECTION
@@ -43,7 +47,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 18
+  integer, parameter :: ndecenergies = 20
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -63,6 +67,8 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
   integer,parameter :: FRAGMODEL_CCSDf12  = 18  ! CCSD-F12 energy correction
+  integer,parameter :: FRAGMODEL_OCCRIMP2 = 19  ! RI-MP2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTRIMP2= 20  ! RI-MP2 virtual partitioning scheme
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -77,6 +83,21 @@ module dec_typedef_module
      ! 
      ! *****************************************************************************************
 
+
+     !> Do a SNOOP calculation rather than DEC? (later SNOOP and DEC will be somewhat merged)
+     logical :: SNOOP
+     !> Skip CC calculation in SNOOP and just do HF
+     logical :: SNOOPjustHF
+     !> Maximum number of iterations in SNOOP HF calculations
+     integer :: SNOOPmaxiter
+     !> Convergence threshold in SNOOP HF calculations
+     real(realk) :: SNOOPthr
+     !> Maximum number of DIIS vectors stored in RH/DIIS scheme in SNOOP
+     integer :: SNOOPmaxdiis
+     !> Debug prints for SNOOP RH/DIIS
+     logical :: SNOOPdebug
+     !> Impose orthogonality constrant for occupied subsystem orbitals in SNOOP
+     logical :: SNOOPort
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
@@ -223,8 +244,8 @@ module dec_typedef_module
      logical :: use_crop
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
-     !> temporary debug keyword to calculate energy without using dense array of v2o2 size:
-     logical :: v2o2_free_solver
+     !> set tilesize in ccsolver in GB
+     real(realk) :: cc_solver_tile_mem
 
      !> ccsd(T) settings
      !> *****************************
@@ -232,6 +253,8 @@ module dec_typedef_module
      logical :: abc
      !> force a specific tile size for use with abc scheme
      integer :: abc_tile_size
+     !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
+     integer :: CCSDPT_nbuffs_ijk
 
      !> F12 settings
      !> ************
@@ -281,7 +304,7 @@ module dec_typedef_module
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
      !> test the array structure
-     logical :: array_test
+     logical :: tensor_test
      !> test the array reorderings
      logical :: reorder_test
      !> Check that LCM orbitals are correct
@@ -315,12 +338,10 @@ module dec_typedef_module
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
      !> Hack to only do fragment optimization
-     integer :: only_n_frag_jobs
+     integer         :: only_n_frag_jobs
      integer,pointer :: frag_job_nr(:)
-     !> Has simple orbital threshold been defined manually in input (true),
-     !> or should simple orbital threshold be adapted to FOT 
-     !> as descripted under FOTlevel (false)?
-     logical :: simple_orbital_threshold_set     
+     !> Use hack to specify only pair fragment jobs
+     logical         :: only_pair_frag_jobs
      !> Use Boughton-Pulay criteria for generating orbitals rather than simple Lowdin charge criteria
      logical :: BoughtonPulay
      !> Simple Mulliken charge threshold (only for Boughton-Pulay procedure)
@@ -340,12 +361,13 @@ module dec_typedef_module
      !> *********************
      !> Fragment optimization threshold
      real(realk) :: FOT
+     !> Fragment optimization thresholds of decreasing magnitude (increasing accuracy)
+     !> to possibly be used in geometry optimization
+     real(realk) :: GeoFOTs(nFOTs)
      !> Max number of iterations for expanding fragment
      integer :: MaxIter
-     !> FOT level defining precision of calculation, see set_input_for_fot_level
+     !> FOT level (used for geometry opt.)
      integer :: FOTlevel
-     !> Max accepted FOT level
-     integer :: maxFOTlevel
      !> Which Fragment Expansion Scheme should be used
      integer :: Frag_Exp_Scheme
      !> Which Fragment Reduction Scheme should be used for the occ space
@@ -358,8 +380,6 @@ module dec_typedef_module
      integer :: Frag_Exp_Size
      real(realk) :: Frag_red_occ_thr
      real(realk) :: Frag_red_virt_thr
-     !> Use RI for Fragment Expansion 
-     logical :: FragmentExpansionRI
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
@@ -387,8 +407,6 @@ module dec_typedef_module
      !> **************
      !> Distance cutoff for pair fragments
      real(realk) :: pair_distance_threshold
-     !> Pair cutoff set manually (will overwrite default pair cutoff defined by FOTlevel)
-     logical :: paircut_set
      !> When pair regression fit is performed, pair distances smaller than PairMinDist are ignored
      real(realk) :: PairMinDist
      !> Skip pair analysis (debug)
@@ -435,7 +453,7 @@ module dec_typedef_module
      !> *********************
      !> Book keeping of the number of DEC calculations for each FOT level
      !> (only relevant for geometry optimizations)
-     integer,dimension(8) :: ncalc
+     integer,dimension(nFOTs) :: ncalc
      !> Factor multiply intrinsic energy error by before returning error to geometry optimizer
      real(realk) :: EerrFactor
      !> Old energy error (used only for geometry opt)
@@ -639,6 +657,13 @@ module dec_typedef_module
      !> model=MODEL_MP2 :  Do MP2
      !> etc., see MODEL_* definitions below
      integer,pointer :: ccmodel(:,:) => null()
+
+     !> Partitioning of energy into dispersion, charge transfer,
+     !> and internal subsystem excitations 
+     !> (see SNOOP_partition_energy).
+     real(realk) :: Edisp
+     real(realk) :: Ect
+     real(realk) :: Esub
 
   end type fullmolecule
 

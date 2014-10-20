@@ -29,13 +29,13 @@ module tensor_interface_module
 
 !> convert arrays, the idea is for a general conversion only the interface
 !should be called
-  interface array_convert
-     module procedure array_convert_fort2arr_wrapper1,&
-     &array_convert_fort2arr_wrapper2,array_convert_fort2arr_wrapper3,&
-     &array_convert_fort2arr_wrapper4,array_convert_array22array,&
-     &array_convert_arr2fort_wrapper1,array_convert_arr2fort_wrapper2,&
-     &array_convert_arr2fort_wrapper3,array_convert_arr2fort_wrapper4
-  end interface array_convert
+  interface tensor_convert
+     module procedure tensor_convert_fort2tensor_wrapper1,&
+     &tensor_convert_fort2tensor_wrapper2,tensor_convert_fort2tensor_wrapper3,&
+     &tensor_convert_fort2tensor_wrapper4,tensor_convert_array22array,&
+     &tensor_convert_tensor2fort_wrapper1,tensor_convert_tensor2fort_wrapper2,&
+     &tensor_convert_tensor2fort_wrapper3,tensor_convert_tensor2fort_wrapper4
+  end interface tensor_convert
 
 !> print norms of array, array2 array3, array4 and fortran arrays
   interface print_norm
@@ -43,7 +43,7 @@ module tensor_interface_module
                     &print_norm_fort_wrapper2_nrm,&
                     &print_norm_fort_wrapper3_nrm,&
                     &print_norm_fort_wrapper4_nrm,&
-                    &array_print_norm_nrm,&
+                    &tensor_print_norm_nrm,&
                     &array2_print_norm_nrm,&
                     &array4_print_norm_nrm,&
                     &matrix_print_norm_nrm,&
@@ -51,55 +51,56 @@ module tensor_interface_module
                     &print_norm_fort_wrapper2_customprint,&
                     &print_norm_fort_wrapper3_customprint,&
                     &print_norm_fort_wrapper4_customprint,&
-                    &array_print_norm_customprint,&
+                    &tensor_print_norm_customprint,&
                     &array2_print_norm_customprint,&
                     &array4_print_norm_customprint
   end interface print_norm
 
 
-  interface array_add
-    module procedure array_add_normal, array_add_arr2fullfort,array_add_fullfort2arr
-  end interface array_add
+  interface tensor_add
+    module procedure tensor_add_normal, tensor_add_arr2fullfort,tensor_add_fullfort2arr
+  end interface tensor_add
 
-  !interface array_contract
-  !  module procedure array_contract_pref
-  !end interface array_contract
+  !interface tensor_contract
+  !  module procedure tensor_contract_pref
+  !end interface tensor_contract
 
 
 contains
 
-  subroutine array_enable_debug_mode()
+  subroutine tensor_enable_debug_mode()
      implicit none
-     array_debug_mode = .true.
-  end subroutine array_enable_debug_mode
+     tensor_debug_mode = .true.
+  end subroutine tensor_enable_debug_mode
 
-  subroutine copy_array(arr_in,arr_out)
+  subroutine copy_array(tensor_in,tensor_out)
     implicit none
-    type(array), intent(in) :: arr_in
-    type(array), intent(inout) :: arr_out
+    type(tensor), intent(in) :: tensor_in
+    type(tensor), intent(inout) :: tensor_out
     integer :: i
-    arr_out%mode = arr_in%mode
-    arr_out%nlti = arr_in%nlti
-    arr_out%tsize = arr_in%tsize
-    arr_out%itype = arr_in%itype
-    arr_out%nelms = arr_in%nelms
-    arr_out%ntiles = arr_in%ntiles
-    arr_out%access_type = arr_in%access_type
-    if(associated(arr_in%dims))call arr_set_dims(arr_out,arr_in%dims,arr_out%mode)
-    if(associated(arr_in%ntpm))call arr_set_ntpm(arr_out,arr_in%ntpm,arr_out%mode)
-    if(associated(arr_in%tdim))call arr_set_tdims(arr_out,arr_in%tdim,arr_out%mode)
-    if(associated(arr_in%addr_p_arr))call arr_set_addr(arr_out,arr_in%addr_p_arr,size(arr_in%addr_p_arr,kind=ls_mpik))
-    !arr_out%dims = arr_in%dims
-    !arr_out%tdim = arr_in%tdim
-    !arr_out%ntpm = arr_in%ntpm
-    if(associated(arr_in%elm1))then
-      call memory_allocate_array_dense(arr_out)
-      arr_out%elm1=arr_in%elm1
+    tensor_out%mode = tensor_in%mode
+    tensor_out%nlti = tensor_in%nlti
+    tensor_out%tsize = tensor_in%tsize
+    tensor_out%itype = tensor_in%itype
+    tensor_out%nelms = tensor_in%nelms
+    tensor_out%ntiles = tensor_in%ntiles
+    tensor_out%access_type = tensor_in%access_type
+    if(associated(tensor_in%dims))call tensor_set_dims(tensor_out,tensor_in%dims,tensor_out%mode)
+    if(associated(tensor_in%ntpm))call tensor_set_ntpm(tensor_out,tensor_in%ntpm,tensor_out%mode)
+    if(associated(tensor_in%tdim))call tensor_set_tdims(tensor_out,tensor_in%tdim,tensor_out%mode)
+    if(associated(tensor_in%addr_p_arr))call tensor_set_addr(tensor_out,tensor_in%addr_p_arr,&
+       &size(tensor_in%addr_p_arr,kind=ls_mpik))
+    !tensor_out%dims = tensor_in%dims
+    !tensor_out%tdim = tensor_in%tdim
+    !tensor_out%ntpm = tensor_in%ntpm
+    if(associated(tensor_in%elm1))then
+      call memory_allocate_tensor_dense(tensor_out)
+      tensor_out%elm1=tensor_in%elm1
     endif
-    if(associated(arr_in%ti))then
-      call memory_allocate_tiles(arr_out)
-      do i=1,arr_in%nlti
-        arr_out%ti(i)%t=arr_in%ti(i)%t
+    if(associated(tensor_in%ti))then
+      call memory_allocate_tiles(tensor_out)
+      do i=1,tensor_in%nlti
+        tensor_out%ti(i)%t=tensor_in%ti(i)%t
       enddo
     endif
   end subroutine copy_array
@@ -110,12 +111,12 @@ contains
   !distributions in the two arrays to be added
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine array_add_normal(x,b,y,a,order)
+  subroutine tensor_add_normal(x,b,y,a,order)
      implicit none
      !> array input, this is the result array with overwritten data
-     type(array),intent(inout) :: x
+     type(tensor),intent(inout) :: x
      !> array to add
-     type(array),intent(in) :: y
+     type(tensor),intent(in) :: y
      !> scaling factor for array y
      real(realk),intent(in) :: b
      !> order the second array such that it fits the first
@@ -128,7 +129,7 @@ contains
      pre2 = 1.0E0_realk
      if(present(a))pre2 = a
 
-     if(x%mode/=y%mode)call lsquit("ERROR(array_add_normal): modes of arrays not compatible",-1)
+     if(x%mode/=y%mode)call lsquit("ERROR(tensor_add_normal): modes of arrays not compatible",-1)
 
      do i=1,x%mode
         if(present(order))then
@@ -136,16 +137,16 @@ contains
         else
            o(i) = i
         endif
-        if(x%dims(i) /= y%dims(o(i)))call lsquit("ERROR(array_add_normal): dims of arrays not &
+        if(x%dims(i) /= y%dims(o(i)))call lsquit("ERROR(tensor_add_normal): dims of arrays not &
            &compatible (with the given order)",-1)
      enddo
 
      select case(x%itype)
 
-     case(DENSE,REPLICATED)
+     case(TT_DENSE,TT_REPLICATED)
 
         select case(y%itype)
-        case(DENSE,REPLICATED)
+        case(TT_DENSE,TT_REPLICATED)
 
            if( x%mode == 1 .or. .not.present(order))then
               if(present(a))then
@@ -165,59 +166,127 @@ contains
               case(4)
                  call array_reorder_4d(b,y%elm1,y%dims(1),y%dims(2),y%dims(3),y%dims(4),o,pre2,x%elm1)
               case default
-                 call lsquit("ERROR(array_add_normal): mode not implemented",-1)
+                 call lsquit("ERROR(tensor_add_normal): mode not implemented",-1)
               end select
            end if
 
-           if(x%itype==REPLICATED)call array_sync_replicated(x)
+           if(x%itype==TT_REPLICATED)call tensor_sync_replicated(x)
 
-        case(TILED_DIST)
+        case(TT_TILED_DIST)
 
            call mem_alloc(buffer,y%tsize)
            !TODO:IMPLEMENT MULTIPLE BUFFERING
            do ti=1,y%ntiles
               call get_tile_dim(nel,y,ti)
-              call array_get_tile(y,ti,buffer,nel)
+              call tensor_get_tile(y,ti,buffer,nel)
               call tile_in_fort(b,buffer,ti,y%tdim,pre2,x%elm1,x%dims,x%mode,o)
            enddo
            call mem_dealloc(buffer)
 
-           if(x%itype==REPLICATED)call array_sync_replicated(x)
+           if(x%itype==TT_REPLICATED)call tensor_sync_replicated(x)
 
         case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(array_add):not yet implemented y%itype",DECinfo%output)
+           call lsquit("ERROR(tensor_add):not yet implemented y%itype 1",DECinfo%output)
         end select
 
-     case(TILED_DIST)
+     case(TT_TILED_DIST)
 
         select case(y%itype)
-        case(TILED_DIST)
-           call array_add_par(pre2,x,b,y,o)
+        !case(TT_DENSE,TT_REPLICATED)
+        !   if(present(a))call tensor_scale(x,a)
+        !   call tensor_add_fullfort2arr(x,b,y%elm1, order = o)
+        case(TT_TILED_DIST)
+           call tensor_add_par(pre2,x,b,y,o)
         case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(array_add):not yet implemented y%itype",DECinfo%output)
+           call lsquit("ERROR(tensor_add):not yet implemented y%itype 2",DECinfo%output)
         end select
 
      case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(array_add_normal):not yet implemented x%itype",DECinfo%output)
+           call lsquit("ERROR(tensor_add_normal):not yet implemented x%itype",DECinfo%output)
      end select
-  end subroutine array_add_normal
+  end subroutine tensor_add_normal
+
+  subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens)
+     implicit none
+     !> specify the number of thensors that should be transformed
+     integer, intent(in) :: ntens,nus,maxtensmode
+     !list of which index of the trafo matrices to contract with the tensor index
+     integer, intent(in) :: t(maxtensmode,ntens)
+     ! list of which u to use to contract with the tensor index
+     integer, intent(in) :: whichU(maxtensmode,ntens)
+     !this contains the transformation matrices
+     type(tensor), intent(in) :: U(nus)
+     !this contains the tensors
+     type(tensor), intent(in) :: tens(ntens)
+
+     !internal variables
+     integer :: itens, imode, it_mode, isort
+     integer :: ord(maxtensmode)
+     type(tensor) :: AUX, AUX1, AUX2
+     real(realk), parameter :: p10 = 1.0E0_realk
+     real(realk), parameter :: p00 = 0.0E0_realk
+
+     do itens=1,ntens
+
+        it_mode = tens(itens)%mode
+
+
+        !initialize a tensor that has exactly the same type and distribution as
+        !the one that should be tansformed
+        call tensor_init(AUX, tens(itens)%dims, it_mode, &
+           & pdm         = tens(itens)%access_type, &
+           & tensor_type = tens(itens)%itype, &
+           & tdims       = tens(itens)%tdim, &
+           & fo          = tens(itens)%offset ) 
+
+        do imode = 1, it_mode
+
+           do isort = 1, it_mode
+              if(isort == imode)then
+                 ord(isort) = 1
+              else if(isort < imode )then
+                 ord(isort) = isort+1
+              else if(isort > imode )then
+                 ord(isort) = isort
+              endif
+           enddo
+
+           !USE ALIASES FOR THE ACTUAL CONTRACTION
+           if( mod(imode,2) == 0)then
+              AUX1 = AUX
+              AUX2 = tens(itens)
+           else
+              AUX1 = tens(itens)
+              AUX2 = AUX
+           endif
+
+           call tensor_contract(p10,U(whichU(imode,itens)),AUX1,[t(imode,itens)],&
+              &[imode],1,p00,AUX2,ord(1:it_mode),force_sync=.true.)
+
+        enddo
+
+        call tensor_free(AUX)
+     enddo
+
+  end subroutine tensor_transform_basis
+
 
   ! x = x + b * y
   !> \brief add a scaled fortran-array to an array. The data may have arbitrary
   !distribution for the array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine array_add_fullfort2arr(arrx,b,fortarry,order,wrk,iwrk)
+  subroutine tensor_add_fullfort2arr(arrx,b,fortarry,order,wrk,iwrk)
     implicit none
     !> full fortan arra´y, this corresponds to y
     real(realk), intent(in) :: fortarry(*)
     !> scaling factor for fortran array
     real(realk), intent(in) :: b
     !> array which is overwritten
-    type(array), intent(inout) :: arrx
+    type(tensor), intent(inout) :: arrx
     !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arrx%mode)
     !> optinally workspace can be passed, the size is defined as iwrk
@@ -232,15 +301,15 @@ contains
     enddo
     if(present(order))o=order
     select case(arrx%itype)
-      case(DENSE)
+      case(TT_DENSE)
         if(.not.present(order))then
           call daxpy(int(arrx%nelms),b,fortarry,1,arrx%elm1,1)
         else
-          call lsquit("ERROR(array_add_fullfort2arr1):not implemented",-1)
+          call lsquit("ERROR(tensor_add_fullfort2arr1):not implemented",-1)
         endif
-      case(TILED)
-        call lsquit("ERROR(array_add_fullfort2arr):not implemented",-1)
-      case(TILED_DIST)
+      case(TT_TILED)
+        call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
+      case(TT_TILED_DIST)
         if(present(wrk).and.present(iwrk))then
           call add_data2tiled_intiles_explicitbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o,wrk,iwrk)
         else
@@ -251,58 +320,59 @@ contains
           endif
         endif
     end select
-  end subroutine array_add_fullfort2arr
+  end subroutine tensor_add_fullfort2arr
 
   ! x = x + b * y
   !> \brief add a scaled array to a fortran- array. The data may have arbitrary
   !distribution for the array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine array_add_arr2fullfort(fortarrx,b,arry,order)
+  subroutine tensor_add_arr2fullfort(fortarrx,b,arry,order)
     implicit none
     !> full fortan arra´y, this corresponds to x and is overwritten
     real(realk), intent(inout) :: fortarrx(*)
     !> scaling factor for the array y
     real(realk), intent(in) :: b
     !> array to add --> y
-    type(array), intent(in) :: arry
+    type(tensor), intent(in) :: arry
     !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arry%mode)
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
     real(realk) :: MemFree,tilemem
     select case(arry%itype)
-      case(DENSE)
+      case(TT_DENSE)
         call daxpy(int(arry%nelms),b,arry%elm1,1,fortarrx,1)
-      case(TILED)
-        call lsquit("ERROR(array_add_fullfort2arr):not implemented",-1)
-      case(TILED_DIST)
+      case(TT_TILED)
+        call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
+      case(TT_TILED_DIST)
         if(present(order))call add_tileddata2fort(arry,b,fortarrx,arry%nelms,.true.,order)
         if(.not.present(order))call add_tileddata2fort(arry,b,fortarrx,arry%nelms,.true.)
     end select
-  end subroutine array_add_arr2fullfort
+  end subroutine tensor_add_arr2fullfort
 
 
   !> \brief simple general tensor conraction of the type C = pre1 * A * B + pre2 * C
   !> \author Patrick Ettenhuber
-  subroutine array_contract(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+  subroutine tensor_contract(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk,force_sync)
      implicit none
      real(realk), intent(in)    :: pre1,pre2
-     type(array), intent(in)    :: A,B
+     type(tensor), intent(in)    :: A,B
      integer, intent(in)        :: nmodes2c
      integer, intent(in)        :: m2cA(nmodes2c), m2cB(nmodes2c)
-     type(array), intent(inout) :: C
+     type(tensor), intent(inout) :: C
      integer, intent(inout)     :: order(C%mode)
      real(realk), intent(in),    optional :: mem
      real(realk), intent(inout), optional :: wrk(:)
      integer, intent(in),        optional :: iwrk
+     logical, intent(in),        optional :: force_sync
      !internal variables
      integer :: i,j,k
      logical :: contraction_mode
      integer :: rorder(C%mode)
 
      if( (A%mode-nmodes2c) + (B%mode-nmodes2c) /= C%mode)then
-        call lsquit("ERROR(array_contract): invalid contraction pattern",-1)
+        call lsquit("ERROR(tensor_contract): invalid contraction pattern",-1)
      endif
 
      do i = 1,C%mode
@@ -311,7 +381,7 @@ contains
 
      do i = 1,nmodes2c
         if(A%dims(m2cA(i))/=B%dims(m2cB(i)))then
-           call lsquit("ERROR(array_contract): Contracted modes in A and B incompatible",-1)
+           call lsquit("ERROR(tensor_contract): Contracted modes in A and B incompatible",-1)
         endif
      enddo
      k = 1
@@ -322,7 +392,7 @@ contains
         enddo
         if(.not.contraction_mode)then
            if(A%dims(i) /= C%dims(rorder(k)))then
-              call lsquit("ERROR(array_contract): Uncontracted modes in A and C incompatible",-1)
+              call lsquit("ERROR(tensor_contract): Uncontracted modes in A and C incompatible",-1)
            endif
            k=k+1
         endif
@@ -334,340 +404,589 @@ contains
         enddo
         if(.not.contraction_mode)then
            if(B%dims(i) /= C%dims(rorder(k)))then
-              call lsquit("ERROR(array_contract): Uncontracted modes in B and C incompatible",-1)
+              call lsquit("ERROR(tensor_contract): Uncontracted modes in B and C incompatible",-1)
            endif
            k=k+1
         endif
      enddo
 
      if(k-1/=C%mode)then
-        call lsquit("ERROR(array_contract): this should have resulted in a seg fault earlier",-1)  
+        call lsquit("ERROR(tensor_contract): this should have resulted in a seg fault earlier",-1)  
      end if
 
      select case(A%itype)
-     case(TILED_DIST)
+     case(TT_DENSE,TT_REPLICATED)
         select case(B%itype)
-        case(TILED_DIST)
+        case(TT_DENSE,TT_REPLICATED)
            select case(C%itype)
-           case(TILED_DIST)
-              call lspdm_array_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+           case(TT_DENSE,TT_REPLICATED)
+              call tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,&
+                 &mem=mem,wrk=wrk,iwrk=iwrk)
+              if(C%itype==TT_REPLICATED)call tensor_sync_replicated(C)
            case default
-              call lsquit("ERROR(array_contract_simple): C%itype not implemented",-1)
+              call lsquit("ERROR(tensor_contract_simple): C%itype not implemented",-1)
            end select
         case default
-           call lsquit("ERROR(array_contract_simple): B%itype not implemented",-1)
+           call lsquit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
+        end select
+     case(TT_TILED_DIST)
+
+        select case(B%itype)
+
+        case(TT_DENSE,TT_REPLICATED)
+
+           select case(C%itype)
+           case(TT_TILED_DIST)
+              call lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,&
+                 & mem=mem,wrk=wrk,iwrk=iwrk,force_sync=force_sync)
+           case default
+              call lsquit("error(tensor_contract_simple): c%itype not implemented",-1)
+           end select
+
+        case(TT_TILED_DIST)
+           select case(C%itype)
+           case(TT_TILED_DIST)
+              call lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,&
+                 & mem=mem,wrk=wrk,iwrk=iwrk,force_sync=force_sync)
+           case default
+              call lsquit("error(tensor_contract_simple): c%itype not implemented",-1)
+           end select
+
+        case default
+           call lsquit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
         end select
      case default
-        call lsquit("ERROR(array_contract_simple): A%itype not implemented",-1)
+        call lsquit("ERROR(tensor_contract_simple): A%itype not implemented",-1)
      end select
 
 
-  end subroutine array_contract
+  end subroutine tensor_contract
+
+  subroutine tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+     implicit none
+     real(realk), intent(in)    :: pre1,pre2
+     type(tensor), intent(in)    :: A,B
+     integer, intent(in)        :: nmodes2c
+     integer, intent(in)        :: m2cA(nmodes2c), m2cB(nmodes2c)
+     type(tensor), intent(inout) :: C
+     integer, intent(inout)     :: order(C%mode)
+     real(realk), intent(in),    optional :: mem
+     real(realk), intent(inout), target, optional :: wrk(:)
+     integer, intent(in),        optional :: iwrk
+     !internal variables
+     real(realk), pointer :: wA(:),  wB(:), wC(:)
+     integer :: ordA(A%mode), ordB(B%mode), ro(C%mode), dims_product(C%mode)
+     integer :: m_gemm, n_gemm, k_gemm, ldA,ldB
+     integer :: i,j,k,l
+     logical :: contraction_mode, use_wrk_space
+     character :: tA, tB
+
+     !in the case of simle matrices do not allocate buffer space
+     ! TODO: this can be generalized for cases where the modes to contract are
+     ! the outer modes of a tensor
+     if(A%mode == 2 .and. B%mode == 2 .and. C%mode == 2)then
+
+        m_gemm = C%dims(1)
+        n_gemm = C%dims(2)
+        wC => C%elm1
+
+        if(order(1) == 1 .and. order(2) == 2)then
+
+           select case (m2cA(1))
+           case(1)
+              tA = 't'
+              k_gemm = A%dims(1)
+           case(2)
+              tA = 'n'
+              k_gemm = A%dims(2)
+           case default
+              call lsquit("ERROR(tensor_contract_dense_simple): undefined contraction mode A",-1)
+           end select
+           select case (m2cB(1))
+           case(1)
+              tB = 'n'
+           case(2)
+              tB = 't'
+           case default
+              call lsquit("ERROR(tensor_contract_dense_simple): undefined contraction mode B",-1)
+           end select
 
 
-  !> \brief perform a contraction of the outer indices of two arrays, r means
-  !the right-most index for the first array, l means the left-most index for the
-  !sectond array, p1 * left * right + p2 * res = res 
-  !> \author Patrick Ettenhuber
-  !> \date late 2012
-  subroutine array_contract_outer_indices_rl(p1,left,right,p2,res)
-    implicit none
-    !> prefactors for the left*right part and the res part
-    real(realk),intent(in) :: p1,p2
-    !> the resulting array
-    type(array),intent(inout) :: res
-    !> the arrays to be multiplied
-    type(array),intent(in) :: left,right
-    integer :: i,m,n,k
-    if(left%dims(left%mode)/=right%dims(1))then
-      call lsquit("ERROR(array_contract_outer_indices_rl):wrong&
-      &contraction dimensions!!",DECinfo%output)
-    endif
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !Introduce a lot of dimensionality checks here!!
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    do i=1,left%mode-1
-      if(left%dims(i)/=res%dims(i))then
-        call lsquit("ERROR(array_contract_outer_indices_rl):wrong&
-        &result (left) dimensions!!",DECinfo%output)
-      endif
-    enddo
-    do i=right%mode,2,-1
-      if(right%dims(i)/=res%dims(left%mode+i-2))then
-        call lsquit("ERROR(array_contract_outer_indices_rl):wrong&
-        &result (right) dimensions!!",DECinfo%output)
-      endif
-    enddo
-    if(left%itype==TILED.or.left%itype==TILED_DIST.or.right%itype==TILED&
-    &.or.right%itype==TILED_DIST)call lsquit("ERROR(array_contract_outer_&
-    &indices_rl):not yet implemented for tiled/PDM",DECinfo%output)
-   
+           wA => A%elm1
+           ldA = A%dims(1)
+           wB => B%elm1
+           ldB = B%dims(1)
 
-    !do that only if type dense --> the other routines are to come
-    select case(res%itype)
-      case(DENSE)
-        m=1
-        do i=1,left%mode-1
-          m=m*left%dims(i)
-        enddo
-        n=1
-        do i=right%mode,2,-1
-          n=n*right%dims(i)
-        enddo
-        k=right%dims(1) 
-        call dgemm('n','n',m,n,k,p1,left%elm1,m,right%elm1,k,p2,res%elm1,m)
-      case(REPLICATED)
-        m=1
-        do i=1,left%mode-1
-          m=m*left%dims(i)
-        enddo
-        n=1
-        do i=right%mode,2,-1
-          n=n*right%dims(i)
-        enddo
-        k=right%dims(1) 
-        call dgemm('n','n',m,n,k,p1,left%elm1,m,right%elm1,k,p2,res%elm1,m)
-        if(res%access_type==MASTER_ACCESS)call array_sync_replicated(res)
-      case(TILED)
-              call lsquit("ERROR(array_contract_outer_indices_rl):not yet implemented for tiled",DECinfo%output)
-      case(TILED_DIST)
-              call lsquit("ERROR(array_contract_outer_indices_rl):not yet implemented for PDM",DECinfo%output)
-      case default
-              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
-    end select
-    
-  end subroutine array_contract_outer_indices_rl
 
-  !> \brief perform a contraction of the outer indices of two arrays, the first l means
-  !the leftt-most index for the first array, l means the left-most index for the
-  !sectond array, p1 * left^T * right + p2 * res = res 
-  !> \author Patrick Ettenhuber
-  !> \date late 2012
-  subroutine array_contract_outer_indices_ll(p1,left,right,p2,res)
-    implicit none
-    !> prefactors for the left*right part and the res part
-    real(realk),intent(in) :: p1,p2
-    !> the resulting array
-    type(array),intent(inout) :: res
-    !> the arrays to be multiplied
-    type(array),intent(in) :: left,right
-    integer :: i,m,n,k
-    if(left%dims(1)/=right%dims(1))then
-      call lsquit("ERROR(array_contract_outer_indices_ll):wrong&
-      &dimensions!!",DECinfo%output)
-    endif
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !Introduce a lot of dimensionality checks here!!
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    do i=2,left%mode
-      if(left%dims(i)/=res%dims(i-1))then
-        call lsquit("ERROR(array_contract_outer_indices_ll):wrong&
-        &result (left) dimensions!!",DECinfo%output)
-      endif
-    enddo
-    do i=right%mode,2,-1
-      if(right%dims(i)/=res%dims(left%mode+i-2))then
-        call lsquit("ERROR(array_contract_outer_indices_ll):wrong&
-        &result (right) dimensions!!",DECinfo%output)
-      endif
-    enddo
-    if(left%itype==TILED.or.left%itype==TILED_DIST.or.right%itype==TILED&
-    &.or.right%itype==TILED_DIST)call lsquit("ERROR(array_contract_outer_&
-    &indices_ll):not yet implemented for tiled/PDM",DECinfo%output)
+        else if(order(1) == 2 .and. order(2) == 1)then
 
-    !do that only if type dense --> the other routines are to come
-    select case(res%itype)
-      case(DENSE)
-        m=1
-        do i=left%mode,2,-1
-          m=m*left%dims(i)
-        enddo
-        n=1
-        do i=right%mode,2,-1
-          n=n*right%dims(i)
-        enddo
-        k=right%dims(1) 
-        call dgemm('t','n',m,n,k,p1,left%elm1,k,right%elm1,k,p2,res%elm1,m)
-      case(REPLICATED)
-        m=1
-        do i=left%mode,2,-1
-          m=m*left%dims(i)
-        enddo
-        n=1
-        do i=right%mode,2,-1
-          n=n*right%dims(i)
-        enddo
-        k=right%dims(1) 
-        call dgemm('t','n',m,n,k,p1,left%elm1,k,right%elm1,k,p2,res%elm1,m)
-        if(res%access_type==MASTER_ACCESS)call array_sync_replicated(res)
-      case(TILED)
-              call lsquit("ERROR(array_contract_outer_indices_ll):not yet implemented for tiled",DECinfo%output)
-      case(TILED_DIST)
-              call lsquit("ERROR(array_contract_outer_indices_ll):not yet implemented for PDM",DECinfo%output)
-      case default
-              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
-    end select
-    
-  end subroutine array_contract_outer_indices_ll
+           select case (m2cA(1))
+           case(1)
+              tA = 'n'
+              k_gemm = A%dims(1)
+           case(2)
+              tA = 't'
+              k_gemm = A%dims(2)
+           case default
+              call lsquit("ERROR(tensor_contract_dense_simple): undefined contraction mode A",-1)
+           end select
+           select case (m2cB(1))
+           case(1)
+              tB = 't'
+           case(2)
+              tB = 'n'
+           case default
+              call lsquit("ERROR(tensor_contract_dense_simple): undefined contraction mode B",-1)
+           end select
 
-  !> \brief perform a contraction of the outer indices of two arrays, the first l means
-  !the leftt-most index for the first array, r means the r-most index for the
-  !sectond array, p1 * left^T * right^T + p2 * res = res 
-  !> \author Patrick Ettenhuber
-  !> \date late 2012
-  subroutine array_contract_outer_indices_lr(p1,left,right,p2,res)
-    implicit none
-    !> prefactors for the left*right part and the res part
-    real(realk),intent(in) :: p1,p2
-    !> the resulting array
-    type(array),intent(inout) :: res
-    !> the arrays to be multiplied
-    type(array),intent(in) :: left,right
-    integer :: i,m,n,k
-    if(left%dims(1)/=right%dims(right%mode))then
-      call lsquit("ERROR(array_contract_outer_indices_lr):wrong&
-      &contraction dimensions!!",DECinfo%output)
-    endif
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !Introduce a lot of dimensionality checks here!!
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    do i=2,left%mode
-      if(left%dims(i)/=res%dims(i-1))then
-        call lsquit("ERROR(array_contract_outer_indices_lr):wrong&
-        &result (left) dimensions!!",DECinfo%output)
-      endif
-    enddo
-    do i=right%mode-1,1,-1
-      if(right%dims(i)/=res%dims(left%mode+i-1))then
-        call lsquit("ERROR(array_contract_outer_indices_lr):wrong&
-        &result (right) dimensions!!",DECinfo%output)
-      endif
-    enddo
-    if(left%itype==TILED.or.left%itype==TILED_DIST.or.right%itype==TILED&
-    &.or.right%itype==TILED_DIST)call lsquit("ERROR(array_contract_outer_&
-    &indices_lr):not yet implemented for tiled/PDM",DECinfo%output)
+           wA => B%elm1
+           ldA = B%dims(1)
+           wB => A%elm1
+           ldB = A%dims(1)
 
-    !do that only if type dense --> the other routines are to come
-    select case(res%itype)
-      case(DENSE)
-        m=1
-        do i=left%mode,2,-1
-          m=m*left%dims(i)
-        enddo
-        n=1
-        do i=1,right%mode-1
-          n=n*right%dims(i)
-        enddo
-        k=left%dims(1) 
-        print *,m,n,k
-        print *,left%dims
-        print *,right%dims
-        print *,res%dims
-        call dgemm('t','t',m,n,k,p1,left%elm1,k,right%elm1,n,p2,res%elm1,m)
-      case(REPLICATED)
-        m=1
-        do i=left%mode,2,-1
-          m=m*left%dims(i)
-        enddo
-        n=1
-        do i=1,right%mode-1
-          n=n*right%dims(i)
-        enddo
-        k=left%dims(1) 
-        print *,m,n,k
-        print *,left%dims
-        print *,right%dims
-        print *,res%dims
-        call dgemm('t','t',m,n,k,p1,left%elm1,k,right%elm1,n,p2,res%elm1,m)
-        if(res%access_type==MASTER_ACCESS)call array_sync_replicated(res)
-      case(TILED)
-              call lsquit("ERROR(array_contract_outer_indices_lr):not yet implemented for tiled",DECinfo%output)
-      case(TILED_DIST)
-              call lsquit("ERROR(array_contract_outer_indices_lr):not yet implemented for PDM",DECinfo%output)
-      case default
-              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
-    end select
-    
-  end subroutine array_contract_outer_indices_lr
+        endif
 
-  !> \brief perform a contraction of the outer indices of two arrays, the first r means
-  !the right-most index for the first array, r means the r-most index for the
-  !sectond array, p1 * left * right^T + p2 * res = res 
-  !> \author Patrick Ettenhuber
-  !> \date late 2012
-  subroutine array_contract_outer_indices_rr(p1,left,right,p2,res)
-    implicit none
-    !> prefactors for the left*right part and the res part
-    real(realk),intent(in) :: p1,p2
-    !> the resulting array
-    type(array),intent(inout) :: res
-    !> the arrays to be multiplied
-    type(array),intent(in) :: left,right
-    integer :: i,m,n,k
-    if(left%dims(left%mode)/=right%dims(right%mode))then
-      call lsquit("ERROR(array_contract_outer_indices_rr):wrong&
-      &dimensions!!",DECinfo%output)
-    endif
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !Introduce a lot of dimensionality checks here!!
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    do i=1,left%mode-1
-      if(left%dims(i)/=res%dims(i))then
-        call lsquit("ERROR(array_contract_outer_indices_rr):wrong&
-        &result (left) dimensions!!",DECinfo%output)
-      endif
-    enddo
-    do i=right%mode-1,1,-1
-      if(right%dims(i)/=res%dims(left%mode+i-1))then
-        call lsquit("ERROR(array_contract_outer_indices_rr):wrong&
-        &result (right) dimensions!!",DECinfo%output)
-      endif
-    enddo
-    if(left%itype==TILED.or.left%itype==TILED_DIST.or.right%itype==TILED&
-    &.or.right%itype==TILED_DIST)call lsquit("ERROR(array_contract_outer_&
-    &indices_rr):not yet implemented for tiled/PDM",DECinfo%output)
+        call dgemm(tA,tB,m_gemm,n_gemm,k_gemm,pre1,wA,ldA,wB,ldB,pre2,wC,m_gemm)
 
-    select case(res%itype)
-      case(DENSE)
-        m=1
-        do i=1,left%mode-1
-          m=m*left%dims(i)
+        wA => null()
+        wB => null()
+        wC => null()
+
+     !GENERAL TENSOR CONTRACTION
+     else
+
+        do i = 1, C%mode
+           ro(order(i)) = i
         enddo
-        n=1
-        do i=1,right%mode-1
-          n=n*right%dims(i)
+
+        if(present(mem))then
+           !use provided memory information to allcate space
+           if(mem < (((A%nelms + B%nelms + C%nelms) * 8.0 )/ 1024.0**3))then
+              print *,"WARNING(tensor_contract_dense_simple): too little memory &
+                 &given, will try to allocate needed space anyways"
+           endif
+           use_wrk_space = .false.
+        else if(present(wrk).and.present(iwrk))then
+           !just assoctiate pointers to work space provided
+           if(A%nelms + B%nelms + C%nelms > iwrk)then
+              print *,"WARNING(tensor_contract_dense_simple): too small work space &
+                 &given, will try to allocate needed space"
+              use_wrk_space = .false.
+           else
+              use_wrk_space = .true.
+           endif
+        else
+           use_wrk_space = .false.
+        endif
+
+        if(use_wrk_space)then
+           wA => wrk(1:A%nelms)
+           wB => wrk(A%nelms + 1 : A%nelms + B%nelms )
+           wC => wrk(A%nelms + B%nelms + 1 : A%nelms + B%nelms + C%nelms )
+        else
+           call mem_alloc(wA,A%nelms)
+           call mem_alloc(wB,B%nelms)
+           call mem_alloc(wC,C%nelms)
+        endif
+
+        m_gemm = 1
+        n_gemm = 1
+        !get the uncontracted mode indices of the A and B arrays
+        k = 1
+        do i = 1, A%mode
+           contraction_mode=.false.
+           do j=1,nmodes2c
+              contraction_mode = contraction_mode.or.(m2cA(j) == i)
+           enddo
+           if(.not.contraction_mode)then
+              ordA(k) = i
+              m_gemm  = m_gemm * C%dims(ro(k))
+              k=k+1
+           endif
         enddo
-        k=left%dims(left%mode) 
-        call dgemm('n','t',m,n,k,p1,left%elm1,m,right%elm1,n,p2,res%elm1,m)
-      case(REPLICATED)
-        m=1
-        do i=1,left%mode-1
-          m=m*left%dims(i)
+
+        if(k-1/=A%mode-nmodes2c)then
+           call lsquit("ERROR(tensor_contract_dense_simple): something wrong in ordering",-1)
+        endif
+
+        k_gemm = 1
+        do i = 1,nmodes2c
+           ordA(k-1+i) = m2cA(i)
+           ordB(i)     = m2cB(i)
+           k_gemm      = k_gemm * A%dims(m2cA(i))
+        end do
+
+        l = 1
+        do i = 1, B%mode
+           contraction_mode=.false.
+           do j=1,nmodes2c
+              contraction_mode = contraction_mode.or.(m2cB(j) == i)
+           enddo
+           if(.not.contraction_mode)then
+              ordB(nmodes2c+l) = i
+              n_gemm           = n_gemm * C%dims(ro(k))
+              k=k+1
+              l=l+1
+           endif
         enddo
-        n=1
-        do i=1,right%mode-1
-          n=n*right%dims(i)
+
+        select case (A%mode)
+        case(2)
+           call array_reorder_2d(1.0E0_realk,A%elm1,A%dims(1),A%dims(2),ordA,0.0E0_realk,wA)
+        case(3)
+           call array_reorder_3d(1.0E0_realk,A%elm1,A%dims(1),A%dims(2),A%dims(3),ordA,0.0E0_realk,wA)
+        case(4)
+           call array_reorder_4d(1.0E0_realk,A%elm1,A%dims(1),A%dims(2),A%dims(3),A%dims(4),ordA,0.0E0_realk,wA)
+        case default
+           call lsquit("ERROR(tensor_contract_dense_simple): sorting A not implemented",-1)
+        end select
+
+        select case (B%mode)
+        case(2)
+           call array_reorder_2d(1.0E0_realk,B%elm1,B%dims(1),B%dims(2),ordB,0.0E0_realk,wB)
+        case(3)
+           call array_reorder_3d(1.0E0_realk,B%elm1,B%dims(1),B%dims(2),B%dims(3),ordB,0.0E0_realk,wB)
+        case(4)
+           call array_reorder_4d(1.0E0_realk,B%elm1,B%dims(1),B%dims(2),B%dims(3),B%dims(4),ordB,0.0E0_realk,wB)
+        case default
+           call lsquit("ERROR(tensor_contract_dense_simple): sorting B not implemented",-1)
+        end select
+
+
+        call dgemm('n','n',m_gemm,n_gemm,k_gemm,1.0E0_realk,wA,m_gemm,wB,k_gemm,0.0E0_realk,wC,m_gemm)
+
+
+        do i=1,C%mode
+           dims_product(i) = C%dims(ro(i))
         enddo
-        k=left%dims(left%mode) 
-        call dgemm('n','t',m,n,k,p1,left%elm1,m,right%elm1,n,p2,res%elm1,m)
-        if(res%access_type==MASTER_ACCESS)call array_sync_replicated(res)
-      case(TILED)
-              call lsquit("ERROR(array_contract_outer_indices_rr):not yet implemented for tiled",DECinfo%output)
-      case(TILED_DIST)
-              call lsquit("ERROR(array_contract_outer_indices_rr):not yet implemented for PDM",DECinfo%output)
-      case default
-              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
-    end select
-    
-  end subroutine array_contract_outer_indices_rr
+
+        !ADD THE FINALIZED TILE TO THE LOCAL TILE IN THE CORRECT ORDER
+        select case (C%mode)
+        case(2)
+           call array_reorder_2d(pre1,wC,dims_product(1),dims_product(2),order,pre2,C%elm1)
+        case(3)
+           call array_reorder_3d(pre1,wC,dims_product(1),dims_product(2),dims_product(3),order,pre2,C%elm1)
+        case(4)
+           call array_reorder_4d(pre1,wC,dims_product(1),dims_product(2),dims_product(3),dims_product(4),order,pre2,C%elm1)
+        case default
+           call lsquit("ERROR(tensor_contract_dense_simple): sorting C not implemented",-1)
+        end select
+
+        if(use_wrk_space)then
+           wA => null()
+           wB => null()
+           wC => null()
+        else
+           call mem_dealloc(wA)
+           call mem_dealloc(wB)
+           call mem_dealloc(wC)
+        endif
+     endif
+  end subroutine tensor_contract_dense_simple
+
+!  !> \brief perform a contraction of the outer indices of two arrays, r means
+!  !the right-most index for the first array, l means the left-most index for the
+!  !sectond array, p1 * left * right + p2 * res = res 
+!  !> \author Patrick Ettenhuber
+!  !> \date late 2012
+!  subroutine tensor_contract_outer_indices_rl(p1,left,right,p2,res)
+!    implicit none
+!    !> prefactors for the left*right part and the res part
+!    real(realk),intent(in) :: p1,p2
+!    !> the resulting array
+!    type(tensor),intent(inout) :: res
+!    !> the arrays to be multiplied
+!    type(tensor),intent(in) :: left,right
+!    integer :: i,m,n,k
+!    if(left%dims(left%mode)/=right%dims(1))then
+!      call lsquit("ERROR(tensor_contract_outer_indices_rl):wrong&
+!      &contraction dimensions!!",DECinfo%output)
+!    endif
+!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!    !Introduce a lot of dimensionality checks here!!
+!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!    do i=1,left%mode-1
+!      if(left%dims(i)/=res%dims(i))then
+!        call lsquit("ERROR(tensor_contract_outer_indices_rl):wrong&
+!        &result (left) dimensions!!",DECinfo%output)
+!      endif
+!    enddo
+!    do i=right%mode,2,-1
+!      if(right%dims(i)/=res%dims(left%mode+i-2))then
+!        call lsquit("ERROR(tensor_contract_outer_indices_rl):wrong&
+!        &result (right) dimensions!!",DECinfo%output)
+!      endif
+!    enddo
+!    if(left%itype==TT_TILED.or.left%itype==TT_TILED_DIST.or.right%itype==TT_TILED&
+!    &.or.right%itype==TT_TILED_DIST)call lsquit("ERROR(tensor_contract_outer_&
+!    &indices_rl):not yet implemented for tiled/PDM",DECinfo%output)
+!   
+!
+!    !do that only if type dense --> the other routines are to come
+!    select case(res%itype)
+!      case(TT_DENSE)
+!        m=1
+!        do i=1,left%mode-1
+!          m=m*left%dims(i)
+!        enddo
+!        n=1
+!        do i=right%mode,2,-1
+!          n=n*right%dims(i)
+!        enddo
+!        k=right%dims(1) 
+!        call dgemm('n','n',m,n,k,p1,left%elm1,m,right%elm1,k,p2,res%elm1,m)
+!      case(TT_REPLICATED)
+!        m=1
+!        do i=1,left%mode-1
+!          m=m*left%dims(i)
+!        enddo
+!        n=1
+!        do i=right%mode,2,-1
+!          n=n*right%dims(i)
+!        enddo
+!        k=right%dims(1) 
+!        call dgemm('n','n',m,n,k,p1,left%elm1,m,right%elm1,k,p2,res%elm1,m)
+!        if(res%access_type==AT_MASTER_ACCESS)call tensor_sync_replicated(res)
+!      case(TT_TILED)
+!              call lsquit("ERROR(tensor_contract_outer_indices_rl):not yet implemented for tiled",DECinfo%output)
+!      case(TT_TILED_DIST)
+!              call lsquit("ERROR(tensor_contract_outer_indices_rl):not yet implemented for PDM",DECinfo%output)
+!      case default
+!              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
+!    end select
+!    
+!  end subroutine tensor_contract_outer_indices_rl
+!
+!  !> \brief perform a contraction of the outer indices of two arrays, the first l means
+!  !the leftt-most index for the first array, l means the left-most index for the
+!  !sectond array, p1 * left^T * right + p2 * res = res 
+!  !> \author Patrick Ettenhuber
+!  !> \date late 2012
+!  subroutine tensor_contract_outer_indices_ll(p1,left,right,p2,res)
+!    implicit none
+!    !> prefactors for the left*right part and the res part
+!    real(realk),intent(in) :: p1,p2
+!    !> the resulting array
+!    type(tensor),intent(inout) :: res
+!    !> the arrays to be multiplied
+!    type(tensor),intent(in) :: left,right
+!    integer :: i,m,n,k
+!    if(left%dims(1)/=right%dims(1))then
+!      call lsquit("ERROR(tensor_contract_outer_indices_ll):wrong&
+!      &dimensions!!",DECinfo%output)
+!    endif
+!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!    !Introduce a lot of dimensionality checks here!!
+!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!    do i=2,left%mode
+!      if(left%dims(i)/=res%dims(i-1))then
+!        call lsquit("ERROR(tensor_contract_outer_indices_ll):wrong&
+!        &result (left) dimensions!!",DECinfo%output)
+!      endif
+!    enddo
+!    do i=right%mode,2,-1
+!      if(right%dims(i)/=res%dims(left%mode+i-2))then
+!        call lsquit("ERROR(tensor_contract_outer_indices_ll):wrong&
+!        &result (right) dimensions!!",DECinfo%output)
+!      endif
+!    enddo
+!    if(left%itype==TT_TILED.or.left%itype==TT_TILED_DIST.or.right%itype==TT_TILED&
+!    &.or.right%itype==TT_TILED_DIST)call lsquit("ERROR(tensor_contract_outer_&
+!    &indices_ll):not yet implemented for tiled/PDM",DECinfo%output)
+!
+!    !do that only if type dense --> the other routines are to come
+!    select case(res%itype)
+!      case(TT_DENSE)
+!        m=1
+!        do i=left%mode,2,-1
+!          m=m*left%dims(i)
+!        enddo
+!        n=1
+!        do i=right%mode,2,-1
+!          n=n*right%dims(i)
+!        enddo
+!        k=right%dims(1) 
+!        call dgemm('t','n',m,n,k,p1,left%elm1,k,right%elm1,k,p2,res%elm1,m)
+!      case(TT_REPLICATED)
+!        m=1
+!        do i=left%mode,2,-1
+!          m=m*left%dims(i)
+!        enddo
+!        n=1
+!        do i=right%mode,2,-1
+!          n=n*right%dims(i)
+!        enddo
+!        k=right%dims(1) 
+!        call dgemm('t','n',m,n,k,p1,left%elm1,k,right%elm1,k,p2,res%elm1,m)
+!        if(res%access_type==AT_MASTER_ACCESS)call tensor_sync_replicated(res)
+!      case(TT_TILED)
+!              call lsquit("ERROR(tensor_contract_outer_indices_ll):not yet implemented for tiled",DECinfo%output)
+!      case(TT_TILED_DIST)
+!              call lsquit("ERROR(tensor_contract_outer_indices_ll):not yet implemented for PDM",DECinfo%output)
+!      case default
+!              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
+!    end select
+!    
+!  end subroutine tensor_contract_outer_indices_ll
+!
+!  !> \brief perform a contraction of the outer indices of two arrays, the first l means
+!  !the leftt-most index for the first array, r means the r-most index for the
+!  !sectond array, p1 * left^T * right^T + p2 * res = res 
+!  !> \author Patrick Ettenhuber
+!  !> \date late 2012
+!  subroutine tensor_contract_outer_indices_lr(p1,left,right,p2,res)
+!    implicit none
+!    !> prefactors for the left*right part and the res part
+!    real(realk),intent(in) :: p1,p2
+!    !> the resulting array
+!    type(tensor),intent(inout) :: res
+!    !> the arrays to be multiplied
+!    type(tensor),intent(in) :: left,right
+!    integer :: i,m,n,k
+!    if(left%dims(1)/=right%dims(right%mode))then
+!      call lsquit("ERROR(tensor_contract_outer_indices_lr):wrong&
+!      &contraction dimensions!!",DECinfo%output)
+!    endif
+!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!    !Introduce a lot of dimensionality checks here!!
+!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!    do i=2,left%mode
+!      if(left%dims(i)/=res%dims(i-1))then
+!        call lsquit("ERROR(tensor_contract_outer_indices_lr):wrong&
+!        &result (left) dimensions!!",DECinfo%output)
+!      endif
+!    enddo
+!    do i=right%mode-1,1,-1
+!      if(right%dims(i)/=res%dims(left%mode+i-1))then
+!        call lsquit("ERROR(tensor_contract_outer_indices_lr):wrong&
+!        &result (right) dimensions!!",DECinfo%output)
+!      endif
+!    enddo
+!    if(left%itype==TT_TILED.or.left%itype==TT_TILED_DIST.or.right%itype==TT_TILED&
+!    &.or.right%itype==TT_TILED_DIST)call lsquit("ERROR(tensor_contract_outer_&
+!    &indices_lr):not yet implemented for tiled/PDM",DECinfo%output)
+!
+!    !do that only if type dense --> the other routines are to come
+!    select case(res%itype)
+!      case(TT_DENSE)
+!        m=1
+!        do i=left%mode,2,-1
+!          m=m*left%dims(i)
+!        enddo
+!        n=1
+!        do i=1,right%mode-1
+!          n=n*right%dims(i)
+!        enddo
+!        k=left%dims(1) 
+!        print *,m,n,k
+!        print *,left%dims
+!        print *,right%dims
+!        print *,res%dims
+!        call dgemm('t','t',m,n,k,p1,left%elm1,k,right%elm1,n,p2,res%elm1,m)
+!      case(TT_REPLICATED)
+!        m=1
+!        do i=left%mode,2,-1
+!          m=m*left%dims(i)
+!        enddo
+!        n=1
+!        do i=1,right%mode-1
+!          n=n*right%dims(i)
+!        enddo
+!        k=left%dims(1) 
+!        print *,m,n,k
+!        print *,left%dims
+!        print *,right%dims
+!        print *,res%dims
+!        call dgemm('t','t',m,n,k,p1,left%elm1,k,right%elm1,n,p2,res%elm1,m)
+!        if(res%access_type==AT_MASTER_ACCESS)call tensor_sync_replicated(res)
+!      case(TT_TILED)
+!              call lsquit("ERROR(tensor_contract_outer_indices_lr):not yet implemented for tiled",DECinfo%output)
+!      case(TT_TILED_DIST)
+!              call lsquit("ERROR(tensor_contract_outer_indices_lr):not yet implemented for PDM",DECinfo%output)
+!      case default
+!              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
+!    end select
+!    
+!  end subroutine tensor_contract_outer_indices_lr
+!
+!  !> \brief perform a contraction of the outer indices of two arrays, the first r means
+!  !the right-most index for the first array, r means the r-most index for the
+!  !sectond array, p1 * left * right^T + p2 * res = res 
+!  !> \author Patrick Ettenhuber
+!  !> \date late 2012
+!  subroutine tensor_contract_outer_indices_rr(p1,left,right,p2,res)
+!    implicit none
+!    !> prefactors for the left*right part and the res part
+!    real(realk),intent(in) :: p1,p2
+!    !> the resulting array
+!    type(tensor),intent(inout) :: res
+!    !> the arrays to be multiplied
+!    type(tensor),intent(in) :: left,right
+!    integer :: i,m,n,k
+!    if(left%dims(left%mode)/=right%dims(right%mode))then
+!      call lsquit("ERROR(tensor_contract_outer_indices_rr):wrong&
+!      &dimensions!!",DECinfo%output)
+!    endif
+!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!    !Introduce a lot of dimensionality checks here!!
+!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!    do i=1,left%mode-1
+!      if(left%dims(i)/=res%dims(i))then
+!        call lsquit("ERROR(tensor_contract_outer_indices_rr):wrong&
+!        &result (left) dimensions!!",DECinfo%output)
+!      endif
+!    enddo
+!    do i=right%mode-1,1,-1
+!      if(right%dims(i)/=res%dims(left%mode+i-1))then
+!        call lsquit("ERROR(tensor_contract_outer_indices_rr):wrong&
+!        &result (right) dimensions!!",DECinfo%output)
+!      endif
+!    enddo
+!    if(left%itype==TT_TILED.or.left%itype==TT_TILED_DIST.or.right%itype==TT_TILED&
+!    &.or.right%itype==TT_TILED_DIST)call lsquit("ERROR(tensor_contract_outer_&
+!    &indices_rr):not yet implemented for tiled/PDM",DECinfo%output)
+!
+!    select case(res%itype)
+!      case(TT_DENSE)
+!        m=1
+!        do i=1,left%mode-1
+!          m=m*left%dims(i)
+!        enddo
+!        n=1
+!        do i=1,right%mode-1
+!          n=n*right%dims(i)
+!        enddo
+!        k=left%dims(left%mode) 
+!        call dgemm('n','t',m,n,k,p1,left%elm1,m,right%elm1,n,p2,res%elm1,m)
+!      case(TT_REPLICATED)
+!        m=1
+!        do i=1,left%mode-1
+!          m=m*left%dims(i)
+!        enddo
+!        n=1
+!        do i=1,right%mode-1
+!          n=n*right%dims(i)
+!        enddo
+!        k=left%dims(left%mode) 
+!        call dgemm('n','t',m,n,k,p1,left%elm1,m,right%elm1,n,p2,res%elm1,m)
+!        if(res%access_type==AT_MASTER_ACCESS)call tensor_sync_replicated(res)
+!      case(TT_TILED)
+!              call lsquit("ERROR(tensor_contract_outer_indices_rr):not yet implemented for tiled",DECinfo%output)
+!      case(TT_TILED_DIST)
+!              call lsquit("ERROR(tensor_contract_outer_indices_rr):not yet implemented for PDM",DECinfo%output)
+!      case default
+!              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
+!    end select
+!    
+!  end subroutine tensor_contract_outer_indices_rr
 
   !> \brief array dotprduct, the arrays may have different distributions
   !> \author Patrick Ettenhuber
   !> \date some time at the end 2012
-  function array_ddot(arr1,arr2,opt_par) result(res)
+  function tensor_ddot(arr1,arr2,opt_par) result(res)
     implicit none
     !> the two arrays to calculate the dotproduct from
-    type(array),intent(in) :: arr1,arr2
+    type(tensor),intent(in) :: arr1,arr2
     !> optional integer specifying on which node the result should be stored
     integer,optional,intent(in) :: opt_par
     real(realk) :: res
@@ -675,57 +994,57 @@ contains
     real(realk), external :: ddot
     
     if(arr1%nelms/=arr2%nelms)then
-      call lsquit("ERROR(array_ddot):operation not defined for arrays with&
+      call lsquit("ERROR(tensor_ddot):operation not defined for arrays with&
       & different nelms",DECinfo%output)
     endif
 
     !get the destination of the contraction
     dest = -1
-    if(arr1%access_type==MASTER_ACCESS)dest=0
+    if(arr1%access_type==AT_MASTER_ACCESS)dest=0
     if(present(opt_par))dest=opt_par
 
     select case(arr1%itype)
-    case(DENSE)
+    case(TT_DENSE)
       select case(arr2%itype)
-      case(DENSE)
+      case(TT_DENSE)
         res=ddot(int(arr1%nelms),arr1%elm1,1,arr2%elm1,1)
       case default
-        call lsquit("ERROR(array_ddot):operation not yet&
+        call lsquit("ERROR(tensor_ddot):operation not yet&
         & implemented",DECinfo%output)
       end select
             
-    case(TILED_DIST)
+    case(TT_TILED_DIST)
       select case(arr2%itype)
-      case(TILED_DIST)
-        res=array_ddot_par(arr1,arr2,dest)
+      case(TT_TILED_DIST)
+        res=tensor_ddot_par(arr1,arr2,dest)
       case default
-        call lsquit("ERROR(array_ddot):operation not yet&
+        call lsquit("ERROR(tensor_ddot):operation not yet&
         & implemented",DECinfo%output)
       end select
     case default
-      call lsquit("ERROR(array_ddot):operation not yet&
+      call lsquit("ERROR(tensor_ddot):operation not yet&
       & implemented",DECinfo%output)
     end select
 
-  end function array_ddot
+  end function tensor_ddot
 
   !> \brief Extract EOS indices from array4 for both occupied and virtual partitioning schemes:
-  !> 1. Arr_occEOS: The occupied orbitals not assigned to the central atom are removed while
+  !> 1. tensor_occEOS: The occupied orbitals not assigned to the central atom are removed while
   !>                the virtual indices are unchanged.
-  !> 2. Arr_virtEOS: The virtual orbitals not assigned to the central atom are removed while
+  !> 2. tensor_virtEOS: The virtual orbitals not assigned to the central atom are removed while
   !>                 the occupied indices are unchanged.
   !> \author Patrick Ettenhuber, adapted from Kasper Kristensen
   !> \date August 2014
-  subroutine array_extract_eos_indices(Arr_orig,MyFragment,Arr_occEOS,Arr_virtEOS)
+  subroutine tensor_extract_eos_indices(tensor_orig,MyFragment,tensor_occEOS,tensor_virtEOS)
 
 
     implicit none
     !> Array where occupied EOS indices are extracted
-    type(array),intent(inout),optional :: Arr_occEOS
+    type(tensor),intent(inout),optional :: tensor_occEOS
     !> Array where virtual EOS indices are extracted
-    type(array),intent(inout),optional :: Arr_virtEOS
+    type(tensor),intent(inout),optional :: tensor_virtEOS
     !> Original array with AOS fragment indices for both occ and virt spaces
-    type(array),intent(in) :: Arr_orig
+    type(tensor),intent(in) :: tensor_orig
     !> Atomic fragment
     type(decfrag),intent(inout) :: MyFragment
     integer :: nocc, nvirt
@@ -737,117 +1056,126 @@ contains
     ! Extract virtual EOS indices and leave occupied indices untouched
     ! ****************************************************************
 
-    if(present(Arr_virtEOS))then
-       call array_extract_eos_indices_virt(Arr_virtEOS,Arr_orig,&
+    if(present(tensor_virtEOS))then
+       call tensor_extract_eos_indices_virt(tensor_virtEOS,tensor_orig,&
           & nvirt,MyFragment%idxu(1:nvirt))
     endif
 
     ! Extract occupied EOS indices and leave virtual indices untouched
     ! ****************************************************************
 
-    if(present(Arr_occEOS))then
-       call array_extract_eos_indices_occ(Arr_occEOS,Arr_orig,&
+    if(present(tensor_occEOS))then
+       call tensor_extract_eos_indices_occ(tensor_occEOS,tensor_orig,&
           & nocc, MyFragment%idxo(1:nocc))
     endif
 
-  end subroutine array_extract_eos_indices
+  end subroutine tensor_extract_eos_indices
 
 
-  subroutine array_extract_eos_indices_virt(Arr,Arr_full,nEOS,EOS_idx)
+  subroutine tensor_extract_eos_indices_virt(Arr,tensor_full,nEOS,EOS_idx)
 
-    implicit none
-    !> Array output where EOS indices are extracted
-    type(array),intent(inout) :: Arr
-    !> Original array
-    type(array),intent(in) :: Arr_full
-    !> Number of EOS indices
-    integer,intent(in) :: nEOS
-    !> List of EOS indices in the total (EOS+buffer) list of orbitals
-    integer, dimension(nEOS),intent(in) :: EOS_idx
-    integer :: nocc,nvirt,i,a,b,j,ax,bx
-    integer, dimension(4) :: new_dims
+     implicit none
+     !> Array output where EOS indices are extracted
+     type(tensor),intent(inout) :: Arr
+     !> Original array
+     type(tensor),intent(in) :: tensor_full
+     !> Number of EOS indices
+     integer,intent(in) :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, dimension(nEOS),intent(in) :: EOS_idx
+     integer :: nocc,nvirt,i,a,b,j,ax,bx
+     integer, dimension(4) :: new_dims
 
-    ! Initialize stuff
-    ! ****************
-    nocc = arr_full%dims(2)  ! Total number of occupied orbitals
-    nvirt = arr_full%dims(1)  ! Total number of virtual orbitals
-    new_dims=[nEOS,nocc,nEOS,nocc] ! nEOS=Number of virtual EOS orbitals
-
-
-    ! Sanity checks
-    ! *************
-
-    ! 1. Positive number of orbitals
-    if( (nocc<1) .or. (nvirt<1) ) then
-       write(DECinfo%output,*) 'nocc = ', nocc
-       write(DECinfo%output,*) 'nvirt = ', nvirt
-       call lsquit('array_extract_eos_indices_virt: &
-          & Negative or zero number of orbitals!',DECinfo%output)
-    end if
-
-    ! 2. Array structure is (virt,occ,virt,occ)
-    if( (nvirt/=arr_full%dims(3)) .or. (nocc/=arr_full%dims(4)) ) then
-       write(DECinfo%output,*) 'arr_full%dims(1) = ', arr_full%dims(1)
-       write(DECinfo%output,*) 'arr_full%dims(2) = ', arr_full%dims(2)
-       write(DECinfo%output,*) 'arr_full%dims(3) = ', arr_full%dims(3)
-       write(DECinfo%output,*) 'arr_full%dims(4) = ', arr_full%dims(4)
-       call lsquit('array_extract_eos_indices_virt: &
-          & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
-    end if
-
-    ! 3. EOS dimension must be smaller than (or equal to) total number of virt orbitals
-    if(nEOS > nvirt) then
-       write(DECinfo%output,*) 'nvirt = ', nvirt
-       write(DECinfo%output,*) 'nEOS  = ', nEOS
-       call lsquit('array4_extract_eos_indices_virt_memory: &
-          & Number of EOS orbitals must be smaller than (or equal to) total number of &
-          & virtual orbitals!',DECinfo%output)
-    end if
-
-    ! 4. EOS indices must not exceed total number of virtual orbitals
-    do i=1,nEOS
-       if(EOS_idx(i) > nvirt) then
-          write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
-          write(DECinfo%output,*) 'nvirt   = ', nvirt
-          write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
-          call lsquit('array4_extract_eos_indices_virt_memory: &
-             & EOS index value larger than nvirt!',DECinfo%output)
-       end if
-    end do
+     ! Initialize stuff
+     ! ****************
+     nocc     = tensor_full%dims(2)   ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)   ! Total number of virtual orbitals
+     new_dims = [nEOS,nocc,nEOS,nocc] ! nEOS=Number of virtual EOS orbitals
 
 
-    ! Extract virtual EOS indices and store in Arr
-    ! ********************************************
+     ! Sanity checks
+     ! *************
 
-    if( arr_full%itype == DENSE )then
-       ! Initiate Arr with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc)
-       call array_init(Arr,new_dims,4)
+     ! 1. Positive number of orbitals
+     if( (nocc<1) .or. (nvirt<1) ) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nvirt = ', nvirt
+        call lsquit('tensor_extract_eos_indices_virt: &
+           & Negative or zero number of orbitals!',DECinfo%output)
+     end if
 
-       ! Set Arr equal to the EOS indices of the original Arr array (arr_full)
-       do j=1,nocc
-          do b=1,nEOS
-             bx=EOS_idx(b)
-             do i=1,nocc
-                do a=1,nEOS
-                   ax=EOS_idx(a)
-                   Arr%elm4(a,i,b,j) = arr_full%elm4(ax,i,bx,j)
-                end do
-             end do
-          end do
-       end do
-    else
-       call lsquit("ERROR(array_extract_eos_indices_virt): NO PDM version implemented yet",-1)
-    endif
+     ! 2. Array structure is (virt,occ,virt,occ)
+     if( (nvirt/=tensor_full%dims(3)) .or. (nocc/=tensor_full%dims(4)) ) then
+        write(DECinfo%output,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
+        write(DECinfo%output,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
+        write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
+        write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
+        call lsquit('tensor_extract_eos_indices_virt: &
+           & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+     end if
+
+     ! 3. EOS dimension must be smaller than (or equal to) total number of virt orbitals
+     if(nEOS > nvirt) then
+        write(DECinfo%output,*) 'nvirt = ', nvirt
+        write(DECinfo%output,*) 'nEOS  = ', nEOS
+        call lsquit('array4_extract_eos_indices_virt_memory: &
+           & Number of EOS orbitals must be smaller than (or equal to) total number of &
+           & virtual orbitals!',DECinfo%output)
+     end if
+
+     ! 4. EOS indices must not exceed total number of virtual orbitals
+     do i=1,nEOS
+        if(EOS_idx(i) > nvirt) then
+           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
+           write(DECinfo%output,*) 'nvirt   = ', nvirt
+           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
+           call lsquit('array4_extract_eos_indices_virt_memory: &
+              & EOS index value larger than nvirt!',DECinfo%output)
+        end if
+     end do
+
+     ! Extract virtual EOS indices and store in Arr
+     ! ********************************************
+
+     ! Initiate Arr with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc) on the
+     ! local node, as the tensor will be small enough to store locally
+     call tensor_init(Arr,new_dims,4)
+
+     select case ( tensor_full%itype )
+     case( TT_DENSE, TT_REPLICATED )
+
+        ! Set Arr equal to the EOS indices of the original Arr array (tensor_full)
+        do j=1,nocc
+           do b=1,nEOS
+              bx=EOS_idx(b)
+              do i=1,nocc
+                 do a=1,nEOS
+                    ax=EOS_idx(a)
+                    Arr%elm4(a,i,b,j) = tensor_full%elm4(ax,i,bx,j)
+                 end do
+              end do
+           end do
+        end do
+
+     case( TT_TILED_DIST )
+
+        call tensor_zero(Arr)
+
+        call lspdm_extract_eos_indices_virt(Arr,tensor_full,nEOS,EOS_idx)
+
+     case default
+        call lsquit("ERROR(tensor_extract_eos_indices_virt): NO PDM version implemented yet",-1)
+     end select
 
 
-  end subroutine array_extract_eos_indices_virt
+  end subroutine tensor_extract_eos_indices_virt
 
-  subroutine array_extract_eos_indices_occ(Arr,arr_full,nEOS,EOS_idx)
+  subroutine tensor_extract_eos_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
      implicit none
      !> Array where EOS indices where are extracted
-     type(array),intent(inout) :: Arr
+     type(tensor),intent(inout) :: Arr
      !> Original array
-     type(array),intent(in) :: arr_full
+     type(tensor),intent(in) :: tensor_full
      !> Number of EOS indices
      integer,intent(in) :: nEOS
      !> List of EOS indices in the total (EOS+buffer) list of orbitals
@@ -857,31 +1185,31 @@ contains
 
      ! Initialize stuff
      ! ****************
-     nocc = arr_full%dims(2)  ! Total number of occupied orbitals
-     nvirt = arr_full%dims(1)  ! Total number of virtual orbitals
-     new_dims=[nvirt,nEOS,nvirt,nEOS] ! nEOS=Number of occupied EOS orbitals
+     nocc     = tensor_full%dims(2)  ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)  ! Total number of virtual orbitals
+     new_dims = [nvirt,nEOS,nvirt,nEOS] ! nEOS=Number of occupied EOS orbitals
 
      ! Sanity checks
      ! *************
-     if( arr_full%mode /= 4)then
-        call lsquit("ERROR(array_extract_eos_indices_occ): wrong mode of arr_full",-1)
+     if( tensor_full%mode /= 4)then
+        call lsquit("ERROR(tensor_extract_eos_indices_occ): wrong mode of tensor_full",-1)
      endif
 
      ! 1. Positive number of orbitals
      if( (nocc<1) .or. (nvirt<1) ) then
         write(DECinfo%output,*) 'nocc = ', nocc
         write(DECinfo%output,*) 'nvirt = ', nvirt
-        call lsquit('array_extract_eos_indices_occ: &
+        call lsquit('tensor_extract_eos_indices_occ: &
            & Negative or zero number of orbitals!',DECinfo%output)
      end if
 
      ! 2. Array structure is (virt,occ,virt,occ)
-     if( (nvirt/=arr_full%dims(3)) .or. (nocc/=arr_full%dims(4)) ) then
-        write(DECinfo%output,*) 'arr_full%dims(1) = ', arr_full%dims(1)
-        write(DECinfo%output,*) 'arr_full%dims(2) = ', arr_full%dims(2)
-        write(DECinfo%output,*) 'arr_full%dims(3) = ', arr_full%dims(3)
-        write(DECinfo%output,*) 'arr_full%dims(4) = ', arr_full%dims(4)
-        call lsquit('array_extract_eos_indices_occ: &
+     if( (nvirt/=tensor_full%dims(3)) .or. (nocc/=tensor_full%dims(4)) ) then
+        write(DECinfo%output,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
+        write(DECinfo%output,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
+        write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
+        write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
+        call lsquit('tensor_extract_eos_indices_occ: &
            & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
      end if
 
@@ -889,7 +1217,7 @@ contains
      if(nEOS > nocc) then
         write(DECinfo%output,*) 'nocc = ', nocc
         write(DECinfo%output,*) 'nEOS = ', nEOS
-        call lsquit('array_extract_eos_indices_occ: &
+        call lsquit('tensor_extract_eos_indices_occ: &
            & Number of EOS orbitals must be smaller than (or equal to) total number of &
            & occupied orbitals!',DECinfo%output)
      end if
@@ -900,7 +1228,7 @@ contains
            write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nocc!'
            write(DECinfo%output,*) 'nocc = ', nocc
            write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
-           call lsquit('array_extract_eos_indices_occ: &
+           call lsquit('tensor_extract_eos_indices_occ: &
               & EOS index value larger than nocc!',DECinfo%output)
         end if
      end do
@@ -909,37 +1237,45 @@ contains
      ! Extract occupied EOS indices and store in Arr
      ! *********************************************
 
-     if( arr_full%itype == DENSE )then
+     ! Initiate Arr with new dimensions (nvirt,nocc_EOS,nvirt,nocc_EOS)
+     call tensor_init(Arr,new_dims,4)
 
-        ! Initiate Arr with new dimensions (nvirt,nocc_EOS,nvirt,nocc_EOS)
-        call array_init(Arr,new_dims,4)
+     select case( tensor_full%itype )
+     case( TT_DENSE, TT_REPLICATED )
 
-        ! Set Arr equal to the EOS indices of the original Arr array (arr_full)
+        ! Set Arr equal to the EOS indices of the original Arr array (tensor_full)
         do j=1,nEOS
            jx=EOS_idx(j)
            do b=1,nvirt
               do i=1,nEOS
                  ix=EOS_idx(i)
                  do a=1,nvirt
-                    Arr%elm4(a,i,b,j) = arr_full%elm4(a,ix,b,jx)
+                    Arr%elm4(a,i,b,j) = tensor_full%elm4(a,ix,b,jx)
                  end do
               end do
            end do
         end do
-     else
-        call lsquit("ERROR(array_extract_eos_indices_occ): NO PDM version implemented yet",-1)
-     endif
+
+     case( TT_TILED_DIST )
+
+        call tensor_zero(Arr)
+
+        call lspdm_extract_eos_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
+
+     case default
+        call lsquit("ERROR(tensor_extract_eos_indices_occ): NO PDM version implemented yet",-1)
+     end select
 
 
-  end subroutine array_extract_eos_indices_occ
+  end subroutine tensor_extract_eos_indices_occ
 
 
   !> \brief Reorder indices with additional memory allocation
   !> \author Patrick Ettenhuber
-  subroutine array_reorder(arr,order)
+  subroutine tensor_reorder(arr,order)
 
      implicit none
-     type(array), intent(inout) :: arr
+     type(tensor), intent(inout) :: arr
      integer, dimension(arr%mode), intent(in) :: order
      integer, dimension(arr%mode) :: new_dims,order1,order2
      real(realk), pointer :: new_data(:)
@@ -959,7 +1295,7 @@ contains
         new_dims(i) = arr%dims(order(i))
      end do
 
-     if( arr%itype == DENSE )then
+     if( arr%itype == TT_DENSE )then
 
         ! Allocate space for reordered data
 
@@ -978,7 +1314,7 @@ contains
            call array_reorder_4d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
               &arr%dims(3),arr%dims(4),order,0.0E0_realk,new_data)
         case default
-           call lsquit("ERROR(arr_reorder) no default for arbitrary modes",-1)
+           call lsquit("ERROR(tensor_reorder) no default for arbitrary modes",-1)
         end select
 
         arr%dims=new_dims
@@ -996,12 +1332,12 @@ contains
         call assoc_ptr_arr(arr)
 
      else
-        call lsquit("ERROR(arr_reorder) only implemented for dense arrs yet",-1)
+        call lsquit("ERROR(tensor_reorder) only implemented for dense arrs yet",-1)
      endif
 
      call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
-  end subroutine array_reorder
+  end subroutine tensor_reorder
 
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1009,9 +1345,9 @@ contains
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  subroutine array_minit(arr, dims, nmodes, local, atype, tdims, fo)
+  subroutine tensor_minit(arr, dims, nmodes, local, atype, tdims, fo)
     !> the output array
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in)              :: nmodes, dims(nmodes)
     integer, intent(in),optional     :: tdims(nmodes)
@@ -1023,9 +1359,9 @@ contains
     logical :: loc
 
     ! Sanity check
-    !if(arr%initialized)call lsquit("ERROR(array_minit):array already initialized",-1) 
+    !if(arr%initialized)call lsquit("ERROR(tensor_minit):array already initialized",-1) 
     do i=1, nmodes
-      if (dims(i) == 0) call lsquit("ERROR(array_minit): 0 dimendion not allowed",-1)
+      if (dims(i) == 0) call lsquit("ERROR(tensor_minit): 0 dimendion not allowed",-1)
     end do
 
     !set defaults
@@ -1049,62 +1385,62 @@ contains
     if(loc) then
       select case(at)
       case('LDAR','REAR','REPD','TDAR','TDPD','RTAR')
-        call array_init_standard(arr,dims,nmodes,pdm=NO_PDM_ACCESS)
+        call tensor_init_standard(arr,dims,nmodes,pdm=AT_NO_PDM_ACCESS)
         arr%atype='LDAR'
       !case('TDAR','TDPD')
-      !  arr=array_init_tiled(dims,nmodes,pdm=NO_PDM_ACCESS)
+      !  arr=tensor_init_tiled(dims,nmodes,pdm=AT_NO_PDM_ACCESS)
       !  arr%atype='LTAR'
       case default
-        call lsquit("ERROR(array_minit): atype not known",-1)
+        call lsquit("ERROR(tensor_minit): atype not known",-1)
       end select
     else
       select case(at)
       case('LDAR')
         !INITIALIZE a Local Dense ARray
-        call array_init_standard(arr,dims,nmodes,pdm=MASTER_ACCESS)
+        call tensor_init_standard(arr,dims,nmodes,pdm=AT_MASTER_ACCESS)
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
-        it               = TILED_DIST
-        call array_init_tiled(arr, dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims,force_offset = fo)
+        it               = TT_TILED_DIST
+        call tensor_init_tiled(arr, dims,nmodes,at,it,pdm=AT_MASTER_ACCESS,tdims=tdims,force_offset = fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('RTAR')
         !INITIALIZE a Replicated Tiled ARray (all nodes have all tiles)
-        it               = TILED
-        call array_init_tiled(arr,dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims,force_offset = fo)
+        it               = TT_TILED
+        call tensor_init_tiled(arr,dims,nmodes,at,it,pdm=AT_MASTER_ACCESS,tdims=tdims,force_offset = fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
-        call array_init_replicated(arr,dims,nmodes,pdm=MASTER_ACCESS)
+        call tensor_init_replicated(arr,dims,nmodes,pdm=AT_MASTER_ACCESS)
         CreatedPDMArrays = CreatedPDMArrays+1
-        arr%itype        = REPLICATED
+        arr%itype        = TT_REPLICATED
         arr%atype        = 'REAR'
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
-        it               = TILED_DIST ! for array_init_tiled routine
-        call array_init_tiled(arr,dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims,ps_d=.true.,force_offset=fo)
-        arr%itype        = DENSE ! back to dense after init
+        it               = TT_TILED_DIST ! for tensor_init_tiled routine
+        call tensor_init_tiled(arr,dims,nmodes,at,it,pdm=AT_MASTER_ACCESS,tdims=tdims,ps_d=.true.,force_offset=fo)
+        arr%itype        = TT_DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REPD')
         !INITIALIZE a REplicated Pseudo Dense array
-        call array_init_replicated(arr,dims,nmodes,pdm=MASTER_ACCESS)
+        call tensor_init_replicated(arr,dims,nmodes,pdm=AT_MASTER_ACCESS)
         CreatedPDMArrays = CreatedPDMArrays+1
-        arr%itype        = DENSE
+        arr%itype        = TT_DENSE
         arr%atype        = 'REPD'
       case default 
-        call lsquit("ERROR(array_minit): atype not known",-1)
+        call lsquit("ERROR(tensor_minit): atype not known",-1)
       end select
     endif
 #else
-    call array_init(arr,dims,nmodes)
+    call tensor_init(arr,dims,nmodes)
     arr%atype='LDAR'
 #endif
     arr%initialized=.true.
-  end subroutine array_minit
+  end subroutine tensor_minit
 
-  subroutine array_ainit(arr, dims, nmodes, local, atype, tdims, fo )
+  subroutine tensor_ainit(arr, dims, nmodes, local, atype, tdims, fo )
     !> the output array
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in)              :: nmodes, dims(nmodes)
     integer, intent(in),optional     :: tdims(nmodes)
@@ -1116,9 +1452,9 @@ contains
     logical :: loc
  
     ! Sanity check
-    !if(arr%initialized)call lsquit("ERROR(array_ainit):array already initialized",-1) 
+    !if(arr%initialized)call lsquit("ERROR(tensor_ainit):array already initialized",-1) 
     do i=1, nmodes
-      if (dims(i) == 0) call lsquit("ERROR(array_minit): 0 dimendion not allowed",-1)
+      if (dims(i) == 0) call lsquit("ERROR(tensor_minit): 0 dimendion not allowed",-1)
     end do
  
     !set defaults
@@ -1143,86 +1479,86 @@ contains
       select case(at)
       case('LDAR','REAR','REPD','TDAR','TDPD')
         !if local recast to a local dense array
-        call array_init_standard(arr,dims,nmodes,pdm=NO_PDM_ACCESS)
+        call tensor_init_standard(arr,dims,nmodes,pdm=AT_NO_PDM_ACCESS)
         arr%atype='LDAR'
       !case('TDAR','TDPD')
-      !  arr=array_init_tiled(dims,nmodes,pdm=NO_PDM_ACCESS)
+      !  arr=tensor_init_tiled(dims,nmodes,pdm=AT_NO_PDM_ACCESS)
       !  arr%atype='LTAR'
       case default
-        call lsquit("ERROR(array_minit): atype not known",-1)
+        call lsquit("ERROR(tensor_minit): atype not known",-1)
       end select
     else
       select case(at)
       case('LDAR')
         !INITIALIZE a Local Dense ARray
-        call array_init_standard(arr,dims,nmodes,pdm=ALL_ACCESS)
+        call tensor_init_standard(arr,dims,nmodes,pdm=AT_ALL_ACCESS)
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
-        it               = TILED_DIST
-        call array_init_tiled(arr,dims,nmodes,at,it,pdm=ALL_ACCESS,tdims=tdims,force_offset=fo)
+        it               = TT_TILED_DIST
+        call tensor_init_tiled(arr,dims,nmodes,at,it,pdm=AT_ALL_ACCESS,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
-        call array_init_replicated(arr,dims,nmodes,pdm=ALL_ACCESS)
+        call tensor_init_replicated(arr,dims,nmodes,pdm=AT_ALL_ACCESS)
         CreatedPDMArrays = CreatedPDMArrays+1
-        arr%itype        = REPLICATED
+        arr%itype        = TT_REPLICATED
         arr%atype        = 'REAR'
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
-        it               = TILED_DIST ! for array_init_tiled routine
-        call array_init_tiled(arr,dims,nmodes,at,it,pdm=ALL_ACCESS,tdims=tdims,ps_d=.true.,force_offset=fo)
-        arr%itype        = DENSE ! back to dense after init
+        it               = TT_TILED_DIST ! for tensor_init_tiled routine
+        call tensor_init_tiled(arr,dims,nmodes,at,it,pdm=AT_ALL_ACCESS,tdims=tdims,ps_d=.true.,force_offset=fo)
+        arr%itype        = TT_DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REPD')
         !INITIALIZE a REplicated Pseudo Dense array
-        call array_init_replicated(arr,dims,nmodes,pdm=ALL_ACCESS)
+        call tensor_init_replicated(arr,dims,nmodes,pdm=AT_ALL_ACCESS)
         CreatedPDMArrays = CreatedPDMArrays+1
-        arr%itype        = DENSE
+        arr%itype        = TT_DENSE
         arr%atype        = 'REPD'
       case default 
-        call lsquit("ERROR(array_minit): atype not known",-1)
+        call lsquit("ERROR(tensor_minit): atype not known",-1)
       end select
     endif
 #else
-    call array_init_standard(arr,dims,nmodes,NO_PDM_ACCESS)
+    call tensor_init_standard(arr,dims,nmodes,AT_NO_PDM_ACCESS)
     arr%atype='LDAR'
 #endif
     arr%initialized=.true.
-  end subroutine array_ainit
+  end subroutine tensor_ainit
 
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief MAIN ARRAY INITIALIZATION ROUTINE
-  subroutine  array_init(arr,dims,nmodes,arr_type,pdm,tdims,fo)
+  subroutine  tensor_init(arr,dims,nmodes,tensor_type,pdm,tdims,fo)
     implicit none
     !> output array
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
     !> integer specifying the type of array (a list of possible types is found
-    !> at the beginning of array_memory.f90
-    integer, optional :: arr_type
+    !> at the beginning of tensor_memory.f90
+    integer, optional :: tensor_type
     !> if tiled then the size of the tile in each mode can be specified explicitly 
     integer, optional :: tdims(nmodes)
-    !> specifies the type of access to the array (NO_PDM_ACCESS,MASTER_ACCESS,ALL_ACCESS)
+    !> specifies the type of access to the array (AT_NO_PDM_ACCESS,AT_MASTER_ACCESS,AT_ALL_ACCESS)
     integer, optional :: pdm,fo
     integer :: sel_type,pdmtype,it
     logical :: zeros_in_tiles,wcps
     !choose which kind of array
 
-    !if(arr%initialized)call lsquit("ERROR(array_init):array already initialized",-1) 
+    !if(arr%initialized)call lsquit("ERROR(tensor_init):array already initialized",-1) 
 
     !DEFAULTS
-    it     = DENSE
-    pdmtype = NO_PDM_ACCESS !NO PDM
+    it      = TT_DENSE
+    pdmtype = AT_NO_PDM_ACCESS !NO PDM
 
     !OPTIONAL SPECIFICATIONS
-    if(present(arr_type))    it      = arr_type
+    if(present(tensor_type)) it      = tensor_type
     if(present(pdm))         pdmtype = pdm
 
     !CHECK INPUT
-    if(pdmtype>=3)call lsquit("ERROR(array_init):WRONG CHOICE IN PDMTYPE",DECinfo%output)
+    if(pdmtype>=3)call lsquit("ERROR(tensor_init):WRONG CHOICE IN PDMTYPE",DECinfo%output)
 
     !EXPERIMENTAL, THIS IS NOT RECOMMENDED!!!!!!!!!!!!!!:
     !instead of modulo dimensions in the rims of an array
@@ -1233,33 +1569,33 @@ contains
     
     !select corresponding routine
     select case(it)
-      case(DENSE)
-        call array_init_standard(arr,dims,nmodes,pdmtype)
+      case(TT_DENSE)
+        call tensor_init_standard(arr,dims,nmodes,pdmtype)
         arr%atype = 'LDAR'
-      case(REPLICATED)
-        call array_init_replicated(arr,dims,nmodes,pdmtype)
+      case(TT_REPLICATED)
+        call tensor_init_replicated(arr,dims,nmodes,pdmtype)
         arr%atype = 'REAR'
         CreatedPDMArrays = CreatedPDMArrays+1
-      case(TILED)
-        call array_init_tiled(arr,dims,nmodes,'TIAR',it,pdmtype,tdims=tdims,force_offset=fo)
-      case(TILED_DIST)
-        call array_init_tiled(arr,dims,nmodes,'TDAR',it,pdmtype,tdims=tdims,force_offset=fo)
+      case(TT_TILED)
+        call tensor_init_tiled(arr,dims,nmodes,'TIAR',it,pdmtype,tdims=tdims,force_offset=fo)
+      case(TT_TILED_DIST)
+        call tensor_init_tiled(arr,dims,nmodes,'TDAR',it,pdmtype,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
     end select
     arr%access_type   = pdmtype
     arr%itype       = it
     arr%initialized = .true.
-  end subroutine array_init
+  end subroutine tensor_init
 
 
 
   !> \author Patrick Ettenhuber adpted from Marcin Ziolkowski
   !> \date September 2012
   !> \brief get mode index from composite index
-  subroutine array_init_standard(arr,dims,nmodes,pdm)
+  subroutine tensor_init_standard(arr,dims,nmodes,pdm)
     implicit none
     integer, intent(in)   :: nmodes,dims(nmodes),pdm
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     logical               :: master
     integer               :: i,addr,tdimdummy(nmodes)
     integer,pointer       :: buf(:)
@@ -1289,19 +1625,19 @@ contains
     p_arr%a(addr)%mode      = nmodes
 
     !SET DIMS
-    call arr_set_dims(p_arr%a(addr),dims,nmodes)
+    call tensor_set_dims(p_arr%a(addr),dims,nmodes)
 
     !SET ARRAY TYPE
-    p_arr%a(addr)%itype     = DENSE
+    p_arr%a(addr)%itype     = TT_DENSE
 
     !SET INIT TYPE
     !default
-    p_arr%a(addr)%access_type = NO_PDM_ACCESS
+    p_arr%a(addr)%access_type = AT_NO_PDM_ACCESS
     !if one uses comm threads the following replace the access_type
-    !if( pdm == MASTER_ACCESS .and. lspdm_use_comm_proc )&
-    !& p_arr%a(addr)%access_type = MASTER_ACCESS
-    !if( pdm == ALL_ACCESS .and. lspdm_use_comm_proc )&
-    !& p_arr%a(addr)%access_type = ALL_ACCESS
+    !if( pdm == AT_MASTER_ACCESS .and. lspdm_use_comm_proc )&
+    !& p_arr%a(addr)%access_type = AT_MASTER_ACCESS
+    !if( pdm == AT_ALL_ACCESS .and. lspdm_use_comm_proc )&
+    !& p_arr%a(addr)%access_type = AT_ALL_ACCESS
 
     !SET IF ALLOCATED WITH COMM PROCS
     !p_arr%a(addr)%allocd_w_c_p = lspdm_use_comm_proc
@@ -1315,25 +1651,25 @@ contains
 
     !put 0 in tdim, since for the replicated array it is not important
     tdimdummy=0
-    call arr_set_tdims(p_arr%a(addr),tdimdummy,nmodes)
+    call tensor_set_tdims(p_arr%a(addr),tdimdummy,nmodes)
 
     !call mem_alloc(buf,pc_nnodes)
     !buf = 0
 
     !if master init only master has to init the addresses addresses before
     !pdm syncronization
-!    if(master .and. p_arr%a(addr)%access_type==MASTER_ACCESS .and. lspdm_use_comm_proc)then
-!      call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
+!    if(master .and. p_arr%a(addr)%access_type==AT_MASTER_ACCESS .and. lspdm_use_comm_proc)then
+!      call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 !#ifdef VAR_MPI
-!      call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_PC,p_arr%a(addr),loc_addr=.true.)
+!      call pdm_tensor_sync(infpar%pc_comm,JOB_INIT_tensor_PC,p_arr%a(addr),loc_addr=.true.)
 !#endif
 !    endif
 
 
 
-    !if ALL_ACCESS all have to have the addresses allocated
-    !if(p_arr%a(addr)%access_type==ALL_ACCESS.and. lspdm_use_comm_proc)&
-    !   &call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
+    !if AT_ALL_ACCESS all have to have the addresses allocated
+    !if(p_arr%a(addr)%access_type==AT_ALL_ACCESS.and. lspdm_use_comm_proc)&
+    !   &call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 
     !SET THE ADDRESSES ON ALL NODES     
     !buf(me+1)=addr 
@@ -1341,23 +1677,23 @@ contains
 !    if( lspdm_use_comm_proc )call lsmpi_allreduce(buf,pc_nnodes,infpar%pc_comm)
 !#endif
 
-    !call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
+    !call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 
     !call mem_dealloc(buf)
 
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
-    call memory_allocate_array_dense(p_arr%a(addr))
+    call memory_allocate_tensor_dense(p_arr%a(addr))
 
     !RETURN THE CURRENLY ALLOCATE ARRAY
     arr=p_arr%a(addr)
 
-  end subroutine array_init_standard
+  end subroutine tensor_init_standard
 
   
 
-  subroutine array_free_standard(arr)
+  subroutine tensor_free_standard(arr)
     implicit none
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     integer :: me
     logical :: parent
  
@@ -1366,75 +1702,75 @@ contains
 !#ifdef VAR_MPI
 !    if( lspdm_use_comm_proc )then
 !      me = infpar%pc_mynum
-!      if(parent) call pdm_array_sync(infpar%pc_comm,JOB_FREE_ARR_STD,arr,loc_addr=.true.)
+!      if(parent) call pdm_tensor_sync(infpar%pc_comm,JOB_FREE_tensor_STD,arr,loc_addr=.true.)
 !    endif
 !#endif
     p_arr%free_addr_on_node(arr%local_addr)=.true.
     p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
-    call array_free_basic(p_arr%a(arr%local_addr)) 
-    call array_reset_value_defaults(p_arr%a(arr%local_addr)) 
-    call array_nullify_pointers(arr)
+    call tensor_free_basic(p_arr%a(arr%local_addr)) 
+    call tensor_reset_value_defaults(p_arr%a(arr%local_addr)) 
+    call tensor_nullify_pointers(arr)
 
-  end subroutine array_free_standard
+  end subroutine tensor_free_standard
 
   !> \author Patrick Ettenhuber
   !> \date January 2013
   !> \brief free a replicated matrix wich is pseudo dense for the routines,
   !> wrapper for use without mpi
   !> without mpi
-  subroutine array_free_rpseudo_dense(arr,local)
+  subroutine tensor_free_rpseudo_dense(arr,local)
     !> the array to free
-    type(array) :: arr
+    type(tensor) :: arr
     logical, intent(in) :: local
 #ifdef VAR_MPI
     if(.not.local)then
-      arr%itype=REPLICATED
+      arr%itype=TT_REPLICATED
     endif
 #endif
-    call array_free(arr)
-  end subroutine array_free_rpseudo_dense
+    call tensor_free(arr)
+  end subroutine tensor_free_rpseudo_dense
 
   !> \author Patrick Ettenhuber
   !> \date January 2013
   !> \brief free a td matrix wich is pseudo dense for the routines,
   !> wrapper for use without mpi
   !> without mpi
-  subroutine array_free_tdpseudo_dense(arr,local)
+  subroutine tensor_free_tdpseudo_dense(arr,local)
     !> the array to free
-    type(array) :: arr
+    type(tensor) :: arr
     logical, intent(in) :: local
 #ifdef VAR_MPI
     if( .not. local ) then
-      arr%itype=TILED_DIST
+      arr%itype=TT_TILED_DIST
     endif
 #endif
-    call array_free(arr)
-  end subroutine array_free_tdpseudo_dense
+    call tensor_free(arr)
+  end subroutine tensor_free_tdpseudo_dense
 
   !> \brief array freeing routine, give an arbitrary array and all allocated
   !memory associated with the array will be freed
   !> \author Patrick Ettenhuber
   !> \Date probably september 2012
-  subroutine array_free(arr)
+  subroutine tensor_free(arr)
     implicit none
     !> array to free
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
 
-    if(.not.arr%initialized)call lsquit("ERROR(array_free):array not initialized",-1) 
+    if(.not.arr%initialized)call lsquit("ERROR(tensor_free):array not initialized",-1) 
 
     select case(arr%atype)
     case('LDAR')
-      call array_free_standard(arr)
+      call tensor_free_standard(arr)
     case('TDAR','REAR','TDPD','REPD','RTAR')
-      call array_free_pdm(arr)
+      call tensor_free_pdm(arr)
       DestroyedPDMArrays = DestroyedPDMArrays + 1
     case('TIAR')
-        call lsquit("ERROR(array_free): local tiled not maintained",-1)
+        call lsquit("ERROR(tensor_free): local tiled not maintained",-1)
     case default 
-        call lsquit("ERROR(array_free): atype not known",-1)
+        call lsquit("ERROR(tensor_free): atype not known",-1)
     end select
     arr%initialized = .false. 
-  end subroutine array_free
+  end subroutine tensor_free
 
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1446,65 +1782,65 @@ contains
   !so that implementations still run
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  subroutine array_change_itype_to_td(arr,local)
+  subroutine tensor_change_itype_to_td(arr,local)
     implicit none
     !> array to change the array type
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     logical, intent(in) :: local
 #ifdef VAR_MPI
     if( .not. local )then
-      arr%itype=TILED_DIST
+      arr%itype=TT_TILED_DIST
       if(associated(arr%elm1))then
-        call arr_deallocate_dense(arr)
+        call tensor_deallocate_dense(arr)
       endif
     endif
 #else
     return
 #endif
-  end subroutine array_change_itype_to_td
+  end subroutine tensor_change_itype_to_td
 
   !> \brief change the array type to replicated, no action in case of
   !non-mpi-build
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine array_change_atype_to_rep(arr,local)
+  subroutine tensor_change_atype_to_rep(arr,local)
     implicit none
     !> array to change the array type
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     logical, intent(in) :: local
 #ifdef VAR_MPI
     if(.not.local)then
-      arr%itype=REPLICATED
+      arr%itype=TT_REPLICATED
     endif
 #else
     return
 #endif
-  end subroutine array_change_atype_to_rep
+  end subroutine tensor_change_atype_to_rep
 
   !> \brief change the array type to replicated, no action in case of
   !non-mpi-build
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine array_change_atype_to_d(arr)
+  subroutine tensor_change_atype_to_d(arr)
     implicit none
     !> array to change the array type
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
 #ifdef VAR_MPI
-    arr%itype=DENSE
+    arr%itype=TT_DENSE
 #else
     return
 #endif
-  end subroutine array_change_atype_to_d
+  end subroutine tensor_change_atype_to_d
 
   !> \brief copy the tiled data of an array to its dense part, if change is
-  !true, also change the %itype to DENSE, but NO deallocation of the tiled
+  !true, also change the %itype to TT_DENSE, but NO deallocation of the tiled
   !distributed part
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine array_cp_tiled2dense(arr,change,order)
+  subroutine tensor_cp_tiled2dense(arr,change,order)
     implicit none
     !> array to copy data from the tiled to its dense part
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     !> logical to specify whether to change the atype
     logical :: change
     !> if order is given the dense part will be reordered with respect to the
@@ -1512,128 +1848,136 @@ contains
     integer,intent(in),optional:: order(arr%mode)
     logical :: pdm
     pdm=.false.
-    if(arr%itype/=DENSE)then
+    if(arr%itype/=TT_DENSE)then
       if(.not.associated(arr%elm1))then
-        call memory_allocate_array_dense(arr)
+        call memory_allocate_tensor_dense(arr)
       else
-        call lsquit("ERROR(array_cp_tiled2dense):dense is already allocated,&
+        call lsquit("ERROR(tensor_cp_tiled2dense):dense is already allocated,&
         & please make sure you are not doing someting stupid",DECinfo%output)
       endif
       if(arr%access_type>0)pdm=.true.
       if(.not.present(order))call cp_tileddata2fort(arr,arr%elm1,arr%nelms,pdm)
       if(present(order))call cp_tileddata2fort(arr,arr%elm1,arr%nelms,pdm,order)
-      if(change)arr%itype=DENSE
+      if(change)arr%itype=TT_DENSE
     endif
-  end subroutine array_cp_tiled2dense
+  end subroutine tensor_cp_tiled2dense
 
   !> \brief copy the dense part of an array to its tiled distributed part and
   !delallocate the dense part afterwards, if desired change the atype. no
   !action if non-mpi build.
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine array_mv_dense2tiled(arr,change)
+  subroutine tensor_mv_dense2tiled(arr,change,dealloc_local)
     implicit none
     !> array to copy dense to tiled and deallocate dense part
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     logical, intent(in) :: change
-    logical :: pdm
+    logical, intent(in),optional :: dealloc_local
+    logical :: pdm,dl
 #ifdef VAR_MPI
     pdm=.false.
     if(.not.associated(arr%elm1))then
-      call lsquit("ERROR(array_cp_dense2tiled):dense is NOT allocated,&
+      call lsquit("ERROR(tensor_cp_dense2tiled):dense is NOT allocated,&
       & please make sure you are not doing someting stupid",DECinfo%output)
     endif
+
+    dl = .true.
+    if(present(dealloc_local))dl = dealloc_local
+
     if(arr%access_type>0)pdm=.true.
-    if(change)arr%itype=TILED_DIST
-    call array_convert_fort2arr(arr%elm1,arr,arr%nelms)
-    call arr_deallocate_dense(arr)
+    if(change)arr%itype=TT_TILED_DIST
+    call tensor_convert_fort2arr(arr%elm1,arr,arr%nelms)
+    if(dl)call tensor_deallocate_dense(arr)
 #else
     return
 #endif
-  end subroutine array_mv_dense2tiled
+  end subroutine tensor_mv_dense2tiled
 
 
   !\brief all the following wrappers are necessary to use the conversion routine
   !in an interface for different shapes of the fortran array  
-  subroutine array_convert_arr2fort_wrapper1(arr,fort,order)
+  subroutine tensor_convert_tensor2fort_wrapper1(arr,fort,order)
     implicit none
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:)
     integer, intent(in), optional :: order(arr%mode)
-    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
-  end subroutine array_convert_arr2fort_wrapper1
-  subroutine array_convert_arr2fort_wrapper2(arr,fort,order)
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+  end subroutine tensor_convert_tensor2fort_wrapper1
+  subroutine tensor_convert_tensor2fort_wrapper2(arr,fort,order)
     implicit none
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:)
     integer, intent(in), optional :: order(arr%mode)
-    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
-  end subroutine array_convert_arr2fort_wrapper2
-  subroutine array_convert_arr2fort_wrapper3(arr,fort,order)
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+  end subroutine tensor_convert_tensor2fort_wrapper2
+  subroutine tensor_convert_tensor2fort_wrapper3(arr,fort,order)
     implicit none
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
-  end subroutine array_convert_arr2fort_wrapper3
-  subroutine array_convert_arr2fort_wrapper4(arr,fort,order)
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+  end subroutine tensor_convert_tensor2fort_wrapper3
+  subroutine tensor_convert_tensor2fort_wrapper4(arr,fort,order)
     implicit none
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
-  end subroutine array_convert_arr2fort_wrapper4
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+  end subroutine tensor_convert_tensor2fort_wrapper4
 
   !\brief all the following wrappers are necessary to use the conversion routine
   !in an interface for different shapes of the fortran array  
-  subroutine array_convert_fort2arr_wrapper1(fortarr,arr,order)
+  subroutine tensor_convert_fort2tensor_wrapper1(fortarr,arr,order)
     implicit none
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     real(realk), intent(in) :: fortarr(arr%nelms)
     integer, intent(in),optional :: order(arr%mode)
-    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
-  end subroutine array_convert_fort2arr_wrapper1
-  subroutine array_convert_fort2arr_wrapper2(fortarr,arr,order)
+    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
+  end subroutine tensor_convert_fort2tensor_wrapper1
+  subroutine tensor_convert_fort2tensor_wrapper2(fortarr,arr,order)
     implicit none
     real(realk), intent(in) :: fortarr(:,:)
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
-  end subroutine array_convert_fort2arr_wrapper2
-  subroutine array_convert_fort2arr_wrapper3(fortarr,arr,order)
+    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
+  end subroutine tensor_convert_fort2tensor_wrapper2
+  subroutine tensor_convert_fort2tensor_wrapper3(fortarr,arr,order)
     implicit none
     real(realk), intent(in) :: fortarr(:,:,:)
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
-  end subroutine array_convert_fort2arr_wrapper3
-  subroutine array_convert_fort2arr_wrapper4(fortarr,arr,order)
+    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
+  end subroutine tensor_convert_fort2tensor_wrapper3
+  subroutine tensor_convert_fort2tensor_wrapper4(fortarr,arr,order)
     implicit none
     real(realk), intent(in) :: fortarr(:,:,:,:)
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
-  end subroutine array_convert_fort2arr_wrapper4
+    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
+  end subroutine tensor_convert_fort2tensor_wrapper4
 
 
   !> \brief put data of a fortan array into an arbitrary array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine array_convert_fort2arr(fortarr,arr,nelms,order)
+  subroutine tensor_convert_fort2arr(fortarr,arr,nelms,order)
     implicit none
     !> the fortran array with the data
     real(realk), intent(in) :: fortarr(*)
     !> the array which should contain the data after the operation
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     !> number of elements to copy from the fortan array to the array
     integer(kind=8), intent(in) :: nelms
     !> if the array should have a different ordering than the fortran array,
     ! this can be specified with order
     integer, intent(in),optional :: order(arr%mode)
-    !> checkmem is outdated
     real(realk) :: tilemem,MemFree
     integer :: i,o(arr%mode),fullfortdims(arr%mode)
     real(realk) :: nrm
+    logical :: simpleord
+
+    simpleord = .true.
+
     do  i=1,arr%mode
       o(i)=i
     enddo
@@ -1641,51 +1985,71 @@ contains
     do  i=1,arr%mode
       fullfortdims(o(i))=arr%dims(i)
     enddo
+
+    do  i=1,arr%mode
+      simpleord = simpleord.and.(o(i)==i)
+    enddo
     
-    if(nelms/=arr%nelms)call lsquit("ERROR(array_convert_fort2arr):array&
-    &dimensions are not the same",-1)
+    if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_fort2arr):array&
+       &dimensions are not the same",-1)
     select case(arr%itype)
-      case(DENSE)
+    case(TT_DENSE,TT_REPLICATED)
+       if(simpleord)then
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
 #else
-        call dcopy(int(nelms),fortarr,1,arr%elm1,1)
+          call dcopy(int(nelms),fortarr,1,arr%elm1,1)
 #endif
-      case(REPLICATED)
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
-#else
-        call dcopy(int(nelms),fortarr,1,arr%elm1,1)
-#endif
-        call array_sync_replicated(arr)
-      case(TILED)
-        call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
-      case(TILED_DIST)
-        !if enough memory is available the lower one should be faster      
-        if(arr%access_type==ALL_ACCESS)then
+       else
+          select case(arr%mode)
+          case(2)
+             call array_reorder_2d(1.0E0_realk,fortarr,fullfortdims(1),fullfortdims(2),&
+                &o,0.0E0_realk,arr%elm1)
+          case(3)
+             call array_reorder_3d(1.0E0_realk,fortarr,fullfortdims(1),fullfortdims(2),&
+                &fullfortdims(3),o,0.0E0_realk,arr%elm1)
+          case(4)
+             call array_reorder_4d(1.0E0_realk,fortarr,fullfortdims(1),fullfortdims(2),&
+                &fullfortdims(3),fullfortdims(4),o,0.0E0_realk,arr%elm1)
+          case default
+             call lsquit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
+          end select
+       endif
+
+       if(arr%itype==TT_REPLICATED)call tensor_sync_replicated(arr)
+
+    case(TT_TILED)
+
+       call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
+
+    case(TT_TILED_DIST)
+
+       !if enough memory is available the lower one should be faster      
+       if(arr%access_type==AT_ALL_ACCESS)then
           do i=1,arr%nlti
-            call tile_from_fort(1.0E0_realk,fortarr,fullfortdims,arr%mode,&
-                               &0.0E0_realk,arr%ti(i)%t,arr%ti(i)%gt,arr%tdim,o)
+             call tile_from_fort(1.0E0_realk,fortarr,fullfortdims,arr%mode,&
+                &0.0E0_realk,arr%ti(i)%t,arr%ti(i)%gt,arr%tdim,o)
           enddo
-        else
+       else
           !call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
           call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode,o)
-        endif
-      case default
-        call lsquit("ERROR(array_convert_fort2arr) the array type is not implemented",-1)
+       endif
+
+    case default
+       call lsquit("ERROR(tensor_convert_fort2arr) the array type is not implemented",-1)
     end select
-  end subroutine array_convert_fort2arr
+ end subroutine tensor_convert_fort2arr
   !> \brief change the init type for a fortan array
   !> \author Patrick Ettenhuber
   !> \date late 2012
   subroutine change_access_type(arr,totype)
     implicit none
     !> array to chage the init type
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     !> type to change it to
     integer,intent(in) :: totype
-    if(arr%itype==TILED_DIST.or.arr%itype==REPLICATED.or.&
-         &totype==TILED_DIST.or.totype==REPLICATED)then
+    if(arr%itype==TT_TILED_DIST.or.arr%itype==TT_REPLICATED.or.&
+         &totype==TT_TILED_DIST.or.totype==TT_REPLICATED)then
       call change_access_type_td(arr,totype)
     else
       call lsquit("ERROR(change_access_type): what you want to do is not implemented",-1)
@@ -1696,10 +2060,10 @@ contains
   !> \brief put data of an arbitrary array into a basic fortan type array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine array_convert_arr2fort(arr,fort,nelms,order)
+  subroutine tensor_convert_tensor2fort(arr,fort,nelms,order)
     implicit none
     !> array with the data at the beginning
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     !> fortan array to contain the data in the end
     real(realk), intent(inout) :: fort(*)
     !> number of elements to convert, must be the same as elements in the array
@@ -1707,137 +2071,195 @@ contains
     !> if the fortan array has a different order than the array this specifies
     !the reordering
     integer, intent(in), optional :: order(arr%mode)
-    if(nelms/=arr%nelms)call lsquit("ERROR(array_convert_arr2fort):array&
+    real(realk) :: tilemem,MemFree
+    integer :: i,o(arr%mode),fullfortdims(arr%mode)
+    real(realk) :: nrm
+    logical :: simpleord
+
+    simpleord = .true.
+
+    do  i=1,arr%mode
+      o(i)=i
+    enddo
+    if(present(order))o=order
+    do  i=1,arr%mode
+      fullfortdims(o(i))=arr%dims(i)
+    enddo
+
+    do  i=1,arr%mode
+      simpleord = simpleord.and.(o(i)==i)
+    enddo
+
+
+    if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_tensor2fort):array&
     &dimensions are not the same",DECinfo%output)
+
+
     select case(arr%itype)
-      case(DENSE)
+
+    case(TT_DENSE,TT_REPLICATED)
+
+       if(simpleord)then
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
 #else
-        call dcopy(int(nelms),arr%elm1,1,fort,1)
+          call dcopy(int(nelms),arr%elm1,1,fort,1)
 #endif
-      case(TILED)
-        if(present(order))call cp_tileddata2fort(arr,fort,nelms,.false.,order)
-        if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.false.)
-      case(TILED_DIST)
-        if(present(order))call cp_tileddata2fort(arr,fort,nelms,.true.,order)
-        if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.true.)
+       else
+
+          select case(arr%mode)
+          case(2)
+             call array_reorder_2d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+                &o,0.0E0_realk,fort)
+          case(3)
+             call array_reorder_3d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+                &arr%dims(3),o,0.0E0_realk,fort)
+          case(4)
+             call array_reorder_4d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+                &arr%dims(3),arr%dims(4),o,0.0E0_realk,fort)
+          case default
+             call lsquit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
+          end select
+
+       endif
+
+    case(TT_TILED)
+       if(present(order))call cp_tileddata2fort(arr,fort,nelms,.false.,order)
+       if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.false.)
+    case(TT_TILED_DIST)
+       if(present(order))call cp_tileddata2fort(arr,fort,nelms,.true.,order)
+       if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.true.)
     end select
-  end subroutine array_convert_arr2fort
+  end subroutine tensor_convert_tensor2fort
 
 
   
   !> \brief convert an old array2 structure to an array structure
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine array_convert_array22array(arraytwo,arr)
+  subroutine tensor_convert_array22array(arraytwo,arr)
     implicit none
     !> array2 input
     type(array2),intent(in) :: arraytwo
     !> array output
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     integer(kind=8) :: nel
     if(arr%mode/=2)then
-      call lsquit("ERROR(array_convert_array22array):wrong mode in arr&
+      call lsquit("ERROR(tensor_convert_array22array):wrong mode in arr&
       &input)",DECinfo%output)
     endif
     nel = int(arraytwo%dims(1)*arraytwo%dims(2),kind=8)
     if(arr%nelms/=nel)then
-      call lsquit("ERROR(array_convert_array22array):number of elements in arr&
+      call lsquit("ERROR(tensor_convert_array22array):number of elements in arr&
       &input)",DECinfo%output)
     endif
-    call array_convert_fort2arr(arraytwo%val,arr,nel)
-  end subroutine array_convert_array22array
+    call tensor_convert_fort2arr(arraytwo%val,arr,nel)
+  end subroutine tensor_convert_array22array
 
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY UTILITIES !!!!!!!!! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  subroutine array_cp_data(from_arr,to_arr)
+  subroutine tensor_cp_data(from_arr,to_arr,order)
     implicit none
-    type(array),intent(in) :: from_arr
-    type(array),intent(inout) :: to_arr
+    type(tensor),intent(inout) :: from_arr
+    type(tensor),intent(inout) :: to_arr
+    integer, intent(in),optional :: order(to_arr%mode)
     integer :: i
     real(realk) :: tilemem,MemFree
+    integer :: o(from_arr%mode)
     if(from_arr%nelms/=to_arr%nelms)then
-      call lsquit("ERROR(array_cp_data):arrays need the same number of& 
+      call lsquit("ERROR(tensor_cp_data):arrays need the same number of& 
       & elements",DECinfo%output)
     endif
+
+    do i=1,from_arr%mode
+       o(i) = i
+    enddo
+    if(present(order)) o = order
     
     select case(from_arr%itype)
-      case(DENSE)
-        select case(to_arr%itype)
-          case(DENSE)
-            call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
-          case(REPLICATED)
-            call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
-            call array_sync_replicated(to_arr)
-          case(TILED_DIST)
-            call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
-          case default
-            call lsquit("ERROR(array_cp_data):operation not yet&
-            & implemented",DECinfo%output)
-        end select
-      case(REPLICATED)
-        select case(to_arr%itype)
-          case(DENSE)
-            call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
-          case(REPLICATED)
-            call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
-            call array_sync_replicated(to_arr)
-          case(TILED_DIST)
-            call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
-          case default
-            call lsquit("ERROR(array_cp_data):operation not yet&
-            & implemented",DECinfo%output)
-        end select
-      case(TILED_DIST)
-        select case(to_arr%itype)
-          case(DENSE)
-            call cp_tileddata2fort(from_arr,to_arr%elm1,from_arr%nelms,.true.)
-          case(TILED_DIST)
-            call array_cp_tiled(from_arr,to_arr)
-          case default
-            call lsquit("ERROR(array_cp_data):operation not yet&
-            & implemented",DECinfo%output)
-        end select
-      case default
-        call lsquit("ERROR(array_cp_data):operation not yet&
-        & implemented",DECinfo%output)
+
+
+    case(TT_DENSE,TT_REPLICATED)
+       select case(to_arr%itype)
+
+       case(TT_DENSE,TT_REPLICATED)
+
+          call tensor_convert(from_arr, to_arr%elm1, order = o)
+          if(to_arr%itype == TT_REPLICATED)call tensor_sync_replicated(to_arr)
+
+       case(TT_TILED_DIST)
+
+          if(to_arr%access_type==AT_ALL_ACCESS)then
+             do i=1,to_arr%nlti
+                call tile_from_fort(1.0E0_realk,from_arr%elm1,from_arr%dims,to_arr%mode,&
+                   &0.0E0_realk,to_arr%ti(i)%t,to_arr%ti(i)%gt,to_arr%tdim,o)
+             enddo
+          else
+             call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode,optorder=o)
+          endif
+
+       case default
+          call lsquit("ERROR(tensor_cp_data):operation not yet implemented",DECinfo%output)
+       end select
+
+
+
+    case(TT_TILED_DIST)
+
+       select case(to_arr%itype)
+       case(TT_DENSE)
+
+          call cp_tileddata2fort(from_arr,to_arr%elm1,from_arr%nelms,.true.,order = o)
+
+       case(TT_TILED_DIST)
+
+          call tensor_cp_tiled(from_arr,to_arr,o)
+
+       case default
+
+          call lsquit("ERROR(tensor_cp_data):operation not yet  implemented",DECinfo%output)
+
+       end select
+
+
+    case default
+        call lsquit("ERROR(tensor_cp_data):operation not yet  implemented",DECinfo%output)
     end select
 
-  end subroutine array_cp_data
+  end subroutine tensor_cp_data
 
-  subroutine array_zero(zeroed)
+  subroutine tensor_zero(zeroed)
     implicit none
-    type(array) :: zeroed
+    type(tensor) :: zeroed
     integer :: i
     
     select case(zeroed%itype)
-      case(DENSE)
+      case(TT_DENSE)
         zeroed%elm1=0.0E0_realk
-      case(REPLICATED)
+      case(TT_REPLICATED)
         zeroed%elm1=0.0E0_realk
-        call array_sync_replicated(zeroed)
-      case(TILED)
+        call tensor_sync_replicated(zeroed)
+      case(TT_TILED)
         if (zeroed%atype=='RTAR') then
-          call array_zero_tiled_dist(zeroed)
+          call tensor_zero_tiled_dist(zeroed)
         else
           do i=1,zeroed%ntiles
             zeroed%ti(i)%t=0.0E0_realk
           enddo
         end if
-      case(TILED_DIST)
-        call array_zero_tiled_dist(zeroed)
+      case(TT_TILED_DIST)
+        call tensor_zero_tiled_dist(zeroed)
       case default
-        call lsquit("ERROR(array_zero):not yet implemented",-1)
+        call lsquit("ERROR(tensor_zero):not yet implemented",-1)
     end select
 
-  end subroutine array_zero
+  end subroutine tensor_zero
 
-  subroutine array_print_tile_norm(arr,globtinr,nrm,returnsquared)
+  subroutine tensor_print_tile_norm(arr,globtinr,nrm,returnsquared)
     implicit none
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     integer,intent(in) :: globtinr
     real(realk),intent(inout),optional::nrm
     logical,intent(in),optional :: returnsquared
@@ -1848,22 +2270,22 @@ contains
     if(present(returnsquared))squareback=returnsquared
     norm=0.0d0
     if(globtinr>arr%ntiles)then
-      call lsquit("ERROR(array_print_tile_norm):tile does not exist",DECinfo%output)
+      call lsquit("ERROR(tensor_print_tile_norm):tile does not exist",DECinfo%output)
     endif 
     select case(arr%itype)
-      case(DENSE)
-        print *,"WARNING INVALID OPTION(array_print_tile_norm):no tiles in dense array"     
+      case(TT_DENSE)
+        print *,"WARNING INVALID OPTION(tensor_print_tile_norm):no tiles in dense array"     
         do i=1,arr%nelms
           norm=norm+arr%elm1(i)*arr%elm1(i)
         enddo
         on = 1
-      case(TILED)
+      case(TT_TILED)
         do j=1,arr%ti(globtinr)%e
           norm=norm + arr%ti(globtinr)%t(j) * arr%ti(globtinr)%t(j)
         enddo
         on = 1
-      case(TILED_DIST)
-        call array_tiled_pdm_print_ti_nrm(arr,globtinr,on,norm)
+      case(TT_TILED_DIST)
+        call tensor_tiled_pdm_print_ti_nrm(arr,globtinr,on,norm)
     end select
     if(.not.squareback)norm=sqrt(norm)
     if(present(nrm))nrm=norm
@@ -1871,12 +2293,12 @@ contains
     if(.not.squareback)write(DECinfo%output,'("LOCAL TILE NORM ON",I3,f20.15)')on,norm
     if(squareback)write(DECinfo%output,'("LOCAL TILE NORM^2 ON",I3,f20.15)')on,norm
     endif
-  end subroutine array_print_tile_norm
+  end subroutine tensor_print_tile_norm
 
-  subroutine array_print_norm_nrm(arr,nrm,returnsquared)
+  subroutine tensor_print_norm_nrm(arr,nrm,returnsquared)
     implicit none
     real(realk),intent(inout),optional :: nrm
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     logical,intent(in),optional :: returnsquared
     real(realk)::norm
     integer(kind=8) :: i,j
@@ -1885,13 +2307,13 @@ contains
     if(present(returnsquared))squareback=returnsquared
     norm=0.0d0
     select case(arr%itype)
-      case(DENSE)
+      case(TT_DENSE)
         do i=1,arr%nelms
           norm=norm+arr%elm1(i)*arr%elm1(i)
         enddo
-      case(REPLICATED)
-        norm = array_print_norm_repl(arr)
-      case(TILED)
+      case(TT_REPLICATED)
+        norm = tensor_print_norm_repl(arr)
+      case(TT_TILED)
         do i=1,arr%nlti
           do j=1,arr%ti(i)%e
             !ISNAN is gfort intrinsic, so this options should be commented out in
@@ -1903,18 +2325,19 @@ contains
             norm=norm + arr%ti(i)%t(j) * arr%ti(i)%t(j)
           enddo
         enddo
-      case(TILED_DIST)
-        norm=array_tiled_pdm_get_nrm2(arr)
+      case(TT_TILED_DIST)
+        norm=tensor_tiled_pdm_get_nrm2(arr)
     end select
     if(.not.squareback)norm = sqrt(norm)
     if(.not.squareback.and..not.present(nrm))print *,"NORM:",norm
     if(squareback.and..not.present(nrm))print *,"NORM^2:",norm
     if(present(nrm))nrm=norm
-  end subroutine array_print_norm_nrm
-  subroutine array_print_norm_customprint(arr,msg,returnsquared)
+  end subroutine tensor_print_norm_nrm
+
+  subroutine tensor_print_norm_customprint(arr,msg,returnsquared)
     implicit none
     character*(*),intent(in) :: msg
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     logical,intent(in),optional :: returnsquared
     real(realk)::norm
     integer(kind=8) :: i,j
@@ -1923,27 +2346,27 @@ contains
     if(present(returnsquared))squareback=returnsquared
     norm=0.0d0
     select case(arr%itype)
-      case(DENSE)
+      case(TT_DENSE)
         do i=1,arr%nelms
           norm=norm+arr%elm1(i)*arr%elm1(i)
         enddo
-      case(TILED)
+      case(TT_TILED)
         do i=1,arr%nlti
           do j=1,arr%ti(i)%e
             norm=norm + arr%ti(i)%t(j) * arr%ti(i)%t(j)
           enddo
         enddo
-      case(TILED_DIST)
-        norm=array_tiled_pdm_get_nrm2(arr)
+      case(TT_TILED_DIST)
+        norm=tensor_tiled_pdm_get_nrm2(arr)
     end select
     if(.not.squareback)norm = sqrt(norm)
     print *,msg,norm
-  end subroutine array_print_norm_customprint
+  end subroutine tensor_print_norm_customprint
 
 
   !> \brief Master routine for getting memory information in different shapes
   !> \autonr Patrick Ettenhuber
-  subroutine array_print_mem_info(output,print_all_nodes,allaccess,reducetocheck)
+  subroutine tensor_print_mem_info(output,print_all_nodes,allaccess,reducetocheck)
     implicit none
     !> integer controling the output, if there should be any
     integer, intent(in) :: output
@@ -1980,7 +2403,7 @@ contains
       if(present(allaccess).and..not.red)call print_mem_per_node(output,allaccess)
       if(.not.present(allaccess).and..not.red)call print_mem_per_node(output,.false.)
     else
-      call array_print_memory_currents(output)
+      call tensor_print_memory_currents(output)
     endif
     if(red.and.master)then
       if(abs(red_info(1))<1.0E-11_realk)then
@@ -1991,7 +2414,7 @@ contains
       call mem_dealloc(red_info)
     endif
 
-  end subroutine array_print_mem_info
+  end subroutine tensor_print_mem_info
 
   subroutine print_norm_fort_wrapper1_nrm(fort,nelms,nrm,square)
     implicit none
@@ -2165,23 +2588,23 @@ contains
 
 
 
-  subroutine array_scale(arr,sc)
+  subroutine tensor_scale(arr,sc)
     implicit none
-    type(array) :: arr
+    type(tensor) :: arr
     real(realk) :: sc
     
     select case(arr%itype)
-    case(DENSE)
+    case(TT_DENSE)
       call dscal(int(arr%nelms),sc,arr%elm1,1)
-    case(REPLICATED)
+    case(TT_REPLICATED)
       call dscal(int(arr%nelms),sc,arr%elm1,1)
-      call array_sync_replicated(arr)
-    case(TILED_DIST)
-      call array_scale_td(arr,sc)
+      call tensor_sync_replicated(arr)
+    case(TT_TILED_DIST)
+      call tensor_scale_td(arr,sc)
     case default
-      call lsquit("ERROR(array_scale):not yet implemented",DECinfo%output)
+      call lsquit("ERROR(tensor_scale):not yet implemented",DECinfo%output)
     end select
-  end subroutine array_scale
+  end subroutine tensor_scale
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY TESTCASES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2190,10 +2613,10 @@ contains
   !> \brief Test the array structure 
   !> \author Patrick Ettenhuber
   !> \date September 2012
-  subroutine test_array_struct()
+  subroutine test_tensor_struct()
     implicit none
 
-    type(array) :: test1,test2,test3
+    type(tensor) :: test1,test2,test3
     real(realk),pointer :: dummy1(:),tileget(:),dummy2(:)
     real(realk),pointer :: tileget2(:),buf1(:), buf2(:), buf3(:)
     real(realk) :: normher,ref,ref2,ref3
@@ -2202,7 +2625,7 @@ contains
     integer :: no,nv,nb,na,i,j,succ,to_get_from,ti,midx(4)
     integer(kind=ls_mpik) :: sender, recver, nnod, rnk, me
     character(len=7) :: teststatus
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
     integer,pointer :: ord(:)
     master = .true.
     nnod   = 1_ls_mpik
@@ -2213,7 +2636,7 @@ contains
       master =.false.
     endif
     nnod = infpar%lg_nodtot
-    if(nnod < 3) print*,"WARNING(test_array_struct): not enough MPI processes to test1 all features"
+    if(nnod < 3) print*,"WARNING(test_tensor_struct): not enough MPI processes to test1 all features"
 #endif
     nb =  21
     nv =  18
@@ -2223,7 +2646,7 @@ contains
 
 #ifdef VAR_MPI
     if(master)then
-      write(DECinfo%output,*)"TESTING PDM TILED ARRAY ALLOCATIONS"
+      write(DECinfo%output,*)"TESTING PDM TT_TILED ARRAY ALLOCATIONS"
       write(DECinfo%output,'(" Using",f8.3," GB of mem for the testarray")')&
       &(nv*no*(nv+nb)*8.0E0_realk)/(1024.E0_realk*1024.E0_realk*1024.E0_realk)
       testint=2
@@ -2243,15 +2666,15 @@ contains
       write (DECinfo%output,*)"ALLOC-DEALLOC TESTS"
       print *,"alloc dealloc tests"
       teststatus="SUCCESS"
-      call array_init(test1,[nv,na,nv,nb],4,TILED_DIST,MASTER_ACCESS,[nv,no-1,1,2])
-      call array_init(test2,[na,nb,nv,no],4,TILED_DIST,MASTER_ACCESS,[nv,no-1,1,2])
-      call array_free(test2)
-      call array_init(test2,[no,no+1,no-1,no+1],4,TILED_DIST,MASTER_ACCESS,[no,no-1,nv,nb])
-      call array_free(test1)
-      call array_free(test2)
-      call array_print_mem_info(DECinfo%output,.true.,.false.,succ)
+      call tensor_init(test1,[nv,na,nv,nb],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nv,no-1,1,2])
+      call tensor_init(test2,[na,nb,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nv,no-1,1,2])
+      call tensor_free(test2)
+      call tensor_init(test2,[no,no+1,no-1,no+1],4,TT_TILED_DIST,AT_MASTER_ACCESS,[no,no-1,nv,nb])
+      call tensor_free(test1)
+      call tensor_free(test2)
+      call tensor_print_mem_info(DECinfo%output,.true.,.false.,succ)
       if(succ/=0)teststatus=" FAILED"
-      call array_init(test2,[nb,no,nv,no+1],4,TILED_DIST,MASTER_ACCESS,[nb,2,3,4])
+      call tensor_init(test2,[nb,no,nv,no+1],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nb,2,3,4])
       write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)')teststatus  
       print *,"DIFFERENT ALLOCATION AND DEALLOCATION STEPS: ",teststatus
 
@@ -2260,9 +2683,9 @@ contains
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       teststatus="SUCCESS"
-      call array_init(test1,[nb,na,nv,no],4,TILED_DIST,MASTER_ACCESS,[nb,na-1,3,no/2])
-      write (DECinfo%output,*) "CONVERT PREVIOUS ARRAY TO PDM TILED" 
-      call array_convert(dummy1,test1,[1,2,3,4])
+      call tensor_init(test1,[nb,na,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nb,na-1,3,no/2])
+      write (DECinfo%output,*) "CONVERT PREVIOUS ARRAY TO PDM TT_TILED" 
+      call tensor_convert(dummy1,test1,[1,2,3,4])
       call print_norm(test1,normher)
       write(DECinfo%output,'("NORM OF PDM ARRAY  : ",f20.15)')normher
       if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
@@ -2290,11 +2713,11 @@ contains
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
       teststatus="SUCCESS"
-      if(nnod>1) call array_print_tile_norm(test1,ti,ref)
+      if(nnod>1) call tensor_print_tile_norm(test1,ti,ref)
       write(DECinfo%output,'("NORM OF TILE IN ARRAY   : ",f20.15)')ref
       if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT BEFORE GET : ",f20.15)')normher
-      if(nnod>1) call array_get_tile(test1,ti,tileget,j)
+      if(nnod>1) call tensor_get_tile(test1,ti,tileget,j)
       if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT AFTER GET  : ",f20.15)')normher
       if(nnod>1)then
@@ -2322,12 +2745,12 @@ contains
       call random_number(tileget)
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
-      if(nnod>1) call array_print_tile_norm(test1,ti,normher)
+      if(nnod>1) call tensor_print_tile_norm(test1,ti,normher)
       write(DECinfo%output,'("NORM OF TILE BEFORE PUT : ",f20.15)')normher
       if(nnod>1) call print_norm(tileget,int(j,kind=8),ref)
       write(DECinfo%output,'("NORM OF FORT TO PUT     : ",f20.15)')ref
-      if(nnod>1) call array_put_tile(test1,ti,tileget,j)
-      if(nnod>1) call array_print_tile_norm(test1,ti,normher)
+      if(nnod>1) call tensor_put_tile(test1,ti,tileget,j)
+      if(nnod>1) call tensor_print_tile_norm(test1,ti,normher)
       write(DECinfo%output,'("NORM OF TILE AFTER PUT  : ",f20.15)')normher
       if(nnod>1)then 
         if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
@@ -2343,9 +2766,9 @@ contains
       !call mem_dealloc(tileget)
       !j=get_tileinfo_nels(test1,testint)
       !call mem_alloc(tileget,j)
-      !call array_get_tile(test1,1,tileget,j)
+      !call tensor_get_tile(test1,1,tileget,j)
       !call print_norm(tileget,j)
-      !call array_print_tile_norm(test1,1)
+      !call tensor_print_tile_norm(test1,1)
       !call sleep(4)
 
 
@@ -2366,8 +2789,8 @@ contains
       tileget=3.0E0_realk
       if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT TO ADD:      ",f20.15)')normher
-      if(nnod>1) call array_accumulate_tile(test1,ti,tileget,j)
-      if(nnod>1) call array_print_tile_norm(test1,ti,normher)
+      if(nnod>1) call tensor_accumulate_tile(test1,ti,tileget,j)
+      if(nnod>1) call tensor_print_tile_norm(test1,ti,normher)
       write(DECinfo%output,'("NORM REMOTE ACCUMULATION: ",f20.15)')normher
       !use the tile with three in it, print its norm put and compare norms
       if(nnod>1)then 
@@ -2379,19 +2802,19 @@ contains
       print *,"TESTING MPI_ACCUMULATE: ",normher,teststatus
 
 
-      call array_free(test1)
-      call array_init(test1,[nb,na,nv,no],4,TILED_DIST,MASTER_ACCESS,[0,0,0,0])
+      call tensor_free(test1)
+      call tensor_init(test1,[nb,na,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[0,0,0,0])
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING CONVERSION TO FORT"
-      call array_convert(dummy1,test1)
+      call tensor_convert(dummy1,test1)
       teststatus="SUCCESS"
       call print_norm(dummy1,int(nb*na*nv*no,kind=8),ref)
-      write(DECinfo%output,'("NORM OF DENSE ARRAY:      ",f20.15)')ref
+      write(DECinfo%output,'("NORM OF TT_DENSE ARRAY:      ",f20.15)')ref
       call print_norm(dummy1,int(no*nv*na*nb,kind=8),normher)
       write(DECinfo%output,'("NORM OF PDM ARRAY :       ",f20.15)')normher
       dummy2=1.0E13_realk
-      call array_convert(test1,dummy2)
+      call tensor_convert(test1,dummy2)
       call print_norm(dummy2,int(no*nv*na*nb,kind=8),normher)
       write(DECinfo%output,'("NORM OF CONTRACTED ARRAY: ",f20.15)')normher
       if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
@@ -2411,13 +2834,13 @@ contains
       call mem_dealloc(dummy1)
       call mem_dealloc(dummy2)
       call mem_dealloc(tileget)
-      !call array_print_mem_info(DECinfo%output,.true.,.false.)
-      call array_free(test1)
-      call array_free(test2)
+      !call tensor_print_mem_info(DECinfo%output,.true.,.false.)
+      call tensor_free(test1)
+      call tensor_free(test2)
 
       teststatus="SUCCESS"
-      call array_print_mem_info(DECinfo%output,.true.,.false.,succ)
-      !call array_print_mem_info(DECinfo%output,.true.,.false.)
+      call tensor_print_mem_info(DECinfo%output,.true.,.false.,succ)
+      !call tensor_print_mem_info(DECinfo%output,.true.,.false.)
       if(succ/=0)teststatus=" FAILED"
        write (DECinfo%output,'("FIRST HALF ALLOCATION: ",A7)')teststatus  
     endif
@@ -2440,15 +2863,15 @@ contains
     !initialize a matrix
     teststatus="SUCCESS"
     if(master) write (DECinfo%output,*)"ALLOC-DEALLOC TESTS"
-    call array_init(test1,[nb,nb+2,nb+3,nb+4],4,TILED_DIST,ALL_ACCESS,[nb,nb+2,40,2])
-    call array_init(test2,[no+3,no+2,no+1,no],4,TILED_DIST,ALL_ACCESS,[no,40,40,10])
-    call array_free(test1)
-    call array_free(test2)
-    call array_init(test2,[nb,na,nv,no],4,TILED_DIST,ALL_ACCESS,[nb,nv-1,1,2])
-    call array_free(test2)
-    call array_print_mem_info(DECinfo%output,.true.,.true.,succ)
+    call tensor_init(test1,[nb,nb+2,nb+3,nb+4],4,TT_TILED_DIST,AT_ALL_ACCESS,[nb,nb+2,40,2])
+    call tensor_init(test2,[no+3,no+2,no+1,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[no,40,40,10])
+    call tensor_free(test1)
+    call tensor_free(test2)
+    call tensor_init(test2,[nb,na,nv,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[nb,nv-1,1,2])
+    call tensor_free(test2)
+    call tensor_print_mem_info(DECinfo%output,.true.,.true.,succ)
     if(succ/=0)teststatus=" FAILED"
-    call array_init(test2,[nb,no,nv,no+1],4,TILED_DIST,ALL_ACCESS,[nb,2,3,4])
+    call tensor_init(test2,[nb,no,nv,no+1],4,TT_TILED_DIST,AT_ALL_ACCESS,[nb,2,3,4])
     if(master) write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)')teststatus  
     if(master) write (DECinfo%output,*)"DONE -- NOW COMMUNICATION"
     if(master) write(DECinfo%output,*)""
@@ -2477,7 +2900,7 @@ contains
         call get_tile_dim(j,test2,ti)
         call mem_alloc(tileget,j)
         tileget = 1.0E1_realk
-        call array_put_tile(test2,ti,tileget,j)
+        call tensor_put_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         call mem_dealloc(tileget)
@@ -2502,7 +2925,7 @@ contains
       if(.not.master)then
         call get_tile_dim(j,test2,ti)
         call mem_alloc(tileget,j)
-        call array_get_tile(test2,ti,tileget,j)
+        call tensor_get_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         do i=1,j
@@ -2512,7 +2935,7 @@ contains
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         tileget = 2.4E0_realk
         call get_midx(ti,midx,test2%ntpm,test2%mode)
-        call array_accumulate_tile(test2,midx,tileget,j)
+        call tensor_accumulate_tile(test2,midx,tileget,j)
         call mem_dealloc(tileget)
       else
         teststatus="SUCCESS"
@@ -2530,8 +2953,8 @@ contains
     !CRITICAL POINTS INSERT BARRIER STATEMENTS TO SYNCHONIZE THE NODES 
     call lsmpi_barrier(infpar%lg_comm)
 
-    if(nnod>2)call array_print_tile_norm(test2,ti,normher)
-    call array_free(test2)
+    if(nnod>2)call tensor_print_tile_norm(test2,ti,normher)
+    call tensor_free(test2)
     if(master)then
        teststatus="SUCCESS"
        write(DECinfo%output,'("NORM PARALLEL WORK: ",f20.15)')normher
@@ -2551,9 +2974,9 @@ contains
     !reordering back into the full array, check norms and order
     teststatus="SUCCESS"
     call lsmpi_barrier(infpar%lg_comm)
-    call array_init(test2,[no-4,nv+3,nv/7,no],4,TILED_DIST,ALL_ACCESS,[no-4,nv+3,5,2])
-    call array_init(test1,[nv/7,nv+3,no,no-4],4,TILED_DIST,ALL_ACCESS)
-    call memory_allocate_array_dense(test1)
+    call tensor_init(test2,[no-4,nv+3,nv/7,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[no-4,nv+3,5,2])
+    call tensor_init(test1,[nv/7,nv+3,no,no-4],4,TT_TILED_DIST,AT_ALL_ACCESS)
+    call memory_allocate_tensor_dense(test1)
     call random_number(test1%elm1)
     call lsmpi_allreduce(test1%elm1,test1%nelms,infpar%lg_comm)
     if(infpar%lg_mynum==0)then
@@ -2570,24 +2993,24 @@ contains
       call print_norm(test1%elm1,test1%nelms,msg)
     endif
     call print_norm(test1%elm1,test1%nelms,ref)
-    call array_convert(test1%elm1,test2,[4,2,1,3])
+    call tensor_convert(test1%elm1,test2,[4,2,1,3])
     call lsmpi_barrier(infpar%lg_comm)
     call print_norm(test2,normher)
     print *,"convert",ref,normher
-    call array_mv_dense2tiled(test1,.false.)
-    call memory_allocate_array_dense(test2)
+    call tensor_mv_dense2tiled(test1,.false.)
+    call memory_allocate_tensor_dense(test2)
     call lsmpi_barrier(infpar%lg_comm)
     test2%elm1=0.0E0_realk
     do i=1,test2%ntiles
       call get_tile_dim(j,test2,i)
       call mem_alloc(tileget,j)
-      call array_get_tile(test2,i,tileget,j)
+      call tensor_get_tile(test2,i,tileget,j)
       call tile_in_fort(1.0E0_realk,tileget,i,test2%tdim,0.0E0_realk,&
                         &test2%elm1,test1%dims,4,[3,2,4,1])
       call mem_dealloc(tileget)
     enddo
     call lsmpi_barrier(infpar%lg_comm)
-    call array_cp_tiled2dense(test1,.true.)
+    call tensor_cp_tiled2dense(test1,.true.)
     call lsmpi_barrier(infpar%lg_comm)
     if(infpar%lg_mynum==0)then
       write (msg,*)"local test1 2 norm master"
@@ -2608,12 +3031,12 @@ contains
         teststatus=" FAILED"
       endif
     enddo
-    call arr_deallocate_dense(test1)
-    call arr_deallocate_dense(test2)
-    test1%itype=TILED_DIST
-    test2%itype=TILED_DIST
-    call array_free(test1)
-    call array_free(test2)
+    call tensor_deallocate_dense(test1)
+    call tensor_deallocate_dense(test2)
+    test1%itype=TT_TILED_DIST
+    test2%itype=TT_TILED_DIST
+    call tensor_free(test1)
+    call tensor_free(test2)
     if(master)then
        write(DECinfo%output,'("PDM REORDERINGS: ",f20.15)')normher
        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
@@ -2623,10 +3046,10 @@ contains
 
     !Test parallel tensor contractions
     teststatus="SUCCESS"
-    call array_ainit(test1,[no,nv,no,nv],4,tdims=[no/2,nv/2,no/2,nv/2],atype="TDPD")
-    call array_ainit(test2,[nv,no,nv],   3,tdims=[nv/2,no/2,nv/2],     atype="TDPD")
-    call array_ainit(test3,[nv,no,nv],   3,tdims=[nv/2,no/2,nv/2],     atype="TDAR")
-    call array_zero(test3)
+    call tensor_ainit(test1,[no,nv,no,nv],4,tdims=[no/2,nv/2,no/2,nv/2],atype="TDPD")
+    call tensor_ainit(test2,[nv,no,nv],   3,tdims=[nv/2,no/2,nv/2],     atype="TDPD")
+    call tensor_ainit(test3,[nv,no,nv],   3,tdims=[nv/2,no/2,nv/2],     atype="TDAR")
+    call tensor_zero(test3)
     !do the local reference calculation on the master
     call mem_alloc(buf3,nv*no*nv)
     if(master)then
@@ -2646,8 +3069,8 @@ contains
     call ls_mpibcast(test1%elm1,test1%nelms,infpar%master,infpar%lg_comm)
     call ls_mpibcast(test2%elm1,test2%nelms,infpar%master,infpar%lg_comm)
     call lsmpi_barrier(infpar%lg_comm)
-    call array_mv_dense2tiled(test1,.true.)
-    call array_mv_dense2tiled(test2,.true.)
+    call tensor_mv_dense2tiled(test1,.true.)
+    call tensor_mv_dense2tiled(test2,.true.)
     call lsmpi_barrier(infpar%lg_comm)
     call print_norm(test1)
     call print_norm(test2)
@@ -2658,13 +3081,13 @@ contains
     ord = [2,1,3]
     buf2 = 0.0E0_realk
 
-    call arr_lock_local_wins(test3,'e')
-    call array_contract(1.0E0_realk,test1,test2,[2,3],[3,2],2,0.0E0_realk,test3,ord)
-    call arr_unlock_wins(test3,.true.)
+    call tensor_lock_local_wins(test3,'e')
+    call tensor_contract(1.0E0_realk,test1,test2,[2,3],[3,2],2,0.0E0_realk,test3,ord)
+    call tensor_unlock_wins(test3,.true.)
 
     call mem_dealloc(ord)
 
-    call array_gather(1.0E0_realk,test3,0.0E0_realk,buf2,test3%nelms,oo=[2,1,3])
+    call tensor_gather(1.0E0_realk,test3,0.0E0_realk,buf2,test3%nelms,oo=[2,1,3])
     call print_norm(buf2,test3%nelms,normher)
     if(master)then
        write(DECinfo%output,'("PDM CONTRACTION: ",f20.15)') normher
@@ -2684,19 +3107,20 @@ contains
     call mem_dealloc(buf2)
     call mem_dealloc(buf3)
 
-    call array_free(test1)
-    call array_free(test2)
-    call array_free(test3)
+    call tensor_free(test1)
+    call tensor_free(test2)
+    call tensor_free(test3)
 
 #endif
 
-  end subroutine test_array_struct 
+  end subroutine test_tensor_struct 
   subroutine get_symm_tensor_segmenting_simple(a,b,a_seg,b_seg)
      implicit none
      integer, intent(in)  :: a,b
      integer, intent(out) :: a_seg, b_seg
      integer :: counter, nnodes
      integer :: modtilea, modtileb
+     real(realk) :: max_mem_p_tile_in_GB
      !get segmenting for tensors, divide dimensions until tiles are less than
      !100MB and/or until enough tiles are available such that each node gets at
      !least one and as long as a_seg>=2 and b_seg>=2
@@ -2711,28 +3135,42 @@ contains
      counter  = 1
      modtilea = 0
      modtileb = 0
-     do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3)>1.0E2_realk&
+
+     max_mem_p_tile_in_GB = DECinfo%cc_solver_tile_mem
+
+     do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
            &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
            & .and. (b_seg>=2.or.a_seg>=2)   )
-        if(b - counter >= 1) b_seg = b - counter
-        if(a - counter >= 1) a_seg = a - counter
+
+        b_seg = b / counter + mod(b,counter)
+        a_seg = a / counter + mod(a,counter)
+
         counter = counter + 1
 
         modtilea = 0
         if(mod(a,a_seg)/=0)modtilea = 1
+
         modtileb = 0
         if(mod(b,b_seg)/=0)modtileb = 1
+
      enddo
+
+     if(DECinfo%PL>2)then
+        print *,"SPLITTING OF DIMS IN A^2B^2"
+        print *,"#a",a,"seg:",a_seg
+        print *,"#b",b,"seg:",b_seg
+     endif
+
   end subroutine get_symm_tensor_segmenting_simple
 
 end module tensor_interface_module
 
 
 #ifdef VAR_MPI
-subroutine get_slaves_to_array_test()
+subroutine get_slaves_to_tensor_test()
   use precision
-  use tensor_interface_module,only:test_array_struct
+  use tensor_interface_module,only:test_tensor_struct
   implicit none
-  call test_array_struct()
-end subroutine get_slaves_to_array_test
+  call test_tensor_struct()
+end subroutine get_slaves_to_tensor_test
 #endif

@@ -140,6 +140,8 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+
+  call Test_if_64bit_integer_required(nbast,nbast)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
@@ -743,7 +745,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use papi_module, only: mypapi_init, eventset
 #endif
 #ifdef VAR_ICHOR
-  use IchorSaveGabModule
+  use IchorSaveGabMod
 #endif
   use lsmpi_type,only: NullifyMPIbuffers
   implicit none
@@ -797,7 +799,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use lsmpi_type
 #endif
 #ifdef VAR_ICHOR
-  use IchorSaveGabModule
+  use IchorSaveGabMod
 #endif
 implicit none
   logical,intent(in)         :: OnMaster

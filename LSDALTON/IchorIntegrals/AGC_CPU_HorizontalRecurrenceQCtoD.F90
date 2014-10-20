@@ -1,5 +1,5 @@
 MODULE AGC_CPU_OBS_HorizontalRecurrenceRHSModCtoD
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 

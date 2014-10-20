@@ -5,12 +5,12 @@
 !> \author T. Kjaergaard
 !> \date 2013 
 MODULE IchorEriCoulombintegralCPUMcMGeneralWTUVMod
-use IchorPrecisionModule
-private 
-public :: IchorwtuvRecurrenceJMIN0JMAX0,IchorwtuvRecurrenceJMIN0JMAX1,&
-     & IchorwtuvRecurrenceJMIN0JMAX2,IchorwtuvRecurrenceJMIN0JMAX3,&
-     & IchorwtuvRecurrenceCurrent, PrintWTUV, IchorTUVindexFuncFull,&
-     & IchorTUVindexFunc,IchorTUVindexFuncJ,IchorwtuvRecurrenceJMIN0JMAX3J
+use IchorPrecisionMod
+!private 
+!public :: IchorwtuvRecurrenceJMIN0JMAX0,IchorwtuvRecurrenceJMIN0JMAX1,&
+!     & IchorwtuvRecurrenceJMIN0JMAX2,IchorwtuvRecurrenceJMIN0JMAX3,&
+!     & IchorwtuvRecurrenceCurrent, PrintWTUV, IchorTUVindexFuncFull,&
+!     & IchorTUVindexFunc,IchorTUVindexFuncJ,IchorwtuvRecurrenceJMIN0JMAX3J
 
 CONTAINS
   subroutine IchorwtuvRecurrenceCurrent(OLD,CUR,J,JMAX,nPrimQ,nPrimP,nPasses,&

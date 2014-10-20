@@ -5,7 +5,7 @@ SUBROUTINE II_test_uncontAObatch(LUPRI,LUERR,SETTING)
   use Matrix_module
   use Matrix_Operations, only: mat_init,mat_add,mat_free,mat_trab
   use ls_Integral_Interface
-  use integralparameters
+  use LSparameters
 IMPLICIT NONE
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR

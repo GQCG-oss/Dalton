@@ -69,7 +69,7 @@ type ConfigItem
    logical              :: doDEC
    !> Turns off DEC energy contribution for get_energy calls
    logical              :: noDecEnergy
-   !> Should Memory Information be printet 
+   !> Should Memory Information be printed
    logical              :: PrintMemory
    !> Perform interaction energy calculation using Counter Poise Correction
    logical              :: InteractionEnergy
@@ -117,6 +117,8 @@ type ConfigItem
    !> Used to store info about geometrical Hessian
    type(geoHessianconfig) :: geoHessian
 #endif
+   !> Max memory available on gpu measured in GB. By default set to 2 GB
+   real(realk) :: GPUMAXMEM
    !> Should a excited state geometry optimization be performed 
    logical              :: doESGopt
    !> Skip LSDALTON calculation and calculate PLT file from existing density
@@ -133,7 +135,7 @@ type ConfigItem
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
    !> set debugging mode for the PDM type arrays
-   logical              :: type_array_debug
+   logical              :: type_tensor_debug
    !> skip SCF calculations
    logical              :: skipscfloop
 end type ConfigItem

@@ -1,0 +1,53 @@
+#!/bin/bash
+
+export MATH_ROOT=/opt/intel/mkl
+
+BRANCH='master'
+NUM_CORES=1
+MAKE_RELEASE=0
+
+while getopts b:p:n:r: opt; do
+  case $opt in
+  b)
+      BRANCH=$OPTARG
+      ;;
+  n)
+      NUM_CORES=$OPTARG
+      ;;
+  r)
+      MAKE_RELEASE=$OPTARG
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+BUILDNAME="$BRANCH-$(basename $0)"
+
+CTEST_TEMP_DIR=/tmp/cdash-scratch
+mkdir -p $CTEST_TEMP_DIR
+
+export DALTON_TMPDIR=$CTEST_TEMP_DIR/run
+
+git clone git@repo.ctcc.no:dalton $CTEST_TEMP_DIR/compile
+
+cd $CTEST_TEMP_DIR/compile
+git checkout $BRANCH &> /dev/null
+
+if [ $MAKE_RELEASE -eq 1 ]; then
+    mkdir build
+    cd build
+    cmake ..
+    make release
+    tar xvzf DALTON-Source.tar.gz
+    cd DALTON-Source
+fi
+
+./setup --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME=$BUILDNAME
+cd build
+make -j$NUM_CORES
+ctest -D Nightly -j$NUM_CORES
+
+rm -rf $CTEST_TEMP_DIR
+
+exit 0

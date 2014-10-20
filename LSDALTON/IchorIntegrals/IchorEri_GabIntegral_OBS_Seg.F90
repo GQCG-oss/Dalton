@@ -1,8 +1,8 @@
 MODULE IchorEriGabintegralOBSGeneralModSeg
 !Automatic Generated Code (AGC) by runGABdriver.f90 in tools directory
 !Contains routines for Segmented contracted Basisset 
-use IchorprecisionModule
-use IchorCommonModule
+use IchorprecisionMod
+use IchorCommonMod
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000MODGen
 use AGC_CPU_OBS_BUILDRJ000MODSeg1Prim
@@ -15,10 +15,13 @@ use AGC_CPU_OBS_VERTICALRECURRENCEMODASeg
 use AGC_CPU_OBS_VERTICALRECURRENCEMODBSeg
 use AGC_CPU_OBS_VERTICALRECURRENCEMODDSeg
 use AGC_CPU_OBS_VERTICALRECURRENCEMODCSeg
-use AGC_CPU_OBS_TRMODAtoCSeg
-use AGC_CPU_OBS_TRMODAtoDSeg
-use AGC_CPU_OBS_TRMODBtoCSeg
-use AGC_CPU_OBS_TRMODBtoDSeg
+use AGC_CPU_OBS_TRMODAtoCSeg1
+use AGC_CPU_OBS_TRMODAtoCSeg2
+use AGC_CPU_OBS_TRMODAtoCSeg3
+use AGC_CPU_OBS_TRMODAtoDSeg1
+use AGC_CPU_OBS_TRMODAtoDSeg2
+use AGC_CPU_OBS_TRMODBtoCSeg1
+use AGC_CPU_OBS_TRMODBtoDSeg1
 use AGC_CPU_OBS_TRMODCtoASeg
 use AGC_CPU_OBS_TRMODDtoASeg
 use AGC_CPU_OBS_TRMODCtoBSeg

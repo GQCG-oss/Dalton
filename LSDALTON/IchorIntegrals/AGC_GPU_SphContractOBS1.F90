@@ -1,6 +1,6 @@
 MODULE AGC_GPU_OBS_Sphcontract1Mod
 !Automatic Generated Code (AGC) by runSphContractOBS1.f90 in tools directory
-use IchorPrecisionModule  
+use IchorPrecisionMod
   
  CONTAINS
   
@@ -181,4 +181,4 @@ end subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA1
 end subroutine SphericalContractOBS1_GPU_maxAngP4_maxAngA2 
   
   
-END MODULE 
+END MODULE AGC_GPU_OBS_Sphcontract1Mod

@@ -330,6 +330,9 @@ contains
 
     ! Get job list 
     calcAF = DECinfo%RepeatAF
+    !This is a hack to specify that only pair fragment jobs should be done
+    if(DECinfo%only_pair_frag_jobs) calcAF = .false.
+
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,.false.,jobs)
 
@@ -560,6 +563,13 @@ contains
           ENDIF
        endif
 #endif 
+    case(MODEL_RIMP2)
+       ! RI-MP2, use occ energy
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTRIMP2)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCRIMP2)
+       ENDIF
     case(MODEL_RPA)
        ! RPA, use occ energy
        IF(DECinfo%onlyVirtPart)THEN
@@ -584,9 +594,9 @@ contains
 #ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
           IF(DECinfo%onlyVirtPart)THEN
-             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_VIRTMP2)
+             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_VIRTCCSD)
           ELSE
-             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_OCCMP2)
+             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_OCCCCSD)
           ENDIF
        endif
 #endif 
@@ -642,8 +652,6 @@ subroutine print_dec_info()
         & DECinfo%simple_orbital_threshold
    write(LU,'(a,i5)')    'Expansion step size                                 =           ',&
         & DECinfo%Frag_Exp_Size
-   write(LU,'(a,A5)')    'Use RI for Expansion step                           =           ',&
-        & LogicString(Log2It(DECinfo%FragmentExpansionRI))
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
    write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))

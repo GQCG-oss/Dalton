@@ -11,7 +11,7 @@ use typedef
 use memory_handling
 use molecule_type
 use molecule_typetype
-use integralparameters
+use LSparameters
 CONTAINS
 
 

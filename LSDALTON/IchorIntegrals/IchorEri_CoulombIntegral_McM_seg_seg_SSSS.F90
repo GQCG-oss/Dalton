@@ -1,6 +1,6 @@
 module ICI_seg_seg_SSSS_mod
-use IchorprecisionModule
-use IchorCommonModule
+use IchorprecisionMod
+use IchorCommonMod
 private 
 public :: ICI_seg_seg_SSSS
 CONTAINS

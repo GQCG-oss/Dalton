@@ -13,7 +13,7 @@ MODULE IntegralInterfaceDEC
        & null_decscreen_and_associate_mastergab_rhs, &
        & null_decscreen_and_associate_mastergab_lhs, &
        & init_decscreen_batch
-  use Integralparameters
+  use LSparameters
   use f12_module, only: set_ggem,stgfit
   use ao_typetype, only: aoitem, BATCHORBITALINFO
   use ao_type, only: free_aoitem, freebatchorbitalinfo, initbatchorbitalinfo, &

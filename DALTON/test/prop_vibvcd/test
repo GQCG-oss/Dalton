@@ -65,13 +65,13 @@ f.add(from_re = 'Isotopic Masses',
 f.add(from_string = 'Vibrational Frequencies and IR Intensities',
        num_lines = 28,
        abs_tolerance = 1.0e-1,
-       mask = [3])
+       mask = [2])
 
 # IR Intensities
 f.add(from_string = 'Vibrational Frequencies and IR Intensities',
        num_lines = 28,
        abs_tolerance = 1.0e-2,
-       mask = [5])
+       mask = [4])
 
 # Dipole and rotational strengths
 f.add(from_string = 'Dipole and rotational strengths',

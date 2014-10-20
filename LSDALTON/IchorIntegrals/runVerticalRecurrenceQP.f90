@@ -127,7 +127,7 @@ CONTAINS
                 !a General Vertical Recurrence is required followed by
                 !a ElectronTransfer
              ENDIF
-             WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+             WRITE(LUFILE,'(A)')' use IchorPrecisionMod'
              WRITE(LUFILE,'(A)')'  '
              WRITE(LUFILE,'(A)')' CONTAINS'
 
@@ -1401,7 +1401,7 @@ CONTAINS
           
           WRITE(LUFILE,'(5A)')'MODULE AGC_',ARCSTRING,'_OBS_BUILDRJ000MOD',SegLabel(1:iSegLabel)
           MaxAngmomQP = 8
-          WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+          WRITE(LUFILE,'(A)')' use IchorPrecisionMod'
           WRITE(LUFILE,'(A)')'  '
           WRITE(LUFILE,'(A)')' CONTAINS'
 

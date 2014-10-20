@@ -439,7 +439,7 @@ END SUBROUTINE II_get_xc_energy
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_get_xc_geoderiv_molgrad(LUPRI,LUERR,SETTING,nbast,D,grad,natoms)
-use Integralparameters
+use LSparameters
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER                   :: LUPRI

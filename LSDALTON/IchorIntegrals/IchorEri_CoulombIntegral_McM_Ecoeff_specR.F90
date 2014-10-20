@@ -5,7 +5,7 @@
 !> \author T. Kjaergaard
 !> \date 2013 
 MODULE IchorEriCoulombintegralCPUMcMspecREcoeffMod
-use IchorPrecisionModule
+use IchorPrecisionMod
 use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 
 CONTAINS

@@ -1,6 +1,6 @@
 MODULE CABS_operations
   use memory_handling!,only: mem_alloc, mem_dealloc
-  use Integralparameters
+  use lsparameters
   use TYPEDEF
   use Matrix_module
   use lowdin_module

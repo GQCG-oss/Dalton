@@ -19,7 +19,7 @@ MODULE dal_interface
                 & ao2gcao_transform_matrixf
    use basis_typetype,only:VALBasParam
    use dec_typedef_module, only: batchTOorb,DecAObatchinfo
-   use Integralparameters
+   use LSparameters
    use AO_TypeType, only: AOITEM
    use files, only: lsclose, lsopen
    use BUILDAOBATCH, only: build_batchesOfAOs, build_ao, &
@@ -2316,9 +2316,14 @@ ENDIF
         integer :: ndmat 
 !       
         logical :: Dsym
+        integer :: isym
 
         Dsym = .TRUE. !matrix either symmetric or antisymmetric
-        IF(mat_get_isym(Dens).EQ.3) Dsym = .FALSE. !NON symmetric Density matrix
+        isym = mat_get_isym(Dens)
+        WRITE(lupri,*)'di_GET_GbDsSingle: mat_get_isym',isym
+        IF(isym.EQ.3)THEN
+           Dsym = .FALSE. !NON symmetric Density matrix
+        ENDIF
         ndmat = 1
         IF(present(setting))THEN
            !This should be changed to a test like the MATSYM function
@@ -2449,12 +2454,14 @@ ENDIF
       type(Matrix), intent(inout) :: GbDs(nDmat)  !output
       type(lssetting),optional :: setting !intent(inout)
       !
-      integer :: idmat
+      integer :: idmat,isym
       logical :: Dsym
       
       Dsym = .TRUE. !all matrices either symmetric or antisymmetric
       DO idmat = 1,ndmat
-         IF(mat_get_isym(Dens(idmat)).EQ.3)THEN
+         isym = mat_get_isym(Dens(idmat))
+         WRITE(lupri,*)'di_GET_GbDsArray: mat_get_isym',isym
+         IF(isym.EQ.3)THEN
             Dsym = .FALSE. !NON symmetric Density matrix
          ENDIF
          IF(.NOT.Dsym)EXIT
