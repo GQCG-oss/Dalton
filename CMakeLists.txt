@@ -116,16 +116,11 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     )
 
 if(ENABLE_PCMSOLVER)
-    include(SetPythonHintVariables)
-    set_python_hint_variables(pyLibsFound pyLibs pyInclude pyInclude2) 
     find_package(ZLIB)
-    if(NOT pyLibsFound AND NOT ZLIB_FOUND)                              
+    if(NOT ZLIB_FOUND)                              
         set(ENABLE_PCMSOLVER OFF)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
-	if(NOT pyLibsFound)
-            message(STATUS "  - install Python development libraries")
-        endif()
         if(NOT ZLIB_FOUND)
             message(STATUS "  - install Zlib development libraries")
         endif()
@@ -140,7 +135,6 @@ if(ENABLE_PCMSOLVER)
             pcm
             getkw
             ${ZLIB_LIBRARIES}
-            ${PYTHON_LIBRARIES}
             ${EXTERNAL_LIBS})
     endif()
 endif()
