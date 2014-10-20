@@ -532,6 +532,11 @@ contains
     call ls_mpibcast(MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
 
+    ! Simple reals
+    call ls_mpibcast(MyMolecule%Edisp,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
+
     ! Allocate pointers if local master
     if(.not. gm) then
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)

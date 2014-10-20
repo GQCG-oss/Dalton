@@ -658,6 +658,13 @@ module dec_typedef_module
      !> etc., see MODEL_* definitions below
      integer,pointer :: ccmodel(:,:) => null()
 
+     !> Partitioning of energy into dispersion, charge transfer,
+     !> and internal subsystem excitations 
+     !> (see SNOOP_partition_energy).
+     real(realk) :: Edisp
+     real(realk) :: Ect
+     real(realk) :: Esub
+
   end type fullmolecule
 
 
