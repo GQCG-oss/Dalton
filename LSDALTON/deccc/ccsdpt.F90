@@ -115,6 +115,11 @@ contains
     type(tensor), intent(inout) :: ccsd_doubles
     !> incoming vovo integrals
     type(tensor), intent(inout) :: vovo
+    !> input for the actual triples computation
+    type(tensor),intent(inout) :: ccsdpt_singles
+    logical :: print_frags,abc
+    type(tensor),intent(inout),optional :: ccsdpt_doubles
+    real(realk),optional :: e4
     !> 2-el integrals
     ! ijk scheme
     type(tensor) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
@@ -136,11 +141,6 @@ contains
     integer, dimension(2) :: occdims, virtdims, virtoccdims,occAO,virtAO
     integer, dimension(3) :: dims_aaa
     integer, dimension(4) :: dims_iaai, dims_aaii
-    !> input for the actual triples computation
-    type(tensor),intent(inout) :: ccsdpt_singles
-    logical :: print_frags,abc
-    type(tensor),intent(inout),optional :: ccsdpt_doubles
-    real(realk),optional :: e4 
     logical :: master
     type(tensor) :: ccsdpt_doubles_2
 #ifdef VAR_OPENACC
@@ -230,6 +230,26 @@ contains
          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
 
+         if (DECinfo%abc_tile_size .gt. 1) then
+
+            write(DECinfo%output,*) 'Tile size for ABC-CCSD(T) partitioning was set manually, use that value instead!'
+            write(DECinfo%output,*) ''
+            tile_size = DECinfo%abc_tile_size
+
+         elseif (DECinfo%abc_tile_size .lt. 1) then
+
+            call lsquit('manually set tile size (.ABC_TILE) .lt. 1 - aborting...',DECinfo%output)
+
+         elseif (DECinfo%abc_tile_size .eq. 1) then
+
+!            ! here; determine tile_size based on available cpu/gpu memory
+!            if (tile_size .eq. 1) call new_routine()
+            tile_size = DECinfo%abc_tile_size
+
+         endif
+
+         if (tile_size .gt. nvirt) call lsquit('manually set tile size (.ABC_TILE) .gt. nvirt - aborting...',DECinfo%output)
+
       else
 
          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
@@ -238,26 +258,6 @@ contains
       endif
 
     end if
-
-    if (master) then
-
-       ! here: determine tile_size for abc == .true.
-       if(DECinfo%abc_tile_size .ne. 1) then
-
-          write(DECinfo%output,*) 'Tile size for ABC-CCSD(T) partitioning was set manually, use that value instead!'
-          write(DECinfo%output,*) ''
-          tile_size = DECinfo%abc_tile_size
-
-          ! sanity check
-          if (tile_size .gt. nvirt) call lsquit('manually set tile size (.ABC_TILE) .gt. nvirt - aborting...',DECinfo%output) 
-
-       else
-
-          tile_size = 1
-
-       end if
-
-    endif
 
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
@@ -285,8 +285,6 @@ contains
     call time_start_phase(PHASE_WORK)
 #endif
 
-    if (master) call print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size,nodtotal)
-
     ! ********************************************
     ! get vo³ and v³o integrals in proper sequence
     ! ********************************************
@@ -301,6 +299,8 @@ contains
        call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ovoo,vvvo)
 
     endif
+
+    if (master) call print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size,nodtotal)
 
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)

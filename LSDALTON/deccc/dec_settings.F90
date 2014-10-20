@@ -107,6 +107,7 @@ contains
     DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
     DECinfo%NO_MO_CCSD           = .false.
+    DECinfo%cc_solver_tile_mem   = 1.0E0_realk
 
     ! -- Output options 
     DECinfo%output               = output
@@ -412,7 +413,7 @@ contains
 
           ! CCSD(T) INFO
           ! ==============
-       case('.PT_ABC'); DECinfo%abc=.true.
+       case('.PT_ABC'); DECinfo%abc= .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
 
           ! CHOICE OF ORBITALS
@@ -532,33 +533,43 @@ contains
 
        !CCSD SPECIFIC KEYWORDS
        !**********************
+       ! - CCSOLVER SPECIFIC KEYWORDS
        case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
        case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
+       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
+       case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
+       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
+       case('.CC_TILE_SIZE_GB');read(input,*) DECinfo%cc_solver_tile_mem 
+       case('.SOSEX');   DECinfo%SOS = .true.
+       case('.NOTPREC'); DECinfo%use_preconditioner=.false.
+       case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
+       case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
+       case('.MAXITER'); read(input,*) DECinfo%MaxIter
+
+       ! - CCSD RESIDUAL SPECIFIC KEYWORDS
        case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
        case('.CCSDNODYNAMIC_LOAD');       DECinfo%dyn_load             = .false.
-       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
-       case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
-       case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
-       case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
-       case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
-       case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
-       case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.; DECinfo%noFAtrunc=.true.
-       case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
-       case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
-       case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
-       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
 
+       ! - PNO-CCSD SPECIFIC KEYWORDS
+       case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
+       case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
        case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
+       case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
+       case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
        case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
+       case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.; DECinfo%noFAtrunc=.true.
+       case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
+       case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
+       case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
 
 
        ! (T) SPECIFIC KEYWORDS
        !**********************
-       case('.(T)#buffs_ijk'); read(input,*) DECinfo%CCSDPT_nbuffs_ijk 
+       case('.(T)#BUFFS_IJK'); read(input,*) DECinfo%CCSDPT_nbuffs_ijk 
 
 
        !OTHER STUFF FIXME: SORT IT INTO BLOCKS
@@ -585,18 +596,12 @@ contains
           doF12 = .TRUE.
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
-       case('.SOSEX')
-         DECinfo%SOS = .true.
-       case('.NOTPREC'); DECinfo%use_preconditioner=.false.
-       case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
        case('.DISTANCE'); DECinfo%distance=.true.
        case('.BOUGHTONPULAY'); DECinfo%BoughtonPulay=.true.
        case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')
           read(input,*) DECinfo%simple_orbital_threshold
-       case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
-       case('.MAXITER'); read(input,*) DECinfo%MaxIter
        case('.DECPRINT'); read(input,*) DECinfo%PL
        case('.MULLIKENTHR'); read(input,*) DECinfo%mulliken_threshold
        case('.CHECKPAIRS') 

@@ -3120,6 +3120,7 @@ contains
      integer, intent(out) :: a_seg, b_seg
      integer :: counter, nnodes
      integer :: modtilea, modtileb
+     real(realk) :: max_mem_p_tile_in_GB
      !get segmenting for tensors, divide dimensions until tiles are less than
      !100MB and/or until enough tiles are available such that each node gets at
      !least one and as long as a_seg>=2 and b_seg>=2
@@ -3134,18 +3135,32 @@ contains
      counter  = 1
      modtilea = 0
      modtileb = 0
-     do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3)>1.0E2_realk&
+
+     max_mem_p_tile_in_GB = DECinfo%cc_solver_tile_mem
+
+     do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
            &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
            & .and. (b_seg>=2.or.a_seg>=2)   )
-        if(b - counter >= 1) b_seg = b - counter
-        if(a - counter >= 1) a_seg = a - counter
+
+        b_seg = b / counter + mod(b,counter)
+        a_seg = a / counter + mod(a,counter)
+
         counter = counter + 1
 
         modtilea = 0
         if(mod(a,a_seg)/=0)modtilea = 1
+
         modtileb = 0
         if(mod(b,b_seg)/=0)modtileb = 1
+
      enddo
+
+     if(DECinfo%PL>2)then
+        print *,"SPLITTING OF DIMS IN A^2B^2"
+        print *,"#a",a,"seg:",a_seg
+        print *,"#b",b,"seg:",b_seg
+     endif
+
   end subroutine get_symm_tensor_segmenting_simple
 
 end module tensor_interface_module

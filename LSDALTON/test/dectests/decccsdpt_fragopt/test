@@ -10,13 +10,13 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Final HF energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-6)
 
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.0e-3)
+      rel_tolerance = 1.0e-5)
 
 f.add(string = 'Total CCSD(T) energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-5)
 
 f.add(from_string = 'VALENCE LOCALITY',
       to_string   = 'Min. sigma_4 and orb.number',
@@ -32,11 +32,7 @@ f.add(from_string = 'Print single and pair fragment energies',
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-f.add(string = 'Memory in use for array3',
-      rel_tolerance = 1.0e-9)
-
-f.add(string = 'Memory in use for array4',
-      rel_tolerance = 1.0e-9)
+f.add(string = 'Allocated MPI memory a cross all slaves')
 
 test.run(['decccsdpt_fragopt.dal'], ['ethylene.mol'], {'out': f})
 
