@@ -6481,8 +6481,8 @@ contains
     integer :: i,j,k,a,b,c,ax,bx,ix,jx,oEOS,vEOS,oAOS,vAOS
     real(realk),parameter :: i2 = -2.0E0_realk
     real(realk),parameter :: i4 = 4.0E0_realk
-    real(realk), pointer  :: tmp(:)
-    integer(kind=8) :: maxsize
+    !real(realk), pointer  :: tmp(:)
+    !integer(kind=8) :: maxsize
 
     if(present(t2) .and. present(t2oEOS))then
        print *,"WARNING(calculate_MP2corrdens_EOS): both t2 and t2oEOS are given, I will use t2oEOS"
@@ -6496,10 +6496,10 @@ contains
     oAOS = MyFragment%noccAOS
     vAOS = MyFragment%nunoccAOS
 
-    maxsize = 0
-    if(present(t2vEOS)) maxsize = max(maxsize,(i8*vEOS**2)*oAOS**2)
-    if(present(t2oEOS)) maxsize = max(maxsize,(i8*oEOS**2)*vAOS**2)
-    call mem_alloc(tmp,maxsize)
+    !maxsize = 0
+    !if(present(t2vEOS)) maxsize = max(maxsize,(i8*vEOS**2)*oAOS**2)
+    !if(present(t2oEOS)) maxsize = max(maxsize,(i8*oEOS**2)*vAOS**2)
+    !call mem_alloc(tmp,maxsize)
 
     ! Occ-occ block of density matrix
     ! *******************************
@@ -6593,7 +6593,7 @@ contains
        end do
     endif
 
-    call mem_dealloc(tmp)
+    !call mem_dealloc(tmp)
 
   end subroutine calculate_MP2corrdens_EOS
 
