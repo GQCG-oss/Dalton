@@ -754,10 +754,13 @@ C
 C     ... note: NDMAT = # of FCAO matrices; NFMAT = # of non-zero FCAO matrices
       IF (NFMAT .GT. 0) THEN
       IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSFOCK .OR. DODFT .OR.
+     &   .NOT. (HSFOCK .OR.
      &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
-         CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
+         write(lupri,*) 'RDSUPM called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
+         CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),ISYMDM,
+     &      WRK(KFREE),LFREE)
       ELSE
+         write(lupri,*) 'SIRFCK called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
          IF (DIRFCK) THEN ! density matrice may be destroyed in SIRFCK
             CALL MEMGET('REAL',KDMAT_SAVE,N2BASX*NDMAT,WRK,KFREE,LFREE)
             CALL DCOPY(NDMAT*N2BASX,DCAO(IOFFAO),1,WRK(KDMAT_SAVE),1)

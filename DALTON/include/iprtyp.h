@@ -54,3 +54,4 @@
 #define efs_generate_basis_work   130
 #define efs_init_2efock_work      131
 #define efs_fock_update_work      132
+#define CALL_HJJTRA_DISTRIBUTED   201

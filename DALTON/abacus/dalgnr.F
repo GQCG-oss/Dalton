@@ -1369,8 +1369,8 @@ C
       WESTA  = .FALSE.
       QMNPMM = .FALSE.
 
-C     HJJTRA and NEWTRA are in /INFTRA/ for practical reasons
-      HJJTRA = .FALSE.
+C     HJJTRA_TYPE and NEWTRA are in /INFTRA/ for practical reasons
+      HJJTRA_TYPE = -1
       NEWTRA = .FALSE.
 
       OPTNEW = .FALSE.
@@ -1590,7 +1590,7 @@ C        ".WALK  "
             DIRCAL = .TRUE.
          GO TO 100
  119     CONTINUE   ! .HJJTRA
-            HJJTRA = .TRUE.
+            READ(LUCMD, *) HJJTRA_TYPE
             NEWTRA = .TRUE.
          GO TO 100
  120     CONTINUE
@@ -1755,9 +1755,10 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (IVECLN .NE. 1) WRITE (LUPRI,'(4X,A,I5)')
      &     'Vector length used in direct Fock matrix calculations '//
      &     '(assuming vector machine)',IVECLN
-      IF (HJJTRA) THEN
-         WRITE(LUPRI,'(4X,A)')
-     &     'Hans Joergens integral transformation (2014) used'
+      IF (HJJTRA_TYPE .gt. 0) THEN
+         WRITE(LUPRI,'(4X,A,I5)')
+     &     'Hans Joergens integral transformation (2014) used, type',
+     &     HJJTRA_TYPE
       ELSE IF (NEWTRA) THEN
          WRITE(LUPRI,'(4X,A)')
      &     '"New" (from 1988!) integral transformation used'

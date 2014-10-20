@@ -170,7 +170,7 @@ C
      &     /'integral transformation (from 1988 ;-) )',
      &      'because more than 255 basis functions.'
       END IF
-      IF (HJJTRA) THEN
+      IF (HJJTRA_TYPE .gt. 0) THEN
          CALL SIR_INTOPEN_HJJTRA
          ! RETURN -- no, continue below to create MOTWOINT for now
       ELSE IF (NEWTRA) THEN
@@ -1765,7 +1765,7 @@ C
          CALL GETTIM(TCPU0,TWALL0)
       END IF
 C
-      IF (HJJTRA) THEN
+      IF (HJJTRA_TYPE .gt. 0) THEN
          CALL HJJTRA_CTL(KTRLVL,CMO,WORK,KWORK)
       ELSE IF (NEWTRA) THEN
          CALL N_TRACTL(KTRLVL,CMO,WORK,KWORK)
@@ -2540,7 +2540,7 @@ C
       SAVE KBUF, KIBUF, KNEXT
       DATA KNEXT /-1/
 C
-      IF (HJJTRA) THEN
+      IF (HJJTRA_TYPE .gt. 0) THEN
          IF (LFREE .LT. N2ORBX) THEN
             write(lupri,*) 'KFREE, LFREE, IDIST',KFREE,LFREE,IDIST
             write(lupri,*) 'N2ORBX',N2ORBX
@@ -2819,7 +2819,7 @@ C
       SAVE KBUF, KIBUF, KNEXT
       DATA KNEXT /-1/
 C
-      IF (HJJTRA) THEN
+      IF (HJJTRA_TYPE .gt. 0) THEN
          CALL HJJTRA_NXTH2D(IC,ID,H2CD,NEEDTP,IDIST)
          RETURN
       ELSE IF (NEWTRA) THEN

@@ -2188,7 +2188,7 @@ C
 #include "cbiher.h"
 #include "cbihrs.h"
       SAVE SET
-      DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', 'xxxxxxx', '.THRESH',
+      DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', '.ONLY J', '.THRESH',
      &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
@@ -2210,6 +2210,7 @@ C
       RUNSUP = SUPMAT
       IPRSUP = IPRDEF
       NOSSUP = .FALSE.
+      ONLY_J = .FALSE.
       THRSUP = -1.0D0
 C
       NEWDEF = WORD .EQ. '*SUPINT'
@@ -2249,6 +2250,7 @@ C
                   NOSSUP = .TRUE.
                GO TO 100
     4          CONTINUE
+                  ONLY_J = .TRUE.
                GO TO 100
     5          CONTINUE
                   READ (LUCMD,*) THRSUP
@@ -2280,12 +2282,18 @@ C
       END IF
   300 CONTINUE
       IF (ICHANG .EQ. 0) GOTO 199
-      IF (RUNSUP. AND. NEWDEF) THEN
-         CALL HEADER('Changes of defaults for SUPINT:',1)
+      IF (NEWDEF) THEN
+         CALL HEADER('Changes of defaults for *SUPINT:',1)
          IF (IPRSUP .NE. IPRDEF) WRITE (LUPRI,'(A,I5)')
-     &         ' Print level in SUPINT:',IPRSUP
+     &         ' Print level                        :',IPRSUP
+         IF (ONLY_J) THEN
+            WRITE(LUPRI,'(A)') ' Only Coulomb (no exchange)'
+         ELSE
+            WRITE(LUPRI,'(A)') ' P-supermatrix integrals,'//
+     &         ' (if requested for DFT: with scaled exchange)'
+         END IF
          IF (THRSUP .NE. -1.0D0) WRITE (LUPRI,'(A,D12.2)')
-     &         ' Threshold for supermatrix integrals:', THRSUP
+     &         ' Threshold for supermatrix integrals:',THRSUP
          IF (NOSSUP) THEN
             WRITE (LUPRI,'(A)') ' No symmetry used in SUPINT.'
          ELSE

@@ -999,6 +999,27 @@ C
 !       (One could use an interface to the C routine usleep.)
       CALL SLEEPQQ(TEN_4)
 #endif
+#ifdef VAR_GFORTRAN
+!      CALL SLEEP(1)
+#endif
+#ifdef COPIED_FROM_NET_CHECK_IT_OUT
+! milliseconds wait
+use iso_c_binding
+implicit none
+interface
+   subroutine usleep(useconds) bind(C)
+!  integer(c_int) function usleep(useconds) bind(C)
+    use iso_c_binding
+    implicit none
+    integer(c_int32_t), value :: useconds
+!  end function
+   end subroutine
+end interface
+  print *, 'before'
+  call usleep(500000_c_int32_t) ! sleep for 1/2 s
+  print *, 'after'
+end
+#endif
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
@@ -1168,6 +1189,8 @@ C added by Bin Gao, May 12, 2012
             call efs_fock_update_slave()
 #endif
 
+         else if (IPRTYP .eq. CALL_HJJTRA_DISTRIBUTED) THEN
+            call HJJTRA_DISTRIBUTED_NODE(WORK(1),MWORK,IPRINT)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
