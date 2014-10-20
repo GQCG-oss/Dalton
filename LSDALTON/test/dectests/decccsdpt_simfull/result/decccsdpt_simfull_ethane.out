@@ -87,30 +87,29 @@
      for further information.
   
   
-   This is an MPI run using       4 processes.
  Who compiled             | janusje
- Host                     | Valhalla.local
+ Host                     | valhalla.st.client.au.dk
  System                   | Darwin-13.1.0
  CMake generator          | Unix Makefiles
  Processor                | i386
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /usr/local/mpi/mpich-gcc48-devel/bin/mpif90
+ MPI                      | OFF
+ Fortran compiler         | /usr/local/bin/gfortran
  Fortran compiler version | GNU Fortran (GCC) 4.8.0 20120930 (experimental)
- C compiler               | /usr/local/mpi/mpich-gcc48-devel/bin/mpicc
+ C compiler               | /usr/local/bin/gcc
  C compiler version       | gcc (GCC) 4.8.0 20120930 (experimental)
- C++ compiler             | /usr/local/mpi/mpich-gcc48-devel/bin/mpic++
- C++ compiler version     | unknown
+ C++ compiler             | /usr/local/bin/g++
+ C++ compiler version     | g++ (GCC) 4.8.0 20120930 (experimental)
  BLAS                     | /usr/lib/libblas.dylib
  LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 777c38e675dce3018c276dec3364aaefe26d94b6
+ Last Git revision        | 3c63287a4068e2b42acf4cec7cd11c5986e8e209
  Git branch               | PE_titan_branch
- Configuration time       | 2014-09-23 13:31:36.175472
+ Configuration time       | 2014-10-10 14:32:59.723284
 
 Start simulation
-     Date and time (Linux)  : Tue Sep 23 14:32:27 2014
-     Host name              : valhalla.st.client.au.dk                
+     Date and time (Linux)  : Fri Oct 10 14:33:39 2014
+     Host name              : Valhalla.local                          
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -194,7 +193,6 @@ Start simulation
   18            z     -1.9348149995
  
  
- Integrals calculated using            4  fragments
  BASISSETLIBRARY  : REGULAR  
    
 BASISSETLIBRARY
@@ -205,7 +203,7 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/janusje/programs/dalton/build_ls_gcc48_mpich_omp_debug/basis/6-31G
+ OPENING FILE/Users/janusje/programs/dalton/build_ls_gcc48_serial_omp_debug/basis/6-31G
                       
 THE MOLECULE
  --------------------------------------------------------------------
@@ -256,7 +254,7 @@ total         16                               60       26
  Configuration:
  ==============
     This is an OpenMP calculation using   3 threads.
-    This is an MPI calculation using   4 processors
+    This is a serial calculation (no MPI)
 
    You have requested Augmented Roothaan-Hall optimization
    => explicit averaging is turned off!
@@ -284,10 +282,10 @@ Due to the presence of the keyword (default for correlation)
 We transform the input basis to the Grand Canonical
 basis and perform integral evaluation using this basis
  
-    The Overall Screening threshold is set to              :1.0000E-08
-    The Screening threshold used for Coulomb               :1.0000E-10
-    The Screening threshold used for Exchange              :1.0000E-08
-    The Screening threshold used for One-electron operators:1.0000E-15
+    The Overall Screening threshold is set to              :  1.0000E-08
+    The Screening threshold used for Coulomb               :  1.0000E-10
+    The Screening threshold used for Exchange              :  1.0000E-08
+    The Screening threshold used for One-electron operators:  1.0000E-15
  The SCF Convergence Criteria is applied to the gradnorm in OAO basis
 
  End of configuration!
@@ -308,7 +306,7 @@ Matrix type: mtype_dense
  Level 1 atomic calculation on 6-31G Charge   6
  ================================================
  The Coulomb energy contribution    21.726141548067758     
- The Exchange energy contribution    5.1823957597629304     
+ The Exchange energy contribution    5.1823957597629313     
  The Fock energy contribution   -16.543745788304825     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
@@ -317,21 +315,21 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
- The Coulomb energy contribution    16.471660524491384     
- The Exchange energy contribution    4.5528482958788530     
- The Fock energy contribution   -11.918812228612532     
+ The Coulomb energy contribution    16.471660524491377     
+ The Exchange energy contribution    4.5528482958788512     
+ The Fock energy contribution   -11.918812228612527     
   2    -37.2417446448   -1.11555631170    0.00      0.00000    0.00    5.28E-01  ###
- The Coulomb energy contribution    17.478963764804568     
- The Exchange energy contribution    4.6566853621650983     
- The Fock energy contribution   -12.822278402639469     
+ The Coulomb energy contribution    17.478963764804561     
+ The Exchange energy contribution    4.6566853621650957     
+ The Fock energy contribution   -12.822278402639462     
   3    -37.3143365252   -0.07259188037   -1.00      0.00000    0.00    8.03E-02  ###
- The Coulomb energy contribution    17.441562324889972     
- The Exchange energy contribution    4.6473508302244149     
+ The Coulomb energy contribution    17.441562324889965     
+ The Exchange energy contribution    4.6473508302244122     
  The Fock energy contribution   -12.794211494665557     
   4    -37.3153570603   -0.00102053510   -1.00      0.00000    0.00    1.00E-02  ###
- The Coulomb energy contribution    17.424551712141124     
- The Exchange energy contribution    4.6453709799227374     
- The Fock energy contribution   -12.779180732218389     
+ The Coulomb energy contribution    17.424551712141138     
+ The Exchange energy contribution    4.6453709799227401     
+ The Fock energy contribution   -12.779180732218400     
   5    -37.3153753736   -0.00001831338   -1.00      0.00000    0.00    5.08E-04  ###
 
  Level 1 atomic calculation on 6-31G Charge   1
@@ -380,19 +378,19 @@ Matrix type: mtype_dense
 total         16                               14
 ---------------------------------------------------------------------
                       
- The Coulomb energy contribution    66.960615526288933     
- The Exchange energy contribution    11.757806323402805     
- The Fock energy contribution   -55.202809202886137     
-  Iteration 0 energy:  -78.668615327076097     
+ The Coulomb energy contribution    66.960615526288962     
+ The Exchange energy contribution    11.757806323402811     
+ The Fock energy contribution   -55.202809202886151     
+  Iteration 0 energy:  -78.668615327076068     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=       156 sparsity:     79.592 %
 Matrix AO D  has nnz=       196 sparsity:    100.000 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   9.9999999999999991E-006
 ** Get Fock matrix number   1
- The Coulomb energy contribution    67.180833404209324     
- The Exchange energy contribution    11.248754734640599     
- The Fock energy contribution   -55.932078669568732     
+ The Coulomb energy contribution    67.180833404209267     
+ The Exchange energy contribution    11.248754734640579     
+ The Fock energy contribution   -55.932078669568682     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -406,7 +404,7 @@ Matrix AO F  has nnz=       196 sparsity:    100.000 %
 Matrix OAO D has nnz=       196 sparsity:    100.000 %
 Matrix OAO F has nnz=       196 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   9.5941004995204748E-002
+ OAO gradnorm   9.5941004995207413E-002
  Number of densities in queue:           0
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -416,17 +414,17 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.551226 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0104289620 (mu =       0.00, xmax = 0.213047E-01, xnorm = 0.802796E-01, THR = 0.959410E-03)
-  Error of red space iteration  2:      0.0014484700 (mu =       0.00, xmax = 0.215157E-01, xnorm = 0.802310E-01, THR = 0.959410E-03)
-  Error of red space iteration  3:      0.0000703782 (mu =       0.00, xmax = 0.213674E-01, xnorm = 0.799449E-01, THR = 0.959410E-03)
+  Error of red space iteration  1:        0.0104289620 (mu =       0.00, xmax =   0.213047E-01, xnorm =   0.802796E-01, THR =   0.959410E-03)
+  Error of red space iteration  2:        0.0014484700 (mu =       0.00, xmax =   0.215157E-01, xnorm =   0.802310E-01, THR =   0.959410E-03)
+  Error of red space iteration  3:        0.0000703782 (mu =       0.00, xmax =   0.213674E-01, xnorm =   0.799449E-01, THR =   0.959410E-03)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    42
- >>>  CPU Time used in SCF iteration is   0.16 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.46 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    67.423773141045359     
- The Exchange energy contribution    11.263952915325026     
- The Fock energy contribution   -56.159820225720331     
+ The Coulomb energy contribution    67.423773141045473     
+ The Exchange energy contribution    11.263952915325046     
+ The Fock energy contribution   -56.159820225720416     
  0.60000 (xnorm)    0.02137    0.07994   -0.00        1.2385    0.0000         0          1    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -438,7 +436,7 @@ Matrix AO F  has nnz=       196 sparsity:    100.000 %
 Matrix OAO D has nnz=       196 sparsity:    100.000 %
 Matrix OAO F has nnz=       196 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   2.6566707606699047E-002
+ OAO gradnorm   2.6566707606692396E-002
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -448,16 +446,16 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.553104 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0013851516 (mu =       0.00, xmax = 0.817660E-02, xnorm = 0.258381E-01, THR = 0.265667E-03)
-  Error of red space iteration  2:      0.0001945308 (mu =       0.00, xmax = 0.816236E-02, xnorm = 0.256958E-01, THR = 0.265667E-03)
+  Error of red space iteration  1:        0.0013851516 (mu =       0.00, xmax =   0.817660E-02, xnorm =   0.258381E-01, THR =   0.265667E-03)
+  Error of red space iteration  2:        0.0001945308 (mu =       0.00, xmax =   0.816236E-02, xnorm =   0.256958E-01, THR =   0.265667E-03)
 Newton equations converged in  2 iterations!
 No. of matmuls in get_density:    43
- >>>  CPU Time used in SCF iteration is   0.15 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.46 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    67.408130245651975     
- The Exchange energy contribution    11.261097694289091     
- The Fock energy contribution   -56.147032551362869     
+ The Coulomb energy contribution    67.408130245651876     
+ The Exchange energy contribution    11.261097694289088     
+ The Fock energy contribution   -56.147032551362770     
  0.60000 (xnorm)    0.00816    0.02570   -0.00        1.0683    0.8913         1          2    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -469,7 +467,7 @@ Matrix AO F  has nnz=       196 sparsity:    100.000 %
 Matrix OAO D has nnz=       196 sparsity:    100.000 %
 Matrix OAO F has nnz=       196 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   2.2427797035202515E-003
+ OAO gradnorm   2.2427797035338552E-003
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -479,17 +477,17 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.553477 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0002589360 (mu =       0.00, xmax = 0.579539E-03, xnorm = 0.228095E-02, THR = 0.224278E-04)
-  Error of red space iteration  2:      0.0000972652 (mu =       0.00, xmax = 0.586311E-03, xnorm = 0.237197E-02, THR = 0.224278E-04)
-  Error of red space iteration  3:      0.0000195948 (mu =       0.00, xmax = 0.601779E-03, xnorm = 0.241941E-02, THR = 0.224278E-04)
+  Error of red space iteration  1:        0.0002589360 (mu =       0.00, xmax =   0.579539E-03, xnorm =   0.228095E-02, THR =   0.224278E-04)
+  Error of red space iteration  2:        0.0000972652 (mu =       0.00, xmax =   0.586311E-03, xnorm =   0.237197E-02, THR =   0.224278E-04)
+  Error of red space iteration  3:        0.0000195948 (mu =       0.00, xmax =   0.601779E-03, xnorm =   0.241941E-02, THR =   0.224278E-04)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    51
- >>>  CPU Time used in SCF iteration is   0.15 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.46 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    67.415649300656426     
- The Exchange energy contribution    11.261523684482317     
- The Fock energy contribution   -56.154125616174106     
+ The Coulomb energy contribution    67.415649300656440     
+ The Exchange energy contribution    11.261523684482324     
+ The Fock energy contribution   -56.154125616174113     
  0.60000 (xnorm)    0.00060    0.00242   -0.00        1.0332    0.9258         2          3    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -501,7 +499,7 @@ Matrix AO F  has nnz=       196 sparsity:    100.000 %
 Matrix OAO D has nnz=       196 sparsity:    100.000 %
 Matrix OAO F has nnz=       196 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   2.2756792541255751E-004
+ OAO gradnorm   2.2756792541556425E-004
  Number of densities in queue:           3
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -511,18 +509,18 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.553506 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0000170870 (mu =       0.00, xmax = 0.707860E-04, xnorm = 0.246206E-03, THR = 0.227568E-06)
-  Error of red space iteration  2:      0.0000038507 (mu =       0.00, xmax = 0.732297E-04, xnorm = 0.253642E-03, THR = 0.227568E-06)
-  Error of red space iteration  3:      0.0000009592 (mu =       0.00, xmax = 0.737917E-04, xnorm = 0.255850E-03, THR = 0.227568E-06)
-  Error of red space iteration  4:      0.0000001636 (mu =       0.00, xmax = 0.739436E-04, xnorm = 0.256440E-03, THR = 0.227568E-06)
+  Error of red space iteration  1:        0.0000170870 (mu =       0.00, xmax =   0.707860E-04, xnorm =   0.246206E-03, THR =   0.227568E-06)
+  Error of red space iteration  2:        0.0000038507 (mu =       0.00, xmax =   0.732297E-04, xnorm =   0.253642E-03, THR =   0.227568E-06)
+  Error of red space iteration  3:        0.0000009592 (mu =       0.00, xmax =   0.737917E-04, xnorm =   0.255850E-03, THR =   0.227568E-06)
+  Error of red space iteration  4:        0.0000001636 (mu =       0.00, xmax =   0.739436E-04, xnorm =   0.256440E-03, THR =   0.227568E-06)
 Newton equations converged in  4 iterations!
 No. of matmuls in get_density:    61
- >>>  CPU Time used in SCF iteration is   0.15 seconds
- >>> wall Time used in SCF iteration is   0.09 seconds
+ >>>  CPU Time used in SCF iteration is   0.46 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    67.415540246395878     
- The Exchange energy contribution    11.261495770749091     
- The Fock energy contribution   -56.154044475646785     
+ The Coulomb energy contribution    67.415540246395864     
+ The Exchange energy contribution    11.261495770749100     
+ The Fock energy contribution   -56.154044475646756     
  0.60000 (xnorm)    0.00007    0.00026   -0.00        1.0146    0.9790         3          4    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -534,7 +532,7 @@ Matrix AO F  has nnz=       196 sparsity:    100.000 %
 Matrix OAO D has nnz=       196 sparsity:    100.000 %
 Matrix OAO F has nnz=       196 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   1.2457004482443006E-005
+ OAO gradnorm   1.2457004479270051E-005
  Number of densities in queue:           4
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -544,28 +542,28 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.553500 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0000033963 (mu =       0.00, xmax = 0.315150E-05, xnorm = 0.109835E-04, THR = 0.124570E-07)
-  Error of red space iteration  2:      0.0000004537 (mu =       0.00, xmax = 0.329307E-05, xnorm = 0.116817E-04, THR = 0.124570E-07)
-  Error of red space iteration  3:      0.0000000760 (mu =       0.00, xmax = 0.333718E-05, xnorm = 0.117641E-04, THR = 0.124570E-07)
-  Error of red space iteration  4:      0.0000000134 (mu =       0.00, xmax = 0.335158E-05, xnorm = 0.117859E-04, THR = 0.124570E-07)
+  Error of red space iteration  1:        0.0000033963 (mu =       0.00, xmax =   0.315150E-05, xnorm =   0.109835E-04, THR =   0.124570E-07)
+  Error of red space iteration  2:        0.0000004537 (mu =       0.00, xmax =   0.329307E-05, xnorm =   0.116817E-04, THR =   0.124570E-07)
+  Error of red space iteration  3:        0.0000000760 (mu =       0.00, xmax =   0.333718E-05, xnorm =   0.117641E-04, THR =   0.124570E-07)
+  Error of red space iteration  4:        0.0000000134 (mu =       0.00, xmax =   0.335158E-05, xnorm =   0.117859E-04, THR =   0.124570E-07)
 Error went down by   97.05%
-  Error of red space iteration  5:      0.0000000037 (mu =       0.00, xmax = 0.335223E-05, xnorm = 0.117862E-04, THR = 0.124570E-07)
+  Error of red space iteration  5:        0.0000000037 (mu =       0.00, xmax =   0.335223E-05, xnorm =   0.117862E-04, THR =   0.124570E-07)
 Newton equations converged in  5 iterations!
 No. of matmuls in get_density:    70
- >>>  CPU Time used in SCF iteration is   0.14 seconds
- >>> wall Time used in SCF iteration is   0.09 seconds
+ >>>  CPU Time used in SCF iteration is   0.47 seconds
+ >>> wall Time used in SCF iteration is   0.18 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    67.415551625849744     
- The Exchange energy contribution    11.261496196394123     
- The Fock energy contribution   -56.154055429455617     
- 0.60000 (xnorm)    0.00000    0.00001   -0.00        1.0994    0.8238         4          5    %%%
+ The Coulomb energy contribution    67.415551625849773     
+ The Exchange energy contribution    11.261496196394130     
+ The Fock energy contribution   -56.154055429455639     
+ 0.60000 (xnorm)    0.00000    0.00001   -0.00        1.0990    0.8238         4          5    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   6    -77.5734477415   -0.00000000015    0.00      0.00000   -0.00    1.60E-06  ###
 SCF converged in      6 iterations
- >>>  CPU Time used in **ITER is   0.90 seconds
- >>> wall Time used in **ITER is   0.56 seconds
+ >>>  CPU Time used in **ITER is   2.76 seconds
+ >>> wall Time used in **ITER is   1.03 seconds
 
 Total no. of matmuls in SCF optimization:        388
 
@@ -603,20 +601,20 @@ Calculation of virtual orbital energies converged in     6 iterations!
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1           -77.56339137410320461186      0.959410049952047D-01
-    2           -77.57272470980409195818      0.265667076066990D-01
-    3           -77.57344215908776163815      0.224277970352025D-02
-    4           -77.57344768349166486132      0.227567925412558D-03
-    5           -77.57344774136643650309      0.124570044824430D-04
-    6           -77.57344774151378885563      0.160134209521194D-05
+    1           -77.56339137410311934673      0.959410049952074D-01
+    2           -77.57272470980406353647      0.265667076066924D-01
+    3           -77.57344215908774742729      0.224277970353386D-02
+    4           -77.57344768349162222876      0.227567925415564D-03
+    5           -77.57344774136646492479      0.124570044792701D-04
+    6           -77.57344774151376043392      0.160134209097702D-05
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
 
 
-      Final HF energy:                   -77.573447741514
-      Nuclear repulsion:                  33.439690236510
-      Electronic energy:                -111.013137978023
+      Final HF energy:                       -77.573447741514
+      Nuclear repulsion:                      33.439690236510
+      Electronic energy:                    -111.013137978023
 
  Level 2 minimization done! Starting Level 3 minimization...
  Level 3 is the final level of the TRILEVEL algorithm 
@@ -634,9 +632,10 @@ Calculation of virtual orbital energies converged in     6 iterations!
   %LOC%  1 sigma_2 =  0.31 mu =  0.0E+00 grd =  8.7E-08 it =  1 trust-region =  0.50 step = 0.00
 Linesearch  :   0 Original function value:             0.2
 Linesearch  :   1 Diff. in function value:            -0.0
-Linesearch  :   2 Diff. in function value:             0.0
+Linesearch  :   2 Diff. in function value:            -0.0
+Linesearch  :   3 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  0.31 mu =  0.0E+00 grd =  1.2E-18 it =  2 trust-region =  0.50 step = 0.00
+  %LOC%  2 sigma_2 =  0.31 mu =  0.0E+00 grd =  1.7E-07 it =  2 trust-region =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -729,16 +728,16 @@ Linesearch done, we choose previous point
   %LOC%   Min. sigma_2 and orb.number:    2.09   11
   %LOC%   Min. sigma_4 and orb.number:    2.58   11
 
- >>>  CPU Time used in Orbital Localization is   0.52 seconds
- >>> wall Time used in Orbital Localization is   0.30 seconds
+ >>>  CPU Time used in Orbital Localization is   0.90 seconds
+ >>> wall Time used in Orbital Localization is   0.32 seconds
 
  Number of electrons  in molecule =           16
  Number of occ. orb.  in molecule =            8
  Number of virt. orb. in molecule =           18
 
 
- OCCUPIED: (Orbital index, MOS) =            6   1.9061576929703545     
- VIRTUAL : (Orbital index, MOS) =           19   2.4977881393084900     
+ OCCUPIED: (Orbital index, MOS) =            6   1.9061576929703532     
+ VIRTUAL : (Orbital index, MOS) =           15   2.4977881393084895     
 
 
 
@@ -750,7 +749,7 @@ Matrix AO D  has nnz=       196 sparsity:     28.994 %
   SCF Convergence criteria for gradient norm:   9.9999999999999995E-007
 ** Get Fock matrix number   1
  The Coulomb energy contribution    67.415551625852231     
- The Exchange energy contribution    11.261496196512745     
+ The Exchange energy contribution    11.261496196512752     
  The Fock energy contribution   -56.154055429339479     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
@@ -765,7 +764,7 @@ Matrix AO F  has nnz=       676 sparsity:    100.000 %
 Matrix OAO D has nnz=       676 sparsity:    100.000 %
 Matrix OAO F has nnz=       676 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  0.78323327813233778     
+ OAO gradnorm  0.78323327813235266     
  Number of densities in queue:           0
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -775,17 +774,17 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.545896 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.1388143911 (mu =       0.00, xmax = 0.123732E+00, xnorm = 0.543853E+00, THR = 0.783233E-02)
-  Error of red space iteration  2:      0.0208592448 (mu =       0.00, xmax = 0.130691E+00, xnorm = 0.545690E+00, THR = 0.783233E-02)
-  Error of red space iteration  3:      0.0033568884 (mu =       0.00, xmax = 0.128414E+00, xnorm = 0.537342E+00, THR = 0.783233E-02)
+  Error of red space iteration  1:        0.1388143911 (mu =       0.00, xmax =   0.123732E+00, xnorm =   0.543853E+00, THR =   0.783233E-02)
+  Error of red space iteration  2:        0.0208592448 (mu =       0.00, xmax =   0.130691E+00, xnorm =   0.545690E+00, THR =   0.783233E-02)
+  Error of red space iteration  3:        0.0033568884 (mu =       0.00, xmax =   0.128414E+00, xnorm =   0.537342E+00, THR =   0.783233E-02)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    45
- >>>  CPU Time used in SCF iteration is   0.17 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.52 seconds
+ >>> wall Time used in SCF iteration is   0.19 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    71.472458253097358     
- The Exchange energy contribution    11.774442151572018     
- The Fock energy contribution   -59.698016101525347     
+ The Coulomb energy contribution    71.472458253097471     
+ The Exchange energy contribution    11.774442151572032     
+ The Fock energy contribution   -59.698016101525461     
  0.60000 (xnorm)    0.12841    0.53734   -0.00        0.9865    0.0000         0          1    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -797,7 +796,7 @@ Matrix AO F  has nnz=       676 sparsity:    100.000 %
 Matrix OAO D has nnz=       676 sparsity:    100.000 %
 Matrix OAO F has nnz=       676 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  0.21336296510221939     
+ OAO gradnorm  0.21336296510223185     
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -807,17 +806,17 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.539277 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0311146786 (mu =       0.00, xmax = 0.353620E-01, xnorm = 0.149604E+00, THR = 0.213363E-02)
-  Error of red space iteration  2:      0.0078269241 (mu =       0.00, xmax = 0.373933E-01, xnorm = 0.151802E+00, THR = 0.213363E-02)
-  Error of red space iteration  3:      0.0012347060 (mu =       0.00, xmax = 0.372314E-01, xnorm = 0.151139E+00, THR = 0.213363E-02)
+  Error of red space iteration  1:        0.0311146786 (mu =       0.00, xmax =   0.353620E-01, xnorm =   0.149604E+00, THR =   0.213363E-02)
+  Error of red space iteration  2:        0.0078269241 (mu =       0.00, xmax =   0.373933E-01, xnorm =   0.151802E+00, THR =   0.213363E-02)
+  Error of red space iteration  3:        0.0012347060 (mu =       0.00, xmax =   0.372314E-01, xnorm =   0.151139E+00, THR =   0.213363E-02)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    55
- >>>  CPU Time used in SCF iteration is   0.16 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.52 seconds
+ >>> wall Time used in SCF iteration is   0.19 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    70.036135099108506     
- The Exchange energy contribution    11.678249361928220     
- The Fock energy contribution   -58.357885737180290     
+ The Coulomb energy contribution    70.036135099108648     
+ The Exchange energy contribution    11.678249361928245     
+ The Fock energy contribution   -58.357885737180403     
  0.60000 (xnorm)    0.03723    0.15114   -0.00        0.8323    0.1723         1          2    %%%
  Trust radius based on max norm!
  % Expand trust-radius by a factor   1.2000000000000000      h(old), h(new):  0.59999999999999998       0.71999999999999997     
@@ -829,7 +828,7 @@ Matrix AO F  has nnz=       676 sparsity:    100.000 %
 Matrix OAO D has nnz=       676 sparsity:    100.000 %
 Matrix OAO F has nnz=       676 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   6.1802771747263223E-002
+ OAO gradnorm   6.1802771747244106E-002
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -839,16 +838,16 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.554460 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0125416024 (mu =       0.00, xmax = 0.684517E-02, xnorm = 0.375388E-01, THR = 0.618028E-03)
-  Error of red space iteration  2:      0.0015166418 (mu =       0.00, xmax = 0.729523E-02, xnorm = 0.395320E-01, THR = 0.618028E-03)
-  Error of red space iteration  3:      0.0003087867 (mu =       0.00, xmax = 0.722184E-02, xnorm = 0.391136E-01, THR = 0.618028E-03)
+  Error of red space iteration  1:        0.0125416024 (mu =       0.00, xmax =   0.684517E-02, xnorm =   0.375388E-01, THR =   0.618028E-03)
+  Error of red space iteration  2:        0.0015166418 (mu =       0.00, xmax =   0.729523E-02, xnorm =   0.395320E-01, THR =   0.618028E-03)
+  Error of red space iteration  3:        0.0003087867 (mu =       0.00, xmax =   0.722184E-02, xnorm =   0.391136E-01, THR =   0.618028E-03)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    53
- >>>  CPU Time used in SCF iteration is   0.17 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.51 seconds
+ >>> wall Time used in SCF iteration is   0.19 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    70.390842153622728     
- The Exchange energy contribution    11.715987406633836     
+ The Coulomb energy contribution    70.390842153622742     
+ The Exchange energy contribution    11.715987406633840     
  The Fock energy contribution   -58.674854746988885     
  0.60000 (xnorm)    0.00722    0.03911   -0.00        1.0323    0.9056         2          3    %%%
  Trust radius based on max norm!
@@ -861,7 +860,7 @@ Matrix AO F  has nnz=       676 sparsity:    100.000 %
 Matrix OAO D has nnz=       676 sparsity:    100.000 %
 Matrix OAO F has nnz=       676 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   4.7986947825153607E-003
+ OAO gradnorm   4.7986947825035767E-003
  Number of densities in queue:           3
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -871,18 +870,18 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.551972 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0010196083 (mu =       0.00, xmax = 0.835795E-03, xnorm = 0.485384E-02, THR = 0.479869E-04)
-  Error of red space iteration  2:      0.0001651053 (mu =       0.00, xmax = 0.873919E-03, xnorm = 0.503769E-02, THR = 0.479869E-04)
-  Error of red space iteration  3:      0.0000719209 (mu =       0.00, xmax = 0.882781E-03, xnorm = 0.511393E-02, THR = 0.479869E-04)
-  Error of red space iteration  4:      0.0000304900 (mu =       0.00, xmax = 0.889815E-03, xnorm = 0.516112E-02, THR = 0.479869E-04)
+  Error of red space iteration  1:        0.0010196083 (mu =       0.00, xmax =   0.835795E-03, xnorm =   0.485384E-02, THR =   0.479869E-04)
+  Error of red space iteration  2:        0.0001651053 (mu =       0.00, xmax =   0.873919E-03, xnorm =   0.503769E-02, THR =   0.479869E-04)
+  Error of red space iteration  3:        0.0000719209 (mu =       0.00, xmax =   0.882781E-03, xnorm =   0.511393E-02, THR =   0.479869E-04)
+  Error of red space iteration  4:        0.0000304900 (mu =       0.00, xmax =   0.889815E-03, xnorm =   0.516112E-02, THR =   0.479869E-04)
 Newton equations converged in  4 iterations!
 No. of matmuls in get_density:    62
- >>>  CPU Time used in SCF iteration is   0.17 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.54 seconds
+ >>> wall Time used in SCF iteration is   0.20 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    70.388901446137496     
- The Exchange energy contribution    11.716022176824069     
- The Fock energy contribution   -58.672879269313420     
+ The Coulomb energy contribution    70.388901446137524     
+ The Exchange energy contribution    11.716022176824076     
+ The Fock energy contribution   -58.672879269313455     
  0.60000 (xnorm)    0.00089    0.00516   -0.00        1.0587    0.9340         3          4    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -894,7 +893,7 @@ Matrix AO F  has nnz=       676 sparsity:    100.000 %
 Matrix OAO D has nnz=       676 sparsity:    100.000 %
 Matrix OAO F has nnz=       676 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   6.8768692786579544E-004
+ OAO gradnorm   6.8768692786831264E-004
  Number of densities in queue:           4
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -904,21 +903,21 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.551864 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0001021548 (mu =       0.00, xmax = 0.115907E-03, xnorm = 0.613664E-03, THR = 0.687687E-06)
-  Error of red space iteration  2:      0.0000309308 (mu =       0.00, xmax = 0.119057E-03, xnorm = 0.650990E-03, THR = 0.687687E-06)
-  Error of red space iteration  3:      0.0000168604 (mu =       0.00, xmax = 0.121085E-03, xnorm = 0.664250E-03, THR = 0.687687E-06)
-  Error of red space iteration  4:      0.0000050092 (mu =       0.00, xmax = 0.121933E-03, xnorm = 0.673340E-03, THR = 0.687687E-06)
+  Error of red space iteration  1:        0.0001021548 (mu =       0.00, xmax =   0.115907E-03, xnorm =   0.613664E-03, THR =   0.687687E-06)
+  Error of red space iteration  2:        0.0000309308 (mu =       0.00, xmax =   0.119057E-03, xnorm =   0.650990E-03, THR =   0.687687E-06)
+  Error of red space iteration  3:        0.0000168604 (mu =       0.00, xmax =   0.121085E-03, xnorm =   0.664250E-03, THR =   0.687687E-06)
+  Error of red space iteration  4:        0.0000050092 (mu =       0.00, xmax =   0.121933E-03, xnorm =   0.673340E-03, THR =   0.687687E-06)
 Error went down by   83.81%
-  Error of red space iteration  5:      0.0000008406 (mu =       0.00, xmax = 0.122342E-03, xnorm = 0.676302E-03, THR = 0.687687E-06)
-  Error of red space iteration  6:      0.0000001514 (mu =       0.00, xmax = 0.122437E-03, xnorm = 0.676681E-03, THR = 0.687687E-06)
+  Error of red space iteration  5:        0.0000008406 (mu =       0.00, xmax =   0.122342E-03, xnorm =   0.676302E-03, THR =   0.687687E-06)
+  Error of red space iteration  6:        0.0000001514 (mu =       0.00, xmax =   0.122437E-03, xnorm =   0.676681E-03, THR =   0.687687E-06)
 Newton equations converged in  6 iterations!
 No. of matmuls in get_density:    81
- >>>  CPU Time used in SCF iteration is   0.17 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.55 seconds
+ >>> wall Time used in SCF iteration is   0.21 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    70.384986617379838     
- The Exchange energy contribution    11.715684746838733     
- The Fock energy contribution   -58.669301870541098     
+ The Coulomb energy contribution    70.384986617379965     
+ The Exchange energy contribution    11.715684746838761     
+ The Fock energy contribution   -58.669301870541197     
  0.60000 (xnorm)    0.00012    0.00068   -0.00        1.0222    0.9274         4          5    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -930,7 +929,7 @@ Matrix AO F  has nnz=       676 sparsity:    100.000 %
 Matrix OAO D has nnz=       676 sparsity:    100.000 %
 Matrix OAO F has nnz=       676 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   9.5538370321776532E-005
+ OAO gradnorm   9.5538370316476234E-005
  Number of densities in queue:           5
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -940,21 +939,21 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.551903 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0000252247 (mu =       0.00, xmax = 0.191337E-04, xnorm = 0.836623E-04, THR = 0.955384E-07)
-  Error of red space iteration  2:      0.0000046204 (mu =       0.00, xmax = 0.198011E-04, xnorm = 0.870979E-04, THR = 0.955384E-07)
-  Error of red space iteration  3:      0.0000020603 (mu =       0.00, xmax = 0.199387E-04, xnorm = 0.880386E-04, THR = 0.955384E-07)
-  Error of red space iteration  4:      0.0000008834 (mu =       0.00, xmax = 0.200937E-04, xnorm = 0.889442E-04, THR = 0.955384E-07)
+  Error of red space iteration  1:        0.0000252247 (mu =       0.00, xmax =   0.191337E-04, xnorm =   0.836623E-04, THR =   0.955384E-07)
+  Error of red space iteration  2:        0.0000046204 (mu =       0.00, xmax =   0.198011E-04, xnorm =   0.870979E-04, THR =   0.955384E-07)
+  Error of red space iteration  3:        0.0000020603 (mu =       0.00, xmax =   0.199387E-04, xnorm =   0.880386E-04, THR =   0.955384E-07)
+  Error of red space iteration  4:        0.0000008834 (mu =       0.00, xmax =   0.200937E-04, xnorm =   0.889442E-04, THR =   0.955384E-07)
 Error went down by   80.88%
-  Error of red space iteration  5:      0.0000001525 (mu =       0.00, xmax = 0.201985E-04, xnorm = 0.895298E-04, THR = 0.955384E-07)
-  Error of red space iteration  6:      0.0000000342 (mu =       0.00, xmax = 0.202133E-04, xnorm = 0.896067E-04, THR = 0.955384E-07)
+  Error of red space iteration  5:        0.0000001525 (mu =       0.00, xmax =   0.201985E-04, xnorm =   0.895298E-04, THR =   0.955384E-07)
+  Error of red space iteration  6:        0.0000000342 (mu =       0.00, xmax =   0.202133E-04, xnorm =   0.896067E-04, THR =   0.955384E-07)
 Newton equations converged in  6 iterations!
 No. of matmuls in get_density:    80
- >>>  CPU Time used in SCF iteration is   0.16 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.55 seconds
+ >>> wall Time used in SCF iteration is   0.20 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    70.385369781711788     
- The Exchange energy contribution    11.715723553059073     
- The Fock energy contribution   -58.669646228652731     
+ The Coulomb energy contribution    70.385369781711830     
+ The Exchange energy contribution    11.715723553059085     
+ The Fock energy contribution   -58.669646228652766     
  0.60000 (xnorm)    0.00002    0.00009   -0.00        1.0385    0.9406         5          6    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -966,7 +965,7 @@ Matrix AO F  has nnz=       676 sparsity:    100.000 %
 Matrix OAO D has nnz=       676 sparsity:    100.000 %
 Matrix OAO F has nnz=       676 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   9.2601279100927479E-006
+ OAO gradnorm   9.2601279114627779E-006
  Number of densities in queue:           6
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -976,31 +975,31 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
     HOMO-LUMO Gap (by diag.):     0.551904 au
 
  First mu:   0.0000000000000000     
-  Error of red space iteration  1:      0.0000015522 (mu =       0.00, xmax = 0.150781E-05, xnorm = 0.899101E-05, THR = 0.926013E-08)
-  Error of red space iteration  2:      0.0000005213 (mu =       0.00, xmax = 0.162971E-05, xnorm = 0.948107E-05, THR = 0.926013E-08)
-  Error of red space iteration  3:      0.0000002310 (mu =       0.00, xmax = 0.167782E-05, xnorm = 0.982524E-05, THR = 0.926013E-08)
-  Error of red space iteration  4:      0.0000000847 (mu =       0.00, xmax = 0.171292E-05, xnorm = 0.100369E-04, THR = 0.926013E-08)
+  Error of red space iteration  1:        0.0000015522 (mu =       0.00, xmax =   0.150781E-05, xnorm =   0.899101E-05, THR =   0.926013E-08)
+  Error of red space iteration  2:        0.0000005213 (mu =       0.00, xmax =   0.162971E-05, xnorm =   0.948107E-05, THR =   0.926013E-08)
+  Error of red space iteration  3:        0.0000002310 (mu =       0.00, xmax =   0.167782E-05, xnorm =   0.982524E-05, THR =   0.926013E-08)
+  Error of red space iteration  4:        0.0000000847 (mu =       0.00, xmax =   0.171292E-05, xnorm =   0.100369E-04, THR =   0.926013E-08)
 Error went down by   83.76%
-  Error of red space iteration  5:      0.0000000182 (mu =       0.00, xmax = 0.172015E-05, xnorm = 0.100785E-04, THR = 0.926013E-08)
-  Error of red space iteration  6:      0.0000000035 (mu =       0.00, xmax = 0.172193E-05, xnorm = 0.100831E-04, THR = 0.926013E-08)
+  Error of red space iteration  5:        0.0000000182 (mu =       0.00, xmax =   0.172015E-05, xnorm =   0.100785E-04, THR =   0.926013E-08)
+  Error of red space iteration  6:        0.0000000035 (mu =       0.00, xmax =   0.172193E-05, xnorm =   0.100831E-04, THR =   0.926013E-08)
 Newton equations converged in  6 iterations!
 No. of matmuls in get_density:    80
- >>>  CPU Time used in SCF iteration is   0.18 seconds
- >>> wall Time used in SCF iteration is   0.10 seconds
+ >>>  CPU Time used in SCF iteration is   0.53 seconds
+ >>> wall Time used in SCF iteration is   0.19 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    70.385354470256232     
- The Exchange energy contribution    11.715722421114897     
- The Fock energy contribution   -58.669632049141335     
- 0.60000 (xnorm)    0.00000    0.00001   -0.00        1.0224    0.9762         6          7    %%%
+ The Coulomb energy contribution    70.385354470256331     
+ The Exchange energy contribution    11.715722421114910     
+ The Fock energy contribution   -58.669632049141406     
+ 0.60000 (xnorm)    0.00000    0.00001   -0.00        1.0214    0.9762         6          7    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   8    -78.0037482713   -0.00000000009    0.00      0.00000   -0.00    7.48E-07  ###
 SCF converged in      8 iterations
- >>>  CPU Time used in **ITER is   1.34 seconds
- >>> wall Time used in **ITER is   0.81 seconds
+ >>>  CPU Time used in **ITER is   4.23 seconds
+ >>> wall Time used in **ITER is   1.57 seconds
 
-Total no. of matmuls in SCF optimization:       1743
+Total no. of matmuls in SCF optimization:       1753
 
  Number of occupied orbitals:           8
  Number of virtual orbitals:          18
@@ -1038,22 +1037,22 @@ Calculation of virtual orbital energies converged in    13 iterations!
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1           -77.57344774162991996036      0.783233278132338D+00
-    2           -77.97619299405478443532      0.213362965102219D+00
-    3           -78.00133238818436609563      0.618027717472632D-01
-    4           -78.00372276813541816409      0.479869478251536D-02
-    5           -78.00374782558820641043      0.687686927865795D-03
-    6           -78.00374826317060694691      0.955383703217765D-04
-    7           -78.00374827124510090925      0.926012791009275D-05
-    8           -78.00374827133357769071      0.747604469426262D-06
+    1           -77.57344774162986311694      0.783233278132353D+00
+    2           -77.97619299405475601361      0.213362965102232D+00
+    3           -78.00133238818430925221      0.618027717472441D-01
+    4           -78.00372276813541816409      0.479869478250358D-02
+    5           -78.00374782558817798872      0.687686927868313D-03
+    6           -78.00374826317060694691      0.955383703164762D-04
+    7           -78.00374827124512933096      0.926012791146278D-05
+    8           -78.00374827133352084729      0.747604471808656D-06
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
 
 
-      Final HF energy:                   -78.003748271334
-      Nuclear repulsion:                  33.439690236510
-      Electronic energy:                -111.443438507843
+      Final HF energy:                       -78.003748271334
+      Nuclear repulsion:                      33.439690236510
+      Electronic energy:                    -111.443438507843
 
  inside leastchange_lcm
   %LOC%   
@@ -1064,13 +1063,12 @@ Calculation of virtual orbital energies converged in    13 iterations!
   %LOC%  
   %LOC% *******  LOCALIZE     2 CORE ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  0.31 mu =  0.0E+00 grd =  1.1E-07 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%  1 sigma_2 =  0.31 mu =  0.0E+00 grd =  2.8E-07 it =  1 trust-region =  0.50 step = 0.00
 Linesearch  :   0 Original function value:             0.2
 Linesearch  :   1 Diff. in function value:            -0.0
-Linesearch  :   2 Diff. in function value:            -0.0
-Linesearch  :   3 Diff. in function value:             0.0
+Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  0.31 mu =  0.0E+00 grd =  2.2E-07 it =  2 trust-region =  0.50 step = 0.00
+  %LOC%  2 sigma_2 =  0.31 mu =  0.0E+00 grd =  1.5E-18 it =  2 trust-region =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -1180,8 +1178,8 @@ Linesearch done, we choose previous point
   %LOC%   Min. sigma_2 and orb.number:    1.95    9
   %LOC%   Min. sigma_4 and orb.number:    2.34    9
 
- >>>  CPU Time used in Orbital Localization is   0.53 seconds
- >>> wall Time used in Orbital Localization is   0.34 seconds
+ >>>  CPU Time used in Orbital Localization is   0.95 seconds
+ >>> wall Time used in Orbital Localization is   0.35 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -1230,7 +1228,6 @@ Expansion step size                                 =              10
 Use RI for Expansion step                           =           FALSE
 Print level                                         =               0
 Fragment-adapted orbitals                           =           FALSE
-Calculate Interaction Energies                      =           FALSE
 Fit Molecular Orbitals                              =            TRUE
  
 DEC orbitals will be generated using  simple Lowdin charge analysis
@@ -1315,46 +1312,12 @@ Use F12 correction           =           FALSE
  *** Initiating optimization of atomic fragments ***
 
 
- *** MPI GROUPSIZE SET TO            3
-Master received job       1 from        1 -- missing #jobs:        0
-
-
- *********************************************************************
-  MPI fragment statistics: FRAGMENT OPT.
- *********************************************************************
-
-
- Printed information
- -------------------
- Job    : Fragment job number
- #occ   : Number of occupied AOS orbitals in fragment
- #virt  : Number of virtual AOS orbitals in fragment
- #basis : Number of basis functions in fragment
- slotsiz: Number of slaves used for fragment incl. local master (slot size)
- #tasks : Number of integral tasks for fragment (nalpha*ngamma)
- GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)
- Time(s): Time (in seconds) used by local master (NOT local slaves)
- Load   : Load distribution measure (ideally 1.0, smaller in practice): 
-            (Sum of effective work times for ALL MPI processes in slot)
-          / (slotsiz * [Local master time] )
-
- Note: Load print is currently only implemented for MP2 calculations
-       and not for atomic fragment optimizations.
-       The Load given below is set to -1 for cases where it is not implemented
-       Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library
-
-
-     Job    #occ   #virt  #basis slotsiz  #tasks     GFLOPS     Time(s)    Load1      Load2
- -----------------------------------------------------------------------------
- Number of jobs done     =        1
- Time-to-solution (s)    =    0.300E-02
- TOTAL time(s) all nodes =    0.300E-02
- Global MPI loss (%)     =     66.7    
- Local MPI loss (%)      =     22.2    
- Total MPI loss (%)      =     88.9    
- -----------------------------------------------------------------------------
-
-
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   1
+ FOP ===============================================
+ FOP
+ FOP Fragment includes all orbitals and fragment optimization is skipped
  >>>  CPU Time used in DEC Atomic Fragment Calculation is   0.00 seconds
  >>> wall Time used in DEC Atomic Fragment Calculation is   0.00 seconds
  Preparing job list...
@@ -1365,7 +1328,7 @@ Master received job       1 from        1 -- missing #jobs:        0
               Atomic fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      1      8     18     26   0.00    /2.12     0.00    /3.10              FRAG_SIZE
+      1      8     18     26     0.00    /  2.12       0.00    /  3.10              FRAG_SIZE
 
  FRAGANALYSIS: Max/Ave/Min occ         :        8       /     8.0000    /       8
  FRAGANALYSIS: Max/Ave/Min unocc       :       18       /     18.000    /      18
@@ -1394,49 +1357,72 @@ Master received job       1 from        1 -- missing #jobs:        0
 
  *** Calculating single and pair interaction energies ***
 
- *** MPI GROUPSIZE SET TO            3
-Master received job       1 from        1 -- missing #jobs:        0
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   1.25 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is   1.56 seconds
+ The Coulomb energy contribution    70.385353271490871     
+ The Exchange energy contribution    11.715722260631390     
+ The Fock energy contribution   -58.669631010859490     
+ CCSOL: MAIN LOOP      :  5.09    s
+ 
+ 
+ =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+         Inside the CCSD(T) driver routine.        
+ *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
+ 
+
+-----------------------------
+      CCSD(T) information    
+-----------------------------
+
+Num. b.f.              =   26
+Num. occ. orb.         =    8
+Num. unocc. orb.       =   18
+Print frag.energies    =    T
+IJK partitioning       =    T
+ABC partitioning       =    F
 
 
- *********************************************************************
-  MPI fragment statistics: ALL FRAGMENTS
- *********************************************************************
+ Gamma batch size was set manually, use that value instead!
+ Alpha batch size was set manually, use that value instead!
+ =======================================================================
+                      CCSD(T) INTEGRALS: MEMORY SUMMARY                 
+                              IJK partitioning                          
+ =======================================================================
+
+ To be on the safe side we use only 85% of the estimated available memory
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      26
+ Number of occupied orbitals             =       8
+ Number of virtual  orbitals             =      18
+ Maximum alpha batch dimension           =      18
+ Maximum gamma batch dimension           =      18
+ Size of tmp array 1                     =     0.584E-03
+ Size of tmp array 2                     =     0.404E-03
+ Size of tmp array 3                     =     0.280E-03
 
 
- Printed information
- -------------------
- Job    : Fragment job number
- #occ   : Number of occupied AOS orbitals in fragment
- #virt  : Number of virtual AOS orbitals in fragment
- #basis : Number of basis functions in fragment
- slotsiz: Number of slaves used for fragment incl. local master (slot size)
- #tasks : Number of integral tasks for fragment (nalpha*ngamma)
- GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)
- Time(s): Time (in seconds) used by local master (NOT local slaves)
- Load   : Load distribution measure (ideally 1.0, smaller in practice): 
-            (Sum of effective work times for ALL MPI processes in slot)
-          / (slotsiz * [Local master time] )
-
- Note: Load print is currently only implemented for MP2 calculations
-       and not for atomic fragment optimizations.
-       The Load given below is set to -1 for cases where it is not implemented
-       Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library
+ >>>  CPU Time used in CCSD(T) INT (IJK) is   1.15 seconds
+ >>> wall Time used in CCSD(T) INT (IJK) is   0.44 seconds
+ >>>  CPU Time used in IJK_LOOP_SER is   0.44 seconds
+ >>> wall Time used in IJK_LOOP_SER is   0.42 seconds
+ >>>  CPU Time used in CCSDPT_DRIVER (TOTAL) is   1.60 seconds
+ >>> wall Time used in CCSDPT_DRIVER (TOTAL) is   0.86 seconds
 
 
-     Job    #occ   #virt  #basis slotsiz  #tasks     GFLOPS     Time(s)    Load1      Load2
-       1       8      18      26       3       0     -1.00       1.55      0.936      0.759    STAT
- -----------------------------------------------------------------------------
- Number of jobs done     =        1
- Time-to-solution (s)    =     1.55    
- TOTAL time(s) all nodes =     4.66    
- Global MPI loss (%)     =    0.644E-01
- Local MPI loss (%)      =     6.35    
- Total MPI loss (%)      =     6.41    
- -----------------------------------------------------------------------------
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.2090979073    
+ Single virtual  energy =    -0.2090979073    
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
 
 
+ Memstats before F12 fragment_energy calculation
+  Allocated memory,     TOTAL                  67.117 MB
+  Max allocated memory, TOTAL                         84.602 MB
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   3.64 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is   2.00 seconds
 
 
  =============================================================================
@@ -1462,14 +1448,14 @@ Master received job       1 from        1 -- missing #jobs:        0
  CCSD occupied pair energies
  =================================================================
 
-  Atom1  Atom2     Dist(Ang)        Energy
+  Frag1  Frag2     Dist(Ang)        Energy
 
 
  =================================================================
  CCSD virtual pair energies
  =================================================================
 
-  Atom1  Atom2     Dist(Ang)        Energy
+  Frag1  Frag2     Dist(Ang)        Energy
 
  CCSD occupied correlation energy :    -0.2090979073    
  CCSD virtual  correlation energy :    -0.2090979073    
@@ -1528,42 +1514,42 @@ Master received job       1 from        1 -- missing #jobs:        0
  (T) occupied pair energies
  =================================================================
 
-  Atom1  Atom2     Dist(Ang)        Energy
+  Frag1  Frag2     Dist(Ang)        Energy
 
 
  =================================================================
  (T) virtual pair energies
  =================================================================
 
-  Atom1  Atom2     Dist(Ang)        Energy
+  Frag1  Frag2     Dist(Ang)        Energy
 
 
  =================================================================
  (T) occupied pair energies (fourth order)
  =================================================================
 
-  Atom1  Atom2     Dist(Ang)        Energy
+  Frag1  Frag2     Dist(Ang)        Energy
 
 
  =================================================================
  (T) virtual pair energies (fourth order)
  =================================================================
 
-  Atom1  Atom2     Dist(Ang)        Energy
+  Frag1  Frag2     Dist(Ang)        Energy
 
 
  =================================================================
  (T) occupied pair energies (fifth order)
  =================================================================
 
-  Atom1  Atom2     Dist(Ang)        Energy
+  Frag1  Frag2     Dist(Ang)        Energy
 
 
  =================================================================
  (T) virtual pair energies (fifth order)
  =================================================================
 
-  Atom1  Atom2     Dist(Ang)        Energy
+  Frag1  Frag2     Dist(Ang)        Energy
 
  (T) occupied correlation energy :    -0.5206568112E-02
  (T) occupied 4th order energy   :    -0.5443663589E-02
@@ -1592,14 +1578,14 @@ Master received job       1 from        1 -- missing #jobs:        0
                E: Total CCSD(T) energy:      -78.2180527468
 
 
- >>>  CPU Time used in DEC FINAL is   0.01 seconds
+ >>>  CPU Time used in DEC FINAL is   0.09 seconds
  >>> wall Time used in DEC FINAL is   0.03 seconds
 
  CC Memory summary
  -----------------
- Allocated memory for array4   :   0.000     GB
+ Allocated memory for array4   :  0.6636E-03 GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :   0.000     GB
+ Max memory in use for array4  :  0.3318E-03 GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
@@ -1608,13 +1594,13 @@ Master received job       1 from        1 -- missing #jobs:        0
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         1.26788     s
-Total Wall time used in DEC          :         1.59200     s
+Total CPU  time used in DEC          :         3.73730     s
+Total Wall time used in DEC          :         2.03500     s
 ------------------------------------------------------
 
 
-Hostname       : valhalla.st.client.au.dk                          
-Job finished   : Date: 23/09/2014   Time: 14:32:31
+Hostname       : Valhalla.local                                    
+Job finished   : Date: 10/10/2014   Time: 14:33:45
 
 
 
@@ -1624,8 +1610,8 @@ Job finished   : Date: 23/09/2014   Time: 14:32:31
 
 
 
- >>>  CPU Time used in *SCF is   3.36 seconds
- >>> wall Time used in *SCF is   2.96 seconds
+ >>>  CPU Time used in *SCF is   9.12 seconds
+ >>> wall Time used in *SCF is   4.16 seconds
 
 Total no. of matmuls used:                      2885
 Total no. of Fock/KS matrix evaluations:          15
@@ -1676,325 +1662,53 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         68.967 MB
+  Max allocated memory, TOTAL                         84.602 MB
   Max allocated memory, type(matrix)                 306.752 kB
-  Max allocated memory, real(realk)                   23.707 MB
+  Max allocated memory, real(realk)                   23.708 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                      310.524 kB
-  Max allocated memory, logical                      204.720 kB
-  Max allocated memory, character                    146.560 kB
-  Max allocated memory, AOBATCH                       22.176 kB
+  Max allocated memory, logical                      202.132 kB
+  Max allocated memory, character                      3.776 kB
+  Max allocated memory, AOBATCH                       26.208 kB
   Max allocated memory, DECORBITAL                     3.328 kB
-  Max allocated memory, DECFRAG                       62.976 kB
-  Max allocated memory, BATCHTOORB                     0.000 Byte
+  Max allocated memory, DECFRAG                       57.840 kB
+  Max allocated memory, BATCHTOORB                     0.224 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         68.000 MB
+  Max allocated memory, ARRAY                         66.125 MB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        6.776 kB
-  Max allocated memory, LSAOTENSOR                    37.440 kB
-  Max allocated memory, SLSAOTENSOR                   29.808 kB
+  Max allocated memory, ODBATCH                        6.336 kB
+  Max allocated memory, LSAOTENSOR                    21.888 kB
+  Max allocated memory, SLSAOTENSOR                   34.224 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 229.584 kB
+  Max allocated memory, ATOMTYPEITEM                 459.168 kB
   Max allocated memory, ATOMITEM                       4.608 kB
-  Max allocated memory, LSMATRIX                       2.128 kB
+  Max allocated memory, LSMATRIX                       2.016 kB
   Max allocated memory, OverlapT                     204.480 kB
   Max allocated memory, linkshell                      1.632 kB
-  Max allocated memory, integrand                      2.150 MB
+  Max allocated memory, integrand                      2.688 MB
   Max allocated memory, integralitem                  23.520 MB
   Max allocated memory, IntWork                      484.824 kB
-  Max allocated memory, Overlap                        8.317 MB
-  Max allocated memory, ODitem                         4.928 kB
-  Max allocated memory, LStensor                     118.960 kB
-  Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                             0.000 Byte
-  Max allocated memory, Lvec_data                      0.000 Byte
-  Max allocated memory, Lattice_cell                   0.000 Byte
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
-  The total memory used across all MPI nodes
-  Max allocated memory, TOTAL                        307.883 MB
-time spent in unlock:        0.2959324470
-  Largest memory allocated on a single MPI slave node (including Master)
-  Max allocated memory, TOTAL                         79.702 MB
-  Largest memory allocated on a single MPI slave node (exclusing Master)
-  Max allocated memory, TOTAL                         79.702 MB
-  Memory statistics for MPI node number         1 
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (TOTAL):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (type(matrix)):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MPI):                     0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (complex):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (character):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (AOBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMITEM):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECORBITAL):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECFRAG):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlapType):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (BATCHTOORB):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECAOBATCHINFO):          0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MYPOINTER):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY2):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY4):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (PNOSpaceInfo):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2DENS):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (TRACEBACK):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2GRAD):                 0 byte  - Should be zero - otherwise a leakage is present
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Additional Memory information          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (linkshell):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integrand):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integralitem):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (IntWork):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlap):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODitem):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lstensor):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (FMM   ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         79.511 MB
-  Max allocated memory, type(matrix)                  38.232 kB
-  Max allocated memory, real(realk)                   23.707 MB
-  Max allocated memory, MPI                            3.422 MB
-  Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                      310.524 kB
-  Max allocated memory, logical                      205.528 kB
-  Max allocated memory, character                    148.160 kB
-  Max allocated memory, AOBATCH                       23.688 kB
-  Max allocated memory, DECORBITAL                     3.328 kB
-  Max allocated memory, DECFRAG                       62.976 kB
-  Max allocated memory, BATCHTOORB                     0.448 kB
-  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.000 Byte
-  Max allocated memory, ARRAY2                         0.000 Byte
-  Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         68.544 MB
-  Max allocated memory, PNOSpaceInfo                   0.000 Byte
-  Max allocated memory, MP2DENS                        0.000 Byte
-  Max allocated memory, TRACEBACK                      0.144 kB
-  Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        7.216 kB
-  Max allocated memory, LSAOTENSOR                    39.312 kB
-  Max allocated memory, SLSAOTENSOR                   36.432 kB
-  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                   1.378 MB
-  Max allocated memory, ATOMITEM                      10.240 kB
-  Max allocated memory, LSMATRIX                       5.152 kB
-  Max allocated memory, OverlapType                  204.480 kB
-  Max allocated memory, linkshell                      1.632 kB
-  Max allocated memory, integrand                      2.688 MB
-  Max allocated memory, integralitem                  23.520 MB
-  Max allocated memory, IntWork                        0.000 Byte
   Max allocated memory, Overlap                       12.925 MB
-  Max allocated memory, ODitem                         5.248 kB
-  Max allocated memory, LStensor                     118.960 kB
+  Max allocated memory, ODitem                         4.608 kB
+  Max allocated memory, LStensor                      61.211 kB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
-  Memory statistics for MPI node number         2 
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (TOTAL):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (type(matrix)):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MPI):                     0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (complex):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (character):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (AOBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMITEM):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECORBITAL):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECFRAG):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlapType):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (BATCHTOORB):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECAOBATCHINFO):          0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MYPOINTER):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY2):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY4):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (PNOSpaceInfo):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2DENS):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (TRACEBACK):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2GRAD):                 0 byte  - Should be zero - otherwise a leakage is present
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Additional Memory information          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (linkshell):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integrand):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integralitem):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (IntWork):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlap):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODitem):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lstensor):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (FMM   ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         79.702 MB
-  Max allocated memory, type(matrix)                   7.528 kB
-  Max allocated memory, real(realk)                   23.707 MB
-  Max allocated memory, MPI                            3.380 MB
-  Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                      310.524 kB
-  Max allocated memory, logical                      203.500 kB
-  Max allocated memory, character                     79.056 kB
-  Max allocated memory, AOBATCH                       23.688 kB
-  Max allocated memory, DECORBITAL                     3.328 kB
-  Max allocated memory, DECFRAG                       62.976 kB
-  Max allocated memory, BATCHTOORB                     0.448 kB
-  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.000 Byte
-  Max allocated memory, ARRAY2                         0.000 Byte
-  Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         68.000 MB
-  Max allocated memory, PNOSpaceInfo                   0.000 Byte
-  Max allocated memory, MP2DENS                        0.000 Byte
-  Max allocated memory, TRACEBACK                      0.144 kB
-  Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        6.424 kB
-  Max allocated memory, LSAOTENSOR                    35.568 kB
-  Max allocated memory, SLSAOTENSOR                   44.160 kB
-  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                   2.296 MB
-  Max allocated memory, ATOMITEM                      15.360 kB
-  Max allocated memory, LSMATRIX                       2.128 kB
-  Max allocated memory, OverlapType                  204.480 kB
-  Max allocated memory, linkshell                      1.632 kB
-  Max allocated memory, integrand                      2.688 MB
-  Max allocated memory, integralitem                  23.520 MB
-  Max allocated memory, IntWork                        0.000 Byte
-  Max allocated memory, Overlap                       12.925 MB
-  Max allocated memory, ODitem                         4.672 kB
-  Max allocated memory, LStensor                     118.960 kB
-  Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                             0.000 Byte
-  Max allocated memory, Lvec_data                      0.000 Byte
-  Max allocated memory, Lattice_cell                   0.000 Byte
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
-  Memory statistics for MPI node number         3 
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (TOTAL):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (type(matrix)):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MPI):                     0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (complex):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (character):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (AOBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMITEM):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECORBITAL):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECFRAG):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlapType):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (BATCHTOORB):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECAOBATCHINFO):          0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MYPOINTER):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY2):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY4):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (PNOSpaceInfo):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2DENS):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (TRACEBACK):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2GRAD):                 0 byte  - Should be zero - otherwise a leakage is present
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Additional Memory information          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (linkshell):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integrand):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integralitem):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (IntWork):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlap):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODitem):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lstensor):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (FMM   ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         79.702 MB
-  Max allocated memory, type(matrix)                   7.624 kB
-  Max allocated memory, real(realk)                   23.707 MB
-  Max allocated memory, MPI                            3.380 MB
-  Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                      310.524 kB
-  Max allocated memory, logical                      203.500 kB
-  Max allocated memory, character                     79.056 kB
-  Max allocated memory, AOBATCH                       23.688 kB
-  Max allocated memory, DECORBITAL                     3.328 kB
-  Max allocated memory, DECFRAG                       62.976 kB
-  Max allocated memory, BATCHTOORB                     0.448 kB
-  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.000 Byte
-  Max allocated memory, ARRAY2                         0.000 Byte
-  Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         68.000 MB
-  Max allocated memory, PNOSpaceInfo                   0.000 Byte
-  Max allocated memory, MP2DENS                        0.000 Byte
-  Max allocated memory, TRACEBACK                      0.144 kB
-  Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        6.952 kB
-  Max allocated memory, LSAOTENSOR                    38.376 kB
-  Max allocated memory, SLSAOTENSOR                   44.160 kB
-  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                   2.296 MB
-  Max allocated memory, ATOMITEM                      15.872 kB
-  Max allocated memory, LSMATRIX                       2.128 kB
-  Max allocated memory, OverlapType                  204.480 kB
-  Max allocated memory, linkshell                      1.632 kB
-  Max allocated memory, integrand                      2.688 MB
-  Max allocated memory, integralitem                  23.520 MB
-  Max allocated memory, IntWork                        0.000 Byte
-  Max allocated memory, Overlap                       12.925 MB
-  Max allocated memory, ODitem                         5.056 kB
-  Max allocated memory, LStensor                     118.960 kB
-  Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                             0.000 Byte
-  Max allocated memory, Lvec_data                      0.000 Byte
-  Max allocated memory, Lattice_cell                   0.000 Byte
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
- >>>  CPU Time used in LSDALTON is   5.28 seconds
- >>> wall Time used in LSDALTON is   4.26 seconds
+  Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+ >>>  CPU Time used in LSDALTON is  13.56 seconds
+ >>> wall Time used in LSDALTON is   5.96 seconds
 
 End simulation
-     Date and time (Linux)  : Tue Sep 23 14:32:31 2014
-     Host name              : valhalla.st.client.au.dk                
+     Date and time (Linux)  : Fri Oct 10 14:33:45 2014
+     Host name              : Valhalla.local                          

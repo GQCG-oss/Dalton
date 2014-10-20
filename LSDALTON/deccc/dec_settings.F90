@@ -188,7 +188,7 @@ contains
     DECinfo%array4OnFile_specified  = .false.
 
     ! ccsd(t) settings
-    DECinfo%abc = .false.
+    DECinfo%abc           = .false.
     DECinfo%abc_tile_size = 1
 
     ! First order properties
@@ -374,7 +374,7 @@ contains
 
           ! CCSD(T) INFO
           ! ==============
-       case('.PT_ABC'); DECinfo%abc=.true.
+       case('.PT_ABC'); DECinfo%abc= .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
 
           ! CHOICE OF ORBITALS

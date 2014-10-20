@@ -359,6 +359,7 @@ contains
           call dec_fragment_time_init(times_pt)
 
           print_frags = DECinfo%print_frags
+          !!! this should be decided on behalf of the amount of memory available !!!
           abc = DECinfo%abc
 
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
@@ -388,6 +389,13 @@ contains
                              & MyFragment%qqfock,MyFragment%Co,&
                              & MyFragment%Cv,MyFragment%mylsitem,&
                              & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+          if (abc) then
+
+            call array_reorder(t2,[3,4,1,2]) ! ccsd_doubles in the order (a,b,i,j)
+            call array_reorder(ccsdpt_t2,[3,4,1,2]) ! ccsdpt_doubles in the order (a,b,i,j)
+            call array_reorder(ccsdpt_t1,[2,1]) ! ccsdpt_singles in the order (a,i)
+
+          endif
           call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
           call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
@@ -997,14 +1005,12 @@ contains
 #ifdef MOD_UNRELEASED
        endif
 #endif
-       print *,"CCSD DONE"
 
        ! Extract EOS indices for integrals 
        ! *********************************
        call array_extract_eos_indices(VOVO, PairFragment, Arr_occEOS=VOVOocc, Arr_virtEOS=VOVOvirt)
 !       call array_free(VOVO)
 
-       print *,"free first order"
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
           !construct RHS for pairs
@@ -1017,8 +1023,6 @@ contains
        ! ********************************************
        ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j) 
        call get_combined_SingleDouble_amplitudes(t1,t2,u)
-
-       print *,"energy adn free crap"
 
        ! Extract EOS indices for amplitudes
        ! **********************************
@@ -1084,7 +1088,6 @@ contains
        call array_free(VOVV)
     end if
 
-    print *,"DOING(T)"
 #ifdef MOD_UNRELEASED
     ! calculate ccsd(t) pair interaction energies
     ! *******************************************
@@ -1097,6 +1100,7 @@ contains
        call dec_fragment_time_init(times_pt)
 
        print_frags = DECinfo%print_frags
+       !!! this should be decided on behalf of the amount of memory available !!!
        abc = DECinfo%abc
 
        ! init ccsd(t) singles and ccsd(t) doubles
@@ -1119,7 +1123,6 @@ contains
                &PairFragment%noccAOS,PairFragment%noccAOS],4)
 
        endif
-       print *,"DONE(T) -- PRINTING"
 
        ! call ccsd(t) driver and pair fragment evaluation
        call ccsdpt_driver(PairFragment%noccAOS,PairFragment%nunoccAOS,&
@@ -1127,11 +1130,17 @@ contains
                           & PairFragment%qqfock,PairFragment%Co,&
                           & PairFragment%Cv,PairFragment%mylsitem,&
                           & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+       if (abc) then
+
+         call array_reorder(t2,[3,4,1,2]) ! ccsd_doubles in the order (a,b,i,j)
+         call array_reorder(ccsdpt_t2,[3,4,1,2]) ! ccsdpt_doubles in the order (a,b,i,j)
+         call array_reorder(ccsdpt_t1,[2,1]) ! ccsdpt_singles in the order (a,i)
+
+       endif
        call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2,ccsdpt_t2)
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 
        ! release ccsd(t) singles and doubles amplitudes
-       print *,"freeing ccsdpt crap",ccsdpt_t1%initialized,ccsdpt_t2%initialized
        call array_free(ccsdpt_t1)
        call array_free(ccsdpt_t2)
 
@@ -1140,7 +1149,6 @@ contains
     end if
 #endif
 
-    print *,"test vovo dealloc",VOVO%initialized
     ! free vovo integrals
     if (PairFragment%CCModel == MODEL_RPA  .or. &
        &PairFragment%CCModel == MODEL_CC2  .or. &
@@ -1160,12 +1168,10 @@ contains
     endif
 
     ! Free remaining arrays
-    print *,"test rest"
     call array_free(VOVOocc)
     call array_free(t2occ)
     call array_free(t2virt)
     call array_free(VOVOvirt)
-    print *,"test done"
 
     !print *,"p1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"p2",VOVOvirt%initialized,associated(VOVOvirt%elm1)

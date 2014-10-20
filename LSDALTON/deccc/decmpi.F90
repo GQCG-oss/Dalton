@@ -2149,6 +2149,8 @@ contains
     call ls_mpi_buffer(DECitem%force_scheme,Master)
     call ls_mpi_buffer(DECitem%dyn_load,Master)
     call ls_mpi_buffer(DECitem%print_frags,Master)
+    call ls_mpi_buffer(DECitem%abc,Master)
+    call ls_mpi_buffer(DECitem%abc_tile_size,Master)
     call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)

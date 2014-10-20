@@ -21,14 +21,12 @@ f.add(from_string = ' (T) virtual  correlation energy :',
       to_string   = 'Total CCSD(T) energy:',
       abs_tolerance = 1.0e-6)
 
-
 # to ignore sign set                      ignore_sign = True   
 # to ignore numbers below 1.0e-4 set      ignore_below = 1.0e-4
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-f.add(string = 'Memory in use for array4',
-      rel_tolerance = 1.0e-9)
+f.add(string = 'Allocated MPI memory a cross all slaves')
 
 test.run(['decccsdpt_virt.dal'], ['helium_chain.mol'], {'out': f})
 
