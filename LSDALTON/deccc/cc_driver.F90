@@ -1588,7 +1588,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
-
    time_work        = 0.0E0_realk
    time_comm        = 0.0E0_realk
    time_idle        = 0.0E0_realk
@@ -2628,9 +2627,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       & [ m2   ], [[2,1,2,1]], [[2,2,2,2]],  4, 1)
 
    if(fragment_job.and.use_pnos)then
-      print *,"DO FOO BACK TRAFO"
       call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,oo=frag%OccMat,vv=frag%VirtMat)
-      print *,"DO FOO DONE"
    endif
 
    call tensor_free(Uo)
