@@ -172,41 +172,57 @@ subroutine report_after_pcm_input(print_unit, pcm_cfg)
       global_print_unit = print_unit                                                                                                 
       ! Initialize host writer                                                                                                       
       call init_host_writer(global_print_unit)                                                                                       
-      write(global_print_unit, *) ' ===== Polarizable Continuum Model calculation set-up ====='                                      
-      write(global_print_unit, *) '* Polarizable Continuum Model using PCMSolver external module:'                                   
-      write(global_print_unit, *) '  1: Converged potentials and charges at tesserae representative points written on file.'         
+      write(global_print_unit, *) &
+      ' ===== Polarizable Continuum Model calculation set-up ====='                                      
+      write(global_print_unit, *) &
+      '* Polarizable Continuum Model using PCMSolver external module:'                                   
+      write(global_print_unit, *) &
+      '  1: Converged potentials and charges at tesserae representative points written on file.'         
                                                                                                                                  
       if (pcm_cfg%separate) then                                                                                                     
-         write(global_print_unit, *) '  2: Separate potentials and apparent charges in nuclear and electronic.'                      
+         write(global_print_unit, *) &
+         '  2: Separate potentials and apparent charges in nuclear and electronic.'                      
       else                                                                                                                           
-         write(global_print_unit, *) '  2: Use total potentials and apparent charges.'                                               
+         write(global_print_unit, *) &
+         '  2: Use total potentials and apparent charges.'                                               
       end if                                                                                                                         
                                                                                                                                      
       if (pcm_cfg%print_level > 5 .and. pcm_cfg%print_level < 10) then                                                               
-         write(global_print_unit, *) '  3: Print potentials at tesserae representative points.'                                      
+         write(global_print_unit, *) &
+         '  3: Print potentials at tesserae representative points.'                                      
       else if (pcm_cfg%print_level > 10) then                                                                                        
-         write(global_print_unit, *) '  3: Print potentials and charges at tesserae representative points.'                          
+         write(global_print_unit, *) &
+         '  3: Print potentials and charges at tesserae representative points.'                          
       else                                                                                                                           
-         write(global_print_unit, *) '  3: Do not print potentials and charges.'                                                     
+         write(global_print_unit, *) &
+         '  3: Do not print potentials and charges.'                                                     
       end if                                                                                                                         
       call print_citation                                                                                                            
    else
-      write(*, *) ' ===== Polarizable Continuum Model calculation set-up ====='                                              
-      write(*, *) '* Polarizable Continuum Model using PCMSolver external module:'                                           
-      write(*, *) '  1: Converged potentials and charges at tesserae representative points written on file.'                 
+      write(*, *) &
+      ' ===== Polarizable Continuum Model calculation set-up ====='                                              
+      write(*, *) &
+      '* Polarizable Continuum Model using PCMSolver external module:'                                           
+      write(*, *) &
+      '  1: Converged potentials and charges at tesserae representative points written on file.'                 
                                                                                                                              
       if (pcm_cfg%separate) then                                                                                             
-         write(*, *) '  2: Separate potentials and apparent charges in nuclear and electronic.'                              
+         write(*, *) &
+         '  2: Separate potentials and apparent charges in nuclear and electronic.'                              
       else                                                                                                                   
-         write(*, *) '  2: Use total potentials and apparent charges.'                                                       
+         write(*, *) &
+         '  2: Use total potentials and apparent charges.'                                                       
       end if                                                                                                                 
                                                                                                                          
       if (pcm_cfg%print_level > 5 .and. pcm_cfg%print_level < 10) then                                                       
-         write(*, *) '  3: Print potentials at tesserae representative points.'                                              
+         write(*, *) &
+         '  3: Print potentials at tesserae representative points.'                                              
       else if (pcm_cfg%print_level > 10) then                                                                                
-         write(*, *) '  3: Print potentials and charges at tesserae representative points.'                                  
+         write(*, *) &
+         '  3: Print potentials and charges at tesserae representative points.'                                  
       else                                                                                                                   
-         write(*, *) '  3: Do not print potentials and charges.'                                                             
+         write(*, *) &
+         '  3: Do not print potentials and charges.'                                                             
       end if                                                                                                                 
       call print_citation                                                                                                    
    end if

@@ -400,6 +400,7 @@ if(ENABLE_PCMSOLVER)
     add_dependencies(lsdaltonmain  pcmsolver lspcm)
     add_dependencies(linearslib    pcmsolver lspcm)
     add_dependencies(solverutillib pcmsolver lspcm)
+    add_dependencies(lspcm lsutillib lsintlib)
 endif()
 
 if(NOT ENABLE_CHEMSHELL)
