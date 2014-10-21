@@ -364,28 +364,29 @@ contains
           call dec_fragment_time_init(times_pt)
 
           print_frags = DECinfo%print_frags
+          !!! this should be decided based on the amount of memory available !!!
           abc = DECinfo%abc
 
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
-         if (abc) then
-
-            call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-
-            call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
-            call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
-                 &MyFragment%nunoccAOS,MyFragment%nunoccAOS],4)
-
-         else
-
-            call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-
-            call tensor_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
-            call tensor_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
-                 &MyFragment%noccAOS,MyFragment%noccAOS],4)
-
-         endif
+          if (abc) then
+ 
+             call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+             call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+ 
+             call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
+             call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
+                  &MyFragment%nunoccAOS,MyFragment%nunoccAOS],4)
+ 
+          else
+ 
+             call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+             call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+ 
+             call tensor_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
+             call tensor_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
+                  &MyFragment%noccAOS,MyFragment%noccAOS],4)
+ 
+          endif
 
           ! call ccsd(t) driver and single fragment evaluation
           call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nunoccAOS,&
@@ -393,6 +394,13 @@ contains
                              & MyFragment%qqfock,MyFragment%Co,&
                              & MyFragment%Cv,MyFragment%mylsitem,&
                              & VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+          if (abc) then
+
+            call tensor_reorder(t2f_local,[3,4,1,2]) ! ccsd_doubles in the order (a,b,i,j)
+            call tensor_reorder(ccsdpt_t2,[3,4,1,2]) ! ccsdpt_doubles in the order (a,b,i,j)
+            call tensor_reorder(ccsdpt_t1,[2,1]) ! ccsdpt_singles in the order (a,i)
+
+          endif
           call ccsdpt_energy_e4_frag(MyFragment,t2f_local,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
           call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
@@ -1126,6 +1134,7 @@ contains
        call dec_fragment_time_init(times_pt)
 
        print_frags = DECinfo%print_frags
+       !!! this should be decided on behalf of the amount of memory available !!!
        abc = DECinfo%abc
 
        ! init ccsd(t) singles and ccsd(t) doubles
@@ -1155,6 +1164,13 @@ contains
                           & PairFragment%qqfock,PairFragment%Co,&
                           & PairFragment%Cv,PairFragment%mylsitem,&
                           & VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+       if (abc) then
+
+         call tensor_reorder(t2f_local,[3,4,1,2]) ! ccsd_doubles in the order (a,b,i,j)
+         call tensor_reorder(ccsdpt_t2,[3,4,1,2]) ! ccsdpt_doubles in the order (a,b,i,j)
+         call tensor_reorder(ccsdpt_t1,[2,1]) ! ccsdpt_singles in the order (a,i)
+
+       endif
        call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2f_local,ccsdpt_t2)
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 

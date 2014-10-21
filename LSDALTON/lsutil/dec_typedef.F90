@@ -244,12 +244,14 @@ module dec_typedef_module
      logical :: use_crop
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
+     !> set tilesize in ccsolver in GB
+     real(realk) :: cc_solver_tile_mem
 
      !> ccsd(T) settings
      !> *****************************
      !> logical for abc scheme
      logical :: abc
-     !> tile size for use with abc scheme
+     !> force a specific tile size for use with abc scheme
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
      integer :: CCSDPT_nbuffs_ijk
