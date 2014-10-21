@@ -1478,10 +1478,6 @@ C
 #if defined (HAS_PCMSOLVER)
       extpcm_input_provided = .false.
       pcmmod_is_pcm_calculation = .false.
-#else
-      WRITE(LUPRI,'(//A/)') 
-     $           'ERROR: EXTPCM requested but PCM Module not compiled'
-      CALL QUIT('Recompile including the PCM Module')
 #endif
       PCM    = .FALSE.
       OUTFLD = .FALSE.
@@ -1648,7 +1644,11 @@ C        ".WALK  "
  119     CONTINUE
 #ifdef HAS_PCMSOLVER
             extpcm_input_provided = .true.
-#endif            
+#else
+      WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+      CALL QUIT('Recompile including the PCM Module')
+#endif
          goto 100
  120     CONTINUE
  121     CONTINUE
