@@ -1646,7 +1646,9 @@ C        ".WALK  "
             DIRCAL = .TRUE.
          GO TO 100
  119     CONTINUE
+#ifdef HAS_PCMSOLVER
             extpcm_input_provided = .true.
+#endif            
          goto 100
  120     CONTINUE
  121     CONTINUE
