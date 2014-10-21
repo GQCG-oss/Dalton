@@ -238,6 +238,7 @@ MODULE scf_stats
       !> Contains general settings for SCF optimization
       type(optItem), intent(in)  :: opt
       integer :: i,j,igrad
+      real(realk) :: Epcm
 
       if (stat_current_iteration>=opt%cfg_max_linscf_iterations) then
          stat_current_iteration = opt%cfg_max_linscf_iterations
@@ -300,19 +301,17 @@ MODULE scf_stats
       else
          call lsquit('Calculation type has not been set',opt%lupri)
       endif
+      Epcm = 0.0_realk
 #ifdef HAS_PCMSOLVER
       if (pcm_config%do_pcm) then
-         WRITE(opt%LUPRI,'("      PCM polarization energy:       ",f24.12)') get_pcm_energy()
-         WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f24.12)') opt%potnuc                                          
-         WRITE(opt%LUPRI,'("      Electronic energy:             ",f24.12)') &
-                                                stat_energy(stat_current_iteration)-opt%potnuc-get_pcm_energy()
-         WRITE(opt%LUPRI,*)
-      end if              
-#else      
-      WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f24.12)') opt%potnuc      
-      WRITE(opt%LUPRI,'("      Electronic energy:             ",f24.12)') stat_energy(stat_current_iteration)-opt%potnuc
+         Epcm = get_pcm_energy()
+         WRITE(opt%LUPRI,'("      PCM polarization energy:       ",f24.12)') Epcm 
+      endif
+#endif  
+      WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f24.12)') opt%potnuc                                          
+      WRITE(opt%LUPRI,'("      Electronic energy:             ",f24.12)') &
+                                       stat_energy(stat_current_iteration)-opt%potnuc-Epcm
       WRITE(opt%LUPRI,*)
-#endif      
 
    end subroutine scf_stats_end_print
 
