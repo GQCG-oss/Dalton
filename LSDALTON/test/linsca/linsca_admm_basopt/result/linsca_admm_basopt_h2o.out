@@ -1,0 +1,1198 @@
+ THIS IS A DEBUG BUILD
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+  
+      This is output from LSDALTON 2014.0
+  
+  
+      IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
+      THE FOLLOWING PAPER SHOULD BE CITED:
+      
+      K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+      L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+      P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+      J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+      L. Ferrighi, H. Fliegl, L. Frediani, K. Hald,
+      A. Halkier, C. Haettig, H. Heiberg,
+      T. Helgaker, A. C. Hennum, H. Hettema,
+      E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+      M. F. Iozzi, B. Jansik, H. J. Aa. Jensen,
+      D. Jonsson, P. Joergensen, J. Kauczor,
+      S. Kirpekar, T. Kjaergaard, W. Klopper,
+      S. Knecht, R. Kobayashi, H. Koch, J. Kongsted,
+      A. Krapp, K. Kristensen, A. Ligabue,
+      O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+      C. Neiss, C. B. Nielsen, P. Norman,
+      J. Olsen, J. M. H. Olsen, A. Osted,
+      M. J. Packer, F. Pawlowski, T. B. Pedersen,
+      P. F. Provasi, S. Reine, Z. Rinkevicius,
+      T. A. Ruden, K. Ruud, V. Rybkin,
+      P. Salek, C. C. M. Samson, A. Sanchez de Meras,
+      T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
+      K. Sneskov, A. H. Steindal, K. O. Sylvester-Hvid,
+      P. R. Taylor, A. M. Teale, E. I. Tellgren,
+      D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+      O. Vahtras, M. A. Watson, D. J. D. Wilson,
+      M. Ziolkowski, and H. AAgren,
+      "The Dalton quantum chemistry program system",
+      WIREs Comput. Mol. Sci. (doi: 10.1002/wcms.1172)
+  
+  
+                                                
+      LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
+      ----------------------------------------------------------------------------
+      Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)
+      Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
+      Sonia Coriani,           University of Trieste,     Italy     (response)
+      Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
+      Trygve Helgaker,         University of Oslo,        Norway    (supervision)
+      Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)
+      Robert Izsak,            University of Oslo,        Norway    (ADMM)
+      Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)
+      Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
+      Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)
+      Patrick Merlot,          University of Oslo,        Norway    (ADMM)
+      Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
+      Jeppe Olsen,             Aarhus University,         Denmark   (supervision)
+      Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)
+      Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
+      Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
+      Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)
+      Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
+      Mark Watson,             University of Oslo,        Norway    (FMM)
+      Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
+  
+  
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     energies and properties using various electronic structure models.
+     The authors accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://daltonprogram.org"
+     for further information.
+  
+  
+ Who compiled             | tkjaer
+ Host                     | localhost.st.client.au.dk
+ System                   | Linux-3.11.10-301.fc20.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 14.0.3 20140422
+ C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
+ Static linking           | OFF
+ Last Git revision        | e823127c4c8f7919d4a49fd877022aecd7be6cb5
+ Git branch               | master
+ Configuration time       | 2014-10-22 16:44:53.014434
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+   2     0         *                                                            
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like:
+ Atomtypes=2 Angstrom
+ (example using 2 atomtypes)
+ Note only integer charges are allowed in current LsDalton version
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+        8.    1                                                                 
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like
+ Charge=6.0 Atoms=2
+ Using an example of 2 Carbon atoms of this type
+ Note only integer charges are allowed in current LsDalton ve
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+        1.    2                                                                 
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like
+ Charge=6.0 Atoms=2
+ Using an example of 2 Carbon atoms of this type
+ Note only integer charges are allowed in current LsDalton ve
+
+Start simulation
+     Date and time (Linux)  : Wed Oct 22 16:50:48 2014
+     Host name              : localhost.st.client.au.dk               
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  3-21G ADMM=STO-3G                       
+  water R(OH) = 0.95Aa , <HOH = 109 deg.  
+  Distance in Aangstroms                  
+     2     0         *                                        
+          8.    1                                             
+  O      0.00000   0.00000   0.00000                          
+          1.    2                                             
+  H      0.55168   0.77340   0.00000                          
+  H      0.55168  -0.77340   0.00000                          
+                      
+ -----------------------------------------
+          PRINTING THE LSDALTON.INP FILE 
+ -----------------------------------------
+                      
+  **GENERAL                                                                                           
+  .TIME                                                                                               
+  **INTEGRALS                                                                                         
+  .ADMM2                                                                                              
+  .ADMM-BASIS-FILE                                                                                    
+  **WAVE FUNCTIONS                                                                                    
+  .HF                                                                                                 
+  *DENSOPT                                                                                            
+  .RH                                                                                                 
+  .DIIS                                                                                               
+  .NVEC                                                                                               
+  8                                                                                                   
+  .CONVTHR                                                                                            
+  3.D-5                                                                                               
+  .START                                                                                              
+  H1DIAG                                                                                              
+  *END OF INPUT                                                                                       
+  
+  MOLPRINT IS SET TO       0
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+   2     0         *                                                            
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like:
+ Atomtypes=2 Angstrom
+ (example using 2 atomtypes)
+ Note only integer charges are allowed in current LsDalton version
+  Coordinates are entered in Angstroms and converted to atomic units.
+  Conversion factor : 1 bohr = 0.52917721 A
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+        8.    1                                                                 
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like
+ Charge=6.0 Atoms=2
+ Using an example of 2 Carbon atoms of this type
+ Note only integer charges are allowed in current LsDalton ve
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+        1.    2                                                                 
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like
+ Charge=6.0 Atoms=2
+ Using an example of 2 Carbon atoms of this type
+ Note only integer charges are allowed in current LsDalton ve
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates:  9
+   Written in atomic units    
+ 
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+ 
+   4   H        x      1.0425241136
+   5            y      1.4615141920
+   6            z      0.0000000000
+ 
+   7   H        x      1.0425241136
+   8            y     -1.4615141920
+   9            z      0.0000000000
+ 
+ 
+ BASISSETLIBRARY  : REGULAR  
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  3-21G                                             
+  CHARGES:    8.0000    1.0000
+                      
+ BASISSETLIBRARY  : ADMM     
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  STO-3G                                            
+  CHARGES:    8.0000    1.0000
+                      
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
+   
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/ADMMproject/build-debug/basis/3-21G
+   
+  CALLING BUILD BASIS WITH DEFAULT ADMM      BASIS
+   
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/ADMMproject/build-debug/basis/STO-3G
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+ Molecular Charge                    :    0.0000
+    Regular basisfunctions             :       13
+    ADMM basisfunctions                :        7
+    Valence basisfunctions             :        0
+    Primitive Regular basisfunctions   :       21
+    Primitive ADMM basisfunctions      :       21
+    Primitive Valence basisfunctions   :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    Phantom   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   8.000  3-21G           F             15           9
+     2   1.000  3-21G           F              3           2
+     3   1.000  3-21G           F              3           2
+                      
+ The cartesian centers in Atomic units. 
+  ATOM  NAME  ISOTOPE            X                 Y                 Z     
+     1  O           1        0.00000000        0.00000000        0.00000000
+     2  H           1        1.04252411        1.46151419        0.00000000
+     3  H           1        1.04252411       -1.46151419        0.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      3
+  THE  REGULAR   is on R =   1
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 O      8.000 3-21G                     15        9 [6s3p|3s2p]                                  
+      2 H      1.000 3-21G                      3        2 [3s|2s]                                      
+      3 H      1.000 3-21G                      3        2 [3s|2s]                                      
+---------------------------------------------------------------------
+total         10                               21       13
+---------------------------------------------------------------------
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      3
+  THE  ADMM      is on R =   7
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 O      8.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      2 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+      3 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+---------------------------------------------------------------------
+total         10                               21        7
+---------------------------------------------------------------------
+                      
+ Configuration:
+ ==============
+    This is a Single core calculation. (no OpenMP)
+    This is a serial calculation (no MPI)
+ 
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
+ 
+ Maximum size of Fock/density queue in averaging:           8
+ 
+Convergence threshold for gradient:   0.30E-04
+ 
+We perform the calculation in the Grand Canonical basis
+(see PCCP 2009, 11, 5805-5813)
+To use the standard input basis use .NOGCBASIS
+ 
+Since the input basis set is a segmented contracted basis we
+perform the integral evaluation in the more efficient
+standard input basis and then transform to the Grand 
+Canonical basis, which is general contracted.
+You can force the integral evaluation in Grand 
+Canonical basis by using the keyword
+.NOGCINTEGRALTRANSFORM
+ 
+    The Overall Screening threshold is set to              :  1.0000E-08
+    The Screening threshold used for Coulomb               :  1.0000E-10
+    The Screening threshold used for Exchange              :  1.0000E-08
+    The Screening threshold used for One-electron operators:  1.0000E-15
+ The SCF Convergence Criteria is applied to the gradnorm in AO basis
+ 
+ End of configuration!
+ 
+ >>>  CPU Time used in *INPUT is   0.00 seconds
+ >>> wall Time used in *INPUT is   0.00 seconds
+Matrix type: mtype_dense
+ 
+ A set of atomic calculations are performed in order to construct
+ the Grand Canonical Basis set (see PCCP 11, 5805-5813 (2009))
+ as well as JCTC 5, 1027 (2009)
+ This is done in order to use the TRILEVEL starting guess and 
+ perform orbital localization
+ This is Level 1 of the TRILEVEL starting guess and is performed per default.
+ The use of the Grand Canonical Basis can be deactivated using .NOGCBASIS
+ under the **GENERAL section. This is NOT recommended if you do TRILEVEL 
+ or orbital localization.
+ 
+ 
+ Level 1 atomic calculation on 3-21G Charge   8
+ ================================================
+ >>>  CPU Time used in OVERLAP is   0.00 seconds
+ >>> wall Time used in OVERLAP is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in reg-Jengine is   0.00 seconds
+ >>> wall Time used in reg-Jengine is   0.00 seconds
+ The Coulomb energy contribution    49.7803543454546     
+ >>>  CPU Time used in st-Kbuild is   0.01 seconds
+ >>> wall Time used in st-Kbuild is   0.01 seconds
+ The Exchange energy contribution    9.35687927117893     
+ The Fock energy contribution   -40.4234750742756     
+*******************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
+*******************************************************************************************###
+  1    -69.1958692875    0.00000000000    0.00      0.00000    0.00    0.0000000    7.66E+00  ###
+ >>>  CPU Time used in reg-Jengine is   0.00 seconds
+ >>> wall Time used in reg-Jengine is   0.00 seconds
+ The Coulomb energy contribution    32.3200271168756     
+ >>>  CPU Time used in st-Kbuild is   0.01 seconds
+ >>> wall Time used in st-Kbuild is   0.01 seconds
+ The Exchange energy contribution    7.17721887301396     
+ The Fock energy contribution   -25.1428082438617     
+  2    -73.3827432449   -4.18687395742    0.00      0.00000    0.00    0.0000000    3.24E+00  ###
+ >>>  CPU Time used in reg-Jengine is   0.00 seconds
+ >>> wall Time used in reg-Jengine is   0.00 seconds
+ The Coulomb energy contribution    36.0177942107831     
+ >>>  CPU Time used in st-Kbuild is   0.01 seconds
+ >>> wall Time used in st-Kbuild is   0.01 seconds
+ The Exchange energy contribution    7.58356684718488     
+ The Fock energy contribution   -28.4342273635982     
+  3    -73.8637832343   -0.48103998935   -1.00      0.00000    0.00    0.0000000    1.91E-01  ###
+ >>>  CPU Time used in reg-Jengine is   0.00 seconds
+ >>> wall Time used in reg-Jengine is   0.00 seconds
+ The Coulomb energy contribution    36.2303500950323     
+ >>>  CPU Time used in st-Kbuild is   0.01 seconds
+ >>> wall Time used in st-Kbuild is   0.01 seconds
+ The Exchange energy contribution    7.60511464562422     
+ The Fock energy contribution   -28.6252354494081     
+  4    -73.8653859895   -0.00160275526   -1.00      0.00000    0.00    0.0000000    3.25E-02  ###
+ >>>  CPU Time used in reg-Jengine is   0.00 seconds
+ >>> wall Time used in reg-Jengine is   0.00 seconds
+ The Coulomb energy contribution    36.1920991989315     
+ >>>  CPU Time used in st-Kbuild is   0.01 seconds
+ >>> wall Time used in st-Kbuild is   0.01 seconds
+ The Exchange energy contribution    7.60036983193259     
+ The Fock energy contribution   -28.5917293669989     
+  5    -73.8654283554   -0.00004236591   -1.00      0.00000    0.00    0.0000000    7.33E-04  ###
+ 
+ Level 1 atomic calculation on 3-21G Charge   1
+ ================================================
+ >>>  CPU Time used in OVERLAP is   0.00 seconds
+ >>> wall Time used in OVERLAP is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in reg-Jengine is   0.00 seconds
+ >>> wall Time used in reg-Jengine is   0.00 seconds
+ The Coulomb energy contribution   0.319990996790884     
+ >>>  CPU Time used in st-Kbuild is   0.00 seconds
+ >>> wall Time used in st-Kbuild is   0.00 seconds
+ The Exchange energy contribution   0.159995498395442     
+ The Fock energy contribution  -0.159995498395442     
+*******************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
+*******************************************************************************************###
+  1     -0.3362031110    0.00000000000    0.00      0.00000    0.00    0.0000000    1.99E-01  ###
+ >>>  CPU Time used in reg-Jengine is   0.00 seconds
+ >>> wall Time used in reg-Jengine is   0.00 seconds
+ The Coulomb energy contribution   0.296183681133060     
+ >>>  CPU Time used in st-Kbuild is   0.00 seconds
+ >>> wall Time used in st-Kbuild is   0.00 seconds
+ The Exchange energy contribution   0.148091840566530     
+ The Fock energy contribution  -0.148091840566530     
+  2     -0.3429646205   -0.00676150947    0.00      0.00000    0.00    0.0000000    1.32E-02  ###
+ >>>  CPU Time used in reg-Jengine is   0.00 seconds
+ >>> wall Time used in reg-Jengine is   0.00 seconds
+ The Coulomb energy contribution   0.294614532546898     
+ >>>  CPU Time used in st-Kbuild is   0.00 seconds
+ >>> wall Time used in st-Kbuild is   0.00 seconds
+ The Exchange energy contribution   0.147307266273449     
+ The Fock energy contribution  -0.147307266273449     
+  3     -0.3429945468   -0.00002992637   -1.00      0.00000    0.00    0.0000000    3.65E-05  ###
+Matrix type: mtype_dense
+ >>>  CPU Time used in *ATOM is   0.06 seconds
+ >>> wall Time used in *ATOM is   0.06 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>>  CPU Time used in OVERLAP is   0.00 seconds
+ >>> wall Time used in OVERLAP is   0.00 seconds
+ >>>  CPU Time used in *S is   0.02 seconds
+ >>> wall Time used in *S is   0.02 seconds
+ >>>  CPU Time used in NucElec is   0.01 seconds
+ >>> wall Time used in NucElec is   0.01 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in *H1 is   0.01 seconds
+ >>> wall Time used in *H1 is   0.01 seconds
+ 
+ Optimize first density for H1 operator
+ 
+ 
+Max no. of matrices allocated in Level 2 / get_initial_dens:         21
+ >>>  CPU Time used in *START is   0.00 seconds
+ >>> wall Time used in *START is   0.00 seconds
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG is   0.00 seconds
+ >>> wall Time used in LWDIAG is   0.00 seconds
+Matrix S     has nnz=        77 sparsity:     45.562 %
+Matrix AO D  has nnz=       105 sparsity:     62.130 %
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  3.000000000000000E-005
+ >>>  CPU Time used in INIT SCF is   0.00 seconds
+ >>> wall Time used in INIT SCF is   0.00 seconds
+** Get Fock matrix number   1
+ >>>  CPU Time used in reg-Jengine is   0.02 seconds
+ >>> wall Time used in reg-Jengine is   0.02 seconds
+ The Coulomb energy contribution    73.0850669395613     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in CS08_INPUT-Mole is   0.02 seconds
+ >>> wall Time used in CS08_INPUT-Mole is   0.02 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>> wall Time used in LINK-Kbuild is   0.03 seconds
+ >>>  CPU Time used in AUX-EX is   0.03 seconds
+ >>> wall Time used in AUX-EX is   0.03 seconds
+Total Number of grid points:       34420
+ >>>  CPU Time used in Boxify is   0.02 seconds
+ >>> wall Time used in Boxify is   0.03 seconds
+ 
+  Max allocated memory, Grid                    1.934 MB
+ 
+ >>>  CPU Time used in gridgeneration2 is   0.07 seconds
+ >>> wall Time used in gridgeneration2 is   0.06 seconds
+  KS electrons/energy:    8.45626307185743   -8.75377352076385 rel.err:-0.15E+00
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.32 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.32 seconds
+Total Number of grid points:       34420
+ >>>  CPU Time used in Boxify is   0.02 seconds
+ >>> wall Time used in Boxify is   0.02 seconds
+ 
+  Max allocated memory, Grid                    1.934 MB
+ 
+ >>>  CPU Time used in gridgeneration2 is   0.06 seconds
+ >>> wall Time used in gridgeneration2 is   0.06 seconds
+  KS electrons/energy:   10.00002037143324  -12.30730674803517 rel.err: 0.20E-05
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.56 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.56 seconds
+ E(x2)=   -8.75377352076385     
+ E(X3)=   -12.3073067480352     
+ E(X3)-E(x2)=   -3.55353322727132     
+ E(K3)=   -12.4199941741990     
+ E(k2)=   -8.30968504957390     
+ E(K3)-E(k2)=   -4.11030912462509     
+ ADMMmin: K(D) energy =   -12.4199941741990     
+ ADMMmin: X(D) energy =   -12.3073067480352     
+ ADMMmin: k(d) energy =   -8.30968504957390     
+ ADMMmin: x(d) energy =   -8.75377352076385     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =  -0.556775897353772     
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.97 seconds
+ >>> wall Time used in FCK_FO is   0.97 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+*******************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
+*******************************************************************************************###
+  1    -66.1476748721    0.00000000000    0.00      0.00000    0.00    0.0000000    1.80E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.97 seconds
+ >>> wall Time used in SCF iteration is   0.97 seconds
+** Get Fock matrix number   2
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.02 seconds
+ The Coulomb energy contribution    32.7689659129241     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.01 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:    7.93898115134709   -7.43557803508631 rel.err:-0.21E+00
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.26 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.26 seconds
+  KS electrons/energy:   10.00000010709245   -7.58908710129862 rel.err: 0.11E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.49 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.50 seconds
+ E(x2)=   -7.43557803508631     
+ E(X3)=   -7.58908710129862     
+ E(X3)-E(x2)=  -0.153509066212311     
+ E(K3)=   -7.57049594548894     
+ E(k2)=   -7.16135015148965     
+ E(K3)-E(k2)=  -0.409145793999294     
+ ADMMmin: K(D) energy =   -7.57049594548894     
+ ADMMmin: X(D) energy =   -7.58908710129862     
+ ADMMmin: k(d) energy =   -7.16135015148965     
+ ADMMmin: x(d) energy =   -7.43557803508631     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =  -0.255636727786983     
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.82 seconds
+ >>> wall Time used in FCK_FO is   0.82 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  2    -70.2984321121   -4.15075724000    0.00      0.00000    0.00    0.0000000    1.04E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.82 seconds
+ >>> wall Time used in SCF iteration is   0.82 seconds
+** Get Fock matrix number   3
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.01 seconds
+ The Coulomb energy contribution    51.2578637511216     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.01 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:    9.92068861487214   -9.36359849326114 rel.err:-0.79E-02
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.26 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.26 seconds
+  KS electrons/energy:   10.00000747493812   -9.48277079603091 rel.err: 0.75E-06
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.49 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.50 seconds
+ E(x2)=   -9.36359849326114     
+ E(X3)=   -9.48277079603091     
+ E(X3)-E(x2)=  -0.119172302769769     
+ E(K3)=   -9.47688665772094     
+ E(k2)=   -9.38767936144918     
+ E(K3)-E(k2)=  -8.920729627175916E-002
+ ADMMmin: K(D) energy =   -9.47688665772094     
+ ADMMmin: X(D) energy =   -9.48277079603091     
+ ADMMmin: k(d) energy =   -9.38767936144918     
+ ADMMmin: x(d) energy =   -9.36359849326114     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =   2.996500649800993E-002
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.81 seconds
+ >>> wall Time used in FCK_FO is   0.82 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  3    -75.2687726350   -4.97034052288   -1.00      0.00000    0.00    0.0000000    4.56E+00  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.81 seconds
+ >>> wall Time used in SCF iteration is   0.82 seconds
+** Get Fock matrix number   4
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.01 seconds
+ The Coulomb energy contribution    48.3807719075856     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.01 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:    9.91197015182246   -9.18299143626000 rel.err:-0.88E-02
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.27 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.27 seconds
+  KS electrons/energy:   10.00000647371705   -9.15410755990798 rel.err: 0.65E-06
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.51 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.51 seconds
+ E(x2)=   -9.18299143626000     
+ E(X3)=   -9.15410755990798     
+ E(X3)-E(x2)=   2.888387635201539E-002
+ E(K3)=   -9.14443279063584     
+ E(k2)=   -9.18913989426792     
+ E(K3)-E(k2)=   4.470710363207786E-002
+ ADMMmin: K(D) energy =   -9.14443279063584     
+ ADMMmin: X(D) energy =   -9.15410755990798     
+ ADMMmin: k(d) energy =   -9.18913989426792     
+ ADMMmin: x(d) energy =   -9.18299143626000     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =   1.582322728006247E-002
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.84 seconds
+ >>> wall Time used in FCK_FO is   0.84 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  4    -75.5453210638   -0.27654842882   -1.00      0.00000    0.00    0.0000000    1.45E+00  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.84 seconds
+ >>> wall Time used in SCF iteration is   0.84 seconds
+** Get Fock matrix number   5
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.9904232853828     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.01 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:    9.90571929889817   -9.08042283419988 rel.err:-0.94E-02
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.26 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.26 seconds
+  KS electrons/energy:   10.00000607920867   -9.00082691048833 rel.err: 0.61E-06
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.50 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.50 seconds
+ E(x2)=   -9.08042283419988     
+ E(X3)=   -9.00082691048833     
+ E(X3)-E(x2)=   7.959592371154578E-002
+ E(K3)=   -8.98789830650960     
+ E(k2)=   -9.07604206263606     
+ E(K3)-E(k2)=   8.814375612645620E-002
+ ADMMmin: K(D) energy =   -8.98789830650960     
+ ADMMmin: X(D) energy =   -9.00082691048833     
+ ADMMmin: k(d) energy =   -9.07604206263606     
+ ADMMmin: x(d) energy =   -9.08042283419988     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =   8.547832414910417E-003
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.82 seconds
+ >>> wall Time used in FCK_FO is   0.82 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  5    -75.5847866987   -0.03946563492   -1.00      0.00000    0.00    0.0000000    9.41E-02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.82 seconds
+ >>> wall Time used in SCF iteration is   0.83 seconds
+** Get Fock matrix number   6
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.8878254867813     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.01 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:    9.90814614442559   -9.06949835863500 rel.err:-0.92E-02
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.27 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.27 seconds
+  KS electrons/energy:   10.00000607128723   -8.99114803823841 rel.err: 0.61E-06
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.50 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.50 seconds
+ E(x2)=   -9.06949835863500     
+ E(X3)=   -8.99114803823841     
+ E(X3)-E(x2)=   7.835032039659140E-002
+ E(K3)=   -8.97681382100172     
+ E(k2)=   -9.06480922003195     
+ E(K3)-E(k2)=   8.799539903023756E-002
+ ADMMmin: K(D) energy =   -8.97681382100172     
+ ADMMmin: X(D) energy =   -8.99114803823841     
+ ADMMmin: k(d) energy =   -9.06480922003195     
+ ADMMmin: x(d) energy =   -9.06949835863500     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =   9.645078633646165E-003
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.84 seconds
+ >>> wall Time used in FCK_FO is   0.84 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  6    -75.5853855466   -0.00059884783   -1.00      0.00000    0.00    0.0000000    4.28E-02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.84 seconds
+ >>> wall Time used in SCF iteration is   0.84 seconds
+** Get Fock matrix number   7
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.9233502711625     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.01 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:    9.90971695743454   -9.07071073607815 rel.err:-0.90E-02
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.26 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.26 seconds
+  KS electrons/energy:   10.00000608906227   -8.99576332091198 rel.err: 0.61E-06
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.49 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.49 seconds
+ E(x2)=   -9.07071073607815     
+ E(X3)=   -8.99576332091198     
+ E(X3)-E(x2)=   7.494741516617154E-002
+ E(K3)=   -8.98110168145832     
+ E(k2)=   -9.06651328570950     
+ E(K3)-E(k2)=   8.541160425118477E-002
+ ADMMmin: K(D) energy =   -8.98110168145832     
+ ADMMmin: X(D) energy =   -8.99576332091198     
+ ADMMmin: k(d) energy =   -9.06651328570950     
+ ADMMmin: x(d) energy =   -9.07071073607815     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =   1.046418908501323E-002
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.81 seconds
+ >>> wall Time used in FCK_FO is   0.82 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  7    -75.5854205701   -0.00003502353   -1.00      0.00000    0.00    0.0000000    1.34E-02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.81 seconds
+ >>> wall Time used in SCF iteration is   0.82 seconds
+** Get Fock matrix number   8
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.9123192502883     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.01 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:    9.90959828486080   -9.07001195271247 rel.err:-0.90E-02
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.26 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.26 seconds
+  KS electrons/energy:   10.00000608564184   -8.99452768374410 rel.err: 0.61E-06
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.49 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.50 seconds
+ E(x2)=   -9.07001195271247     
+ E(X3)=   -8.99452768374410     
+ E(X3)-E(x2)=   7.548426896837057E-002
+ E(K3)=   -8.97989999541580     
+ E(k2)=   -9.06573615770131     
+ E(K3)-E(k2)=   8.583616228550639E-002
+ ADMMmin: K(D) energy =   -8.97989999541580     
+ ADMMmin: X(D) energy =   -8.99452768374410     
+ ADMMmin: k(d) energy =   -9.06573615770131     
+ ADMMmin: x(d) energy =   -9.07001195271247     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =   1.035189331713582E-002
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.81 seconds
+ >>> wall Time used in FCK_FO is   0.81 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  8    -75.5854229095   -0.00000233943   -1.00      0.00000    0.00    0.0000000    3.03E-04  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.81 seconds
+ >>> wall Time used in SCF iteration is   0.82 seconds
+** Get Fock matrix number   9
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.9125145967543     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.01 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:    9.90959714184917   -9.07003327847968 rel.err:-0.90E-02
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.26 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.26 seconds
+  KS electrons/energy:   10.00000608567583   -8.99454314511604 rel.err: 0.61E-06
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.49 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.49 seconds
+ E(x2)=   -9.07003327847968     
+ E(X3)=   -8.99454314511604     
+ E(X3)-E(x2)=   7.549013336364219E-002
+ E(K3)=   -8.97991768878340     
+ E(k2)=   -9.06575950115617     
+ E(K3)-E(k2)=   8.584181237276312E-002
+ ADMMmin: K(D) energy =   -8.97991768878340     
+ ADMMmin: X(D) energy =   -8.99454314511604     
+ ADMMmin: k(d) energy =   -9.06575950115617     
+ ADMMmin: x(d) energy =   -9.07003327847968     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =   1.035167900912093E-002
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.81 seconds
+ >>> wall Time used in FCK_FO is   0.81 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  9    -75.5854229142   -0.00000000468   -1.00      0.00000    0.00    0.0000000    1.61E-04  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.81 seconds
+ >>> wall Time used in SCF iteration is   0.81 seconds
+** Get Fock matrix number  10
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.9123845676063     
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in AUX-IN is   0.00 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.01 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:    9.90959419157367   -9.07002606264861 rel.err:-0.90E-02
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.26 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.26 seconds
+  KS electrons/energy:   10.00000608562053   -8.99452737530475 rel.err: 0.61E-06
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.49 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.49 seconds
+ E(x2)=   -9.07002606264861     
+ E(X3)=   -8.99452737530475     
+ E(X3)-E(x2)=   7.549868734386500E-002
+ E(K3)=   -8.97990240010129     
+ E(k2)=   -9.06575127165022     
+ E(K3)-E(k2)=   8.584887154893295E-002
+ ADMMmin: K(D) energy =   -8.97990240010129     
+ ADMMmin: X(D) energy =   -8.99452737530475     
+ ADMMmin: k(d) energy =   -9.06575127165022     
+ ADMMmin: x(d) energy =   -9.07002606264861     
+ ====================================================================
+ ADMMmin: K(D) - k(d) - X(D) + x(d) =   1.035018420506795E-002
+ ====================================================================
+ >>>  CPU Time used in FCK_FO is   0.81 seconds
+ >>> wall Time used in FCK_FO is   0.81 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+ 10    -75.5854229150   -0.00000000080   -1.00      0.00000    0.00    0.0000000    1.90E-05  ###
+SCF converged in     10 iterations
+ >>>  CPU Time used in **ITER is   8.35 seconds
+ >>> wall Time used in **ITER is   8.38 seconds
+ 
+Total no. of matmuls in SCF optimization:        256
+ 
+ Number of occupied orbitals:           5
+ Number of virtual orbitals:           8
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+Calculation of occupied orbital energies converged in     3 iterations!
+ 
+Calculation of virtual orbital energies converged in     4 iterations!
+ 
+    E(LUMO):                         0.266568 au
+   -E(HOMO):                        -0.529463 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.796031 au
+ 
+ >>>  CPU Time used in HL GAP is   0.66 seconds
+ >>> wall Time used in HL GAP is   0.66 seconds
+ 
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -4.15075724000    0.0000    0.0000    0.0000000
+  3   -4.97034052288   -1.0000    0.0000    0.0000000
+  4   -0.27654842882   -1.0000    0.0000    0.0000000
+  5   -0.03946563492   -1.0000    0.0000    0.0000000
+  6   -0.00059884783   -1.0000    0.0000    0.0000000
+  7   -0.00003502353   -1.0000    0.0000    0.0000000
+  8   -0.00000233943   -1.0000    0.0000    0.0000000
+  9   -0.00000000468   -1.0000    0.0000    0.0000000
+ 10   -0.00000000080   -1.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 AO Gradient norm
+======================================================================
+    1           -66.14767487212313312739      0.180212150366348D+02
+    2           -70.29843211212221376627      0.104056505077566D+02
+    3           -75.26877263499939374469      0.456127083252891D+01
+    4           -75.54532106381944345230      0.144702856247222D+01
+    5           -75.58478669873503008603      0.940538952816204D-01
+    6           -75.58538554656328756209      0.427745715013292D-01
+    7           -75.58542057009330505934      0.133986394559926D-01
+    8           -75.58542290952689768346      0.302963179252758D-03
+    9           -75.58542291420907588417      0.160742838717287D-03
+   10           -75.58542291500670273763      0.189502402071182D-04
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final HF energy:                       -75.585422915007
+      Nuclear repulsion:                       9.254577176284
+      Electronic energy:                     -84.840000091291
+ 
+ >>>  CPU Time used in *SCF is   9.01 seconds
+ >>> wall Time used in *SCF is   9.04 seconds
+ 
+Total no. of matmuls used:                       264
+Total no. of Fock/KS matrix evaluations:          10
+Max no. of matrices allocated in Level 3:         47
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                      0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MPI):                       0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (complex):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (character):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (AOBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSAOTENSOR):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (SLSAOTENSOR):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (GLOBALLSAOTENSOR):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMTYPEITEM):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMITEM):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSMATRIX):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECORBITAL):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECFRAG):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlapType):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (PNOSpaceInfo):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2DENS):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (TRACEBACK):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2GRAD):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lvec_data)):           0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lattice_cell)):        0 byte  - Should be zero - otherwise a leakage is present
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Additional Memory information          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (linkshell):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                         85.674 MB
+  Max allocated memory, type(matrix)                  60.040 kB
+  Max allocated memory, real(realk)                    1.202 MB
+  Max allocated memory, MPI                            0.000 Byte
+  Max allocated memory, complex(complexk)              0.000 Byte
+  Max allocated memory, integer                      276.584 kB
+  Max allocated memory, logical                      338.320 kB
+  Max allocated memory, character                      2.496 kB
+  Max allocated memory, AOBATCH                       17.136 kB
+  Max allocated memory, DECORBITAL                     0.000 Byte
+  Max allocated memory, DECFRAG                        0.000 Byte
+  Max allocated memory, BATCHTOORB                     0.000 Byte
+  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
+  Max allocated memory, MYPOINTER                      0.000 Byte
+  Max allocated memory, ARRAY2                         0.000 Byte
+  Max allocated memory, ARRAY4                         0.000 Byte
+  Max allocated memory, ARRAY                         83.600 MB
+  Max allocated memory, PNOSpaceInfo                   0.000 Byte
+  Max allocated memory, MP2DENS                        0.000 Byte
+  Max allocated memory, TRACEBACK                      0.000 Byte
+  Max allocated memory, MP2GRAD                        0.000 Byte
+  Max allocated memory, ODBATCH                        4.928 kB
+  Max allocated memory, LSAOTENSOR                     7.632 kB
+  Max allocated memory, SLSAOTENSOR                    9.984 kB
+  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
+  Max allocated memory, ATOMTYPEITEM                 337.584 kB
+  Max allocated memory, ATOMITEM                       2.048 kB
+  Max allocated memory, LSMATRIX                       3.520 kB
+  Max allocated memory, OverlapT                     122.304 kB
+  Max allocated memory, linkshell                      1.260 kB
+  Max allocated memory, integrand                     64.512 kB
+  Max allocated memory, integralitem                 829.440 kB
+  Max allocated memory, IntWork                       18.504 kB
+  Max allocated memory, Overlap                      388.436 kB
+  Max allocated memory, ODitem                         3.584 kB
+  Max allocated memory, LStensor                       9.886 kB
+  Max allocated memory, FMM                            0.000 Byte
+  Max allocated memory, XC                             0.000 Byte
+  Max allocated memory, Lvec_data                      0.000 Byte
+  Max allocated memory, Lattice_cell                   0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+  Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 1 The Atomic Calculation                     
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L1 mat_trans               18            0.0000            0.0010
+   L1 mat_assign              24            0.0000            0.0000
+   L1 mat_copy                 8            0.0000            0.0000
+   L1 mat_mul                 24            0.0000            0.0000
+   L1 mat_add                 26            0.0000            0.0000
+   L1 mat_daxpy               40            0.0000            0.0000
+   L1 mat_dotproduct          47            0.0000            0.0010
+   L1 mat_sqnorm2             46            0.0000            0.0000
+   L1 mat_zero                20            0.0000            0.0000
+      ==============================================================
+   L1 TOTAL MAT                             0.0000            0.0020
+      ==============================================================
+   L1     II_get_overlap       2            0.0030            0.0020
+   L1     II_get_kinetic       2            0.0010            0.0020
+   L1   II_get_nucel_mat       2            0.0030            0.0030
+   L1 II_GET_EXCHANGE_MA       8            0.0340            0.0350
+   L1 II_get_coulomb_mat       8            0.0220            0.0200
+      ==============================================================
+   L1 TOTAL INTEGRAL                        0.0630            0.0620
+      ==============================================================
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 3 The Full molecular Calculation             
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L3 mat_set_from_full       84            0.0000            0.0000
+   L3 mat_to_full             24            0.0010            0.0000
+   L3 mat_trans               60            0.0000            0.0010
+   L3 mat_assign             119            0.0000            0.0000
+   L3 mat_copy                17            0.0000            0.0000
+   L3 mat_mul                230            0.0010            0.0000
+   L3 mat_add                 70            0.0000            0.0010
+   L3 mat_daxpy              161            0.0000            0.0000
+   L3 mat_dotproduct          95            0.0000            0.0000
+   L3 mat_sqnorm2             79            0.0000            0.0000
+   L3 mat_diag_f              10            0.0010            0.0010
+   L3 mat_zero               102            0.0000            0.0000
+   L3 mat_density_from_o      10            0.0000            0.0000
+   L3 mat_scal_dia_vec         2            0.0000            0.0000
+   L3  mat_inv                 1            0.0000            0.0000
+   L3 mat_dsyev                1            0.0000            0.0000
+   L3 mat_identity             2            0.0000            0.0000
+   L3 mat_write_to_disk       11            0.0000            0.0010
+      ==============================================================
+   L3 TOTAL MAT                             0.0030            0.0040
+      ==============================================================
+   L3     II_get_overlap       1            0.0020            0.0020
+   L3     II_get_kinetic       1            0.0020            0.0020
+   L3   II_get_nucel_mat       1            0.0060            0.0070
+   L3 II_precalc_ScreenM       1            0.0190            0.0190
+   L3      II_get_nucpot       1            0.0000            0.0000
+   L3 II_GET_EXCHANGE_MA      20            0.5250            0.5260
+   L3 II_get_coulomb_mat      10            0.1280            0.1320
+   L3 II_get_xc_Fock_mat      20            7.6900            7.7120
+   L3           homolumo       1            0.6580            0.6600
+      ==============================================================
+   L3 TOTAL INTEGRAL                        9.1000            9.1310
+      ==============================================================
+ >>>  CPU Time used in LSDALTON is   9.13 seconds
+ >>> wall Time used in LSDALTON is   9.16 seconds
+
+End simulation
+     Date and time (Linux)  : Wed Oct 22 16:50:57 2014
+     Host name              : localhost.st.client.au.dk               

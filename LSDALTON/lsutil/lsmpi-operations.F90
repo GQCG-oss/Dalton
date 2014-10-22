@@ -1374,7 +1374,7 @@ call LS_MPI_BUFFER(dalton%ADMMS,Master)
 call LS_MPI_BUFFER(dalton%ADMMP,Master)
 call LS_MPI_BUFFER(dalton%ADMM_separateX,Master)
 call LS_MPI_BUFFER(dalton%PRINT_EK3,Master)
-
+call LS_MPI_BUFFER(dalton%ADMMBASISFILE,Master)
 call LS_MPI_BUFFER(dalton%SR_EXCHANGE,Master)
 
 !Coulomb attenuated method CAM parameters
