@@ -2491,11 +2491,11 @@ module matrix_operations_scalapack
     real(realk),intent(INOUT) :: eival(:) !output
     integer,intent(IN) :: DESC_A(9),DESC_B(9),DESC_C(9)
     !
-    real(realk),pointer :: WORK(:),GAP(:)
+    real(realk),pointer :: WORK(:),GAP(:),Atmp(:,:),Btmp(:,:)
     integer,pointer :: IWORK(:),IFAIL(:),ICLUSTR(:)
     real(realk) :: ABSTOL,ORFAC,DDUMMY
-    integer :: LWORK,LIWORK,INFO,IDUMMY
-    integer :: neigenvalues,neigenvectors
+    integer :: LWORK,LIWORK,INFO,IDUMMY,LWORK_SAVE
+    integer :: neigenvalues,neigenvectors,LIWORK_SAVE
 !    INTEGER :: NUMROC
 #ifdef VAR_SCALAPACK
 !    INTEGER            ICEIL
@@ -2510,7 +2510,7 @@ module matrix_operations_scalapack
     call mem_alloc(GAP,SLgrid%nprow*SLgrid%npcol)
     DDUMMY=0E0_realk
     IDUMMY=0
-    ORFAC=1E-3_realk
+    ORFAC=1.0E-3_realk
     ABSTOL = PDLAMCH(SLGrid%ictxt, 'U')
     LWORK = -1  !A workspace query is assumed
     LIWORK = -1 !A workspace query is assumed
@@ -2522,19 +2522,57 @@ module matrix_operations_scalapack
     IF(INFO.NE. 0)THEN
        CALL LSQUIT('matop_scalapack mat_diag_f: PDSYGVX Failed A ',-1)
     ENDIF
-    LWORK  = INT(WORK(1))*9+150000000 !THE INQUIRE FUNCTION IS WRONG, THIS IS A WORKAROUND
-    LIWORK = IWORK(1)*9+100000000 !THE INQUIRE FUNCTION IS WRONG, THIS IS A WORKAROUND
+    LWORK  = INT(WORK(1))
+    LIWORK = IWORK(1)
+    LWORK_SAVE  = INT(WORK(1))
+    LIWORK_SAVE = IWORK(1)
     call mem_dealloc(WORK)
     call mem_dealloc(IWORK)
     call mem_alloc(WORK,LWORK)
     call mem_alloc(IWORK,LIWORK)
-    CALL PDSYGVX(1,'V','A','L',A%nrow,A%p,1,1,DESC_A,&
-               & B%p,1,1,DESC_B,DDUMMY,DDUMMY,IDUMMY,IDUMMY,&
+
+    call mem_alloc(Atmp,size(A%p,1),size(A%p,2))
+    call mem_alloc(Btmp,size(B%p,1),size(B%p,2))
+    Atmp = A%p
+    Btmp = B%p
+
+    CALL PDSYGVX(1,'V','A','L',A%nrow,Atmp,1,1,DESC_A,&
+               & Btmp,1,1,DESC_B,DDUMMY,DDUMMY,IDUMMY,IDUMMY,&
                & ABSTOL,neigenvalues,neigenvectors,eival,&
                & ORFAC,C%p,1,1,DESC_C,WORK,LWORK,IWORK,LIWORK,&
                & ifail,iclustr,gap,INFO)
+
+    call mem_dealloc(WORK)
+    call mem_dealloc(IWORK)
+    
     IF(INFO.NE. 0)THEN
-       print*,'INFO',INFO
+       print*,'PDSYGVX Failed: Increasing WorkArray INFO',INFO
+       INFO = 0 
+       !For PDSYGVX, the computed eigenvectors may not be orthogonal 
+       !if the minimum workspace is supplied and ortol is too small; 
+       !therefore, if you want to guarantee orthogonality 
+       !(at the cost of potentially compromising performance), 
+       !you should add the following to lwork: (clustersize-1)(n)
+       !where clustersize is the number of eigenvalues in the largest cluster
+       !, where a cluster is defined as a set of close eigenvalues: 
+       !       LWORK  = LWORK + A%nrow*A%nrow
+       Atmp = A%p
+       Btmp = B%p
+
+       LWORK  = LWORK_SAVE + A%nrow*A%nrow
+       LIWORK = LIWORK_SAVE
+       call mem_alloc(WORK,LWORK)
+       call mem_alloc(IWORK,LIWORK)
+       CALL PDSYGVX(1,'V','A','L',A%nrow,Atmp,1,1,DESC_A,&
+            & Btmp,1,1,DESC_B,DDUMMY,DDUMMY,IDUMMY,IDUMMY,&
+            & ABSTOL,neigenvalues,neigenvectors,eival,&
+            & ORFAC,C%p,1,1,DESC_C,WORK,LWORK,IWORK,LIWORK,&
+            & ifail,iclustr,gap,INFO)
+       call mem_dealloc(WORK)
+       call mem_dealloc(IWORK)
+    ENDIF
+    IF(INFO.NE. 0)THEN
+       print*,'PDSYGVX Failed: INFO',INFO
        IF(INFO.GT. 0)THEN
           IF(MOD(INFO,2).NE. 0)THEN
              print*,'one or more eigenvectors failed to converge.'
@@ -2557,10 +2595,10 @@ module matrix_operations_scalapack
              print*,'Unknown reason'
           ENDIF
        ENDIF
-       CALL LSQUIT('matop_scalapack mat_diag_f: PDSYGVX Failed B ',-1)
+       CALL LSQUIT('matop_scalapack mat_diag_f: PDSYGVX Failed B2 ',-1)
     ENDIF
-    call mem_dealloc(WORK)
-    call mem_dealloc(IWORK)
+    call mem_dealloc(Atmp)
+    call mem_dealloc(Btmp)
     call mem_dealloc(IFAIL)
     call mem_dealloc(ICLUSTR)
     call mem_dealloc(GAP)
@@ -2599,7 +2637,7 @@ module matrix_operations_scalapack
     real(realk),intent(INOUT) :: eival(ndim) !output
     integer,intent(IN) :: DESC_A(9),DESC_B(9),ndim
     !
-    real(realk),pointer :: WORK(:)
+    real(realk),pointer :: WORK(:),Atmp(:,:)
     integer :: LWORK,INFO
 #ifdef VAR_SCALAPACK
     REAL(REALK),EXTERNAL :: PDLAMCH
@@ -2614,8 +2652,11 @@ module matrix_operations_scalapack
     LWORK = INT(WORK(1))
     call mem_dealloc(WORK)
     call mem_alloc(WORK,LWORK)
-    CALL PDSYEV('V','U',A%nrow,A%p,1,1,DESC_A,&
+    call mem_alloc(Atmp,size(A%p,1),size(A%p,2))
+    Atmp = A%p
+    CALL PDSYEV('V','U',A%nrow,Atmp,1,1,DESC_A,&
                & eival,B%p,1,1,DESC_B,WORK,LWORK,INFO)
+    call mem_dealloc(Atmp)
     IF(INFO.NE. 0)THEN
        print*,'INFO',INFO
        CALL LSQUIT('matop_scalapack mat_dsyev: PDSYEV Failed B',-1)
@@ -2654,7 +2695,7 @@ module matrix_operations_scalapack
     real(realk),pointer :: choltemp(:),eivec(:)
     integer,pointer     :: icholtemp(:),IFAIL(:),ICLUSTR(:)
     integer             :: ndim,neig,info,VL,VU
-    real(realk),pointer :: eivalTmp(:),GAP(:)
+    real(realk),pointer :: eivalTmp(:),GAP(:),Atmp(:,:)
     integer :: lwork,liwork
 
 
@@ -2672,10 +2713,13 @@ module matrix_operations_scalapack
     call mem_alloc(GAP,ndim)
     call mem_alloc(ICLUSTR,ndim)
 !   Inquire to get the size of lwork and liwork
-    call PDSYEVX('N', 'I', 'U', ndim, A%p, 1, 1, DESC_A, VL, VU, ieig, ieig, &
+    call mem_alloc(Atmp,size(A%p,1),size(A%p,2))
+    Atmp = A%p
+    call PDSYEVX('N', 'I', 'U', ndim, Atmp, 1, 1, DESC_A, VL, VU, ieig, ieig, &
        &  0.0E0_realk, neig, 0, eivalTmp, 0.0E0_realk, eivec, 1, 1, DESC_A, &
        &  choltemp, lwork, icholtemp, liwork, &
        &  IFAIL, ICLUSTR, GAP, INFO )
+    call mem_dealloc(Atmp)
     lwork =  INT(choltemp(1))
     liwork = icholtemp(1)
     call mem_dealloc(choltemp)
