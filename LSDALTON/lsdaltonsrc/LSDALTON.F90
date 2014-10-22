@@ -104,6 +104,10 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use ls_qmatrix, only: ls_qmatrix_test, &
                         ls_qmatrix_finalize
 #endif
+#ifdef HAS_PCMSOLVER
+  use ls_pcm_utils, only: init_molecule
+  use ls_pcm_scf, only: ls_pcm_scf_initialize, ls_pcm_scf_finalize
+#endif
   implicit none
   logical, intent(in) :: OnMaster
   logical, intent(inout):: meminfo_slaves
@@ -140,8 +144,21 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
-
+   
   call Test_if_64bit_integer_required(nbast,nbast)
+
+#ifdef HAS_PCMSOLVER
+        !
+        ! Polarizable continuum model calculation
+        !
+        if (config%pcm%do_pcm) then
+           ! Set molecule object in ls_pcm_utils
+           call init_molecule(ls%input%Molecule)
+           ! Now initialize PCM
+           call ls_pcm_scf_initialize(ls%setting, lupri, luerr)
+           write (lupri,*) 'PCMSolver interface correctly initialized'
+        end if
+#endif        
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
@@ -720,6 +737,14 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      call config_shutdown(config)
   end if
   call config_free(config)
+
+#ifdef HAS_PCMSOLVER
+  if (config%pcm%do_pcm) then
+     ! Now finalize PCM
+     call ls_pcm_scf_finalize
+     write (lupri,*) 'PCMSolver interface correctly finalized'
+  end if
+#endif
 
   call ls_free(ls)
   

@@ -65,8 +65,20 @@ C
 !940501-hjaaj
 !FCKEIG: exit if ".FREEZE" not compatible with ORDRSS.
 !    ORDRSS now always called (this also fixes error in prev. version).
+!940408-hjaaj
+!DIIS_CTL: s/EMCACT/EACTIV/ to define active energy in /INFOPT/
+!940311-hjaaj
+!DIIS_CTL: s/EVCNRM/GRDNRM/ (so gradient norm is transferred to SIROUT)
+!        nice output to LUW4 if LUW4 .ne. LUPRI
 !931126-hjaaj
 !DIIS_CTL: call NEWORB after each iteration (for restart)
+!930720-hjaaj
+!SRDIIS: new parameter PROCC .FALSE. in CALL PRORB
+!930715-hjaaj
+!------: improved some print
+!SRDIIS: exit MXDGSS .GT. 0
+!930623-hjaaj
+!FCKEIG: inserted PARAMETER(D0=0.0D0)
 !===========================================================================
 #endif
 C  /* Deck srdiis */
@@ -123,6 +135,7 @@ C
 C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
+
 
       ! QM/NP/MM embedding
       IF (QMNPMM) THEN
@@ -307,6 +320,10 @@ C
 C DFT modifications T.  Helgaker
 C
 C
+#if defined (HAS_PCMSOLVER)
+      use pcm_scf
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), GVEC(*), BMAT(*), H1AO(*)
@@ -315,6 +332,12 @@ C
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
       DIMENSION RCPMAT(*), RMMMAT(*)
+
+#if defined (HAS_PCMSOLVER)
+      real(8), allocatable :: density_ao(:), density_ao_symm(:)
+      real(8), allocatable :: fock_pcm_ao(:), fock_pcm_ao_symm(:)
+#endif
+
 C
 C Used from common blocks:
 C  INFINP : FLAG(*)
@@ -406,8 +429,13 @@ CAMT  If requested calculate the DFT-D energy correction
 
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
+#if defined (HAS_PCMSOLVER)
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM .OR.
+     &    pcmmod_is_pcm_calculation) THEN
+#else              
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM) THEN
-C     this also includes the case of MMPCM
+#endif
+C     this also includes the case of MMPCM   
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
      &      ' Iter      Total energy       Solvation energy    '//
@@ -525,6 +553,11 @@ C------------------
      &     .AND. .NOT. use_efs
 #endif
 C
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+              dodifden = .false.
+      end if
+#endif
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -999,6 +1032,72 @@ C
 #endif
          END IF
 C
+#if defined (HAS_PCMSOLVER)
+         if (pcmmod_is_pcm_calculation) then
+! Allocate scratch space for the PCM Fock matrix contribution in AO basis.
+           allocate(fock_pcm_ao(nnbasx))
+           fock_pcm_ao = 0.0d0
+! Allocate scratch space for the density matrix to be passed to the PCM
+! subroutines
+           allocate(density_ao_symm(nnbasx))
+           density_ao_symm = 0.0d0
+! Allocate the PCM Fock matrix contribution in AO basis. 
+! It is of dimension NNBASX and we take the memory from the WRK array. 
+! We zero it out afterwards.
+!           call memget('REAL', kfcsol, nnbasx, wrk, kfree, lfree)
+!           call dzero(wrk(kfcsol), nnbasx)
+! DAOSAV(:, 1) = DCAO (density matrix for closed shells)
+! DAOSAV(:, 2) = DVAO (density matrix for open shells)
+! PCM doesn't care about closed/open shells, so we decide at this
+! higher level which one of them to pass, based on the wavefunction asked.          
+           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+             density_ao_symm(:) = daosav(:, 1)
+! We pass just DCAO, i.e. density_matrix = DCAO
+           else
+! We sum DCAO and DVAO, i.e. density_matrix = DCAO + DVAO
+             density_ao_symm(:) = daosav(:, 1) + daosav(:, 2)
+           end if
+! Call the energy driver with the symmetry-unpacked density matrix 
+           if (nsym > 1) then
+             allocate(density_ao(nnbasx))
+             density_ao = 0.0d0
+! Symmetry un-pack density_ao_symm to density_ao             
+             call pksym1(density_ao, density_ao_symm, nbas, nsym, -1)
+             call pcm_energy_driver(density_ao, esolt, wrk(kfree), 
+     &                               lfree)
+           else
+             call pcm_energy_driver(density_ao_symm, esolt, wrk(kfree), 
+     &                              lfree)
+           end if
+! Call the Fock driver           
+           call pcm_oper_ao_driver(fock_pcm_ao, 'TotASC'//char(0), 
+     &                             wrk(kfree), lfree)
+! Copy the PCM Fock matrix contribution on top of the AO basis Fock matrix
+           if (nsym > 1) then
+             allocate(fock_pcm_ao_symm(nnbasx))
+             fock_pcm_ao_symm = 0.0d0
+! Symmetry-pack fock_pcm_ao to fock_pcm_ao_symm 
+             call pksym1(fock_pcm_ao, fock_pcm_ao_symm, nbas, nsym, +1)
+             call daxpy(nnbast, -1.0d0, fock_pcm_ao_symm, 1, 
+     &                                  faosav(1, indevc, 1), 1)
+           else
+             call daxpy(nnbast, -1.0d0, fock_pcm_ao, 1, 
+     &                                  faosav(1, indevc, 1), 1)
+           end if
+! We can print it here, if needed.
+!lf            write(lupri,*) 'extpcm fock matrix'
+!lf            call outpak(wrk(kfcsol), nbast, 1, lupri)
+! Clean-up
+           deallocate(fock_pcm_ao)
+           deallocate(density_ao_symm)
+           if (nsym > 1) then
+             deallocate(fock_pcm_ao_symm)
+             deallocate(density_ao)
+           end if
+         end if
+#endif
+
+C
          EMCDIF = EMCSCF
          EMCSCF = EMY + EACTIV + EPOT + ESOLT
 
@@ -1040,7 +1139,11 @@ C
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
+#if defined (HAS_PCMSOLVER)
+            IF (EMBEDDING .or. pcmmod_is_pcm_calculation) then
+#else                
             IF (EMBEDDING) THEN
+#endif                    
 C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(A,I3,1P,2G20.12,D15.5,D12.2)')

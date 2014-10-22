@@ -1361,7 +1361,7 @@ contains
                    nAwaitDealloc = nAwaitDealloc + 1
                    CurrentWait(nAwaitDealloc) = 2
                 ELSE
-                   useAlphaCD3 = .FALSE.; useAlphaCD3=.TRUE.
+                   useAlphaCD3 = .FALSE.; useAlphaCD2=.TRUE.
                    nAwaitDealloc = nAwaitDealloc + 1
                    CurrentWait(nAwaitDealloc) = 3
                 ENDIF
@@ -1438,6 +1438,7 @@ contains
        call mem_leaktool_dealloc(Calpha,LT_Calpha)
        call mem_dealloc(Calpha)              
     ENDIF
+
     call mem_leaktool_dealloc(EpsOcc,LT_Eps)
     call mem_dealloc(EpsOcc)
     call mem_leaktool_dealloc(EpsVirt,LT_Eps)

@@ -114,6 +114,13 @@ set(GEOOPT_SOURCES
     LSDALTON/geomopt/q_to_x.F90
     LSDALTON/geomopt/dqdx.cpp           
     )
+set(LSDALTON_PCM_SOURCES	
+    LSDALTON/pcm/ls_pcm_config.F90
+    LSDALTON/pcm/ls_pcm_utils.F90
+    LSDALTON/pcm/ls_pcm_write.F90
+    LSDALTON/pcm/ls_pcm_integrals.F90
+    LSDALTON/pcm/ls_pcm_scf.F90
+    )
 set(LINEARS_SOURCES	
     LSDALTON/linears/configurationType.F90
     LSDALTON/linears/LocTypes.F90
@@ -880,3 +887,8 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${ICHORLIB_SOURCES}
     ${LS_QMATRIX_SOURCES}
  )
+if(ENABLE_PCMSOLVER)
+    set(LSDALTON_FREE_FORTRAN_SOURCES
+        ${LSDALTON_FREE_FORTRAN_SOURCES} 
+        ${LSDALTON_PCM_SOURCES})
+endif()

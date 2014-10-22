@@ -638,6 +638,11 @@ C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
 C     variables.
 C
+#if defined (HAS_PCMSOLVER)
+      use pcm_scf
+      use pcmmod_cfg
+#endif
+
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1274,6 +1279,15 @@ C
       CTOT = CEND - CSTR
       WTOT = WEND - WSTR
 C
+! Finalize pcm_scf if an EXTPCM calculation (PCM using PCMSolver
+! library) was requested.
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        call pcm_scf_finalize
+        write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
+      end if
+#endif
+
       CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRI)
       CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRI)
 C
@@ -1292,6 +1306,11 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+      use pcm_write
+#endif
+
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1321,7 +1340,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 13, NTABLE = 35, D0 = 0.D0)
+      PARAMETER (NDIR = 14, NTABLE = 35, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1329,19 +1348,24 @@ C
 #endif
 C
       LOGICAL ALLOPT
+
+#if defined (HAS_PCMSOLVER)
+      logical extpcm_input_provided
+#endif
+
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-     &            '*READIN', '*QMNPMM', '*QFIT  '/
+     &            '*READIN', '*QMNPMM', '*QFIT  ', '*EXTPCM'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
      &            '.WALK  ', '.MAX IT', '.RESPON', ! 12
      &            '.RUN PR', '.RUN RE', '.RUN WA',
      &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
+     &            '.EXTPCM', 'xxxxxxx', 'xxxxxxx',
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
@@ -1449,8 +1473,12 @@ C         but we may restart with old integrals. FTRCTL is set
 C         true by EXEHER signalling that new AO integrals have
 C         been calculated.
 C
-C     Initialize /PCMLOG/
+C     Initialize /PCMLOG/ and /EXTPCM/
 C
+#if defined (HAS_PCMSOLVER)
+      extpcm_input_provided = .false.
+      pcmmod_is_pcm_calculation = .false.
+#endif
       PCM    = .FALSE.
       OUTFLD = .FALSE.
       NEWMAT = .TRUE.
@@ -1518,7 +1546,7 @@ C Table(01:34) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
+C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.EXTPCM',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  '.
@@ -1614,6 +1642,14 @@ C        ".WALK  "
             DIRCAL = .TRUE.
          GO TO 100
  119     CONTINUE
+#ifdef HAS_PCMSOLVER
+            extpcm_input_provided = .true.
+#else
+      WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+      CALL QUIT('Recompile including the PCM Module')
+#endif
+         goto 100
  120     CONTINUE
  121     CONTINUE
  122     CONTINUE
@@ -1696,6 +1732,7 @@ C
       WRITE (LUPRI,'(3X,A,I5)')  'Overall default print level:',IPRUSR
       IF (IPRSTAT .EQ. -10) IPRSTAT = IPRUSR + 1
       WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.STAT:',IPRSTAT
+!     WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.STAT',IPRSTAT
       WRITE (LUSTAT,'(A,I5)')    ' Print level for DALTON.STAT',IPRSTAT
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
@@ -1824,7 +1861,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1922,8 +1959,36 @@ C     "*QMNPMM" input
 #endif
       GOTO 200
 C     "*END OF" or "**something"
+
+!     *EXTPCM input
+   14 CONTINUE
+#if defined (HAS_PCMSOLVER)
+            call move_to_next_star(word,lucmd)
+#else
+            WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+            CALL QUIT('Recompile including the PCM Module')
+#endif
+      GOTO 200
+C     "*END OF" or "**something"
     1 CONTINUE
 C
+#if defined (HAS_PCMSOLVER)
+!     read EXTPCM input if applicable
+      if(extpcm_input_provided)then
+        call read_menu_input('DALTON.INP', lucmd,
+     &                       '*EXTPCM', extpcm_input_provided)
+        pcmmod_is_pcm_calculation = .true.
+        if (.not. extpcm_input_provided) then
+        call quit('Oops, read_menu_input could not find *EXTPCM input')
+        end if
+      end if
+      if(pcmmod_is_pcm_calculation) then
+! Print useful info about DALTON+PCMSolver input options specified              
+              call report_after_pcm_input(lupri)
+      end if
+#endif
+
 #if defined (VAR_MPI) || defined (VAR_PVM)
       CALL PRLINP(WORD)
 #endif

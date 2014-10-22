@@ -37,6 +37,7 @@ paramlist="$*"
 OUTEXT="out"
 DALEXT="dal"
 MOLEXT="mol"
+PCMEXT="pcm"
 AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
 opt_lslib_test=0
@@ -57,7 +58,7 @@ opt_noappend=0
 usage (){
       echo
       echo "Usage:    lsdalton [-b directory] [-d] [-D] [-ext log | -o file] [-f] [-m mem | -M mem]"
-      echo  "[-N cores] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
+      echo  "[-N cores] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT} pcm.{.$PCMEXT}"
       echo
       echo 'Options:'
       echo ' -b dir    change directory where basis sets are searched for to dir'
@@ -70,6 +71,7 @@ usage (){
       echo ' -noappend do not append anything to the scratch directory; be careful'
       echo '           with this option since by default scratch is wiped after'
       echo '           calculation'
+      echo ' -put "file1 ..." : put files to DALTON_TMPDIR before calculation starts'
       echo ' -ext log  change output extension from ".out" to ".log"'
       echo ' -o FILE   redirect output from program to FILE in WRKDIR'
       echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
@@ -124,6 +126,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -restart ) opt_restart=1;;
       -dens ) optdens=1;;
       -ext ) OUTEXT=$2; shift;;
+      -put ) PUT_FILES=$2; shift;;
       -f ) optf="$2"; shift;;
       -N ) optn=$2; shift;;
       -m ) WRKMEM=$2; export WRKMEM; shift;;
@@ -180,6 +183,19 @@ else
    fi
 fi
 #
+#  Added option for including a pcmsolver.pcm file for PCM calculations
+is_pcm=false
+if [ -n "$3" ]; then
+   filename=`echo $3`
+#  remove .pcm, if added by user
+   pcmfil=`echo $3 | sed "s/\.$PCMEXT//"`                                           
+   if [ "$pcmfil" = "$molfil" ] && [ "$pcmfil" = "$dalfil" ]; then
+      outnam=$pcmfil
+   else
+      outnam=${dalfil}_${molfil}_${pcmfil}
+   fi
+fi
+#
 export DALTON_TMPDIR
 
 if [ $opt_noappend -eq 1 ]; then
@@ -196,6 +212,9 @@ echo "   ******************************************* "
 echo; echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
 echo;
+if [ "$is_pcm" = true ]; then
+echo "   Calculation: $outnam  (input files: $dalfil, $molfil and $pcmfil)"
+fi
 echo "   Calculation: $outnam  (input files: $dalfil and $molfil)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
@@ -226,6 +245,21 @@ if [ -d "$DALTON_SCRATCH" -a -w "$DALTON_SCRATCH" ]; then
       echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
       echo "===> assuming single-input file calculation."
       cp $WRKDIR/$dalfil.$DALEXT MOLECULE.INP
+   fi
+   if [ "x$pcmfil" != "x" ]; then 
+     if [ -s $WRKDIR/$pcmfil.$PCMEXT -a -r $WRKDIR/$pcmfil.$PCMEXT ]; then
+        cp $WRKDIR/$pcmfil.$PCMEXT pcmsolver.inp
+     else
+        echo "$WRKDIR/$pcmfil.$PCMEXT for PCM does not exist or is not readable"
+        ierr=1
+     fi
+   fi
+   # put files listed under -put to scratch directory
+   if [ "$PUT_FILES" != "" ]; then
+      for file in $PUT_FILES; do
+          echo copying $file to scratch directory
+          cp $WRKDIR/$file $file
+      done
    fi
    if [ $optdens -eq 1 ] ; then
       echo "copy $WRKDIR/$molfil.dens.restart"

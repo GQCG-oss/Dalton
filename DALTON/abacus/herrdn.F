@@ -790,6 +790,7 @@ C       THRS    - integral threshold
 C       ADDSYM  - flag for automatic determination of symmetry
 C***********************************************************************
       CALL RDLINE(LUINFO)
+      CALL UPCASE(MLINE(NMLINE))
       CALL LINE4(MLINE(NMLINE),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
      &           KASYM,ID3,DOCART,DOOWN)
 C --> Angstrom or Bohr?
@@ -4669,6 +4670,10 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+#if defined (HAS_PCMSOLVER)
+      use pcm_scf, only: pcm_scf_initialize
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4852,6 +4857,13 @@ C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
+
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        call pcm_scf_initialize(lupri)
+        write(lupri, *) "PCMSolver interface correctly initialized"
+      end if
+#endif
 
       RETURN
       END
@@ -6790,6 +6802,7 @@ C
 C
 C     Read in the fourth input line using the new input scheme
 C
+
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7068,7 +7081,7 @@ C
          ISTART = ISTART + 10
       END IF
       IF (DOOWN) THEN
-         WRITE (TMPLN(ISTART:),'(A4)') 'OWN '
+         WRITE (TMPLN(ISTART:),'(A10)') 'OWN '
          ISTART = ISTART + 4
       END IF
 C

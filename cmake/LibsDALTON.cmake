@@ -91,6 +91,18 @@ if(ENABLE_OPENRSP)
     include(LibsOpenRSP)
 endif()
 
+if(ENABLE_PCMSOLVER)
+    set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    if(MPI_FOUND)
+        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
+    endif()
+    add_dependencies(dalton pcmsolver)
+    set(DALTON_LIBS
+        ${PCMSOLVER_LIBS}
+        ${DALTON_LIBS}
+        )
+endif()
+
 if(NOT ENABLE_CHEMSHELL)
 add_executable(
     dalton.x

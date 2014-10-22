@@ -2141,6 +2141,10 @@ CONTAINS
    ! WE have to go through the interface to dalton before the fock
    ! evaluator learns how to handle arbitrary-type arrays.
    ! ===================================================================
+#ifdef HAS_PCMSOLVER
+   use ls_pcm_config
+   use ls_pcm_scf, only: ls_pcm_energy_driver, ls_pcm_oper_ao_driver
+#endif
       IMPLICIT NONE
       integer, INTENT(IN)         :: ndmat
       TYPE(Matrix), INTENT(IN)    :: H1, D(ndmat)
@@ -2153,6 +2157,10 @@ CONTAINS
       logical :: Dsym,ADMMexchange
       TYPE(Matrix) :: K(ndmat),dXC(ndmat)
       logical :: PRINT_EK3
+#ifdef HAS_PCMSOLVER
+      type(matrix) :: fockPCM(ndmat)
+      real(realk)  :: Epol
+#endif      
       !
       PRINT_EK3 = ls%setting%scheme%PRINT_EK3
       nbast = D(1)%nrow
@@ -2237,6 +2245,24 @@ ENDIF
             Etotal(idmat) = Etotal(idmat) + Edfty(idmat)
          enddo
       ENDIF
+#ifdef HAS_PCMSOLVER
+      if (pcm_config%do_pcm) then
+         ! ndmat is 1
+         ! Calculate polarization energy and update Etotal
+         do idmat = 1, ndmat             
+            call ls_pcm_energy_driver(D(idmat), Epol)
+            Etotal(idmat) = Etotal(idmat) + Epol
+         enddo
+         ! Update Fock matrix with PCM contribution
+         do idmat = 1, ndmat
+            call mat_init(fockPCM(idmat), nbast, nbast)
+            call mat_zero(fockPCM(idmat))
+            call ls_pcm_oper_ao_driver(fockPCM(idmat))
+            call mat_daxpy(-1.e0_realk, fockPCM(idmat), F(idmat))
+            call mat_free(fockPCM(idmat))
+         end do
+      end if
+#endif      
       !** F = h + G
       do idmat=1,ndmat
          call mat_daxpy(1E0_realk,H1,F(idmat))

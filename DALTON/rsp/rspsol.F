@@ -112,6 +112,10 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+      use pcm_linear_response
+#endif 
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -369,6 +373,11 @@ C
      &                 EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
 #endif
       END IF
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        call hello_world
+      end if
+#endif 
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)

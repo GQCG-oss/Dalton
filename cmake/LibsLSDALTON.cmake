@@ -147,6 +147,13 @@ add_library(
 
 target_link_libraries(matrixulib matrixolib)
 
+if(ENABLE_PCMSOLVER)
+    set(EXTERNAL_LIBS ${PCMSOLVER_LIBS} ${EXTERNAL_LIBS})
+    add_library(
+        lspcm
+        ${LSDALTON_PCM_SOURCES})
+endif()
+
 set(ExternalProjectCMakeArgs
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -388,6 +395,14 @@ if(ENABLE_QMATRIX)
     target_link_libraries(lsdaltonmain ls_qmatrix_interface)
 endif()
 
+if(ENABLE_PCMSOLVER)
+    target_link_libraries(lsdaltonmain lspcm)
+    add_dependencies(lsdaltonmain  pcmsolver lspcm)
+    add_dependencies(linearslib    pcmsolver lspcm)
+    add_dependencies(solverutillib pcmsolver lspcm)
+    add_dependencies(lspcm lsutillib lsintlib)
+endif()
+
 if(NOT ENABLE_CHEMSHELL)
     add_executable(
         lsdalton.x
@@ -458,6 +473,9 @@ set(LIBS_TO_MERGE
     xcfun_interface
     lsdaltonmain 
     )
+if(ENABLE_PCMSOLVER)
+	set(LIBS_TO_MERGE ${LIBS_TO_MERGE} lspcm)
+endif()	
 
 MERGE_STATIC_LIBS(
     rsp_prop
@@ -481,10 +499,12 @@ if(NOT ENABLE_CHEMSHELL)
     target_link_libraries(
         lsdalton.x
         lsdalton
+	${PCMSOLVER_LIBS}
         )
 
     target_link_libraries(
         lslib_tester.x
         lsdalton
+	${PCMSOLVER_LIBS}
         )
 endif()

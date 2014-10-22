@@ -67,6 +67,9 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
+#ifdef HAS_PCMSOLVER
+use ls_pcm_config, only: pcmtype, ls_pcm_init, ls_pcm_input
+#endif
 use LSparameters
 
 private
@@ -133,6 +136,10 @@ implicit none
   call optimization_set_default_config(config%optinfo)
   ! Dynamics
   call LS_dynamics_init(config%dynamics)
+#ifdef HAS_PCMSOLVER
+  ! Polarizable Continuum Model
+  call ls_pcm_init(config%pcm)
+#endif
   !Only for testing new sparse matrix library, should be removed afterwards!
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
@@ -749,6 +756,18 @@ DO
       CALL LS_dynamics_input(config%dynamics,readword,word,&
            & lucmd,lupri,config%molecule%NAtoms)
    ENDIF
+!
+
+!
+! Find PCM input section
+!
+#ifdef HAS_PCMSOLVER
+   IF (WORD(1:5) .EQ. '**PCM') THEN
+      config%pcm%do_pcm = .true.
+      call ls_pcm_input(config%pcm,readword,word,&
+           & lucmd,lupri)
+   ENDIF
+#endif
 !
    
 #ifdef MOD_UNRELEASED
@@ -3630,6 +3649,17 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       if (config%decomp%cfg_unres) call lsquit('DEBUG_DD not implemented for unrestricted',config%lupri)
       call scf_stats_arh_header(config%lupri)
    endif
+
+#ifdef HAS_PCMSOLVER
+! Cross-check for polarizable continuum model
+!=================================================
+   if (config%pcm%do_pcm .and. config%optinfo%optimize) then
+      call lsquit('Sorry, polarizable continuum model not available for geometry optimizations!',config%lupri)
+   endif
+   if (config%pcm%do_pcm .and. config%dynamics%do_dynamics) then
+      call lsquit('Sorry, polarizable continuum model not available for dynamics!',config%lupri)
+   endif
+#endif   
 
 !MKL sanity check:
 !==================

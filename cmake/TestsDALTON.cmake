@@ -78,6 +78,10 @@ add_dalton_runtest(qmmm5                         "dalton;runtest;qmmm;parallel;m
 add_dalton_runtest(qmmm6                         "dalton;runtest;qmmm;medium;parallel")
 add_dalton_runtest(walk_solvmag                  "dalton;runtest;long")
 
+if(ENABLE_PCMSOLVER)
+	add_dalton_runtest(extpcm "dalton;runtest;short")
+endif()
+
 add_dalton_test(gen1int_fluorobenzene_cart  "dalton;gen1int;short;parallel")
 add_dalton_test(gen1int_fluorobenzene_spher "dalton;gen1int;short;parallel")
 add_dalton_test(gen1int_water_cart          "dalton;gen1int;short;parallel")

@@ -55,6 +55,9 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -330,7 +333,12 @@ csonia 04/10/95
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
-
+#ifdef HAS_PCMSOLVER
+      ELSE IF (pcmmod_is_pcm_calculation) THEN
+         WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
+     *        'SOLVATION MODEL: polarizable continuum model (PCM),'
+         WRITE(LUPRI,'(5X,A24,F20.12)') 'Solvation energy:     ',ESOLT
+#endif
       ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
         WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
