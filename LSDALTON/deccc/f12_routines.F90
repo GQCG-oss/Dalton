@@ -758,6 +758,57 @@ contains
     call mat_transpose(n41,n42, 1.0E0_realk,C4, 0.0E0_realk,C4T)
     call mat_transpose(n31,n32, 1.0E0_realk,C3, 0.0E0_realk,C3T)
     call mat_transpose(n11,n12, 1.0E0_realk,C1, 0.0E0_realk,C1T)
+
+
+
+!!$    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
+!!$    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
+!!$
+!!$    get current allocated
+!!$    getMaximem =  decinfo%memory
+!!$    IF(n21*n41*nbasis*nbasis + n22*n41*nbasis*nbasis)THEN
+!!$       !NON BATCHING
+!!$       Optimalbatchdimgamma = nbasis
+!!$       Optimalbatchdimalpha = nbasis
+!!$    ELSE
+!!$       IF(n21*n41*nbasis*MinGammaBatchSize + n22*n41*nbasis*MinGammaBatchSize)THEN
+!!$          !BATCHING ON GAMMA ONLY
+!!$          Optimalbatchdimalpha = nbasis
+!!$          do Ngamma = Nbasis,MinGammaBatchSize,-1
+!!$             dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
+!!$             dim2 = i8*n41*dimAlpha*dimGamma*n22  ! dim of tmp2 
+!!$             step1mem = dim1 + dim2
+!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
+!!$                Optimalbatchdimgamma = Ngamma
+!!$                EXIT
+!!$             ENDIF
+!!$          enddo
+!!$       ELSE
+!!$          !BATCH ON BOTH
+!!$          do Nalpha = Nbasis,MinAlphaBatchSize,-1
+!!$             dim1 = i8*n21*n41*dimAlpha*MinGammaBatchSize   ! dimension for integral array tmp1
+!!$             dim2 = i8*n41*dimAlpha*MinGammaBatchSize*n22  ! dim of tmp2 
+!!$             step1mem = dim1 + dim2
+!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
+!!$                Optimalbatchdimalpha = Nalpha
+!!$                EXIT
+!!$             ENDIF
+!!$          enddo
+!!$          
+     
+!!$       do Ngamma = MinGammaBatchSize,Nbasis
+!!$          do Nalpha = MinAlphaBatchSize,Nbasis
+!!$             
+!!$             dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
+!!$             dim2 = i8*n41*dimAlpha*dimGamma*n22  ! dim of tmp2 
+!!$             step1mem = dim1 + dim2
+!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
+!!$                Optimalbatchdimgamma = Ngamma
+!!$             ENDIF
+!!$          enddo
+!!$       enddo
+!!$    ENDIF
+    
     ! ************************
     ! Determine AO batch sizes
     ! ************************
@@ -765,7 +816,7 @@ contains
     ! (as is done e.g. in get_optimal_batch_sizes_for_mp2_integrals).
     ! For simplicity we simply choose the gamma batch to contain all basis functions,
     ! while we make the alpha batch as small as possible
-
+    
     ! ***********************************
     ! Determine batch Types ('R' or 'C')
     ! ***********************************
@@ -1529,6 +1580,11 @@ contains
 
   end subroutine get_4Center_MO_integrals
 
+  subroutine get_max_batchsize()
+    implicit none
+
+  end subroutine get_max_batchsize
+  
 #else
 
    subroutine dummy_f12_routines()

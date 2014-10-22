@@ -5362,14 +5362,16 @@ ELSE
 ENDIF
 END SUBROUTINE II_get_exchange_mat_regular_full
 
-SUBROUTINE II_get_admm_exchange_mat(LUPRI,LUERR,SETTING,optlevel,D,F,dXC,ndmat,EdXC,dsym)
+SUBROUTINE II_get_admm_exchange_mat(LUPRI,LUERR,SETTING,optlevel,D,F,dXC,ndmat,&
+     & EdXC,dsym,Econt,ADMMBASISFILE)
 implicit none
 Integer,intent(in)            :: lupri,luerr,optlevel,ndmat
 real(realk),intent(out)       :: EdXC
+real(realk),intent(inout)     :: Econt(5)
 TYPE(Matrix),intent(in)       :: D
 TYPE(Matrix),intent(inout)    :: F,dXC
 type(lssetting),intent(inout) :: setting
-logical,intent(in)            :: dsym
+logical,intent(in)            :: dsym,ADMMBASISFILE
 !
 logical             :: GC3
 TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33
@@ -5450,12 +5452,12 @@ CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(k2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,k2)
 
-
 call Transformed_F2_to_F3(TMPF,k2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AOadmm,AO3,.FALSE.,GC3,constrain_factor)
 fac = 1E0_realk
 IF (isADMMP) fac = constrain_factor**(4.E0_realk)
 call mat_daxpy(fac,TMPF,F)
+IF(ADMMBASISFILE)Econt(3) = mat_dotproduct(TMPF,D)
 
 !Subtract XC-correction
 CALL lstimer('AUX-EX',ts,te,lupri)
@@ -5481,7 +5483,7 @@ IF (isADMMS) THEN
    call mat_scal(constrain_factor**(4./3.),x2(1)) ! RE-SCALING XC2 TO FIT k2  
 ENDIF
 
-
+IF(ADMMBASISFILE)Econt(4) = EX2(1)
 
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,x2(1),setting,lupri,luerr,nbast2,nbast,&
@@ -5501,6 +5503,7 @@ IF (separateX) THEN
   CALL mat_init(F3(1),nbast,nbast)
   CALL mat_zero(F3(1))
   call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
+  IF(ADMMBASISFILE)Econt(2) = EX3(1)
   
   CALL mat_daxpy(1E0_realk,F3(1),dXC)
   CALL mat_free(F3(1))
