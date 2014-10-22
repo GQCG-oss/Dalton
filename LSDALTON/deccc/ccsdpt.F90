@@ -8752,7 +8752,7 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
     call time_start_phase(PHASE_WORK)
 
     o3v           = nocc*nocc*nocc*nvirt
@@ -9032,7 +9032,7 @@ contains
 #endif
              !call tensor_accumulate_tile(vvvo,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
 
-             dest = get_residence_of_tile(i,vvvo) 
+             call get_residence_of_tile(dest,i,vvvo) 
 
              do first_el_i_block=1,v3,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
@@ -9043,10 +9043,16 @@ contains
                    &(mod(v3-first_el_i_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
                    &nel2t=int(mod(v3,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
 
-                call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,first_el_i_block,dest,vvvo%wi(i))
+                if( alloc_in_dummy )then
+                   wi_idx = 1
+                else
+                   wi_idx = i 
+                endif
+
+                call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,first_el_i_block,dest,vvvo%wi(wi_idx))
 
 #ifdef VAR_HAVE_MPI3
-                call lsmpi_win_flush(vvvo%wi(i),rank=dest,local=.true.)
+                call lsmpi_win_flush(vvvo%wi(wi_idx),rank=dest,local=.true.)
 #else
                 call tensor_unlock_win(vvvo,i)
 #endif
@@ -9182,7 +9188,7 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3,ov2
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
     call time_start_phase(PHASE_WORK)
 
     o3v           = nocc*nocc*nocc*nvirt
@@ -9536,21 +9542,28 @@ contains
 #ifdef VAR_HAVE_MPI3
              call tensor_lock_win(vovv,tile,'s',assert=mode)
 #endif
-             dest = get_residence_of_tile(tile,vovv)
+             call get_residence_of_tile(dest,tile,vovv)
 
              do first_el_c_block=1,ov2*tile_size_tmp,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
                 call tensor_lock_win(vovv,tile,'s',assert=mode)
 #endif
+
+                if( alloc_in_dummy )then
+                   wi_idx = 1
+                else
+                   wi_idx = tile
+                endif
+
                 nel2t=MAX_SIZE_ONE_SIDED
                 if(((ov2*tile_size_tmp-first_el_c_block)<MAX_SIZE_ONE_SIDED).and.&
                    &(mod(ov2*tile_size_tmp-first_el_c_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
                    &nel2t=int(mod(ov2*tile_size_tmp,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
 
-                call lsmpi_acc(tmp2(first_el_c_block:first_el_c_block+nel2t-1),nel2t,first_el_c_block,dest,vovv%wi(tile))
+                call lsmpi_acc(tmp2(first_el_c_block:first_el_c_block+nel2t-1),nel2t,first_el_c_block,dest,vovv%wi(wi_idx))
 
 #ifdef VAR_HAVE_MPI3
-                call lsmpi_win_flush(vovv%wi(tile),rank=dest,local=.true.)
+                call lsmpi_win_flush(vovv%wi(wi_idx),rank=dest,local=.true.)
 #else
                 call tensor_unlock_win(vovv,tile)
 #endif

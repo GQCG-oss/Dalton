@@ -206,17 +206,7 @@ module tensor_basic_module
       endif
       vector_size = dble(arr%nelms)*realk
 
-!      if( lspdm_use_comm_proc )then
-!#ifdef VAR_MPI
-!        ne = 0_long
-!        if(infpar%pc_mynum==infpar%pc_nodtot-1) ne = arr%nelms
-!        call mem_alloc(arr%elm1,arr%e1c,ne,arr%w1,infpar%pc_comm,arr%nelms)
-!#else
-!        call lsquit("ERROR(memory_allocate_tensor_dense) not possible without MPI",-1)
-!#endif
-!      else
-        call mem_alloc(arr%elm1,arr%nelms)
-!      endif
+      call mem_alloc(arr%elm1,arr%nelms)
 
       if( tensor_debug_mode )then
          arr%elm1 = 0.0E0_realk
@@ -287,34 +277,41 @@ module tensor_basic_module
       do i=1,arr%nlti
         if(associated(arr%ti(i)%t)) then
  
-           dim1 = dble(size(arr%ti(i)%t))*realk
-           if( lspdm_use_comm_proc )then
-             call mem_dealloc(arr%ti(i)%t,arr%ti(i)%c,arr%ti(i)%wi)
+           if( .not. alloc_in_dummy )then
+
+              dim1 = dble(size(arr%ti(i)%t))*realk
+
 #ifdef VAR_MPI
-           else
-             call mem_dealloc(arr%ti(i)%t,arr%ti(i)%c)
+              call mem_dealloc(arr%ti(i)%t,arr%ti(i)%c)
 #endif
+              !$OMP CRITICAL
+              tensor_tiled_deallocd_mem = tensor_tiled_deallocd_mem + dim1 
+              tensor_memory_in_use      = tensor_memory_in_use      - dim1
+              !$OMP END CRITICAL
            endif
 
-           dim2 = dble(size(arr%ti(i)%d(:)))
-           nullify(arr%ti(i)%t)
+           arr%ti(i)%t => null()
+
            call mem_dealloc(arr%ti(i)%d)
-!$OMP CRITICAL
-           tensor_tiled_deallocd_mem = tensor_tiled_deallocd_mem + dim1 
-           tensor_memory_in_use      = tensor_memory_in_use      - dim1
+           dim2 = dble(size(arr%ti(i)%d(:)))
+           !$OMP CRITICAL
            tensor_aux_deallocd_mem   = tensor_aux_deallocd_mem   + dim2 
            tensor_memory_in_use      = tensor_memory_in_use      - dim2
-!$OMP END CRITICAL
+           !$OMP END CRITICAL
         end if
 
       enddo
+
       vector_size = dble(size(arr%ti))
 !$OMP CRITICAL
       tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
       tensor_memory_in_use    = tensor_memory_in_use    - vector_size
 !$OMP END CRITICAL
+
       deallocate(arr%ti)
+
       nullify(arr%ti)
+
       call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
 

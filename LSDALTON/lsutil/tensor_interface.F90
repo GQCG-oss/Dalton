@@ -2700,7 +2700,7 @@ contains
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_GET"
       do ti = 1, test1%ntiles
-        to_get_from = get_residence_of_tile(ti,test1)
+        call get_residence_of_tile(to_get_from,ti,test1)
         if(to_get_from /= me .or. nnod==1)then
          testint = ti
          exit
@@ -2734,7 +2734,7 @@ contains
       write(DECinfo%output,*)"TESTING MPI_PUT"
       teststatus="SUCCESS"
       do ti = test1%ntiles,1, -1
-        to_get_from = get_residence_of_tile(ti,test1)
+        call get_residence_of_tile(to_get_from,ti,test1)
         if(to_get_from /= me .or. nnod==1)then
          testint = ti
          exit
@@ -2884,7 +2884,7 @@ contains
     teststatus="SUCCESS"
     rnk = nnod - 1
     do ti = test1%ntiles,1, -1
-      to_get_from = get_residence_of_tile(ti,test1)
+      call get_residence_of_tile(to_get_from,ti,test1)
       if(to_get_from /= nnod-1 .and. to_get_from/=nnod-2)then
        testint = ti
        exit

@@ -1289,8 +1289,7 @@ contains
                    if (.not.local) then
                       !LOCK WINDOW AND LOCK_SET = .true.
                       win = idb
-                      dest = get_residence_of_tile(win,pgmo_diag)
-                      call lsmpi_win_lock(dest,pgmo_diag%wi(win),'s')
+                      call tensor_lock_win(pgmo_diag,win,'s')
                       gdi_lk = .true. 
                    end if
                    call pack_and_add_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp2)
@@ -1299,8 +1298,7 @@ contains
                    if (.not.local) then
                       !LOCK WINDOW AND LOCK_SET = .true.
                       win = iub
-                      dest = get_residence_of_tile(win,pgmo_up)
-                      call lsmpi_win_lock(dest,pgmo_up%wi(win),'s')
+                      call tensor_lock_win(pgmo_up,win,'s')
                       gup_lk = .true.
                    end if
                    call pack_and_add_gmo(gmo,pgmo_up,iub,ntot,dimP,dimQ,.false.,tmp2)
@@ -1360,9 +1358,9 @@ contains
 
     ! UNLOCK REMAINING WINDOWS
     if (gdi_lk) then
-       call lsmpi_win_unlock(dest,pgmo_diag%wi(win))
+       call tensor_unlock_win(pgmo_diag,win)
     else if (gup_lk) then
-       call lsmpi_win_unlock(dest,pgmo_up%wi(win))
+       call tensor_unlock_win(pgmo_up,win)
     end if
 
 #ifdef VAR_MPI
@@ -1898,10 +1896,10 @@ contains
 
     ! UNLOCK WINDOW IF (LOCK_SET)
     if (gdi_lk) then
-       call lsmpi_win_unlock(dest,pgmo_diag%wi(win))
+       call tensor_unlock_win(pgmo_diag,win)
        gdi_lk = .false.
     else if (gup_lk) then
-       call lsmpi_win_unlock(dest,pgmo_up%wi(win))
+       call tensor_unlock_win(pgmo_up,win)
        gup_lk = .false.
     end if
 
