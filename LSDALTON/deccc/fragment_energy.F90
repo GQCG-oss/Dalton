@@ -291,12 +291,15 @@ contains
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
+#ifdef MOD_UNRELEASED
        ! MP2-F12 Code
        if(DECinfo%F12) then    
           call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
           !> Free cabs after each calculation
           call free_cabs()
        endif
+#endif
+
     case(MODEL_RIMP2) ! RIMP2 calculation
 
        if(DECinfo%first_order)call lsquit('no first order RIMP2',-1)
