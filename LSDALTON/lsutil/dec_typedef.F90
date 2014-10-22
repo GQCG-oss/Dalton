@@ -253,7 +253,7 @@ module dec_typedef_module
      !> *****************************
      !> logical for abc scheme
      logical :: abc
-     !> tile size for use with abc scheme
+     !> force a specific tile size for use with abc scheme
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
      integer :: CCSDPT_nbuffs_ijk
