@@ -393,16 +393,25 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       endif
 
       ! If there are two subsystems, calculate dispersion, charge transfer and subsystem energy contributions 
-      !> (KK: FIX for MPI and for more than two subsystems!!!)
-#ifndef VAR_MPI
       if(mylsitem%input%molecule%nSubSystems==2) then
-         call SNOOP_partition_energy(VOVO,t1_final,t2_final,mylsitem,MyMolecule)
+         !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
+         !one node is used  FIXME
+         if(VOVO%itype==TT_DENSE .and. t2_final%itype==TT_DENSE) then
+            call SNOOP_partition_energy(VOVO,t1_final,t2_final,mylsitem,MyMolecule)
+         else
+            call tensor_init( VOVO_local, VOVO%dims,    4 )
+            call tensor_init( t2f_local, t2_final%dims, 4 )
+            call tensor_cp_data( VOVO,     VOVO_local )
+            call tensor_cp_data( t2_final, t2f_local  )
+            call SNOOP_partition_energy(VOVO_local,t1_final,t2f_local,mylsitem,MyMolecule)
+            call tensor_free(VOVO_local)
+            call tensor_free(t2f_local)
+         end if
       end if
-#endif
  
       if(ccmodel == MODEL_CCSDpT)then
          !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
-         !one node is used
+         !one node is used  FIXME
          call tensor_init( VOVO_local, VOVO%dims,    4 )
          call tensor_init( t2f_local, t2_final%dims, 4 )
          call tensor_cp_data( VOVO,     VOVO_local )
