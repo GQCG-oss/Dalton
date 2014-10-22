@@ -24,41 +24,38 @@ module tensor_interface_module
   integer(kind=long) :: DestroyedPDMArrays=0
 
 
-  !> Overloaded operator for adding arrays
-
-
-!> convert arrays, the idea is for a general conversion only the interface
-!should be called
+  !> convert arrays, the idea is for a general conversion only the interface
+  !should be called
   interface tensor_convert
      module procedure tensor_convert_fort2tensor_wrapper1,&
-     &tensor_convert_fort2tensor_wrapper2,tensor_convert_fort2tensor_wrapper3,&
-     &tensor_convert_fort2tensor_wrapper4,tensor_convert_array22array,&
-     &tensor_convert_tensor2fort_wrapper1,tensor_convert_tensor2fort_wrapper2,&
-     &tensor_convert_tensor2fort_wrapper3,tensor_convert_tensor2fort_wrapper4
+        &tensor_convert_fort2tensor_wrapper2,tensor_convert_fort2tensor_wrapper3,&
+        &tensor_convert_fort2tensor_wrapper4,tensor_convert_array22array,&
+        &tensor_convert_tensor2fort_wrapper1,tensor_convert_tensor2fort_wrapper2,&
+        &tensor_convert_tensor2fort_wrapper3,tensor_convert_tensor2fort_wrapper4
   end interface tensor_convert
-
-!> print norms of array, array2 array3, array4 and fortran arrays
+  
+  !> print norms of array, array2 array3, array4 and fortran arrays
   interface print_norm
-    module procedure print_norm_fort_wrapper1_nrm,&
-                    &print_norm_fort_wrapper2_nrm,&
-                    &print_norm_fort_wrapper3_nrm,&
-                    &print_norm_fort_wrapper4_nrm,&
-                    &tensor_print_norm_nrm,&
-                    &array2_print_norm_nrm,&
-                    &array4_print_norm_nrm,&
-                    &matrix_print_norm_nrm,&
-                    &print_norm_fort_wrapper1_customprint,&
-                    &print_norm_fort_wrapper2_customprint,&
-                    &print_norm_fort_wrapper3_customprint,&
-                    &print_norm_fort_wrapper4_customprint,&
-                    &tensor_print_norm_customprint,&
-                    &array2_print_norm_customprint,&
-                    &array4_print_norm_customprint
+     module procedure print_norm_fort_wrapper1_nrm,&
+        &print_norm_fort_wrapper2_nrm,&
+        &print_norm_fort_wrapper3_nrm,&
+        &print_norm_fort_wrapper4_nrm,&
+        &tensor_print_norm_nrm,&
+        &array2_print_norm_nrm,&
+        &array4_print_norm_nrm,&
+        &matrix_print_norm_nrm,&
+        &print_norm_fort_wrapper1_customprint,&
+        &print_norm_fort_wrapper2_customprint,&
+        &print_norm_fort_wrapper3_customprint,&
+        &print_norm_fort_wrapper4_customprint,&
+        &tensor_print_norm_customprint,&
+        &array2_print_norm_customprint,&
+        &array4_print_norm_customprint
   end interface print_norm
 
 
   interface tensor_add
-    module procedure tensor_add_normal, tensor_add_arr2fullfort,tensor_add_fullfort2arr
+     module procedure tensor_add_normal, tensor_add_arr2fullfort,tensor_add_fullfort2arr
   end interface tensor_add
 
   !interface tensor_contract
@@ -126,6 +123,8 @@ contains
      real(realk),pointer :: buffer(:)
      real(realk) :: pre2
      integer :: ti,i,nel,o(x%mode)
+     call time_start_phase( PHASE_WORK )
+
      pre2 = 1.0E0_realk
      if(present(a))pre2 = a
 
@@ -178,12 +177,18 @@ contains
            !TODO:IMPLEMENT MULTIPLE BUFFERING
            do ti=1,y%ntiles
               call get_tile_dim(nel,y,ti)
+
+              call time_start_phase( PHASE_COMM )
               call tensor_get_tile(y,ti,buffer,nel)
+              call time_start_phase( PHASE_WORK )
+
               call tile_in_fort(b,buffer,ti,y%tdim,pre2,x%elm1,x%dims,x%mode,o)
            enddo
            call mem_dealloc(buffer)
 
+           call time_start_phase( PHASE_COMM )
            if(x%itype==TT_REPLICATED)call tensor_sync_replicated(x)
+           call time_start_phase( PHASE_WORK )
 
         case default
            print *,x%itype,y%itype
@@ -193,11 +198,10 @@ contains
      case(TT_TILED_DIST)
 
         select case(y%itype)
-        !case(TT_DENSE,TT_REPLICATED)
-        !   if(present(a))call tensor_scale(x,a)
-        !   call tensor_add_fullfort2arr(x,b,y%elm1, order = o)
         case(TT_TILED_DIST)
+
            call tensor_add_par(pre2,x,b,y,o)
+
         case default
            print *,x%itype,y%itype
            call lsquit("ERROR(tensor_add):not yet implemented y%itype 2",DECinfo%output)
@@ -207,6 +211,8 @@ contains
            print *,x%itype,y%itype
            call lsquit("ERROR(tensor_add_normal):not yet implemented x%itype",DECinfo%output)
      end select
+
+     call time_start_phase( PHASE_WORK )
   end subroutine tensor_add_normal
 
   subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens)
@@ -296,6 +302,8 @@ contains
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
     real(realk) :: MemFree,tilemem
+    call time_start_phase( PHASE_WORK )
+
     do i=1,arrx%mode
       o(i) = i
     enddo
@@ -320,6 +328,8 @@ contains
           endif
         endif
     end select
+
+    call time_start_phase( PHASE_WORK )
   end subroutine tensor_add_fullfort2arr
 
   ! x = x + b * y
@@ -340,15 +350,18 @@ contains
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
     real(realk) :: MemFree,tilemem
+    call time_start_phase( PHASE_WORK )
+
     select case(arry%itype)
       case(TT_DENSE)
         call daxpy(int(arry%nelms),b,arry%elm1,1,fortarrx,1)
       case(TT_TILED)
         call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
       case(TT_TILED_DIST)
-        if(present(order))call add_tileddata2fort(arry,b,fortarrx,arry%nelms,.true.,order)
-        if(.not.present(order))call add_tileddata2fort(arry,b,fortarrx,arry%nelms,.true.)
+        call add_tileddata2fort(arry,b,fortarrx,arry%nelms,.true.,order = order)
     end select
+
+    call time_start_phase( PHASE_WORK )
   end subroutine tensor_add_arr2fullfort
 
 
@@ -370,6 +383,7 @@ contains
      integer :: i,j,k
      logical :: contraction_mode
      integer :: rorder(C%mode)
+     call time_start_phase( PHASE_WORK )
 
      if( (A%mode-nmodes2c) + (B%mode-nmodes2c) /= C%mode)then
         call lsquit("ERROR(tensor_contract): invalid contraction pattern",-1)
@@ -460,6 +474,7 @@ contains
      end select
 
 
+     call time_start_phase( PHASE_WORK )
   end subroutine tensor_contract
 
   subroutine tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
@@ -3132,28 +3147,100 @@ contains
 
      b_seg    = b
      a_seg    = a
-     counter  = 1
      modtilea = 0
      modtileb = 0
 
      max_mem_p_tile_in_GB = DECinfo%cc_solver_tile_mem
 
-     do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-           &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-           & .and. (b_seg>=2.or.a_seg>=2)   )
+     if(DECinfo%tensor_segmenting_scheme == 1)then
 
-        b_seg = b / counter + mod(b,counter)
-        a_seg = a / counter + mod(a,counter)
+        counter  = 1
 
-        counter = counter + 1
+        !FIRST a then b
 
-        modtilea = 0
-        if(mod(a,a_seg)/=0)modtilea = 1
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                     & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
+              & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
 
-        modtileb = 0
-        if(mod(b,b_seg)/=0)modtileb = 1
+           a_seg = a / counter + mod(a,counter)
 
-     enddo
+           counter = counter + 1
+
+           modtilea = 0
+           if(mod(a,a_seg)/=0)modtilea = 1
+
+        enddo
+
+        counter  = 1
+
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+              & .and. (b_seg>=1.or.a_seg>=1)  .and. (b/b_seg+modtileb) <= 4   )
+
+           b_seg = b / counter + mod(b,counter)
+
+           counter = counter + 1
+
+           modtileb = 0
+           if(mod(b,b_seg)/=0)modtileb = 1
+
+        enddo
+
+     else if (DECinfo%tensor_segmenting_scheme == 2) then
+
+        !FIRST b then a
+        counter  = 1
+
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+              & .and. (b_seg>=1.or.a_seg>=1)   .and. (b/b_seg+modtileb) <= 4   )
+
+           b_seg = b / counter + mod(b,counter)
+
+           counter = counter + 1
+
+           modtileb = 0
+           if(mod(b,b_seg)/=0)modtileb = 1
+
+        enddo
+
+        counter  = 1
+
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+              & .and. (b_seg>=1.or.a_seg>=1)  .and. (a/a_seg+modtilea) <= 4  )
+
+           a_seg = a / counter + mod(a,counter)
+
+           counter = counter + 1
+
+           modtilea = 0
+           if(mod(a,a_seg)/=0)modtilea = 1
+
+        enddo
+     else
+
+        counter  = 1
+
+        !BOTH a and b
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+              & .and. (b_seg>=2.or.a_seg>=2)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
+
+           b_seg = b / counter + mod(b,counter)
+           a_seg = a / counter + mod(a,counter)
+
+           counter = counter + 1
+
+           modtilea = 0
+           if(mod(a,a_seg)/=0)modtilea = 1
+
+           modtileb = 0
+           if(mod(b,b_seg)/=0)modtileb = 1
+
+        enddo
+
+     endif
 
      if(DECinfo%PL>2)then
         print *,"SPLITTING OF DIMS IN A^2B^2"

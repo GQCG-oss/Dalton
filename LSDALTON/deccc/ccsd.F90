@@ -1400,16 +1400,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !        call lsmpi_win_create(sio4%d,sio4w,int(i8*nor*no2,kind=long),infpar%lg_comm)
 !#endif
         if(scheme == 4 .or. scheme == 3)then
+
            sio4_mode = 3
            sio4_dims(1:sio4_mode) = [no,no,nor]
            sio4_tdim(1:sio4_mode) = [os,os,nor]
            write(def_atype,'(A4)')'LDAR'
+
         else if(scheme == 2)then
+
            sio4_mode = 4
            sio4_dims(1:sio4_mode) = [no,no,no,no]
            sio4_tdim(1:sio4_mode) = [os,os,os,os]
            write(def_atype,'(A4)')'TDAR'
         endif
+
         call tensor_ainit(sio4,sio4_dims(1:sio4_mode),sio4_mode,local=local,atype=def_atype,tdims = sio4_tdim(1:sio4_mode))
         call tensor_zero(sio4)
 

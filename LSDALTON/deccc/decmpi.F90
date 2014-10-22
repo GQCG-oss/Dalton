@@ -2203,6 +2203,7 @@ contains
     call ls_mpi_buffer(DECitem%hack2,Master)
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
     call ls_mpi_buffer(DECitem%tensor_test,Master)
+    call ls_mpi_buffer(DECitem%tensor_segmenting_scheme,Master)
     call ls_mpi_buffer(DECitem%reorder_test,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
