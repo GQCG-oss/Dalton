@@ -341,8 +341,10 @@ module lspdm_basic_module
     !get zero dummy matrix in size of largest tile --> size(dummy)=tsize
     if( alloc_in_dummy )then
        call memory_allocate_dummy(arr, arr%tsize*arr%nlti)
+#ifdef VAR_MPI
        call memory_allocate_window(arr,nwins = 1)
        call lsmpi_win_create(arr%dummy,arr%wi(1),arr%tsize*arr%nlti,infpar%lg_comm) 
+#endif
     else
        call memory_allocate_dummy(arr)
        !prepare the integer window in the array --> ntiles windows should be created

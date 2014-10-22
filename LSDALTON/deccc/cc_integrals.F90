@@ -1289,8 +1289,10 @@ contains
                    if (.not.local) then
                       !LOCK WINDOW AND LOCK_SET = .true.
                       win = idb
+#ifdef VAR_MPI
                       call tensor_lock_win(pgmo_diag,win,'s')
                       gdi_lk = .true. 
+#endif
                    end if
                    call pack_and_add_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp2)
                 else 
@@ -1298,8 +1300,10 @@ contains
                    if (.not.local) then
                       !LOCK WINDOW AND LOCK_SET = .true.
                       win = iub
+#ifdef VAR_MPI
                       call tensor_lock_win(pgmo_up,win,'s')
                       gup_lk = .true.
+#endif
                    end if
                    call pack_and_add_gmo(gmo,pgmo_up,iub,ntot,dimP,dimQ,.false.,tmp2)
                 end if
@@ -1356,6 +1360,7 @@ contains
        !call daxpy(ncopy,1.0E0_realk,gmo,1,govov%elm1,1)
     endif
 
+#ifdef VAR_MPI
     ! UNLOCK REMAINING WINDOWS
     if (gdi_lk) then
        call tensor_unlock_win(pgmo_diag,win)
@@ -1363,7 +1368,6 @@ contains
        call tensor_unlock_win(pgmo_up,win)
     end if
 
-#ifdef VAR_MPI
     call mem_dealloc(tasks)
     ! Problem specific to one sided comm. and maybe bcast,
     ! We must use a barrier after one sided communication epoc:
@@ -1894,6 +1898,7 @@ contains
     call dgemm('t','n',nb*dimAlpha*dimGamma,ntot,nb,1.0E0_realk, &
          & gao,nb,Cov,nb,0.0E0_realk,tmp1,nb*dimAlpha*dimGamma)
 
+#ifdef VAR_MPI
     ! UNLOCK WINDOW IF (LOCK_SET)
     if (gdi_lk) then
        call tensor_unlock_win(pgmo_diag,win)
@@ -1902,6 +1907,7 @@ contains
        call tensor_unlock_win(pgmo_up,win)
        gup_lk = .false.
     end if
+#endif
 
     ! transfo delta to s => [alphaB gammaB r, s]
     call dgemm('t','n',dimAlpha*dimGamma*ntot,ntot,nb,1.0E0_realk, &

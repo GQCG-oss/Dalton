@@ -246,6 +246,8 @@ module dec_typedef_module
      logical :: spawn_comm_proc
      !> set tilesize in ccsolver in GB
      real(realk) :: cc_solver_tile_mem
+     !> select tensor segmenting scheme
+     integer :: tensor_segmenting_scheme
 
      !> ccsd(T) settings
      !> *****************************
