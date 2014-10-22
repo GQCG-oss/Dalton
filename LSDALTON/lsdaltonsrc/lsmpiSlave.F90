@@ -32,6 +32,13 @@ subroutine lsmpi_init(OnMaster)
 
    lsmpi_enabled_comm_procs = .false.
 
+   !TEST WHETHER THE MPI VARIABLES AND THE INTERNALLY DECLARED ls_mpik have the
+   !same kind
+   if(huge(ierr) /= huge(MPI_COMM_WORLD))then
+      print *,"WARNING: THE MPI INTRINSIC VARIABLES AND THE ls_mpik ARE OF&
+      & DIFFERENT KIND, YOUR JOB IS LIKELY TO FAIL",huge(ierr),huge(MPI_COMM_WORLD)
+   endif
+
    !asynchronous progress is off per default, might be switched on with an
    !environment variable, or by spawning communication processes
    LSMPIASYNCP             = .false.

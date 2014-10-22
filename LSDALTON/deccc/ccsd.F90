@@ -898,9 +898,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! Variables for mpi
      logical :: master,lg_master,parent
-     integer :: fintel,nintel,fe,ne,ierr
+     integer :: fintel,nintel,fe,ne
      integer(kind=ls_mpik) :: nnod
      real(realk) :: startt, stopp
+     integer(kind=ls_mpik) :: ierr
 
      integer :: sio4_mode, sio4_dims(4),sio4_tdim(4) 
      type(tensor) :: u2, sio4
@@ -982,6 +983,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: time_Bcnd,time_Bcnd_work,time_Bcnd_comm, time_Bcnd_idle
      real(realk) :: time_cnd,time_cnd_work,time_cnd_comm,time_get_ao_fock, time_get_mo_fock
      real(realk) :: time_Esing,time_Esing_work,time_Esing_comm, time_Esing_idle
+     real(realk) :: phase_counters_int_dir(nphases)
      integer :: testmode(4)
      integer(kind=long) :: xyz,zyx1,zyx2
      logical :: debug
@@ -1522,6 +1524,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         write( *,'("-------------------------------------------------------------------")')
         write( *,'("CCSD residual init work:",g10.3,"s, comm:",g10.3,"s")')time_init_work,time_init_comm
      endif
+     call time_phases_get_current(current_wt=phase_counters_int_dir)
 
      fullRHS=(nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
@@ -1921,6 +1924,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
 
+     call time_phases_get_diff(current_wt=phase_counters_int_dir)
+     call lsmpi_local_reduction(phase_counters_int_dir,nphases,infpar%master)
+
      max_wait_time = time_intloop_idle
      min_wait_time = time_intloop_idle
 
@@ -2017,6 +2023,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         write( *,'("     total work time   :",g10.3,"s")') time_intloop_work+time_intloop_B1work
         write( *,'("     total comm time   :",g10.3,"s")') time_intloop_comm+time_intloop_B1comm
         write( *,'("     total ints time   :",g10.3,"s")') time_intloop_int
+        write( *,'("     ave work time     :",g10.3,"s")') phase_counters_int_dir(PHASE_WORK_IDX)/float(infpar%lg_nodtot)
+        write( *,'("     ave comm time     :",g10.3,"s")') phase_counters_int_dir(PHASE_COMM_IDX)/float(infpar%lg_nodtot)
+        write( *,'("     ave idle time     :",g10.3,"s")') phase_counters_int_dir(PHASE_IDLE_IDX)/float(infpar%lg_nodtot)
         write( *,'("     max/ave/min idle  :",g10.3,"s",g10.3,"s",g10.3,"s")') max_wait_time,ave_wait_time,min_wait_time
         write( *,'("     B1 work time      :",g10.3,"s")') time_intloop_B1work
         write( *,'("     B1 comm time      :",g10.3,"s")') time_intloop_B1comm
