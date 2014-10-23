@@ -39,6 +39,11 @@ f.add(string = 'Electronic excitation energies',
 f.add(string = 'First-order non-adiabatic coupling matrix elements (NACMEs)',
       rel_tolerance = 1.0e-2)
 
+f.add(from_string = 'Singlet electronic excitation energies',
+      num_lines = 65,
+      mask = [4],
+      abs_tolerance = 1.0e-4)
+
 f.add(string = 'Vibrational g-factor',
        abs_tolerance = 1.0e-6)
 
