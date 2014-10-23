@@ -138,7 +138,7 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
       !make sure all data is in the correct for this routine, that is omega2 is
       !TT_TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
-      call tensor_init(prec,dims,4,TT_TILED_DIST,AT_MASTER_ACCESS,omega2%tdim)
+      call tensor_init(prec,dims,4,TT_TILED_DIST,AT_MASTER_ACCESS,omega2%tdim,fo=omega2%offset)
       call tensor_change_atype_to_rep(ppfock,loc)
       call tensor_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
@@ -983,6 +983,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: time_Bcnd,time_Bcnd_work,time_Bcnd_comm, time_Bcnd_idle
      real(realk) :: time_cnd,time_cnd_work,time_cnd_comm,time_get_ao_fock, time_get_mo_fock
      real(realk) :: time_Esing,time_Esing_work,time_Esing_comm, time_Esing_idle
+     real(realk) :: unlock_time, waiting_time
      real(realk) :: phase_counters_int_dir(nphases)
      integer :: testmode(4)
      integer(kind=long) :: xyz,zyx1,zyx2
@@ -1013,6 +1014,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      time_Esing_work      = 0.0E0_realk
      time_Esing_comm      = 0.0E0_realk
      commtime             = 0.0E0_realk
+#ifdef VAR_MPI
+     unlock_time  = time_lsmpi_win_unlock 
+     waiting_time = time_lsmpi_wait
+#endif
 
 
      ! Set default values for the path throug the routine
@@ -1097,16 +1102,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, at = time_init_comm)
      endif StartUpSlaves
 
+
      if(.not.local)then
         t2%access_type     = AT_ALL_ACCESS
-        call tensor_lock_wins( t2, 's', mode )
+        call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
         call memory_allocate_tensor_dense( t2 )
         buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
         call mem_alloc(buf1,buf_size)
         call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
         call mem_dealloc(buf1)
-        call tensor_unlock_wins( t2, .true. )
+        call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
      endif
+     print *,"collect T2 done",norm2(t2%elm1(1:t2%nelms))
 
      call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
 #endif
@@ -1371,6 +1378,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
         call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
+        print *,"u2 construction! -- done"
+        
+        call print_norm(u2,"U2norm")
+        call lsmpi_barrier(infpar%lg_comm)
+        stop 0
 
         call time_start_phase(PHASE_WORK, at = time_init_comm )
 
@@ -1514,6 +1526,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call lsmpi_win_create(tasks,tasksw,nbatchesGamma,infpar%lg_comm)
 
      endif
+
+     
+     if(master.and.DECinfo%PL>2)then
+        write(*,'("CCSD time in lsmpi_unlock phase A",g10.3)'), time_lsmpi_win_unlock - unlock_time
+        write(*,'("CCSD time in lsmpi_wait   phase A",g10.3)'), time_lsmpi_wait       - waiting_time
+     endif
+     unlock_time  = time_lsmpi_win_unlock 
+     waiting_time = time_lsmpi_wait
 #endif
 
      myload = 0
@@ -1647,7 +1667,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_COMM, at = time_intloop_int)
 #ifdef VAR_MPI
            !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
-           if( lock_outside .and. scheme==2 )call tensor_unlock_wins(omega2,.true.)
+           !if( alloc_in_dummy )then
+           !   if( lock_outside .and. scheme==2 )call lsmpi_wait(req_o2)
+           !else
+              if( lock_outside .and. scheme==2 )call tensor_unlock_wins(omega2,.true.)
+           !endif
 #endif
            call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 
@@ -1860,7 +1884,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! free arrays only needed in the batched loops
 #ifdef VAR_MPI
      call time_start_phase(PHASE_COMM, at = time_intloop_work )
-     if(lock_outside.and.scheme==2)call tensor_unlock_wins(omega2,.true.)
+     if(lock_outside.and.scheme==2)call tensor_unlock_wins(omega2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy)
      call time_start_phase(PHASE_WORK, at = time_intloop_comm )
 #endif
 
@@ -1899,7 +1923,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_alloc(buf1,buf_size)
 
         if(lock_outside)then
-           call tensor_lock_wins( govov  , 's', mode )
+           call tensor_lock_wins( govov, 's', mode, all_nodes = alloc_in_dummy )
         endif
 
         call memory_allocate_tensor_dense( govov )
@@ -1935,8 +1959,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if(scheme==3)then
 
         if(lock_outside)then
-           call tensor_lock_wins( gvoova , 's', mode )
-           call tensor_lock_wins( gvvooa , 's', mode )
+           call tensor_lock_wins( gvoova , 's', mode, all_nodes = alloc_in_dummy )
+           call tensor_lock_wins( gvvooa , 's', mode, all_nodes = alloc_in_dummy )
         endif
 
         call mem_alloc( gvvoo, o2v2, simple=.true. )
@@ -2009,6 +2033,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(tasks,tasksc)
      endif
 
+     if(master.and.DECinfo%PL>2)then
+        write(*,'("CCSD time in lsmpi_unlock phase B",g10.3)'), time_lsmpi_win_unlock - unlock_time
+        write(*,'("CCSD time in lsmpi_wait   phase B",g10.3)'), time_lsmpi_wait       - waiting_time
+     endif
+     unlock_time  = time_lsmpi_win_unlock 
+     waiting_time = time_lsmpi_wait
 #endif
 
      call time_start_phase(PHASE_WORK, at = time_intloop_comm , twall = time_intloop_stop)
@@ -2067,7 +2097,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_COMM, at = time_Bcnd_work )
         if((scheme==4.or.scheme==3).and..not.local)then
 
-           call tensor_unlock_wins(govov, .true.)
+           call tensor_unlock_wins(govov, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
            if(lock_outside)call mem_dealloc(buf1)
 
         endif
@@ -2076,8 +2106,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==3)then
 
            if(lock_outside)then
-              call tensor_unlock_wins(gvoova,.true.)
-              call tensor_unlock_wins(gvvooa,.true.)
+              call tensor_unlock_wins(gvoova, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+              call tensor_unlock_wins(gvvooa, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy)
               call mem_dealloc(buf2)
               call mem_dealloc(buf3)
            endif
@@ -2345,6 +2375,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if((.not.local).and.(scheme==4.or.scheme==3))then
         call tensor_mv_dense2tiled(omega2,.true.)
         call tensor_mv_dense2tiled(t2,.true.)
+     endif
+     if(master.and.DECinfo%PL>2)then
+        write(*,'("CCSD time in lsmpi_unlock phase C",g10.3)'), time_lsmpi_win_unlock - unlock_time
+        write(*,'("CCSD time in lsmpi_wait   phase C",g10.3)'), time_lsmpi_wait       - waiting_time
      endif
 #endif
 
@@ -6103,7 +6137,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      case(2)
         if(print_debug.and.ccmodel>MODEL_CC2)then
 #ifdef VAR_MPI
-           if(.not.local)call tensor_unlock_wins(omega2,.true.)
+           if(.not.local)call tensor_unlock_wins(omega2,check=.not.alloc_in_dummy,all_nodes=alloc_in_dummy)
 #endif
            if(scheme==4.or.scheme==3)then
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
@@ -6122,7 +6156,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      case(3)
         if(print_debug.and.ccmodel>MODEL_CC2)then
 #ifdef VAR_MPI
-           if(.not.local)call tensor_unlock_wins(omega2,.true.)
+           if(.not.local)call tensor_unlock_wins(omega2,check=.not.alloc_in_dummy,all_nodes=alloc_in_dummy)
 #endif
            if(scheme==4)then
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN

@@ -1723,6 +1723,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end select ModelSpecificSettings
 
+   print*,"here 1"
 
    ! go to a (pseudo) canonical basis
    call mem_alloc( focc,     no     )
@@ -1733,6 +1734,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc( qqfock_d, nv, nv )
    call tensor_minit(Uo,   [no,no],  2, local=local, atype="TDPD", tdims = [os,os] )
    call tensor_minit(Uv,   [nv,nv],  2, local=local, atype="TDPD", tdims = [vs,vs] )
+
+   print*,"here 2"
 
    use_pseudo_diag_basis = .not.(DECinfo%CCSDpreventcanonical)
    !if(DECinfo%CCSDpreventcanonical.or.(use_pnos.and.ccmodel/=MODEL_MP2))then
@@ -1790,10 +1793,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       enddo
    endif
 
+   print*,"here 4"
    call mem_dealloc( focc  )
    call mem_dealloc( fvirt )
+   print*,"here 5"
    call tensor_mv_dense2tiled(Uo,.not.local,dealloc_local = .false.)
    call tensor_mv_dense2tiled(Uv,.not.local,dealloc_local = .false.)
+   print*,"here 6"
 
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
@@ -2537,6 +2543,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
    call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
 
+   print *,"FREEING iajb"
+
    call tensor_free(iajb)
 
    ! deallocate stuff
@@ -2545,6 +2553,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call mem_dealloc(omega1)
    end if
 
+   print *,"FREEING t2 + o2"
    call mem_dealloc(t2)
    call mem_dealloc(omega2)
 
@@ -2569,6 +2578,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_free(qpfock)
    end if
 
+   print *,"other crab"
 
    if(ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA)then
       call tensor_free(ppfock)
@@ -2618,6 +2628,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    endif
 
+   print *,"do the trafo"
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !transform back to original basis!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2626,6 +2637,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       & [ t2_final, VOVO    ],  &
       & [[2,1,2,1],[2,1,2,1]], &
       & [[2,2,2,2],[2,2,2,2]],  4, 2)
+   print *,"weird trafo done"
 
    if(use_singles)then
       !this should be replaced if/whenever t1 is not local
@@ -2642,6 +2654,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_free(Uo)
    call tensor_free(Uv)
 
+   print *,"doone"
 #ifdef MOD_UNRELEASED
    ! free memory from MO-based CCSD
    if(.not. restart_from_converged)then

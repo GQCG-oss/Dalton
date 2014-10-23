@@ -573,7 +573,7 @@ module lspdm_basic_module
 
        rank_of_node = mod(globaltilenumber-1+arr%offset,nnod)
 
-       pos          = (globaltilenumber-1)/nnod
+       pos          = (globaltilenumber-1)/nnod + 1
 
        idx          = 1 + ( pos - 1 ) * arr%tsize
        !Return the node local index of the tile

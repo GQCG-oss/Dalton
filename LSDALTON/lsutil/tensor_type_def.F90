@@ -99,7 +99,11 @@ module tensor_type_def_module
   integer,parameter :: lspdm_errout  = 0
 
   !parameter to reduce the amount of windows per array
+#ifdef VAR_HAVE_MPI3
+  logical,parameter :: alloc_in_dummy = .true.
+#else
   logical,parameter :: alloc_in_dummy = .false.
+#endif
 
   !> execution time variables
   logical :: lspdm_use_comm_proc

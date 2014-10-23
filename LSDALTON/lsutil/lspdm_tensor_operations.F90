@@ -712,6 +712,7 @@ module lspdm_tensor_operations_module
     integer(kind=long) :: tiledim
     real(realk), external :: ddot
     integer, pointer :: table_iajb(:,:), table_ibja(:,:)
+    integer(kind=ls_mpik), pointer :: reqC(:),reqE(:)
 #ifdef VAR_MPI
     call time_start_phase( PHASE_WORK )
 
@@ -743,6 +744,12 @@ module lspdm_tensor_operations_module
     E1=0.0E0_realk
     E2=0.0E0_realk
     Ec=0.0E0_realk
+
+    if( alloc_in_dummy )then
+       call tensor_lock_wins(gmo,'s',all_nodes = .true.)
+       call mem_alloc(reqC,nbuffs_c)
+       call mem_alloc(reqE,nbuffs_e)
+    endif
 
     !Preload nbuffs_c tiles
     do lt=1,min(nbuffs_c-1,t2%nlti)
@@ -776,16 +783,24 @@ module lspdm_tensor_operations_module
 
        !GET COULOMB TILE
        call time_start_phase( PHASE_COMM )
-       call tensor_lock_win(gmo,gmo_ccidx,'s',assert = mode)
-       call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
+       if( alloc_in_dummy )then
+          call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.,req=reqC(cbuf))
+       else
+          call tensor_lock_win(gmo,gmo_ccidx,'s',assert = mode)
+          call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
+       endif
        call time_start_phase( PHASE_WORK )
 
        !GET EXCHANGE TILE
        if(gmo_ccidx/=gmo_ecidx)then
           ebuf = nbuffs_c + mod(lt,nbuffs_c) + 1
           call time_start_phase( PHASE_COMM )
-          call tensor_lock_win(gmo,gmo_ecidx,'s',assert = mode)
-          call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
+          if( alloc_in_dummy )then
+             call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.,req=reqE(cbuf))
+          else
+             call tensor_lock_win(gmo,gmo_ecidx,'s',assert = mode)
+             call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
+          endif
           call time_start_phase( PHASE_WORK )
        else
           ebuf = cbuf
@@ -831,16 +846,24 @@ module lspdm_tensor_operations_module
 
           !GET COULOMB TILE
           call time_start_phase( PHASE_COMM )
-          call tensor_lock_win(gmo,gmo_ccidx,'s',assert = mode)
-          call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
+          if( alloc_in_dummy )then
+             call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.,req=reqC(cbuf))
+          else
+             call tensor_lock_win(gmo,gmo_ccidx,'s',assert = mode)
+             call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
+          endif
           call time_start_phase( PHASE_WORK )
 
           !GET EXCHANGE TILE
           if(gmo_ccidx/=gmo_ecidx)then
              ebuf = nbuffs_c + mod(nt,nbuffs_c) + 1
              call time_start_phase( PHASE_COMM )
-             call tensor_lock_win(gmo,gmo_ecidx,'s',assert = mode)
-             call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
+             if( alloc_in_dummy )then
+                call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.,req=reqE(cbuf))
+             else
+                call tensor_lock_win(gmo,gmo_ecidx,'s',assert = mode)
+                call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
+             endif
              call time_start_phase( PHASE_WORK )
           else
              ebuf = cbuf
@@ -877,13 +900,21 @@ module lspdm_tensor_operations_module
        gmo_ecidx = get_cidx(gmo_etidx,gmo%ntpm,gmo%mode)
 
        call time_start_phase( PHASE_COMM )
-       call tensor_unlock_win(gmo,gmo_ccidx)
+       if( alloc_in_dummy )then
+          call lsmpi_wait(reqC(cbuf))
+       else
+          call tensor_unlock_win(gmo,gmo_ccidx)
+       endif
        call time_start_phase( PHASE_WORK )
 
        if(gmo_ccidx/=gmo_ecidx)then
           ebuf = nbuffs_c + mod(lt,nbuffs_c) + 1
           call time_start_phase( PHASE_COMM )
-          call tensor_unlock_win(gmo,gmo_ecidx)
+          if( alloc_in_dummy )then
+             call lsmpi_wait(reqE(cbuf))
+          else
+             call tensor_unlock_win(gmo,gmo_ecidx)
+          endif
           call time_start_phase( PHASE_WORK )
        else
           ebuf = cbuf
@@ -919,6 +950,12 @@ module lspdm_tensor_operations_module
        gmo_ctile => null()
        gmo_etile => null()
     enddo
+
+    if( alloc_in_dummy )then
+       call tensor_unlock_wins(gmo,all_nodes = .true.)
+       call mem_dealloc(reqC)
+       call mem_dealloc(reqE)
+    endif
 
     call time_start_phase( PHASE_COMM )
     call lsmpi_local_reduction(E1,infpar%master)
@@ -1833,6 +1870,7 @@ module lspdm_tensor_operations_module
     real(realk) :: prex, prey
     integer :: i,lt,nbuffs,ibuf,cmidy,buffer_lt
     integer :: xmidx(x%mode), ymidx(y%mode), ytdim(y%mode), ynels
+    integer(kind=ls_mpik),pointer :: req(:)
 #ifdef VAR_MPI
     call time_start_phase( PHASE_WORK )
 
@@ -1869,6 +1907,13 @@ module lspdm_tensor_operations_module
       
     !allocate buffer for the tiles
     call mem_alloc(buffer,x%tsize,nbuffs)
+
+    if( alloc_in_dummy )then
+       call mem_alloc(req,nbuffs)
+       call tensor_lock_wins(y,'s',all_nodes=.true.)
+    endif
+    
+
     !fill buffer
     do lt=1,min(nbuffs-1,x%nlti)
 
@@ -1892,11 +1937,16 @@ module lspdm_tensor_operations_module
        cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
        call time_start_phase( PHASE_COMM )
-       call tensor_lock_win(y,cmidy,'s')
-       call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+       if(alloc_in_dummy )then
+          call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+       else
+          call tensor_lock_win(y,cmidy,'s')
+          call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+       endif
        call time_start_phase( PHASE_WORK )
 
     enddo
+
   
     !lsoop over local tiles of array x
     do lt=1,x%nlti
@@ -1924,8 +1974,18 @@ module lspdm_tensor_operations_module
           cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
           call time_start_phase( PHASE_COMM )
-          call tensor_lock_win(y,cmidy,'s')
-          call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+
+          if(alloc_in_dummy )then
+
+             call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+
+          else
+
+             call tensor_lock_win(y,cmidy,'s')
+             call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+
+          endif
+
           call time_start_phase( PHASE_WORK )
        endif
 
@@ -1947,9 +2007,13 @@ module lspdm_tensor_operations_module
        ibuf = mod(lt-1,nbuffs)+1
 
        cmidy = get_cidx(ymidx,y%ntpm,y%mode)
-       !call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels)
+
        call time_start_phase( PHASE_COMM )
-       call tensor_unlock_win(y,cmidy)
+       if(alloc_in_dummy )then
+          call lsmpi_wait(req(ibuf))
+       else
+          call tensor_unlock_win(y,cmidy)
+       endif
        call time_start_phase( PHASE_WORK )
 
        select case(x%mode)
@@ -1976,6 +2040,11 @@ module lspdm_tensor_operations_module
           call lsquit("ERROR(tensor_add_par): mode>4 not yet implemented",-1)
        end select
     enddo
+
+    if( alloc_in_dummy )then
+       call mem_dealloc(req)
+       call tensor_unlock_wins(y,all_nodes=.true.)
+    endif
 
     call mem_dealloc(buffer)
 
@@ -2004,6 +2073,7 @@ module lspdm_tensor_operations_module
     integer :: i,lt,nbuffs,ibuf,cmidy,buffer_lt
     integer :: xmidx(from%mode), ymidx(to_ar%mode), ytdim(to_ar%mode), ynels
 #ifdef VAR_MPI
+    integer(kind=ls_mpik), pointer :: req(:)
     
     !if(present(order)) call lsquit("ERROR(tensor_cp_tiled): order not yet implemented",-1)
 
@@ -2027,6 +2097,11 @@ module lspdm_tensor_operations_module
       
     !allocate buffer for the tiles
     call mem_alloc(buffer,to_ar%tsize,nbuffs)
+    if( alloc_in_dummy )then
+       call mem_alloc(req,nbuffs)
+       call tensor_lock_wins(from,'s',all_nodes=.true.)
+    endif
+
     !fill buffer
     do lt=1,min(nbuffs-1,to_ar%nlti)
 
@@ -2049,8 +2124,12 @@ module lspdm_tensor_operations_module
 
        cmidy = get_cidx(ymidx,from%ntpm,from%mode)
 
-       call tensor_lock_win(from,cmidy,'s')
-       call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+       if( alloc_in_dummy )then
+          call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+       else
+          call tensor_lock_win(from,cmidy,'s')
+          call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+       endif
     enddo
   
     !lsoop over local tiles of array to_ar
@@ -2080,8 +2159,12 @@ module lspdm_tensor_operations_module
 
           cmidy = get_cidx(ymidx,from%ntpm,from%mode)
 
-          call tensor_lock_win(from,cmidy,'s')
-          call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+          if( alloc_in_dummy )then
+             call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+          else
+             call tensor_lock_win(from,cmidy,'s')
+             call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+          endif
        endif
 
        call get_midx(to_ar%ti(lt)%gt,xmidx,to_ar%ntpm,to_ar%mode)
@@ -2102,8 +2185,12 @@ module lspdm_tensor_operations_module
        ibuf = mod(lt-1,nbuffs)+1
 
        cmidy = get_cidx(ymidx,from%ntpm,from%mode)
-       !call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels)
-       call tensor_unlock_win(from,cmidy)
+
+       if( alloc_in_dummy )then
+          call lsmpi_wait(req(ibuf))
+       else
+          call tensor_unlock_win(from,cmidy)
+       endif
 
        select case(to_ar%mode)
        case(1)
@@ -2120,6 +2207,11 @@ module lspdm_tensor_operations_module
     enddo
 
     call mem_dealloc(buffer)
+
+    if( alloc_in_dummy )then
+       call mem_dealloc(req)
+       call tensor_unlock_wins(from,all_nodes=.true.)
+    endif
 
     !crucial barrier, because direct memory access is used
     call lsmpi_barrier(infpar%lg_comm)
@@ -2623,6 +2715,8 @@ module lspdm_tensor_operations_module
      integer :: i,j,k,l, cci, max_mode_ci(nmodes2c),cm,current_mode(nmodes2c)
      integer :: m_gemm, n_gemm, k_gemm
      logical :: B_dense
+     integer(kind=ls_mpik),pointer :: reqA(:),reqB(:)
+
      call time_start_phase( PHASE_WORK )
 
      sync = .false.
@@ -2835,6 +2929,18 @@ module lspdm_tensor_operations_module
         call mem_alloc(wC,C%tsize)
      endif
 
+     if( alloc_in_dummy )then
+
+        call mem_alloc(reqA,nbuffsA)
+        call tensor_lock_wins(A,'s',all_nodes=.true.)
+
+        if(.not.B_dense)then
+           call mem_alloc(reqB,nbuffsB)
+           call tensor_lock_wins(B,'s',all_nodes=.true.)
+        endif
+
+     endif
+
      !loop over local tiles of C and contract corresponding 
      LocalTiles: do locC = 1, C%nlti
         !get the global combined and global mode indices of the current C tile
@@ -2919,8 +3025,12 @@ module lspdm_tensor_operations_module
            ibufA = mod(cm-1,nbuffsA)+1
 
            call time_start_phase( PHASE_COMM )
-           call tensor_lock_win(A,cmidA,'s')
-           call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
+           if( alloc_in_dummy )then
+              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+           else
+              call tensor_lock_win(A,cmidA,'s')
+              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
+           endif
            call time_start_phase( PHASE_WORK )
 
            if(.not.B_dense)then
@@ -2928,8 +3038,12 @@ module lspdm_tensor_operations_module
               ibufB = mod(cm-1,nbuffsB)+1
 
               call time_start_phase( PHASE_COMM )
-              call tensor_lock_win(B,cmidB,'s')
-              call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
+              if( alloc_in_dummy )then
+                 call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+              else
+                 call tensor_lock_win(B,cmidB,'s')
+                 call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
+              endif
               call time_start_phase( PHASE_WORK )
            endif
 
@@ -2961,8 +3075,12 @@ module lspdm_tensor_operations_module
               ibufA = mod(buffer_cm-1,nbuffsA)+1
 
               call time_start_phase( PHASE_COMM )
-              call tensor_lock_win(A,cmidA,'s')
-              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
+              if( alloc_in_dummy )then
+                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+              else
+                 call tensor_lock_win(A,cmidA,'s')
+                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
+              endif
               call time_start_phase( PHASE_WORK )
               
               !same for B if necessary
@@ -2970,8 +3088,12 @@ module lspdm_tensor_operations_module
                  call get_tile_dim(nelmsTB,B,mB)
                  ibufB = mod(buffer_cm-1,nbuffsB)+1
                  call time_start_phase( PHASE_COMM )
-                 call tensor_lock_win(B,cmidB,'s')
-                 call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
+                 if( alloc_in_dummy )then
+                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                 else
+                    call tensor_lock_win(B,cmidB,'s')
+                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
+                 endif
                  call time_start_phase( PHASE_WORK )
               endif
 
@@ -3007,13 +3129,21 @@ module lspdm_tensor_operations_module
            !get buffer positions for A and B bufs
            ibufA = mod(cm-1,nbuffsA)+1
            call time_start_phase( PHASE_COMM )
-           call tensor_unlock_win(A,cmidA)
+           if( alloc_in_dummy )then
+              call lsmpi_wait(reqA(ibufA))
+           else
+              call tensor_unlock_win(A,cmidA)
+           endif
            call time_start_phase( PHASE_WORK )
 
            if(.not.B_dense)then
               ibufB = mod(cm-1,nbuffsB)+1
               call time_start_phase( PHASE_COMM )
-              call tensor_unlock_win(B,cmidB)
+              if( alloc_in_dummy )then
+                 call lsmpi_wait(reqB(ibufB))
+              else
+                 call tensor_unlock_win(B,cmidB)
+              endif
               call time_start_phase( PHASE_WORK )
            endif
 
@@ -3093,6 +3223,19 @@ module lspdm_tensor_operations_module
         call mem_dealloc(wA)
         call mem_dealloc(wB)
         call mem_dealloc(wC)
+     endif
+
+
+     if( alloc_in_dummy )then
+
+        call mem_dealloc(reqA)
+        call tensor_unlock_wins(A,all_nodes=.true.)
+
+        if(.not.B_dense)then
+           call mem_dealloc(reqB)
+           call tensor_unlock_wins(B,all_nodes=.true.)
+        endif
+
      endif
 
      !critical barrier if synchronization is not achieved by other measures
@@ -3451,10 +3594,11 @@ module lspdm_tensor_operations_module
     integer               :: i,ltidx,o(arr%mode)
     integer               :: nelintile,fullfortdim(arr%mode)
     real(realk), pointer  :: tmp(:)
-    integer               :: tmps, elms_sent,last_flush_i,j
+    integer               :: tmps, elms_sent,last_flush_i,j,bidx
     logical               :: internal_alloc,lock_outside,so,consecutive,ff,ls
     integer               :: maxintmp,b,e,minstart
 #ifdef VAR_MPI
+    integer(kind=ls_mpik),pointer :: req(:)
   
     do i=1,arr%mode
       o(i)=i
@@ -3555,32 +3699,44 @@ module lspdm_tensor_operations_module
 
       maxintmp = tmps / arr%tsize
 
+      call mem_alloc(req,maxintmp)
+
       do i=1,arr%ntiles
 
-        if(i>maxintmp)then
-          b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
+        !set the buffer index
+        bidx = mod(i-1,maxintmp)+1
+
+        if(i>maxintmp.and..not. alloc_in_dummy)then
+          b = 1 + (bidx - 1) * arr%tsize
+          !b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
           e = b + arr%tsize -1
-          if( alloc_in_dummy )then
-             call tensor_flush_win(arr, gtidx = i-maxintmp, local = .false., only_owner=.true.)
-          else
-             if(arr%lock_set(i-maxintmp))call tensor_unlock_win(arr,i-maxintmp)
-          endif
+
+          if(arr%lock_set(i-maxintmp))call tensor_unlock_win(arr,i-maxintmp)
           call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+
+
         endif
 
         call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
 
         !ADDRESSING IN TMP BUFFER ALWAYS WITH FULL TILE SIZES
-        b = 1 + mod(i - 1, maxintmp) * arr%tsize
+        b = 1 + (bidx - 1) * arr%tsize
+        !b = 1 + mod(i - 1, maxintmp) * arr%tsize
         e = b + arr%tsize - 1
 
         if( alloc_in_dummy ) then
-           ls = arr%lock_set(1)
+           if(i>maxintmp)then
+              call lsmpi_wait(req(bidx))
+              call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+           endif
+           call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+
+           call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=.true.,req = req(bidx))
         else
            ls = arr%lock_set(i)
+           call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
         endif
 
-        call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
 
         elms_sent = elms_sent + nelintile
 
@@ -3602,12 +3758,18 @@ module lspdm_tensor_operations_module
         minstart = 1
       endif
      
-      if( alloc_in_dummy.and.arr%lock_set(1))call tensor_unlock_win(arr,1) 
       do i=minstart, arr%ntiles
-        b = 1 + mod(i - 1, maxintmp) * arr%tsize
+
+        bidx = mod(i-1,maxintmp)+1
+
+        b = 1 + (bidx - 1) * arr%tsize
         e = b + arr%tsize -1
+
+        if( alloc_in_dummy ) call lsmpi_wait(req(bidx))
         if(.not. alloc_in_dummy.and.arr%lock_set(i))call tensor_unlock_win(arr,i)
+
         call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+
       enddo
 
       if(internal_alloc)then
@@ -3617,6 +3779,7 @@ module lspdm_tensor_operations_module
       endif
     endif
 
+    call mem_dealloc(req)
 #else
     call lsquit('ERROR(tensor_gather):this routine is MPI only',-1)
 #endif
@@ -3755,10 +3918,10 @@ module lspdm_tensor_operations_module
        minstart = 1
     endif
 
-    if( alloc_in_dummy.and.arr%lock_set(1))call tensor_unlock_win(arr,1) 
     do i=minstart, arr%ntiles
        b = 1 + mod(i - 1, maxintmp) * arr%tsize
        e = b + arr%tsize -1
+       if( alloc_in_dummy.and.arr%lock_set(1))call tensor_flush_win(arr, gtidx = i, local = .false., only_owner=.false.)
        if(.not.alloc_in_dummy.and.arr%lock_set(i))call tensor_unlock_win(arr,i)
        call tile_in_fort(2.0E0_realk,tmp(b:e),i,arr%tdim,1.0E0_realk,fort,fullfortdim,arr%mode,o)
        call tile_in_fort(-1.0E0_realk,tmp(b:e),i,arr%tdim,1.0E0_realk,fort,fullfortdim,arr%mode,excho)
@@ -5674,6 +5837,28 @@ module lspdm_tensor_operations_module
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_lock_win
 
+  subroutine tensor_lock_win_on_all_nodes(arr,ti_idx,locktype,assert)
+    implicit none
+    type(tensor) :: arr
+    integer,intent(in) :: ti_idx
+    character, intent(in) :: locktype
+    integer(kind=ls_mpik), optional,intent(in) :: assert
+    integer(kind=ls_mpik) ::node,wi_idx
+    call time_start_phase( PHASE_COMM )
+
+    if( alloc_in_dummy )then
+       wi_idx = 1
+    else
+       wi_idx = ti_idx
+    endif
+
+    call get_residence_of_tile(node,ti_idx,arr)
+    call lsmpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
+    arr%lock_set(wi_idx)=.true.
+
+    call time_start_phase( PHASE_WORK )
+  end subroutine tensor_lock_win_on_all_nodes
+
   subroutine tensor_unlock_win(arr,ti_idx)
     implicit none
     type(tensor) :: arr
@@ -5694,19 +5879,43 @@ module lspdm_tensor_operations_module
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_unlock_win
 
-  subroutine tensor_lock_wins(arr,locktype,assert)
+  subroutine tensor_lock_wins(arr,locktype,assert,all_nodes)
     implicit none
     type(tensor) :: arr
     character, intent(in) :: locktype
     integer(kind=ls_mpik), optional,intent(in) :: assert
+    logical, optional,intent(in) :: all_nodes
     integer(kind=ls_mpik) :: node
     integer :: i
+    logical :: an
     call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
+    !Per default this routine only locks the window on the specific nodes where
+    !the tiles reside
+    an = .false.
+    if(present(all_nodes))an = all_nodes
 
-    do i=1,arr%ntiles
-       call tensor_lock_win(arr,i,locktype,assert=assert)
-    enddo
+    if(an)then
 
+       if(locktype == 'e') print *,"WARNING(tensor_lock_wins): you called a &
+       & lock_win on all windows on all nodees with an exclusive lock, &
+       &that should not be done"
+
+       do i=1,arr%nwins
+          call lsmpi_win_lock_all(arr%wi(i),ass=assert)
+       enddo
+
+    else
+
+       do i=1,arr%nwins
+          call tensor_lock_win(arr,i,locktype,assert=assert)
+       enddo
+
+    endif
+
+    arr%lock_set = .true.
+
+#endif
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_lock_wins
 
@@ -5720,10 +5929,18 @@ module lspdm_tensor_operations_module
     node = infpar%lg_mynum
     call time_start_phase( PHASE_COMM )
 
-    do i=1,arr%nlti
-       gt = arr%ti(i)%gt
-       call tensor_lock_win(arr,gt,locktype,assert=assert)
-    enddo
+    if( alloc_in_dummy )then
+
+       call lsmpi_win_lock(node,arr%wi(1),locktype,ass=assert)
+
+    else
+
+       do i=1,arr%nlti
+          gt = arr%ti(i)%gt
+          call tensor_lock_win(arr,gt,locktype,assert=assert)
+       enddo
+
+    endif
 
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_lock_local_wins
@@ -5731,37 +5948,57 @@ module lspdm_tensor_operations_module
   !\> \brief unlock all windows of a tensor 
   !\> \author Patrick Ettenhuber
   !\> \date July 2013
-  subroutine tensor_unlock_wins(arr,check)
+  subroutine tensor_unlock_wins(arr,check,all_nodes)
      implicit none
      type(tensor) :: arr
      logical, intent(in),optional:: check
+     logical, optional,intent(in) :: all_nodes
      integer(kind=ls_mpik) :: node
      integer :: i
-     logical :: ch
+     logical :: ch,an
 
      ch = .false.
-     if(present(check))ch=check
+     if(present(check))     ch = check
+     an = .false.
+     if(present(all_nodes)) an = all_nodes
+
+     if(ch.and.an)call lsquit("ERROR(tensor_unlock_wins): input error, an all &
+        &node unlock can only be requested without check, since an MPI_UNLOCK_ALL &
+        &needs a preceding MPI_LOCK_ALL",-1)
 
      call time_start_phase( PHASE_COMM )
 
      if(arr%itype/=TT_DENSE)then
-        if(ch)then
+
+        if(an)then
+           !UNLOCK ALL WINDOWS ON ALL NODES
            do i=1,arr%nwins
-              if(arr%lock_set(i))then
-                 call get_residence_of_tile(node,i,arr)
-                 call lsmpi_win_unlock(node,arr%wi(i))
-                 arr%lock_set(i)=.false.
-              endif
+              call lsmpi_win_unlock_all(arr%wi(i))
            enddo
 
         else
 
-           do i=1,arr%nwins
-              call get_residence_of_tile(node,i,arr)
-              call lsmpi_win_unlock(node,arr%wi(i))
-              arr%lock_set(i)=.false.
-           enddo
+           if(ch)then
 
+              !UNLOCK ALL WINDOWS THAT ARE MARKED AS LOCKED
+              do i=1,arr%nwins
+                 if(arr%lock_set(i))then
+                    call get_residence_of_tile(node,i,arr)
+                    call lsmpi_win_unlock(node,arr%wi(i))
+                    arr%lock_set(i)=.false.
+                 endif
+              enddo
+
+           else
+
+              !UNLOCK ALL WINDOWS 
+              do i=1,arr%nwins
+                 call get_residence_of_tile(node,i,arr)
+                 call lsmpi_win_unlock(node,arr%wi(i))
+                 arr%lock_set(i)=.false.
+              enddo
+
+           endif
         endif
      endif
 
@@ -6396,6 +6633,7 @@ module lspdm_tensor_operations_module
 
     sta  = MPI_WTIME()
 
+    print *,"putting",globtilenr,p
 
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(widx),'s')
     call lsmpi_put(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it=flush_it)
@@ -6470,35 +6708,38 @@ module lspdm_tensor_operations_module
 !!!!!!!                   GET TILES
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !interface to the tensor_gettile_combidx
-  subroutine tensor_gettile_modeidx(arr,modidx,fort,nelms,lock_set,flush_it)
+  subroutine tensor_gettile_modeidx(arr,modidx,fort,nelms,lock_set,flush_it,req)
     implicit none
     type(tensor),intent(in) ::arr
     integer,intent(in) :: modidx(arr%mode),nelms
     real(realk),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set,flush_it
+    integer(kind=ls_mpik),intent(inout),optional :: req
     logical :: ls
     integer :: cidx
     ls = .false.
     if(present(lock_set))ls=lock_set
     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
-    call tensor_get_tile(arr,cidx,fort,nelms,lock_set=ls,flush_it=flush_it)
+    call tensor_get_tile(arr,cidx,fort,nelms,lock_set=ls,flush_it=flush_it,req=req)
   end subroutine tensor_gettile_modeidx
-  subroutine tensor_gett8(arr,globtilenr,fort,nelms,lock_set,flush_it)
+  subroutine tensor_gett8(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
     implicit none
     type(tensor),intent(in) :: arr
     integer,intent(in) :: globtilenr
     integer(kind=8),intent(in) :: nelms
     real(realk),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set,flush_it
-    call tensor_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it)
+    integer(kind=ls_mpik),intent(inout),optional :: req
+    call tensor_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
   end subroutine tensor_gett8
-  subroutine tensor_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set,flush_it)
+  subroutine tensor_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
     implicit none
     type(tensor),intent(in) :: arr
     integer,intent(in) :: globtilenr
     integer(kind=8),intent(in) :: nelms
     real(realk),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set,flush_it
+    integer(kind=ls_mpik),intent(inout),optional :: req
     integer(kind=ls_mpik) :: source
     real(realk) :: sta,sto
     logical :: ls
@@ -6524,7 +6765,12 @@ module lspdm_tensor_operations_module
     sta    = MPI_WTIME()
 
     if(.not.ls)call lsmpi_win_lock(source,arr%wi(widx),'s')
-    call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
+    if(present(req))then
+       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
+       !call lsmpi_win_flush(arr%wi(widx),source,local = .false.)
+    else
+       call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
+    endif
     if(.not.ls)call lsmpi_win_unlock(source,arr%wi(widx))
 
     sto = MPI_WTIME()
@@ -6536,22 +6782,24 @@ module lspdm_tensor_operations_module
     call time_start_phase( PHASE_WORK )
 #endif
   end subroutine tensor_gettile_combidx8
-  subroutine tensor_gett4(arr,globtilenr,fort,nelms,lock_set,flush_it)
+  subroutine tensor_gett4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
     implicit none
     type(tensor),intent(in) :: arr
     integer,intent(in) :: globtilenr
     integer(kind=4),intent(in) :: nelms
     real(realk),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set,flush_it
-    call tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it)
+    integer(kind=ls_mpik),intent(inout),optional :: req
+    call tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
   end subroutine tensor_gett4
-  subroutine tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set,flush_it)
+  subroutine tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
     implicit none
     type(tensor),intent(in) :: arr
     integer,intent(in) :: globtilenr
     integer(kind=4),intent(in) :: nelms
     real(realk),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set,flush_it
+    integer(kind=ls_mpik),intent(inout),optional :: req
     integer(kind=ls_mpik) :: source
     real(realk) :: sta,sto
     logical :: ls
@@ -6577,7 +6825,11 @@ module lspdm_tensor_operations_module
     sta    = MPI_WTIME()
 
     if(.not.ls)call lsmpi_win_lock(source,arr%wi(widx),'s')
-    call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
+    if(present(req))then
+       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
+    else
+       call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
+    endif
     if(.not.ls)call lsmpi_win_unlock(source,arr%wi(widx))
 
     sto = MPI_WTIME()
@@ -6840,7 +7092,7 @@ module lspdm_tensor_operations_module
 
         if( all_tiles )then
 
-           do widx = T%nwins
+           do widx = 1, T%nwins
 
               call lsmpi_win_flush(T%wi(widx),rank=node,local=local)
 
@@ -6854,7 +7106,9 @@ module lspdm_tensor_operations_module
               widx = gtidx
            endif
 
-           call get_residence_of_tile(n,T,tidx)
+           call get_residence_of_tile(n,gtidx,T)
+
+           print *,infpar%lg_mynum,"flush",widx,"on",n,"local",local
 
            call lsmpi_win_flush(T%wi(widx),rank=n,local=local)
 
@@ -6862,7 +7116,7 @@ module lspdm_tensor_operations_module
      else
         if( all_tiles )then
 
-           do widx = T%nwins
+           do widx = 1, T%nwins
               call lsmpi_win_flush(T%wi(widx),rank=node,local=local)
            enddo
 

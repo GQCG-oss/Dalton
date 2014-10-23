@@ -155,11 +155,19 @@ module lsmpi_type
                  &   lsmpi_put_realkV_parts_wrapper8
   end interface lsmpi_put
 
+
   interface lsmpi_get
     module procedure lsmpi_get_realk,&
-                 &   lsmpi_get_realkV,lsmpi_get_realkV_wrapper8,lsmpi_get_realkV_parts,&
-                 &   lsmpi_get_realkV_parts_wrapper8,lsmpi_get_int4,lsmpi_get_int8
+                 &   lsmpi_get_realkV,lsmpi_get_realkV_wrapper8,&
+                 &   lsmpi_get_int4,lsmpi_get_int8,lsmpi_get_realkV_parts_wrapper8, &
+                 &   lsmpi_get_realkV_parts 
   end interface lsmpi_get
+  interface lsmpi_rget
+    module procedure lsmpi_rget_realk, &
+                 &   lsmpi_rget_realkV4,lsmpi_rget_realkV8,lsmpi_rget_realkV_wrapper8,&
+                 &   lsmpi_rget_realkV_wrapper4,&
+                 &   lsmpi_rget_int4,lsmpi_rget_int8
+  end interface lsmpi_rget
 
   interface lsmpi_acc
     module procedure lsmpi_acc_realk,&
@@ -200,7 +208,7 @@ module lsmpi_type
   integer     :: MAX_SIZE_ONE_SIDED 
 
   !mpistatus
-  integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
+  integer(kind=ls_mpik) :: lsmpi_status(MPI_STATUS_SIZE) 
 
   type mpigroup
      integer(kind=ls_mpik)         :: groupsize
@@ -233,7 +241,8 @@ module lsmpi_type
   integer,parameter           :: incremCha=1510
   real(realk)                 :: poketime=0.0E0_realk
   integer(kind=long)          :: poketimes = 0
-  real(realk)                 :: time_win_unlock = 0.0E0_realk
+  real(realk)                 :: time_lsmpi_win_unlock = 0.0E0_realk
+  real(realk)                 :: time_lsmpi_wait=0.0E0_realk
 
 
 !$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt4,iInt8,iCha,iSho,&
@@ -1033,7 +1042,7 @@ contains
       do i=1,nbuf,k
          nMPI=k
          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
-         call MPI_RECV(buffer(i:i+nMPI-1),nMPI,dtype,sender,tag,comm,status,ierr)
+         call MPI_RECV(buffer(i:i+nMPI-1),nMPI,dtype,sender,tag,comm,lsmpi_status,ierr)
          IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       enddo
 #endif 
@@ -1079,7 +1088,7 @@ contains
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
       else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
+         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
          call lsquit('ls_mpisendrecv_integer: &
@@ -1108,7 +1117,7 @@ contains
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
       else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
+         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
          call lsquit('ls_mpisendrecv_long: &
@@ -1191,7 +1200,7 @@ contains
          if(mynum.EQ.sender) then ! send stuff to receiver
             call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_longV: &
@@ -1238,7 +1247,7 @@ contains
          if(mynum.EQ.sender) then ! send stuff to receiver
             call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_longV: &
@@ -1279,7 +1288,7 @@ contains
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
       else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
+         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
          call lsquit('ls_mpisendrecv_realk: &
@@ -1310,7 +1319,7 @@ contains
          if(mynum.EQ.sender) then ! send stuff to receiver
             call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_realkV: &
@@ -1407,11 +1416,11 @@ contains
       else if(mynum.EQ.receiver) then  ! receive stuff from sender
          IF(mpi_logical_extent.EQ.4)THEN
             !32 bit mpi logical
-            call MPI_RECV(buffer4,thesize,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer4,thesize,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
             BUFFER = BUFFER4
          ELSE
             !64 bit mpi logical
-            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
          ENDIF
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1452,9 +1461,9 @@ contains
       else if(mynum.EQ.receiver) then  ! receive stuff from sender
          IF(mpi_logical_extent.EQ.4)THEN
             !32 bit mpi logical
-            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
          ELSE
-            call MPI_RECV(buffer8,thesize,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer8,thesize,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
             BUFFER = BUFFER8
          ENDIF
       else ! Error: Node should be either sender or receiver
@@ -1504,14 +1513,14 @@ contains
             IF(mpi_logical_extent.EQ.4)THEN
                !32 bit mpi logical
                call mem_alloc(buffer4,nMPI)
-               call MPI_RECV(buffer4,nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               call MPI_RECV(buffer4,nMPI,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
                do J = 1,nMPI
                   buffer(i+J-1) = buffer4(J)
                enddo
                call mem_dealloc(buffer4)
             ELSE
                !64 bit mpi logical
-               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
             ENDIF
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1573,11 +1582,11 @@ contains
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
             IF(mpi_logical_extent.EQ.4)THEN
                !32 bit mpi logical
-               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
             ELSE
                !64 bit mpi logical
                call mem_alloc(buffer8,nMPI)
-               call MPI_RECV(buffer8,nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               call MPI_RECV(buffer8,nMPI,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
                do J = 1,nMPI
                   buffer(i+J-1) = buffer8(J)
                enddo
@@ -1689,7 +1698,7 @@ contains
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
       else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
+         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
       else ! Error: Node should be either sender or receiver
          print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
          call lsquit('ls_mpisendrecv_charac: &
@@ -1721,7 +1730,7 @@ contains
          if(mynum.EQ.sender) then ! send stuff to receiver
             call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_characV: &
@@ -1767,7 +1776,7 @@ contains
          if(mynum.EQ.sender) then ! send stuff to receiver
             call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,lsmpi_status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_characV: &
@@ -3060,7 +3069,7 @@ contains
       ELSE IF (IERRCL.EQ.MPI_ERR_INTERN) THEN
          ERRBUF = 'Internal MPI (implementation) error'
       ELSE IF (IERRCL.EQ.MPI_ERR_IN_STATUS) THEN
-         ERRBUF = 'Error code is in status'
+         ERRBUF = 'Error code is in lsmpi_status'
       ELSE IF (IERRCL.EQ.MPI_ERR_PENDING) THEN
          ERRBUF = 'Pending request'
       ELSE IF (IERRCL.EQ.MPI_ERR_LASTCODE) THEN
@@ -4633,12 +4642,12 @@ contains
            & cnt,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
       !IF direct communication is used the unlock times are interesting
 
-      call lsmpi_reduction(time_win_unlock,infpar%master,MPI_COMM_LSDALTON)
+      call lsmpi_reduction(time_lsmpi_win_unlock,infpar%master,MPI_COMM_LSDALTON)
   
       IF(infpar%mynum.eq.infpar%master) THEN
          WRITE(lupri,'(A)')'  The total memory used across all MPI nodes'
          call print_maxmem(lupri,recvbuffer,'TOTAL')
-         Write(lupri,'("time spent in unlock: ",f19.10)')time_win_unlock
+         Write(lupri,'("time spent in unlock: ",f19.10)') time_lsmpi_win_unlock
       ENDIF
       !Largest max_mem_used_global including Master
       CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
@@ -4672,7 +4681,7 @@ contains
             call mem_alloc(longintbufferInt,longintbuffersize)
             cnt = longintbuffersize
             CALL MPI_RECV(longintbufferInt,cnt,MPI_INTEGER8,I,tag,&
-                 & MPI_COMM_LSDALTON,status,IERR)
+                 & MPI_COMM_LSDALTON,lsmpi_status,IERR)
             call copy_to_mem_stats(longintbufferInt)
             call mem_dealloc(longintbufferInt)
             WRITE(LUPRI,'("  Memory statistics for MPI node number ",i9," ")') I
@@ -4972,9 +4981,46 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_win_unlock): error in mpi",ierr)
     endif
-    time_win_unlock = time_win_unlock + te - ta
+    time_lsmpi_win_unlock = time_lsmpi_win_unlock + te - ta
 #endif
   end subroutine lsmpi_win_unlock
+  subroutine lsmpi_win_lock_all(win,ass)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(in),optional :: ass
+#ifdef VAR_MPI   
+    integer(kind=ls_mpik) :: ierr, assert
+    ierr= 0
+
+    assert = 0
+    if(present(ass))assert=ass
+
+    CALL MPI_WIN_LOCK_ALL(assert,win,ierr)
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_win_lock_all): error in mpi",ierr)
+    endif
+#endif
+  end subroutine lsmpi_win_lock_all
+  subroutine lsmpi_win_unlock_all(win)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI   
+    integer(kind=ls_mpik) :: ierr, assert
+    real(realk) :: sta,sto
+    ierr= 0
+
+    sta=MPI_WTIME()
+    CALL MPI_WIN_UNLOCK_ALL(win,ierr)
+    sto=MPI_WTIME()
+
+    time_lsmpi_win_unlock = time_lsmpi_win_unlock + sto - sta
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_win_unlock_all): error in mpi",ierr)
+    endif
+#endif
+  end subroutine lsmpi_win_unlock_all
 
   subroutine lsmpi_win_flush(win,rank,local)
      implicit none
@@ -5363,6 +5409,252 @@ contains
     enddo
 #endif
   end subroutine lsmpi_get_realkV_parts
+  !=========================================================!
+  !                  MPI RGET ROUTINES                      !
+  !=========================================================!
+  subroutine lsmpi_rget_int8(buf,pos,dest,win,req)
+    implicit none
+    integer(kind=8),intent(in) :: buf
+    integer, intent(in) :: pos
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(inout) :: req
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+
+    ierr = 0
+    n  = 1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+    call MPI_RGET(buf,n,MPI_INTEGER8,dest,offset,n,MPI_INTEGER8,win,req,ierr)
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_rget_int8)",ierr)
+    endif
+
+#endif
+  end subroutine lsmpi_rget_int8
+  subroutine lsmpi_rget_int4(buf,pos,dest,win,req)
+    implicit none
+    integer(kind=4),intent(in) :: buf
+    integer, intent(in) :: pos
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(inout) :: req
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+    ierr = 0
+    n  = 1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+    call MPI_RGET(buf,n,MPI_INTEGER4,dest, offset,n,MPI_INTEGER4,win,req,ierr)
+    
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_fget_int4)",ierr)
+    endif
+#endif
+  end subroutine lsmpi_rget_int4
+  subroutine lsmpi_rget_realk(buf,pos,dest,win,req)
+    implicit none
+    real(realk),intent(in) :: buf
+    integer, intent(in) :: pos
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(inout) :: req
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+    ierr = 0
+    n  = 1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+    call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_rget_realk)",ierr)
+    endif
+
+#endif
+  end subroutine lsmpi_rget_realk
+  subroutine lsmpi_rget_realkV_wrapper8(buf,nelms,pos,dest,win,req,nreqs)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(inout),pointer :: req(:)
+    integer,intent(out) :: nreqs
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=4) :: n4,k,i,ireq
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+
+    if(ls_mpik==4)then
+
+      k=SPLIT_MPI_MSG
+
+      nreqs = nelms/k
+      if(mod(nelms,k)>0) nreqs = nreqs + 1
+
+      if(.not.associated(req))then
+         call mem_alloc(req,nreqs)
+      else
+         if( nreqs > size(req) )call lsquit("ERROR(lsmpi_rget_realkV_wrapper8):not enough request handles",-1)
+      endif
+
+      ireq = 1
+
+      do i=1,nelms,k
+
+        n4=k
+        if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
+
+        call lsmpi_rget_realkV4(buf(i:i+n4-1),n4,pos+i-1,dest,win,req(ireq))
+
+        ireq = ireq + 1
+      enddo
+
+
+    else
+
+      ierr = 0
+
+      n  = nelms
+      offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+      nreqs = 1
+      if(.not.associated(req))then
+         call mem_alloc(req,nreqs)
+      else
+         if( nreqs > size(req) )call lsquit("ERROR(lsmpi_rget_realkV_wrapper8):not enough request handles",-1)
+      endif
+
+      call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req(1),ierr)
+
+      if(ierr.ne.0)then
+        call lsquit("Error(lsmpi_rget_realkV_wrapper8)",ierr)
+      endif
+
+    endif
+#endif
+  end subroutine lsmpi_rget_realkV_wrapper8
+  subroutine lsmpi_rget_realkV_wrapper4(buf,nelms,pos,dest,win,req,nreqs)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=4) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(inout),pointer :: req(:)
+    integer,intent(out) :: nreqs
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=4) :: n4,k,i, ireq
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+
+    if(ls_mpik==4)then
+
+      k=SPLIT_MPI_MSG
+
+      nreqs = nelms/k
+      if(mod(nelms,k)>0) nreqs = nreqs + 1
+
+      if(.not.associated(req))then
+         call mem_alloc(req,nreqs)
+      else
+         if( nreqs > size(req) )call lsquit("ERROR(lsmpi_rget_realkV_wrapper4):not enough request handles",-1)
+      endif
+
+      ireq = 1
+
+      do i=1,nelms,k
+
+        n4=k
+        if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
+
+        call lsmpi_rget_realkV4(buf(i:i+n4-1),n4,pos+i-1,dest,win,req(ireq))
+
+        ireq = ireq + 1
+      enddo
+
+
+    else
+
+      ierr = 0
+
+      n  = nelms
+      offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+      nreqs = 1
+      if(.not.associated(req))then
+         call mem_alloc(req,nreqs)
+      else
+         if( nreqs > size(req) )call lsquit("ERROR(lsmpi_rget_realkV_wrapper4):not enough request handles",-1)
+      endif
+
+      call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req(1),ierr)
+
+      if(ierr.ne.0)then
+        call lsquit("Error(lsmpi_rget_realkV_wrapper4)",ierr)
+      endif
+
+    endif
+#endif
+  end subroutine lsmpi_rget_realkV_wrapper4
+
+  subroutine lsmpi_rget_realkV4(buf,nelms,pos,dest,win,req)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=4) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(inout) :: req
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+
+    ierr   = 0
+    n      = nelms
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+    call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_rget_realkV4)",ierr)
+    endif
+#endif
+  end subroutine lsmpi_rget_realkV4
+  subroutine lsmpi_rget_realkV8(buf,nelms,pos,dest,win,req)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(inout) :: req
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+
+    ierr   = 0
+    n      = nelms
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+    if(nelms>MAXINT32.and.ls_mpik==4)then
+       call lsquit("ERROR(lsmpi_rget_realkV8): message is too big",-1)
+    endif
+
+    call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_rget_realkV)",ierr)
+    endif
+#endif
+  end subroutine lsmpi_rget_realkV8
 
 
   !=========================================================!
@@ -5711,13 +6003,34 @@ contains
     ierr = 0
     if(.not.LSMPIASYNCP)then
       sta=MPI_WTIME()
-      call mpi_iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,infpar%lg_comm,flag,status,ierr)
+      call mpi_iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,infpar%lg_comm,flag,lsmpi_status,ierr)
       sto=MPI_WTIME()
       poketime=poketime+sto-sta
       poketimes = poketimes + 1
     endif
 #endif
   end subroutine lsmpi_poke
+
+  subroutine lsmpi_wait(request_handle)
+     implicit none
+     integer(kind=ls_mpik),intent(in) :: request_handle
+     integer(kind=ls_mpik) :: ierr
+#ifdef VAR_MPI
+     real(realk) :: sta,sto
+
+     ierr = 0
+
+     sta=MPI_WTIME()
+     call MPI_WAIT(request_handle,lsmpi_status,ierr)
+     sto=MPI_WTIME()
+
+     time_lsmpi_wait = time_lsmpi_wait + sto - sta
+
+     if(ierr/=0)then
+        call lsquit("ERROR(lsmpi_wait): error in lsmpi_wait",-1)
+     endif
+#endif
+  end subroutine lsmpi_wait
 
 end module lsmpi_type
 
