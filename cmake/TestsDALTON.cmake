@@ -550,4 +550,6 @@ add_dalton_runtest(rsp_zfs_mc2       "dalton;runtest;mcscf")
 add_dalton_runtest(pcm_mcscf         "dalton;runtest;mcscf;pcm;essential")
 add_dalton_runtest(pcm_mcscf_nomp2   "dalton;runtest;mcscf;pcm")
 
+add_dalton_runtest(molden            "dalton;runtest;molden;hf")
+
 add_dalton_test(cc2_r12_aux_benzene_sym_fop   "dalton;ccr12;longccr12")
