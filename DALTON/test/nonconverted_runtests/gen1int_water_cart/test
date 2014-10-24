@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['gen1int_water_cart.dal'], ['tmp.mol'], {'out': f})
+test.run(['gen1int_water_cart.dal'], ['gen1int_water_cart.mol'], {'out': f})
 
 sys.exit(test.return_code)
