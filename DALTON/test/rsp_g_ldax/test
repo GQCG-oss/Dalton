@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+#    rsp_g_ldax
+#    -----------
+#    Molecule:       CH2
+#    Wave Function:  LDA 
+#    Test Purpuse:   Three step calculation for numerical difference test
+#                    of perturbed g-tensor component
+#                    Analytical (quadratic response)          0.00064170
+#                    Numerical  (linear response) + field/2  -1.766935551362D-04
+#                                                 - field/2  -1.773352501451D-04
+#                        difference/field                     0.000641695
+#                    Here: field=0.001
 
 import os
 import sys

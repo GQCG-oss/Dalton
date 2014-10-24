@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import os
 import sys
 
@@ -46,5 +47,3 @@ f.add(from_string = 'Indirect spin-spin coupling between ',
 test.run(['shield_spin.dal'], ['C2H3Li_STO-3G.mol'], {'out': f})
 
 sys.exit(test.return_code)
-
-

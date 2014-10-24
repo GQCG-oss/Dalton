@@ -1,7 +1,0 @@
-   spin_local
-   ----------
-   Molecule:         H2O
-   Wave Function:    DFT/B3LYP (6-31G)
-   Test Purpose:     Analysis of spin-spin coupling constants
-                     in terms of localized occupied orbitals
-                     using Foster-Boys localization

@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#    rsp_absorp
+#    -------
+#    Molecule:         LiH
+#    Wave Function:    HF
+#    Test Purpose:     Response calculations (first and second order)
+#                      with damping (absorption)
 
 import os
 import sys

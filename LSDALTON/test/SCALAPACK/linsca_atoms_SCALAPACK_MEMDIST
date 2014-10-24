@@ -94,19 +94,19 @@ ERROR[2]="HOMO-LUMO GAP NOT CORRECT -"
 # Test individual iterations
 CRIT1=`$GREP "1 * -75.92740771[0-5]" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
-CTRL[3]=1
+CTRL[3]=2
 ERROR[3]="1st energy not correct -"
 
 # Test individual iterations
 CRIT1=`$GREP "2 * -75.96925697[0-5]" $log | wc -l`
 TEST[4]=`expr  $CRIT1`
-CTRL[4]=1
+CTRL[4]=2
 ERROR[4]="2nd energy not correct -"
 
 # Test individual iterations
 CRIT1=`$GREP "7 * -75.98530302[0-9]" $log | wc -l`
 TEST[5]=`expr  $CRIT1`
-CTRL[5]=1
+CTRL[5]=2
 ERROR[5]="Last energy not correct -"
 
 # Test Newton convergence

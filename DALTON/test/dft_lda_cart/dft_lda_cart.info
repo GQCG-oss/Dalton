@@ -1,7 +1,0 @@
-
-   dft_lda_cart
-   ------------
-   Molecule:         HCN
-   Wave Function:    DFT LDA / aug-cc-pVDZ
-   Test Purpose:     Check DFT-code with Cartesians
-

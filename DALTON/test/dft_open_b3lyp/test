@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    dft_open_b3lyp
+#    ------------------
+#    Molecule:         BeH
+#    Wave Functions:   Open-shell DFT B3LYP / AhlrichsVTZ
+#    Test Purpose:     Open-shell DFT B3LYP properties test w/o symmetry.
 
 import os
 import sys

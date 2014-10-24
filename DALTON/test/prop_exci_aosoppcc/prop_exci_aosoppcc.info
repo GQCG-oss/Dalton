@@ -1,5 +1,0 @@
-   prop_exci_aosoppcc
-   ------------------
-   Molecule:         H2O
-   Wave Function:    CCSD (AO-SOPPA(CCSD))
-   Test Purpose:     Calculation of excitation energies through ABACUS
