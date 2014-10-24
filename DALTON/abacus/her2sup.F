@@ -74,8 +74,6 @@ C Written by Olav Kvalheim, University of Bergen, Norway.
 C
 C Revised
 C        5-Jul-1984 hjaaj (changed all var. to max 6 char.)
-C       17-Nov-1984 hjaaj SUPSRT error corrected: must use IRAT
-C                         instead of 2 (because of e.g. FPS)
 C       23-Sep-1986 tuh   adaption to HERMIT
 C       12-Jun-1987 hjaaj increased NBMAX from 150 to 255 and
 C                         made appropriate changes in commons etc.
@@ -386,7 +384,7 @@ C
       RETURN
       END
 C  /* Deck supsrt */
-      SUBROUTINE SUP_SORT(NOSYM,RINT,INT,SCR,ISCR,LSORT,IT,IPRINT)
+      SUBROUTINE SUP_SORT(NOSYM,RINT,INT4,SCR,ISCR,LSORT,IT,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -397,7 +395,7 @@ C  /* Deck supsrt */
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
       DIMENSION RINT(*),SCR(*),ISCR(*),IT(*)
-      INTEGER*4 INT(*)
+      INTEGER*4 INT4(*)
       LOGICAL NOSYM, OLDDX 
       DIMENSION NSOINT(255), NAOS(8)
 C
@@ -551,16 +549,20 @@ C
          KBATCH = KBATCH+LDA22
   15  CONTINUE
 Cha
-      IAOINT = IRAT*600
-      LAOINT = IAOINT+NIBUF*600+1
-      IF (LAOINT .NE. LENINT4) CALL QUIT('LAOINT .ne. LENINT4')
+      IAOINT = 2*600
+      LAOINT4 = IAOINT+NIBUF*600+1
+      IF (LAOINT4 .NE. LENINT4) THEN
+         WRITE(LUPRI,*)
+     &   'Fatal error LAOINT4 .ne. LENINT4',LAOINT4,LENINT4
+         CALL QUIT('LAOINT4 .ne. LENINT4')
+      END IF
 C
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
 C
   20  CONTINUE
-      CALL READI4(LUINTA,LAOINT,INT)
-      NINT = INT(LAOINT)
+      CALL READI4(LUINTA,LAOINT4,INT4)
+      NINT = INT4(LAOINT4)
       IF(NINT.EQ. 0) GO TO 20
       IF(NINT.EQ.-1) GO TO 35
 C
@@ -575,7 +577,7 @@ C     IBITSHR_4 =       0 ! shift for index 4 in (12|34) -- not needed!
          VALUE  = RINT(I)
          NINTAO = NINTAO+1
       IF(ABS(VALUE).LE.THRQ) GO TO 30
-         LABEL  = INT(IAOINT+I)
+         LABEL  = INT4(IAOINT+I)
 C
          NP = IBTAND(IBTSHR(LABEL,IBITSHR_1),IBITMASK)
 C        HERMIT: We know NP is largest index, thus we don't need NQ,NR,NS

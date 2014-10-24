@@ -247,6 +247,7 @@ C
       LFREE = LWRK
       CALL MEMGET2('REAL','CMO',  KCMO  ,NCMOT, WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT, WRK,KFREE,LFREE)
+      CALL DZERO(WRK(KOCCNO),NORBT)
       CALL MEMGET2('REAL','CREF', KCREF ,NCONF, WRK,KFREE,LFREE)
       IF (FLAG(3)) THEN
          IF ( FLAG(2) .AND. ICONV.EQ.0 ) THEN
@@ -272,14 +273,14 @@ C           CALL SIRCAN(IPRCAN,CREF,CMO,OCC,WRK,KFREE,LFREE)
       END IF
 C
 C     Now read the final orbitals and occupation numbers from SIRIUS.RST
+C     (if label 'NATOCC  ' not found, then we assume any occupation numbers
+C      already in WRK(KOCCNO) are OK)
 C
       REWIND LUIT1
       CALL READMO(WRK(KCMO),9,WRK(KFREE),LFREE)
       REWIND LUIT1
       IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
          CALL READT(LUIT1,NORBT,WRK(KOCCNO))
-      ELSE
-         CALL DZERO(WRK(KOCCNO),NORBT)
       END IF
 C
 C *** FINAL RESULTS

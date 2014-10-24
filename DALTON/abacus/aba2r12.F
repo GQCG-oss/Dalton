@@ -688,15 +688,18 @@ C
             IBIT1 = 2**NBITS - 1
             DO 100 INT = 1, ICOUNT
                IF (NIBUF .EQ. 1) THEN
-                  I = IBTAND(IBTSHR(IBUF4(INT),3*NBITS),IBIT1)
-                  J = IBTAND(IBTSHR(IBUF4(INT),2*NBITS),IBIT1)
-                  K = IBTAND(IBTSHR(IBUF4(INT),  NBITS),IBIT1)
-                  L = IBTAND(       IBUF4(INT),         IBIT1)
+                  IJKL = IBUF4(INT) ! IJKL will always be standard integer
+                  I = IBTAND(IBTSHR(IJKL,3*NBITS),IBIT1)
+                  J = IBTAND(IBTSHR(IJKL,2*NBITS),IBIT1)
+                  K = IBTAND(IBTSHR(IJKL,  NBITS),IBIT1)
+                  L = IBTAND(       IJKL,         IBIT1)
                ELSE
-                  I = IBTAND(IBTSHR(IBUF4(2*INT-1),NBITS),IBIT1)
-                  J = IBTAND(       IBUF4(2*INT-1),       IBIT1)
-                  K = IBTAND(IBTSHR(IBUF4(2*INT  ),NBITS),IBIT1)
-                  L = IBTAND(       IBUF4(2*INT  ),       IBIT1)
+                  IJ = IBUF4(2*INT-1)
+                  KL = IBUF4(2*INT  )
+                  I = IBTAND(IBTSHR(IJ,NBITS),IBIT1)
+                  J = IBTAND(       IJ,       IBIT1)
+                  K = IBTAND(IBTSHR(KL,NBITS),IBIT1)
+                  L = IBTAND(       KL,       IBIT1)
                END IF
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,2(1P,D16.8))')
      &                      ' ## ', I, J, K, L, BUF(INT), CUF(INT)
@@ -719,15 +722,18 @@ C
                IBIT1 = 2**NBITS - 1
                DO 200 INT = 1, ICOUNT
                   IF (NIBUF .EQ. 1) THEN
-                     I = IBTAND(IBTSHR(IBUF4(INT),3*NBITS),IBIT1)
-                     J = IBTAND(IBTSHR(IBUF4(INT),2*NBITS),IBIT1)
-                     K = IBTAND(IBTSHR(IBUF4(INT),  NBITS),IBIT1)
-                     L = IBTAND(       IBUF4(INT),         IBIT1)
+                     IJKL = IBUF4(INT) ! IJKL will always be standard integer
+                     I = IBTAND(IBTSHR(IJKL,3*NBITS),IBIT1)
+                     J = IBTAND(IBTSHR(IJKL,2*NBITS),IBIT1)
+                     K = IBTAND(IBTSHR(IJKL,  NBITS),IBIT1)
+                     L = IBTAND(       IJKL,         IBIT1)
                   ELSE
-                     I = IBTAND(IBTSHR(IBUF4(2*INT-1),NBITS),IBIT1)
-                     J = IBTAND(       IBUF4(2*INT-1),       IBIT1)
-                     K = IBTAND(IBTSHR(IBUF4(2*INT  ),NBITS),IBIT1)
-                     L = IBTAND(       IBUF4(2*INT  ),       IBIT1)
+                     IJ = IBUF4(2*INT-1)
+                     KL = IBUF4(2*INT  )
+                     I = IBTAND(IBTSHR(IJ,NBITS),IBIT1)
+                     J = IBTAND(       IJ,       IBIT1)
+                     K = IBTAND(IBTSHR(KL,NBITS),IBIT1)
+                     L = IBTAND(       KL,       IBIT1)
                   END IF
                   WRITE (LUPRI,'(10X,A,2X,4I4,5X,2(1P,D16.8))')
      &                         ' ## ', I, J, K, L, BUF(INT), CUF(INT)
