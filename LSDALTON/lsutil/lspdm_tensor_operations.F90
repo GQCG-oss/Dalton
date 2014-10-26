@@ -690,14 +690,14 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date December 2012
   !> \brief calculate aos cc energy in parallel (PDM)
-  function get_cc_energy_parallel(t1,t2,gmo) result(Ec)
+  function get_cc_energy_parallel(t2,gmo,t1) result(Ec)
     implicit none
-    !> singles amplitudes
-    type(tensor), intent(inout) :: t1
     !> two electron integrals in the mo-basis
     type(tensor), intent(inout) :: gmo
     !> doubles amplitudes
     type(tensor), intent(in) :: t2
+    !> singles amplitudes, optional so that an MP2 contribution can be calculated
+    type(tensor), intent(inout),optional :: t1
     !> on return Ec contains the correlation energy
     real(realk) :: E1,E2,Ec
     real(realk),pointer :: t2tile(:,:,:,:),gmotile(:,:,:,:),gmotile1d(:)
@@ -731,7 +731,11 @@ module lspdm_tensor_operations_module
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
        call time_start_phase( PHASE_COMM )
-       call pdm_tensor_sync(infpar%lg_comm,JOB_GET_CC_ENERGY,t1,t2,gmo)
+       if(present(t1))then
+          call pdm_tensor_sync(infpar%lg_comm,JOB_GET_CC_ENERGY,t2,gmo,t1)
+       else
+          call pdm_tensor_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
+       endif
        call time_start_phase( PHASE_WORK )
     endif
 
@@ -930,7 +934,7 @@ module lspdm_tensor_operations_module
        di = t2%ti(lt)%d(3)
        dj = t2%ti(lt)%d(4)
        !count over local indices
-       !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t1,t2tile,gmo_ctile,gmo_etile,&
+       !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t2tile,gmo_ctile,gmo_etile,&
        !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
        do j=1,dj
           do i=1,di
@@ -939,14 +943,28 @@ module lspdm_tensor_operations_module
 
                    E2 = E2 + t2tile(a,b,i,j)*&
                       & (2.0E0_realk*  gmo_ctile(i,a,j,b) - gmo_etile(i,b,j,a))
-                   E1 = E1 + ( t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4)) ) * &
-                      (2.0E0_realk*gmo_ctile(i,a,j,b)-gmo_etile(i,b,j,a))
-
                 enddo 
              enddo
           enddo
        enddo
        !$OMP END PARALLEL DO
+       if(present(t1))then
+          !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t1,gmo_ctile,gmo_etile,&
+          !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
+          do j=1,dj
+             do i=1,di
+                do b=1,db
+                   do a=1,da
+
+                      E1 = E1 + ( t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4)) ) * &
+                         (2.0E0_realk*gmo_ctile(i,a,j,b)-gmo_etile(i,b,j,a))
+
+                   enddo 
+                enddo
+             enddo
+          enddo
+          !$OMP END PARALLEL DO
+       endif
        t2tile    => null()
        gmo_ctile => null()
        gmo_etile => null()
@@ -959,11 +977,15 @@ module lspdm_tensor_operations_module
     endif
 
     call time_start_phase( PHASE_COMM )
-    call lsmpi_local_reduction(E1,infpar%master)
+    if(present(t1))call lsmpi_local_reduction(E1,infpar%master)
     call lsmpi_local_reduction(E2,infpar%master)
     call time_start_phase( PHASE_WORK )
 
-    Ec=E1+E2
+    if(present(t1))then
+       Ec=E1+E2
+    else
+       Ec=E2
+    endif
 
     call mem_dealloc(gmo_tile_buf)
 #else
@@ -1354,108 +1376,6 @@ module lspdm_tensor_operations_module
 #endif
   end subroutine get_info_for_mpi_get_and_reorder_t1
 
-  !> \author Patrick Ettenhuber
-  !> \date April 2014
-  !> \brief calculate aos cc energy in parallel (PDM)
-  function get_mp2_energy_parallel(t2,gmo) result(Ec)
-    implicit none
-    !> two electron integrals in the mo-basis
-    type(tensor), intent(inout) :: gmo
-    !> doubles amplitudes
-    type(tensor), intent(in) :: t2
-    !> on return Ec contains the correlation energy
-    real(realk) :: E2,Ec
-    real(realk),pointer :: t(:,:,:,:)
-    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
-
-#ifdef VAR_MPI
-    !Get the slaves to this routine
-      !bloda = t2%ti(lt)%d(1)
-      !db = t2%ti(lt)%d(2)
-      !di = t2%ti(lt)%d(3)
-      !dj = t2%ti(lt)%d(4)
-        
-      !! Make table of indices:
-      !!$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t1tile,table_iajb,table_ibja,&
-      !!$OMP  da,db,di,dj) PRIVATE(i,j,a,b,idx,glob_mode_idx) COLLAPSE(3)
-      !do j=1,dj
-      !  do i=1,di
-      !    do b=1,db
-      !      do a=1,da
-      !        ! get combined index for tiles:
-      !        idx = a + (b-1)*da + (i-1)*da*db + (j-1)*da*db*di
-        
-      !        ! GET G_IAJB ELMT FROM PDM ARRAY:    
-      !        glob_mode_idx = [i+o(3),a+o(1),j+o(4),b+o(2)]
-      !        call get_data_table(gmo,glob_mode_idx,table_iajb(idx,:))
-        
-      !        ! GET G_IBJA ELMT FROM PDM ARRAY:    
-      !        glob_mode_idx = [i+o(3),b+o(2),j+o(4),a+o(1)]
-      !        call get_data_table(gmo,glob_mode_idx,table_ibja(idx,:))
-      !       
-      !        ! reorder t1 contributions into one big tile:
-      !        t1tile(idx) = t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4))
-      !      enddo 
-      !    enddo
-      !  enddo
-      !enddo
-      !!$OMP END PARALLEL DO
-    if(infpar%lg_mynum==infpar%master)then
-      call time_start_phase( PHASE_COMM )
-      call pdm_tensor_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
-      call time_start_phase( PHASE_WORK )
-    endif
-    call memory_allocate_tensor_dense(gmo)
-
-    call time_start_phase( PHASE_COMM )
-    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
-    call time_start_phase( PHASE_WORK )
-
-    E2=0.0E0_realk
-    Ec=0.0E0_realk
-    do lt=1,t2%nlti
-      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
-      !get offset for global indices
-      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
-      do j=1,t2%mode
-        o(j)=(o(j)-1)*t2%tdim(j)
-      enddo
-
-      da = t2%ti(lt)%d(1)
-      db = t2%ti(lt)%d(2)
-      di = t2%ti(lt)%d(3)
-      dj = t2%ti(lt)%d(4)
-      !count over local indices
-      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
-      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E2) COLLAPSE(3)
-      do j=1,dj
-        do i=1,di
-          do b=1,db
-            do a=1,da
-     
-              E2 = E2 + t(a,b,i,j)*&
-              & (2.0E0_realk*  gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2))-gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)))
-   
-            enddo 
-          enddo
-        enddo
-      enddo
-      !$OMP END PARALLEL DO
-      nullify(t)
-    enddo
-
-    call tensor_deallocate_dense(gmo)
-    
-    call time_start_phase( PHASE_COMM )
-    call lsmpi_local_reduction(E2,infpar%master)
-    call time_start_phase( PHASE_WORK )
-
-    Ec = E2
-#else
-    Ec = 0.0E0_realk
-#endif
-  end function get_mp2_energy_parallel
-
 
   function get_rpa_energy_parallel(t2,gmo) result(Ec)
     implicit none
@@ -1619,7 +1539,7 @@ module lspdm_tensor_operations_module
 
      if( oof%itype == TT_DENSE .or. oof%itype == TT_REPLICATED )then
 
-        !TODO: introduce prefetching of tiles
+        !TODO: introduce prefetching of tiles and adapt to alloc_in_dummy
         call mem_alloc(buf,iajb%tsize)
 
         do lt=1,t2%nlti
@@ -2901,11 +2821,11 @@ module lspdm_tensor_operations_module
      endif
 
      if(B_dense)then
-        nbuffs  = min(1,nbuffsA)
+        nbuffs  = max(2,nbuffsA)
         nbuffsA = nbuffs
         nbuffsB = 0
      else
-        nbuffs  = min(1,min(nbuffsA, nbuffsB))
+        nbuffs  = max(2,min(nbuffsA, nbuffsB))
         nbuffsA = nbuffs
         nbuffsB = nbuffs
      endif

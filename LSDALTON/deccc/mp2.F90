@@ -4206,7 +4206,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
 #ifdef VAR_MPI
    call tensor_lock_local_wins(Pijab_om2,'e',mode)
-   call tensor_unlock_wins(omega2,.true.)
+   call tensor_unlock_local_wins(omega2)
 #endif
 
    !INTRODUCE PERMUTATION
@@ -4215,7 +4215,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
 #ifdef VAR_MPI
    call tensor_lock_local_wins(omega2,'e',mode)
-   call tensor_unlock_wins(Pijab_om2,.true.)
+   call tensor_unlock_local_wins(Pijab_om2)
 #endif
 
    call tensor_add(omega2,1.0E0_realk,Pijab_om2)
@@ -4225,7 +4225,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    call tensor_add(omega2,1.0E0_realk,iajb, order = ord )
 
 #ifdef VAR_MPI
-   call tensor_unlock_wins(omega2,.true.)
+   call tensor_unlock_local_wins(omega2)
    omega2%access_type = AT_MASTER_ACCESS
    iajb%access_type   = AT_MASTER_ACCESS
    t2%access_type     = AT_MASTER_ACCESS
