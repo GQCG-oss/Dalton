@@ -155,6 +155,10 @@ module lsmpi_type
                  &   lsmpi_put_realkV_parts_wrapper8
   end interface lsmpi_put
 
+  interface lsmpi_rput
+    module procedure lsmpi_rput_realkV4,lsmpi_rput_realkV8
+  end interface lsmpi_rput
+
 
   interface lsmpi_get
     module procedure lsmpi_get_realk,&
@@ -174,6 +178,10 @@ module lsmpi_type
                  &   lsmpi_acc_realkV,lsmpi_acc_realkV_wrapper8,lsmpi_acc_realkV_parts, &
                  &   lsmpi_acc_realkV_parts_wrapper8,lsmpi_acc_int4,lsmpi_acc_int8
   end interface lsmpi_acc
+
+  interface lsmpi_racc
+    module procedure lsmpi_racc_realkV4,lsmpi_racc_realkV8
+  end interface lsmpi_racc
 
   interface lsmpi_get_acc
     module procedure lsmpi_get_acc_int444,lsmpi_get_acc_int888
@@ -238,11 +246,12 @@ module lsmpi_type
   logical,pointer             :: lsmpibufferLog(:)
   character,pointer           :: lsmpibufferCha(:)
   integer,parameter           :: incremLog=169,incremDP=100,incremInteger=626
-  integer,parameter           :: incremCha=1510
-  real(realk)                 :: poketime=0.0E0_realk
-  integer(kind=long)          :: poketimes = 0
+  integer,parameter           :: incremCha             = 1510
+  real(realk)                 :: poketime              = 0.0E0_realk
+  integer(kind=long)          :: poketimes             = 0
   real(realk)                 :: time_lsmpi_win_unlock = 0.0E0_realk
-  real(realk)                 :: time_lsmpi_wait=0.0E0_realk
+  real(realk)                 :: time_lsmpi_wait       = 0.0E0_realk
+  real(realk)                 :: time_lsmpi_win_flush  = 0.0E0_realk
 
 
 !$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt4,iInt8,iCha,iSho,&
@@ -5031,8 +5040,12 @@ contains
 #ifdef VAR_HAVE_MPI3
      integer(kind=ls_mpik) :: ierr
      logical :: loc
+     real(realk) :: sta,sto
+
+     sta = MPI_WTIME()
      loc  = .false.
      ierr = 0
+
 
      if(present(local))loc = local
 
@@ -5053,6 +5066,9 @@ contains
      if(ierr /= 0_ls_mpik)then
         call lsquit("ERROR(lsmpi_win_flush): non zero exit, error in mpi",-1)
      endif
+
+     time_lsmpi_win_flush = time_lsmpi_win_flush + MPI_WTIME() - sta
+
 #else
      print *,"WARNING(lsmpi_win_flush)called without MPI3, unlock should force&
      & the sync"
@@ -5218,6 +5234,65 @@ contains
     enddo
 #endif
   end subroutine lsmpi_put_realkV_parts
+
+  !=========================================================!
+  !                   MPI RPUT ROUTINES                     !
+  !=========================================================!
+
+  subroutine lsmpi_rput_realkV4(buf,nelms,pos,dest,win,req)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=4) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(in) :: req
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+
+    ierr   = 0
+    n      = nelms
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+    call MPI_RPUT(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_rput_realkV4)",ierr)
+    endif
+
+#endif
+  end subroutine lsmpi_rput_realkV4
+
+  subroutine lsmpi_rput_realkV8(buf,nelms,pos,dest,win,req)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(in) :: req
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+
+    ierr   = 0
+    n      = nelms
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+    if(nelms>MAXINT32.and.ls_mpik==4)then
+       call lsquit("ERROR(lsmpi_rput_realkV8): message is too big",-1)
+    endif
+
+
+    call MPI_RPUT(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_rput_realkV4)",ierr)
+    endif
+
+#endif
+  end subroutine lsmpi_rput_realkV8
 
 
   !=========================================================!
@@ -5721,8 +5796,7 @@ contains
     ierr = 0
     n  = 1
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
-    call MPI_ACCUMULATE(buf,n,MPI_INTEGER8,dest, &
-     & offset,n,MPI_INTEGER8,MPI_SUM,win,ierr)
+    call MPI_ACCUMULATE(buf,n,MPI_INTEGER8,dest,offset,n,MPI_INTEGER8,MPI_SUM,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_acc_realk)",ierr)
     endif
@@ -5740,8 +5814,7 @@ contains
     ierr = 0
     n  = 1
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
-    call MPI_ACCUMULATE(buf,n,MPI_INTEGER4,dest, &
-     & offset,n,MPI_INTEGER4,MPI_SUM,win,ierr)
+    call MPI_ACCUMULATE(buf,n,MPI_INTEGER4,dest,offset,n,MPI_INTEGER4,MPI_SUM,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_acc_realk)",ierr)
     endif
@@ -5759,8 +5832,7 @@ contains
     ierr = 0
     n  = 1
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
-    call MPI_ACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest, &
-     & offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,ierr)
+    call MPI_ACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_acc_realk)",ierr)
     endif
@@ -5788,8 +5860,7 @@ contains
       ierr = 0
       n  = nelms
       offset = int(pos-1,kind=MPI_ADDRESS_KIND)
-      call MPI_ACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest, &
-       & offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,ierr)
+      call MPI_ACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,ierr)
       if(ierr.ne.0)then
         call lsquit("Error(lsmpi_acc_realk)",ierr)
       endif
@@ -5889,7 +5960,68 @@ contains
     enddo
 #endif
   end subroutine lsmpi_acc_realkV_parts
+
+  !=========================================================!
+  !                   MPI RACC ROUTINES                     !
+  !=========================================================!
+
+  subroutine lsmpi_racc_realkV4(buf,nelms,pos,dest,win,req)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=4) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(inout) :: req
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+
+    ierr   = 0
+    n      = nelms
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+    call MPI_RACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,req,ierr)
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_racc_realkV4)",ierr)
+    endif
+
+#endif
+  end subroutine lsmpi_racc_realkV4
+  subroutine lsmpi_racc_realkV8(buf,nelms,pos,dest,win,req)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(inout) :: req
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+
+    ierr   = 0
+    n      = nelms
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
+
+    if(nelms>MAXINT32.and.ls_mpik==4)then
+       call lsquit("ERROR(lsmpi_rget_realkV8): message is too big",-1)
+    endif
+
+    call MPI_RACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,req,ierr)
+
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_racc_realkV8)",ierr)
+    endif
+
+#endif
+  end subroutine lsmpi_racc_realkV8
   
+  
+
+
+
 
   subroutine lsmpi_localallgatherv_realk8(sendbuf,recbuf,reccnts,disps)
     implicit none

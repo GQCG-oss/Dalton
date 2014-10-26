@@ -2628,7 +2628,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    endif
 
-   print *,"do the trafo"
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !transform back to original basis!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2637,7 +2636,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       & [ t2_final, VOVO    ],  &
       & [[2,1,2,1],[2,1,2,1]], &
       & [[2,2,2,2],[2,2,2,2]],  4, 2)
-   print *,"weird trafo done"
 
    if(use_singles)then
       !this should be replaced if/whenever t1 is not local

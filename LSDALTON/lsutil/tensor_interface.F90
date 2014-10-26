@@ -318,15 +318,16 @@ contains
       case(TT_TILED)
         call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
       case(TT_TILED_DIST)
-        if(present(wrk).and.present(iwrk))then
-          call add_data2tiled_intiles_explicitbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o,wrk,iwrk)
-        else
-          if(b==1.0E0_realk)then
-            call add_data2tiled_intiles_nobuffer(arrx,fortarry,arrx%dims,arrx%mode,o)
-          else
-            call add_data2tiled_intiles_stackbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o)
-          endif
-        endif
+        call tensor_scatter(b,fortarry,1.0E0_realk,arrx,arrx%nelms,oo=order,wrk=wrk,iwrk=iwrk)
+        !if(present(wrk).and.present(iwrk))then
+        !  call add_data2tiled_intiles_explicitbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o,wrk,iwrk)
+        !else
+        !  if(b==1.0E0_realk)then
+        !    call add_data2tiled_intiles_nobuffer(arrx,fortarry,arrx%dims,arrx%mode,o)
+        !  else
+        !    call add_data2tiled_intiles_stackbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o)
+        !  endif
+        !endif
     end select
 
     call time_start_phase( PHASE_WORK )
@@ -1911,71 +1912,87 @@ contains
 
   !\brief all the following wrappers are necessary to use the conversion routine
   !in an interface for different shapes of the fortran array  
-  subroutine tensor_convert_tensor2fort_wrapper1(arr,fort,order)
+  subroutine tensor_convert_tensor2fort_wrapper1(arr,fort,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:)
     integer, intent(in), optional :: order(arr%mode)
-    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_tensor2fort_wrapper1
-  subroutine tensor_convert_tensor2fort_wrapper2(arr,fort,order)
+  subroutine tensor_convert_tensor2fort_wrapper2(arr,fort,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:)
     integer, intent(in), optional :: order(arr%mode)
-    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_tensor2fort_wrapper2
-  subroutine tensor_convert_tensor2fort_wrapper3(arr,fort,order)
+  subroutine tensor_convert_tensor2fort_wrapper3(arr,fort,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_tensor2fort_wrapper3
-  subroutine tensor_convert_tensor2fort_wrapper4(arr,fort,order)
+  subroutine tensor_convert_tensor2fort_wrapper4(arr,fort,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_tensor2fort_wrapper4
 
   !\brief all the following wrappers are necessary to use the conversion routine
   !in an interface for different shapes of the fortran array  
-  subroutine tensor_convert_fort2tensor_wrapper1(fortarr,arr,order)
+  subroutine tensor_convert_fort2tensor_wrapper1(fortarr,arr,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
     real(realk), intent(in) :: fortarr(arr%nelms)
     integer, intent(in),optional :: order(arr%mode)
-    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
+    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_fort2tensor_wrapper1
-  subroutine tensor_convert_fort2tensor_wrapper2(fortarr,arr,order)
+  subroutine tensor_convert_fort2tensor_wrapper2(fortarr,arr,order,wrk,iwrk)
     implicit none
     real(realk), intent(in) :: fortarr(:,:)
     type(tensor), intent(inout) :: arr
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
     integer, intent(in),optional :: order(arr%mode)
-    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
+    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_fort2tensor_wrapper2
-  subroutine tensor_convert_fort2tensor_wrapper3(fortarr,arr,order)
+  subroutine tensor_convert_fort2tensor_wrapper3(fortarr,arr,order,wrk,iwrk)
     implicit none
     real(realk), intent(in) :: fortarr(:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
+    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_fort2tensor_wrapper3
-  subroutine tensor_convert_fort2tensor_wrapper4(fortarr,arr,order)
+  subroutine tensor_convert_fort2tensor_wrapper4(fortarr,arr,order,wrk,iwrk)
     implicit none
     real(realk), intent(in) :: fortarr(:,:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
+    call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_fort2tensor_wrapper4
 
 
   !> \brief put data of a fortan array into an arbitrary array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine tensor_convert_fort2arr(fortarr,arr,nelms,order)
+  subroutine tensor_convert_fort2arr(fortarr,arr,nelms,order,wrk,iwrk)
     implicit none
     !> the fortran array with the data
     real(realk), intent(in) :: fortarr(*)
@@ -1986,6 +2003,8 @@ contains
     !> if the array should have a different ordering than the fortran array,
     ! this can be specified with order
     integer, intent(in),optional :: order(arr%mode)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
     real(realk) :: tilemem,MemFree
     integer :: i,o(arr%mode),fullfortdims(arr%mode)
     real(realk) :: nrm
@@ -2048,26 +2067,28 @@ contains
        else
           !call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
           call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode,o)
+          !call tensor_scatter(1.0E0_realk,fortarr,0.0E0_realk,arr,nelms,oo=order,wrk=wrk,iwrk=iwrk)
        endif
 
     case default
        call lsquit("ERROR(tensor_convert_fort2arr) the array type is not implemented",-1)
     end select
  end subroutine tensor_convert_fort2arr
-  !> \brief change the init type for a fortan array
-  !> \author Patrick Ettenhuber
-  !> \date late 2012
-  subroutine change_access_type(arr,totype)
+
+ !> \brief change the init type for a fortan array
+ !> \author Patrick Ettenhuber
+ !> \date late 2012
+ subroutine change_access_type(arr,totype)
     implicit none
     !> array to chage the init type
     type(tensor),intent(inout) :: arr
     !> type to change it to
     integer,intent(in) :: totype
-    if(arr%itype==TT_TILED_DIST.or.arr%itype==TT_REPLICATED.or.&
-         &totype==TT_TILED_DIST.or.totype==TT_REPLICATED)then
-      call change_access_type_td(arr,totype)
+    if(arr%itype==TT_TILED_DIST.or.arr%itype==TT_REPLICATED.or. &
+       & totype==TT_TILED_DIST.or.totype==TT_REPLICATED)then
+       call change_access_type_td(arr,totype)
     else
-      call lsquit("ERROR(change_access_type): what you want to do is not implemented",-1)
+       call lsquit("ERROR(change_access_type): what you want to do is not implemented",-1)
     endif
   end subroutine change_access_type
 
@@ -2075,7 +2096,7 @@ contains
   !> \brief put data of an arbitrary array into a basic fortan type array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine tensor_convert_tensor2fort(arr,fort,nelms,order)
+  subroutine tensor_convert_tensor2fort(arr,fort,nelms,order,wrk,iwrk)
     implicit none
     !> array with the data at the beginning
     type(tensor), intent(inout) :: arr
@@ -2086,6 +2107,8 @@ contains
     !> if the fortan array has a different order than the array this specifies
     !the reordering
     integer, intent(in), optional :: order(arr%mode)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
     real(realk) :: tilemem,MemFree
     integer :: i,o(arr%mode),fullfortdims(arr%mode)
     real(realk) :: nrm
@@ -2139,11 +2162,9 @@ contains
        endif
 
     case(TT_TILED)
-       if(present(order))call cp_tileddata2fort(arr,fort,nelms,.false.,order)
-       if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.false.)
+       call cp_tileddata2fort(arr,fort,nelms,.false.,order=order)
     case(TT_TILED_DIST)
-       if(present(order))call cp_tileddata2fort(arr,fort,nelms,.true.,order)
-       if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.true.)
+       call tensor_gather(1.0E0_realk,arr,0.0E0_realk,fort,nelms,oo=order,wrk=wrk,iwrk=iwrk)
     end select
   end subroutine tensor_convert_tensor2fort
 
@@ -2349,16 +2370,25 @@ contains
     if(present(nrm))nrm=norm
   end subroutine tensor_print_norm_nrm
 
-  subroutine tensor_print_norm_customprint(arr,msg,returnsquared)
+  subroutine tensor_print_norm_customprint(arr,msg,returnsquared,print_on_rank)
     implicit none
     character*(*),intent(in) :: msg
     type(tensor),intent(in) :: arr
     logical,intent(in),optional :: returnsquared
+    integer,intent(in),optional :: print_on_rank
     real(realk)::norm
     integer(kind=8) :: i,j
     logical :: squareback
+    integer(kind=ls_mpik) :: me,nnod
     squareback=.false.
     if(present(returnsquared))squareback=returnsquared
+    me   = 0
+    nnod = 1
+#ifdef VAR_MPI
+    me   = infpar%lg_mynum
+    nnod = infpar%lg_nodtot
+#endif
+    
     norm=0.0d0
     select case(arr%itype)
       case(TT_DENSE)
@@ -2374,8 +2404,15 @@ contains
       case(TT_TILED_DIST)
         norm=tensor_tiled_pdm_get_nrm2(arr)
     end select
+
     if(.not.squareback)norm = sqrt(norm)
-    print *,msg,norm
+
+    if(present(print_on_rank))then
+       if( me == print_on_rank ) print *,msg,norm
+    else
+       print *,msg,norm
+    endif
+
   end subroutine tensor_print_norm_customprint
 
 
