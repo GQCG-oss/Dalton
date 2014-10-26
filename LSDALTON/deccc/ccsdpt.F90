@@ -8821,7 +8821,8 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, p,pos
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
+    integer :: p,pos
     call time_start_phase(PHASE_WORK)
 
     o3v           = nocc*nocc*nocc*nvirt
@@ -9263,7 +9264,8 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3,ov2
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, pos, p
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
+    integer :: p,pos
     call time_start_phase(PHASE_WORK)
 
     o3v           = nocc*nocc*nocc*nvirt

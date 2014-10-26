@@ -27,6 +27,10 @@ module lspdm_basic_module
                     &get_tileinfo_nelspermode_fromarr8
   end interface get_tile_dim
 
+  interface get_residence_of_tile
+     module procedure get_residence_of_tile4,get_residence_of_tile8
+  end interface get_residence_of_tile
+
   !interface get_tile_idx
   !  module procedure get_tile_idx_from_global_idx
   !end interface get_tile_idx
@@ -558,9 +562,9 @@ module lspdm_basic_module
     end subroutine tensor_pdm_free_special_aux
 
     
-    subroutine get_residence_of_tile(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node)
+    subroutine get_residence_of_tile4(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node)
        implicit none
-       integer, intent(out) :: rank_of_node
+       integer(kind=4), intent(out) :: rank_of_node
        type(tensor), intent(in) :: arr
        integer,intent(in) :: globaltilenumber
        integer, intent(out), optional :: pos_on_node, idx_on_node
@@ -579,7 +583,29 @@ module lspdm_basic_module
        !Return the node local index of the tile
        if(present(pos_on_node)) pos_on_node = pos
        if(present(idx_on_node)) idx_on_node = idx
-    end subroutine get_residence_of_tile
+    end subroutine get_residence_of_tile4
+    subroutine get_residence_of_tile8(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node)
+       implicit none
+       integer(kind=8), intent(out) :: rank_of_node
+       type(tensor), intent(in) :: arr
+       integer,intent(in) :: globaltilenumber
+       integer, intent(out), optional :: pos_on_node, idx_on_node
+       integer :: nnod, pos, idx
+
+       nnod=1
+#ifdef VAR_MPI
+       nnod=infpar%lg_nodtot
+#endif      
+
+       rank_of_node = mod(globaltilenumber-1+arr%offset,nnod)
+
+       pos          = (globaltilenumber-1)/nnod + 1
+
+       idx          = 1 + ( pos - 1 ) * arr%tsize
+       !Return the node local index of the tile
+       if(present(pos_on_node)) pos_on_node = pos
+       if(present(idx_on_node)) idx_on_node = idx
+    end subroutine get_residence_of_tile8
 
 
 end module lspdm_basic_module
