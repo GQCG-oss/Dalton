@@ -4187,7 +4187,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    t2%access_type     = AT_ALL_ACCESS
    oof%access_type    = AT_ALL_ACCESS
    vvf%access_type    = AT_ALL_ACCESS
-   call tensor_lock_local_wins(omega2,'e',mode)
+   if(.not.local) call tensor_lock_local_wins(omega2,'e',mode)
 #endif
 
    vs = t2%tdim(1)
@@ -4205,8 +4205,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset)
 
 #ifdef VAR_MPI
-   call tensor_lock_local_wins(Pijab_om2,'e',mode)
-   call tensor_unlock_local_wins(omega2)
+   if(.not.local) call tensor_lock_local_wins(Pijab_om2,'e',mode)
+   if(.not.local) call tensor_unlock_local_wins(omega2)
 #endif
 
    !INTRODUCE PERMUTATION
@@ -4214,8 +4214,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    call tensor_add(Pijab_om2,1.0E0_realk,omega2, a = 0.0E0_realk, order = ord )
 
 #ifdef VAR_MPI
-   call tensor_lock_local_wins(omega2,'e',mode)
-   call tensor_unlock_local_wins(Pijab_om2)
+   if(.not.local) call tensor_lock_local_wins(omega2,'e',mode)
+   if(.not.local) call tensor_unlock_local_wins(Pijab_om2)
 #endif
 
    call tensor_add(omega2,1.0E0_realk,Pijab_om2)
@@ -4225,7 +4225,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    call tensor_add(omega2,1.0E0_realk,iajb, order = ord )
 
 #ifdef VAR_MPI
-   call tensor_unlock_local_wins(omega2)
+   if(.not.local) call tensor_unlock_local_wins(omega2)
    omega2%access_type = AT_MASTER_ACCESS
    iajb%access_type   = AT_MASTER_ACCESS
    t2%access_type     = AT_MASTER_ACCESS
