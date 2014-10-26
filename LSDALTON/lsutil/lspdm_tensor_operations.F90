@@ -6694,7 +6694,7 @@ module lspdm_tensor_operations_module
 
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(widx),'s')
     if(present(req))then
-       call lsmpi_put(fort,nelms,p,dest,arr%wi(widx),req)
+       call lsmpi_rput(fort,nelms,p,dest,arr%wi(widx),req)
     else
        call lsmpi_put(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it = flush_it)
     endif
@@ -6800,6 +6800,8 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik),intent(inout),optional :: req
     call tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
   end subroutine tensor_gett4
+
+
   subroutine tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
     implicit none
     type(tensor),intent(in) :: arr
@@ -7082,10 +7084,12 @@ module lspdm_tensor_operations_module
   subroutine tensor_flush_win(T,node,gtidx,local,only_owner)
      implicit none
      type(tensor) :: T
-     integer, intent(in), optional :: node, gtidx
+     integer(kind=ls_mpik), intent(in), optional :: node
+     integer, intent(in), optional :: gtidx
      logical, intent(in), optional :: local,only_owner
-     integer :: n, widx, tidx
+     integer :: widx, tidx,n
      logical :: all_tiles,oo
+     integer(kind=ls_mpik) :: node2
      
      all_tiles = .not.present(gtidx)
 
@@ -7116,9 +7120,9 @@ module lspdm_tensor_operations_module
 
            call get_residence_of_tile(n,gtidx,T)
 
-           print *,infpar%lg_mynum,"flush",widx,"on",n,"local",local
+           node2 = n
 
-           call lsmpi_win_flush(T%wi(widx),rank=n,local=local)
+           call lsmpi_win_flush(T%wi(widx),rank=node2,local=local)
 
         endif
      else
