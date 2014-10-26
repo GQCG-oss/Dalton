@@ -6631,8 +6631,6 @@ module lspdm_tensor_operations_module
 
     sta  = MPI_WTIME()
 
-    print *,"putting",globtilenr,p
-
     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(widx),'s')
     if(present(req))then
        call lsmpi_rput(fort,nelms,p,dest,arr%wi(widx),req)
