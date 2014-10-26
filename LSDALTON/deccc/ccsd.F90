@@ -1217,7 +1217,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      govov%access_type  = AT_ALL_ACCESS
      omega2%access_type = AT_ALL_ACCESS
 
-     call lsmpi_barrier(infpar%lg_comm)
+     if( alloc_in_dummy .and. scheme == 2)then
+        call tensor_lock_wins(omega2,'s',all_nodes = .true.)
+     endif
 #endif
 
      !if the residual is handeled as dense, allocate and zero it, adjust the
@@ -1227,10 +1229,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         omega2%itype=TT_DENSE
      endif
      call tensor_zero(omega2)
-
-     if( alloc_in_dummy .and. scheme == 2)then
-        call tensor_lock_wins(omega2,'s',all_nodes = .true.)
-     endif
 
 
      ! ************************************************
@@ -1374,6 +1372,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !get u2 in pdm or local
      if(scheme==2)then
+#ifdef VAR_MPI
         call memory_deallocate_tensor_dense(t2)
 
         call time_start_phase(PHASE_COMM, at = time_init_work )
@@ -1385,6 +1384,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if( alloc_in_dummy )call tensor_lock_wins(u2,'s',all_nodes = .true.)
 
         call time_start_phase(PHASE_WORK, at = time_init_comm )
+#endif
 
      else
         call tensor_ainit(u2, [nv,nv,no,no], 4, local=local, atype='LDAR' )
@@ -1433,6 +1433,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_zero(sio4)
 
 
+#ifdef VAR_MPI
         if( alloc_in_dummy )then
            if(scheme==2.or.scheme==3)then
               call tensor_lock_wins(gvvooa,'s',all_nodes = .true.)
@@ -1442,6 +1443,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call tensor_lock_wins(sio4,  's',all_nodes = .true.)
            endif
         endif
+#endif
 
      endif
 
