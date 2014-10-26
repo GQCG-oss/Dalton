@@ -996,8 +996,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
 
-     print *,"IN RESIDUAL ROUTINE"
-
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
 
@@ -1105,8 +1103,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, at = time_init_comm)
      endif StartUpSlaves
 
-     print *,"COLLECT T2"
-
      if(.not.local)then
         t2%access_type     = AT_ALL_ACCESS
         call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
@@ -1117,8 +1113,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(buf1)
         call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
      endif
-     print *,"collect T2 done",norm2(t2%elm1(1:t2%nelms))
-
      call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
 #endif
 
@@ -1443,7 +1437,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(scheme==2.or.scheme==3)then
               call tensor_lock_wins(gvvooa,'s',all_nodes = .true.)
               call tensor_lock_wins(gvoova,'s',all_nodes = .true.)
-              print *,infpar%lg_mynum,"CHECKINGT Gs",gvvooa%lock_set(1),gvoova%lock_set(1)
            endif
            if(scheme==2)then
               call tensor_lock_wins(sio4,  's',all_nodes = .true.)
@@ -1773,8 +1766,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,0.0E0_realk,w2%d,nv)
                  call time_start_phase(PHASE_COMM, at = time_intloop_work)
                  if( .not. alloc_in_dummy.and.lock_outside )call tensor_lock_wins(gvoova,'s',mode)
-                 !FIXME: PROVIDE A BUFFER
-                 call tensor_add(gvoova,1.0E0_realk,w2%d)
+                 call tensor_add(gvoova,1.0E0_realk,w2%d,wrk = w3%d, iwrk=w3%n)
                  call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
               endif
@@ -1858,7 +1850,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  if(.not.alloc_in_dummy)call tensor_lock_wins(sio4,'s',mode)
                  call tensor_add(sio4,1.0E0_realk,w3%d,order = [1,2,3,4],wrk=w2%d,iwrk=w2%n)
                  if( alloc_in_dummy )then
-                    print *,"FLUSHING SIO4!",sio4%lock_set(1)
                     call lsmpi_win_flush(sio4%wi(1),local=.true.)
                  else
                     call tensor_unlock_wins(sio4,.true.)
@@ -6211,7 +6202,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if (ccmodel>MODEL_CC2) then
               !DEBUG PRINT NORM GVVOO
 #ifdef VAR_MPI
-              if(.not.local)then
+              if(.not.local.and..not.scheme==4)then
                  if(alloc_in_dummy)then
                     if(gvvooa%lock_set(1))call lsmpi_win_flush(gvvooa%wi(1))
                  else
@@ -6223,7 +6214,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                
               !DEBUG PRINT NORM GVOOV
 #ifdef VAR_MPI
-              if(.not.local)then
+              if(.not.local.and..not.scheme==4)then
                  if(alloc_in_dummy)then
                     if(gvoova%lock_set(1))call lsmpi_win_flush(gvoova%wi(1))
                  else

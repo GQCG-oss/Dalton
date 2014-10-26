@@ -3577,6 +3577,10 @@ module lspdm_tensor_operations_module
      endif
 
      if( alloc_in_dummy )then
+        do i=minstart, arr%ntiles
+           bidx = mod(i-1,maxintmp)+1
+           call lsmpi_wait(req(bidx))
+        enddo
         if(arr%lock_set(1).and.lock_was_not_set)call tensor_unlock_wins(arr, all_nodes = .true.)
      else
         do i=minstart, arr%ntiles
