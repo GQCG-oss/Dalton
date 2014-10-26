@@ -652,7 +652,7 @@ module cc_tools_module
                endif
             else if(s==2)then
 #ifdef VAR_MPI
-               if( lock_outside )call tensor_lock_wins(omega,'s',mode)
+               if( .not.alloc_in_dummy.and.lock_outside )call tensor_lock_wins(omega,'s',mode)
                !$OMP WORKSHARE
                w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
                !$OMP END WORKSHARE
@@ -691,7 +691,11 @@ module cc_tools_module
 #ifdef  VAR_MPI
             if( lock_outside .and. s==2 )then
                call time_start_phase(PHASE_COMM, at=twork)
-               call tensor_unlock_wins(omega,.true.)
+               if( alloc_in_dummy )then
+                  call lsmpi_win_flush(omega%wi(1),local=.true.)
+               else
+                  call tensor_unlock_wins(omega,.true.)
+               endif
                call time_start_phase(PHASE_WORK, at=tcomm)
             endif
 #endif 
@@ -776,7 +780,13 @@ module cc_tools_module
          call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
 #ifdef VAR_MPI
          if(lock_outside.and.s==2)then
-            call tensor_unlock_wins(omega,.true.)
+            call time_start_phase(PHASE_COMM, at=twork)
+            if( alloc_in_dummy )then
+               call lsmpi_win_flush(omega%wi(1),local=.true.)
+            else
+               call tensor_unlock_wins(omega,.true.)
+            endif
+            call time_start_phase(PHASE_WORK, at=tcomm)
          endif
 #endif
          !transform gamma -> l
@@ -818,11 +828,15 @@ module cc_tools_module
                   enddo
                enddo
 #ifdef VAR_MPI
-               if( lock_outside )call tensor_lock_wins(sio4,'s',mode)
+               if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
                call time_start_phase(PHASE_COMM, at=twork)
                call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               if( alloc_in_dummy )then
+                  call lsmpi_win_flush(sio4%wi(1),local=.true.)
+               else
+                  if( lock_outside )call tensor_unlock_wins(sio4,.true.)
+               endif
                call time_start_phase(PHASE_WORK, at=tcomm)
-               if( lock_outside )call tensor_unlock_wins(sio4,.true.)
 #endif
             else
                call ass_D1to3(w2,t1,[no2,no2,nor])
@@ -894,11 +908,15 @@ module cc_tools_module
                      enddo
                   enddo
 #ifdef VAR_MPI
-                  if( lock_outside )call tensor_lock_wins(sio4,'s',mode)
                   call time_start_phase(PHASE_COMM, at=twork)
+                  if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
                   call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  if(alloc_in_dummy)then
+                     call lsmpi_win_flush(sio4%wi(1),local=.true.)
+                  else
+                     if( lock_outside )call tensor_unlock_wins(sio4,.true.)
+                  endif
                   call time_start_phase(PHASE_WORK, at=tcomm)
-                  if( lock_outside )call tensor_unlock_wins(sio4,.true.)
 #endif
                else
 
@@ -1389,7 +1407,6 @@ module cc_tools_module
 
 #ifdef VAR_MPI
          o = [1,2,3,4]
-         if(lock_outside)call tensor_lock_local_wins(om2,'e',mode)
          call tensor_contract(0.5E0_realk,t2,sio4,[3,4],[1,2],2,1.0E0_realk,om2,o)
 #endif
 

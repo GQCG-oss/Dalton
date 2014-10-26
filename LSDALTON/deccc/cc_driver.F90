@@ -1723,7 +1723,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end select ModelSpecificSettings
 
-
    ! go to a (pseudo) canonical basis
    call mem_alloc( focc,     no     )
    call mem_alloc( fvirt,    nv     )

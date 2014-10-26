@@ -2278,11 +2278,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               !all buffers are allocated and await to be deallocated once the memory
               !have been recieved by the reciever.
               IF(CurrentWait(1).EQ.5)THEN
-                 call MPI_WAIT(request5,status,ierr)
+                 call MPI_WAIT(request5,lsmpi_status,ierr)
 !                 call MPI_Request_free(request5,ierr)
                  call mem_dealloc(AlphaCD5)
               ELSEIF(CurrentWait(1).EQ.6)THEN
-                 call MPI_WAIT(request6,status,ierr)
+                 call MPI_WAIT(request6,lsmpi_status,ierr)
 !                 call MPI_Request_free(request6,ierr)
                  call mem_dealloc(AlphaCD6)
               ENDIF
@@ -2299,9 +2299,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
            MessageRecieved = .FALSE.
            IF(useAlphaCD5)THEN
-              call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,status,ierr)
+              call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
            ELSEIF(useAlphaCD6)THEN
-              call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,status,ierr)
+              call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
            ENDIF
 !           call MPI_Request_free(request,ierr) 
            IF(MynbasisAuxMPI.GT.0)THEN
@@ -2409,11 +2409,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(nAwaitDealloc.NE.0)THEN
         do iAwaitDealloc=1,nAwaitDealloc
            IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
-              call MPI_WAIT(request5,status,ierr)
+              call MPI_WAIT(request5,lsmpi_status,ierr)
               !                 call MPI_Request_free(request5,ierr)
               call mem_dealloc(AlphaCD5)
            ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
-              call MPI_WAIT(request6,status,ierr)
+              call MPI_WAIT(request6,lsmpi_status,ierr)
               !                 call MPI_Request_free(request6,ierr)
               call mem_dealloc(AlphaCD6)
            ENDIF
@@ -4206,7 +4206,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
 #ifdef VAR_MPI
    call tensor_lock_local_wins(Pijab_om2,'e',mode)
-   call tensor_unlock_wins(omega2,.true.)
+   call tensor_unlock_local_wins(omega2)
 #endif
 
    !INTRODUCE PERMUTATION
@@ -4215,7 +4215,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
 #ifdef VAR_MPI
    call tensor_lock_local_wins(omega2,'e',mode)
-   call tensor_unlock_wins(Pijab_om2,.true.)
+   call tensor_unlock_local_wins(Pijab_om2)
 #endif
 
    call tensor_add(omega2,1.0E0_realk,Pijab_om2)
@@ -4225,7 +4225,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    call tensor_add(omega2,1.0E0_realk,iajb, order = ord )
 
 #ifdef VAR_MPI
-   call tensor_unlock_wins(omega2,.true.)
+   call tensor_unlock_local_wins(omega2)
    omega2%access_type = AT_MASTER_ACCESS
    iajb%access_type   = AT_MASTER_ACCESS
    t2%access_type     = AT_MASTER_ACCESS
