@@ -2026,6 +2026,7 @@ contains
     
     if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_fort2arr):array&
        &dimensions are not the same",-1)
+
     select case(arr%itype)
     case(TT_DENSE,TT_REPLICATED)
        if(simpleord)then
@@ -2391,18 +2392,20 @@ contains
     
     norm=0.0d0
     select case(arr%itype)
-      case(TT_DENSE)
-        do i=1,arr%nelms
+    case(TT_DENSE)
+       do i=1,arr%nelms
           norm=norm+arr%elm1(i)*arr%elm1(i)
-        enddo
-      case(TT_TILED)
-        do i=1,arr%nlti
+       enddo
+    case(TT_REPLICATED)
+       norm = tensor_print_norm_repl(arr)
+    case(TT_TILED)
+       do i=1,arr%nlti
           do j=1,arr%ti(i)%e
-            norm=norm + arr%ti(i)%t(j) * arr%ti(i)%t(j)
+             norm=norm + arr%ti(i)%t(j) * arr%ti(i)%t(j)
           enddo
-        enddo
-      case(TT_TILED_DIST)
-        norm=tensor_tiled_pdm_get_nrm2(arr)
+       enddo
+    case(TT_TILED_DIST)
+       norm=tensor_tiled_pdm_get_nrm2(arr)
     end select
 
     if(.not.squareback)norm = sqrt(norm)
@@ -2657,6 +2660,130 @@ contains
       call lsquit("ERROR(tensor_scale):not yet implemented",DECinfo%output)
     end select
   end subroutine tensor_scale
+  subroutine get_symm_tensor_segmenting_simple(a,b,a_seg,b_seg)
+     implicit none
+     integer, intent(in)  :: a,b
+     integer, intent(out) :: a_seg, b_seg
+     integer :: counter, nnodes
+     integer :: modtilea, modtileb
+     real(realk) :: max_mem_p_tile_in_GB
+     !get segmenting for tensors, divide dimensions until tiles are less than
+     !100MB and/or until enough tiles are available such that each node gets at
+     !least one and as long as a_seg>=2 and b_seg>=2
+
+     nnodes = 1
+#ifdef VAR_MPI
+     nnodes = infpar%lg_nodtot
+#endif
+
+     b_seg    = b
+     a_seg    = a
+     modtilea = 0
+     modtileb = 0
+
+     max_mem_p_tile_in_GB = DECinfo%cc_solver_tile_mem
+
+     if(DECinfo%tensor_segmenting_scheme == 1)then
+
+        counter  = 1
+
+        !FIRST a then b
+
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                     & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
+              & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
+
+           a_seg = a / counter + mod(a,counter)
+
+           counter = counter + 1
+
+           modtilea = 0
+           if(mod(a,a_seg)/=0)modtilea = 1
+
+        enddo
+
+        counter  = 1
+
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+              & .and. (b_seg>=1.or.a_seg>=1)  .and. (b/b_seg+modtileb) <= 4   )
+
+           b_seg = b / counter + mod(b,counter)
+
+           counter = counter + 1
+
+           modtileb = 0
+           if(mod(b,b_seg)/=0)modtileb = 1
+
+        enddo
+
+     else if (DECinfo%tensor_segmenting_scheme == 2) then
+
+        !FIRST b then a
+        counter  = 1
+
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+              & .and. (b_seg>=1.or.a_seg>=1)   .and. (b/b_seg+modtileb) <= 4   )
+
+           b_seg = b / counter + mod(b,counter)
+
+           counter = counter + 1
+
+           modtileb = 0
+           if(mod(b,b_seg)/=0)modtileb = 1
+
+        enddo
+
+        counter  = 1
+
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+              & .and. (b_seg>=1.or.a_seg>=1)  .and. (a/a_seg+modtilea) <= 4  )
+
+           a_seg = a / counter + mod(a,counter)
+
+           counter = counter + 1
+
+           modtilea = 0
+           if(mod(a,a_seg)/=0)modtilea = 1
+
+        enddo
+     else
+
+        counter  = 1
+
+        !BOTH a and b
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+              & .and. (b_seg>=2.or.a_seg>=2)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
+
+           b_seg = b / counter + mod(b,counter)
+           a_seg = a / counter + mod(a,counter)
+
+           counter = counter + 1
+
+           modtilea = 0
+           if(mod(a,a_seg)/=0)modtilea = 1
+
+           modtileb = 0
+           if(mod(b,b_seg)/=0)modtileb = 1
+
+        enddo
+
+     endif
+
+     if(DECinfo%PL>2)then
+        print *,"SPLITTING OF DIMS IN A^2B^2"
+        print *,"#a",a,"seg:",a_seg
+        print *,"#b",b,"seg:",b_seg
+     endif
+
+  end subroutine get_symm_tensor_segmenting_simple
+
+
+
+
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY TESTCASES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3135,7 +3262,7 @@ contains
 
     call tensor_lock_local_wins(test3,'e')
     call tensor_contract(1.0E0_realk,test1,test2,[2,3],[3,2],2,0.0E0_realk,test3,ord)
-    call tensor_unlock_wins(test3,.true.)
+    call tensor_unlock_local_wins(test3)
 
     call mem_dealloc(ord)
 
@@ -3166,127 +3293,6 @@ contains
 #endif
 
   end subroutine test_tensor_struct 
-  subroutine get_symm_tensor_segmenting_simple(a,b,a_seg,b_seg)
-     implicit none
-     integer, intent(in)  :: a,b
-     integer, intent(out) :: a_seg, b_seg
-     integer :: counter, nnodes
-     integer :: modtilea, modtileb
-     real(realk) :: max_mem_p_tile_in_GB
-     !get segmenting for tensors, divide dimensions until tiles are less than
-     !100MB and/or until enough tiles are available such that each node gets at
-     !least one and as long as a_seg>=2 and b_seg>=2
-
-     nnodes = 1
-#ifdef VAR_MPI
-     nnodes = infpar%lg_nodtot
-#endif
-
-     b_seg    = b
-     a_seg    = a
-     modtilea = 0
-     modtileb = 0
-
-     max_mem_p_tile_in_GB = DECinfo%cc_solver_tile_mem
-
-     if(DECinfo%tensor_segmenting_scheme == 1)then
-
-        counter  = 1
-
-        !FIRST a then b
-
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-                     & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
-              & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
-
-           a_seg = a / counter + mod(a,counter)
-
-           counter = counter + 1
-
-           modtilea = 0
-           if(mod(a,a_seg)/=0)modtilea = 1
-
-        enddo
-
-        counter  = 1
-
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-              & .and. (b_seg>=1.or.a_seg>=1)  .and. (b/b_seg+modtileb) <= 4   )
-
-           b_seg = b / counter + mod(b,counter)
-
-           counter = counter + 1
-
-           modtileb = 0
-           if(mod(b,b_seg)/=0)modtileb = 1
-
-        enddo
-
-     else if (DECinfo%tensor_segmenting_scheme == 2) then
-
-        !FIRST b then a
-        counter  = 1
-
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-              & .and. (b_seg>=1.or.a_seg>=1)   .and. (b/b_seg+modtileb) <= 4   )
-
-           b_seg = b / counter + mod(b,counter)
-
-           counter = counter + 1
-
-           modtileb = 0
-           if(mod(b,b_seg)/=0)modtileb = 1
-
-        enddo
-
-        counter  = 1
-
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-              & .and. (b_seg>=1.or.a_seg>=1)  .and. (a/a_seg+modtilea) <= 4  )
-
-           a_seg = a / counter + mod(a,counter)
-
-           counter = counter + 1
-
-           modtilea = 0
-           if(mod(a,a_seg)/=0)modtilea = 1
-
-        enddo
-     else
-
-        counter  = 1
-
-        !BOTH a and b
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-              & .and. (b_seg>=2.or.a_seg>=2)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
-
-           b_seg = b / counter + mod(b,counter)
-           a_seg = a / counter + mod(a,counter)
-
-           counter = counter + 1
-
-           modtilea = 0
-           if(mod(a,a_seg)/=0)modtilea = 1
-
-           modtileb = 0
-           if(mod(b,b_seg)/=0)modtileb = 1
-
-        enddo
-
-     endif
-
-     if(DECinfo%PL>2)then
-        print *,"SPLITTING OF DIMS IN A^2B^2"
-        print *,"#a",a,"seg:",a_seg
-        print *,"#b",b,"seg:",b_seg
-     endif
-
-  end subroutine get_symm_tensor_segmenting_simple
-
 end module tensor_interface_module
 
 
