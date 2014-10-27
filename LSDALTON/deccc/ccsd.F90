@@ -1542,9 +1542,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      
      if(master.and.DECinfo%PL>2)then
-        write(*,'("CCSD time in lsmpi_win_unlock phase A",g10.3)'), time_lsmpi_win_unlock - unlock_time
-        write(*,'("CCSD time in lsmpi_wait       phase A",g10.3)'), time_lsmpi_wait       - waiting_time
-        write(*,'("CCSD time in lsmpi_win_flush  phase A",g10.3)'), time_lsmpi_win_flush  - flushing_time
+        write(*,'("CCSD time in lsmpi_win_unlock phase A",g10.3)') time_lsmpi_win_unlock - unlock_time
+        write(*,'("CCSD time in lsmpi_wait       phase A",g10.3)') time_lsmpi_wait       - waiting_time
+        write(*,'("CCSD time in lsmpi_win_flush  phase A",g10.3)') time_lsmpi_win_flush  - flushing_time
      endif
      unlock_time   = time_lsmpi_win_unlock 
      waiting_time  = time_lsmpi_wait
@@ -2092,9 +2092,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      if(master.and.DECinfo%PL>2)then
-        write(*,'("CCSD time in lsmpi_win_unlock phase B",g10.3)'), time_lsmpi_win_unlock - unlock_time
-        write(*,'("CCSD time in lsmpi_wait       phase B",g10.3)'), time_lsmpi_wait       - waiting_time
-        write(*,'("CCSD time in lsmpi_win_flush  phase B",g10.3)'), time_lsmpi_win_flush  - flushing_time
+        write(*,'("CCSD time in lsmpi_win_unlock phase B",g10.3)') time_lsmpi_win_unlock - unlock_time
+        write(*,'("CCSD time in lsmpi_wait       phase B",g10.3)') time_lsmpi_wait       - waiting_time
+        write(*,'("CCSD time in lsmpi_win_flush  phase B",g10.3)') time_lsmpi_win_flush  - flushing_time
      endif
      unlock_time   = time_lsmpi_win_unlock 
      waiting_time  = time_lsmpi_wait
@@ -2460,9 +2460,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_mv_dense2tiled(t2,.true.)
      endif
      if(master.and.DECinfo%PL>2)then
-        write(*,'("CCSD time in lsmpi_win_unlock phase C",g10.3)'), time_lsmpi_win_unlock - unlock_time
-        write(*,'("CCSD time in lsmpi_wait       phase C",g10.3)'), time_lsmpi_wait       - waiting_time
-        write(*,'("CCSD time in lsmpi_win_flush  phase C",g10.3)'), time_lsmpi_win_flush  - flushing_time
+        write(*,'("CCSD time in lsmpi_win_unlock phase C",g10.3)') time_lsmpi_win_unlock - unlock_time
+        write(*,'("CCSD time in lsmpi_wait       phase C",g10.3)') time_lsmpi_wait       - waiting_time
+        write(*,'("CCSD time in lsmpi_win_flush  phase C",g10.3)') time_lsmpi_win_flush  - flushing_time
      endif
 #endif
 
