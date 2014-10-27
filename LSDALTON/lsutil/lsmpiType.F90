@@ -5255,7 +5255,11 @@ contains
     n      = nelms
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 
+#ifdef VAR_HAVE_MPI3
     call MPI_RPUT(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+#else
+    call lsquit("ERROR(lsmpi_rput_realkV4): this routine is MPI 3 only ",-1)
+#endif
 
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rput_realkV4)",ierr)
@@ -5285,7 +5289,11 @@ contains
     endif
 
 
+#ifdef VAR_HAVE_MPI3
     call MPI_RPUT(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+#else
+    call lsquit("ERROR(lsmpi_rput_realkV4): this routine is MPI 3 only ",-1)
+#endif
 
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rput_realkV4)",ierr)
@@ -5502,7 +5510,11 @@ contains
     n  = 1
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 
+#ifdef VAR_HAVE_MPI3
     call MPI_RGET(buf,n,MPI_INTEGER8,dest,offset,n,MPI_INTEGER8,win,req,ierr)
+#else
+    call lsquit("ERROR(lsmpi_rget_int8): this routine is MPI 3 only ",-1)
+#endif
 
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_int8)",ierr)
@@ -5524,7 +5536,11 @@ contains
     n  = 1
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 
+#ifdef VAR_HAVE_MPI3
     call MPI_RGET(buf,n,MPI_INTEGER4,dest, offset,n,MPI_INTEGER4,win,req,ierr)
+#else
+    call lsquit("ERROR(lsmpi_rget_int4): this routine is MPI 3 only ",-1)
+#endif
     
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_fget_int4)",ierr)
@@ -5545,7 +5561,11 @@ contains
     n  = 1
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 
+#ifdef VAR_HAVE_MPI3
     call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+#else
+    call lsquit("ERROR(lsmpi_rget_realk): this routine is MPI 3 only ",-1)
+#endif
 
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_realk)",ierr)
@@ -5607,7 +5627,11 @@ contains
          if( nreqs > size(req) )call lsquit("ERROR(lsmpi_rget_realkV_wrapper8):not enough request handles",-1)
       endif
 
+#ifdef VAR_HAVE_MPI3
       call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req(1),ierr)
+#else
+      call lsquit("ERROR(lsmpi_racc_realkV_wrapper8): this routine is MPI 3 only ",-1)
+#endif
 
       if(ierr.ne.0)then
         call lsquit("Error(lsmpi_rget_realkV_wrapper8)",ierr)
@@ -5696,7 +5720,11 @@ contains
     n      = nelms
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 
+#ifdef VAR_HAVE_MPI3
     call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+#else
+    call lsquit("ERROR(lsmpi_rget_realkV4): this routine is MPI 3 only ",-1)
+#endif
 
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_realkV4)",ierr)
@@ -5723,7 +5751,11 @@ contains
        call lsquit("ERROR(lsmpi_rget_realkV8): message is too big",-1)
     endif
 
+#ifdef VAR_HAVE_MPI3
     call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req,ierr)
+#else
+    call lsquit("ERROR(lsmpi_rget_realkV8): this routine is MPI 3 only ",-1)
+#endif
 
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_realkV)",ierr)
@@ -5981,7 +6013,11 @@ contains
     n      = nelms
     offset = int(pos-1,kind=MPI_ADDRESS_KIND)
 
+#ifdef VAR_HAVE_MPI3
     call MPI_RACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,req,ierr)
+#else
+    call lsquit("ERROR(lsmpi_racc_realkV4): this routine is MPI 3 only ",-1)
+#endif
 
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_racc_realkV4)",ierr)
