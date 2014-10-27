@@ -32,7 +32,7 @@ MODULE IchorErimod
   use IchorEriDistmod
 #ifdef VAR_OPENACC
   !OpenACC libary routines  
-  use openacc, only: acc_async_test
+  use openacc!, only: acc_async_test
 #endif
   use IchorGaussianGeminalMod, only: set_GGem, free_GGem, GGemOperatorCalc
 
@@ -2277,8 +2277,8 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   call DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
        & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
        & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass)
+!  WRITE(lupri,*)'nAsyncHandles',nAsyncHandles
   IF(nAsyncHandles.EQ.0)call ichorquit('GPU Memory Error. Calc require too much memory transported to device',-1)
-!  print*,'nAsyncHandles',nAsyncHandles
 #else
   nAsyncHandles = 1
 #endif
@@ -2314,8 +2314,6 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   nLocalIntPass = nLocalint*MaxPasses
   allocate(LocalIntPass1(nLocalIntPass,nAsyncHandles))
   CALL Mem_ichor_alloc(LocalIntPass1)
-
-
 !$ACC DATA COPYIN(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
 !$ACC             nPrimQ,nPasses,MaxPasses,intprint,lupri,&
 !$ACC             nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
@@ -2333,7 +2331,6 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 !$ACC             IatomAPass,iatomBPass) &
 !$ACC CREATE(LocalIntPass1) &
 !$ACC CREATE(TmpArray1,TmpArray2)
-
   DO IatomD = 1,nAtomsD
    GABELM = 0.0E0_realk 
    iBatchD = iBatchIndexOfTypeD + IatomD
@@ -2422,8 +2419,6 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
               iCAH = iAsyncHandles !CurrentAsyncHandles 
               IatomCcurr = mod(iSync(iCAH)-1,nAtomsC)+1
               IatomDcurr = (iSync(iCAH)-1)/nAtomsC + 1
-              
-
               IF(nPasses(iCAH).NE.nAtomsA*nAtomsB)THEN
                  do I4 = 1,nLocalint*nAtomsA*nAtomsB
                     LocalIntPass2(I4) = 0.0E0_realk
@@ -2467,7 +2462,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 
         IatomCcurr = mod(iSync(iCAH)-1,nAtomsC)+1
         IatomDcurr = (iSync(iCAH)-1)/nAtomsC + 1
-                      
+
         IF(nPasses(iCAH).NE.nAtomsA*nAtomsB)THEN
            do I4 = 1,nLocalint*nAtomsA*nAtomsB
               LocalIntPass2(I4) = 0.0E0_realk
@@ -2571,9 +2566,9 @@ subroutine DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nP
     !ACC CREATE(TmpArray1,TmpArray2)                                      
   nSizeAsync = nSizeAsync + mem_realsize*(TMParray1maxsize*MaxPasses+TMParray2maxsize*MaxPasses)
 
-!  print*,'nSizeStatic',nSizeStatic
-!  print*,'nSizeAsync',nSizeAsync
-!  print*,'MaxGPUmemory',MaxGPUmemory
+!  WRITE(lupri,*)'nSizeStatic',nSizeStatic
+!  WRITE(lupri,*)'nSizeAsync',nSizeAsync
+!  WRITE(lupri,*)'MaxGPUmemory',MaxGPUmemory
   DO iAsyncHandles=1,maxnAsyncHandles
      IF(nSizeStatic+iAsyncHandles*nSizeAsync.LT.MaxGPUmemory)THEN
         nAsyncHandles = iAsyncHandles

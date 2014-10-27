@@ -123,16 +123,16 @@ DO GPUrun=1,2
   WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegSize'
   WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1PrimSize'
 
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModGen'
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegQ'
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegP'
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg'
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim'
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModGen2'
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegQ2'
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegP2'
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg2'
-  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim2'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModGen'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegQ'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegP'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModGen2'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegQ2'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSegP2'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg2'
+!  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim2'
 
   IF(CPU)THEN
      DO ILUMOD=8,12
