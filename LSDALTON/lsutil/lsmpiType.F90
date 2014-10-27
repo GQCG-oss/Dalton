@@ -6145,7 +6145,7 @@ contains
 
   subroutine lsmpi_wait(request_handle)
      implicit none
-     integer(kind=ls_mpik),intent(in) :: request_handle
+     integer(kind=ls_mpik),intent(inout) :: request_handle
      integer(kind=ls_mpik) :: ierr
 #ifdef VAR_MPI
      real(realk) :: sta,sto
