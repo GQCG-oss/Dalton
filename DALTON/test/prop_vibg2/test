@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#    prop_vibg2
+#    ----------
+#    Molecule:         H2
+#    Wave Function:    Full CI / 6-31G**
+#    Test Purpose:     Calculation of vibrational g-factor as sum
+#                      over all first order non-adiabatic coupling elements
 
 import os
 import sys
@@ -38,6 +44,11 @@ f.add(string = 'Electronic excitation energies',
       rel_tolerance = 1.0e-2)
 f.add(string = 'First-order non-adiabatic coupling matrix elements (NACMEs)',
       rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Singlet electronic excitation energies',
+      num_lines = 65,
+      mask = [4],
+      abs_tolerance = 1.0e-4)
 
 f.add(string = 'Vibrational g-factor',
        abs_tolerance = 1.0e-6)

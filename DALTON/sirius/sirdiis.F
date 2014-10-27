@@ -918,6 +918,9 @@ c        density
 
          ESOLT = D0
          IF (.NOT. MMPCM) THEN ! do as we usually do ...
+           IF (PCM .AND. (FLAG(16) .OR. QMMM .OR. QMNPMM .OR. QM3)) THEN
+             CALL QUIT("PCM not compatible with other solvent models")
+           END IF
            IF (QM3 .AND. .NOT. DOCCSD) THEN
              CALL MEMGET2('REAL','FCQM3',KFCSOL,NNBAST,WRK,KFREE,LFREE)
              CALL DZERO(WRK(KFCSOL),NNBAST)
@@ -973,6 +976,9 @@ c        density
            END IF
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd
+           IF (.NOT. QM3 .OR. .NOT. PCM) THEN
+             CALL QUIT("MMPCM have to be used with both PCM and QM3")
+           END IF
 C          parameters on input: MXITMP and THRSMP
            LCONV = .FALSE.
            XTEST1 = D0

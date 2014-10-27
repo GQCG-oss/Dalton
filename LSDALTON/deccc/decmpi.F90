@@ -1217,11 +1217,12 @@ contains
     do ijob=1,min(nnod,njob)
       if (easytrace(ijob,2)==0) then 
         ! tile in pgmo_diag array
-        next_nod = get_residence_of_tile(easytrace(ijob,1),pgmo_diag) + 1
+        call get_residence_of_tile(next_nod,easytrace(ijob,1),pgmo_diag)
       else 
         ! tile in pgmo_up array
-        next_nod = get_residence_of_tile(easytrace(ijob,1),pgmo_up) + 1
+        call get_residence_of_tile(next_nod,easytrace(ijob,1),pgmo_up)
       end if
+      next_nod = next_nod + 1
       ! Update joblist and workload
       joblist(ijob) = next_nod 
       work_in_node(next_nod) = work_in_node(next_nod) + workloads(ijob)
@@ -2205,6 +2206,7 @@ contains
     call ls_mpi_buffer(DECitem%hack2,Master)
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
     call ls_mpi_buffer(DECitem%tensor_test,Master)
+    call ls_mpi_buffer(DECitem%tensor_segmenting_scheme,Master)
     call ls_mpi_buffer(DECitem%reorder_test,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)

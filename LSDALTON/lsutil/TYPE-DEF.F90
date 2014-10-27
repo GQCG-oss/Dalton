@@ -193,6 +193,7 @@ CHARACTER(80) :: ADMM_FUNC
 LOGICAL       :: ADMM_separateX
 LOGICAL       :: ADMM_2ERI
 LOGICAL       :: PRINT_EK3
+LOGICAL       :: ADMMBASISFILE
 
 LOGICAL       :: SR_EXCHANGE
 !Coulomb attenuated method CAM parameters

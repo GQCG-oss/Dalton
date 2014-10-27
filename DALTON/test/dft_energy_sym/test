@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    dft_energy_sym
+#    --------------
+#    Molecule:         H2O2
+#    Wave Function:    DFT HF+PZ81 / 6-31G**
+#    Test Purpose:     DFT direct energy calculation w/symmetry
 
 import os
 import sys

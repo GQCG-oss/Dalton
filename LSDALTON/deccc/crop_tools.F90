@@ -230,7 +230,7 @@ module crop_tools_module
 
          t1%itype = TT_REPLICATED
          call tensor_sync_replicated(t1)
-         ecorr    = get_cc_energy_parallel(t1,t2,gmo)
+         ecorr    = get_cc_energy_parallel(t2,gmo,t1)
          t1%itype = TT_DENSE
 
       endif
@@ -269,7 +269,7 @@ module crop_tools_module
 
       else if(t2%itype==TT_TILED_DIST.and.gmo%itype==TT_TILED_DIST)then
 
-         ecorr=get_mp2_energy_parallel(t2,gmo)
+         ecorr=get_cc_energy_parallel(t2,gmo)
 
       endif
 

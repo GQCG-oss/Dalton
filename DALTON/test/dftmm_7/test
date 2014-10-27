@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#    dftmm_7
+#    -----------
+#    Molecule:         CH2O(DFT)/2 H2O(MM)
+#    Wave Function:    B3LYP / STO-3G  
+#    Test Purpose:     DFT/MM LR with matrix inversion and exponential damping
+#                      RF calculated at the QM nuclei
 
 import os
 import sys

@@ -1335,6 +1335,22 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
                                   !Calculates X and XC independently, default is to calculate
                                   !X+XC with one call to dft (and x with a separate call)
            INTEGRAL%ADMM_separateX  = .TRUE.
+        CASE ('.ADMM-BASIS-FILE'); ! EXPERIMENTAL
+           !Write file ADMMmin.dat containing info used for constructing a basis set optimized for ADMM
+           !We use PRINT_EK3 to calculate the full exchange matrix.
+           !We then use the full exchange matrix to converge the standard calculation but for every 
+           !iteration we print ADMM stuff:
+           !Exchange energy of aux density
+           !Exchange energy of full density 
+           !(GGA-type) Exchange functional energy of aux density
+           !(GGA-type) Exchange functional energy of full density 
+           !to easily obtain this infomation we use ADMM_separateX
+           IF (.NOT.INTEGRAL%ADMM_EXCHANGE) THEN
+              CALL LSQUIT('Illegal input under **INTEGRAL. .ADMM-BASIS-FILE require ADMM.',lupri)
+           ENDIF
+           INTEGRAL%ADMMBASISFILE   = .TRUE.
+           INTEGRAL%PRINT_EK3       = .TRUE. !to calculate the full exchange matrix
+           INTEGRAL%ADMM_separateX  = .TRUE. !to obtain the pure Exchange functional energy of full density 
         CASE ('.ADMM-2ERI'); ! EXPERIMENTAL
            INTEGRAL%ADMM_2ERI       = .TRUE.
         CASE ('.PRINT_EK3'); ! EXPERIMENTAL

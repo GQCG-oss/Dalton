@@ -2491,7 +2491,7 @@ module matrix_operations_scalapack
     real(realk),intent(INOUT) :: eival(:) !output
     integer,intent(IN) :: DESC_A(9),DESC_B(9),DESC_C(9)
     !
-    real(realk),pointer :: WORK(:),GAP(:)
+    real(realk),pointer :: WORK(:),GAP(:),Atmp(:,:),Btmp(:,:)
     integer,pointer :: IWORK(:),IFAIL(:),ICLUSTR(:)
     real(realk) :: ABSTOL,ORFAC,DDUMMY
     integer :: LWORK,LIWORK,INFO,IDUMMY,LWORK_SAVE
@@ -2530,8 +2530,14 @@ module matrix_operations_scalapack
     call mem_dealloc(IWORK)
     call mem_alloc(WORK,LWORK)
     call mem_alloc(IWORK,LIWORK)
-    CALL PDSYGVX(1,'V','A','L',A%nrow,A%p,1,1,DESC_A,&
-               & B%p,1,1,DESC_B,DDUMMY,DDUMMY,IDUMMY,IDUMMY,&
+
+    call mem_alloc(Atmp,size(A%p,1),size(A%p,2))
+    call mem_alloc(Btmp,size(B%p,1),size(B%p,2))
+    Atmp = A%p
+    Btmp = B%p
+
+    CALL PDSYGVX(1,'V','A','L',A%nrow,Atmp,1,1,DESC_A,&
+               & Btmp,1,1,DESC_B,DDUMMY,DDUMMY,IDUMMY,IDUMMY,&
                & ABSTOL,neigenvalues,neigenvectors,eival,&
                & ORFAC,C%p,1,1,DESC_C,WORK,LWORK,IWORK,LIWORK,&
                & ifail,iclustr,gap,INFO)
@@ -2549,12 +2555,15 @@ module matrix_operations_scalapack
        !where clustersize is the number of eigenvalues in the largest cluster
        !, where a cluster is defined as a set of close eigenvalues: 
        !       LWORK  = LWORK + A%nrow*A%nrow
+       Atmp = A%p
+       Btmp = B%p
+
        LWORK  = LWORK_SAVE + A%nrow*A%nrow
        LIWORK = LIWORK_SAVE
        call mem_alloc(WORK,LWORK)
        call mem_alloc(IWORK,LIWORK)
-       CALL PDSYGVX(1,'V','A','L',A%nrow,A%p,1,1,DESC_A,&
-            & B%p,1,1,DESC_B,DDUMMY,DDUMMY,IDUMMY,IDUMMY,&
+       CALL PDSYGVX(1,'V','A','L',A%nrow,Atmp,1,1,DESC_A,&
+            & Btmp,1,1,DESC_B,DDUMMY,DDUMMY,IDUMMY,IDUMMY,&
             & ABSTOL,neigenvalues,neigenvectors,eival,&
             & ORFAC,C%p,1,1,DESC_C,WORK,LWORK,IWORK,LIWORK,&
             & ifail,iclustr,gap,INFO)
@@ -2585,8 +2594,10 @@ module matrix_operations_scalapack
              print*,'Unknown reason'
           ENDIF
        ENDIF
-       CALL LSQUIT('matop_scalapack mat_diag_f: PDSYGVX Failed B ',-1)
+       CALL LSQUIT('matop_scalapack mat_diag_f: PDSYGVX Failed B2 ',-1)
     ENDIF
+    call mem_dealloc(Atmp)
+    call mem_dealloc(Btmp)
     call mem_dealloc(IFAIL)
     call mem_dealloc(ICLUSTR)
     call mem_dealloc(GAP)
@@ -2625,7 +2636,7 @@ module matrix_operations_scalapack
     real(realk),intent(INOUT) :: eival(ndim) !output
     integer,intent(IN) :: DESC_A(9),DESC_B(9),ndim
     !
-    real(realk),pointer :: WORK(:)
+    real(realk),pointer :: WORK(:),Atmp(:,:)
     integer :: LWORK,INFO
 #ifdef VAR_SCALAPACK
     REAL(REALK),EXTERNAL :: PDLAMCH
@@ -2640,8 +2651,11 @@ module matrix_operations_scalapack
     LWORK = INT(WORK(1))
     call mem_dealloc(WORK)
     call mem_alloc(WORK,LWORK)
-    CALL PDSYEV('V','U',A%nrow,A%p,1,1,DESC_A,&
+    call mem_alloc(Atmp,size(A%p,1),size(A%p,2))
+    Atmp = A%p
+    CALL PDSYEV('V','U',A%nrow,Atmp,1,1,DESC_A,&
                & eival,B%p,1,1,DESC_B,WORK,LWORK,INFO)
+    call mem_dealloc(Atmp)
     IF(INFO.NE. 0)THEN
        print*,'INFO',INFO
        CALL LSQUIT('matop_scalapack mat_dsyev: PDSYEV Failed B',-1)
@@ -2680,7 +2694,7 @@ module matrix_operations_scalapack
     real(realk),pointer :: choltemp(:),eivec(:)
     integer,pointer     :: icholtemp(:),IFAIL(:),ICLUSTR(:)
     integer             :: ndim,neig,info,VL,VU
-    real(realk),pointer :: eivalTmp(:),GAP(:)
+    real(realk),pointer :: eivalTmp(:),GAP(:),Atmp(:,:)
     integer :: lwork,liwork
 
 
@@ -2698,10 +2712,13 @@ module matrix_operations_scalapack
     call mem_alloc(GAP,ndim)
     call mem_alloc(ICLUSTR,ndim)
 !   Inquire to get the size of lwork and liwork
-    call PDSYEVX('N', 'I', 'U', ndim, A%p, 1, 1, DESC_A, VL, VU, ieig, ieig, &
+    call mem_alloc(Atmp,size(A%p,1),size(A%p,2))
+    Atmp = A%p
+    call PDSYEVX('N', 'I', 'U', ndim, Atmp, 1, 1, DESC_A, VL, VU, ieig, ieig, &
        &  0.0E0_realk, neig, 0, eivalTmp, 0.0E0_realk, eivec, 1, 1, DESC_A, &
        &  choltemp, lwork, icholtemp, liwork, &
        &  IFAIL, ICLUSTR, GAP, INFO )
+    call mem_dealloc(Atmp)
     lwork =  INT(choltemp(1))
     liwork = icholtemp(1)
     call mem_dealloc(choltemp)
