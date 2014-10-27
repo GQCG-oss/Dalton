@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+#    dft_b3lyp_molhes_nosym 
+#    ----------------------
+#    Molecule:         LiOH
+#    Wave Function:    DFT (B3LYP) / 6-31G** 
+#    Test Purpose:     Test analytical molecular hessian and dipole
+#                      gradient with spherical basis functions  
+#                      
 
 import os
 import sys

@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#    energy_corehole
+#    ---------------
+#    Molecule:         CO
+#    Wave Functions:   MCSCF (RAS)
+#    Test Purpose:     Core-hole excitations using both a frozen and a
+#                      relaxed core orbital
 
 import os
 import sys

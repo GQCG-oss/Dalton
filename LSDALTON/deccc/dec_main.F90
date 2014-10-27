@@ -184,6 +184,9 @@ contains
     real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr
     real(realk) :: molgrad(3,Molecule%natoms)
 
+    ! Set DEC memory
+    call get_memory_for_dec_calculation()
+
     ! Perform SNOOP calculation and skip DEC calculation
     ! (at some point SNOOP and DEC might be merged)
     if(DECinfo%SNOOP) then
@@ -236,9 +239,6 @@ contains
        write(DECinfo%output,*)
        write(DECinfo%output,*)
     end if
-
-    ! Set DEC memory
-    call get_memory_for_dec_calculation()
 
     if(DECinfo%full_molecular_cc) then
        ! -- Call full molecular CC

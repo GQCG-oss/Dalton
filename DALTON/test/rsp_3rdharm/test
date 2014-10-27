@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    rsp_3rdharm
+#    -----------
+#    Molecule:         LiH
+#    Wave Function:    MCSCF (CAS) / 4-31G
+#    Test Purpose:     Third-Harmonic generation
 
 import os
 import sys

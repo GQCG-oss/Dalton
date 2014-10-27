@@ -1,7 +1,0 @@
-   prop_newtrasoppa
-   ----------------
-   Molecule:         CH4
-   Wave Function:    MP2 (SOPPA) / cc-pVDZ
-   Test Purpose:     Calculation of SOPPA spin-spin coupling constants
-                     through ABACUS using the NEWTRA option 
-                      (new integral transformation)
