@@ -2060,8 +2060,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            &ave_wait_time,max_wait_time
      endif
 
-     call lsmpi_barrier(infpar%lg_comm)
-
      startt=MPI_wtime()
 
      if(infpar%lg_nodtot>1.or.scheme==3) then

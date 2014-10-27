@@ -4195,14 +4195,25 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    no = iajb%dims(1)
    nv = iajb%dims(2)
 
+   call tensor_ainit(E1,[nv,nv],2,tdims = [vs,vs],local=local, atype="TDAR")
+   call tensor_ainit(E2,[no,no],2,tdims = [os,os],local=local, atype="TDAR")
+
+   call tensor_cp_data(vvf,E1)
+   call tensor_cp_data(oof,E2)
+
    ord = [1,4,2,3]
-   call tensor_contract( 1.0E0_realk,t2,vvf,[2],[2],1,0.0E0_realk,omega2,ord)
+   !call tensor_contract( 1.0E0_realk,t2,vvf,[2],[2],1,0.0E0_realk,omega2,ord,force_sync=.true.)
+   call tensor_contract( 1.0E0_realk,t2,E1,[2],[2],1,0.0E0_realk,omega2,ord,force_sync=.true.)
 
    ord = [1,2,3,4]
-   call tensor_contract(-1.0E0_realk,t2,oof,[4],[1],1,1.0E0_realk,omega2,ord)
+   !call tensor_contract(-1.0E0_realk,t2,oof,[4],[1],1,1.0E0_realk,omega2,ord,force_sync=.true.)
+   call tensor_contract(-1.0E0_realk,t2,E2,[4],[1],1,1.0E0_realk,omega2,ord,force_sync=.true.)
 
 
    call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset)
+
+   call tensor_free(E1)
+   call tensor_free(E2)
 
 #ifdef VAR_MPI
    if(.not.local) call tensor_lock_local_wins(Pijab_om2,'e',mode)
@@ -4234,6 +4245,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 #endif
 
    call tensor_free(Pijab_om2)
+
 
 
 end subroutine get_simple_parallel_mp2_residual

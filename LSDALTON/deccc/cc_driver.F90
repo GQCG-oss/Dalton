@@ -2015,7 +2015,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
         end if
       end if
 
-
 #ifdef MOD_UNRELEASED
       !============================================================================!
       !                          MO-CCSD initialization                            !
