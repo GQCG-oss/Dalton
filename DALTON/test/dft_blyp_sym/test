@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    dft_blyp_sym
+#    ------------
+#    Molecule:         HCN
+#    Wave Function:    DFT BLYP / aug-cc-pVDZ
+#    Test Purpose:     Check BLYP functional w/symmetry
 
 import os
 import sys

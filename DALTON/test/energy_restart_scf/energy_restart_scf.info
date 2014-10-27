@@ -1,5 +1,0 @@
-   energy_restart_scf
-   --------------
-   Molecule:         H2O
-   Wave Functions:   HF / cc-pVDZ
-   Test Purpose:     Restart an HF wave function optimization

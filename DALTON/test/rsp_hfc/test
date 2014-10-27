@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    rsp_hfc
+#    -------
+#    Molecule:         TiF3
+#    Wave Function:    Restricted open-shell DFT:BP86  
+#    Test Purpose:     Single-point calculation of hfc parameters
 
 import os
 import sys
