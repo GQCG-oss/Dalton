@@ -164,6 +164,7 @@ module lspdm_tensor_operations_module
   real(realk) :: time_pdm_get          = 0.0E0_realk
   integer(kind=long) :: bytes_transferred_get = 0
   integer(kind=long) :: nmsg_get = 0
+  integer(kind=long) :: nel_one_sided = 0
 
 #ifdef VAR_MPI
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -789,10 +790,18 @@ module lspdm_tensor_operations_module
        !GET COULOMB TILE
        call time_start_phase( PHASE_COMM )
        if( alloc_in_dummy )then
+
+          if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+             call tensor_flush_win(gmo, local = .true.)
+             nel_one_sided = 0
+          endif
+
           call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.,req=reqC(cbuf))
+          nel_one_sided = nel_one_sided + gmo_ts
        else
           call tensor_lock_win(gmo,gmo_ccidx,'s',assert = mode)
           call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
+          nel_one_sided = nel_one_sided + gmo_ts
        endif
        call time_start_phase( PHASE_WORK )
 
@@ -801,10 +810,18 @@ module lspdm_tensor_operations_module
           ebuf = nbuffs_c + mod(lt,nbuffs_c) + 1
           call time_start_phase( PHASE_COMM )
           if( alloc_in_dummy )then
+
+             if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                call tensor_flush_win(gmo, local = .true.)
+                nel_one_sided = 0
+             endif
+
              call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.,req=reqE(cbuf))
+             nel_one_sided = nel_one_sided + gmo_ts
           else
              call tensor_lock_win(gmo,gmo_ecidx,'s',assert = mode)
              call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
+             nel_one_sided = nel_one_sided + gmo_ts
           endif
           call time_start_phase( PHASE_WORK )
        else
@@ -852,7 +869,15 @@ module lspdm_tensor_operations_module
           !GET COULOMB TILE
           call time_start_phase( PHASE_COMM )
           if( alloc_in_dummy )then
+
+             if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                call tensor_flush_win(gmo, local = .true.)
+                nel_one_sided = 0
+             endif
+
              call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.,req=reqC(cbuf))
+
+             nel_one_sided = nel_one_sided + gmo_ts
           else
              call tensor_lock_win(gmo,gmo_ccidx,'s',assert = mode)
              call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
@@ -864,7 +889,15 @@ module lspdm_tensor_operations_module
              ebuf = nbuffs_c + mod(nt,nbuffs_c) + 1
              call time_start_phase( PHASE_COMM )
              if( alloc_in_dummy )then
+
+                if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                   call tensor_flush_win(gmo, local = .true.)
+                   nel_one_sided = 0
+                endif
+
                 call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.,req=reqE(cbuf))
+
+                nel_one_sided = nel_one_sided + gmo_ts
              else
                 call tensor_lock_win(gmo,gmo_ecidx,'s',assert = mode)
                 call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
@@ -907,6 +940,7 @@ module lspdm_tensor_operations_module
        call time_start_phase( PHASE_COMM )
        if( alloc_in_dummy )then
           call lsmpi_wait(reqC(cbuf))
+          nel_one_sided = nel_one_sided - gmo_ts
        else
           call tensor_unlock_win(gmo,gmo_ccidx)
        endif
@@ -917,6 +951,7 @@ module lspdm_tensor_operations_module
           call time_start_phase( PHASE_COMM )
           if( alloc_in_dummy )then
              call lsmpi_wait(reqE(cbuf))
+             nel_one_sided = nel_one_sided - gmo_ts
           else
              call tensor_unlock_win(gmo,gmo_ecidx)
           endif
@@ -1859,7 +1894,15 @@ module lspdm_tensor_operations_module
 
        call time_start_phase( PHASE_COMM )
        if(alloc_in_dummy )then
+
+          if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+             call tensor_flush_win(y, local = .true.)
+             nel_one_sided = 0
+          endif
+
           call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+
+          nel_one_sided = nel_one_sided + ynels
        else
           call tensor_lock_win(y,cmidy,'s')
           call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
@@ -1897,8 +1940,14 @@ module lspdm_tensor_operations_module
           call time_start_phase( PHASE_COMM )
 
           if(alloc_in_dummy )then
+             if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                call tensor_flush_win(y, local = .true.)
+                nel_one_sided = 0
+             endif
 
              call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+
+             nel_one_sided = nel_one_sided + ynels
 
           else
 
@@ -1932,6 +1981,7 @@ module lspdm_tensor_operations_module
        call time_start_phase( PHASE_COMM )
        if(alloc_in_dummy )then
           call lsmpi_wait(req(ibuf))
+          nel_one_sided = nel_one_sided - ynels
        else
           call tensor_unlock_win(y,cmidy)
        endif
@@ -2046,7 +2096,13 @@ module lspdm_tensor_operations_module
        cmidy = get_cidx(ymidx,from%ntpm,from%mode)
 
        if( alloc_in_dummy )then
+          if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+             call tensor_flush_win(from, local = .true.)
+             nel_one_sided = 0
+          endif
           call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+          nel_one_sided = nel_one_sided + ynels
+
        else
           call tensor_lock_win(from,cmidy,'s')
           call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
@@ -2081,7 +2137,12 @@ module lspdm_tensor_operations_module
           cmidy = get_cidx(ymidx,from%ntpm,from%mode)
 
           if( alloc_in_dummy )then
+             if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                call tensor_flush_win(from, local = .true.)
+                nel_one_sided = 0
+             endif
              call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+             nel_one_sided = nel_one_sided + ynels
           else
              call tensor_lock_win(from,cmidy,'s')
              call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
@@ -2109,6 +2170,7 @@ module lspdm_tensor_operations_module
 
        if( alloc_in_dummy )then
           call lsmpi_wait(req(ibuf))
+          nel_one_sided = nel_one_sided - ynels
        else
           call tensor_unlock_win(from,cmidy)
        endif
@@ -2949,7 +3011,16 @@ module lspdm_tensor_operations_module
 
            call time_start_phase( PHASE_COMM )
            if( alloc_in_dummy )then
+
+              if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                 call tensor_flush_win(A, local = .true.)
+                 if(.not.B_dense) call tensor_flush_win(B, local = .true.)
+                 nel_one_sided = 0
+              endif
+
               call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+              nel_one_sided = nel_one_sided + nelmsTA
+
            else
               call tensor_lock_win(A,cmidA,'s')
               call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
@@ -2962,7 +3033,16 @@ module lspdm_tensor_operations_module
 
               call time_start_phase( PHASE_COMM )
               if( alloc_in_dummy )then
+
+                 if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                    call tensor_flush_win(A, local = .true.)
+                    if(.not.B_dense) call tensor_flush_win(B, local = .true.)
+                    nel_one_sided = 0
+                 endif
+
                  call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+
+                 nel_one_sided = nel_one_sided + nelmsTB
               else
                  call tensor_lock_win(B,cmidB,'s')
                  call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
@@ -2999,7 +3079,16 @@ module lspdm_tensor_operations_module
 
               call time_start_phase( PHASE_COMM )
               if( alloc_in_dummy )then
+
+                 if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                    call tensor_flush_win(A, local = .true.)
+                    if(.not.B_dense) call tensor_flush_win(B, local = .true.)
+                    nel_one_sided = 0
+                 endif
+
                  call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+
+                 nel_one_sided = nel_one_sided + nelmsTA
               else
                  call tensor_lock_win(A,cmidA,'s')
                  call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
@@ -3008,11 +3097,22 @@ module lspdm_tensor_operations_module
               
               !same for B if necessary
               if(.not.B_dense)then
+
                  call get_tile_dim(nelmsTB,B,mB)
                  ibufB = mod(buffer_cm-1,nbuffsB)+1
                  call time_start_phase( PHASE_COMM )
+
                  if( alloc_in_dummy )then
+
+                    if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                       call tensor_flush_win(A, local = .true.)
+                       if(.not.B_dense) call tensor_flush_win(B, local = .true.)
+                       nel_one_sided = 0
+                    endif
+
                     call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+
+                    nel_one_sided = nel_one_sided + nelmsTB
                  else
                     call tensor_lock_win(B,cmidB,'s')
                     call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
@@ -3054,6 +3154,7 @@ module lspdm_tensor_operations_module
            call time_start_phase( PHASE_COMM )
            if( alloc_in_dummy )then
               call lsmpi_wait(reqA(ibufA))
+              nel_one_sided = nel_one_sided - nelmsTA
            else
               call tensor_unlock_win(A,cmidA)
            endif
@@ -3064,6 +3165,7 @@ module lspdm_tensor_operations_module
               call time_start_phase( PHASE_COMM )
               if( alloc_in_dummy )then
                  call lsmpi_wait(reqB(ibufB))
+                 nel_one_sided = nel_one_sided - nelmsTB
               else
                  call tensor_unlock_win(B,cmidB)
               endif
@@ -3451,7 +3553,12 @@ module lspdm_tensor_operations_module
 
         if( i>maxintmp )then
            if(alloc_in_dummy)then
+              call get_tile_dim(nelintile,i-maxintmp,arr%dims,arr%tdim,arr%mode)
+
               call lsmpi_wait(req(bidx))
+              !call tensor_flush_win(arr, gtidx = i-maxintmp, only_owner = .true.,local = .true.)
+
+              nel_one_sided = nel_one_sided - nelintile
            else
               if(arr%lock_set(i-maxintmp)) call tensor_unlock_win(arr,i-maxintmp)
            endif
@@ -3470,8 +3577,18 @@ module lspdm_tensor_operations_module
         endif
 
         call tile_from_fort(pre1,fort,fullfortdim,arr%mode,0.0E0_realk,tmp(b:e),i,arr%tdim,o)
+
         if( alloc_in_dummy )then
+
+           if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+              call tensor_flush_win(arr, local = .true.)
+              nel_one_sided = 0
+           endif
+
            call put_acc(arr,i,tmp(b:e),nelintile,lock_set=ls,req=req(bidx))
+           !call put_acc(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
+
+           nel_one_sided = nel_one_sided + nelintile
         else
            call put_acc(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
         endif
@@ -3498,8 +3615,11 @@ module lspdm_tensor_operations_module
 
      if( alloc_in_dummy )then
         do i=minstart, arr%ntiles
+           call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
            bidx = mod(i-1,maxintmp)+1
+           !call tensor_flush_win(arr, gtidx = i, only_owner = .true.,local = .true.)
            call lsmpi_wait(req(bidx))
+           nel_one_sided = nel_one_sided - nelintile
         enddo
         if(arr%lock_set(1).and.lock_was_not_set)call tensor_unlock_wins(arr, all_nodes = .true.)
      else
@@ -3675,13 +3795,23 @@ module lspdm_tensor_operations_module
         e = b + arr%tsize - 1
 
         if( alloc_in_dummy ) then
+
            if(i>maxintmp)then
+              call get_tile_dim(nelintile,i-maxintmp,arr%dims,arr%tdim,arr%mode)
               call lsmpi_wait(req(bidx))
+              nel_one_sided = nel_one_sided - nelintile
               call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
            endif
+
            call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
 
+           if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+              call tensor_flush_win(arr, local = .true.)
+              nel_one_sided = 0
+           endif
+
            call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=.true.,req = req(bidx))
+           nel_one_sided = nel_one_sided + nelintile
         else
            ls = arr%lock_set(i)
            call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
@@ -3715,8 +3845,13 @@ module lspdm_tensor_operations_module
         b = 1 + (bidx - 1) * arr%tsize
         e = b + arr%tsize -1
 
-        if( alloc_in_dummy ) call lsmpi_wait(req(bidx))
-        if(.not. alloc_in_dummy.and.arr%lock_set(i))call tensor_unlock_win(arr,i)
+        if( alloc_in_dummy )then
+           call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+           call lsmpi_wait(req(bidx))
+           nel_one_sided = nel_one_sided - nelintile
+        else
+           if(arr%lock_set(i))call tensor_unlock_win(arr,i)
+        endif
 
         call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
 
@@ -5772,16 +5907,11 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: ti_idx
     character, intent(in) :: locktype
     integer(kind=ls_mpik), optional,intent(in) :: assert
-    integer(kind=ls_mpik) ::node,wi_idx
+    integer(kind=ls_mpik) ::node
+    integer :: wi_idx
     call time_start_phase( PHASE_COMM )
 
-    if( alloc_in_dummy )then
-       wi_idx = 1
-    else
-       wi_idx = ti_idx
-    endif
-
-    call get_residence_of_tile(node,ti_idx,arr)
+    call get_residence_of_tile(node,ti_idx,arr,window_index=wi_idx)
     call lsmpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
     arr%lock_set(wi_idx)=.true.
 
@@ -5794,16 +5924,10 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: ti_idx
     character, intent(in) :: locktype
     integer(kind=ls_mpik), optional,intent(in) :: assert
-    integer(kind=ls_mpik) ::node,wi_idx
+    integer(kind=ls_mpik) ::node
+    integer :: wi_idx
     call time_start_phase( PHASE_COMM )
-
-    if( alloc_in_dummy )then
-       wi_idx = 1
-    else
-       wi_idx = ti_idx
-    endif
-
-    call get_residence_of_tile(node,ti_idx,arr)
+    call get_residence_of_tile(node,ti_idx,arr,window_index=wi_idx)
     call lsmpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
     arr%lock_set(wi_idx)=.true.
 
@@ -5814,16 +5938,11 @@ module lspdm_tensor_operations_module
     implicit none
     type(tensor) :: arr
     integer,intent(in) :: ti_idx
-    integer(kind=ls_mpik) :: node, wi_idx
+    integer(kind=ls_mpik) :: node
+    integer :: wi_idx
     call time_start_phase( PHASE_COMM )
 
-    if( alloc_in_dummy )then
-       wi_idx = 1
-    else
-       wi_idx = ti_idx
-    endif
-
-    call get_residence_of_tile(node,ti_idx,arr)
+    call get_residence_of_tile(node,ti_idx,arr,window_index=wi_idx)
     call lsmpi_win_unlock(node,arr%wi(wi_idx))
     arr%lock_set(wi_idx) = .false.
 
@@ -6276,15 +6395,7 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    call get_residence_of_tile(dest,globtilenr,arr,idx_on_node = pos)
-
-    if( alloc_in_dummy ) then
-       widx = 1
-       p    = pos
-    else
-       widx = globtilenr
-       p    = 1
-    endif
+    call get_residence_of_tile(dest,globtilenr,arr,idx_on_node = p, window_index = widx)
 
     sta  = MPI_WTIME()
 
@@ -6335,15 +6446,7 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set)) ls = lock_set
 
-    call get_residence_of_tile( dest, globtilenr, arr, idx_on_node = pos)
-
-    if( alloc_in_dummy ) then
-       widx = 1
-       p    = pos
-    else
-       widx = globtilenr
-       p    = 1
-    endif
+    call get_residence_of_tile( dest, globtilenr, arr, idx_on_node = p, window_index = widx )
 
     sta  = MPI_WTIME()
 
@@ -6399,15 +6502,7 @@ module lspdm_tensor_operations_module
       if(o(i)/=i)order_type=-1
     enddo
 
-    call get_residence_of_tile(dest,globtilenr,arr,idx_on_node = pos)
-
-    if( alloc_in_dummy ) then
-       widx = 1
-       p    = pos
-    else
-       widx = globtilenr
-       p    = 1
-    endif
+    call get_residence_of_tile(dest,globtilenr,arr,idx_on_node = p, window_index = widx )
 
     do i=1,arr%mode
       !get the reverse order information
@@ -6619,15 +6714,7 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    call get_residence_of_tile(dest,globtilenr,arr,idx_on_node=pos)
-
-    if( alloc_in_dummy ) then
-       widx = 1
-       p    = pos
-    else
-       widx = globtilenr
-       p    = 1
-    endif
+    call get_residence_of_tile(dest,globtilenr,arr,idx_on_node=p,window_index=widx)
 
     sta  = MPI_WTIME()
 
@@ -6678,15 +6765,7 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    call get_residence_of_tile(dest,globtilenr,arr, idx_on_node = pos)
-
-    if( alloc_in_dummy ) then
-       widx = 1
-       p    = pos
-    else
-       widx = globtilenr
-       p    = 1
-    endif
+    call get_residence_of_tile(dest,globtilenr,arr, idx_on_node = p, window_index=widx)
 
     sta  = MPI_WTIME()
 
@@ -6758,15 +6837,7 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    call get_residence_of_tile(source,globtilenr,arr,idx_on_node=pos)
-
-    if( alloc_in_dummy ) then
-       widx = 1
-       p    = pos
-    else
-       widx = globtilenr
-       p    = 1
-    endif
+    call get_residence_of_tile(source,globtilenr,arr,idx_on_node=p,window_index=widx)
 
     sta    = MPI_WTIME()
 
@@ -6820,15 +6891,7 @@ module lspdm_tensor_operations_module
     ls = .false.
     if(present(lock_set))ls=lock_set
 
-    call get_residence_of_tile(source,globtilenr,arr,idx_on_node=pos)
-
-    if( alloc_in_dummy ) then
-       widx = 1
-       p    = pos
-    else
-       widx = globtilenr
-       p    = 1
-    endif
+    call get_residence_of_tile(source,globtilenr,arr,idx_on_node=p,window_index=widx)
 
     sta    = MPI_WTIME()
 
@@ -7110,13 +7173,7 @@ module lspdm_tensor_operations_module
 
         else
 
-           if( alloc_in_dummy ) then
-              widx = 1
-           else
-              widx = gtidx
-           endif
-
-           call get_residence_of_tile(n,gtidx,T)
+           call get_residence_of_tile(n,gtidx,T,window_index=widx)
 
            node2 = n
 

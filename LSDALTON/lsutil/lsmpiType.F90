@@ -211,7 +211,7 @@ module lsmpi_type
 
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-  integer     :: SPLIT_MPI_MSG      = 100000000
+  integer     :: SPLIT_MPI_MSG
   !split mpi one sided communication into 100MB chunks
   integer     :: MAX_SIZE_ONE_SIDED 
 
@@ -5648,66 +5648,6 @@ contains
     endif
 #endif
   end subroutine lsmpi_rget_realkV_wrapper8
-  subroutine lsmpi_rget_realkV_wrapper4(buf,nelms,pos,dest,win,req,iflush)
-    implicit none
-    real(realk),intent(in) :: buf(*)
-    integer, intent(in) :: pos
-    integer(kind=4) :: nelms
-    integer(kind=ls_mpik),intent(in) :: dest
-    integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik),intent(inout) :: req
-    logical,intent(in) :: nreqs
-#ifdef VAR_MPI
-    integer(kind=ls_mpik) :: n,ierr
-    integer(kind=4) :: n4,k,i, ireq
-    integer(kind=MPI_ADDRESS_KIND) :: offset
-
-    if(ls_mpik==4)then
-
-      k=SPLIT_MPI_MSG
-
-      nreqs = nelms/k
-      if(mod(nelms,k)>0) nreqs = nreqs + 1
-
-      if(.not.associated(req))then
-         call mem_alloc(req,nreqs)
-      else
-         if( nreqs > size(req) )call lsquit("ERROR(lsmpi_rget_realkV_wrapper4):not enough request handles",-1)
-      endif
-
-      do i=1,nelms,k
-
-        n4=k
-        if(((nelms-i)<k).and.(mod(nelms-i+1,k)/=0))n4=mod(nelms,k)
-
-        call lsmpi_rget_realkV4(buf(i:i+n4-1),n4,pos+i-1,dest,win,req)
-
-      enddo
-
-
-    else
-
-      ierr = 0
-
-      n  = nelms
-      offset = int(pos-1,kind=MPI_ADDRESS_KIND)
-
-      nreqs = 1
-      if(.not.associated(req))then
-         call mem_alloc(req,nreqs)
-      else
-         if( nreqs > size(req) )call lsquit("ERROR(lsmpi_rget_realkV_wrapper4):not enough request handles",-1)
-      endif
-
-      call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req(1),ierr)
-
-      if(ierr.ne.0)then
-        call lsquit("Error(lsmpi_rget_realkV_wrapper4)",ierr)
-      endif
-
-    endif
-#endif
-  end subroutine lsmpi_rget_realkV_wrapper4
   subroutine lsmpi_rget_realkV_wrapper4(buf,nelms,pos,dest,win,req,nreqs)
     implicit none
     real(realk),intent(in) :: buf(*)
