@@ -319,15 +319,6 @@ contains
         call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
       case(TT_TILED_DIST)
         call tensor_scatter(b,fortarry,1.0E0_realk,arrx,arrx%nelms,oo=order,wrk=wrk,iwrk=iwrk)
-        !if(present(wrk).and.present(iwrk))then
-        !  call add_data2tiled_intiles_explicitbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o,wrk,iwrk)
-        !else
-        !  if(b==1.0E0_realk)then
-        !    call add_data2tiled_intiles_nobuffer(arrx,fortarry,arrx%dims,arrx%mode,o)
-        !  else
-        !    call add_data2tiled_intiles_stackbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o)
-        !  endif
-        !endif
     end select
 
     call time_start_phase( PHASE_WORK )
@@ -338,7 +329,7 @@ contains
   !distribution for the array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine tensor_add_arr2fullfort(fortarrx,b,arry,order)
+  subroutine tensor_add_arr2fullfort(fortarrx,b,arry,order,wrk,iwrk)
     implicit none
     !> full fortan arra´y, this corresponds to x and is overwritten
     real(realk), intent(inout) :: fortarrx(*)
@@ -348,6 +339,9 @@ contains
     type(tensor), intent(in) :: arry
     !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arry%mode)
+    !> optinally workspace can be passed, the size is defined as iwrk
+    integer(kind=8), intent(in),optional :: iwrk
+    real(realk), intent(inout),optional :: wrk(*)
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
     real(realk) :: MemFree,tilemem
@@ -358,8 +352,11 @@ contains
         call daxpy(int(arry%nelms),b,arry%elm1,1,fortarrx,1)
       case(TT_TILED)
         call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
-      case(TT_TILED_DIST)
-        call add_tileddata2fort(arry,b,fortarrx,arry%nelms,.true.,order = order)
+      !case(TT_TILED_DIST)
+      !  !call add_tileddata2fort(arry,b,fortarrx,arry%nelms,.true.,order = order)
+      !  call tensor_gather(b,arry,1.0E0_realk,fortarrx,arry%nelms,oo=order,wrk=wrk,iwrk=iwrk)
+     case default
+        call lsquit("ERROR(tensor_add_arr2fullfort) not implemented",-1)
     end select
 
     call time_start_phase( PHASE_WORK )
@@ -700,301 +697,6 @@ contains
      endif
   end subroutine tensor_contract_dense_simple
 
-!  !> \brief perform a contraction of the outer indices of two arrays, r means
-!  !the right-most index for the first array, l means the left-most index for the
-!  !sectond array, p1 * left * right + p2 * res = res 
-!  !> \author Patrick Ettenhuber
-!  !> \date late 2012
-!  subroutine tensor_contract_outer_indices_rl(p1,left,right,p2,res)
-!    implicit none
-!    !> prefactors for the left*right part and the res part
-!    real(realk),intent(in) :: p1,p2
-!    !> the resulting array
-!    type(tensor),intent(inout) :: res
-!    !> the arrays to be multiplied
-!    type(tensor),intent(in) :: left,right
-!    integer :: i,m,n,k
-!    if(left%dims(left%mode)/=right%dims(1))then
-!      call lsquit("ERROR(tensor_contract_outer_indices_rl):wrong&
-!      &contraction dimensions!!",DECinfo%output)
-!    endif
-!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    !Introduce a lot of dimensionality checks here!!
-!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    do i=1,left%mode-1
-!      if(left%dims(i)/=res%dims(i))then
-!        call lsquit("ERROR(tensor_contract_outer_indices_rl):wrong&
-!        &result (left) dimensions!!",DECinfo%output)
-!      endif
-!    enddo
-!    do i=right%mode,2,-1
-!      if(right%dims(i)/=res%dims(left%mode+i-2))then
-!        call lsquit("ERROR(tensor_contract_outer_indices_rl):wrong&
-!        &result (right) dimensions!!",DECinfo%output)
-!      endif
-!    enddo
-!    if(left%itype==TT_TILED.or.left%itype==TT_TILED_DIST.or.right%itype==TT_TILED&
-!    &.or.right%itype==TT_TILED_DIST)call lsquit("ERROR(tensor_contract_outer_&
-!    &indices_rl):not yet implemented for tiled/PDM",DECinfo%output)
-!   
-!
-!    !do that only if type dense --> the other routines are to come
-!    select case(res%itype)
-!      case(TT_DENSE)
-!        m=1
-!        do i=1,left%mode-1
-!          m=m*left%dims(i)
-!        enddo
-!        n=1
-!        do i=right%mode,2,-1
-!          n=n*right%dims(i)
-!        enddo
-!        k=right%dims(1) 
-!        call dgemm('n','n',m,n,k,p1,left%elm1,m,right%elm1,k,p2,res%elm1,m)
-!      case(TT_REPLICATED)
-!        m=1
-!        do i=1,left%mode-1
-!          m=m*left%dims(i)
-!        enddo
-!        n=1
-!        do i=right%mode,2,-1
-!          n=n*right%dims(i)
-!        enddo
-!        k=right%dims(1) 
-!        call dgemm('n','n',m,n,k,p1,left%elm1,m,right%elm1,k,p2,res%elm1,m)
-!        if(res%access_type==AT_MASTER_ACCESS)call tensor_sync_replicated(res)
-!      case(TT_TILED)
-!              call lsquit("ERROR(tensor_contract_outer_indices_rl):not yet implemented for tiled",DECinfo%output)
-!      case(TT_TILED_DIST)
-!              call lsquit("ERROR(tensor_contract_outer_indices_rl):not yet implemented for PDM",DECinfo%output)
-!      case default
-!              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
-!    end select
-!    
-!  end subroutine tensor_contract_outer_indices_rl
-!
-!  !> \brief perform a contraction of the outer indices of two arrays, the first l means
-!  !the leftt-most index for the first array, l means the left-most index for the
-!  !sectond array, p1 * left^T * right + p2 * res = res 
-!  !> \author Patrick Ettenhuber
-!  !> \date late 2012
-!  subroutine tensor_contract_outer_indices_ll(p1,left,right,p2,res)
-!    implicit none
-!    !> prefactors for the left*right part and the res part
-!    real(realk),intent(in) :: p1,p2
-!    !> the resulting array
-!    type(tensor),intent(inout) :: res
-!    !> the arrays to be multiplied
-!    type(tensor),intent(in) :: left,right
-!    integer :: i,m,n,k
-!    if(left%dims(1)/=right%dims(1))then
-!      call lsquit("ERROR(tensor_contract_outer_indices_ll):wrong&
-!      &dimensions!!",DECinfo%output)
-!    endif
-!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    !Introduce a lot of dimensionality checks here!!
-!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    do i=2,left%mode
-!      if(left%dims(i)/=res%dims(i-1))then
-!        call lsquit("ERROR(tensor_contract_outer_indices_ll):wrong&
-!        &result (left) dimensions!!",DECinfo%output)
-!      endif
-!    enddo
-!    do i=right%mode,2,-1
-!      if(right%dims(i)/=res%dims(left%mode+i-2))then
-!        call lsquit("ERROR(tensor_contract_outer_indices_ll):wrong&
-!        &result (right) dimensions!!",DECinfo%output)
-!      endif
-!    enddo
-!    if(left%itype==TT_TILED.or.left%itype==TT_TILED_DIST.or.right%itype==TT_TILED&
-!    &.or.right%itype==TT_TILED_DIST)call lsquit("ERROR(tensor_contract_outer_&
-!    &indices_ll):not yet implemented for tiled/PDM",DECinfo%output)
-!
-!    !do that only if type dense --> the other routines are to come
-!    select case(res%itype)
-!      case(TT_DENSE)
-!        m=1
-!        do i=left%mode,2,-1
-!          m=m*left%dims(i)
-!        enddo
-!        n=1
-!        do i=right%mode,2,-1
-!          n=n*right%dims(i)
-!        enddo
-!        k=right%dims(1) 
-!        call dgemm('t','n',m,n,k,p1,left%elm1,k,right%elm1,k,p2,res%elm1,m)
-!      case(TT_REPLICATED)
-!        m=1
-!        do i=left%mode,2,-1
-!          m=m*left%dims(i)
-!        enddo
-!        n=1
-!        do i=right%mode,2,-1
-!          n=n*right%dims(i)
-!        enddo
-!        k=right%dims(1) 
-!        call dgemm('t','n',m,n,k,p1,left%elm1,k,right%elm1,k,p2,res%elm1,m)
-!        if(res%access_type==AT_MASTER_ACCESS)call tensor_sync_replicated(res)
-!      case(TT_TILED)
-!              call lsquit("ERROR(tensor_contract_outer_indices_ll):not yet implemented for tiled",DECinfo%output)
-!      case(TT_TILED_DIST)
-!              call lsquit("ERROR(tensor_contract_outer_indices_ll):not yet implemented for PDM",DECinfo%output)
-!      case default
-!              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
-!    end select
-!    
-!  end subroutine tensor_contract_outer_indices_ll
-!
-!  !> \brief perform a contraction of the outer indices of two arrays, the first l means
-!  !the leftt-most index for the first array, r means the r-most index for the
-!  !sectond array, p1 * left^T * right^T + p2 * res = res 
-!  !> \author Patrick Ettenhuber
-!  !> \date late 2012
-!  subroutine tensor_contract_outer_indices_lr(p1,left,right,p2,res)
-!    implicit none
-!    !> prefactors for the left*right part and the res part
-!    real(realk),intent(in) :: p1,p2
-!    !> the resulting array
-!    type(tensor),intent(inout) :: res
-!    !> the arrays to be multiplied
-!    type(tensor),intent(in) :: left,right
-!    integer :: i,m,n,k
-!    if(left%dims(1)/=right%dims(right%mode))then
-!      call lsquit("ERROR(tensor_contract_outer_indices_lr):wrong&
-!      &contraction dimensions!!",DECinfo%output)
-!    endif
-!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    !Introduce a lot of dimensionality checks here!!
-!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    do i=2,left%mode
-!      if(left%dims(i)/=res%dims(i-1))then
-!        call lsquit("ERROR(tensor_contract_outer_indices_lr):wrong&
-!        &result (left) dimensions!!",DECinfo%output)
-!      endif
-!    enddo
-!    do i=right%mode-1,1,-1
-!      if(right%dims(i)/=res%dims(left%mode+i-1))then
-!        call lsquit("ERROR(tensor_contract_outer_indices_lr):wrong&
-!        &result (right) dimensions!!",DECinfo%output)
-!      endif
-!    enddo
-!    if(left%itype==TT_TILED.or.left%itype==TT_TILED_DIST.or.right%itype==TT_TILED&
-!    &.or.right%itype==TT_TILED_DIST)call lsquit("ERROR(tensor_contract_outer_&
-!    &indices_lr):not yet implemented for tiled/PDM",DECinfo%output)
-!
-!    !do that only if type dense --> the other routines are to come
-!    select case(res%itype)
-!      case(TT_DENSE)
-!        m=1
-!        do i=left%mode,2,-1
-!          m=m*left%dims(i)
-!        enddo
-!        n=1
-!        do i=1,right%mode-1
-!          n=n*right%dims(i)
-!        enddo
-!        k=left%dims(1) 
-!        print *,m,n,k
-!        print *,left%dims
-!        print *,right%dims
-!        print *,res%dims
-!        call dgemm('t','t',m,n,k,p1,left%elm1,k,right%elm1,n,p2,res%elm1,m)
-!      case(TT_REPLICATED)
-!        m=1
-!        do i=left%mode,2,-1
-!          m=m*left%dims(i)
-!        enddo
-!        n=1
-!        do i=1,right%mode-1
-!          n=n*right%dims(i)
-!        enddo
-!        k=left%dims(1) 
-!        print *,m,n,k
-!        print *,left%dims
-!        print *,right%dims
-!        print *,res%dims
-!        call dgemm('t','t',m,n,k,p1,left%elm1,k,right%elm1,n,p2,res%elm1,m)
-!        if(res%access_type==AT_MASTER_ACCESS)call tensor_sync_replicated(res)
-!      case(TT_TILED)
-!              call lsquit("ERROR(tensor_contract_outer_indices_lr):not yet implemented for tiled",DECinfo%output)
-!      case(TT_TILED_DIST)
-!              call lsquit("ERROR(tensor_contract_outer_indices_lr):not yet implemented for PDM",DECinfo%output)
-!      case default
-!              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
-!    end select
-!    
-!  end subroutine tensor_contract_outer_indices_lr
-!
-!  !> \brief perform a contraction of the outer indices of two arrays, the first r means
-!  !the right-most index for the first array, r means the r-most index for the
-!  !sectond array, p1 * left * right^T + p2 * res = res 
-!  !> \author Patrick Ettenhuber
-!  !> \date late 2012
-!  subroutine tensor_contract_outer_indices_rr(p1,left,right,p2,res)
-!    implicit none
-!    !> prefactors for the left*right part and the res part
-!    real(realk),intent(in) :: p1,p2
-!    !> the resulting array
-!    type(tensor),intent(inout) :: res
-!    !> the arrays to be multiplied
-!    type(tensor),intent(in) :: left,right
-!    integer :: i,m,n,k
-!    if(left%dims(left%mode)/=right%dims(right%mode))then
-!      call lsquit("ERROR(tensor_contract_outer_indices_rr):wrong&
-!      &dimensions!!",DECinfo%output)
-!    endif
-!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    !Introduce a lot of dimensionality checks here!!
-!    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!    do i=1,left%mode-1
-!      if(left%dims(i)/=res%dims(i))then
-!        call lsquit("ERROR(tensor_contract_outer_indices_rr):wrong&
-!        &result (left) dimensions!!",DECinfo%output)
-!      endif
-!    enddo
-!    do i=right%mode-1,1,-1
-!      if(right%dims(i)/=res%dims(left%mode+i-1))then
-!        call lsquit("ERROR(tensor_contract_outer_indices_rr):wrong&
-!        &result (right) dimensions!!",DECinfo%output)
-!      endif
-!    enddo
-!    if(left%itype==TT_TILED.or.left%itype==TT_TILED_DIST.or.right%itype==TT_TILED&
-!    &.or.right%itype==TT_TILED_DIST)call lsquit("ERROR(tensor_contract_outer_&
-!    &indices_rr):not yet implemented for tiled/PDM",DECinfo%output)
-!
-!    select case(res%itype)
-!      case(TT_DENSE)
-!        m=1
-!        do i=1,left%mode-1
-!          m=m*left%dims(i)
-!        enddo
-!        n=1
-!        do i=1,right%mode-1
-!          n=n*right%dims(i)
-!        enddo
-!        k=left%dims(left%mode) 
-!        call dgemm('n','t',m,n,k,p1,left%elm1,m,right%elm1,n,p2,res%elm1,m)
-!      case(TT_REPLICATED)
-!        m=1
-!        do i=1,left%mode-1
-!          m=m*left%dims(i)
-!        enddo
-!        n=1
-!        do i=1,right%mode-1
-!          n=n*right%dims(i)
-!        enddo
-!        k=left%dims(left%mode) 
-!        call dgemm('n','t',m,n,k,p1,left%elm1,m,right%elm1,n,p2,res%elm1,m)
-!        if(res%access_type==AT_MASTER_ACCESS)call tensor_sync_replicated(res)
-!      case(TT_TILED)
-!              call lsquit("ERROR(tensor_contract_outer_indices_rr):not yet implemented for tiled",DECinfo%output)
-!      case(TT_TILED_DIST)
-!              call lsquit("ERROR(tensor_contract_outer_indices_rr):not yet implemented for PDM",DECinfo%output)
-!      case default
-!              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
-!    end select
-!    
-!  end subroutine tensor_contract_outer_indices_rr
 
   !> \brief array dotprduct, the arrays may have different distributions
   !> \author Patrick Ettenhuber
@@ -2059,16 +1761,13 @@ contains
 
     case(TT_TILED_DIST)
 
-       !if enough memory is available the lower one should be faster      
        if(arr%access_type==AT_ALL_ACCESS)then
           do i=1,arr%nlti
              call tile_from_fort(1.0E0_realk,fortarr,fullfortdims,arr%mode,&
                 &0.0E0_realk,arr%ti(i)%t,arr%ti(i)%gt,arr%tdim,o)
           enddo
        else
-          !call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
-          call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode,o)
-          !call tensor_scatter(1.0E0_realk,fortarr,0.0E0_realk,arr,nelms,oo=order,wrk=wrk,iwrk=iwrk)
+          call tensor_scatter(1.0E0_realk,fortarr,0.0E0_realk,arr,nelms,oo=o,wrk=wrk,iwrk=iwrk)
        endif
 
     case default
@@ -2197,11 +1896,13 @@ contains
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY UTILITIES !!!!!!!!! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  subroutine tensor_cp_data(from_arr,to_arr,order)
+  subroutine tensor_cp_data(from_arr,to_arr,order,wrk,iwrk)
     implicit none
     type(tensor),intent(inout) :: from_arr
     type(tensor),intent(inout) :: to_arr
     integer, intent(in),optional :: order(to_arr%mode)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
     integer :: i
     real(realk) :: tilemem,MemFree
     integer :: o(from_arr%mode)
@@ -2234,7 +1935,7 @@ contains
                    &0.0E0_realk,to_arr%ti(i)%t,to_arr%ti(i)%gt,to_arr%tdim,o)
              enddo
           else
-             call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode,optorder=o)
+             call tensor_scatter(1.0E0_realk,from_arr%elm1,0.0E0_realk,to_arr,from_arr%nelms,oo=o,wrk=wrk,iwrk=iwrk)
           endif
 
        case default
