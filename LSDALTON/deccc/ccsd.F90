@@ -2939,73 +2939,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            do i=1,tl
               call dcopy(no*nv,w1(fai+i-1),no*nv,w2(i),tl)
            enddo
-        else if(s==2)then
-#ifdef VAR_MPI
-           if(lock_outside)then
-
-              call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-              !call tensor_lock_wins(gvvoo,'s',mode)
-              call tensor_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,.false.)
-              !call tensor_unlock_wins(gvvoo,.true.)
-              if(DECinfo%PL>3.and.master)then
-                 call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time C1:" )
-              else
-                 call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-              endif
-
-           else
-              call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-              call tensor_gather_tilesinfort(gvvoo,w1,int((i8*no)*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
-              do nod=1,nnod-1
-                 call mo_work_dist(no*nv,fri,tri,trafi,nod)
-                 if(trafi)then
-                    if(me==0)then
-                       do i=1,tri
-                          call dcopy(no*nv,w1(fri+i-1),no*nv,w2(i),tri)
-                       enddo
-                    endif
-                    if(me==0.or.me==nod)then
-                       call ls_mpisendrecv(w2(1:no*nv*tri),int((i8*no)*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-                    endif
-                 endif
-              enddo
-              if(me==0.and.traf)then
-                 do i=1,tl
-                    call dcopy(no*nv,w1(fai+i-1),no*nv,w2(i),tl)
-                 enddo
-              endif
-
-              if(DECinfo%PL>3.and.master)then
-                 call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                    & labelttot = "CC comm time C1:" )
-              else
-                 call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-              endif
-
-           endif
-#endif
-        endif
-
-        !SCHEME 2
-        !Reorder govov [k d l c] -> govov [d l c k]
-        if(s==2.and.lock_outside)then
-#ifdef VAR_MPI
-           call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-           call tensor_unlock_wins(omega2,.true.)
-
-           call tensor_lock_wins(govov,'s',mode)
-           call tensor_gather(1.0E0_realk,govov,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
-           call tensor_unlock_wins(govov,.true.)
-
-           if(DECinfo%PL>3.and.master)then
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time C2:" )
-           else
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-           endif
-#endif
         endif
 
         !Reorder t [a d l i] -> t [a i d l]
@@ -3021,64 +2954,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            do i=1,tl
               call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
            enddo
-        else if(s==2)then
-#ifdef VAR_MPI
-
-           if(lock_outside)then
-
-              call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-              call tensor_lock_wins(t2,'s',mode)
-              call tensor_two_dim_1batch(t2,[1,4,2,3],'g',w3,2,fai,tl,lock_outside)
-              call tensor_unlock_wins(t2,.true.)
-           
-              if(DECinfo%PL>3.and.master)then
-                 call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                    & labelttot = "CC comm time C3:" )
-              else
-                 call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-              endif
-
-           else
-
-              call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-              call tensor_gather_tilesinfort(t2,w1,o2v2,infpar%master,[1,4,2,3])
-
-              do nod=1,nnod-1
-
-                 call mo_work_dist(no*nv,fri,tri,trafi,nod)
-
-                 if(trafi)then
-                    if(me==0)then
-                       do i=1,tri
-                          call dcopy(no*nv,w1(fri+i-1),no*nv,w3(i),tri)
-                       enddo
-                    endif
-                    if(me==0.or.me==nod)then
-                       call ls_mpisendrecv(w3(1:no*nv*tri),int((i8*no)*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-                    endif
-                 endif
-
-              enddo
-
-              if(me==0.and.traf)then
-                 do i=1,tl
-                    call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
-                 enddo
-              endif
-
-              call time_start_phase(PHASE_WORK, at = tc )
-
-              if(DECinfo%PL>3.and.master)then
-                 call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                    & labelttot = "CC comm time C3:" )
-              else
-                 call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-              endif
-
-           endif
-#endif
         endif
 
         !stop 0
@@ -3086,13 +2961,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !Reorder govov [k d l c] -> govov [d l c k]
         if(s==3.or.s==4)then
            call array_reorder_4d(1.0E0_realk,govov%elm1,no,nv,no,nv,[2,3,4,1],0.0E0_realk,w1)
-        else if(s==2.and..not.lock_outside)then
-#ifdef VAR_MPI
-           call time_start_phase(PHASE_COMM, at = tw )
-           call tensor_gather_tilesinfort(govov,w1,o2v2,infpar%master,[2,3,4,1])
-           call ls_mpibcast(w1,o2v2,infpar%master,infpar%lg_comm)
-           call time_start_phase(PHASE_WORK, at = tc )
-#endif
         endif
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3117,23 +2985,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
            enddo
            !print *,infpar%lg_mynum,"DGEMM2 -- out",norm2(w1),norm2(w3)
-        else if(s==2)then
-#ifdef VAR_MPI
-           call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-           if(lock_outside)call tensor_lock_wins(t2,'s',mode)
-           call tensor_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2,oo=[1,4,2,3],wrk=w3,iwrk=w3size)
-           if(lock_outside)call tensor_unlock_wins(t2,.true.)
-
-           if(DECinfo%PL>3.and.master)then
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time C4:" )
-           else
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-           endif
-
-           call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
-#endif
         endif
 
 
@@ -3145,38 +2996,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
            !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
            call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
-        else if(s==2)then
-#ifdef VAR_MPI
-           call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-           if(lock_outside)call tensor_lock_wins(omega2,'s',mode)
-           call tensor_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside)
-           if(lock_outside)call tensor_unlock_wins(omega2,.true.)
-
-           if(lock_outside)call tensor_lock_wins(omega2,'s',mode)
-
-           if(DECinfo%PL>3.and.master)then
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time C OM1:" )
-           else
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-           endif
-
-           call dcopy(tlov,w3,1,w2,1)
-           call dscal(tlov,0.5E0_realk,w2,1)
-
-           call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-           call tensor_two_dim_1batch(omega2,[1,3,2,4],'a',w2,2,fai,tl,lock_outside)
-           if(lock_outside)call tensor_unlock_wins(omega2,.true.)
-
-           if(DECinfo%PL>3.and.master)then
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time C OM2:" )
-           else
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-           endif
-#endif
         endif
 
 
@@ -3199,43 +3018,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            do i=1,tl
               call dcopy(no*nv,w1(fai+i-1),no*nv,w2(i),tl)
            enddo
-        else if(s==2)then
-#ifdef VAR_MPI
-           call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-           call tensor_two_dim_1batch(gvoov,[1,4,2,3],'g',w2,2,fai,tl,.false.)
-           call tensor_two_dim_1batch(gvvoo,[1,3,2,4],'g',w3,2,fai,tl,.false.)
-
-           if(DECinfo%PL>3.and.master)then
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time D1:" )
-           else
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-           endif
-
-           call dscal(tl*no*nv,2.0E0_realk,w2,1)
-           call daxpy(tl*no*nv,-1.0E0_realk,w3,1,w2,1)
-#endif
         endif
 
-        !SCHEME 2
-        !(-1) * govov [l c k d] + 2*govov[l d k c] = L [l d k c]
-        if(s==2)then
-#ifdef VAR_MPI
-           call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-           if(lock_outside)call tensor_lock_wins(govov,'s',mode)
-           call tensor_gather_2cme(govov,w1,o2v2,[2,4],wrk=w3,iwrk=w3size)
-           if(lock_outside)call tensor_unlock_wins(govov,.true.)
-
-           if(DECinfo%PL>3.and.master)then
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time D2:" )
-           else
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-           endif
-#endif
-        endif
 
         !Transpose u [d a i l] -> u [a i l d]
         if(s==4)then
@@ -3245,26 +3029,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            do i=1,tl
               call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
            enddo
-        else if(s==2)then
-#ifdef VAR_MPI
-           call get_currently_available_memory(MemFree)
-           call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-           w3 = 0.0E0_realk
-           !if(lock_outside)call tensor_lock_wins(u2,'s',mode)
-           call tensor_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,.false.,&
-              &mem=MemFree,debug=.false.)!,wrk=w3(o2v2+1:w3size),iwrk=(w3size-o2v2))
-           !if(lock_outside)call tensor_unlock_wins(u2,.true.)
-
-           !print *,infpar%lg_mynum,"w3",norm2(w3),fai,tl
-
-           if(DECinfo%PL>3.and.master)then
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time D3:" )
-           else
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-           endif
-#endif
         endif
 
         !SCHEME 3 AND 4, because of the reordering using w1
@@ -3294,23 +3058,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            do i=1,tl
               call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
            enddo
-        else if(s==2)then
-#ifdef VAR_MPI
-           call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-           if(lock_outside)call tensor_lock_wins(u2,'s',mode)
-           call tensor_gather(1.0E0_realk,u2,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
-           if(lock_outside)call tensor_unlock_wins(u2,.true.)
-
-           if(DECinfo%PL>3.and.master)then
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time D4:" )
-           else
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-           endif
-
-           call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
-#endif
         endif
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3319,21 +3066,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! preOmD [a i b j] -> =+ Omega [a b i j]
         if(s==4.or.s==3)then
            call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
-        else if(s==2)then
-#ifdef VAR_MPI
-           call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
-           if(lock_outside)call tensor_lock_wins(omega2,'s',mode)
-           call tensor_two_dim_1batch(omega2,[1,3,2,4],'a',w3,2,fai,tl,lock_outside)
-           if(lock_outside)call tensor_unlock_wins(omega2,.true.)
-
-           if(DECinfo%PL>3.and.master)then
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
-                 & labelttot = "CC comm time D OM :" )
-           else
-              call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b )
-           endif
-#endif
         endif
 
         call mem_dealloc(w2)
