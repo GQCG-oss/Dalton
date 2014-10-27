@@ -1393,7 +1393,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call array_reorder_4d( -1.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
      endif
 
-     if(print_debug) call print_norm(u2," NORM(u2)    :")
+     if(print_debug) call print_norm(u2," NORM(u2)    :",print_on_rank=0)
 
      call mem_alloc(Had,nv*nb)
      call mem_alloc(Gbi,nb*no)
@@ -1537,6 +1537,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(lg_me == 0) tasks(1) = lg_nnod
 
         call lsmpi_win_create(tasks,tasksw,nbatchesGamma,infpar%lg_comm)
+#ifdef VAR_HAVE_MPI3
+        call lsmpi_win_lock_all(tasksw,ass=mode)
+#endif
 
      endif
 
@@ -2085,6 +2088,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if(.not.dynamic_load)then
         call mem_dealloc(tasks)
      else
+#ifdef VAR_HAVE_MPI3
+        call lsmpi_win_unlock_all(tasksw)
+#endif
         call lsmpi_win_free(tasksw)
         call mem_dealloc(tasks,tasksc)
      endif
@@ -2666,9 +2672,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            a=infpar%lg_mynum
          else
            el=1
+#ifdef VAR_HAVE_MPI3
+           call lsmpi_get_acc(el,a,infpar%master,g,win)
+           call lsmpi_win_flush(win,rank = infpar%master, local=.true.)
+#else
            call lsmpi_win_lock(infpar%master,win,'e')
            call lsmpi_get_acc(el,a,infpar%master,g,win)
            call lsmpi_win_unlock(infpar%master,win)
+#endif
          endif
        endif
        if(fr) fr=.false.

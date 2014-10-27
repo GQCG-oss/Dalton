@@ -562,13 +562,13 @@ module lspdm_basic_module
     end subroutine tensor_pdm_free_special_aux
 
     
-    subroutine get_residence_of_tile4(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node)
+    subroutine get_residence_of_tile4(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node,window_index)
        implicit none
        integer(kind=4), intent(out) :: rank_of_node
        type(tensor), intent(in) :: arr
        integer,intent(in) :: globaltilenumber
-       integer, intent(out), optional :: pos_on_node, idx_on_node
-       integer :: nnod, pos, idx
+       integer, intent(out), optional :: pos_on_node, idx_on_node, window_index
+       integer :: nnod, pos, idx,widx
 
        nnod=1
 #ifdef VAR_MPI
@@ -577,20 +577,29 @@ module lspdm_basic_module
 
        rank_of_node = mod(globaltilenumber-1+arr%offset,nnod)
 
-       pos          = (globaltilenumber-1)/nnod + 1
+       if( alloc_in_dummy ) then
+          widx = 1
+          pos  = (globaltilenumber-1)/nnod + 1
+          idx  = 1 + ( pos - 1 ) * arr%tsize
+       else
+          widx = globaltilenumber
+          pos  = 1
+          idx  = 1 
+       endif
 
-       idx          = 1 + ( pos - 1 ) * arr%tsize
+
        !Return the node local index of the tile
-       if(present(pos_on_node)) pos_on_node = pos
-       if(present(idx_on_node)) idx_on_node = idx
+       if(present(pos_on_node))  pos_on_node  = pos
+       if(present(idx_on_node))  idx_on_node  = idx
+       if(present(window_index)) window_index = widx
     end subroutine get_residence_of_tile4
-    subroutine get_residence_of_tile8(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node)
+    subroutine get_residence_of_tile8(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node,window_index)
        implicit none
        integer(kind=8), intent(out) :: rank_of_node
        type(tensor), intent(in) :: arr
        integer,intent(in) :: globaltilenumber
-       integer, intent(out), optional :: pos_on_node, idx_on_node
-       integer :: nnod, pos, idx
+       integer, intent(out), optional :: pos_on_node, idx_on_node,window_index
+       integer :: nnod, pos, idx,widx
 
        nnod=1
 #ifdef VAR_MPI
@@ -599,12 +608,20 @@ module lspdm_basic_module
 
        rank_of_node = mod(globaltilenumber-1+arr%offset,nnod)
 
-       pos          = (globaltilenumber-1)/nnod + 1
+       if( alloc_in_dummy ) then
+          widx = 1
+          pos  = (globaltilenumber-1)/nnod + 1
+          idx  = 1 + ( pos - 1 ) * arr%tsize
+       else
+          widx = globaltilenumber
+          pos  = 1
+          idx  = 1 
+       endif
 
-       idx          = 1 + ( pos - 1 ) * arr%tsize
        !Return the node local index of the tile
        if(present(pos_on_node)) pos_on_node = pos
        if(present(idx_on_node)) idx_on_node = idx
+       if(present(window_index)) window_index = widx
     end subroutine get_residence_of_tile8
 
 
