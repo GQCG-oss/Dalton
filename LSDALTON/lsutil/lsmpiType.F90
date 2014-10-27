@@ -5004,7 +5004,11 @@ contains
     assert = 0
     if(present(ass))assert=ass
 
+#ifdef VAR_HAVE_MPI3
     CALL MPI_WIN_LOCK_ALL(assert,win,ierr)
+#else
+    call lsquit("ERROR(lsmpi_win_lock_all): this routine is MPI 3 only ",-1)
+#endif
 
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_win_lock_all): error in mpi",ierr)
@@ -5020,7 +5024,11 @@ contains
     ierr= 0
 
     sta=MPI_WTIME()
+#ifdef VAR_HAVE_MPI3
     CALL MPI_WIN_UNLOCK_ALL(win,ierr)
+#else
+    call lsquit("ERROR(lsmpi_win_unlock_all): this routine is MPI 3 only ",-1)
+#endif
     sto=MPI_WTIME()
 
     time_lsmpi_win_unlock = time_lsmpi_win_unlock + sto - sta
@@ -6045,7 +6053,11 @@ contains
        call lsquit("ERROR(lsmpi_rget_realkV8): message is too big",-1)
     endif
 
+#ifdef VAR_HAVE_MPI3
     call MPI_RACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,req,ierr)
+#else
+    call lsquit("ERROR(lsmpi_racc_realkV8): this routine is MPI 3 only ",-1)
+#endif
 
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_racc_realkV8)",ierr)
