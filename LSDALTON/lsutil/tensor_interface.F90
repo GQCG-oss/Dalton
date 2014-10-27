@@ -2026,6 +2026,7 @@ contains
     
     if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_fort2arr):array&
        &dimensions are not the same",-1)
+
     select case(arr%itype)
     case(TT_DENSE,TT_REPLICATED)
        if(simpleord)then
@@ -2391,18 +2392,20 @@ contains
     
     norm=0.0d0
     select case(arr%itype)
-      case(TT_DENSE)
-        do i=1,arr%nelms
+    case(TT_DENSE)
+       do i=1,arr%nelms
           norm=norm+arr%elm1(i)*arr%elm1(i)
-        enddo
-      case(TT_TILED)
-        do i=1,arr%nlti
+       enddo
+    case(TT_REPLICATED)
+       norm = tensor_print_norm_repl(arr)
+    case(TT_TILED)
+       do i=1,arr%nlti
           do j=1,arr%ti(i)%e
-            norm=norm + arr%ti(i)%t(j) * arr%ti(i)%t(j)
+             norm=norm + arr%ti(i)%t(j) * arr%ti(i)%t(j)
           enddo
-        enddo
-      case(TT_TILED_DIST)
-        norm=tensor_tiled_pdm_get_nrm2(arr)
+       enddo
+    case(TT_TILED_DIST)
+       norm=tensor_tiled_pdm_get_nrm2(arr)
     end select
 
     if(.not.squareback)norm = sqrt(norm)
