@@ -6153,7 +6153,7 @@ contains
      ierr = 0
 
      sta=MPI_WTIME()
-     call MPI_WAIT(request_handle,lsmpi_status,ierr)
+     call MPI_WAIT(request_handle,MPI_STATUS_IGNORE,ierr)
      sto=MPI_WTIME()
 
      time_lsmpi_wait = time_lsmpi_wait + sto - sta
