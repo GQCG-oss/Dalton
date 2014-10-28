@@ -51,7 +51,7 @@ module ccsdpt_module
 #endif
 
 #ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#ifdef VAR_CUBLAS
   interface
 
      ! cublasCreate
@@ -579,8 +579,6 @@ contains
     real(realk), dimension(nocc,nvirt,nocc,nocc) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
     type(tensor), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
-    real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
-    real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch tiles
     !> ccsd doubles amplitudes
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
@@ -596,6 +594,8 @@ contains
     !> orbital energies
     real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
     !> job distribution
+    real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
+    real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch tiles
     integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
     !> loop integers
@@ -606,9 +606,9 @@ contains
     logical,pointer :: needed(:)
 #ifdef VAR_OPENACC
     ! 6 is the unique number of handles
-    integer(kind=acc_handle_kind), dimension(6) :: async_id
+    integer(kind=acc_handle_kind), dimension(4) :: async_id
 #else
-    integer, dimension(6) :: async_id
+    integer, dimension(4) :: async_id
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
@@ -681,37 +681,36 @@ contains
     async_id(1) = int(1,kind=acc_handle_kind) ! handle for ccsd_doubles
     async_id(2) = int(2,kind=acc_handle_kind) ! handle for integrals
     async_id(3) = int(3,kind=acc_handle_kind) ! handle for ccsd(t) intermediates
-    async_id(4) = int(4,kind=acc_handle_kind) ! handle for ccsd_doubles_portions
-    async_id(5) = int(5,kind=acc_handle_kind) ! handle for generating triples amplitudes
-    async_id(6) = int(6,kind=acc_handle_kind) ! handle for generating ccsd(t) intermediates
+    async_id(4) = int(4,kind=acc_handle_kind) ! handle for device computations
 !
-!    async_id(1) = acc_async_sync 
-!    async_id(2) = acc_async_sync 
-!    async_id(3) = acc_async_sync 
-!    async_id(4) = acc_async_sync 
-!    async_id(5) = acc_async_sync 
-!    async_id(6) = acc_async_sync 
+!    async_id(1) = acc_async_sync
+!    async_id(2) = acc_async_sync
+!    async_id(3) = acc_async_sync
+!    async_id(4) = acc_async_sync
 #else
     async_id(1) = -1
     async_id(2) = -2
     async_id(3) = -3
     async_id(4) = -4
-    async_id(5) = -5
-    async_id(6) = -6
 #endif
 
 #ifdef VAR_CUBLAS
     ! initialize the CUBLAS context
-    stat = cublasCreate_v2 ( cublas_handle )
+    stat = cublasCreate_v2(cublas_handle)
 
     ! Make cublas calls asynchronous on the stream associated with the acc handle
-    stat = cublasSetStream_v2 ( cublas_handle, acc_get_cuda_stream(async_id(4)) )
+    stat = cublasSetStream_v2(cublas_handle,acc_get_cuda_stream(async_id(4)))
 #endif
 
-! copy in orbital energies and create triples amplitudes and work arrays
+!$acc wait
+
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalocc,eivalvirt)
+!$acc& copyin(eivalvirt) if(.not. full_no_frags)
+!
+!$acc enter data create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
+!$acc& copyin(eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
 
 !$acc wait
 
@@ -756,8 +755,8 @@ contains
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(4))
-! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                   call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(4))
@@ -778,12 +777,14 @@ contains
                   call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i),& 
-!$acc& vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
 
-!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                   ! store j index
                   j_old = j
@@ -794,8 +795,8 @@ contains
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(4))
-                     ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
@@ -803,12 +804,6 @@ contains
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
-
-!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-!                     call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
-!#else
-!                     vvvo_pdm_i = vvvo_pdm_j
-!#endif
 
                      call time_start_phase(PHASE_COMM)
 
@@ -821,19 +816,21 @@ contains
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,&
-!$acc& ovoo(:,:,i,j),&
-!$acc& vvoo(:,:,i,j)) async(async_id(2))
+!$acc& ovoo(:,:,i,j)) async(async_id(2))
 
-!$acc enter data copyin(ccsdpt_singles(:,i),&
+!$acc enter data copyin(vvoo(:,:,i,j),&
+!$acc& ccsdpt_singles(:,i),&
 !$acc& ccsdpt_doubles(:,:,i,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
 
                   else ! i .gt. j
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(4))
-                     ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
@@ -855,12 +852,14 @@ contains
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i),&
-!$acc& vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
 
-!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                   end if
 
@@ -873,8 +872,8 @@ contains
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(4))
-                     ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
@@ -895,19 +894,21 @@ contains
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,&
-!$acc& ovoo(:,:,i,j),&
-!$acc& vvoo(:,:,i,j)) async(async_id(2))
+!$acc& ovoo(:,:,i,j)) async(async_id(2))
 
-!$acc enter data copyin(ccsdpt_singles(:,i),&
+!$acc enter data copyin(vvoo(:,:,i,j),&
+!$acc& ccsdpt_singles(:,i),&
 !$acc& ccsdpt_doubles(:,:,i,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
 
                   else ! i .gt. j
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(4))
-                     ! store portions of ccsd_doubles (the i'th and j'th indices) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
@@ -938,12 +939,14 @@ contains
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i),&
-!$acc& vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
 
-!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                   end if
 
@@ -978,8 +981,8 @@ contains
 ! move ccsd_doubles block to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(4))
-                        ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                         call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(4))
@@ -1000,22 +1003,26 @@ contains
                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_k,&
-!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),&
-!$acc& vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
 
-!$acc enter data copyin(ccsdpt_singles(:,k),&
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
+!$acc& ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
 
                      else if ((i .gt. j) .and. (j .eq. k)) then
 
                         ! i > j == k
                         tuple_type = 2
 
-!$acc enter data copyin(ovoo(:,:,j,k),&
-!$acc& vvoo(:,:,j,k)) async(async_id(2))
+!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2))
 
-!$acc enter data copyin(ccsdpt_doubles(:,:,j,k)) async(async_id(3))
+!$acc enter data copyin(vvoo(:,:,j,k),&
+!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
 
                      else
 
@@ -1024,8 +1031,8 @@ contains
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(4))
-                        ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                         call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(4))
@@ -1046,12 +1053,14 @@ contains
                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_k,&
-!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j),&
-!$acc& vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(2))
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
 
-!$acc enter data copyin(ccsdpt_singles(:,k),&
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
+!$acc& ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
 
                      end if
 
@@ -1065,19 +1074,21 @@ contains
 
                      case(1)
 
-!$acc wait(async_id(1),async_id(2),async_id(4),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2)) async(async_id(4))
 
                         call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                 & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_k,&
                                                 & vvvo_pdm_i,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
-                                                & trip_tmp,trip_ampl,async_id(5),cublas_handle)
+                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-!$acc wait(async_id(5)) async(async_id(1))
+!$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
                         if (full_no_frags) then
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                           call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
@@ -1087,10 +1098,14 @@ contains
                         else
 
                            ! generate triples amplitudes from trip arrays
-   
-                           call trip_denom_ijk(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
-   
-!$acc wait(async_id(2),async_id(3),async_id(5)) async(async_id(6))
+
+#ifdef VAR_OPENACC
+                           call trip_denom_ijk_acc(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                           call trip_denom_ijk_cpu(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif   
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                            ! now do the contractions
 
@@ -1100,32 +1115,36 @@ contains
                                                 & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
                                                 & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
                                                 & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
-                                                & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6),cublas_handle)
+                                                & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
                         endif
 
-!$acc wait(async_id(5),async_id(6)) async(async_id(2))
+!$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
-!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),&
-!$acc& vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
 
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data copyout(ccsdpt_singles(:,k),&
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
+!$acc& copyout(ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
 
                      case(2)
 
-!$acc wait(async_id(1),async_id(2),async_id(4),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2)) async(async_id(4))
 
                         call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                 & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_j,&
                                                 & vvvo_pdm_i,vvvo_pdm_j,&
                                                 & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
-                                                & trip_tmp,trip_ampl,async_id(5),cublas_handle)
+                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
                         if (full_no_frags) then
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                           call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
@@ -1136,9 +1155,13 @@ contains
 
                            ! generate triples amplitudes from trip arrays
    
-                           call trip_denom_ijk(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#ifdef VAR_OPENACC
+                           call trip_denom_ijk_acc(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                           call trip_denom_ijk_cpu(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
 
-!$acc wait(async_id(2),async_id(3),async_id(5)) async(async_id(6))
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                            ! now do the contractions
 
@@ -1148,20 +1171,22 @@ contains
                                                 & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
                                                 & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
                                                 & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
-                                                & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,async_id(6),cublas_handle)
+                                                & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
                         endif
 
-!$acc wait(async_id(5),async_id(6)) async(async_id(2))
-!$acc exit data delete(ovoo(:,:,j,k),&
-!$acc& vvoo(:,:,j,k)) async(async_id(2))
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(2))
 
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(3))
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,j,k))&
+!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
 
                      case(3)
 
-!$acc wait(async_id(1),async_id(2),async_id(4),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2)) async(async_id(4))
 
                         call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
                                                 & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
@@ -1171,12 +1196,14 @@ contains
                                                 & vvvo_pdm_j,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
                                                 & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
-                                                & trip_tmp,trip_ampl,async_id(5),cublas_handle)
+                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-!$acc wait(async_id(5)) async(async_id(1))
+!$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
                         if (full_no_frags) then
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                           call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
@@ -1187,10 +1214,14 @@ contains
                         else
 
                            ! generate triples amplitudes from trip arrays
-   
-                           call trip_denom_ijk(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
 
-!$acc wait(async_id(2),async_id(3),async_id(5)) async(async_id(6))
+#ifdef VAR_OPENACC 
+                           call trip_denom_ijk_acc(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                           call trip_denom_ijk_cpu(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                            ! now do the contractions
 
@@ -1204,19 +1235,21 @@ contains
                                                 & ccsdpt_doubles(:,:,j,i),ccsdpt_doubles(:,:,j,k),&
                                                 & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
                                                 & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
-                                                & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6),cublas_handle)
+                                                & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
                         endif
 
-!$acc wait(async_id(5),async_id(6)) async(async_id(2))
+!$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
-!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j),&
-!$acc& vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(2))
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
 
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data copyout(ccsdpt_singles(:,k),&
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!$acc& copyout(ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
 
                      end select TypeOfTuple_par_ijk
 
@@ -1229,33 +1262,37 @@ contains
 
                if (j .eq. i) then
 
-!$acc wait(async_id(5)) async(async_id(1))
+!$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-!$acc wait(async_id(5),async_id(6)) async(async_id(2))
+!$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i,&
-!$acc& ovoo(:,:,i,j),&
-!$acc& vvoo(:,:,i,j)) async(async_id(2))
+!$acc& ovoo(:,:,i,j)) async(async_id(2))
 
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data copyout(ccsdpt_singles(:,i),&
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,j))&
+!$acc& copyout(ccsdpt_singles(:,i),&
 !$acc& ccsdpt_doubles(:,:,i,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
 
                else ! i .gt. j
 
-!$acc wait(async_id(5)) async(async_id(1))
+!$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(5),async_id(6)) async(async_id(2))
+!$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i,vvvo_pdm_j,&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i),&
-!$acc& vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
 
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data copyout(ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
+!$acc& copyout(ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                end if
 
@@ -1266,11 +1303,14 @@ contains
 !$acc wait
 
 !$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalocc,eivalvirt)
+!$acc& eivalvirt) if(.not. full_no_frags)
+!
+!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalvirt) copyout(ccsdpt_singles,e4) if(full_no_frags)
 
 #ifdef VAR_CUBLAS
     ! Destroy the CUBLAS context
-    stat = cublasDestroy_v2 ( cublas_handle )
+    stat = cublasDestroy_v2(cublas_handle)
 #endif
 
     ! release ccsd_doubles_help_arrays
@@ -1572,12 +1612,13 @@ contains
     !> async handles
 #ifdef VAR_OPENACC
     ! 5 is the unique number of handles
-    integer(kind=acc_handle_kind), dimension(4) :: async_id
-    logical :: test
+    integer(kind=acc_handle_kind), dimension(5) :: async_id
+    integer(kind=acc_device_kind) :: acc_device_type
+    integer, target :: stream
 #else
-    integer, dimension(4) :: async_id
+    integer, dimension(5) :: async_id
 #endif
-    type(c_ptr) :: cublas_handle
+    type(c_ptr) :: cublas_handle,cublas_handle_4,cublas_handle_5
     integer*4 :: stat
     real(realk) :: tcpu,twall
 
@@ -1603,93 +1644,108 @@ contains
     async_id(2) = int(2,kind=acc_handle_kind) ! handle for integrals
     async_id(3) = int(3,kind=acc_handle_kind) ! handle for ccsd(t) intermediates
     async_id(4) = int(4,kind=acc_handle_kind) ! handle for device computations
+    async_id(5) = int(5,kind=acc_handle_kind) ! handle for device computations
 !
 !    async_id(1) = acc_async_sync 
 !    async_id(2) = acc_async_sync 
 !    async_id(3) = acc_async_sync 
 !    async_id(4) = acc_async_sync 
+!    async_id(5) = acc_async_sync
 #else
     async_id(1) = -1
     async_id(2) = -2
     async_id(3) = -3
     async_id(4) = -4
+    async_id(5) = -5
+#endif
+
+#ifdef VAR_OPENACC
+
+    ! probe for device type
+    acc_device_type = acc_get_device_type()
+
+    ! initialize the device
+    call acc_init(acc_device_type)
+
 #endif
 
 #ifdef VAR_CUBLAS
-    ! initialize the CUBLAS context
-    stat = cublasCreate_v2 ( cublas_handle )
 
-    ! Make cublas calls asynchronous on the stream associated with the acc handle
-    stat = cublasSetStream_v2 ( cublas_handle, acc_get_cuda_stream(async_id(4)) )
+    ! initialize the CUBLAS context
+    stat = cublasCreate_v2(cublas_handle)
+
 #endif
 
-! copy in orbital energies and create triples amplitudes and work arrays
-!
+!$acc wait
+
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalvirt) if(.not. full_no_frags)
+!$acc& copyin(eivalvirt,eivalocc) if(.not. full_no_frags)
 ! 
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
+!$acc& copyin(eivalvirt,eivalocc,ccsdpt_singles,e4) if(full_no_frags)
 
 !$acc wait
 
  irun_ser: do i=1,nocc
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
-
-!$acc wait(async_id(1)) async(async_id(4))
+!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1)) wait(async_id(4))
 
              ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
              call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
+                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4),async_id(1))
 #else
              call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-!$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2))
+!$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
 !$acc enter data copyin(ccsdpt_singles(:,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
     jrun_ser: do j=1,i
 
                  if (j .eq. i) then 
 
-!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(2))
-
-!$acc enter data copyin(vvoo(:,:,i,j),&
-!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
+!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
 !
-!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
+!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
+
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),&
+!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                  else ! i .gt. j
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,j)) async(async_id(1))
-
-!$acc wait(async_id(1)) async(async_id(4))
+!$acc enter data copyin(ccsd_doubles(:,:,:,j)) wait(async_id(4)) async(async_id(1))
 
                     ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(4))
+                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(4),async_id(1))
 #else
                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
 !$acc enter data copyin(vvvo(:,:,:,j),&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(vvvo(:,:,:,j),&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
 !$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
 !$acc& ccsdpt_singles(:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                  end if
 
@@ -1709,59 +1765,66 @@ contains
                        ! i == j > k
                        tuple_type = 1
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1)) wait(async_id(4))
 
 !$acc enter data copyin(vvvo(:,:,:,k),&
-!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
 !$acc& ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                     else if ((i .gt. j) .and. (j .eq. k)) then
 
                        ! i > j == k
                        tuple_type = 2
 
-!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2))
-
-!$acc enter data copyin(vvoo(:,:,j,k),&
-!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
+!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
 !
-!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
+!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
+
+!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,j,k),&
+!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                     else
 
                        ! i > j > k 
                        tuple_type = 3
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1)) wait(async_id(4))
 
 !$acc enter data copyin(vvvo(:,:,:,k),&
-!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!$acc& async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
 !$acc& ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
 !$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                     end if
 
                     ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
                     if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
 
-!$acc wait(async_id(1)) async(async_id(4))
-
                        ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                        call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(4))
+                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(4),async_id(1))
 #else
                        call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
@@ -1774,7 +1837,12 @@ contains
     
                     case(1)
 
-!$acc wait(async_id(1),async_id(2)) async(async_id(4))
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
+
+#ifdef VAR_CUBLAS
+                       stream = acc_get_cuda_stream(async_id(4))
+                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
                        call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
@@ -1783,27 +1851,39 @@ contains
                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-!$acc wait(async_id(4)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(4)) wait(async_id(1))
+
+!$acc exit data delete(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
 
                        if (full_no_frags) then
 
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
                           call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
-                                               & e4,async_id(4),cublas_handle)
+                                               & e4,async_id(5),cublas_handle)
  
                        else
 
-                          ! generate triples amplitudes from trip arrays
-       
-                          call trip_denom_ijk(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
-       
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-                          ! now do the contractions
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
+
+#ifdef VAR_OPENACC 
+                          call trip_denom_ijk_acc(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                          call trip_denom_ijk_cpu(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
  
                           call ccsdpt_driver_ijk_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
@@ -1811,25 +1891,28 @@ contains
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
                                                & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
                                                & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
-                                               & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(4),cublas_handle)
+                                               & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(5),cublas_handle)
 
                        endif
 
-!$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo(:,:,:,k),&
-!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
 !$acc& copyout(ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 
                     case(2)
 
-!$acc wait(async_id(1),async_id(2)) async(async_id(4))
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
+
+#ifdef VAR_CUBLAS
+                       stream = acc_get_cuda_stream(async_id(4))
+                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
                        call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
@@ -1838,24 +1921,36 @@ contains
                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
+!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
+
                        if (full_no_frags) then
 
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
                           call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-                                               & e4,async_id(4),cublas_handle)
+                                               & e4,async_id(5),cublas_handle)
 
                        else
 
-                          ! generate triples amplitudes from trip arrays
-       
-                          call trip_denom_ijk(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
-    
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-                          ! now do the contractions
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
+
+#ifdef VAR_OPENACC       
+                          call trip_denom_ijk_acc(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else    
+                          call trip_denom_ijk_cpu(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
 
                           call ccsdpt_driver_ijk_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
@@ -1863,22 +1958,25 @@ contains
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
                                                & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
                                                & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
-                                               & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,async_id(4),cublas_handle)
+                                               & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,async_id(5),cublas_handle)
 
                        endif
 
-!$acc wait(async_id(4)) async(async_id(2))
-!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(2))
+!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc wait(async_id(4)) async(async_id(3))
-!$acc exit data delete(vvoo(:,:,j,k))&
-!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
+!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
 !
-!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
+!$acc exit data delete(vvoo(:,:,j,k))&
+!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 
                     case(3)
 
-!$acc wait(async_id(1),async_id(2)) async(async_id(4))
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
+
+#ifdef VAR_CUBLAS
+                       stream = acc_get_cuda_stream(async_id(4))
+                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
                        call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
                                                & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
@@ -1890,28 +1988,40 @@ contains
                                                & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-!$acc wait(async_id(4)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(4)) wait(async_id(1))
+
+!$acc exit data delete(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
 
                        if (full_no_frags) then
 
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
                           call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
                                                & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
-                                               & e4,async_id(4),cublas_handle)
+                                               & e4,async_id(5),cublas_handle)
 
                        else
 
-                          ! generate triples amplitudes from trip arrays
-       
-                          call trip_denom_ijk(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
-    
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-                          ! now do the contractions
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
+
+#ifdef VAR_OPENACC       
+                          call trip_denom_ijk_acc(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                          call trip_denom_ijk_cpu(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif    
 
                           call ccsdpt_driver_ijk_case3(i,j,k,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
                                                & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),ovoo(:,:,i,j),&
@@ -1922,21 +2032,20 @@ contains
                                                & ccsdpt_doubles(:,:,j,i),ccsdpt_doubles(:,:,j,k),&
                                                & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
                                                & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
-                                               & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(4),cublas_handle)
+                                               & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(5),cublas_handle)
 
                        endif
 
-!$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo(:,:,:,k),&
-!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc wait(async_id(4)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
 !$acc& copyout(ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 !
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!$acc& async(async_id(5)) wait(async_id(3)) if(full_no_frags)
 
                     end select TypeOfTuple_ser_ijk
 
@@ -1944,58 +2053,72 @@ contains
 
                  if (j .eq. i) then
 
-!$acc wait(async_id(4)) async(async_id(2))
-!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(2))
-!$acc wait(async_id(4)) async(async_id(3))
-!$acc exit data delete(vvoo(:,:,i,j))&
-!$acc& copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
+!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
 !
-!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
+!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
+
+!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,j))&
+!$acc& copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 
                  else ! i .gt. j
 
-!$acc wait(async_id(4)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,j)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,j)) async(async_id(4)) wait(async_id(1))
 
-!$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo(:,:,:,j),&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
+!
+!$acc exit data delete(vvvo(:,:,:,j),&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!
 !$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
 !$acc& copyout(ccsdpt_singles(:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 
                  end if
  
               end do jrun_ser
 
-!$acc wait(async_id(4)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(4)) wait(async_id(1))
 
-!$acc wait(async_id(4)) async(async_id(2))
-!$acc exit data delete(vvvo(:,:,:,i)) async(async_id(2))
+!$acc exit data delete(vvvo(:,:,:,i)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
+!
+!$acc exit data delete(vvvo(:,:,:,i)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc wait(async_id(4)) async(async_id(3))
 !$acc exit data copyout(ccsdpt_singles(:,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 
            end do irun_ser
 
-!$acc wait 
+!$acc wait
 
-!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalvirt) if(.not. full_no_frags)
+!$acc exit data delete(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalvirt,eivalocc) if(.not. full_no_frags)
 !
-!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalvirt) copyout(ccsdpt_singles,e4) if(full_no_frags)
+!$acc exit data delete(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalvirt,eivalocc)&
+!$acc& copyout(ccsdpt_singles,e4) if(full_no_frags)
+
+!$acc wait
 
 #ifdef VAR_CUBLAS
+
     ! Destroy the CUBLAS context
-    stat = cublasDestroy_v2 ( cublas_handle )
+    stat = cublasDestroy_v2(cublas_handle)
+
+#endif
+
+#ifdef VAR_OPENACC
+
+    ! shut down the device
+    call acc_shutdown(acc_device_type)
+
 #endif
 
     ! release ccsd_doubles_help_arrays
@@ -2118,10 +2241,10 @@ contains
 
 #ifdef VAR_CUBLAS
     ! initialize the CUBLAS context
-    stat = cublasCreate_v2 ( cublas_handle )
+    stat = cublasCreate_v2(cublas_handle)
 
     ! Make cublas calls asynchronous on the stream associated with the acc handle
-    stat = cublasSetStream_v2 ( cublas_handle, acc_get_cuda_stream(async_id(4)) )
+    stat = cublasSetStream_v2(cublas_handle,c_loc(acc_get_cuda_stream(async_id(4))))
 #endif
 
     do a_tile = 1,nvirt,tile_size
@@ -2262,10 +2385,12 @@ contains
          
                          else
 
-                            ! generate triples amplitudes from trip arrays
-            
-                            call trip_denom_abc(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
-            
+#ifdef VAR_OPENACC
+                            call trip_denom_abc_acc(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                            call trip_denom_abc_cpu(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+       
                             ! now do the contractions
             
                             call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv(:,:,a,a),oovv(:,:,a,c),oovv(:,:,c,a),&
@@ -2296,8 +2421,12 @@ contains
                          else
  
                             ! generate triples amplitudes from trip arrays
-            
-                            call trip_denom_abc(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+
+#ifdef VAR_OPENACC            
+                            call trip_denom_abc_acc(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                            call trip_denom_abc_cpu(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
             
                             ! now do the contractions
             
@@ -2334,8 +2463,12 @@ contains
                          else
  
                             ! generate triples amplitudes from trip arrays
-            
-                            call trip_denom_abc(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+
+#ifdef VAR_OPENACC            
+                            call trip_denom_abc_acc(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                            call trip_denom_abc_cpu(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
             
                             ! now do the contractions
             
@@ -2436,6 +2569,7 @@ contains
 #ifdef VAR_OPENACC
     ! 9 is the unique number of handles
     integer(kind=acc_handle_kind), dimension(4) :: async_id
+    integer, target :: stream
 #else
     integer, dimension(4) :: async_id
 #endif
@@ -2479,21 +2613,22 @@ contains
 
 #ifdef VAR_CUBLAS
     ! initialize the CUBLAS context
-    stat = cublasCreate_v2 ( cublas_handle )
+    stat = cublasCreate_v2(cublas_handle)
 
     ! Make cublas calls asynchronous on the stream associated with the acc handle
-    stat = cublasSetStream_v2 ( cublas_handle, acc_get_cuda_stream(async_id(4)) )
+    stream = acc_get_cuda_stream(async_id(4))
+    stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
 #endif
 
 ! copy in orbital energies and create triples amplitudes and work arrays
 !
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
-!$acc& copyin(eivalocc) if(.not. full_no_frags)
+!$acc& copyin(eivalocc,eivalvirt) if(.not. full_no_frags)
 !
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
-!$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
+!$acc& copyin(eivalocc,eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
 
 !$acc wait
 
@@ -2656,9 +2791,13 @@ contains
                 else
 
                    ! generate triples amplitudes from trip arrays
-   
-                   call trip_denom_abc(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
-   
+
+#ifdef VAR_OPENACC   
+                   call trip_denom_abc_acc(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                   call trip_denom_abc_cpu(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+
 !$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                    ! now do the contractions
@@ -2707,9 +2846,13 @@ contains
                 else
 
                    ! generate triples amplitudes from trip arrays
-   
-                   call trip_denom_abc(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
-   
+
+#ifdef VAR_OPENACC   
+                   call trip_denom_abc_acc(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else   
+                   call trip_denom_abc_cpu(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+
 !$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                    ! now do the contractions
@@ -2761,8 +2904,12 @@ contains
                 else
 
                    ! generate triples amplitudes from trip arrays
-   
-                   call trip_denom_abc(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+
+#ifdef VAR_OPENACC  
+                   call trip_denom_abc_acc(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                   call trip_denom_abc_cpu(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
 
 !$acc wait(async_id(2),async_id(3)) async(async_id(4))
    
@@ -2843,10 +2990,10 @@ contains
 !$acc wait
 
 !$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c,&
-!$acc& eivalocc) if(.not. full_no_frags)
+!$acc& eivalocc,eivalvirt) if(.not. full_no_frags)
 !
 !$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c,&
-!$acc& eivalocc) copyout(ccsdpt_singles,e4) if(full_no_frags)
+!$acc& eivalocc,eivalvirt) copyout(ccsdpt_singles,e4) if(full_no_frags)
 
 #ifdef VAR_CUBLAS
     ! Destroy the CUBLAS context
@@ -2876,11 +3023,11 @@ contains
     !> njobs and nocc
     integer, intent(in) :: o1,o2,o3,no,nv
     !> trip arrays
-    real(realk), dimension(nv,nv,nv), intent(inout) :: trip_ampl,trip_tmp
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip_ampl,trip_tmp
     !> orbital energies
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     !> e4 energy
-    real(realk), intent(inout) :: e4
+    real(realk), target, intent(inout) :: e4
     !> ccsd(t) singles amplitudes
     real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_3
     !> tiles of vvoo integrals
@@ -2900,28 +3047,26 @@ contains
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
     ! see the ccsdpt_driver_ijk_case1 routine 
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_tmp = trip_ampl
 !$acc end kernels
 #endif
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_tmp = trip_ampl
-!$acc end kernels
-#endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -2950,14 +3095,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -2981,14 +3130,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3029,11 +3182,11 @@ contains
     !> njobs and nocc
     integer, intent(in) :: v1,v2,v3,no,nv
     !> trip arrays
-    real(realk), dimension(no,no,no), intent(inout) :: trip_ampl,trip_tmp
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip_ampl,trip_tmp
     !> orbital energies
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     !> e4 energy
-    real(realk), intent(inout) :: e4
+    real(realk), target, intent(inout) :: e4
     !> ccsd(t) singles amplitudes
     real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_3
     !> tiles of vvoo integrals
@@ -3053,28 +3206,26 @@ contains
     ! for explanations on the calls to ccsdpt_contract_abc_11/12,
     ! see the ccsdpt_driver_abc_case1 routine 
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_tmp = trip_ampl
 !$acc end kernels
 #endif
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_tmp = trip_ampl
-!$acc end kernels
-#endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3103,14 +3254,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3134,14 +3289,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3180,11 +3339,11 @@ contains
     !> njobs and nocc
     integer, intent(in) :: o1,o2,o3,no,nv
     !> trip arrays
-    real(realk), dimension(nv,nv,nv), intent(inout) :: trip_ampl,trip_tmp
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip_ampl,trip_tmp
     !> orbital energies
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     !> e4 energy
-    real(realk), intent(inout) :: e4
+    real(realk), target, intent(inout) :: e4
     !> ccsd(t) singles amplitudes
     real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_2
     !> tiles of vvoo integrals
@@ -3204,28 +3363,26 @@ contains
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
     ! see the ccsdpt_driver_ijk_case2 routine 
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_tmp = trip_ampl
 !$acc end kernels
 #endif
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_tmp = trip_ampl
-!$acc end kernels
-#endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3254,14 +3411,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3290,14 +3451,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3331,11 +3496,11 @@ contains
     !> njobs and nocc
     integer, intent(in) :: v1,v2,v3,no,nv
     !> trip arrays
-    real(realk), dimension(no,no,no), intent(inout) :: trip_ampl,trip_tmp
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip_ampl,trip_tmp
     !> orbital energies
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     !> e4 energy
-    real(realk), intent(inout) :: e4
+    real(realk), target, intent(inout) :: e4
     !> ccsd(t) singles amplitudes
     real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_2
     !> tiles of vvoo integrals
@@ -3355,28 +3520,26 @@ contains
     ! for explanations on the calls to ccsdpt_contract_abc_11/12,
     ! see the ccsdpt_driver_abc_case2 routine 
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_tmp = trip_ampl
 !$acc end kernels
 #endif
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_tmp = trip_ampl
-!$acc end kernels
-#endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3405,14 +3568,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3441,14 +3608,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3482,11 +3653,11 @@ contains
     !> njobs and nocc
     integer, intent(in) :: o1,o2,o3,no,nv
     !> trip arrays
-    real(realk), dimension(nv,nv,nv), intent(inout) :: trip_ampl,trip_tmp
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip_ampl,trip_tmp
     !> orbital energies
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     !> e4 energy
-    real(realk), intent(inout) :: e4
+    real(realk), target, intent(inout) :: e4
     !> ccsd(t) singles amplitudes
     real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3
     !> tiles of vvoo integrals
@@ -3507,28 +3678,26 @@ contains
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
     ! see the ccsdpt_driver_ijk_case3 routine 
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_tmp = trip_ampl
 !$acc end kernels
 #endif
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_tmp = trip_ampl
-!$acc end kernels
-#endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,8.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3557,14 +3726,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3593,14 +3766,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3629,14 +3806,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,2,1],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3665,14 +3846,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[1,3,2],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3701,14 +3886,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,1,3],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
@@ -3747,11 +3936,11 @@ contains
     !> njobs and nocc
     integer, intent(in) :: v1,v2,v3,no,nv
     !> trip arrays
-    real(realk), dimension(no,no,no), intent(inout) :: trip_ampl,trip_tmp
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip_ampl,trip_tmp
     !> orbital energies
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     !> e4 energy
-    real(realk), intent(inout) :: e4
+    real(realk), target, intent(inout) :: e4
     !> ccsd(t) singles amplitudes
     real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3
     !> tiles of vvoo integrals
@@ -3772,28 +3961,26 @@ contains
     ! for explanations on the calls to ccsdpt_contract_abc_11/12,
     ! see the ccsdpt_driver_abc_case3 routine 
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_tmp = trip_ampl
 !$acc end kernels
 #endif
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_tmp = trip_ampl
-!$acc end kernels
-#endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,8.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3822,14 +4009,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3858,14 +4049,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3894,14 +4089,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[3,2,1],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3930,14 +4129,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[1,3,2],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -3966,14 +4169,18 @@ contains
     call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[2,1,3],0.0E0_realk,trip_ampl)
 #endif
 
-    call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_tmp,trip_ampl,e4)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
@@ -4244,14 +4451,8 @@ contains
     call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_portions_1,&
                             & ovoo_tile_13,trip_tmp,async_idx,cublas_handle)
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_ampl = trip_tmp
-!$acc end kernels
-#endif
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
@@ -4340,14 +4541,8 @@ contains
     call trip_amplitudes_abc_virt(vindex1,vindex3,vindex1,no,nv,ccsd_doubles_portions_1,&
                             & vovv_tile_13,trip_tmp,async_idx,cublas_handle)
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_ampl = trip_tmp
-!$acc end kernels
-#endif
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
@@ -4434,14 +4629,8 @@ contains
     call trip_amplitudes_ijk_occ(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_portions_2,&
                             & ovoo_tile_12,trip_tmp,async_idx,cublas_handle)
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_ampl = trip_tmp
-!$acc end kernels
-#endif
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
@@ -4530,14 +4719,8 @@ contains
     call trip_amplitudes_abc_virt(vindex2,vindex2,vindex1,no,nv,ccsd_doubles_portions_2,&
                             & vovv_tile_12,trip_tmp,async_idx,cublas_handle)
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_ampl = trip_tmp
-!$acc end kernels
-#endif
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
@@ -6142,9 +6325,9 @@ contains
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
-    real(realk), dimension(nv,nv), intent(in) :: doub_ampl_v2
-    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
+    real(realk), dimension(nv,nv,nv), target, intent(in) :: int_virt_tile
+    real(realk), dimension(nv,nv), target, intent(in) :: doub_ampl_v2
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -6152,22 +6335,18 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-    !> temporary quantities
-    integer :: nv2
-
-    nv2 = nv**2
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
+    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
 !    call dgemm_acc('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                       & 0.0E0_realk,trip,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv2,kind=4),int(nv,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                           & 1.0E0_realk,c_loc(doub_ampl_v2),int(nv,kind=4),c_loc(int_virt_tile),int(nv,kind=4),&
                           & 0.0E0_realk,c_loc(trip),int(nv,kind=4))
 !$acc end host_data
@@ -6179,7 +6358,7 @@ contains
 
 #endif
 #else
-    call dgemm('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
+    call dgemm('t','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                    & 0.0E0_realk,trip,nv)
 #endif
 
@@ -6195,9 +6374,9 @@ contains
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(no,no,no), intent(in) :: int_occ_tile
-    real(realk), dimension(no,no), intent(in) :: doub_ampl_o2
-    real(realk), dimension(no,no,no), intent(inout) :: trip
+    real(realk), dimension(no,no,no), target, intent(in) :: int_occ_tile
+    real(realk), dimension(no,no), target, intent(in) :: doub_ampl_o2
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -6205,21 +6384,17 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-    !> temporary quantities
-    integer :: no2
-
-    no2 = no**2
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(doub_ampl_o2,int_occ_tile,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',no,no2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
+    call dgemm_acc_openacc_async(async_idx,'t','n',no,no**2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
                    & 0.0E0_realk,trip,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(doub_ampl_o2,int_occ_tile,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no2,kind=4),int(no,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no**2,kind=4),int(no,kind=4),&
                           & -1.0E0_realk,c_loc(doub_ampl_o2),int(no,kind=4),c_loc(int_occ_tile),int(no,kind=4),&
                           & 0.0E0_realk,c_loc(trip),int(no,kind=4))
 !$acc end host_data
@@ -6231,7 +6406,7 @@ contains
 
 #endif
 #else
-    call dgemm('t','n',no,no2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
+    call dgemm('t','n',no,no**2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
                    & 0.0E0_realk,trip,no)
 #endif
 
@@ -6252,9 +6427,9 @@ contains
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(no,nv), intent(in) :: int_occ_portion
-    real(realk), dimension(no,nv,nv), intent(in) :: doub_ampl_ov2
-    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
+    real(realk), dimension(no,nv), target, intent(in) :: int_occ_portion
+    real(realk), dimension(no,nv,nv), target, intent(in) :: doub_ampl_ov2
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -6262,22 +6437,18 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-    !> temporary quantities
-    integer :: nv2
-
-    nv2 = nv**2
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
 !    call dgemm_acc('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
                       & 1.0E0_realk,trip,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv2,kind=4),int(no,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(no,kind=4),&
                           & -1.0E0_realk,c_loc(int_occ_portion),int(no,kind=4),c_loc(doub_ampl_ov2),int(no,kind=4),&
                           & 1.0E0_realk,c_loc(trip),int(nv,kind=4))
 !$acc end host_data
@@ -6289,7 +6460,7 @@ contains
 
 #endif
 #else
-    call dgemm('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+    call dgemm('t','n',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
                    & 1.0E0_realk,trip,nv)
 #endif
 
@@ -6305,9 +6476,9 @@ contains
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(nv,no), intent(in) :: int_virt_portion
-    real(realk), dimension(nv,no,no), intent(in) :: doub_ampl_vo2
-    real(realk), dimension(no,no,no), intent(inout) :: trip
+    real(realk), dimension(nv,no), target, intent(in) :: int_virt_portion
+    real(realk), dimension(nv,no,no), target, intent(in) :: doub_ampl_vo2
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -6315,20 +6486,17 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-    integer :: no2
-
-    no2 = no**2
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_portion,doub_ampl_vo2,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',no,no2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,nv,&
+    call dgemm_acc_openacc_async(async_idx,'t','n',no,no**2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,nv,&
                    & 1.0E0_realk,trip,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_virt_portion,doub_ampl_vo2,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no2,kind=4),int(nv,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no**2,kind=4),int(nv,kind=4),&
                           & 1.0E0_realk,c_loc(int_virt_portion),int(nv,kind=4),c_loc(doub_ampl_vo2),int(nv,kind=4),&
                           & 1.0E0_realk,c_loc(trip),int(no,kind=4))
 !$acc end host_data
@@ -6340,7 +6508,7 @@ contains
 
 #endif
 #else
-    call dgemm('t','n',no,no2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,nv,&
+    call dgemm('t','n',no,no**2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,nv,&
                    & 1.0E0_realk,trip,no)
 #endif
 
@@ -6353,7 +6521,7 @@ contains
   !> \param: no and nv are nocc and nvirt, respectively
   !> \param: eigenocc and eigenvirt are vectors containing occupied and virtual orbital energies, respectively
   !> \param: amplitudes are the final triples amplitude tuple [a,b,c], that is, of the size (virt)³ kept in memory
-  subroutine trip_denom_ijk(oindex1,oindex2,oindex3,no,nv,eigenocc,eigenvirt,trip,async_idx)
+  subroutine trip_denom_ijk_cpu(oindex1,oindex2,oindex3,no,nv,eigenocc,eigenvirt,trip)
 
     implicit none
     !> input
@@ -6361,54 +6529,69 @@ contains
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     real(realk), dimension(nv,nv,nv), intent(inout) :: trip
     !> temporary quantities
-    integer :: trip_type, a, b, c
-    real(realk) :: e_orb, e_orb_occ
-#ifdef VAR_OPENACC
-    integer(kind=acc_handle_kind) :: async_idx
-#else
-    integer :: async_idx
-#endif
+    integer :: a, b, c
+    real(realk) :: e_orb_occ
 
     ! at first, calculate the sum of the three participating occupied orbital energies, as this
     ! is a constant for the three incomming occupied indices
 
     e_orb_occ = eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3)
 
-#ifdef VAR_OPENACC
-!$acc parallel present(trip,eigenvirt) copyin(e_orb_occ) async(async_idx)
-!$acc loop gang
-#else
 !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c),SHARED(nv,trip,eigenvirt,e_orb_occ)
-#endif
  arun_0: do a=1,nv
-#ifdef VAR_OPENACC
-!$acc loop worker
-#endif
     brun_0: do b=1,nv
-#ifdef VAR_OPENACC
-!$acc loop vector
-#endif
        crun_0: do c=1,nv
 
                   trip(c,b,a) = trip(c,b,a) / (e_orb_occ - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
 
                end do crun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
             end do brun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
          end do arun_0
+!$OMP END PARALLEL DO
+
+  end subroutine trip_denom_ijk_cpu
+
+
 #ifdef VAR_OPENACC
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2012
+  !> \param: oindex1, oindex2, and oindex3 are the three occupied indices of the outer loop in the ccsd(t) driver
+  !> \param: no and nv are nocc and nvirt, respectively
+  !> \param: eigenocc and eigenvirt are vectors containing occupied and virtual orbital energies, respectively
+  !> \param: amplitudes are the final triples amplitude tuple [a,b,c], that is, of the size (virt)³ kept in memory
+  subroutine trip_denom_ijk_acc(oindex1,oindex2,oindex3,no,nv,eigenocc,eigenvirt,trip,async_idx)
+
+    implicit none
+    !> input
+    integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
+    !> temporary quantities
+    integer :: a, b, c
+    integer(kind=acc_handle_kind) :: async_idx
+
+!$acc parallel present(trip,eigenvirt,eigenocc) firstprivate(nv,oindex1,oindex2,oindex3) &
+!$acc& private(a,b,c) async(async_idx)
+!$acc loop gang
+ arun_0: do a=1,nv
+!$acc loop worker
+    brun_0: do b=1,nv
+!$acc loop vector
+       crun_0: do c=1,nv
+
+                  trip(c,b,a) = trip(c,b,a) / (eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3) &
+                                             & - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
+
+               end do crun_0
+!$acc end loop
+            end do brun_0
+!$acc end loop
+         end do arun_0
 !$acc end loop
 !$acc end parallel
-#else
-!$OMP END PARALLEL DO
-#endif
 
-  end subroutine trip_denom_ijk
+  end subroutine trip_denom_ijk_acc
+#endif
 
 
   !> \author: Janus Juul Eriksen
@@ -6417,7 +6600,7 @@ contains
   !> \param: no and nv are nocc and nvirt, respectively
   !> \param: eigenocc and eigenvirt are vectors containing occupied and virtual orbital energies, respectively
   !> \param: amplitudes are the final triples amplitude tuple [i,j,k], that is, of the size (occ)³ kept in memory
-  subroutine trip_denom_abc(vindex1,vindex2,vindex3,no,nv,eigenocc,eigenvirt,trip,async_idx)
+  subroutine trip_denom_abc_cpu(vindex1,vindex2,vindex3,no,nv,eigenocc,eigenvirt,trip)
 
     implicit none
     !> input
@@ -6425,54 +6608,69 @@ contains
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     real(realk), dimension(no,no,no), intent(inout) :: trip
     !> temporary quantities
-    integer :: trip_type, i, j, k
-    real(realk) :: e_orb, e_orb_virt
-#ifdef VAR_OPENACC
-    integer(kind=acc_handle_kind) :: async_idx
-#else
-    integer :: async_idx
-#endif
+    integer :: i, j, k
+    real(realk) :: e_orb_virt
 
     ! at first, calculate the sum of the three participating virtual orbital energies, as this
     ! is a constant for the three incomming occupied indices
 
     e_orb_virt = eigenvirt(vindex1) + eigenvirt(vindex2) + eigenvirt(vindex3)
 
-#ifdef VAR_OPENACC
-!$acc parallel present(trip,eigenocc) copyin(e_orb_virt) async(async_idx)
-!$acc loop gang
-#else
 !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,j,k),SHARED(no,trip,eigenocc,e_orb_virt)
-#endif
  irun_0: do i=1,no
-#ifdef VAR_OPENACC
-!$acc loop worker
-#endif
     jrun_0: do j=1,no
-#ifdef VAR_OPENACC
-!$acc loop vector
-#endif
        krun_0: do k=1,no
 
                   trip(k,j,i) = trip(k,j,i) / (eigenocc(i) + eigenocc(j) + eigenocc(k) - e_orb_virt)
 
                end do krun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
             end do jrun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
          end do irun_0
+!$OMP END PARALLEL DO
+
+  end subroutine trip_denom_abc_cpu
+
+
 #ifdef VAR_OPENACC
+  !> \author: Janus Juul Eriksen
+  !> \date: april 2014
+  !> \param: vindex1, vindex2, and vindex3 are the three virtual indices of the outer loop in the ccsd(t) driver
+  !> \param: no and nv are nocc and nvirt, respectively
+  !> \param: eigenocc and eigenvirt are vectors containing occupied and virtual orbital energies, respectively
+  !> \param: amplitudes are the final triples amplitude tuple [i,j,k], that is, of the size (occ)³ kept in memory
+  subroutine trip_denom_abc_acc(vindex1,vindex2,vindex3,no,nv,eigenocc,eigenvirt,trip,async_idx)
+
+    implicit none
+    !> input
+    integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    real(realk), dimension(no,no,no), intent(inout) :: trip
+    !> temporary quantities
+    integer :: i, j, k
+    integer(kind=acc_handle_kind) :: async_idx
+
+!$acc parallel present(trip,eigenocc,eigenvirt) firstprivate(no,vindex1,vindex2,vindex3)&
+!$acc& private(i,j,k) async(async_idx)
+!$acc loop gang
+ irun_0: do i=1,no
+!$acc loop worker
+    jrun_0: do j=1,no
+!$acc loop vector
+       krun_0: do k=1,no
+
+                  trip(k,j,i) = trip(k,j,i) / (eigenocc(i) + eigenocc(j) + eigenocc(k) &
+                                            & - eigenvirt(vindex1) - eigenvirt(vindex2) - eigenvirt(vindex3))
+
+               end do krun_0
+!$acc end loop
+            end do jrun_0
+!$acc end loop
+         end do irun_0
 !$acc end loop
 !$acc end parallel
-#else
-!$OMP END PARALLEL DO
-#endif
 
-  end subroutine trip_denom_abc
+  end subroutine trip_denom_abc_acc
+#endif
 
 
   !> brief: do the first of the two contraction over 'cdkl' (here: 'c' and 'd', 'k' and 'l' are summations in driver routine)
@@ -6487,12 +6685,12 @@ contains
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv, no
-    real(realk), dimension(nv) :: T_star_o1 ! T_star(:,oinedx1)
-    real(realk), dimension(nv,nv) :: int_normal_23, int_normal_32
-    real(realk), dimension(nv,nv,nv) :: trip_ampl
+    real(realk), dimension(nv), target :: T_star_o1 ! T_star(:,oinedx1)
+    real(realk), dimension(nv,nv), target :: int_normal_23, int_normal_32
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, nv2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -6500,8 +6698,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    nv2 = nv**2
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -6520,15 +6716,15 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_23,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
 !       call dgemm_acc('n','n',nv,1,nv2,&
-                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv2,1.0E0_realk,T_star_o1,nv)
+                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,int_normal_23,T_star_o1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_23),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_23),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1),int(nv,kind=4))
 !$acc end host_data
 
@@ -6539,8 +6735,8 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',nv,1,nv2,&
-                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv2,1.0E0_realk,T_star_o1,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
 #endif
 
     case(1)
@@ -6549,21 +6745,21 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
 !       call dgemm_acc('n','n',nv,1,nv2,&
-                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv2,1.0E0_realk,T_star_o1,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
+                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
 !       call dgemm_acc('n','n',nv,1,nv2,&
-                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv2,1.0E0_realk,T_star_o1,nv)
+                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv**2,1.0E0_realk,T_star_o1,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_o1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv2,kind=4),&
-                             & 2.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_23),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & 2.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_23),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1),int(nv,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_32),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_32),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1),int(nv,kind=4))
 !$acc end host_data
 
@@ -6574,10 +6770,10 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',nv,1,nv2,&
-                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv2,1.0E0_realk,T_star_o1,nv)
-       call dgemm('n','n',nv,1,nv2,&
-                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv2,1.0E0_realk,T_star_o1,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv**2,1.0E0_realk,T_star_o1,nv)
 #endif
 
 
@@ -6596,12 +6792,12 @@ contains
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, nv, no
-    real(realk), dimension(no) :: T_star_v1 ! T_star(:,oinedx1)
-    real(realk), dimension(no,no) :: int_normal_23, int_normal_32
-    real(realk), dimension(no,no,no) :: trip_ampl
+    real(realk), dimension(no), target :: T_star_v1 ! T_star(:,oinedx1)
+    real(realk), dimension(no,no), target :: int_normal_23, int_normal_32
+    real(realk), dimension(no,no,no), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, no2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -6609,8 +6805,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    no2 = no**2
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -6627,14 +6821,14 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_23,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_23,no2,1.0E0_realk,T_star_v1,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & 1.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,int_normal_23,T_star_v1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_23),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_23),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1),int(no,kind=4))
 !$acc end host_data
 
@@ -6645,8 +6839,8 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',no,1,no2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_23,no2,1.0E0_realk,T_star_v1,no)
+       call dgemm('n','n',no,1,no**2,&
+                & 1.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
 #endif
 
     case(1)
@@ -6655,19 +6849,19 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & 2.0E0_realk,trip_ampl,no,int_normal_23,no2,1.0E0_realk,T_star_v1,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_32,no2,1.0E0_realk,T_star_v1,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & 2.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & -1.0E0_realk,trip_ampl,no,int_normal_32,no**2,1.0E0_realk,T_star_v1,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_v1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no2,kind=4),&
-                             & 2.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_23),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & 2.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_23),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1),int(no,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_32),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_32),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1),int(no,kind=4))
 !$acc end host_data
 
@@ -6678,10 +6872,10 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',no,1,no2,&
-                & 2.0E0_realk,trip_ampl,no,int_normal_23,no2,1.0E0_realk,T_star_v1,no)
-       call dgemm('n','n',no,1,no2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_32,no2,1.0E0_realk,T_star_v1,no)
+       call dgemm('n','n',no,1,no**2,&
+                & 2.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
+       call dgemm('n','n',no,1,no**2,&
+                & -1.0E0_realk,trip_ampl,no,int_normal_32,no**2,1.0E0_realk,T_star_v1,no)
 #endif
 
     end select TypeofContraction_abc_11
@@ -6701,12 +6895,12 @@ contains
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv, no
-    real(realk), dimension(nv) :: T_star_o3 ! T_star(:,oinedx3)
-    real(realk), dimension(nv,nv) :: int_normal_21, int_normal_12
-    real(realk), dimension(nv,nv,nv) :: trip_ampl
+    real(realk), dimension(nv), target :: T_star_o3 ! T_star(:,oinedx3)
+    real(realk), dimension(nv,nv), target :: int_normal_21, int_normal_12
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, nv2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -6714,8 +6908,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    nv2 = nv**2
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -6735,15 +6927,15 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_21,T_star_o3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
 !       call dgemm_acc('n','n',nv,1,nv2,&
-             & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv2,1.0E0_realk,T_star_o3,nv)
+             & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,int_normal_21,T_star_o3)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_21),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_21),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o3),int(nv,kind=4))
 !$acc end host_data
 
@@ -6754,8 +6946,8 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',nv,1,nv2,&
-                & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv2,1.0E0_realk,T_star_o3,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
 #endif
 
     case(1)
@@ -6764,21 +6956,21 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_o3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
 !       call dgemm_acc('n','n',nv,1,nv2,&
-             & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv2,1.0E0_realk,T_star_o3,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
+             & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
 !       call dgemm_acc('n','n',nv,1,nv2,&
-             & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv2,1.0E0_realk,T_star_o3,nv)
+             & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv**2,1.0E0_realk,T_star_o3,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_o3)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv2,kind=4),&
-                             & -2.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_21),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & -2.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_21),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o3),int(nv,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_12),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_12),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o3),int(nv,kind=4))
 !$acc end host_data
 
@@ -6789,10 +6981,10 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',nv,1,nv2,&
-                & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv2,1.0E0_realk,T_star_o3,nv)
-       call dgemm('n','n',nv,1,nv2,&
-                & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv2,1.0E0_realk,T_star_o3,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv**2,1.0E0_realk,T_star_o3,nv)
 #endif
 
     end select TypeofContraction_ijk_12
@@ -6810,12 +7002,12 @@ contains
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, nv, no
-    real(realk), dimension(no) :: T_star_v3 ! T_star(:,oinedx3)
-    real(realk), dimension(no,no) :: int_normal_21, int_normal_12
-    real(realk), dimension(no,no,no) :: trip_ampl
+    real(realk), dimension(no), target :: T_star_v3 ! T_star(:,oinedx3)
+    real(realk), dimension(no,no), target :: int_normal_21, int_normal_12
+    real(realk), dimension(no,no,no), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, no2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -6823,8 +7015,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    no2 = no**2
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -6844,14 +7034,14 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_21,T_star_v3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_21,no2,1.0E0_realk,T_star_v3,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & -1.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,int_normal_21,T_star_v3)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no2,kind=4),&
-                             & -11.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & -11.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
 !$acc end host_data
 
@@ -6862,8 +7052,8 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',no,1,no2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_21,no2,1.0E0_realk,T_star_v3,no)
+       call dgemm('n','n',no,1,no**2,&
+                & -1.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
 #endif
 
     case(1)
@@ -6872,19 +7062,19 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_v3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & -2.0E0_realk,trip_ampl,no,int_normal_21,no2,1.0E0_realk,T_star_v3,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_12,no2,1.0E0_realk,T_star_v3,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & -2.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & 1.0E0_realk,trip_ampl,no,int_normal_12,no**2,1.0E0_realk,T_star_v3,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_v3)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no2,kind=4),&
-                             & -2.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & -2.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_12),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_12),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
 !$acc end host_data
 
@@ -6895,10 +7085,10 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',no,1,no2,&
-                & -2.0E0_realk,trip_ampl,no,int_normal_21,no2,1.0E0_realk,T_star_v3,no)
-       call dgemm('n','n',no,1,no2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_12,no2,1.0E0_realk,T_star_v3,no)
+       call dgemm('n','n',no,1,no**2,&
+                & -2.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
+       call dgemm('n','n',no,1,no**2,&
+                & 1.0E0_realk,trip_ampl,no,int_normal_12,no**2,1.0E0_realk,T_star_v3,no)
 #endif
 
     end select TypeofContraction_abc_12
@@ -6920,12 +7110,12 @@ contains
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv, no
-    real(realk), dimension(nv,nv) :: T_star_o1o2 ! T_star(:,:,oindex1,oindex2)
-    real(realk), dimension(nv,nv,nv) :: tmp_g,trip_ampl
-    real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
+    real(realk), dimension(nv,nv), target :: T_star_o1o2 ! T_star(:,:,oindex1,oindex2)
+    real(realk), dimension(nv,nv,nv), target :: tmp_g,trip_ampl
+    real(realk), dimension(nv,nv,nv), target, intent(in) :: int_virt_tile
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, nv2, i,j,k
+    integer :: contraction_type, i,j,k
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -6933,8 +7123,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    nv2 = nv**2
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -6960,15 +7148,15 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2,&
+       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
 !       call dgemm_acc('t','n',nv,nv,nv2,&
-            & 1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+            & 1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(nv2,kind=4),c_loc(tmp_g),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
 !$acc end host_data
 
@@ -6979,8 +7167,8 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',nv,nv,nv2,&
-            & 1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm('t','n',nv,nv,nv**2,&
+            & 1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 #endif
 
        ! reorder to obtain exchange term
@@ -6994,15 +7182,15 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2,&
+       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
 !       call dgemm_acc('t','n',nv,nv,nv2,&
-            -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(nv2,kind=4),c_loc(tmp_g),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
 !$acc end host_data
 
@@ -7013,8 +7201,8 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',nv,nv,nv2,&
-            -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm('t','n',nv,nv,nv**2,&
+            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 #endif
 
     case(1)
@@ -7032,15 +7220,15 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2,&
+       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
 !       call dgemm_acc('t','n',nv,nv,nv2,&
-            2.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+            2.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv2,kind=4),&
-                             & 2.0E0_realk,c_loc(trip_ampl),int(nv2,kind=4),c_loc(tmp_g),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                             & 2.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
 !$acc end host_data
 
@@ -7051,8 +7239,8 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',nv,nv,nv2,&
-            2.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm('t','n',nv,nv,nv**2,&
+            2.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 #endif
 
        ! reorder to obtain exchange term
@@ -7066,15 +7254,15 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2,&
+       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
 !       call dgemm_acc('t','n',nv,nv,nv2,&
-            -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(nv2,kind=4),c_loc(tmp_g),int(nv2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
 !$acc end host_data
 
@@ -7085,8 +7273,8 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',nv,nv,nv2,&
-            -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm('t','n',nv,nv,nv**2,&
+            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 #endif
 
     end select TypeofContraction_211
@@ -7104,12 +7292,12 @@ contains
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(nv,no,no) :: T_star_v1 ! T_star(:,:,:,vindex1)
-    real(realk), dimension(nv,no) :: int_virt_23, int_virt_32
-    real(realk), dimension(no,no,no) :: trip_ampl
+    real(realk), dimension(nv,no,no), target :: T_star_v1 ! T_star(:,:,:,vindex1)
+    real(realk), dimension(nv,no), target :: int_virt_23, int_virt_32
+    real(realk), dimension(no,no,no), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, no2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -7117,8 +7305,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    no2 = no**2
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -7136,18 +7322,18 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,1.0E0_realk,int_virt_32,nv,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,1.0E0_realk,int_virt_32,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,-1.0E0_realk,int_virt_23,nv,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no2,kind=4),int(no,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                              & 1.0E0_realk,c_loc(int_virt_32),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no2,kind=4),int(no,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                              & -1.0E0_realk,c_loc(int_virt_23),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
 !$acc end host_data
@@ -7159,9 +7345,9 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',nv,no2,no,1.0E0_realk,int_virt_32,nv,&
+       call dgemm('n','n',nv,no**2,no,1.0E0_realk,int_virt_32,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
-       call dgemm('n','n',nv,no2,no,-1.0E0_realk,int_virt_23,nv,&
+       call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
 #endif
 
@@ -7171,18 +7357,18 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,2.0E0_realk,int_virt_32,nv,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,2.0E0_realk,int_virt_32,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,-1.0E0_realk,int_virt_23,nv,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no2,kind=4),int(no,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                              & 2.0E0_realk,c_loc(int_virt_32),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no2,kind=4),int(no,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                              & -1.0E0_realk,c_loc(int_virt_23),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
 !$acc end host_data
@@ -7194,9 +7380,9 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',nv,no2,no,2.0E0_realk,int_virt_32,nv,&
+       call dgemm('n','n',nv,no**2,no,2.0E0_realk,int_virt_32,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
-       call dgemm('n','n',nv,no2,no,-1.0E0_realk,int_virt_23,nv,&
+       call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
 #endif
 
@@ -7219,11 +7405,9 @@ contains
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv, no
-    real(realk), dimension(nv,nv) :: T_star_o3o2 ! T_star(:,:,oindex3,oindex2)
-    real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
-    real(realk), dimension(nv,nv,nv) :: tmp_g,trip_ampl
-    !> temporary quantities
-    integer :: nv2
+    real(realk), dimension(nv,nv), target :: T_star_o3o2 ! T_star(:,:,oindex3,oindex2)
+    real(realk), dimension(nv,nv,nv), target, intent(in) :: int_virt_tile
+    real(realk), dimension(nv,nv,nv), target :: tmp_g,trip_ampl
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -7231,8 +7415,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    nv2 = nv**2
 
     ! reorder to obtain coulumb term 
 #ifdef VAR_OPENACC
@@ -7245,15 +7427,15 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o3o2)
-    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2,&
+    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
 !    call dgemm_acc('t','n',nv,nv,nv2,&
-         & -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o3o2,nv)
+         & -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o3o2,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o3o2)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv2,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_ampl),int(nv2,kind=4),c_loc(tmp_g),int(nv2,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
                           & 1.0E0_realk,c_loc(T_star_o3o2),int(nv,kind=4))
 !$acc end host_data
 
@@ -7264,8 +7446,8 @@ contains
 
 #endif
 #else
-    call dgemm('t','n',nv,nv,nv2,&
-         & -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o3o2,nv)
+    call dgemm('t','n',nv,nv,nv**2,&
+         & -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o3o2,nv)
 #endif
 
   end subroutine ccsdpt_contract_ijk_212
@@ -7280,11 +7462,9 @@ contains
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(nv,no,no) :: T_star_v3 ! T_star(:,:,:,vindex3)
-    real(realk), dimension(nv,no) :: int_virt_12
-    real(realk), dimension(no,no,no) :: trip_ampl
-    !> integer
-    integer :: no2
+    real(realk), dimension(nv,no,no), target :: T_star_v3 ! T_star(:,:,:,vindex3)
+    real(realk), dimension(nv,no), target :: int_virt_12
+    real(realk), dimension(no,no,no), target :: trip_ampl
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -7293,18 +7473,16 @@ contains
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
-    no2 = no**2
-
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_12,trip_ampl,T_star_v3)
-    call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,-1.0E0_realk,int_virt_12,nv,&
+    call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_12,nv,&
                    & trip_ampl,no,1.0E0_realk,T_star_v3,nv)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_virt_12,trip_ampl,T_star_v3)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no2,kind=4),int(no,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                           & -1.0E0_realk,c_loc(int_virt_12),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
                           & 1.0E0_realk,c_loc(T_star_v3),int(nv,kind=4))
 !$acc end host_data
@@ -7316,7 +7494,7 @@ contains
 
 #endif
 #else
-    call dgemm('n','n',nv,no2,no,-1.0E0_realk,int_virt_12,nv,&
+    call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_12,nv,&
                    & trip_ampl,no,1.0E0_realk,T_star_v3,nv)
 #endif
 
@@ -7335,12 +7513,12 @@ contains
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(no,nv,nv) :: T_star_o1 ! T_star(:,:,:,oindex1)
-    real(realk), dimension(no,nv) :: int_occ_23, int_occ_32
-    real(realk), dimension(nv,nv,nv) :: trip_ampl
+    real(realk), dimension(no,nv,nv), target :: T_star_o1 ! T_star(:,:,:,oindex1)
+    real(realk), dimension(no,nv), target :: int_occ_23, int_occ_32
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, nv2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -7348,8 +7526,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    nv2 = nv**2
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -7367,20 +7543,20 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,-1.0E0_realk,int_occ_32,no,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,-1.0E0_realk,int_occ_32,no,&
 !       call dgemm_acc('n','n',no,nv2,nv,-1.0E0_realk,int_occ_32,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
 !       call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv2,kind=4),int(nv,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                              & -1.0E0_realk,c_loc(int_occ_32),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv2,kind=4),int(nv,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                              & 1.0E0_realk,c_loc(int_occ_23),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
 !$acc end host_data
@@ -7392,9 +7568,9 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',no,nv2,nv,-1.0E0_realk,int_occ_32,no,&
+       call dgemm('n','n',no,nv**2,nv,-1.0E0_realk,int_occ_32,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
-       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
+       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
 #endif
 
@@ -7404,20 +7580,20 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,-2.0E0_realk,int_occ_32,no,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,-2.0E0_realk,int_occ_32,no,&
 !       call dgemm_acc('n','n',no,nv2,nv,-2.0E0_realk,int_occ_32,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
 !       call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv2,kind=4),int(nv,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                              & -2.0E0_realk,c_loc(int_occ_32),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv2,kind=4),int(nv,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                              & 1.0E0_realk,c_loc(int_occ_23),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
 !$acc end host_data
@@ -7429,9 +7605,9 @@ contains
 
 #endif
 #else
-       call dgemm('n','n',no,nv2,nv,-2.0E0_realk,int_occ_32,no,&
+       call dgemm('n','n',no,nv**2,nv,-2.0E0_realk,int_occ_32,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
-       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
+       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
 #endif
 
@@ -7450,12 +7626,12 @@ contains
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, nv, no
-    real(realk), dimension(no,no) :: T_star_v1v2 ! T_star(:,:,vindex1,vindex2)
-    real(realk), dimension(no,no,no) :: tmp_g,trip_ampl
-    real(realk), dimension(no,no,no), intent(in) :: int_occ_tile
+    real(realk), dimension(no,no), target :: T_star_v1v2 ! T_star(:,:,vindex1,vindex2)
+    real(realk), dimension(no,no,no), target :: tmp_g,trip_ampl
+    real(realk), dimension(no,no,no), target, intent(in) :: int_occ_tile
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, no2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -7463,8 +7639,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    no2 = no**2
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -7487,14 +7661,14 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2, &
-            & -1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+            & -1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(no2,kind=4),c_loc(tmp_g),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
 !$acc end host_data
 
@@ -7505,8 +7679,8 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',no,no,no2, &
-            & -1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm('t','n',no,no,no**2, &
+            & -1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
        ! reorder to obtain exchange term
@@ -7519,14 +7693,14 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2, &
-            1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(no2,kind=4),c_loc(tmp_g),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
 !$acc end host_data
 
@@ -7537,8 +7711,8 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',no,no,no2, &
-            1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm('t','n',no,no,no**2, &
+            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
     case(1)
@@ -7553,14 +7727,14 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2, &
-            -2.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+            -2.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no2,kind=4),&
-                             & -2.0E0_realk,c_loc(trip_ampl),int(no2,kind=4),c_loc(tmp_g),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                             & -2.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
 !$acc end host_data
 
@@ -7571,8 +7745,8 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',no,no,no2, &
-            -2.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm('t','n',no,no,no**2, &
+            -2.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
        ! reorder to obtain exchange term
@@ -7585,14 +7759,14 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2, &
-            1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(no2,kind=4),c_loc(tmp_g),int(no2,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
 !$acc end host_data
 
@@ -7603,8 +7777,8 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',no,no,no2, &
-            1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm('t','n',no,no,no**2, &
+            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
     end select TypeofContraction_abc_221
@@ -7623,11 +7797,9 @@ contains
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(no,nv,nv) :: T_star_o3 ! T_star(:,:,:,oindex3)
-    real(realk), dimension(no,nv) :: int_occ_12
-    real(realk), dimension(nv,nv,nv) :: trip_ampl
-    !> integer
-    integer :: nv2
+    real(realk), dimension(no,nv,nv), target :: T_star_o3 ! T_star(:,:,:,oindex3)
+    real(realk), dimension(no,nv), target :: int_occ_12
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -7636,20 +7808,18 @@ contains
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
-    nv2 = nv**2
-
     ! contract coulumb term over first index
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_occ_12,trip_ampl,T_star_o3)
-    call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,1.0E0_realk,int_occ_12,no,&
+    call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_12,no,&
 !    call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_12,no,&
                    & trip_ampl,nv,1.0E0_realk,T_star_o3,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_occ_12,trip_ampl,T_star_o3)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv2,kind=4),int(nv,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                           & 1.0E0_realk,c_loc(int_occ_12),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
                           & 1.0E0_realk,c_loc(T_star_o3),int(no,kind=4))
 !$acc end host_data
@@ -7661,7 +7831,7 @@ contains
 
 #endif
 #else
-    call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ_12,no,&
+    call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_12,no,&
                    & trip_ampl,nv,1.0E0_realk,T_star_o3,no)
 #endif
 
@@ -7678,11 +7848,9 @@ contains
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, nv, no
-    real(realk), dimension(no,no) :: T_star_v3v2 ! T_star(:,:,vindex3,vindex2)
-    real(realk), dimension(no,no,no), intent(in) :: int_occ_tile
-    real(realk), dimension(no,no,no) :: tmp_g,trip_ampl
-    !> temporary quantities
-    integer :: no2
+    real(realk), dimension(no,no), target :: T_star_v3v2 ! T_star(:,:,vindex3,vindex2)
+    real(realk), dimension(no,no,no), target, intent(in) :: int_occ_tile
+    real(realk), dimension(no,no,no), target :: tmp_g,trip_ampl
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -7690,8 +7858,6 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-
-    no2 = no**2
 
     ! reorder
 #ifdef VAR_OPENACC
@@ -7703,14 +7869,14 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v3v2)
-    call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2,&
-         & 1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v3v2,no)
+    call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2,&
+         & 1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v3v2,no)
 !$acc end host_data
-#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+#elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v3v2)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no2,kind=4),&
-                          & 1.0E0_realk,c_loc(trip_ampl),int(no2,kind=4),c_loc(tmp_g),int(no2,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                          & 1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
                           & 1.0E0_realk,c_loc(T_star_v3v2),int(no,kind=4))
 !$acc end host_data
 
@@ -7721,8 +7887,8 @@ contains
 
 #endif
 #else
-    call dgemm('t','n',no,no,no2,&
-         & 1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v3v2,no)
+    call dgemm('t','n',no,no,no**2,&
+         & 1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v3v2,no)
 #endif
 
   end subroutine ccsdpt_contract_abc_222
