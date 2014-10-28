@@ -115,6 +115,7 @@ subroutine PASSsub
                 ELSE
                    LOOPUNROLL = .FALSE.
                 ENDIF
+                IF(.NOT.CPU)LOOPUNROLL = .TRUE.
                 nTUVP = (JP+1)*(JP+2)*(JP+3)/6   
                 nTUVQ = (JQ+1)*(JQ+2)*(JQ+3)/6   
                 JPQ = JP + JQ

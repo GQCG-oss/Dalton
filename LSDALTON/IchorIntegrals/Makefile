@@ -107,55 +107,77 @@ F90_OBJS = \
         AGC_CPU_TransferRecurrenceCtoBSeg1Prim.o \
         AGC_GPU_TransferRecurrenceAtoCGen1.o \
         AGC_GPU_TransferRecurrenceAtoCGen2.o \
+        AGC_GPU_TransferRecurrenceAtoCGen3.o \
+        AGC_GPU_TransferRecurrenceAtoCGen4.o \
         AGC_GPU_TransferRecurrenceAtoDGen1.o \
         AGC_GPU_TransferRecurrenceAtoDGen2.o \
+        AGC_GPU_TransferRecurrenceAtoDGen3.o \
         AGC_GPU_TransferRecurrenceDtoAGen.o \
         AGC_GPU_TransferRecurrenceCtoAGen.o \
         AGC_GPU_TransferRecurrenceBtoCGen1.o \
+        AGC_GPU_TransferRecurrenceBtoCGen2.o \
         AGC_GPU_TransferRecurrenceBtoDGen1.o \
+        AGC_GPU_TransferRecurrenceBtoDGen2.o \
         AGC_GPU_TransferRecurrenceDtoBGen.o \
         AGC_GPU_TransferRecurrenceCtoBGen.o \
         AGC_GPU_TransferRecurrenceAtoCSegQ1.o \
         AGC_GPU_TransferRecurrenceAtoCSegQ2.o \
         AGC_GPU_TransferRecurrenceAtoCSegQ3.o \
+        AGC_GPU_TransferRecurrenceAtoCSegQ4.o \
         AGC_GPU_TransferRecurrenceAtoDSegQ1.o \
         AGC_GPU_TransferRecurrenceAtoDSegQ2.o \
+        AGC_GPU_TransferRecurrenceAtoDSegQ3.o \
         AGC_GPU_TransferRecurrenceDtoASegQ.o \
         AGC_GPU_TransferRecurrenceCtoASegQ.o \
         AGC_GPU_TransferRecurrenceBtoCSegQ1.o \
+        AGC_GPU_TransferRecurrenceBtoCSegQ2.o \
         AGC_GPU_TransferRecurrenceBtoDSegQ1.o \
+        AGC_GPU_TransferRecurrenceBtoDSegQ2.o \
         AGC_GPU_TransferRecurrenceDtoBSegQ.o \
         AGC_GPU_TransferRecurrenceCtoBSegQ.o \
         AGC_GPU_TransferRecurrenceAtoCSegP1.o \
         AGC_GPU_TransferRecurrenceAtoCSegP2.o \
         AGC_GPU_TransferRecurrenceAtoCSegP3.o \
+        AGC_GPU_TransferRecurrenceAtoCSegP4.o \
         AGC_GPU_TransferRecurrenceAtoDSegP1.o \
         AGC_GPU_TransferRecurrenceAtoDSegP2.o \
+        AGC_GPU_TransferRecurrenceAtoDSegP3.o \
         AGC_GPU_TransferRecurrenceDtoASegP.o \
         AGC_GPU_TransferRecurrenceCtoASegP.o \
         AGC_GPU_TransferRecurrenceBtoCSegP1.o \
+        AGC_GPU_TransferRecurrenceBtoCSegP2.o \
         AGC_GPU_TransferRecurrenceBtoDSegP1.o \
+        AGC_GPU_TransferRecurrenceBtoDSegP2.o \
         AGC_GPU_TransferRecurrenceDtoBSegP.o \
         AGC_GPU_TransferRecurrenceCtoBSegP.o \
         AGC_GPU_TransferRecurrenceAtoCSeg1.o \
         AGC_GPU_TransferRecurrenceAtoCSeg2.o \
         AGC_GPU_TransferRecurrenceAtoCSeg3.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg4.o \
         AGC_GPU_TransferRecurrenceAtoDSeg1.o \
         AGC_GPU_TransferRecurrenceAtoDSeg2.o \
+        AGC_GPU_TransferRecurrenceAtoDSeg3.o \
         AGC_GPU_TransferRecurrenceDtoASeg.o \
         AGC_GPU_TransferRecurrenceCtoASeg.o \
         AGC_GPU_TransferRecurrenceBtoCSeg1.o \
+        AGC_GPU_TransferRecurrenceBtoCSeg2.o \
         AGC_GPU_TransferRecurrenceBtoDSeg1.o \
+        AGC_GPU_TransferRecurrenceBtoDSeg2.o \
         AGC_GPU_TransferRecurrenceDtoBSeg.o \
         AGC_GPU_TransferRecurrenceCtoBSeg.o \
         AGC_GPU_TransferRecurrenceAtoCSeg1Prim1.o \
         AGC_GPU_TransferRecurrenceAtoCSeg1Prim2.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg1Prim3.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg1Prim4.o \
         AGC_GPU_TransferRecurrenceAtoDSeg1Prim1.o \
         AGC_GPU_TransferRecurrenceAtoDSeg1Prim2.o \
+        AGC_GPU_TransferRecurrenceAtoDSeg1Prim3.o \
         AGC_GPU_TransferRecurrenceDtoASeg1Prim.o \
         AGC_GPU_TransferRecurrenceCtoASeg1Prim.o \
         AGC_GPU_TransferRecurrenceBtoCSeg1Prim1.o \
+        AGC_GPU_TransferRecurrenceBtoCSeg1Prim2.o \
         AGC_GPU_TransferRecurrenceBtoDSeg1Prim1.o \
+        AGC_GPU_TransferRecurrenceBtoDSeg1Prim2.o \
         AGC_GPU_TransferRecurrenceDtoBSeg1Prim.o \
         AGC_GPU_TransferRecurrenceCtoBSeg1Prim.o \
         AGC_CPU_HorizontalRecurrencePAtoB.o \
