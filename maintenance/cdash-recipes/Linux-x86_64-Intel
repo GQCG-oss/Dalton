@@ -6,8 +6,9 @@ source /opt/intel/vtune_amplifier_xe_2013/amplxe-vars.sh intel64
 BRANCH='master'
 NUM_CORES=1
 MAKE_RELEASE=0
+TRACK='Other'
 
-while getopts b:p:n:r: opt; do
+while getopts b:n:r:t: opt; do
   case $opt in
   b)
       BRANCH=$OPTARG
@@ -17,6 +18,9 @@ while getopts b:p:n:r: opt; do
       ;;
   r)
       MAKE_RELEASE=$OPTARG
+      ;;
+  t)
+      TRACK=$OPTARG
       ;;
   esac
 done
@@ -47,7 +51,7 @@ fi
 ./setup --fc=ifort --cc=icc --cxx=icpc --mkl=sequential -D BUILDNAME=$BUILDNAME
 cd build
 make -j$NUM_CORES
-ctest -D Nightly -j$NUM_CORES
+ctest -D Nightly -j$NUM_CORES --track $TRACK
 
 rm -rf $CTEST_TEMP_DIR
 

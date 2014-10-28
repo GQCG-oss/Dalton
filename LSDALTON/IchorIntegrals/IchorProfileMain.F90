@@ -1,4 +1,15 @@
 PROGRAM IchorErimoduleTEST
+#ifdef VAR_OPENACC
+#ifdef VAR_PGF90
+use openacc, only: acc_get_device_type,ACC_DEVICE_NONE,&
+     & ACC_DEVICE_DEFAULT,ACC_DEVICE_HOST,ACC_DEVICE_NOT_HOST,&
+     & acc_get_num_devices,acc_set_device_num, acc_init,ACC_DEVICE_NVIDIA
+#else
+use openacc, only: acc_get_device_type,ACC_DEVICE_NONE,&
+     & ACC_DEVICE_DEFAULT,ACC_DEVICE_HOST,ACC_DEVICE_NOT_HOST,&
+     & acc_get_num_devices,acc_set_device_num, acc_init
+#endif
+#endif
 implicit none
 integer        :: LUPRI,IPRINT
 integer        :: dim1,dim2,dim3,dim4 !AO dim
@@ -48,11 +59,53 @@ integer :: iBasis1Q,iBasis2Q,iBasis3Q,iBasis4Q
 integer,pointer :: iBasisA(:),iBasisB(:),iBasisC(:),iBasisD(:)
 CHARACTER(len=20)    :: BASISTYPE(13)
 integer :: iBASISTYPE(13),DebugIchorOption,ifilename,nKK,KK
-integer :: DebugIchorOption2,nRepetitions,L,K,I,J
+integer :: DebugIchorOption2,nRepetitions,L,K,I,J,selected_device_number
 character(len=100) :: filename
 logical      :: SpecialPass,FAIL(13,13,13,13),ALLPASS
 real(8) :: WALLTIMEFULL,WALLTIMECASE,WALLTIMEseg,WALLTIMEsegP,WALLTIMEsegQ
-real(8) :: WALLTIMEseg1Prim,WALLTIMEGen,TIME1,TIME2,DELTAWALL,CPUTIME,WALLTIME
+real(8) :: WALLTIMEseg1Prim,WALLTIMEGen,TIME1,TIME2,DELTAWALL,CPUTIME,WALLTIME,GPUMAXMEM
+
+#ifdef VAR_OPENACC
+print*,'acc_get_device_type = ',acc_get_device_type()
+print*,'================================'
+!4 device types are always supported 
+print*,'ACC_DEVICE_NONE     = ',ACC_DEVICE_NONE
+print*,'ACC_DEVICE_DEFAULT  = ',ACC_DEVICE_DEFAULT
+print*,'ACC_DEVICE_HOST     = ',ACC_DEVICE_HOST
+print*,'ACC_DEVICE_NOT_HOST = ',ACC_DEVICE_NOT_HOST
+#ifdef VAR_PGF90
+!PGF90 supports 
+print*,'ACC_DEVICE_NVIDIA   = ',ACC_DEVICE_NVIDIA
+#endif
+print*,'================================'
+#ifdef VAR_PGF90
+IF(acc_get_device_type().EQ.ACC_DEVICE_NVIDIA)print*,'ACC_DEVICE_NVIDIA have been selected'
+#endif
+IF(acc_get_device_type().EQ.ACC_DEVICE_NONE)THEN
+   print*,'ACC_DEVICE_NONE have been selected'
+   print*,'please use the command'
+   print*,'export ACC_DEVICE=NVIDIA'
+   print*,'to chose the NVIDIA graphics card or '
+   print*,'export ACC_DEVICE=HOST'
+   print*,'to chose to run the GPU kernel on the CPU'
+ENDIF
+print*,'There are ',acc_get_num_devices(acc_get_device_type()),'devices'
+print*,'The Program only support 1 device at present'
+selected_device_number = 2
+IF(acc_get_num_devices(acc_get_device_type()).GT.1)THEN
+   IF(selected_device_number .EQ. 0)THEN
+      print*,'Using default behavior of which device to use'
+      print*,'Change this behavior by choosing device number in input or'
+      print*,'export ACC_DEVICE_NUM=1'
+   ELSE
+      print*,'The selected device number=',selected_device_number
+      call acc_set_device_num(2,0)
+   ENDIF
+ENDIF
+call acc_init(acc_get_device_type())
+#endif
+
+
 SpecialPass = .FALSE.
 DebugIchorOption = 9
 LUPRI = 6
@@ -277,6 +330,8 @@ do Ipass = IpassStart,IpassEnd
      call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
      call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
      call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
+     GPUMAXMEM = 2.0E0_8
+     call SetIchorGPUMaxMem(GPUMAXMEM)
      
      SameLHSaos = .FALSE. 
      SameRHSaos = .FALSE. 
