@@ -2100,20 +2100,23 @@ C
 C
       IF (NIBUF .EQ. 1) THEN
          DO INT = 1, INTS
-            I = IBTAND(IBTSHR(IBIN4(1,INT),3*NBITS),IBIT1)
-            J = IBTAND(IBTSHR(IBIN4(1,INT),2*NBITS),IBIT1)
-            K = IBTAND(IBTSHR(IBIN4(1,INT),  NBITS),IBIT1)
-            L = IBTAND(       IBIN4(1,INT),         IBIT1)
+            I_IJKL = IBIN4(1,INT)
+            I = IBTAND(IBTSHR(I_IJKL,3*NBITS),IBIT1)
+            J = IBTAND(IBTSHR(I_IJKL,2*NBITS),IBIT1)
+            K = IBTAND(IBTSHR(I_IJKL,  NBITS),IBIT1)
+            L = IBTAND(       I_IJKL,         IBIT1)
             IJ = MAX(I,J)*IBIT1 + I + J
             KL = MAX(K,L)*IBIT1 + K + L
             IBIN4(1,INT) = MAX(IJ,KL)*IBIT2 + IJ + KL
          END DO
       ELSE
          DO INT = 1, INTS
-            I = IBTAND(IBTSHR(IBIN4(1,INT),NBITS),IBIT1)
-            J = IBTAND(       IBIN4(1,INT),       IBIT1)
-            K = IBTAND(IBTSHR(IBIN4(2,INT),NBITS),IBIT1)
-            L = IBTAND(       IBIN4(2,INT),       IBIT1)
+            I_IJ = IBIN4(1,INT)
+            I_KL = IBIN4(2,INT)
+            I = IBTAND(IBTSHR(I_IJ,NBITS),IBIT1)
+            J = IBTAND(       I_IJ,       IBIT1)
+            K = IBTAND(IBTSHR(I_KL,NBITS),IBIT1)
+            L = IBTAND(       I_KL,       IBIT1)
             IJ = MAX(I,J)*IBIT1 + I + J
             KL = MAX(K,L)*IBIT1 + K + L
             IBIN4(1,INT) = MAX(IJ,KL)
@@ -2135,15 +2138,18 @@ C  /* Deck eripri */
       IBIT1 = 2**NBITS - 1
       DO INT = 1, ICOUNT
          IF (NIBUF .EQ. 1) THEN
-            I0 = IBTAND(IBTSHR(IBUF4(1,INT),3*NBITS),IBIT1)
-            J0 = IBTAND(IBTSHR(IBUF4(1,INT),2*NBITS),IBIT1)
-            K0 = IBTAND(IBTSHR(IBUF4(1,INT),  NBITS),IBIT1)
-            L0 = IBTAND(       IBUF4(1,INT),         IBIT1)
+            I_IJKL = IBUF4(1,INT)
+            I0 = IBTAND(IBTSHR(I_IJKL,3*NBITS),IBIT1)
+            J0 = IBTAND(IBTSHR(I_IJKL,2*NBITS),IBIT1)
+            K0 = IBTAND(IBTSHR(I_IJKL,  NBITS),IBIT1)
+            L0 = IBTAND(       I_IJKL,         IBIT1)
          ELSE
-            I0 = IBTAND(IBTSHR(IBUF4(1,INT),NBITS),IBIT1)
-            J0 = IBTAND(       IBUF4(1,INT),       IBIT1)
-            K0 = IBTAND(IBTSHR(IBUF4(2,INT),NBITS),IBIT1)
-            L0 = IBTAND(       IBUF4(2,INT),       IBIT1)
+            I_IJ = IBUF4(1,INT)
+            I_KL = IBUF4(2,INT)
+            I0 = IBTAND(IBTSHR(I_IJ,NBITS),IBIT1)
+            J0 = IBTAND(       I_IJ,       IBIT1)
+            K0 = IBTAND(IBTSHR(I_KL,NBITS),IBIT1)
+            L0 = IBTAND(       I_KL,       IBIT1)
          END IF
          IF (ITRI(I0,J0).GE.ITRI(K0,L0)) THEN
             I = MAX(I0,J0)
