@@ -608,19 +608,13 @@ module cc_tools_module
             !in the indices i and j
 
             ! add up contributions in the residual with keeping track of i<j
-            !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-            !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
             do j=no,1,-1
-               !$OMP DO 
                do i=j,1,-1
                   pos1=1+((i+j*(j-1)/2)-1)*nv*nv
                   pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
                   if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
                enddo
-               !$OMP END DO
             enddo
-            !$OMP BARRIER
-            !$OMP DO 
             do j=no,1,-1
                do i=j,1,-1
                   pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
@@ -628,8 +622,6 @@ module cc_tools_module
                   if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
                enddo
             enddo
-            !$OMP END DO
-            !$OMP END PARALLEL
 
             do j=no,1,-1
                do i=j,1,-1
@@ -702,19 +694,13 @@ module cc_tools_module
             call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
 
             if(.not.rest_o2_occ)then
-               !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-               !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
                do j=no,1,-1
-                  !$OMP DO 
                   do i=j,1,-1
                      pos1=1+((i+j*(j-1)/2)-1)*nv*nv
                      pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
                      if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
                   enddo
-                  !$OMP END DO
                enddo
-               !$OMP BARRIER
-               !$OMP DO 
                do j=no,1,-1
                   do i=j,1,-1
                      pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
@@ -722,8 +708,6 @@ module cc_tools_module
                      if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
                   enddo
                enddo
-               !$OMP END DO
-               !$OMP END PARALLEL
 
                do j=no,1,-1
                   do i=j,1,-1
@@ -1281,19 +1265,13 @@ module cc_tools_module
       endif
 
 
-      !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-      !$OMP PRIVATE(i,j,pos1,pos2)
       do j=no,1,-1
-         !$OMP DO 
          do i=j,1,-1
             pos1=1+((i+j*(j-1)/2)-1)*nv*nv
             pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
             if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
          enddo
-         !$OMP END DO
       enddo
-      !$OMP BARRIER
-      !$OMP DO 
       do j=no,1,-1
          do i=j,1,-1
             pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
@@ -1301,8 +1279,6 @@ module cc_tools_module
             if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
          enddo
       enddo
-      !$OMP END DO
-      !$OMP END PARALLEL
 
       do j=no,1,-1
          do i=j,1,-1
