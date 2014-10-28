@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    rsp_2ndharm
+#    -----------
+#    Molecule:         LiH
+#    Wave Function:    MCSCF (CAS) / 4-31G
+#    Test Purpose:     Second-Harmonic generation
 
 import os
 import sys

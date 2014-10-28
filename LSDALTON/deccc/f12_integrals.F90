@@ -2954,12 +2954,31 @@ contains
        ! **********************************************
        call mem_alloc(ECCSD_Vijab,5)
 
-       call ccsdf12_Vijab_EV1(ECCSD_Vijab, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj)
-       call ccsdf12_Vijab_EV2(ECCSD_Vijab, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj)
-       call ccsdf12_Vijab_EV3(ECCSD_Vijab, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj)
-       call get_EV4(ECCSD_Vijab, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj) 
+       WRITE(DECinfo%output,*) "Memory statistics after allocation of ECCSD_Vijab energy:"  
+       call stats_globalmem(DECinfo%output)
 
-       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_EV1:"  
+       call ccsdf12_Vijab_EV1(ECCSD_Vijab, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj)
+       call LSTIMER('ccsdf12_Vijab_EV1_timing: ',tcpu,twall,DECinfo%output)
+
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Vijab_EV1:"  
+       call stats_globalmem(DECinfo%output)
+
+       call ccsdf12_Vijab_EV2(ECCSD_Vijab, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj)
+       call LSTIMER('ccsdf12_Vijab_EV2_timing: ',tcpu,twall,DECinfo%output)
+
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Vijab_EV2:"  
+       call stats_globalmem(DECinfo%output)
+
+       call ccsdf12_Vijab_EV3(ECCSD_Vijab, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj)
+       call LSTIMER('ccsdf12_Vijab_EV3_timing: ',tcpu,twall,DECinfo%output)
+
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Vijab_EV3:"  
+       call stats_globalmem(DECinfo%output)
+
+       call get_EV4(ECCSD_Vijab, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj) 
+       call LSTIMER('get_EV4_timing: ',tcpu,twall,DECinfo%output)
+
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EV4:"  
        call stats_globalmem(DECinfo%output)
 
        print *, '----------------------------------------'
@@ -2980,9 +2999,26 @@ contains
        !    Next term V_ij^ia (V_ijia) or (Viija)
        ! **********************************************************
        call mem_alloc(ECCSD_Vijia,4)
+       WRITE(DECinfo%output,*) "Memory statistics after allocation of ECCSD_Vijia energy:"  
+       call stats_globalmem(DECinfo%output)
+       
        call ccsdf12_Vijia_EV1(ECCSD_Vijia,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Tai)
+       call LSTIMER('ccsdf12_Vijia_EV1_timing: ',tcpu,twall,DECinfo%output)
+       
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Vijia_EV1:"  
+       call stats_globalmem(DECinfo%output)
+
        call ccsdf12_Vijia_EV2(ECCSD_Vijia,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Tai)
+       call LSTIMER('ccsdf12_Vijia_EV2_timing: ',tcpu,twall,DECinfo%output)
+   
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Vijia_EV2:"  
+       call stats_globalmem(DECinfo%output)
+
        call ccsdf12_Vijia_EV3(ECCSD_Vijia,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Tai)
+       call LSTIMER('ccsdf12_Vijia_EV3_timing: ',tcpu,twall,DECinfo%output)
+   
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Vijia_EV3:"  
+       call stats_globalmem(DECinfo%output)
 
        print *, '----------------------------------------'
        print *, ' E_CCSD_Vijia energies                  '
@@ -2996,14 +3032,31 @@ contains
        ECCSD_E21 = ECCSD_E21 + ECCSD_Vijia(1) + ECCSD_Vijia(2) + ECCSD_Vijia(3) + ECCSD_Vijia(4) 
 
        call mem_dealloc(ECCSD_Vijia)
-
+       
        ! ***********************************************************
        !    Last term V_ij^aj 
        ! **********************************************************
        call mem_alloc(ECCSD_Vijaj,4)
+       WRITE(DECinfo%output,*) "Memory statistics after allocation of ECCSD_Vijaj energy:"  
+       call stats_globalmem(DECinfo%output)
+       
        call ccsdf12_Viajj_EV1(ECCSD_Vijaj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Tai)
+       call LSTIMER('ccsdf12_Viajj_EV1_timing: ',tcpu,twall,DECinfo%output)
+  
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Viajj_EV1:"  
+       call stats_globalmem(DECinfo%output)
+       
        call ccsdf12_Viajj_EV2(ECCSD_Vijaj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Tai)
+       call LSTIMER('ccsdf12_Viajj_EV2_timing: ',tcpu,twall,DECinfo%output)
+     
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Viajj_EV2:"  
+       call stats_globalmem(DECinfo%output)
+       
        call ccsdf12_Viajj_EV3(ECCSD_Vijaj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Tai)
+       call LSTIMER('ccsdf12_Viajj_EV3_timing: ',tcpu,twall,DECinfo%output)
+  
+       WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Viajj_EV3:"  
+       call stats_globalmem(DECinfo%output)
 
        print *, '----------------------------------------'
        print *, ' E_CCSD_Vijaj energies                  '
@@ -3021,8 +3074,12 @@ contains
     E_F12 = ECCSD_E21 + E_21noC+E_22+E_23
     
     call get_ccsd_energy(CCSDenergy,MyFragment,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Tai,Taibj)
-
-     if(DECinfo%F12debug) then
+    call LSTIMER('get_ccsd_energy_timings: ',tcpu,twall,DECinfo%output)
+  
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_ccsd_energy:"  
+    call stats_globalmem(DECinfo%output)
+    
+    if(DECinfo%F12debug) then
        print *,   '----------------------------------------------------------------'
        print *,   '                   DEC-CCSD-F12 CALCULATION                     '
        print *,   '----------------------------------------------------------------'
@@ -3046,7 +3103,6 @@ contains
     Myfragment%energies(FRAGMODEL_CCSDf12) = E_F12
     !> Need to be set for the single_fragments
     Myfragment%EoccFOP_Corr = E_F12      
-
 
     end select WhichCCmodel
 

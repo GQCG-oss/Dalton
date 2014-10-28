@@ -1,4 +1,4 @@
-B1;3402;0c#!/bin/bash
+#!/bin/bash
 TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonGfortranDebug
 SCRATCH_DIR=/tmp/tkjaer/DaltonGfortranDebug
 rm -rf $TMP_DIR 

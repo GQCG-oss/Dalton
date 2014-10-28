@@ -603,6 +603,7 @@ contains
     !> ij loop and k loop buffer handling
     integer ::  nbuffs, ibuf, jbuf, kbuf
     integer,pointer :: tiles_in_buf(:)
+    integer(kind=ls_mpik), pointer :: req(:)
     logical,pointer :: needed(:)
 #ifdef VAR_OPENACC
     ! 6 is the unique number of handles
@@ -626,9 +627,13 @@ contains
     !this should not be set below 3
     nbuffs = DECinfo%CCSDPT_nbuffs_ijk
     if(nbuffs < 3) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 3",-1)
-    call mem_alloc(vvvo_pdm_buff,nvirt**3,nbuffs)
-    call mem_alloc(needed,nbuffs)
-    call mem_alloc(tiles_in_buf, nbuffs)
+    call mem_alloc( vvvo_pdm_buff, nvirt**3, nbuffs )
+    call mem_alloc( needed,       nbuffs )
+    call mem_alloc( tiles_in_buf, nbuffs )
+    call mem_alloc( req,          nbuffs )
+#ifdef VAR_MPI
+    if(alloc_in_dummy)call tensor_lock_wins(vvvo,'s',all_nodes=.true.)
+#endif
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
@@ -716,6 +721,7 @@ contains
 
  ijrun_par: do ij_count = 1,b_size + 1
 
+
                ! get value of ij from job disttribution list
                ij = jobs(ij_count)
 
@@ -740,11 +746,12 @@ contains
 
                end if
 
+
                !FIND i in buffer
-               call assoc_ptr_to_buf(i,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_i,vvvo_pdm_buff,ibuf)
+               call assoc_ptr_to_buf(i,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_i,vvvo_pdm_buff,ibuf,req)
 
                !FIND j in buffer
-               call assoc_ptr_to_buf(j,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_j,vvvo_pdm_buff,jbuf)
+               call assoc_ptr_to_buf(j,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_j,vvvo_pdm_buff,jbuf,req)
 
                ! select ij combination
                TypeOf_ij_combi: select case(ij_type)
@@ -768,9 +775,13 @@ contains
                   ! get the j'th v^3 tile only
                   call time_start_phase(PHASE_COMM)
 
-                  if(vvvo%lock_set(j))then
+                  if( alloc_in_dummy )then
 
-                     call tensor_unlock_win(vvvo,j)
+                     call lsmpi_wait(req(jbuf))
+
+                  else
+
+                     if(vvvo%lock_set(j)) call tensor_unlock_win(vvvo,j)
 
                   endif
 
@@ -807,11 +818,16 @@ contains
 
                      call time_start_phase(PHASE_COMM)
 
-                     if(vvvo%lock_set(i))then
+                     if( alloc_in_dummy )then
 
-                        call tensor_unlock_win(vvvo,i)
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
 
                      endif
+
 
                      call time_start_phase(PHASE_WORK)
 
@@ -843,9 +859,13 @@ contains
 
                      call time_start_phase(PHASE_COMM)
 
-                     if(vvvo%lock_set(i))then
+                     if( alloc_in_dummy )then
 
-                        call tensor_unlock_win(vvvo,i)
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
 
                      endif
 
@@ -885,11 +905,16 @@ contains
                      ! get the i'th v^3 tile
                      call time_start_phase(PHASE_COMM)
 
-                     if(vvvo%lock_set(i))then
+                     if( alloc_in_dummy )then
 
-                        call tensor_unlock_win(vvvo,i)
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
 
                      endif
+
 
                      call time_start_phase(PHASE_WORK)
 
@@ -924,15 +949,24 @@ contains
                      ! get the i'th and j'th v^3 tiles
                      call time_start_phase(PHASE_COMM)
 
-                     if(vvvo%lock_set(i))then
+                     if( alloc_in_dummy )then
 
-                        call tensor_unlock_win(vvvo,i)
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
 
                      endif
 
-                     if(vvvo%lock_set(j))then
 
-                        call tensor_unlock_win(vvvo,j)
+                     if( alloc_in_dummy )then
+
+                        call lsmpi_wait(req(jbuf))
+
+                     else
+
+                        if(vvvo%lock_set(j)) call tensor_unlock_win(vvvo,j)
 
                      endif
 
@@ -959,13 +993,14 @@ contains
                needed(ibuf) = .true.
                needed(jbuf) = .true.
 
+
         krun_par: do k=1,j
 
                      ! select type of tuple
                      tuple_type = -1
 
                      !FIND k in buffer
-                     call assoc_ptr_to_buf(k,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_k,vvvo_pdm_buff,kbuf)
+                     call assoc_ptr_to_buf(k,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_k,vvvo_pdm_buff,kbuf,req)
 
                      if ((i .eq. j) .and. (j .eq. k)) then
 
@@ -994,9 +1029,13 @@ contains
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
 
-                        if(vvvo%lock_set(k))then
+                        if( alloc_in_dummy )then
 
-                           call tensor_unlock_win(vvvo,k)
+                           call lsmpi_wait(req(kbuf))
+
+                        else
+
+                           if(vvvo%lock_set(k)) call tensor_unlock_win(vvvo,k)
 
                         endif
 
@@ -1044,9 +1083,13 @@ contains
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
 
-                        if(vvvo%lock_set(k))then
+                        if( alloc_in_dummy )then
 
-                           call tensor_unlock_win(vvvo,k)
+                           call lsmpi_wait(req(kbuf))
+
+                        else
+
+                           if(vvvo%lock_set(k)) call tensor_unlock_win(vvvo,k)
 
                         endif
 
@@ -1067,7 +1110,7 @@ contains
 
                      needed(kbuf) = .true.
 
-                     call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,i,j,k,ij_count,nbuffs,needed,tiles_in_buf,vvvo_pdm_buff)
+                     call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,i,j,k,ij_count,nbuffs,needed,tiles_in_buf,vvvo_pdm_buff,req)
 
                      ! generate tuple(s)
                      TypeOfTuple_par_ijk: select case(tuple_type)
@@ -1313,10 +1356,15 @@ contains
     stat = cublasDestroy_v2(cublas_handle)
 #endif
 
+#ifdef VAR_MPI
+    if(alloc_in_dummy)call tensor_unlock_wins(vvvo,all_nodes=.true.)
+#endif
+
     ! release ccsd_doubles_help_arrays
     call mem_dealloc(ccsd_doubles_portions_i)
     call mem_dealloc(ccsd_doubles_portions_j)
     call mem_dealloc(ccsd_doubles_portions_k)
+    call mem_dealloc( req )
 
     ! release pdm work arrays and job list
     call mem_dealloc(vvvo_pdm_buff)
@@ -1333,7 +1381,7 @@ contains
   end subroutine ijk_loop_par
 #endif
 
-  subroutine assoc_ptr_to_buf(tilenr,arr,nbuffs,buf_pos,buf_log,ptr,bg_buf,pos)
+  subroutine assoc_ptr_to_buf(tilenr,arr,nbuffs,buf_pos,buf_log,ptr,bg_buf,pos,req)
      implicit none
      integer, intent(in):: tilenr,nbuffs
      type(tensor), intent(inout) :: arr
@@ -1341,7 +1389,8 @@ contains
      logical, intent(inout):: buf_log(nbuffs)
      real(realk), intent(out),   pointer :: ptr(:)
      real(realk), intent(inout), pointer :: bg_buf(:,:)
-     integer, intent(out):: pos
+     integer, intent(out) :: pos
+     integer(kind=ls_mpik), intent(inout) :: req(nbuffs)
      integer :: i_search_buf,ts
      logical :: found
      integer(kind=ls_mpik) :: mode
@@ -1362,11 +1411,15 @@ contains
 
               pos          = i_search_buf
 
-              call tensor_lock_win(arr,tilenr,'s',assert=mode)
+              if( .not. alloc_in_dummy ) call tensor_lock_win(arr,tilenr,'s',assert=mode)
 
               call get_tile_dim(ts,arr,tilenr)
 
-              call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
+              if( alloc_in_dummy )then
+                 call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,req=req(pos))
+              else
+                 call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
+              endif
 
               buf_pos(pos) = tilenr
               buf_log(pos) = .true.
@@ -1407,7 +1460,7 @@ contains
   end subroutine find_tile_pos_in_buf
 
   subroutine preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,current_i,current_j,current_k,current_ij_count,nbuffs,needed,&
-        &tiles_in_buf,vvvo_pdm_buff)
+        &tiles_in_buf,vvvo_pdm_buff,req)
      implicit none
      type(tensor), intent(inout) :: vvvo
      integer, intent(in) :: b_size,current_i, current_j, current_k, current_ij_count, nbuffs,nocc
@@ -1415,6 +1468,7 @@ contains
      logical, intent(inout) :: needed(nbuffs)
      integer, intent(inout) :: tiles_in_buf(nbuffs)
      real(realk), pointer, intent(inout) :: vvvo_pdm_buff(:,:)
+     integer(kind=ls_mpik),intent(inout) :: req(nbuffs)
 
      integer :: i_test,j_test,k_test,i_search_buf
      integer :: ibuf_test, jbuf_test, kbuf_test, ij_count_test, ij_test
@@ -1461,10 +1515,15 @@ contains
               do i_search_buf = 1, nbuffs
                  if(.not.needed(i_search_buf))then
                     kbuf_test = i_search_buf
-                    call tensor_lock_win(vvvo,k_test,'s',assert=mode)
+                    if( .not.alloc_in_dummy ) call tensor_lock_win(vvvo,k_test,'s',assert=mode)
                     call get_tile_dim(ts,vvvo,k_test)
-                    call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
-                       &lock_set=.true.,flush_it=.true.)
+                    if( alloc_in_dummy )then
+                       call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
+                          &lock_set=.true.,req=req(kbuf_test))
+                    else
+                       call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
+                          &lock_set=.true.,flush_it=.true.)
+                    endif
                     needed(kbuf_test)       = .true.
                     tiles_in_buf(kbuf_test) = k_test
 
@@ -1525,10 +1584,15 @@ contains
                  do i_search_buf = 1, nbuffs
                     if(.not.needed(i_search_buf))then
                        jbuf_test = i_search_buf
-                       call tensor_lock_win(vvvo,j_test,'s',assert=mode)
+                       if( .not. alloc_in_dummy ) call tensor_lock_win(vvvo,j_test,'s',assert=mode)
                        call get_tile_dim(ts,vvvo,j_test)
-                       call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
-                          &lock_set=.true.,flush_it=.true.)
+                       if(alloc_in_dummy)then
+                          call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
+                             &lock_set=.true.,req=req(jbuf_test))
+                       else
+                          call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
+                             &lock_set=.true.,flush_it=.true.)
+                       endif
                        needed(jbuf_test)       = .true.
                        tiles_in_buf(jbuf_test) = j_test
 
@@ -1548,10 +1612,15 @@ contains
 
                        ibuf_test = i_search_buf
 
-                       call tensor_lock_win(vvvo,i_test,'s',assert=mode)
+                       if( .not. alloc_in_dummy ) call tensor_lock_win(vvvo,i_test,'s',assert=mode)
                        call get_tile_dim(ts,vvvo,i_test)
-                       call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
-                          &lock_set=.true.,flush_it=.true.)
+                       if(alloc_in_dummy )then
+                          call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
+                             &lock_set=.true.,req=req(ibuf_test))
+                       else
+                          call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
+                             &lock_set=.true.,flush_it=.true.)
+                       endif
 
                        needed(ibuf_test)       = .true.
                        tiles_in_buf(ibuf_test) = i_test
@@ -8918,7 +8987,8 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
+    integer :: p,pos
     call time_start_phase(PHASE_WORK)
 
     o3v           = nocc*nocc*nocc*nvirt
@@ -9193,12 +9263,21 @@ contains
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
 
              call time_start_phase(PHASE_COMM)
+
 #ifdef VAR_HAVE_MPI3
-             call tensor_lock_win(vvvo,i,'s',assert=mode)
+             call tensor_lock_win(vvvo,i,'s')
 #endif
              !call tensor_accumulate_tile(vvvo,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
 
-             dest = get_residence_of_tile(i,vvvo) 
+             call get_residence_of_tile(dest,i,vvvo,idx_on_node = pos)
+
+             if( alloc_in_dummy )then
+                wi_idx = 1
+                p      = pos - 1
+             else
+                wi_idx = i 
+                p      = 0
+             endif
 
              do first_el_i_block=1,v3,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
@@ -9209,10 +9288,11 @@ contains
                    &(mod(v3-first_el_i_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
                    &nel2t=int(mod(v3,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
 
-                call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,first_el_i_block,dest,vvvo%wi(i))
+
+                call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,p+first_el_i_block,dest,vvvo%wi(wi_idx))
 
 #ifdef VAR_HAVE_MPI3
-                call lsmpi_win_flush(vvvo%wi(i),rank=dest,local=.true.)
+                call lsmpi_win_flush(vvvo%wi(wi_idx),rank=dest,local=.true.)
 #else
                 call tensor_unlock_win(vvvo,i)
 #endif
@@ -9261,6 +9341,8 @@ contains
     call mem_dealloc(distribution)
 
 #endif
+
+    call print_norm(vvvo,"VVVO norm",print_on_rank=0)
 
     ! free stuff
     ! **********
@@ -9348,7 +9430,8 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3,ov2
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
+    integer :: p,pos
     call time_start_phase(PHASE_WORK)
 
     o3v           = nocc*nocc*nocc*nvirt
@@ -9702,21 +9785,31 @@ contains
 #ifdef VAR_HAVE_MPI3
              call tensor_lock_win(vovv,tile,'s',assert=mode)
 #endif
-             dest = get_residence_of_tile(tile,vovv)
+             call get_residence_of_tile(dest,tile,vovv, idx_on_node = pos)
+
+             if( alloc_in_dummy )then
+                wi_idx = 1
+                p      = pos - 1
+             else
+                wi_idx = tile
+                p      = 0
+             endif
+
 
              do first_el_c_block=1,ov2*tile_size_tmp,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
                 call tensor_lock_win(vovv,tile,'s',assert=mode)
 #endif
+
                 nel2t=MAX_SIZE_ONE_SIDED
                 if(((ov2*tile_size_tmp-first_el_c_block)<MAX_SIZE_ONE_SIDED).and.&
                    &(mod(ov2*tile_size_tmp-first_el_c_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
                    &nel2t=int(mod(ov2*tile_size_tmp,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
 
-                call lsmpi_acc(tmp2(first_el_c_block:first_el_c_block+nel2t-1),nel2t,first_el_c_block,dest,vovv%wi(tile))
+                call lsmpi_acc(tmp2(first_el_c_block:first_el_c_block+nel2t-1),nel2t,p+first_el_c_block,dest,vovv%wi(wi_idx))
 
 #ifdef VAR_HAVE_MPI3
-                call lsmpi_win_flush(vovv%wi(tile),rank=dest,local=.true.)
+                call lsmpi_win_flush(vovv%wi(wi_idx),rank=dest,local=.true.)
 #else
                 call tensor_unlock_win(vovv,tile)
 #endif

@@ -2146,17 +2146,18 @@ CONTAINS
    use ls_pcm_scf, only: ls_pcm_energy_driver, ls_pcm_oper_ao_driver
 #endif
       IMPLICIT NONE
-      integer, INTENT(IN)         :: ndmat
+      integer, INTENT(IN)         :: ndmat, lupri,luerr
       TYPE(Matrix), INTENT(IN)    :: H1, D(ndmat)
       TYPE(Matrix), INTENT(INOUT) :: F(ndmat)
       type(lsitem) :: ls
       real(realk), INTENT(INOUT) :: Etotal(ndmat)
-      !
+      !local variables
       real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp,EK3,EK2
-      integer nbast, lupri,luerr,idmat
+      integer nbast,idmat,LUADMM
       logical :: Dsym,ADMMexchange
-      TYPE(Matrix) :: K(ndmat),dXC(ndmat)
+      TYPE(Matrix) :: K(ndmat),dXC(ndmat),Ksave
       logical :: PRINT_EK3
+      real(realk)  :: EcontADMM(5)
 #ifdef HAS_PCMSOLVER
       type(matrix) :: fockPCM(ndmat)
       real(realk)  :: Epol
@@ -2181,7 +2182,6 @@ CONTAINS
             call lsquit('Auxiliary Density Matrix Calculation requires NOINCREM',-1)
          ENDIF
 
-
          !We do the full Coulomb part with Full density
          do idmat=1,ndmat
             call mat_zero(F(idmat))
@@ -2195,34 +2195,66 @@ CONTAINS
             call mat_init(dXC(idmat),nbast,nbast)
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
+            IF(PRINT_EK3)THEN
+               ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
+               call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),1,Dsym,K(idmat))
+               EK3 = mat_dotproduct(K(idmat),D(idmat))
+               EcontADMM(1) = EK3
+               IF(ls%input%dalton%ADMMBASISFILE)THEN
+                  !save matrix
+                  call mat_init(Ksave,nbast,nbast)
+                  call mat_assign(Ksave,K(idmat))
+               ENDIF
+               call mat_zero(K(idmat))
+            ENDIF
 
-IF(PRINT_EK3)THEN
-   ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
-   call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
-   EK3 = mat_dotproduct(K(idmat),D(idmat))
-   call mat_zero(K(idmat))
-ENDIF
-
-            call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
-
-IF(PRINT_EK3)THEN
-   EK2 = mat_dotproduct(K(idmat),D(idmat))
-   write(*,*)     "E(K3)= ",EK3
-   write(lupri,*) "E(K3)= ",EK3
-   write(*,*)     "E(k2)= ",EK2
-   write(lupri,*) "E(k2)= ",EK2
-   write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
-   write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
-ENDIF
-
-            Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
-            call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
-            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
-            Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
-            EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
-            write(lupri,*) "ADMM exchange energy contribution: ",EADMM
-            call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
+            call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym,&
+                 & EcontADMM,ls%input%dalton%ADMMBASISFILE)
             
+            IF(PRINT_EK3)THEN
+               EK2 = mat_dotproduct(K(idmat),D(idmat))
+               write(*,*)     "E(K3)= ",EK3
+               write(lupri,*) "E(K3)= ",EK3
+               write(*,*)     "E(k2)= ",EK2
+               write(lupri,*) "E(k2)= ",EK2
+               write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
+               write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
+               IF(ls%input%dalton%ADMMBASISFILE)THEN
+                  LUADMM = -1                  
+                  write(lupri,*) "ADMMmin: K(D) energy = ",EcontADMM(1)
+                  write(lupri,*) "ADMMmin: X(D) energy = ",EcontADMM(2)
+                  write(lupri,*) "ADMMmin: k(d) energy = ",EcontADMM(3)
+                  write(lupri,*) "ADMMmin: x(d) energy = ",EcontADMM(4)
+                  EcontADMM(5) = EcontADMM(1) - EcontADMM(3) - EcontADMM(2) + EcontADMM(4)
+                  write(lupri,*) "===================================================================="
+                  write(lupri,*) "ADMMmin: K(D) - k(d) - X(D) + x(d) = ",EcontADMM(5)                  
+                  write(lupri,*) "===================================================================="
+                  CALL LSOPEN(LUADMM,'ADMMmin.dat','UNKNOWN','FORMATTED')
+                  WRITE(LUADMM,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)
+                  CALL LSCLOSE(LUADMM,'KEEP')
+               ENDIF
+            ENDIF
+            
+            IF(ls%input%dalton%ADMMBASISFILE)THEN
+               !add full exchange matrix contribution to the Coulomb matrix - Standard convergence
+               call mat_daxpy(1.E0_realk,Ksave,F(idmat))
+               call mat_free(Ksave)
+               Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+            ELSE
+               Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
+               call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
+               call mat_init(Ksave,nbast,nbast)
+               call mat_zero(Ksave)
+               write(lupri,*) "ADMM exchange energy contribution: ",fockenergy_f(K(idmat),D(idmat),Ksave,&
+                    & ls%input%dalton%unres,ls%input%potnuc,lupri)
+               call mat_free(Ksave)
+               Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+               Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
+               EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
+               write(lupri,*) "ADMM EdXC: ",EdXC(idmat)
+               write(lupri,*) "ADMM exchange energy contribution: ",EADMM
+               call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
+            ENDIF
                      
             call mat_free(K(idmat))
             call mat_free(dXC(idmat))

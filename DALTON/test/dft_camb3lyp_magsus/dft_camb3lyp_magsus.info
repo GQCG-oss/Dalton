@@ -1,9 +1,0 @@
-
-   dft_camb3lyp_magsus 
-   ----------------------
-   Molecule:         HOF
-   Wave Function:    DFT (CAM-B3LYP) / 6-31G** 
-   Test Purpose:     Test magnetizability and molecular
-                     rotational g-factor calculation with
-                     Coulomb attenuated functional 
-

@@ -1,8 +1,0 @@
-
-   dft_lda_molhes 
-   -------------
-   Molecule:         Ethane
-   Wave Function:    DFT (LDA) / STO-3G 
-   Test Purpose:     Test analytical molecular hessian and dipole
-                     gradient 
-

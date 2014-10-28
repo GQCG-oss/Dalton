@@ -30,6 +30,6 @@ if [[ -e  DALTON-Source.tar.gz ]]; then
 ./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing --int64 -D BUILDNAME="RBMR-Sisyphos-linux-gfortran472-omp-int64-openMPI-release" build
 
  cd build
- ctest -D Nightly -L linsca
+ ctest --track ReleaseBranch2014MakeRelease -D Nightly -L linsca
 fi
 exit 0

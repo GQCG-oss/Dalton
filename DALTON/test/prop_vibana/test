@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    prop_vibana
+#    -----------
+#    Molecule:         Pyrimidine cation
+#    Wave Function:    Open-shell HF / cc-pVDZ
+#    Test Purpose:     Vibrational analysis
 
 import os
 import sys
