@@ -20,6 +20,6 @@ if [[ -e  DALTON-Source.tar.gz ]]; then
  cd DALTON-Source
  ./setup --fc=gfortran --cc=gcc --cxx=g++ --omp -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-release" build
  cd build
- ctest -D Nightly -L linsca
+ ctest -D Nightly --track NightlyMakeRelease -L linsca
 fi
 exit 0
