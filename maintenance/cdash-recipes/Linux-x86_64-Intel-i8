@@ -48,7 +48,7 @@ if [ $MAKE_RELEASE -eq 1 ]; then
     cd DALTON-Source
 fi
 
-./setup --fc=ifort --cc=icc --cxx=icpc --mkl=sequential -D BUILDNAME=$BUILDNAME
+./setup --fc=ifort --cc=icc --cxx=icpc --mkl=sequential -D BUILDNAME=$BUILDNAME --int64
 cd build
 make -j$NUM_CORES
 ctest -D Nightly -j$NUM_CORES --track $TRACK
