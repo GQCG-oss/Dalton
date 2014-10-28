@@ -398,55 +398,77 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceCtoBSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCGen1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCGen2.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCGen3.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCGen4.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDGen1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDGen2.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDGen3.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoAGen.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoAGen.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCGen1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCGen2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDGen1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDGen2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoBGen.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBGen.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegQ1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegQ2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegQ3.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegQ4.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegQ1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegQ2.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegQ3.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoASegQ.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoASegQ.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCSegQ1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCSegQ2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSegQ1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSegQ2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoBSegQ.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBSegQ.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegP1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegP2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegP3.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegP4.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegP1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegP2.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegP3.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoASegP.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoASegP.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCSegP1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCSegP2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSegP1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSegP2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoBSegP.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBSegP.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg3.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg4.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSeg1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSeg2.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSeg3.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoASeg.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoASeg.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCSeg1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCSeg2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSeg1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSeg2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoBSeg.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBSeg.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg1Prim1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg1Prim2.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg1Prim3.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg1Prim4.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSeg1Prim1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSeg1Prim2.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSeg1Prim3.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoASeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoASeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCSeg1Prim1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoCSeg1Prim2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSeg1Prim1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSeg1Prim2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoBSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_PrimContractSegQ.F90

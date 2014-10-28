@@ -5646,6 +5646,8 @@ contains
       endif
 
     endif
+#else
+    nreqs = 0
 #endif
   end subroutine lsmpi_rget_realkV_wrapper8
   subroutine lsmpi_rget_realkV_wrapper4(buf,nelms,pos,dest,win,req,nreqs)
@@ -5713,6 +5715,8 @@ contains
       endif
 
     endif
+#else
+    nreqs = 0
 #endif
   end subroutine lsmpi_rget_realkV_wrapper4
 
