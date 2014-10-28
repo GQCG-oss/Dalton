@@ -9,9 +9,9 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string = 'TEST STRING',
+f.add(string = 'Total MP2-R12/A energy',
       rel_tolerance = 1.0e-7)
 
-test.run(['cc2_r12_he.dal'], ['tmp.mol'], {'out': f})
+test.run(['cc2_r12_he.dal'], ['cc2_r12_he.mol'], {'out': f})
 
 sys.exit(test.return_code)

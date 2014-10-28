@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['ccsdr12_be.dal'], ['tmp.mol'], {'out': f})
+test.run(['ccsdr12_be.dal'], ['ccsdr12_be.mol'], {'out': f})
 
 sys.exit(test.return_code)
