@@ -569,7 +569,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          & t1_final,t2_final,VOVO,.false.,local,.false.)
    end if
 
-   call tensor_free(t1_final)
+   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
+      call tensor_free(t1_final)
+   endif
    call tensor_free(t2_final)
    call tensor_free(VOVO)
 
