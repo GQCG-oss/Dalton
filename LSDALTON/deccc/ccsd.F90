@@ -1472,21 +1472,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call get_currently_available_memory(MemFree3)
 
-     print *,infpar%lg_mynum,"have",MemFree,MemFree2,MemFree4,MemFree3
-     call lsmpi_barrier(infpar%lg_comm)
+     !print *,infpar%lg_mynum,"have",MemFree,MemFree2,MemFree4,MemFree3
+     !call lsmpi_barrier(infpar%lg_comm)
 
-     print *,infpar%lg_mynum,"first touching w0",w0%n,(w0%n*8.0E0_realk)/1024.0**3
-     w0%d=0.0E0_realk
-     call lsmpi_barrier(infpar%lg_comm)
-     print *,infpar%lg_mynum,"first touching w1",w1%n,(w1%n*8.0E0_realk)/1024.0**3
-     w1%d=0.0E0_realk
-     call lsmpi_barrier(infpar%lg_comm)
-     print *,infpar%lg_mynum,"first touching w2",w2%n,(w2%n*8.0E0_realk)/1024.0**3
-     w2%d=0.0E0_realk
-     call lsmpi_barrier(infpar%lg_comm)
-     print *,infpar%lg_mynum,"first touching w3",w3%n,(w3%n*8.0E0_realk)/1024.0**3
-     w3%d=0.0E0_realk
-     call lsmpi_barrier(infpar%lg_comm)
+     !print *,infpar%lg_mynum,"first touching w0",w0%n,(w0%n*8.0E0_realk)/1024.0**3
+     !w0%d=0.0E0_realk
+     !call lsmpi_barrier(infpar%lg_comm)
+     !print *,infpar%lg_mynum,"first touching w1",w1%n,(w1%n*8.0E0_realk)/1024.0**3
+     !w1%d=0.0E0_realk
+     !call lsmpi_barrier(infpar%lg_comm)
+     !print *,infpar%lg_mynum,"first touching w2",w2%n,(w2%n*8.0E0_realk)/1024.0**3
+     !w2%d=0.0E0_realk
+     !call lsmpi_barrier(infpar%lg_comm)
+     !print *,infpar%lg_mynum,"first touching w3",w3%n,(w3%n*8.0E0_realk)/1024.0**3
+     !w3%d=0.0E0_realk
+     !call lsmpi_barrier(infpar%lg_comm)
 
      !allocate semi-permanent storage arrays for loop
      !print *,"allocing help things:",o2v*MaxActualDimGamma*2,&
