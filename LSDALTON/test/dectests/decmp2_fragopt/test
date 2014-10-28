@@ -14,11 +14,11 @@ f.add(string = 'Final HF energy',
 
 #the individual errors are 1e-4 but they can accumulate
 f.add(string = 'Correlation energy',
-      rel_tolerance = 6.0e-4)
+      rel_tolerance = 1.2e-3)
 
 #Mostly determined by the HF energy
 f.add(string = 'Total MP2 energy',
-      rel_tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-5)
 
 f.add(from_string = 'CORE LOCALITY',
       to_string   = 'Min. sigma_4 and orb.number',
