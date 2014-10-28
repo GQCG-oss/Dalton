@@ -12,11 +12,13 @@ f = Filter()
 f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
+#the individual errors are 1e-4 but they can accumulate
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.0e-7)
+      rel_tolerance = 6.0e-4)
 
+#Mostly determined by the HF energy
 f.add(string = 'Total MP2 energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-6)
 
 f.add(from_string = 'CORE LOCALITY',
       to_string   = 'Min. sigma_4 and orb.number',
@@ -30,6 +32,7 @@ f.add(from_string = 'VIRTUAL LOCALITY',
       to_string   = 'Min. sigma_4 and orb.number',
       abs_tolerance = 1.0e-4)
 
+#Using a FOT of 1.e-4!
 f.add(from_string = 'MP2 occupied single energies',
       to_string   = 'MP2 Lagrangian correlation energy',
       abs_tolerance = 1.0e-4)
