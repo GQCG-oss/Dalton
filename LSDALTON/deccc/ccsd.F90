@@ -952,16 +952,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
      logical :: MoTrans, NoSymmetry,SameMol
 #else
-     type(batchtoorb), pointer :: batch2orbAlpha(:)
-     type(batchtoorb), pointer :: batch2orbGamma(:)
      Character(80)        :: FilenameCS,FilenamePS
      Character(80),pointer:: BatchfilenamesCS(:,:)
      Character(80),pointer:: BatchfilenamesPS(:,:)
      logical :: FoundInMem,doscreen
-     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+     integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+     integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
      TYPE(DECscreenITEM)    :: DecScreen
 #endif
+     integer, pointer :: batchdimAlpha(:), batchdimGamma(:)     
+     type(batchtoorb), pointer :: batch2orbAlpha(:)
+     type(batchtoorb), pointer :: batch2orbGamma(:)
      Character            :: INTSPEC(5)
      logical :: fullRHS
      integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
@@ -1539,13 +1540,47 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_alloc( tasks, lenI2 )
 
         myload = 0
-
-
         tasks  = 0
-        call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
-           &batchdimGamma,myload,lg_nnod,lg_me,scheme,no,nv,nb,batch2orbAlpha,&
-           &batch2orbGamma)
 
+#ifdef VAR_ICHOR
+        call mem_alloc(batchdimAlpha,nbatchesAlpha)
+        do idx=1,nbatchesAlpha
+           batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+        enddo
+        call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+        do idx=1,nbatchesAlpha
+           call mem_alloc(batch2orbAlpha(idx)%orbindex,1)
+           batch2orbAlpha(idx)%orbindex(1) = AOAlphabatchinfo(idx)%orbstart
+           batch2orbAlpha(idx)%norbindex = 1
+        end do
+        call mem_alloc(batchdimGamma,nbatchesGamma)
+        do idx=1,nbatchesGamma
+           batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+        enddo
+        call mem_alloc(batch2orbGamma,nbatchesGamma)
+        do idx=1,nbatchesGamma
+           call mem_alloc(batch2orbGamma(idx)%orbindex,1)
+           batch2orbGamma(idx)%orbindex(1) = AOGammabatchinfo(idx)%orbstart
+           batch2orbGamma(idx)%norbindex = 1
+        end do
+        call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,&
+             & batchdimAlpha,batchdimGamma,myload,lg_nnod,lg_me,scheme,&
+             & no,nv,nb,batch2orbAlpha,batch2orbGamma)
+        call mem_dealloc(batchdimAlpha)
+        call mem_dealloc(batchdimGamma)
+        do idx=1,nbatchesAlpha
+           call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+        end do
+        call mem_dealloc(batch2orbAlpha)
+        do idx=1,nbatchesGamma
+           call mem_dealloc(batch2orbGamma(idx)%orbindex)
+        end do
+        call mem_dealloc(batch2orbGamma)
+#else
+        call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
+             &batchdimGamma,myload,lg_nnod,lg_me,scheme,no,nv,nb,batch2orbAlpha,&
+             &batch2orbGamma)
+#endif
 
      else
 

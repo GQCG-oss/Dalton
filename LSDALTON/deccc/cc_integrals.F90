@@ -2320,11 +2320,12 @@ contains
     Character(80),pointer:: BatchfilenamesCS(:,:)
     Character(80),pointer:: BatchfilenamesPS(:,:)
     logical :: FoundInMem,doscreen
-    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
     TYPE(DECscreenITEM)  :: DecScreen
 #endif
-    Character            :: INTSPEC(5)
+    integer, pointer :: batchdimAlpha(:),batchdimGamma(:)
+    Character        :: INTSPEC(5)
     logical :: fullRHS
     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
@@ -2622,8 +2623,24 @@ contains
     call mem_alloc(jobdist,nbatchesAlpha*nbatchesGamma)
     !JOB distribution
 #ifdef VAR_MPI
+
+
+#ifdef VAR_ICHOR
+    call mem_alloc(batchdimAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+    enddo
+    call mem_alloc(batchdimGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+    enddo
+#endif
     call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
          &batchdimGamma,myload,nnod,me)
+#ifdef VAR_ICHOR
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchdimGamma)
+#endif
 #else
     jobdist = 0
 #endif

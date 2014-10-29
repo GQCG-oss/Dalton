@@ -133,11 +133,12 @@ contains
 #else
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
-    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
     TYPE(DECscreenITEM)   :: DecScreen
     Character(80)        :: FilenameCS,FilenamePS
 #endif
+    integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
     logical :: FoundInMem,FullRHS,doscreen
 #ifdef VAR_OMP
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
@@ -640,8 +641,25 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #ifdef VAR_MPI
       call mem_alloc(decmpitasks,nbatchesAlpha*nbatchesGamma)
       if(wakeslave) then  ! share workload with slave(s)
+
+#ifdef VAR_ICHOR
+         call mem_alloc(batchdimAlpha,nbatchesAlpha)
+         do idx=1,nbatchesAlpha
+            batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+         enddo
+         call mem_alloc(batchdimGamma,nbatchesGamma)
+         do idx=1,nbatchesGamma
+            batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+         enddo
+#endif
          call distribute_mpi_jobs(decmpitasks,nbatchesAlpha,nbatchesGamma,&
               & batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+
+#ifdef VAR_ICHOR
+         call mem_dealloc(batchdimAlpha)
+         call mem_dealloc(batchdimGamma)
+#endif
+
          if(DECinfo%PL>0) write(DECinfo%output,'(a,i6,a,i15)') 'Rank ', infpar%mynum, ' has load ', myload
       else ! master do all jobs
          decmpitasks=infpar%lg_mynum
