@@ -1,8 +1,5 @@
 include(SaveCompilerFlags)
 
-# check whether we can use -xHost on this machine
-include(ConfigXHostFlag)
-
 if(CMAKE_C_COMPILER_WORKS)
     include(CFlags)
 endif()
