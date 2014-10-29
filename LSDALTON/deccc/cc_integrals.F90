@@ -851,13 +851,13 @@ contains
 #else
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
-    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:)
     integer, pointer :: batchsizeAlpha(:), batchindexAlpha(:)
-    integer, pointer :: orb2batchGamma(:), batchdimGamma(:)
+    integer, pointer :: orb2batchAlpha(:),orb2batchGamma(:)
     integer, pointer :: batchsizeGamma(:), batchindexGamma(:)
     ! Screening integrals stuff:
     type(DECscreenITEM) :: DecScreen
 #endif
+    integer, pointer :: batchdimAlpha(:),batchdimGamma(:)
     Character :: INTSPEC(5)
     logical :: fullRHS, doscreen
     integer :: MaxAllowedDimAlpha, MaxActualDimAlpha, nbatchesAlpha
@@ -1188,9 +1188,45 @@ contains
 
     myload = 0
     tasks  = 0
+#ifdef VAR_ICHOR
+    call mem_alloc(batchdimAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+    enddo
+    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       call mem_alloc(batch2orbAlpha(idx)%orbindex,1)
+       batch2orbAlpha(idx)%orbindex(1) = AOAlphabatchinfo(idx)%orbstart
+       batch2orbAlpha(idx)%norbindex = 1
+    end do
+    call mem_alloc(batchdimGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+    enddo
+    call mem_alloc(batch2orbGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       call mem_alloc(batch2orbGamma(idx)%orbindex,1)
+       batch2orbGamma(idx)%orbindex(1) = AOGammabatchinfo(idx)%orbstart
+       batch2orbGamma(idx)%norbindex = 1
+    end do
     call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
          &batchdimGamma,myload,nnod,myrank,4,no,nv,nb,batch2orbAlpha,&
          &batch2orbGamma)
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchdimGamma)
+    do idx=1,nbatchesAlpha
+       call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+    end do
+    call mem_dealloc(batch2orbAlpha)
+    do idx=1,nbatchesGamma
+       call mem_dealloc(batch2orbGamma(idx)%orbindex)
+    end do
+    call mem_dealloc(batch2orbGamma)
+#else
+    call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
+         &batchdimGamma,myload,nnod,myrank,4,no,nv,nb,batch2orbAlpha,&
+         &batch2orbGamma)
+#endif
 #endif
     myload = 0
 
