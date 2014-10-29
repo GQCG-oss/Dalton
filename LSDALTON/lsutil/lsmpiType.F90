@@ -5702,7 +5702,11 @@ contains
          if( nreqs > size(req) )call lsquit("ERROR(lsmpi_rget_realkV_wrapper4):not enough request handles",-1)
       endif
 
+#ifdef VAR_HAVE_MPI3
       call MPI_RGET(buf,n,MPI_DOUBLE_PRECISION,dest,offset,n,MPI_DOUBLE_PRECISION,win,req(1),ierr)
+#else
+      call lsquit("ERROR(lsmpi_racc_realkV_wrapper4): this routine is MPI 3 only ",-1)
+#endif
 
       if(ierr.ne.0)then
         call lsquit("Error(lsmpi_rget_realkV_wrapper4)",ierr)

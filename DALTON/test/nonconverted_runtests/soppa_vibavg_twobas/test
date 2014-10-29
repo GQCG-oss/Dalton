@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['soppa_vibavg_twobas.dal'], ['tmp.mol'], {'out': f})
+test.run(['soppa_vibavg_twobas.dal'], ['soppa_vibavg_twobas.mol'], {'out': f})
 
 sys.exit(test.return_code)

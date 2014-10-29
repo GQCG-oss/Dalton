@@ -558,10 +558,12 @@ contains
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
        case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
+#endif
        case('.CCSDFORCE_SCHEME');         DECinfo%force_scheme         = .true.
                                           read(input,*) DECinfo%en_mem
        case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
+#ifdef MOD_UNRELEASED
        ! - PNO-CCSD SPECIFIC KEYWORDS
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.

@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['pehf_beta.dal'], ['tmp.mol'], {'out': f})
+test.run(['pehf_beta.dal'], ['pehf_beta.mol'], {'out': f})
 
 sys.exit(test.return_code)

@@ -1123,10 +1123,11 @@ C
                IF (MULFIL) NREC = ICOUNT
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
                DO 110 I = 1,LENGTH4
-                  IR = IBTAND(IBTSHR(IBUF4(I),2*NBITS),IBIT1)
+                  I_PQR = IBUF4(I) ! change to default integer type
+                  IR = IBTAND(IBTSHR(I_PQR,2*NBITS),IBIT1)
                   IF (IR .EQ. IGAM) THEN
-                     IP = IBTAND(       IBUF4(I)         ,IBIT1)
-                     IQ = IBTAND(IBTSHR(IBUF4(I),  NBITS),IBIT1)
+                     IP = IBTAND(       I_PQR         ,IBIT1)
+                     IQ = IBTAND(IBTSHR(I_PQR,  NBITS),IBIT1)
                      IADR = KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
                   ENDIF
@@ -1145,10 +1146,12 @@ C
                IF (MULFIL) NREC = ICOUNT
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
                DO 130 I = 1,LENGTH4
-                  IR = IBTAND(       IBUF4(2*I-1)       ,IBIT1)
+                  I_PQ = IBUF4(2*I  ) ! change to default integer type
+                  I_RS = IBUF4(2*I-1) ! change to default integer type
+                  IR = IBTAND(       I_RS       ,IBIT1)
                   IF (IR .EQ. IGAM) THEN
-                     IP = IBTAND(       IBUF4(2*I  )       ,IBIT1)
-                     IQ = IBTAND(IBTSHR(IBUF4(2*I  ),NBITS),IBIT1)
+                     IP = IBTAND(       I_PQ       ,IBIT1)
+                     IQ = IBTAND(IBTSHR(I_PQ,NBITS),IBIT1)
                      IADR = KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
                   ENDIF
@@ -3125,7 +3128,8 @@ C
                NREC   = J
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
                DO 110 I = 1,LENGTH4
-                  IR = IBTAND(IBTSHR(IBUF4(I),2*NBITS),IBIT1)
+                  I_PQR = IBUF4(I) ! change to default integer type
+                  IR = IBTAND(IBTSHR(I_PQR,2*NBITS),IBIT1)
                   LSV = -1
                   DO L = 1,ICOUNT
                      IF (IR .EQ. KGAM(L,1)) THEN
@@ -3133,8 +3137,8 @@ C
                      ENDIF
                   ENDDO 
                   IF (LSV .GT. 0) THEN
-                     IP = IBTAND(       IBUF4(I)         ,IBIT1)
-                     IQ = IBTAND(IBTSHR(IBUF4(I),  NBITS),IBIT1)
+                     IP = IBTAND(       I_PQR         ,IBIT1)
+                     IQ = IBTAND(IBTSHR(I_PQR,  NBITS),IBIT1)
                      IADR = NNBST(ISYMGD)*(LSV-1) + KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
                   ENDIF
@@ -3163,7 +3167,9 @@ C
                NREC   = J
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
                DO 130 I = 1,LENGTH4
-                  IR = IBTAND(       IBUF4(2*I-1)       ,IBIT1)
+                  I_PQ = IBUF4(2*I  ) ! change to default integer type
+                  I_RS = IBUF4(2*I-1) ! change to default integer type
+                  IR = IBTAND(       I_RS       ,IBIT1)
                   LSV = -1
                   DO L = 1,ICOUNT
                      IF (IR .EQ. KGAM(L,1)) THEN
@@ -3171,8 +3177,8 @@ C
                      ENDIF
                   ENDDO 
                   IF (LSV .GT. 0) THEN
-                     IP = IBTAND(       IBUF4(2*I  )       ,IBIT1)
-                     IQ = IBTAND(IBTSHR(IBUF4(2*I  ),NBITS),IBIT1)
+                     IP = IBTAND(       I_PQ       ,IBIT1)
+                     IQ = IBTAND(IBTSHR(I_PQ,NBITS),IBIT1)
                      IADR = NNBST(ISYMGD)*(LSV-1) + KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
                   ENDIF
@@ -4398,10 +4404,11 @@ C
                NREC   = J
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
                DO 110 I = 1,LENGTH4
-                  IA = IBTAND(IBTSHR(IBUF4(I),3*NBITS),IBIT1)
-                  IB = IBTAND(IBTSHR(IBUF4(I),2*NBITS),IBIT1)
-                  IC = IBTAND(IBTSHR(IBUF4(I),  NBITS),IBIT1)
-                  ID = IBTAND(       IBUF4(I)         ,IBIT1)
+                  I_ABCD = IBUF4(I) ! change to default integer type
+                  IA = IBTAND(IBTSHR(I_ABCD,3*NBITS),IBIT1)
+                  IB = IBTAND(IBTSHR(I_ABCD,2*NBITS),IBIT1)
+                  IC = IBTAND(IBTSHR(I_ABCD,  NBITS),IBIT1)
+                  ID = IBTAND(       I_ABCD         ,IBIT1)
                   IADR = NUMDIA*(JNDEXB(IB) - 1) + JNDEXA(IA) 
                   XINT(IADR) = RBUF(I)
                   IF (ISHLA .EQ. ISHLB) THEN
@@ -4422,10 +4429,12 @@ C
                NREC   = J
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
                DO 130 I = 1,LENGTH4
-                  IA = IBTAND(IBTSHR(IBUF4(2*I-1),NBITS),IBIT1)
-                  IB = IBTAND(       IBUF4(2*I-1)       ,IBIT1)
-                  IC = IBTAND(IBTSHR(IBUF4(2*I  ),NBITS),IBIT1)
-                  ID = IBTAND(       IBUF4(2*I  )       ,IBIT1)
+                  I_AB = IBUF4(2*I  ) ! change to default integer type
+                  I_CD = IBUF4(2*I-1) ! change to default integer type
+                  IA = IBTAND(IBTSHR(I_AB,NBITS),IBIT1)
+                  IB = IBTAND(       I_AB       ,IBIT1)
+                  IC = IBTAND(IBTSHR(I_CD,NBITS),IBIT1)
+                  ID = IBTAND(       I_CD       ,IBIT1)
                   IADR = NUMDIA*(JNDEXB(IB) - 1) + JNDEXA(IA) 
                   XINT(IADR) = RBUF(I)
                   IF (ISHLA .EQ. ISHLB) THEN
