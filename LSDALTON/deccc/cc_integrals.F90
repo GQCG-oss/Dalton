@@ -849,14 +849,14 @@ contains
     integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
     logical :: MoTrans, NoSymmetry,SameMol
 #else
-    type(batchtoorb), pointer :: batch2orbAlpha(:)
-    type(batchtoorb), pointer :: batch2orbGamma(:)
     integer, pointer :: batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchAlpha(:),orb2batchGamma(:)
     integer, pointer :: batchsizeGamma(:), batchindexGamma(:)
     ! Screening integrals stuff:
     type(DECscreenITEM) :: DecScreen
 #endif
+    type(batchtoorb), pointer :: batch2orbAlpha(:)
+    type(batchtoorb), pointer :: batch2orbGamma(:)
     integer, pointer :: batchdimAlpha(:),batchdimGamma(:)
     Character :: INTSPEC(5)
     logical :: fullRHS, doscreen
