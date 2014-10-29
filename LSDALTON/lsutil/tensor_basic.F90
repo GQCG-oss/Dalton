@@ -292,8 +292,8 @@ module tensor_basic_module
 
            arr%ti(i)%t => null()
 
-           call mem_dealloc(arr%ti(i)%d)
            dim2 = dble(size(arr%ti(i)%d(:)))
+           call mem_dealloc(arr%ti(i)%d)
            !$OMP CRITICAL
            tensor_aux_deallocd_mem   = tensor_aux_deallocd_mem   + dim2 
            tensor_memory_in_use      = tensor_memory_in_use      - dim2
