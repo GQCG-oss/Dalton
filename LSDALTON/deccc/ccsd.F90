@@ -1015,9 +1015,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      time_Esing_comm      = 0.0E0_realk
      commtime             = 0.0E0_realk
 #ifdef VAR_MPI
-     unlock_time   = time_lsmpi_win_unlock 
-     waiting_time  = time_lsmpi_wait
-     flushing_time = time_lsmpi_win_flush
+     unlock_time          = time_lsmpi_win_unlock 
+     waiting_time         = time_lsmpi_wait
+     flushing_time        = time_lsmpi_win_flush
+#else
+     unlock_time          = 0.0E0_realk 
+     waiting_time         = 0.0E0_realk
+     flushing_time        = 0.0E0_realk
 #endif
 
 

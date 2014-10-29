@@ -2297,22 +2297,35 @@ contains
     integer(kind=long) :: maxsize
     logical :: master
     integer(kind=ls_mpik) :: me, nnod
-    integer, pointer :: jobdist(:)
+    integer               :: lenI2, modeBidx(2), modeBdim(2), el,jobidx,pos
+    integer, pointer      :: jobdist(:)
+    type(c_ptr)           :: jobdistc
+    integer(kind=ls_mpik) :: jobdistw
     real(realk), pointer :: work(:)
     integer(kind=long) :: w1size, w2size
+    real(realk) :: phase_counters(nphases),unlock_time, waiting_time, flushing_time, timers(6), total_integral_time
     real(realk), parameter :: fraction_of = 0.8E0_realk
-
-    call time_start_phase( PHASE_WORK )
-
-
-    master  = .true.
-    me      = 0
-    nnod    = 1
-    magic   = 3
+    logical :: dynamic_load
 #ifdef VAR_MPI
-    master  = (infpar%lg_mynum == infpar%master)
-    me      = infpar%lg_mynum
-    nnod    = infpar%lg_nodtot
+    integer(kind=ls_mpik), parameter :: mode = MPI_MODE_NOCHECK
+#endif
+
+    call time_start_phase( PHASE_WORK, twall = total_integral_time )
+    call time_phases_get_current(current_wt=phase_counters)
+
+
+    master        = .true.
+    me            = 0
+    nnod          = 1
+    magic         = 3
+    dynamic_load  = DECinfo%dyn_load
+#ifdef VAR_MPI
+    master        = (infpar%lg_mynum == infpar%master)
+    me            = infpar%lg_mynum
+    nnod          = infpar%lg_nodtot
+    unlock_time   = time_lsmpi_win_unlock 
+    waiting_time  = time_lsmpi_wait
+    flushing_time = time_lsmpi_win_flush
 #endif
 
 
@@ -2335,10 +2348,10 @@ contains
     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)               = 'C' !C = Coulomb operator
 #ifdef VAR_ICHOR
-    iprint = 0           !print level for Ichor Integral code
-    MoTrans = .FALSE.    !Do not transform to MO basis! 
+    iprint     = 0       !print level for Ichor Integral code
+    MoTrans    = .FALSE. !Do not transform to MO basis! 
     NoSymmetry = .FALSE. !Use Permutational Symmetry! 
-    SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+    SameMol    = .TRUE.  !Same molecule on all centers of the 4 center 2 electron integral
     !Determine the full number of AO batches - not to be confused with the batches of AOs
     !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
     iAO = 1
@@ -2392,22 +2405,52 @@ contains
        alp: do i = MinAObatch, nb
           gamm: do k = MinAObatch, nb
 
-             maxsize=max(max(nb**2*i*k,n1*n2*k*i),n1*n2*n3*n4)
-             maxsize=maxsize + max(n1*nb*i*k,n1*n2*n3*k)
-             if(collective) maxsize = maxsize + n1*n2*n3*n4
+             w1size = get_work_array_size(1,n1,n2,n3,n4,nb,i,k)
+             w2size = get_work_array_size(2,n1,n2,n3,n4,nb,i,k)
+
+             maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
 
              if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
-                if(nba <= MinAObatch .and. nbg<= MinAObatch .and. collective)then
+
+                if(i <= MinAObatch .and. k <= MinAObatch .and. collective)then
+
                    collective = .false.
+                   exit alp
+
                 else
+
                    nba = i
                    nbg = k - 1
+
                    exit alp
+
                 endif
              endif
 
           enddo gamm
        enddo alp
+
+       if(.not. collective)then
+          alp_nc: do i = MinAObatch, nb
+             gamm_nc: do k = MinAObatch, nb
+
+                w1size = get_work_array_size(1,n1,n2,n3,n4,nb,i,k)
+                w2size = get_work_array_size(2,n1,n2,n3,n4,nb,i,k)
+
+                maxsize = w1size + w2size
+
+                if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+
+                   nba = i
+                   nbg = k - 1
+
+                   exit alp_nc
+
+                endif
+
+             enddo gamm_nc
+          enddo alp_nc
+       endif
 
 
        if(DECinfo%manual_batchsizes)then
@@ -2428,9 +2471,18 @@ contains
           endif
        endif
 
-       maxsize=max(max(nb**2*nba*nbg,n1*n2*nba*nbg),n1*n2*n3*n4)
-       maxsize=maxsize + max(n1*nb*nba*nbg,n1*n2*n3*nbg)
-       if(collective) maxsize = maxsize + n1*n2*n3*n4
+       w1size=get_work_array_size(1,n1,n2,n3,n4,nb,nba,nbg)
+       w2size=get_work_array_size(2,n1,n2,n3,n4,nb,nba,nbg)
+
+       if(DECinfo%PL>2)then
+          print *,"INFO(get_mo_integral_par): c",collective,"MinAObatch",MinAObatch,&
+             &"nba",nba,"nbg",nbg,"size 1",w1size,"size 2",w2size
+       endif
+
+       maxsize = w1size
+       maxsize = maxsize + w2size
+
+       if(collective) maxsize = maxsize + (i8*n1*n2)*n3*n4
 
        if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
 
@@ -2450,6 +2502,7 @@ contains
        call time_start_phase( PHASE_COMM )
        call ls_mpibcast(MaxAllowedDimAlpha,infpar%master,infpar%lg_comm)
        call ls_mpibcast(MaxAllowedDimGamma,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(collective,infpar%master,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
 #endif
     endif
@@ -2547,13 +2600,16 @@ contains
        batch2orbAlpha(idx)%orbindex(K) = iorb
     end do
 #endif
+    w1size=get_work_array_size(1,n1,n2,n3,n4,nb,MaxActualDimAlpha,MaxActualDimGamma)
+    w2size=get_work_array_size(2,n1,n2,n3,n4,nb,MaxActualDimAlpha,MaxActualDimGamma)
 
-    maxsize=max(max(nb**2*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*MaxActualDimAlpha*MaxActualDimGamma),n1*n2*n3*n4)
-    w1size = maxsize
     call mem_alloc( w1, w1size )
-    maxsize=max(n1*nb*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*n3*MaxActualDimGamma)
-    w2size = maxsize
     call mem_alloc( w2, w2size )
+
+    !First touch
+    w1(1) = 0.0E0_realk
+    w2(1) = 0.0E0_realk
+
     if(collective)then
        call mem_alloc(work,(i8*n1)*n2*n3*n4)
        work = 0.0E0_realk
@@ -2583,12 +2639,29 @@ contains
     ENDIF
 #endif
 
-    call mem_alloc(jobdist,nbatchesAlpha*nbatchesGamma)
-    !JOB distribution
 #ifdef VAR_MPI
-    call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
-         &batchdimGamma,myload,nnod,me)
+    !JOB distribution
+    if(.not.dynamic_load)then
+       lenI2 = nbatchesAlpha*nbatchesGamma
+       call mem_alloc(jobdist,lenI2)
+       myload   = 0
+       jobdist  = 0
+       call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
+          &batchdimGamma,myload,nnod,me)
+    else
+        lenI2 = 1
+        call mem_alloc( jobdist, jobdistc, lenI2 ) 
+        jobdist = 0
+        if(me == infpar%master) jobdist(1) = nnod + 1
+
+        call lsmpi_win_create(jobdist,jobdistw,1,infpar%lg_comm)
+#ifdef VAR_HAVE_MPI3
+        call lsmpi_win_lock_all(jobdistw,ass=mode)
+#endif
+
+    endif
 #else
+    call mem_alloc(jobdist,nbatchesAlpha*nbatchesGamma)
     jobdist = 0
 #endif
 
@@ -2598,21 +2671,85 @@ contains
     myload = 0
     fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
 
-    BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+#ifdef VAR_MPI
+    if(.not.collective .and. alloc_in_dummy)then
+       call tensor_lock_wins(integral, 's', all_nodes = .true. )
+    endif
+#endif
+
+    gammaB   = 0
+    alphaB   = 0
+    modeBdim = [nbatchesAlpha,nbatchesGamma]
+
+    BatchGamma: do while(gammaB <= nbatchesGamma)  ! AO batches
+
+       gammaB = gammaB + 1
+
+       BatchAlpha: do while (alphaB <= nbatchesAlpha)
+
+          if(.not.dynamic_load)then
+
+             !ONLY SET ALPHAB
+             alphaB = alphaB + 1
+
+             if(alphaB > nbatchesAlpha) cycle BatchAlpha
+
+             if( me /= jobdist(gammaB + (alphaB-1) *nbatchesGamma) ) cycle BatchAlpha
+
+          else
+
+             !SET ALPHAB AND GAMMAB
+             if(alphaB == 0)then
+                call get_midx(int(me + 1),modeBidx,modeBdim,2)
+                gammaB = modeBidx(2)
+                alphaB = modeBidx(1)
+             else
+#ifdef VAR_MPI
+                el  = 1
+                pos = 1
+#ifdef VAR_HAVE_MPI3
+                call lsmpi_get_acc(el,jobidx,infpar%master,pos,jobdistw)
+                call lsmpi_win_flush(jobdistw,rank = infpar%master, local=.true.)
+#else
+                call lsmpi_win_lock(infpar%master,jobdistw,'e')
+                call lsmpi_get_acc(el,jobidx,infpar%master,pos,jobdistw)
+                call lsmpi_win_unlock(infpar%master,jobdistw)
+#endif
+#endif
+                call get_midx(jobidx,modeBidx,modeBdim,2)
+                gammaB = modeBidx(2)
+                alphaB = modeBidx(1)
+
+             endif
+
+             if(alphaB > nbatchesAlpha .or. gammaB > nbatchesGamma)then
+                write (*, '("Rank",I3," has invalid job (",I3,"/",I3,",",I3,"/",I3,")")') &
+                   & me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+                call lsquit("ERROR(get_mo_integral_par) error in jobassignment",-1)
+             endif
+
+             if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchGamma
+
+          endif
+
+
+          if(DECinfo%PL>2)then
+             write (*, '("Rank",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') &
+                & me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+          endif
 
 #ifdef VAR_ICHOR
-       lg = AOGammabatchinfo(gammaB)%dim               ! Dimension of gamma batch
-       fg = AOGammabatchinfo(gammaB)%orbstart          ! First orbital index in gamma batch
-       GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
-       AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
-       AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+          lg = AOGammabatchinfo(gammaB)%dim               ! Dimension of gamma batch
+          fg = AOGammabatchinfo(gammaB)%orbstart          ! First orbital index in gamma batch
+          GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+          AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+          AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
 #else
-       lg  = batchdimGamma(gammaB)                     ! Dimension of gamma batch
-       fg  = batch2orbGamma(gammaB)%orbindex(1)        ! First index in gamma batch
-       biG = batchindexGamma(gammaB)
-       bsG = batchsizeGamma(gammaB)
+          lg  = batchdimGamma(gammaB)                     ! Dimension of gamma batch
+          fg  = batch2orbGamma(gammaB)%orbindex(1)        ! First index in gamma batch
+          biG = batchindexGamma(gammaB)
+          bsG = batchsizeGamma(gammaB)
 #endif
-       BatchAlpha: do alphaB = 1, nbatchesAlpha
 
 #ifdef VAR_ICHOR
           la = AOAlphabatchinfo(alphaB)%dim               ! Dimension of alpha batch
@@ -2629,11 +2766,6 @@ contains
           !print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
           !call lsmpi_barrier(infpar%lg_comm)
 
-          if( me /= jobdist(gammaB + (alphaB-1) *nbatchesGamma) ) cycle BatchAlpha
-
-          if(DECinfo%PL>2)write (*, '("Rank",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
-               &me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
-
           myload     = myload + la * lg
 
 #ifdef VAR_ICHOR
@@ -2648,6 +2780,13 @@ contains
                &biG,bsA,bsG,nb,nb,la,lg,fullRHS,INTSPEC)
 #endif
 
+
+#ifdef VAR_MPI
+          if( .not.collective.and.alloc_in_dummy )then
+             call lsmpi_win_flush(integral%wi(1),local=.true.)
+          endif
+#endif
+
           !something more sophisticated can be implemented here
           call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
           call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
@@ -2659,11 +2798,12 @@ contains
              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
              call time_start_phase( PHASE_COMM )
-             call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize, order = order)
+             call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size, order = order)
              call time_start_phase( PHASE_WORK )
           endif
 
        enddo BatchAlpha
+
     enddo BatchGamma
 
     ! Free integral stuff
@@ -2700,24 +2840,82 @@ contains
     call mem_dealloc(batch2orbAlpha)
 #endif
 
-    call mem_dealloc(jobdist)
 
+     if(.not.dynamic_load)then
+        call mem_dealloc(jobdist)
+     else
+#ifdef VAR_MPI
+#ifdef VAR_HAVE_MPI3
+        call lsmpi_win_unlock_all(jobdistw)
+#endif
+        call lsmpi_win_free(jobdistw)
+        call mem_dealloc(jobdist,jobdistc)
+#endif
+     endif
+
+
+#ifdef VAR_MPI
+    if(.not.collective .and. alloc_in_dummy)then
+       call tensor_unlock_wins(integral, all_nodes = .true. )
+    endif
+#endif
 
     call mem_dealloc( w1 )
     call mem_dealloc( w2 )
 
 #ifdef VAR_MPI
+
     call time_start_phase( PHASE_IDLE )
     call lsmpi_barrier(infpar%lg_comm)
+
     if(collective)then
        call time_start_phase( PHASE_COMM )
        call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm)
+       call time_start_phase( PHASE_WORK )
        call tensor_convert(work,integral, order = order )
     endif
-    call time_start_phase( PHASE_WORK )
+
 #else
+
+    call time_start_phase( PHASE_WORK )
     call tensor_convert(work,integral, order = order )
+
 #endif
+
+    !TIMING INFORMATION
+    if(DECinfo%PL>2)then
+
+#ifdef VAR_MPI
+       call time_start_phase( PHASE_COMM )
+       call time_phases_get_diff(current_wt=phase_counters)
+       call lsmpi_local_reduction(phase_counters,nphases,infpar%master)
+       unlock_time   = time_lsmpi_win_unlock - unlock_time
+       waiting_time  = time_lsmpi_wait       - waiting_time
+       flushing_time = time_lsmpi_win_flush  - flushing_time
+
+       timers = [phase_counters(PHASE_WORK_IDX),phase_counters(PHASE_COMM_IDX),phase_counters(PHASE_IDLE_IDX),&
+          &unlock_time,waiting_time,flushing_time]
+
+       call lsmpi_local_reduction(timers,6,infpar%master)
+
+       call time_start_phase( PHASE_WORK, ttot = total_integral_time )
+
+       if(master)then
+          write(*,'("INTEGRAL total integral time         : ",g10.3)') total_integral_time
+          write(*,'("INTEGRAL ave time in PHASE_WORK      : ",g10.3)') timers(1)/dble(nnod)
+          write(*,'("INTEGRAL ave time in PHASE_COMM      : ",g10.3)') timers(2)/dble(nnod)
+          write(*,'("INTEGRAL ave time in PHASE_IDLE      : ",g10.3)') timers(3)/dble(nnod)
+          write(*,'("INTEGRAL ave time in lsmpi_win_unlock: ",g10.3)') timers(4)/dble(nnod)
+          write(*,'("INTEGRAL ave time in lsmpi_wait      : ",g10.3)') timers(5)/dble(nnod)
+          write(*,'("INTEGRAL ave time in lsmpi_win_flush : ",g10.3)') timers(6)/dble(nnod)
+       endif
+#else
+       call time_start_phase( PHASE_WORK, ttot = total_integral_time )
+       write(*,'("INTEGRAL total integral time     : ",g10.3)') total_integral_time
+#endif
+    endif
+
+
     if(collective) call mem_dealloc( work )
 
     if(DECinfo%PL>2)then
@@ -2733,6 +2931,22 @@ contains
        trafo4%access_type = AT_MASTER_ACCESS
     endif
 
+    contains
+
+    function get_work_array_size(which_array,mo1,mo2,mo3,mo4,nb,nba,nbg) result(s)
+       implicit none
+       integer, intent(in) :: which_array,mo1,mo2,mo3,mo4,nb,nba,nbg
+       integer(kind=long)  :: s
+
+       select case(which_array)
+       case(1)
+          s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
+       case(2)
+          s = max(mo1*nb*nba*nbg,mo1*mo2*mo3*nbg)
+       case default
+          call lsquit("ERROR(get_work_array_size):wrong selection of array",-1)
+       end select
+    end function get_work_array_size
 
   end subroutine get_mo_integral_par
 
