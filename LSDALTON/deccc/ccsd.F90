@@ -1476,6 +1476,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call get_currently_available_memory(MemFree3)
 
+#ifdef VAR_MPI
      print *,infpar%lg_mynum,"have",MemFree,MemFree2,MemFree4,MemFree3
      call lsmpi_barrier(infpar%lg_comm)
 
@@ -1491,6 +1492,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      print *,infpar%lg_mynum,"first touching w3",w3%n,(w3%n*8.0E0_realk)/1024.0**3
      w3%d=0.0E0_realk
      call lsmpi_barrier(infpar%lg_comm)
+#endif
 
      !allocate semi-permanent storage arrays for loop
      !print *,"allocing help things:",o2v*MaxActualDimGamma*2,&

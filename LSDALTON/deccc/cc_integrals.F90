@@ -2680,131 +2680,132 @@ contains
     gammaB   = 0
     alphaB   = 0
     modeBdim = [nbatchesAlpha,nbatchesGamma]
+    jobidx   = 0
 
-    BatchGamma: do while(gammaB <= nbatchesGamma)  ! AO batches
+    BatchLoop: do while(gammaB <= nbatchesGamma.or.alphaB<= nbatchesAlpha)  ! AO batches
 
-       gammaB = gammaB + 1
 
-       BatchAlpha: do while (alphaB <= nbatchesAlpha)
+       !SET ALPHAB AND GAMMAB
+       if(.not.dynamic_load)then
 
-          if(.not.dynamic_load)then
+          jobidx = jobidx + 1
 
-             !ONLY SET ALPHAB
-             alphaB = alphaB + 1
+          call get_midx(jobidx,modeBidx,modeBdim,2)
 
-             if(alphaB > nbatchesAlpha) cycle BatchAlpha
+          gammaB = modeBidx(2)
+          alphaB = modeBidx(1)
 
-             if( me /= jobdist(gammaB + (alphaB-1) *nbatchesGamma) ) cycle BatchAlpha
+          if( me /= jobdist(gammaB + (alphaB-1) *nbatchesGamma) ) cycle BatchLoop
 
+       else
+
+          if(alphaB == 0)then
+             call get_midx(int(me + 1),modeBidx,modeBdim,2)
+             gammaB = modeBidx(2)
+             alphaB = modeBidx(1)
           else
-
-             !SET ALPHAB AND GAMMAB
-             if(alphaB == 0)then
-                call get_midx(int(me + 1),modeBidx,modeBdim,2)
-                gammaB = modeBidx(2)
-                alphaB = modeBidx(1)
-             else
 #ifdef VAR_MPI
-                el  = 1
-                pos = 1
+             el  = 1
+             pos = 1
 #ifdef VAR_HAVE_MPI3
-                call lsmpi_get_acc(el,jobidx,infpar%master,pos,jobdistw)
-                call lsmpi_win_flush(jobdistw,rank = infpar%master, local=.true.)
+             call lsmpi_get_acc(el,jobidx,infpar%master,pos,jobdistw)
+             call lsmpi_win_flush(jobdistw,rank = infpar%master, local=.true.)
 #else
-                call lsmpi_win_lock(infpar%master,jobdistw,'e')
-                call lsmpi_get_acc(el,jobidx,infpar%master,pos,jobdistw)
-                call lsmpi_win_unlock(infpar%master,jobdistw)
+             call lsmpi_win_lock(infpar%master,jobdistw,'e')
+             call lsmpi_get_acc(el,jobidx,infpar%master,pos,jobdistw)
+             call lsmpi_win_unlock(infpar%master,jobdistw)
 #endif
 #endif
-                call get_midx(jobidx,modeBidx,modeBdim,2)
-                gammaB = modeBidx(2)
-                alphaB = modeBidx(1)
-
-             endif
-
-             if(alphaB > nbatchesAlpha .or. gammaB > nbatchesGamma)then
-                write (*, '("Rank",I3," has invalid job (",I3,"/",I3,",",I3,"/",I3,")")') &
-                   & me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
-                call lsquit("ERROR(get_mo_integral_par) error in jobassignment",-1)
-             endif
-
-             if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchGamma
+             call get_midx(jobidx,modeBidx,modeBdim,2)
+             gammaB = modeBidx(2)
+             alphaB = modeBidx(1)
 
           endif
 
 
-          if(DECinfo%PL>2)then
-             write (*, '("Rank",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') &
-                & me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
-          endif
+
+       endif
+
+       if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchLoop
+
+       if(alphaB > nbatchesAlpha .or. gammaB > nbatchesGamma)then
+          write (*, '("Rank",I3," has invalid job (",I3,"/",I3,",",I3,"/",I3,")")') &
+             & me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+          call lsquit("ERROR(get_mo_integral_par) error in jobassignment",-1)
+       endif
+
+
+       if(DECinfo%PL>2)then
+          write (*, '("Rank",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') &
+             & me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+       endif
 
 #ifdef VAR_ICHOR
-          lg = AOGammabatchinfo(gammaB)%dim               ! Dimension of gamma batch
-          fg = AOGammabatchinfo(gammaB)%orbstart          ! First orbital index in gamma batch
-          GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
-          AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
-          AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+       lg = AOGammabatchinfo(gammaB)%dim               ! Dimension of gamma batch
+       fg = AOGammabatchinfo(gammaB)%orbstart          ! First orbital index in gamma batch
+       GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+       AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+       AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
 #else
-          lg  = batchdimGamma(gammaB)                     ! Dimension of gamma batch
-          fg  = batch2orbGamma(gammaB)%orbindex(1)        ! First index in gamma batch
-          biG = batchindexGamma(gammaB)
-          bsG = batchsizeGamma(gammaB)
+       lg  = batchdimGamma(gammaB)                     ! Dimension of gamma batch
+       fg  = batch2orbGamma(gammaB)%orbindex(1)        ! First index in gamma batch
+       biG = batchindexGamma(gammaB)
+       bsG = batchsizeGamma(gammaB)
 #endif
 
 #ifdef VAR_ICHOR
-          la = AOAlphabatchinfo(alphaB)%dim               ! Dimension of alpha batch
-          fa = AOAlphabatchinfo(alphaB)%orbstart          ! First orbital index in alpha batch
-          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
-          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
-          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+       la = AOAlphabatchinfo(alphaB)%dim               ! Dimension of alpha batch
+       fa = AOAlphabatchinfo(alphaB)%orbstart          ! First orbital index in alpha batch
+       AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+       AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+       AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
 #else
-          la  = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
-          fa  = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-          biA = batchindexAlpha(alphaB)
-          bsA = batchsizeAlpha(alphaB)
+       la  = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
+       fa  = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+       biA = batchindexAlpha(alphaB)
+       bsA = batchsizeAlpha(alphaB)
 #endif
-          !print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
-          !call lsmpi_barrier(infpar%lg_comm)
+       !print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
+       !call lsmpi_barrier(infpar%lg_comm)
 
-          myload     = myload + la * lg
+       myload     = myload + la * lg
 
 #ifdef VAR_ICHOR
-          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,la,lg,&
-               & w1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-               & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,la,lg,NoSymmetry)
+       call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,la,lg,&
+          & w1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+          & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,la,lg,NoSymmetry)
 #else
-          IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-          IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+       IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+       IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
-          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,biA,&
-               &biG,bsA,bsG,nb,nb,la,lg,fullRHS,INTSPEC)
+       call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,biA,&
+          &biG,bsA,bsG,nb,nb,la,lg,fullRHS,INTSPEC)
 #endif
 
 
 #ifdef VAR_MPI
-          if( .not.collective.and.alloc_in_dummy )then
-             call lsmpi_win_flush(integral%wi(1),local=.true.)
-          endif
+       if( .not.collective.and.alloc_in_dummy )then
+          call lsmpi_win_flush(integral%wi(1),local=.true.)
+       endif
 #endif
 
-          !something more sophisticated can be implemented here
-          call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
-          call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
-          call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
+       !something more sophisticated can be implemented here
+       call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
+       call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
+       call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
 
-          if(collective) then
-             call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,1.0E0_realk,work,n1*n2*n3)
-          else
-             call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
+       if(collective) then
+          call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,1.0E0_realk,work,n1*n2*n3)
+       else
+          call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
-             call time_start_phase( PHASE_COMM )
-             call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size, order = order)
-             call time_start_phase( PHASE_WORK )
-          endif
+          call time_start_phase( PHASE_COMM )
+          call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size, order = order)
+          call time_start_phase( PHASE_WORK )
+       endif
 
-       enddo BatchAlpha
 
-    enddo BatchGamma
+    enddo BatchLoop
 
     ! Free integral stuff
     ! *******************
@@ -2841,19 +2842,6 @@ contains
 #endif
 
 
-     if(.not.dynamic_load)then
-        call mem_dealloc(jobdist)
-     else
-#ifdef VAR_MPI
-#ifdef VAR_HAVE_MPI3
-        call lsmpi_win_unlock_all(jobdistw)
-#endif
-        call lsmpi_win_free(jobdistw)
-        call mem_dealloc(jobdist,jobdistc)
-#endif
-     endif
-
-
 #ifdef VAR_MPI
     if(.not.collective .and. alloc_in_dummy)then
        call tensor_unlock_wins(integral, all_nodes = .true. )
@@ -2877,10 +2865,23 @@ contains
 
 #else
 
+
     call time_start_phase( PHASE_WORK )
     call tensor_convert(work,integral, order = order )
 
 #endif
+
+    if(.not.dynamic_load)then
+       call mem_dealloc(jobdist)
+    else
+#ifdef VAR_MPI
+#ifdef VAR_HAVE_MPI3
+       call lsmpi_win_unlock_all(jobdistw)
+#endif
+       call lsmpi_win_free(jobdistw)
+       call mem_dealloc(jobdist,jobdistc)
+#endif
+    endif
 
     !TIMING INFORMATION
     if(DECinfo%PL>2)then
