@@ -1728,15 +1728,15 @@ contains
     async_id(5) = -5
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! probe for device type
-    acc_device_type = acc_get_device_type()
-
-    ! initialize the device
-    call acc_init(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! probe for device type
+!    acc_device_type = acc_get_device_type()
+!
+!    ! initialize the device
+!    call acc_init(acc_device_type)
+!
+!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -1749,11 +1749,11 @@ contains
 
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalvirt,eivalocc) if(.not. full_no_frags)
-! 
+!$acc& copyin(eivalvirt,eivalocc,ccsdpt_singles,e4) if(full_no_frags)
+!
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalvirt,eivalocc,ccsdpt_singles,e4) if(full_no_frags)
+!$acc& copyin(eivalvirt,eivalocc) if(.not. full_no_frags)
 
 !$acc wait
 
@@ -2109,12 +2109,12 @@ contains
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!$acc& async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
 !$acc& copyout(ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
 !$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
-!$acc& async(async_id(5)) wait(async_id(3)) if(full_no_frags)
 
                     end select TypeOfTuple_ser_ijk
 
@@ -2167,12 +2167,12 @@ contains
 
 !$acc exit data delete(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalvirt,eivalocc) if(.not. full_no_frags)
+!$acc& eivalvirt,eivalocc)&
+!$acc& copyout(ccsdpt_singles,e4) if(full_no_frags)
 !
 !$acc exit data delete(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalvirt,eivalocc)&
-!$acc& copyout(ccsdpt_singles,e4) if(full_no_frags)
+!$acc& eivalvirt,eivalocc) if(.not. full_no_frags)
 
 !$acc wait
 
@@ -2183,12 +2183,12 @@ contains
 
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! shut down the device
-    call acc_shutdown(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! shut down the device
+!    call acc_shutdown(acc_device_type)
+!
+!#endif
 
     ! release ccsd_doubles_help_arrays
     call mem_dealloc(ccsd_doubles_portions_i)
