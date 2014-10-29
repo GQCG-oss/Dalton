@@ -318,7 +318,7 @@
 #ifdef VAR_OPENACC
   !> \brief general gpu array reordering routine, can add to destination matrix
   !> \author Janus Juul Eriksen, adapted scheme from Patrick Ettenhuber and Marcin Ziolkowski
-  subroutine array_reorder_4d_acc(pre1,array_in,d1,d2,d3,d4,order,pre2,array_out,async_idx)
+  subroutine array_reorder_4d_acc(pre1,array_in,d1,d2,d3,d4,order,pre2,array_out,async_idx,async_wait)
 
     use openacc
     implicit none
@@ -328,6 +328,7 @@
     real(realk), intent(inout):: array_out(i8*d1*d2*d3*d4)
     integer, dimension(4), intent(in) :: order
     integer(kind=acc_handle_kind), intent(in) :: async_idx
+    integer(kind=acc_handle_kind), intent(in), optional :: async_wait
 
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d,maxdim
@@ -337,12 +338,23 @@
     integer :: di3(3), di2(2)
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: vec_size64
+    logical :: wait_arg
+    integer(kind=acc_handle_kind) :: async_idx2
 
     vec_size64 = int(d1*d2*d3*d4,kind=8)
     if(vec_size64>MAXINT)then
        call lsquit('ERROR(array_reorder_4d_acc): size of array cannot be &
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
+    endif
+
+    wait_arg = .false.
+    if (present(async_wait)) wait_arg = .true.
+
+    if (wait_arg) then
+       async_idx2 = async_wait
+    else
+       async_idx2 = async_idx
     endif
 
     call LSTIMER('START',tcpu1,twall1,-1)
@@ -423,51 +435,51 @@
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)*dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(2)
        ! CASE 4 1 2 3
        di2(1) = dims(1)*dims(2)*dims(3)
        di2(2) = dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(3)
        ! CASE 2 3 4 1
        di2(1) = dims(1)
        di2(2) = dims(2)*dims(3)*dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
 
     case(4)
@@ -476,17 +488,17 @@
        di3(2) = dims(3)
        di3(3) = dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_132_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_132_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_132_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_132_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_132_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_132_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(5)
        ! CASE  1 4 2 3
@@ -494,17 +506,17 @@
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_132_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_132_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_132_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_132_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_132_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_132_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(6)
        ! CASE  1 3 4 2
@@ -512,17 +524,17 @@
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_132_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_132_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_132_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_132_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_132_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_132_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(7)
        ! CASE 3 1 2 4
@@ -530,17 +542,17 @@
        di3(2) = dims(3)
        di3(3) = dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_213_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_213_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_213_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_213_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_213_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_213_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(8)
        ! CASE  2 3 1 4
@@ -548,17 +560,17 @@
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_213_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_213_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_213_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_213_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_213_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_213_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(9)
        ! CASE 2 1 3 4
@@ -566,17 +578,17 @@
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_213_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_213_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_213_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_213_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_213_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_213_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(10)
        ! CASE  4 3 1 2
@@ -584,17 +596,17 @@
        di3(2) = dims(3)
        di3(3) = dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_321_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_321_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_321_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_321_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_321_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_321_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(11)
        ! CASE  4 2 3 1
@@ -602,17 +614,17 @@
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_321_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_321_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_321_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_321_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_321_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_321_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(12)
        ! CASE  3 4 2 1
@@ -620,172 +632,172 @@
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_321_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_0(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_321_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_1(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_321_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_2(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_321_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_3(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_321_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_4(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_321_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_5(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
 
     case(13)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_2413_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2413_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_2413_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2413_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_2413_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2413_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_2413_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2413_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_2413_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2413_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_2413_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2413_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(14)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_3214_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3214_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_3214_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3214_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_3214_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3214_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_3214_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3214_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_3214_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3214_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_3214_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3214_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(15)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_1324_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1324_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_1324_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1324_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_1324_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1324_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_1324_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1324_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_1324_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1324_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_1324_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1324_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(16)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_4132_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4132_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_4132_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4132_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_4132_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4132_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_4132_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4132_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_4132_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4132_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_4132_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4132_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(17)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_2143_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2143_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_2143_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2143_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_2143_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2143_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_2143_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2143_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_2143_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2143_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_2143_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2143_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(18)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_4321_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4321_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_4321_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4321_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_4321_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4321_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_4321_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4321_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_4321_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4321_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_4321_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4321_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(19)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_2431_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2431_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_2431_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2431_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_2431_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2431_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_2431_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2431_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_2431_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2431_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_2431_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_2431_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(20)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_1432_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1432_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_1432_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1432_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_1432_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1432_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_1432_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1432_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_1432_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1432_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_1432_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_1432_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(21)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_3142_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3142_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_3142_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3142_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_3142_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3142_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_3142_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3142_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_3142_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3142_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_3142_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3142_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(22)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_3241_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3241_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_3241_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3241_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_3241_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3241_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_3241_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3241_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_3241_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3241_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_3241_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_3241_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(23)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_4213_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4213_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_4213_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4213_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_4213_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4213_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_4213_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4213_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_4213_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4213_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_4213_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_4213_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case default
        print *,'4d_acc_reordering case does not exist, THIS IS IMPOSSIBLE UNLESS&
@@ -898,7 +910,7 @@
 #ifdef VAR_OPENACC
   !> \brief general gpu 3d array reordering routine, can add to destination matrix
   !> \author Janus Juul Eriksen, adapted scheme from Patrick Ettenhuber and Marcin Ziolkowski
-  subroutine array_reorder_3d_acc(pre1,array_in,d1,d2,d3,order,pre2,array_out,async_idx)
+  subroutine array_reorder_3d_acc(pre1,array_in,d1,d2,d3,order,pre2,array_out,async_idx,async_wait)
 
     use openacc
     implicit none
@@ -908,6 +920,7 @@
     real(realk), intent(inout):: array_out((i8*d1)*d2*d3)
     integer, dimension(3), intent(in) :: order
     integer(kind=acc_handle_kind), intent(in) :: async_idx
+    integer(kind=acc_handle_kind), intent(in), optional :: async_wait
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
@@ -916,6 +929,17 @@
     integer :: di2(2)
     integer(kind=long) :: vec_size64
     real(realk) :: tcpu1,twall1,tcpu2,twall2
+    logical :: wait_arg
+    integer(kind=acc_handle_kind) :: async_idx2
+
+    wait_arg = .false.
+    if (present(async_wait)) wait_arg = .true.
+
+    if (wait_arg) then 
+       async_idx2 = async_wait
+    else
+       async_idx2 = async_idx
+    endif
 
     vec_size64 = int(d1*d2*d3,kind=8)
     if(vec_size64>MAXINT)then
@@ -958,77 +982,77 @@
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(2)
        ! CASE 2 3 1
        di2(1) = dims(1)
        di2(2) = dims(2) * dims(3)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_0(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_1(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_2(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_3(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_4(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_21_reordering_5(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
 
     case(3)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_132_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_132_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_132_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_132_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_132_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_132_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_132_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(4)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_213_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_213_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_213_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_213_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_213_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_213_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_213_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case(5)
        if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_321_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_0(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 0.0E0_realk) then
-          call manual_acc_321_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_1(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_321_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_2(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .eq. 1.0E0_realk) then
-          call manual_acc_321_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_3(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .eq. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_321_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_4(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        else if (pre1 .ne. 1.0E0_realk .and. pre2 .ne. 1.0E0_realk) then
-          call manual_acc_321_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx)
+          call manual_acc_321_reordering_5(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
        end if
     case default
        print *,'3d_reordering_acc case does not exist, THIS IS IMPOSSIBLE UNLESS&
