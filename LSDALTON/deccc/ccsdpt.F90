@@ -8752,76 +8752,77 @@ contains
 
   end subroutine ccsdpt_energy_e4_full
 
-  !> \brief: print out E[4] fragment and pair interaction contribution to 
-  !>         ccsd(t) energy correction for full molecule calculation
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
-
-    implicit none
-
-    !> number of atoms in molecule
-    integer, intent(in) :: natoms
-    !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
-    !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-    !> loop counters
-    integer :: i,j
-!    use the one in lsutil/fundamental.f90
-!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
-
-    ! print out fragment energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,'(1X,a)') '*                         E[4] energies                       *'
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (fourth--order E[4])'
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,*)
-
-    do i=1,natoms
-
-       if (orbitals_assigned(i)) then
-
-          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, e4_matrix(i,i)
-
-       end if
-
-    end do
-
-    ! now print out pair interaction energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (fourth--order E[4])     '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,*)
-
-    do j=1,natoms
-       do i=j+1,natoms
-
-          ! write increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
-
-          end if
-
-       end do
-    end do
-
-
-  end subroutine print_e4_full
+! code not used
+!  !> \brief: print out E[4] fragment and pair interaction contribution to 
+!  !>         ccsd(t) energy correction for full molecule calculation
+!  !> \author: Janus Juul Eriksen
+!  !> \date: February 2013
+!  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
+!
+!    implicit none
+!
+!    !> number of atoms in molecule
+!    integer, intent(in) :: natoms
+!    !> matrices containing E[4] energies and interatomic distances
+!    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
+!    !> vector handling how the orbitals are assigned?
+!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
+!    !> loop counters
+!    integer :: i,j
+!!    use the one in lsutil/fundamental.f90
+!!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
+!
+!    ! print out fragment energies
+!
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,'(1X,a)') '*                         E[4] energies                       *'
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (fourth--order E[4])'
+!    write(DECinfo%output,'(8X,a)') '------    --------------------'
+!    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
+!    write(DECinfo%output,'(8X,a)') '------    --------------------'
+!    write(DECinfo%output,*)
+!
+!    do i=1,natoms
+!
+!       if (orbitals_assigned(i)) then
+!
+!          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, e4_matrix(i,i)
+!
+!       end if
+!
+!    end do
+!
+!    ! now print out pair interaction energies
+!
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (fourth--order E[4])     '
+!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+!    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
+!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+!    write(DECinfo%output,*)
+!
+!    do j=1,natoms
+!       do i=j+1,natoms
+!
+!          ! write increments only if pair interaction energy is nonzero
+!          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
+!
+!             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
+!                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
+!
+!          end if
+!
+!       end do
+!    end do
+!
+!
+!  end subroutine print_e4_full
 
 
 
@@ -8882,64 +8883,65 @@ contains
 
   end subroutine ccsdpt_energy_e5_full
 
-  !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
-
-    implicit none
-
-    !> number of atoms in molecule
-    integer, intent(in) :: natoms
-    !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
-    !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-    !> loop counters
-    integer :: i,a
-
-    ! print out fragment energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,'(1X,a)') '*                         E[5] energies                       *'
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Pair fragment energies (fifth--order E[5])          '
-    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-    write(DECinfo%output,'(9X,a)') 'P(virt)    Q(occ)      R(Ang)           E(PQ)          '
-    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-    write(DECinfo%output,*)
-
-    ! the total singles energy must result from an unrestricted summation over all occ and virt indices
-    ! as we are only interested in general orbital interactions and hence not the nature (occ/virt)
-    ! of the individual orbitals
-
-    do i=1,natoms
-       do a=1,natoms
-
-          ! write increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
-
-             if (i .eq. a) then
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &0.000, e5_matrix(a,i)
-
-             else
-
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
-
-             end if
-
-          end if
-
-       end do
-    end do
-
-  end subroutine print_e5_full
+! code not used
+!  !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
+!  !> \author: Janus Juul Eriksen
+!  !> \date: February 2013
+!  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
+!
+!    implicit none
+!
+!    !> number of atoms in molecule
+!    integer, intent(in) :: natoms
+!    !> matrices containing E[4] energies and interatomic distances
+!    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
+!    !> vector handling how the orbitals are assigned?
+!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
+!    !> loop counters
+!    integer :: i,a
+!
+!    ! print out fragment energies
+!
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,'(1X,a)') '*                         E[5] energies                       *'
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(8X,a)') '-- Pair fragment energies (fifth--order E[5])          '
+!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
+!    write(DECinfo%output,'(9X,a)') 'P(virt)    Q(occ)      R(Ang)           E(PQ)          '
+!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
+!    write(DECinfo%output,*)
+!
+!    ! the total singles energy must result from an unrestricted summation over all occ and virt indices
+!    ! as we are only interested in general orbital interactions and hence not the nature (occ/virt)
+!    ! of the individual orbitals
+!
+!    do i=1,natoms
+!       do a=1,natoms
+!
+!          ! write increments only if pair interaction energy is nonzero
+!          if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
+!
+!             if (i .eq. a) then
+!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+!                     &0.000, e5_matrix(a,i)
+!
+!             else
+!
+!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+!                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
+!
+!             end if
+!
+!          end if
+!
+!       end do
+!    end do
+!
+!  end subroutine print_e5_full
 
 
   !> \brief Get MO integrals for ijk-CCSD(T) (in canonical basis), see integral storing order below.
