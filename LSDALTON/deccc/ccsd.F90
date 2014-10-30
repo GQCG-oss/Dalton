@@ -2903,9 +2903,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
         &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.)
 
-     MaxAllowedDimAlpha = nb
-     MaxAllowedDimGamma = nb
-
         if(scheme /= 4 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 4 possible",-1)
      endif
 
@@ -3090,17 +3087,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      ! allocate working arrays depending on the batch sizes
-     w0size = max(max(MaxActualDimGamma*nv,MaxActualDimAlpha*no),max(MaxActualDimGamma*no,MaxActualDimAlpha*nv))
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
      call mem_alloc( w0, w0size , simple = .false. )
 
-     w1size = max(nb**2*MaxActualDimGamma*MaxActualDimAlpha,1)
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
      call mem_alloc( w1, w1size , simple = .false.)
-
-     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     !call mem_alloc( w2, w2size , simple = .false. )
-
-     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     !call mem_alloc( w3, w3size , simple = .false. )
 
 
 
@@ -4894,6 +4885,32 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
        print *,"Dmitry, please implement your memory requirements here, such&
        & that a memory estimation can be made and the batch sizes adapted -- PE"
+
+    case(0)
+
+       print *,"I have no idea what I am doing, a reasonable estimate is needed!!"
+
+       !RIGHT NOW THIS IS SET TO THE SAME VALUE AS SCHEME 4 JUST /nnod
+       ! u 2 + Omega 2 +  H +G  
+       memrq = 1.0E0_realk*(2_long*no*no*nv*nv+ i8*nb*nv+i8*nb*no)
+       !gvoov gvvoo
+       memrq=memrq+ 2.0E0_realk*(i8*nv*nv)*no*no
+
+       memrq = memrq/float(nnod)
+
+       !INSIDE OF MAIN LOOP
+       !*******************
+
+       !uigcj sio4
+       memin = memin +1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
+       !tpl tmi
+       memin = memin + (i8*nor)*nvr*2.0E0_realk
+
+       memin = memin/float(nnod)
+
+       !OUTSIDE OF MAIN LOOP
+       !********************
+       memout = 1.0E0_realk*max(max(max(max(i8*nb*nb,i8*nb*nv),i8*nb*no),i8*nv*nv),i8*no*no)
 
     case default
 
@@ -7327,17 +7344,26 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      case(0)
         maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
         if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
+        if(s==0)then
+           maxsize64 = max(max(nbg*nv,nba*no),max(nbg*no,nba*nv))
+        endif
      case(1)
         maxsize64 = max(int((i8*nb*nb)*nba*nbg,kind=8),int((i8*nv*nv*no)*nba,kind=8))
         maxsize64 = max(maxsize64,int((i8*no*no*nv)*nbg,kind=8))
         if(s==4.or.s==3) maxsize64 = max(maxsize64,int((i8*no*no*nv)*nba,kind=8))
         if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
+        if(s==0)then
+           maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
+        endif
      case(2)
         maxsize64 = max(int((i8*nb)*nb*nba*nbg,kind=8),(i8*no*no)*nv*nv)
         maxsize64 = max(maxsize64,int(nor*no*no,kind=8))
         if(s==2)then
            maxsize64 = max(maxsize64,int((no*no*no)*no,kind=8))
            maxsize64 = max(maxsize64,int((no*no*no)*nbg,kind=8))
+        endif
+        if(s==0)then
+           maxsize64 = 0
         endif
      case(3)
         maxsize64 = max(int((i8*nv)*no*nba*nbg,kind=8),int((i8*no*no)*nba*nbg,kind=8))
@@ -7350,6 +7376,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==2)then
             maxsize64 = max(maxsize64,int((2_long*vs*vs*os)*os,kind=8))
             maxsize64 = max(maxsize64,int((i8*no*no)*no*no,kind=8))
+        endif
+        if(s==0)then
+           maxsize64 = 0
         endif
      case default
         call lsquit("ERROR(get_wsize_for_ccsd_int_direct):unknown identifier",-1)
