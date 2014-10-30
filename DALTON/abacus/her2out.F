@@ -1582,7 +1582,7 @@ c        NBUFX(0) = 0
 C
          IF (IPRINT .GE. 6) THEN
             WRITE (LUPRI,'(2X,A,I5,A/)')
-     &         'Integral buffer #',NBUFX(0),' has been written.'
+     &         'UN2WRN: Integral buffer #',NBUFX(0),' has been written.'
             IBIT1 = 2**NBITS - 1
             DO 100 INT = 1, ICOUNT
                IF (NIBUF .EQ. 1) THEN
@@ -1614,8 +1614,9 @@ C
 C
          IF (IPRINT .GE. 6) THEN
             IF (ICOUNT .GT. 0) THEN
-               WRITE (LUPRI,'(2X,A,I5,A/)')
-     &            'Integral buffer #',NBUFX(0),' has been written.'
+               WRITE (LUPRI,'(2X,A,I5,A,I5/)')
+     &         'UN2WRN: Integral buffer #',NBUFX(0),' has been written.'
+     &         //'  INDA =',INDA
                IBIT1 = 2**NBITS - 1
                DO 200 INT = 1, ICOUNT
                   IF (NIBUF .EQ. 1) THEN
