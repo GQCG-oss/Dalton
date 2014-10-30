@@ -4649,7 +4649,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! mpi_split should be true when we want to estimate the workload associated
     ! to a DEC fragment and eventually split the slots. In this case, the next
     ! step must be skiped.
-    if (.not.mpi_split) then
+    if (.not.mpi_split.and..not.scheme==0) then
       !if much more slaves than jobs are available, split the jobs to get at least
       !one for all the slaves
       !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
