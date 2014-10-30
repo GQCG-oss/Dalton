@@ -81,7 +81,7 @@ contains
     tensor_out%itype = tensor_in%itype
     tensor_out%nelms = tensor_in%nelms
     tensor_out%ntiles = tensor_in%ntiles
-    tensor_out%access_type = tensor_in%access_type
+    tensor_out%access_type => tensor_in%access_type
     if(associated(tensor_in%dims))call tensor_set_dims(tensor_out,tensor_in%dims,tensor_out%mode)
     if(associated(tensor_in%ntpm))call tensor_set_ntpm(tensor_out,tensor_in%ntpm,tensor_out%mode)
     if(associated(tensor_in%tdim))call tensor_set_tdims(tensor_out,tensor_in%tdim,tensor_out%mode)
@@ -1076,8 +1076,10 @@ contains
     integer       :: it
     logical :: loc
 
+
     ! Sanity check
-    !if(arr%initialized)call lsquit("ERROR(tensor_minit):array already initialized",-1) 
+    if(arr%initialized)call lsquit("ERROR(tensor_minit):array already initialized",-1) 
+
     do i=1, nmodes
       if (dims(i) == 0) call lsquit("ERROR(tensor_minit): 0 dimendion not allowed",-1)
     end do
@@ -1086,6 +1088,7 @@ contains
     loc = .true.
     at  = 'LDAR'
     if(present(atype)) at  = atype
+
 
     !Default is to check at, but forcable with local
     if(present(local))then
@@ -1154,6 +1157,7 @@ contains
     arr%atype='LDAR'
 #endif
     arr%initialized=.true.
+
   end subroutine tensor_minit
 
   subroutine tensor_ainit(arr, dims, nmodes, local, atype, tdims, fo )
@@ -1170,7 +1174,7 @@ contains
     logical :: loc
  
     ! Sanity check
-    !if(arr%initialized)call lsquit("ERROR(tensor_ainit):array already initialized",-1) 
+    if(arr%initialized)call lsquit("ERROR(tensor_ainit):tensor already initialized",-1) 
     do i=1, nmodes
       if (dims(i) == 0) call lsquit("ERROR(tensor_minit): 0 dimendion not allowed",-1)
     end do
@@ -1301,8 +1305,8 @@ contains
         CreatedPDMArrays = CreatedPDMArrays+1
     end select
     arr%access_type   = pdmtype
-    arr%itype       = it
-    arr%initialized = .true.
+    arr%itype         = it
+    arr%initialized   = .true.
   end subroutine tensor_init
 
 
@@ -1350,6 +1354,7 @@ contains
 
     !SET INIT TYPE
     !default
+    allocate( p_arr%a(addr)%access_type )
     p_arr%a(addr)%access_type = AT_NO_PDM_ACCESS
     !if one uses comm threads the following replace the access_type
     !if( pdm == AT_MASTER_ACCESS .and. lspdm_use_comm_proc )&
