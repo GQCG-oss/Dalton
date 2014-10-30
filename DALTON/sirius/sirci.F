@@ -409,11 +409,7 @@ C
       JCONV  = NCROOT
       TIMITR = SECOND()
       IF (.NOT. FLAG(14)) THEN
-      IF (DONEVPT) THEN
-         CALL TRACTL(4,CMO,WRK,LWRK)
-      ELSE
          CALL TRACTL(0,CMO,WRK,LWRK)
-      ENDIF
 C        CALL TRACTL(ITRLVL,CMO,WRK,LWRK)
          FLAG(14) = .TRUE.
       END IF

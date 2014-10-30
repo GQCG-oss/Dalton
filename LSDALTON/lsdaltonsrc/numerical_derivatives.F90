@@ -404,7 +404,7 @@ enddo
 !write(lupri,*)
 
 
-!call output(numerical_hessian,1,3*ls%INPUT%MOLECULE%nAtoms,1,3*ls%INPUT%MOLECULE%nAtoms,&
+!call ls_output(numerical_hessian,1,3*ls%INPUT%MOLECULE%nAtoms,1,3*ls%INPUT%MOLECULE%nAtoms,&
 !     & 3*ls%INPUT%MOLECULE%nAtoms,3*ls%INPUT%MOLECULE%nAtoms,1,lupri)
 
 end subroutine get_hessian_from_numerical_gradient
@@ -457,7 +457,7 @@ do i = 1,nAtoms
 enddo
  
 write(lupri,*)
-call output(symmetric_hessian,1,3*nAtoms,1,3*nAtoms,3*nAtoms,3*nAtoms,1,lupri)
+call ls_output(symmetric_hessian,1,3*nAtoms,1,3*nAtoms,3*nAtoms,3*nAtoms,1,lupri)
 
 
 !Mass Weighting the Hessian
@@ -481,7 +481,7 @@ do i = 1,ls%INPUT%MOLECULE%nAtoms
    write(lupri,*) ls%INPUT%MOLECULE%ATOM(i)%NAME, '(x,y,z) '
 enddo
 write(lupri,*)
-call output(symmetric_hessian,1,3*nAtoms,1,3*nAtoms,3*nAtoms,3*nAtoms,1,lupri)
+call ls_output(symmetric_hessian,1,3*nAtoms,1,3*nAtoms,3*nAtoms,3*nAtoms,1,lupri)
 
 
 !Diagonalizing
@@ -518,7 +518,7 @@ write(lupri,*) '                                Normal Modes'
 write(lupri,*) '                               -------------'
 write(lupri,*)
 
-call output(symmetric_hessian,1,3*nAtoms,DegFree+1,3*nAtoms,&
+call ls_output(symmetric_hessian,1,3*nAtoms,DegFree+1,3*nAtoms,&
      & 3*nAtoms,3*nAtoms,1,lupri)
 write(lupri,*)
 write(lupri,*) 

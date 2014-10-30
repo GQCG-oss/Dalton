@@ -1,10 +1,10 @@
 MODULE AGC_CPU_OBS_Sphcontract2Mod
 !Automatic Generated Code (AGC) by runSphContractOBS2.f90 in tools directory
-use IchorPrecisionModule  
+use IchorPrecisionMod
   
  CONTAINS
   
-subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(nlmP,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: nlmP,nContPasses
   real(realk),intent(in)    :: IN(nlmP,  6,nContPasses)
@@ -29,7 +29,7 @@ subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(nlmP,nContPasses,IN,OUT)
 end subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC2 
   
   
-subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(nlmP,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: nlmP,nContPasses
   real(realk),intent(in)    :: IN(nlmP,  6,nContPasses)
@@ -54,7 +54,7 @@ subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(nlmP,nContPasses,IN,OUT)
 end subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC0 
   
   
-subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(nlmP,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: nlmP,nContPasses
   real(realk),intent(in)    :: IN(nlmP, 18,nContPasses)
@@ -89,7 +89,7 @@ subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(nlmP,nContPasses,IN,OUT)
 end subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC2 
   
   
-subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(nlmP,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: nlmP,nContPasses
   real(realk),intent(in)    :: IN(nlmP, 18,nContPasses)
@@ -124,7 +124,7 @@ subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(nlmP,nContPasses,IN,OUT)
 end subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC1 
   
   
-subroutine SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(nlmP,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: nlmP,nContPasses
   real(realk),intent(in)    :: IN(nlmP, 36,nContPasses)
@@ -182,4 +182,4 @@ subroutine SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(nlmP,nContPasses,IN,OUT)
 end subroutine SphericalContractOBS2_CPU_maxAngQ4_maxAngC2 
   
   
-END MODULE
+END MODULE AGC_CPU_OBS_Sphcontract2Mod

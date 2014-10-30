@@ -1,5 +1,5 @@
 MODULE AGC_GPU_OBS_VERTICALRECURRENCEMODASeg1Prim
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 
@@ -7,7 +7,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim0(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,&
          & Pcent,Qcent,integralPrefactor,&
          & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+         & AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -18,6 +18,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim0(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
   real(realk),intent(in) :: QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(inout) :: AUXarray(nPassP)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   real(realk),PARAMETER :: D2JP36=  3.6000000000000000E+01_realk
   real(realk),parameter :: D2=2.0E0_realk
@@ -47,7 +48,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim0(nPassP,nPrimP,nPrimQ,&
 !$ACC         iP,iPassP) &
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -86,7 +87,7 @@ end subroutine VerticalRecurrenceGPUSeg1Prim0
 subroutine VerticalRecurrenceGPUSeg1Prim1A(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
          & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-         & PpreExpFac,QpreExpFac,AUXarray)
+         & PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -96,6 +97,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim1A(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
   real(realk),intent(inout) :: AUXarray(nPassP,4)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   Integer :: iP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa
@@ -134,7 +136,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim1A(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Pexp,Acenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -192,7 +194,7 @@ end subroutine VerticalRecurrenceGPUSeg1Prim1A
 
 subroutine VerticalRecurrenceGPUSeg1Prim2A(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -202,6 +204,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim2A(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
   real(realk),intent(inout) :: AUXarray(nPassP,   10)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(    4)
@@ -231,7 +234,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim2A(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Pexp,Acenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -277,7 +280,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim2A(nPassP,nPrimP,nPrimQ,&
 
 subroutine VerticalRecurrenceGPUSeg1Prim3A(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -287,6 +290,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim3A(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
   real(realk),intent(inout) :: AUXarray(nPassP,   20)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   10)
@@ -318,7 +322,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim3A(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Pexp,Acenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -388,7 +392,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim3A(nPassP,nPrimP,nPrimQ,&
 
 subroutine VerticalRecurrenceGPUSeg1Prim4A(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -398,6 +402,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim4A(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
   real(realk),intent(inout) :: AUXarray(nPassP,   35)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   20)
@@ -431,7 +436,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim4A(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Pexp,Acenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -543,7 +548,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim4A(nPassP,nPrimP,nPrimQ,&
 
 subroutine VerticalRecurrenceGPUSeg1Prim5A(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -553,6 +558,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim5A(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
   real(realk),intent(inout) :: AUXarray(nPassP,   56)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   35)
@@ -588,7 +594,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim5A(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Pexp,Acenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -769,7 +775,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim5A(nPassP,nPrimP,nPrimQ,&
 
 subroutine VerticalRecurrenceGPUSeg1Prim6A(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -779,6 +785,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim6A(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
   real(realk),intent(inout) :: AUXarray(nPassP,   84)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   56)
@@ -816,7 +823,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim6A(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Pexp,Acenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -1103,7 +1110,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim6A(nPassP,nPrimP,nPrimQ,&
 
 subroutine VerticalRecurrenceGPUSeg1Prim7A(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -1113,6 +1120,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim7A(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
   real(realk),intent(inout) :: AUXarray(nPassP,  120)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   84)
@@ -1152,7 +1160,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim7A(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Pexp,Acenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)
@@ -1594,7 +1602,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim7A(nPassP,nPrimP,nPrimQ,&
 
 subroutine VerticalRecurrenceGPUSeg1Prim8A(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -1604,6 +1612,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim8A(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
   real(realk),intent(inout) :: AUXarray(nPassP,  165)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(  120)
@@ -1645,7 +1654,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim8A(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Pexp,Acenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
      iAtomA = iAtomApass(iPassP)

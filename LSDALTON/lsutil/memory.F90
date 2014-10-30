@@ -190,7 +190,7 @@ integer(KIND=long),save :: max_mem_used_DecAObatchinfo_tmp
 integer(KIND=long),save :: max_mem_used_MYPOINTER_tmp
 integer(KIND=long),save :: max_mem_used_ARRAY2_tmp
 integer(KIND=long),save :: max_mem_used_ARRAY4_tmp
-integer(KIND=long),save :: max_mem_used_ARRAY_tmp
+integer(KIND=long),save :: max_mem_used_tensor_tmp
 integer(KIND=long),save :: max_mem_used_PNOSPACEINFO_tmp
 integer(KIND=long),save :: max_mem_used_MP2DENS_tmp
 integer(KIND=long),save :: max_mem_used_TRACEBACK_tmp
@@ -329,7 +329,7 @@ INTERFACE mem_alloc
       &             BATCHTOORB_allocate_1dim,MYPOINTER_allocate_1dim, MYPOINTER_allocate_2dim, &
       &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
       &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,PNOSPACEINFO_allocate_1dim, &
-      &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
+      &             OVERLAPT_allocate_1dim,tensor_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
       &             lsmpi_allocate_dV4,lsmpi_allocate_dV8, lsmpi_local_allocate_dV8, &
       &             lsmpi_local_allocate_I8V8,lsmpi_local_allocate_I4V4,&
       &             lsmpi_allocate_d,DECAOBATCHINFO_allocate_1dim,&
@@ -361,7 +361,7 @@ INTERFACE mem_alloc
          &             BATCHTOORB_deallocate_1dim,MYPOINTER_deallocate_1dim,MYPOINTER_deallocate_2dim, &
          &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
          &             TRACEBACK_deallocate_1dim,MP2GRAD_deallocate_1dim, &
-         &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,PNOSPACEINFO_deallocate_1dim,&
+         &             OVERLAPT_deallocate_1dim,tensor_deallocate_1dim,PNOSPACEINFO_deallocate_1dim,&
          &             lsmpi_local_deallocate_I4V,lsmpi_local_deallocate_I8V,&
          &             lsmpi_deallocate_d,DECAOBATCHINFO_deallocate_1dim,&
 #ifdef MOD_UNRELEASED
@@ -457,7 +457,7 @@ INTERFACE mem_alloc
       TYPE(MYPOINTER) :: MYPOINTERitem
       TYPE(ARRAY2) :: ARRAY2item
       TYPE(ARRAY4) :: ARRAY4item
-      TYPE(ARRAY) :: ARRAYitem
+      type(tensor) :: ARRAYitem
       TYPE(PNOSpaceInfo) :: PNOSpaceitem
       TYPE(MP2DENS) :: MP2DENSitem
       TYPE(TRACEBACK) :: TRACEBACKitem
@@ -602,7 +602,7 @@ INTERFACE mem_alloc
       max_mem_used_MYPOINTER = MAX(max_mem_used_MYPOINTER,max_mem_used_MYPOINTER_tmp)
       max_mem_used_ARRAY2 = MAX(max_mem_used_ARRAY2,max_mem_used_ARRAY2_tmp)
       max_mem_used_ARRAY4 = MAX(max_mem_used_ARRAY4,max_mem_used_ARRAY4_tmp)
-      max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,max_mem_used_ARRAY_tmp)
+      max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,max_mem_used_tensor_tmp)
       max_mem_used_PNOSpaceInfo = MAX(max_mem_used_PNOSpaceInfo,max_mem_used_PNOSpaceInfo_tmp)
       max_mem_used_MP2DENS = MAX(max_mem_used_MP2DENS,max_mem_used_MP2DENS_tmp)
       max_mem_used_TRACEBACK = MAX(max_mem_used_TRACEBACK,max_mem_used_TRACEBACK_tmp)
@@ -651,7 +651,7 @@ INTERFACE mem_alloc
       max_mem_used_MYPOINTER_tmp = 0
       max_mem_used_ARRAY2_tmp = 0
       max_mem_used_ARRAY4_tmp = 0
-      max_mem_used_ARRAY_tmp = 0
+      max_mem_used_tensor_tmp = 0
       max_mem_used_PNOSpaceInfo_tmp = 0
       max_mem_used_MP2DENS_tmp = 0
       max_mem_used_TRACEBACK_tmp = 0
@@ -917,7 +917,7 @@ INTERFACE mem_alloc
       max_mem_used_MYPOINTER_tmp = max_mem_used_MYPOINTER_tmp+max_mem_tp_used_MYPOINTER
       max_mem_used_ARRAY2_tmp = max_mem_used_ARRAY2_tmp+max_mem_tp_used_ARRAY2
       max_mem_used_ARRAY4_tmp = max_mem_used_ARRAY4_tmp+max_mem_tp_used_ARRAY4
-      max_mem_used_ARRAY_tmp = max_mem_used_ARRAY_tmp+max_mem_tp_used_ARRAY
+      max_mem_used_tensor_tmp = max_mem_used_tensor_tmp+max_mem_tp_used_ARRAY
       max_mem_used_PNOSpaceInfo_tmp = max_mem_used_PNOSpaceInfo_tmp+max_mem_tp_used_PNOSpaceInfo
       max_mem_used_MP2DENS_tmp = max_mem_used_MP2DENS_tmp+max_mem_tp_used_MP2DENS
       max_mem_used_TRACEBACK_tmp = max_mem_used_TRACEBACK_tmp+max_mem_tp_used_TRACEBACK
@@ -1186,7 +1186,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated MPI memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated MPI memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2DENS
@@ -1337,7 +1337,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MP2DENS
@@ -1816,46 +1816,46 @@ subroutine debug_mem_stats(lupri)
      IF (error_size.LT.0) THEN
         write(ERR,'(A8)') ' < zero '
         ELSEIF (error_size.LT.1000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E0," B "
+        write(ERR,'(F5.1,A3)') error_size*1E0_realk," B "
         ELSEIF (error_size.LT.1000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-3," kB"
+        write(ERR,'(F5.1,A3)') error_size*1E-3_realk," kB"
         ELSEIF (error_size.LT.1000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-6," MB"
+        write(ERR,'(F5.1,A3)') error_size*1E-6_realk," MB"
 #ifdef VAR_INT64
         ELSEIF (error_size.LT.1000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+        write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
         ELSEIF (error_size.LT.1000000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-12," TB"
+        write(ERR,'(F5.1,A3)') error_size*1E-12_realk," TB"
         ELSEIF (error_size.LT.1000000000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-15," PB"
+        write(ERR,'(F5.1,A3)') error_size*1E-15_realk," PB"
      ELSE
-        write(ERR,'(F5.1,A3)') error_size*1E-18," EB"
+        write(ERR,'(F5.1,A3)') error_size*1E-18_realk," EB"
      ENDIF
 #else
   ELSE
-     write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+     write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
   ENDIF
 #endif
 
   IF (max_mem_used_global.LT.0) THEN
      write(GLOB,'(A8)') ' < zero '
      ELSEIF (max_mem_used_global.LT.1000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0," B "
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
      ELSEIF (max_mem_used_global.LT.1000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3," kB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
      ELSEIF (max_mem_used_global.LT.1000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6," MB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
 #ifdef VAR_INT64
      ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12," TB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
      ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15," PB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
   ELSE
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18," EB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
   ENDIF
 #else
 ELSE
-   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9," GB"
+   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
 ENDIF
 #endif
 
@@ -4405,40 +4405,40 @@ END SUBROUTINE ARRAY4_deallocate_1dim
 
 !----- ALLOCATE ARRAY POINTERS -----!
 
-SUBROUTINE ARRAY_allocate_1dim(ARRAYITEM,n)
+SUBROUTINE tensor_allocate_1dim(ARRAYITEM,n)
    implicit none
    integer,intent(in) :: n
-   TYPE(ARRAY),pointer    :: ARRAYITEM(:)
+   type(tensor),pointer    :: ARRAYITEM(:)
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(ARRAYITEM)
    ALLOCATE(ARRAYITEM(n),STAT = IERR)
    nsize = size(ARRAYITEM,KIND=long)*mem_ARRAYsize
    IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in ARRAY_allocate_1dim',IERR,n
-      CALL MEMORY_ERROR_QUIT('Error in ARRAY_allocate_1dim',nsize)
+      write(*,*) 'Error in tensor_allocate_1dim',IERR,n
+      CALL MEMORY_ERROR_QUIT('Error in tensor_allocate_1dim',nsize)
    ENDIF
    call mem_allocated_mem_ARRAY(nsize)
-END SUBROUTINE ARRAY_allocate_1dim
+END SUBROUTINE tensor_allocate_1dim
 
-SUBROUTINE ARRAY_deallocate_1dim(ARRAYITEM)
+SUBROUTINE tensor_deallocate_1dim(ARRAYITEM)
    implicit none
-   TYPE(ARRAY),pointer :: ARRAYITEM(:)
+   type(tensor),pointer :: ARRAYITEM(:)
    integer :: IERR
    integer (kind=long) :: nsize
    nsize = size(ARRAYITEM,KIND=long)*mem_ARRAYsize
    call mem_deallocated_mem_ARRAY(nsize)
    if (.not.ASSOCIATED(ARRAYITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ARRAY_deallocate_1dim - memory previously released',nsize)
+      call memory_error_quit('Error in tensor_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(ARRAYITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in ARRAY_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in ARRAY_deallocate_1dim',nsize)
+      write(*,*) 'Error in tensor_deallocate_1dim',IERR
+      CALL MEMORY_ERROR_QUIT('Error in tensor_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(ARRAYITEM)
-END SUBROUTINE ARRAY_deallocate_1dim
+END SUBROUTINE tensor_deallocate_1dim
 
 !----- ALLOCATE MP2DENS POINTERS -----!
 
@@ -7201,56 +7201,59 @@ end subroutine mem_deallocated_mem_lattice_cell
 !> 1 GB be default.
 !> \author Kasper Kristensen, modified by Patrick Ettenhuber
 !> \date January 2012
-subroutine get_available_memory(lupri,MemoryAvailable,memfound)
+subroutine get_available_memory(lupri,MemoryAvailable,memfound,suppress_print)
    !> Logical unit number for output file
    integer,intent(in) :: lupri
    !> Available memory measured in GB (using 1GB = 1000000000 bytes)
    real(realk),intent(inout) :: MemoryAvailable
    !> Was the memory information found?
    logical,intent(inout) :: MemFound
+   logical,intent(in),optional :: suppress_print
    !> check for /proc/meminfo
-   logical :: meminfo_found
+   logical :: meminfo_found,sp
 
    ! If System will not be identified, use default values
    memfound=.false.
    MemoryAvailable=1.0E0_realk
+
+   sp = .false.
+   if(present(suppress_print))sp = suppress_print
 
    INQUIRE(FILE="/proc/meminfo", EXIST=meminfo_found)
 
    ! Is this a LINUX system?
    if(meminfo_found) then
       call get_available_memory_specific('MENFO',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be LINUX!'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       end if
    endif
 
    ! meminfo not found or mem in meminfo not found  --> Is this a MAC system?
    if((.not. meminfo_found).or.(.not.memfound)) then
       call get_available_memory_specific('MAC  ',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be MAC!'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       end if
    endif
 
    ! Still no result --> Is this a LINUX system without a  readable /proc/memninfo?
    if(.not.memfound) then
       call get_available_memory_specific('LINUX',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be LINUX!(using the top command)'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       endif
    endif
 
 
-   write(lupri,*) '******************** WARNING WARNING WARNING ***********************'
-   write(lupri,*) 'get_available_memory: System type NOT identified!'
-   write(lupri,'(1X,a,g16.5)') 'Default setting: Available Memory (GB) = ', MemoryAvailable
+   if(.not.memfound)then
+      write(lupri,*) '******************** WARNING WARNING WARNING ***********************'
+      write(lupri,*) 'get_available_memory: System type NOT identified!'
+      write(lupri,'(1X,a,g16.5)') 'Default setting: Available Memory (GB) = ', MemoryAvailable
+   endif
 
 
 end subroutine get_available_memory

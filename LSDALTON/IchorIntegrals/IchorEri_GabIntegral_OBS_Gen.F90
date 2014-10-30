@@ -1,20 +1,23 @@
 MODULE IchorEriGabintegralOBSGeneralModGen
 !Automatic Generated Code (AGC) by runGABdriver.f90 in tools directory
 !Contains routines for General Contracted Basisset 
-use IchorprecisionModule
-use IchorCommonModule
+use IchorprecisionMod
+use IchorCommonMod
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000MODGen
 use AGC_CPU_OBS_BUILDRJ000MODSeg1Prim
+use IchorEriGabintegralCPUMcMGeneralMod
 use IchorEriCoulombintegralCPUOBSGeneralModGen
 use AGC_CPU_OBS_VERTICALRECURRENCEMODAGen
 use AGC_CPU_OBS_VERTICALRECURRENCEMODBGen
 use AGC_CPU_OBS_VERTICALRECURRENCEMODDGen
 use AGC_CPU_OBS_VERTICALRECURRENCEMODCGen
-use AGC_CPU_OBS_TRMODAtoCGen
-use AGC_CPU_OBS_TRMODAtoDGen
-use AGC_CPU_OBS_TRMODBtoCGen
-use AGC_CPU_OBS_TRMODBtoDGen
+use AGC_CPU_OBS_TRMODAtoCGen1
+use AGC_CPU_OBS_TRMODAtoCGen2
+use AGC_CPU_OBS_TRMODAtoDGen1
+use AGC_CPU_OBS_TRMODAtoDGen2
+use AGC_CPU_OBS_TRMODBtoCGen1
+use AGC_CPU_OBS_TRMODBtoDGen1
 use AGC_CPU_OBS_TRMODCtoAGen
 use AGC_CPU_OBS_TRMODDtoAGen
 use AGC_CPU_OBS_TRMODCtoBGen
@@ -27,14 +30,16 @@ use AGC_CPU_OBS_Sphcontract1Mod
 use AGC_CPU_OBS_Sphcontract2Mod
   
 private   
-public :: IchorGabIntegral_OBS_Gen,IchorGabIntegral_OBS_general_sizeGen  
+public :: IGI_OBS_Gen,IGI_OBS_general_sizeGen  
   
 CONTAINS
   
   
-  subroutine IchorGabIntegral_OBS_Gen(nPrimA,nPrimB,&
+  subroutine IGI_OBS_Gen(nPrimA,nPrimB,&
        & nPrimP,IntPrint,lupri,&
        & nContA,nContB,nContP,pexp,ACC,BCC,&
+       & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&
+       & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
@@ -45,6 +50,8 @@ CONTAINS
     integer,intent(in) :: IntPrint,lupri
     integer,intent(in) :: nContA,nContB,nContP,nTABFJW1,nTABFJW2
     integer,intent(in) :: AngmomA,AngmomB
+    integer,intent(in) :: nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB
+    integer,intent(in) :: nCartOrbCompP,nOrbCompP,nTUVP,nTUV
     real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB)
     logical,intent(in)     :: Psegmented
     real(realk),intent(in) :: pexp(nPrimP)
@@ -78,6 +85,7 @@ CONTAINS
 !    nlmA = 2*AngmomA+1
 !    nlmB = 2*AngmomB+1
     AngmomID = 10*AngmomA+AngmomB
+    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -579,12 +587,21 @@ CONTAINS
             & TMParray1)
         call ExtractGabElmP15Gen(TMParray1,LOCALINTS,nContP)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorGabIntegral_OBS_Gen',-1)
+        call IGI_CPU_McM_general(nPrimA,nPrimB,&
+           & nPrimP,IntPrint,lupri,&
+           & nContA,nContB,nContP,pexp,ACC,BCC,&
+           & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&
+           & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&
+           & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+           & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
+           & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,&
+           & Acenter,Bcenter,spherical,&
+           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
     END SELECT
-  end subroutine IchorGabIntegral_OBS_Gen
+  end subroutine IGI_OBS_Gen
   
   
-  subroutine IchorGabIntegral_OBS_general_sizeGen(TMParray1maxsize,&
+  subroutine IGI_OBS_general_sizeGen(TMParray1maxsize,&
          &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,nContP,nPrimB)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize
@@ -594,6 +611,7 @@ CONTAINS
     integer :: AngmomID
     
     AngmomID = 10*AngmomA+AngmomB
+    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code
     TMParray2maxSize = 1
     TMParray1maxSize = 1
     BasisContmaxsize = 1
@@ -677,9 +695,11 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,900*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,625*nContP)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorGabIntegral_OBS_general_size',-1)
+      call IGI_CPU_McM_general_size(TMParray1maxsize,&
+          & TMParray2maxsize,AngmomA,AngmomB,&
+          & nPrimP,nContP,nPrimB,.FALSE.)
     END SELECT
-  end subroutine IchorGabIntegral_OBS_general_sizeGen
+  end subroutine IGI_OBS_general_sizeGen
   subroutine GabPrimitiveContractionGen1(AUXarray2,AUXarrayCont,nPrimP,&
        & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont)
     implicit none

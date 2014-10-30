@@ -337,13 +337,17 @@ END SUBROUTINE build_empty_molecule
 !> \param R the array of point coordinates
 !> \param N the number of points
 !> \param lupri logical unit number of output file
-SUBROUTINE build_pointmolecule(pointmolecule,R,N,lupri)
+SUBROUTINE build_pointmolecule(pointmolecule,R,N,lupri,charge)
 IMPLICIT NONE
 TYPE(MOLECULEINFO),intent(INOUT) :: pointmolecule
 integer,intent(in) :: lupri,N
 real(realk) :: R(3,N)
+real(realk),optional :: charge(N)
 !
 Integer :: I,J
+Logical :: unitCharge
+
+unitCharge = .NOT.present(charge)
 
 call mem_alloc(pointmolecule%ATOM,N)
 call nullifyAtoms(pointmolecule%ATOM)
@@ -379,7 +383,11 @@ DO I=1,N
    pointmolecule%ATOM(I)%CENTER(2)=R(2,I)
    pointmolecule%ATOM(I)%CENTER(3)=R(3,I)
    pointmolecule%ATOM(I)%Atomic_number=0
-   pointmolecule%ATOM(I)%Charge=-1.d0
+   IF (unitCharge) THEN
+     pointmolecule%ATOM(I)%Charge=-1.d0
+   ELSE
+     pointmolecule%ATOM(I)%Charge=-Charge(I)
+   ENDIF
    do j=1,nBasisBasParam
       pointmolecule%ATOM(I)%basislabel(j)='XXXXXXXXX'
       pointmolecule%ATOM(I)%Basisindex(j)=0

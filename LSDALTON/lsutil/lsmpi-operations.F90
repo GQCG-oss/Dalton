@@ -10,10 +10,9 @@ module lsmpi_op
   use basis_typetype, only: BASISSETINFO,nBasisBasParam,nullifyMainBasis,&
        & nullifyBasisset
   use basis_type, only: lsmpi_alloc_basissetinfo
-  use lstiming, only: lstimer
   use memory_handling, only: mem_alloc,mem_dealloc, mem_shortintsize,&
        & mem_realsize, mem_intsize, mem_allocated_mem_lstensor
-  use integralparameters
+  use LSparameters
   use Matrix_Operations, only: mat_mpicopy, mtype_scalapack, matrix_type
   use matrix_operations_scalapack, only: pdm_matrixsync
   use molecule_typetype, only: MOLECULEINFO
@@ -471,6 +470,7 @@ SUBROUTINE mpicopy_setting(setting,comm,rankslave)
   call mpicopy_reduced_screen_info(setting%redCS,slave,master)               !LSSETTING080
 
   !if (.NOT.SLAVE) call lstimer('copy8',ts,te,6)
+  CALL LS_MPI_BUFFER(setting%GPUMAXMEM,Master)                               !LSSETTING081
 
 END SUBROUTINE mpicopy_setting
 
@@ -621,7 +621,7 @@ integer(kind=long)  :: nbuffer
 real(realk),pointer :: buffer(:)
 integer(kind=ls_mpik) :: COUNT,TAG,IERR,request,COUNT2
 real(realk),pointer :: buffer2(:)
-integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE),nMess,j,i
+integer(kind=ls_mpik) :: lsmpi_status(MPI_STATUS_SIZE),nMess,j,i
 logical(kind=ls_mpik) :: MessageRecieved
 logical :: ALLOC,MessageRecievedW
 TAG = 155534879
@@ -632,7 +632,7 @@ MessageRecieved = .TRUE.
 MessageRecievedW = .TRUE.
 ALLOC=.FALSE.
 DO WHILE(MessageRecievedW)
-   call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,status,ierr)
+   call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,lsmpi_status,ierr)
    MessageRecievedW = MessageRecieved 
    IF(MessageRecievedW)THEN
       IF(.NOT.ALLOC)THEN
@@ -640,8 +640,8 @@ DO WHILE(MessageRecievedW)
          ALLOC=.TRUE.
       ENDIF
       !get the sender ID
-      j = status(MPI_SOURCE)
-      call MPI_GET_COUNT(status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
+      j = lsmpi_status(MPI_SOURCE)
+      call MPI_GET_COUNT(lsmpi_status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
       IF(COUNT2.NE.COUNT)CALL LSQUIT('COUNT WRONG IN lsmpi_probe_and_irecv_add_lstmemrealkbuf ',-1)
       inputMessageRecieved(j+1) = .TRUE.
       call MPI_IRECV(buffer2,COUNT,MPI_DOUBLE_PRECISION,J,TAG,MPI_COMM_WORLD,request,ierr)
@@ -667,7 +667,7 @@ integer(kind=long)             :: nbuffer
 real(realk),pointer :: buffer(:)
 integer(kind=ls_mpik) :: COUNT,TAG,IERR,request
 real(realk),pointer :: buffer2(:)
-integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE),nMess,k,i,COUNT2,j
+integer(kind=ls_mpik) :: lsmpi_status(MPI_STATUS_SIZE),nMess,k,i,COUNT2,j
 integer :: Nmissing
 logical :: ALLOC,ALLMessageRecieved
 TAG = 155534879
@@ -690,16 +690,16 @@ DO WHILE(.NOT.ALLMessageRecieved)
       ALLOC=.TRUE.
    ENDIF
    !blocking Recv   
-   call MPI_PROBE(MPI_ANY_SOURCE,TAG,comm,status,ierr)
+   call MPI_PROBE(MPI_ANY_SOURCE,TAG,comm,lsmpi_status,ierr)
    !get the sender ID
-   j = status(MPI_SOURCE)
-   call MPI_GET_COUNT(status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
+   j = lsmpi_status(MPI_SOURCE)
+   call MPI_GET_COUNT(lsmpi_status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
    IF(COUNT2.NE.COUNT)THEN
       print*,'COUNT',COUNT,'infpar%mynm',infpar%mynum
       print*,'COUNT2',COUNT2,'infpar%mynm',infpar%mynum
       call lsquit('COUNT WRONG lsmpi_blocking_recv_add_lstmemrealkbuf',-1)
    ENDIF
-   call MPI_RECV(buffer2,COUNT,MPI_DOUBLE_PRECISION,J,TAG,comm,status,ierr)
+   call MPI_RECV(buffer2,COUNT,MPI_DOUBLE_PRECISION,J,TAG,comm,lsmpi_status,ierr)
    !add to buffer
    do K=1,COUNT
       buffer(K)=buffer(K)+buffer2(K) 
@@ -720,7 +720,7 @@ end subroutine lsmpi_blocking_recv_add_lstmemrealkbuf
 !!$real(realk),pointer :: buffer(:)
 !!$integer :: COUNT,TAG,IERR,request
 !!$real(realk),pointer :: buffer2(:)
-!!$integer :: status(MPI_STATUS_SIZE),nMess,k,i,COUNT2,j
+!!$integer :: lsmpi_status(MPI_STATUS_SIZE),nMess,k,i,COUNT2,j
 !!$logical :: MessageRecieved,ALLMessageRecieved,ALLOC
 !!$
 !!$TAG = 155534879
@@ -737,15 +737,15 @@ end subroutine lsmpi_blocking_recv_add_lstmemrealkbuf
 !!$ENDDO
 !!$
 !!$DO WHILE(.NOT.ALLMessageRecieved)
-!!$   call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,status,ierr)
+!!$   call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,lsmpi_status,ierr)
 !!$   IF(MessageRecieved)THEN
 !!$      IF(.NOT.ALLOC)THEN
 !!$         call mem_alloc(buffer2,COUNT)
 !!$         ALLOC=.TRUE.
 !!$      ENDIF
 !!$      !get the sender ID
-!!$      j = status(MPI_SOURCE)
-!!$      call MPI_GET_COUNT(status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
+!!$      j = lsmpi_status(MPI_SOURCE)
+!!$      call MPI_GET_COUNT(lsmpi_status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
 !!$      IF(COUNT2.NE.COUNT)CALL LSQUIT('COUNT WRONG IN lsmpi_probe_and_irecv_add_lstmemrealkbuf ',-1)
 !!$      inputMessageRecieved(j+1) = .TRUE.
 !!$      print*,'BLOCKING mynum',mynum,'RECV BUFFER FROM ',J,' OF SIZE',COUNT
@@ -1374,7 +1374,7 @@ call LS_MPI_BUFFER(dalton%ADMMS,Master)
 call LS_MPI_BUFFER(dalton%ADMMP,Master)
 call LS_MPI_BUFFER(dalton%ADMM_separateX,Master)
 call LS_MPI_BUFFER(dalton%PRINT_EK3,Master)
-
+call LS_MPI_BUFFER(dalton%ADMMBASISFILE,Master)
 call LS_MPI_BUFFER(dalton%SR_EXCHANGE,Master)
 
 !Coulomb attenuated method CAM parameters

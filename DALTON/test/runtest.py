@@ -15,7 +15,8 @@
       https://github.com/rbast/runtest
 """
 
-RUNTEST_VERSION = 'v0.1.7'
+# since version 1.0.0 we follow http://semver.org/
+__version__ = '1.0.4'
 
 import re
 import os
@@ -119,7 +120,7 @@ class TestRun:
 
     #--------------------------------------------------------------------------
     def _parse_args(self, input_dir, argv):
-        parser = OptionParser(description='runtest %s - Numerically tolerant test library.' % RUNTEST_VERSION)
+        parser = OptionParser(description='runtest %s - Numerically tolerant test library.' % __version__)
         parser.add_option('--binary-dir',
                           '-b',
                           action='store',
@@ -302,6 +303,15 @@ class Filter:
             log_ref.write(''.join(ref_filtered))
             ref_numbers, ref_location = self._extract_numbers(f, ref_filtered)
 
+            if out_numbers == [] and ref_numbers == []:
+                # no numbers are extracted
+                if out_filtered != ref_filtered:
+                    log_diff.write('ERROR: extracted strings do not match\n')
+                    log_diff.write('own gave:\n')
+                    log_diff.write(''.join(out_filtered) + '\n')
+                    log_diff.write('reference gave:\n')
+                    log_diff.write(''.join(ref_filtered) + '\n')
+
             if len(out_numbers) == len(ref_numbers):
                 l = self._compare_numbers(f, out_numbers, ref_numbers)
                 if 0 in l:
@@ -313,10 +323,10 @@ class Filter:
                             if line_num == k:
                                 if l[i] == 0:
                                     is_integer = isinstance(num, int)
-                                    log_diff.write('ERROR   %s' % self._underline(f, start_char, length, ref_numbers[i], is_integer))
+                                    log_diff.write('ERROR   %s' % self._underline(f, start_char, length, ref_numbers[i], out_numbers[i], is_integer))
 
             if len(out_numbers) != len(ref_numbers):
-                log_diff.write('extracted sizes do not match\n')
+                log_diff.write('ERROR: extracted sizes do not match\n')
                 log_diff.write('own gave %i numbers:\n' % len(out_numbers))
                 log_diff.write(''.join(out_filtered) + '\n')
                 log_diff.write('reference gave %i numbers:\n' % len(ref_numbers))
@@ -424,12 +434,12 @@ class Filter:
         for n, line in enumerate(text):
             i = 0
             for w in line.split():
-                i += 1
-                if (f.use_mask) and (i not in f.mask):
-                    continue
                 # do not consider words like TzB1g
                 # otherwise we would extract 1 later
                 if re.match(r'^[0-9\.eEdD\+\-]*$', w):
+                    i += 1
+                    if (f.use_mask) and (i not in f.mask):
+                        continue
                     is_integer = False
                     if len(pattern_float.findall(w)) > 0:
                         is_integer = (pattern_float.findall(w) == pattern_int.findall(w))
@@ -443,17 +453,21 @@ class Filter:
                         else:
                             numbers.append(float(m))
                         location.append((n, index, len(m)))
+        if f.use_mask:
+            if numbers == []:
+                raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
 
         return numbers, location
 
     #--------------------------------------------------------------------------
-    def _underline(self, f, start_char, length, reference, is_integer):
+    def _underline(self, f, start_char, length, reference, number, is_integer):
         """
         Input:
             - f -- filter task
             - start_char -- position of start character
             - length -- underline length
             - reference -- reference number
+            - number -- obtained (calculated) number
             - is_integer -- whether reference number is integer
 
         Returns:
@@ -473,9 +487,9 @@ class Filter:
         if not is_integer:
             if f.tolerance_is_set:
                 if f.tolerance_is_relative:
-                    s += ' (rel tolerance: %e)' % f.tolerance
+                    s += ' (rel diff: %6.2e)' % abs(1.0 - number/reference)
                 else:
-                    s += ' (abs tolerance: %e)' % f.tolerance
+                    s += ' (abs diff: %6.2e)' % abs(number - reference)
 
         return s + '\n'
 

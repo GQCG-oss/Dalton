@@ -15,6 +15,7 @@ MODULE DEC_settings_mod
   use ls_util
 #ifdef VAR_MPI
   use infpar_module
+  use lsmpi_type, only: LSMPIASYNCP
 #endif
 
 contains
@@ -29,7 +30,21 @@ contains
     !> Unit number for DALTON.OUT
     integer, intent(in) :: output
 
+    ! SNOOP
+    DECinfo%SNOOP = .false.
+    DECinfo%SNOOPjustHF = .false.
+    DECinfo%SNOOPMaxDIIS=5
+    DECinfo%SNOOPMaxIter=100
+    DECinfo%SNOOPthr=1e-7_realk
+    DECinfo%SNOOPdebug=.false.
+    DECinfo%SNOOPort=.false.
+
+
     DECinfo%doDEC                  = .false.
+
+    ! Orbital-based DEC scheme 
+    DECinfo%DECCO = .false.
+
     ! Max memory measured in GB. By default set to 2 GB
     DECinfo%memory                 = 2.0E0_realk
     DECinfo%memory_defined         = .false.
@@ -37,6 +52,7 @@ contains
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc = .false. ! full molecular cc
+    DECinfo%print_frags = .false.
     DECinfo%simulate_full     = .false.
     DECinfo%simulate_natoms   = 1
     DECinfo%SkipReadIn        = .false.
@@ -64,10 +80,12 @@ contains
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
-    DECinfo%dyn_load             = .false.
+#ifdef VAR_MPI
+    DECinfo%dyn_load             = LSMPIASYNCP
+#endif
     DECinfo%force_scheme         = .false.
     DECinfo%en_mem               = 0
-    DECinfo%array_test           = .false.
+    DECinfo%tensor_test           = .false.
     DECinfo%reorder_test         = .false.
     DECinfo%CCSDno_restart       = .false.
     DECinfo%CCSDnosaferun        = .false.
@@ -89,7 +107,7 @@ contains
     DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
     DECinfo%NO_MO_CCSD           = .false.
-    DECinfo%v2o2_free_solver     = .false.
+    DECinfo%cc_solver_tile_mem   = 1.0E0_realk
 
     ! -- Output options 
     DECinfo%output               = output
@@ -109,32 +127,31 @@ contains
     DECinfo%BoughtonPulay                = .false.
     DECinfo%FitOrbitals                  = .true.
     DECinfo%simple_orbital_threshold     = 0.05E0_realk
-    DECinfo%simple_orbital_threshold_set = .false.
 
 
     ! -- Fragment
     DECinfo%MaxIter                = 20
-    DECinfo%FOTlevel               = 4
-    DECinfo%maxFOTlevel            = 8   ! if you modify this remember to modify dimension of ncalc as well!
+    DECinfo%FOTlevel               = 1
     DECinfo%FOT                    = 1.0E-4_realk
     DECinfo%InclFullMolecule       = .false.
     DECinfo%PL                     = 0
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
     DECinfo%Frag_Exp_Scheme        = 1
-    DECinfo%Frag_Red_Scheme        = 1
+    DECinfo%Frag_RedOcc_Scheme        = 1
+    DECinfo%Frag_RedVir_Scheme        = 1
     DECinfo%Frag_Init_Size         = 4
     DECinfo%Frag_Exp_Size          = 10
     DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
     DECinfo%frag_red_virt_thr      = 0.9  ! times FOT
-    DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
+    DECinfo%only_pair_frag_jobs    =  .false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
-    DECinfo%orb_based_fragopt      = .false.
+    DECinfo%no_orb_based_fragopt   = .false.
     DECinfo%OnlyOccPart            = .false.
     DECinfo%OnlyVirtPart           = .false.
     ! Repeat atomic fragment calcs after fragment optimization
@@ -144,7 +161,6 @@ contains
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
-    DECinfo%paircut_set             = .false.
     DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr               =  0.0_realk
     DECinfo%PairMP2                 = .false.
@@ -159,27 +175,30 @@ contains
 
     ! -- CC solver options
 
-    DECinfo%ccsd_expl               = .false.
-    DECinfo%ccMaxIter               = 100
-    DECinfo%ccMaxDIIS               = 3
-    DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
-    DECinfo%F12                     = .false.
-    DECinfo%F12debug                = .false.
-    DECinfo%SOS                     = .false.
-    DECinfo%PureHydrogenDebug       = .false.
-    DECinfo%InteractionEnergy       = .false.
-    DECinfo%PrintInteractionEnergy  = .false.
-    DECinfo%StressTest              = .false.
-    DECinfo%DFTreference            = .false.
-    DECinfo%ccConvergenceThreshold  = 1e-5_realk
-    DECinfo%CCthrSpecified          = .false.
-    DECinfo%use_singles             = .false.
-    DECinfo%use_preconditioner      = .true.
-    DECinfo%use_preconditioner_in_b = .true.
-    DECinfo%use_crop                = .true.
-    DECinfo%array4OnFile            = .false.
-    DECinfo%array4OnFile_specified  = .false.
+    DECinfo%ccsd_expl                = .false.
+    DECinfo%ccMaxIter                = 100
+    DECinfo%ccMaxDIIS                = 3
+    DECinfo%ccModel                  = MODEL_MP2 ! see parameter-list in dec_typedef.f90
+    DECinfo%F12                      = .false.
+    DECinfo%F12debug                 = .false.
+    DECinfo%SOS                      = .false.
+    DECinfo%PureHydrogenDebug        = .false.
+    DECinfo%StressTest               = .false.
+    DECinfo%DFTreference             = .false.
+    DECinfo%ccConvergenceThreshold   = 1e-5_realk
+    DECinfo%CCthrSpecified           = .false.
+    DECinfo%use_singles              = .false.
+    DECinfo%use_preconditioner       = .true.
+    DECinfo%use_preconditioner_in_b  = .true.
+    DECinfo%use_crop                 = .true.
+    DECinfo%array4OnFile             = .false.
+    DECinfo%array4OnFile_specified   = .false.
+    DECinfo%tensor_segmenting_scheme = 0
 
+    ! ccsd(t) settings
+    DECinfo%abc               = .false.
+    DECinfo%abc_tile_size     = 1
+    DECinfo%CCSDPT_nbuffs_ijk = 6
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -192,11 +211,11 @@ contains
     DECinfo%gradient=.false.
     DECinfo%kappa_use_preconditioner=.true.
     DECinfo%kappa_use_preconditioner_in_b=.true.
+    DECinfo%kappa_driver_debug=.false.
     DECinfo%kappaMaxDIIS=3
     DECinfo%kappaMaxIter=100
-    DECinfo%kappa_driver_debug=.false.
     DECinfo%kappaTHR=1e-4_realk
-    DECinfo%EerrFactor = 1.0_realk
+    DECinfo%EerrFactor = 0.1_realk
     DECinfo%EerrOLD = 0.0_realk
 
     ! -- Timings
@@ -216,11 +235,12 @@ contains
     !> The DEC item
     type(decsettings),intent(inout) :: DECitem
 
-    DECitem%cc_models(MODEL_MP2)='MP2     '
-    DECitem%cc_models(MODEL_CC2)='CC2     '
-    DECitem%cc_models(MODEL_CCSD)='CCSD    '
+    DECitem%cc_models(MODEL_MP2)   ='MP2     '
+    DECitem%cc_models(MODEL_CC2)   ='CC2     '
+    DECitem%cc_models(MODEL_CCSD)  ='CCSD    '
     DECitem%cc_models(MODEL_CCSDpT)='CCSD(T) '
-    DECitem%cc_models(MODEL_RPA)='RPA     '
+    DECitem%cc_models(MODEL_RPA)   ='RPA     '
+    DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
 
   end subroutine dec_set_model_names
 
@@ -246,7 +266,7 @@ contains
     !> do we do F12 calc (is a CABS basis required?)
     logical,intent(inout) :: doF12
     logical,save :: already_called = .false.
-    integer :: fotlevel,nworkers
+    integer :: nworkers
 
     ! Sanity check that this routine is only called once for either **DEC OR **CC
     if(already_called) then
@@ -309,11 +329,46 @@ contains
           ! ****************************************************************************
           ! These keywords should be properly documented for the release.
 
+
+          ! SNOOP
+          ! =====
+
+          ! Perform SNOOP calculation rather than DEC (will be merged at some point)
+       case('.SNOOP') 
+          DECinfo%SNOOP=.true.
+
+          ! Just do HF calculation in SNOOP and skip correlated CC calculation?
+       case('.SNOOPJUSTHF') 
+          DECinfo%SNOOPjustHF=.true.
+
+          ! Threshold for residual norm in SNOOP HF calculations
+       case('.SNOOPTHR') 
+          read(input,*) DECinfo%SNOOPthr
+
+          ! Maximum number of iterations in SNOOP HF calculations
+       case('.SNOOPMAXITER'); read(input,*) DECinfo%SNOOPMaxIter
+          ! Maximum number of DIIS vectors to store in SNOOP HF calculations (RH/DIIS scheme)
+       case('.SNOOPMAXDIIS'); read(input,*) DECinfo%SNOOPMaxDIIS
+          ! Debug prints for SNOOP
+       case('.SNOOP_DEBUG'); DECinfo%SNOOPdebug=.true.
+          ! Impose orthogonality constrant for occupied subsystem orbitals in SNOOP 
+       case('.SNOOPORT'); DECinfo%SNOOPort=.true.
+
+
           ! GENERAL INFO
           ! ============
 
+
+          ! DEC orbital-based
+       case('.DECCO')
+          DECinfo%DECCO=.true.
+
           ! CC model
        case('.MP2') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles = .false.  
+          DECinfo%NO_MO_CCSD  = .true.
+       case('.RIMP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles = .false.  
           DECinfo%NO_MO_CCSD  = .true.
@@ -357,13 +412,11 @@ contains
           ! Number of residual vectors to save when solving CC amplitude equation
        case('.SUBSIZE'); read(input,*) DECinfo%ccMaxDIIS
 
+          ! CCSD(T) INFO
+          ! ==============
+       case('.PT_ABC'); DECinfo%abc= .true.
+       case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
 
-          ! CHOICE OF ORBITALS
-          ! ==================
-          ! By default orbitals from the lcm_orbitals.u file are used for DEC or full calculation.
-          ! Canonical orbitals can be invoked by this keyword
-       case('.CANONICAL') 
-          DECinfo%use_canonical=.true.
 
 
           ! DEC CALCULATION 
@@ -382,13 +435,9 @@ contains
           ! Do not absorb H atoms when assigning orbitals
        case('.NOTABSORBH'); DECinfo%AbsorbHatoms=.false.
 
-          !> See description of FOT level in set_input_for_fot_level.
-          !> Note that if one does not use simple orbital threshold, then
-          !> one should manually choose a suitable threshold to determine
-          !> the atomic extent (e.g. threshold for Boughton-Pulay procedure).
+          ! FOT
        case('.FOT')  
-          read(input,*) FOTlevel
-          call set_input_for_fot_level(FOTlevel)
+          read(input,*) DECinfo%FOT
 
           !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
        case('.CORRDENS')  
@@ -409,12 +458,10 @@ contains
        case('.PAIRTHR') 
           ! Threshold in a.u.
           read(input,*) DECinfo%pair_distance_threshold
-          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
        case('.PAIRTHRANGSTROM') 
           ! Input in Angstrom
           read(input,*) DECinfo%pair_distance_threshold
           DECinfo%pair_distance_threshold=DECinfo%pair_distance_threshold/bohr_to_angstrom
-          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
 
           ! Calculate MP2 gradient (without necessarily doing geometry optimization)
        case('.GRADIENT') 
@@ -431,6 +478,13 @@ contains
           read(input,*) DECinfo%kappaTHR
 
 
+          ! CHOICE OF ORBITALS
+          ! ==================
+          ! By default orbitals from the lcm_orbitals.u file are used for DEC or full calculation.
+          ! Canonical orbitals can be invoked by this keyword
+       case('.CANONICAL') 
+          DECinfo%use_canonical=.true.
+
 
           ! ****************************************************************************
           ! *               Keywords only available for developers                     *
@@ -439,21 +493,19 @@ contains
           ! Keywords only used for testing in release branch, not intended to be used by end-users,
           ! so on purpose there is no documentation for those in the LSDALTON manual.
 
-       !general testing
-       case('.TESTARRAY'); DECinfo%array_test=.true.
+
+       !KEYWORDS FOR TESTCASES
+       !**********************
+       case('.TESTARRAY'); DECinfo%tensor_test=.true.
        case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
     
-       !CCSD testing
-       case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
-          read(input,*) DECinfo%en_mem
-       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
+       !KEYWORDS FOR DEC PARALLELISM
+       !****************************
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
-       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
-          ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
 #ifndef VAR_MPI
@@ -461,44 +513,74 @@ contains
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
-       ! Those keyword should probably not be released but are necesary for some essantial test cases:
+
+
+       !KEYWORDS FOR DEC DEBUGGING AND TESTING
+       !**************************************
+       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
+          ! Size of local groups in MPI scheme
        case('.CRASHCALC') 
           DECinfo%CRASHCALC= .true.
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
-       case('.FRAG_INIT_SIZE'); read(input,*) DECinfo%Frag_Init_Size
-       case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
-       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
-       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
+       case('.FRAG_EXP_SCHEME');    read(input,*) DECinfo%Frag_Exp_Scheme
+       case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
+       case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
+       case('.FRAG_INIT_SIZE');     read(input,*) DECinfo%Frag_Init_Size
+       case('.FRAG_EXP_SIZE');      read(input,*) DECinfo%Frag_Exp_Size
+       case('.PRINTFRAGS')
+          ! Print fragment energies for full molecular cc calculation
+          DECinfo%print_frags = .true.
 
 
 #ifdef MOD_UNRELEASED
 
        !CCSD SPECIFIC KEYWORDS
        !**********************
+       ! - CCSOLVER SPECIFIC KEYWORDS
        case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
        case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
-       case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
-       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
+       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
+       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
+       case('.CC_TILE_SIZE_GB');read(input,*) DECinfo%cc_solver_tile_mem 
+       case('.SOSEX');   DECinfo%SOS = .true.
+       case('.NOTPREC'); DECinfo%use_preconditioner=.false.
+       case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
+       case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
+       case('.MAXITER'); read(input,*) DECinfo%MaxIter
+       case('.TENSOR_SEGMENTING_SCHEME'); read(input,*) DECinfo%tensor_segmenting_scheme
+
+       ! - CCSD RESIDUAL SPECIFIC KEYWORDS
+       case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
+       case('.CCSDNODYNAMIC_LOAD');       DECinfo%dyn_load             = .false.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
-       case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
+       case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
+       case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
+#endif
+       case('.CCSDFORCE_SCHEME');         DECinfo%force_scheme         = .true.
+                                          read(input,*) DECinfo%en_mem
+       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
+
+#ifdef MOD_UNRELEASED
+       ! - PNO-CCSD SPECIFIC KEYWORDS
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
+       case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
+       case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
        case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
        case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
+       case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
        case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.; DECinfo%noFAtrunc=.true.
        case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
-       case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
-       case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
-       case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
-       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
-       case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
-
-       case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
-       case('.EOSPNOTHR');     read(input,*) DECinfo%EOSPNOthr
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
+       case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
+       case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
 
+
+       ! (T) SPECIFIC KEYWORDS
+       !**********************
+       case('.(T)#BUFFS_IJK'); read(input,*) DECinfo%CCSDPT_nbuffs_ijk 
 
 
        !OTHER STUFF FIXME: SORT IT INTO BLOCKS
@@ -506,7 +588,6 @@ contains
 
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
-       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.FRAGEXPMODEL') 
           read(input,*) myword
@@ -526,25 +607,12 @@ contains
           doF12 = .TRUE.
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
-       case('.INTERACTIONENERGY')     
-          !Calculate the Interaction energy (add ref to article) 
-          DECinfo%InteractionEnergy       = .true.
-       case('.PRINTINTERACTIONENERGY')     
-          !Print the Interaction energy (see .INTERACTIONENERGY) 
-          DECinfo%PrintInteractionEnergy  = .true.
-       case('.SOSEX')
-         DECinfo%SOS = .true.
-       case('.NOTPREC'); DECinfo%use_preconditioner=.false.
-       case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
        case('.DISTANCE'); DECinfo%distance=.true.
        case('.BOUGHTONPULAY'); DECinfo%BoughtonPulay=.true.
        case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')
           read(input,*) DECinfo%simple_orbital_threshold
-          DECinfo%simple_orbital_threshold_set=.true.
-       case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
-       case('.MAXITER'); read(input,*) DECinfo%MaxIter
        case('.DECPRINT'); read(input,*) DECinfo%PL
        case('.MULLIKENTHR'); read(input,*) DECinfo%mulliken_threshold
        case('.CHECKPAIRS') 
@@ -578,15 +646,15 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
-       case('.FRAG_EXP_SCHEME'); read(input,*) DECinfo%Frag_Exp_Scheme
-       case('.FRAG_RED_SCHEME'); read(input,*) DECinfo%Frag_Red_Scheme
-       case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
+       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
+       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
-       case('.ORB_BASED_FRAGOPT'); DECinfo%orb_based_fragopt = .true.
+       case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
           read(input,*)DECinfo%only_n_frag_jobs
           call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
           read(input,*)DECinfo%frag_job_nr(1:DECinfo%only_n_frag_jobs)
+       case('.ONLY_PAIR_FRAG_JOBS'); DECinfo%only_pair_frag_jobs = .true.
 
           ! kappabar multiplier equation
        case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 
@@ -636,8 +704,71 @@ contains
     nodtot = infpar%nodtot
 #endif
 
-    ! Check that array4OnFile is only called for the cases where it is implemented
+    
+    ! SNOOP - currently limited in several ways
+    if(DECinfo%SNOOP) then
+       
+       ! Only for full calculation
+       if(.not. DECinfo%full_molecular_cc) then
+          call lsquit('Currently SNOOP is only implemented for **CC and not for **DEC!',-1)
+       end if
 
+       ! Only for dense matrices for now
+       if(matrix_type/=mtype_dense) then
+          call lsquit('SNOOP is only implemented for dense matrices!',-1)
+       end if
+       
+       ! SimulateFull will destroy subsystem assignment and thus render SNOOP meaningless
+       if(DECinfo%simulate_full) then
+          call lsquit('SNOOP cannot be used in connection with the SIMULATEFULL keyword!',-1)
+       end if
+
+       ! Energy contribution analysis will not work for DECCO
+       if(DECinfo%DECCO) then
+          call lsquit('SNOOP cannot be used in connection with the DECCO keyword!',-1)
+       end if
+       
+    end if
+
+
+    ! DEC orbital-based - currently limited to occupied partitioning scheme
+    ! and several options are not possible
+    DoDECCO: if(DECinfo%DECCO) then
+
+       ! Occupied partitioning scheme
+!!$       if(.not. DECinfo%OnlyOccPart) then
+!!$          print *, 'WARNING: DECCO is implemented only for occ partitioning scheme!'
+!!$          print *, '--> I will only use occupied partitioning scheme.'
+!!$          write(DECinfo%output,*) 'WARNING: DECCO only for occ partitioning scheme!'
+!!$          write(DECinfo%output,*) '--> I will only use occupied partitioning scheme.'
+!!$          DECinfo%OnlyOccPart=.true.
+!!$          DECinfo%OnlyVirtPart=.false.
+!!$       end if
+
+       ! Not simulate full
+       if(DECinfo%simulate_full) then
+          call lsquit('DECCO not implemented for SIMULATEFULL',-1)
+       end if
+
+!!$       ! Not working for first-order properties
+!!$       if(DECinfo%first_order) then
+!!$          call lsquit('DECCO is not implemented for first-order properties!',DECinfo%output)
+!!$       end if
+
+
+       ! No stress test implemented
+       if( DECinfo%StressTest ) then
+          call lsquit('DECCO is not implemented for stress test!',DECinfo%output)
+       end if
+
+       if(DECinfo%SinglesPolari) then
+          call lsquit('DECCO is not implemented for singles polarization effects!',DECinfo%output)
+       end if
+
+    end if DoDECCO
+
+
+    ! Check that array4OnFile is only called for the cases where it is implemented
     ArraysOnFile: if(DECinfo%array4OnFile) then
 
        ! Only for MP2 so far
@@ -723,7 +854,7 @@ contains
     end if
 
     if((.not. (DECinfo%memory_defined .or.  DECinfo%use_system_memory_info ) )&
-       & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
+         & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
 
        write(DECinfo%output,*) 'Memory not or multiply defined for **DEC or **CC calculation!'
        write(DECinfo%output,*) 'Please specify using EITHER .MEMORY keyword (in gigabytes) OR .USE_SYS_MEM_INFO'
@@ -753,28 +884,33 @@ contains
     endif
 
     if( (.not.DECinfo%full_molecular_cc) .and. DECinfo%ccmodel == MODEL_MP2 .and. &
-      &(    DECinfo%fragopt_exp_model == MODEL_CC2 &
-      &.or. DECinfo%fragopt_red_model == MODEL_CC2 &
-      &.or. DECinfo%fragopt_exp_model == MODEL_CCSD &
-      &.or. DECinfo%fragopt_red_model == MODEL_CCSD &
-      &.or. DECinfo%fragopt_exp_model == MODEL_CCSDpT &
-      &.or. DECinfo%fragopt_red_model == MODEL_CCSDpT )                          ) then
-         call lsquit('The specification of .MP2 and .FRAGEXPMODEL > .MP2 or .FRAGREDMODEL > .MP2&
+         &(    DECinfo%fragopt_exp_model == MODEL_CC2 &
+         &.or. DECinfo%fragopt_red_model == MODEL_CC2 &
+         &.or. DECinfo%fragopt_exp_model == MODEL_CCSD &
+         &.or. DECinfo%fragopt_red_model == MODEL_CCSD &
+         &.or. DECinfo%fragopt_exp_model == MODEL_CCSDpT &
+         &.or. DECinfo%fragopt_red_model == MODEL_CCSDpT )                          ) then
+       call lsquit('The specification of .MP2 and .FRAGEXPMODEL > .MP2 or .FRAGREDMODEL > .MP2&
             & does not make sense, please change input!',-1)
 
     endif
 
-   if((.not.DECinfo%full_molecular_cc).and.DECinfo%force_scheme)then
-      call lsquit("ERROR(check_dec_input):Do not use &
-         &.CCSDforce_scheme in a DEC calculation",-1)
-   endif
+    if((.not.DECinfo%full_molecular_cc).and.DECinfo%force_scheme)then
+       call lsquit("ERROR(check_dec_input):Do not use &
+            &.CCSDforce_scheme in a DEC calculation",-1)
+    endif
 
-   if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==1.or.&
-      &DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
-      call lsquit("ERROR(check_dec_input):You forced a scheme in &
-      &the CCSD part which is dependent on running at least 2 &
-      &MPI processes with only one process",-1)
-   endif
+    if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==1.or.&
+         &DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
+       call lsquit("ERROR(check_dec_input):You forced a scheme in &
+            &the CCSD part which is dependent on running at least 2 &
+            &MPI processes with only one process",-1)
+    endif
+
+
+    ! Set FOTs for geometry opt.
+    call set_geoopt_FOTs(DECinfo%FOT)
+
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
@@ -837,8 +973,13 @@ contains
     WRITE(lupri,*) ' The DEC settings structure '
     write(lupri,*) '****************************'
 
-    write(lupri,*) 
-
+    write(lupri,*) 'SNOOP ',DECinfo%SNOOP
+    write(lupri,*) 'SNOOPjustHF ', DECinfo%SNOOPjustHF
+    write(lupri,*) 'SNOOPMaxDIIS ', DECinfo%SNOOPMaxDIIS
+    write(lupri,*) 'SNOOPMaxIter ', DECinfo%SNOOPMaxIter
+    write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
+    write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
+    write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
@@ -892,7 +1033,7 @@ contains
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
     write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
-    write(lupri,*) 'array_test ', DECitem%array_test
+    write(lupri,*) 'tensor_test ', DECitem%tensor_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test
     write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
     write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
@@ -905,7 +1046,6 @@ contains
     write(lupri,*) 'simple_orbital_threshold ', DECitem%simple_orbital_threshold
     write(lupri,*) 'PurifyMOs ', DECitem%PurifyMOs
     write(lupri,*) 'FragAdapt ', DECitem%FragAdapt
-    write(lupri,*) 'simple_orbital_threshold_set ', DECitem%simple_orbital_threshold_set
     write(lupri,*) 'BoughtonPulay ', DECitem%BoughtonPulay
     write(lupri,*) 'mulliken_threshold ', DECitem%mulliken_threshold
     write(lupri,*) 'simple_mulliken_threshold ', DECitem%simple_mulliken_threshold
@@ -914,19 +1054,17 @@ contains
     write(lupri,*) 'FOT ', DECitem%FOT
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
-    write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'Frag_Exp_Scheme ', DECitem%Frag_Exp_Scheme
-    write(lupri,*) 'Frag_Red_Scheme ', DECitem%Frag_Red_Scheme
+    write(lupri,*) 'Frag_RedOcc_Scheme ', DECitem%Frag_RedOcc_Scheme
+    write(lupri,*) 'Frag_RedVir_Scheme ', DECitem%Frag_RedVir_Scheme
     write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
     write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr
     write(lupri,*) 'Frag_Red_virt_thr ', DECinfo%frag_red_virt_thr
-    write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
-    write(lupri,*) 'Orb_Based_FragOpt ', DECitem%orb_based_fragopt
+    write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
-    write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
@@ -949,85 +1087,29 @@ contains
 
 
 
-  !> \brief Set DEC parameters in DEC structure according to FOT level,
-  !> e.g. FOT itself and orbital extent threshold are set here.
-  !> See details inside subroutine.
+  !> \brief Set FOTs to (possibly) be used for geometry optimization,
+  !> --> sets DECinfo%GeoFOTs such that
+  !> DECinfo%GeoFOTs(1) = initial FOT
+  !> DECinfo%GeoFOTs(2) = (initial FOT)/10
+  !> DECinfo%GeoFOTs(3) = (initial FOT)/100
+  !> etc.
   !> \author Kasper Kristensen
   !> \date November 2012
-  subroutine set_input_for_fot_level(FOTlevel)
+  subroutine set_geoopt_FOTs(FOT)
     implicit none
-    !> FOT level defining precision of calculation
-    integer,intent(in) :: FOTlevel
+    !> Initial FOT
+    real(realk),intent(in) :: FOT
+    integer :: i
 
-    !> FOTlevel: Defines the precision of the whole calculation:
-    !>           In general FOT=10^{-FOTlevel}
-    !>           So a large FOTlevel means HIGH precision.
-    !>           It is also possible to adapt the orbital threshold to the given FOT,
-    !>           however, for now we simply set the orbital threshold to 0.05 for all levels.
-    !> 
-    !> Default: FOTlevel=4. If FOTlevel is not 1,2,3,4,5,6,7, or 8, the program will quit.
+    ! Initial FOT level is 1
+    DECinfo%FOTlevel = 1
 
-    ! Set FOT level
-    DECinfo%FOTlevel = FOTlevel
+    DECinfo%GeoFOTs(1) = FOT
+    do i=2,nFOTs
+       DECinfo%GeoFOTs(i) = DECinfo%GeoFOTs(i-1)*0.1_realk
+    end do
 
-    WhatFOTlevel: SELECT CASE(DECinfo%FOTlevel)
-
-    case(1)
-       DECinfo%FOT = 1.0E-1_realk
-       ! Define simple orbital threshold here only if it was not set manually
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(2)
-       DECinfo%FOT = 1.0E-2_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(3)
-       DECinfo%FOT = 1.0E-3_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(4)
-       DECinfo%FOT = 1.0E-4_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(5)
-       DECinfo%FOT = 1.0E-5_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(6)
-       DECinfo%FOT = 1.0E-6_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(7)
-       DECinfo%FOT = 1.0E-7_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(8)
-       DECinfo%FOT = 1.0E-8_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case default
-       call lsquit('set_input_for_fot_level: FOT level must be 1,2,3,4,5,6,7, or 8!',DECinfo%output)
-
-    end SELECT WhatFOTlevel
-
-
-  end subroutine set_input_for_fot_level
+  end subroutine set_geoopt_FOTs
 
   subroutine free_decinfo()
      implicit none
@@ -1053,6 +1135,7 @@ contains
     case('.CCD');     modelnumber = MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
     case('.CCSD(T)'); modelnumber = MODEL_CCSDpT
     case('.RPA');     modelnumber = MODEL_RPA
+    case('.RIMP2');   modelnumber = MODEL_RIMP2
     case default
        print *, 'Model not found: ', myword
        write(DECinfo%output,*)'Model not found: ', myword
@@ -1063,6 +1146,7 @@ contains
        write(DECinfo%output,*)'.CCD'
        write(DECinfo%output,*)'.CCSD(T)'
        write(DECinfo%output,*)'.RPA'
+       write(DECinfo%output,*)'.RIMP2'
        call lsquit('Requested model not found!',-1)
     end SELECT
 

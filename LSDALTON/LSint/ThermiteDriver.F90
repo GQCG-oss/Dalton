@@ -19,12 +19,15 @@ MODULE integraldriver
   use ls_util
   use Thermite_prop
   use ThermiteMem_module
-  use Integralparameters
+  use LSparameters
   use Fundamental
   use OverlapType
   use thermite_distribute
+  use thermite_distribute2
+  use thermite_distributeGen
   use thermite_distributeDEC
   use thermite_distributeK
+  use thermite_distributeK2
   use math_fun
 SAVE
 TYPE LINKshell

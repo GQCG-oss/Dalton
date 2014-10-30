@@ -1,5 +1,6 @@
 set(DALTON_LIBS)
 if(ENABLE_VPOTDAMP)
+    add_definitions(-DENABLE_VPOTDAMP)
     add_subdirectory(DALTON/1e_cpp ${CMAKE_BINARY_DIR}/vpotdamp)
     set(DALTON_LIBS
         vpotdamp
@@ -36,6 +37,22 @@ add_library(
     )
 
 add_dependencies(dalton generate_binary_info)
+
+# QMatrix library
+if(ENABLE_QMATRIX)
+    add_library(
+        dal_qmatrix_interface
+        ${DAL_QMATRIX_SOURCES}
+        )
+    add_dependencies(dal_qmatrix_interface pdpacklib)
+    add_dependencies(dal_qmatrix_interface matrixulib)
+    add_dependencies(dal_qmatrix_interface qmatrix)
+    add_dependencies(dalton dal_qmatrix_interface)
+    target_link_libraries(dal_qmatrix_interface
+                          ${LIB_LS_QMATRIX}
+                          matrixulib
+                          pdpacklib)
+endif()
 
 if(ENABLE_EFS)
     add_dependencies(dalton efs)
@@ -74,6 +91,18 @@ if(ENABLE_OPENRSP)
     include(LibsOpenRSP)
 endif()
 
+if(ENABLE_PCMSOLVER)
+    set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    if(MPI_FOUND)
+        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
+    endif()
+    add_dependencies(dalton pcmsolver)
+    set(DALTON_LIBS
+        ${PCMSOLVER_LIBS}
+        ${DALTON_LIBS}
+        )
+endif()
+
 if(NOT ENABLE_CHEMSHELL)
 add_executable(
     dalton.x
@@ -82,12 +111,23 @@ add_executable(
 
 set_property(TARGET dalton.x PROPERTY LINKER_LANGUAGE Fortran)
 
-target_link_libraries(
-    dalton.x
-    dalton
-    ${DALTON_LIBS}
-    ${EXTERNAL_LIBS}
-    )
+if(ENABLE_QMATRIX)
+    target_link_libraries(
+        dalton.x
+        dalton
+        dal_qmatrix_interface
+        ${DALTON_LIBS}
+        ${EXTERNAL_LIBS}
+        )
+else()
+    target_link_libraries(
+        dalton.x
+        dalton
+        ${DALTON_LIBS}
+        ${EXTERNAL_LIBS}
+        )
+endif()
+
 endif()
 
 # compile utilities

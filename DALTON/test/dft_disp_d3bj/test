@@ -1,4 +1,14 @@
 #!/usr/bin/env python
+#    DFT D3 Dispersion Correction (with Becke-Johnson Damping)  
+#    ---------------------------------------------------------
+#    Molecule:         CH4 Dimer 
+#    Wave Function:    DFT / BLYP / STO-3G (Geom. Opt.)
+#    Test Purpose:     Run a geometry optimization with symm. using the
+#                      DFT-D3 empirical dispersion correction using 
+#                      Becke-Johnson damping. BLYP uncorrected gives a 
+#                      C-C separation of ~4.6 Ang, the corrected version 
+#                      gives ~3.66 Ang. The S22 geometry is ~3.7 Ang  
+#                                                                 
 
 import os
 import sys

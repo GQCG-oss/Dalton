@@ -3,3 +3,8 @@
 */*/*.out.filtered
 */*/*.out.reference
 */*/*.stdout
+*/*.out
+*/*.out.diff
+*/*.out.filtered
+*/*.out.reference
+*/*.stdout

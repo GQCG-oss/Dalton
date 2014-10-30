@@ -1,21 +1,22 @@
 MODULE AGC_GPU_OBS_HorizontalRecurrenceRHSModDtoC
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 
 !Transfer angmom from D to C
 subroutine HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContPQ,nPasses,nlmP,&
-         & Qdistance12,ThetaP2,ThetaP,lupri)
+         & Qdistance12,ThetaP2,ThetaP,lupri,iASync)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
   real(realk),intent(in) :: Qdistance12(3)
   real(realk),intent(in) :: ThetaP2(nContPQ*nPasses,nlmP,    4)
   real(realk),intent(inout) :: ThetaP(nContPQ*nPasses,nlmP,1,    2:    4)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   integer :: iP,ilmP,iTUVD
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iTUVD,ilmP) &
-!$ACC PRESENT(nPasses,ThetaP,ThetaP2)
+!$ACC PRESENT(nPasses,ThetaP,ThetaP2) ASYNC(iASync)
   DO iP = 1,nContPQ*nPasses
     DO iTUVD=  2,  4
      DO ilmP = 1,nlmP
@@ -27,17 +28,18 @@ end subroutine HorizontalRR_GPU_RHS_Q1C0D1DtoC
 
 !Transfer angmom from D to C
 subroutine HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContPQ,nPasses,nlmP,&
-         & Qdistance12,ThetaP2,ThetaP,lupri)
+         & Qdistance12,ThetaP2,ThetaP,lupri,iASync)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
   real(realk),intent(in) :: Qdistance12(3)
   real(realk),intent(in) :: ThetaP2(nContPQ*nPasses,nlmP,   10)
   real(realk),intent(inout) :: ThetaP(nContPQ*nPasses,nlmP,1,    5:   10)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   integer :: iP,ilmP,iTUVD
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iTUVD,ilmP) &
-!$ACC PRESENT(nPasses,ThetaP,ThetaP2)
+!$ACC PRESENT(nPasses,ThetaP,ThetaP2) ASYNC(iASync)
   DO iP = 1,nContPQ*nPasses
     DO iTUVD=  5, 10
      DO ilmP = 1,nlmP
@@ -49,19 +51,20 @@ end subroutine HorizontalRR_GPU_RHS_Q2C0D2DtoC
 
 !Transfer angmom from D to C
 subroutine HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContPQ,nPasses,nlmP,&
-         & Qdistance12,ThetaP2,ThetaP,lupri)
+         & Qdistance12,ThetaP2,ThetaP,lupri,iASync)
   implicit none
   integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
   real(realk),intent(in) :: Qdistance12(3)
   real(realk),intent(in) :: ThetaP2(nContPQ*nPasses,nlmP,   20)
   real(realk),intent(inout) :: ThetaP(nContPQ*nPasses,nlmP,    2:    4,    5:   10)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   integer :: iP,iC,iPassQ,ilmP,iTUVD
   real(realk) :: Xcd,Ycd,Zcd
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         iTUVD,ilmP,Xcd,Ycd,Zcd) &
-!$ACC PRESENT(nPasses,Qdistance12,ThetaP,ThetaP2)
+!$ACC PRESENT(nPasses,Qdistance12,ThetaP,ThetaP2) ASYNC(iASync)
   DO iP = 1,nContPQ*nPasses
    Xcd = -Qdistance12(1)
    Ycd = -Qdistance12(2)

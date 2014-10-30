@@ -26,7 +26,18 @@ subroutine lsmpi_init(OnMaster)
 #endif
    endif
 
+   !Set default mpi message sizes
+   SPLIT_MPI_MSG      = 100000000
+   MAX_SIZE_ONE_SIDED =  12500000
+
    lsmpi_enabled_comm_procs = .false.
+
+   !TEST WHETHER THE MPI VARIABLES AND THE INTERNALLY DECLARED ls_mpik have the
+   !same kind
+   if(huge(ierr) /= huge(MPI_COMM_WORLD))then
+      print *,"WARNING: THE MPI INTRINSIC VARIABLES AND THE ls_mpik ARE OF&
+      & DIFFERENT KIND, YOUR JOB IS LIKELY TO FAIL",huge(ierr),huge(MPI_COMM_WORLD)
+   endif
 
    !asynchronous progress is off per default, might be switched on with an
    !environment variable, or by spawning communication processes
@@ -76,6 +87,7 @@ end subroutine lsmpi_init
 #ifdef VAR_MPI
 
 subroutine lsmpi_slave(comm)
+   use lsparameters
    use lstiming
    use infpar_module
    use lsmpi_type
@@ -95,10 +107,9 @@ subroutine lsmpi_slave(comm)
    do while(stay_in_slaveroutine)
 
       call time_start_phase(PHASE_IDLE)
-
       call ls_mpibcast(job,infpar%master,comm)
-
       call time_start_phase(PHASE_WORK)
+
 
       select case(job)
       case(MATRIXTY);
@@ -142,10 +153,10 @@ subroutine lsmpi_slave(comm)
          ! DEC MP2 integrals and amplitudes
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
-#ifdef MOD_UNRELEASED
-      case(MP2INAMPRI);
-         call MP2_RI_EnergyContribution_slave
-#endif
+      case(RIMP2INAMP);
+         call RIMP2_integrals_and_amplitudes_slave
+      case(RIMP2FULL);
+         call full_canonical_rimp2_slave
       case(DEC_SETTING_TO_SLAVES);
          call set_dec_settings_on_slaves
       case(CCSDDATA);
@@ -169,7 +180,7 @@ subroutine lsmpi_slave(comm)
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
       case(ARRAYTEST);
-         call get_slaves_to_array_test
+         call get_slaves_to_tensor_test
       case(GROUPINIT);
          call init_mpi_groups_slave
          ! DEC driver - main loop
@@ -186,7 +197,7 @@ subroutine lsmpi_slave(comm)
          call PDM_SLAVE
 #endif
       case(PDMA4SLV);
-         call PDM_ARRAY_SLAVE(comm)
+         call PDM_tensor_SLAVE(comm)
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);
@@ -212,6 +223,14 @@ subroutine lsmpi_slave(comm)
       case(LSPDM_SLAVES_SHUT_DOWN_CHILD)
          if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
          call lspdm_shut_down_comm_procs
+
+      case(SET_GPUMAXMEM);
+         call ls_mpibcast(GPUMAXMEM,infpar%master,comm)
+
+      case(SET_SPLIT_MPI_MSG);
+         call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
+      case(SET_MAX_SIZE_ONE_SIDED);
+         call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########
@@ -239,6 +258,7 @@ subroutine lsmpi_slave(comm)
          call lsmpi_finalize(6,.FALSE.)
          stay_in_slaveroutine = .false.
       end select
+
    end do
 
 end subroutine lsmpi_slave

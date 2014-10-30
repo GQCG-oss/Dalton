@@ -1,7 +1,7 @@
       MODULE IIDFTD
       use gridgenerationmodule
       use dft_memory_handling
-      use Integralparameters
+      use LSparameters
       !use memory_handling
       !WARNING you must not add memory_handling, all memory goes through 
       !grid_memory_handling  module so as to determine the memory used in this
@@ -269,10 +269,9 @@
       ENDIF
 
       IF (NVER.EQ.0) THEN
-        WRITE(LUPRI,*)'NO DFT-D VERSION SPECIFIED, DEFAULTS TO DFT-D3BJ'
-        NVER=3
-        SETTING%SCHEME%DFT%DO_DFTD3=.TRUE.
-        SETTING%SCHEME%DFT%DO_BJDAMP = .TRUE.
+          WRITE(LUPRI,*)'WARNING: NO DFTD VERSION, DEFAULT TO DFT-D2'
+          NVER=2
+          SETTING%SCHEME%DFT%DO_DFTD2=.TRUE.
       ENDIF
 
       CALL LSHEADER(LUPRI,'DFT-D Empirical Dispersion Correction')

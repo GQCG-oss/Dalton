@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    prop_lresc
+#    -------------
+#    Molecule:         FH
+#    Wave Function:    HF
+#    Test Purpose:     LRESC correction to Fluorine Shielding constant
 
 import os
 import sys

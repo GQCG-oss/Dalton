@@ -1,6 +1,6 @@
-MODULE IchorSaveGabModule
-  use IchorprecisionModule
-  use IchorCommonModule
+MODULE IchorSaveGabMod
+  use IchorprecisionMod
+  use IchorCommonMod
 !  use IchorMemory
   public :: InitIchorSaveGabModule, AddGabToIchorSaveGabModule,&
        & RetrieveGabFromIchorSaveGabModule,FreeIchorSaveGabModule,&
@@ -188,4 +188,4 @@ subroutine gabdcopy(n,dx,dy)
   enddo
 end subroutine gabdcopy
 
-END MODULE ICHORSAVEGABMODULE
+END MODULE ICHORSAVEGABMOD

@@ -15,7 +15,7 @@ module atomic_fragment_operations
   use dec_typedef_module
   use memory_handling!, only: mem_alloc,mem_dealloc
   use IntegralInterfaceMod!, only: ii_get_mixed_overlap_full
-  use Integralparameters!,only: AORdefault
+  use lsparameters!, only: AORdefault
 #ifdef VAR_MPI
   use infpar_module
 #endif
@@ -76,19 +76,18 @@ contains
     !> Is it a pair fragment?
     logical,intent(in) :: pairfrag
     integer :: j,idx,i,natoms,startidx
-    integer :: CentralAtom, Rcntr,Dcntr
+    integer :: CentralAtom, Rcntr,Dcntr,nfrags
     real(realk) :: tcpu, twall
     logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
     !> list of atoms with AOS orbitals assigned
     logical,pointer :: all_atoms(:)
-
     
 
     ! Check that no core orbital are included in AOS space whith frozencore:
-    if (DECinfo%orb_based_fragopt.and.DECinfo%frozencore) then
+    if ((.not.DECinfo%no_orb_based_fragopt).and.DECinfo%frozencore) then
       do i=1,Mymolecule%ncore
          if(Occ_list(i)) call lsquit('core orbital should never be included in AOS space &
-            & whith frozen core approximation',DECinfo%output)
+            & with frozen core approximation',DECinfo%output)
       end do
     end if
 
@@ -106,10 +105,11 @@ contains
     fragment%PNOset          = .false.
 
     natoms = MyMolecule%natoms
+    nfrags = MyMolecule%nfrags
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-    call mem_alloc( all_atoms,  natoms )
+    call mem_alloc( all_atoms,  nfrags )
     all_atoms  = .false.
 
 
@@ -307,7 +307,7 @@ contains
        end if
 
     end do
-    !print *,"checking",idx,fragment%nunoccAOS,fragment%EOSatoms,pairfrag
+
     
     if(idx /= fragment%nunoccAOS) then
       print *,unocc_list
@@ -438,7 +438,7 @@ contains
     end if
 
     call LSTIMER('FRAGMENT INIT',tcpu,twall,DECinfo%output)
-     
+
   end subroutine atomic_fragment_init_orbital_specific
 
   
@@ -608,60 +608,67 @@ contains
     !> Distance beyond which to include neighbour atoms
     real(realk),intent(in) :: init_radius
     !> List of which atoms have orbitals assigned
-    logical,intent(in),dimension(MyMolecule%natoms) :: dofrag
+    logical,intent(in),dimension(MyMolecule%nfrags) :: dofrag
     !> Fragments to construct
-    type(decfrag), intent(inout), dimension(MyMolecule%natoms) :: AtomicFragments
+    type(decfrag), intent(inout), dimension(MyMolecule%nfrags) :: AtomicFragments
 
     !> Orbital priority lists:
     integer, pointer :: esti_list_occ(:), esti_list_vir(:)
     !> Logical vector telling which orbital is include in the fragment
     logical, pointer :: Occ_AOS(:), Vir_AOS(:)
     integer :: nesti_occ, nesti_vir
-    integer :: i,D1,D2,D3,D4,MyAtom,ncore,natoms
+    integer :: i,D1,D2,D3,D4,MyAtom,ncore,nfrags
     logical :: full_mol
 
-    natoms = MyMolecule%natoms
+    nfrags = MyMolecule%nfrags
 
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle
+    FragLoop: do i=1,nfrags
+       if(.not. dofrag(i)) cycle FragLoop
+
        MyAtom=i
-       if (DECinfo%orb_based_fragopt) then
+
+       if (DECinfo%decco) then
           ! Set # core orbitals to zero if the frozen core approximation is not used:
           if (DECinfo%frozencore) then
              ncore = MyMolecule%ncore
           else
              ncore = 0
           end if
-           
+        
           ! Get ninit_occ and ninit_vir:
-          nesti_occ = DECinfo%EstimateInitAtom*ceiling((nocc-ncore)*1.0E0_realk/natoms)
-          nesti_vir = DECinfo%estimateInitAtom*ceiling(nunocc*1.0E0_realk/natoms)
-
+          nesti_occ = DECinfo%EstimateInitAtom*ceiling((nocc-ncore)*1.0E0_realk/nfrags)
+          nesti_vir = DECinfo%estimateInitAtom*ceiling(nunocc*1.0E0_realk/nfrags)
+        
           call mem_alloc(esti_list_occ,nocc)
           call mem_alloc(esti_list_vir,nunocc)
           call mem_alloc(Occ_AOS,nocc)
           call mem_alloc(Vir_AOS,nunocc)
+        
           ! Get orbital priority list and number of orbital for esti frags
-          call define_frag_expansion(nocc,nunocc,natoms,MyAtom,MyMolecule, &
-             & AtomicFragments(MyAtom),esti_list_occ,esti_list_vir,D1,D2,D3,D4)
+          call define_frag_expansion(nocc,nunocc,nfrags,MyAtom,MyMolecule, &
+               & AtomicFragments(MyAtom),esti_list_occ,esti_list_vir,D1,D2,D3,D4)
+        
           ! Get logical list Occ_AOS/Vir_AOS to know which orbitals to include:
           call expand_fragment(nocc,nunocc,esti_list_occ,esti_list_vir,nesti_occ, &
-             & nesti_vir,MyAtom,MyMolecule,OccOrbitals,UnoccOrbitals,Occ_AOS,Vir_AOS, &
-             & full_mol,.true.)
+               & nesti_vir,MyAtom,MyMolecule,OccOrbitals,UnoccOrbitals,Occ_AOS,Vir_AOS, &
+               & full_mol,.true.)
           ! Initialize fragment base on orbital lists Occ_AOS/Vir_AOS:
+        
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,Vir_AOS, &
-             & Occ_AOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(MyAtom), &
-             & DoBasis,.false.) 
+               & Occ_AOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(MyAtom), &
+               & DoBasis,.false.) 
           call mem_dealloc(esti_list_occ)
           call mem_dealloc(esti_list_vir)
           call mem_dealloc(Occ_AOS)
           call mem_dealloc(Vir_AOS)
        else
+
+          ! Atomic based fragment optimization
           call atomic_fragment_init_within_distance(MyAtom,&
-             & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-             & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
+               & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+               & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
        end if
-    end do
+    end do FragLoop
 
   end subroutine init_estimated_atomic_fragments
 
@@ -766,13 +773,20 @@ contains
     logical, intent(in) :: DoBasis
     !> Is it a pair fragment?
     logical,intent(in) :: pairfrag
-    integer :: j,idx, CentralAtom
+    integer :: j,iocc, CentralAtom
     logical,pointer :: occ_list(:),unocc_list(:)
+
+
+    if (DECinfo%frozencore) then
+       iocc = MyMolecule%ncore + 1 
+    else
+       iocc = 1
+    end if
 
     ! Determine list of occupied orbitals assigned to one of the atoms in occ_atoms
     call mem_alloc(occ_list,nocc)
     occ_list=.false.
-    do j=1,nocc
+    do j=iocc,nocc
        CentralAtom=OccOrbitals(j)%centralatom
        if( Occ_atoms(CentralAtom) ) then  ! occupied orbital j is included in fragment
           occ_list(j)=.true.
@@ -903,8 +917,9 @@ contains
       !> Return # occ/vir orbital1s added to EOS space to define the initial fragment:
       integer, intent(out) :: ninit_occ, ninit_vir
 
+      real(realk), pointer :: DistOccOcc(:,:), DistVirOcc(:,:)      
       real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
-      integer :: ncore
+      integer :: ncore, i
 
       ! Set # core orbitals to zero if the frozen core approximation is not used:
       if (DECinfo%frozencore) then
@@ -924,17 +939,43 @@ contains
       ! SCHEME 1:
       if (DECinfo%Frag_Exp_Scheme == 1) then
          ! The priority list for scheme one is based on distance:
-         ! Get occupied priority list:
-         call mem_alloc(occ_priority_list,no_full)
-         call GetSortedList(occ_priority_list,track_occ_priority_list,&
-              & mymolecule%DistanceTableOrbAtomOcc,no_full,natoms,MyAtom)
-         call mem_dealloc(occ_priority_list)
-   
-         ! Get virtual priority list:
-         call mem_alloc(vir_priority_list,nv_full)
-         call GetSortedList(vir_priority_list,track_vir_priority_list,&
-              & mymolecule%DistanceTableOrbAtomVirt,nv_full,natoms,MyAtom)
-         call mem_dealloc(vir_priority_list)
+         if (DECinfo%decco) then 
+            ! Distances between occ and unocc orbitals
+            call mem_alloc(DistVirOcc,nv_full,no_full)
+            call mem_alloc(vir_priority_list,nv_full)
+             
+            call general_distance_table(nv_full,no_full,MyMolecule%carmomvirt, &
+               & MyMolecule%carmomocc,DistVirOcc)
+            call GetSortedList(vir_priority_list,track_vir_priority_list,&
+               & DistVirOcc,nv_full,no_full,MyAtom)
+
+            call mem_dealloc(DistVirOcc)
+            call mem_dealloc(vir_priority_list)
+             
+            ! .. and between occ and occ orbitals
+            call mem_alloc(DistOccOcc,no_full,no_full)
+            call mem_alloc(occ_priority_list,no_full)
+             
+            call general_distance_table(no_full,no_full,MyMolecule%carmomocc, &
+               & MyMolecule%carmomocc,DistOccOcc)
+            call GetSortedList(occ_priority_list,track_occ_priority_list,&
+               & DistOccOcc,no_full,no_full,MyAtom)
+          
+            call mem_dealloc(DistOccOcc)
+            call mem_dealloc(occ_priority_list)
+         else
+            ! Get occupied priority list:
+            call mem_alloc(occ_priority_list,no_full)
+            call GetSortedList(occ_priority_list,track_occ_priority_list,&
+                 & mymolecule%DistanceTableOrbAtomOcc,no_full,natoms,MyAtom)
+            call mem_dealloc(occ_priority_list)
+             
+            ! Get virtual priority list:
+            call mem_alloc(vir_priority_list,nv_full)
+            call GetSortedList(vir_priority_list,track_vir_priority_list,&
+                 & mymolecule%DistanceTableOrbAtomVirt,nv_full,natoms,MyAtom)
+            call mem_dealloc(vir_priority_list)
+         end if
 
       ! SCHEME 2:
       else if (DECinfo%Frag_Exp_Scheme == 2) then
@@ -1006,6 +1047,7 @@ contains
       !  last two steps of the binary search.
       integer, intent(out) :: nred_occ, nred_vir
 
+      real(realk), pointer :: DistOccOcc(:,:), DistVirOcc(:,:)      
       real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
 
       ! Get nred_occ and nred_vir (5% of the expanded spaces)
@@ -1021,8 +1063,10 @@ contains
          dE_red_vir = DECinfo%frag_red_occ_thr*DECinfo%FOT
       end if
 
+      ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:
+      ! ======================================
       ! SCHEME 1:
-      if (DECinfo%Frag_Red_Scheme == 1) then
+      if (DECinfo%Frag_RedOcc_Scheme == 1) then
          ! The priority list for scheme one is based on energy contribution:
          ! Get contribution from local occupied orbitals:
          call mem_alloc(occ_priority_list,no_full)
@@ -1030,14 +1074,8 @@ contains
             & track_occ_priority_list,occ_priority_list)
          call mem_dealloc(occ_priority_list)
 
-         ! Get contribution from local virtual orbitals:
-         call mem_alloc(vir_priority_list,nv_full)
-         call get_energy_priority_list(MyFragment,nv_full,.false., &
-            & track_vir_priority_list,vir_priority_list)
-         call mem_dealloc(vir_priority_list)
-
       ! SCHEME 2:
-      else if (DECinfo%Frag_Red_Scheme == 2) then
+      else if (DECinfo%Frag_RedOcc_Scheme == 2) then
          ! The priority list for scheme 2 is based on contribution to the fock matrix:
          ! Get contribution from local occupied orbitals:
          call mem_alloc(occ_priority_list,no_full)
@@ -1045,6 +1083,44 @@ contains
             & track_occ_priority_list,occ_priority_list)
          call mem_dealloc(occ_priority_list)
 
+      ! SCHEME 3:
+      else if (DECinfo%Frag_RedOcc_Scheme == 3) then
+         ! The priority list for scheme 3 is based on distance:
+         if (DECinfo%decco) then 
+            ! Distance between occ and occ orbitals
+            call mem_alloc(DistOccOcc,no_full,no_full)
+            call mem_alloc(occ_priority_list,no_full)
+             
+            call general_distance_table(no_full,no_full,MyMolecule%carmomocc, &
+               & MyMolecule%carmomocc,DistOccOcc)
+            call GetSortedList(occ_priority_list,track_occ_priority_list,&
+               & DistOccOcc,no_full,no_full,MyAtom)
+          
+            call mem_dealloc(DistOccOcc)
+            call mem_dealloc(occ_priority_list)
+         else
+            ! Get occupied priority list:
+            call mem_alloc(occ_priority_list,no_full)
+            call GetSortedList(occ_priority_list,track_occ_priority_list,&
+                 & mymolecule%DistanceTableOrbAtomOcc,no_full,natoms,MyAtom)
+            call mem_dealloc(occ_priority_list)
+         end if
+      else 
+         call lsquit('ERROR FOP: Occupied Reduction scheme not defined',DECinfo%output)
+      end if
+
+      ! 2) DEFINE REDUCTION OF OCCUPIED SPACE:
+      ! ======================================
+      ! SCHEME 1:
+      if (DECinfo%Frag_RedVir_Scheme == 1) then
+         ! Get contribution from local virtual orbitals:
+         call mem_alloc(vir_priority_list,nv_full)
+         call get_energy_priority_list(MyFragment,nv_full,.false., &
+            & track_vir_priority_list,vir_priority_list)
+         call mem_dealloc(vir_priority_list)
+
+      ! SCHEME 2:
+      else if (DECinfo%Frag_RedVir_Scheme == 2) then
          ! Get contribution from local virtual orbitals:
          call mem_alloc(vir_priority_list,nv_full)
          call get_fock_priority_list(MyFragment,MyMolecule,nv_full,.false., &
@@ -1052,22 +1128,28 @@ contains
          call mem_dealloc(vir_priority_list)
 
       ! SCHEME 3:
-      else if (DECinfo%Frag_Red_Scheme == 3) then
-         ! The priority list for scheme 3 is based on distance:
-         ! Get occupied priority list:
-         call mem_alloc(occ_priority_list,no_full)
-         call GetSortedList(occ_priority_list,track_occ_priority_list,&
-              & mymolecule%DistanceTableOrbAtomOcc,no_full,natoms,MyAtom)
-         call mem_dealloc(occ_priority_list)
-   
-         ! Get virtual priority list:
-         call mem_alloc(vir_priority_list,nv_full)
-         call GetSortedList(vir_priority_list,track_vir_priority_list,&
-              & mymolecule%DistanceTableOrbAtomVirt,nv_full,natoms,MyAtom)
-         call mem_dealloc(vir_priority_list)
+      else if (DECinfo%Frag_RedVir_Scheme == 3) then
+         if (DECinfo%decco) then 
+            ! Distances between occ and unocc orbitals
+            call mem_alloc(DistVirOcc,nv_full,no_full)
+            call mem_alloc(vir_priority_list,nv_full)
+             
+            call general_distance_table(nv_full,no_full,MyMolecule%carmomvirt, &
+               & MyMolecule%carmomocc,DistVirOcc)
+            call GetSortedList(vir_priority_list,track_vir_priority_list,&
+               & DistVirOcc,nv_full,no_full,MyAtom)
 
+            call mem_dealloc(DistVirOcc)
+            call mem_dealloc(vir_priority_list)
+         else
+            ! Get virtual priority list:
+            call mem_alloc(vir_priority_list,nv_full)
+            call GetSortedList(vir_priority_list,track_vir_priority_list,&
+                 & mymolecule%DistanceTableOrbAtomVirt,nv_full,natoms,MyAtom)
+            call mem_dealloc(vir_priority_list)
+         end if
       else 
-         call lsquit('ERROR FOP: Reduction scheme not defined',DECinfo%output)
+         call lsquit('ERROR FOP: Virtual Reduction scheme not defined',DECinfo%output)
       end if
 
 
@@ -2075,6 +2157,9 @@ contains
     ! All orbitals included in fragment
     unocc_list=.true.
     occ_list=.true.
+    if(DECinfo%frozencore) then  ! never include core orbitals for frozen core
+       occ_list(1:MyMolecule%ncore)=.false.
+    end if
 
     call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_list, &
          & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
@@ -3369,11 +3454,9 @@ contains
   !> file atomicfragmentsdone.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
+  subroutine restart_atomic_fragments_from_file(MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
        & DoBasis,fragments,jobs)
     implicit none
-    !> Number of atoms in the full molecule
-    integer,intent(in) :: natoms
     !> Full molecule info
     type(fullmolecule),intent(in)  :: MyMolecule
     !> LSitem info
@@ -3385,7 +3468,7 @@ contains
     !> Construct Fock matrix and MO coeff for fragments?
     logical,intent(in) :: DoBasis
     !> Atomic fragments. NOTE: Only those fragments specified by bookkeeping will be initialized here.
-    type(decfrag), intent(inout),dimension(natoms) :: fragments
+    type(decfrag), intent(inout),dimension(MyMolecule%nfrags) :: fragments
     !> Job list
     type(joblist),intent(inout) :: jobs
     character(len=40) :: FileName
@@ -4354,7 +4437,7 @@ contains
   !> In this way the enviroment (first factor), the nature of the atom
   !> (second factor), and the direct orbital assignments (third factor) become determining factors.
   !> The atoms are sorted according to estimated size, with the largest first.
-  subroutine estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+  subroutine estimate_atomic_fragment_sizes(natoms,nocc,nunocc,ncore,DistanceTable,&
        & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
 
     implicit none
@@ -4365,6 +4448,8 @@ contains
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
+    !> Number of core orbitals in full molecule
+    integer,intent(in) :: ncore
     !> Distance table for all atoms in the molecule
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> Information about DEC occupied orbitals
@@ -4405,23 +4490,31 @@ contains
     interactions=0
     do i=1,natoms
        do j=1,natoms
-
           ! Atom "i": Count atom j's orbitals if j is within distance
           if(DistanceTable(j,i)<dist) then
              interactions(i) = interactions(i) + norb(j)
           end if
-
        end do
     end do
-
 
     ! Size measure = interaction orbitals * atomtype * EOSorbitals
     ! ************************************************************
     SizeMeasure=0
     do i=1,natoms
-       atomtype = MyLsitem%input%molecule%atom(i)%atomic_number ! atom type for atom "i"
-       SizeMeasure(i) = interactions(i)*atomtype*norb(i)
+       if(DECinfo%DECCO) then
+          if(DECinfo%frozencore .and. (i .le. ncore) ) then
+             !Set size measure to 0 for core orbitals when frozen core approx is used
+             SizeMeasure(i)=0
+          else
+             ! For DECCO, simply use number of neighbour orbitals.
+             SizeMeasure(i) = interactions(i)
+          end if
+       else
+          atomtype = MyLsitem%input%molecule%atom(i)%atomic_number ! atom type for atom "i"
+          SizeMeasure(i) = interactions(i)*atomtype*norb(i)
+       end if
     end do
+
 
     ! Sort according to size measure (largest first)
     ! **********************************************
@@ -4430,14 +4523,28 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) '******************************************************************'
-    write(DECinfo%output,*) '       ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       '
+    if(DECinfo%DECCO) then
+       write(DECinfo%output,*) '  OCCUPIED ORBITAL FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES  '
+    else
+       write(DECinfo%output,*) '       ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       '
+    end if
     write(DECinfo%output,*) '******************************************************************'
     write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') 'JobNumber  AtomType  AtomIndex  SizeMeasure'
+    if(DECinfo%DECCO) then
+       write(DECinfo%output,'(1X,a)') 'JobNumber    OrbitalIndex   NeighbourOrbitals'
+    else
+       write(DECinfo%output,'(1X,a)') 'JobNumber  AtomType  AtomIndex  SizeMeasure'
+    end if
     do i=1,natoms
        j=af_list(i)  ! atom index for job number "i"
-       write(DECinfo%output,'(1X,i6,7X,a4,2X,i6,2X,i10)') i, MyLsitem%input%molecule%atom(j)%name, &
-            & j, SizeMeasure(i)
+       if(DECinfo%DECCO) then
+          if(SizeMeasure(i)>0) then
+             write(DECinfo%output,'(1X,i7,7X,i7,7X,i7)') i,j,SizeMeasure(i)
+          end if
+       else
+          write(DECinfo%output,'(1X,i6,7X,a4,2X,i6,2X,i10)') i, MyLsitem%input%molecule%atom(j)%name, &
+               & j, SizeMeasure(i)
+       end if
     end do
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -4471,7 +4578,7 @@ contains
 
 
     ! Find list of atoms where one or more occupied AOS orbitals are assigned
-    call mem_alloc(which_atoms,MyMolecule%natoms)
+    call mem_alloc(which_atoms,MyMolecule%nfrags)
     which_atoms=.false.
     do i=1,MyFragment%noccAOS
        idx = MyFragment%occAOSidx(i)  ! orbital index in full list
@@ -4479,7 +4586,6 @@ contains
        atom = OccOrbitals(idx)%centralatom
        which_atoms(atom)=.true.
     end do
-
 
     ! Include core orbitals for atoms which already contribute with one or more valence orbitals
     ! ******************************************************************************************
@@ -4491,6 +4597,7 @@ contains
           which_core_orbitals(i)=.true.
        end if
     end do
+
 
     ! Set number of core orbitals for fragment
     MyFragment%ncore = count(which_core_orbitals)
@@ -4557,7 +4664,7 @@ contains
   !> only 2 atomic fragments and 1 pair fragment
   !> \author Thomas Kjaergaard
   !> \date Marts 2014
-  subroutine StressTest_mod_dofrag(natoms,nocc,nunocc,&
+  subroutine StressTest_mod_dofrag(natoms,nocc,nunocc,ncore,&
        & DistanceTable,OccOrbitals, UnoccOrbitals, dofrag, mylsitem)
     implicit none
     !> Number of atoms in full molecule
@@ -4566,6 +4673,8 @@ contains
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
+    !> Number of core orbitals in full molecule
+    integer,intent(in) :: ncore
     !> Distance table for all atoms in the molecule
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> Information about DEC occupied orbitals
@@ -4580,7 +4689,7 @@ contains
     integer :: njobs,i,j
 
     ! Get list of atomic fragment ordered according to their (very roughly) estimated sizes
-    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,ncore,DistanceTable,&
          & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
 
     i=0    
@@ -4596,7 +4705,7 @@ contains
   !> \brief Create job list for DEC fragment optimization calculations.
   !> \author Kasper Kristensen
   !> \date November 2013
-  subroutine create_dec_joblist_fragopt(natoms,nocc,nunocc,DistanceTable,&
+  subroutine create_dec_joblist_fragopt(natoms,nocc,nunocc,ncore,DistanceTable,&
        & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,jobs)
     implicit none
 
@@ -4606,6 +4715,8 @@ contains
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
+    !> Number of core orbitals in full molecule
+    integer,intent(in) :: ncore
     !> Distance table for all atoms in the molecule
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> Information about DEC occupied orbitals
@@ -4622,7 +4733,7 @@ contains
     integer :: njobs,i,j
 
     ! Get list of atomic fragment ordered according to their (very roughly) estimated sizes
-    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,ncore,DistanceTable,&
          & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
 
     ! Init job list with number of jobs corresponding to number of atoms with orbitals assigned
@@ -4836,7 +4947,11 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,'(1X,a)') '***************************************************************&
          &****************'
-    write(DECinfo%output,*) '             Atomic fragments listed according to total size'
+    if(DECinfo%DECCO) then
+       write(DECinfo%output,*) '        Occ Orbital fragments listed according to total size'
+    else
+       write(DECinfo%output,*) '             Atomic fragments listed according to total size'
+    end if
     write(DECinfo%output,'(1X,a)') '***************************************************************&
          &****************'
 
@@ -4853,7 +4968,7 @@ contains
             write(DECinfo%output,*)
             write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
           endif
-          write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,10X,"FRAG_SIZE")') &
+          write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,10X,"FRAG_SIZE")') &
                & myatom, &
                & occsize(myatom), &
                & unoccsize(myatom), &
@@ -4864,7 +4979,7 @@ contains
                & AtomicFragments(myatom)%DmaxAE*bohr_to_angstrom
           if(DECinfo%PL>1)then
             write(DECinfo%output,*) '   Rave(AOS/AE)      Rsdv(AOS/AE)      Dave(AOS/AE)      Dsdv(AOS/AE)'
-            write(DECinfo%output,'(4X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3," FRAG_SIZE_EXT")') &
+            write(DECinfo%output,'(4X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3," FRAG_SIZE_EXT")') &
                & AtomicFragments(myatom)%RaveAOS*bohr_to_angstrom, &
                & AtomicFragments(myatom)%RaveAE*bohr_to_angstrom, &
                & AtomicFragments(myatom)%RsdvAOS*bohr_to_angstrom, &
@@ -4944,7 +5059,13 @@ contains
     write(DECinfo%output,*) '*****************************************************'
     write(DECinfo%output,*) 'Number of jobs = ', njobs
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
+    if(DECinfo%DECCO) then
+       write(DECinfo%output,*) 'JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis'
+    else
+       write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
+    end if
+
+
     do i=1,njobs
        if(jobs%atom1(i)==jobs%atom2(i)) then ! single
           write(DECinfo%output,'(1X,i8,4X,i15,7X,i8,11X,i6,3X,i6,3X,i6)') &
@@ -5265,13 +5386,13 @@ contains
   !> file fragenergies.info (or estimate_fragenergies.info for estimated energies).
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine write_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
+  subroutine write_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
 
     implicit none
-    !> Number of atoms in the molecule
-    integer,intent(in) :: natoms
+    !> Number of fragments
+    integer,intent(in) :: nfrags
     !> Fragment energies (see decfrag type def)
-    real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergies
+    real(realk),dimension(nfrags,nfrags,ndecenergies),intent(in) :: FragEnergies
     !> Job list of fragment jobs
     type(joblist),intent(in) :: jobs
     !> Read estimated fragment energies for restart?
@@ -5307,13 +5428,13 @@ contains
   !> \brief Read fragment energies for fragment from file fragenergies.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine read_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
+  subroutine read_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
 
     implicit none
-    !> Number of atoms in the molecule
-    integer,intent(in) :: natoms
+    !> Number of fragments
+    integer,intent(in) :: nfrags
     !> Fragment energies (see decfrag type def)
-    real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
+    real(realk),dimension(nfrags,nfrags,ndecenergies),intent(inout) :: FragEnergies
     !> Job list of fragments
     type(joblist),intent(inout) :: jobs
     !> Read estimated fragment energies for restart?
@@ -6303,15 +6424,16 @@ contains
   !> for atomic fragment from AOS amplitude input.
   !> Different definitions for the density matrices are given depending on the model
   !> and on whether we use both occupied and virtual partitioning schemes (details inside subroutine).
-  !> \author Kasper Kristensen
+  !> \author Kasper Kristensen, adapted by PE
   !> \date August 2013
-  subroutine calculate_corrdens_frag(t2,MyFragment)
+  subroutine calculate_MP2corrdens_frag(t2,MyFragment)
     implicit none
     !> Doubles amplitudes in AOS stored as (a,i,b,j)
-    type(array4),intent(in) :: t2
+    type(tensor),intent(inout) :: t2
     !> MyFragment - output occ and virt density matrices are stored in
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
     type(decfrag),intent(inout) :: MyFragment
+    type(tensor) :: t2oEOS, t2vEOS
 
     ! Delete existing correlation density matrix (if present)
     if(MyFragment%CDset) then
@@ -6324,44 +6446,67 @@ contains
     ! Different density matrix definitions depending on scheme
     ! - this is work in progress and will probably be modified.
     ! See DECsettings type definition for details.
-    print *, 'CORRDENS: Using scheme ', DECinfo%CorrDensScheme
+    if(DECinfo%PL>2)print *, 'CORRDENS: Using scheme ', DECinfo%CorrDensScheme
 
     CorrDensDefinition: select case(DECinfo%CorrDensScheme)
     case(1)
        ! Construct density matrix based only on EOS amplitudes
-       call calculate_corrdens_EOS(t2,MyFragment)
+       call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2oEOS,tensor_virtEOS=t2vEOS)
+       call calculate_MP2corrdens_EOS(MyFragment,t2oEOS=t2oEOS%elm4,t2vEOS=t2vEOS%elm4)
+
+       call tensor_free(t2oEOS)
+       call tensor_free(t2vEOS)
     case(2)
        ! Use AOS amplitudes but with special emphasis on EOS for virtual FOs,
        ! while, for occupied FOs, we put equal weight on all AOS amplitudes.
-       call calculate_corrdens_semiEOS(t2,MyFragment)
+       !call calculate_corrdens_semiEOS(t2,MyFragment)
+       call lsquit("ERROR(calculate_corrdens_frag): this option is deprecated 1",-1)
     case(3)
        ! Use AOS amplitudes with equal weight on all amplitudes.
-       call calculate_corrdens_AOS(t2,MyFragment)
+       !call calculate_corrdens_AOS(t2,MyFragment)
+       call lsquit("ERROR(calculate_corrdens_frag): this option is deprecated 2",-1)
     case default
        call lsquit('calculate_corrdens: Invalid corrdens scheme',-1)
     end select CorrDensDefinition
 
     MyFragment%CDset=.true.
 
-  end subroutine calculate_corrdens_frag
+  end subroutine calculate_MP2corrdens_frag
 
 
   !> \brief Calculate occ-occ and virt-virt blocks of correlation density matrix
   !> for atomic fragment using EOS subset of AOS amplitudes (see inside subroutine).
-  !> \author Kasper Kristensen
+  !> \author Kasper Kristensen, modified by PE
   !> \date August 2013
-  subroutine calculate_corrdens_EOS(t2,MyFragment)
+  subroutine calculate_MP2corrdens_EOS(MyFragment,t2,t2oEOS,t2vEOS)
     implicit none
-    !> Doubles amplitudes in AOS stored as (a,i,b,j)
-    type(array4),intent(in) :: t2
     !> MyFragment - output occ and virt density matrices are stored in
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
     type(decfrag),intent(inout) :: MyFragment
-    integer :: i,j,k,a,b,c,ax,bx,ix,jx
-    real(realk) :: i2,i4
+    !> Doubles amplitudes (in EOS) stored as (a,i,b,j)
+    real(realk),intent(in), optional :: t2(:,:,:,:),t2oEOS(:,:,:,:),t2vEOS(:,:,:,:)
+    integer :: i,j,k,a,b,c,ax,bx,ix,jx,oEOS,vEOS,oAOS,vAOS
+    real(realk),parameter :: i2 = -2.0E0_realk
+    real(realk),parameter :: i4 = 4.0E0_realk
+    !real(realk), pointer  :: tmp(:)
+    !integer(kind=8) :: maxsize
 
-    i2 = 2.0_realk
-    i4 = 4.0_realk
+    if(present(t2) .and. present(t2oEOS))then
+       print *,"WARNING(calculate_MP2corrdens_EOS): both t2 and t2oEOS are given, I will use t2oEOS"
+    endif
+    if(present(t2) .and. present(t2vEOS))then
+       print *,"WARNING(calculate_MP2corrdens_EOS): both t2 and t2vEOS are given, I will use t2vEOS"
+    endif
+
+    oEOS = MyFragment%noccEOS
+    vEOS = MyFragment%nunoccEOS
+    oAOS = MyFragment%noccAOS
+    vAOS = MyFragment%nunoccAOS
+
+    !maxsize = 0
+    !if(present(t2vEOS)) maxsize = max(maxsize,(i8*vEOS**2)*oAOS**2)
+    !if(present(t2oEOS)) maxsize = max(maxsize,(i8*oEOS**2)*vAOS**2)
+    !call mem_alloc(tmp,maxsize)
 
     ! Occ-occ block of density matrix
     ! *******************************
@@ -6369,20 +6514,47 @@ contains
     ! where ab are assigned to central atom in fragment, and ijk are in occupied AOS
     ! tbar_{ij}^{ab} = 4t_{ij}^{ab} - 2t_{ij}^{ba}
     MyFragment%OccMat = 0.0_realk
-    do b=1,MyFragment%nunoccEOS
-       bx = MyFragment%idxu(b)  ! index for EOS orbital b in AOS list of orbitals
-       do a=1,MyFragment%nunoccEOS
-          ax = MyFragment%idxu(a)
-          do k=1,MyFragment%noccAOS
-             do i=1,MyFragment%noccAOS
-                do j=1,MyFragment%noccAOS
-                   MyFragment%OccMat(i,j) = MyFragment%OccMat(i,j) + &
-                        & t2%val(ax,i,bx,k)*(i4*t2%val(ax,j,bx,k) - i2*t2%val(bx,j,ax,k))
+    if(present(t2vEOS))then
+
+      !call array_reorder_4d(i4,t2vEOS,vEOS,oAOS,vEOS,oAOS,[1,2,3,4],0.0E0_realk,tmp)
+      !call array_reorder_4d(i2,t2vEOS,vEOS,oAOS,vEOS,oAOS,[3,2,1,4],0.0E0_realk,tmp)
+      
+
+       do b=1,vEOS
+          do a=1,vEOS
+             do k=1,oAOS
+                do i=1,oAOS
+                   do j=1,oAOS
+                      !MyFragment%OccMat(i,j) = MyFragment%OccMat(i,j) + &
+                      !   & t2vEOS(a,i,b,k)*(i4*t2vEOS(a,j,b,k) + i2*t2vEOS(b,j,a,k))
+                      MyFragment%OccMat(i,j) = MyFragment%OccMat(i,j) + &
+                         & i4 * t2vEOS(a,i,b,k) * t2vEOS(a,j,b,k)
+                      MyFragment%OccMat(i,j) = MyFragment%OccMat(i,j) + &
+                         & i2 * t2vEOS(a,i,b,k) * t2vEOS(b,j,a,k)
+                   end do
                 end do
              end do
           end do
        end do
-    end do
+
+    else if(present(t2))then
+
+       do b=1,vEOS
+          bx = MyFragment%idxu(b)  ! index for EOS orbital b in AOS list of orbitals
+          do a=1,vEOS
+             ax = MyFragment%idxu(a)
+             do k=1,oAOS
+                do i=1,oAOS
+                   do j=1,oAOS
+                      MyFragment%OccMat(i,j) = MyFragment%OccMat(i,j) + &
+                         & t2(ax,i,bx,k)*(i4*t2(ax,j,bx,k) + i2*t2(bx,j,ax,k))
+                   end do
+                end do
+             end do
+          end do
+       end do
+
+    endif
 
 
     ! Virt-virt block of density matrix
@@ -6391,22 +6563,46 @@ contains
     ! VirtMat(a,b) = sum_{ijc} t_{ij}^{ac}  tbar_{ij}^{bc}
     ! where ij are assigned to central atom in fragment, and abc are in virtual AOS
     MyFragment%VirtMat = 0.0_realk
-    do i=1,MyFragment%noccEOS
-       ix = MyFragment%idxo(i)
-       do j=1,MyFragment%noccEOS
-          jx = MyFragment%idxo(j)
-          do a=1,MyFragment%nunoccAOS
-             do b=1,MyFragment%nunoccAOS
-                do c=1,MyFragment%nunoccAOS
-                   MyFragment%VirtMat(a,b) = MyFragment%VirtMat(a,b) + &
-                        & t2%val(a,ix,c,jx)*(i4*t2%val(b,ix,c,jx) - i2*t2%val(c,ix,b,jx))
+
+    if(present(t2oEOS))then
+
+       do i=1,oEOS
+          do j=1,oEOS
+             do a=1,vAOS
+                do b=1,vAOS
+                   do c=1,vAOS
+                      !MyFragment%VirtMat(a,b) = MyFragment%VirtMat(a,b) + &
+                      !   & t2oEOS(a,i,c,j)*(i4*t2oEOS(b,i,c,j) + i2*t2oEOS(c,i,b,j))
+                      MyFragment%VirtMat(a,b) = MyFragment%VirtMat(a,b) + &
+                         & i4 * t2oEOS(a,i,c,j) * t2oEOS(b,i,c,j)
+                      MyFragment%VirtMat(a,b) = MyFragment%VirtMat(a,b) + &
+                         & i2 * t2oEOS(a,i,c,j) * t2oEOS(c,i,b,j)
+                   end do
                 end do
              end do
           end do
        end do
-    end do
 
-  end subroutine calculate_corrdens_EOS
+    else if(present(t2))then
+       do i=1,oEOS
+          ix = MyFragment%idxo(i)
+          do j=1,oEOS
+             jx = MyFragment%idxo(j)
+             do a=1,vAOS
+                do b=1,vAOS
+                   do c=1,vAOS
+                      MyFragment%VirtMat(a,b) = MyFragment%VirtMat(a,b) + &
+                         & t2(a,ix,c,jx)*(i4*t2(b,ix,c,jx) + i2*t2(c,ix,b,jx))
+                   end do
+                end do
+             end do
+          end do
+       end do
+    endif
+
+    !call mem_dealloc(tmp)
+
+  end subroutine calculate_MP2corrdens_EOS
 
 
   !> \brief Calculate occ-occ and virt-virt blocks of correlation density matrix
@@ -6896,18 +7092,6 @@ contains
 
        ! Sanity precaution: Atomic fragment energies should always use input CC model
        MyMolecule%ccmodel(P,P) = DECinfo%ccmodel
-
-       ! Step 4 above: In case that we are calculating Interaction Energies we skip
-       !               all pairs which have same SubSystem index on P and Q. 
-       ! ********************************************
-       IF(DecInfo%InteractionEnergy)THEN
-          Qloop4: do Q=1,natoms
-             if(MyMolecule%SubSystemIndex(Q).EQ.MyMolecule%SubSystemIndex(P)) then
-                ! SubSystem index is the same on both P and Q --> (P,Qidx) can be skipped!
-                MyMolecule%ccmodel(P,Q)=MODEL_NONE
-             end if
-          end do Qloop4
-       ENDIF
 
     end do Ploop
 

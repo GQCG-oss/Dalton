@@ -981,14 +981,18 @@ given if the print level is 4 or higher.
 \subsection{Polarizable embedding model: \Sec{PEQM}}
 \label{subsec:peqm} \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}\index{multiscale model}\index{multiscale}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
 
-This input section controls calculations using polarizable
-embedding (PE) model which can include effects from a structured
+This input section controls calculations using the polarizable
+embedding (PE) model\cite{pemodel1,pemodel2} which can include effects from a structured
 environment on a core molecular system described using quantum mechanics.
 The core system is defined by the \molinp\ file.
 The environment can be described by multipole moment expansions
 and anisotropic dipole-dipole polarizabilities provided in the \potinp\
 file. See Chapter~\ref{ch:embedding} for an introduction to
-calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC.
+calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for
+details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA,
+Ref.~\cite{pemcscf} for PE-MCSCF and Ref.~\cite{pecc} for PE-CC. Note, that the input
+options shown here cannot be used with PE-CC, because it is based on an older
+implementation (see Section~\ref{sec:pecc} for PE-CC input examples).
 
 
 \begin{description}

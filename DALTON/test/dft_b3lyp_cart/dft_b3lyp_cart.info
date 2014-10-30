@@ -1,7 +1,0 @@
-
-   dft_b3lyp_cart
-   --------------
-   Molecule:         H2O 
-   Wave Function:    DFT B3LYP    
-   Test Purpose:     Check DFT-code with Cartesians
-

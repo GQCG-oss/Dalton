@@ -86,7 +86,7 @@
 
    if (print_eivecs) then
       write (lupri,*) 'Eigenvectors of A:'
-      call OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
+      call LS_OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
    endif
 
    deallocate(eigenval)
@@ -785,11 +785,11 @@ end subroutine ls_dcopy
          first = .false.
          call cpu_time(TCPU0)
          call date_and_time(values=dateandtime0)
-         call get_walltime(dateandtime0,twall0)
+         call ls_get_walltime(dateandtime0,twall0)
       end if
       call cpu_time(tcpu1)
       call date_and_time(values=dateandtime1)
-      call get_walltime(dateandtime1,twall1)
+      call ls_get_walltime(dateandtime1,twall1)
 
       cputime = tcpu1 - TCPU0
       walltime = twall1 - twall0
@@ -855,7 +855,7 @@ end subroutine ls_dcopy
 !> Exception: Years that are evenly divisible by 100 are not leap years, 
 !> unless they are also evenly divisible by 400. Source: Wikipedia
 !>
-subroutine get_walltime(dateandtime,walltime)
+subroutine ls_get_walltime(dateandtime,walltime)
 use precision
 implicit none
    !> "values" output from fortran intrinsic subroutine date_and_time
@@ -905,7 +905,7 @@ implicit none
       else if (month == 4 .or. month == 6 .or. month == 9 .or. month == 11) then
          walltime = walltime + 30E0_realk*24E0_realk*3600E0_realk
       else
-         stop 'Unknown month (get_walltime)'
+         stop 'Unknown month (ls_get_walltime)'
       endif
    enddo
 
@@ -923,7 +923,7 @@ implicit none
       endif
    enddo
 
-end subroutine get_walltime
+end subroutine ls_get_walltime
 
 !> \brief Flush formatted output unit (empty buffers). 
 !> \author H. J. Aa. Jensen. F90'fied by S. Host
@@ -965,7 +965,7 @@ end subroutine ls_flshfo
 !>         Revised 15-Dec-1983 by Hans Jorgen Aa. Jensen.
 !>         16-Aug-2010 f90'fied by S. Host
 !> \date August 2010
-subroutine output(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,NCTL,LUPRI)
+subroutine ls_output(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,NCTL,LUPRI)
 use precision
 implicit none 
       !> ROW NUMBER AT WHICH OUTPUT IS TO BEGIN
@@ -1040,7 +1040,7 @@ implicit none
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
  1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
-      END subroutine output
+      END subroutine ls_output
 
       subroutine shortint_output(MAT2,dim1,dim2,lupri)
         implicit none

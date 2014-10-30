@@ -21,7 +21,7 @@ MODULE TYPEDEF
  use integralOutput_typetype
  use LSTENSOR_OPERATIONSMOD
  use LSTENSOR_typetype
- use Integralparameters
+ use LSparameters
  use GCtransMod
 #ifdef VAR_MPI
  use infpar_module
@@ -152,6 +152,7 @@ DALTON%ADMM_FUNC     = 'B88X'
 DALTON%ADMM_separateX= .FALSE.
 DALTON%ADMM_2ERI     = .FALSE.
 DALTON%PRINT_EK3     = .FALSE.
+DALTON%ADMMBASISFILE = .FALSE. !we do not produce ADMMmin.dat file 
 DALTON%NOFAMILY = .FALSE.
 DALTON%Hermiteecoeff = .TRUE.
 DALTON%JENGINE = .TRUE.
@@ -437,7 +438,7 @@ IF(SET%RHSdfull)THEN
    dim2 = SIZE(SET%DfullRHS, 2)  
    DO imat = 1,SET%nDmatRHS
       WRITE(LUPRI,*)'THE RHS DENSITY REAL(REALK) NR=',Imat,'Dim=',dim1,dim2,'Sym=',SET%DsymRHS(Imat)
-      call output(SET%DfullRHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
+      call ls_output(SET%DfullRHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
    ENDDO
 ELSE
    WRITE(lupri,*)'RHSdfull',SET%RHSdfull
@@ -459,7 +460,7 @@ IF(SET%LHSdfull)THEN
    dim2 = SIZE(SET%DfullLHS, 2)  
    DO imat = 1,SET%nDmatLHS
       WRITE(LUPRI,*)'THE RHS DENSITY REAL(REALK) NR=',Imat,'Dim=',dim1,dim2,'Sym=',SET%DsymLHS(Imat)
-      call output(SET%DfullLHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
+      call ls_output(SET%DfullLHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
    ENDDO
 ELSE
    WRITE(lupri,*)'LHSdfull',SET%LHSdfull
@@ -977,6 +978,7 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMP',DALTON%ADMMP
 WRITE(LUPRI,'(2X,A35,7X,A30)')'ADMM_FUNC',DALTON%ADMM_FUNC
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_separateX',DALTON%ADMM_separateX
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PRINT_EK3',DALTON%PRINT_EK3
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMBASISFILE',DALTON%ADMMBASISFILE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'SR_EXCHANGE',DALTON%SR_EXCHANGE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'CAM',DALTON%CAM
 WRITE(LUPRI,'(2X,A35,F16.8)') 'CAMalpha',DALTON%CAMalpha
@@ -2475,6 +2477,7 @@ SETTING%LHSSameAsRHSDmat  = .FALSE.
 SETTING%SCHEME%OD_MOM = .FALSE.
 SETTING%SCHEME%MOM_CENTER = (/0E0_realk,0E0_realk,0E0_realk/)
 CALL init_reduced_screen_info(SETTING%RedCS)
+SETTING%GPUMAXMEM = 0.0E0_realk
 
 END SUBROUTINE typedef_set_default_setting
 
@@ -2535,6 +2538,7 @@ NULLIFY(SETTING%DsymLHS)
 NULLIFY(SETTING%DsymRHS)
 CALL io_init(SETTING%IO)
 CALL init_GGem(SETTING%GGem)
+SETTING%GPUMAXMEM = 0.0E0_realk 
 
 NULLIFY(SETTING%LST_GAB_LHS)
 NULLIFY(SETTING%LST_GAB_RHS)
@@ -3060,7 +3064,7 @@ IF (iprint.GE.1) THEN
   WRITE(IUNIT,'(A,I4)') 'Printing reduced screening information with print level',iprint
   IF (redCS%isset) THEN
 #ifdef VAR_MPI
-    WRITE(IUNIT,'(A,G10.4)') 'Screening threshold is ',(1E1_realk)**redCS%CS_THRLOG
+    WRITE(IUNIT,'(A,G12.4)') 'Screening threshold is ',(1E1_realk)**redCS%CS_THRLOG
     DO iAO=1,4
       IF (IPRINT.GE.5) write(IUNIT,'(3X,A,I1)') 'Printing AO item info for iAO ',iAO
       call print_aoAtomInfo(redCS%AO(iAO),iprint,iunit)

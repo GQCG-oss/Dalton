@@ -50,7 +50,7 @@ CONTAINS
        open(unit = LUFILE, file=TRIM(FileName),status="unknown")
        
        WRITE(LUFILE,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceLHSModBtoA'
-       WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+       WRITE(LUFILE,'(A)')' use IchorPrecisionMod'
        WRITE(LUFILE,'(A)')'  '
        WRITE(LUFILE,'(A)')' CONTAINS'
 
@@ -111,7 +111,11 @@ CONTAINS
           ELSE
              WRITE(LUFILE,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA(nContQP,nPasses,nTUVQ,&'
           ENDIF
-          WRITE(LUFILE,'(A)')'         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)'
+          IF(DoOpenACC)THEN
+             WRITE(LUFILE,'(A)')'         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri,iASync)'
+          ELSE
+             WRITE(LUFILE,'(A)')'         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)'
+          ENDIF
           WRITE(LUFILE,'(A)')'  implicit none'
           WRITE(LUFILE,'(A)')'  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB'
           WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)'
@@ -127,6 +131,7 @@ CONTAINS
           ELSE
              WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nContQP*nPasses,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ)'
           ENDIF
+          IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind) :: iASync'
           WRITE(LUFILE,'(A)')'  !Local variables'
           IF(ANGMOMA.NE.0)THEN
              WRITE(LUFILE,'(A)')'  integer :: iPassP,iP,iTUVQ,iTUVB,iAtomA,iAtomB'
@@ -204,9 +209,9 @@ CONTAINS
              ENDIF
              WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,&'
              IF(JA.NE.0)THEN
-                WRITE(LUFILE,'(A)')'!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
+                WRITE(LUFILE,'(A)')'!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP) ASYNC(iASync)'
              ELSE
-                WRITE(LUFILE,'(A)')'!$ACC         AuxCont,ThetaP)'
+                WRITE(LUFILE,'(A)')'!$ACC         AuxCont,ThetaP) ASYNC(iASync)'
              ENDIF
           ENDIF
           IF(nPrimLast)THEN          

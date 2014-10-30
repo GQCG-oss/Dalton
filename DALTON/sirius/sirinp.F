@@ -269,11 +269,6 @@ C
 
       CALL QENTER('SIRRDI')
 C
-C  ***** Check dimension
-C
-      IF ( LCMO .LT. MXCORB*MXCORB )
-     *   CALL ERRWRK('SIRRDI.cmo',-MXCORB*MXCORB,LCMO)
-C
 C     Skip next section if processed earlier
 C
       IF (INPPRC) THEN
@@ -1667,6 +1662,12 @@ C  (that is, is QM part embedded in environment)
 C
       IF (QMMM .AND. ECP) THEN
          CALL QUIT('QMMM is not compatible with the use of ECPs')
+      END IF
+      IF (QMMM .AND. DOCI) THEN
+         CALL QUIT('QMMM is currently not compatible with .CI')
+      END IF
+      IF (PEQM .AND. DOCI) THEN
+         CALL QUIT('PEQM is currently not compatible with .CI')
       END IF
       EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. PEQM .OR.
      &            QMNPMM

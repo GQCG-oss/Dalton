@@ -69,6 +69,7 @@ C
 C     Magnetic field derivative integrals of dipole length
 C     K.Ruud, Aug.-93
 C
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -97,6 +98,7 @@ C inftra : USE_INTSORT
 C
 #include "inftra.h"
 C
+
       LOGICAL SET, FEXIST
 C
       DIMENSION WORK(LWORK)

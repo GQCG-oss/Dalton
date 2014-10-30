@@ -13,7 +13,7 @@ module cc_tools_module
       integer,intent(inout)::fai
       integer,intent(inout)::tl
       logical,intent(out)  :: have_part
-      integer(kind=ls_mpik),optional,intent(inout)::nod
+      integer(kind=ls_mpik),optional,intent(in)::nod
       integer(kind=ls_mpik) :: nnod, me
       integer :: l,ml
 
@@ -127,11 +127,11 @@ module cc_tools_module
       integer, intent(in) :: la,lg
       !> the doubles residual to update
       !real(realk), intent(inout) :: om2(:)
-      type(array), intent(inout) :: om2
+      type(tensor), intent(inout) :: om2
       !> the lambda transformation matrices
       real(realk), intent(in)    :: xo(:),yo(:),xv(:),yv(:)
       !> the sio4 matrix to calculate the b2.2 contribution
-      real(realk),intent(inout) ::sio4(:)
+      type(tensor),intent(inout) ::sio4
       !> scheme
       integer,intent(in) :: s
       logical,intent(in) :: lo
@@ -221,7 +221,7 @@ module cc_tools_module
       wszes3 = [wszes(1),wszes(3),wszes(4)]
       call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
          &no,nv,nb,goffs,aoffs,s,wszes3,lo,twork,tcomm,order=order, &
-         &rest_occ_om2=rest_occ_om2,scal=scal)  
+         &rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
@@ -235,7 +235,7 @@ module cc_tools_module
       !\> omega should be the residual matrix which contains the second parts
       !of the A2 and B2 term
       !real(realk),intent(inout) :: omega(nv*nv*no*no)
-      type(array),intent(inout) :: omega
+      type(tensor),intent(inout) :: omega
       !> w0 is just some workspace on input
       real(realk),intent(inout) :: w0(:)
       !> w2 is just some workspace on input
@@ -244,7 +244,7 @@ module cc_tools_module
       real(realk),intent(inout) :: w3(:)
       !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
       !contribution after the loop, update them in the loops
-      real(realk),intent(inout) :: sio4(:)
+      type(tensor),intent(inout) :: sio4
       !> Lambda p virutal part
       real(realk),intent(in) :: xvirt(:)
       !> Lambda p occupied part
@@ -277,7 +277,7 @@ module cc_tools_module
       real(realk) :: twork,tcomm
       !> the doubles amplitudes
       !real(realk),intent(in) :: amps(nv*nv*no*no)
-      !type(array),intent(in) :: amps
+      !type(tensor),intent(in) :: amps
       real(realk) :: scaleitby
       integer(kind=8)       :: pos,pos2,pos21,i,j,dim_big,dim_small,ttri,tsq,nel2cp,ncph,pos1
       integer ::occ,gamm,alpha,case_sel,full1,full2,offset1,offset2
@@ -606,37 +606,8 @@ module cc_tools_module
          if(.not.rest_o2_occ)then
             !square up the contributions if the residual itself has no restricions
             !in the indices i and j
+            call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
 
-            ! add up contributions in the residual with keeping track of i<j
-            !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-            !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
-            do j=no,1,-1
-               !$OMP DO 
-               do i=j,1,-1
-                  pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-                  pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                  if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-               enddo
-               !$OMP END DO
-            enddo
-            !$OMP BARRIER
-            !$OMP DO 
-            do j=no,1,-1
-               do i=j,1,-1
-                  pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                  pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-                  if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-               enddo
-            enddo
-            !$OMP END DO
-            !$OMP END PARALLEL
-
-            do j=no,1,-1
-               do i=j,1,-1
-                  pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                  call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-               enddo
-            enddo
 
             if(s==4.or.s==3)then
                if( present(order) )then
@@ -652,12 +623,12 @@ module cc_tools_module
                endif
             else if(s==2)then
 #ifdef VAR_MPI
-               if( lock_outside )call arr_lock_wins(omega,'s',mode)
+               if( .not.alloc_in_dummy.and.lock_outside )call tensor_lock_wins(omega,'s',mode)
                !$OMP WORKSHARE
                w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
                !$OMP END WORKSHARE
                call time_start_phase(PHASE_COMM, at=twork)
-               call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             endif
@@ -691,7 +662,11 @@ module cc_tools_module
 #ifdef  VAR_MPI
             if( lock_outside .and. s==2 )then
                call time_start_phase(PHASE_COMM, at=twork)
-               call arr_unlock_wins(omega,.true.)
+               if( alloc_in_dummy )then
+                  call lsmpi_win_flush(omega%wi(1),local=.true.)
+               else
+                  call tensor_unlock_wins(omega,.true.)
+               endif
                call time_start_phase(PHASE_WORK, at=tcomm)
             endif
 #endif 
@@ -702,35 +677,7 @@ module cc_tools_module
             call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
 
             if(.not.rest_o2_occ)then
-               !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-               !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
-               do j=no,1,-1
-                  !$OMP DO 
-                  do i=j,1,-1
-                     pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-                     pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                     if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-                  enddo
-                  !$OMP END DO
-               enddo
-               !$OMP BARRIER
-               !$OMP DO 
-               do j=no,1,-1
-                  do i=j,1,-1
-                     pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                     pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-                     if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-                  enddo
-               enddo
-               !$OMP END DO
-               !$OMP END PARALLEL
-
-               do j=no,1,-1
-                  do i=j,1,-1
-                     pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                     call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-                  enddo
-               enddo
+               call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
                if(s==4.or.s==3)then
                   if( present(order) )then
                      call array_reorder_4d(scaleitby,w2,nv,nv,no,no,order,1.0E0_realk,omega%elm1)
@@ -744,11 +691,15 @@ module cc_tools_module
 #endif
                   endif
                else if(s==2)then
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+                  call assign_in_subblocks(w2,'=',w2,o2v2,scal2=scaleitby)
+#else
                   !$OMP WORKSHARE
                   w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
                   !$OMP END WORKSHARE
+#endif
                   call time_start_phase(PHASE_COMM, at=twork)
-                  call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
                   call time_start_phase(PHASE_WORK, at=tcomm)
                endif
             else
@@ -772,27 +723,48 @@ module cc_tools_module
          call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
 #ifdef VAR_MPI
          if(lock_outside.and.s==2)then
-            call arr_unlock_wins(omega,.true.)
+            call time_start_phase(PHASE_COMM, at=twork)
+            if( alloc_in_dummy )then
+               call lsmpi_win_flush(omega%wi(1),local=.true.)
+            else
+               call tensor_unlock_wins(omega,.true.)
+            endif
+            call time_start_phase(PHASE_WORK, at=tcomm)
          endif
 #endif
          !transform gamma -> l
          call dgemm('t','n',no2,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no2)
          !transform alpha -> a , order is now sigma [ k l i j]
          if( rest_sio4 )then
-            call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
+            call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,1.0E0_realk,sio4%elm1,no2)
          else
-
             call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
-            call ass_D1to3(w2,t1,[no2,no2,nor])
-            call ass_D1to4(sio4,h1,[no,no,no2,no2])
-            do j=no,1,-1
-               do i=j,1,-1
-                  call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
-                  if(i /= j)then
-                     h1(j,i,:,:) =h1(j,i,:,:) +  t1(:,:,i+j*(j-1)/2)
-                  endif
+
+            if(s==2)then
+               call squareup_block_triangular_squarematrix(w2,no,no,do_block_transpose = .true.)
+#ifdef VAR_MPI
+               if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
+               call time_start_phase(PHASE_COMM, at=twork)
+               call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               if( alloc_in_dummy )then
+                  call lsmpi_win_flush(sio4%wi(1),local=.true.)
+               else
+                  if( lock_outside )call tensor_unlock_wins(sio4,.true.)
+               endif
+               call time_start_phase(PHASE_WORK, at=tcomm)
+#endif
+            else
+               call ass_D1to3(w2,t1,[no2,no2,nor])
+               call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
+               do j=no,1,-1
+                  do i=j,1,-1
+                     call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
+                     if(i /= j)then
+                        h1(j,i,:,:) = h1(j,i,:,:) +  t1(:,:,i+j*(j-1)/2)
+                     endif
+                  enddo
                enddo
-            enddo
+            endif
          endif
 
 
@@ -817,19 +789,35 @@ module cc_tools_module
             call dgemm('t','n',no2,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no2)
             !transform alpha -> k, order is now sigma[k l i j]
             if( rest_sio4 )then
-               call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
+               call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4%elm1,no2)
             else
                call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
-               call ass_D1to3(w2,t1,[no2,no2,nor])
-               call ass_D1to4(sio4,h1,[no,no,no2,no2])
-               do j=no,1,-1
-                  do i=j,1,-1
-                     call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
-                     if(i /= j)then
-                        h1(j,i,:,:) =h1(j,i,:,:) + t1(:,:,i+j*(j-1)/2)
-                     endif
+               if(s==2)then
+                  call squareup_block_triangular_squarematrix(w2,no,no,do_block_transpose = .true.)
+#ifdef VAR_MPI
+                  call time_start_phase(PHASE_COMM, at=twork)
+                  if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
+                  call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  if(alloc_in_dummy)then
+                     call lsmpi_win_flush(sio4%wi(1),local=.true.)
+                  else
+                     if( lock_outside )call tensor_unlock_wins(sio4,.true.)
+                  endif
+                  call time_start_phase(PHASE_WORK, at=tcomm)
+#endif
+               else
+
+                  call ass_D1to3(w2,t1,[no2,no2,nor])
+                  call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
+                  do j=no,1,-1
+                     do i=j,1,-1
+                        call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
+                        if(i /= j)then
+                           h1(j,i,:,:) = h1(j,i,:,:) + t1(:,:,i+j*(j-1)/2)
+                        endif
+                     enddo
                   enddo
-               enddo
+               endif
             endif
 
          endif
@@ -1175,11 +1163,11 @@ module cc_tools_module
             w3(pos1:pos1+la*lg-1) = w2(pos2:pos2+la*lg-1)
          enddo
       enddo
-      ! (w3):I[ gamma i <= j alpha] <- (w2):I[alpha gamma i <= j]
+      ! (w3):I[ alpha i <= j gamma] <- (w2):I[alpha gamma i <= j]
       call array_reorder_3d(1.0E0_realk,w3,lg,la,nor,[2,3,1],0.0E0_realk,w2)
-      ! (w2):I[ l i <= j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i <= j alpha]
+      ! (w2):I[ l i <= j gamma] <- (w3):Lambda^p [alpha l ]^T I[alpha i <= j gamma]
       call dgemm('t','n',no2,nor*lg,la,1.0E0_realk,xo(fa),nb,w2,la,0.0E0_realk,w3,no2)
-      ! (sio4):I[ k l i <= j] <-+ (w2):Lambda^p [alpha k ]^T I[l i <= j alpha]^T
+      ! (sio4):I[ k l i <= j] <-+ (w2):Lambda^p [gamma k ]^T I[l i <= j , gamma]^T
       call dgemm('t','t',no2,nor*no2,lg,1.0E0_realk,xo(fg),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
 
    end subroutine add_int_to_sio4
@@ -1190,10 +1178,10 @@ module cc_tools_module
    subroutine get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,om2,s,lock_outside,tw,tc,no_par,order)
       implicit none
       !> the sio4 matrix from the kobayashi terms on input
-      real(realk), intent(in) :: sio4(:)
+      type(tensor), intent(in) :: sio4
       !> amplitudes
       !real(realk), intent(in) :: t2(*)
-      type(array), intent(inout) :: t2
+      type(tensor), intent(inout) :: t2
       !> some workspave
       real(realk), intent(inout) :: w1(:)
       real(realk), pointer :: w2(:)
@@ -1201,7 +1189,7 @@ module cc_tools_module
       integer, intent(in) :: no,nv
       !> residual to be updated
       !real(realk), intent(inout) :: om2(*)
-      type(array), intent(inout) :: om2
+      type(tensor), intent(inout) :: om2
       !> integer specifying the calc-scheme
       integer, intent(in) :: s
       logical, intent(in) :: lock_outside
@@ -1257,82 +1245,28 @@ module cc_tools_module
 
 
          w1=0.0E0_realk
-         call dgemm('n','n',tl,nor,no*no,0.5E0_realk,t2%elm1(fai),nv*nv,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
-
-
-      else if(s==2.and.traf)then
-
-#ifdef VAR_MPI
-         call mem_alloc(w2,tl*no*no)
-
-         call time_start_phase(PHASE_COMM, at = tw )
-
-         if(lock_outside)call arr_lock_wins(t2,'s',mode)
-         call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,lock_outside)
-         if(lock_outside)call arr_unlock_wins(t2,.true.)
-
-         call time_start_phase(PHASE_WORK, at = tc )
-
-         w1=0.0E0_realk
-         call dgemm('n','n',tl,nor,no*no,0.5E0_realk,w2,tl,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
-         call mem_dealloc(w2)
-#endif
-
-      endif
-
-
-      !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-      !$OMP PRIVATE(i,j,pos1,pos2)
-      do j=no,1,-1
-         !$OMP DO 
-         do i=j,1,-1
-            pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-            pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-            if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-         enddo
-         !$OMP END DO
-      enddo
-      !$OMP BARRIER
-      !$OMP DO 
-      do j=no,1,-1
-         do i=j,1,-1
-            pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-            pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-            if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-         enddo
-      enddo
-      !$OMP END DO
-      !$OMP END PARALLEL
-
-      do j=no,1,-1
-         do i=j,1,-1
-            pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-            call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-         enddo
-      enddo
-
-      if((s==4.or.s==3).and.traf)then
+         call dgemm('n','n',tl,nor,no*no,0.5E0_realk,t2%elm1(fai),nv*nv,sio4%elm1,no*no,0.0E0_realk,w1(fai),nv*nv)
+         
+         call squareup_block_triangular_squarematrix(w1,nv,no,do_block_transpose = .true.)
 
          if(present(order))then
             call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,order,1.0E0_realk,om2%elm1)
          else
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-         call assign_in_subblocks(om2%elm1,'+',w1,o2v2)
+            call assign_in_subblocks(om2%elm1,'+',w1,o2v2)
 #else
-         !$OMP WORKSHARE
-         om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
-         !$OMP END WORKSHARE
+            !$OMP WORKSHARE
+            om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
+            !$OMP END WORKSHARE
 #endif
          endif
+
 
       else if(s==2.and.traf)then
 
 #ifdef VAR_MPI
-         call time_start_phase(PHASE_COMM, at = tw )
-
-         if(lock_outside)call arr_lock_wins(om2,'s',mode)
-         call array_two_dim_1batch(om2,o,'a',w1,2,1,nv*nv,lock_outside) 
-         call time_start_phase(PHASE_WORK, at = tc )
+         o = [1,2,3,4]
+         call tensor_contract(0.5E0_realk,t2,sio4,[3,4],[1,2],2,1.0E0_realk,om2,o)
 #endif
 
       endif
@@ -1401,5 +1335,47 @@ module cc_tools_module
 
 
    end subroutine print_tensor_unfolding_with_labels
+
+   subroutine squareup_block_triangular_squarematrix(BTM,blockidx,sidx,do_block_transpose)
+      implicit none
+      integer ,intent(in) :: blockidx,sidx
+      real(realk), intent(inout) :: BTM(blockidx**2*sidx**2)
+      logical, intent(in), optional :: do_block_transpose
+      logical :: dbt
+      integer :: blocksize
+      integer :: mv((blockidx**2)/2),st,i,j,pos1,pos2
+
+      dbt = .false.
+      if(present(do_block_transpose))dbt=do_block_transpose
+
+      blocksize = blockidx**2
+
+      do j=sidx,1,-1
+         do i=j,1,-1
+            pos1=1+((i+j*(j-1)/2)-1)*blocksize
+            pos2=1+(i-1)*blocksize+(j-1)*sidx*blocksize
+            if(j/=1) BTM(pos2:pos2+blocksize-1) = BTM(pos1:pos1+blocksize-1)
+         enddo
+      enddo
+      do j=sidx,1,-1
+         do i=j,1,-1
+            pos1=1+(i-1)*blocksize+(j-1)*sidx*blocksize
+            pos2=1+(j-1)*blocksize+(i-1)*sidx*blocksize
+            if(i/=j) BTM(pos2:pos2+blocksize-1) = BTM(pos1:pos1+blocksize-1)
+         enddo
+      enddo
+
+      if(dbt)then
+         do j=sidx,1,-1
+            do i=j,1,-1
+               pos1=1+(i-1)*blocksize+(j-1)*sidx*blocksize
+               call alg513(BTM(pos1:blocksize+pos1-1),blockidx,blockidx,blocksize,mv,blocksize/2,st)
+            enddo
+         enddo
+      endif
+
+
+   end subroutine squareup_block_triangular_squarematrix
+
 
 end module cc_tools_module

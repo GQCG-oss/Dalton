@@ -1,5 +1,5 @@
 MODULE AGC_GPU_OBS_VERTICALRECURRENCEMODDSegP
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 
@@ -7,7 +7,7 @@ MODULE AGC_GPU_OBS_VERTICALRECURRENCEMODDSegP
 subroutine VerticalRecurrenceGPUSegP1D(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
          & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-         & PpreExpFac,QpreExpFac,AUXarray)
+         & PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -18,6 +18,7 @@ subroutine VerticalRecurrenceGPUSegP1D(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)
   real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(nPrimQ*nPassP,4)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   Integer :: iP,iPrimQ,iPrimP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: Xqd,Yqd,Zqd
@@ -63,7 +64,7 @@ subroutine VerticalRecurrenceGPUSegP1D(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,TABFJW,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Qexp,Dcenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPassP
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
@@ -121,7 +122,7 @@ end subroutine VerticalRecurrenceGPUSegP1D
 
 subroutine VerticalRecurrenceGPUSegP2D(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,RJ000Array,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -132,6 +133,7 @@ subroutine VerticalRecurrenceGPUSegP2D(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)
   real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(nPrimQ*nPassP,   10)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iPassP,iPrimP,iPrimQ,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(    4)
@@ -167,7 +169,7 @@ subroutine VerticalRecurrenceGPUSegP2D(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Qexp,Dcenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPassP
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
@@ -216,7 +218,7 @@ subroutine VerticalRecurrenceGPUSegP2D(nPassP,nPrimP,nPrimQ,&
 
 subroutine VerticalRecurrenceGPUSegP3D(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,RJ000Array,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -227,6 +229,7 @@ subroutine VerticalRecurrenceGPUSegP3D(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)
   real(realk),intent(in) :: Dcenter(3)
   real(realk),intent(inout) :: AUXarray(nPrimQ*nPassP,   20)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iPassP,iPrimP,iPrimQ,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   10)
@@ -264,7 +267,7 @@ subroutine VerticalRecurrenceGPUSegP3D(nPassP,nPrimP,nPrimQ,&
 !$ACC PRESENT(iAtomApass,iAtomBpass,Pcent,Qcent,reducedExponents,RJ000Array,&
 !$ACC        integralPrefactor,PpreExpFac,QpreExpFac,AUXarray,&
 !$ACC        Qexp,Dcenter, &
-!$ACC        nPrimP,nPrimQ,nPassP)
+!$ACC        nPrimP,nPrimQ,nPassP) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPassP
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ

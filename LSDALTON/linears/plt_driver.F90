@@ -17,7 +17,7 @@ module plt_driver_module
   use typedefTYPE
   use grid_utilities_module
   use davidson_settings
-  use IntegralInterfaceMOD,only:II_Get_overlap
+  use IntegralInterfaceMOD!,only:II_Get_overlap
   private
   public :: plt_wrapper, pltinfo_set_default_config, config_plt_input, &
        & config_pltgrid_input, construct_plt_file_driver, &

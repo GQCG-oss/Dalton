@@ -2,12 +2,12 @@
 !> DEC-CCSD(T) routines
 !> \brief: ccsd(t) module
 !> \author: Janus Juul Eriksen
-!> \date: 2012-2013, Aarhus
+!> \date: 2012-2014, Aarhus
 module ccsdpt_module
 
 #ifdef VAR_MPI
-      use infpar_module
-      use lsmpi_type
+  use infpar_module
+  use lsmpi_type
 #endif
   use precision
   use dec_typedef_module
@@ -20,17 +20,20 @@ module ccsdpt_module
   use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
 !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
   use IntegralInterfaceMOD
+#ifdef VAR_ICHOR
+   use IchorErimoduleHost
+#endif
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use ptr_assoc_module 
 #ifdef VAR_OPENACC
-      use openacc
+  use openacc
 #endif
 
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
 #ifdef VAR_MPI
-      use decmpi_module
+  use decmpi_module
 #endif
   use dec_workarounds_module
   use crop_tools_module
@@ -39,11 +42,54 @@ module ccsdpt_module
   use array3_simple_operations
   use array4_simple_operations
   
+#ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair,&
-       & ccsdpt_energy_e4_full, print_e4_full, ccsdpt_energy_e5_full,&
-       & print_e5_full
+       & ccsdpt_energy_e4_full, print_e4_full,&
+       & ccsdpt_energy_e5_full,print_e5_full,ccsdpt_energy_e5_ddot
   private
+#endif
+
+#ifdef VAR_OPENACC
+#ifdef VAR_CUBLAS
+  interface
+
+     ! cublasCreate
+     integer (C_INT) function cublasCreate_v2 ( handle ) bind (C, name="cublasCreate_v2")
+       use iso_c_binding
+       implicit none
+       type (C_PTR) :: handle
+     end function cublasCreate_v2
+
+     ! cublasDestroy
+     integer (C_INT) function cublasDestroy_v2 ( handle ) bind (C, name="cublasDestroy_v2")
+       use iso_c_binding
+       implicit none
+       type (C_PTR), value :: handle
+     end function cublasDestroy_v2
+
+    ! cublasDgemm_v2
+    integer (C_INT) function cublasDgemm_v2 ( handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc ) bind (C, name="cublasDgemm_v2")
+      use iso_c_binding
+      implicit none
+      type (C_PTR), value :: handle
+      type (C_PTR), value :: A, B, C
+      integer (C_INT), value :: m, n, k, lda, ldb, ldc
+      integer (C_INT), value :: transa, transb
+      real (C_DOUBLE) :: alpha, beta
+    end function cublasDgemm_v2
+
+    ! cublasSetStream_v2
+    integer (C_INT) function cublasSetStream_v2 ( handle, stream ) bind (C, name="cublasSetStream_v2")
+      use iso_c_binding
+      implicit none
+      type (C_PTR), value :: handle
+      type (C_PTR), value :: stream
+    end function cublasSetStream_v2
+
+  end interface
+#endif
+#endif
 
 contains
 
@@ -52,8 +98,8 @@ contains
   !> \brief: driver routine for dec-ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
-  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_doubles,&
-                         & ccsdpt_singles,ccsdpt_doubles)
+  subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,vovo,ccsd_doubles,&
+                         & ccsdpt_singles,print_frags,abc,ccsdpt_doubles,e4)
 
     implicit none
 
@@ -66,18 +112,27 @@ contains
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
-    type(array), intent(inout) :: ccsd_doubles
+    type(tensor), intent(inout) :: ccsd_doubles
+    !> incoming vovo integrals
+    type(tensor), intent(inout) :: vovo
+    !> input for the actual triples computation
+    type(tensor),intent(inout) :: ccsdpt_singles
+    logical :: print_frags,abc
+    type(tensor),intent(inout),optional :: ccsdpt_doubles
+    real(realk),optional :: e4
     !> 2-el integrals
-    type(array4) :: jaik ! integrals (AI|JK) in the order (J,A,I,K)
-    type(array4) :: abij ! integrals (AI|BJ) in the order (A,B,I,J)
-    ! cbai is of type DENSE, if this is a serial calculation, and TILED_DIST,
+    ! ijk scheme
+    type(tensor) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
+    ! vvvo is of type DENSE, if this is a serial calculation, and TILED_DIST,
     ! if this is a parallel calculation
-    type(array) :: cbai ! integrals (AI|BC) in the order (C,B,A,I)
-#ifdef VAR_MPI
+    type(tensor) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    ! abc scheme
+    type(tensor) :: ooov ! integrals (AI|JK) in the order (I,J,K,A)
+    ! vovv is of type DENSE, if this is a serial calculation, and TILED_DIST,
+    ! if this is a parallel calculation
+    type(tensor) :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
     integer :: nodtotal
-    real(realk) :: jaik_norm, abij_norm, cbai_norm, ccsd_doubles_norm
-    real(realk) :: ccsdpt_doubles_norm, ccsdpt_doubles_2_norm, ccsdpt_singles_norm
-#endif
+    integer :: tile_size
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
     !> MOs and unitary transformation matrices
@@ -86,22 +141,35 @@ contains
     integer, dimension(2) :: occdims, virtdims, virtoccdims,occAO,virtAO
     integer, dimension(3) :: dims_aaa
     integer, dimension(4) :: dims_iaai, dims_aaii
-    !> input for the actual triples computation
-    type(array4) :: ccsdpt_doubles_2
-    type(array),intent(inout) :: ccsdpt_doubles
-    type(array),intent(inout) :: ccsdpt_singles
     logical :: master
+    type(tensor) :: ccsdpt_doubles_2
 #ifdef VAR_OPENACC
     !> device type
     integer(acc_device_kind) :: acc_device_type
 #endif
+    real(realk) :: tcpu,twall
 
     call time_start_phase(PHASE_WORK)
 
     master = .true.
+    nodtotal = 1
 #ifdef VAR_MPI
-    master = (infpar%lg_mynum == infpar%master)
+    master = (infpar%lg_mynum .eq. infpar%master)
+    nodtotal = infpar%lg_nodtot
 #endif
+
+    if (master) then
+
+       call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) '=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*'
+       write(DECinfo%output,*) '        Inside the CCSD(T) driver routine.        '
+       write(DECinfo%output,*) '*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*='
+       write(DECinfo%output,*) ''
+
+    endif
 
     ! init dimensions
     occdims     = [nocc,nocc]
@@ -113,9 +181,28 @@ contains
     occAO       = [nbasis,nocc]
     virtAO      = [nbasis,nvirt]
 
-    !Zero to be able to sum up 
-    call array_zero(ccsdpt_singles)
-    call array_zero(ccsdpt_doubles)
+    if (print_frags) then
+
+       !Zero to be able to sum up 
+       call tensor_zero(ccsdpt_singles)
+       call tensor_zero(ccsdpt_doubles)
+
+    else
+
+       !Zero to be able to sum up
+       call tensor_zero(ccsdpt_singles)
+ 
+       if (present(e4)) then
+
+          e4 = 0.0E0_realk
+
+       else
+
+          call lsquit('print_frags == .false., but e4 is missing... aborting.',DECinfo%output) 
+
+       endif
+
+    endif
 
     call mem_alloc(eivalocc,nocc)
     call mem_alloc(eivalvirt,nvirt)
@@ -135,26 +222,54 @@ contains
       call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
                          & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
-      ! ***************************************************
-      ! transform ccsd doubles amplitudes to diagonal basis
-      ! ***************************************************
-      call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vovo=ccsd_doubles%elm1)
+      ! ************************************************************
+      ! transform vovo and ccsd doubles amplitudes to diagonal basis
+      ! ************************************************************
+      if (abc) then
+
+         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+
+         if (DECinfo%abc_tile_size .gt. 1) then
+
+            write(DECinfo%output,*) 'Tile size for ABC-CCSD(T) partitioning was set manually, use that value instead!'
+            write(DECinfo%output,*) ''
+            tile_size = DECinfo%abc_tile_size
+
+         elseif (DECinfo%abc_tile_size .lt. 1) then
+
+            call lsquit('manually set tile size (.ABC_TILE) .lt. 1 - aborting...',DECinfo%output)
+
+         elseif (DECinfo%abc_tile_size .eq. 1) then
+
+!            ! here; determine tile_size based on available cpu/gpu memory
+!            if (tile_size .eq. 1) call new_routine()
+            tile_size = DECinfo%abc_tile_size
+
+         endif
+
+         if (tile_size .gt. nvirt) call lsquit('manually set tile size (.ABC_TILE) .gt. nvirt - aborting...',DECinfo%output)
+
+      else
+
+         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+
+      endif
 
     end if
 
 #ifdef VAR_MPI
-    nodtotal = infpar%lg_nodtot
-
     call time_start_phase(PHASE_COMM)
 
-   ! bcast the JOB specifier and distribute data to all the slaves within local group
+    ! bcast the JOB specifier and distribute data to all the slaves within local group
     waking_the_slaves: if ((nodtotal .gt. 1) .and. master) then
 
        ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_doubles%elm4,mylsitem)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_doubles%elm4,mylsitem,print_frags,abc)
 
     end if waking_the_slaves
 
@@ -164,17 +279,28 @@ contains
     call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
     call ls_mpi_buffer(C_can_occ%val,nbasis,nocc,infpar%master)
     call ls_mpi_buffer(C_can_virt%val,nbasis,nvirt,infpar%master)
+    call ls_mpi_buffer(tile_size,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
     call time_start_phase(PHASE_WORK)
 #endif
 
-    ! ***************************************************
-    ! get vo³, v²o², and v³o integrals in proper sequence
-    ! ***************************************************
+    ! ********************************************
+    ! get vo³ and v³o integrals in proper sequence
+    ! ********************************************
     ! note: the integrals are calculated in canonical basis
 
-    call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
+    if (abc) then
+
+       call get_CCSDpT_integrals_abc(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ooov,vovv,tile_size)
+
+    else
+
+       call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ovoo,vvvo)
+
+    endif
+
+    if (master) call print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size,nodtotal)
 
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
@@ -199,61 +325,108 @@ contains
     ! ***************** trip generation *******************
     ! *****************************************************
 
-    ! init ccsdpt_doubles_2 array4 structure.
+    ! init ccsdpt_doubles_2 array structure.
     ! we merge ccsdpt_doubles and ccsdpt_doubles_2 at the end into ccsdpt_doubles. 
     ! we have dimensioned ccsdpt_doubles as dims_aaii and ccsdpt_doubles_2 as dims_iaai 
     ! in order to load in data consecutive in memory inside ccsdpt_contract_21 
     ! and ccsdpt_contract_22, respectively.
-    ccsdpt_doubles_2 = array4_init_standard(dims_iaai)
+    if (print_frags) then
 
-    ! initially, reorder ccsd_doubles
-    call array_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
+       if (abc) then
 
-    !**********************************************************
-    ! here: the main ijk-loop: this is where the magic happens!
-    !**********************************************************
+          call tensor_init(ccsdpt_doubles_2, [nvirt,nocc,nocc,nvirt],4)
 
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
+       else
+
+          call tensor_init(ccsdpt_doubles_2, [nocc,nvirt,nvirt,nocc],4)
+ 
+       endif
+
+       call tensor_zero(ccsdpt_doubles_2)
+
+    endif
+
+    !************************************************************!
+    ! here: the main  (t) loop: this is where the magic happens! !
+    !************************************************************!
 
 #ifdef VAR_MPI
 
     call time_start_phase(PHASE_WORK)
 
-    ! the parallel version of the ijk-loop
-    call ijk_loop_par(nocc,nvirt,jaik%val,abij%val,cbai,ccsd_doubles%elm1,&
-                    & ccsdpt_doubles%elm1,ccsdpt_doubles_2%val,ccsdpt_singles%elm1,eivalocc,eivalvirt,nodtotal)
+    if (abc) then
+
+       ! the parallel version of the abc-loop
+       if (print_frags) then
+
+          call abc_loop_par(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,nodtotal,tile_size,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
+       else
+
+          call abc_loop_par(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,nodtotal,tile_size,ccsdpt_singles%elm1,e4=e4)
+
+       endif
+
+    else
+
+       ! the parallel version of the ijk-loop
+       if (print_frags) then
+   
+          call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,nodtotal,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+   
+       else
+   
+          call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,nodtotal,ccsdpt_singles%elm1,e4=e4)
+   
+       endif
+
+    endif
 
     call time_start_phase(PHASE_WORK)
 
 #else
 
-    ! the serial version of the ijk-loop
-    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%elm1,&
-                    & ccsdpt_doubles%elm1,ccsdpt_doubles_2%val,ccsdpt_singles%elm1,eivalocc,eivalvirt)
-!    ! the serial version of the abc-loop
-!    call abc_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
-!                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
+    if (abc) then
+
+       ! the serial version of the abc-loop
+       if (print_frags) then
+
+          call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo%elm1,vovv%elm1,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
+       else
+
+          call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo%elm1,vovv%elm1,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,e4=e4)
+
+       endif
+
+    else
+
+       ! the serial version of the ijk-loop
+       if (print_frags) then
+   
+          call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+   
+       else
+   
+          call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,e4=e4)
+   
+       endif
+
+    endif
 
 #endif
 
     ! *******************************************
     ! *********** done w/ main loop *************
     ! *******************************************
-
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
 
 #ifdef VAR_MPI
 
@@ -266,11 +439,18 @@ contains
 
        call time_start_phase(PHASE_COMM)
 
-       call lsmpi_local_reduction(ccsdpt_singles%elm1,ccsdpt_singles%nelms,infpar%master,SPLIT_MSG_REC)
-       call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master,SPLIT_MSG_REC)
-       !FIXME: Please introduce SPLIT_MSG_REC here, otherwise buffers may beocme
-       !too big
-       call lsmpi_local_reduction(ccsdpt_doubles_2%val,nvirt,nocc,nvirt,nocc,infpar%master)
+       call lsmpi_local_reduction(ccsdpt_singles%elm1,ccsdpt_singles%nelms,infpar%master)
+
+       if (print_frags) then
+
+          call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master)
+          call lsmpi_local_reduction(ccsdpt_doubles_2%elm1,ccsdpt_doubles_2%nelms,infpar%master)
+
+       else
+
+          call lsmpi_local_reduction(e4,infpar%master)
+
+       endif
 
        call time_start_phase(PHASE_WORK)
 
@@ -282,12 +462,22 @@ contains
        call time_start_phase(PHASE_WORK)
 
        ! release stuff initialized herein
-       call array4_free(ccsdpt_doubles_2) 
+       if (print_frags) call tensor_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
-       call array4_free(abij)
-       call array4_free(jaik)
-       call array_free(cbai)
+
+       ! release o^3v and v^3o integrals
+       if (abc) then
+
+          call tensor_free(ooov)
+          call tensor_free(vovv)
+
+       else
+
+          call tensor_free(ovoo)
+          call tensor_free(vvvo)
+
+       endif
 
        ! now, release the slaves  
        return
@@ -300,22 +490,66 @@ contains
 
     ! now everything resides on the master...
 
-    ! collect ccsdpt_doubles and ccsdpt_doubles_2 into ccsdpt_doubles array4 structure
-    ! ccsdpt_doubles(a,b,i,j) = ccsdpt_doubles(a,b,i,j) + ccsdpt_doubles_2(j,a,b,i) (*)
-    ! (*) here, ccsdpt_doubles_2 is simultaneously reordered as (j,a,b,i) --> (a,b,i,j)
-    call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_2%val,ccsdpt_doubles_2%dims(1),&
-                               &ccsdpt_doubles_2%dims(2),ccsdpt_doubles_2%dims(3),ccsdpt_doubles_2%dims(4),&
-                               &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%elm1)
+    if (print_frags) then
 
-    ! release ccsdpt_doubles_2 array4 structure
-    call array4_free(ccsdpt_doubles_2)
+       ! collect ccsdpt_doubles and ccsdpt_doubles_2 into ccsdpt_doubles array structure
+       ! ccsdpt_doubles(a,b,i,j) = ccsdpt_doubles(a,b,i,j) + ccsdpt_doubles_2(j,a,b,i) (*)
+       ! (*) here, ccsdpt_doubles_2 is simultaneously reordered as (j,a,b,i) --> (a,b,i,j)
+       call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_2%elm1,ccsdpt_doubles_2%dims(1),&
+                                  &ccsdpt_doubles_2%dims(2),ccsdpt_doubles_2%dims(3),ccsdpt_doubles_2%dims(4),&
+                                  &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%elm1)
+   
+       ! release ccsdpt_doubles_2 array structure
+       call tensor_free(ccsdpt_doubles_2)
+
+    endif
+
+    ! release o^3v and v^3o integrals
+    if (abc) then
+
+       call tensor_free(ooov)
+       call tensor_free(vovv)
+
+    else
+
+       call tensor_free(ovoo)
+       call tensor_free(vvvo)
+
+    endif
 
     ! *************************************************
     ! ***** do canonical --> local transformation *****
     ! *************************************************
 
-    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
-    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+    if (print_frags) then
+
+       if (abc) then
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+
+       else
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+
+       endif
+
+    else
+
+       if (abc) then
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,ov=ccsdpt_singles%elm1)
+
+       else
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vo=ccsdpt_singles%elm1)
+
+       endif
+
+    endif
 
     ! now, release Uocc and Uvirt
     call array2_free(Uocc)
@@ -324,9 +558,8 @@ contains
     ! clean up
     call mem_dealloc(eivalocc)
     call mem_dealloc(eivalvirt)
-    call array4_free(abij)
-    call array_free(cbai)
-    call array4_free(jaik)
+
+    if (master) call LSTIMER('CCSDPT_DRIVER (TOTAL)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine ccsdpt_driver
 
@@ -336,7 +569,7 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: january 2014
   subroutine ijk_loop_par(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
-                        & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt,nodtotal)
+                        & eivalocc,eivalvirt,nodtotal,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
 
@@ -345,8 +578,7 @@ contains
     !> 2-el integrals
     real(realk), dimension(nocc,nvirt,nocc,nocc) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
-    type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
-    real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
+    type(tensor), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     !> ccsd doubles amplitudes
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
@@ -354,30 +586,54 @@ contains
     !> triples amplitudes and 3d work array
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates 
-    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsdpt_doubles
-    real(realk), dimension(nocc,nvirt,nvirt,nocc) :: ccsdpt_doubles_2
     real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc),optional :: ccsdpt_doubles
+    real(realk), dimension(nocc,nvirt,nvirt,nocc),optional :: ccsdpt_doubles_2
+    real(realk),optional :: e4
+    logical :: full_no_frags
     !> orbital energies
     real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
     !> job distribution
+    real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
+    real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch tiles
     integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
     !> loop integers
     integer :: i,j,k,idx,ij_type,tuple_type
+    !> ij loop and k loop buffer handling
+    integer ::  nbuffs, ibuf, jbuf, kbuf
+    integer,pointer :: tiles_in_buf(:)
+    integer(kind=ls_mpik), pointer :: req(:)
+    logical,pointer :: needed(:)
 #ifdef VAR_OPENACC
-    ! 10 is the unique number of handles
-    integer(kind=acc_handle_kind), dimension(10) :: async_id
+    ! 6 is the unique number of handles
+    integer(kind=acc_handle_kind), dimension(4) :: async_id
 #else
-    integer, dimension(10) :: async_id
+    integer, dimension(4) :: async_id
 #endif
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
+    real(realk) :: tcpu,twall
+
+    if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    full_no_frags = .false.
+
+    if (present(e4)) full_no_frags = .true.
 
     call time_start_phase(PHASE_WORK)
 
-    ! init pdm work arrays for vvvo integrals
-    ! init ccsd_doubles_help_arrays
-    call mem_alloc(vvvo_pdm_i,nvirt**3)
-    call mem_alloc(vvvo_pdm_j,nvirt**3)
-    call mem_alloc(vvvo_pdm_k,nvirt**3)
+    !init multiple buffering for mpi
+    !this should not be set below 3
+    nbuffs = DECinfo%CCSDPT_nbuffs_ijk
+    if(nbuffs < 3) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 3",-1)
+    call mem_alloc( vvvo_pdm_buff, nvirt**3, nbuffs )
+    call mem_alloc( needed,       nbuffs )
+    call mem_alloc( tiles_in_buf, nbuffs )
+    call mem_alloc( req,          nbuffs )
+#ifdef VAR_MPI
+    if(alloc_in_dummy)call tensor_lock_wins(vvvo,'s',all_nodes=.true.)
+#endif
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
@@ -402,7 +658,7 @@ contains
     call mem_alloc(jobs,b_size + 1)
 
     ! create ij_array
-    call create_ij_array_ccsdpt(njobs,nocc,ij_array)
+    call create_ij_tensor_ccsdpt(njobs,nocc,ij_array)
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
@@ -417,41 +673,54 @@ contains
     ! the composite index ij is incremented in the collapsed loop, and we may calculate i and j from ij.
 
     ! init ij and i_old/j_old
-    ij = 0
-    i_old = 0
-    j_old = 0
-    ij_type = 0
+    ij           = 0
+    i_old        = 0
+    j_old        = 0
+    ij_type      = 0
+    needed       = .false.
+    tiles_in_buf = -1
+
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
 #ifdef VAR_OPENACC
     async_id(1) = int(1,kind=acc_handle_kind) ! handle for ccsd_doubles
-    async_id(2) = int(2,kind=acc_handle_kind) ! handle for vvvo integrals
-    async_id(3) = int(3,kind=acc_handle_kind) ! handle for ovoo integrals
-    async_id(4) = int(4,kind=acc_handle_kind) ! handle for vvoo integrals
-    async_id(5) = int(5,kind=acc_handle_kind) ! handle for generating triples amplitudes
-    async_id(6) = int(6,kind=acc_handle_kind) ! handle for generating ccsd(t) intermediates
-    async_id(7) = int(7,kind=acc_handle_kind) ! handle for ccsdpt_singles
-    async_id(8) = int(8,kind=acc_handle_kind) ! handle for ccsdpt_doubles
-    async_id(9) = int(9,kind=acc_handle_kind) ! handle for ccsdpt_doubles_2
-    async_id(10) = int(10,kind=acc_handle_kind) ! handle for ccsd_doubles_portions_i/j/k
+    async_id(2) = int(2,kind=acc_handle_kind) ! handle for integrals
+    async_id(3) = int(3,kind=acc_handle_kind) ! handle for ccsd(t) intermediates
+    async_id(4) = int(4,kind=acc_handle_kind) ! handle for device computations
+!
+!    async_id(1) = acc_async_sync
+!    async_id(2) = acc_async_sync
+!    async_id(3) = acc_async_sync
+!    async_id(4) = acc_async_sync
 #else
     async_id(1) = -1
     async_id(2) = -2
     async_id(3) = -3
     async_id(4) = -4
-    async_id(5) = -5
-    async_id(6) = -6
-    async_id(7) = -7
-    async_id(8) = -8
-    async_id(9) = -9
-    async_id(10) = -10
 #endif
 
-! copy in orbital energies and create triples amplitudes and work arrays
-!$acc enter data create(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k) &
-!$acc& copyin(eivalocc,eivalvirt)
+#ifdef VAR_CUBLAS
+    ! initialize the CUBLAS context
+    stat = cublasCreate_v2(cublas_handle)
+
+    ! Make cublas calls asynchronous on the stream associated with the acc handle
+    stat = cublasSetStream_v2(cublas_handle,acc_get_cuda_stream(async_id(4)))
+#endif
+
+!$acc wait
+
+!$acc enter data create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
+!$acc& copyin(eivalvirt) if(.not. full_no_frags)
+!
+!$acc enter data create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
+!$acc& copyin(eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
+
+!$acc wait
 
  ijrun_par: do ij_count = 1,b_size + 1
+
 
                ! get value of ij from job disttribution list
                ij = jobs(ij_count)
@@ -477,6 +746,13 @@ contains
 
                end if
 
+
+               !FIND i in buffer
+               call assoc_ptr_to_buf(i,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_i,vvvo_pdm_buff,ibuf,req)
+
+               !FIND j in buffer
+               call assoc_ptr_to_buf(j,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_j,vvvo_pdm_buff,jbuf,req)
+
                ! select ij combination
                TypeOf_ij_combi: select case(ij_type)
 
@@ -484,37 +760,42 @@ contains
 
                   ! i .gt. j
 
-! move ccsd_doubles blocks to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
-! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(10))
+                  call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(4))
 #else
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
-! move integrals to the device
-!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
-
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
-
-!                  ! get the j'th v^3 tile only
-!                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
                   ! get the j'th v^3 tile only
                   call time_start_phase(PHASE_COMM)
-                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
+
+                  if( alloc_in_dummy )then
+
+                     call lsmpi_wait(req(jbuf))
+
+                  else
+
+                     if(vvvo%lock_set(j)) call tensor_unlock_win(vvvo,j)
+
+                  endif
+
                   call time_start_phase(PHASE_WORK)
 
-! move integrals to the device
-!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
+!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
+
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                   ! store j index
                   j_old = j
@@ -523,71 +804,82 @@ contains
 
                   if (i .eq. j) then
 
-! move ccsd_doubles and integrals blocks to the device
-! (we need ccsd_doubles for i, but no need for ccsd_doubles for index j since i == j)
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
-                     ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(4))
+                     call time_start_phase(PHASE_COMM)
 
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,i)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
+                     if( alloc_in_dummy )then
 
-! no need to get i'th tile as j'th tile is already present on the host node.
-! just copy on the host node and copyin to the device.
-!                     vvvo_pdm_i = vvvo_pdm_j
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-                     call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
-#else
-                     vvvo_pdm_i = vvvo_pdm_j
-#endif
-!$acc enter data copyin(vvvo_pdm_i) async(async_id(2))
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+
+                     endif
+
+
+                     call time_start_phase(PHASE_WORK)
+
+!$acc enter data copyin(vvvo_pdm_i,&
+!$acc& ovoo(:,:,i,j)) async(async_id(2))
+
+!$acc enter data copyin(vvoo(:,:,i,j),&
+!$acc& ccsdpt_singles(:,i),&
+!$acc& ccsdpt_doubles(:,:,i,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
 
                   else ! i .gt. j
 
-! move ccsd_doubles blocks to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
-                     ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-! move integrals to the device
-!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
-
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
-
-!                     ! get the i'th v^3 tile only
-!                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
                      ! get the i'th v^3 tile only
+
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+
+                     if( alloc_in_dummy )then
+
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
-! move integrals to the device
-!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
+!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
+
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                   end if
 
@@ -598,50 +890,55 @@ contains
 
                   if (i .eq. j) then
 
-! move ccsd_doubles blocks to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
-                     ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-! move integral blocks to the device (no need for ccsd_doubles since i == j)
-!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(4))
-
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,i)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
-
-!                     ! get the i'th v^3 tile
-!                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
                      ! get the i'th v^3 tile
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+
+                     if( alloc_in_dummy )then
+
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+
+                     endif
+
+
                      call time_start_phase(PHASE_WORK)
 
-! move integrals to the device
-!$acc enter data copyin(vvvo_pdm_i) async(async_id(2))
+!$acc enter data copyin(vvvo_pdm_i,&
+!$acc& ovoo(:,:,i,j)) async(async_id(2))
+
+!$acc enter data copyin(vvoo(:,:,i,j),&
+!$acc& ccsdpt_singles(:,i),&
+!$acc& ccsdpt_doubles(:,:,i,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
 
                   else ! i .gt. j
 
-! move ccsd_doubles blocks to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
-                     ! store portions of ccsd_doubles (the i'th and j'th indices) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(10))
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(4))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
@@ -649,26 +946,41 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
-! move ccsd_doubles and integral blocks to the device
-!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
-
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
-
-!                     ! get the i'th and j'th v^3 tiles
-!                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
-!                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
                      ! get the i'th and j'th v^3 tiles
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
-                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
+
+                     if( alloc_in_dummy )then
+
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+
+                     endif
+
+
+                     if( alloc_in_dummy )then
+
+                        call lsmpi_wait(req(jbuf))
+
+                     else
+
+                        if(vvvo%lock_set(j)) call tensor_unlock_win(vvvo,j)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
-! move integrals to the device
-!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
+!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
+
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                   end if
 
@@ -678,10 +990,17 @@ contains
 
                end select TypeOf_ij_combi
 
+               needed(ibuf) = .true.
+               needed(jbuf) = .true.
+
+
         krun_par: do k=1,j
 
                      ! select type of tuple
                      tuple_type = -1
+
+                     !FIND k in buffer
+                     call assoc_ptr_to_buf(k,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_k,vvvo_pdm_buff,kbuf,req)
 
                      if ((i .eq. j) .and. (j .eq. k)) then
 
@@ -697,180 +1016,220 @@ contains
 ! move ccsd_doubles block to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
-                        ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                         call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(10))
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(4))
 #else
                         call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
-! move integral blocks to the device
-!$acc enter data copyin(ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(4))
-
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,k)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
-
-!                        ! get the k'th tile
-!                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
+
+                        if( alloc_in_dummy )then
+
+                           call lsmpi_wait(req(kbuf))
+
+                        else
+
+                           if(vvvo%lock_set(k)) call tensor_unlock_win(vvvo,k)
+
+                        endif
+
                         call time_start_phase(PHASE_WORK)
 
-! move integrals to the device
-!$acc enter data copyin(vvvo_pdm_k) async(async_id(2))
+!$acc enter data copyin(vvvo_pdm_k,&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
+
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
+!$acc& ccsdpt_singles(:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
 
                      else if ((i .gt. j) .and. (j .eq. k)) then
 
                         ! i > j == k
                         tuple_type = 2
-! no need to transfer any ccsd_doubles block since k == j
 
-! move integral blocks to the device
-!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(4))
+!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2))
 
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_doubles(:,:,j,k)) async(async_id(8))
+!$acc enter data copyin(vvoo(:,:,j,k),&
+!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
 
                      else
 
                         ! i > j > k
                         tuple_type = 3
 
-! move ccsd_doubles block to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
-                        ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+!$acc wait(async_id(1)) async(async_id(4))
+
 #ifdef VAR_OPENACC
                         call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(10))
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(4))
 #else
                         call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
-! move integral blocks to the device
-!$acc enter data copyin(ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(4))
-
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,k)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
-
-!                        ! get the k'th tile
-!                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
+
+                        if( alloc_in_dummy )then
+
+                           call lsmpi_wait(req(kbuf))
+
+                        else
+
+                           if(vvvo%lock_set(k)) call tensor_unlock_win(vvvo,k)
+
+                        endif
+
                         call time_start_phase(PHASE_WORK)
 
-! move integrals to the device
-!$acc enter data copyin(vvvo_pdm_k) async(async_id(2))
+!$acc enter data copyin(vvvo_pdm_k,&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
+
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
+!$acc& ccsdpt_singles(:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
 
                      end if
 
+
+                     needed(kbuf) = .true.
+
+                     call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,i,j,k,ij_count,nbuffs,needed,tiles_in_buf,vvvo_pdm_buff,req)
+
                      ! generate tuple(s)
-                     TypeOfTuple_par: select case(tuple_type)
+                     TypeOfTuple_par_ijk: select case(tuple_type)
 
                      case(1)
 
-!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2)) async(async_id(4))
 
                         call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                 & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_k,&
                                                 & vvvo_pdm_i,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
-                                                & trip_tmp,trip_ampl,async_id(5))
+                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-! delete reference to the ccsd_doubles
-!$acc wait(async_id(5)) async(async_id(1))
+!$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-                        ! generate triples amplitudes from trip arrays
+                        if (full_no_frags) then
 
-                        call trip_denom_ijk(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
-                        ! now do the contractions
+                          call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                               & vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
+                                               & e4,async_id(4),cublas_handle)
 
-!$acc wait(async_id(5),async_id(7),async_id(8),async_id(9)) async(async_id(6))
+                        else
 
-                        call ccsdpt_driver_ijk_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
-                                             & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
-                                             & vvvo_pdm_i,vvvo_pdm_k,&
-                                             & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
-                                             & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
-                                             & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
-                                             & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6))
+                           ! generate triples amplitudes from trip arrays
 
-! delete reference to device arrays such that the memory may be be re-used
-!!$acc wait(async_id(6)) async(async_id(1))
-!!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
-!$acc wait(async_id(6)) async(async_id(2))
-!$acc exit data delete(vvvo_pdm_k) async(async_id(2))
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(4))
+#ifdef VAR_OPENACC
+                           call trip_denom_ijk_acc(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                           call trip_denom_ijk_cpu(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif   
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(7))
-!$acc exit data copyout(ccsdpt_singles(:,k)) async(async_id(7))
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(8))
-!$acc wait(async_id(6)) async(async_id(9))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+
+                           ! now do the contractions
+
+                           call ccsdpt_driver_ijk_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
+                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
+                                                & vvvo_pdm_i,vvvo_pdm_k,&
+                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
+                                                & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
+                                                & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
+                                                & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(4),cublas_handle)
+
+                        endif
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_k,&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
+!$acc& copyout(ccsdpt_singles(:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
 
                      case(2)
 
-!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2)) async(async_id(4))
 
                         call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                 & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
                                                 & ccsd_doubles_portions_j,&
                                                 & vvvo_pdm_i,vvvo_pdm_j,&
                                                 & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
-                                                & trip_tmp,trip_ampl,async_id(5))
+                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-                        ! generate triples amplitudes from trip arrays
+                        if (full_no_frags) then
 
-                        call trip_denom_ijk(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
-!$acc wait(async_id(5),async_id(8)) async(async_id(6))
+                          call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                               & vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+                                               & e4,async_id(4),cublas_handle)
 
-                        ! now do the contractions
+                        else
 
-                        call ccsdpt_driver_ijk_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
-                                             & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
-                                             & vvvo_pdm_i,vvvo_pdm_j,&
-                                             & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-                                             & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-                                             & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
-                                             & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,async_id(6))
+                           ! generate triples amplitudes from trip arrays
+   
+#ifdef VAR_OPENACC
+                           call trip_denom_ijk_acc(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                           call trip_denom_ijk_cpu(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
 
-! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(4))
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(8))
+                           ! now do the contractions
+
+                           call ccsdpt_driver_ijk_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
+                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
+                                                & vvvo_pdm_i,vvvo_pdm_j,&
+                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+                                                & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+                                                & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
+                                                & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,async_id(4),cublas_handle)
+
+                        endif
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,j,k))&
+!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
 
                      case(3)
 
-!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2)) async(async_id(4))
 
                         call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
                                                 & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
@@ -880,96 +1239,103 @@ contains
                                                 & vvvo_pdm_j,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
                                                 & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
-                                                & trip_tmp,trip_ampl,async_id(5))
+                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-! delete reference to the ccsd_doubles
-!$acc wait(async_id(5)) async(async_id(1))
+!$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-                        ! generate triples amplitudes from trip arrays
+                        if (full_no_frags) then
 
-                        call trip_denom_ijk(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
-                        ! now do the contractions
+                          call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                               & vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
+                                               & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
+                                               & e4,async_id(4),cublas_handle)
 
-!$acc wait(async_id(5),async_id(7),async_id(8),async_id(9)) async(async_id(6))
+                        else
 
-                        call ccsdpt_driver_ijk_case3(i,j,k,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,i,k),&
-                                             & vvoo(:,:,j,i),vvoo(:,:,j,k),vvoo(:,:,k,i),&
-                                             & vvoo(:,:,k,j),ovoo(:,:,i,j),ovoo(:,:,i,k),&
-                                             & ovoo(:,:,j,i),ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
-                                             & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
-                                             & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
-                                             & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,i,k),&
-                                             & ccsdpt_doubles(:,:,j,i),ccsdpt_doubles(:,:,j,k),&
-                                             & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
-                                             & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
-                                             & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6))
+                           ! generate triples amplitudes from trip arrays
 
-! delete reference to device arrays such that the memory may be be re-used
-!!$acc wait(async_id(6)) async(async_id(1))
-!!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
-!$acc wait(async_id(6)) async(async_id(2))
-!$acc exit data delete(vvvo_pdm_k) async(async_id(2))
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(4))
+#ifdef VAR_OPENACC 
+                           call trip_denom_ijk_acc(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                           call trip_denom_ijk_cpu(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(7))
-!$acc exit data copyout(ccsdpt_singles(:,k)) async(async_id(7))
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(8))
-!$acc wait(async_id(6)) async(async_id(9))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
-                     end select TypeOfTuple_par
+                           ! now do the contractions
+
+                           call ccsdpt_driver_ijk_case3(i,j,k,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,i,k),&
+                                                & vvoo(:,:,j,i),vvoo(:,:,j,k),vvoo(:,:,k,i),&
+                                                & vvoo(:,:,k,j),ovoo(:,:,i,j),ovoo(:,:,i,k),&
+                                                & ovoo(:,:,j,i),ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
+                                                & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
+                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
+                                                & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,i,k),&
+                                                & ccsdpt_doubles(:,:,j,i),ccsdpt_doubles(:,:,j,k),&
+                                                & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
+                                                & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
+                                                & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(4),cublas_handle)
+
+                        endif
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_k,&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!$acc& copyout(ccsdpt_singles(:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
+
+                     end select TypeOfTuple_par_ijk
+
+                     needed(kbuf) = .false.
 
                   end do krun_par
 
+                  needed(ibuf) = .false.
+                  needed(jbuf) = .false.
+
                if (j .eq. i) then
 
-! delete reference to device arrays such that the memory may be be re-used
-!!$acc wait(async_id(6)) async(async_id(1))
-!$acc wait(async_id(5)) async(async_id(1))
+!$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(1))
-!$acc wait(async_id(6)) async(async_id(2))
-!$acc exit data delete(vvvo_pdm_i) async(async_id(2))
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(4))
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(7))
-!$acc exit data copyout(ccsdpt_singles(:,i)) async(async_id(7))
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(8))
-!$acc wait(async_id(6)) async(async_id(9))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_i,&
+!$acc& ovoo(:,:,i,j)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,j))&
+!$acc& copyout(ccsdpt_singles(:,i),&
+!$acc& ccsdpt_doubles(:,:,i,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
 
                else ! i .gt. j
 
-! delete reference to device arrays such that the memory may be be re-used
-!!$acc wait(async_id(6)) async(async_id(1))
-!$acc wait(async_id(5)) async(async_id(1))
+!$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
-!$acc wait(async_id(6)) async(async_id(2))
-!$acc exit data delete(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(7))
-!$acc exit data copyout(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id(7))
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
-!$acc wait(async_id(6)) async(async_id(9))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_i,vvvo_pdm_j,&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
+!$acc& copyout(ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                end if
 
@@ -979,34 +1345,314 @@ contains
 
 !$acc wait
 
-! delete reference to the rest of the device arrays
-!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
-!$acc& ccsd_doubles_portions_k,eivalocc,eivalvirt)
+!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalvirt) if(.not. full_no_frags)
+!
+!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalvirt) copyout(ccsdpt_singles,e4) if(full_no_frags)
+
+#ifdef VAR_CUBLAS
+    ! Destroy the CUBLAS context
+    stat = cublasDestroy_v2(cublas_handle)
+#endif
+
+#ifdef VAR_MPI
+    if(alloc_in_dummy)call tensor_unlock_wins(vvvo,all_nodes=.true.)
+#endif
 
     ! release ccsd_doubles_help_arrays
     call mem_dealloc(ccsd_doubles_portions_i)
     call mem_dealloc(ccsd_doubles_portions_j)
     call mem_dealloc(ccsd_doubles_portions_k)
+    call mem_dealloc( req )
 
     ! release pdm work arrays and job list
-    call mem_dealloc(vvvo_pdm_i)
-    call mem_dealloc(vvvo_pdm_j)
-    call mem_dealloc(vvvo_pdm_k)
+    call mem_dealloc(vvvo_pdm_buff)
+    call mem_dealloc(needed)
+    call mem_dealloc(tiles_in_buf)
     call mem_dealloc(jobs)
 
     ! release triples ampl structures
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
 
+    if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('IJK_LOOP_PAR',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
   end subroutine ijk_loop_par
 #endif
+
+  subroutine assoc_ptr_to_buf(tilenr,arr,nbuffs,buf_pos,buf_log,ptr,bg_buf,pos,req)
+     implicit none
+     integer, intent(in):: tilenr,nbuffs
+     type(tensor), intent(inout) :: arr
+     integer, intent(inout):: buf_pos(nbuffs)
+     logical, intent(inout):: buf_log(nbuffs)
+     real(realk), intent(out),   pointer :: ptr(:)
+     real(realk), intent(inout), pointer :: bg_buf(:,:)
+     integer, intent(out) :: pos
+     integer(kind=ls_mpik), intent(inout) :: req(nbuffs)
+     integer :: i_search_buf,ts
+     logical :: found
+     integer(kind=ls_mpik) :: mode
+     pos = 0
+#ifdef VAR_MPI
+     mode = MPI_MODE_NOCHECK
+
+
+     call find_tile_pos_in_buf(tilenr,buf_pos,nbuffs,pos,found)
+
+     if(found)then
+
+        ptr => bg_buf(:,pos)
+
+     else
+        do i_search_buf = 1,nbuffs
+           if(.not.buf_log(i_search_buf))then
+
+              pos          = i_search_buf
+
+              if( .not. alloc_in_dummy ) call tensor_lock_win(arr,tilenr,'s',assert=mode)
+
+              call get_tile_dim(ts,arr,tilenr)
+
+              if( alloc_in_dummy )then
+                 call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,req=req(pos))
+              else
+                 call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
+              endif
+
+              buf_pos(pos) = tilenr
+              buf_log(pos) = .true.
+              found        = .true.
+              ptr          => bg_buf(:,pos)
+
+              exit
+
+           endif
+        enddo
+
+        if( .not. found)then
+
+           call lsquit("ERROR(assoc_ptr_to_buf):tile not found in buf and no&
+              & free position available to load",-1)
+
+        endif
+
+     endif
+#endif
+  end subroutine assoc_ptr_to_buf
+
+  subroutine find_tile_pos_in_buf(tilenr,buf,nbuffs,pos,found)
+     implicit none
+     integer, intent(in):: tilenr,nbuffs
+     integer, intent(in):: buf(nbuffs)
+     logical, intent(out):: found
+     integer, intent(out):: pos
+     integer :: i
+     found = .false.
+     do i=1,nbuffs
+        if(buf(i)==tilenr)then
+           pos   = i
+           found = .true.
+           exit
+        endif
+     enddo
+  end subroutine find_tile_pos_in_buf
+
+  subroutine preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,current_i,current_j,current_k,current_ij_count,nbuffs,needed,&
+        &tiles_in_buf,vvvo_pdm_buff,req)
+     implicit none
+     type(tensor), intent(inout) :: vvvo
+     integer, intent(in) :: b_size,current_i, current_j, current_k, current_ij_count, nbuffs,nocc
+     integer, intent(in) :: jobs(b_size+1)
+     logical, intent(inout) :: needed(nbuffs)
+     integer, intent(inout) :: tiles_in_buf(nbuffs)
+     real(realk), pointer, intent(inout) :: vvvo_pdm_buff(:,:)
+     integer(kind=ls_mpik),intent(inout) :: req(nbuffs)
+
+     integer :: i_test,j_test,k_test,i_search_buf
+     integer :: ibuf_test, jbuf_test, kbuf_test, ij_count_test, ij_test
+     logical :: keep_looping,ij_done, new_i_needed, new_j_needed, new_k_needed
+     integer :: ts
+     integer(kind=ls_mpik) :: mode
+#ifdef VAR_MPI
+     mode = MPI_MODE_NOCHECK
+
+     !set testing integers
+     i_test        = current_i
+     j_test        = current_j
+     k_test        = current_k
+     ij_count_test = current_ij_count
+     ij_done       = .false.
+     keep_looping  = (count(needed)<nbuffs)
+
+     !load next bunch of tiles needed
+     fill_buffer: do while(keep_looping)
+
+        !break condition
+        keep_looping = (count(needed)<nbuffs.and..not.(ij_done .and. .not. k_test<=j_test))
+
+        if(k_test<=j_test)then
+
+           !Load the next k tile
+
+           new_k_needed = .true.
+           do i_search_buf=1,nbuffs
+              if(tiles_in_buf(i_search_buf) == k_test)then
+
+                 needed(i_search_buf) = .true.
+                 new_k_needed         = .false.
+
+                 exit
+
+              endif
+
+           enddo
+
+           !load k
+           if( new_k_needed )then
+              !find pos in buff
+              do i_search_buf = 1, nbuffs
+                 if(.not.needed(i_search_buf))then
+                    kbuf_test = i_search_buf
+                    if( .not.alloc_in_dummy ) call tensor_lock_win(vvvo,k_test,'s',assert=mode)
+                    call get_tile_dim(ts,vvvo,k_test)
+                    if( alloc_in_dummy )then
+                       call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
+                          &lock_set=.true.,req=req(kbuf_test))
+                    else
+                       call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
+                          &lock_set=.true.,flush_it=.true.)
+                    endif
+                    needed(kbuf_test)       = .true.
+                    tiles_in_buf(kbuf_test) = k_test
+
+                    exit
+
+                 endif
+              enddo
+
+           endif
+
+        else
+
+           !Load the next i and j tiles
+
+           ij_count_test = ij_count_test + 1
+
+           if(ij_count_test<=b_size)then
+
+              !is incremented by one at the end of the loop
+              !therefore we set it to 0 here
+              k_test = 0
+
+              ij_test = jobs(ij_count_test)
+
+              call calc_i_and_j(ij_test,nocc,i_test,j_test)
+
+              !check for i
+              new_i_needed = .true.
+              do i_search_buf=1,nbuffs
+                 if(tiles_in_buf(i_search_buf) == i_test)then
+
+                    needed(i_search_buf) = .true.
+                    new_i_needed         = .false.
+
+                    exit
+
+                 endif
+
+              enddo
+
+              !check for j
+              new_j_needed = .true.
+              do i_search_buf=1,nbuffs
+                 if(tiles_in_buf(i_search_buf) == j_test)then
+
+                    needed(i_search_buf) = .true.
+                    new_j_needed         = .false.
+
+                    exit
+
+                 endif
+
+              enddo
+
+              !load new j
+              if( new_j_needed )then
+                 !find pos in buff
+                 do i_search_buf = 1, nbuffs
+                    if(.not.needed(i_search_buf))then
+                       jbuf_test = i_search_buf
+                       if( .not. alloc_in_dummy ) call tensor_lock_win(vvvo,j_test,'s',assert=mode)
+                       call get_tile_dim(ts,vvvo,j_test)
+                       if(alloc_in_dummy)then
+                          call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
+                             &lock_set=.true.,req=req(jbuf_test))
+                       else
+                          call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
+                             &lock_set=.true.,flush_it=.true.)
+                       endif
+                       needed(jbuf_test)       = .true.
+                       tiles_in_buf(jbuf_test) = j_test
+
+                       exit
+
+                    endif
+                 enddo
+
+              endif
+
+              !load new i
+              if( new_i_needed )then
+
+                 !find pos in buff
+                 do i_search_buf = 1, nbuffs
+                    if(.not.needed(i_search_buf))then
+
+                       ibuf_test = i_search_buf
+
+                       if( .not. alloc_in_dummy ) call tensor_lock_win(vvvo,i_test,'s',assert=mode)
+                       call get_tile_dim(ts,vvvo,i_test)
+                       if(alloc_in_dummy )then
+                          call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
+                             &lock_set=.true.,req=req(ibuf_test))
+                       else
+                          call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
+                             &lock_set=.true.,flush_it=.true.)
+                       endif
+
+                       needed(ibuf_test)       = .true.
+                       tiles_in_buf(ibuf_test) = i_test
+
+                       exit
+
+                    endif
+                 enddo
+
+              endif
+
+           else
+
+              ij_done = .true.
+
+           endif
+
+
+        endif
+
+        k_test = k_test + 1
+
+     enddo fill_buffer
+#endif
+  end subroutine preload_tiles_in_bg_buf
 
 
   !> \brief: main ijk-loop (serial version)
   !> \author: Janus Juul Eriksen
   !> \date: january 2014
   subroutine ijk_loop_ser(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
-                        & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt)
+                        & eivalocc,eivalvirt,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
 
@@ -1023,20 +1669,33 @@ contains
     !> triples amplitudes and 3d work array
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates
-    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsdpt_doubles
-    real(realk), dimension(nocc,nvirt,nvirt,nocc) :: ccsdpt_doubles_2
     real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc),optional :: ccsdpt_doubles
+    real(realk), dimension(nocc,nvirt,nvirt,nocc),optional :: ccsdpt_doubles_2
+    real(realk),optional :: e4
+    logical :: full_no_frags
     !> orbital energiesi
     real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
     !> loop integers
     integer :: i,j,k,tuple_type
     !> async handles
 #ifdef VAR_OPENACC
-    ! 9 is the unique number of handles
-    integer(kind=acc_handle_kind), dimension(10) :: async_id
+    ! 5 is the unique number of handles
+    integer(kind=acc_handle_kind), dimension(5) :: async_id
+    integer(kind=acc_device_kind) :: acc_device_type
+    integer, target :: stream
 #else
-    integer, dimension(10) :: async_id
+    integer, dimension(5) :: async_id
 #endif
+    type(c_ptr) :: cublas_handle,cublas_handle_4,cublas_handle_5
+    integer*4 :: stat
+    real(realk) :: tcpu,twall
+
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    full_no_frags = .false.
+
+    if (present(e4)) full_no_frags = .true.
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
@@ -1051,88 +1710,111 @@ contains
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
 #ifdef VAR_OPENACC
     async_id(1) = int(1,kind=acc_handle_kind) ! handle for ccsd_doubles
-    async_id(2) = int(2,kind=acc_handle_kind) ! handle for vvvo integrals
-    async_id(3) = int(3,kind=acc_handle_kind) ! handle for ovoo integrals
-    async_id(4) = int(4,kind=acc_handle_kind) ! handle for vvoo integrals
-    async_id(5) = int(5,kind=acc_handle_kind) ! handle for generating triples amplitudes
-    async_id(6) = int(6,kind=acc_handle_kind) ! handle for generating ccsd(t) intermediates
-    async_id(7) = int(7,kind=acc_handle_kind) ! handle for ccsdpt_singles
-    async_id(8) = int(8,kind=acc_handle_kind) ! handle for ccsdpt_doubles
-    async_id(9) = int(9,kind=acc_handle_kind) ! handle for ccsdpt_doubles_2
-    async_id(10) = int(10,kind=acc_handle_kind) ! handle for ccsd_doubles_portions_i/j/k
+    async_id(2) = int(2,kind=acc_handle_kind) ! handle for integrals
+    async_id(3) = int(3,kind=acc_handle_kind) ! handle for ccsd(t) intermediates
+    async_id(4) = int(4,kind=acc_handle_kind) ! handle for device computations
+    async_id(5) = int(5,kind=acc_handle_kind) ! handle for device computations
+!
+!    async_id(1) = acc_async_sync 
+!    async_id(2) = acc_async_sync 
+!    async_id(3) = acc_async_sync 
+!    async_id(4) = acc_async_sync 
+!    async_id(5) = acc_async_sync
 #else
     async_id(1) = -1
     async_id(2) = -2
     async_id(3) = -3
     async_id(4) = -4
     async_id(5) = -5
-    async_id(6) = -6
-    async_id(7) = -7
-    async_id(8) = -8
-    async_id(9) = -9
-    async_id(10) = -10
 #endif
 
-! copy in orbital energies and create triples amplitudes and work arrays
+!#ifdef VAR_OPENACC
+!
+!    ! probe for device type
+!    acc_device_type = acc_get_device_type()
+!
+!    ! initialize the device
+!    call acc_init(acc_device_type)
+!
+!#endif
+
+#ifdef VAR_CUBLAS
+
+    ! initialize the CUBLAS context
+    stat = cublasCreate_v2(cublas_handle)
+
+#endif
+
+!$acc wait
+
 !$acc enter data create(trip_tmp,trip_ampl,&
-!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k) &
-!$acc& copyin(eivalocc,eivalvirt)
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
+!$acc& copyin(eivalvirt,eivalocc,ccsdpt_singles,e4) if(full_no_frags)
+!
+!$acc enter data create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
+!$acc& copyin(eivalvirt,eivalocc) if(.not. full_no_frags)
+
+!$acc wait
 
  irun_ser: do i=1,nocc
 
-! move integral and ccsd_doubles blocks to the device
-!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
+!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1)) wait(async_id(4))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
              ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
              call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
+                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4),async_id(1))
 #else
              call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-! copyin vvvo integrals
-!$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2))
+!$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,i)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
+!$acc enter data copyin(ccsdpt_singles(:,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
     jrun_ser: do j=1,i
 
                  if (j .eq. i) then 
 
-! move integral blocks to the device (no need for ccsd_doubles since j == i)
-!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(4))
+!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j)) async(async_id(8))
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),&
+!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                  else ! i .gt. j
 
-! move integral and ccsd_doubles blocks to the device
-!$acc enter data copyin(ccsd_doubles(:,:,:,j)) async(async_id(1))
-!$acc enter data copyin(vvvo(:,:,:,j)) async(async_id(2))
-!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
+!$acc enter data copyin(ccsd_doubles(:,:,:,j)) wait(async_id(4)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
-! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+                    ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(10))
+                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(4),async_id(1))
 #else
                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,j)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
+!$acc enter data copyin(vvvo(:,:,:,j),&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(vvvo(:,:,:,j),&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
+
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_singles(:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                  end if
 
@@ -1152,57 +1834,66 @@ contains
                        ! i == j > k
                        tuple_type = 1
 
-! move ccsd_doubles block and integrals to the device
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
-!$acc enter data copyin(vvvo(:,:,:,k)) async(async_id(2))
-!$acc enter data copyin(ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(4))
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1)) wait(async_id(4))
 
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,k)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
+!$acc enter data copyin(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
+
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
+!$acc& ccsdpt_singles(:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                     else if ((i .gt. j) .and. (j .eq. k)) then
 
                        ! i > j == k
                        tuple_type = 2
 
-! no need to transfer any ccsd_doubles block since k == j
-! move integrals to the device
-!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(4))
+!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_doubles(:,:,j,k)) async(async_id(8))
+!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,j,k),&
+!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                     else
 
                        ! i > j > k 
                        tuple_type = 3
 
-! move ccsd_doubles block and integrals to the device
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
-!$acc enter data copyin(vvvo(:,:,:,k)) async(async_id(2))
-!$acc enter data copyin(ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(3))
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(4))
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1)) wait(async_id(4))
 
-! copyin ccsdpt intermediates
-!$acc enter data copyin(ccsdpt_singles(:,k)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(8))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
+!$acc enter data copyin(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2)) wait(async_id(4)) if(full_no_frags)
+!
+!$acc enter data copyin(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
+
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!$acc& async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
+!$acc& ccsdpt_singles(:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
                     end if
 
                     ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
                     if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10))
                        ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                        call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(10))
+                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(4),async_id(1))
 #else
                        call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
@@ -1215,93 +1906,146 @@ contains
     
                     case(1)
 
-!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
+
+#ifdef VAR_CUBLAS
+                       stream = acc_get_cuda_stream(async_id(4))
+                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
                        call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
                                                & ccsd_doubles_portions_k,&
                                                & vvvo(:,:,:,i),vvvo(:,:,:,k),&
                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
-                                               & trip_tmp,trip_ampl,async_id(5))
+                                               & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-! delete reference to the ccsd_doubles
-!$acc wait(async_id(5)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(4)) wait(async_id(1))
+
+!$acc exit data delete(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
+
+                       if (full_no_frags) then
+
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
+
+                          call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                               & vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
+                                               & e4,async_id(5),cublas_handle)
  
-                       ! generate triples amplitudes from trip arrays
-    
-                       call trip_denom_ijk(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
-    
-                       ! now do the contractions
+                       else
 
-!$acc wait(async_id(5),async_id(7),async_id(8),async_id(9)) async(async_id(6))
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
+
+#ifdef VAR_OPENACC 
+                          call trip_denom_ijk_acc(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                          call trip_denom_ijk_cpu(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
  
-                       call ccsdpt_driver_ijk_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
-                                            & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
-                                            & vvvo(:,:,:,i),vvvo(:,:,:,k),&
-                                            & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
-                                            & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
-                                            & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
-                                            & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6))
+                          call ccsdpt_driver_ijk_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
+                                               & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
+                                               & vvvo(:,:,:,i),vvvo(:,:,:,k),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
+                                               & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
+                                               & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
+                                               & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(5),cublas_handle)
 
-! delete reference to device arrays such that the memory may be be re-used
-!!$acc wait(async_id(6)) async(async_id(1))
-!!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
-!$acc wait(async_id(6)) async(async_id(2))
-!$acc exit data delete(vvvo(:,:,:,k)) async(async_id(2))
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(4))
+                       endif
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(7))
-!$acc exit data copyout(ccsdpt_singles(:,k)) async(async_id(7))
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(8))
-!$acc wait(async_id(6)) async(async_id(9))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9)) 
- 
+!$acc exit data delete(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
+
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
+!$acc& copyout(ccsdpt_singles(:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+
                     case(2)
 
-!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
+
+#ifdef VAR_CUBLAS
+                       stream = acc_get_cuda_stream(async_id(4))
+                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
                        call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
                                                & ccsd_doubles_portions_j,&
                                                & vvvo(:,:,:,i),vvvo(:,:,:,j),&
                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
-                                               & trip_tmp,trip_ampl,async_id(5))
+                                               & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-                       ! generate triples amplitudes from trip arrays
-    
-                       call trip_denom_ijk(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
- 
-                       ! now do the contractions
+!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
 
-!$acc wait(async_id(5),async_id(8)) async(async_id(6))
+                       if (full_no_frags) then
 
-                       call ccsdpt_driver_ijk_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
-                                            & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
-                                            & vvvo(:,:,:,i),vvvo(:,:,:,j),&
-                                            & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-                                            & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-                                            & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
-                                            & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,async_id(6))
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(4))
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(8))
- 
+                          call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                               & vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+                                               & e4,async_id(5),cublas_handle)
+
+                       else
+
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
+
+#ifdef VAR_OPENACC       
+                          call trip_denom_ijk_acc(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else    
+                          call trip_denom_ijk_cpu(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+
+                          call ccsdpt_driver_ijk_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
+                                               & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
+                                               & vvvo(:,:,:,i),vvvo(:,:,:,j),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+                                               & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+                                               & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
+                                               & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,async_id(5),cublas_handle)
+
+                       endif
+
+!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
+
+!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,j,k))&
+!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+
                     case(3)
 
-!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5)) 
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
+
+#ifdef VAR_CUBLAS
+                       stream = acc_get_cuda_stream(async_id(4))
+                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
                        call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
                                                & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
@@ -1311,49 +2055,66 @@ contains
                                                & vvvo(:,:,:,j),vvvo(:,:,:,k),&
                                                & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
                                                & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
-                                               & trip_tmp,trip_ampl,async_id(5))
+                                               & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-! delete reference to the ccsd_doubles
-!$acc wait(async_id(5)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(4)) wait(async_id(1))
 
-                       ! generate triples amplitudes from trip arrays
-    
-                       call trip_denom_ijk(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
- 
-                       ! now do the contractions
+!$acc exit data delete(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
 
-!$acc wait(async_id(5),async_id(7),async_id(8),async_id(9)) async(async_id(6))
+                       if (full_no_frags) then
 
-                       call ccsdpt_driver_ijk_case3(i,j,k,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
-                                            & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),ovoo(:,:,i,j),&
-                                            & ovoo(:,:,i,k),ovoo(:,:,j,i),ovoo(:,:,j,k),ovoo(:,:,k,i),&
-                                            & ovoo(:,:,k,j),vvvo(:,:,:,i),vvvo(:,:,:,j),vvvo(:,:,:,k),&
-                                            & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
-                                            & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,i,k),&
-                                            & ccsdpt_doubles(:,:,j,i),ccsdpt_doubles(:,:,j,k),&
-                                            & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
-                                            & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
-                                            & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6))
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-! delete reference to device arrays such that the memory may be be re-used
-!!$acc wait(async_id(6)) async(async_id(1)) 
-!!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
-!$acc wait(async_id(6)) async(async_id(2))
-!$acc exit data delete(vvvo(:,:,:,k)) async(async_id(2))
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(4))
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(7))
-!$acc exit data copyout(ccsdpt_singles(:,k)) async(async_id(7))
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(8))
-!$acc wait(async_id(6)) async(async_id(9))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
+                          call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                               & vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
+                                               & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
+                                               & e4,async_id(5),cublas_handle)
+
+                       else
+
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+
+#ifdef VAR_CUBLAS
+                          stream = acc_get_cuda_stream(async_id(5))
+                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
+
+#ifdef VAR_OPENACC       
+                          call trip_denom_ijk_acc(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                          call trip_denom_ijk_cpu(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif    
+
+                          call ccsdpt_driver_ijk_case3(i,j,k,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
+                                               & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),ovoo(:,:,i,j),&
+                                               & ovoo(:,:,i,k),ovoo(:,:,j,i),ovoo(:,:,j,k),ovoo(:,:,k,i),&
+                                               & ovoo(:,:,k,j),vvvo(:,:,:,i),vvvo(:,:,:,j),vvvo(:,:,:,k),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
+                                               & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,i,k),&
+                                               & ccsdpt_doubles(:,:,j,i),ccsdpt_doubles(:,:,j,k),&
+                                               & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
+                                               & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
+                                               & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(5),cublas_handle)
+
+                       endif
+
+!$acc exit data delete(vvvo(:,:,:,k),&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
+
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!$acc& async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!$acc& copyout(ccsdpt_singles(:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 
                     end select TypeOfTuple_ser_ijk
 
@@ -1361,61 +2122,73 @@ contains
 
                  if (j .eq. i) then
 
-! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(4))
+!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
+!
+!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(8))
+!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,j))&
+!$acc& copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 
                  else ! i .gt. j
 
-! delete reference to device arrays such that the memory may be be re-used
-!!$acc wait(async_id(6)) async(async_id(1))
-!$acc wait(async_id(5)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,j)) async(async_id(1))
-!$acc wait(async_id(6)) async(async_id(2))
-!$acc exit data delete(vvvo(:,:,:,j)) async(async_id(2))
-!$acc wait(async_id(6)) async(async_id(3))
-!$acc exit data delete(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
-!$acc wait(async_id(6)) async(async_id(4))
-!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
+!$acc exit data delete(ccsd_doubles(:,:,:,j)) async(async_id(4)) wait(async_id(1))
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(7))
-!$acc exit data copyout(ccsdpt_singles(:,j)) async(async_id(7))
-!$acc wait(async_id(6)) async(async_id(8))
-!$acc exit data copyout(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
-!$acc wait(async_id(6)) async(async_id(9))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
+!$acc exit data delete(vvvo(:,:,:,j),&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
+!
+!$acc exit data delete(vvvo(:,:,:,j),&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
+
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
+!$acc& copyout(ccsdpt_singles(:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 
                  end if
  
               end do jrun_ser
 
-! delete reference to device arrays such that the memory may be be re-used
-!!$acc wait(async_id(6)) async(async_id(1))
-!$acc wait(async_id(5)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(1))
-!$acc wait(async_id(6)) async(async_id(2))
-!$acc exit data delete(vvvo(:,:,:,i)) async(async_id(2))
+!$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(4)) wait(async_id(1))
 
-! copyout ccsdpt intermediates
-!$acc wait(async_id(6)) async(async_id(7))
-!$acc exit data copyout(ccsdpt_singles(:,i)) async(async_id(7))
-!$acc wait(async_id(6)) async(async_id(9))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
- 
+!$acc exit data delete(vvvo(:,:,:,i)) async(async_id(4)) wait(async_id(2)) if(full_no_frags)
+!
+!$acc exit data delete(vvvo(:,:,:,i)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
+
+!$acc exit data copyout(ccsdpt_singles(:,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+
            end do irun_ser
 
-!$acc wait 
+!$acc wait
 
-! delete reference to the rest of the device arrays
-!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalocc,eivalvirt)
+!$acc exit data delete(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalvirt,eivalocc)&
+!$acc& copyout(ccsdpt_singles,e4) if(full_no_frags)
+!
+!$acc exit data delete(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalvirt,eivalocc) if(.not. full_no_frags)
+
+!$acc wait
+
+#ifdef VAR_CUBLAS
+
+    ! Destroy the CUBLAS context
+    stat = cublasDestroy_v2(cublas_handle)
+
+#endif
+
+!#ifdef VAR_OPENACC
+!
+!    ! shut down the device
+!    call acc_shutdown(acc_device_type)
+!
+!#endif
 
     ! release ccsd_doubles_help_arrays
     call mem_dealloc(ccsd_doubles_portions_i)
@@ -1426,37 +2199,47 @@ contains
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
 
+    call LSTIMER('IJK_LOOP_SER',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
   end subroutine ijk_loop_ser
 
 
-  !> \brief: main abc-loop (serial version)
+#ifdef VAR_MPI
+  !> \brief: main abc-loop (mpi version)
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
-  subroutine abc_loop_ser(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
-                        & ccsdpt_doubles,ccsdpt_doubles_2,ccsdpt_singles,eivalocc,eivalvirt)
+  subroutine abc_loop_par(nocc,nvirt,ooov,oovv,vovv,ccsd_doubles,&
+                        & eivalocc,eivalvirt,nodtotal,tile_size,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
 
     !> nocc,nvirt
     integer, intent(in) :: nocc,nvirt
     !> 2-el integrals
-    real(realk), dimension(nocc,nvirt,nocc,nocc) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
-    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
-    real(realk), dimension(nvirt,nvirt,nvirt,nocc) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    real(realk), dimension(nocc,nocc,nocc,nvirt) :: ooov ! integrals (AI|JK) in the order (K,I,J,A)
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: oovv ! integrals (AI|BJ) in the order (I,J,A,B)
+    type(tensor), intent(inout)  :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
+    real(realk), pointer, dimension(:) :: vovv_pdm_a,vovv_pdm_b,vovv_pdm_c ! ov^2*tile_size tiles from vovv
+    real(realk), pointer, dimension(:,:,:,:) :: ptr_pdm_a,ptr_pdm_b,ptr_pdm_c
+    integer, intent(inout) :: nodtotal, tile_size
     !> ccsd doubles amplitudes
-    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: ccsd_doubles
     ! v*o^2 portions of ccsd_doubles
     real(realk), pointer, dimension(:,:,:) :: ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c
     !> triples amplitudes and 3d work array
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates
-    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsdpt_doubles
-    real(realk), dimension(nocc,nvirt,nvirt,nocc) :: ccsdpt_doubles_2
-    real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
+    real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt), optional :: ccsdpt_doubles
+    real(realk), dimension(nvirt,nocc,nocc,nvirt), optional :: ccsdpt_doubles_2
+    real(realk),optional :: e4
+    logical :: full_no_frags
     !> orbital energiesi
-    real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
+    real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt) 
     !> loop integers
-    integer :: a,b,c,tuple_type
+    integer :: a,b,c,tuple_type,counter
+    integer :: a_tile,b_tile,c_tile,a_count,b_count,c_count,a_tile_num,b_tile_num,c_tile_num
+    integer :: total_num_tiles,nelms,tile_size_tmp_a,tile_size_tmp_b,tile_size_tmp_c
     !> async handles
 #ifdef VAR_OPENACC
     ! 9 is the unique number of handles
@@ -1464,8 +2247,21 @@ contains
 #else
     integer, dimension(9) :: async_id
 #endif
-    real(realk), pointer, dimension(:,:,:,:) :: ovoo_2,vvoo_2,vvvo_2,ccsd_doubles_2,ccsdpt_doubles_3,ccsdpt_doubles_4
-    real(realk), pointer, dimension(:,:) :: ccsdpt_singles_2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
+    real(realk) :: tcpu,twall
+
+    if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('START',tcpu,twall,DECinfo%output) 
+
+    full_no_frags = .false.
+
+    if (present(e4)) full_no_frags = .true.
+
+    ! init pdm work arrays for vvvo integrals
+    ! init ccsd_doubles_help_arrays
+    call mem_alloc(vovv_pdm_a,nocc*nvirt**2*tile_size)
+    call mem_alloc(vovv_pdm_b,nocc*nvirt**2*tile_size)
+    call mem_alloc(vovv_pdm_c,nocc*nvirt**2*tile_size)
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_a,nvirt,nocc,nocc)
@@ -1476,22 +2272,6 @@ contains
     call mem_alloc(trip_ampl,nocc,nocc,nocc)
     ! init 3d wrk array
     call mem_alloc(trip_tmp,nocc,nocc,nocc)
-
-    call mem_alloc(ovoo_2,nocc,nocc,nocc,nvirt)
-    call mem_alloc(vvoo_2,nocc,nocc,nvirt,nvirt)
-    call mem_alloc(vvvo_2,nvirt,nocc,nvirt,nvirt)
-    call mem_alloc(ccsd_doubles_2,nocc,nocc,nvirt,nvirt)
-    call mem_alloc(ccsdpt_doubles_3,nocc,nocc,nvirt,nvirt)
-    call mem_alloc(ccsdpt_doubles_4,nvirt,nocc,nocc,nvirt)
-    call mem_alloc(ccsdpt_singles_2,nocc,nvirt)
-    call array_reorder_4d(1.0E0_realk,ovoo,nocc,nvirt,nocc,nocc,[1,4,3,2],0.0E0_realk,ovoo_2)
-    call array_reorder_4d(1.0E0_realk,vvoo,nvirt,nvirt,nocc,nocc,[3,4,1,2],0.0E0_realk,vvoo_2)
-    call array_reorder_4d(1.0E0_realk,vvvo,nvirt,nvirt,nvirt,nocc,[1,4,3,2],0.0E0_realk,vvvo_2)
-    call array_reorder_4d(1.0E0_realk,ccsd_doubles,nvirt,nvirt,nocc,nocc,[3,4,1,2],0.0E0_realk,ccsd_doubles_2)
-
-    ccsdpt_doubles_3 = 0.0E0_realk
-    ccsdpt_doubles_4 = 0.0E0_realk
-    ccsdpt_singles_2 = 0.0E0_realk
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
 #ifdef VAR_OPENACC
@@ -1516,15 +2296,466 @@ contains
     async_id(9) = -9
 #endif
 
+    a_count = 0
+    b_count = 0
+    c_count = 0
+
+    a_tile_num = 0
+    b_tile_num = 0
+    c_tile_num = 0
+
+    total_num_tiles = vovv%ntiles
+
+    counter = infpar%lg_mynum + 1
+
+#ifdef VAR_CUBLAS
+    ! initialize the CUBLAS context
+    stat = cublasCreate_v2(cublas_handle)
+
+    ! Make cublas calls asynchronous on the stream associated with the acc handle
+    stat = cublasSetStream_v2(cublas_handle,c_loc(acc_get_cuda_stream(async_id(4))))
+#endif
+
+    do a_tile = 1,nvirt,tile_size
+
+       a_tile_num = a_tile_num + 1
+
+       if (a_tile_num .ne. counter) then
+
+          cycle
+
+       else
+
+          counter = counter + nodtotal
+
+       endif
+
+       call get_tileinfo_nels_fromarr8(nelms,vovv,i8*a_tile_num)
+       tile_size_tmp_a = int(nelms/(nocc*nvirt**2))
+
+       call time_start_phase(PHASE_COMM)
+       call tensor_get_tile(vovv,a_tile_num,vovv_pdm_a,nocc*nvirt**2*tile_size_tmp_a,flush_it = .true.)
+       call time_start_phase(PHASE_WORK)
+   
+       call ass_D1to4(vovv_pdm_a,ptr_pdm_a,[nvirt,nocc,nvirt,tile_size_tmp_a])
+
+       do b_tile = 1,a_tile,tile_size
+
+          b_tile_num = b_tile_num + 1
+
+          call get_tileinfo_nels_fromarr8(nelms,vovv,i8*b_tile_num)
+          tile_size_tmp_b = int(nelms/(nocc*nvirt**2))
+
+          call time_start_phase(PHASE_COMM)
+          call tensor_get_tile(vovv,b_tile_num,vovv_pdm_b,nocc*nvirt**2*tile_size_tmp_b,flush_it = .true.)
+          call time_start_phase(PHASE_WORK)
+
+          call ass_D1to4(vovv_pdm_b,ptr_pdm_b,[nvirt,nocc,nvirt,tile_size_tmp_b])
+
+          do c_tile = 1,b_tile,tile_size
+
+             c_tile_num = c_tile_num + 1
+
+             call get_tileinfo_nels_fromarr8(nelms,vovv,i8*c_tile_num)
+             tile_size_tmp_c = int(nelms/(nocc*nvirt**2))
+
+             call time_start_phase(PHASE_COMM)
+             call tensor_get_tile(vovv,c_tile_num,vovv_pdm_c,nocc*nvirt**2*tile_size_tmp_c,flush_it = .true.)
+             call time_start_phase(PHASE_WORK)
+   
+             call ass_D1to4(vovv_pdm_c,ptr_pdm_c,[nvirt,nocc,nvirt,tile_size_tmp_c])
+
+             do a = a_tile,a_tile + tile_size_tmp_a - 1
+
+                a_count = a_count + 1
+
+                call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,a),nocc,nocc,&
+                        & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_a)
+         
+                do b = b_tile,b_tile + tile_size_tmp_b - 1
+         
+                   b_count = b_count + 1
+
+                   if (b .gt. a) then
+
+                      b_count = 0
+                      cycle
+
+                   endif
+
+                   call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
+                           & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
+         
+                   do c = c_tile,c_tile + tile_size_tmp_c - 1
+
+                      c_count = c_count + 1
+
+                      if ((c .gt. b) .or. (c .gt. a)) then
+
+                         c_count = 0
+                         cycle
+   
+                      endif
+
+                      ! select type of tuple
+                      tuple_type = -1
+         
+                      if ((a .eq. b) .and. (b .eq. c)) then
+         
+                         ! a == b == c
+                         ! this always gives zero contribution
+
+                         if (c_count .eq. tile_size_tmp_c) c_count = 0
+                         cycle
+         
+                      else if ((a .eq. b) .and. (b .gt. c)) then
+         
+                         ! a == b > c
+                         tuple_type = 1
+         
+                      else if ((a .gt. b) .and. (b .eq. c)) then
+         
+                         ! a > b == c
+                         tuple_type = 2
+         
+                      else
+         
+                         ! a > b > c 
+                         tuple_type = 3
+         
+                      end if
+         
+                      ! store portion of ccsd_doubles (the c'th index) to avoid unnecessary reorderings
+                      if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
+         
+                         ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+                         call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,c),nocc,nocc,&
+                                 & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c)
+         
+                      end if
+
+                      ! generate tuple(s)
+                      TypeOfTuple_par_abc: select case(tuple_type)
+
+                      case(1)
+         
+                         call trip_generator_abc_case1(a,c,nocc,nvirt,ccsd_doubles(:,:,a,a),ccsd_doubles(:,:,a,c),&
+                                                 & ccsd_doubles(:,:,c,a),ccsd_doubles_portions_a,&
+                                                 & ccsd_doubles_portions_c,&
+                                                 & ooov(:,:,:,a),ooov(:,:,:,c),&
+                                                 & ptr_pdm_a(:,:,a,a_count),ptr_pdm_c(:,:,a,c_count),ptr_pdm_a(:,:,c,a_count),&
+                                                 & trip_tmp,trip_ampl,async_id(5),cublas_handle)
+
+                         if (full_no_frags) then
+
+                            call ccsdpt_energy_full_abc_case1(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                                  & oovv(:,:,a,a),oovv(:,:,a,c),oovv(:,:,c,a),&
+                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,c),e4,async_id(4),cublas_handle)
+         
+                         else
+
+#ifdef VAR_OPENACC
+                            call trip_denom_abc_acc(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                            call trip_denom_abc_cpu(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+       
+                            ! now do the contractions
+            
+                            call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv(:,:,a,a),oovv(:,:,a,c),oovv(:,:,c,a),&
+                                                 & ptr_pdm_a(:,:,a,a_count),ptr_pdm_c(:,:,a,c_count),ptr_pdm_a(:,:,c,a_count),&
+                                                 & ooov(:,:,:,a),ooov(:,:,:,c),&
+                                                 & ccsdpt_singles(:,a),ccsdpt_singles(:,c),&
+                                                 & ccsdpt_doubles(:,:,a,a),ccsdpt_doubles(:,:,a,c),&
+                                                 & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles_2(:,:,:,a),&
+                                                 & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id(6),cublas_handle)
+
+                         endif
+
+                      case(2)
+         
+                         call trip_generator_abc_case2(a,b,nocc,nvirt,ccsd_doubles(:,:,a,b),ccsd_doubles(:,:,b,a),&
+                                                 & ccsd_doubles(:,:,b,b),ccsd_doubles_portions_a,&
+                                                 & ccsd_doubles_portions_b,&
+                                                 & ooov(:,:,:,a),ooov(:,:,:,b),&
+                                                 & ptr_pdm_b(:,:,a,b_count),ptr_pdm_a(:,:,b,a_count),ptr_pdm_b(:,:,b,b_count),&
+                                                 & trip_tmp,trip_ampl,async_id(5),cublas_handle)
+
+                         if (full_no_frags) then
+
+                            call ccsdpt_energy_full_abc_case2(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                                  & oovv(:,:,a,b),oovv(:,:,b,a),oovv(:,:,b,b),&
+                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,b),e4,async_id(4),cublas_handle)
+
+                         else
+ 
+                            ! generate triples amplitudes from trip arrays
+
+#ifdef VAR_OPENACC            
+                            call trip_denom_abc_acc(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                            call trip_denom_abc_cpu(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+            
+                            ! now do the contractions
+            
+                            call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,oovv(:,:,a,b),oovv(:,:,b,a),oovv(:,:,b,b),&
+                                                 & ptr_pdm_b(:,:,a,b_count),ptr_pdm_a(:,:,b,a_count),ptr_pdm_b(:,:,b,b_count),&
+                                                 & ooov(:,:,:,a),ooov(:,:,:,b),&
+                                                 & ccsdpt_singles(:,a),ccsdpt_singles(:,b),&
+                                                 & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
+                                                 & ccsdpt_doubles(:,:,b,b),ccsdpt_doubles_2(:,:,:,a),&
+                                                 & ccsdpt_doubles_2(:,:,:,b),trip_tmp,trip_ampl,async_id(6),cublas_handle)
+         
+                         endif
+
+                      case(3)
+         
+                         call trip_generator_abc_case3(a,b,c,nocc,nvirt,ccsd_doubles(:,:,a,b),ccsd_doubles(:,:,a,c),&
+                                                 & ccsd_doubles(:,:,b,a),ccsd_doubles(:,:,b,c),&
+                                                 & ccsd_doubles(:,:,c,a),ccsd_doubles(:,:,c,b),&
+                                                 & ccsd_doubles_portions_a,ccsd_doubles_portions_b,&
+                                                 & ccsd_doubles_portions_c,ooov(:,:,:,a),&
+                                                 & ooov(:,:,:,b),ooov(:,:,:,c),&
+                                                 & ptr_pdm_b(:,:,a,b_count),ptr_pdm_c(:,:,a,c_count),ptr_pdm_a(:,:,b,a_count),&
+                                                 & ptr_pdm_c(:,:,b,c_count),ptr_pdm_a(:,:,c,a_count),ptr_pdm_b(:,:,c,b_count),&
+                                                 & trip_tmp,trip_ampl,async_id(5),cublas_handle)
+
+                         if (full_no_frags) then
+
+                            call ccsdpt_energy_full_abc_case3(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                                  & oovv(:,:,a,b),oovv(:,:,a,c),oovv(:,:,b,a),&
+                                                  & oovv(:,:,b,c),oovv(:,:,c,a),oovv(:,:,c,b),&
+                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
+                                                  & e4,async_id(4),cublas_handle)
+
+                         else
+ 
+                            ! generate triples amplitudes from trip arrays
+
+#ifdef VAR_OPENACC            
+                            call trip_denom_abc_acc(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+#else
+                            call trip_denom_abc_cpu(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+            
+                            ! now do the contractions
+            
+                            call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,oovv(:,:,a,b),oovv(:,:,a,c),oovv(:,:,b,a),&
+                                                 & oovv(:,:,b,c),oovv(:,:,c,a),oovv(:,:,c,b),&
+                                                 & ptr_pdm_b(:,:,a,b_count),ptr_pdm_c(:,:,a,c_count),ptr_pdm_a(:,:,b,a_count),&
+                                                 & ptr_pdm_c(:,:,b,c_count),ptr_pdm_a(:,:,c,a_count),ptr_pdm_b(:,:,c,b_count),&
+                                                 & ooov(:,:,:,a),ooov(:,:,:,b),ooov(:,:,:,c),&
+                                                 & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
+                                                 & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,a,c),&
+                                                 & ccsdpt_doubles(:,:,b,a),ccsdpt_doubles(:,:,b,c),&
+                                                 & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles(:,:,c,b),&
+                                                 & ccsdpt_doubles_2(:,:,:,a),ccsdpt_doubles_2(:,:,:,b),&
+                                                 & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id(6),cublas_handle)
+         
+                         endif
+
+                      end select TypeOfTuple_par_abc
+
+                      if (c_count .eq. tile_size_tmp_c) c_count = 0
+ 
+                   end do
+
+                   if (b_count .eq. tile_size_tmp_b) b_count = 0
+
+                end do
+          
+                if (a_count .eq. tile_size_tmp_a) a_count = 0
+
+             end do
+
+             if (c_tile .eq. b_tile) c_tile_num = 0
+
+          end do
+
+          if (b_tile .eq. a_tile) b_tile_num = 0
+
+       end do
+
+    end do
+
+#ifdef VAR_CUBLAS
+    ! Destroy the CUBLAS context
+    stat = cublasDestroy_v2 ( cublas_handle )
+#endif
+
+    ! release ccsd_doubles_help_arrays
+    call mem_dealloc(ccsd_doubles_portions_a)
+    call mem_dealloc(ccsd_doubles_portions_b)
+    call mem_dealloc(ccsd_doubles_portions_c)
+
+    ! release pdm work arrays
+    call mem_dealloc(vovv_pdm_a)
+    call mem_dealloc(vovv_pdm_b)
+    call mem_dealloc(vovv_pdm_c)
+
+    ! release triples ampl structures
+    call mem_dealloc(trip_ampl)
+    call mem_dealloc(trip_tmp)
+
+    if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('ABC_LOOP_PAR',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
+  end subroutine abc_loop_par
+#endif
+
+
+  !> \brief: main abc-loop (serial version)
+  !> \author: Janus Juul Eriksen
+  !> \date: april 2014
+  subroutine abc_loop_ser(nocc,nvirt,ooov,oovv,vovv,ccsd_doubles,&
+                        & eivalocc,eivalvirt,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
+
+    implicit none
+
+    !> nocc,nvirt
+    integer, intent(in) :: nocc,nvirt
+    !> 2-el integrals
+    real(realk), dimension(nocc,nocc,nocc,nvirt) :: ooov ! integrals (AI|JK) in the order (K,I,J,A)
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: oovv ! integrals (AI|BJ) in the order (I,J,A,B)
+    real(realk), dimension(nvirt,nocc,nvirt,nvirt) :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
+    !> ccsd doubles amplitudes
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: ccsd_doubles
+    ! v*o^2 portions of ccsd_doubles
+    real(realk), pointer, dimension(:,:,:) :: ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c
+    !> triples amplitudes and 3d work array
+    real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
+    !> ccsd(t) intermediates
+    real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt), optional :: ccsdpt_doubles
+    real(realk), dimension(nvirt,nocc,nocc,nvirt), optional :: ccsdpt_doubles_2
+    real(realk),optional :: e4
+    logical :: full_no_frags
+    !> orbital energiesi
+    real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
+    !> loop integers
+    integer :: a,b,c,tuple_type
+    !> async handles
+#ifdef VAR_OPENACC
+    ! 9 is the unique number of handles
+    integer(kind=acc_handle_kind), dimension(4) :: async_id
+    integer, target :: stream
+#else
+    integer, dimension(4) :: async_id
+#endif
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
+    real(realk) :: tcpu,twall
+
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    full_no_frags = .false.
+
+    if (present(e4)) full_no_frags = .true.
+
+    ! init ccsd_doubles_help_arrays
+    call mem_alloc(ccsd_doubles_portions_a,nvirt,nocc,nocc)
+    call mem_alloc(ccsd_doubles_portions_b,nvirt,nocc,nocc)
+    call mem_alloc(ccsd_doubles_portions_c,nvirt,nocc,nocc)
+
+    ! init triples tuples structure
+    call mem_alloc(trip_ampl,nocc,nocc,nocc)
+    ! init 3d wrk array
+    call mem_alloc(trip_tmp,nocc,nocc,nocc)
+
+    ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
+#ifdef VAR_OPENACC
+    async_id(1) = int(1,kind=acc_handle_kind) ! handle for ccsd_doubles
+    async_id(2) = int(2,kind=acc_handle_kind) ! handle for integrals
+    async_id(3) = int(3,kind=acc_handle_kind) ! handle for ccsd(t) intermediates
+    async_id(4) = int(4,kind=acc_handle_kind) ! handle for device computations
+!
+!    async_id(1) = acc_async_sync
+!    async_id(2) = acc_async_sync
+!    async_id(3) = acc_async_sync
+!    async_id(4) = acc_async_sync
+#else
+    async_id(1) = -1
+    async_id(2) = -2
+    async_id(3) = -3
+    async_id(4) = -4
+#endif
+
+#ifdef VAR_CUBLAS
+    ! initialize the CUBLAS context
+    stat = cublasCreate_v2(cublas_handle)
+
+    ! Make cublas calls asynchronous on the stream associated with the acc handle
+    stream = acc_get_cuda_stream(async_id(4))
+    stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+#endif
+
+! copy in orbital energies and create triples amplitudes and work arrays
+!
+!$acc enter data create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
+!$acc& copyin(eivalocc,eivalvirt) if(.not. full_no_frags)
+!
+!$acc enter data create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
+!$acc& copyin(eivalocc,eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
+
+!$acc wait
+
     do a=1,nvirt
 
-       call array_reorder_3d(1.0E0_realk,ccsd_doubles_2(:,:,:,a),nocc,nocc,&
-               & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_a)
+!$acc enter data copyin(ccsd_doubles(:,:,:,a)) async(async_id(1))
+
+!$acc wait(async_id(1)) async(async_id(4))
+
+#ifdef VAR_OPENACC
+             call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,a),nocc,nocc,&
+                     & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_a,async_id(4))
+#else
+             call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,a),nocc,nocc,&
+                     & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_a)
+#endif
+
+!$acc enter data copyin(ooov(:,:,:,a)) async(async_id(2))
+
+!$acc enter data copyin(ccsdpt_singles(:,a),&
+!$acc& ccsdpt_doubles_2(:,:,:,a)) async(async_id(3)) if(.not. full_no_frags)
 
        do b=1,a
 
-          call array_reorder_3d(1.0E0_realk,ccsd_doubles_2(:,:,:,b),nocc,nocc,&
-                  & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
+          if (b .eq. a) then
+
+!$acc enter data copyin(vovv(:,:,a,b)) async(async_id(2))
+
+!$acc enter data copyin(oovv(:,:,a,b),&
+!$acc& ccsdpt_doubles(:,:,a,b)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,a,b)) async(async_id(3)) if(full_no_frags)
+
+          else ! a .gt. b
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,b)) async(async_id(1))
+
+!$acc wait(async_id(1)) async(async_id(4))
+
+#ifdef VAR_OPENACC
+             call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
+                     & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b,async_id(4))
+#else
+             call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
+                     & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
+#endif
+
+!$acc enter data copyin(ooov(:,:,:,b),&
+!$acc& vovv(:,:,a,b),vovv(:,:,b,a)) async(async_id(2))
+
+!$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a),&
+!$acc& ccsdpt_singles(:,b),&
+!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
+!$acc& ccsdpt_doubles_2(:,:,:,b)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3)) if(full_no_frags)
+
+          endif
 
           do c=1,b
 
@@ -1542,24 +2773,62 @@ contains
                 ! a == b > c
                 tuple_type = 1
 
+!$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
+
+!$acc enter data copyin(ooov(:,:,:,c),&
+!$acc& vovv(:,:,a,c),vovv(:,:,c,a)) async(async_id(2))
+
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),&
+!$acc& ccsdpt_singles(:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
+!$acc& ccsdpt_doubles_2(:,:,:,c)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a)) async(async_id(3)) if(full_no_frags)
+
              else if ((a .gt. b) .and. (b .eq. c)) then
 
                 ! a > b == c
                 tuple_type = 2
+
+!$acc enter data copyin(vovv(:,:,b,c)) async(async_id(2))
+
+!$acc enter data copyin(oovv(:,:,b,c),&
+!$acc& ccsdpt_doubles(:,:,b,c)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,b,c)) async(async_id(3)) if(full_no_frags)
 
              else
 
                 ! a > b > c 
                 tuple_type = 3
 
+!$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
+
+!$acc enter data copyin(ooov(:,:,:,c),&
+!$acc& vovv(:,:,a,c),vovv(:,:,c,a),vovv(:,:,b,c),vovv(:,:,c,b)) async(async_id(2))
+
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b),&
+!$acc& ccsdpt_singles(:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
+!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b),&
+!$acc& ccsdpt_doubles_2(:,:,:,c)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3)) if(full_no_frags)
+
              end if
 
              ! store portion of ccsd_doubles (the c'th index) to avoid unnecessary reorderings
              if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
 
-                ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
-                call array_reorder_3d(1.0E0_realk,ccsd_doubles_2(:,:,:,c),nocc,nocc,&
-                        & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c)
+!$acc wait(async_id(1)) async(async_id(4))
+
+#ifdef VAR_OPENACC
+                       call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,c),nocc,nocc,&
+                               & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c,async_id(4))
+#else
+                       call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,c),nocc,nocc,&
+                               & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c)
+#endif
 
              end if
 
@@ -1568,86 +2837,237 @@ contains
 
              case(1)
 
-                call trip_generator_abc_case1(a,c,nocc,nvirt,ccsd_doubles_2(:,:,a,a),ccsd_doubles_2(:,:,a,c),&
-                                        & ccsd_doubles_2(:,:,c,a),ccsd_doubles_portions_a,&
+!$acc wait(async_id(1),async_id(2)) async(async_id(4))
+
+                call trip_generator_abc_case1(a,c,nocc,nvirt,ccsd_doubles(:,:,a,a),ccsd_doubles(:,:,a,c),&
+                                        & ccsd_doubles(:,:,c,a),ccsd_doubles_portions_a,&
                                         & ccsd_doubles_portions_c,&
-                                        & ovoo_2(:,:,:,a),ovoo_2(:,:,:,c),&
-                                        & vvvo_2(:,:,a,a),vvvo_2(:,:,a,c),vvvo_2(:,:,c,a),&
-                                        & trip_tmp,trip_ampl,async_id(5))
+                                        & ooov(:,:,:,a),ooov(:,:,:,c),&
+                                        & vovv(:,:,a,a),vovv(:,:,a,c),vovv(:,:,c,a),&
+                                        & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-                ! generate triples amplitudes from trip arrays
+!$acc wait(async_id(4)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,c)) async(async_id(1))
 
-                call trip_denom_abc(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+                if (full_no_frags) then
 
-                ! now do the contractions
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
-                call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,vvoo_2(:,:,a,a),vvoo_2(:,:,a,c),vvoo_2(:,:,c,a),&
-                                     & vvvo_2(:,:,a,a),vvvo_2(:,:,a,c),vvvo_2(:,:,c,a),&
-                                     & ovoo_2(:,:,:,a),ovoo_2(:,:,:,c),&
-                                     & ccsdpt_singles_2(:,a),ccsdpt_singles_2(:,c),&
-                                     & ccsdpt_doubles_3(:,:,a,a),ccsdpt_doubles_3(:,:,a,c),&
-                                     & ccsdpt_doubles_3(:,:,c,a),ccsdpt_doubles_4(:,:,:,a),&
-                                     & ccsdpt_doubles_4(:,:,:,c),trip_tmp,trip_ampl,async_id(6))
+                   call ccsdpt_energy_full_abc_case1(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                         & oovv(:,:,a,a),oovv(:,:,a,c),oovv(:,:,c,a),&
+                                         & ccsdpt_singles(:,a),ccsdpt_singles(:,c),e4,async_id(4),cublas_handle)
+
+                else
+
+                   ! generate triples amplitudes from trip arrays
+
+#ifdef VAR_OPENACC   
+                   call trip_denom_abc_acc(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                   call trip_denom_abc_cpu(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+
+                   ! now do the contractions
+   
+                   call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv(:,:,a,a),oovv(:,:,a,c),oovv(:,:,c,a),&
+                                        & vovv(:,:,a,a),vovv(:,:,a,c),vovv(:,:,c,a),&
+                                        & ooov(:,:,:,a),ooov(:,:,:,c),&
+                                        & ccsdpt_singles(:,a),ccsdpt_singles(:,c),&
+                                        & ccsdpt_doubles(:,:,a,a),ccsdpt_doubles(:,:,a,c),&
+                                        & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles_2(:,:,:,a),&
+                                        & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id(4),cublas_handle)
+
+                endif
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,c),&
+!$acc& vovv(:,:,a,c),vovv(:,:,c,a)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a))&
+!$acc& copyout(ccsdpt_singles(:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
+!$acc& ccsdpt_doubles_2(:,:,:,c)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a)) async(async_id(3)) if(full_no_frags)
 
              case(2)
 
-                call trip_generator_abc_case2(a,b,nocc,nvirt,ccsd_doubles_2(:,:,a,b),ccsd_doubles_2(:,:,b,a),&
-                                        & ccsd_doubles_2(:,:,b,b),ccsd_doubles_portions_a,&
+!$acc wait(async_id(1),async_id(2)) async(async_id(4))
+
+                call trip_generator_abc_case2(a,b,nocc,nvirt,ccsd_doubles(:,:,a,b),ccsd_doubles(:,:,b,a),&
+                                        & ccsd_doubles(:,:,b,b),ccsd_doubles_portions_a,&
                                         & ccsd_doubles_portions_b,&
-                                        & ovoo_2(:,:,:,a),ovoo_2(:,:,:,b),&
-                                        & vvvo_2(:,:,a,b),vvvo_2(:,:,b,a),vvvo_2(:,:,b,b),&
-                                        & trip_tmp,trip_ampl,async_id(5))
+                                        & ooov(:,:,:,a),ooov(:,:,:,b),&
+                                        & vovv(:,:,a,b),vovv(:,:,b,a),vovv(:,:,b,b),&
+                                        & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-                ! generate triples amplitudes from trip arrays
+                if (full_no_frags) then
 
-                call trip_denom_abc(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
-                ! now do the contractions
+                   call ccsdpt_energy_full_abc_case2(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                         & oovv(:,:,a,b),oovv(:,:,b,a),oovv(:,:,b,b),&
+                                         & ccsdpt_singles(:,a),ccsdpt_singles(:,b),e4,async_id(4),cublas_handle)
 
-                call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,vvoo_2(:,:,a,b),vvoo_2(:,:,b,a),vvoo_2(:,:,b,b),&
-                                     & vvvo_2(:,:,a,b),vvvo_2(:,:,b,a),vvvo_2(:,:,b,b),&
-                                     & ovoo_2(:,:,:,a),ovoo_2(:,:,:,b),&
-                                     & ccsdpt_singles_2(:,a),ccsdpt_singles_2(:,b),&
-                                     & ccsdpt_doubles_3(:,:,a,b),ccsdpt_doubles_3(:,:,b,a),&
-                                     & ccsdpt_doubles_3(:,:,b,b),ccsdpt_doubles_4(:,:,:,a),&
-                                     & ccsdpt_doubles_4(:,:,:,b),trip_tmp,trip_ampl,async_id(6))
+                else
+
+                   ! generate triples amplitudes from trip arrays
+
+#ifdef VAR_OPENACC   
+                   call trip_denom_abc_acc(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else   
+                   call trip_denom_abc_cpu(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+
+                   ! now do the contractions
+   
+                   call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,oovv(:,:,a,b),oovv(:,:,b,a),oovv(:,:,b,b),&
+                                        & vovv(:,:,a,b),vovv(:,:,b,a),vovv(:,:,b,b),&
+                                        & ooov(:,:,:,a),ooov(:,:,:,b),&
+                                        & ccsdpt_singles(:,a),ccsdpt_singles(:,b),&
+                                        & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
+                                        & ccsdpt_doubles(:,:,b,b),ccsdpt_doubles_2(:,:,:,a),&
+                                        & ccsdpt_doubles_2(:,:,:,b),trip_tmp,trip_ampl,async_id(4),cublas_handle)
+
+                endif
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(vovv(:,:,b,c)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,b,c))&
+!$acc& copyout(ccsdpt_doubles(:,:,b,c)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(oovv(:,:,b,c)) async(async_id(3)) if(full_no_frags)
 
              case(3)
 
-                call trip_generator_abc_case3(a,b,c,nocc,nvirt,ccsd_doubles_2(:,:,a,b),ccsd_doubles_2(:,:,a,c),&
-                                        & ccsd_doubles_2(:,:,b,a),ccsd_doubles_2(:,:,b,c),&
-                                        & ccsd_doubles_2(:,:,c,a),ccsd_doubles_2(:,:,c,b),&
+!$acc wait(async_id(1),async_id(2)) async(async_id(4))
+
+                call trip_generator_abc_case3(a,b,c,nocc,nvirt,ccsd_doubles(:,:,a,b),ccsd_doubles(:,:,a,c),&
+                                        & ccsd_doubles(:,:,b,a),ccsd_doubles(:,:,b,c),&
+                                        & ccsd_doubles(:,:,c,a),ccsd_doubles(:,:,c,b),&
                                         & ccsd_doubles_portions_a,ccsd_doubles_portions_b,&
-                                        & ccsd_doubles_portions_c,ovoo_2(:,:,:,a),&
-                                        & ovoo_2(:,:,:,b),ovoo_2(:,:,:,c),&
-                                        & vvvo_2(:,:,a,b),vvvo_2(:,:,a,c),vvvo_2(:,:,b,a),&
-                                        & vvvo_2(:,:,b,c),vvvo_2(:,:,c,a),vvvo_2(:,:,c,b),&
-                                        & trip_tmp,trip_ampl,async_id(5))
+                                        & ccsd_doubles_portions_c,ooov(:,:,:,a),&
+                                        & ooov(:,:,:,b),ooov(:,:,:,c),&
+                                        & vovv(:,:,a,b),vovv(:,:,a,c),vovv(:,:,b,a),&
+                                        & vovv(:,:,b,c),vovv(:,:,c,a),vovv(:,:,c,b),&
+                                        & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
-                ! generate triples amplitudes from trip arrays
+!$acc wait(async_id(4)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,c)) async(async_id(1))
 
-                call trip_denom_abc(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
+                if (full_no_frags) then
 
-                ! now do the contractions
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
-                call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,vvoo_2(:,:,a,b),vvoo_2(:,:,a,c),vvoo_2(:,:,b,a),&
-                                     & vvoo_2(:,:,b,c),vvoo_2(:,:,c,a),vvoo_2(:,:,c,b),vvvo_2(:,:,a,b),&
-                                     & vvvo_2(:,:,a,c),vvvo_2(:,:,b,a),vvvo_2(:,:,b,c),vvvo_2(:,:,c,a),&
-                                     & vvvo_2(:,:,c,b),ovoo_2(:,:,:,a),ovoo_2(:,:,:,b),ovoo_2(:,:,:,c),&
-                                     & ccsdpt_singles_2(:,a),ccsdpt_singles_2(:,b),ccsdpt_singles_2(:,c),&
-                                     & ccsdpt_doubles_3(:,:,a,b),ccsdpt_doubles_3(:,:,a,c),&
-                                     & ccsdpt_doubles_3(:,:,b,a),ccsdpt_doubles_3(:,:,b,c),&
-                                     & ccsdpt_doubles_3(:,:,c,a),ccsdpt_doubles_3(:,:,c,b),&
-                                     & ccsdpt_doubles_4(:,:,:,a),ccsdpt_doubles_4(:,:,:,b),&
-                                     & ccsdpt_doubles_4(:,:,:,c),trip_tmp,trip_ampl,async_id(6))
+                   call ccsdpt_energy_full_abc_case3(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                         & oovv(:,:,a,b),oovv(:,:,a,c),oovv(:,:,b,a),oovv(:,:,b,c),oovv(:,:,c,a),oovv(:,:,c,b),&
+                                         & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),e4,async_id(4),cublas_handle)
+
+                else
+
+                   ! generate triples amplitudes from trip arrays
+
+#ifdef VAR_OPENACC  
+                   call trip_denom_abc_acc(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+#else
+                   call trip_denom_abc_cpu(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+#endif
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+   
+                   ! now do the contractions
+   
+                   call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,oovv(:,:,a,b),oovv(:,:,a,c),oovv(:,:,b,a),&
+                                        & oovv(:,:,b,c),oovv(:,:,c,a),oovv(:,:,c,b),vovv(:,:,a,b),&
+                                        & vovv(:,:,a,c),vovv(:,:,b,a),vovv(:,:,b,c),vovv(:,:,c,a),&
+                                        & vovv(:,:,c,b),ooov(:,:,:,a),ooov(:,:,:,b),ooov(:,:,:,c),&
+                                        & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
+                                        & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,a,c),&
+                                        & ccsdpt_doubles(:,:,b,a),ccsdpt_doubles(:,:,b,c),&
+                                        & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles(:,:,c,b),&
+                                        & ccsdpt_doubles_2(:,:,:,a),ccsdpt_doubles_2(:,:,:,b),&
+                                        & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id(4),cublas_handle)
+
+                endif
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,c),&
+!$acc& vovv(:,:,a,c),vovv(:,:,c,a),vovv(:,:,b,c),vovv(:,:,c,b)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b))&
+!$acc& copyout(ccsdpt_singles(:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b),&
+!$acc& ccsdpt_doubles_2(:,:,:,c)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3)) if(full_no_frags)
 
              end select TypeOfTuple_ser_abc
 
           end do
- 
+
+          if (b .eq. a) then
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(vovv(:,:,a,b)) async(async_id(2))
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,b))&
+!$acc& copyout(ccsdpt_doubles(:,:,a,b)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(oovv(:,:,a,b)) async(async_id(3)) if(full_no_frags)
+
+          else ! a .gt. b
+
+!$acc wait(async_id(4)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,b)) async(async_id(1))
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,b),&
+!$acc& vovv(:,:,a,b),vovv(:,:,b,a)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a))&
+!$acc& copyout(ccsdpt_singles(:,b),&
+!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
+!$acc& ccsdpt_doubles_2(:,:,:,b)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3)) if(full_no_frags)
+
+          endif
+
        end do
  
+!$acc wait(async_id(4)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,a)) async(async_id(1))
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,a)) async(async_id(2))
+
+!$acc wait(async_id(4)) async(async_id(3))
+!$acc exit data copyout(ccsdpt_singles(:,a),&
+!$acc& ccsdpt_doubles_2(:,:,:,a)) async(async_id(3)) if(.not. full_no_frags)
+
     end do
+
+!$acc wait
+
+!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c,&
+!$acc& eivalocc,eivalvirt) if(.not. full_no_frags)
+!
+!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c,&
+!$acc& eivalocc,eivalvirt) copyout(ccsdpt_singles,e4) if(full_no_frags)
+
+#ifdef VAR_CUBLAS
+    ! Destroy the CUBLAS context
+    stat = cublasDestroy_v2 ( cublas_handle )
+#endif
 
     ! release ccsd_doubles_help_arrays
     call mem_dealloc(ccsd_doubles_portions_a)
@@ -1658,24 +3078,1229 @@ contains
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
 
-    call mem_dealloc(ovoo_2)
-    call mem_dealloc(vvoo_2)
-    call mem_dealloc(vvvo_2)
-    call mem_dealloc(ccsd_doubles_2)
-    call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_3,nocc,nocc,nvirt,nvirt,[3,4,1,2],0.0E0_realk,ccsdpt_doubles)
-    call mem_dealloc(ccsdpt_doubles_3)
-    call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_4,nvirt,nocc,nocc,nvirt,[3,4,1,2],0.0E0_realk,ccsdpt_doubles_2)
-    call mem_dealloc(ccsdpt_doubles_4)
-    call array_reorder_2d(1.0E0_realk,ccsdpt_singles_2,nocc,nvirt,[2,1],0.0E0_realk,ccsdpt_singles)
-    call mem_dealloc(ccsdpt_singles_2)
+    call LSTIMER('ABC_LOOP_SER',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine abc_loop_ser
+
+
+  subroutine ccsdpt_energy_full_ijk_case1(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,trip_tmp,&
+                                         & vvoo_tile_12,vvoo_tile_13,vvoo_tile_31,&
+                                         & ccsdpt_singles_1,ccsdpt_singles_3,e4,async_idx,cublas_handle)
+
+    implicit none
+
+    !> njobs and nocc
+    integer, intent(in) :: o1,o2,o3,no,nv
+    !> trip arrays
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip_ampl,trip_tmp
+    !> orbital energies
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    !> e4 energy
+    real(realk), target, intent(inout) :: e4
+    !> ccsd(t) singles amplitudes
+    real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_3
+    !> tiles of vvoo integrals
+    real(realk), dimension(nv,nv) :: vvoo_tile_12, vvoo_tile_13, vvoo_tile_31
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_idx
+    integer*4 :: stat
+#else
+    integer :: async_idx
+#endif
+    type(c_ptr) :: cublas_handle
+    !> temp e4 energy
+    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    !> ddot
+    real(realk), external :: ddot
+
+    ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
+    ! see the ccsdpt_driver_ijk_case1 routine 
+
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+#else
+!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
+    trip_tmp = trip_ampl
+!$acc end kernels
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case1 - 1) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o1,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o1,o1,o3,nv,no,vvoo_tile_12,vvoo_tile_12,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case1 - 2) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case1 - 3) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o3,o1,o1,nv,no,vvoo_tile_12,vvoo_tile_12,&
+                 & ccsdpt_singles_3,trip_ampl,.true.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o3,o1,o1,nv,no,vvoo_tile_13,vvoo_tile_31,&
+                 & ccsdpt_singles_1,trip_ampl,.true.,async_idx,cublas_handle)
+
+#ifndef VAR_OPENACC
+    e4 = e4 + e4_tmp
+#endif
+
+!!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
+
+  end subroutine ccsdpt_energy_full_ijk_case1
+
+
+  subroutine ccsdpt_energy_full_abc_case1(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,trip_tmp,&
+                                         & oovv_tile_12,oovv_tile_13,oovv_tile_31,&
+                                         & ccsdpt_singles_1,ccsdpt_singles_3,e4,async_idx,cublas_handle)
+
+    implicit none
+
+    !> njobs and nocc
+    integer, intent(in) :: v1,v2,v3,no,nv
+    !> trip arrays
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip_ampl,trip_tmp
+    !> orbital energies
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    !> e4 energy
+    real(realk), target, intent(inout) :: e4
+    !> ccsd(t) singles amplitudes
+    real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_3
+    !> tiles of vvoo integrals
+    real(realk), dimension(no,no) :: oovv_tile_12, oovv_tile_13, oovv_tile_31
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_idx
+    integer*4 :: stat
+#else
+    integer :: async_idx
+#endif
+    type(c_ptr) :: cublas_handle
+    !> temp e4 energy
+    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    !> ddot
+    real(realk), external :: ddot
+
+    ! for explanations on the calls to ccsdpt_contract_abc_11/12,
+    ! see the ccsdpt_driver_abc_case1 routine 
+
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
+#else
+!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
+    trip_tmp = trip_ampl
+!$acc end kernels
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case1 - 1) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v1,v1,v3,nv,no,oovv_tile_13,oovv_tile_31,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v1,v1,v3,nv,no,oovv_tile_12,oovv_tile_12,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case1 - 2) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case1 - 3) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v3,v1,v1,nv,no,oovv_tile_12,oovv_tile_12,&
+                 & ccsdpt_singles_3,trip_ampl,.true.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v3,v1,v1,nv,no,oovv_tile_13,oovv_tile_31,&
+                 & ccsdpt_singles_1,trip_ampl,.true.,async_idx,cublas_handle)
+
+#ifndef VAR_OPENACC
+    e4 = e4 + e4_tmp
+#endif
+
+  end subroutine ccsdpt_energy_full_abc_case1
+
+
+  subroutine ccsdpt_energy_full_ijk_case2(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,trip_tmp,&
+                                         & vvoo_tile_12,vvoo_tile_21,vvoo_tile_23,&
+                                         & ccsdpt_singles_1,ccsdpt_singles_2,e4,async_idx,cublas_handle)
+
+    implicit none
+
+    !> njobs and nocc
+    integer, intent(in) :: o1,o2,o3,no,nv
+    !> trip arrays
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip_ampl,trip_tmp
+    !> orbital energies
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    !> e4 energy
+    real(realk), target, intent(inout) :: e4
+    !> ccsd(t) singles amplitudes
+    real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_2
+    !> tiles of vvoo integrals
+    real(realk), dimension(nv,nv) :: vvoo_tile_12, vvoo_tile_21, vvoo_tile_23
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_idx
+    integer*4 :: stat
+#else
+    integer :: async_idx
+#endif
+    type(c_ptr) :: cublas_handle
+    !> temp e4 energy
+    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    !> ddot
+    real(realk), external :: ddot
+
+    ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
+    ! see the ccsdpt_driver_ijk_case2 routine 
+
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+#else
+!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
+    trip_tmp = trip_ampl
+!$acc end kernels
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case2 - 1) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o1,o2,o2,nv,no,vvoo_tile_23,vvoo_tile_23,&
+                 & ccsdpt_singles_1,trip_ampl,.true.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o1,o2,o2,nv,no,vvoo_tile_21,vvoo_tile_12,&
+                 & ccsdpt_singles_2,trip_ampl,.true.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case2 - 2) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o2,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o2,o2,o1,nv,no,vvoo_tile_23,vvoo_tile_23,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case2 - 3) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+#ifndef VAR_OPENACC
+    e4 = e4 + e4_tmp
+#endif
+
+  end subroutine ccsdpt_energy_full_ijk_case2
+
+
+  subroutine ccsdpt_energy_full_abc_case2(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,trip_tmp,&
+                                         & oovv_tile_12,oovv_tile_21,oovv_tile_23,&
+                                         & ccsdpt_singles_1,ccsdpt_singles_2,e4,async_idx,cublas_handle)
+
+    implicit none
+
+    !> njobs and nocc
+    integer, intent(in) :: v1,v2,v3,no,nv
+    !> trip arrays
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip_ampl,trip_tmp
+    !> orbital energies
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    !> e4 energy
+    real(realk), target, intent(inout) :: e4
+    !> ccsd(t) singles amplitudes
+    real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_2
+    !> tiles of vvoo integrals
+    real(realk), dimension(no,no) :: oovv_tile_12, oovv_tile_21, oovv_tile_23
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_idx
+    integer*4 :: stat
+#else
+    integer :: async_idx
+#endif
+    type(c_ptr) :: cublas_handle
+    !> temp e4 energy
+    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    !> ddot
+    real(realk), external :: ddot
+
+    ! for explanations on the calls to ccsdpt_contract_abc_11/12,
+    ! see the ccsdpt_driver_abc_case2 routine 
+
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
+#else
+!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
+    trip_tmp = trip_ampl
+!$acc end kernels
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case2 - 1) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v1,v2,v2,nv,no,oovv_tile_23,oovv_tile_23,&
+                 & ccsdpt_singles_1,trip_ampl,.true.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v1,v2,v2,nv,no,oovv_tile_21,oovv_tile_12,&
+                 & ccsdpt_singles_2,trip_ampl,.true.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case2 - 2) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v2,v2,v1,nv,no,oovv_tile_21,oovv_tile_12,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v2,v2,v1,nv,no,oovv_tile_23,oovv_tile_23,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case2 - 3) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+#ifndef VAR_OPENACC
+    e4 = e4 + e4_tmp
+#endif
+
+  end subroutine ccsdpt_energy_full_abc_case2
+
+
+  subroutine ccsdpt_energy_full_ijk_case3(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,trip_tmp,&
+                                         & vvoo_tile_12,vvoo_tile_13,vvoo_tile_21,vvoo_tile_23,vvoo_tile_31,vvoo_tile_32,&
+                                         & ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3,e4,async_idx,cublas_handle)
+
+    implicit none
+
+    !> njobs and nocc
+    integer, intent(in) :: o1,o2,o3,no,nv
+    !> trip arrays
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip_ampl,trip_tmp
+    !> orbital energies
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    !> e4 energy
+    real(realk), target, intent(inout) :: e4
+    !> ccsd(t) singles amplitudes
+    real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3
+    !> tiles of vvoo integrals
+    real(realk), dimension(nv,nv) :: vvoo_tile_12, vvoo_tile_13, vvoo_tile_21
+    real(realk), dimension(nv,nv) :: vvoo_tile_23, vvoo_tile_31, vvoo_tile_32
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_idx
+    integer*4 :: stat
+#else
+    integer :: async_idx
+#endif
+    type(c_ptr) :: cublas_handle
+    !> temp e4 energy
+    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    !> ddot
+    real(realk), external :: ddot
+
+    ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
+    ! see the ccsdpt_driver_ijk_case3 routine 
+
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+#else
+!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
+    trip_tmp = trip_ampl
+!$acc end kernels
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,8.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 8.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 1) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = 4.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o1,o2,o3,nv,no,vvoo_tile_23,vvoo_tile_32,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o1,o2,o3,nv,no,vvoo_tile_21,vvoo_tile_12,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 2) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o2,o3,o1,nv,no,vvoo_tile_31,vvoo_tile_13,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o2,o3,o1,nv,no,vvoo_tile_32,vvoo_tile_23,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 3) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o3,o1,o2,nv,no,vvoo_tile_12,vvoo_tile_21,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o3,o1,o2,nv,no,vvoo_tile_13,vvoo_tile_31,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,2,1],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,2,1],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 4) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o3,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o3,o2,o1,nv,no,vvoo_tile_23,vvoo_tile_32,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[1,3,2],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[1,3,2],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 5) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o1,o3,o2,nv,no,vvoo_tile_32,vvoo_tile_23,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o1,o3,o2,nv,no,vvoo_tile_31,vvoo_tile_13,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,1,3],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,1,3],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_ijk_acc(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 6) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_ijk_11(o2,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_ijk_12(o2,o1,o3,nv,no,vvoo_tile_12,vvoo_tile_21,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifndef VAR_OPENACC
+    e4 = e4 + 2.0E0_realk * e4_tmp
+#endif
+
+  end subroutine ccsdpt_energy_full_ijk_case3
+
+
+  subroutine ccsdpt_energy_full_abc_case3(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,trip_tmp,&
+                                         & oovv_tile_12,oovv_tile_13,oovv_tile_21,oovv_tile_23,oovv_tile_31,oovv_tile_32,&
+                                         & ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3,e4,async_idx,cublas_handle)
+
+    implicit none
+
+    !> njobs and nocc
+    integer, intent(in) :: v1,v2,v3,no,nv
+    !> trip arrays
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip_ampl,trip_tmp
+    !> orbital energies
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    !> e4 energy
+    real(realk), target, intent(inout) :: e4
+    !> ccsd(t) singles amplitudes
+    real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3
+    !> tiles of vvoo integrals
+    real(realk), dimension(no,no) :: oovv_tile_12, oovv_tile_13, oovv_tile_21
+    real(realk), dimension(no,no) :: oovv_tile_23, oovv_tile_31, oovv_tile_32
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_idx
+    integer*4 :: stat
+#else
+    integer :: async_idx
+#endif
+    type(c_ptr) :: cublas_handle
+    !> temp e4 energy
+    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    !> ddot
+    real(realk), external :: ddot
+
+    ! for explanations on the calls to ccsdpt_contract_abc_11/12,
+    ! see the ccsdpt_driver_abc_case3 routine 
+
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+#else
+!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
+    trip_tmp = trip_ampl
+!$acc end kernels
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,8.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & 8.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case3 - 1) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = 4.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v1,v2,v3,nv,no,oovv_tile_23,oovv_tile_32,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v1,v2,v3,nv,no,oovv_tile_21,oovv_tile_12,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case3 - 2) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp + ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v2,v3,v1,nv,no,oovv_tile_31,oovv_tile_13,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v2,v3,v1,nv,no,oovv_tile_32,oovv_tile_23,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case3 - 3) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp + ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v3,v1,v2,nv,no,oovv_tile_12,oovv_tile_21,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v3,v1,v2,nv,no,oovv_tile_13,oovv_tile_31,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,2,1],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[3,2,1],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case3 - 4) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v3,v2,v1,nv,no,oovv_tile_21,oovv_tile_12,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v3,v2,v1,nv,no,oovv_tile_23,oovv_tile_32,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[1,3,2],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[1,3,2],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case3 - 5) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v1,v3,v2,nv,no,oovv_tile_32,oovv_tile_23,&
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v1,v3,v2,nv,no,oovv_tile_31,oovv_tile_13,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[2,1,3],0.0E0_realk,trip_ampl,async_idx)
+#else
+    call array_reorder_3d(1.0E0_realk,trip_tmp,no,no,no,[2,1,3],0.0E0_realk,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+    call trip_denom_abc_acc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
+#else
+    call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
+#endif
+
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
+!$acc end host_data
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
+                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_energy_full_abc_case3 - 6) = ",stat
+!       stop
+!    end if
+
+#endif
+#else
+    e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
+#endif
+
+    call ccsdpt_contract_abc_11(v2,v1,v3,nv,no,oovv_tile_13,oovv_tile_31,&
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
+    call ccsdpt_contract_abc_12(v2,v1,v3,nv,no,oovv_tile_12,oovv_tile_21,&
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
+
+#ifndef VAR_OPENACC
+    e4 = e4 + 2.0E0_realk * e4_tmp
+#endif
+
+  end subroutine ccsdpt_energy_full_abc_case3
+
+
+  subroutine ccsdpt_energy_e5_ddot(no,nv,ccsdpt_singles,ccsd_singles,e5)
+
+    implicit none
+
+    !> njobs and nocc
+    integer, intent(in) :: no,nv
+    !> ccsd(t) and ccsd singles amplitudes
+    real(realk), dimension(nv,no), intent(inout) :: ccsdpt_singles,ccsd_singles
+    !> e5 energy
+    real(realk), intent(inout) :: e5
+    !> ddot
+    real(realk), external :: ddot
+
+    e5 = 2.0E0_realk * ddot(no*nv,ccsdpt_singles,1,ccsd_singles,1)
+
+  end subroutine ccsdpt_energy_e5_ddot
 
 
   !> \brief: create ij_array for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine create_ij_array_ccsdpt(njobs,no,ij_array)
+  subroutine create_ij_tensor_ccsdpt(njobs,no,ij_array)
 
     implicit none
 
@@ -1689,16 +4314,16 @@ contains
     ! since i .ge. j, the composite ij indices will make up a lower triangular matrix.
     ! for each ij, k (where j .ge. k) jobs have to be carried out.
     ! thus, the largest jobs for a given i-value will be those that have the largest j-value,
-    ! and the largest jobs will thus be those for which the ij index appears near the diagonal.
+    ! i.e. the largest jobs will be those for which the ij index appears near the diagonal.
     ! as the value of j specifies how large a given job is, we fill up the ij_array with jobs
     ! for j-values in descending order.
 
     ! the below is the lower triangular part of the ij (5*5) matrix written in row-major order
 
-    ! ||  1               ||
-    ! ||  2   3           ||
-    ! ||  4   5  6        ||
-    ! ||  7   8  9 10     ||
+    ! ||   1              ||
+    ! ||   2  3           ||
+    ! ||   4  5  6        ||
+    ! ||   7  8  9 10     ||
     ! ||  11 12 13 14 15  ||
 
     ! examples of ij --> i,j conversion
@@ -1755,20 +4380,20 @@ contains
 
     end do
 
-  end subroutine create_ij_array_ccsdpt
+  end subroutine create_ij_tensor_ccsdpt
 
 
   !> \brief: make job distribution list for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
+  subroutine job_distrib_ccsdpt(b_size,njobs,index_array,jobs)
 
     implicit none
 
     !> batch size (without remainder contribution) and njobs 
     integer, intent(in) :: b_size,njobs
-    !> ij_array
-    integer, dimension(njobs), intent(inout) :: ij_array
+    !> index_array
+    integer, dimension(njobs), intent(inout) :: index_array
     !> jobs array
     integer, dimension(b_size+1), intent(inout) :: jobs
     !> integers
@@ -1778,8 +4403,8 @@ contains
 
     nodtotal = infpar%lg_nodtot
 
-    ! fill the jobs array with values of ij stored in ij_array
-    ! there are (nocc**2 + nocc)/2 jobs in total (njobs)
+    ! fill the jobs array with composite index values stored in index_array.
+    ! there are njobs jobs in total.
 
     ! the below algorithm distributes the jobs evenly among the nodes.
 
@@ -1789,11 +4414,11 @@ contains
 
        if (fill_sum .le. njobs) then
 
-          jobs(fill + 1) = ij_array(infpar%lg_mynum + 1 + fill*nodtotal) 
+          jobs(fill + 1) = index_array(fill_sum) 
 
        else
 
-          ! fill jobs array with negative number such that this number won't appear for any value of ij
+          ! fill jobs array with negative number such that this number won't appear for any value of the composite index
           jobs(fill + 1) = -1
 
        end if
@@ -1866,7 +4491,7 @@ contains
   subroutine trip_generator_ijk_case1(oindex1,oindex3,no,nv,ccsd_doubles_11,ccsd_doubles_13,&
                                 & ccsd_doubles_31,ccsd_doubles_portions_1,ccsd_doubles_portions_3,&
                                 & vvvo_tile_1,vvvo_tile_3,ovoo_tile_11,&
-                                & ovoo_tile_13,ovoo_tile_31,trip_tmp,trip_ampl,async_idx)
+                                & ovoo_tile_13,ovoo_tile_31,trip_tmp,trip_ampl,async_idx,cublas_handle)
 
     implicit none
 
@@ -1887,21 +4512,16 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! iik,iki
     call trip_amplitudes_ijk_virt(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_11,&
-                            & vvvo_tile_3,trip_tmp,async_idx)
+                            & vvvo_tile_3,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_portions_1,&
-                            & ovoo_tile_13,trip_tmp,async_idx)
+                            & ovoo_tile_13,trip_tmp,async_idx,cublas_handle)
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_ampl = trip_tmp
-!$acc end kernels
-#endif
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
@@ -1918,9 +4538,10 @@ contains
 
     ! kii,iik
     call trip_amplitudes_ijk_virt(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_13,&
-                            & vvvo_tile_1,trip_tmp,async_idx)
+                            & vvvo_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_portions_1,&
-                            & ovoo_tile_31,trip_tmp,async_idx)
+                            & ovoo_tile_31,trip_tmp,async_idx,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [2,3,1],1.0E0_realk,trip_ampl,async_idx)
@@ -1935,9 +4556,10 @@ contains
 
     ! iki.kii
     call trip_amplitudes_ijk_virt(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_31,&
-                            & vvvo_tile_1,trip_tmp,async_idx)
+                            & vvvo_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_portions_3,&
-                            & ovoo_tile_11,trip_tmp,async_idx)
+                            & ovoo_tile_11,trip_tmp,async_idx,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [1,3,2],1.0E0_realk,trip_ampl,async_idx)
@@ -1959,7 +4581,7 @@ contains
   subroutine trip_generator_abc_case1(vindex1,vindex3,no,nv,ccsd_doubles_11,ccsd_doubles_13,&
                                 & ccsd_doubles_31,ccsd_doubles_portions_1,ccsd_doubles_portions_3,&
                                 & ooov_tile_1,ooov_tile_3,vovv_tile_11,&
-                                & vovv_tile_13,vovv_tile_31,trip_tmp,trip_ampl,async_idx)
+                                & vovv_tile_13,vovv_tile_31,trip_tmp,trip_ampl,async_idx,cublas_handle)
 
     implicit none
 
@@ -1980,15 +4602,22 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! aac,aca
     call trip_amplitudes_abc_occ(vindex1,vindex1,vindex3,no,nv,ccsd_doubles_11,&
-                            & ooov_tile_3,trip_tmp,async_idx)
+                            & ooov_tile_3,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex1,vindex3,vindex1,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_13,trip_tmp,async_idx)
+                            & vovv_tile_13,trip_tmp,async_idx,cublas_handle)
+
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
+#else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
 !$acc end kernels
+#endif
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [2,1,3],1.0E0_realk,trip_ampl,async_idx)
@@ -1999,9 +4628,9 @@ contains
 
     ! caa,aac
     call trip_amplitudes_abc_occ(vindex3,vindex1,vindex1,no,nv,ccsd_doubles_13,&
-                            & ooov_tile_1,trip_tmp,async_idx)
+                            & ooov_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex1,vindex1,vindex3,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_31,trip_tmp,async_idx)
+                            & vovv_tile_31,trip_tmp,async_idx,cublas_handle)
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [2,3,1],1.0E0_realk,trip_ampl,async_idx)
@@ -2016,9 +4645,9 @@ contains
 
     ! aca.caa
     call trip_amplitudes_abc_occ(vindex1,vindex3,vindex1,no,nv,ccsd_doubles_31,&
-                            & ooov_tile_1,trip_tmp,async_idx)
+                            & ooov_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex3,vindex1,vindex1,no,nv,ccsd_doubles_portions_3,&
-                            & vovv_tile_11,trip_tmp,async_idx)
+                            & vovv_tile_11,trip_tmp,async_idx,cublas_handle)
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [1,3,2],1.0E0_realk,trip_ampl,async_idx)
@@ -2040,7 +4669,7 @@ contains
   subroutine trip_generator_ijk_case2(oindex1,oindex2,no,nv,ccsd_doubles_12,ccsd_doubles_21,&
                                 & ccsd_doubles_22,ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
                                 & vvvo_tile_1,vvvo_tile_2,ovoo_tile_12,&
-                                & ovoo_tile_21,ovoo_tile_22,trip_tmp,trip_ampl,async_idx)
+                                & ovoo_tile_21,ovoo_tile_22,trip_tmp,trip_ampl,async_idx,cublas_handle)
 
     implicit none
 
@@ -2061,21 +4690,16 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! ijj.jji
     call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_21,&
-                            & vvvo_tile_2,trip_tmp,async_idx)
+                            & vvvo_tile_2,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_portions_2,&
-                            & ovoo_tile_12,trip_tmp,async_idx)
+                            & ovoo_tile_12,trip_tmp,async_idx,cublas_handle)
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-#ifndef VAR_OPENACC
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
-#else
-!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
-    trip_ampl = trip_tmp
-!$acc end kernels
-#endif
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
@@ -2092,9 +4716,10 @@ contains
 
     ! jij,ijj
     call trip_amplitudes_ijk_virt(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_12,&
-                            & vvvo_tile_2,trip_tmp,async_idx)
+                            & vvvo_tile_2,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_portions_1,&
-                            & ovoo_tile_22,trip_tmp,async_idx)
+                            & ovoo_tile_22,trip_tmp,async_idx,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [2,1,3],1.0E0_realk,trip_ampl,async_idx)
@@ -2109,9 +4734,10 @@ contains
 
     ! jji,jij
     call trip_amplitudes_ijk_virt(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_22,&
-                            & vvvo_tile_1,trip_tmp,async_idx)
+                            & vvvo_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_portions_2,&
-                            & ovoo_tile_21,trip_tmp,async_idx)
+                            & ovoo_tile_21,trip_tmp,async_idx,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [3,1,2],1.0E0_realk,trip_ampl,async_idx)
@@ -2133,7 +4759,7 @@ contains
   subroutine trip_generator_abc_case2(vindex1,vindex2,no,nv,ccsd_doubles_12,ccsd_doubles_21,&
                                 & ccsd_doubles_22,ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
                                 & ooov_tile_1,ooov_tile_2,vovv_tile_12,&
-                                & vovv_tile_21,vovv_tile_22,trip_tmp,trip_ampl,async_idx)
+                                & vovv_tile_21,vovv_tile_22,trip_tmp,trip_ampl,async_idx,cublas_handle)
 
     implicit none
 
@@ -2154,15 +4780,22 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! abb.bba
     call trip_amplitudes_abc_occ(vindex1,vindex2,vindex2,no,nv,ccsd_doubles_21,&
-                            & ooov_tile_2,trip_tmp,async_idx)
+                            & ooov_tile_2,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex2,vindex2,vindex1,no,nv,ccsd_doubles_portions_2,&
-                            & vovv_tile_12,trip_tmp,async_idx)
+                            & vovv_tile_12,trip_tmp,async_idx,cublas_handle)
+
+#if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
+#else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
 !$acc end kernels
+#endif
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [1,3,2],1.0E0_realk,trip_ampl,async_idx)
@@ -2173,9 +4806,9 @@ contains
 
     ! bab,abb
     call trip_amplitudes_abc_occ(vindex2,vindex1,vindex2,no,nv,ccsd_doubles_12,&
-                            & ooov_tile_2,trip_tmp,async_idx)
+                            & ooov_tile_2,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex1,vindex2,vindex2,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_22,trip_tmp,async_idx)
+                            & vovv_tile_22,trip_tmp,async_idx,cublas_handle)
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [2,1,3],1.0E0_realk,trip_ampl,async_idx)
@@ -2190,9 +4823,9 @@ contains
 
     ! bba,bab
     call trip_amplitudes_abc_occ(vindex2,vindex2,vindex1,no,nv,ccsd_doubles_22,&
-                            & ooov_tile_1,trip_tmp,async_idx)
+                            & ooov_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex2,vindex1,vindex2,no,nv,ccsd_doubles_portions_2,&
-                            & vovv_tile_21,trip_tmp,async_idx)
+                            & vovv_tile_21,trip_tmp,async_idx,cublas_handle)
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [3,1,2],1.0E0_realk,trip_ampl,async_idx)
@@ -2216,7 +4849,7 @@ contains
                                 & ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
                                 & ccsd_doubles_portions_3,vvvo_tile_1,vvvo_tile_2,vvvo_tile_3,&
                                 & ovoo_tile_12,ovoo_tile_13,ovoo_tile_21,ovoo_tile_23,ovoo_tile_31,&
-                                & ovoo_tile_32,trip_tmp,trip_ampl,async_idx)
+                                & ovoo_tile_32,trip_tmp,trip_ampl,async_idx,cublas_handle)
 
     implicit none
 
@@ -2239,18 +4872,20 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! ijk.jki
     call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_21,&
-                            & vvvo_tile_3,trip_ampl,async_idx)
+                            & vvvo_tile_3,trip_ampl,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_portions_2,&
-                            & ovoo_tile_13,trip_ampl,async_idx)
+                            & ovoo_tile_13,trip_ampl,async_idx,cublas_handle)
 
     ! kij,ijk
     call trip_amplitudes_ijk_virt(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_13,&
-                            & vvvo_tile_2,trip_tmp,async_idx)
+                            & vvvo_tile_2,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_portions_1,&
-                            & ovoo_tile_32,trip_tmp,async_idx)
+                            & ovoo_tile_32,trip_tmp,async_idx,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [2,3,1],1.0E0_realk,trip_ampl,async_idx)
@@ -2261,9 +4896,10 @@ contains
 
     ! jki,kij
     call trip_amplitudes_ijk_virt(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_32,&
-                            & vvvo_tile_1,trip_tmp,async_idx)
+                            & vvvo_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_portions_3,&
-                            & ovoo_tile_21,trip_tmp,async_idx)
+                            & ovoo_tile_21,trip_tmp,async_idx,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [3,1,2],1.0E0_realk,trip_ampl,async_idx)
@@ -2274,9 +4910,10 @@ contains
 
     ! ikj,kji
     call trip_amplitudes_ijk_virt(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_31,&
-                            & vvvo_tile_2,trip_tmp,async_idx)
+                            & vvvo_tile_2,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_portions_3,&
-                            & ovoo_tile_12,trip_tmp,async_idx)
+                            & ovoo_tile_12,trip_tmp,async_idx,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [1,3,2],1.0E0_realk,trip_ampl,async_idx)
@@ -2287,9 +4924,10 @@ contains
 
     ! jik,ikj
     call trip_amplitudes_ijk_virt(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_12,&
-                            & vvvo_tile_3,trip_tmp,async_idx)
+                            & vvvo_tile_3,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_portions_1,&
-                            & ovoo_tile_23,trip_tmp,async_idx)
+                            & ovoo_tile_23,trip_tmp,async_idx,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [2,1,3],1.0E0_realk,trip_ampl,async_idx)
@@ -2300,9 +4938,10 @@ contains
 
     ! kji,jik
     call trip_amplitudes_ijk_virt(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_23,&
-                            & vvvo_tile_1,trip_tmp,async_idx)
+                            & vvvo_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_ijk_occ(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_portions_2,&
-                            & ovoo_tile_31,trip_tmp,async_idx)
+                            & ovoo_tile_31,trip_tmp,async_idx,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [3,2,1],1.0E0_realk,trip_ampl,async_idx)
@@ -2322,7 +4961,7 @@ contains
                                 & ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
                                 & ccsd_doubles_portions_3,ooov_tile_1,ooov_tile_2,ooov_tile_3,&
                                 & vovv_tile_12,vovv_tile_13,vovv_tile_21,vovv_tile_23,vovv_tile_31,&
-                                & vovv_tile_32,trip_tmp,trip_ampl,async_idx)
+                                & vovv_tile_32,trip_tmp,trip_ampl,async_idx,cublas_handle)
 
     implicit none
 
@@ -2345,18 +4984,19 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! abc.bca
     call trip_amplitudes_abc_occ(vindex1,vindex2,vindex3,no,nv,ccsd_doubles_21,&
-                            & ooov_tile_3,trip_ampl,async_idx)
+                            & ooov_tile_3,trip_ampl,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex2,vindex3,vindex1,no,nv,ccsd_doubles_portions_2,&
-                            & vovv_tile_13,trip_ampl,async_idx)
+                            & vovv_tile_13,trip_ampl,async_idx,cublas_handle)
 
     ! cab,abc
     call trip_amplitudes_abc_occ(vindex3,vindex1,vindex2,no,nv,ccsd_doubles_13,&
-                            & ooov_tile_2,trip_tmp,async_idx)
+                            & ooov_tile_2,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex1,vindex2,vindex3,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_32,trip_tmp,async_idx)
+                            & vovv_tile_32,trip_tmp,async_idx,cublas_handle)
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [2,3,1],1.0E0_realk,trip_ampl,async_idx)
@@ -2367,9 +5007,9 @@ contains
 
     ! bca,cab
     call trip_amplitudes_abc_occ(vindex2,vindex3,vindex1,no,nv,ccsd_doubles_32,&
-                            & ooov_tile_1,trip_tmp,async_idx)
+                            & ooov_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex3,vindex1,vindex2,no,nv,ccsd_doubles_portions_3,&
-                            & vovv_tile_21,trip_tmp,async_idx)
+                            & vovv_tile_21,trip_tmp,async_idx,cublas_handle)
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [3,1,2],1.0E0_realk,trip_ampl,async_idx)
@@ -2380,9 +5020,9 @@ contains
 
     ! acb,cba
     call trip_amplitudes_abc_occ(vindex1,vindex3,vindex2,no,nv,ccsd_doubles_31,&
-                            & ooov_tile_2,trip_tmp,async_idx)
+                            & ooov_tile_2,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex3,vindex2,vindex1,no,nv,ccsd_doubles_portions_3,&
-                            & vovv_tile_12,trip_tmp,async_idx)
+                            & vovv_tile_12,trip_tmp,async_idx,cublas_handle)
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [1,3,2],1.0E0_realk,trip_ampl,async_idx)
@@ -2393,9 +5033,9 @@ contains
 
     ! bac,acb
     call trip_amplitudes_abc_occ(vindex2,vindex1,vindex3,no,nv,ccsd_doubles_12,&
-                            & ooov_tile_3,trip_tmp,async_idx)
+                            & ooov_tile_3,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex1,vindex3,vindex2,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_23,trip_tmp,async_idx)
+                            & vovv_tile_23,trip_tmp,async_idx,cublas_handle)
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [2,1,3],1.0E0_realk,trip_ampl,async_idx)
@@ -2406,9 +5046,9 @@ contains
 
     ! cba,bac
     call trip_amplitudes_abc_occ(vindex3,vindex2,vindex1,no,nv,ccsd_doubles_23,&
-                            & ooov_tile_1,trip_tmp,async_idx)
+                            & ooov_tile_1,trip_tmp,async_idx,cublas_handle)
     call trip_amplitudes_abc_virt(vindex2,vindex1,vindex3,no,nv,ccsd_doubles_portions_2,&
-                            & vovv_tile_31,trip_tmp,async_idx)
+                            & vovv_tile_31,trip_tmp,async_idx,cublas_handle)
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [3,2,1],1.0E0_realk,trip_ampl,async_idx)
@@ -2428,7 +5068,7 @@ contains
                             & vvvo_tile_o1,vvvo_tile_o3,&
                             & ccsdpt_singles_1,ccsdpt_singles_3,&
                             & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_3,wrk_3d,trip,async_idx)
+                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_3,wrk_3d,trip,async_idx,cublas_handle)
 
     implicit none
 
@@ -2454,6 +5094,8 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
+
     ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
     ! performed, and in order to take optimal advantage of the symmetry of the amplitudes, we carry out
     ! the amplitudes in accordance to the following scheme
@@ -2470,24 +5112,24 @@ contains
 
           call ccsdpt_contract_ijk_11(oindex1,oindex1,oindex3,nv,no,vvoo_tile_13,vvoo_tile_31,&
                        & ccsdpt_singles_1,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex1,oindex1,oindex3,nv,no,vvoo_tile_12,vvoo_tile_12,&
                        & ccsdpt_singles_3,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex3,oindex1,oindex1,nv,no,&
                            & ccsdpt_doubles_31,&
-                           & wrk_3d,trip,vvvo_tile_o1,.false.,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o1,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex3,oindex1,oindex1,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & wrk_3d,trip,vvvo_tile_o3,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o3,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex3,oindex1,no,nv,ovoo_tile_31,ovoo_tile_13,&
-                           & ccsdpt_doubles_2_1,trip,.true.,async_idx)
+                           & ccsdpt_doubles_2_1,trip,.true.,async_idx,cublas_handle)
 
        else if (idx .eq. 2) then ! kii
 
@@ -2509,17 +5151,17 @@ contains
 
           call ccsdpt_contract_ijk_211(oindex1,oindex1,oindex3,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & trip,wrk_3d,vvvo_tile_o3,.false.,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o3,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex1,oindex3,nv,no,&
                            & ccsdpt_doubles_31,&
-                           & trip,wrk_3d,vvvo_tile_o1,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o1,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex3,oindex1,oindex1,no,nv,ovoo_tile_12,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_3,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex3,oindex1,oindex1,no,nv,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_1,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_1,wrk_3d,async_idx,cublas_handle)
 
        else if (idx .eq. 3) then ! iki
 
@@ -2535,23 +5177,23 @@ contains
 
           call ccsdpt_contract_ijk_11(oindex3,oindex1,oindex1,nv,no,vvoo_tile_12,vvoo_tile_12,&
                        & ccsdpt_singles_3,&
-                       & trip,.true.,async_idx)
+                       & trip,.true.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex3,oindex1,oindex1,nv,no,vvoo_tile_13,vvoo_tile_31,&
                        & ccsdpt_singles_1,&
-                       & trip,.true.,async_idx)
+                       & trip,.true.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex3,oindex1,nv,no,&
                            & ccsdpt_doubles_13,&
-                           & wrk_3d,trip,vvvo_tile_o1,.true.,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o1,.true.,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex1,oindex3,no,nv,ovoo_tile_13,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_1,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_1,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex1,oindex3,no,nv,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,trip,async_idx)
+                           & ccsdpt_doubles_2_3,trip,async_idx,cublas_handle)
 
        end if
 
@@ -2568,7 +5210,7 @@ contains
                             & ooov_tile_v1,ooov_tile_v3,&
                             & ccsdpt_singles_1,ccsdpt_singles_3,&
                             & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_3,wrk_3d,trip,async_idx)
+                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_3,wrk_3d,trip,async_idx,cublas_handle)
 
     implicit none
 
@@ -2594,6 +5236,8 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
+
     ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
     ! performed, and in order to take optimal advantage of the symmetry of the amplitudes, we carry out
     ! the amplitudes in accordance to the following scheme
@@ -2610,24 +5254,24 @@ contains
 
           call ccsdpt_contract_abc_11(vindex1,vindex1,vindex3,nv,no,oovv_tile_13,oovv_tile_31,&
                        & ccsdpt_singles_1,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex1,vindex1,vindex3,nv,no,oovv_tile_12,oovv_tile_12,&
                        & ccsdpt_singles_3,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex1,vindex3,vindex1,no,nv,vovv_tile_31,vovv_tile_13,&
-                           & ccsdpt_doubles_2_1,trip,.true.,async_idx)
+                           & ccsdpt_doubles_2_1,trip,.true.,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex3,vindex1,vindex1,nv,no,&
                            & ccsdpt_doubles_31,&
-                           & wrk_3d,trip,ooov_tile_v1,.false.,async_idx)
+                           & wrk_3d,trip,ooov_tile_v1,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex3,vindex1,vindex1,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & wrk_3d,trip,ooov_tile_v3,async_idx)
+                           & wrk_3d,trip,ooov_tile_v3,async_idx,cublas_handle)
 
        else if (idx .eq. 2) then ! caa
 
@@ -2648,18 +5292,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex3,vindex1,vindex1,no,nv,vovv_tile_12,vovv_tile_12,&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_3,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex3,vindex1,vindex1,no,nv,vovv_tile_31,&
-                           & ccsdpt_doubles_2_1,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_1,wrk_3d,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex1,vindex3,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & trip,wrk_3d,ooov_tile_v3,.false.,async_idx)
+                           & trip,wrk_3d,ooov_tile_v3,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex1,vindex3,nv,no,&
                            & ccsdpt_doubles_31,&
-                           & trip,wrk_3d,ooov_tile_v1,async_idx)
+                           & trip,wrk_3d,ooov_tile_v1,async_idx,cublas_handle)
 
        else if (idx .eq. 3) then ! aca
 
@@ -2675,23 +5319,23 @@ contains
 
           call ccsdpt_contract_abc_11(vindex3,vindex1,vindex1,nv,no,oovv_tile_12,oovv_tile_12,&
                        & ccsdpt_singles_3,&
-                       & trip,.true.,async_idx)
+                       & trip,.true.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex3,vindex1,vindex1,nv,no,oovv_tile_13,oovv_tile_31,&
                        & ccsdpt_singles_1,&
-                       & trip,.true.,async_idx)
+                       & trip,.true.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex1,vindex1,vindex3,no,nv,vovv_tile_13,vovv_tile_31,&
-                           & ccsdpt_doubles_2_1,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_1,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex1,vindex3,no,nv,vovv_tile_12,&
-                           & ccsdpt_doubles_2_3,trip,async_idx)
+                           & ccsdpt_doubles_2_3,trip,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex3,vindex1,nv,no,&
                            & ccsdpt_doubles_13,&
-                           & wrk_3d,trip,ooov_tile_v1,.true.,async_idx)
+                           & wrk_3d,trip,ooov_tile_v1,.true.,async_idx,cublas_handle)
 
        end if
 
@@ -2708,7 +5352,7 @@ contains
                             & vvvo_tile_o1,vvvo_tile_o2,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,&
                             & ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,wrk_3d,trip,async_idx)
+                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,wrk_3d,trip,async_idx,cublas_handle)
 
     implicit none
 
@@ -2734,6 +5378,7 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
     ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
@@ -2752,23 +5397,23 @@ contains
  
           call ccsdpt_contract_ijk_11(oindex1,oindex2,oindex2,nv,no,vvoo_tile_23,vvoo_tile_23,&
                        & ccsdpt_singles_1,&
-                       & trip,.true.,async_idx)
+                       & trip,.true.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex1,oindex2,oindex2,nv,no,vvoo_tile_21,vvoo_tile_12,&
                        & ccsdpt_singles_2,&
-                       & trip,.true.,async_idx)
+                       & trip,.true.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex1,oindex2,nv,no,&
                            & ccsdpt_doubles_21,&
-                           & wrk_3d,trip,vvvo_tile_o2,.true.,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o2,.true.,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex2,oindex1,no,nv,ovoo_tile_21,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_2,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_2,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex2,oindex2,oindex1,no,nv,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,trip,async_idx)
+                           & ccsdpt_doubles_2_1,trip,async_idx,cublas_handle)
 
        else if (idx .eq. 2) then
    
@@ -2790,17 +5435,17 @@ contains
 
           call ccsdpt_contract_ijk_211(oindex2,oindex2,oindex1,nv,no,&
                            & ccsdpt_doubles_23,&
-                           & trip,wrk_3d,vvvo_tile_o1,.false.,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o1,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex2,oindex2,oindex1,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & trip,wrk_3d,vvvo_tile_o2,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o2,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex2,oindex2,no,nv,ovoo_tile_23,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_1,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex2,oindex2,no,nv,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_2,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_2,wrk_3d,async_idx,cublas_handle)
 
        else if (idx .eq. 3) then
 
@@ -2818,24 +5463,24 @@ contains
    
           call ccsdpt_contract_ijk_11(oindex2,oindex2,oindex1,nv,no,vvoo_tile_21,vvoo_tile_12,&
                        & ccsdpt_singles_2,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex2,oindex2,oindex1,nv,no,vvoo_tile_23,vvoo_tile_23,&
                        & ccsdpt_singles_1,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
    
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex2,oindex2,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & wrk_3d,trip,vvvo_tile_o2,.false.,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o2,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex2,oindex2,nv,no,&
                            & ccsdpt_doubles_23,&
-                           & wrk_3d,trip,vvvo_tile_o1,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o1,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex1,oindex2,no,nv,ovoo_tile_12,ovoo_tile_21,&
-                           & ccsdpt_doubles_2_2,trip,.true.,async_idx)
+                           & ccsdpt_doubles_2_2,trip,.true.,async_idx,cublas_handle)
 
        end if
 
@@ -2852,7 +5497,7 @@ contains
                             & ooov_tile_v1,ooov_tile_v2,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,&
                             & ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,wrk_3d,trip,async_idx)
+                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,wrk_3d,trip,async_idx,cublas_handle)
 
     implicit none
 
@@ -2878,6 +5523,7 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
     ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
@@ -2896,23 +5542,23 @@ contains
  
           call ccsdpt_contract_abc_11(vindex1,vindex2,vindex2,nv,no,oovv_tile_23,oovv_tile_23,&
                        & ccsdpt_singles_1,&
-                       & trip,.true.,async_idx)
+                       & trip,.true.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex1,vindex2,vindex2,nv,no,oovv_tile_21,oovv_tile_12,&
                        & ccsdpt_singles_2,&
-                       & trip,.true.,async_idx)
+                       & trip,.true.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex2,vindex2,vindex1,no,nv,vovv_tile_21,vovv_tile_12,&
-                           & ccsdpt_doubles_2_2,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_2,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex2,vindex2,vindex1,no,nv,vovv_tile_23,&
-                           & ccsdpt_doubles_2_1,trip,async_idx)
+                           & ccsdpt_doubles_2_1,trip,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex1,vindex2,nv,no,&
                            & ccsdpt_doubles_21,&
-                           & wrk_3d,trip,ooov_tile_v2,.true.,async_idx)
+                           & wrk_3d,trip,ooov_tile_v2,.true.,async_idx,cublas_handle)
 
        else if (idx .eq. 2) then
    
@@ -2933,18 +5579,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex1,vindex2,vindex2,no,nv,vovv_tile_23,vovv_tile_23,&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_1,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex2,vindex2,no,nv,vovv_tile_12,&
-                           & ccsdpt_doubles_2_2,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_2,wrk_3d,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex2,vindex1,nv,no,&
                            & ccsdpt_doubles_23,&
-                           & trip,wrk_3d,ooov_tile_v1,.false.,async_idx)
+                           & trip,wrk_3d,ooov_tile_v1,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex2,vindex2,vindex1,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & trip,wrk_3d,ooov_tile_v2,async_idx)
+                           & trip,wrk_3d,ooov_tile_v2,async_idx,cublas_handle)
 
        else if (idx .eq. 3) then
 
@@ -2962,24 +5608,24 @@ contains
    
           call ccsdpt_contract_abc_11(vindex2,vindex2,vindex1,nv,no,oovv_tile_21,oovv_tile_12,&
                        & ccsdpt_singles_2,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex2,vindex2,vindex1,nv,no,oovv_tile_23,oovv_tile_23,&
                        & ccsdpt_singles_1,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
    
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex2,vindex1,vindex2,no,nv,vovv_tile_12,vovv_tile_21,&
-                           & ccsdpt_doubles_2_2,trip,.true.,async_idx)
+                           & ccsdpt_doubles_2_2,trip,.true.,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex2,vindex2,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & wrk_3d,trip,ooov_tile_v2,.false.,async_idx)
+                           & wrk_3d,trip,ooov_tile_v2,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex2,vindex2,nv,no,&
                            & ccsdpt_doubles_23,&
-                           & wrk_3d,trip,ooov_tile_v1,async_idx)
+                           & wrk_3d,trip,ooov_tile_v1,async_idx,cublas_handle)
 
        end if
 
@@ -3001,7 +5647,7 @@ contains
                             & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21,&
                             & ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32,&
                             & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3,&
-                            & wrk_3d,trip,async_idx)
+                            & wrk_3d,trip,async_idx,cublas_handle)
 
     implicit none
 
@@ -3031,6 +5677,7 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
     ! we implicitly do a [2,3,1] reordering. 
@@ -3051,26 +5698,26 @@ contains
 
           call ccsdpt_contract_ijk_11(oindex1,oindex2,oindex3,nv,no,vvoo_tile_23,vvoo_tile_32,&
                        & ccsdpt_singles_1,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex1,oindex2,oindex3,nv,no,vvoo_tile_21,vvoo_tile_12,&
                        & ccsdpt_singles_3,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex3,oindex1,oindex2,nv,no,&
                            & ccsdpt_doubles_31,&
-                           & wrk_3d,trip,vvvo_tile_o2,.false.,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o2,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex3,oindex1,oindex2,nv,no,&
                            & ccsdpt_doubles_21,&
-                           & wrk_3d,trip,vvvo_tile_o3,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o3,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex3,oindex1,no,nv,ovoo_tile_31,ovoo_tile_13,&
-                           & ccsdpt_doubles_2_2,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_2,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex2,oindex3,oindex1,no,nv,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,trip,async_idx)
+                           & ccsdpt_doubles_2_1,trip,async_idx,cublas_handle)
 
        else if (idx .eq. 2) then ! kij
 
@@ -3088,26 +5735,26 @@ contains
 
           call ccsdpt_contract_ijk_11(oindex2,oindex1,oindex3,nv,no,vvoo_tile_13,vvoo_tile_31,&
                        & ccsdpt_singles_2,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex2,oindex1,oindex3,nv,no,vvoo_tile_12,vvoo_tile_21,&
                        & ccsdpt_singles_3,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex3,oindex2,oindex1,nv,no,&
                            & ccsdpt_doubles_32,&
-                           & trip,wrk_3d,vvvo_tile_o1,.false.,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o1,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex3,oindex2,oindex1,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & trip,wrk_3d,vvvo_tile_o3,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o3,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex3,oindex2,no,nv,ovoo_tile_32,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_1,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex3,oindex2,no,nv,ovoo_tile_13,&
-                           & ccsdpt_doubles_2_2,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_2,wrk_3d,async_idx,cublas_handle)
 
        else if (idx .eq. 3) then ! jki
 
@@ -3125,26 +5772,26 @@ contains
 
           call ccsdpt_contract_ijk_11(oindex2,oindex3,oindex1,nv,no,vvoo_tile_31,vvoo_tile_13,&
                        & ccsdpt_singles_2,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex2,oindex3,oindex1,nv,no,vvoo_tile_32,vvoo_tile_23,&
                        & ccsdpt_singles_1,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex2,oindex3,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & wrk_3d,trip,vvvo_tile_o3,.false.,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o3,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex2,oindex3,nv,no,&
                            & ccsdpt_doubles_32,&
-                           & wrk_3d,trip,vvvo_tile_o1,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o1,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex3,oindex1,oindex2,no,nv,ovoo_tile_12,ovoo_tile_21,&
-                           & ccsdpt_doubles_2_3,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_3,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex3,oindex1,oindex2,no,nv,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_2,trip,async_idx)
+                           & ccsdpt_doubles_2_2,trip,async_idx,cublas_handle)
 
        else if (idx .eq. 4) then ! kji
 
@@ -3162,26 +5809,26 @@ contains
 
           call ccsdpt_contract_ijk_11(oindex1,oindex3,oindex2,nv,no,vvoo_tile_32,vvoo_tile_23,&
                        & ccsdpt_singles_1,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex1,oindex3,oindex2,nv,no,vvoo_tile_31,vvoo_tile_13,&
                        & ccsdpt_singles_2,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex1,oindex3,nv,no,&
                            & ccsdpt_doubles_21,&
-                           & trip,wrk_3d,vvvo_tile_o3,.false.,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o3,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex2,oindex1,oindex3,nv,no,&
                            & ccsdpt_doubles_31,&
-                           & trip,wrk_3d,vvvo_tile_o2,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o2,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex3,oindex2,oindex1,no,nv,ovoo_tile_21,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_3,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex3,oindex2,oindex1,no,nv,ovoo_tile_32,&
-                           & ccsdpt_doubles_2_1,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_1,wrk_3d,async_idx,cublas_handle)
 
        else if (idx .eq. 5) then ! ikj
 
@@ -3199,26 +5846,26 @@ contains
 
           call ccsdpt_contract_ijk_11(oindex3,oindex1,oindex2,nv,no,vvoo_tile_12,vvoo_tile_21,&
                        & ccsdpt_singles_3,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex3,oindex1,oindex2,nv,no,vvoo_tile_13,vvoo_tile_31,&
                        & ccsdpt_singles_2,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex3,oindex1,nv,no,&
                            & ccsdpt_doubles_23,&
-                           & wrk_3d,trip,vvvo_tile_o1,.false.,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o1,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex2,oindex3,oindex1,nv,no,&
                            & ccsdpt_doubles_13,&
-                           & wrk_3d,trip,vvvo_tile_o2,async_idx)
+                           & wrk_3d,trip,vvvo_tile_o2,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex2,oindex3,no,nv,ovoo_tile_23,ovoo_tile_32,&
-                           & ccsdpt_doubles_2_1,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_1,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex2,oindex3,no,nv,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,trip,async_idx)
+                           & ccsdpt_doubles_2_3,trip,async_idx,cublas_handle)
 
        else if (idx .eq. 6) then ! jik
 
@@ -3236,26 +5883,26 @@ contains
 
           call ccsdpt_contract_ijk_11(oindex3,oindex2,oindex1,nv,no,vvoo_tile_21,vvoo_tile_12,&
                        & ccsdpt_singles_3,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_12(oindex3,oindex2,oindex1,nv,no,vvoo_tile_23,vvoo_tile_32,&
                        & ccsdpt_singles_1,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex3,oindex2,nv,no,&
                            & ccsdpt_doubles_13,&
-                           & trip,wrk_3d,vvvo_tile_o2,.false.,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o2,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex3,oindex2,nv,no,&
                            & ccsdpt_doubles_23,&
-                           & trip,wrk_3d,vvvo_tile_o1,async_idx)
+                           & trip,wrk_3d,vvvo_tile_o1,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex1,oindex3,no,nv,ovoo_tile_13,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_2,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_2,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex2,oindex1,oindex3,no,nv,ovoo_tile_21,&
-                           & ccsdpt_doubles_2_3,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_3,wrk_3d,async_idx,cublas_handle)
 
        end if
 
@@ -3277,7 +5924,7 @@ contains
                             & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21,&
                             & ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32,&
                             & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3,&
-                            & wrk_3d,trip,async_idx)
+                            & wrk_3d,trip,async_idx,cublas_handle)
 
     implicit none
 
@@ -3307,6 +5954,7 @@ contains
 #else
     integer :: async_idx
 #endif
+    type(c_ptr) :: cublas_handle
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
     ! we implicitly do a [2,3,1] reordering. 
@@ -3327,26 +5975,26 @@ contains
 
           call ccsdpt_contract_abc_11(vindex1,vindex2,vindex3,nv,no,oovv_tile_23,oovv_tile_32,&
                        & ccsdpt_singles_1,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex1,vindex2,vindex3,nv,no,oovv_tile_21,oovv_tile_12,&
                        & ccsdpt_singles_3,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex2,vindex3,vindex1,no,nv,vovv_tile_31,vovv_tile_13,&
-                           & ccsdpt_doubles_2_2,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_2,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex2,vindex3,vindex1,no,nv,vovv_tile_23,&
-                           & ccsdpt_doubles_2_1,trip,async_idx)
+                           & ccsdpt_doubles_2_1,trip,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex3,vindex1,vindex2,nv,no,&
                            & ccsdpt_doubles_31,&
-                           & wrk_3d,trip,ooov_tile_v2,.false.,async_idx)
+                           & wrk_3d,trip,ooov_tile_v2,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex3,vindex1,vindex2,nv,no,&
                            & ccsdpt_doubles_21,&
-                           & wrk_3d,trip,ooov_tile_v3,async_idx)
+                           & wrk_3d,trip,ooov_tile_v3,async_idx,cublas_handle)
 
        else if (idx .eq. 2) then ! cab
 
@@ -3364,26 +6012,26 @@ contains
 
           call ccsdpt_contract_abc_11(vindex2,vindex1,vindex3,nv,no,oovv_tile_13,oovv_tile_31,&
                        & ccsdpt_singles_2,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex2,vindex1,vindex3,nv,no,oovv_tile_12,oovv_tile_21,&
                        & ccsdpt_singles_3,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex1,vindex3,vindex2,no,nv,vovv_tile_32,vovv_tile_23,&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_1,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex3,vindex2,no,nv,vovv_tile_13,&
-                           & ccsdpt_doubles_2_2,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_2,wrk_3d,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex3,vindex2,vindex1,nv,no,&
                            & ccsdpt_doubles_32,&
-                           & trip,wrk_3d,ooov_tile_v1,.false.,async_idx)
+                           & trip,wrk_3d,ooov_tile_v1,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex3,vindex2,vindex1,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & trip,wrk_3d,ooov_tile_v3,async_idx)
+                           & trip,wrk_3d,ooov_tile_v3,async_idx,cublas_handle)
 
        else if (idx .eq. 3) then ! bca
 
@@ -3401,26 +6049,26 @@ contains
 
           call ccsdpt_contract_abc_11(vindex2,vindex3,vindex1,nv,no,oovv_tile_31,oovv_tile_13,&
                        & ccsdpt_singles_2,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex2,vindex3,vindex1,nv,no,oovv_tile_32,oovv_tile_23,&
                        & ccsdpt_singles_1,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex3,vindex1,vindex2,no,nv,vovv_tile_12,vovv_tile_21,&
-                           & ccsdpt_doubles_2_3,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_3,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex3,vindex1,vindex2,no,nv,vovv_tile_31,&
-                           & ccsdpt_doubles_2_2,trip,async_idx)
+                           & ccsdpt_doubles_2_2,trip,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex2,vindex3,nv,no,&
                            & ccsdpt_doubles_12,&
-                           & wrk_3d,trip,ooov_tile_v3,.false.,async_idx)
+                           & wrk_3d,trip,ooov_tile_v3,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex2,vindex3,nv,no,&
                            & ccsdpt_doubles_32,&
-                           & wrk_3d,trip,ooov_tile_v1,async_idx)
+                           & wrk_3d,trip,ooov_tile_v1,async_idx,cublas_handle)
 
        else if (idx .eq. 4) then ! cba
 
@@ -3438,26 +6086,26 @@ contains
 
           call ccsdpt_contract_abc_11(vindex1,vindex3,vindex2,nv,no,oovv_tile_32,oovv_tile_23,&
                        & ccsdpt_singles_1,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex1,vindex3,vindex2,nv,no,oovv_tile_31,oovv_tile_13,&
                        & ccsdpt_singles_2,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex3,vindex2,vindex1,no,nv,vovv_tile_21,vovv_tile_12,&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_3,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex3,vindex2,vindex1,no,nv,vovv_tile_32,&
-                           & ccsdpt_doubles_2_1,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_1,wrk_3d,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex1,vindex3,nv,no,&
                            & ccsdpt_doubles_21,&
-                           & trip,wrk_3d,ooov_tile_v3,.false.,async_idx)
+                           & trip,wrk_3d,ooov_tile_v3,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex2,vindex1,vindex3,nv,no,&
                            & ccsdpt_doubles_31,&
-                           & trip,wrk_3d,ooov_tile_v2,async_idx)
+                           & trip,wrk_3d,ooov_tile_v2,async_idx,cublas_handle)
 
        else if (idx .eq. 5) then ! acb
 
@@ -3475,26 +6123,26 @@ contains
 
           call ccsdpt_contract_abc_11(vindex3,vindex1,vindex2,nv,no,oovv_tile_12,oovv_tile_21,&
                        & ccsdpt_singles_3,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex3,vindex1,vindex2,nv,no,oovv_tile_13,oovv_tile_31,&
                        & ccsdpt_singles_2,&
-                       & trip,.false.,async_idx)
+                       & trip,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex1,vindex2,vindex3,no,nv,vovv_tile_23,vovv_tile_32,&
-                           & ccsdpt_doubles_2_1,trip,.false.,async_idx)
+                           & ccsdpt_doubles_2_1,trip,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,vovv_tile_12,&
-                           & ccsdpt_doubles_2_3,trip,async_idx)
+                           & ccsdpt_doubles_2_3,trip,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex3,vindex1,nv,no,&
                            & ccsdpt_doubles_23,&
-                           & wrk_3d,trip,ooov_tile_v1,.false.,async_idx)
+                           & wrk_3d,trip,ooov_tile_v1,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex2,vindex3,vindex1,nv,no,&
                            & ccsdpt_doubles_13,&
-                           & wrk_3d,trip,ooov_tile_v2,async_idx)
+                           & wrk_3d,trip,ooov_tile_v2,async_idx,cublas_handle)
 
        else if (idx .eq. 6) then ! bac
 
@@ -3512,26 +6160,26 @@ contains
 
           call ccsdpt_contract_abc_11(vindex3,vindex2,vindex1,nv,no,oovv_tile_21,oovv_tile_12,&
                        & ccsdpt_singles_3,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_12(vindex3,vindex2,vindex1,nv,no,oovv_tile_23,oovv_tile_32,&
                        & ccsdpt_singles_1,&
-                       & wrk_3d,.false.,async_idx)
+                       & wrk_3d,.false.,async_idx,cublas_handle)
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_abc_211(vindex2,vindex1,vindex3,no,nv,vovv_tile_13,vovv_tile_31,&
-                           & ccsdpt_doubles_2_2,wrk_3d,.false.,async_idx)
+                           & ccsdpt_doubles_2_2,wrk_3d,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_212(vindex2,vindex1,vindex3,no,nv,vovv_tile_21,&
-                           & ccsdpt_doubles_2_3,wrk_3d,async_idx)
+                           & ccsdpt_doubles_2_3,wrk_3d,async_idx,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex3,vindex2,nv,no,&
                            & ccsdpt_doubles_13,&
-                           & trip,wrk_3d,ooov_tile_v2,.false.,async_idx)
+                           & trip,wrk_3d,ooov_tile_v2,.false.,async_idx,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex3,vindex2,nv,no,&
                            & ccsdpt_doubles_23,&
-                           & trip,wrk_3d,ooov_tile_v1,async_idx)
+                           & trip,wrk_3d,ooov_tile_v1,async_idx,cublas_handle)
 
        end if
 
@@ -3549,7 +6197,7 @@ contains
 
     implicit none
     !> ccsd doubles
-    type(array), intent(inout) :: ccsd_t2_arr
+    type(tensor), intent(inout) :: ccsd_t2_arr
     !> unitary transformation matrices
     type(array2), intent(inout) :: U_occ, U_virt
     !> integers
@@ -3609,9 +6257,9 @@ contains
 
     implicit none
     !> ccsdpt_singles
-    type(array), intent(inout) :: ccsdpt_t1_arr
+    type(tensor), intent(inout) :: ccsdpt_t1_arr
     !> ccsd_doubles and ccsdpt_doubles
-    type(array), intent(inout) :: ccsd_t2_arr, ccsdpt_t2_arr
+    type(tensor), intent(inout) :: ccsd_t2_arr, ccsdpt_t2_arr
     !> unitary transformation matrices
     type(array2), intent(inout) :: U_occ, U_virt
     !> integers
@@ -3741,35 +6389,45 @@ contains
   !> \param: doub_ampl are ccsd ampltidues, t^{ab}_{ij}
   !> \param: int_virt is a v^3 part of cbai of driver routine
   !> \param: trip holds the triples tuple [a,b,c], that is, of the size (virt)³ kept in memory
-  subroutine trip_amplitudes_ijk_virt(oindex1,oindex2,oindex3,no,nv,doub_ampl_v2,int_virt_tile,trip,async_idx)
+  subroutine trip_amplitudes_ijk_virt(oindex1,oindex2,oindex3,no,nv,doub_ampl_v2,int_virt_tile,trip,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
-    real(realk), dimension(nv,nv), intent(in) :: doub_ampl_v2
-    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
+    real(realk), dimension(nv,nv,nv), target, intent(in) :: int_virt_tile
+    real(realk), dimension(nv,nv), target, intent(in) :: doub_ampl_v2
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-    !> temporary quantities
-    integer :: nv2
-
-    nv2 = nv**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
+    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
+!    call dgemm_acc('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                       & 0.0E0_realk,trip,nv)
 !$acc end host_data
-#else
-    call lsquit('in trip_amplitudes_ijk_virt: no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
+                          & 1.0E0_realk,c_loc(doub_ampl_v2),int(nv,kind=4),c_loc(int_virt_tile),int(nv,kind=4),&
+                          & 0.0E0_realk,c_loc(trip),int(nv,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (trip_amplitudes_ijk_virt) = ",stat
+!       stop
+!    end if
+
 #endif
 #else
-    call dgemm('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
+    call dgemm('t','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                    & 0.0E0_realk,trip,nv)
 #endif
 
@@ -3780,35 +6438,44 @@ contains
   !          saved as an array3 structure (amplitudes)
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
-  subroutine trip_amplitudes_abc_occ(vindex1,vindex2,vindex3,no,nv,doub_ampl_o2,int_occ_tile,trip,async_idx)
+  subroutine trip_amplitudes_abc_occ(vindex1,vindex2,vindex3,no,nv,doub_ampl_o2,int_occ_tile,trip,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(no,no,no), intent(in) :: int_occ_tile
-    real(realk), dimension(no,no), intent(in) :: doub_ampl_o2
-    real(realk), dimension(no,no,no), intent(inout) :: trip
+    real(realk), dimension(no,no,no), target, intent(in) :: int_occ_tile
+    real(realk), dimension(no,no), target, intent(in) :: doub_ampl_o2
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-    !> temporary quantities
-    integer :: no2
-
-    no2 = no**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(doub_ampl_o2,int_occ_tile,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',no,no2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
+    call dgemm_acc_openacc_async(async_idx,'t','n',no,no**2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
                    & 0.0E0_realk,trip,no)
 !$acc end host_data
-#else
-    call lsquit('in trip_amplitudes_abc_occ: no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(doub_ampl_o2,int_occ_tile,trip)
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no**2,kind=4),int(no,kind=4),&
+                          & -1.0E0_realk,c_loc(doub_ampl_o2),int(no,kind=4),c_loc(int_occ_tile),int(no,kind=4),&
+                          & 0.0E0_realk,c_loc(trip),int(no,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (trip_amplitudes_abc_occ) = ",stat
+!       stop
+!    end if
+
 #endif
 #else
-    call dgemm('t','n',no,no2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
+    call dgemm('t','n',no,no**2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
                    & 0.0E0_realk,trip,no)
 #endif
 
@@ -3824,35 +6491,45 @@ contains
   !> \param: doub_ampl are ccsd ampltidues, t^{ab}_{ij}
   !> \param: int_occ is a ov part of jaik of driver routine
   !> \param: trip holds the triples tuple [c,a,b], that is, of the size (virt)³ kept in memory
-  subroutine trip_amplitudes_ijk_occ(oindex1,oindex2,oindex3,no,nv,doub_ampl_ov2,int_occ_portion,trip,async_idx)
+  subroutine trip_amplitudes_ijk_occ(oindex1,oindex2,oindex3,no,nv,doub_ampl_ov2,int_occ_portion,trip,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(no,nv), intent(in) :: int_occ_portion
-    real(realk), dimension(no,nv,nv), intent(in) :: doub_ampl_ov2
-    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
+    real(realk), dimension(no,nv), target, intent(in) :: int_occ_portion
+    real(realk), dimension(no,nv,nv), target, intent(in) :: doub_ampl_ov2
+    real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-    !> temporary quantities
-    integer :: nv2
-
-    nv2 = nv**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+!    call dgemm_acc('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
                       & 1.0E0_realk,trip,nv)
 !$acc end host_data
-#else
-    call lsquit('in trip_amplitudes_ijk_occ: no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(no,kind=4),&
+                          & -1.0E0_realk,c_loc(int_occ_portion),int(no,kind=4),c_loc(doub_ampl_ov2),int(no,kind=4),&
+                          & 1.0E0_realk,c_loc(trip),int(nv,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (trip_amplitudes_ijk_occ) = ",stat
+!       stop
+!    end if
+
 #endif
 #else
-    call dgemm('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+    call dgemm('t','n',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
                    & 1.0E0_realk,trip,nv)
 #endif
 
@@ -3863,34 +6540,44 @@ contains
   !          saved as an array3 structure (amplitudes)
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
-  subroutine trip_amplitudes_abc_virt(vindex1,vindex2,vindex3,no,nv,doub_ampl_vo2,int_virt_portion,trip,async_idx)
+  subroutine trip_amplitudes_abc_virt(vindex1,vindex2,vindex3,no,nv,doub_ampl_vo2,int_virt_portion,trip,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(nv,no), intent(in) :: int_virt_portion
-    real(realk), dimension(nv,no,no), intent(in) :: doub_ampl_vo2
-    real(realk), dimension(no,no,no), intent(inout) :: trip
+    real(realk), dimension(nv,no), target, intent(in) :: int_virt_portion
+    real(realk), dimension(nv,no,no), target, intent(in) :: doub_ampl_vo2
+    real(realk), dimension(no,no,no), target, intent(inout) :: trip
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-    integer :: no2
-
-    no2 = no**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_portion,doub_ampl_vo2,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',no,no2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,nv,&
+    call dgemm_acc_openacc_async(async_idx,'t','n',no,no**2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,nv,&
                    & 1.0E0_realk,trip,no)
 !$acc end host_data
-#else
-    call lsquit('in trip_amplitudes_abc_virt: no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(int_virt_portion,doub_ampl_vo2,trip)
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no**2,kind=4),int(nv,kind=4),&
+                          & 1.0E0_realk,c_loc(int_virt_portion),int(nv,kind=4),c_loc(doub_ampl_vo2),int(nv,kind=4),&
+                          & 1.0E0_realk,c_loc(trip),int(no,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (trip_amplitudes_abc_virt) = ",stat
+!       stop
+!    end if
+
 #endif
 #else
-    call dgemm('t','n',no,no2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,nv,&
+    call dgemm('t','n',no,no**2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,nv,&
                    & 1.0E0_realk,trip,no)
 #endif
 
@@ -3903,7 +6590,7 @@ contains
   !> \param: no and nv are nocc and nvirt, respectively
   !> \param: eigenocc and eigenvirt are vectors containing occupied and virtual orbital energies, respectively
   !> \param: amplitudes are the final triples amplitude tuple [a,b,c], that is, of the size (virt)³ kept in memory
-  subroutine trip_denom_ijk(oindex1,oindex2,oindex3,no,nv,eigenocc,eigenvirt,trip,async_idx)
+  subroutine trip_denom_ijk_cpu(oindex1,oindex2,oindex3,no,nv,eigenocc,eigenvirt,trip)
 
     implicit none
     !> input
@@ -3911,54 +6598,69 @@ contains
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     real(realk), dimension(nv,nv,nv), intent(inout) :: trip
     !> temporary quantities
-    integer :: trip_type, a, b, c
-    real(realk) :: e_orb, e_orb_occ
-#ifdef VAR_OPENACC
-    integer(kind=acc_handle_kind) :: async_idx
-#else
-    integer :: async_idx
-#endif
+    integer :: a, b, c
+    real(realk) :: e_orb_occ
 
     ! at first, calculate the sum of the three participating occupied orbital energies, as this
     ! is a constant for the three incomming occupied indices
 
     e_orb_occ = eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3)
 
-#ifdef VAR_OPENACC
-!$acc parallel present(trip,eigenvirt,eigenocc) async(async_idx)
-!$acc loop gang
-#else
 !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c),SHARED(nv,trip,eigenvirt,e_orb_occ)
-#endif
  arun_0: do a=1,nv
-#ifdef VAR_OPENACC
-!$acc loop worker
-#endif
     brun_0: do b=1,nv
-#ifdef VAR_OPENACC
-!$acc loop vector
-#endif
        crun_0: do c=1,nv
 
                   trip(c,b,a) = trip(c,b,a) / (e_orb_occ - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
 
                end do crun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
             end do brun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
          end do arun_0
+!$OMP END PARALLEL DO
+
+  end subroutine trip_denom_ijk_cpu
+
+
 #ifdef VAR_OPENACC
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2012
+  !> \param: oindex1, oindex2, and oindex3 are the three occupied indices of the outer loop in the ccsd(t) driver
+  !> \param: no and nv are nocc and nvirt, respectively
+  !> \param: eigenocc and eigenvirt are vectors containing occupied and virtual orbital energies, respectively
+  !> \param: amplitudes are the final triples amplitude tuple [a,b,c], that is, of the size (virt)³ kept in memory
+  subroutine trip_denom_ijk_acc(oindex1,oindex2,oindex3,no,nv,eigenocc,eigenvirt,trip,async_idx)
+
+    implicit none
+    !> input
+    integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
+    !> temporary quantities
+    integer :: a, b, c
+    integer(kind=acc_handle_kind) :: async_idx
+
+!$acc parallel present(trip,eigenvirt,eigenocc) firstprivate(nv,oindex1,oindex2,oindex3) &
+!$acc& private(a,b,c) async(async_idx)
+!$acc loop gang
+ arun_0: do a=1,nv
+!$acc loop worker
+    brun_0: do b=1,nv
+!$acc loop vector
+       crun_0: do c=1,nv
+
+                  trip(c,b,a) = trip(c,b,a) / (eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3) &
+                                             & - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
+
+               end do crun_0
+!$acc end loop
+            end do brun_0
+!$acc end loop
+         end do arun_0
 !$acc end loop
 !$acc end parallel
-#else
-!$OMP END PARALLEL DO
-#endif
 
-  end subroutine trip_denom_ijk
+  end subroutine trip_denom_ijk_acc
+#endif
 
 
   !> \author: Janus Juul Eriksen
@@ -3967,7 +6669,7 @@ contains
   !> \param: no and nv are nocc and nvirt, respectively
   !> \param: eigenocc and eigenvirt are vectors containing occupied and virtual orbital energies, respectively
   !> \param: amplitudes are the final triples amplitude tuple [i,j,k], that is, of the size (occ)³ kept in memory
-  subroutine trip_denom_abc(vindex1,vindex2,vindex3,no,nv,eigenocc,eigenvirt,trip,async_idx)
+  subroutine trip_denom_abc_cpu(vindex1,vindex2,vindex3,no,nv,eigenocc,eigenvirt,trip)
 
     implicit none
     !> input
@@ -3975,54 +6677,69 @@ contains
     real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
     real(realk), dimension(no,no,no), intent(inout) :: trip
     !> temporary quantities
-    integer :: trip_type, i, j, k
-    real(realk) :: e_orb, e_orb_virt
-#ifdef VAR_OPENACC
-    integer(kind=acc_handle_kind) :: async_idx
-#else
-    integer :: async_idx
-#endif
+    integer :: i, j, k
+    real(realk) :: e_orb_virt
 
     ! at first, calculate the sum of the three participating virtual orbital energies, as this
     ! is a constant for the three incomming occupied indices
 
     e_orb_virt = eigenvirt(vindex1) + eigenvirt(vindex2) + eigenvirt(vindex3)
 
-#ifdef VAR_OPENACC
-!$acc parallel present(trip,eigenvirt,eigenocc) async(async_idx)
-!$acc loop gang
-#else
 !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,j,k),SHARED(no,trip,eigenocc,e_orb_virt)
-#endif
  irun_0: do i=1,no
-#ifdef VAR_OPENACC
-!$acc loop worker
-#endif
     jrun_0: do j=1,no
-#ifdef VAR_OPENACC
-!$acc loop vector
-#endif
        krun_0: do k=1,no
 
                   trip(k,j,i) = trip(k,j,i) / (eigenocc(i) + eigenocc(j) + eigenocc(k) - e_orb_virt)
 
                end do krun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
             end do jrun_0
-#ifdef VAR_OPENACC
-!$acc end loop
-#endif
          end do irun_0
+!$OMP END PARALLEL DO
+
+  end subroutine trip_denom_abc_cpu
+
+
 #ifdef VAR_OPENACC
+  !> \author: Janus Juul Eriksen
+  !> \date: april 2014
+  !> \param: vindex1, vindex2, and vindex3 are the three virtual indices of the outer loop in the ccsd(t) driver
+  !> \param: no and nv are nocc and nvirt, respectively
+  !> \param: eigenocc and eigenvirt are vectors containing occupied and virtual orbital energies, respectively
+  !> \param: amplitudes are the final triples amplitude tuple [i,j,k], that is, of the size (occ)³ kept in memory
+  subroutine trip_denom_abc_acc(vindex1,vindex2,vindex3,no,nv,eigenocc,eigenvirt,trip,async_idx)
+
+    implicit none
+    !> input
+    integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
+    real(realk), intent(inout) :: eigenocc(no), eigenvirt(nv)
+    real(realk), dimension(no,no,no), intent(inout) :: trip
+    !> temporary quantities
+    integer :: i, j, k
+    integer(kind=acc_handle_kind) :: async_idx
+
+!$acc parallel present(trip,eigenocc,eigenvirt) firstprivate(no,vindex1,vindex2,vindex3)&
+!$acc& private(i,j,k) async(async_idx)
+!$acc loop gang
+ irun_0: do i=1,no
+!$acc loop worker
+    jrun_0: do j=1,no
+!$acc loop vector
+       krun_0: do k=1,no
+
+                  trip(k,j,i) = trip(k,j,i) / (eigenocc(i) + eigenocc(j) + eigenocc(k) &
+                                            & - eigenvirt(vindex1) - eigenvirt(vindex2) - eigenvirt(vindex3))
+
+               end do krun_0
+!$acc end loop
+            end do jrun_0
+!$acc end loop
+         end do irun_0
 !$acc end loop
 !$acc end parallel
-#else
-!$OMP END PARALLEL DO
-#endif
 
-  end subroutine trip_denom_abc
+  end subroutine trip_denom_abc_acc
+#endif
 
 
   !> brief: do the first of the two contraction over 'cdkl' (here: 'c' and 'd', 'k' and 'l' are summations in driver routine)
@@ -4032,24 +6749,24 @@ contains
   !> param: oindex1-oindex3 are outside loop indices of driver routine. int_normal is abij of driver.
   !> nv is nvirt and T_star is ccsdpt_singles of driver. trip_ampl is the triples amplitude array.
   subroutine ccsdpt_contract_ijk_11(oindex1,oindex2,oindex3,nv,no,int_normal_23,int_normal_32,T_star_o1,&
-                              & trip_ampl,special,async_idx)
+                              & trip_ampl,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv, no
-    real(realk), dimension(nv) :: T_star_o1 ! T_star(:,oinedx1)
-    real(realk), dimension(nv,nv) :: int_normal_23, int_normal_32
-    real(realk), dimension(nv,nv,nv) :: trip_ampl
+    real(realk), dimension(nv), target :: T_star_o1 ! T_star(:,oinedx1)
+    real(realk), dimension(nv,nv), target :: int_normal_23, int_normal_32
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, nv2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    nv2 = nv**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -4066,38 +6783,66 @@ contains
 
        ! now contract coulumb term over both indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_23,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
-                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv2,1.0E0_realk,T_star_o1,nv)
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
+!       call dgemm_acc('n','n',nv,1,nv2,&
+                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_11 (case 0): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,int_normal_23,T_star_o1)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_23),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_11 - case 0) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',nv,1,nv2,&
-                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv2,1.0E0_realk,T_star_o1,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
 #endif
 
     case(1)
 
        ! now contract coulumb term over both indices, then contract exchange term over both indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
-                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv2,1.0E0_realk,T_star_o1,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
-                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv2,1.0E0_realk,T_star_o1,nv)
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
+!       call dgemm_acc('n','n',nv,1,nv2,&
+                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
+!       call dgemm_acc('n','n',nv,1,nv2,&
+                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv**2,1.0E0_realk,T_star_o1,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_11 (case1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_o1)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & 2.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_23),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1),int(nv,kind=4))
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_32),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_11 - case 1) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',nv,1,nv2,&
-                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv2,1.0E0_realk,T_star_o1,nv)
-       call dgemm('n','n',nv,1,nv2,&
-                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv2,1.0E0_realk,T_star_o1,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv**2,1.0E0_realk,T_star_o1,nv)
 #endif
 
 
@@ -4111,24 +6856,24 @@ contains
   !> author: Janus Juul Eriksen
   !> date: april 2014
   subroutine ccsdpt_contract_abc_11(vindex1,vindex2,vindex3,nv,no,int_normal_23,int_normal_32,T_star_v1,&
-                              & trip_ampl,special,async_idx)
+                              & trip_ampl,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, nv, no
-    real(realk), dimension(no) :: T_star_v1 ! T_star(:,oinedx1)
-    real(realk), dimension(no,no) :: int_normal_23, int_normal_32
-    real(realk), dimension(no,no,no) :: trip_ampl
+    real(realk), dimension(no), target :: T_star_v1 ! T_star(:,oinedx1)
+    real(realk), dimension(no,no), target :: int_normal_23, int_normal_32
+    real(realk), dimension(no,no,no), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, no2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    no2 = no**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -4143,38 +6888,63 @@ contains
 
        ! here, the coulumb and exchange parts will be equal and we thus only need to contract with the coulumb part. 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_23,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_23,no2,1.0E0_realk,T_star_v1,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & 1.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_11 (case 0): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,int_normal_23,T_star_v1)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_23),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_11 (case 0)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',no,1,no2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_23,no2,1.0E0_realk,T_star_v1,no)
+       call dgemm('n','n',no,1,no**2,&
+                & 1.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
 #endif
 
     case(1)
 
        ! now contract coulumb term over both indices, then contract exchange term over both indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & 2.0E0_realk,trip_ampl,no,int_normal_23,no2,1.0E0_realk,T_star_v1,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_32,no2,1.0E0_realk,T_star_v1,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & 2.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & -1.0E0_realk,trip_ampl,no,int_normal_32,no**2,1.0E0_realk,T_star_v1,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_11 (case1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_v1)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & 2.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_23),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1),int(no,kind=4))
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_32),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_11 (case 1)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',no,1,no2,&
-                & 2.0E0_realk,trip_ampl,no,int_normal_23,no2,1.0E0_realk,T_star_v1,no)
-       call dgemm('n','n',no,1,no2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_32,no2,1.0E0_realk,T_star_v1,no)
+       call dgemm('n','n',no,1,no**2,&
+                & 2.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
+       call dgemm('n','n',no,1,no**2,&
+                & -1.0E0_realk,trip_ampl,no,int_normal_32,no**2,1.0E0_realk,T_star_v1,no)
 #endif
 
     end select TypeofContraction_abc_11
@@ -4189,24 +6959,24 @@ contains
   !> param: oindex1-oindex3 are outside loop indices of driver routine. int_normal is abij of driver.
   !> nv is nvirt and T_star is ccsdpt_singles of driver. trip_ampl is the triples amplitude array.
   subroutine ccsdpt_contract_ijk_12(oindex1,oindex2,oindex3,nv,no,int_normal_21,int_normal_12,T_star_o3,&
-                              & trip_ampl,special,async_idx)
+                              & trip_ampl,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv, no
-    real(realk), dimension(nv) :: T_star_o3 ! T_star(:,oinedx3)
-    real(realk), dimension(nv,nv) :: int_normal_21, int_normal_12
-    real(realk), dimension(nv,nv,nv) :: trip_ampl
+    real(realk), dimension(nv), target :: T_star_o3 ! T_star(:,oinedx3)
+    real(realk), dimension(nv,nv), target :: int_normal_21, int_normal_12
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, nv2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    nv2 = nv**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -4224,38 +6994,66 @@ contains
 
        ! now contract coulumb term over both indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_21,T_star_o3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
-             & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv2,1.0E0_realk,T_star_o3,nv)
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
+!       call dgemm_acc('n','n',nv,1,nv2,&
+             & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_12 (case 0): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,int_normal_21,T_star_o3)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_21),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o3),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_12 - case 0) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',nv,1,nv2,&
-                & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv2,1.0E0_realk,T_star_o3,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
 #endif
 
     case(1)
 
        ! now contract coulumb term over both indices, then contract exchange term over both indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_o3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
-             & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv2,1.0E0_realk,T_star_o3,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv2,&
-             & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv2,1.0E0_realk,T_star_o3,nv)
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
+!       call dgemm_acc('n','n',nv,1,nv2,&
+             & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
+!       call dgemm_acc('n','n',nv,1,nv2,&
+             & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv**2,1.0E0_realk,T_star_o3,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_12 (case1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_o3)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & -2.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_21),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o3),int(nv,kind=4))
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_12),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o3),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_12 - case 1) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',nv,1,nv2,&
-                & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv2,1.0E0_realk,T_star_o3,nv)
-       call dgemm('n','n',nv,1,nv2,&
-                & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv2,1.0E0_realk,T_star_o3,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
+       call dgemm('n','n',nv,1,nv**2,&
+                & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv**2,1.0E0_realk,T_star_o3,nv)
 #endif
 
     end select TypeofContraction_ijk_12
@@ -4268,24 +7066,24 @@ contains
   !> author: Janus Juul Eriksen
   !> date: april 2014
   subroutine ccsdpt_contract_abc_12(vindex1,vindex2,vindex3,nv,no,int_normal_21,int_normal_12,T_star_v3,&
-                              & trip_ampl,special,async_idx)
+                              & trip_ampl,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, nv, no
-    real(realk), dimension(no) :: T_star_v3 ! T_star(:,oinedx3)
-    real(realk), dimension(no,no) :: int_normal_21, int_normal_12
-    real(realk), dimension(no,no,no) :: trip_ampl
+    real(realk), dimension(no), target :: T_star_v3 ! T_star(:,oinedx3)
+    real(realk), dimension(no,no), target :: int_normal_21, int_normal_12
+    real(realk), dimension(no,no,no), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, no2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    no2 = no**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -4303,38 +7101,63 @@ contains
 
        ! now contract coulumb term over both indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_21,T_star_v3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_21,no2,1.0E0_realk,T_star_v3,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & -1.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_12 (case 0): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,int_normal_21,T_star_v3)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & -11.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_12 (case 0)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',no,1,no2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_21,no2,1.0E0_realk,T_star_v3,no)
+       call dgemm('n','n',no,1,no**2,&
+                & -1.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
 #endif
 
     case(1)
 
        ! now contract coulumb term over both indices, then contract exchange term over both indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_v3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & -2.0E0_realk,trip_ampl,no,int_normal_21,no2,1.0E0_realk,T_star_v3,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_12,no2,1.0E0_realk,T_star_v3,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & -2.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
+                & 1.0E0_realk,trip_ampl,no,int_normal_12,no**2,1.0E0_realk,T_star_v3,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_12 (case1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_v3)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & -2.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_12),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_12 (case 1)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',no,1,no2,&
-                & -2.0E0_realk,trip_ampl,no,int_normal_21,no2,1.0E0_realk,T_star_v3,no)
-       call dgemm('n','n',no,1,no2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_12,no2,1.0E0_realk,T_star_v3,no)
+       call dgemm('n','n',no,1,no**2,&
+                & -2.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
+       call dgemm('n','n',no,1,no**2,&
+                & 1.0E0_realk,trip_ampl,no,int_normal_12,no**2,1.0E0_realk,T_star_v3,no)
 #endif
 
     end select TypeofContraction_abc_12
@@ -4351,24 +7174,24 @@ contains
   !> int_virt_tile is a v^3 tile determined by driver occ index
   !> tmp_g is a 3d work array
   subroutine ccsdpt_contract_ijk_211(oindex1,oindex2,oindex3,nv,no,&
-       & T_star_o1o2,tmp_g,trip_ampl,int_virt_tile,special,async_idx)
+       & T_star_o1o2,tmp_g,trip_ampl,int_virt_tile,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv, no
-    real(realk), dimension(nv,nv) :: T_star_o1o2 ! T_star(:,:,oindex1,oindex2)
-    real(realk), dimension(nv,nv,nv) :: tmp_g,trip_ampl
-    real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
+    real(realk), dimension(nv,nv), target :: T_star_o1o2 ! T_star(:,:,oindex1,oindex2)
+    real(realk), dimension(nv,nv,nv), target :: tmp_g,trip_ampl
+    real(realk), dimension(nv,nv,nv), target, intent(in) :: int_virt_tile
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, nv2, i,j,k
+    integer :: contraction_type, i,j,k
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    nv2 = nv**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -4392,17 +7215,29 @@ contains
 
        ! now contract coulumb term over 2 first indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2, &
-            & 1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
+!       call dgemm_acc('t','n',nv,nv,nv2,&
+            & 1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_211 (case 0-1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_211 - case 0-1) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('t','n',nv,nv,nv2, &
-            & 1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm('t','n',nv,nv,nv**2,&
+            & 1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 #endif
 
        ! reorder to obtain exchange term
@@ -4414,17 +7249,29 @@ contains
 
        ! now contract exchange term over 2 first indices2
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2, &
-            -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
+!       call dgemm_acc('t','n',nv,nv,nv2,&
+            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_211 (case 0-2): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_211 - case 0-2) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('t','n',nv,nv,nv2, &
-            -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm('t','n',nv,nv,nv**2,&
+            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 #endif
 
     case(1)
@@ -4440,17 +7287,29 @@ contains
 
        ! now contract coulumb term over 2 first indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2, &
-            2.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
+!       call dgemm_acc('t','n',nv,nv,nv2,&
+            2.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_211 (case 1-1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                             & 2.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_211 - case 1-1) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('t','n',nv,nv,nv2, &
-            2.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm('t','n',nv,nv,nv**2,&
+            2.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 #endif
 
        ! reorder to obtain exchange term
@@ -4462,17 +7321,29 @@ contains
 
        ! now contract exchange term over 2 first indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2, &
-            -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
+!       call dgemm_acc('t','n',nv,nv,nv2,&
+            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_211 (case 1-2): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_211 - case 1-2) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('t','n',nv,nv,nv2, &
-            -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o1o2,nv)
+       call dgemm('t','n',nv,nv,nv**2,&
+            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
 #endif
 
     end select TypeofContraction_211
@@ -4485,24 +7356,24 @@ contains
   !> author: Janus Juul Eriksen
   !> date: april 2014
   subroutine ccsdpt_contract_abc_211(vindex1,vindex2,vindex3,no,nv,&
-                               & int_virt_23,int_virt_32,T_star_v1,trip_ampl,special,async_idx)
+                               & int_virt_23,int_virt_32,T_star_v1,trip_ampl,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(nv,no,no) :: T_star_v1 ! T_star(:,:,:,vindex1)
-    real(realk), dimension(nv,no) :: int_virt_23, int_virt_32
-    real(realk), dimension(no,no,no) :: trip_ampl
+    real(realk), dimension(nv,no,no), target :: T_star_v1 ! T_star(:,:,:,vindex1)
+    real(realk), dimension(nv,no), target :: int_virt_23, int_virt_32
+    real(realk), dimension(no,no,no), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, no2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    no2 = no**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -4518,20 +7389,34 @@ contains
        ! now contract coulumb term over first index, then contract exchange term over first index 
        ! for this special case, we only have to subtract one coulumb term
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,1.0E0_realk,int_virt_32,nv,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,1.0E0_realk,int_virt_32,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,-1.0E0_realk,int_virt_23,nv,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_211 (case 0): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
+                             & 1.0E0_realk,c_loc(int_virt_32),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
+                             & -1.0E0_realk,c_loc(int_virt_23),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_211 (case 0)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',nv,no2,no,1.0E0_realk,int_virt_32,nv,&
+       call dgemm('n','n',nv,no**2,no,1.0E0_realk,int_virt_32,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
-       call dgemm('n','n',nv,no2,no,-1.0E0_realk,int_virt_23,nv,&
+       call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
 #endif
 
@@ -4539,20 +7424,34 @@ contains
  
        ! now contract coulumb term over first index, next contract exchange term over first index
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,2.0E0_realk,int_virt_32,nv,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,2.0E0_realk,int_virt_32,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,-1.0E0_realk,int_virt_23,nv,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_211 (case 1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
+                             & 2.0E0_realk,c_loc(int_virt_32),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
+                             & -1.0E0_realk,c_loc(int_virt_23),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_211 (case 1)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',nv,no2,no,2.0E0_realk,int_virt_32,nv,&
+       call dgemm('n','n',nv,no**2,no,2.0E0_realk,int_virt_32,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
-       call dgemm('n','n',nv,no2,no,-1.0E0_realk,int_virt_23,nv,&
+       call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
                       & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
 #endif
 
@@ -4570,23 +7469,21 @@ contains
   !> int_virt_tile is a v^3 tile determined by driver occ index
   !> tmp_g is a 3d work array
   subroutine ccsdpt_contract_ijk_212(oindex1,oindex2,oindex3,nv,no,&
-       & T_star_o3o2,tmp_g,trip_ampl,int_virt_tile,async_idx)
+       & T_star_o3o2,tmp_g,trip_ampl,int_virt_tile,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv, no
-    real(realk), dimension(nv,nv) :: T_star_o3o2 ! T_star(:,:,oindex3,oindex2)
-    real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
-    real(realk), dimension(nv,nv,nv) :: tmp_g,trip_ampl
-    !> temporary quantities
-    integer :: nv2
+    real(realk), dimension(nv,nv), target :: T_star_o3o2 ! T_star(:,:,oindex3,oindex2)
+    real(realk), dimension(nv,nv,nv), target, intent(in) :: int_virt_tile
+    real(realk), dimension(nv,nv,nv), target :: tmp_g,trip_ampl
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    nv2 = nv**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! reorder to obtain coulumb term 
 #ifdef VAR_OPENACC
@@ -4597,17 +7494,29 @@ contains
 
     ! now contract coulumb term over 2 first indices
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_o3o2)
-    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv2,&
-         & -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o3o2,nv)
+    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
+!    call dgemm_acc('t','n',nv,nv,nv2,&
+         & -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o3o2,nv)
 !$acc end host_data
-#else
-    call lsquit('in ccsdpt_contract_ijk_212: no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_o3o2)
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
+                          & 1.0E0_realk,c_loc(T_star_o3o2),int(nv,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_contract_ijk_212) = ",stat
+!       stop
+!    end if
+
 #endif
 #else
-    call dgemm('t','n',nv,nv,nv2,&
-         & -1.0E0_realk,trip_ampl,nv2,tmp_g,nv2,1.0E0_realk,T_star_o3o2,nv)
+    call dgemm('t','n',nv,nv,nv**2,&
+         & -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o3o2,nv)
 #endif
 
   end subroutine ccsdpt_contract_ijk_212
@@ -4617,35 +7526,44 @@ contains
   !         in eq. (14.6.64) of MEST
   !> author: Janus Juul Eriksen
   !> date: april 2014
-  subroutine ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,int_virt_12,T_star_v3,trip_ampl,async_idx)
+  subroutine ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,int_virt_12,T_star_v3,trip_ampl,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(nv,no,no) :: T_star_v3 ! T_star(:,:,:,vindex3)
-    real(realk), dimension(nv,no) :: int_virt_12
-    real(realk), dimension(no,no,no) :: trip_ampl
-    !> integer
-    integer :: no2
+    real(realk), dimension(nv,no,no), target :: T_star_v3 ! T_star(:,:,:,vindex3)
+    real(realk), dimension(nv,no), target :: int_virt_12
+    real(realk), dimension(no,no,no), target :: trip_ampl
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    no2 = no**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_12,trip_ampl,T_star_v3)
-    call dgemm_acc_openacc_async(async_idx,'n','n',nv,no2,no,-1.0E0_realk,int_virt_12,nv,&
+    call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_12,nv,&
                    & trip_ampl,no,1.0E0_realk,T_star_v3,nv)
 !$acc end host_data
-#else
-    call lsquit('in ccsdpt_contract_abc_212: no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(int_virt_12,trip_ampl,T_star_v3)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
+                          & -1.0E0_realk,c_loc(int_virt_12),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
+                          & 1.0E0_realk,c_loc(T_star_v3),int(nv,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_contract_abc_212) = ",stat
+!       stop
+!    end if
+
 #endif
 #else
-    call dgemm('n','n',nv,no2,no,-1.0E0_realk,int_virt_12,nv,&
+    call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_12,nv,&
                    & trip_ampl,no,1.0E0_realk,T_star_v3,nv)
 #endif
 
@@ -4659,24 +7577,24 @@ contains
   !> param: oindex1-oindex3 are outside loop indices of driver routine.
   !> nv is nvirt and T_star is T_ast_2 of driver. trip_ampl is the triples amplitud array.
   subroutine ccsdpt_contract_ijk_221(oindex1,oindex2,oindex3,no,nv,&
-                               & int_occ_23,int_occ_32,T_star_o1,trip_ampl,special,async_idx)
+                               & int_occ_23,int_occ_32,T_star_o1,trip_ampl,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(no,nv,nv) :: T_star_o1 ! T_star(:,:,:,oindex1)
-    real(realk), dimension(no,nv) :: int_occ_23, int_occ_32
-    real(realk), dimension(nv,nv,nv) :: trip_ampl
+    real(realk), dimension(no,nv,nv), target :: T_star_o1 ! T_star(:,:,:,oindex1)
+    real(realk), dimension(no,nv), target :: int_occ_23, int_occ_32
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, nv2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    nv2 = nv**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -4692,20 +7610,36 @@ contains
        ! now contract coulumb term over first index, then contract exchange term over first index 
        ! for this special case, we only have to subtract one coulumb term
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,-1.0E0_realk,int_occ_32,no,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,-1.0E0_realk,int_occ_32,no,&
+!       call dgemm_acc('n','n',no,nv2,nv,-1.0E0_realk,int_occ_32,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
+!       call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_221 (case 0): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
+                             & -1.0E0_realk,c_loc(int_occ_32),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
+                             & 1.0E0_realk,c_loc(int_occ_23),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_221 - case 0) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',no,nv2,nv,-1.0E0_realk,int_occ_32,no,&
+       call dgemm('n','n',no,nv**2,nv,-1.0E0_realk,int_occ_32,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
-       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
+       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
 #endif
 
@@ -4713,20 +7647,36 @@ contains
  
        ! now contract coulumb term over first index, next contract exchange term over first index
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,-2.0E0_realk,int_occ_32,no,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,-2.0E0_realk,int_occ_32,no,&
+!       call dgemm_acc('n','n',no,nv2,nv,-2.0E0_realk,int_occ_32,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
+       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
+!       call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_ijk_221 (case 1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
+                             & -2.0E0_realk,c_loc(int_occ_32),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
+                             & 1.0E0_realk,c_loc(int_occ_23),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_ijk_221 - case 1) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('n','n',no,nv2,nv,-2.0E0_realk,int_occ_32,no,&
+       call dgemm('n','n',no,nv**2,nv,-2.0E0_realk,int_occ_32,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
-       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
+       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
                       & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
 #endif
 
@@ -4740,24 +7690,24 @@ contains
   !> author: Janus Juul Eriksen
   !> date: april 2014
   subroutine ccsdpt_contract_abc_221(vindex1,vindex2,vindex3,nv,no,&
-       & T_star_v1v2,tmp_g,trip_ampl,int_occ_tile,special,async_idx)
+       & T_star_v1v2,tmp_g,trip_ampl,int_occ_tile,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, nv, no
-    real(realk), dimension(no,no) :: T_star_v1v2 ! T_star(:,:,vindex1,vindex2)
-    real(realk), dimension(no,no,no) :: tmp_g,trip_ampl
-    real(realk), dimension(no,no,no), intent(in) :: int_occ_tile
+    real(realk), dimension(no,no), target :: T_star_v1v2 ! T_star(:,:,vindex1,vindex2)
+    real(realk), dimension(no,no,no), target :: tmp_g,trip_ampl
+    real(realk), dimension(no,no,no), target, intent(in) :: int_occ_tile
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, no2
+    integer :: contraction_type
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    no2 = no**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! determine which type of contraction is to be performed
     contraction_type = -1
@@ -4778,17 +7728,28 @@ contains
 #endif
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2, &
-            & -1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+            & -1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_221 (case 0-1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_221 (case 0-1)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('t','n',no,no,no2, &
-            & -1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm('t','n',no,no,no**2, &
+            & -1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
        ! reorder to obtain exchange term
@@ -4799,17 +7760,28 @@ contains
 #endif
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2, &
-            1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_221 (case 0-2): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_221 (case 0-2)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('t','n',no,no,no2, &
-            1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm('t','n',no,no,no**2, &
+            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
     case(1)
@@ -4822,17 +7794,28 @@ contains
 #endif
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2, &
-            1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+            -2.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_221 (case 1-1): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                             & -2.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_221 (case 1-1)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('t','n',no,no,no2, &
-            -2.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm('t','n',no,no,no**2, &
+            -2.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
        ! reorder to obtain exchange term
@@ -4843,17 +7826,28 @@ contains
 #endif
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2, &
-            1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_221 (case 1-2): no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
+       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
+                             & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
+!$acc end host_data
+
+!       if (stat .ne. 0 ) then
+!          print *, "stat (ccsdpt_contract_abc_221 (case 1-2)) = ",stat
+!          stop
+!       end if
+
 #endif
 #else
-       call dgemm('t','n',no,no,no2, &
-            1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v1v2,no)
+       call dgemm('t','n',no,no,no**2, &
+            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
     end select TypeofContraction_abc_221
@@ -4867,36 +7861,46 @@ contains
   !> date: august 2012
   !> param: oindex1-oindex3 are outside loop indices of driver routine.
   !> nv is nvirt and T_star is T_ast_2 of driver. trip_ampl is the triples amplitud array.
-  subroutine ccsdpt_contract_ijk_222(oindex1,oindex2,oindex3,no,nv,int_occ_12,T_star_o3,trip_ampl,async_idx)
+  subroutine ccsdpt_contract_ijk_222(oindex1,oindex2,oindex3,no,nv,int_occ_12,T_star_o3,trip_ampl,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(no,nv,nv) :: T_star_o3 ! T_star(:,:,:,oindex3)
-    real(realk), dimension(no,nv) :: int_occ_12
-    real(realk), dimension(nv,nv,nv) :: trip_ampl
-    !> integer
-    integer :: nv2
+    real(realk), dimension(no,nv,nv), target :: T_star_o3 ! T_star(:,:,:,oindex3)
+    real(realk), dimension(no,nv), target :: int_occ_12
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    nv2 = nv**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! contract coulumb term over first index
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_occ_12,trip_ampl,T_star_o3)
-    call dgemm_acc_openacc_async(async_idx,'n','n',no,nv2,nv,1.0E0_realk,int_occ_12,no,&
+    call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_12,no,&
+!    call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_12,no,&
                    & trip_ampl,nv,1.0E0_realk,T_star_o3,no)
 !$acc end host_data
-#else
-    call lsquit('in ccsdpt_contract_ijk_222: no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(int_occ_12,trip_ampl,T_star_o3)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
+                          & 1.0E0_realk,c_loc(int_occ_12),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
+                          & 1.0E0_realk,c_loc(T_star_o3),int(no,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_contract_ijk_222) = ",stat
+!       stop
+!    end if
+
 #endif
 #else
-    call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ_12,no,&
+    call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_12,no,&
                    & trip_ampl,nv,1.0E0_realk,T_star_o3,no)
 #endif
 
@@ -4908,23 +7912,21 @@ contains
   !> author: Janus Juul Eriksen
   !> date: april 2014
   subroutine ccsdpt_contract_abc_222(vindex1,vindex2,vindex3,nv,no,&
-       & T_star_v3v2,tmp_g,trip_ampl,int_occ_tile,async_idx)
+       & T_star_v3v2,tmp_g,trip_ampl,int_occ_tile,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, nv, no
-    real(realk), dimension(no,no) :: T_star_v3v2 ! T_star(:,:,vindex3,vindex2)
-    real(realk), dimension(no,no,no), intent(in) :: int_occ_tile
-    real(realk), dimension(no,no,no) :: tmp_g,trip_ampl
-    !> temporary quantities
-    integer :: no2
+    real(realk), dimension(no,no), target :: T_star_v3v2 ! T_star(:,:,vindex3,vindex2)
+    real(realk), dimension(no,no,no), target, intent(in) :: int_occ_tile
+    real(realk), dimension(no,no,no), target :: tmp_g,trip_ampl
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
-
-    no2 = no**2
+    type(c_ptr) :: cublas_handle
+    integer*4 :: stat
 
     ! reorder
 #ifdef VAR_OPENACC
@@ -4934,22 +7936,31 @@ contains
 #endif
 
 #ifdef VAR_OPENACC
-#ifdef VAR_CRAY
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v3v2)
-    call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no2,&
-         & 1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v3v2,no)
+    call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2,&
+         & 1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v3v2,no)
 !$acc end host_data
-#else
-       call lsquit('in ccsdpt_contract_abc_222: no cublas dgemm implemented yet',DECinfo%output)
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(trip_ampl,tmp_g,T_star_v3v2)
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
+                          & 1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
+                          & 1.0E0_realk,c_loc(T_star_v3v2),int(no,kind=4))
+!$acc end host_data
+
+!    if (stat .ne. 0 ) then
+!       print *, "stat (ccsdpt_contract_abc_222) = ",stat
+!       stop
+!    end if
+
 #endif
 #else
-    call dgemm('t','n',no,no,no2,&
-         & 1.0E0_realk,trip_ampl,no2,tmp_g,no2,1.0E0_realk,T_star_v3v2,no)
+    call dgemm('t','n',no,no,no**2,&
+         & 1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v3v2,no)
 #endif
 
   end subroutine ccsdpt_contract_abc_222
-
-
 
 
   !> \brief: calculate E[5] contribution to single fragment ccsd(t) energy correction
@@ -4962,7 +7973,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
     real(realk) :: energy_tmp, ccsdpt_e5
     logical :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
     integer :: noccAOS,nunoccAOS,i,a
@@ -5036,7 +8047,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
     real(realk) :: energy_tmp, ccsdpt_e5
     logical :: SEC_occ(PairFragment%noccAOS), SEC_unocc(PairFragment%nunoccAOS)
     integer :: noccAOS,nunoccAOS,i,a,atomi,atoma
@@ -5117,7 +8128,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) doubles amplitudes
-    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> is this called from inside the ccsd(t) fragment optimization routine?
     logical, optional, intent(in) :: fragopt_pT
     !> incomming orbital contribution vectors
@@ -5208,7 +8219,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
-       call array_reorder(ccsd_doubles,[1,2,4,3])
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
@@ -5258,16 +8269,16 @@ contains
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array_reorder(ccsd_doubles,[3,4,1,2])
-          call array_reorder(ccsdpt_doubles,[3,4,1,2])
+          call tensor_reorder(ccsd_doubles,[3,4,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
 
        else
 
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array_reorder(ccsd_doubles,[4,3,1,2])
-          call array_reorder(ccsdpt_doubles,[3,4,1,2])
+          call tensor_reorder(ccsd_doubles,[4,3,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
 
        end if
 
@@ -5304,7 +8315,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
-       call array_reorder(ccsd_doubles,[2,1,3,4])
+       call tensor_reorder(ccsd_doubles,[2,1,3,4])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
@@ -5357,17 +8368,17 @@ contains
        if (do_occ .and. (.not. do_virt)) then
 
           ! reorder from (a,b,j,i) to (a,i,b,j)
-          if (fragopt_pT) call array_reorder(ccsd_doubles,[1,4,2,3])
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[1,4,2,3])
 
        else if (do_virt .and. (.not. do_virt)) then
 
           ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call array_reorder(ccsd_doubles,[3,1,4,2])
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
 
        else if (do_occ .and. do_virt) then
 
           ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call array_reorder(ccsd_doubles,[3,1,4,2])
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
 
        end if
 
@@ -5394,7 +8405,7 @@ contains
     !> pair fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
-    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     ! logical pointers for keeping hold of which pairs are to be handled
     logical, pointer :: dopair_occ(:,:), dopair_virt(:,:)
     !> integers
@@ -5488,7 +8499,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
-       call array_reorder(ccsd_doubles,[1,2,4,3])
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
@@ -5533,16 +8544,16 @@ contains
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array_reorder(ccsd_doubles,[3,4,1,2])
-          call array_reorder(ccsdpt_doubles,[3,4,1,2])
+          call tensor_reorder(ccsd_doubles,[3,4,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
 
        else
 
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array_reorder(ccsd_doubles,[4,3,1,2])
-          call array_reorder(ccsdpt_doubles,[3,4,1,2])
+          call tensor_reorder(ccsd_doubles,[4,3,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
 
        end if
 
@@ -5574,7 +8585,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
-       call array_reorder(ccsd_doubles,[2,1,3,4])
+       call tensor_reorder(ccsd_doubles,[2,1,3,4])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
@@ -5637,20 +8648,20 @@ contains
   !> \brief: calculate E[4] contribution to ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsdpt_energy_e4_full(nocc,nvirt,natoms,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
+  subroutine ccsdpt_energy_e4_full(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
                            & eccsdpt_matrix_cou,eccsdpt_matrix_exc,ccsdpt_e4)
 
     implicit none
 
     !> ccsd and ccsd(t) doubles amplitudes
-    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e4
-    real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
     !> integers
     integer :: i,j,a,b,atomI,atomJ
     !> energy reals
@@ -5695,7 +8706,7 @@ contains
     !$OMP END PARALLEL DO
 
     ! reorder from (a,b,i,j) to (a,b,j,i)
-    call array_reorder(ccsd_doubles,[1,2,4,3])
+    call tensor_reorder(ccsd_doubles,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_exc),&
     !$OMP REDUCTION(+:eccsdpt_matrix_exc),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
@@ -5725,8 +8736,8 @@ contains
     ! for the e4 pair fragment energy matrix,
     ! we only consider pairs IJ where J>I; thus, move contributions
 
-    do AtomJ=1,natoms
-       do AtomI=AtomJ+1,natoms
+    do AtomJ=1,nfrags
+       do AtomI=AtomJ+1,nfrags
 
           eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
                                               & + eccsdpt_matrix_cou(AtomJ,AtomI)
@@ -5741,98 +8752,99 @@ contains
 
   end subroutine ccsdpt_energy_e4_full
 
-  !> \brief: print out E[4] fragment and pair interaction contribution to 
-  !>         ccsd(t) energy correction for full molecule calculation
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
-
-    implicit none
-
-    !> number of atoms in molecule
-    integer, intent(in) :: natoms
-    !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
-    !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-    !> loop counters
-    integer :: i,j
-!    use the one in lsutil/fundamental.f90
-!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
-
-    ! print out fragment energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,'(1X,a)') '*                         E[4] energies                       *'
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (fourth--order E[4])'
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,*)
-
-    do i=1,natoms
-
-       if (orbitals_assigned(i)) then
-
-          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, e4_matrix(i,i)
-
-       end if
-
-    end do
-
-    ! now print out pair interaction energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (fourth--order E[4])     '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,*)
-
-    do j=1,natoms
-       do i=j+1,natoms
-
-          ! write increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
-
-          end if
-
-       end do
-    end do
-
-
-  end subroutine print_e4_full
+! code not used
+!  !> \brief: print out E[4] fragment and pair interaction contribution to 
+!  !>         ccsd(t) energy correction for full molecule calculation
+!  !> \author: Janus Juul Eriksen
+!  !> \date: February 2013
+!  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
+!
+!    implicit none
+!
+!    !> number of atoms in molecule
+!    integer, intent(in) :: natoms
+!    !> matrices containing E[4] energies and interatomic distances
+!    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
+!    !> vector handling how the orbitals are assigned?
+!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
+!    !> loop counters
+!    integer :: i,j
+!!    use the one in lsutil/fundamental.f90
+!!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
+!
+!    ! print out fragment energies
+!
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,'(1X,a)') '*                         E[4] energies                       *'
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (fourth--order E[4])'
+!    write(DECinfo%output,'(8X,a)') '------    --------------------'
+!    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
+!    write(DECinfo%output,'(8X,a)') '------    --------------------'
+!    write(DECinfo%output,*)
+!
+!    do i=1,natoms
+!
+!       if (orbitals_assigned(i)) then
+!
+!          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, e4_matrix(i,i)
+!
+!       end if
+!
+!    end do
+!
+!    ! now print out pair interaction energies
+!
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (fourth--order E[4])     '
+!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+!    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
+!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+!    write(DECinfo%output,*)
+!
+!    do j=1,natoms
+!       do i=j+1,natoms
+!
+!          ! write increments only if pair interaction energy is nonzero
+!          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
+!
+!             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
+!                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
+!
+!          end if
+!
+!       end do
+!    end do
+!
+!
+!  end subroutine print_e4_full
 
 
 
   !> \brief: calculate E[5] contribution to ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsdpt_energy_e5_full(nocc,nvirt,natoms,offset,ccsd_singles,ccsdpt_singles,&
+  subroutine ccsdpt_energy_e5_full(nocc,nvirt,nfrags,offset,ccsd_singles,ccsdpt_singles,&
                              & occ_orbitals,unocc_orbitals,e5_matrix,ccsdpt_e5)
 
     implicit none
 
     !> ccsd and ccsd(t) singles amplitudes
-    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> virtual orbital information
     type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e5
-    real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: e5_matrix
     !> integers
     integer :: i,a,AtomI,AtomA
     !> tmp energy real
@@ -5871,70 +8883,71 @@ contains
 
   end subroutine ccsdpt_energy_e5_full
 
-  !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
+! code not used
+!  !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
+!  !> \author: Janus Juul Eriksen
+!  !> \date: February 2013
+!  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
+!
+!    implicit none
+!
+!    !> number of atoms in molecule
+!    integer, intent(in) :: natoms
+!    !> matrices containing E[4] energies and interatomic distances
+!    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
+!    !> vector handling how the orbitals are assigned?
+!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
+!    !> loop counters
+!    integer :: i,a
+!
+!    ! print out fragment energies
+!
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,'(1X,a)') '*                         E[5] energies                       *'
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(8X,a)') '-- Pair fragment energies (fifth--order E[5])          '
+!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
+!    write(DECinfo%output,'(9X,a)') 'P(virt)    Q(occ)      R(Ang)           E(PQ)          '
+!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
+!    write(DECinfo%output,*)
+!
+!    ! the total singles energy must result from an unrestricted summation over all occ and virt indices
+!    ! as we are only interested in general orbital interactions and hence not the nature (occ/virt)
+!    ! of the individual orbitals
+!
+!    do i=1,natoms
+!       do a=1,natoms
+!
+!          ! write increments only if pair interaction energy is nonzero
+!          if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
+!
+!             if (i .eq. a) then
+!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+!                     &0.000, e5_matrix(a,i)
+!
+!             else
+!
+!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+!                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
+!
+!             end if
+!
+!          end if
+!
+!       end do
+!    end do
+!
+!  end subroutine print_e5_full
 
-    implicit none
 
-    !> number of atoms in molecule
-    integer, intent(in) :: natoms
-    !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
-    !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-    !> loop counters
-    integer :: i,a
-
-    ! print out fragment energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,'(1X,a)') '*                         E[5] energies                       *'
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Pair fragment energies (fifth--order E[5])          '
-    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-    write(DECinfo%output,'(9X,a)') 'P(virt)    Q(occ)      R(Ang)           E(PQ)          '
-    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-    write(DECinfo%output,*)
-
-    ! the total singles energy must result from an unrestricted summation over all occ and virt indices
-    ! as we are only interested in general orbital interactions and hence not the nature (occ/virt)
-    ! of the individual orbitals
-
-    do i=1,natoms
-       do a=1,natoms
-
-          ! write increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
-
-             if (i .eq. a) then
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &0.000, e5_matrix(a,i)
-
-             else
-
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
-
-             end if
-
-          end if
-
-       end do
-    end do
-
-  end subroutine print_e5_full
-
-
-  !> \brief Get MO integrals for CCSD(T) (in canonical basis), see integral storing order below.
+  !> \brief Get MO integrals for ijk-CCSD(T) (in canonical basis), see integral storing order below.
   !> \author Janus Eriksen and Kasper Kristensen
   !> \date September-October 2012
-  subroutine get_CCSDpT_integrals(MyLsitem,nbasis,nocc,nvirt,Cocc,Cvirt,JAIK,ABIJ,CBAI)
+  subroutine get_CCSDpT_integrals_ijk(MyLsitem,nbasis,nocc,nvirt,Cocc,Cvirt,ovoo,vvvo)
 
     implicit none
 
@@ -5950,12 +8963,10 @@ contains
     real(realk), dimension(nbasis,nocc),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk), dimension(nbasis,nvirt),intent(in) :: Cvirt
-    ! JIAK: Integrals (AI|JK) in the order (J,A,I,K)
-    type(array4), intent(inout) :: JAIK
-    ! ABIJ: Integrals (AI|BJ) in the order (A,B,I,J)
-    type(array4), intent(inout) :: ABIJ
-    ! CBAI: Integrals (AI|BC) in the order (C,B,A,I)
-    type(array), intent(inout) :: CBAI
+    ! ovoo: Integrals (AI|JK) in the order (J,A,I,K)
+    type(tensor), intent(inout) :: ovoo
+    ! vvvo: Integrals (AI|BC) in the order (C,B,A,I)
+    type(tensor), intent(inout) :: vvvo
     integer :: gammadim, alphadim,iorb
     integer :: alphaB,gammaB,dimAlpha,dimGamma,idx
     real(realk),pointer :: tmp1(:),tmp2(:),tmp3(:)
@@ -5964,63 +8975,89 @@ contains
     logical :: FullRHS,doscreen
     real(realk) :: tcpu, twall
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
-    type(array4) :: JAIB
     integer :: MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxActualDimGamma,nbatchesGamma
+#ifdef VAR_ICHOR
+    type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
+    type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
+    integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
+    logical :: MoTrans, NoSymmetry,SameMol
+#else
+    integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    TYPE(DECscreenITEM)   :: DecScreen
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
-    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
-    TYPE(DECscreenITEM)   :: DecScreen
+#endif
+    integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
     ! distribution stuff needed for mpi parallelization
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
     integer :: myload,first_el_i_block
     logical :: master
-    integer(kind=long) :: o2v2,o3v,v3
-    real(realk), pointer :: dummy1(:),dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t
+    integer(kind=long) :: o3v,v3
+    real(realk), pointer :: dummy2(:)
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
+    integer :: p,pos
     call time_start_phase(PHASE_WORK)
 
-    o2v2          = nocc*nocc*nvirt*nvirt
     o3v           = nocc*nocc*nocc*nvirt
     v3            = nvirt**3
 
-    ! Lots of timings
+#ifdef VAR_MPI
+
+    master = (infpar%lg_mynum .eq. infpar%master)
+    if (master) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+#else
+
+    master = .true.
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+#endif
+
+    ! Set integral info
+    ! *****************
+    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
+    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
+    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
+    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
+    INTSPEC(5)='C' !C = Coulomb operator
+#ifdef VAR_ICHOR
+    iprint = 0           !print level for Ichor Integral code
+    MoTrans = .FALSE.    !Do not transform to MO basis! 
+    NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+    SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+    !Determine the full number of AO batches - not to be confused with the batches of AOs
+    !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+    iAO = 1
+    call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+#else
     ! Integral screening?
     doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
-
+#endif
     ! allocate arrays to update during integral loop 
     ! **********************************************
     
     ! note 1: this must be done before call to get_optimal_batch_sizes_ccsdpt_integrals
-    ! note 2: these integrals will be reordered into the output structures
 
-    ! JAIK: Integrals (AI|KJ) in the order (J,A,I,K)
+    ! Integrals (AI|KJ) in the order (J,A,I,K)
     dims = [nocc,nvirt,nocc,nocc]
-    JAIK = array4_init_standard(dims)
+    call tensor_init(ovoo, dims,4)
+    call tensor_zero(ovoo)
 
-    ! JAIB: Integrals (AI|BJ) in the order (J,A,I,B)
-    dims = [nocc,nvirt,nocc,nvirt]
-    JAIB = array4_init_standard(dims)
-
-    ! CBAI: Integrals (AB|IC) in the order (C,B,A,I)
+    ! Integrals (AB|IC) in the order (C,B,A,I)
     dims = [nvirt,nvirt,nvirt,nocc]
-
 #ifdef VAR_MPI
     mode   = MPI_MODE_NOCHECK
-    master = (infpar%lg_mynum == infpar%master)
 
-    CBAI   = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
-    call array_zero_tiled_dist(CBAI)
+    call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
+    call tensor_zero_tiled_dist(vvvo)
 
 #else
 
-    CBAI = array_init(dims,4)
-    call array_zero(CBAI)
-    master = .true.
+    call tensor_init(vvvo, dims,4)
+    call tensor_zero(vvvo)
 
 #endif
 
@@ -6032,22 +9069,38 @@ contains
 
     ! Determine optimal batchsizes and corresponding sizes of arrays
     call get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-         & size1,size2,size3,.true.)
+         & size1,size2,size3,.true.,.false.,1)
 
 
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
-
+#ifdef VAR_ICHOR
+    iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the gammadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,DECinfo%output)
+    call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+    !Construct the batches of AOS based on the gammadim, the requested
+    !size of the AO batches - gammadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimGamma must be less og equal to gammadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+#else
     ! Orbital to batch information
     ! ----------------------------
     call mem_alloc(orb2batchGamma,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
          & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
          & nbatchesGamma,orb2BatchGamma,'R')
-
+#endif
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
+#ifndef VAR_ICHOR
     ! Translate batchindex to orbital index
     ! -------------------------------------
     call mem_alloc(batch2orbGamma,nbatchesGamma)
@@ -6068,20 +9121,39 @@ contains
        batch2orbGamma(idx)%orbindex(K) = iorb
 
     end do
+#endif
 
     ! ************************************************
     ! * Determine batch information for Alpha batch  *
     ! ************************************************
 
+#ifdef VAR_ICHOR
+    iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the alphadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,DECinfo%output)
+    call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+    !Construct the batches of AOS based on the alphadim, the requested
+    !size of the AO batches - alphadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimAlpha must be less og equal to alphadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+#else
     ! Orbital to batch information
     ! ----------------------------
     call mem_alloc(orb2batchAlpha,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
          & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
          & nbatchesAlpha,orb2BatchAlpha,'R')
+#endif
 
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
+#ifndef VAR_ICHOR
     ! Translate batchindex to orbital index
     ! -------------------------------------
     call mem_alloc(batch2orbAlpha,nbatchesAlpha)
@@ -6102,14 +9174,14 @@ contains
        batch2orbAlpha(idx)%orbindex(K) = iorb
 
     end do
+#endif
 
-    ! Set integral info
-    ! *****************
-    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
-    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
-    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
-    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
-    INTSPEC(5)='C' !C = Coulomb operator
+
+#ifdef VAR_ICHOR
+    !Calculate Screening integrals 
+    SameMOL = .TRUE. !Specifies same molecule on all centers 
+    call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+#else
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
             & nbatchesAlpha,nbatchesGamma,INTSPEC)
 
@@ -6121,6 +9193,7 @@ contains
             & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
 
     end if
+#endif
 
     FullRHS = (nbatchesGamma .eq. 1) .and. (nbatchesAlpha .eq. 1)
 
@@ -6140,8 +9213,22 @@ contains
     ! init distribution
     distribution = 0
     myload = 0
+#ifdef VAR_ICHOR
+    call mem_alloc(batchdimAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+    enddo
+    call mem_alloc(batchdimGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+    enddo
+#endif
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+#ifdef VAR_ICHOR
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchdimGamma)
+#endif
 
 #endif
 
@@ -6149,15 +9236,30 @@ contains
     ! ******************************************************************
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+#ifdef VAR_ICHOR
+       dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+       GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+       GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+       AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+       AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+#else
        dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
        GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
-
+#endif
 
        BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
+#ifdef VAR_ICHOR
+          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+#else
           dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
           AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+#endif
 
 #ifdef VAR_MPI
 
@@ -6173,16 +9275,23 @@ contains
 
 #endif
 
+          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
+          ! ************************************************************************************
+
+#ifdef VAR_ICHOR
+          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
+               & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+               & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
+#else
           if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
           if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
 
-          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
-          ! ************************************************************************************
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
                & FullRHS,INTSPEC)
+#endif
 
           ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
           m = nbasis*dimGamma*dimAlpha
@@ -6213,17 +9322,11 @@ contains
           n = nvirt*nocc*dimAlpha
           call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1,GammaStart),nocc,tmp2,k,0.0E0_realk,tmp1,m)
 
-          ! JAIK(J,A,I;K) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cocc(alpha,K)
+          ! ovoo(J,A,I;K) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cocc(alpha,K)
           m = nvirt*nocc**2
           k = dimAlpha
           n = nocc
-          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart,1),nbasis,1.0E0_realk,JAIK%val,m)
-
-          ! JAIB(J,A,I;B) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cvirt(alpha,B)
-          m = nvirt*nocc**2
-          k = dimAlpha
-          n = nvirt
-          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,1),nbasis,1.0E0_realk,JAIB%val,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart,1),nbasis,1.0E0_realk,ovoo%elm1,m)
 
           ! Reorder: tmp3(B,alphaB;gammaB,A) --> tmp1(gammaB,A;B,alphaB)
           m = nvirt*dimAlpha
@@ -6236,13 +9339,11 @@ contains
           n = dimAlpha*nvirt**2
           call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(1,GammaStart),nvirt,tmp1,k,0.0E0_realk,tmp3,m)
 
-          ! reorder tmp1 and do CBAI(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
           m = nvirt**3
           k = dimAlpha
           n = 1
-
 #ifdef VAR_MPI
-
+          ! reorder tmp1 and do vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
           do i=1,nocc
 
              ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
@@ -6250,44 +9351,54 @@ contains
 
              ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
              ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
-             ! of dummy indices A=B, B=C, and C=A) as (BC|IA). In order to align with the CBAI order of
+             ! of dummy indices A=B, B=C, and C=A) as (BC|IA). In order to align with the vvvo order of
              ! ccsd(t) driver routine, we reorder as:
              ! (BC|IA) --> (CB|AI), i.e., tmp1(C,A,B,i) = ABCI(A,B,C,i) (norm. notat.) --> 
              !                                            tmp1(C,B,A,i) (norm. notat.) = tmp1(B,A,C,i) (notat. herein)
              ! 
              ! next, we accumulate
-             ! CBAI(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
+             ! vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
 
              call time_start_phase(PHASE_COMM)
-#ifdef VAR_HAVE_MPI3
-             call arr_lock_win(CBAI,i,'s',assert=mode)
-#endif
-             !call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
 
-             dest = get_residence_of_tile(i,CBAI) 
+#ifdef VAR_HAVE_MPI3
+             call tensor_lock_win(vvvo,i,'s')
+#endif
+             !call tensor_accumulate_tile(vvvo,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
+
+             call get_residence_of_tile(dest,i,vvvo,idx_on_node = pos)
+
+             if( alloc_in_dummy )then
+                wi_idx = 1
+                p      = pos - 1
+             else
+                wi_idx = i 
+                p      = 0
+             endif
 
              do first_el_i_block=1,v3,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
-                call arr_lock_win(CBAI,i,'s',assert=mode)
+                call tensor_lock_win(vvvo,i,'s',assert=mode)
 #endif
                 nel2t=MAX_SIZE_ONE_SIDED
                 if(((v3-first_el_i_block)<MAX_SIZE_ONE_SIDED).and.&
                    &(mod(v3-first_el_i_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
                    &nel2t=int(mod(v3,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
 
-                call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,first_el_i_block,dest,CBAI%wi(i))
+
+                call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,p+first_el_i_block,dest,vvvo%wi(wi_idx))
 
 #ifdef VAR_HAVE_MPI3
-                call lsmpi_win_flush(CBAI%wi(i),rank=dest,local=.true.)
+                call lsmpi_win_flush(vvvo%wi(wi_idx),rank=dest,local=.true.)
 #else
-                call arr_unlock_win(CBAI,i)
+                call tensor_unlock_win(vvvo,i)
 #endif
              enddo
 
 #ifdef VAR_HAVE_MPI3
-             call arr_unlock_win(CBAI,i)
+             call tensor_unlock_win(vvvo,i)
 #endif
              call time_start_phase(PHASE_WORK)
 
@@ -6300,7 +9411,7 @@ contains
              ! for description, see mpi section above
              call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
 
-             call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,CBAI%elm4(:,:,:,i))
+             call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,vvvo%elm4(:,:,:,i))
 
           end do
 
@@ -6313,16 +9424,14 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call ass_D4to1(JAIB%val,dummy1,[nocc,nvirt,nocc,nvirt])
-       call ass_D4to1(JAIK%val,dummy2,[nocc,nvirt,nocc,nocc])
+       call ass_D4to1(ovoo%elm1,dummy2,[nocc,nvirt,nocc,nocc])
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)
 
-       ! now, reduce o^2v^2 and o^3v integrals onto master
+       ! now, reduce o^3v integrals onto master
        call time_start_phase(PHASE_COMM)
-       call lsmpi_allreduce(dummy1,o2v2,infpar%lg_comm,SPLIT_MSG_REC )
-       call lsmpi_allreduce(dummy2,o3v, infpar%lg_comm,SPLIT_MSG_REC ) 
+       call lsmpi_allreduce(dummy2,o3v,infpar%lg_comm) 
        call time_start_phase(PHASE_WORK)
 
     end if
@@ -6332,14 +9441,21 @@ contains
 
 #endif
 
+    call print_norm(vvvo,"VVVO norm",print_on_rank=0)
+
     ! free stuff
     ! **********
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
     call mem_dealloc(tmp3)
-    call free_decscreen(DECSCREEN)
     call mem_dealloc(CoccT)
     call mem_dealloc(CvirtT)
+#ifdef VAR_ICHOR
+    call FREE_SCREEN_ICHORERI()
+    call mem_dealloc(AOGammabatchinfo)
+    call mem_dealloc(AOAlphabatchinfo)
+#else
+    call free_decscreen(DECSCREEN)
     call mem_dealloc(orb2batchGamma)
     call mem_dealloc(batchdimGamma)
     call mem_dealloc(batchsizeGamma)
@@ -6359,30 +9475,547 @@ contains
     call mem_dealloc(batch2orbAlpha)
     nullify(mylsitem%setting%LST_GAB_LHS)
     nullify(mylsitem%setting%LST_GAB_RHS)
+#endif
+    if (master) call LSTIMER('CCSD(T) INT (IJK)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
-    ! finally, reorder JAIB to final output
-    ! *********************************************
+  end subroutine get_CCSDpT_integrals_ijk
 
-    ! ** JAIB corresponds to (AI|BJ) in Mulliken notation. Noting that the v²o² integrals
-    ! are normally written as g_{AIBJ} = g_{BJAI}, we may also write this Mulliken integral (with substitution
-    ! of dummy indices A=B and B=A) as (BI|AJ). In order to align with the ABIJ order of
-    ! ccsd(t) driver routine, we reorder as:
-    ! (BI|AJ) --> (AB|IJ), i.e., JAIB(J,A,I,B) = JBIA(J,B,I,A) (norm. notat.) --> 
-    !                                            BAIJ(B,A,I,J) (norm. notat.) =
-    !                                            ABIJ(A,B,I,J) (notat. herein)
 
-    order = [2,4,3,1]
-    dims = [nvirt,nvirt,nocc,nocc]
-    ABIJ = array4_init_standard(dims)
+  !> \brief Get MO integrals for abc-CCSD(T) (in canonical basis), see integral storing order below.
+  !> \author Janus Eriksen and Kasper Kristensen
+  !> \date September 2014
+  subroutine get_CCSDpT_integrals_abc(MyLsitem,nbasis,nocc,nvirt,Cocc,Cvirt,ooov,vovv,tile_size)
+
+    implicit none
+
+    !> Integral info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of basis functions
+    integer,intent(in) :: nbasis
+    !> Number of occupied orbitals
+    integer,intent(in) :: nocc
+    !> Number of virtual orbitals
+    integer,intent(in) :: nvirt
+    !> Occupied MO coefficients
+    real(realk), dimension(nbasis,nocc),intent(in) :: Cocc
+    !> Virtual MO coefficients
+    real(realk), dimension(nbasis,nvirt),intent(in) :: Cvirt
+    ! Integrals (AI|JK) in the order (I,J,K,A)
+    type(tensor), intent(inout) :: ooov
+    ! Integrals (AI|BC) in the order (B,I,A,C)
+    type(tensor), intent(inout) :: vovv
+    integer, intent(inout) :: tile_size
+    integer :: gammadim, alphadim,iorb,tile
+    integer :: alphaB,gammaB,dimAlpha,dimGamma,idx
+    real(realk),pointer :: tmp1(:),tmp2(:),tmp3(:)
+    integer(kind=long) :: size1,size2,size3
+    integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd,m,k,n,i,j,c,dims(4),order(4)
+    logical :: FullRHS,doscreen
+    real(realk) :: tcpu, twall, vovv_norm
+    real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
+    integer :: MaxActualDimAlpha,nbatchesAlpha
+    integer :: MaxActualDimGamma,nbatchesGamma
+#ifdef VAR_ICHOR
+    type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
+    type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
+    integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
+    logical :: MoTrans, NoSymmetry,SameMol
+#else
+    integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    TYPE(DECscreenITEM)   :: DecScreen
+    type(batchtoorb), pointer :: batch2orbAlpha(:)
+    type(batchtoorb), pointer :: batch2orbGamma(:)
+#endif
+    integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
+
+    ! distribution stuff needed for mpi parallelization
+    integer, pointer :: distribution(:)
+    Character            :: intSpec(5)
+    integer :: myload,first_el_c_block,nelms,tile_size_tmp,total_num_tiles
+    logical :: master
+    integer(kind=long) :: o3v,v3,ov2
+    real(realk), pointer :: dummy2(:)
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
+    integer :: p,pos
+    call time_start_phase(PHASE_WORK)
+
+    o3v           = nocc*nocc*nocc*nvirt
+    v3            = nvirt**3
+    ov2           = nocc*nvirt**2
+
+#ifdef VAR_MPI
+
+    master = (infpar%lg_mynum .eq. infpar%master)
+    if (master) call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+#else
+
+    master = .true.
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+#endif
+
+    ! Set integral info
+    ! *****************
+    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
+    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
+    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
+    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
+    INTSPEC(5)='C' !C = Coulomb operator
+#ifdef VAR_ICHOR
+    iprint = 0           !print level for Ichor Integral code
+    MoTrans = .FALSE.    !Do not transform to MO basis! 
+    NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+    SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+    !Determine the full number of AO batches - not to be confused with the batches of AOs
+    !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched
+    iAO = 1
+    call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+#else
+    ! Integral screening?
+    doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
+#endif
+
+    ! allocate arrays to update during integral loop 
+    ! **********************************************
     
-    call array_reorder_4d(1.0E0_realk,JAIB%val,JAIB%dims(1),JAIB%dims(2),&
-         & JAIB%dims(3),JAIB%dims(4),order,0.0E0_realk,ABIJ%val)
-    
-    call array4_free(JAIB)
+    ! note 1: this must be done before call to get_optimal_batch_sizes_ccsdpt_integrals
 
-    call LSTIMER('CCSD(T) INT',tcpu,twall,DECinfo%output)
+    ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
+    dims = [nocc,nocc,nocc,nvirt]
+    call tensor_init(ooov, dims,4)
+    call tensor_zero(ooov)
 
-  end subroutine get_CCSDpT_integrals
+    ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
+    dims = [nvirt,nocc,nvirt,nvirt]
+
+#ifdef VAR_MPI
+
+    mode   = MPI_MODE_NOCHECK
+
+    call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
+    call tensor_zero_tiled_dist(vovv)
+
+#else
+
+    call tensor_init(vovv, dims,4)
+    call tensor_zero(vovv)
+
+#endif
+
+    ! For efficiency when calling dgemm, save transposed matrices
+    call mem_alloc(CoccT,nocc,nbasis)
+    call mem_alloc(CvirtT,nvirt,nbasis)
+    call mat_transpose(nbasis,nocc,1.0E0_realk,Cocc,0.0E0_realk,CoccT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,Cvirt,0.0E0_realk,CvirtT)
+
+    ! Determine optimal batchsizes and corresponding sizes of arrays
+    call get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
+         & size1,size2,size3,.true.,.true.,tile_size)
+
+
+    ! ************************************************
+    ! * Determine batch information for Gamma batch  *
+    ! ************************************************
+#ifdef VAR_ICHOR
+    iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the gammadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,DECinfo%output)
+    call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+    !Construct the batches of AOS based on the gammadim, the requested
+    !size of the AO batches - gammadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimGamma must be less og equal to gammadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+#else
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchGamma,nbasis)
+    call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
+         & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
+         & nbatchesGamma,orb2BatchGamma,'R')
+#endif
+
+    if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
+
+#ifndef VAR_ICHOR
+    ! Translate batchindex to orbital index
+    ! -------------------------------------
+    call mem_alloc(batch2orbGamma,nbatchesGamma)
+
+    do idx=1,nbatchesGamma
+
+       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
+       batch2orbGamma(idx)%orbindex = 0
+       batch2orbGamma(idx)%norbindex = 0
+
+    end do
+
+    do iorb=1,nbasis
+
+       idx = orb2batchGamma(iorb)
+       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+       K = batch2orbGamma(idx)%norbindex
+       batch2orbGamma(idx)%orbindex(K) = iorb
+
+    end do
+#endif
+
+    ! ************************************************
+    ! * Determine batch information for Alpha batch  *
+    ! ************************************************
+#ifdef VAR_ICHOR
+    iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the alphadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,DECinfo%output)
+    call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+    !Construct the batches of AOS based on the alphadim, the requested
+    !size of the AO batches - alphadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimAlpha must be less og equal to alphadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+#else
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchAlpha,nbasis)
+    call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
+         & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
+         & nbatchesAlpha,orb2BatchAlpha,'R')
+#endif
+
+    if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
+
+#ifndef VAR_ICHOR
+    ! Translate batchindex to orbital index
+    ! -------------------------------------
+    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+
+    do idx=1,nbatchesAlpha
+
+       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+       batch2orbAlpha(idx)%orbindex = 0
+       batch2orbAlpha(idx)%norbindex = 0
+
+    end do
+
+    do iorb=1,nbasis
+
+       idx = orb2batchAlpha(iorb)
+       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+       K = batch2orbAlpha(idx)%norbindex
+       batch2orbAlpha(idx)%orbindex(K) = iorb
+
+    end do
+#endif
+
+#ifdef VAR_ICHOR
+     !Calculate Screening integrals 
+     SameMOL = .TRUE. !Specifies same molecule on all centers 
+     call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+#else
+    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
+            & nbatchesAlpha,nbatchesGamma,INTSPEC)
+
+    if (doscreen) then
+
+       call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+            & nbasis,nbatchesAlpha,nbatchesGamma,&
+            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+
+    end if
+#endif
+
+    FullRHS = (nbatchesGamma .eq. 1) .and. (nbatchesAlpha .eq. 1)
+
+
+    ! Allocate array for AO integrals
+    ! *******************************
+    call mem_alloc(tmp1,size1)
+    call mem_alloc(tmp2,size2)
+    call mem_alloc(tmp3,size3)
+
+#ifdef VAR_MPI
+
+    ! alloc distribution array
+    nullify(distribution)
+    call mem_alloc(distribution,nbatchesGamma*nbatchesAlpha)
+
+    ! init distribution
+    distribution = 0
+    myload = 0
+#ifdef VAR_ICHOR
+    call mem_alloc(batchdimAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+    enddo
+    call mem_alloc(batchdimGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+    enddo
+#endif
+    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
+    &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+#ifdef VAR_ICHOR
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchdimGamma)
+#endif
+
+#endif
+
+    ! Start looping over gamma and alpha batches and calculate integrals
+    ! ******************************************************************
+
+    BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+#ifdef VAR_ICHOR
+       dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+       GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+       GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+       AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+       AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+#else
+       dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
+       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+       GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+#endif
+
+       BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
+#ifdef VAR_ICHOR
+          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+#else
+          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+#endif
+#ifdef VAR_MPI
+
+          ! distribute tasks
+          if (distribution((alphaB-1)*nbatchesGamma+gammaB) .ne. infpar%lg_mynum) then
+
+             cycle BatchAlpha
+
+          end if
+
+          if(DECinfo%PL>2)write (*, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
+             &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+
+#endif
+
+#ifdef VAR_ICHOR
+          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
+               & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+               & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
+#else
+          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+
+
+          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
+          ! ************************************************************************************
+          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
+               & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
+               & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
+               & FullRHS,INTSPEC)
+#endif
+          ! tmp2(delta,alphaB,gammaB;I) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cocc(beta,I)
+          m = nbasis*dimGamma*dimAlpha
+          k = nbasis
+          n = nocc
+          call dgemm('T','N',m,n,k,1.0E0_realk,tmp1,k,Cocc,k,0.0E0_realk,tmp2,m)
+
+          ! tmp3(J;alphaB,gammaB,I) = sum_{delta} CoccT(J,delta) tmp2(delta;alphaB,gammaB,I)
+          m = nocc
+          k = nbasis
+          n = dimAlpha*dimGamma*nocc
+          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT,m,tmp2,k,0.0E0_realk,tmp3,m)
+
+          ! tmp1(A;alphaB,gammaB,I) = sum_{delta} CvirtT(A,delta) tmp2(delta,alphaB,gammaB,I)
+          m = nvirt
+          k = nbasis
+          n = dimAlpha*dimGamma*nocc
+          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT,m,tmp2,k,0.0E0_realk,tmp1,m)
+
+          ! Reorder: tmp3(J,alphaB;gammaB,I) --> tmp2(gammaB,I;J,alphaB)
+          m = nocc*dimAlpha
+          n = dimGamma*nocc
+          call mat_transpose(m,n,1.0E0_realk,tmp3,0.0E0_realk,tmp2)
+
+          ! tmp3(K;I,J,alphaB) = sum_{gamma in gammaB} CoccT(K,gamma) tmp2(gamma,I,J,alphaB)
+          m = nocc
+          k = dimGamma
+          n = dimAlpha*nocc**2
+          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1,GammaStart),m,tmp2,k,0.0E0_realk,tmp3,m)
+
+          ! ooov(K,I,J;A) += sum_{alpha in alphaB} tmp3(K,I,J,alpha) Cvirt(alpha,A)
+          m = nocc**3
+          k = dimAlpha
+          n = nvirt
+          call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cvirt(AlphaStart,1),nbasis,1.0E0_realk,ooov%elm1,m)
+
+          ! Reorder: tmp1(A,alphaB;gammaB,I) --> tmp2(gammaB,I;A,alphaB)
+          m = nvirt*dimAlpha
+          n = dimGamma*nocc
+          call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
+
+          ! tmp1(B;I,A,alphaB) = sum_{gamma in gammaB} CvirtT(B,gamma) tmp2(gamma,I,A,alphaB)
+          m = nvirt
+          k = dimGamma
+          n = nvirt*nocc*dimAlpha
+          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(1,GammaStart),m,tmp2,k,0.0E0_realk,tmp1,m)
+
+#ifdef VAR_MPI
+
+          ! mpi   : 1) tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
+          !         2) vovv(B,I,A,C) += sum_{tile in CB} tmp2(B,I,A,tile)
+          ! serial: vovv(B,I,A,C) += sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,C)
+          m = nocc*nvirt**2
+          k = dimAlpha
+
+          total_num_tiles = vovv%ntiles
+          tile = 0
+
+          do c=1,nvirt,tile_size
+
+             tile = tile + 1
+
+             call get_tileinfo_nels_fromarr8(nelms,vovv,i8*tile)
+             tile_size_tmp = nelms/(nocc*nvirt**2)
+
+             n = tile_size_tmp
+
+             ! tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
+             call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,c),nbasis,0.0E0_realk,tmp2,m)
+
+             call time_start_phase(PHASE_COMM)
+#ifdef VAR_HAVE_MPI3
+             call tensor_lock_win(vovv,tile,'s',assert=mode)
+#endif
+             call get_residence_of_tile(dest,tile,vovv, idx_on_node = pos)
+
+             if( alloc_in_dummy )then
+                wi_idx = 1
+                p      = pos - 1
+             else
+                wi_idx = tile
+                p      = 0
+             endif
+
+
+             do first_el_c_block=1,ov2*tile_size_tmp,MAX_SIZE_ONE_SIDED
+#ifndef VAR_HAVE_MPI3
+                call tensor_lock_win(vovv,tile,'s',assert=mode)
+#endif
+
+                nel2t=MAX_SIZE_ONE_SIDED
+                if(((ov2*tile_size_tmp-first_el_c_block)<MAX_SIZE_ONE_SIDED).and.&
+                   &(mod(ov2*tile_size_tmp-first_el_c_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
+                   &nel2t=int(mod(ov2*tile_size_tmp,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
+
+                call lsmpi_acc(tmp2(first_el_c_block:first_el_c_block+nel2t-1),nel2t,p+first_el_c_block,dest,vovv%wi(wi_idx))
+
+#ifdef VAR_HAVE_MPI3
+                call lsmpi_win_flush(vovv%wi(wi_idx),rank=dest,local=.true.)
+#else
+                call tensor_unlock_win(vovv,tile)
+#endif
+             enddo
+
+#ifdef VAR_HAVE_MPI3
+             call tensor_unlock_win(vovv,tile)
+#endif
+             call time_start_phase(PHASE_WORK)
+
+          end do
+
+#else
+
+          m = nocc*nvirt**2
+          k = dimAlpha
+          n = nvirt
+          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,1),nbasis,1.0E0_realk,vovv%elm1,m)
+
+#endif
+
+       end do BatchAlpha
+    end do BatchGamma
+
+#ifdef VAR_MPI
+
+    if (infpar%lg_nodtot .gt. 1) then
+
+       call ass_D4to1(ooov%elm1,dummy2,[nocc,nocc,nocc,nvirt])
+       
+       call time_start_phase(PHASE_IDLE)
+       call lsmpi_barrier(infpar%lg_comm)
+
+       ! now, reduce o^3v integrals onto master
+       call time_start_phase(PHASE_COMM)
+       call lsmpi_allreduce(dummy2,o3v,infpar%lg_comm) 
+       call time_start_phase(PHASE_WORK)
+
+    end if
+
+    ! dealloc distribution array
+    call mem_dealloc(distribution)
+
+#endif
+
+    ! free stuff
+    ! **********
+    call mem_dealloc(tmp1)
+    call mem_dealloc(tmp2)
+    call mem_dealloc(tmp3)
+
+#ifdef VAR_ICHOR
+    call FREE_SCREEN_ICHORERI()
+    call mem_dealloc(AOGammabatchinfo)
+    call mem_dealloc(AOAlphabatchinfo)
+#else
+    call free_decscreen(DECSCREEN)
+    call mem_dealloc(orb2batchGamma)
+    call mem_dealloc(batchdimGamma)
+    call mem_dealloc(batchsizeGamma)
+    call mem_dealloc(batchindexGamma)
+    do idx=1,nbatchesGamma
+       call mem_dealloc(batch2orbGamma(idx)%orbindex)
+    end do
+    call mem_dealloc(batch2orbGamma)
+    call mem_dealloc(orb2batchAlpha)
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchsizeAlpha)
+    call mem_dealloc(batchindexAlpha)
+    do idx=1,nbatchesAlpha
+       call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+       batch2orbAlpha(idx)%orbindex => null()
+    end do
+    call mem_dealloc(batch2orbAlpha)
+    nullify(mylsitem%setting%LST_GAB_LHS)
+    nullify(mylsitem%setting%LST_GAB_RHS)
+#endif
+    call mem_dealloc(CoccT)
+    call mem_dealloc(CvirtT)
+
+    ! finally, reorder ooov(K,I,J,A) --> ooov(I,J,K,A)
+    call tensor_reorder(ooov,[2,3,1,4])
+
+    if (master) call LSTIMER('CCSD(T) INT (ABC)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
+  end subroutine get_CCSDpT_integrals_abc
 
 
   !> \brief Get optimal batch sizes to be used in get_CCSDpT_integrals
@@ -6390,7 +10023,7 @@ contains
   !> \author Kasper Kristensen & Janus Eriksen
   !> \date September 2011, rev. October 2012
   subroutine get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-        & size1,size2,size3,adapt_to_nnodes)
+        & size1,size2,size3,adapt_to_nnodes,abc,tile_size)
 
      implicit none
 
@@ -6414,9 +10047,13 @@ contains
      integer(kind=long),intent(inout) :: size3
      !> choose to split if more nodes are available than necessary
      logical,intent(in) :: adapt_to_nnodes
+     !> is this for the abc partitioning?
+     logical, intent(in) :: abc
+     !> tile_size for abc partitioning
+     integer, intent(in) :: tile_size
      !> memory reals
      real(realk) :: MemoryNeeded, MemoryAvailable
-     integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma
+     integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma,iAO
      integer(kind=ls_mpik) :: nnod,me
      logical :: master
      ! Memory currently available
@@ -6448,8 +10085,17 @@ contains
         ! The smallest possible AO batch depends on the basis set
         ! (More precisely, if all batches are made as small as possible, then the
         !  call below determines the largest of these small batches).
+#ifdef VAR_ICHOR
+        !Determine the minimum allowed AObatch size MinAObatch
+        !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
+        !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
+        !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
+        !'R'  !Specifies that it is the Regular AO basis that should be batched
+        iAO = 1 !the center that the batching should occur on.  
+        call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
+#else
         call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
-
+#endif
 
         ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
         AlphaDim=MinAObatch
@@ -6462,8 +10108,8 @@ contains
         ! =================================
         GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
 
-           call get_max_arraysizes_for_ccsdpt_integrals(alphaDim,gamma,nbasis,nocc,nvirt,&
-              & size1,size2,size3,MemoryNeeded)
+           call get_max_arraysizes_for_ccsdpt_integrals(alphadim,gamma,nbasis,nocc,nvirt,&
+              & size1,size2,size3,MemoryNeeded,abc,tile_size)
 
            if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
               if(adapt_to_nnodes)then
@@ -6508,7 +10154,7 @@ contains
         AlphaLoop: do alpha = MaxAObatch,MinAOBatch,-1
 
            call get_max_arraysizes_for_ccsdpt_integrals(alpha,gammadim,nbasis,nocc,nvirt,&
-              & size1,size2,size3,MemoryNeeded)
+              & size1,size2,size3,MemoryNeeded,abc,tile_size)
 
            if(MemoryNeeded < MemoryAvailable .or. (alpha==minAObatch) ) then
 
@@ -6552,10 +10198,13 @@ contains
         ! Print out and sanity check
         ! ==========================
 
-        write(DECinfo%output,*)
-        write(DECinfo%output,*)
         write(DECinfo%output,*) '======================================================================='
         write(DECinfo%output,*) '                     CCSD(T) INTEGRALS: MEMORY SUMMARY                 '
+        if (abc) then
+           write(DECinfo%output,*) '                             ABC partitioning                          '
+        else
+           write(DECinfo%output,*) '                             IJK partitioning                          '
+        endif
         write(DECinfo%output,*) '======================================================================='
         write(DECinfo%output,*)
         write(DECinfo%output,*) 'To be on the safe side we use only 85% of the estimated available memory'
@@ -6571,7 +10220,7 @@ contains
         write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9_realk
         write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9_realk
         write(DECinfo%output,*)
-
+        write(DECinfo%output,*)
 
      endif
 
@@ -6582,7 +10231,8 @@ contains
 
      ! Sanity check
      call get_max_arraysizes_for_ccsdpt_integrals(alphadim,gammadim,nbasis,nocc,nvirt,&
-        & size1,size2,size3,MemoryNeeded)  
+        & size1,size2,size3,MemoryNeeded,abc,tile_size)
+
      if(MemoryNeeded > MemoryAvailable) then
         write(DECinfo%output,*) 'Requested/available memory: ', MemoryNeeded, MemoryAvailable
         call lsquit('CCSD(T) integrals: Insufficient memory!',-1)
@@ -6599,7 +10249,7 @@ contains
   !> \author Kasper Kristensen & Janus Eriksen
   !> \date September 2011, rev. October 2012
   subroutine get_max_arraysizes_for_ccsdpt_integrals(alphadim,gammadim,nbasis,nocc,nvirt,&
-                     & size1,size2,size3,mem)
+                     & size1,size2,size3,mem,abc,tile_size)
     implicit none
     !> Max size for AO alpha batch
     integer,intent(in) :: alphadim
@@ -6619,39 +10269,113 @@ contains
     integer(kind=long),intent(inout) :: size3
     !> Tot size of temporary arrays (in GB)
     real(realk), intent(inout) :: mem
+    !> is this for the abc partitioning?
+    logical, intent(in) :: abc
+    !> tle_size only relevant for abc partitioning
+    integer, intent(in) :: tile_size 
     real(realk) :: GB
     integer(kind=long) :: tmpI
     GB = 1.000E-9_realk ! 1 GB
     ! Array sizes needed in get_CCSDpT_integrals are checked and the largest one is found
+ 
+    ! Tmp array 1
+    if (abc) then
+
+       size1 = i8*alphadim*gammadim*nbasis*nbasis
+       tmpI = i8*alphadim*gammadim*nocc*nvirt
+       size1 = max(size1,tmpI)
+       tmpI = i8*alphadim*nocc*nvirt**2
+       size1 = max(size1,tmpI)
+
+    else
+
+       size1 = i8*alphadim*gammadim*nbasis*nbasis
+       tmpI = i8*nvirt**2*gammadim*alphadim
+       size1 = max(size1,tmpI)
+       tmpI = i8*nvirt*nocc*gammadim*alphadim
+       size1 = max(size1,tmpI)
+       tmpI = i8*nvirt*nocc**2*alphadim
+       size1 = max(size1,tmpI)
+       tmpI = i8*nvirt**3
+       size1 = max(size1,tmpI)
+
+    endif
   
-    ! Tmp array 1 (five candidates)
-    size1 = i8*alphadim*gammadim*nbasis*nbasis
-    tmpI = i8*nvirt**2*gammadim*alphadim
-    size1 = max(size1,tmpI)
-    tmpI = i8*nvirt*nocc*gammadim*alphadim
-    size1 = max(size1,tmpI)
-    tmpI = i8*nvirt*nocc**2*alphadim
-    size1 = max(size1,tmpI)
-    tmpI = i8*nvirt**3
-    size1 = max(size1,tmpI)
+    ! tmp array 2
+    if (abc) then
+
+       size2 = i8*alphadim*gammadim*nbasis*nocc
+       tmpI = i8*alphadim*gammadim*nocc**2
+       size2 = max(size2,tmpI)
+       tmpI = i8*alphadim*gammadim*nocc*nvirt
+       size2 = max(size2,tmpI)
+#ifdef VAR_MPI
+       tmpI = i8*nocc*nvirt**2*tile_size
+       size2 = max(size2,tmpI)
+#endif
+
+    else
+
+       size2 = i8*alphadim*gammadim*nbasis*nvirt
+       tmpI = i8*alphadim*gammadim*nvirt*nocc
+       size2 = max(size2,tmpI)
+       tmpI = i8*nvirt**3
+       size2 = max(size2,tmpI)
+
+    endif
   
-    ! tmp array 2 (three candidates)
-    size2 = i8*alphadim*gammadim*nbasis*nvirt
-    tmpI = alphadim*gammadim*nvirt*nocc
-    size2 = max(size2,tmpI)
-    tmpI = i8*nvirt**3
-    size2 = max(size2,tmpI)
-  
-    ! Tmp array3 (two candidates)
-    size3 = i8*alphadim*gammadim*nvirt**2
-    tmpI = i8*alphadim*nvirt**3
-    size3 = max(size3,tmpI)
-  
+    ! Tmp array3
+    if (abc) then
+
+       size3 = i8*alphadim*gammadim*nocc**2
+       tmpI = i8*alphadim*nocc**3
+       size3 = max(size3,tmpI)
+ 
+    else
+
+       size3 = i8*alphadim*gammadim*nvirt**2
+       tmpI = i8*alphadim*nvirt**3
+       size3 = max(size3,tmpI)
+
+    endif
+
     ! Size = size1+size2+size3,  convert to GB
     mem = realk*GB*(size1+size2+size3)
 
 
   end subroutine get_max_arraysizes_for_ccsdpt_integrals
+
+  subroutine print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size,nodtotal)
+      implicit none
+      integer, intent(in) :: nbasis,nocc,nvirt
+      logical, intent(in) :: print_frags,abc
+      integer, intent(in) :: tile_size,nodtotal
+      logical :: ijk
+
+      if (abc) then
+         ijk = .false.
+      else
+         ijk = .true.
+      endif
+
+      write(DECinfo%output,'(/,a)') '-----------------------------'
+      write(DECinfo%output,'(a)')   '      CCSD(T) information    '
+      write(DECinfo%output,'(a,/)') '-----------------------------'
+      write(DECinfo%output,'(a,i4)')     'Num. b.f.              = ',nbasis
+      write(DECinfo%output,'(a,i4)')     'Num. occ. orb.         = ',nocc
+      write(DECinfo%output,'(a,i4)')     'Num. unocc. orb.       = ',nvirt
+#ifdef VAR_MPI
+      write(DECinfo%output,'(a,i4)')     'Number of nodes in lg  = ',nodtotal
+#endif
+      write(DECinfo%output,'(a,l4)')     'Print frag.energies    = ',print_frags
+      write(DECinfo%output,'(a,l4)')     'IJK partitioning       = ',ijk
+      write(DECinfo%output,'(a,l4)')     'ABC partitioning       = ',abc
+      if (abc) write(DECinfo%output,'(a,i4)')     'Tile size for ABC      = ',tile_size
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+
+  end subroutine print_pt_info
+
 !endif mod_unreleased
 #endif
 
@@ -6690,36 +10414,104 @@ end module ccsdpt_module
     implicit none
     integer :: nocc, nvirt,nbasis
     real(realk), pointer :: ppfock(:,:), qqfock(:,:), Co(:,:), Cv(:,:)
-    type(array) :: ccsdpt_t1
-    type(array) :: ccsd_t2, ccsdpt_t2
+    type(tensor) :: ccsdpt_t1
+    type(tensor) :: vovo,ccsd_t2, ccsdpt_t2
+    real(realk) :: ccsdpt_e4
     type(lsitem) :: mylsitem
+    logical :: print_frags,abc
+
+    abc = .false.
+    print_frags = .false.
 
     call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2%elm4,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_t2%elm4,mylsitem,print_frags,abc)
 
     !FIXME: split MPI messages!!!!!!!!!!
-    ! init and receive ccsd_doubles array4 structure
-    ccsd_t2 = array_init([nvirt,nocc,nvirt,nocc],4)
-    call ls_mpibcast(ccsd_t2%elm4,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
+    ! init and receive vovo and ccsd_doubles array structures
+    if (abc) then
 
-    ! init ccsd(t) singles and ccsd(t) doubles
-    ccsdpt_t1 = array_init([nvirt,nocc],2)
-    ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+       call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+       call tensor_init(ccsd_t2, [nocc,nocc,nvirt,nvirt],4)
+
+       call ls_mpibcast(vovo%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(ccsd_t2%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+
+    else
+
+       call tensor_init(vovo, [nvirt,nvirt,nocc,nocc],4)
+       call tensor_init(ccsd_t2, [nvirt,nvirt,nocc,nocc],4)
+
+       call ls_mpibcast(vovo%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+
+    endif
+
+    if (print_frags) then
+ 
+       ! init ccsd(t) singles and ccsd(t) doubles
+       if (abc) then
+
+          call tensor_init(ccsdpt_t1, [nocc,nvirt],2)
+          call tensor_init(ccsdpt_t2, [nocc,nocc,nvirt,nvirt],4)
+          
+       else
+
+          call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
+          call tensor_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4)
+
+       endif
+
+    else
+
+       ! init ccsd(t) singles
+       if (abc) then
+
+          call tensor_init(ccsdpt_t1, [nocc,nvirt],2)
+
+       else
+
+          call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
+
+       endif
+       ccsdpt_e4 = 0.0E0_realk
+
+    endif
 
     call time_start_phase(PHASE_WORK)
 
     ! now enter the ccsd(t) driver routine
-    call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
-                         & ccsdpt_t1,ccsdpt_t2)
+    if (print_frags) then
+
+       call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,vovo,ccsd_t2,&
+                               & ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+
+    else
+
+       call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,vovo,ccsd_t2,&
+                               & ccsdpt_t1,print_frags,abc,e4=ccsdpt_e4)
+
+    endif
 
     call time_start_phase(PHASE_WORK)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
-    call array_free(ccsdpt_t1)
-    call array_free(ccsd_t2)
-    call array_free(ccsdpt_t2)
+    call tensor_free(vovo)
+    call tensor_free(ccsd_t2)
+
+    if (print_frags) then
+
+       call tensor_free(ccsdpt_t1)
+       call tensor_free(ccsdpt_t2)
+
+    else
+
+       call tensor_free(ccsdpt_t1)
+
+    endif
+
+    call ls_free(mylsitem)
 
   end subroutine ccsdpt_slave
 

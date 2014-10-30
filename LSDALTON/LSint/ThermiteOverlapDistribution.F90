@@ -7,7 +7,7 @@ use SphCart_matrices
 use OD_type
 use ls_util
 use precision
-use Integralparameters
+use LSparameters
 use ThermiteMem_module
 use OverlapType
 TYPE Allocitem
@@ -1830,7 +1830,7 @@ Logical :: printCenter
    ENDDO
 !   IF(Orb%angmom(K) .GE. 2)THEN
 !      WRITE(IUNIT,'(7X,A,I3)')'Spherical transformation matrix for angular momentum', Orb%angmom(K)
-!      CALL OUTPUT(orb%SPH_MAT(Orb%angmom(K)+1)%p%elms,1,2*Orb%angmom(K)+1,&
+!      CALL LS_OUTPUT(orb%SPH_MAT(Orb%angmom(K)+1)%p%elms,1,2*Orb%angmom(K)+1,&
 !         &1,(Orb%angmom(K)+1)*(Orb%angmom(K)+2)/2,2*Orb%angmom(K)+1,&
 !         &(Orb%angmom(K)+1)*(Orb%angmom(K)+2)/2,1,IUNIT)
 !   ENDIF
@@ -2225,7 +2225,7 @@ IF (IPRINT.GT. 50) THEN
   DO iPrim=1,nPrim
     DO iOrb=1,nOrb
         WRITE(LUPRI,'(5X,A,I3,A,I3)') 'iPrim =',iPrim,', iOrb =',iOrb
-        WRITE(LUPRI,'(7X,5ES10.4/,(7X,5ES10.4))') (EcoeffCont(iAng,iOrb,iPrim),iAng=1,nAng)
+        WRITE(LUPRI,'(7X,5ES12.4/,(7X,5ES12.4))') (EcoeffCont(iAng,iOrb,iPrim),iAng=1,nAng)
     ENDDO
   ENDDO
 ENDIF
@@ -2308,7 +2308,7 @@ IF(IPRINT.GT.100)THEN
    do X=1,nOperatorComp
       WRITE(lupri,'(A,I3,A,I3,A,I3)')&
            &'The SphericalTransformed intermidiates lm=',lm,'dim1=',dim1,'X=',X
-      call output(integralSpher(:,:,X),1,lm,1,dim1,lm,dim1,1,lupri)
+      call ls_output(integralSpher(:,:,X),1,lm,1,dim1,lm,dim1,1,lupri)
    enddo
 ENDIF
 
@@ -2522,7 +2522,7 @@ IF (IPRINT.GT. 30) THEN
   WRITE(LUPRI,'(7X,A)') 'C1  C2 CC(prim12)'
   DO iC2=1,nC2
     DO iC1=1,nC1
-      WRITE(LUPRI,'(5X,2I4,5ES10.4/,(13X,5ES10.4))') iC1,iC2,(CC(iP,iC1,iC2),iP=1,nP)
+      WRITE(LUPRI,'(5X,2I4,5ES12.4/,(13X,5ES12.4))') iC1,iC2,(CC(iP,iC1,iC2),iP=1,nP)
     ENDDO
   ENDDO
 ENDIF

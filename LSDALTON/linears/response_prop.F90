@@ -276,11 +276,11 @@ Contains
     PrintFrequencyLoop: do i=1,nfreq
 
        if(alphainput%imag_frequencies_in_input) then ! print complex frequency
-          write(lupri,'(1X,A,g10.5,A,g10.5,A)')  'Frequency = ', &
+          write(lupri,'(1X,A,g12.5,A,g12.5,A)')  'Frequency = ', &
                & real(MyRspFunc(i)%freq(2)), " + ", imag(MyRspFunc(i)%freq(2)), "i"
           write(lupri,*) '===================================='
        else ! print real frequency
-          write(lupri,'(1X,A,g10.5)')  'Frequency = ', &
+          write(lupri,'(1X,A,g12.5)')  'Frequency = ', &
                & real(MyRspFunc(i)%freq(2))
           write(lupri,*) '=================='
        end if
@@ -324,6 +324,8 @@ Contains
        write(lupri,*) 
 
     end do PrintFrequencyLoop
+
+    write(lupri,'(1X,A)') ' End of polarizability calculation'
 
 
     ! Deallocate stuff
@@ -607,15 +609,15 @@ Contains
     PrintFrequencyLoop: do i=1,nfreq
 
        if(ImagFreq) then  
-          write(lupri,'(1X,A,g10.5,A,g10.5,A)')  'Frequency B = ', &
+          write(lupri,'(1X,A,g12.5,A,g12.5,A)')  'Frequency B = ', &
                & real(MyRspFunc(i)%freq(2)), " + ", imag(MyRspFunc(i)%freq(2)), "i"
-          write(lupri,'(1X,A,g10.5,A,g10.5,A)')  'Frequency C = ', &
+          write(lupri,'(1X,A,g12.5,A,g12.5,A)')  'Frequency C = ', &
                & real(MyRspFunc(i)%freq(3)), " + ", imag(MyRspFunc(i)%freq(3)), "i"
           write(lupri,*) '======================================'
        else
-          write(lupri,'(1X,A,g10.5)')  'Frequency B = ', &
+          write(lupri,'(1X,A,g12.5)')  'Frequency B = ', &
                & real(MyRspFunc(i)%freq(2))
-          write(lupri,'(1X,A,g10.5)')  'Frequency C = ', &
+          write(lupri,'(1X,A,g12.5)')  'Frequency C = ', &
                & real(MyRspFunc(i)%freq(3))
           write(lupri,*) '========================'
        end if
@@ -1030,19 +1032,19 @@ Contains
     PrintFrequencyLoop: do i=1,nfreq
 
        if(ImagFreq) then
-          write(lupri,'(1X,A,g10.5,A,g10.5,A)')  'Frequency B = ', &
+          write(lupri,'(1X,A,g12.5,A,g12.5,A)')  'Frequency B = ', &
                & real(MyRspFunc(i)%freq(2)), " + ", imag(MyRspFunc(i)%freq(2)), "i"
-          write(lupri,'(1X,A,g10.5,A,g10.5,A)')  'Frequency C = ', &
+          write(lupri,'(1X,A,g12.5,A,g12.5,A)')  'Frequency C = ', &
                & real(MyRspFunc(i)%freq(3)), " + ", imag(MyRspFunc(i)%freq(3)), "i"
-          write(lupri,'(1X,A,g10.5,A,g10.5,A)')  'Frequency D = ', &
+          write(lupri,'(1X,A,g12.5,A,g12.5,A)')  'Frequency D = ', &
                & real(MyRspFunc(i)%freq(4)), " + ", imag(MyRspFunc(i)%freq(4)), "i"
           write(lupri,*) '======================================'
        else
-          write(lupri,'(1X,A,g10.5)')  'Frequency B = ', &
+          write(lupri,'(1X,A,g12.5)')  'Frequency B = ', &
                & real(MyRspFunc(i)%freq(2))
-          write(lupri,'(1X,A,g10.5)')  'Frequency C = ', &
+          write(lupri,'(1X,A,g12.5)')  'Frequency C = ', &
                & real(MyRspFunc(i)%freq(3))
-          write(lupri,'(1X,A,g10.5)')  'Frequency D = ', &
+          write(lupri,'(1X,A,g12.5)')  'Frequency D = ', &
                & real(MyRspFunc(i)%freq(4))
           write(lupri,*) '========================'
        end if
@@ -4151,7 +4153,7 @@ Contains
          WRITE(LUMCD4,'(A)')'#set linestyle  7'
          WRITE(LUMCD4,'(A)')'set size 2.0,1.0'
          WRITE(LUMCD4,'(A)')'set style data linespoints'
-         WRITE(LUMCD4,'(A,F6.4,A,F6.4,A)')'set xrange [',Xcoor3(1),':',Xcoor3(nXcoor3),']'
+         WRITE(LUMCD4,'(A,F12.4,A,F12.4,A)')'set xrange [',Xcoor3(1),':',Xcoor3(nXcoor3),']'
          WRITE(LUMCD4,'(A)')'P(x)=0.000'
          WRITE(LUMCD4,'(A)')'plot ''dampedMCDspectraRAU.dat'' using 1:2 title ''london'' w l ls 3,'//Achar(92)
          WRITE(LUMCD4,'(A)')'     ''dampedMCDspectraRAU.dat'' using 1:3 title ''nolondon'' w l ls 4,'//Achar(92)
@@ -4172,7 +4174,7 @@ Contains
          WRITE(LUMCD4,'(A)')'#set linestyle  7'
          WRITE(LUMCD4,'(A)')'set size 2.0,1.0'
          WRITE(LUMCD4,'(A)')'set style data linespoints'
-         WRITE(LUMCD4,'(A,F6.4,A,F6.4,A)')'set xrange [',Xcoor3(1),':',Xcoor3(nXcoor3),']'
+         WRITE(LUMCD4,'(A,F12.4,A,F12.4,A)')'set xrange [',Xcoor3(1),':',Xcoor3(nXcoor3),']'
          WRITE(LUMCD4,'(A)')'P(x)=0.000'
          WRITE(LUMCD4,'(A)')'plot ''MCDspectraAU.dat'' using 1:2 title ''london'' w l ls 1,'//Achar(92)
          WRITE(LUMCD4,'(A)')'     ''MCDspectraAU.dat'' using 1:3 title ''nolondon'' w l ls 2,'//Achar(92)
@@ -4367,6 +4369,7 @@ enddo
 deallocate(NMST)
 deallocate(atomname)
 CALL LSTIMER('*SHIELD',TS,TE,LUPRI)
+WRITE(LUPRI,*) " Done with shielding tensor calculation"
 
 end subroutine NMRshieldresponse_driver
 
@@ -4658,7 +4661,7 @@ subroutine simulateSpectra(lupri,nBterms,nAterms,MCDBterm,MCDBtermL,MCDAterm,&
      WRITE(LUMCD2,'(A)')'#set linestyle  7'
      WRITE(LUMCD2,'(A)')'set size 2.0,1.0'
      WRITE(LUMCD2,'(A)')'set style data linespoints'
-     WRITE(LUMCD2,'(A,F6.4,A,F6.4,A)')'set xrange [',Xcoor(1),':',Xcoor(lengthX),']'
+     WRITE(LUMCD2,'(A,F12.4,A,F12.4,A)')'set xrange [',Xcoor(1),':',Xcoor(lengthX),']'
      WRITE(LUMCD2,'(A)')'P(x)=0.000'
      WRITE(LUMCD2,'(A)')'plot ''MCDspectraAU.dat'' using 1:2 title ''london'' w l ls 1,'//Achar(92)
      WRITE(LUMCD2,'(A)')'     ''MCDspectraAU.dat'' using 1:3 title ''nolondon'' w l ls 2,'//Achar(92)
@@ -5157,15 +5160,15 @@ end subroutine write_transition_density_matrix
   enddo
   WRITE(lupri,'(A)')' '
   WRITE(lupri,'(A)')'The transition dipole moments between state X and Y for operator XDIPLEN: <X | A - <A> | Y>'
-  call output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,1),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
+  call ls_output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,1),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
   WRITE(lupri,'(A)')' '
 
   WRITE(lupri,'(A)')'The transition dipole moments between state X and Y for operator YDIPLEN: <X | A - <A> | Y>'
-  call output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,2),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
+  call ls_output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,2),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
   WRITE(lupri,'(A)')' '
 
   WRITE(lupri,'(A)')'The transition dipole moments between state X and Y for operator ZDIPLEN: <X | A - <A> | Y>'
-  call output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,3),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
+  call ls_output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,3),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
   WRITE(lupri,'(A)')' '
   WRITE(lupri,'(A)')'The Full Dipole Moment Matrix'
   WRITE(lupri,'(A)')' '
@@ -5176,7 +5179,7 @@ end subroutine write_transition_density_matrix
      WRITE(lupri,'(A,A12)')'Dipole Moment Matrix for ',Dir(J)
      WRITE(lupri,'(A)')' '
 
-!     call output(DipoleMomentMatrix(:,:,J),1,1+nexci_max,1,1+nexci_max,1+nexci_max,1+nexci_max,1,lupri)
+!     call ls_output(DipoleMomentMatrix(:,:,J),1,1+nexci_max,1,1+nexci_max,1+nexci_max,1+nexci_max,1,lupri)
 
      DO K = 1,nexci_max+1,4
         IF(K.LE.nexci_max+1-3)THEN

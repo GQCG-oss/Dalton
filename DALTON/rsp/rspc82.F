@@ -566,6 +566,9 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -585,6 +588,13 @@ C
 #include "infrsp.h"
 #include "gnrinf.h"
 #include "mxcent.h"
+C
+      logical :: is_pcmsolver = .false.
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        is_pcmsolver = .true.
+      end if
+#endif
 C
       CALL QENTER('RSPELI')
 C
@@ -662,7 +672,7 @@ C CBN+JK 03.01.06 : This covers also mm/pcm
 C
 C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM .OR. QMNPMM
 C
-      IF (EMBEDDING) THEN
+      IF (EMBEDDING .or. is_pcmsolver) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      &               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF

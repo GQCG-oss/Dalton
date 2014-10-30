@@ -6,7 +6,7 @@ MODULE ProfileIchorMod
   use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
-  use Integralparameters
+  use LSparameters
   use molecule_typetype, only: MOLECULEINFO, MOLECULE_PT, ATOMITEM
   use molecule_type, only: build_pointmolecule, DETERMINE_MAXCOOR, &
        & free_moleculeinfo, build_atomicmolecule, print_mol
@@ -121,7 +121,7 @@ IF(config%prof%IchorProfDoThermite)THEN
       !   setting%scheme%CS_SCREEN = .FALSE.
       !   setting%scheme%PS_SCREEN = .FALSE.
       CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
-      call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
+      call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,intspec,dirac)
       CALL LSTIMER('Thermite4Center',TIMSTR,TIMEND,lupri,ForcePrint)
       call determine_norm(IntegralsII,normII,dim1,dim2,dim3,dim4)
       WRITE(lupri,*)'Norm of Thermite:',normII
@@ -188,9 +188,9 @@ IF(COMPARE)THEN
    ENDDO
  ENDDO
  write(lupri,*)'integralsIchor:'
- call output(integralsIchor,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
+ call ls_output(integralsIchor,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
  write(lupri,*)'integralsThermie:'
- call output(integralsII,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
+ call ls_output(integralsII,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
  call mem_dealloc(integralsIchor)
  call mem_dealloc(integralsII)
 ENDIF

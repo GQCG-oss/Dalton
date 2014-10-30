@@ -421,6 +421,12 @@ C
            END IF
          END DO
          IF (ABSLRS_NSCD) THEN
+           !stop if we are using symmetry.
+           if (NSYM.gt.1) then
+               WRITE (LUPRI,*)
+     &  'NSCD not yet working symmetry: remove sym and resubmit'
+               CALL QUIT('NSCD not fully working with symmetry')
+           end if
            CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                   'UNFORMATTED',IDUMMY,.FALSE.)
  333      CONTINUE

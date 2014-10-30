@@ -594,7 +594,7 @@ end subroutine diag_set_default_config
       type(avItem), intent(inout) :: av
       TYPE(util_HistoryStore),intent(in) :: queue
       type(Matrix), intent(in) :: S,Dmu
-      real(realk), intent(out) :: ratio
+      real(realk), intent(inout) :: ratio
 
       !** Initializations
       call lsquit('ratio_Dorth_D',-1)

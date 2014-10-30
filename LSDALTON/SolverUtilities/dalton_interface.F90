@@ -19,7 +19,7 @@ MODULE dal_interface
                 & ao2gcao_transform_matrixf
    use basis_typetype,only:VALBasParam
    use dec_typedef_module, only: batchTOorb,DecAObatchinfo
-   use Integralparameters
+   use LSparameters
    use AO_TypeType, only: AOITEM
    use files, only: lsclose, lsopen
    use BUILDAOBATCH, only: build_batchesOfAOs, build_ao, &
@@ -295,7 +295,7 @@ CONTAINS
       CALL DAXPY(3*natoms,1E0_realk,tmpGrad,1,Grad,1)
 
 !      WRITE(lupri,*)'The h1grad'
-!      call output(Grad,1,3,1,Natoms,3,natoms,1,lupri)
+!      call ls_output(Grad,1,3,1,Natoms,3,natoms,1,lupri)
 
       do I=1,Natoms
          IF(ABS(mat_trAB(genh1x(3*(I-1)+1),D)-grad(1,I)).GT.1E-8_realk)THEN
@@ -1430,6 +1430,13 @@ CONTAINS
       real(realk),parameter :: CS13=1E-13_REALK,CS14=1E-14_REALK,CS15=1E-15_REALK  
       logical :: CS_screenSAVE, PS_screenSAVE, OE_screenSAVE, PARI_screenSAVE
       logical :: OD_screenSAVE, MBIE_screenSAVE,SAVEReCalcGab
+      character :: intspec(5)
+      intspec(1) = 'R'
+      intspec(2) = 'R'
+      intspec(3) = 'R'
+      intspec(4) = 'R'
+      intspec(5) = 'C'
+
       print*,'di_screen_test(setting,nbast,lupri,luerr)',nbast
       CS(7)=CS7; CS(8)=CS8; CS(9)=CS9; CS(10)=CS10; CS(11)=CS11; CS(12)=CS12;
       CS(13)=CS13; CS(14)=CS14; CS(15)=CS15;
@@ -1449,7 +1456,8 @@ CONTAINS
       setting%scheme%OD_screen = .FALSE.
       setting%scheme%MBIE_screen = .FALSE.
       call mem_alloc(integrals,nbast,nbast,nbast,nbast)
-      call II_get_4center_eri(LUPRI,LUERR,setting,integrals,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LUERR,setting,integrals,&
+           & nbast,nbast,nbast,nbast,intspec)
       n(7:15)=0
       DO iD=1,nbast
          DO iC=1,nbast
@@ -1483,7 +1491,8 @@ CONTAINS
          WRITE(lupri,*)'Testing threshold = ',CS(I)
          setting%scheme%threshold = CS(I)/setting%scheme%J_THR
          WRITE(lupri,*)'Testing setting%scheme%threshold = ',setting%scheme%threshold
-         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,&
+              & nbast,nbast,nbast,nbast,intspec)
          test(7:15)=0;
          DO iD=1,nbast
             DO iC=1,nbast
@@ -1524,7 +1533,8 @@ CONTAINS
          WRITE(lupri,*)'Testing threshold = ',CS(I)
          setting%scheme%threshold = CS(I)/setting%scheme%J_THR
          WRITE(lupri,*)'Testing setting%scheme%threshold = ',setting%scheme%threshold
-         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,&
+              & nbast,nbast,nbast,nbast,intspec)
          test(7:15)=0;
          DO iD=1,nbast
             DO iC=1,nbast
@@ -1564,7 +1574,8 @@ CONTAINS
          WRITE(lupri,*)'Testing threshold = ',CS(I)
          setting%scheme%threshold = CS(I)/setting%scheme%J_THR
          WRITE(lupri,*)'Testing setting%scheme%threshold = ',setting%scheme%threshold
-         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,&
+              & nbast,nbast,nbast,nbast,intspec)
          test(7:15)=0;
          DO iD=1,nbast
             DO iC=1,nbast
@@ -2130,18 +2141,27 @@ CONTAINS
    ! WE have to go through the interface to dalton before the fock
    ! evaluator learns how to handle arbitrary-type arrays.
    ! ===================================================================
+#ifdef HAS_PCMSOLVER
+   use ls_pcm_config
+   use ls_pcm_scf, only: ls_pcm_energy_driver, ls_pcm_oper_ao_driver
+#endif
       IMPLICIT NONE
-      integer, INTENT(IN)         :: ndmat
+      integer, INTENT(IN)         :: ndmat, lupri,luerr
       TYPE(Matrix), INTENT(IN)    :: H1, D(ndmat)
       TYPE(Matrix), INTENT(INOUT) :: F(ndmat)
       type(lsitem) :: ls
       real(realk), INTENT(INOUT) :: Etotal(ndmat)
-      !
+      !local variables
       real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp,EK3,EK2
-      integer nbast, lupri,luerr,idmat
+      integer nbast,idmat,LUADMM
       logical :: Dsym,ADMMexchange
-      TYPE(Matrix) :: K(ndmat),dXC(ndmat)
+      TYPE(Matrix) :: K(ndmat),dXC(ndmat),Ksave
       logical :: PRINT_EK3
+      real(realk)  :: EcontADMM(5)
+#ifdef HAS_PCMSOLVER
+      type(matrix) :: fockPCM(ndmat)
+      real(realk)  :: Epol
+#endif      
       !
       PRINT_EK3 = ls%setting%scheme%PRINT_EK3
       nbast = D(1)%nrow
@@ -2162,7 +2182,6 @@ CONTAINS
             call lsquit('Auxiliary Density Matrix Calculation requires NOINCREM',-1)
          ENDIF
 
-
          !We do the full Coulomb part with Full density
          do idmat=1,ndmat
             call mat_zero(F(idmat))
@@ -2176,34 +2195,66 @@ CONTAINS
             call mat_init(dXC(idmat),nbast,nbast)
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
+            IF(PRINT_EK3)THEN
+               ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
+               call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),1,Dsym,K(idmat))
+               EK3 = mat_dotproduct(K(idmat),D(idmat))
+               EcontADMM(1) = EK3
+               IF(ls%input%dalton%ADMMBASISFILE)THEN
+                  !save matrix
+                  call mat_init(Ksave,nbast,nbast)
+                  call mat_assign(Ksave,K(idmat))
+               ENDIF
+               call mat_zero(K(idmat))
+            ENDIF
 
-IF(PRINT_EK3)THEN
-   ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
-   call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
-   EK3 = mat_dotproduct(K(idmat),D(idmat))
-   call mat_zero(K(idmat))
-ENDIF
-
-            call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
-
-IF(PRINT_EK3)THEN
-   EK2 = mat_dotproduct(K(idmat),D(idmat))
-   write(*,*)     "E(K3)= ",EK3
-   write(lupri,*) "E(K3)= ",EK3
-   write(*,*)     "E(k2)= ",EK2
-   write(lupri,*) "E(k2)= ",EK2
-   write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
-   write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
-ENDIF
-
-            Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
-            call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
-            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
-            Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
-            EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
-            write(lupri,*) "ADMM exchange energy contribution: ",EADMM
-            call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
+            call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym,&
+                 & EcontADMM,ls%input%dalton%ADMMBASISFILE)
             
+            IF(PRINT_EK3)THEN
+               EK2 = mat_dotproduct(K(idmat),D(idmat))
+               write(*,*)     "E(K3)= ",EK3
+               write(lupri,*) "E(K3)= ",EK3
+               write(*,*)     "E(k2)= ",EK2
+               write(lupri,*) "E(k2)= ",EK2
+               write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
+               write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
+               IF(ls%input%dalton%ADMMBASISFILE)THEN
+                  LUADMM = -1                  
+                  write(lupri,*) "ADMMmin: K(D) energy = ",EcontADMM(1)
+                  write(lupri,*) "ADMMmin: X(D) energy = ",EcontADMM(2)
+                  write(lupri,*) "ADMMmin: k(d) energy = ",EcontADMM(3)
+                  write(lupri,*) "ADMMmin: x(d) energy = ",EcontADMM(4)
+                  EcontADMM(5) = EcontADMM(1) - EcontADMM(3) - EcontADMM(2) + EcontADMM(4)
+                  write(lupri,*) "===================================================================="
+                  write(lupri,*) "ADMMmin: K(D) - k(d) - X(D) + x(d) = ",EcontADMM(5)                  
+                  write(lupri,*) "===================================================================="
+                  CALL LSOPEN(LUADMM,'ADMMmin.dat','UNKNOWN','FORMATTED')
+                  WRITE(LUADMM,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)
+                  CALL LSCLOSE(LUADMM,'KEEP')
+               ENDIF
+            ENDIF
+            
+            IF(ls%input%dalton%ADMMBASISFILE)THEN
+               !add full exchange matrix contribution to the Coulomb matrix - Standard convergence
+               call mat_daxpy(1.E0_realk,Ksave,F(idmat))
+               call mat_free(Ksave)
+               Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+            ELSE
+               Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
+               call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
+               call mat_init(Ksave,nbast,nbast)
+               call mat_zero(Ksave)
+               write(lupri,*) "ADMM exchange energy contribution: ",fockenergy_f(K(idmat),D(idmat),Ksave,&
+                    & ls%input%dalton%unres,ls%input%potnuc,lupri)
+               call mat_free(Ksave)
+               Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+               Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
+               EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
+               write(lupri,*) "ADMM EdXC: ",EdXC(idmat)
+               write(lupri,*) "ADMM exchange energy contribution: ",EADMM
+               call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
+            ENDIF
                      
             call mat_free(K(idmat))
             call mat_free(dXC(idmat))
@@ -2226,6 +2277,24 @@ ENDIF
             Etotal(idmat) = Etotal(idmat) + Edfty(idmat)
          enddo
       ENDIF
+#ifdef HAS_PCMSOLVER
+      if (pcm_config%do_pcm) then
+         ! ndmat is 1
+         ! Calculate polarization energy and update Etotal
+         do idmat = 1, ndmat             
+            call ls_pcm_energy_driver(D(idmat), Epol)
+            Etotal(idmat) = Etotal(idmat) + Epol
+         enddo
+         ! Update Fock matrix with PCM contribution
+         do idmat = 1, ndmat
+            call mat_init(fockPCM(idmat), nbast, nbast)
+            call mat_zero(fockPCM(idmat))
+            call ls_pcm_oper_ao_driver(fockPCM(idmat))
+            call mat_daxpy(-1.e0_realk, fockPCM(idmat), F(idmat))
+            call mat_free(fockPCM(idmat))
+         end do
+      end if
+#endif      
       !** F = h + G
       do idmat=1,ndmat
          call mat_daxpy(1E0_realk,H1,F(idmat))
@@ -2305,9 +2374,14 @@ ENDIF
         integer :: ndmat 
 !       
         logical :: Dsym
+        integer :: isym
 
         Dsym = .TRUE. !matrix either symmetric or antisymmetric
-        IF(mat_get_isym(Dens).EQ.3) Dsym = .FALSE. !NON symmetric Density matrix
+        isym = mat_get_isym(Dens)
+        WRITE(lupri,*)'di_GET_GbDsSingle: mat_get_isym',isym
+        IF(isym.EQ.3)THEN
+           Dsym = .FALSE. !NON symmetric Density matrix
+        ENDIF
         ndmat = 1
         IF(present(setting))THEN
            !This should be changed to a test like the MATSYM function
@@ -2355,9 +2429,15 @@ ENDIF
         ELSE
             ADMMexchange = lsint_fock_data%ls%setting%scheme%ADMM_EXCHANGE 
         ENDIF
+
         IF (ADMMexchange) THEN 
             ! GdBs = J(B) + K(b) + X(B) - X(b)
+#ifdef MOD_UNRELEASED
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
+#else
+            write(lupri,'(3X,A)') 'Warning: the linear-response part of the code does not apply ADMM for exchange'
+            call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
+#endif
         ELSE 
             ! GdBs = J(B) + K(B)
             call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
@@ -2432,12 +2512,14 @@ ENDIF
       type(Matrix), intent(inout) :: GbDs(nDmat)  !output
       type(lssetting),optional :: setting !intent(inout)
       !
-      integer :: idmat
+      integer :: idmat,isym
       logical :: Dsym
       
       Dsym = .TRUE. !all matrices either symmetric or antisymmetric
       DO idmat = 1,ndmat
-         IF(mat_get_isym(Dens(idmat)).EQ.3)THEN
+         isym = mat_get_isym(Dens(idmat))
+         WRITE(lupri,*)'di_GET_GbDsArray: mat_get_isym',isym
+         IF(isym.EQ.3)THEN
             Dsym = .FALSE. !NON symmetric Density matrix
          ENDIF
          IF(.NOT.Dsym)EXIT
@@ -2756,6 +2838,12 @@ ENDIF
         real(realk) :: JFAC,KFAC
         real(realk),pointer :: g(:,:,:,:),LmatFull(:,:),GmatFull(:,:)
         real(realk),pointer :: LmatFull2(:,:),GmatFull2(:,:)
+        character :: intspec(5)
+        intspec(1) = 'R'
+        intspec(2) = 'R'
+        intspec(3) = 'R'
+        intspec(4) = 'R'
+        intspec(5) = 'C'
         nbast = Lmat%nrow
         IF(.FALSE.)THEN
            call mat_init(TEMP2,Gmat%nrow,Gmat%ncol)
@@ -2785,7 +2873,7 @@ ENDIF
               ENDDO
            ELSE
               call II_get_4center_eri(lsint_fock_data%LUPRI,lsint_fock_data%LUERR,&
-                   & lsint_fock_data%ls%SETTING,g,nbast,nbast,nbast,nbast)
+                   & lsint_fock_data%ls%SETTING,g,nbast,nbast,nbast,nbast,intspec)
               LUINT = -1
               call LSOPEN(LUINT,'ERI.Integrals','UNKNOWN','UNFORMATTED')
               do D=1,nbast
@@ -3094,7 +3182,7 @@ ENDIF
       SameMOL = .TRUE.
       MoTrans = .FALSE.
       call LSTIMER('START',t1,t2,LUPRI)
-      call SCREEN_ICHORERI_DRIVER(lupri,luerr,ls%setting,INTSPEC,SameMOL)
+      call SCREEN_ICHORERI_DRIVER(lupri,iprint,ls%setting,INTSPEC,SameMOL)
       call LSTIMER('SCREENDECJ',t1,t2,LUPRI,ForcePrint)
 
       !step 1 Orbital to Batch information
@@ -3201,6 +3289,7 @@ ENDIF
       call mat_free(J)
       call mat_free(Jdec)
       call mat_free(tempm3)
+      call FREE_SCREEN_ICHORERI()
 
     END SUBROUTINE DI_DECPACKEDJ
 
@@ -3383,12 +3472,18 @@ ENDIF
       real(realk),pointer   :: integrals(:,:,:,:)
       real(realk),pointer   :: integrals2(:,:,:,:)
       integer :: iB,iA,iC,iD
+      character :: intspec(5)
+      intspec(1) = 'R'
+      intspec(2) = 'R'
+      intspec(3) = 'R'
+      intspec(4) = 'R'
+      intspec(5) = 'C'
       call mem_alloc(integrals2,nbast,nbast,nbast,nbast)
-      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals2,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals2,nbast,nbast,nbast,nbast,intspec)
 
       ls%setting%scheme%interest = .FALSE.
       call mem_alloc(integrals,nbast,nbast,nbast,nbast)
-      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast,intspec)
       do iD=1,nbast
          do iC=1,nbast
             do iB=1,nbast

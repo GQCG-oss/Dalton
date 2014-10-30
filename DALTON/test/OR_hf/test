@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import os
 import sys
 
@@ -34,7 +35,7 @@ f.add(string = 'Center-of-mass',
 
 # or_lon
 f.add(string = 'Optical rotation (',
-      rel_tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-5)
 
 # gauge_or
 f.add(string = 'Center of mass gauge origin',

@@ -38,7 +38,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
      & check_cc_input
-use dec_typedef_module,only: DECinfo,MODEL_MP2
+use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -57,7 +57,7 @@ use plt_driver_module
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
-use lsmpi_type, only: DFTSETFU
+use lsmpi_type, only: DFTSETFU,SPLIT_MPI_MSG,MAX_SIZE_ONE_SIDED
 #endif
 #ifdef BUILD_CGTODIFF
 use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
@@ -67,6 +67,11 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
+#ifdef HAS_PCMSOLVER
+use ls_pcm_config, only: pcmtype, ls_pcm_init, ls_pcm_input
+#endif
+use LSparameters
+
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
      & config_free, set_final_config_and_print
@@ -118,6 +123,11 @@ implicit none
   ! RSP solver
   call RSPSOLVERiputitem_set_default_config(config%response%RSPSOLVERinput)
   call rsp_tasks_set_default_config(config%response%tasks)
+#ifdef VAR_RSP
+  config%response%noOpenRSP = .FALSE. !Use OpenRSP module - Default
+#else
+  config%response%noOpenRSP = .TRUE.  !Use LSDALTON own Response module
+#endif
 #ifdef MOD_UNRELEASED
   ! Molecular Hessian
   call geohessian_set_default_config(config%geoHessian)
@@ -126,6 +136,10 @@ implicit none
   call optimization_set_default_config(config%optinfo)
   ! Dynamics
   call LS_dynamics_init(config%dynamics)
+#ifdef HAS_PCMSOLVER
+  ! Polarizable Continuum Model
+  call ls_pcm_init(config%pcm)
+#endif
   !Only for testing new sparse matrix library, should be removed afterwards!
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
@@ -135,6 +149,7 @@ implicit none
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
   config%doESGopt = .false.
+  config%GPUMAXMEM = 2.0E0_realk
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
 #ifdef MOD_UNRELEASED
@@ -146,7 +161,7 @@ implicit none
   !F12 calc?
   config%doF12=.false.
   config%doTestMPIcopy = .false.
-  config%type_array_debug = .false.
+  config%type_tensor_debug = .false.
   config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
@@ -218,6 +233,10 @@ end subroutine config_free
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
 use IIDFTINT, only: II_DFTsetFunc
+#if defined(ENABLE_QMATRIX)
+use ls_qmatrix, only: ls_qmatrix_init, &
+                      ls_qmatrix_input
+#endif
 implicit none
 !> Logical unit number for LSDALTON.OUT
 INTEGER            :: LUPRI
@@ -738,6 +757,18 @@ DO
            & lucmd,lupri,config%molecule%NAtoms)
    ENDIF
 !
+
+!
+! Find PCM input section
+!
+#ifdef HAS_PCMSOLVER
+   IF (WORD(1:5) .EQ. '**PCM') THEN
+      config%pcm%do_pcm = .true.
+      call ls_pcm_input(config%pcm,readword,word,&
+           & lucmd,lupri)
+   ENDIF
+#endif
+!
    
 #ifdef MOD_UNRELEASED
    IF (WORD(1:5) == '**PBC') THEN
@@ -840,6 +871,18 @@ DO
    ENDIF
 #endif
 
+#if defined(ENABLE_QMATRIX)
+   ! QMatrix library
+   if (WORD=='**QMATRIX') then
+       config%do_qmatrix = .true.
+       ! initializes the QMatrix interface
+       call ls_qmatrix_init(config%ls_qmat)
+       ! processes input
+       READWORD = .true.
+       call ls_qmatrix_input(config%ls_qmat, LUCMD, LUPRI, READWORD, WORD)
+   end if
+#endif
+
    IF (WORD == '*END OF INPUT') THEN
       DONE=.TRUE.
    ENDIF
@@ -875,6 +918,10 @@ subroutine DEC_meaningful_input(config)
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
+     if(DECinfo%ccmodel == MODEL_CCSDpT) then
+        if (.not. DECinfo%full_molecular_cc) DECinfo%print_frags = .true.
+     endif
+
      ! CCSD does not work for SCALAPACK, Hubi please fix!
      if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .SCALAPACK!',-1)
@@ -884,9 +931,9 @@ subroutine DEC_meaningful_input(config)
      if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
      end if
-     if(DECinfo%FragmentExpansionRI .AND. (.NOT. config%integral%basis(AuxBasParam)))then
+     if(DECinfo%ccmodel.EQ.MODEL_RIMP2 .AND. (.NOT. config%integral%basis(AuxBasParam)))then
         WRITE(config%LUPRI,'(/A)') &
-             &     'You have specified .FRAGMENTEXPANSIONRI in the input but not supplied a fitting basis set'
+             &     'You have specified .RIMP2 in the input but not supplied a fitting basis set'
         CALL lsquit('MP2 RI input inconsitensy: add fitting basis set',config%lupri)
      endif
      ! DEC and response do not go together right now...
@@ -1056,12 +1103,34 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
-        CASE('.TIME');              call SET_LSTIME_PRINT(.TRUE.)
-        CASE('.GCBASIS');           config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
-        CASE('.NOGCBASIS');         config%decomp%cfg_gcbasis    = .false.
-        CASE('.FORCEGCBASIS');      config%INTEGRAL%FORCEGCBASIS = .true.
-        CASE('.TESTMPICOPY');       config%doTestMPIcopy         = .true.
-        CASE('.TYPE_ARRAY_DEBUG');  config%type_array_debug      = .true.
+        CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
+        CASE('.GCBASIS');               config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
+        CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
+        CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
+        CASE('.TYPE_TENSOR_DEBUG');     config%type_tensor_debug    = .true.
+           ! Max memory available on gpu measured in GB. By default set to 2 GB
+        CASE('.GPUMAXMEM');             
+           READ(LUCMD,*) config%GPUMAXMEM
+           IF(config%GPUMAXMEM.LT.0.0E0_realk)THEN
+              CALL LSQUIT('.GPUMAXMEM error: less than 0 GB supplied on input',-1)
+           ELSEIF(config%GPUMAXMEM.GT.100.0E0_realk)THEN
+              CALL LSQUIT('.GPUMAXMEM error: More than 100 GB supplied on input',-1)
+           ENDIF
+#ifdef VAR_MPI
+           call ls_mpibcast(SET_GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(config%GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
+#endif
+#ifdef VAR_MPI
+        CASE('.MAX_MPI_MSG_SIZE_NEL');
+           READ(LUCMD,*) SPLIT_MPI_MSG 
+           call ls_mpibcast(SET_SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+        CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  
+           READ(LUCMD,*) MAX_SIZE_ONE_SIDED
+           call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
+#endif
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'
@@ -1266,6 +1335,22 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
                                   !Calculates X and XC independently, default is to calculate
                                   !X+XC with one call to dft (and x with a separate call)
            INTEGRAL%ADMM_separateX  = .TRUE.
+        CASE ('.ADMM-BASIS-FILE'); ! EXPERIMENTAL
+           !Write file ADMMmin.dat containing info used for constructing a basis set optimized for ADMM
+           !We use PRINT_EK3 to calculate the full exchange matrix.
+           !We then use the full exchange matrix to converge the standard calculation but for every 
+           !iteration we print ADMM stuff:
+           !Exchange energy of aux density
+           !Exchange energy of full density 
+           !(GGA-type) Exchange functional energy of aux density
+           !(GGA-type) Exchange functional energy of full density 
+           !to easily obtain this infomation we use ADMM_separateX
+           IF (.NOT.INTEGRAL%ADMM_EXCHANGE) THEN
+              CALL LSQUIT('Illegal input under **INTEGRAL. .ADMM-BASIS-FILE require ADMM.',lupri)
+           ENDIF
+           INTEGRAL%ADMMBASISFILE   = .TRUE.
+           INTEGRAL%PRINT_EK3       = .TRUE. !to calculate the full exchange matrix
+           INTEGRAL%ADMM_separateX  = .TRUE. !to obtain the pure Exchange functional energy of full density 
         CASE ('.ADMM-2ERI'); ! EXPERIMENTAL
            INTEGRAL%ADMM_2ERI       = .TRUE.
         CASE ('.PRINT_EK3'); ! EXPERIMENTAL
@@ -1600,6 +1685,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
      if (WORD(1:1) == '*') then
        !which type of response is wanted??
        SELECT CASE(WORD)
+       CASE('*NoOpenRSP')
+          config%response%noOpenRSP = .TRUE. !Use LSDALTON own Response module
        CASE('*DIPOLE')
           config%response%tasks%doDipole=.true.
        CASE('*DIPOLEMOMENTMATRIX')
@@ -2009,6 +2096,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                CASE ('.NSTART');   READ(LUCMD,*) config%response%rspsolverinput%rsp_no_of_startvectors
                   config%response%rspsolverinput%rsp_startvectors = .true.  
                   config%decomp%cfg_startvectors = .TRUE.
+                  config%decomp%cfg_no_of_startvectors = config%response%rspsolverinput%rsp_no_of_startvectors
                CASE('.DTHR')
                   !threshold for when excited states is considered degenerate
                   READ(LUCMD,*) config%response%rspsolverinput%degenerateTHR
@@ -2622,7 +2710,9 @@ DO
       CASE ('.HARDNESS' ); READ(LUCMD,*) DALTON%DFT%HRDNES
       CASE ('.DISPER' )
          DALTON%DFT%DODISP = .TRUE.
-         CALL DFTDISPCHECK()
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+         DALTON%DFT%DO_BJDAMP = .TRUE.
 !AMT
       CASE ('.DFT-D2')
          DALTON%DFT%DODISP = .TRUE.
@@ -2890,6 +2980,10 @@ ENDIF
 #endif
 
 #ifdef VAR_MPI
+
+if(mod(SPLIT_MPI_MSG,8)/=0)call lsquit("INPUT ERROR: MAX_MPI_MSG_SIZE_NEL has to be a multiple of 8",-1)
+
+
 IF(nthreads.EQ.1)THEN
  IF(infpar%nodtot.GT.1)THEN
   WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot, &
@@ -3497,20 +3591,20 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 ! Write Screening Thresholds:
 !======================
    WRITE(config%LUPRI,'(A)')' '
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Coulomb               :',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Coulomb               :',&
 & config%integral%THRESHOLD*config%integral%J_THR
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Exchange              :',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Exchange              :',&
 &config%integral%THRESHOLD*config%integral%K_THR
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for One-electron operators:',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for One-electron operators:',&
 &config%integral%THRESHOLD*config%integral%ONEEL_THR
    if(config%integral%DALINK)THEN
       WRITE(config%LUPRI,'(A)')' '
-      WRITE(config%LUPRI,'(A,ES10.4)')'   DaLink have been activated, so in addition to using ',&
+      WRITE(config%LUPRI,'(A,ES12.4)')'   DaLink have been activated, so in addition to using ',&
            & config%integral%THRESHOLD*config%integral%K_THR      
       WRITE(config%LUPRI,'(A)')'   as a screening threshold on the integrals contribution to'
       WRITE(config%LUPRI,'(A)')'   the Fock matrix, we also use a screening threshold'
-      WRITE(config%LUPRI,'(A,ES10.4)')'   on the integrals contribution to the Energy:       ',&
+      WRITE(config%LUPRI,'(A,ES12.4)')'   on the integrals contribution to the Energy:       ',&
       &config%integral%THRESHOLD*config%integral%K_THR*(1.0E+1_realk**(-config%INTEGRAL%DASCREEN_THRLOG))
    endif
 
@@ -3572,6 +3666,17 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       call scf_stats_arh_header(config%lupri)
    endif
 
+#ifdef HAS_PCMSOLVER
+! Cross-check for polarizable continuum model
+!=================================================
+   if (config%pcm%do_pcm .and. config%optinfo%optimize) then
+      call lsquit('Sorry, polarizable continuum model not available for geometry optimizations!',config%lupri)
+   endif
+   if (config%pcm%do_pcm .and. config%dynamics%do_dynamics) then
+      call lsquit('Sorry, polarizable continuum model not available for dynamics!',config%lupri)
+   endif
+#endif   
+
 !MKL sanity check:
 !==================
 
@@ -3583,7 +3688,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          CALL mat_select_type(mtype_csr,lupri)
          call mat_inquire_cutoff(cutoff)
          write(config%lupri,*)
-         write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d7.2)') cutoff
+         write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d10.2)') cutoff
 #else
          call lsquit('.CSR requires MKL library and -DVAR_MKL precompiler flag',config%lupri)
 #endif
@@ -3727,7 +3832,7 @@ ENDIF
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
-
+   ls%setting%GPUMAXMEM = config%GPUMAXMEM
 end subroutine set_final_config_and_print
 
 SUBROUTINE TRIM_STRING(string,n,words)

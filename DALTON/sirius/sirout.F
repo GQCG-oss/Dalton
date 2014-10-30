@@ -57,6 +57,11 @@ C            Documentation of MOTECC-90.
 C
       use lucita_mcscf_srdftci_cfg
       use lucita_mcscf_ci_cfg
+
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+#endif
+
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -249,6 +254,7 @@ C
       LFREE = LWRK
       CALL MEMGET2('REAL','CMO',  KCMO  ,NCMOT, WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT, WRK,KFREE,LFREE)
+      CALL DZERO(WRK(KOCCNO),NORBT)
       CALL MEMGET2('REAL','CREF', KCREF ,NCONF, WRK,KFREE,LFREE)
       IF (FLAG(3)) THEN
          IF ( FLAG(2) .AND. ICONV.EQ.0 ) THEN
@@ -274,14 +280,14 @@ C           CALL SIRCAN(IPRCAN,CREF,CMO,OCC,WRK,KFREE,LFREE)
       END IF
 C
 C     Now read the final orbitals and occupation numbers from SIRIUS.RST
+C     (if label 'NATOCC  ' not found, then we assume any occupation numbers
+C      already in WRK(KOCCNO) are OK)
 C
       REWIND LUIT1
       CALL READMO(WRK(KCMO),9,WRK(KFREE),LFREE)
       REWIND LUIT1
       IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
          CALL READT(LUIT1,NORBT,WRK(KOCCNO))
-      ELSE
-         CALL DZERO(WRK(KOCCNO),NORBT)
       END IF
 C
 C *** FINAL RESULTS
@@ -332,7 +338,12 @@ csonia 04/10/95
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
-
+#ifdef HAS_PCMSOLVER
+      ELSE IF (pcmmod_is_pcm_calculation) THEN
+         WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
+     *        'SOLVATION MODEL: polarizable continuum model (PCM),'
+         WRITE(LUPRI,'(5X,A24,F20.12)') 'Solvation energy:     ',ESOLT
+#endif
       ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
         WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3

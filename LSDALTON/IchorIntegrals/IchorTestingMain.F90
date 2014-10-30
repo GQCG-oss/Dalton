@@ -1,4 +1,15 @@
 PROGRAM IchorErimoduleTEST
+#ifdef VAR_OPENACC
+#ifdef VAR_PGF90
+use openacc, only: acc_get_device_type,ACC_DEVICE_NONE,&
+     & ACC_DEVICE_DEFAULT,ACC_DEVICE_HOST,ACC_DEVICE_NOT_HOST,&
+     & acc_get_num_devices,acc_set_device_num, acc_init,ACC_DEVICE_NVIDIA
+#else
+use openacc, only: acc_get_device_type,ACC_DEVICE_NONE,&
+     & ACC_DEVICE_DEFAULT,ACC_DEVICE_HOST,ACC_DEVICE_NOT_HOST,&
+     & acc_get_num_devices,acc_set_device_num, acc_init
+#endif
+#endif
 implicit none
 integer        :: LUPRI,IPRINT
 integer        :: dim1,dim2,dim3,dim4 !AO dim
@@ -30,7 +41,7 @@ integer :: SphericalSpec,IchorJobSpec,IchorInputSpec,IchorParSpec,IchorScreenSpe
 Integer :: IchorInputDim1,IchorInputDim2,IchorInputDim3,IchorDebugSpec,IchorAlgoSpec
 integer :: filestorageIdentifier,MaxFileStorage,IchorPermuteSpec
 Integer :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
-Integer :: GabIdentifier, IchorGabID1, IchorGabID2
+Integer :: GabIdentifier, IchorGabID1, IchorGabID2,IchorOperatorSpec
 logical :: SameLHSaos
 real(8) :: THRESHOLD_CS,THRESHOLD_QQR,THRESHOLD_OD
 real(8),pointer :: InputStorage(:)
@@ -47,16 +58,58 @@ real(8),pointer :: integrals(:,:,:,:),ComparisonInt(:,:,:,:)
 integer :: iBasis1Q,iBasis2Q,iBasis3Q,iBasis4Q
 integer,pointer :: iBasisA(:),iBasisB(:),iBasisC(:),iBasisD(:)
 CHARACTER(len=20)    :: BASISTYPE(10)
-integer              :: iBASISTYPE(10),DebugIchorOption,ifilename
+integer              :: iBASISTYPE(10),DebugIchorOption,ifilename,selected_device_number
 character(len=100) :: filename
 logical      :: SpecialPass,FAIL(10,10,10,10),ALLPASS
+real(8) :: GPUMAXMEM
+
+DebugIchorOption = 9
+#ifdef VAR_OPENACC
+print*,'acc_get_device_type = ',acc_get_device_type()
+print*,'================================'
+!4 device types are always supported                                                                    
+print*,'ACC_DEVICE_NONE     = ',ACC_DEVICE_NONE
+print*,'ACC_DEVICE_DEFAULT  = ',ACC_DEVICE_DEFAULT
+print*,'ACC_DEVICE_HOST     = ',ACC_DEVICE_HOST
+print*,'ACC_DEVICE_NOT_HOST = ',ACC_DEVICE_NOT_HOST
+#ifdef VAR_PGF90
+!PGF90 supports                                                                                         
+print*,'ACC_DEVICE_NVIDIA   = ',ACC_DEVICE_NVIDIA
+#endif
+print*,'================================'
+#ifdef VAR_PGF90
+IF(acc_get_device_type().EQ.ACC_DEVICE_NVIDIA)print*,'ACC_DEVICE_NVIDIA have been selected'
+#endif
+IF(acc_get_device_type().EQ.ACC_DEVICE_NONE)THEN
+   print*,'ACC_DEVICE_NONE have been selected'
+   print*,'please use the command'
+   print*,'export ACC_DEVICE=NVIDIA'
+   print*,'to chose the NVIDIA graphics card or '
+   print*,'export ACC_DEVICE=HOST'
+   print*,'to chose to run the GPU kernel on the CPU'
+ENDIF
+print*,'There are ',acc_get_num_devices(acc_get_device_type()),'devices'
+print*,'The Program only support 1 device at present'
+selected_device_number = 2
+IF(acc_get_num_devices(acc_get_device_type()).GT.1)THEN
+   IF(selected_device_number .EQ. 0)THEN
+      print*,'Using default behavior of which device to use'
+      print*,'Change this behavior by choosing device number in input or'
+      print*,'export ACC_DEVICE_NUM=1'
+   ELSE
+      print*,'The selected device number=',selected_device_number
+      call acc_set_device_num(2,0)
+   ENDIF
+ENDIF
+call acc_init(acc_get_device_type())
+#endif
+
 do A=1,100
    filename(A:A) = ' '
 enddo
 filename(1:13) = 'IchorUnitTest'
 ifilename = 14
 SpecialPass = .FALSE.
-DebugIchorOption = 9
 LUPRI = 6
 IPRINT = 0
 spherical = .TRUE.
@@ -159,7 +212,7 @@ CASE(5)
    iBasisC(1) = 7; iBasisC(2) = 8; iBasisC(3) = 9
    iBasisD(1) = 7; iBasisD(2) = 8; iBasisD(3) = 9
 CASE DEFAULT
-   FileName = 'IchorUnitTestUnitTest_segD1pUnitTest_segDUnitTest_genDUnitTest_segD1p'
+   FileName = 'IchorUnitTestUnitTest_segD1pUnitTest_segDUnitTest_genDUnitTest_segD1p1'
    nBasisA = 1
    nBasisB = 1
    nBasisC = 1
@@ -183,9 +236,6 @@ CASE DEFAULT
       iBasisD(iBasis4Q) = iBasis4Q
    enddo
 END SELECT
-
-IpassEnd = 1 !WARNING 
-
 
 BASISTYPE(1) = 'UnitTest_segS1p     '; iBASISTYPE(1) = 15
 BASISTYPE(2) = 'UnitTest_segP1p     '; iBASISTYPE(2) = 15
@@ -217,6 +267,8 @@ do Ipass = IpassStart,IpassEnd
            filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
            ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
         enddo
+        WRITE(filename(ifilename:ifilename),'(I1)') Ipass
+        ifilename = ifilename + 1
      ENDIF
      LUOUTPUT = 12
      print*,'FileName',FileName
@@ -293,13 +345,16 @@ do Ipass = IpassStart,IpassEnd
      call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
      call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
      call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
-     
+     GPUMAXMEM = 2.0E0_8
+     call SetIchorGPUMaxMem(GPUMAXMEM)
+
      SameLHSaos = .FALSE. 
      SameRHSaos = .FALSE. 
      SameODs = .FALSE. 
      
      call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
      call GetIchorFileStorageIdentifier(filestorageIdentifier)
+     call GetIchorOpereratorIntSpec('C',IchorOperatorSpec) !Coulomb Operator
        
      MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
      MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
@@ -339,8 +394,8 @@ do Ipass = IpassStart,IpassEnd
           & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
           & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
           & nbatchDstart2,nbatchDend2,&
-          & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
-          & IchorInputDim3,&
+          & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+          & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
           & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,&
           & THRESHOLD_QQR,IchorGabID1,IchorGabID2,IchorDebugSpec,&
           & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
@@ -470,6 +525,30 @@ IF(ALLPASS)THEN
 ELSE
    WRITE(*,'(A)')'Ichor Integrals UnitTest: FAILED'
 ENDIF
+CONTAINS
+subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
+  implicit none
+  character :: intspec 
+  integer,intent(inout) :: IchorOperatorSpec
+  IF (intSpec.EQ.'C') THEN
+     ! Regular Coulomb operator 1/r12                                                                   
+     call GetIchorOpererator('Coulomb',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'G') THEN
+     ! The Gaussian geminal operator g                                                                  
+     call GetIchorOpererator('GGem   ',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'F') THEN
+     ! The Gaussian geminal divided by the Coulomb operator g/r12                                       
+     call GetIchorOpererator('GGemCou',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'D') THEN
+     ! The double commutator [[T,g],g]                                                                  
+     call GetIchorOpererator('GGemGrd',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'2') THEN
+     ! The Gaussian geminal operator squared g^2                                                        
+     call GetIchorOpererator('GGemSq ',IchorOperatorSpec)
+  ELSE
+     STOP 'Error in specification of operator in GetIchorOpereratorIntSpec'
+  ENDIF
+end subroutine GetIchorOpereratorIntSpec
 
 END PROGRAM IchorErimoduleTEST
 

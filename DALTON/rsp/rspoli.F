@@ -691,7 +691,7 @@ C
          KDTOTAO = KDTVAO
       END IF
 
-!ifdef DEBUG_RSPOLI
+#ifdef DEBUG_RSPOLI
       write(lupri,*) 'rspoli: ncsim,nosim',ncsim,nosim
       write(lupri,*) 'rspoli: nfmat,ndmat',nfmat,ndmat
       write(lupri,*) 'rspoli: dohfsrdft,domcsrdft,soppa',
@@ -701,7 +701,7 @@ C
       write(lupri,*) 'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,
      &                        KDTOTAO,kfree',
      &                KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
-!endif
+#endif
 
 #ifdef MOD_SRDFT
       IF (DOHFSRDFT .OR. DOMCSRDFT) THEN

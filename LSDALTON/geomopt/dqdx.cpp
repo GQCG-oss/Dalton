@@ -140,8 +140,15 @@ void dqdx(int type,
 
 #ifndef NO_FORTRAN
 
+#ifdef VAR_INT64
+#include <stdint.h>
+typedef long integer;
+#else
+typedef int integer;
+#endif
+
 extern "C"
-void dqdx_(int *type, int *order,
+void dqdx_(integer *type, integer *order,
 	   double *q,
 	   double *x)
 {

@@ -71,7 +71,7 @@ Call DGEMV('N',N_cart,N_Cart-6,1.0E0_realk,Bs_inv,N_Cart,Del_step,1,&
 ! Print delocalized step
 If (optinfo%IPrint .GE. 12) then
   call lsheader(lupri,'Step in delocalized internals:')
-  call output(Total_ds,1,1,1,N_Cart-6,1,N_Cart-6,1,LUPRI)
+  call ls_output(Total_ds,1,1,1,N_Cart-6,1,N_Cart-6,1,LUPRI)
 Endif
 !
 Do while (Finished .EQV. .False.)
@@ -112,7 +112,7 @@ Do while (Finished .EQV. .False.)
         Call B_matrix(N_int,N_cart,2,B_mat,optinfo)
         If (optinfo%IPrint .GE. 12) then
            call lsheader(lupri,'Wilson B matrix [B(ij) = dq(i)/dx(j)] from C++')
-           call output(B_mat,1,N_Int,1,N_Cart,N_Int,N_Cart,1,LUPRI)
+           call ls_output(B_mat,1,N_Int,1,N_Cart,N_Int,N_Cart,1,LUPRI)
         Endif
         Call DGEMM('T','N',N_Cart-6,N_Cart,N_Int,1.0E0_realk,&
              & Vectors,N_Int,B_mat,N_Int,0.0E0_realk,Bs,N_Cart-6)
@@ -120,7 +120,7 @@ Do while (Finished .EQV. .False.)
         ! Some printout
         If (optinfo%IPrint .GE. 12) then
            call lsheader(lupri,'Generalized inverse of B matrix for delocalized internals')
-           call output(Bs_inv,1,N_Cart,1,N_Cart-6,N_Cart,N_Cart-6,1,LUPRI)
+           call ls_output(Bs_inv,1,N_Cart,1,N_Cart-6,N_Cart,N_Cart-6,1,LUPRI)
         Endif
         !
      Endif ! Finished
@@ -155,7 +155,7 @@ If (.NOT. optinfo%IBT) then
   call lsheader(lupri,'Cartesian step from back-transformation')
   If (optinfo%oldIBT) call lsheader(lupri,'simplified IBT')
   If (optinfo%New_stepping) call lsheader(lupri,'HOBIT')
-   call output(CSTEP(1:N_Cart),1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+   call ls_output(CSTEP(1:N_Cart),1,1,1,N_Cart,1,N_Cart,1,LUPRI)
    ! Modify optinfo%STPINT and optinfo%stpsym
    Do i= 1, N_int
      optinfo%STPINT(i) = q(i) - q0(i)
@@ -174,7 +174,7 @@ If (.NOT. optinfo%IBT) then
   call lsheader(lupri,'Internal step from back-transformation:')
   If (optinfo%oldIBT) call lsheader(lupri,'simplified IBT')
   If (optinfo%New_stepping) call lsheader(lupri,'HOBIT')
-  call output(optinfo%STPINT,1,1,1,N_int,1,N_int,1,LUPRI)
+  call ls_output(optinfo%STPINT,1,1,1,N_int,1,N_int,1,LUPRI)
   Int_step_norm = SQRT(DDOT(N_Int,optinfo%STPINT,1,optinfo%STPINT,1))
   WRITE(LUPRI,'(/A,F17.12)')' Norm of internal step', Int_step_norm
   !
@@ -183,7 +183,7 @@ If (.NOT. optinfo%IBT) then
   Call DGEMV('T',N_Int,N_Cart-6,1.0E0_realk,Vectors,N_Int,&
      & optinfo%STPINT(1:N_int),1,1.0E0_realk,Del_step,1)
   call lsheader(lupri,'Step in delocalized internals:')
-  call output(Del_step,1,1,1,N_Cart-6,1,N_Cart-6,1,LUPRI)
+  call ls_output(Del_step,1,1,1,N_Cart-6,1,N_Cart-6,1,LUPRI)
 ! IBT
 Endif
 ! 
@@ -240,7 +240,7 @@ call LSTIMER('START ',TS,TE,lupri)
 Call B_matrix(N_int,N_cart,2,B_mat,optinfo)
 If (optinfo%IPrint .GE. 12) then
      call lsheader(lupri,'Wilson B matrix [B(ij) = dq(i)/dx(j)] from C++')
-     call output(B_mat,1,N_Int,1,N_Cart,N_Int,N_Cart,1,LUPRI)
+     call ls_output(B_mat,1,N_Int,1,N_Cart,N_Int,N_Cart,1,LUPRI)
 Endif
 ! Call LAPACK to do the singular value decomposition
 Call DGESVD('A','A',N_Int,N_Cart,B_mat,N_Int, &
@@ -289,7 +289,7 @@ Call mem_dealloc(Sigma)
 ! Some printout
 If (optinfo%IPrint .GE. 12) then
    call lsheader(lupri,'Generalized inverse of B matrix for delocalized internals')
-   call output(Bs_inv,1,N_Cart,1,N_Deloc,N_Cart,N_Deloc,1,LUPRI)
+   call ls_output(Bs_inv,1,N_Cart,1,N_Deloc,N_Cart,N_Deloc,1,LUPRI)
 Endif
 !
 ! Copy Left to Vectors
@@ -387,18 +387,18 @@ Cart_rms = (D1/SQRT(Real(N_Cart)))*SQRT(DDOT(N_Cart,Cart_steps(1,:),1,Cart_steps
 If (optinfo%IPrint .GE. 5) then
    call lsheader(lupri,'Residuals for nonredundant coordinates,order')
    WRITE(LUPRI,'(A,I10)') 'Order:    ', 1
-   call output(Del_residuals,1,1,1,N_Deloc,1,N_Deloc,1,LUPRI)
+   call ls_output(Del_residuals,1,1,1,N_Deloc,1,N_Deloc,1,LUPRI)
    WRITE(LUPRI,'(/A,F20.15)')' RMS of the residuals', NonRed_rms
    call lsheader(lupri,'Residuals for redundant coordinates,order')
    WRITE(LUPRI,'(A,I10)') 'Order:    ', 1
-   call output(Residuals,1,1,1,N_int,1,N_int,1,LUPRI)
+   call ls_output(Residuals,1,1,1,N_int,1,N_int,1,LUPRI)
    WRITE(LUPRI,'(/A,F20.15)')' RMS of the redundant residuals', Red_rms
    call lsheader(lupri,'Residuals for Cartesian coordinates,order')
    WRITE(LUPRI,'(A,I10)') 'Order:    ', 1
-   call output(Cart_steps(1,:),1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+   call ls_output(Cart_steps(1,:),1,1,1,N_Cart,1,N_Cart,1,LUPRI)
    WRITE(LUPRI,'(/A,F17.12)')' RMS of the Cartesian residuals', Cart_rms
    call lsheader(lupri,'Cartesian step from high-order derivatives,first estimate')
-   call output(CSTEP,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+   call ls_output(CSTEP,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
 Endif
 ! A loop over orders of differentiation
 Do i =2, optinfo%Deriv_order
@@ -443,19 +443,19 @@ Do i =2, optinfo%Deriv_order
    If (optinfo%IPrint .GE. 5) then
       call lsheader(lupri,'Residuals for nonredundant coordinates,order')
       WRITE(LUPRI,'(A,I10)') 'Order:    ', i
-      call output(Del_residuals,1,1,1,N_Deloc,1,N_Deloc,1,LUPRI)
+      call ls_output(Del_residuals,1,1,1,N_Deloc,1,N_Deloc,1,LUPRI)
       WRITE(LUPRI,'(/A,F20.15)')' RMS of the residuals', NonRed_rms
       call lsheader(lupri,'Residuals for redundant coordinates,order')
       WRITE(LUPRI,'(A,I10)') 'Order:    ', i
-      call output(Residuals,1,1,1,N_int,1,N_int,1,LUPRI)
+      call ls_output(Residuals,1,1,1,N_int,1,N_int,1,LUPRI)
       WRITE(LUPRI,'(/A,F20.15)')' RMS of the redundant residuals', Red_rms
       WRITE(LUPRI,'(A,I10)') 'Order:    ', i
       call lsheader(lupri,'Residuals for Cartesian coordinates,order')
       WRITE(LUPRI,'(A,I10)') 'Order:    ', i
-      call output(dx,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+      call ls_output(dx,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
       WRITE(LUPRI,'(/A,F20.15)')' RMS of the Cartesian residuals', Cart_rms
       call lsheader(lupri,'Cartesian step from high-order derivatives')
-      call output(CSTEP,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+      call ls_output(CSTEP,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
    Endif
  ! Check convergence
    If ((NonRed_rms .LE. Conv_thresh) .AND. (Cart_rms .LE. Conv_thresh)) then 
@@ -554,18 +554,18 @@ Cart_rms = (D1/SQRT(Real(N_Cart)))*SQRT(DDOT(N_Cart,Cart_step,1,Cart_step,1))
 If (optinfo%IPrint .GE. 5) then
    call lsheader(lupri,'Residuals for nonredundant coordinates,order')
    WRITE(LUPRI,'(A,I10)') 'Order:    ', 1
-   call output(Del_residuals,1,1,1,N_Del,1,N_Del,1,LUPRI)
+   call ls_output(Del_residuals,1,1,1,N_Del,1,N_Del,1,LUPRI)
    WRITE(LUPRI,'(/A,F20.15)')' RMS of the residuals', NonRed_rms
    call lsheader(lupri,'Residuals for redundant coordinates,order')
    WRITE(LUPRI,'(A,I10)') 'Order:    ', 1
-   call output(Residuals,1,1,1,N_int,1,N_int,1,LUPRI)
+   call ls_output(Residuals,1,1,1,N_int,1,N_int,1,LUPRI)
    WRITE(LUPRI,'(/A,F20.15)')' RMS of the redundant residuals', Red_rms
    call lsheader(lupri,'Residuals for Cartesian coordinates,order')
    WRITE(LUPRI,'(A,I10)') 'Order:    ', 1
-   call output(Cart_step,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+   call ls_output(Cart_step,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
    WRITE(LUPRI,'(/A,F17.12)')' RMS of the Cartesian residuals', Cart_rms
    call lsheader(lupri,'Cartesian step from high-order derivatives,first estimate')
-   call output(Cart_step,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+   call ls_output(Cart_step,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
 Endif
 !
 Residuals = D0
@@ -611,18 +611,18 @@ Do j = 2, optinfo%Deriv_order
    If (optinfo%IPrint .GE. 5) then
       call lsheader(lupri,'Residuals for nonredundant coordinates,iteration:')
       WRITE(LUPRI,'(A,I10)') 'Order:    ', j
-      call output(Del_residuals,1,1,1,N_Del,1,N_Del,1,LUPRI)
+      call ls_output(Del_residuals,1,1,1,N_Del,1,N_Del,1,LUPRI)
       WRITE(LUPRI,'(/A,F25.18)')'RMS of the residuals', NonRed_rms
       call lsheader(lupri,'Residuals for redundant coordinates,order')
       WRITE(LUPRI,'(A,I10)') 'Order:    ', j
-      call output(Residuals,1,1,1,N_int,1,N_int,1,LUPRI)
+      call ls_output(Residuals,1,1,1,N_int,1,N_int,1,LUPRI)
       WRITE(LUPRI,'(/A,F25.18)')' Norm the residuals', Red_rms
       call lsheader(lupri,'Residuals for Cartesian coordinates,order')
       WRITE(LUPRI,'(A,I10)') 'Order:    ', j
-      call output(dx,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+      call ls_output(dx,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
       WRITE(LUPRI,'(/A,F25.18)')' RMS of the Cartesian residuals', Cart_rms
       call lsheader(lupri,'Cartesian step from a proper IBT, not finished')
-      call output(Cart_step,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+      call ls_output(Cart_step,1,1,1,N_Cart,1,N_Cart,1,LUPRI)
    Endif
    ! Check convergence
    If ((NonRed_rms .LE. Conv_thresh) .AND. (Cart_rms .LE. Conv_thresh)) then 
@@ -635,7 +635,7 @@ Enddo
 ! Final printout and modifications
 ! Print Cart_step
 call lsheader(lupri,'Cartesian step from iterative back transformation')
-call output(Cart_step(1:N_Cart),1,1,1,N_Cart,1,N_Cart,1,LUPRI)
+call ls_output(Cart_step(1:N_Cart),1,1,1,N_Cart,1,N_Cart,1,LUPRI)
 ! Modify optinfo%STPINT and optinfo%stpsym
 Do i= 1, N_int
     optinfo%STPINT(i) = q(i) - q0(i)
@@ -652,7 +652,7 @@ Enddo
 optinfo%STPSYM = Cart_step
 ! Print step in intertnals
 call lsheader(lupri,'Internal step from iterative back transformation')
-call output(optinfo%STPINT,1,1,1,N_int,1,N_int,1,LUPRI)
+call ls_output(optinfo%STPINT,1,1,1,N_int,1,N_int,1,LUPRI)
 Int_step_norm = SQRT(DDOT(N_Int,optinfo%STPINT,1,optinfo%STPINT,1))
 WRITE(LUPRI,'(/A,F17.12)')' Norm of internal step', Int_step_norm
 !
@@ -763,7 +763,7 @@ Enddo
 ! Printout
 If (optinfo%IPrint .GE. 10) then
    call lsheader(lupri,'Internals from Get_internals')
-   call output(New_internals,1,1,1,N_internal,1,N_internal,1,LUPRI)
+   call ls_output(New_internals,1,1,1,N_internal,1,N_internal,1,LUPRI)
 Endif
 ! Deallocate memory
 Call mem_dealloc(Cartesian)
@@ -916,7 +916,7 @@ Call Get_internals(N_internal,N_Cartesian,Cart_step,q,lupri,optinfo)
 ! Printout
 If (optinfo%IPrint .GE. 5) then
    call lsheader(lupri,'Internals after approximate step')
-   call output(q,1,1,1,N_internal,1,N_internal,1,LUPRI)
+   call ls_output(q,1,1,1,N_internal,1,N_internal,1,LUPRI)
 Endif
 ! Estimate residuals
 Residuals = dq - (q - q0)

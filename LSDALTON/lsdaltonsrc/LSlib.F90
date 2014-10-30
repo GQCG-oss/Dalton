@@ -68,7 +68,7 @@ END SUBROUTINE LSlib_set_external_comm
 SUBROUTINE LSlib_exit_slave()
 use infpar_module,      only : infpar
 use lsmpi_type,         only : ls_mpibcast
-use Integralparameters, only : LSMPIQUIT
+use LSparameters, only : LSMPIQUIT
 use lslib_state
 implicit none
 
@@ -303,7 +303,7 @@ Logical,optional        :: testElectrons
 !
 TYPE(MATRIX),target  :: Kmat(ndmat),Dmat(ndmat),dXCmat
 Integer              :: mtype_save, idmat
-real(realk)          :: EdXC
+real(realk)          :: EdXC,Econt(5)
 
 IF (.NOT.state_set) CALL LSQUIT('LSlib_get_Exchange error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_Exchange. Basis-function mismatch',lupri)
@@ -322,7 +322,7 @@ IF (ls%input%dalton%ADMM_EXCHANGE) THEN
   IF (present(testElectrons)) ls%setting%scheme%dft%testNelectrons = testElectrons
   call mat_init(dXCmat,nbast,nbast)
   DO idmat=1,ndmat
-    CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,Dmat(idmat),Kmat(idmat),dXCmat,1,EdXC,Dsym)
+    CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,Dmat(idmat),Kmat(idmat),dXCmat,1,EdXC,Dsym,Econt,.FALSE.)
     call mat_daxpy(1.E0_realk,dXCmat,Kmat(idmat))
   ENDDO
   CALL mat_free(dXCmat)
@@ -470,11 +470,18 @@ IMPLICIT NONE
 Integer,intent(in)      :: nbast,lupri,luerr
 Real(realk),intent(out) :: eri(nbast,nbast,nbast,nbast,1)
 Logical,intent(IN)      :: dirac
+character :: intspec(5)
+intspec(1) = 'R'
+intspec(2) = 'R'
+intspec(3) = 'R'
+intspec(4) = 'R'
+intspec(5) = 'C'
 
 IF (.NOT.state_set) CALL LSQUIT('LSlib_get_4center_eri error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_4center_eri. Basis-function mismatch',lupri)
 
-CALL II_get_4center_eri(lupri,luerr,ls%setting,eri,nbast,nbast,nbast,nbast,dirac)
+CALL II_get_4center_eri(lupri,luerr,ls%setting,eri,&
+     & nbast,nbast,nbast,nbast,intspec,dirac)
 
 END SUBROUTINE LSlib_get_4center_eri
 

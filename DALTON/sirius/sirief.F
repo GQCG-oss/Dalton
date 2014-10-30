@@ -121,7 +121,7 @@ C
          LSTART = NTSIRR * LSYM + 1
          CALL MATPCM(DPAK(1,LSTART),SPAK(1,LSTART),AS,CPAK(1,LSTART),
      $        NTSIRR,FACT,1)
-      ENDDO               
+      ENDDO              
 C
 Clf Check if the off-diagonal terms of DMATM1 are too big
 C   If they are not, then are properly stored
@@ -527,13 +527,12 @@ C
 C Computation of UMAT
 C
       CALL DZERO(WORK(1,1),NTS*NTS)
+      umat = 0.0d0
       DO ISYM = 0, MAXREP
          DO JSYM = 0, MAXREP
             UMAT(ISYM, JSYM) = ONE * PT(IBTAND(ISYM,JSYM))
          ENDDO
       ENDDO
-
-      
 
 C
 C Computation of WORK = DMAT * UMAT

@@ -1,5 +1,0 @@
-   dftmm_3
-   -----------
-   Molecule:         CH2O(DFT)/2 H2O(MM)
-   Wave Function:    B3LYP / STO-3G  
-   Test Purpose:     Test of DFT/MM Linear Response through ABACUS

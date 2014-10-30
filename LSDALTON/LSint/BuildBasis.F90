@@ -1011,7 +1011,7 @@ IF((ELEMENT .EQ. 0) .OR. (ELEMENT.NE.CHARGE))THEN
     ELSE
       READ (STRING, '(A1)') SIGN
       IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
-        READ (STRING, '(A1, I4)') SIGN, NUCLEARCHARGE
+        READ (STRING, '(A1, I8)') SIGN, NUCLEARCHARGE
         IF (CHARGE .EQ. NUCLEARCHARGE) THEN
           SEARCHING=.FALSE.
         ENDIF     
@@ -1182,9 +1182,9 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   implicit none
   TYPE(BASISSETINFO)    :: BASINFO
   INTEGER               :: LUBAS,ios,IEX,I,M,LUPRI,IPRINT
-  LOGICAL               :: POLFUN,CONTRACTED,segmentedFormat,BLANK
+  LOGICAL               :: POLFUN,CONTRACTED,segmentedFormat,BLANK,FOUNDnewContractionCoeffLine
   INTEGER               :: atype,nang,nprim,nOrbital,IAUG,NUMNUMOLD
-  INTEGER               :: J,NUMBER_OF_LINES,KNTORB,NUMNUM,KAUG,nNumbers
+  INTEGER               :: J,NUMBER_OF_LINES,KNTORB,NUMNUM,KAUG,nNumbers,LIST(2,20)
   CHARACTER(len=280)    :: STRING
   CHARACTER(len=1)      :: SIGN
   real(realk)           :: exmin2,exmin1,PI,Exp,PIPPI
@@ -1209,101 +1209,96 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
            CALL TEST_BLANK_LINE(BLANK, STRING)
            IF (.NOT. BLANK) THEN
               !We have found a line with a primitive and some coeffecients
-              J=J+1
-              !LINES_OF_CONTRACTION returns the number of lines 
-              !the contraction coeffecients written on.
-              CALL determine_nNumbers_in_string(STRING,nNUMBERS)
-              IF(nNUMBERS.GT.7)THEN
-                 WRITE(lupri,*)'WARNING This basis format violte the old dalton basis format'
-                 WRITE(lupri,*)'Which consist of 1 Exponent F16.9 and up to 6 contraction'
-                 WRITE(lupri,*)'coefficients on the first line followed by a up to 7 contraction coefficients'
-                 WRITE(lupri,*)'on the following lines until the full number of contraction coefficients are given'
-                 WRITE(lupri,*)'We will try to this basis set, but this code is not very well testet. TK'
-              ENDIF
-              IF(nNUMBERS-1.LT.nOrbital)THEN
-                 CALL LINES_OF_CONTRACTION(nOrbital,nNUMBERS-1,NUMBER_OF_LINES,segmentedFormat)
-              ELSEIF(nNUMBERS-1.EQ.nOrbital)THEN
-                 NUMBER_OF_LINES=1
-              ELSE
-                 CALL LSQUIT('Error in determining number of continuation lines',-1)
-              ENDIF
-              IF (.NOT.CONTRACTED.OR.segmentedFormat) THEN
-                 IF(J .GT. maxBASISsegment)THEN
-                    WRITE(LUPRI,*)'J=',J
-                    WRITE(LUPRI,*)'nang=',nang
-                    WRITE(LUPRI,*)'nang=',nang
-                    WRITE(LUPRI,*)'You have alot of segments&
-                         & This is okay, but you need to increase the parameter&
-                         & maxBASISsegment in the TYPE-DEF.f90 file and recompile.&
-                         & Currently the parameter is set to ',maxBASISsegment,&
-                         &'Thomas Kjaergaard'
-                    CALL LSQUIT('Increase maxBASISsegment in TYPE-DEF.f90 file',lupri)
-                 ENDIF
-                 !WRITE(LUPRI,*) 'INSIDE UNCONTRACTED'
-                 !uncontracted basis set are forced uncontracted with .UNCONT
-
-                 READ (STRING, '(F16.9)') Exp
-                 !skip contiuation lines for contraction coeff.
-                 DO I = 2,NUMBER_OF_LINES
-                    READ (LUBAS,*)
-                 END DO
-                 BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%Exponents(1) = Exp
-                 BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%elms(1)= &
-                      &(4*Exp)**(0.5E0_realk*nang+0.25E0_realk)*PIPPI 
-              ELSE
-                 !         Getting the format for the read statement right.
-                 IF (NUMBER_OF_LINES .EQ. 1) THEN
-                    KNTORB = nOrbital
-                 ELSE
-                    KNTORB = nNUMBERS-1
-                 END IF
-                 READ (STRING,*) Exponents%elms(J),&
-                      &(ContractionMatrix%elms(J+(I-1)*(nprim+IAUG)),I = 1, KNTORB)
-                 !         Reading the first line with exponents and contractioncoeffecients
-                 !     READ (STRING, '(F16.9, 6F12.9)') Exponents%elms(J),&
-                 !          &(ContractionMatrix%elms(J+(I-1)*(nprim+IAUG)),I = 1, KNTORB)
-                 !         If there are more lines with contraction-coeffecients
-                 !         they will be read here.
-                 NUMNUM = nNUMBERS-1
-                 NUMNUMOLD = nNUMBERS-1
-                 DO I=2, NUMBER_OF_LINES
-                    CALL determine_nNumbers_in_string(STRING,nNUMBERS)
-                    IF(nNUMBERS.GT.7)THEN
+              J=J+1 !The primitive index 
+              NUMBER_OF_LINES=1           
+              KNTORB = 0 !number of Contraction Coefficients read 
+              DO WHILE(KNTORB.NE.nOrbital)
+                 !LINES_OF_CONTRACTION returns the number of lines 
+                 !the contraction coeffecients written on.
+                 CALL determine_nNumbers_in_string(STRING,nNUMBERS,LIST)
+                 IF(nNUMBERS.GT.7)THEN
+                    IF(NUMBER_OF_LINES.EQ.1)THEN
+                       WRITE(lupri,*)'WARNING This basis format violate the old dalton basis format'
+                       WRITE(lupri,*)'Which consist of 1 Exponent F16.9 and up to 6 contraction'
+                       WRITE(lupri,*)'coefficients on the first line followed by a up to 7 contraction coefficients'
+                       WRITE(lupri,*)'on the following lines until the full number of contraction coefficients are given'
+                       WRITE(lupri,*)'We will try to this basis set, but this code is not very well testet. TK'
+                    ELSE
                        WRITE(lupri,*)'WARNING This is a continuation line, which violte the old dalton basis format'
                        WRITE(lupri,*)'The continuation line should contain at most 7 contraction coefficients'
                        WRITE(lupri,*)'We will try to this basis set, but this code is not very well testet. TK'           
                     ENDIF
-                    NUMNUM = NUMNUM + nNUMBERS
-                    KNTORB = MIN(NUMNUM, nOrbital)
-                    !Getting the format for the read-stat right.
-                    !Making the usual safety-precautions before we read the 
-                    !contraction-coeffecients.
-                    READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
-                    IF(ios /= 0)THEN
-                       WRITE (LUPRI,'(2A)') ' Error in basisset file'
-                       CALL LSQUIT('Error in basisset file',lupri)
-                    ELSE
-                       READ (STRING, '(A1)') SIGN
-                       IF (SIGN .EQ. ' ') THEN
-                          CALL TEST_BLANK_LINE(BLANK, STRING)
-                          IF (.NOT. BLANK) THEN
-                             !We now have a line with contraction-coeffecients.
-                             !         READ (STRING,'(F16.9,6F12.9)')&
-                             !              &(Contractionmatrix%elms(J+(M-1)*(nprim+IAUG)),&
-                             !              & M = 6 + (I-2)*7 +1, KNTORB)
-                             READ (STRING,*)&
-                                  &(Contractionmatrix%elms(J+(M-1)*(nprim+IAUG)),&
-                                  & M = NUMNUMOLD+1, KNTORB)
-                          END IF
-                       ELSE
-                          cycle
-                       ENDIF
+                 ENDIF
+                 IF (.NOT.CONTRACTED.OR.segmentedFormat) THEN
+                    IF(J .GT. maxBASISsegment)THEN
+                       WRITE(LUPRI,*)'J=',J
+                       WRITE(LUPRI,*)'nang=',nang
+                       WRITE(LUPRI,*)'nang=',nang
+                       WRITE(LUPRI,*)'You have alot of segments&
+                            & This is okay, but you need to increase the parameter&
+                            & maxBASISsegment in the TYPE-DEF.f90 file and recompile.&
+                            & Currently the parameter is set to ',maxBASISsegment,&
+                            &'Thomas Kjaergaard'
+                       CALL LSQUIT('Increase maxBASISsegment in TYPE-DEF.f90 file',lupri)
                     ENDIF
-                    NUMNUMOLD = NUMNUM
-                    !just in case NUMBER_OF_LINES was wrong
-                    IF(KNTORB.EQ.nOrbital)EXIT
-                 ENDDO
-              ENDIF
+                    !WRITE(LUPRI,*) 'INSIDE UNCONTRACTED'
+                    !uncontracted basis set are forced uncontracted with .UNCONT
+                    IF(NUMBER_OF_LINES.EQ.1)THEN
+                       READ (STRING, '(F16.9)') Exp
+                       BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%Exponents(1) = Exp
+                       BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%elms(1)= &
+                            &(4*Exp)**(0.5E0_realk*nang+0.25E0_realk)*PIPPI 
+                       KNTORB = nNUMBERS-1
+                    ELSE
+                       !continuation line with no exponents
+                       KNTORB = KNTORB + nNUMBERS
+                    ENDIF
+                 ELSE
+                    IF(NUMBER_OF_LINES.EQ.1)THEN                    
+                       READ (STRING(LIST(1,1):LIST(2,1)),*) Exponents%elms(J)
+                       DO I = 1, nNUMBERS-1
+                          READ (STRING(LIST(1,I+1):LIST(2,I+1)),*) ContractionMatrix%elms(J+(I-1)*(nprim+IAUG))
+                       ENDDO
+                       !         Reading the first line with exponents and contractioncoeffecients
+                       !     READ (STRING, '(F16.9, 6F12.9)') Exponents%elms(J),&
+                       !          &(ContractionMatrix%elms(J+(I-1)*(nprim+IAUG)),I = 1, KNTORB)
+                       !         If there are more lines with contraction-coeffecients
+                       !         they will be read here.
+                       KNTORB = nNUMBERS-1
+                    ELSE
+                       !We now have a line with contraction-coeffecients.
+                       !         READ (STRING,'(F16.9,6F12.9)')&
+                       !              &(Contractionmatrix%elms(J+(M-1)*(nprim+IAUG)),&
+                       !              & M = 6 + (I-2)*7 +1, KNTORB)
+                       DO I = 1, nNUMBERS
+                          READ (STRING(LIST(1,I):LIST(2,I)),*) ContractionMatrix%elms(J+(I+KNTORB-1)*(nprim+IAUG))
+                       ENDDO
+                       KNTORB = KNTORB + nNUMBERS
+                    ENDIF
+                 ENDIF
+                 IF(KNTORB.NE.nOrbital)THEN
+                    FOUNDnewContractionCoeffLine = .FALSE.
+                    DO WHILE(.NOT.FOUNDnewContractionCoeffLine)
+                       READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
+                       IF(ios /= 0)THEN
+                          WRITE (LUPRI,'(2A)') ' Error in basisset file'
+                          CALL LSQUIT('Error in basisset file',lupri)
+                       ELSE
+                          READ (STRING, '(A1)') SIGN
+                          IF (SIGN .EQ. ' ') THEN
+                             CALL TEST_BLANK_LINE(BLANK, STRING)
+                             IF (.NOT. BLANK) THEN
+                                NUMBER_OF_LINES = NUMBER_OF_LINES + 1
+                                FOUNDnewContractionCoeffLine = .TRUE.
+                             END IF
+                          ELSE
+                             cycle
+                          ENDIF
+                       ENDIF
+                    ENDDO
+                 ENDIF
+                 IF(KNTORB.GT.nOrbital)CALL LSQUIT('Error in BuildBasis: too many coefficients',-1)
+              ENDDO
            ENDIF
         ENDIF
      ENDIF
@@ -1390,10 +1385,10 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
 
 END SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS
 
-subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
+subroutine determine_nNumbers_in_string(STRING,nNUMBERS,LIST)
   implicit none
   CHARACTER(len=280)    :: STRING
-  integer :: nNUMBERS
+  integer :: nNUMBERS,LIST(2,20)
   !
   logical :: INSIDENUMBER,SCIENTIFIC
   integer :: I
@@ -1402,10 +1397,21 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
   SCIENTIFIC = .FALSE.
   DO I=1,LEN(STRING)
 !    The '-' allows fixed format type numbers with no space separation
-     IF((STRING(I:I).EQ.' ').OR.(STRING(I:I).EQ.'-').AND.INSIDENUMBER)THEN
+     IF(INSIDENUMBER.AND.STRING(I:I).EQ.' ')THEN
+        INSIDENUMBER=.FALSE.
+        LIST(2,nNUMBERS) = I-1 !Last charater in String
+     ELSEIF((STRING(I:I).EQ.'-'.OR.STRING(I:I).EQ.'+').AND.INSIDENUMBER)THEN
 !       In case of scientific number representation 1.2345678D-09 we do not 
 !       accept '-' to separate two nnumbers
-        INSIDENUMBER=SCIENTIFIC
+        IF(SCIENTIFIC)THEN
+           !still inside a number 
+           INSIDENUMBER=.TRUE.
+        ELSE
+           LIST(2,nNUMBERS) = I-1 !Last charater in String
+           nNUMBERS=nNUMBERS+1    !new number starting with - or plus
+           LIST(1,nNUMBERS) = I   !First charater in String
+           INSIDENUMBER=.TRUE.
+        ENDIF
      ELSEIF(STRING(I:I).EQ.' '.AND..NOT.INSIDENUMBER)THEN
         !still outside number but not yet inside new number
 !     ELSEIF(STRING(I:I).EQ.'H'.AND..NOT.INSIDENUMBER)THEN
@@ -1413,10 +1419,11 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
      ELSE
         IF(.NOT.INSIDENUMBER)THEN
            nNUMBERS=nNUMBERS+1
+           LIST(1,nNUMBERS) = I !First charater in String
            INSIDENUMBER=.TRUE.
         ENDIF
      ENDIF
-     SCIENTIFIC = STRING(I:I).EQ.'D'
+     SCIENTIFIC = STRING(I:I).EQ.'D' .OR. STRING(I:I).EQ.'E'
   ENDDO
 END subroutine DETERMINE_NNUMBERS_IN_STRING
 
@@ -1486,9 +1493,9 @@ call dcopy (nrow*ncol,Contractionmatrix%elms,1,CC,1)
 IF (IPRINT .GT. 200)THEN
    WRITE(LUPRI,*)'nrow,ncol,nOrbital,nprim',nrow,ncol,nOrbital,nprim
    WRITE(LUPRI,*)'CCN'
-   call output(CCN,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   call ls_output(CCN,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
    WRITE(LUPRI,*)'CC'
-   call output(CC,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   call ls_output(CC,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
 ENDIF
 !reorder primitives at this level using basic bubblesort
 DO K=1,nrow
@@ -1559,15 +1566,15 @@ IF(Segmented)THEN
    !Print Stuff
    IF(IPRINT .GT. 200)THEN
     WRITE(LUPRI,*)'Exponents nr.',J,'nrow',nrow
-    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
+    call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
    ENDIF
    IF(IPRINT .GT. 200)THEN
     WRITE(LUPRI,*)'Coefficients nr.',J,'nrow',nrow
-    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+    call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
    ENDIF
    IF(IPRINT .GT. 200)THEN
     WRITE(LUPRI,*)'Unnormalizes Coefficients nr.',J,'nrow',nrow
-    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+    call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
    ENDIF
  ENDDO
 ELSE
@@ -1649,15 +1656,15 @@ ELSE
       !Print Stuff
       IF(IPRINT .GT. 200)THEN
          WRITE(LUPRI,*)'Exponents nr.',J,'nrow',nrow
-         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
+         call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
       ENDIF
       IF(IPRINT .GT. 200)THEN
          WRITE(LUPRI,*)'Coefficients nr.',J,'nrow',nrow,'ncol',ncol
-         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+         call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
       ENDIF
       IF(IPRINT .GT. 200)THEN
          WRITE(LUPRI,*)'Unnormalizes Coefficients nr.',J,'nrow',nrow,'ncol',ncol
-         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+         call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
       ENDIF
    enddo
 ENDIF

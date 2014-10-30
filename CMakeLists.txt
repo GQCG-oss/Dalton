@@ -49,12 +49,13 @@ option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
 option(ENABLE_QFITLIB        "Enable charge fittling library (QFITLIB)"         ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
+option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                         OFF)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
 option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
-option(ENABLE_XCFUN          "Enable XCFUN"                                     OFF)
+option(ENABLE_XCFUN          "Enable XCFUN"                                     ON)
 option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
@@ -62,8 +63,10 @@ option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 
 option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          ON)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
-option(ENABLE_OPENRSP        "Enable OpenRSP"                                   OFF)
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
+option(ENABLE_QMATRIX        "Enable QMatrix library"                           OFF)
+option(ENABLE_OPENRSP        "Enable OPENRSP library (need QMatrix library)"    OFF)
+option(ENABLE_TDRSP          "Enable TDRSP library (need QMatrix library)"      OFF)
 
 option(ENABLE_EFS            "Enable Echidna Fock Solver"                       ON)
 
@@ -74,6 +77,10 @@ option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                
 option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
 
 option(ENABLE_SRDFT          "Enable srdft module"                              ON)
+# Gen1Int interface, OpenRSP and TDRSP needs QMatrix library
+#if(ENABLE_GEN1INT OR ENABLE_OPENRSP OR ENABLE_TDRSP)
+#    set(ENABLE_QMATRIX ON)
+#endif()
 
 set(EXTERNAL_LIBS)
 
@@ -108,6 +115,30 @@ endif()
 set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
+
+if(ENABLE_PCMSOLVER)
+    find_package(ZLIB)
+    if(NOT ZLIB_FOUND)                              
+        set(ENABLE_PCMSOLVER OFF)
+        message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
+        message(STATUS " PCMSolver dependencies NOT satisfied:")
+        if(NOT ZLIB_FOUND)
+            message(STATUS "  - install Zlib development libraries")
+        endif()
+    else()
+        add_definitions(-DHAS_PCMSOLVER)                                                  
+        message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
+	
+	add_PCMSOLVER()
+        
+	set(PCMSOLVER_LIBS
+            stdc++
+            pcm
+            getkw
+            ${ZLIB_LIBRARIES}
+            ${EXTERNAL_LIBS})
+    endif()
+endif()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
@@ -174,8 +205,9 @@ if(USE_BUILTIN_LAPACK)
         )
 endif()
 
-include(LibsDALTON)
 include(LibsLSDALTON)
+# Dalton uses libraries of LSDalton if QMatrix built
+include(LibsDALTON)
 
 # copy basis/ to build directory
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})

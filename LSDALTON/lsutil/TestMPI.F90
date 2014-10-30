@@ -1,6 +1,6 @@
 module lsmpi_test
   use precision
-  use Integralparameters
+  use LSparameters
   use memory_handling
   use lsmpi_type
 #ifdef VAR_MPI

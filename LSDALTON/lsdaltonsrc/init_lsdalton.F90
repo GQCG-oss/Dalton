@@ -21,7 +21,7 @@ module init_lsdalton_mod
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
   use memory_handling, only: Print_Memory_info
-  use tensor_interface_module, only: array_enable_debug_mode
+  use tensor_interface_module, only: tensor_enable_debug_mode
   private
   public :: open_lsdalton_files,init_lsdalton_and_get_lsitem, &
        & get_lsitem_from_input
@@ -111,8 +111,8 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
     call sparsetest(ls%setting, lupri)
   endif
 
-  if( config%type_array_debug )then
-     call array_enable_debug_mode()
+  if( config%type_tensor_debug )then
+     call tensor_enable_debug_mode()
   endif
 
 end SUBROUTINE init_lsdalton_and_get_lsitem
@@ -239,13 +239,14 @@ SUBROUTINE print_intro(lupri)
        &  ' Trygve Helgaker,         University of Oslo,        Norway    (supervision)',&
        &  ' Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)',&
        &  ' Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)',&
+       &  ' Robert Izsak,            University of Oslo,        Norway    (ADMM)',&
        &  ' Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)',&
        &  ' Poul Joergensen,         Aarhus University,         Denmark   (supervision)', &
        &  ' Joanna Kauczor,          Aarhus University,         Denmark   (response solver)',&
        &  ' Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)',&
        &  ' Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)',&
        &  ' Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)',&
-       &  ' Patrick Merlot,          University of Oslo,        Norway    (PARI)',&
+       &  ' Patrick Merlot,          University of Oslo,        Norway    (ADMM)',&
        &  ' Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)',&
        &  ' Jeppe Olsen,             Aarhus University,         Denmark   (supervision)', &
        &  ' Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)',&

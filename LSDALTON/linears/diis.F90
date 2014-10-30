@@ -41,7 +41,7 @@ module LINSCA_DIIS
       call DIIS_WEIGHTS(av,msize,queue,weights)
       if (av%info_weight_final .or. av%info_diis) then
         WRITE(av%LUPRI,*) 'WEIGHTS,POS',POS
-        call OUTPUT(weights,1,msize,1,1,msize,1,1,av%lupri)
+        call LS_OUTPUT(weights,1,msize,1,1,msize,1,1,av%lupri)
       endif
 !** Construct average density and fock matrix
       if (.not. av%trilevel_gcscf_skip) then
@@ -83,7 +83,7 @@ module LINSCA_DIIS
     Amat(msize+1,msize+1) = 0.0
     if (av%info_diis) then
       write(av%lupri,*)'DIIS A matrix'
-      call output(Amat,1,msize+1,1,msize+1,msize+1,msize+1,1,av%lupri)
+      call ls_output(Amat,1,msize+1,1,msize+1,msize+1,msize+1,1,av%lupri)
     endif    
     bvec(1:msize) = 0.0E0_realk
     bvec(msize+1) = -1.0E0_realk
@@ -166,7 +166,7 @@ end module LINSCA_DIIS
 !!$      call EDIIS_WEIGHTS(av,msize,queue,weights)
 !!$      if (av%info_weight_final .or. av%info_ediis) then
 !!$        WRITE(av%LUPRI,*) 'WEIGHTS,POS',av%ediis_POS
-!!$        call OUTPUT(weights,1,msize,1,1,msize,1,1,av%lupri)
+!!$        call LS_OUTPUT(weights,1,msize,1,1,msize,1,1,av%lupri)
 !!$      endif
 !!$!** Construct average density and fock matrix
 !!$      call get_AVERAGE_arr(av,'D',queue,av%ediis_history_size,weights,Dav)
@@ -206,12 +206,12 @@ end module LINSCA_DIIS
 !!$    if (error /= 0) then 
 !!$       write(av%lupri,*) &
 !!$            &'  EDIIS_WEIGHTS: Error', error
-!!$       call output(Amat,1,msize-1,1,msize-1,msize-1,msize-1,1,av%lupri)
+!!$       call ls_output(Amat,1,msize-1,1,msize-1,msize-1,msize-1,1,av%lupri)
 !!$       stop 'EDIIS_WEIGHTS: error in EDIIS'
 !!$    end if
 !!$    if (av%info_ediis) then
 !!$       write(av%lupri,*)'Solution vector'
-!!$       call output(bvec,1,msize-1,1,1,msize-1,1,1,av%lupri)
+!!$       call ls_output(bvec,1,msize-1,1,1,msize-1,1,1,av%lupri)
 !!$    endif
 !!$    j = 0
 !!$    do i = 1,msize
@@ -263,9 +263,9 @@ end module LINSCA_DIIS
 !!$    !  enddo
 !!$    !  WRITE(av%LUPRI,*) 'Finite difference derivatives'
 !!$    !  write(av%lupri,*) 'EDIIS gradient '
-!!$    !  call output(bvec,1,msize-1,1,1,msize-1,1,1,av%lupri)
+!!$    !  call ls_output(bvec,1,msize-1,1,1,msize-1,1,1,av%lupri)
 !!$    !  write(av%lupri,*) 'EDIIS hessian '
-!!$    !  call output(Amat,1,msize-1,1,msize-1,msize-1,msize-1,1,av%lupri)
+!!$    !  call ls_output(Amat,1,msize-1,1,msize-1,msize-1,msize-1,1,av%lupri)
 !!$    !endif
 !!$
 !!$!** Construct bvec
@@ -305,9 +305,9 @@ end module LINSCA_DIIS
 !!$    if (av%debug_ediis) then
 !!$      WRITE(av%LUPRI,*) 'EDIIS derivatives'
 !!$      write(av%lupri,*) 'gradient '
-!!$      call output(bvec,1,msize-1,1,1,msize-1,1,1,av%lupri)
+!!$      call ls_output(bvec,1,msize-1,1,1,msize-1,1,1,av%lupri)
 !!$      write(av%lupri,*) 'hessian '
-!!$      call output(Amat,1,msize-1,1,msize-1,msize-1,msize-1,1,av%lupri)
+!!$      call ls_output(Amat,1,msize-1,1,msize-1,msize-1,msize-1,1,av%lupri)
 !!$    endif       
 !!$
 !!$  end subroutine get_A_and_b

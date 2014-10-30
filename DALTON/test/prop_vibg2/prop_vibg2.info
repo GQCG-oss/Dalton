@@ -1,6 +1,0 @@
-   prop_vibg2
-   ----------
-   Molecule:         H2
-   Wave Function:    Full CI / 6-31G**
-   Test Purpose:     Calculation of vibrational g-factor as sum
-                     over all first order non-adiabatic coupling elements
