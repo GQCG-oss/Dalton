@@ -9075,18 +9075,18 @@ contains
     ! ************************************************
 #ifdef VAR_ICHOR
     iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
-    !Determine how many batches of AOS based on the MaxAllowedDimGamma, the requested
+    !Determine how many batches of AOS based on the gammadim, the requested
     !size of the AO batches. iAO is the center that the batching should occur on. 
     !'R'  !Specifies that it is the Regular AO basis that should be batched 
-    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
          & nbatchesGamma,DECinfo%output)
     call mem_alloc(AOGammabatchinfo,nbatchesGamma)
-    !Construct the batches of AOS based on the MaxAllowedDimGamma, the requested
-    !size of the AO batches - MaxAllowedDimGamma must be unchanged since the call 
+    !Construct the batches of AOS based on the gammadim, the requested
+    !size of the AO batches - gammadim must be unchanged since the call 
     !to determine_Ichor_nbatchesofAOS
     !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
-    !So MaxActualDimGamma must be less og equal to MaxAllowedDimGamma
-    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+    !So MaxActualDimGamma must be less og equal to gammadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
          & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
 #else
     ! Orbital to batch information
@@ -9127,18 +9127,18 @@ contains
 
 #ifdef VAR_ICHOR
     iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
-    !Determine how many batches of AOS based on the MaxAllowedDimAlpha, the requested
+    !Determine how many batches of AOS based on the alphadim, the requested
     !size of the AO batches. iAO is the center that the batching should occur on. 
     !'R'  !Specifies that it is the Regular AO basis that should be batched 
-    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
          & nbatchesAlpha,DECinfo%output)
     call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
-    !Construct the batches of AOS based on the MaxAllowedDimAlpha, the requested
-    !size of the AO batches - MaxAllowedDimAlpha must be unchanged since the call 
+    !Construct the batches of AOS based on the alphadim, the requested
+    !size of the AO batches - alphadim must be unchanged since the call 
     !to determine_Ichor_nbatchesofAOS
     !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
-    !So MaxActualDimAlpha must be less og equal to MaxAllowedDimAlpha
-    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+    !So MaxActualDimAlpha must be less og equal to alphadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
          & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
 #else
     ! Orbital to batch information
