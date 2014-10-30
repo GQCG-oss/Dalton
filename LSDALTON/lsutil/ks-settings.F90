@@ -2,7 +2,7 @@ MODULE KS_settings
 use precision
 use matrix_module
 use matrix_operations
-use LS_UTIL, only : insensitveEQUIV
+use LS_UTIL, only : capitalize_string
 ! This module evaluates the Fock/Kohn-Sham matrix using chosen
 ! algorithm, matrix representation, etc.
 !
@@ -85,17 +85,19 @@ end subroutine activate_incremental
 
 ! check if for the functional used the empirical disp. corr. is defined
 SUBROUTINE II_dftdispcheck(func,lupri)
-implicit none
-Character(len=80),intent(IN) :: func
-Integer,intent(IN)           :: lupri
-!
-Logical :: disp
+  implicit none
+  Character(len=80),intent(IN) :: func
+  Integer,intent(IN)           :: lupri
+  !
+  Logical :: disp
 
-disp = .FALSE.
-IF (insensitveEQUIV(func,"BP86"))  disp = .TRUE.
-IF (insensitveEQUIV(func,"BLYP"))  disp = .TRUE.
-IF (insensitveEQUIV(func,"PBE"))   disp = .TRUE.
-IF (insensitveEQUIV(func,"B3LYP")) disp = .TRUE.
+  disp = .FALSE.
+  
+  call capitalize_string(func)
+  IF (func == "BP86")  disp = .TRUE.
+  IF (func == "BLYP")  disp = .TRUE.
+  IF (func == "PBE")   disp = .TRUE.
+  IF (func == "B3LYP") disp = .TRUE.
 !  IF (insensitveEQUIV(func,"TPSS"))  disp = .TRUE. !!!TPSS not yet implemented in LSDALTON
 
 IF (disp .EQV. .FALSE.) THEN

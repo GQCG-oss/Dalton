@@ -2464,15 +2464,16 @@ CONTAINS
     Integer,intent(IN)           :: lupri
     Real(realk) :: S6,II_DISP_FUNCFAC
     
-    IF (insensitveEQUIV(func,"BP86")) THEN
+    call capitalize_string(func)
+    IF (func == "BP86") THEN
       S6 = 1.05D0
-    ELSE IF (insensitveEQUIV(func,"BLYP")) THEN
+    ELSE IF (func == "BLYP") THEN
       S6 = 1.20D0
-    ELSE IF (insensitveEQUIV(func,"PBE")) THEN
+    ELSE IF (func == "PBE") THEN
       S6 = 0.75D0
-    ELSE IF (insensitveEQUIV(func,"B3LYP")) THEN
+    ELSE IF (func == "B3LYP") THEN
       S6 = 1.05D0
-    ELSE IF (insensitveEQUIV(func,"TPSS")) THEN
+    ELSE IF (func == "TPSS") THEN
       S6 = 1.00D0
     ELSE 
       CALL LSQUIT('Non-valid functional in II_DISP_FUNCFAC',-1)
