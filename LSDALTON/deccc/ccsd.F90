@@ -1739,7 +1739,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call lsmpi_poke()
            !Transpose u[k gamma c alpha]^T -> u[c alpha k gamma]
            call array_reorder_4d(1.0E0_realk,w1%d,no,lg, nv,la,[3,4,1,2],0.0E0_realk,w3%d)
-           call print_norm(w3%d,i8*no*lg*nv*la,"int 1")
            call lsmpi_poke()
 
            !print*,"GAMMA:",fg,nbatchesGamma,"ALPHA:",fa,nbatchesAlpha
@@ -1785,7 +1784,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 
            call array_reorder_4d(1.0E0_realk,w1%d,nb,nb,la,lg,[4,2,3,1],0.0E0_realk,w0%d)
-           call print_norm(w0%d,i8*nb*nb*la*lg," NORM INT BATCH:")
            call lsmpi_poke()
 
            ! I [gamma delta alpha beta] * Lambda^p [beta l] = I[gamma delta alpha l]
@@ -1799,7 +1797,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3%d,nv,w1%d,lg*la*no,1.0E0_realk,Had,nv)
            call lsmpi_poke()
 
-           call print_norm(Had,i8*nv*nb," Had:")
            !VVOO
            if ( Ccmodel > MODEL_CC2 ) then
               !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
@@ -1825,7 +1822,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               endif
               call lsmpi_poke()
            endif
-           call print_norm(gvvooa%elm1,i8*nv*nv*no*no," gvvoo:")
 
            ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
            call dgemm('n','n',lg*la*no,nv,nb,1.0E0_realk,w1%d,la*no*lg,yv,nb,0.0E0_realk,w3%d,la*no*lg)
@@ -1834,7 +1830,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3%d,la,uigcj%d,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
            call lsmpi_poke()
 
-           call print_norm(Gbi,i8*nb*no," Gbi:")
            if ( Ccmodel > MODEL_CC2 ) then
 
               !Reorder I [alpha j gamma b]                      -> I [alpha j b gamma]
@@ -1859,7 +1854,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
               endif
               call lsmpi_poke()
-           call print_norm(gvoova%elm1,i8*nv*no*no*nv," gvoov:")
            endif
 
            call time_start_phase(PHASE_WORK, at = time_intloop_work)
@@ -1907,7 +1901,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                     &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
                     &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
 
-                 call print_norm(omega2%elm1,i8*no*no*nv*nv,"orig")
 
                  !start a new timing phase after these terms
                  call time_start_phase(PHASE_WORK)
@@ -1971,7 +1964,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            else
               call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,1.0E0_realk,omega2%elm1,nv)
            endif
-           call print_norm(omega2%elm1,i8*nv*no*no*nv," gvovo:")
            call lsmpi_poke()
 
         end do BatchAlpha
@@ -2234,15 +2226,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call time_start_phase(PHASE_WORK, twall = time_Bcnd )
 
-        call print_norm(omega2,"Before B2",print_on_rank=0)
-
         !get B2.2 contributions
         !**********************
         call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,&
            &time_Bcnd_work,time_Bcnd_comm)
 
-
-        call print_norm(omega2,"AFTER B2",print_on_rank=0)
 
         call tensor_free(sio4)
 
@@ -2332,8 +2320,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
      endif
-
-     call print_norm(omega2,"AFTER CND",print_on_rank=0)
 
 
      !IN CASE OF MPI (AND CORRECT SCHEME) REDUCE TO MASTER
@@ -2529,7 +2515,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! (-1) Had [a delta] * Lambda^h [delta i] =+ Omega[a i]
         call dgemm('n','n',nv,no,nb,-1.0E0_realk,Had,nv,yo,nb,1.0E0_realk,omega1,nv)
 
-        call print_norm(omega1,i8*nv*no," OMEGA1:")
      endif
 
 
@@ -3163,7 +3148,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      unlock_time   = time_lsmpi_win_unlock 
      waiting_time  = time_lsmpi_wait
      flushing_time = time_lsmpi_win_flush
-#endif
 
      myload = 0
 
@@ -3220,8 +3204,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call lsmpi_barrier(infpar%lg_comm)
 
-        call print_norm(uigcj,"uigcj",print_on_rank=0)
-
         !**********************************
         ! Begin the loop over alpha batches
         !**********************************
@@ -3262,7 +3244,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            order4 = [3,4,1,2]
            call tensor_contract( 1.0E0_realk, uigcj, xo_fa, [4],[2],1,0.0E0_realk, int1, order4)
-           call print_norm(int1,"int 1",print_on_rank=0)
 
            call tensor_ainit(Cint, [lg,nb,la,nb], 4, local=local, atype="TDAR", tdims=[lg,bs,la,bs])
 
@@ -3293,22 +3274,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
            call tensor_convert(w1%d,Cint,order=[4,2,3,1])
 
-           call print_norm(Cint," NORM INT BATCH:",print_on_rank=0)
-
 
            ! I [gamma delta alpha beta] * Lambda^p [beta l] = I [alpha l gamma delta]
            call tensor_ainit( int2, [la,no,lg,nb], 4, local=local, atype="TDAR", tdims=[la,os,lg,bs] )
            order4 = [3,4,1,2]
-           call tensor_contract( 1.0E0_realk, Cint, xo, [4],[1],1,0.0E0_realk, int2, order4)
+           call tensor_contract( 1.0E0_realk, Cint, xo, [4],[1],1,0.0E0_realk, int2, order4,force_sync=.true.)
 
 
            !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
            order2 = [1,2]
-           call tensor_contract( 1.0E0_realk, int1, int2, [2,3,4],[1,2,3],3,1.0E0_realk, Had, order2)
+           call tensor_contract( 1.0E0_realk, int1, int2, [2,3,4],[1,2,3],3,1.0E0_realk, Had, order2,force_sync=.true.)
 
            call tensor_free( int1 )
-
-           call print_norm(Had," Had:",print_on_rank=0)
 
 
 
@@ -3319,29 +3296,27 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
               call tensor_ainit( int3, [la,no,no,lg], 4, local=local, atype="TDAR", tdims=[la,os,os,lg] )
               order4 = [1,2,4,3]
-              call tensor_contract( 1.0E0_realk, int2, yo   , [4],[1],1, 0.0E0_realk, int3, order4)
+              call tensor_contract( 1.0E0_realk, int2, yo   , [4],[1],1, 0.0E0_realk, int3, order4,force_sync=.true.)
 
               !I [alpha  i j gamma] * Lambda^h [gamma b]            = I [alpha i j b]
               call tensor_ainit( int4, [la,no,no,nv], 4, local=local, atype="TDAR", tdims=[la,os,os,vs] )
               order4 = [1,2,3,4]
-              call tensor_contract( 1.0E0_realk, int3, yv_fg, [4],[1],1, 0.0E0_realk, int4, order4)
+              call tensor_contract( 1.0E0_realk, int3, yv_fg, [4],[1],1, 0.0E0_realk, int4, order4,force_sync=.true.)
 
               call tensor_free( int3 )
 
               !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
-              call tensor_contract( 1.0E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, gvvoo, order4)
+              call tensor_contract( 1.0E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, gvvoo, order4,force_sync=.true.)
 
               call tensor_free( int4 )
 
            endif
 
-           call print_norm(gvvoo," gvvoo:",print_on_rank=0)
-
 
            ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
            call tensor_ainit( int1, [la,no,lg,nv], 4, local=local, atype="TDAR", tdims=[la,os,lg,vs] )
            order4 = [1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int2, yv, [4],[1],1, 0.0E0_realk, int1, order4)
+           call tensor_contract( 1.0E0_realk, int2, yv, [4],[1],1, 0.0E0_realk, int1, order4,force_sync=.true.)
 
            call tensor_free( int2 )
 
@@ -3357,7 +3332,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !$OMP WORKSHARE
               Gbi_local%elm2(fa:fa+la-1,:) = Gbi_local%elm2(fa:fa+la-1,:) + p2(:,:)
               !$OMP END WORKSHARE
-              call print_norm(Gbi_local," Gbi:")
            endif
 
            call tensor_free( int3 )
@@ -3369,12 +3343,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               order4 = [1,2,3,4]
               !Reorder I [alpha j gamma b]  * Lambda^h [gamma i]          = I [alpha j b i]
-              call tensor_contract( 1.0E0_realk, int1, yo_fg, [3],[1],1, 0.0E0_realk, int3, order4)
+              call tensor_contract( 1.0E0_realk, int1, yo_fg, [3],[1],1, 0.0E0_realk, int3, order4,force_sync=.true.)
 
               !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
-              call tensor_contract( 1.0E0_realk, yv_fa, int3, [1],[1],1, 1.0E0_realk, gvoov, order4)
+              call tensor_contract( 1.0E0_realk, xv_fa, int3, [1],[1],1, 1.0E0_realk, gvoov, order4,force_sync=.true.)
 
-              call print_norm(gvoov," gvoov",print_on_rank=0)
 
               call tensor_free( int3 )
            endif
@@ -3426,7 +3399,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            !transform alpha to a and add to omega2
            order4=[1,2,3,4]
            call tensor_contract( 0.5E0_realk, xv_fa, int2, [1],[1],1, 1.0E0_realk, omega2, order4,force_sync=.true.)
-           call print_norm(omega2,"orig",print_on_rank=0)
 
            call tensor_free( int2 )
 
@@ -3457,8 +3429,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call tensor_contract( 0.5E0_realk, int3, int1, [3,4],[2,1],2, 1.0E0_realk, omega2, order4,force_sync=.true.)
 
            call tensor_free( int3 )
-
-           call print_norm(omega2," O MEGA",print_on_rank=0)
 
 
 !           if( Ccmodel > MODEL_CC2 )then
@@ -3526,7 +3496,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            order4=[1,2,3,4]
            call tensor_contract( 0.5E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, omega2, order4,force_sync=.true.)
 
-           call print_norm(omega2," gvovo",print_on_rank=0)
 
            call tensor_free( int1 )
            call tensor_free( int2 )
@@ -3596,12 +3565,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_WORK, at = time_intloop_comm )
 
-
      call tensor_free(tpl)
      call tensor_free(tmi)
      ! free working matrices and adapt to new requirements
      call mem_dealloc(w0)
      call mem_dealloc(w1)
+
      if(master.and.DECinfo%PL>2)then
         write(*,'("CCSD time in lsmpi_win_unlock phase B",g10.3)') time_lsmpi_win_unlock - unlock_time
         write(*,'("CCSD time in lsmpi_wait       phase B",g10.3)') time_lsmpi_wait       - waiting_time
@@ -3637,11 +3606,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if(alloc_in_dummy)then
         call tensor_unlock_wins(u2,     all_nodes=.true.)
      endif
-
-     call print_norm(omega2,"AFTER CND",print_on_rank=0)
-     call lsmpi_barrier(infpar%lg_comm)
-
-
 
      govov%access_type  = AT_MASTER_ACCESS
      omega2%access_type = AT_MASTER_ACCESS
@@ -3777,8 +3741,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! F [a i] = Omega [a i]
         call daxpy(no*nv,1.0E0_realk,qpfock,1,omega1,1)
 
-
-        call print_norm(omega1,i8*nv*no," OMEGA1:")
      endif
 
 
@@ -3823,6 +3785,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call tensor_free(yo)
      call tensor_free(xv)
      call tensor_free(yv)
+     call tensor_free(u2)
 
      call mem_dealloc(w0)
 
@@ -3831,10 +3794,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(omega2,                       " NORM(omega2):")
      endif
 
-     !stop 0
-!#else
-!     call lsquit("ERROR(yet_another_ccsd_residual): MPI only",-1)
-!#endif
+#else
+     call lsquit("ERROR(yet_another_ccsd_residual): MPI only",-1)
+#endif
 
   end subroutine yet_another_ccsd_residual
 
