@@ -5779,7 +5779,7 @@ C
             LBFINP = LBUF
 C     
 #if defined (SYS_NEC)
-            LRECL =   LBFINP + NIBUF*LBFINP/2 + 1    ! in intger*8 units
+            LRECL =   LBFINP + NIBUF*LBFINP/2 + 1    ! in integer*8 units
 #else
             LRECL = 2*LBFINP + NIBUF*LBFINP   + 1    ! in integer*4 units
 #endif
