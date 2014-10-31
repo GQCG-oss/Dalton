@@ -142,7 +142,7 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
       !make sure all data is in the correct for this routine, that is omega2 is
       !TT_TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
-      call tensor_init(prec,dims,4,TT_TILED_DIST,AT_MASTER_ACCESS,omega2%tdim,fo=omega2%offset)
+      call tensor_minit(prec,dims,4,atype="TDAR",tdims=omega2%tdim,fo=omega2%offset)
       call tensor_change_atype_to_rep(ppfock,loc)
       call tensor_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
@@ -6161,6 +6161,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     ! Slaves exit the routines:
     if(.not. master) then
+      govov%access_type  = AT_MASTER_ACCESS
+      t2%access_type     = AT_MASTER_ACCESS
+      omega2%access_type = AT_MASTER_ACCESS
       ! Free arrays:
       call mem_dealloc(xvir)
       call mem_dealloc(yocc)
