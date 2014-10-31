@@ -1053,9 +1053,9 @@ contains
   !> \brief MPI communcation where CCSD and CC2 data is transferred
   !> \author Patrick Ettenhuber
   !> \date March 2012
-  subroutine mpi_communicate_ccsd_calcdata(ccmodel,om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,loc)
+  subroutine mpi_communicate_ccsd_calcdata(ccmodel,om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,loc,res_nr)
      implicit none
-     integer,intent(inout) :: ccmodel
+     integer,intent(inout) :: ccmodel,res_nr
      type(mp2_batch_construction) :: bat
      integer            :: nbas,nocc,nvirt,ierr,iter
      !real(realk)        :: t2(:),govov(:)
@@ -1082,6 +1082,7 @@ contains
      call ls_mpi_buffer(iter,infpar%master)
      call ls_mpi_buffer(loc,infpar%master)
      call ls_mpi_buffer(ccmodel,infpar%master)
+     call ls_mpi_buffer(res_nr,infpar%master)
      if(.not.loc)then
         if(master)gaddr=govov%addr_p_arr
         call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)

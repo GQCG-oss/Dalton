@@ -8752,76 +8752,77 @@ contains
 
   end subroutine ccsdpt_energy_e4_full
 
-  !> \brief: print out E[4] fragment and pair interaction contribution to 
-  !>         ccsd(t) energy correction for full molecule calculation
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
-
-    implicit none
-
-    !> number of atoms in molecule
-    integer, intent(in) :: natoms
-    !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
-    !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-    !> loop counters
-    integer :: i,j
-!    use the one in lsutil/fundamental.f90
-!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
-
-    ! print out fragment energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,'(1X,a)') '*                         E[4] energies                       *'
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (fourth--order E[4])'
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,*)
-
-    do i=1,natoms
-
-       if (orbitals_assigned(i)) then
-
-          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, e4_matrix(i,i)
-
-       end if
-
-    end do
-
-    ! now print out pair interaction energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (fourth--order E[4])     '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,*)
-
-    do j=1,natoms
-       do i=j+1,natoms
-
-          ! write increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
-                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
-
-          end if
-
-       end do
-    end do
-
-
-  end subroutine print_e4_full
+! code not used
+!  !> \brief: print out E[4] fragment and pair interaction contribution to 
+!  !>         ccsd(t) energy correction for full molecule calculation
+!  !> \author: Janus Juul Eriksen
+!  !> \date: February 2013
+!  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
+!
+!    implicit none
+!
+!    !> number of atoms in molecule
+!    integer, intent(in) :: natoms
+!    !> matrices containing E[4] energies and interatomic distances
+!    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
+!    !> vector handling how the orbitals are assigned?
+!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
+!    !> loop counters
+!    integer :: i,j
+!!    use the one in lsutil/fundamental.f90
+!!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
+!
+!    ! print out fragment energies
+!
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,'(1X,a)') '*                         E[4] energies                       *'
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (fourth--order E[4])'
+!    write(DECinfo%output,'(8X,a)') '------    --------------------'
+!    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
+!    write(DECinfo%output,'(8X,a)') '------    --------------------'
+!    write(DECinfo%output,*)
+!
+!    do i=1,natoms
+!
+!       if (orbitals_assigned(i)) then
+!
+!          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, e4_matrix(i,i)
+!
+!       end if
+!
+!    end do
+!
+!    ! now print out pair interaction energies
+!
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (fourth--order E[4])     '
+!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+!    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
+!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+!    write(DECinfo%output,*)
+!
+!    do j=1,natoms
+!       do i=j+1,natoms
+!
+!          ! write increments only if pair interaction energy is nonzero
+!          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
+!
+!             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
+!                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
+!
+!          end if
+!
+!       end do
+!    end do
+!
+!
+!  end subroutine print_e4_full
 
 
 
@@ -8882,64 +8883,65 @@ contains
 
   end subroutine ccsdpt_energy_e5_full
 
-  !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
-
-    implicit none
-
-    !> number of atoms in molecule
-    integer, intent(in) :: natoms
-    !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
-    !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-    !> loop counters
-    integer :: i,a
-
-    ! print out fragment energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,'(1X,a)') '*                         E[5] energies                       *'
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Pair fragment energies (fifth--order E[5])          '
-    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-    write(DECinfo%output,'(9X,a)') 'P(virt)    Q(occ)      R(Ang)           E(PQ)          '
-    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-    write(DECinfo%output,*)
-
-    ! the total singles energy must result from an unrestricted summation over all occ and virt indices
-    ! as we are only interested in general orbital interactions and hence not the nature (occ/virt)
-    ! of the individual orbitals
-
-    do i=1,natoms
-       do a=1,natoms
-
-          ! write increments only if pair interaction energy is nonzero
-          if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
-
-             if (i .eq. a) then
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &0.000, e5_matrix(a,i)
-
-             else
-
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
-
-             end if
-
-          end if
-
-       end do
-    end do
-
-  end subroutine print_e5_full
+! code not used
+!  !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
+!  !> \author: Janus Juul Eriksen
+!  !> \date: February 2013
+!  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
+!
+!    implicit none
+!
+!    !> number of atoms in molecule
+!    integer, intent(in) :: natoms
+!    !> matrices containing E[4] energies and interatomic distances
+!    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
+!    !> vector handling how the orbitals are assigned?
+!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
+!    !> loop counters
+!    integer :: i,a
+!
+!    ! print out fragment energies
+!
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,'(1X,a)') '*                         E[5] energies                       *'
+!    write(DECinfo%output,'(1X,a)') '***************************************************************'
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,*)
+!    write(DECinfo%output,'(8X,a)') '-- Pair fragment energies (fifth--order E[5])          '
+!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
+!    write(DECinfo%output,'(9X,a)') 'P(virt)    Q(occ)      R(Ang)           E(PQ)          '
+!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
+!    write(DECinfo%output,*)
+!
+!    ! the total singles energy must result from an unrestricted summation over all occ and virt indices
+!    ! as we are only interested in general orbital interactions and hence not the nature (occ/virt)
+!    ! of the individual orbitals
+!
+!    do i=1,natoms
+!       do a=1,natoms
+!
+!          ! write increments only if pair interaction energy is nonzero
+!          if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
+!
+!             if (i .eq. a) then
+!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+!                     &0.000, e5_matrix(a,i)
+!
+!             else
+!
+!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+!                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
+!
+!             end if
+!
+!          end if
+!
+!       end do
+!    end do
+!
+!  end subroutine print_e5_full
 
 
   !> \brief Get MO integrals for ijk-CCSD(T) (in canonical basis), see integral storing order below.
@@ -8975,11 +8977,19 @@ contains
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
     integer :: MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxActualDimGamma,nbatchesGamma
+#ifdef VAR_ICHOR
+    type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
+    type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
+    integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
+    logical :: MoTrans, NoSymmetry,SameMol
+#else
+    integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    TYPE(DECscreenITEM)   :: DecScreen
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
-    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
-    TYPE(DECscreenITEM)   :: DecScreen
+#endif
+    integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
     ! distribution stuff needed for mpi parallelization
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
@@ -9006,9 +9016,26 @@ contains
 
 #endif
 
+    ! Set integral info
+    ! *****************
+    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
+    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
+    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
+    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
+    INTSPEC(5)='C' !C = Coulomb operator
+#ifdef VAR_ICHOR
+    iprint = 0           !print level for Ichor Integral code
+    MoTrans = .FALSE.    !Do not transform to MO basis! 
+    NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+    SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+    !Determine the full number of AO batches - not to be confused with the batches of AOs
+    !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+    iAO = 1
+    call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+#else
     ! Integral screening?
     doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
-
+#endif
     ! allocate arrays to update during integral loop 
     ! **********************************************
     
@@ -9048,16 +9075,32 @@ contains
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
-
+#ifdef VAR_ICHOR
+    iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the gammadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,DECinfo%output)
+    call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+    !Construct the batches of AOS based on the gammadim, the requested
+    !size of the AO batches - gammadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimGamma must be less og equal to gammadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+#else
     ! Orbital to batch information
     ! ----------------------------
     call mem_alloc(orb2batchGamma,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
          & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
          & nbatchesGamma,orb2BatchGamma,'R')
-
+#endif
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
+#ifndef VAR_ICHOR
     ! Translate batchindex to orbital index
     ! -------------------------------------
     call mem_alloc(batch2orbGamma,nbatchesGamma)
@@ -9078,20 +9121,39 @@ contains
        batch2orbGamma(idx)%orbindex(K) = iorb
 
     end do
+#endif
 
     ! ************************************************
     ! * Determine batch information for Alpha batch  *
     ! ************************************************
 
+#ifdef VAR_ICHOR
+    iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the alphadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,DECinfo%output)
+    call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+    !Construct the batches of AOS based on the alphadim, the requested
+    !size of the AO batches - alphadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimAlpha must be less og equal to alphadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+#else
     ! Orbital to batch information
     ! ----------------------------
     call mem_alloc(orb2batchAlpha,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
          & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
          & nbatchesAlpha,orb2BatchAlpha,'R')
+#endif
 
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
+#ifndef VAR_ICHOR
     ! Translate batchindex to orbital index
     ! -------------------------------------
     call mem_alloc(batch2orbAlpha,nbatchesAlpha)
@@ -9112,14 +9174,14 @@ contains
        batch2orbAlpha(idx)%orbindex(K) = iorb
 
     end do
+#endif
 
-    ! Set integral info
-    ! *****************
-    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
-    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
-    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
-    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
-    INTSPEC(5)='C' !C = Coulomb operator
+
+#ifdef VAR_ICHOR
+    !Calculate Screening integrals 
+    SameMOL = .TRUE. !Specifies same molecule on all centers 
+    call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+#else
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
             & nbatchesAlpha,nbatchesGamma,INTSPEC)
 
@@ -9131,6 +9193,7 @@ contains
             & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
 
     end if
+#endif
 
     FullRHS = (nbatchesGamma .eq. 1) .and. (nbatchesAlpha .eq. 1)
 
@@ -9150,8 +9213,22 @@ contains
     ! init distribution
     distribution = 0
     myload = 0
+#ifdef VAR_ICHOR
+    call mem_alloc(batchdimAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+    enddo
+    call mem_alloc(batchdimGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+    enddo
+#endif
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+#ifdef VAR_ICHOR
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchdimGamma)
+#endif
 
 #endif
 
@@ -9159,15 +9236,30 @@ contains
     ! ******************************************************************
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+#ifdef VAR_ICHOR
+       dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+       GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+       GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+       AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+       AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+#else
        dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
        GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
-
+#endif
 
        BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
+#ifdef VAR_ICHOR
+          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+#else
           dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
           AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+#endif
 
 #ifdef VAR_MPI
 
@@ -9183,16 +9275,23 @@ contains
 
 #endif
 
+          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
+          ! ************************************************************************************
+
+#ifdef VAR_ICHOR
+          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
+               & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+               & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
+#else
           if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
           if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
 
-          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
-          ! ************************************************************************************
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
                & FullRHS,INTSPEC)
+#endif
 
           ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
           m = nbasis*dimGamma*dimAlpha
@@ -9349,9 +9448,14 @@ contains
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
     call mem_dealloc(tmp3)
-    call free_decscreen(DECSCREEN)
     call mem_dealloc(CoccT)
     call mem_dealloc(CvirtT)
+#ifdef VAR_ICHOR
+    call FREE_SCREEN_ICHORERI()
+    call mem_dealloc(AOGammabatchinfo)
+    call mem_dealloc(AOAlphabatchinfo)
+#else
+    call free_decscreen(DECSCREEN)
     call mem_dealloc(orb2batchGamma)
     call mem_dealloc(batchdimGamma)
     call mem_dealloc(batchsizeGamma)
@@ -9371,7 +9475,7 @@ contains
     call mem_dealloc(batch2orbAlpha)
     nullify(mylsitem%setting%LST_GAB_LHS)
     nullify(mylsitem%setting%LST_GAB_RHS)
-
+#endif
     if (master) call LSTIMER('CCSD(T) INT (IJK)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine get_CCSDpT_integrals_ijk
@@ -9417,12 +9521,14 @@ contains
     integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
     logical :: MoTrans, NoSymmetry,SameMol
 #else
+    integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    TYPE(DECscreenITEM)   :: DecScreen
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
-    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
-    TYPE(DECscreenITEM)   :: DecScreen
 #endif
+    integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
+
     ! distribution stuff needed for mpi parallelization
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
@@ -9649,8 +9755,22 @@ contains
     ! init distribution
     distribution = 0
     myload = 0
+#ifdef VAR_ICHOR
+    call mem_alloc(batchdimAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+    enddo
+    call mem_alloc(batchdimGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+    enddo
+#endif
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+#ifdef VAR_ICHOR
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchdimGamma)
+#endif
 
 #endif
 

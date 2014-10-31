@@ -608,6 +608,7 @@ module cc_tools_module
             !in the indices i and j
             call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
 
+
             if(s==4.or.s==3)then
                if( present(order) )then
                   call array_reorder_4d(scaleitby,w2,nv,nv,no,no,order,1.0E0_realk,omega%elm1)

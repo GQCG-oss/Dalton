@@ -2277,6 +2277,7 @@ module lspdm_tensor_operations_module
     p_arr%a(addr)%local_addr  = addr
     p_arr%a(addr)%initialized = .true.
 
+    allocate( p_arr%a(addr)%access_type )
     p_arr%a(addr)%access_type = pdm
 
     !SET MODE
@@ -2554,6 +2555,8 @@ module lspdm_tensor_operations_module
     p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
     p_arr%a(addr)%local_addr  = addr
     p_arr%a(addr)%initialized = .true.
+
+    allocate( p_arr%a(addr)%access_type )
     p_arr%a(addr)%access_type = pdm
 
     !INITIALIZE TILE STRUCTURE, if master from basics, if slave most is already
