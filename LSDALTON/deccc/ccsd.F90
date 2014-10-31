@@ -2273,7 +2273,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               &scheme,lock_outside,els2add,time_cnd_work,time_cnd_comm)
         else if(scheme==2)then
            call get_cnd_terms_mo_2(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
-              &scheme,lock_outside)
+              &scheme,lock_outside,local)
         endif
 
         call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
@@ -3585,7 +3585,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !Get the C2 and D2 terms
         !***********************
         call get_cnd_terms_mo_2(w1%d,w2%d,w3%d,t2,u2,govov,gvoov,gvvoo,no,nv,omega2,&
-           &scheme,lock_outside)
+           &scheme,lock_outside,local)
 
         call tensor_free( gvoov )
         call tensor_free( gvvoo )
@@ -3706,8 +3706,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !*************************
 
         !FIXME:this is a workaround, use complete pdm also in the trafos
-        call tensor_minit(int1, [nv,no], 2, atype="TDAR", tdims=[vs,os])
-        call tensor_minit(int2, [no,nv], 2, atype="TDAR", tdims=[os,vs])
+        call tensor_minit(int1, [nv,no], 2, atype="TDAR", tdims=[vs,os],local=local)
+        call tensor_minit(int2, [no,nv], 2, atype="TDAR", tdims=[os,vs],local=local)
         call tensor_convert(pqfock,int2,wrk=w0%d,iwrk=w0%n)
 
         ! u [a i k c] * F[k c] =+ Omega [a i]
@@ -3739,8 +3739,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !***********************************************************
      !Prepare the E2 term by transforming Had and Cbi and move them in
      !PDM, here rendundand work is performed, but only O^3, so cheap
-     call tensor_minit(int1,[nv,nv],2,tdims=[vs,vs],atype="TDAR")
-     call tensor_minit(int2,[no,no],2,tdims=[os,os],atype="TDAR")
+     call tensor_minit(int1,[nv,nv],2,tdims=[vs,vs],atype="TDAR",local=local)
+     call tensor_minit(int2,[no,no],2,tdims=[os,os],atype="TDAR",local=local)
      call tensor_convert(qqfock,int1,wrk=w0%d,iwrk=w0%n)
      call tensor_convert(ppfock,int2,wrk=w0%d,iwrk=w0%n)
 
@@ -3755,7 +3755,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      order4 = [1,2,3,4]
      call tensor_contract(-1.0E0_realk,t2,int2,[4],[1],1,1.0E0_realk,omega2,order4,force_sync=.true.)
 
-     call tensor_minit(int3,omega2%dims,4,tdims=omega2%tdim,atype="TDAR")
+     call tensor_minit(int3,omega2%dims,4,tdims=omega2%tdim,atype="TDAR",local=local)
 
      call tensor_free(int1)
      call tensor_free(int2)
@@ -4003,7 +4003,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \author Patrick Ettenhuber
   !> \Date January 2013 
   subroutine get_cnd_terms_mo_2(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
-        &no,nv,omega2,s,lock_outside)
+        &no,nv,omega2,s,lock_outside,local)
      implicit none
      !> input some empty workspace of zise v^2*o^2 
      real(realk), intent(inout) :: w1(:)
@@ -4024,7 +4024,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !> integer specifying the scheme
      integer, intent(in) :: s
      !> specifiaction if lock stuff
-     logical, intent(in) :: lock_outside
+     logical, intent(in) :: lock_outside,local
 
      !INTERNAL VARIABLES:
      type(tensor) :: Dvoov, Lovov, Coovv, O_pre
@@ -4055,7 +4055,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Cterm
      fdim1 = [no,no,nv,nv]
      sdim1 = [os,os,vs,vs]
-     call tensor_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype)
+     call tensor_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype,local=local)
      call tensor_lock_local_wins(Coovv,'e',mode)
 
      !Build C intermediate
@@ -4067,7 +4067,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
-     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
+     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,local=local,fo = omega2%offset)
      call tensor_lock_local_wins(O_pre,'e',mode)
 
      !now allow for access to the completed tiles
@@ -4095,8 +4095,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      sdim1  = [vs,os,os,vs]
      fdim2  = govov%dims
      sdim2  = govov%tdim
-     call tensor_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype)
-     call tensor_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype)
+     call tensor_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype,local=local)
+     call tensor_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype,local=local)
      call tensor_lock_local_wins(Dvoov,'e',mode)
      call tensor_lock_local_wins(Lovov,'e',mode)
 
@@ -4118,7 +4118,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
-     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
+     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,local=local,fo = omega2%offset)
      call tensor_lock_local_wins(O_pre,'e',mode)
 
      call tensor_unlock_local_wins(Dvoov)
