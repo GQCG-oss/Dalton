@@ -133,11 +133,12 @@ contains
 #else
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
-    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
     TYPE(DECscreenITEM)   :: DecScreen
     Character(80)        :: FilenameCS,FilenamePS
 #endif
+    integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
     logical :: FoundInMem,FullRHS,doscreen
 #ifdef VAR_OMP
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
@@ -640,8 +641,25 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #ifdef VAR_MPI
       call mem_alloc(decmpitasks,nbatchesAlpha*nbatchesGamma)
       if(wakeslave) then  ! share workload with slave(s)
+
+#ifdef VAR_ICHOR
+         call mem_alloc(batchdimAlpha,nbatchesAlpha)
+         do idx=1,nbatchesAlpha
+            batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+         enddo
+         call mem_alloc(batchdimGamma,nbatchesGamma)
+         do idx=1,nbatchesGamma
+            batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+         enddo
+#endif
          call distribute_mpi_jobs(decmpitasks,nbatchesAlpha,nbatchesGamma,&
               & batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+
+#ifdef VAR_ICHOR
+         call mem_dealloc(batchdimAlpha)
+         call mem_dealloc(batchdimGamma)
+#endif
+
          if(DECinfo%PL>0) write(DECinfo%output,'(a,i6,a,i15)') 'Rank ', infpar%mynum, ' has load ', myload
       else ! master do all jobs
          decmpitasks=infpar%lg_mynum
@@ -2278,11 +2296,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               !all buffers are allocated and await to be deallocated once the memory
               !have been recieved by the reciever.
               IF(CurrentWait(1).EQ.5)THEN
-                 call MPI_WAIT(request5,status,ierr)
+                 call MPI_WAIT(request5,lsmpi_status,ierr)
 !                 call MPI_Request_free(request5,ierr)
                  call mem_dealloc(AlphaCD5)
               ELSEIF(CurrentWait(1).EQ.6)THEN
-                 call MPI_WAIT(request6,status,ierr)
+                 call MPI_WAIT(request6,lsmpi_status,ierr)
 !                 call MPI_Request_free(request6,ierr)
                  call mem_dealloc(AlphaCD6)
               ENDIF
@@ -2299,9 +2317,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
            MessageRecieved = .FALSE.
            IF(useAlphaCD5)THEN
-              call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,status,ierr)
+              call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
            ELSEIF(useAlphaCD6)THEN
-              call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,status,ierr)
+              call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
            ENDIF
 !           call MPI_Request_free(request,ierr) 
            IF(MynbasisAuxMPI.GT.0)THEN
@@ -2409,11 +2427,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(nAwaitDealloc.NE.0)THEN
         do iAwaitDealloc=1,nAwaitDealloc
            IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
-              call MPI_WAIT(request5,status,ierr)
+              call MPI_WAIT(request5,lsmpi_status,ierr)
               !                 call MPI_Request_free(request5,ierr)
               call mem_dealloc(AlphaCD5)
            ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
-              call MPI_WAIT(request6,status,ierr)
+              call MPI_WAIT(request6,lsmpi_status,ierr)
               !                 call MPI_Request_free(request6,ierr)
               call mem_dealloc(AlphaCD6)
            ENDIF
@@ -4187,7 +4205,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    t2%access_type     = AT_ALL_ACCESS
    oof%access_type    = AT_ALL_ACCESS
    vvf%access_type    = AT_ALL_ACCESS
-   call tensor_lock_local_wins(omega2,'e',mode)
+   if(.not.local) call tensor_lock_local_wins(omega2,'e',mode)
 #endif
 
    vs = t2%tdim(1)
@@ -4195,18 +4213,29 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    no = iajb%dims(1)
    nv = iajb%dims(2)
 
+   call tensor_ainit(E1,[nv,nv],2,tdims = [vs,vs],local=local, atype="TDAR")
+   call tensor_ainit(E2,[no,no],2,tdims = [os,os],local=local, atype="TDAR")
+
+   call tensor_cp_data(vvf,E1)
+   call tensor_cp_data(oof,E2)
+
    ord = [1,4,2,3]
-   call tensor_contract( 1.0E0_realk,t2,vvf,[2],[2],1,0.0E0_realk,omega2,ord)
+   !call tensor_contract( 1.0E0_realk,t2,vvf,[2],[2],1,0.0E0_realk,omega2,ord,force_sync=.true.)
+   call tensor_contract( 1.0E0_realk,t2,E1,[2],[2],1,0.0E0_realk,omega2,ord,force_sync=.true.)
 
    ord = [1,2,3,4]
-   call tensor_contract(-1.0E0_realk,t2,oof,[4],[1],1,1.0E0_realk,omega2,ord)
+   !call tensor_contract(-1.0E0_realk,t2,oof,[4],[1],1,1.0E0_realk,omega2,ord,force_sync=.true.)
+   call tensor_contract(-1.0E0_realk,t2,E2,[4],[1],1,1.0E0_realk,omega2,ord,force_sync=.true.)
 
 
    call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset)
 
+   call tensor_free(E1)
+   call tensor_free(E2)
+
 #ifdef VAR_MPI
-   call tensor_lock_local_wins(Pijab_om2,'e',mode)
-   call tensor_unlock_wins(omega2,.true.)
+   if(.not.local) call tensor_lock_local_wins(Pijab_om2,'e',mode)
+   if(.not.local) call tensor_unlock_local_wins(omega2)
 #endif
 
    !INTRODUCE PERMUTATION
@@ -4214,8 +4243,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    call tensor_add(Pijab_om2,1.0E0_realk,omega2, a = 0.0E0_realk, order = ord )
 
 #ifdef VAR_MPI
-   call tensor_lock_local_wins(omega2,'e',mode)
-   call tensor_unlock_wins(Pijab_om2,.true.)
+   if(.not.local) call tensor_lock_local_wins(omega2,'e',mode)
+   if(.not.local) call tensor_unlock_local_wins(Pijab_om2)
 #endif
 
    call tensor_add(omega2,1.0E0_realk,Pijab_om2)
@@ -4225,7 +4254,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    call tensor_add(omega2,1.0E0_realk,iajb, order = ord )
 
 #ifdef VAR_MPI
-   call tensor_unlock_wins(omega2,.true.)
+   if(.not.local) call tensor_unlock_local_wins(omega2)
    omega2%access_type = AT_MASTER_ACCESS
    iajb%access_type   = AT_MASTER_ACCESS
    t2%access_type     = AT_MASTER_ACCESS
@@ -4234,6 +4263,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 #endif
 
    call tensor_free(Pijab_om2)
+
 
 
 end subroutine get_simple_parallel_mp2_residual

@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    choles_b3lyp_polar
+#     ---------------
+#    Molecule:         HCN
+#    Wave Function:    B3LYP / aug-cc-pVDZ
+#    Test Purpose:     Cholesky B3LYP energy and polarizability
 
 import os
 import sys

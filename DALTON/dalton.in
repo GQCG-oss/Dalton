@@ -44,7 +44,10 @@ PCMEXT="pcm"
 
 GET_FILES=''
 PUT_FILES=''
-
+dalfil=''
+molfil=''
+potfil=''
+pcmfil=''
 SSH=ssh
 SCP=scp
 
@@ -78,6 +81,10 @@ usage (){
         echo '                    (default:' $WRKDIR')'
         echo ' -o file          : redirect output from program to WRKDIR with "file" as file name'
         echo ' -ow              : redirect output from program to WRKDIR with standard file name'
+        echo ' -dal file        : the dalton input file'
+        echo ' -mol file        : the molecule input file'
+        echo ' -pot file        : the potential input file (for .QM3, .QMMM and .PEQM)'
+        echo ' -pcm file        : the pcm input file'
         echo ' -ext log         : change output extension from ".out" to ".log"'
         echo ' -nobackup        : do not backup files, simply overwrite outputs'
         echo ' -f dal_mol[_pot] : extract dal_mol[_pot].tar.gz archive from WRKDIR into'
@@ -164,6 +171,10 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) DALTON_TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
+      -dal ) dalfil=$2; shift;;
+      -mol ) molfil=$2; shift;;
+      -pot ) potfil=$2; shift;;
+      -pcm ) pcmfil=$2; shift;;
       -x ) optx=1; gs=$2; ch=$3; shift;shift;;
        * ) usage; exit 1;;
    esac
@@ -182,14 +193,6 @@ if [ $len_INSTALL_BASDIR -gt 1 ]; then
    BASDIR="$BASDIR:$INSTALL_BASDIR"
 fi
 export BASDIR
-
-# check for correct input
-if [ -z "$1" ]; then
-   echo 'Fatal error: Input file[s] not specified'
-   echo "Your command was: $0 $paramlist"
-   usage
-   exit 1
-fi
 
 if [ -z "$DALTON_TMPDIR" ]; then  # not set as environment variable and not set with "-t dir" option
     scratch_dir_candidates="$SCRATCH /global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
@@ -215,65 +218,99 @@ fi
 
 # -- identify input files and construct output file name
 
-#  remove .dal, if added by user
-dalfil=`echo $1 | sed "s/\.$DALEXT//"`
-if [ -z "$2" ]; then
-#  only one input file, check if molfil exist with same base name;
-    if [ -r ${dalfil}.mol ]; then
-        molfil=$dalfil
-        if [ -s ${dalfil}.pot ]; then
-            potfil=$dalfil
-            input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
-        elif [ -s ${dalfil}.pcm ]; then
-            pcmfil=$dalfil
-            input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $pcmfil.$PCMEXT"
-        else
-            input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
-        fi
+# check for correct input
+if [ -z $dalfil ] && [ -z "$1" ]; then
+    echo 'Fatal error: Input file[s] not specified'
+    echo "Your command was: $0 $paramlist"
+    usage
+    exit 1
+fi
+
+if [ ! -z $dalfil ]; then
+    # dal given as -dal <filename>
+    # remove dal-ending
+    dalfil=`echo $dalfil | sed "s/\.$DALEXT//"`
+    if [ -z $molfil ]; then
+	if [ -r ${dalfil}.$MOLEXT ]; then
+	    # molfil named the same as dalfil
+	    molfil=$dalfil
+	else
+	    # molecule defined inside dalfil
+	    molfil=''
+	fi
     else
-        molfil=
-        input_files="input file: $dalfil.$DALEXT"
+        molfil=`echo $molfil | sed "s/\.$MOLEXT//"`
     fi
-    outnam=$dalfil
-else
-#  two input files;
-#  remove .mol, if added by user
-   molfil=`echo $2 | sed "s/\.$MOLEXT//"`
-   if [ "$molfil" = "$dalfil" ]; then
-      outnam=$molfil
-   else
-      outnam=${dalfil}_${molfil}
-   fi
-   input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
+    if [ -z $potfil ]; then
+	if [ -r ${dalfil}.$POTEXT ]; then
+	    potfil=$dalfil
+	fi
+    else
+        potfil=`echo $potfil | sed "s/\.$POTEXT//"`
+    fi
+    if [ -z $pcmfil ]; then
+	if [ -r ${dalfil}.$PCMEXT ]; then
+	    pcmfil=$dalfil
+	fi
+    else
+        pcmfil=`echo $pcmfil | sed "s/\.$PCMEXT//"`
+    fi
+elif [ -n "$1" ]; then
+    # input files given as arguments in the end of the dalton command
+    dalfil=`echo $1 | sed "s/\.$DALEXT//"`
+    if [ -z "$2" ]; then
+	# only one argument given
+	if [ -r ${dalfil}.$MOLEXT ]; then
+	    # molfil named the same as dalfil
+	    molfil=$dalfil
+	else
+	    # molecule defined inside dalfil
+	    molfil=''
+	fi
+    else
+        molfil=`echo $2 | sed "s/\.$MOLEXT//"`
+	if [ -z "$3" ]; then
+	# three arguments NOT given. Check for pot and pcm files
+	    if [ -r ${dalfil}.$POTEXT ]; then
+		potfil=$dalfil
+	    elif [ -r ${dalfil}.$PCMEXT ]; then
+		pcmfil=$dalfil
+	    fi
+	else
+	# three arguments given. Check if it is pot or pcm
+            tmpfil=`echo $3 | sed "s/\.$POTEXT//" | sed "s/\.$PCMEXT//"`
+	    if [ -r ${tmpfil}.$POTEXT ]; then
+		potfil=$tmpfil
+	    elif [ -r ${tmpfil}.$PCMEXT ]; then
+		pcmfil=$tmpfil
+	    fi
+	fi
+    fi
 fi
-#  Added option for including a potential.inp file for embedding calculations
-#  or a pcmsolver.pcm file for PCM calculations
-if [ -n "$3" ]; then
-   filename=`echo $3`
-#  get filename extension. 
-#  !WARNING! If input files are given without extension the following fails.
-   extension="${filename##*.}"
-   if [ "$extension" == "pot" ]; then
-#  remove .pot, if added by user
-      potfil=`echo $3 | sed "s/\.$POTEXT//"`
-      if [ "$potfil" = "$molfil" ] && [ "$potfil" = "$dalfil" ]; then
-         outnam=$potfil
-      else
-         outnam=${dalfil}_${molfil}_${potfil}
-      fi
-      input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
-   else
-#  remove .pcm, if added by user
-      pcmfil=`echo $3 | sed "s/\.$PCMEXT//"`                                           
-      if [ "$pcmfil" = "$molfil" ] && [ "$pcmfil" = "$dalfil" ]; then
-         outnam=$pcmfil
-      else
-         outnam=${dalfil}_${molfil}_${pcmfil}
-      fi
-      input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $pcmfil.$PCMEXT"
-   fi
-   input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
+
+if [ -z $potfil ] && [ -z $pcmfil ]; then
+    if [ "$dalfil" = "$molfil" ] || [ -z "$molfil" ]; then
+	outnam=$dalfil
+    else
+	outnam=${dalfil}_${molfil}
+    fi
+    input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
+elif [ -n $potfil ]; then
+    if [ "$dalfil" = "$molfil" ] && [ "$dalfil" = "$potfil" ] ; then
+	outnam=$dalfil
+    else
+	outnam=${dalfil}_${molfil}_${potfil}
+    fi
+    input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
+elif [ -n $pcmfil ]; then
+    if [ "$dalfil" = "$molfil" ] && [ "$dalfil" = "$pcmfil" ] ; then
+	outnam=$dalfil
+    else
+	outnam=${dalfil}_${molfil}_${pcmfil}
+    fi
+    input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $pcmfil.$PCMEXT"
 fi
+
 if [ $opto -eq 2 ]; then   # -ow input option
    OUTFIL=$outnam.$OUTEXT
    export OUTFIL

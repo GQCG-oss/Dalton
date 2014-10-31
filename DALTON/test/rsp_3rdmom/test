@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#    rsp_3rdmom
+#    ----------
+#    Molecule:         LiH
+#    Wave Function:    MCSCF (CAS) / 4-31G
+#    Test Purpose:     Third moments
 
 import os
 import sys

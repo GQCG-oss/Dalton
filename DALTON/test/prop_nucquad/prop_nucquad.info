@@ -1,6 +1,0 @@
-   prop_nucquad
-   ------------
-   Molecule:         ClO2
-   Wave Function:    MCSCF (CAS) / cc-pVTZ
-   Test Purpose:     Open shell MP2 start guess
-                     Nuclear quadrupole coupling constants

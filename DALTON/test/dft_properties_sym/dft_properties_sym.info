@@ -1,7 +1,0 @@
-   dft_properties_sym
-   ------------------
-   Molecule:         H2O
-   Wave Functions:   DFT B3LYP / cc-pVDZ
-   Test Purpose:     DFT B3LYP properties test w/symmetry:
-                     Shieldings, excitation energies, spin-spin, darwin,
-                     mass-vel., dipol, spin-orbit,  P-viola

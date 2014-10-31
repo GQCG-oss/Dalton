@@ -175,24 +175,25 @@ contains
 
     ! -- CC solver options
 
-    DECinfo%ccsd_expl               = .false.
-    DECinfo%ccMaxIter               = 100
-    DECinfo%ccMaxDIIS               = 3
-    DECinfo%ccModel                 = MODEL_MP2 ! see parameter-list in dec_typedef.f90
-    DECinfo%F12                     = .false.
-    DECinfo%F12debug                = .false.
-    DECinfo%SOS                     = .false.
-    DECinfo%PureHydrogenDebug       = .false.
-    DECinfo%StressTest              = .false.
-    DECinfo%DFTreference            = .false.
-    DECinfo%ccConvergenceThreshold  = 1e-5_realk
-    DECinfo%CCthrSpecified          = .false.
-    DECinfo%use_singles             = .false.
-    DECinfo%use_preconditioner      = .true.
-    DECinfo%use_preconditioner_in_b = .true.
-    DECinfo%use_crop                = .true.
-    DECinfo%array4OnFile            = .false.
-    DECinfo%array4OnFile_specified  = .false.
+    DECinfo%ccsd_expl                = .false.
+    DECinfo%ccMaxIter                = 100
+    DECinfo%ccMaxDIIS                = 3
+    DECinfo%ccModel                  = MODEL_MP2 ! see parameter-list in dec_typedef.f90
+    DECinfo%F12                      = .false.
+    DECinfo%F12debug                 = .false.
+    DECinfo%SOS                      = .false.
+    DECinfo%PureHydrogenDebug        = .false.
+    DECinfo%StressTest               = .false.
+    DECinfo%DFTreference             = .false.
+    DECinfo%ccConvergenceThreshold   = 1e-5_realk
+    DECinfo%CCthrSpecified           = .false.
+    DECinfo%use_singles              = .false.
+    DECinfo%use_preconditioner       = .true.
+    DECinfo%use_preconditioner_in_b  = .true.
+    DECinfo%use_crop                 = .true.
+    DECinfo%array4OnFile             = .false.
+    DECinfo%array4OnFile_specified   = .false.
+    DECinfo%tensor_segmenting_scheme = 0
 
     ! ccsd(t) settings
     DECinfo%abc               = .false.
@@ -416,12 +417,6 @@ contains
        case('.PT_ABC'); DECinfo%abc= .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
 
-          ! CHOICE OF ORBITALS
-          ! ==================
-          ! By default orbitals from the lcm_orbitals.u file are used for DEC or full calculation.
-          ! Canonical orbitals can be invoked by this keyword
-       case('.CANONICAL') 
-          DECinfo%use_canonical=.true.
 
 
           ! DEC CALCULATION 
@@ -483,6 +478,13 @@ contains
           read(input,*) DECinfo%kappaTHR
 
 
+          ! CHOICE OF ORBITALS
+          ! ==================
+          ! By default orbitals from the lcm_orbitals.u file are used for DEC or full calculation.
+          ! Canonical orbitals can be invoked by this keyword
+       case('.CANONICAL') 
+          DECinfo%use_canonical=.true.
+
 
           ! ****************************************************************************
           ! *               Keywords only available for developers                     *
@@ -491,21 +493,19 @@ contains
           ! Keywords only used for testing in release branch, not intended to be used by end-users,
           ! so on purpose there is no documentation for those in the LSDALTON manual.
 
-       !general testing
+
+       !KEYWORDS FOR TESTCASES
+       !**********************
        case('.TESTARRAY'); DECinfo%tensor_test=.true.
        case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
     
-       !CCSD testing
-       case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
-          read(input,*) DECinfo%en_mem
-       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
+       !KEYWORDS FOR DEC PARALLELISM
+       !****************************
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
-       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
-          ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
 #ifndef VAR_MPI
@@ -513,7 +513,12 @@ contains
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
-       ! Those keyword should probably not be released but are necesary for some essantial test cases:
+
+
+       !KEYWORDS FOR DEC DEBUGGING AND TESTING
+       !**************************************
+       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
+          ! Size of local groups in MPI scheme
        case('.CRASHCALC') 
           DECinfo%CRASHCALC= .true.
        case('.STRESSTEST')     
@@ -545,6 +550,7 @@ contains
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
        case('.MAXITER'); read(input,*) DECinfo%MaxIter
+       case('.TENSOR_SEGMENTING_SCHEME'); read(input,*) DECinfo%tensor_segmenting_scheme
 
        ! - CCSD RESIDUAL SPECIFIC KEYWORDS
        case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
@@ -552,7 +558,12 @@ contains
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
        case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
+#endif
+       case('.CCSDFORCE_SCHEME');         DECinfo%force_scheme         = .true.
+                                          read(input,*) DECinfo%en_mem
+       case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
+#ifdef MOD_UNRELEASED
        ! - PNO-CCSD SPECIFIC KEYWORDS
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.

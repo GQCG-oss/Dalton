@@ -1,6 +1,0 @@
-   prop_vibvcd
-   -----------
-   Molecule:         C2H4O
-   Wave Function:    SCF / DZ
-   Test Purpose:     Single-point calculation checking vibrational analysis
-                     and IR and VCD spectral properties

@@ -50,7 +50,8 @@ all: libIchorIntegrals.a
 #F90            = pgf90
 #FLNK           = pgf90
 #RM             = rm -f
-#F90OPTFLAGS    = -mp -Mconcur -acc -Minfo=accel
+#F90OPTFLAGS    = -mp -Mconcur -acc -ta=tesla:cc20,host -Mcuda=5.5 #-Minfo=accel
+##F90OPTFLAGS    = -mp -Mconcur -acc -ta=tesla:nordc,cuda5.5 -Mcuda=5.5 #-Minfo=accel
 #INCLUDES       =  
 #LIBS           = 
 #AR             = ar

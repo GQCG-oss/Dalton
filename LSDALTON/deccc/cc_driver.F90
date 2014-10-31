@@ -294,13 +294,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       nsingle = count(orbitals_assigned)
       npair   = nsingle*(nsingle-1)/2
       njobs   = nsingle + npair
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Number of single jobs = ', nsingle
+      write(DECinfo%output,'(//,1X,a,i10)') 'FULL JOB SUMMARY: Number of single jobs = ', nsingle
       write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Number of pair jobs   = ', npair
-      write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Total number of jobs  = ', njobs
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a,i10,//)') 'FULL JOB SUMMARY: Total number of jobs  = ', njobs
    
       ! Calculate single and pair fragments energies:
       call mem_alloc(FragEnergies,nfrags,nfrags,nenergies)
@@ -569,7 +565,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          & t1_final,t2_final,VOVO,.false.,local,.false.)
    end if
 
-   call tensor_free(t1_final)
+   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
+      call tensor_free(t1_final)
+   endif
    call tensor_free(t2_final)
    call tensor_free(VOVO)
 
@@ -1723,7 +1721,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end select ModelSpecificSettings
 
-
    ! go to a (pseudo) canonical basis
    call mem_alloc( focc,     no     )
    call mem_alloc( fvirt,    nv     )
@@ -2015,7 +2012,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
              & 5 and 6 require the MO based algorithm. (Remove NO_MO_CCSD keyword)', DECinfo%output)
         end if
       end if
-
 
 #ifdef MOD_UNRELEASED
       !============================================================================!

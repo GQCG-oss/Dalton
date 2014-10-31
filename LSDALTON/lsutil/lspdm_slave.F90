@@ -128,7 +128,7 @@ subroutine pdm_tensor_slave(comm)
    CASE(JOB_GET_CC_ENERGY)
       REAL1 = get_cc_energy_parallel(A,B,C)
    CASE(JOB_GET_MP2_ENERGY)
-      REAL1 = get_mp2_energy_parallel(A,B)
+      REAL1 = get_cc_energy_parallel(A,B)
    CASE(JOB_GET_FRAG_CC_ENERGY)
       !the counterpart to this buffer is in get_fragment_cc_energy
       call time_start_phase(PHASE_COMM)

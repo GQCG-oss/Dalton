@@ -45,6 +45,7 @@ module tensor_type_def_module
      real(realk),pointer   :: dummy(:)             => null()       !for the creation of mpi windows a dummy is required
      type(tile),pointer    :: ti(:)                => null()       !tiles, if matrix should be distributed
      integer(kind=ls_mpik),pointer    :: wi(:)     => null()       !windows for tiles, if matrix should be distributed, there are ntiles windows to be inited
+     integer               :: nwins                = 0             !number of windows allocated
      integer,pointer       :: ntpm(:)              => null()       !dimensions in the modes, number of tiles per mode, 
      integer,pointer       :: tdim(:)              => null()       !dimension of the tiles per mode(per def symmetric, but needed)
      integer,pointer       :: addr_p_arr(:)        => null()       !address of array in persistent array "p_arr" on each compute node
@@ -54,7 +55,7 @@ module tensor_type_def_module
      integer :: ntiles,tsize                         !batching of tiles in one mode, number of tiles, tilesize (ts^mode), amount of modes of the array
      integer :: nlti                                 !number of local tiles
      integer :: offset                               !use offset in nodes for the distribution of arrays
-     integer :: access_type                          !type of access to the array
+     integer,pointer :: access_type                          !type of access to the array
      logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
      !logical :: allocd_w_c_p                         ! allocated with comm_threads or not?
      logical :: initialized = .false.                !check variable if array is initialized
@@ -97,6 +98,12 @@ module tensor_type_def_module
   integer,parameter :: lspdm_stdout  = 6
   integer,parameter :: lspdm_errout  = 0
 
+  !parameter to reduce the amount of windows per array
+#ifdef VAR_HAVE_MPI3
+  logical,parameter :: alloc_in_dummy = .true.
+#else
+  logical,parameter :: alloc_in_dummy = .false.
+#endif
 
   !> execution time variables
   logical :: lspdm_use_comm_proc

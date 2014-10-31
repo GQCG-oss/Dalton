@@ -627,33 +627,33 @@ contains
 
        MyAtom=i
 
-       OrbitalBasedFragOpt: if (.not.DECinfo%no_orb_based_fragopt) then
+       if (DECinfo%decco) then
           ! Set # core orbitals to zero if the frozen core approximation is not used:
           if (DECinfo%frozencore) then
              ncore = MyMolecule%ncore
           else
              ncore = 0
           end if
-
+        
           ! Get ninit_occ and ninit_vir:
           nesti_occ = DECinfo%EstimateInitAtom*ceiling((nocc-ncore)*1.0E0_realk/nfrags)
           nesti_vir = DECinfo%estimateInitAtom*ceiling(nunocc*1.0E0_realk/nfrags)
-
+        
           call mem_alloc(esti_list_occ,nocc)
           call mem_alloc(esti_list_vir,nunocc)
           call mem_alloc(Occ_AOS,nocc)
           call mem_alloc(Vir_AOS,nunocc)
-
+        
           ! Get orbital priority list and number of orbital for esti frags
           call define_frag_expansion(nocc,nunocc,nfrags,MyAtom,MyMolecule, &
                & AtomicFragments(MyAtom),esti_list_occ,esti_list_vir,D1,D2,D3,D4)
-
+        
           ! Get logical list Occ_AOS/Vir_AOS to know which orbitals to include:
           call expand_fragment(nocc,nunocc,esti_list_occ,esti_list_vir,nesti_occ, &
                & nesti_vir,MyAtom,MyMolecule,OccOrbitals,UnoccOrbitals,Occ_AOS,Vir_AOS, &
                & full_mol,.true.)
           ! Initialize fragment base on orbital lists Occ_AOS/Vir_AOS:
-
+        
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,Vir_AOS, &
                & Occ_AOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(MyAtom), &
                & DoBasis,.false.) 
@@ -667,7 +667,7 @@ contains
           call atomic_fragment_init_within_distance(MyAtom,&
                & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
                & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
-       end if OrbitalBasedFragOpt
+       end if
     end do FragLoop
 
   end subroutine init_estimated_atomic_fragments
@@ -773,13 +773,20 @@ contains
     logical, intent(in) :: DoBasis
     !> Is it a pair fragment?
     logical,intent(in) :: pairfrag
-    integer :: j,idx, CentralAtom
+    integer :: j,iocc, CentralAtom
     logical,pointer :: occ_list(:),unocc_list(:)
+
+
+    if (DECinfo%frozencore) then
+       iocc = MyMolecule%ncore + 1 
+    else
+       iocc = 1
+    end if
 
     ! Determine list of occupied orbitals assigned to one of the atoms in occ_atoms
     call mem_alloc(occ_list,nocc)
     occ_list=.false.
-    do j=1,nocc
+    do j=iocc,nocc
        CentralAtom=OccOrbitals(j)%centralatom
        if( Occ_atoms(CentralAtom) ) then  ! occupied orbital j is included in fragment
           occ_list(j)=.true.

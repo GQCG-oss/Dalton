@@ -606,37 +606,8 @@ module cc_tools_module
          if(.not.rest_o2_occ)then
             !square up the contributions if the residual itself has no restricions
             !in the indices i and j
+            call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
 
-            ! add up contributions in the residual with keeping track of i<j
-            !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-            !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
-            do j=no,1,-1
-               !$OMP DO 
-               do i=j,1,-1
-                  pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-                  pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                  if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-               enddo
-               !$OMP END DO
-            enddo
-            !$OMP BARRIER
-            !$OMP DO 
-            do j=no,1,-1
-               do i=j,1,-1
-                  pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                  pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-                  if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-               enddo
-            enddo
-            !$OMP END DO
-            !$OMP END PARALLEL
-
-            do j=no,1,-1
-               do i=j,1,-1
-                  pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                  call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-               enddo
-            enddo
 
             if(s==4.or.s==3)then
                if( present(order) )then
@@ -652,7 +623,7 @@ module cc_tools_module
                endif
             else if(s==2)then
 #ifdef VAR_MPI
-               if( lock_outside )call tensor_lock_wins(omega,'s',mode)
+               if( .not.alloc_in_dummy.and.lock_outside )call tensor_lock_wins(omega,'s',mode)
                !$OMP WORKSHARE
                w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
                !$OMP END WORKSHARE
@@ -691,7 +662,11 @@ module cc_tools_module
 #ifdef  VAR_MPI
             if( lock_outside .and. s==2 )then
                call time_start_phase(PHASE_COMM, at=twork)
-               call tensor_unlock_wins(omega,.true.)
+               if( alloc_in_dummy )then
+                  call lsmpi_win_flush(omega%wi(1),local=.true.)
+               else
+                  call tensor_unlock_wins(omega,.true.)
+               endif
                call time_start_phase(PHASE_WORK, at=tcomm)
             endif
 #endif 
@@ -702,35 +677,7 @@ module cc_tools_module
             call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
 
             if(.not.rest_o2_occ)then
-               !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-               !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
-               do j=no,1,-1
-                  !$OMP DO 
-                  do i=j,1,-1
-                     pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-                     pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                     if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-                  enddo
-                  !$OMP END DO
-               enddo
-               !$OMP BARRIER
-               !$OMP DO 
-               do j=no,1,-1
-                  do i=j,1,-1
-                     pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                     pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-                     if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-                  enddo
-               enddo
-               !$OMP END DO
-               !$OMP END PARALLEL
-
-               do j=no,1,-1
-                  do i=j,1,-1
-                     pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                     call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-                  enddo
-               enddo
+               call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
                if(s==4.or.s==3)then
                   if( present(order) )then
                      call array_reorder_4d(scaleitby,w2,nv,nv,no,no,order,1.0E0_realk,omega%elm1)
@@ -776,7 +723,13 @@ module cc_tools_module
          call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
 #ifdef VAR_MPI
          if(lock_outside.and.s==2)then
-            call tensor_unlock_wins(omega,.true.)
+            call time_start_phase(PHASE_COMM, at=twork)
+            if( alloc_in_dummy )then
+               call lsmpi_win_flush(omega%wi(1),local=.true.)
+            else
+               call tensor_unlock_wins(omega,.true.)
+            endif
+            call time_start_phase(PHASE_WORK, at=tcomm)
          endif
 #endif
          !transform gamma -> l
@@ -788,41 +741,17 @@ module cc_tools_module
             call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 
             if(s==2)then
-               !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,no2)&
-               !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
-               do j=no,1,-1
-                  !$OMP DO 
-                  do i=j,1,-1
-                     pos1=1+((i+j*(j-1)/2)-1)*no*no
-                     pos2=1+(i-1)*no*no+(j-1)*no*no*no
-                     if(j/=1) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
-                  enddo
-                  !$OMP END DO
-               enddo
-               !$OMP BARRIER
-               !$OMP DO 
-               do j=no,1,-1
-                  do i=j,1,-1
-                     pos1=1+(i-1)*no*no+(j-1)*no*no*no
-                     pos2=1+(j-1)*no*no+(i-1)*no*no*no
-                     if(i/=j) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
-                  enddo
-               enddo
-               !$OMP END DO
-               !$OMP END PARALLEL
-
-               do j=no,1,-1
-                  do i=j,1,-1
-                     pos1=1+(i-1)*no*no+(j-1)*no*no*no
-                     call alg513(w2(pos1:no*no+pos1-1),no,no,no*no,mv,(nv*nv)/2,st)
-                  enddo
-               enddo
+               call squareup_block_triangular_squarematrix(w2,no,no,do_block_transpose = .true.)
 #ifdef VAR_MPI
-               if( lock_outside )call tensor_lock_wins(sio4,'s',mode)
+               if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
                call time_start_phase(PHASE_COMM, at=twork)
                call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               if( alloc_in_dummy )then
+                  call lsmpi_win_flush(sio4%wi(1),local=.true.)
+               else
+                  if( lock_outside )call tensor_unlock_wins(sio4,.true.)
+               endif
                call time_start_phase(PHASE_WORK, at=tcomm)
-               if( lock_outside )call tensor_unlock_wins(sio4,.true.)
 #endif
             else
                call ass_D1to3(w2,t1,[no2,no2,nor])
@@ -864,41 +793,17 @@ module cc_tools_module
             else
                call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
                if(s==2)then
-                  !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,no2)&
-                  !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
-                  do j=no,1,-1
-                     !$OMP DO 
-                     do i=j,1,-1
-                        pos1=1+((i+j*(j-1)/2)-1)*no*no
-                        pos2=1+(i-1)*no*no+(j-1)*no*no*no
-                        if(j/=1) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
-                     enddo
-                     !$OMP END DO
-                  enddo
-                  !$OMP BARRIER
-                  !$OMP DO 
-                  do j=no,1,-1
-                     do i=j,1,-1
-                        pos1=1+(i-1)*no*no+(j-1)*no*no*no
-                        pos2=1+(j-1)*no*no+(i-1)*no*no*no
-                        if(i/=j) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
-                     enddo
-                  enddo
-                  !$OMP END DO
-                  !$OMP END PARALLEL
-
-                  do j=no,1,-1
-                     do i=j,1,-1
-                        pos1=1+(i-1)*no*no+(j-1)*no*no*no
-                        call alg513(w2(pos1:no*no+pos1-1),no,no,no*no,mv,(nv*nv)/2,st)
-                     enddo
-                  enddo
+                  call squareup_block_triangular_squarematrix(w2,no,no,do_block_transpose = .true.)
 #ifdef VAR_MPI
-                  if( lock_outside )call tensor_lock_wins(sio4,'s',mode)
                   call time_start_phase(PHASE_COMM, at=twork)
+                  if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
                   call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  if(alloc_in_dummy)then
+                     call lsmpi_win_flush(sio4%wi(1),local=.true.)
+                  else
+                     if( lock_outside )call tensor_unlock_wins(sio4,.true.)
+                  endif
                   call time_start_phase(PHASE_WORK, at=tcomm)
-                  if( lock_outside )call tensor_unlock_wins(sio4,.true.)
 #endif
                else
 
@@ -1341,36 +1246,8 @@ module cc_tools_module
 
          w1=0.0E0_realk
          call dgemm('n','n',tl,nor,no*no,0.5E0_realk,t2%elm1(fai),nv*nv,sio4%elm1,no*no,0.0E0_realk,w1(fai),nv*nv)
-         !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-         !$OMP PRIVATE(i,j,pos1,pos2)
-         do j=no,1,-1
-            !$OMP DO 
-            do i=j,1,-1
-               pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-               pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-               if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-            enddo
-            !$OMP END DO
-         enddo
-         !$OMP BARRIER
-         !$OMP DO 
-         do j=no,1,-1
-            do i=j,1,-1
-               pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-               pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-               if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-            enddo
-         enddo
-         !$OMP END DO
-         !$OMP END PARALLEL
-
-         do j=no,1,-1
-            do i=j,1,-1
-               pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-               call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-            enddo
-         enddo
-
+         
+         call squareup_block_triangular_squarematrix(w1,nv,no,do_block_transpose = .true.)
 
          if(present(order))then
             call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,order,1.0E0_realk,om2%elm1)
@@ -1389,7 +1266,6 @@ module cc_tools_module
 
 #ifdef VAR_MPI
          o = [1,2,3,4]
-         if(lock_outside)call tensor_lock_local_wins(om2,'e',mode)
          call tensor_contract(0.5E0_realk,t2,sio4,[3,4],[1,2],2,1.0E0_realk,om2,o)
 #endif
 
@@ -1459,5 +1335,47 @@ module cc_tools_module
 
 
    end subroutine print_tensor_unfolding_with_labels
+
+   subroutine squareup_block_triangular_squarematrix(BTM,blockidx,sidx,do_block_transpose)
+      implicit none
+      integer ,intent(in) :: blockidx,sidx
+      real(realk), intent(inout) :: BTM(blockidx**2*sidx**2)
+      logical, intent(in), optional :: do_block_transpose
+      logical :: dbt
+      integer :: blocksize
+      integer :: mv((blockidx**2)/2),st,i,j,pos1,pos2
+
+      dbt = .false.
+      if(present(do_block_transpose))dbt=do_block_transpose
+
+      blocksize = blockidx**2
+
+      do j=sidx,1,-1
+         do i=j,1,-1
+            pos1=1+((i+j*(j-1)/2)-1)*blocksize
+            pos2=1+(i-1)*blocksize+(j-1)*sidx*blocksize
+            if(j/=1) BTM(pos2:pos2+blocksize-1) = BTM(pos1:pos1+blocksize-1)
+         enddo
+      enddo
+      do j=sidx,1,-1
+         do i=j,1,-1
+            pos1=1+(i-1)*blocksize+(j-1)*sidx*blocksize
+            pos2=1+(j-1)*blocksize+(i-1)*sidx*blocksize
+            if(i/=j) BTM(pos2:pos2+blocksize-1) = BTM(pos1:pos1+blocksize-1)
+         enddo
+      enddo
+
+      if(dbt)then
+         do j=sidx,1,-1
+            do i=j,1,-1
+               pos1=1+(i-1)*blocksize+(j-1)*sidx*blocksize
+               call alg513(BTM(pos1:blocksize+pos1-1),blockidx,blockidx,blocksize,mv,blocksize/2,st)
+            enddo
+         enddo
+      endif
+
+
+   end subroutine squareup_block_triangular_squarematrix
+
 
 end module cc_tools_module
