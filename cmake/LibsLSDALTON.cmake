@@ -490,9 +490,9 @@ MERGE_STATIC_LIBS(
 
 target_link_libraries(
     lsdalton
-    lsdaltonmain
     ${EXTERNAL_LIBS}
     ${LSDALTON_EXTERNAL_LIBS}
+    stdc++
     )
 
 if(NOT ENABLE_CHEMSHELL)
