@@ -288,6 +288,16 @@ C
       REWIND LUIT1
       IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
          CALL READT(LUIT1,NORBT,WRK(KOCCNO))
+      ELSE IF (MCTYPE .EQ. 0) THEN
+         DO, ISYM = 1,NSYM
+            JOCC1  = KOCCNO -1 + IORB(ISYM)
+            NISHI  = NISH(ISYM)
+            WRK(JOCC1+1:JOCC1+NISHI) = 2.0D0
+            NASHI  = NASH(ISYM)
+         IF (NASHI.EQ.0) CYCLE
+            JOCC1  = JOCC1 + NISHI
+            WRK(JOCC1+1:JOCC1+NASHI) = 1.0D0
+         END DO
       END IF
 C
 C *** FINAL RESULTS
