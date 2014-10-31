@@ -395,7 +395,7 @@ C
      &          IPNTNO(4,*), IPNTRP(3,*), NCOUNT(NDIST),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IDSORB(NDIST), IORBDS(NBASIS), IORBSH(*)
-      INTEGER   IBUF4(LBUF*NIBUF,NDIST)
+      INTEGER*4 IBUF4(LBUF*NIBUF,NDIST)
 #include "twocom.h"
 #include "symmet.h"
 #include "drw2el.h"
@@ -683,7 +683,7 @@ c        NBUFX(0) = 0
          WRITE (LU21INT  ,REC=NBUFX(0)) CUF,IBUF4,ICOUNT4
 C
          IF (IPRINT .GE. 6) THEN
-            WRITE (LUPRI,'(2X,A,I5,A/)')
+            WRITE (LUPRI,'(2X,A,I5,A/)') 'UN2WRU '//
      &         'Integral buffer #',NBUFX(0),' has been written.'
             IBIT1 = 2**NBITS - 1
             DO 100 INT = 1, ICOUNT
@@ -717,8 +717,9 @@ C
 C
          IF (IPRINT .GE. 6) THEN
             IF (ICOUNT .GT. 0) THEN
-               WRITE (LUPRI,'(2X,A,I5,A/)')
-     &            'Integral buffer #',NBUFX(0),' has been written.'
+               WRITE (LUPRI,'(2X,A,I5,A,I5/)') 'UN2WRU '//
+     &            'Integral buffer #',NBUFX(0),' has been written.'//
+     &            '   INDA =',INDA
                IBIT1 = 2**NBITS - 1
                DO 200 INT = 1, ICOUNT
                   IF (NIBUF .EQ. 1) THEN

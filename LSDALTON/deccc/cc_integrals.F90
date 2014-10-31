@@ -1563,14 +1563,14 @@ contains
 #else
     call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
 #endif
-    call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
+    call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
          & MinAObatch,MinAObatch,MinAObatch)
 
     MaxGamma = MinAObatch
     MaxAlpha = MinAObatch
     do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxGamma<=nb)) 
        MaxGamma = MaxGamma + 1
-       call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
+       call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
             & MaxAlpha,MaxGamma,MinAObatch)  
     end do
     if (MaxGamma>=nb) then
@@ -1582,7 +1582,7 @@ contains
     end if
     do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAlpha<=nb)) 
        MaxAlpha = MaxAlpha + 1
-       call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
+       call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
             & MaxAlpha,MaxGamma,MinAObatch)  
     end do
     if (MaxAlpha>=nb) then
@@ -1622,7 +1622,7 @@ contains
     end if
 
     ! sanity check:
-    call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
+    call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
          & MaxAlpha,MaxGamma,MinAObatch)  
     if ((MemFree-MemNeed)<=0.0E0_realk) then
        mo_ccsd = .false.
@@ -1642,7 +1642,7 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    December 2013
-  subroutine get_mem_t1_free_gmo(MemOut,M,N,O,V,X,nMOB,AlphaDim,GammaDim,MinDimAO)
+  subroutine get_mem_t1_free_gmo(local,MemOut,M,N,O,V,X,nMOB,AlphaDim,GammaDim,MinDimAO)
 
     implicit none 
 
@@ -1653,6 +1653,8 @@ contains
     ! X: dimension of MO batch.
     ! nMOB: number of MO batches.
     integer,  intent(in) :: M, N, O, V, X, nMOB
+    !> use local scheme?
+    logical :: local
     !> AO stuff:
     integer, intent(in) :: AlphaDim, GammaDim, MinDimAO
     !> memory needed:
@@ -1665,6 +1667,7 @@ contains
 #ifdef VAR_MPI
     nnod = infpar%lg_nodtot
 #endif
+    if (local) nnod = 1
 
     ! Transfo. matrices:
     MemNeed = N*M + AlphaDim*X + GammaDim*X
