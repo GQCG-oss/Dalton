@@ -52,6 +52,7 @@ F90_OBJS = \
         AGC_GPU_VerticalRecurrenceQPBSeg1Prim.o \
         AGC_GPU_VerticalRecurrenceQPCSeg1Prim.o \
         AGC_GPU_VerticalRecurrenceQPDSeg1Prim.o \
+        AGC_TransferRecurrenceParam.o\
         AGC_CPU_TransferRecurrenceAtoCGen1.o \
         AGC_CPU_TransferRecurrenceAtoCGen2.o \
         AGC_CPU_TransferRecurrenceAtoDGen1.o \
@@ -64,7 +65,6 @@ F90_OBJS = \
         AGC_CPU_TransferRecurrenceCtoBGen.o \
         AGC_CPU_TransferRecurrenceAtoCSegQ1.o \
         AGC_CPU_TransferRecurrenceAtoCSegQ2.o \
-        AGC_CPU_TransferRecurrenceAtoCSegQ3.o \
         AGC_CPU_TransferRecurrenceAtoDSegQ1.o \
         AGC_CPU_TransferRecurrenceAtoDSegQ2.o \
         AGC_CPU_TransferRecurrenceDtoASegQ.o \
@@ -75,7 +75,6 @@ F90_OBJS = \
         AGC_CPU_TransferRecurrenceCtoBSegQ.o \
         AGC_CPU_TransferRecurrenceAtoCSegP1.o \
         AGC_CPU_TransferRecurrenceAtoCSegP2.o \
-        AGC_CPU_TransferRecurrenceAtoCSegP3.o \
         AGC_CPU_TransferRecurrenceAtoDSegP1.o \
         AGC_CPU_TransferRecurrenceAtoDSegP2.o \
         AGC_CPU_TransferRecurrenceDtoASegP.o \
@@ -86,7 +85,6 @@ F90_OBJS = \
         AGC_CPU_TransferRecurrenceCtoBSegP.o \
         AGC_CPU_TransferRecurrenceAtoCSeg1.o \
         AGC_CPU_TransferRecurrenceAtoCSeg2.o \
-        AGC_CPU_TransferRecurrenceAtoCSeg3.o \
         AGC_CPU_TransferRecurrenceAtoDSeg1.o \
         AGC_CPU_TransferRecurrenceAtoDSeg2.o \
         AGC_CPU_TransferRecurrenceDtoASeg.o \
@@ -117,7 +115,6 @@ F90_OBJS = \
         AGC_GPU_TransferRecurrenceCtoBGen.o \
         AGC_GPU_TransferRecurrenceAtoCSegQ1.o \
         AGC_GPU_TransferRecurrenceAtoCSegQ2.o \
-        AGC_GPU_TransferRecurrenceAtoCSegQ3.o \
         AGC_GPU_TransferRecurrenceAtoDSegQ1.o \
         AGC_GPU_TransferRecurrenceAtoDSegQ2.o \
         AGC_GPU_TransferRecurrenceDtoASegQ.o \
@@ -128,7 +125,6 @@ F90_OBJS = \
         AGC_GPU_TransferRecurrenceCtoBSegQ.o \
         AGC_GPU_TransferRecurrenceAtoCSegP1.o \
         AGC_GPU_TransferRecurrenceAtoCSegP2.o \
-        AGC_GPU_TransferRecurrenceAtoCSegP3.o \
         AGC_GPU_TransferRecurrenceAtoDSegP1.o \
         AGC_GPU_TransferRecurrenceAtoDSegP2.o \
         AGC_GPU_TransferRecurrenceDtoASegP.o \
@@ -139,7 +135,6 @@ F90_OBJS = \
         AGC_GPU_TransferRecurrenceCtoBSegP.o \
         AGC_GPU_TransferRecurrenceAtoCSeg1.o \
         AGC_GPU_TransferRecurrenceAtoCSeg2.o \
-        AGC_GPU_TransferRecurrenceAtoCSeg3.o \
         AGC_GPU_TransferRecurrenceAtoDSeg1.o \
         AGC_GPU_TransferRecurrenceAtoDSeg2.o \
         AGC_GPU_TransferRecurrenceDtoASeg.o \

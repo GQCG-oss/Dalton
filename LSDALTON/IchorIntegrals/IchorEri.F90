@@ -33,6 +33,7 @@ MODULE IchorErimod
 #ifdef VAR_OPENACC
   !OpenACC libary routines  
   use openacc!, only: acc_async_test
+  use AGC_OBS_TRParamMod
 #endif
   use IchorGaussianGeminalMod, only: set_GGem, free_GGem, GGemOperatorCalc
 
@@ -257,6 +258,7 @@ integer,allocatable :: nBraketList(:),BraketList(:,:)
 logical :: doMoTrans
 !MOtrans specific stuff
 integer :: nCMO1,nCMO2,nCMO3,nCMO4
+integer :: nStaticParamIfac
 real(realk),allocatable :: CMO1A(:,:),CMO2B(:,:)
 real(realk),allocatable :: CMO1B(:,:),CMO2A(:,:)
 real(realk),allocatable :: CMO3C(:,:),CMO4D(:,:)
@@ -265,6 +267,17 @@ real(realk),allocatable :: CMO3D(:,:),CMO4C(:,:)
 IF(.NOT.UseCPU)THEN
    Write(lupri,'(A,F10.3,A)')'Ichor: GPU Maximum Memory : ', IchorGPUMAXMEM, ' GB'
 ENDIF
+#ifdef VAR_OPENACC
+!$ACC DATA COPYIN(TUVindexX1_35,TUVindexX2_35,TUVindexX3_35,&
+!$ACC             IfacX1_20,IfacX2_20,IfacX3_20,&
+!$ACC             TUVindexX1_56,TUVindexX2_56,TUVindexX3_56,&
+!$ACC             IfacX1_35,IfacX2_35,IfacX3_35,&
+!$ACC             TUVindexX1_84,TUVindexX2_84,TUVindexX3_84,&
+!$ACC             IfacX1_56,IfacX2_56,IfacX3_56,&
+!$ACC             TUVindexX1_120,TUVindexX2_120,TUVindexX3_120,&
+!$ACC             IfacX1_84,IfacX2_84,IfacX3_84)
+nStaticParamIfac = 3*(35 + 20 + 56 + 35 + 84 + 56 + 120 + 84)
+#endif
 
 doMOtrans = IchorJobSpec.EQ.IchorJobMOtrans
 IF(doMOtrans)Then
@@ -943,7 +956,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                  & reducedExponents,integralPrefactor,PcentPass,Pdistance12Pass,PpreExpFacPass,&
                  & PQorder,BATCHGCD,BATCHGAB,Spherical,TMParray1maxsize,nLocalInt,&
                  & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
-                 & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri)
+                 & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,nStaticParamIfac)
          ENDIF
 !         call mem_ichor_dealloc(pcent)
 !         deallocate(pcent)
@@ -1201,6 +1214,9 @@ IF(MemAllocated.NE.0)THEN
    call stats_ichor_mem(lupri)
    call ichorquit('MemoryLeak in IchorEri',lupri)
 ENDIF
+#ifdef VAR_OPENACC
+!$ACC END DATA
+#endif
 
 end subroutine IchorEri
 
@@ -2193,14 +2209,14 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      & PQorder,&
      & BATCHGCD,BATCHGAB,Spherical,TMParray1maxsize,nLocalInt,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
-     & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri)
+     & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,nStaticParamIfac)
   implicit none
   logical,intent(in) :: TriangularRHSAtomLoop,TriangularLHSAtomLoop,PermuteLHSTypes
   logical,intent(in) :: Qsegmented,Psegmented,PQorder,Spherical,CSscreen
   logical,intent(in) :: TriangularODAtomLoop
   integer,intent(in) :: nTABFJW1,nTABFJW2,lupri
   real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2),THRESHOLD_CS
-  integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
+  integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ),nStaticParamIfac
   !D
   integer,intent(in) :: nAtomsD,nPrimD,nContD,nOrbCompD,AngmomD,nBatchD,nOrbD
   integer,intent(in) :: iBatchIndexOfTypeD
@@ -2276,7 +2292,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   MaxGPUmemory = FLOOR(IchorGPUMAXMEM,kind=long)*1000_long*1000_long*1000_long !given by input
   call DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
        & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
-       & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass)
+       & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass,nStaticParamIfac)
 !  WRITE(lupri,*)'nAsyncHandles',nAsyncHandles
   IF(nAsyncHandles.EQ.0)call ichorquit('GPU Memory Error. Calc require too much memory transported to device',-1)
 #else
@@ -2513,13 +2529,14 @@ end subroutine IchorTypeIntegralLoopGPU
 !  GPU OpenACC Memory calculation 
 subroutine DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
      & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
-     & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass)
+     & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,&
+     & nLocalIntPass,nStaticParamIfac)
   implicit none
   integer(kind=long),intent(in) :: MaxGPUmemory
   integer,intent(in) :: maxnAsyncHandles,nPrimP,nPrimQ,nPrimA,nContA,nPrimB,nContB
   integer,intent(in) :: nPrimC,nContC,nPrimD,nContD,nTABFJW1,nTABFJW2,natomsA
   integer,intent(in) :: natomsB,TMParray1maxsize,MaxPasses,nLocalIntPass
-  integer,intent(in) :: TMParray2maxsize
+  integer,intent(in) :: TMParray2maxsize,nStaticParamIfac
   integer,intent(inout) :: nAsyncHandles
   !local variables
   integer(kind=long) :: nSizeStatic,nSizeAsync
@@ -2527,9 +2544,11 @@ subroutine DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nP
 
   !Calculate the size of the memory independent on the number of streams
   !                                                                     
+  !Copy of parameters in AGC_TransferRecurrenceParam.F90
+  nSizeStatic = nStaticParamIfac*mem_intsize
   ! ACC DATA COPYIN OF                                                
   ! nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,                               
-  nSizeStatic = mem_intsize*5
+  nSizeStatic = nSizeStatic + mem_intsize*5 
   ! nPrimQ,nPasses,MaxPasses,intprint,lupri,                          
   nSizeStatic = nSizeStatic + mem_intsize*(4 + maxnAsyncHandles)  !nPasses is static allocated
   ! nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,              
