@@ -5254,7 +5254,7 @@ contains
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik),intent(in) :: req
+    integer(kind=ls_mpik),intent(inout) :: req
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: n,ierr
     integer(kind=MPI_ADDRESS_KIND) :: offset
@@ -5272,7 +5272,6 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rput_realkV4)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rput_realkV4
 
@@ -5283,7 +5282,7 @@ contains
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik),intent(in) :: req
+    integer(kind=ls_mpik),intent(inout) :: req
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: n,ierr
     integer(kind=MPI_ADDRESS_KIND) :: offset
@@ -5306,7 +5305,6 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rput_realkV4)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rput_realkV8
 
@@ -5527,7 +5525,6 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_int8)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rget_int8
   subroutine lsmpi_rget_int4(buf,pos,dest,win,req)
@@ -5578,7 +5575,6 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_realk)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rget_realk
   subroutine lsmpi_rget_realkV_wrapper8(buf,nelms,pos,dest,win,req,nreqs)
@@ -5646,6 +5642,8 @@ contains
       endif
 
     endif
+#else
+    nreqs=0
 #endif
   end subroutine lsmpi_rget_realkV_wrapper8
   subroutine lsmpi_rget_realkV_wrapper4(buf,nelms,pos,dest,win,req,nreqs)
@@ -5713,6 +5711,8 @@ contains
       endif
 
     endif
+#else
+    nreqs=0
 #endif
   end subroutine lsmpi_rget_realkV_wrapper4
 
