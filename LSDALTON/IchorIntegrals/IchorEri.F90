@@ -33,8 +33,8 @@ MODULE IchorErimod
 #ifdef VAR_OPENACC
   !OpenACC libary routines  
   use openacc!, only: acc_async_test
-  use AGC_GPU_OBS_TRParamMod
 #endif
+  use AGC_GPU_OBS_TRParamMod
   use IchorGaussianGeminalMod, only: set_GGem, free_GGem, GGemOperatorCalc
 
   public:: IchorEri,IchorEriMem
