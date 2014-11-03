@@ -5817,11 +5817,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Change array type to be dense:
     if (.not.local.and.master) then
       call tensor_cp_tiled2dense(t2,.false.)
-      if(iter==1) then
-        call memory_allocate_tensor_dense(govov)
-      else
-        call tensor_cp_tiled2dense(govov,.false.)
-      end if
+      call tensor_cp_tiled2dense(govov,.false.)
     end if 
 #endif
 
@@ -5919,7 +5915,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      govov%itype  = TT_DENSE
    end if
 #endif
-    if (iter==1) call tensor_zero(govov)
     call tensor_zero(omega2)
 
     call LSTIMER('MO-CCSD INIT',tcpu1,twall1,DECinfo%output)
@@ -5954,7 +5949,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       ! Get intermediate for the calculation of residual
       call wrapper_get_intermediates(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
                          & xvir,yocc,t2%elm1,u2,goooo,B2prep,omega2%elm1,G_Pi,H_aQ, &
-                         & govov%elm1,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
+                         & gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     end do BatchPQ
 
@@ -5978,7 +5973,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
-                & govoo,gvooo,gvoov,gvvoo,govov)
+                & govoo,gvooo,gvoov,gvvoo)
 
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
@@ -6126,12 +6121,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       govov%access_type  = AT_MASTER_ACCESS
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
-      if (iter==1) then
-        call tensor_mv_dense2tiled(govov,.true.)
-      else
-        call memory_deallocate_tensor_dense_pc(govov)
-        govov%itype      = TT_TILED_DIST
-      end if
+      call memory_deallocate_tensor_dense_pc(govov)
+      govov%itype      = TT_TILED_DIST
       call tensor_mv_dense2tiled(omega2,.true.)
       call tensor_mv_dense2tiled(t2,.true.)
     endif
@@ -6149,7 +6140,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Date:    November 2013
   subroutine wrapper_get_intermediates(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
                                      & xvir,yocc,t2,u2,goooo,B2prep,omega2,G_Pi,H_aQ, &
-                                     & govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
+                                     & gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     implicit none
 
@@ -6176,7 +6167,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> Intermediates used to calculate the E2, A1 and B1 terms:
     real(realk), intent(inout) :: G_Pi(ntot*nocc),  H_aQ(nvir*ntot)
     !> T1-transformed MO integrals:
-    real(realk), intent(inout) :: govov(:), gvoov(:), gvvoo(:)
+    real(realk), intent(inout) :: gvoov(:), gvvoo(:)
     real(realk), intent(inout) :: goooo(:), govoo(:), gvooo(:)
     !> working arrays:
     real(realk), intent(inout) :: tmp0(:), tmp1(:), tmp2(:)
@@ -6187,7 +6178,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call get_G_and_H_intermeditates(ntot,nocc,nvir,dimP,dimQ, &
                         &  P_sta,Q_sta,gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
     call get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                        & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
+                        & xvir,yocc,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
 
     ! If the PQ batch is an upper diagonal block, we repeat the oprerations
     ! with the transposed batch:
@@ -6202,7 +6193,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call get_G_and_H_intermeditates(ntot,nocc,nvir,dimQ,dimP, &
                           & Q_sta,P_sta,gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
       call get_MO_integrals(ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta,iter,gmo, &
-                          & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
+                          & xvir,yocc,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
     end if
 
   end subroutine wrapper_get_intermediates  
@@ -6612,7 +6603,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Author: Pablo Baudin
   !> Date:   November 2013
   subroutine get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                             & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
+                             & xvir,yocc,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
     implicit none
 
     !> dimensions for arrays:
@@ -6625,7 +6616,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> transformation matrices:
     real(realk), intent(in) :: xvir(nvir*ntot), yocc(nocc*ntot)
     !> T1-transformed MO integrals:
-    real(realk), intent(inout) :: govov(:), gvoov(:), gvvoo(:)
+    real(realk), intent(inout) :: gvoov(:), gvvoo(:)
     real(realk), intent(inout) :: govoo(:), gvooo(:)
     !> working arrays:
     real(realk), intent(inout) :: tmp0(:), tmp1(:)
@@ -6657,23 +6648,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
     I_sta = nocc - dimI + 1
 
-    !====================================================================
-    ! Get govov integrals:  g[iajb]
-    if ((iter==1).and.(dimI>0)) then 
-      do b=1,nvir
-        do j=1,nocc
-          do a=1,dimA
-            pos1 = 1 + dimP*dimK + (a-1)*dimP + (j-1)*dimP*dimQ &
-                 & + (nocc+b-1)*dimP*dimQ*ntot
-
-            pos2 = P_sta + (A_sta+a-2)*nocc + (j-1)*nocc*nvir + (b-1)*nocc*nvir*nocc
-
-            call dcopy(dimI,gmo(pos1),1,govov(pos2),1)
-          end do
-        end do
-      end do
-    end if
- 
     !====================================================================
     ! Get gvooo integrals: g[aijk]
     ! 1) get g[PQjs]
@@ -6784,7 +6758,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Author:  Pablo Baudin
   !> Date:    April 2014
   subroutine  mpi_reduction_after_main_loop(ccmodel,nt,nv,no,iter,G_Pi,H_aQ,goooo, &
-                & govoo,gvooo,gvoov,gvvoo,govov)
+                & govoo,gvooo,gvoov,gvvoo)
 
     implicit none
   
@@ -6792,7 +6766,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk), intent(inout) :: G_Pi(:), H_aQ(:)
     real(realk), intent(inout) :: goooo(:), govoo(:), gvooo(:)
     real(realk), intent(inout) :: gvoov(:), gvvoo(:)
-    type(tensor), intent(inout) :: govov
     
     integer(kind=long) :: no2v2
 
@@ -6809,11 +6782,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       ! ALL REDUCE FOR C2 AND D2 TERMS WITH MPI:
       call lsmpi_allreduce(gvoov,no2v2,infpar%lg_comm)
       call lsmpi_allreduce(gvvoo,no2v2,infpar%lg_comm)
-      if (iter==1) call lsmpi_allreduce(govov%elm1,no2v2,infpar%lg_comm)
     else if(ccmodel==MODEL_CC2) then
       call lsmpi_local_reduction(gvoov,no2v2,infpar%master)
       call lsmpi_local_reduction(gvvoo,no2v2,infpar%master)
-      if (iter==1) call lsmpi_local_reduction(govov%elm1,no2v2,infpar%master)
     end if
     call time_start_phase(PHASE_WORK)
 #endif
@@ -7515,7 +7486,6 @@ subroutine moccsd_data_slave()
   integer(kind=long) :: nelms
   logical :: local
 
-
   call mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,omega2, &
          & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,local)
   
@@ -7536,9 +7506,7 @@ subroutine moccsd_data_slave()
 
   nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
   call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
-  if (iter/=1) then
-    call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
-  endif
+  call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
 
   !==============================================================================
   ! the slave call the routine to get MO-CCSD residual:

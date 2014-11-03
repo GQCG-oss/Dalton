@@ -2017,8 +2017,8 @@ contains
      
     !> CC model
     integer,intent(inout) :: ccmodel
-    !> MO pack integrals; amplitudes and residuals:
     integer :: nbas, nocc, nvir, iter
+    !> MO pack integrals; amplitudes and residuals:
     type(tensor) :: pgmo_diag, pgmo_up
     type(tensor) :: govov
     type(tensor) :: t1
@@ -2096,9 +2096,7 @@ contains
 
       nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
       call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
-      if (iter/=1) then
-        call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
-      endif
+      call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
     else
       if(.not.loc)then
         t1    = get_tensor_from_parr(t1addr(infpar%lg_mynum+1))
