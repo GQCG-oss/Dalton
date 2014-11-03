@@ -140,6 +140,7 @@ contains
            &compatible (with the given order)",-1)
      enddo
 
+
      select case(x%itype)
 
      case(TT_DENSE,TT_REPLICATED)

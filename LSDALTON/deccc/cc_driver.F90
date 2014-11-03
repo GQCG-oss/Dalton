@@ -2022,7 +2022,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       ! Check if there is enough memory to performed an MO-CCSD calculation.
       !   YES: get full set of t1 free gmo and pack them
       !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
-      if (mo_ccsd.or.(ccmodel == MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
+      if (mo_ccsd.and.(.not.ccmodel==MODEL_MP2)) then
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
 
          call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,iajb,pgmo_diag,pgmo_up, &
@@ -2166,11 +2166,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case( MODEL_RPA )
 
-#ifdef VAR_MPI
             call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv,local)
-#else
-            call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
-#endif
+!            call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
 
          case default
 

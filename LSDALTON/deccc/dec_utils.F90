@@ -5170,15 +5170,19 @@ end function max_batch_dimension
         endif
      case( TT_TILED_DIST )
 
-        if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
-           call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
-        endif
 
         call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
            &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset )
 
         if(DECinfo%use_singles)then
-           call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
+
+          !This was put outside of this test, it did not make sense
+          !as t1 may not have been initialized.
+          if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
+            call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
+          endif
+
+          call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
         else
            !this is just copying t2 to u
            call tensor_add( u, 1.0E0_realk, t2, a = 0.0E0_realk)
