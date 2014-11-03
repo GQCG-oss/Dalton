@@ -2687,7 +2687,7 @@ module lspdm_tensor_operations_module
      integer, intent(inout)     :: order(C%mode)
      real(realk), intent(in),    optional :: mem !in GB
      real(realk), intent(inout), target, optional :: wrk(:)
-     integer, intent(in),        optional :: iwrk
+     integer(kind=long), intent(in),     optional :: iwrk
      logical, intent(in),        optional :: force_sync
      !internal variables
      logical :: test_all_master_access,test_all_all_access,master, use_wrk_space,contraction_mode,sync
@@ -2829,7 +2829,7 @@ module lspdm_tensor_operations_module
 
 
 
-     if(test_all_master_access)then
+     if(test_all_all_access)then
         if(present(mem))then
            !use provided memory information to allcate space
 
@@ -2857,6 +2857,7 @@ module lspdm_tensor_operations_module
            else
               nbuffsB = ((iwrk-(A%tsize + tsizeB + C%tsize))/ntens_to_get_from)/tsizeB
            endif
+
            if(nbuffsA==0.or.(nbuffsB==0.and..not.B_dense))then
               print *,"WARNING(tensor_contract_par): the specified work space is too small, switching to allocations"
               use_wrk_space = .false.

@@ -3153,6 +3153,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      fullRHS=(nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
+     call get_currently_available_memory(MemFree)
+     MemFree = 0.4_realk * MemFree
+
      !**********************************
      ! Begin the loop over gamma batches
      !**********************************
@@ -3175,25 +3178,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call tensor_ainit(yv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[lg,vs])
         call copy_stripe_from_full_matrix(yv_f,w0%d,fg,lg,nb,nv)
-        call tensor_convert(w0%d,yv_fg)
+        call tensor_convert(w0%d,yv_fg,wrk=w1%d,iwrk=w1%n)
 
         call tensor_ainit(yo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[lg,os])
         call copy_stripe_from_full_matrix(yo_f,w0%d,fg,lg,nb,no)
-        call tensor_convert(w0%d,yo_fg)
+        call tensor_convert(w0%d,yo_fg,wrk=w1%d,iwrk=w1%n)
 
         call tensor_ainit(xo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[lg,os])
         call copy_stripe_from_full_matrix(xo_f,w0%d,fg,lg,nb,no)
-        call tensor_convert(w0%d,xo_fg)
+        call tensor_convert(w0%d,xo_fg,wrk=w1%d,iwrk=w1%n)
 
         call tensor_ainit(xv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[lg,vs])
         call copy_stripe_from_full_matrix(xv_f,w0%d,fg,lg,nb,nv)
-        call tensor_convert(w0%d,xv_fg)
+        call tensor_convert(w0%d,xv_fg,wrk=w1%d,iwrk=w1%n)
 
         call tensor_ainit( uigcj, [no,lg,nv,no], 4, local=local, atype='TDAR', tdims=[os,lg,vs,os] )
         order4 = [3,1,2,4]
-        call tensor_contract( 1.0E0_realk, yv_fg, u2, [2],[1],1,0.0E0_realk,uigcj, order4)
-
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_contract( 1.0E0_realk, yv_fg, u2, [2],[1],1,0.0E0_realk,uigcj, order4, force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
         !**********************************
         ! Begin the loop over alpha batches
@@ -3221,20 +3222,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call tensor_ainit(xo_fa, [la,no], 2, local=local, atype="TDAR", tdims=[la,os])
            call copy_stripe_from_full_matrix(xo_f,w0%d,fa,la,nb,no)
-           call tensor_convert(w0%d,xo_fa)
+           call tensor_convert(w0%d,xo_fa,wrk=w1%d,iwrk=w1%n)
 
            call tensor_ainit(xv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[la,vs])
            call copy_stripe_from_full_matrix(xv_f,w0%d,fa,la,nb,nv)
-           call tensor_convert(w0%d,xv_fa)
+           call tensor_convert(w0%d,xv_fa,wrk=w1%d,iwrk=w1%n)
 
            call tensor_ainit(yv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[la,vs])
            call copy_stripe_from_full_matrix(yv_f,w0%d,fa,la,nb,nv)
-           call tensor_convert(w0%d,yv_fa)
+           call tensor_convert(w0%d,yv_fa,wrk=w1%d,iwrk=w1%n)
 
            call tensor_ainit( int1, [nv,la,no,lg], 4, local=local, atype="TDAR", tdims=[vs,la,os,lg] )
 
            order4 = [3,4,1,2]
-           call tensor_contract( 1.0E0_realk, uigcj, xo_fa, [4],[2],1,0.0E0_realk, int1, order4)
+           call tensor_contract( 1.0E0_realk, uigcj, xo_fa, [4],[2],1,0.0E0_realk, int1, order4,wrk=w1%d,iwrk=w1%n)
 
            call tensor_ainit(Cint, [lg,nb,la,nb], 4, local=local, atype="TDAR", tdims=[lg,bs,la,bs])
 
@@ -3269,12 +3270,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            ! I [gamma delta alpha beta] * Lambda^p [beta l] = I [alpha l gamma delta]
            call tensor_ainit( int2, [la,no,lg,nb], 4, local=local, atype="TDAR", tdims=[la,os,lg,bs] )
            order4 = [3,4,1,2]
-           call tensor_contract( 1.0E0_realk, Cint, xo, [4],[1],1,0.0E0_realk, int2, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, Cint, xo, [4],[1],1,0.0E0_realk, int2, order4,force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
 
            !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
            order2 = [1,2]
-           call tensor_contract( 1.0E0_realk, int1, int2, [2,3,4],[1,2,3],3,1.0E0_realk, Had, order2,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int1, int2, [2,3,4],[1,2,3],3,1.0E0_realk, Had, order2,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            call tensor_free( int1 )
 
@@ -3287,17 +3289,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
               call tensor_ainit( int3, [la,no,no,lg], 4, local=local, atype="TDAR", tdims=[la,os,os,lg] )
               order4 = [1,2,4,3]
-              call tensor_contract( 1.0E0_realk, int2, yo   , [4],[1],1, 0.0E0_realk, int3, order4,force_sync=.true.)
+              call tensor_contract( 1.0E0_realk, int2, yo   , [4],[1],1, 0.0E0_realk, int3, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
               !I [alpha  i j gamma] * Lambda^h [gamma b]            = I [alpha i j b]
               call tensor_ainit( int4, [la,no,no,nv], 4, local=local, atype="TDAR", tdims=[la,os,os,vs] )
               order4 = [1,2,3,4]
-              call tensor_contract( 1.0E0_realk, int3, yv_fg, [4],[1],1, 0.0E0_realk, int4, order4,force_sync=.true.)
+              call tensor_contract( 1.0E0_realk, int3, yv_fg, [4],[1],1, 0.0E0_realk, int4, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
               call tensor_free( int3 )
 
               !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
-              call tensor_contract( 1.0E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, gvvoo, order4,force_sync=.true.)
+              call tensor_contract( 1.0E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, gvvoo, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
               call tensor_free( int4 )
 
@@ -3307,18 +3312,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
            call tensor_ainit( int1, [la,no,lg,nv], 4, local=local, atype="TDAR", tdims=[la,os,lg,vs] )
            order4 = [1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int2, yv, [4],[1],1, 0.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int2, yv, [4],[1],1, 0.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            call tensor_free( int2 )
 
            !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
            call tensor_ainit( int3, [la,no], 2, local=local, atype="TDAR", tdims=[la,os] )
            order2 = [1,2]
-           call tensor_contract( 1.0E0_realk, int1, uigcj, [2,3,4],[1,2,3],3, 0.0E0_realk, int3, order2,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int1, uigcj, [2,3,4],[1,2,3],3, 0.0E0_realk, int3, order2,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            !FIXME: find a more elegant solution for this contraction
            if( me == 0 )then
-              call tensor_convert(int3,w0%d)
+              call tensor_convert(int3,w0%d,wrk=w1%d,iwrk=w1%n)
               call ass_D1to2(w0%d,p2,[la,no])
               !$OMP WORKSHARE
               Gbi_local%elm2(fa:fa+la-1,:) = Gbi_local%elm2(fa:fa+la-1,:) + p2(:,:)
@@ -3334,10 +3341,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               order4 = [1,2,3,4]
               !Reorder I [alpha j gamma b]  * Lambda^h [gamma i]          = I [alpha j b i]
-              call tensor_contract( 1.0E0_realk, int1, yo_fg, [3],[1],1, 0.0E0_realk, int3, order4,force_sync=.true.)
+              call tensor_contract( 1.0E0_realk, int1, yo_fg, [3],[1],1, 0.0E0_realk, int3, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
               !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
-              call tensor_contract( 1.0E0_realk, xv_fa, int3, [1],[1],1, 1.0E0_realk, gvoov, order4,force_sync=.true.)
+              call tensor_contract( 1.0E0_realk, xv_fa, int3, [1],[1],1, 1.0E0_realk, gvoov, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
 
               call tensor_free( int3 )
@@ -3367,57 +3376,67 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            !Transform c
            call tensor_ainit( int1, [lg,la,nv,nb], 4, local=local, atype="TDAR", tdims=[lg,la,vs,bs] )
            order4=[2,1,4,3]
-           call tensor_contract( 1.0E0_realk, Cint, yv, [2],[1],1, 0.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, Cint, yv, [2],[1],1, 0.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            !transform d
            call tensor_ainit( int2, [lg,la,nv,nv], 4, local=local, atype="TDAR", tdims=[lg,la,vs,vs] )
            order4=[1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int1, yv, [4],[1],1, 0.0E0_realk, int2, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int1, yv, [4],[1],1, 0.0E0_realk, int2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            call tensor_free( int1 )
            !contract t(cd) and int2(cd)
            call tensor_ainit( int1, [lg,la,no,no], 4, local=local, atype="TDAR", tdims=[lg,la,os,os] )
            order4=[1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int2, t2, [3,4],[1,2],2, 0.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int2, t2, [3,4],[1,2],2, 0.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            call tensor_free( int2 )
 
            !transform gamma to b
            call tensor_ainit( int2, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[la,vs,os,os] )
            order4=[2,1,3,4]
-           call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int2, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            !transform alpha to a and add to omega2
            order4=[1,2,3,4]
-           call tensor_contract( 0.5E0_realk, xv_fa, int2, [1],[1],1, 1.0E0_realk, omega2, order4,force_sync=.true.)
+           call tensor_contract( 0.5E0_realk, xv_fa, int2, [1],[1],1, 1.0E0_realk, omega2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            call tensor_free( int2 )
 
            !Do B2 term from int1 - transform occ i
            call tensor_ainit( int2, [lg,la,no,nb], 4, local=local, atype="TDAR", tdims=[lg,la,os,bs] )
            order4=[2,1,4,3]
-           call tensor_contract( 1.0E0_realk, Cint, yo, [2],[1],1, 0.0E0_realk, int2, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, Cint, yo, [2],[1],1, 0.0E0_realk, int2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            call tensor_free( Cint )
 
            !transform occ j
            order4=[1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 1.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 1.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            !backtransform t2
            order4=[1,2,3,4]
            call tensor_ainit( int4, [nv,nv,no,la], 4, local=local, atype="TDAR", tdims=[vs,vs,os,la] )
 
-           call tensor_contract( 1.0E0_realk, t2, xo_fa, [3],[2],1, 0.0E0_realk, int4, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, t2, xo_fa, [3],[2],1, 0.0E0_realk, int4, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            call tensor_ainit( int3, [nv,nv,la,lg], 4, local=local, atype="TDAR", tdims=[vs,vs,la,lg] )
 
-           call tensor_contract( 1.0E0_realk, int4, xo_fg, [3],[2],1, 0.0E0_realk, int3, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int4, xo_fg, [3],[2],1, 0.0E0_realk, int3, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            call tensor_free( int4 )
 
            order4=[1,2,3,4]
-           call tensor_contract( 0.5E0_realk, int3, int1, [3,4],[2,1],2, 1.0E0_realk, omega2, order4,force_sync=.true.)
+           call tensor_contract( 0.5E0_realk, int3, int1, [3,4],[2,1],2, 1.0E0_realk, omega2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            call tensor_free( int3 )
 
@@ -3477,15 +3496,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            !Transform second bas to occ in int2 to get T1 transformed integral contrib
            !transform occ j
            order4=[1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 0.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 0.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            !g´transform gamma->b
            call tensor_ainit( int4, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[la,vs,os,os] )
            order4=[2,1,3,4]
-           call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int4, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int4, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
            order4=[1,2,3,4]
-           call tensor_contract( 0.5E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, omega2, order4,force_sync=.true.)
+           call tensor_contract( 0.5E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, omega2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
 
 
            call tensor_free( int1 )
@@ -7357,6 +7379,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
         if(s==0)then
            maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
+           maxsize64 = max(maxsize64,int((5 *i8*vs**2)*os**2,kind=8))
         endif
      case(2)
         maxsize64 = max(int((i8*nb)*nb*nba*nbg,kind=8),(i8*no*no)*nv*nv)
