@@ -368,7 +368,7 @@ if [ $lsdalton_exitcode -ne 0 ] ; then
    du -h
 fi
 
-filelist="LSDALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.PHS DALTON.PHS DALTON.WLK molden.inp dens.restart fock.restart lcm_orbitals.u runopt.history MOLECULE.OUT"
+filelist="LSDALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.PHS DALTON.PHS DALTON.WLK molden.inp dens.restart fock.restart lcm_orbitals.u runopt.history MOLECULE.OUT ADMMmin.dat"
 
 for i in $filelist ; do
    if [ -s $i -a -r $i ] ; then

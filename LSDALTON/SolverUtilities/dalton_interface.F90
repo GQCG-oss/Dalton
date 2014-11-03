@@ -2229,8 +2229,10 @@ CONTAINS
                   write(lupri,*) "===================================================================="
                   write(lupri,*) "ADMMmin: K(D) - k(d) - X(D) + x(d) = ",EcontADMM(5)                  
                   write(lupri,*) "===================================================================="
+                  write(lupri,*) "ADMMminDATA"
                   CALL LSOPEN(LUADMM,'ADMMmin.dat','UNKNOWN','FORMATTED')
-                  WRITE(LUADMM,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)
+                  WRITE(LUADMM,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
+                  WRITE(LUPRI,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
                   CALL LSCLOSE(LUADMM,'KEEP')
                ENDIF
             ENDIF
