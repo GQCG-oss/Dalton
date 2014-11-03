@@ -1209,7 +1209,7 @@ end subroutine mat_unres_dense_create_ab_elms
     integer :: i
     type(Matrix), intent(in) :: A
     character(len=20) :: filename
-
+    integer(kind=long) :: ncol,nrow 
     if (.not.ASSOCIATED(A%elms)) &
          & STOP 'A in mat_unres_dense_WRITE_TO_DISK non-existant'
 
@@ -1220,7 +1220,9 @@ end subroutine mat_unres_dense_create_ab_elms
 !    OPEN(iunit, FILE=filename, STATUS="old", FORM="unformatted", POSITION="append" )
 !    OPEN(iunit, FILE=filename, STATUS="old", FORM="unformatted")
  !   REWIND(iunit)
-    WRITE(iunit) A%Nrow, A%Ncol
+    nrow = A%Nrow
+    ncol = A%Ncol
+    write(iunit) Nrow, Ncol
     WRITE(iunit)(A%elms(I),I=1,A%nrow*A%ncol)
     WRITE(iunit)(A%elmsb(I),I=1,A%nrow*A%ncol)
  !   WRITE(iunit) A%elms
@@ -1238,9 +1240,12 @@ end subroutine mat_unres_dense_create_ab_elms
     integer, intent(in) :: iunit
     type(Matrix), intent(inout) :: A
     integer :: i
+    integer(kind=long) :: ncol,nrow 
 
 !    REWIND iunit
-    READ(iunit) A%Nrow, A%Ncol         
+    READ(iunit) Nrow, Ncol
+    IF(nrow .NE. A%Nrow) call lsquit( 'mat_unres_dense_read_from_disk: Nrow /= A%nrow',-1)
+    IF(ncol .NE. A%Ncol) call lsquit( 'mat_unres_dense_read_from_disk: Ncol /= A%ncol',-1)
     READ(iunit)(A%elms(I),I=1,A%nrow*A%ncol)
     READ(iunit)(A%elmsb(I),I=1,A%nrow*A%ncol)
     !READ(iunit) A%elms

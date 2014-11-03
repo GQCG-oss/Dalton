@@ -2181,6 +2181,7 @@ end subroutine set_lowertriangular_zero
          type(Matrix), intent(in) :: A
          logical,optional :: OnMaster !obsolete
          !
+         integer(kind=long) :: ncol,nrow 
          real(realk), allocatable :: afull(:,:)
          call time_mat_operations1
 
@@ -2195,7 +2196,9 @@ end subroutine set_lowertriangular_zero
             !The master collects the info and write to disk
             allocate(afull(a%nrow, a%ncol))
             call mat_to_full(a,1E0_realk,afull)
-            write(iunit) A%Nrow, A%Ncol
+            nrow = A%Nrow
+            ncol = A%Ncol
+            write(iunit) Nrow, Ncol
             write(iunit) afull
             deallocate(afull)
          case(mtype_unres_dense)
@@ -2204,7 +2207,9 @@ end subroutine set_lowertriangular_zero
             print *, "FALLBACK: mat_write_to_disk"
             allocate(afull(a%nrow, a%ncol))
             call mat_to_full(a,1E0_realk,afull)
-            write(iunit) A%Nrow, A%Ncol
+            nrow = A%Nrow
+            ncol = A%Ncol
+            write(iunit) Nrow, Ncol
             write(iunit) afull
             deallocate(afull)
          end select
@@ -2237,7 +2242,7 @@ end subroutine set_lowertriangular_zero
          integer, intent(in) :: iunit
          logical, intent(in) :: info
 
-      write(iunit) info
+         write(iunit) info
       end subroutine mat_write_info_to_disk
 
 !> \brief Read a type(matrix) from disk.
@@ -2252,7 +2257,7 @@ end subroutine set_lowertriangular_zero
          logical,optional :: OnMaster !obsolete
          !
          real(realk), allocatable :: afull(:,:)
-         integer                  :: nrow, ncol
+         integer(kind=long)       :: nrow, ncol
          call time_mat_operations1
          if (info_memory) write(mat_lu,*) 'Before mat_read_from_disk: mem_allocated_global =', mem_allocated_global
          !if (INFO_TIME_MAT) CALL LSTIMER('START ',mat_TSTR,mat_TEN,mat_lu)
