@@ -1,4 +1,4 @@
-MODULE AGC_OBS_TRParamMod
+MODULE AGC_CPU_OBS_TRParamMod
   
   integer,parameter, dimension(35) :: TUVindexX1_35 = (/ 2,5,6,7,11,12,13,&
           & 14,15,16,21,22,23,24,25,26,27,28,29,30,36,37,38,39,&
@@ -108,4 +108,4 @@ MODULE AGC_OBS_TRParamMod
           & 1,2,3,4,1,2,3,4,5,1,2,3,4,5,6,1,1,&
           & 2,1,2,3,1,2,3,4,1,2,3,4,5,1,2,3,4,&
           & 5,6,1,2,3,4,5,6,7 /)
-END MODULE AGC_OBS_TRParamMod
+END MODULE AGC_CPU_OBS_TRParamMod
