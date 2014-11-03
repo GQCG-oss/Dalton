@@ -5,7 +5,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim2
  subroutine TransferRecurrenceCPUP4Q2AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
-  use AGC_OBS_TRParamMod
+  use AGC_CPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -226,7 +226,7 @@ MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim2
  subroutine TransferRecurrenceCPUP4Q3AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
-  use AGC_OBS_TRParamMod
+  use AGC_CPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)

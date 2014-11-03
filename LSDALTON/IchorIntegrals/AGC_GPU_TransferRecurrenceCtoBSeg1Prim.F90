@@ -301,7 +301,7 @@ MODULE AGC_GPU_OBS_TRMODCtoBSeg1Prim
  subroutine TransferRecurrenceGPUP1Q4CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
-  use AGC_OBS_TRParamMod
+  use AGC_GPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -416,7 +416,7 @@ MODULE AGC_GPU_OBS_TRMODCtoBSeg1Prim
  subroutine TransferRecurrenceGPUP2Q3CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
-  use AGC_OBS_TRParamMod
+  use AGC_GPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -690,7 +690,7 @@ MODULE AGC_GPU_OBS_TRMODCtoBSeg1Prim
  subroutine TransferRecurrenceGPUP2Q4CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
-  use AGC_OBS_TRParamMod
+  use AGC_GPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -964,7 +964,7 @@ MODULE AGC_GPU_OBS_TRMODCtoBSeg1Prim
  subroutine TransferRecurrenceGPUP3Q4CtoBSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
-  use AGC_OBS_TRParamMod
+  use AGC_GPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)

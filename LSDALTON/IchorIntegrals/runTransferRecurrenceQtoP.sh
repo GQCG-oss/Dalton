@@ -4,49 +4,50 @@ ifort -c -g -check all -debug all Strings.f90
 ifort -g -check all -debug all -o runTransferRecurrenceQtoP.x runTransferRecurrenceQtoP.f90 Strings.o
 ./runTransferRecurrenceQtoP.x #>& runNewTransferRecurrenceQPAtoCoutput.F90
 
-ifort -c -g -check all -debug all AGC_TransferRecurrenceParam.F90
+ifort -c -g -check all -debug all AGC_CPU_TransferRecurrenceParam.F90
+ifort -c -g -check all -debug all AGC_GPU_TransferRecurrenceParam.F90
 
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoAGenoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBGenoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoAGenoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBGenoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegQoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegQoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegQoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegQoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegPoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegPoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegPoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegPoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoAGenoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBGenoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoAGenoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBGenoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegQoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegQoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegQoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegQoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegPoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegPoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegPoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegPoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSeg1PrimoutputCPU.F90 mathfile.o IchorPresicion.o AGC_CPU_TransferRecurrenceParam.o     
 
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoAGenoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBGenoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoAGenoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBGenoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegQoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegQoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegQoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegQoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegPoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegPoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegPoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegPoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o         
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o          
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
-ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o AGC_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoAGenoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBGenoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoAGenoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBGenoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegQoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegQoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegQoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegQoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegPoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegPoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegPoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegPoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o         
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASegoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSegoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASegoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSegoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o          
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoASeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPCtoBSeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoASeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o     
+ifort -g -check all -openmp -debug all -o a.x runNewTransferRecurrenceQPDtoBSeg1PrimoutputGPU.F90 mathfile.o IchorPresicion.o AGC_GPU_TransferRecurrenceParam.o     
 
 cp runNewTransferRecurrenceQPCtoAGenoutputCPU.F90 AGC_CPU_TransferRecurrenceCtoAGen.F90 
 cp runNewTransferRecurrenceQPCtoASeg1PrimoutputCPU.F90 AGC_CPU_TransferRecurrenceCtoASeg1Prim.F90 

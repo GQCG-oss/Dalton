@@ -187,7 +187,7 @@ subroutine PASSsub
                 ENDIF
                 call writeString(LUFILE)
                 IF(.NOT.LOOPUNROLL)THEN
-                   WRITE(LUFILE,'(A)')'  use AGC_OBS_TRParamMod'
+                   WRITE(LUFILE,'(A,A,A)')'  use AGC_',ARCSTRING,'_OBS_TRParamMod'
                 ENDIF
                 WRITE(LUFILE,'(A)')'  implicit none'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses'

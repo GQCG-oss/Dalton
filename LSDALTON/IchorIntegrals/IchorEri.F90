@@ -33,7 +33,7 @@ MODULE IchorErimod
 #ifdef VAR_OPENACC
   !OpenACC libary routines  
   use openacc!, only: acc_async_test
-  use AGC_OBS_TRParamMod
+  use AGC_GPU_OBS_TRParamMod
 #endif
   use IchorGaussianGeminalMod, only: set_GGem, free_GGem, GGemOperatorCalc
 
@@ -268,13 +268,14 @@ IF(.NOT.UseCPU)THEN
    Write(lupri,'(A,F10.3,A)')'Ichor: GPU Maximum Memory : ', IchorGPUMAXMEM, ' GB'
 ENDIF
 #ifdef VAR_OPENACC
+call Init_AGC_TransferParam()
 !$ACC DATA COPYIN(TUVindexX1_35,TUVindexX2_35,TUVindexX3_35,&
-!$ACC             IfacX1_20,IfacX2_20,IfacX3_20,&
 !$ACC             TUVindexX1_56,TUVindexX2_56,TUVindexX3_56,&
-!$ACC             IfacX1_35,IfacX2_35,IfacX3_35,&
 !$ACC             TUVindexX1_84,TUVindexX2_84,TUVindexX3_84,&
-!$ACC             IfacX1_56,IfacX2_56,IfacX3_56,&
 !$ACC             TUVindexX1_120,TUVindexX2_120,TUVindexX3_120,&
+!$ACC             IfacX1_20,IfacX2_20,IfacX3_20,&
+!$ACC             IfacX1_35,IfacX2_35,IfacX3_35,&
+!$ACC             IfacX1_56,IfacX2_56,IfacX3_56,&
 !$ACC             IfacX1_84,IfacX2_84,IfacX3_84)
 nStaticParamIfac = 3*(35 + 20 + 56 + 35 + 84 + 56 + 120 + 84)
 #endif
