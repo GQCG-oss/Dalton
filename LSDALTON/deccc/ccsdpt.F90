@@ -1728,15 +1728,15 @@ contains
     async_id(5) = -5
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
+#ifdef VAR_OPENACC
+
+    ! probe for device type
+    acc_device_type = acc_get_device_type()
+
+    ! initialize the device
+    call acc_init(acc_device_type)
+
+#endif
 
 #ifdef VAR_CUBLAS
 
@@ -1751,9 +1751,12 @@ contains
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
 !$acc& copyin(eivalvirt,eivalocc,ccsdpt_singles,e4) if(full_no_frags)
 !
+!!$acc enter data create(trip_tmp,trip_ampl,&
+!!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
+!!$acc& copyin(eivalvirt,eivalocc) if(.not. full_no_frags)
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalvirt,eivalocc) if(.not. full_no_frags)
+!$acc& copyin(eivalvirt,eivalocc,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2) if(.not. full_no_frags)
 
 !$acc wait
 
@@ -1774,8 +1777,8 @@ contains
 !
 !$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
-!$acc enter data copyin(ccsdpt_singles(:,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!!$acc enter data copyin(ccsdpt_singles(:,i),&
+!!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
 
     jrun_ser: do j=1,i
 
@@ -1785,10 +1788,11 @@ contains
 !
 !$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
-!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,j),&
-!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!!
+!!$acc enter data copyin(vvoo(:,:,i,j),&
+!!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) wait(async_id(5))
 
                  else ! i .gt. j
 
@@ -1809,12 +1813,13 @@ contains
 !$acc enter data copyin(vvvo(:,:,:,j),&
 !$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
-!$acc& ccsdpt_singles(:,j),&
-!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!!
+!!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!!$acc& ccsdpt_singles(:,j),&
+!!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+!!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) wait(async_id(5))
 
                  end if
 
@@ -1842,12 +1847,13 @@ contains
 !$acc enter data copyin(vvvo(:,:,:,k),&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
-!$acc& ccsdpt_singles(:,k),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!!
+!!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
+!!$acc& ccsdpt_singles(:,k),&
+!!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) wait(async_id(5))
 
                     else if ((i .gt. j) .and. (j .eq. k)) then
 
@@ -1858,10 +1864,11 @@ contains
 !
 !$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
-!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,j,k),&
-!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!!
+!!$acc enter data copyin(vvoo(:,:,j,k),&
+!!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) wait(async_id(5))
 
                     else
 
@@ -1876,14 +1883,15 @@ contains
 !$acc enter data copyin(vvvo(:,:,:,k),&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2)) wait(async_id(5)) if(.not. full_no_frags)
 
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
-!$acc& async(async_id(3)) wait(async_id(5)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
-!$acc& ccsdpt_singles(:,k),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!!$acc& async(async_id(3)) wait(async_id(5)) if(full_no_frags)
+!!
+!!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
+!!$acc& ccsdpt_singles(:,k),&
+!!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
+!!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) wait(async_id(5)) if(.not. full_no_frags)
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) wait(async_id(5))
 
                     end if
 
@@ -1909,8 +1917,9 @@ contains
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
 #ifdef VAR_CUBLAS
-                       stream = acc_get_cuda_stream(async_id(4))
-                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+!                       stream = acc_get_cuda_stream(async_id(4))
+!                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+                       stat = acc_set_cuda_stream(async_id(4),cublas_handle)
 #endif
 
                        call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
@@ -1927,11 +1936,12 @@ contains
 
                        if (full_no_frags) then
 
-!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+!$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
 #ifdef VAR_CUBLAS
-                          stream = acc_get_cuda_stream(async_id(5))
-                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+!                          stream = acc_get_cuda_stream(async_id(5))
+!                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+                          stat = acc_set_cuda_stream(async_id(5),cublas_handle)
 #endif
 
                           call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
@@ -1944,8 +1954,9 @@ contains
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
 #ifdef VAR_CUBLAS
-                          stream = acc_get_cuda_stream(async_id(5))
-                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+!                          stream = acc_get_cuda_stream(async_id(5))
+!                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+                          stat = acc_set_cuda_stream(async_id(5),cublas_handle)
 #endif
 
 #ifdef VAR_OPENACC 
@@ -1967,20 +1978,22 @@ contains
 !$acc exit data delete(vvvo(:,:,:,k),&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
-!$acc& copyout(ccsdpt_singles(:,k),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!!
+!!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
+!!$acc& copyout(ccsdpt_singles(:,k),&
+!!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(5)) wait(async_id(3))
 
                     case(2)
 
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
 #ifdef VAR_CUBLAS
-                       stream = acc_get_cuda_stream(async_id(4))
-                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+!                       stream = acc_get_cuda_stream(async_id(4))
+!                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+                       stat = acc_set_cuda_stream(async_id(4),cublas_handle)
 #endif
 
                        call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
@@ -1994,11 +2007,12 @@ contains
 
                        if (full_no_frags) then
 
-!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+!$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
 #ifdef VAR_CUBLAS
-                          stream = acc_get_cuda_stream(async_id(5))
-                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+!                          stream = acc_get_cuda_stream(async_id(5))
+!                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+                          stat = acc_set_cuda_stream(async_id(5),cublas_handle)
 #endif
 
                           call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
@@ -2011,8 +2025,9 @@ contains
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
 #ifdef VAR_CUBLAS
-                          stream = acc_get_cuda_stream(async_id(5))
-                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+!                          stream = acc_get_cuda_stream(async_id(5))
+!                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+                          stat = acc_set_cuda_stream(async_id(5),cublas_handle)
 #endif
 
 #ifdef VAR_OPENACC       
@@ -2033,18 +2048,20 @@ contains
 
 !$acc exit data delete(ovoo(:,:,j,k)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,j,k))&
-!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!!
+!!$acc exit data delete(vvoo(:,:,j,k))&
+!!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(5)) wait(async_id(3))
 
                     case(3)
 
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
 #ifdef VAR_CUBLAS
-                       stream = acc_get_cuda_stream(async_id(4))
-                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+!                       stream = acc_get_cuda_stream(async_id(4))
+!                       stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+                       stat = acc_set_cuda_stream(async_id(4),cublas_handle)
 #endif
 
                        call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
@@ -2064,11 +2081,12 @@ contains
 
                        if (full_no_frags) then
 
-!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+!$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
 #ifdef VAR_CUBLAS
-                          stream = acc_get_cuda_stream(async_id(5))
-                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+!                          stream = acc_get_cuda_stream(async_id(5))
+!                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+                          stat = acc_set_cuda_stream(async_id(5),cublas_handle)
 #endif
 
                           call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
@@ -2082,8 +2100,9 @@ contains
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
 #ifdef VAR_CUBLAS
-                          stream = acc_get_cuda_stream(async_id(5))
-                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+!                          stream = acc_get_cuda_stream(async_id(5))
+!                          stat = cublasSetStream_v2(cublas_handle,c_loc(stream))
+                          stat = acc_set_cuda_stream(async_id(5),cublas_handle)
 #endif
 
 #ifdef VAR_OPENACC       
@@ -2108,13 +2127,14 @@ contains
 !$acc exit data delete(vvvo(:,:,:,k),&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
-!$acc& async(async_id(5)) wait(async_id(3)) if(full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
-!$acc& copyout(ccsdpt_singles(:,k),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!!$acc& async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!!
+!!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
+!!$acc& copyout(ccsdpt_singles(:,k),&
+!!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
+!!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(5)) wait(async_id(3))
 
                     end select TypeOfTuple_ser_ijk
 
@@ -2126,10 +2146,11 @@ contains
 !
 !$acc exit data delete(ovoo(:,:,i,j)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,j))&
-!$acc& copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!!
+!!$acc exit data delete(vvoo(:,:,i,j))&
+!!$acc& copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(5)) wait(async_id(3))
 
                  else ! i .gt. j
 
@@ -2141,12 +2162,13 @@ contains
 !$acc exit data delete(vvvo(:,:,:,j),&
 !$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
-!$acc& copyout(ccsdpt_singles(:,j),&
-!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(5)) wait(async_id(3)) if(full_no_frags)
+!!
+!!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
+!!$acc& copyout(ccsdpt_singles(:,j),&
+!!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+!!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(5)) wait(async_id(3))
 
                  end if
  
@@ -2158,8 +2180,8 @@ contains
 !
 !$acc exit data delete(vvvo(:,:,:,i)) async(async_id(5)) wait(async_id(2)) if(.not. full_no_frags)
 
-!$acc exit data copyout(ccsdpt_singles(:,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
+!!$acc exit data copyout(ccsdpt_singles(:,i),&
+!!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(5)) wait(async_id(3)) if(.not. full_no_frags)
 
            end do irun_ser
 
@@ -2170,9 +2192,13 @@ contains
 !$acc& eivalvirt,eivalocc)&
 !$acc& copyout(ccsdpt_singles,e4) if(full_no_frags)
 !
+!!$acc exit data delete(trip_tmp,trip_ampl,&
+!!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!!$acc& eivalvirt,eivalocc) if(.not. full_no_frags)
 !$acc exit data delete(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalvirt,eivalocc) if(.not. full_no_frags)
+!$acc& eivalvirt,eivalocc)&
+!$acc& copyout(ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2) if(.not. full_no_frags)
 
 !$acc wait
 
@@ -2183,12 +2209,12 @@ contains
 
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
+#ifdef VAR_OPENACC
+
+    ! shut down the device
+    call acc_shutdown(acc_device_type)
+
+#endif
 
     ! release ccsd_doubles_help_arrays
     call mem_dealloc(ccsd_doubles_portions_i)
@@ -6607,15 +6633,15 @@ contains
     e_orb_occ = eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3)
 
 !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,b,c),SHARED(nv,trip,eigenvirt,e_orb_occ)
- arun_0: do a=1,nv
-    brun_0: do b=1,nv
-       crun_0: do c=1,nv
+    do a=1,nv
+       do b=1,nv
+          do c=1,nv
 
                   trip(c,b,a) = trip(c,b,a) / (e_orb_occ - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
 
-               end do crun_0
-            end do brun_0
-         end do arun_0
+          end do
+       end do
+    end do
 !$OMP END PARALLEL DO
 
   end subroutine trip_denom_ijk_cpu
@@ -6638,24 +6664,29 @@ contains
     !> temporary quantities
     integer :: a, b, c
     integer(kind=acc_handle_kind) :: async_idx
+    real(realk) :: e_orb_occ
 
-!$acc parallel present(trip,eigenvirt,eigenocc) firstprivate(nv,oindex1,oindex2,oindex3) &
+    ! at first, calculate the sum of the three participating occupied orbital energies, as this
+    ! is a constant for the three incomming occupied indices
+
+    e_orb_occ = eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3)
+
+!$acc parallel present(trip,eigenvirt) firstprivate(nv,e_orb_occ) &
 !$acc& private(a,b,c) async(async_idx)
 !$acc loop gang
- arun_0: do a=1,nv
+    do a=1,nv
 !$acc loop worker
-    brun_0: do b=1,nv
+       do b=1,nv
 !$acc loop vector
-       crun_0: do c=1,nv
+          do c=1,nv
 
-                  trip(c,b,a) = trip(c,b,a) / (eigenocc(oindex1) + eigenocc(oindex2) + eigenocc(oindex3) &
-                                             & - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
+                  trip(c,b,a) = trip(c,b,a) / (e_orb_occ - eigenvirt(a) - eigenvirt(b) - eigenvirt(c))
 
-               end do crun_0
+          end do
 !$acc end loop
-            end do brun_0
+       end do
 !$acc end loop
-         end do arun_0
+    end do
 !$acc end loop
 !$acc end parallel
 
@@ -6686,15 +6717,15 @@ contains
     e_orb_virt = eigenvirt(vindex1) + eigenvirt(vindex2) + eigenvirt(vindex3)
 
 !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,j,k),SHARED(no,trip,eigenocc,e_orb_virt)
- irun_0: do i=1,no
-    jrun_0: do j=1,no
-       krun_0: do k=1,no
+    do i=1,no
+       do j=1,no
+          do k=1,no
 
                   trip(k,j,i) = trip(k,j,i) / (eigenocc(i) + eigenocc(j) + eigenocc(k) - e_orb_virt)
 
-               end do krun_0
-            end do jrun_0
-         end do irun_0
+          end do
+       end do
+    end do
 !$OMP END PARALLEL DO
 
   end subroutine trip_denom_abc_cpu
@@ -6717,24 +6748,29 @@ contains
     !> temporary quantities
     integer :: i, j, k
     integer(kind=acc_handle_kind) :: async_idx
+    real(realk) :: e_orb_virt
 
-!$acc parallel present(trip,eigenocc,eigenvirt) firstprivate(no,vindex1,vindex2,vindex3)&
+    ! at first, calculate the sum of the three participating virtual orbital energies, as this
+    ! is a constant for the three incomming occupied indices
+
+    e_orb_virt = eigenvirt(vindex1) + eigenvirt(vindex2) + eigenvirt(vindex3)
+
+!$acc parallel present(trip,eigenocc,eigenvirt) firstprivate(no,e_orb_virt)&
 !$acc& private(i,j,k) async(async_idx)
 !$acc loop gang
- irun_0: do i=1,no
+    do i=1,no
 !$acc loop worker
-    jrun_0: do j=1,no
+       do j=1,no
 !$acc loop vector
-       krun_0: do k=1,no
+          do k=1,no
 
-                  trip(k,j,i) = trip(k,j,i) / (eigenocc(i) + eigenocc(j) + eigenocc(k) &
-                                            & - eigenvirt(vindex1) - eigenvirt(vindex2) - eigenvirt(vindex3))
+                  trip(k,j,i) = trip(k,j,i) / (eigenocc(i) + eigenocc(j) + eigenocc(k) - e_orb_virt)
 
-               end do krun_0
+          end do
 !$acc end loop
-            end do jrun_0
+       end do
 !$acc end loop
-         end do irun_0
+    end do
 !$acc end loop
 !$acc end parallel
 
@@ -7730,7 +7766,7 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2,&
             & -1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
@@ -7780,7 +7816,7 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',no,no,no**2, &
+       call dgemm('t','n',no,no,no**2,&
             1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
@@ -7796,7 +7832,7 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2,&
             -2.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
@@ -7814,7 +7850,7 @@ contains
 
 #endif
 #else
-       call dgemm('t','n',no,no,no**2, &
+       call dgemm('t','n',no,no,no**2,&
             -2.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 #endif
 
@@ -7828,7 +7864,7 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
+       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2,&
             1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
