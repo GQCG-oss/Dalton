@@ -267,8 +267,8 @@ real(realk),allocatable :: CMO3D(:,:),CMO4C(:,:)
 IF(.NOT.UseCPU)THEN
    Write(lupri,'(A,F10.3,A)')'Ichor: GPU Maximum Memory : ', IchorGPUMAXMEM, ' GB'
 ENDIF
+IF(.NOT.UseCPU) call Init_AGC_TransferParam()
 #ifdef VAR_OPENACC
-call Init_AGC_TransferParam()
 !$ACC DATA COPYIN(TUVindexX1_35,TUVindexX2_35,TUVindexX3_35,&
 !$ACC             TUVindexX1_56,TUVindexX2_56,TUVindexX3_56,&
 !$ACC             TUVindexX1_84,TUVindexX2_84,TUVindexX3_84,&
