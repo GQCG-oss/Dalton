@@ -64,7 +64,7 @@ option(ENABLE_ICHOR          "Enable ichor integrals"                           
 option(ENABLE_OPENRSP        "Enable OpenRSP"                                   OFF)
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
 
-option(ENABLE_EFS            "Enable Echidna Fock Solver"                       ON)
+option(ENABLE_EFS            "Enable Echidna Fock Solver"                       OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
