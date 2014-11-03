@@ -52,7 +52,7 @@ F90_OBJS = \
         AGC_GPU_VerticalRecurrenceQPBSeg1Prim.o \
         AGC_GPU_VerticalRecurrenceQPCSeg1Prim.o \
         AGC_GPU_VerticalRecurrenceQPDSeg1Prim.o \
-        AGC_TransferRecurrenceParam.o\
+        AGC_CPU_TransferRecurrenceParam.o\
         AGC_CPU_TransferRecurrenceAtoCGen1.o \
         AGC_CPU_TransferRecurrenceAtoCGen2.o \
         AGC_CPU_TransferRecurrenceAtoDGen1.o \
@@ -103,6 +103,7 @@ F90_OBJS = \
         AGC_CPU_TransferRecurrenceBtoDSeg1Prim1.o \
         AGC_CPU_TransferRecurrenceDtoBSeg1Prim.o \
         AGC_CPU_TransferRecurrenceCtoBSeg1Prim.o \
+        AGC_GPU_TransferRecurrenceParam.o\
         AGC_GPU_TransferRecurrenceAtoCGen1.o \
         AGC_GPU_TransferRecurrenceAtoCGen2.o \
         AGC_GPU_TransferRecurrenceAtoDGen1.o \
