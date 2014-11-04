@@ -34,6 +34,9 @@ type infpar_struct
   !> number of nodes in the parent child communicator
   integer(kind=ls_mpik) :: pc_nodtot
 
+  !> number of nodes used in scalapack
+  integer(kind=ls_mpik) :: ScalapackNodes
+
   !> Are there more local jobs?
   logical :: lg_morejobs
 end type infpar_struct

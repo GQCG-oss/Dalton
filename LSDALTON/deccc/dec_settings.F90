@@ -250,7 +250,7 @@ contains
   !> configuration structure accordingly.
   !> \author Kasper Kristensen
   !> \date September 2010
-  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc,doF12)
+  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc,doF12,doRIMP2)
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
@@ -266,6 +266,8 @@ contains
     logical,intent(in) :: fullcalc
     !> do we do F12 calc (is a CABS basis required?)
     logical,intent(inout) :: doF12
+    !> do we do RIMP2 calc (is a AUX basis required?)
+    logical,intent(inout) :: doRIMP2
     logical,save :: already_called = .false.
     integer :: nworkers
 
@@ -373,6 +375,7 @@ contains
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles = .false.  
           DECinfo%NO_MO_CCSD  = .true.
+          doRIMP2 = .TRUE.
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 

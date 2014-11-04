@@ -156,7 +156,7 @@ MODULE matrix_operations
                    call lsquit('scalapack error in mat_select_type',-1)
                 ENDIF
                 print*,'TYPE SCALAPACK HAVE BEEN SELECTED' 
-                nproc = infpar%nodtot
+                nproc = infpar%ScalapackNodes
                 nrow = nproc
                 ncol = 1
                 K=1
@@ -172,14 +172,55 @@ MODULE matrix_operations
                       ENDIF
                    ENDIF
                 enddo
-                print*,'nrow=',nrow,'ncol=',ncol,'nodtot=',infpar%nodtot
-                print*,'call PDM_GRIDINIT(',nrow,',',ncol,')'
+                print*,'nrow=',nrow,'ncol=',ncol,'nodtot=',infpar%ScalapackNodes
+                print*,'call PDM_GRIDINIT(',nrow,',',ncol,')'                
+                !make possible subset 
+                call ls_mpibcast(infpar%ScalapackNodes,infpar%master,MPI_COMM_LSDALTON)
+                IF(infpar%ScalapackNodes.NE.infpar%nodtot)THEN
+                   IF(scalapack_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(scalapack_comm)
+                      scalapack_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(scalapack_nodtot,&
+                   & scalapack_mynum,scalapack_comm,scalapack_member,&
+                   & infpar%ScalapackNodes,lupri)
+                   scalapack_mpi_set = .TRUE.
+                ELSE
+                   scalapack_nodtot = infpar%nodtot
+                   scalapack_mynum = infpar%mynum
+                   scalapack_comm = MPI_COMM_LSDALTON
+                   scalapack_member = .TRUE.
+                ENDIF
+                print*,'call PDM_GRIDINIT'
                 CALL PDM_GRIDINIT(nrow,ncol,nbast)
                 IF(infpar%mynum.EQ.infpar%master)then
                    WRITE(lupri,*)'Scalapack Grid initiation Block Size = ',BLOCK_SIZE
                    WRITE(lupri,*)'Scalapack Grid initiation nprow      = ',nrow
                    WRITE(lupri,*)'Scalapack Grid initiation npcol      = ',ncol
                 endif
+             endif
+          ELSE
+             !slave
+             if(matrix_type.EQ.mtype_scalapack)then
+                call ls_mpibcast(infpar%ScalapackNodes,infpar%master,&
+                     & MPI_COMM_LSDALTON)
+                IF(infpar%ScalapackNodes.NE.infpar%nodtot)THEN
+                   IF(scalapack_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(scalapack_comm)
+                      scalapack_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(scalapack_nodtot,&
+                        & scalapack_mynum,scalapack_comm,scalapack_member,&
+                        & infpar%ScalapackNodes,lupri)
+                   scalapack_mpi_set = .TRUE.
+                ELSE
+                   scalapack_nodtot = infpar%nodtot
+                   scalapack_mynum = infpar%mynum
+                   scalapack_comm = MPI_COMM_LSDALTON
+                   scalapack_member = .TRUE.
+                ENDIF
              endif
           ENDIF
 #endif
