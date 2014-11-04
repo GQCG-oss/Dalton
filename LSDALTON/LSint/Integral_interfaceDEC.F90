@@ -595,7 +595,7 @@ setting%sameMol=.FALSE.
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
 nullify(setting%output%resulttensor)
 call initIntegralOutputDims(setting%output,dim1,dim2,dim3,dim4,1)
-!setting%output%DECPACKED = .TRUE.
+setting%output%DECPACKED = .TRUE.
 setting%output%Resultmat => outputintegral
 
 ! Set to zero

@@ -1277,11 +1277,11 @@ enddo
 end subroutine build_batchesOfAOs
 
 subroutine build_minimalbatchesOfAOs(lupri,setting,nbast,&
-     & batchdim,nbatches,orbTobatch,AOspec)
+     & batchsize,batchdim,batchindex,nbatches,orbTobatch,AOspec)
 implicit none
 integer,intent(in)         :: lupri,nbast
 type(lssetting) :: setting
-integer,pointer :: batchdim(:)
+integer,pointer :: batchdim(:),batchsize(:),batchindex(:)
 integer :: orbtoBatch(nbast)
 integer,intent(inout) :: nbatches
 character(len=1),intent(in) :: AOspec
@@ -1309,12 +1309,18 @@ Family = .FALSE.
 do I=1,AO%nbatches
    IF(AO%BATCH(I)%nAngmom.GT.1) Family = .TRUE.
 enddo
-call lsquit('Family basis set not allowed in build_minimalbatchesOfAOs',-1)
+IF(Family)THEN
+   call lsquit('Family basis set not allowed in build_minimalbatchesOfAOs',-1)
+ENDIF
 
 nbatches = AO%nbatches
 call mem_alloc(batchdim,nbatches)
+call mem_alloc(batchsize,nbatches)
+call mem_alloc(batchindex,nbatches)
 do I=1,nbatches
    batchdim(I) = 0
+   batchsize(I) = 1
+   batchindex(I) = I
 enddo
 do I=1,AO%nbatches
    norbitals = 0
