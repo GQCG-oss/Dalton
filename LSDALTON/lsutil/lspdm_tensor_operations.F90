@@ -3023,7 +3023,8 @@ module lspdm_tensor_operations_module
                  nel_one_sided = 0
               endif
 
-              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+              !call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
               nel_one_sided = nel_one_sided + nelmsTA
 
            else
@@ -3045,7 +3046,8 @@ module lspdm_tensor_operations_module
                     nel_one_sided = 0
                  endif
 
-                 call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                 !call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                 call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
 
                  nel_one_sided = nel_one_sided + nelmsTB
               else
@@ -3091,7 +3093,8 @@ module lspdm_tensor_operations_module
                     nel_one_sided = 0
                  endif
 
-                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+                 !call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
 
                  nel_one_sided = nel_one_sided + nelmsTA
               else
@@ -3115,7 +3118,8 @@ module lspdm_tensor_operations_module
                        nel_one_sided = 0
                     endif
 
-                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                    !call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
 
                     nel_one_sided = nel_one_sided + nelmsTB
                  else
@@ -3158,7 +3162,8 @@ module lspdm_tensor_operations_module
            ibufA = mod(cm-1,nbuffsA)+1
            call time_start_phase( PHASE_COMM )
            if( alloc_in_dummy )then
-              call lsmpi_wait(reqA(ibufA))
+              !call lsmpi_wait(reqA(ibufA))
+              call tensor_flush_win(A, gtidx=cmidA,only_owner=.true.,local = .true.)
               nel_one_sided = nel_one_sided - nelmsTA
            else
               call tensor_unlock_win(A,cmidA)
@@ -3169,7 +3174,8 @@ module lspdm_tensor_operations_module
               ibufB = mod(cm-1,nbuffsB)+1
               call time_start_phase( PHASE_COMM )
               if( alloc_in_dummy )then
-                 call lsmpi_wait(reqB(ibufB))
+                 !call lsmpi_wait(reqB(ibufB))
+                 call tensor_flush_win(B, gtidx=cmidB,only_owner=.true.,local = .true.)
                  nel_one_sided = nel_one_sided - nelmsTB
               else
                  call tensor_unlock_win(B,cmidB)
