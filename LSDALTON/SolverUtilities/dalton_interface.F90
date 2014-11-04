@@ -2135,7 +2135,7 @@ CONTAINS
 !!$    END SUBROUTINE di_debug_ccfragment
 #endif
 
-   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls)
+   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls,EcontADMMout)
    ! ===================================================================
    ! di_get_fock obtains total fock matrix and corresponding energy.
    ! WE have to go through the interface to dalton before the fock
@@ -2151,6 +2151,7 @@ CONTAINS
       TYPE(Matrix), INTENT(INOUT) :: F(ndmat)
       type(lsitem) :: ls
       real(realk), INTENT(INOUT) :: Etotal(ndmat)
+      real(realk),optional :: EcontADMMout(5)
       !local variables
       real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp,EK3,EK2
       integer nbast,idmat,LUADMM
@@ -2161,7 +2162,7 @@ CONTAINS
 #ifdef HAS_PCMSOLVER
       type(matrix) :: fockPCM(ndmat)
       real(realk)  :: Epol
-#endif      
+#endif
       !
       PRINT_EK3 = ls%setting%scheme%PRINT_EK3
       nbast = D(1)%nrow
@@ -2229,34 +2230,30 @@ CONTAINS
                   write(lupri,*) "===================================================================="
                   write(lupri,*) "ADMMmin: K(D) - k(d) - X(D) + x(d) = ",EcontADMM(5)                  
                   write(lupri,*) "===================================================================="
-                  write(lupri,*) "ADMMminDATA"
-                  CALL LSOPEN(LUADMM,'ADMMmin.dat','UNKNOWN','FORMATTED')
-                  WRITE(LUADMM,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
-                  WRITE(LUPRI,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
-                  CALL LSCLOSE(LUADMM,'KEEP')
+!                  write(lupri,*) "ADMMminDATA"
+!                  CALL LSOPEN(LUADMM,'ADMMmin.dat','UNKNOWN','FORMATTED')
+!                  WRITE(LUADMM,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
+!                  WRITE(LUPRI,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
+!                  CALL LSCLOSE(LUADMM,'KEEP')
                ENDIF
             ENDIF
             
             IF(ls%input%dalton%ADMMBASISFILE)THEN
-               !add full exchange matrix contribution to the Coulomb matrix - Standard convergence
-               call mat_daxpy(1.E0_realk,Ksave,F(idmat))
                call mat_free(Ksave)
-               Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
-            ELSE
-               Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
-               call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
-               call mat_init(Ksave,nbast,nbast)
-               call mat_zero(Ksave)
-               write(lupri,*) "ADMM exchange energy contribution: ",fockenergy_f(K(idmat),D(idmat),Ksave,&
-                    & ls%input%dalton%unres,ls%input%potnuc,lupri)
-               call mat_free(Ksave)
-               Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
-               Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
-               EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
-               write(lupri,*) "ADMM EdXC: ",EdXC(idmat)
-               write(lupri,*) "ADMM exchange energy contribution: ",EADMM
-               call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
             ENDIF
+            Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
+            call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
+            call mat_init(Ksave,nbast,nbast)
+            call mat_zero(Ksave)
+            write(lupri,*) "ADMM exchange energy contribution: ",fockenergy_f(K(idmat),D(idmat),Ksave,&
+                 & ls%input%dalton%unres,ls%input%potnuc,lupri)
+            call mat_free(Ksave)
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+            Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
+            EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
+            write(lupri,*) "ADMM EdXC: ",EdXC(idmat)
+            write(lupri,*) "ADMM exchange energy contribution: ",EADMM
+            call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
                      
             call mat_free(K(idmat))
             call mat_free(dXC(idmat))
@@ -2301,6 +2298,7 @@ CONTAINS
       do idmat=1,ndmat
          call mat_daxpy(1E0_realk,H1,F(idmat))
       enddo
+      IF(present(EcontADMMout))EcontADMMout = EcontADMM
    END SUBROUTINE di_get_fock_LSDALTON
 
    real(realk) function fockenergy_F(F,D,H1,unres,pot_nuc,lupri)

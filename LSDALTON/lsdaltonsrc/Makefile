@@ -8,6 +8,7 @@ INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../dd
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
 
 F90_OBJS = \
+	ADMMbasisOpt.o\
 	numerical_derivatives.o\
         LS_optimizer.o \
 	LSdynamics.o \

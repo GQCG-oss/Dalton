@@ -78,6 +78,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! GEO OPTIMIZER
   use ls_optimizer_mod, only: LS_RUNOPT
   use InteractionEnergyMod, only: InteractionEnergy
+  use ADMMbasisOptMod, only: ADMMbasisOptSub
   use lsmpi_type, only: lsmpi_finalize
   use lsmpi_op, only: TestMPIcopySetting,TestMPIcopyScreen
   use lstensorMem, only: lstmem_init, lstmem_free
@@ -550,6 +551,10 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         if (config%InteractionEnergy) then
            CALL InteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
         endif
+        if(ls%input%dalton%ADMMBASISFILE)then
+           call ADMMbasisOptSub(E,config,H1,F,D,S,CMO,ls)
+        endif
+
         !PROPERTIES SECTION
 
         if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. & 
