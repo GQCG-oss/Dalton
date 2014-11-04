@@ -1974,6 +1974,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      ChangedDefault = .TRUE.
      call get_default_AOs(oldAORegular,oldAOdfAux) !the current values for Regular and Aux Basis 
      call set_default_AOs(oldAORegular,oldAORegular) !change to use Regular for Aux 
+     call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
   ENDIF
 
 !#ifndef VAR_MPI
