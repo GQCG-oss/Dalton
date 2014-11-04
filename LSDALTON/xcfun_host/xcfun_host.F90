@@ -22,31 +22,49 @@ module xcfun_host
   contains
   subroutine xcfun_host_init(DFTfuncString,hfweight,lupri)
     implicit none
-    integer :: lupri
-    character(len=80),intent(in)  :: DFTfuncString
-    real(realk),intent(out) :: hfweight
+    integer                       :: lupri
+    character(len=1024),intent(in):: DFTfuncString
+    real(realk),intent(out)       :: hfweight
     !
 #ifdef VAR_XCFUN
-    character(len=80),pointer  :: DFTfuncStringSingle(:)
-    integer :: Ipos,nStrings,ierr,I,ierrLDA,ierrGGA,ierrMETA,ierrHF
-    logical :: GGAkeyString
-    real(realk),pointer :: WeightSingle(:)
-    GGAkeyString = .FALSE.
-    IPOS = INDEX(DFTfuncString,'GGAKEY')
-    IF(IPOS.NE.0)GGAkeyString = .TRUE.
-    IPOS = INDEX(DFTfuncString,'GGAkey')
-    IF(IPOS.NE.0)GGAkeyString = .TRUE.
-    IPOS = INDEX(DFTfuncString,'GGAKey')
-    IF(IPOS.NE.0)GGAkeyString = .TRUE.
+    character(len=80),pointer     :: DFTfuncStringSingle(:)
+    integer                       :: Ipos,nStrings,ierr,I,ierrLDA,ierrGGA,ierrMETA,ierrHF
+    !logical                       :: GGAkeyString,ErfString           deprecated
+    real(realk),pointer           :: WeightSingle(:)
 
-    IF(GGAkeyString)THEN
-       IPOS = INDEX(DFTfuncString,'GGAKey')
+    !Initialization
+    !GGAkeyString = .FALSE.
+    !ErfString = .false.
+    XCFUNfunctional = xc_new_functional()
+
+    IPOS = INDEX(DFTfuncString,'GGAKEY')
+    if (IPOS.NE.0) then
+       !GGAkeyString = .TRUE.
        call determine_nStrings(DFTfuncString(IPOS+7:80),nStrings)
        allocate(DFTfuncStringSingle(nStrings))
        allocate(WeightSingle(nStrings))
        call trim_strings(DFTfuncString(IPOS+7:80),nStrings,&
             & DFTfuncStringSingle,WeightSingle)
-    ELSE
+    else if ((INDEX(DFTfuncString,'LDAERF')).NE.0) then
+       nStrings = 3
+       !ErfString = .true.
+       allocate(DFTfuncStringSingle(nStrings))
+       allocate(WeightSingle(nStrings))
+       call trim_strings(DFTfuncString,nStrings,&
+            & DFTfuncStringSingle,WeightSingle)
+!!$    else if ((INDEX(DFTfuncString,'CAM')).NE.0) then
+!!$       !FIX ME: ALPHA; BETA; MU
+!!$       call determine_nStrings(DFTfuncString,nStrings)
+!!$       allocate(DFTfuncStringSingle(nStrings))
+!!$       allocate(WeightSingle(nStrings))
+!!$       if (nStrings==1) then
+!!$          call trim_strings(DFTfuncString,nStrings,&
+!!$               & DFTfuncStringSingle,WeightSingle)
+!!$          WeightSingle(1) = 1.0E0_realk
+!!$       else
+!!$          call lsquit('It is not possible to tune CAMB3LYP with XCFUN yet',lupri)
+!!$       endif
+    else
        nStrings = 1
        allocate(DFTfuncStringSingle(nStrings))
        allocate(WeightSingle(nStrings))
@@ -54,13 +72,14 @@ module xcfun_host
             & DFTfuncStringSingle,WeightSingle)
        WeightSingle(1) = 1.0E0_realk
     ENDIF
-    XCFUNfunctional = xc_new_functional()
+
+    !XCFUNfunctional = xc_new_functional()
     do I=1,nStrings
        ierr = xc_set(XCFUNfunctional,DFTfuncStringSingle(I),WeightSingle(I))
        IF(ierr.NE.0)THEN
-          print*,'The functional name:',DFTfuncStringSingle(I),'was not recognized'
+          print*,'The functional or parameter name:',DFTfuncStringSingle(I),'was not recognized'
           print*,' by the XCFUN program '
-          write(lupri,*)'The functional name:',DFTfuncStringSingle(I),'was not recognized'
+          write(lupri,*)'The functional or parameter name:',DFTfuncStringSingle(I),'was not recognized'
           write(lupri,*)' by the XCFUN program '
           call lsquit('xcfun_host_init: error',lupri)
        ENDIF
@@ -108,7 +127,7 @@ module xcfun_host
        call lsquit('Error determining exact (HF) exchange weight.',lupri)
     ENDIF
     IF(ABS(hfweight).GT.1.0E-16_realk)THEN
-       WRITE(lupri,*)'The Functional chosen contains a exact exchange contribution'
+       WRITE(lupri,*)'The Functional chosen contains an exact exchange contribution'
        WRITE(lupri,*)'with the weight:', hfweight
     ELSE
        WRITE(lupri,*)'The Functional chosen contains no exact exchange contribution'
@@ -1183,7 +1202,9 @@ module xcfun_host
                 call lsquit('Finished searching the string number mismatch',-1)
              endif
              if (string(i:i) == ' ') then
-                TMPweight(1:nweight) = string(i-nweight+1:i)
+                write(*,*) 'debug:',i,nweight,j,WeightSingle(j)
+                TMPweight(1:nweight) = string(i-nweight:i-1)
+                write(*,*) 'debug:',TMPweight
                 READ(TMPweight,*) WeightSingle(j)
                 print*,'found weight =',WeightSingle(j)
                 if (j == n) then

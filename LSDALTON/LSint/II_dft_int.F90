@@ -2490,14 +2490,18 @@ use lsmpi_mod
 use lsmpi_type
 #endif
 implicit none
-Character(len=80),intent(IN) :: Func
-Real(realk),intent(INOUT)    :: hfweight
-logical,intent(IN)           :: useXCfun
-integer,intent(IN)           :: lupri
-integer                      :: ierror
+Character(len=1024),intent(IN) :: Func
+Real(realk),intent(INOUT)      :: hfweight
+logical,intent(IN)             :: useXCfun
+integer,intent(IN)             :: lupri
+integer                        :: ierror
 IF(.NOT.useXCfun)THEN
-   CALL DFTsetFunc(Func,hfweight,ierror)
-   IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
+   if (len_trim(Func).gt.80) then 
+      call lsquit('Functional string length exceed 80',-1)
+   else 
+      CALL DFTsetFunc(Func,hfweight,ierror)
+      IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
+   endif
 ELSE
    call xcfun_host_init(Func,hfweight,lupri)
 ENDIF

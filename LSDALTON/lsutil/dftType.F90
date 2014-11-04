@@ -149,13 +149,17 @@ enddo
 end subroutine init_gridObject
 
 subroutine init_dftfunc(dft)
-TYPE(dftparam) :: dft
+!TYPE(integralconfig) :: integral
+TYPE(DFTparam) :: dft
 !
 integer :: iDFT,ialpha
 character(80) :: word
 
-do iDFT=1,size(dft%dftfuncObject)
-   DFT%DFTfuncObject(iDFT) = dft%dftfunc
+!!$do iDFT=1,size(integral%DFT%dftfuncObject)
+!!$   integral%DFT%DFTfuncObject(iDFT) = integral%DFT%dftfunc
+!!$enddo
+do iDFT=1,size(DFT%dftfuncObject)
+   DFT%DFTfuncObject(iDFT) = DFT%dftfunc
 enddo
 IF ((INDEX(dft%dftfunc,'cam').NE.0).OR.(INDEX(dft%dftfunc,'CAM').NE.0)) THEN
   !word = 'Camx'
@@ -168,6 +172,13 @@ IF ((INDEX(dft%dftfunc,'cam').NE.0).OR.(INDEX(dft%dftfunc,'CAM').NE.0)) THEN
 ELSE
   word = 'BX'
 ENDIF
+
+!!$IF (integral%CAM) THEN
+!!$   write(word,'(A8,X,A71)') 'Camcompx',integral%CAMalpha
+!!$ELSE
+!!$   word = 'BX'
+!!$ENDIF
+
 call set_admmfun(dft,word)
 
 end subroutine init_dftfunc

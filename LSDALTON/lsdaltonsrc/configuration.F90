@@ -65,6 +65,7 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
+use ls_util,only: capitalize_string
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
      & config_free, set_final_config_and_print, scf_purify
@@ -214,14 +215,15 @@ INTEGER            :: LUPRI
 !> Contains info, settings and data for entire calculation
 type(ConfigItem), intent(inout) :: config
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
-INTEGER            :: IDUMMY,IPOS,IPOS2,IPOS3,COUNTER
-character(len=80)  :: WORD,TMPWORD
+INTEGER            :: IDUMMY,IPOS,IPOS2,IPOS3,IPOSMU,COUNTER
+character(len=80)  :: WORD,TMPWORD,MUWORD,FormatString
+character(len=1024):: XCfunString
 character(len=2)   :: PROMPT
 LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,WAVE
 !LINSCA variables:
 real(realk)        :: shift, min_density_overlap, maxratio, zero
 integer            :: nvec, i
-Real(realk)  :: hfweight 
+Real(realk)        :: hfweight 
 
 WAVE = .FALSE.
 
@@ -294,11 +296,12 @@ DO
             CASE ('.EXCHANGESCAL');
                READ(LUCMD,*) config%integral%exchangeFactor
                config%integral%dft%HFexchangeFac = config%integral%exchangeFactor
-            CASE ('.DFT'); config%opt%calctype = config%opt%dftcalc !DFT calc
-                           config%av%CFG_SET_type = config%av%CFG_THR_dft
-                           config%solver%do_dft = .true.
-                           config%soeoinp%do_dft = .true.
-                           config%davidSCF%arh_dodft = .true.
+            CASE ('.DFT'); 
+               config%opt%calctype = config%opt%dftcalc !DFT calc
+               config%av%CFG_SET_type = config%av%CFG_THR_dft
+               config%solver%do_dft = .true.
+               config%soeoinp%do_dft = .true.
+               config%davidSCF%arh_dodft = .true.
                DO 
                   READ (LUCMD, '(A80)') WORD
                   IF ((WORD(1:1) .EQ. '!') .OR. (WORD(1:1) .EQ. '#')) CYCLE   
@@ -308,13 +311,40 @@ DO
                           & '    expected functional specification but read:',&
                           & WORD
                   ELSE
-!                     IF(WORD(1:3) .EQ. 'LDA') 
-                     IPOS = INDEX(WORD,'CAM')
-                     IPOS2 = INDEX(WORD,'cam')                     
-                     IPOS3 = INDEX(WORD,'Cam')                     
-                     IF((IPOS.NE.0.OR.IPOS2.NE.0).OR.IPOS3.NE.0)THEN !CAM
+                     call capitalize_string(WORD)
+                     IF ((INDEX(WORD,'LDAERF')).NE.0) THEN !LDAERF   
+                        xcfun: IF (USEXCFUN) THEN !Works only with the XCfun module
+                           config%integral%CAM=.TRUE. !Activate lr intergrals
+                           config%integral%CAMalpha=0E0_realk !No exact exchange
+                           config%integral%CAMbeta=1E0_realk !Lr HF exchange prefactor
+                           READ (LUCMD, '(A80)') MUWORD
+                           call capitalize_string(MUWORD)
+                           IPOS = INDEX(MUWORD,'MU')
+                           mu: IF (IPOS .NE. 0) THEN
+                              IPOS2 = INDEX(MUWORD(IPOS:),'=')
+                              IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 3)) THEN
+                                 WRITE (LUPRI,'(2X,A40)') 'Incorrect input for ERF parameters'
+                                 WRITE (LUPRI,'(2X,A40)') 'Format is "mu=?"'
+                                 CALL lsQUIT('Incorrect range-separation parameter mu',lupri)
+                              ELSE
+                                 !Set value of the range-separation parameter mu
+                                 READ (MUWORD((IPOS+IPOS2):80),*) config%integral%CAMmu 
+                                 write(LUPRI,*) ''
+                                 WRITE(LUPRI,*) 'This is a LDAERF functional with mu=',config%integral%CAMmu
+                                 !String to be passed to xcfun_host
+                                 !EXX=1 sets hfweight and activates exchange integral evaluation
+                                 XCfunString = ('LDAERF EXX=1 RANGESEP_MU='//trim(MUWORD((IPOS+IPOS2):80))) 
+                                 write(LUPRI,*) XCfunString
+                              ENDIF
+                           ELSE
+                              CALL lsQUIT('Range-separation parameter mu required when using LDAERF',lupri)
+                           ENDIF mu
+                        ELSE
+                           call lsquit('This functional can only be used when the XCfun module is activated',-1) 
+                        ENDIF xcfun
+                     ELSE IF ((INDEX(WORD,'CAM')).NE.0) THEN !CAM
                         config%integral%CAM=.TRUE.
-                        IPOS = INDEX(WORD,'alpha')
+                        IPOS = INDEX(WORD,'ALPHA')
                         IF (IPOS .NE. 0) THEN
                            IPOS2 = INDEX(WORD(IPOS:),'=')
                            IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
@@ -323,22 +353,22 @@ DO
                               CALL lsQUIT('Incorrect input for alpha parameter',lupri)
                            ELSE
                               READ (WORD((IPOS+IPOS2):80),*) config%integral%CAMalpha
-                              IPOS = INDEX(WORD,'beta')
+                              IPOS = INDEX(WORD,'BETA')
                               IF (IPOS .NE. 0) THEN
                                  IPOS2 = INDEX(WORD(IPOS:),'=')
                                  IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
                                     WRITE (LUPRI,'(2X,A40)') 'Incorrect input for CAM parameters'
                                     WRITE (LUPRI,'(2X,A40)') 'Format is "alpha=?  beta=? mu=?"'
-                                    CALL lsQUIT('Incorrect input for alpha parameter',lupri)
+                                    CALL lsQUIT('Incorrect input for beta parameter',lupri)
                                  ELSE
                                     READ (WORD((IPOS+IPOS2):80),*) config%integral%CAMbeta
-                                    IPOS = INDEX(WORD,'mu')
+                                    IPOS = INDEX(WORD,'MU')
                                     IF (IPOS .NE. 0) THEN
                                        IPOS2 = INDEX(WORD(IPOS:),'=')
                                        IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 3)) THEN
                                           WRITE (LUPRI,'(2X,A40)') 'Incorrect input for CAM parameters'
                                           WRITE (LUPRI,'(2X,A40)') 'Format is "alpha=?  beta=? mu=?"'
-                                          CALL lsQUIT('Incorrect input for alpha parameter',lupri)
+                                          CALL lsQUIT('Incorrect input for mu parameter',lupri)
                                        ELSE
                                           READ (WORD((IPOS+IPOS2):80),*) config%integral%CAMmu
                                        ENDIF
@@ -351,23 +381,45 @@ DO
                            config%integral%CAMbeta=0.46E0_realk
                            config%integral%CAMmu=0.33E0_realk
                         ENDIF
+                        if (USEXCFUN) then
+                           !FIX ME: ALPHA, BETA and MU for XCFUN
+                           FormatString= "(A16,F4.2,A8,F4.2,A26,F4.2,A13)" 
+                           TMPWORD=''
+                           write(tmpword,*) config%integral%CAMmu
+                           DO IPOSMU=1,LEN(tmpword)
+                              IF (tmpword(IPOSMU:IPOSMU).NE." ") EXIT
+                           ENDDO
+                           write(XCfunString,FormatString) 'GGAKEY BECKESRX=',&
+                                & config%integral%CAMbeta,' BECKEX=',&
+                                & (1.0-config%integral%CAMalpha-config%integral%CAMbeta),&
+                                & ' VWN5C=0.19 LYPC=0.91 EXX=',config%integral%CAMalpha,&
+                                & ' RANGESEP_MU='
+                           WRITE(LUPRI,*) XCfunString
+                           WRITE(LUPRI,*) tmpword
+                           XCfunString = ( trim(XCfunString) // tmpword(IPOSMU:(IPOSMU+8)) )
+                           WRITE(LUPRI,*) XCfunString
+                        else
+                           XCfunString = WORD
+                        endif
                         WRITE(LUPRI,*) 'This is a CAM functional with'
                         WRITE(LUPRI,*) 'config%integral%CAMalpha',config%integral%CAMalpha
                         WRITE(LUPRI,*) 'config%integral%CAMbeta',config%integral%CAMbeta
                         WRITE(LUPRI,*) 'config%integral%CAMmu',config%integral%CAMmu
+                     ELSE
+                        XCfunString = WORD
                      END IF
                      hfweight=0E0_realk 
                      ! Remove starting blancks
-                     DO IPOS=1,LEN(WORD)
-                       IF (WORD(IPOS:IPOS).NE." ") EXIT
+                     DO IPOS=1,LEN(XCfunString)
+                       IF (XCfunString(IPOS:IPOS).NE." ") EXIT
                      ENDDO
                      !it is assumed that hfweight is set to zero and only  
                      !changed if the functional require a HF weight  
                      !different from zero. 
                      !note the 40 is harcoded in DFTsetFunc routine in general.c 
-                     config%integral%dft%dftfunc = WORD(IPOS:)
+                     config%integral%dft%dftfunc = XCfunString(IPOS:)
                      
-                     CALL II_DFTsetFunc(WORD,hfweight,USEXCFUN,lupri)
+                     CALL II_DFTsetFunc(XCfunString,hfweight,USEXCFUN,lupri)
                      config%integral%exchangeFactor = hfweight
                      config%integral%dft%HFexchangeFac = hfweight
 #ifdef BUILD_CGTODIFF
@@ -825,6 +877,7 @@ CALL lsCLOSE(LUCMD,'KEEP')
 if(config%solver%do_dft)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
    call init_dftfunc(config%integral%DFT)
+   !call init_dftfunc(config%integral)
 endif
 
 END SUBROUTINE read_dalton_input
