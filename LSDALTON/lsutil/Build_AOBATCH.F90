@@ -1276,6 +1276,70 @@ enddo
 
 end subroutine build_batchesOfAOs
 
+subroutine build_minimalbatchesOfAOs(lupri,setting,nbast,&
+     & batchdim,nbatches,orbTobatch,AOspec)
+implicit none
+integer,intent(in)         :: lupri,nbast
+type(lssetting) :: setting
+integer,pointer :: batchdim(:)
+integer :: orbtoBatch(nbast)
+integer,intent(inout) :: nbatches
+character(len=1),intent(in) :: AOspec
+!
+integer :: I,A,norbitals,iOrb,tmporb,allocnbatches
+logical :: uncont,intnrm,Family
+type(AOITEM) :: AO
+TYPE(BASISSETINFO),pointer :: AObasis
+uncont=.FALSE.
+intnrm = .false.
+IF(AOspec.EQ.'R')THEN
+   !   The regular AO-basis
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+ELSEIF(AOspec.EQ.'C')THEN
+   !   The CABS AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
+
+call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+
+Family = .FALSE.
+do I=1,AO%nbatches
+   IF(AO%BATCH(I)%nAngmom.GT.1) Family = .TRUE.
+enddo
+call lsquit('Family basis set not allowed in build_minimalbatchesOfAOs',-1)
+
+nbatches = AO%nbatches
+call mem_alloc(batchdim,nbatches)
+do I=1,nbatches
+   batchdim(I) = 0
+enddo
+do I=1,AO%nbatches
+   norbitals = 0
+   DO A=1,AO%BATCH(I)%nAngmom
+      norbitals = norbitals + AO%BATCH(I)%norbitals(A)
+   ENDDO
+   batchdim(I) = norbitals
+enddo
+
+norbitals = 0         
+do I=1,nbatches
+   norbitals=norbitals + batchdim(I)
+enddo
+IF(norbitals.NE.nbast)call lsquit('basfunc mismatch in build_minimalbatchesOfAOs',-1)
+
+call free_aoitem(lupri,AO)
+norbitals = 0
+do I=1,nbatches
+   do iOrb = 1,batchdim(I)
+      norbitals=norbitals+1
+      orbtoBatch(norbitals)=I      
+   enddo   
+enddo
+end subroutine build_minimalbatchesOfAOs
+
 subroutine determine_MaxOrbitals(lupri,setting,maxallowedorbitals,MaxOrbitals,AOspec)
 implicit none
 integer,intent(in)    :: lupri,maxallowedorbitals
