@@ -508,7 +508,7 @@ C       In iterations we want 0.001 times GRDNRM because we do
 C       keep vectors until GRDNRM lowered with a factor 100
       DAMP   = D0
       EMCLOW = D0
-      GRDNRM = 1.0D20
+      GRDNRM = -1.0D0
       ITNOCC = 0
       NEWOCC = 0
       LNEWOCC = AUTOCC
@@ -1455,7 +1455,7 @@ C
             THR_FCKEIG = 0.8D0*THDIIS
             CALL ICOPY(8,NORB,1,NCAN,1) ! we need all orbitals canonical for CC
          ELSE
-            THR_FCKEIG = 0.05D0*GRDNRM
+            THR_FCKEIG = 0.01D0*GRDNRM
             CALL ICOPY(8,NOCC,1,NCAN,1) ! we only need oocupied orbitals canonical in global region
          END IF
 
