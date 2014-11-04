@@ -151,7 +151,7 @@
 #endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
-        stop "programming error in my_DSYGV input. workarray inquiry"
+        call lsquit("programming error in my_DSYGV input. workarray inquiry",-1)
      endif
 !#ifdef VAR_LSDEBUG
 !     ! sometimes the optimal batch sizes do not always work, especially when
@@ -172,7 +172,18 @@
 #endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
-        stop "programming error in my_DSYGV input."
+        IF(ierr.LT.0) print *, "illegal value of argument number ",ABS(ierr)
+        IF(ierr.LE.N)then
+           print *, 'SYEV failed to converge;'
+           print *,  ierr, ' off-diagonal elements of an intermediate'
+           print *, 'tridiagonal form did not converge to zero;'
+        ENDIF
+        IF(ierr.GE.N.AND.ierr.LE.2*N)then
+           print *, 'the leading minor of order ',ierr-N,' of B is not positive definite.'
+           print *, 'The factorization of B could not be completed and'
+           print *, 'no eigenvalues or eigenvectors were computed '
+        endif
+        call lsquit("programming error in my_DSYGV input.",-1)
      endif
      deallocate(wrk)
    END SUBROUTINE my_DSYGV

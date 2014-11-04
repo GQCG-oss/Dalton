@@ -218,6 +218,7 @@ if(ENABLE_XCFUN)
         -DPARENT_DEFINITIONS="-DVAR_LSDALTON"
         )
     add_external(xcfun)
+    include_directories(${PROJECT_BINARY_DIR}/external/xcfun-build)
     add_dependencies(xcfun_interface xcfun)
     add_definitions(-DVAR_XCFUN)
     set(LSDALTON_EXTERNAL_LIBS

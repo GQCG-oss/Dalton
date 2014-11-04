@@ -68,7 +68,7 @@ option(ENABLE_QMATRIX        "Enable QMatrix library"                           
 option(ENABLE_OPENRSP        "Enable OPENRSP library (need QMatrix library)"    OFF)
 option(ENABLE_TDRSP          "Enable TDRSP library (need QMatrix library)"      OFF)
 
-option(ENABLE_EFS            "Enable Echidna Fock Solver"                       ON)
+option(ENABLE_EFS            "Enable Echidna Fock Solver"                       OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)

@@ -2252,6 +2252,7 @@ contains
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
     call ls_mpi_buffer(DECitem%EstimateInitRadius,Master)
     call ls_mpi_buffer(DECitem%EstimateInitAtom,Master)
+    call ls_mpi_buffer(DECitem%PairEstimateModel,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
