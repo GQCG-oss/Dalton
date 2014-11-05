@@ -2370,14 +2370,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      endif
 
-!#ifdef VAR_LSDEBUG
+#ifdef VAR_LSDEBUG
      if(print_debug)then
         call print_norm(Gbi,int((i8*no)*nb,kind=8)," NORM(Gbi)       :")
         call print_norm(Had,int((i8*nv)*nb,kind=8)," NORM(Had)       :")
         call print_norm(omega2,                    " NORM(omega2 s-o):")
         call print_norm(govov,                     " NORM(govov s-o) :")
      endif
-!#endif
+#endif
 
      call time_start_phase(PHASE_WORK, twall = time_get_ao_fock)
 
@@ -3324,7 +3324,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            time_cont1_tot = time_cont1_tot + time_cont1
 
            call time_start_phase(PHASE_WORK, twall = time_int1 )
-           call tensor_ainit(Cint, [lg,nb,la,nb], 4, local=local, atype="TDAR", tdims=[lg,bs,la,bs])
+           call tensor_ainit(Cint, [nb,nb,la,lg], 4, local=local, atype="TDAR", tdims=[bs,bs,la,lg])
 
            !setup RHS screening - here we only have a set of AO basisfunctions
            !                      so we use the batchscreening matrices.
@@ -3351,19 +3351,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
            !Mylsitem%setting%scheme%intprint=0
 #endif
-           call tensor_convert(w1%d,Cint,order=[4,2,3,1])
+           call tensor_convert(w1%d,Cint)
            call time_start_phase(PHASE_WORK, ttot = time_int1 )
            time_int1_tot = time_int1_tot + time_int1
 
-
-           call time_start_phase(PHASE_WORK, twall = time_cont2 )
-           ! I [gamma delta alpha beta] * Lambda^p [beta l] = I [alpha l gamma delta]
+           call time_start_phase(PHASE_WORK, twall = time_cont3 )
+           ! I [beta delta alpha gamma] * Lambda^p [beta l] = I [alpha l gamma delta]
            call tensor_ainit( int2, [la,no,lg,nb], 4, local=local, atype="TDAR", tdims=[la,os,lg,bs] )
-           order4 = [3,4,1,2]
-           call tensor_contract( 1.0E0_realk, Cint, xo, [4],[1],1,0.0E0_realk, int2, order4,force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           order4 = [2,4,3,1]
+           call tensor_contract( 1.0E0_realk, Cint, xo, [2],[1],1,0.0E0_realk, int2, order4,force_sync=.true.,wrk=w1%d,iwrk=w1%n)
            call time_start_phase(PHASE_WORK, ttot = time_cont2 )
            time_cont2_tot = time_cont2_tot + time_cont2
-
 
            !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
            call time_start_phase(PHASE_WORK, twall = time_cont3 )
@@ -3374,6 +3372,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            time_cont3_tot = time_cont3_tot + time_cont3
 
            call tensor_free( int1 )
+           call tensor_free( Cint )
 
 
 
@@ -3446,7 +3445,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            time_convGBI_tot = time_convGBI_tot + time_convGBI
 
            call tensor_free( int3 )
-           call tensor_free( Cint )
 
            if ( Ccmodel > MODEL_CC2 ) then
 
@@ -4112,14 +4110,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      endif
 
-!#ifdef VAR_LSDEBUG
+#ifdef VAR_LSDEBUG
      if(print_debug)then
         call print_norm(Gbi,    " NORM(Gbi)       :",print_on_rank=0)
         call print_norm(Had,    " NORM(Had)       :",print_on_rank=0)
         call print_norm(omega2, " NORM(omega2 s-o):",print_on_rank=0)
         call print_norm(govov,  " NORM(govov s-o) :",print_on_rank=0)
      endif
-!#endif
+#endif
 
 
      call tensor_minit(iFock,[nb,nb],2,atype="REAR",local=local)
@@ -7745,7 +7743,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(tensor) :: omega2,govov,gvvooa,gvoova
      character(tensor_MSG_LEN) :: msg
 
-!#ifdef VAR_LSDEBUG
+#ifdef VAR_LSDEBUG
      select case(print_nr)
      case(1)
         if(print_debug)then
@@ -7828,7 +7826,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      case default
         print *,"WARNING(ccsd_debug_print):unknown debug print selected"
      end select
-!#endif
+#endif
   end subroutine ccsd_debug_print
 
 

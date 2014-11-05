@@ -2896,17 +2896,17 @@ module lspdm_tensor_operations_module
         nbuffsA = nbuffs
         nbuffsB = nbuffs
      endif
-
+     
      if(use_wrk_space)then
         call ass_D1to2(wrk,buffA,[A%tsize,nbuffsA])
         if(B_dense)then
            buffB => null()
         else
-           call ass_D1to2(wrk(nbuffsA*A%tsize:nbuffsA*A%tsize+nbuffsB*tsizeB-1),buffB,[tsizeB,nbuffsB])
+           call ass_D1to2(wrk(nbuffsA*A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB),buffB,[tsizeB,nbuffsB])
         endif
-        wA => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize-1)
-        wB => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB-1)
-        wC => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize-1)
+        wA => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize)
+        wB => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB)
+        wC => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize)
      else
         call mem_alloc(buffA,A%tsize,nbuffs)
         if(.not.B_dense)then
