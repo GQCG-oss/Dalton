@@ -1943,8 +1943,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
   TAG = 131124879
-  ChangedDefault = .FALSE.
 #endif
+  ChangedDefault = .FALSE.
   ForcePrint = .TRUE.
   call time_start_phase(PHASE_WORK)
   myload = 0
