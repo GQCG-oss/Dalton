@@ -57,7 +57,6 @@ fi
 
 if [ "$COMPILER" == 'Intel' ]; then
     source /opt/intel/bin/compilervars.sh intel64
-    source /opt/intel/vtune_amplifier_xe_2013/amplxe-vars.sh intel64
     SETUP_FLAGS="--fc=ifort --cc=icc --cxx=icpc --mkl=sequential"
 else
     export MATH_ROOT=/opt/intel/mkl
