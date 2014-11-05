@@ -2957,9 +2957,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
 #endif
         call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.)
+           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.)
 
-        if(scheme /= 4 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 4 possible",-1)
+        if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 4 possible",-1)
      endif
 
 
@@ -4993,26 +4993,31 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
     if (mem_used>frac_of_total_mem*MemFree)then
 #ifdef VAR_MPI
-        !test for scheme with medium requirements
-        scheme=3
-        mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
-        if (mem_used>frac_of_total_mem*MemFree)then
+       !test for scheme with medium requirements
+       scheme=3
+       mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+       if (mem_used>frac_of_total_mem*MemFree)then
           !test for scheme with low requirements
           scheme=2
           mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
           if (mem_used>frac_of_total_mem*MemFree)then
-            write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
-            write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
-            &frac_of_total_mem*MemFree
-            write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,3,.false.)
-            write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,4,.false.)
-            write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
-            call lsquit("ERROR(CCSD): there is just not enough memory&
-            & available",DECinfo%output)
+             scheme=0
+             mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+             frac_of_total_mem=0.60E0_realk
+             if (mem_used>frac_of_total_mem*MemFree)then
+                write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
+                write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
+                   &frac_of_total_mem*MemFree
+                write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,3,.false.)
+                write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,4,.false.)
+                write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
+                call lsquit("ERROR(CCSD): there is just not enough memory&
+                   & available",DECinfo%output)
+             endif
           endif
-      endif
+       endif
 #endif
     endif
 
@@ -5036,8 +5041,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         print *,"SCHEME 1: DMITRY's SCHEME (PDM)"
       else if(scheme==0)then
         print *,"SCHEME 0: COMPLETE PDM"
-        !HACK
-        scheme = 4
       else
         print *,"SCHEME ",scheme," DOES NOT EXIST"
         call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme2",-1)
