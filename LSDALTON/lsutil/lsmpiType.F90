@@ -4913,14 +4913,16 @@ contains
   !> \brief simple mpi_win_fence call for dma/rma
   !> \author Patrick Ettenhuber
   !> \date September 2012
-  subroutine lsmpi_win_fence_simple(win)
+  subroutine lsmpi_win_fence_simple(win,assert)
     implicit none
     integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(in),optional :: assert
 #ifdef VAR_MPI
-    integer(kind=ls_mpik) :: ierr,nr
+    integer(kind=ls_mpik) :: ierr,as
     IERR=0
-    nr=0
-    call MPI_WIN_FENCE(nr,win,ierr)
+    as=0
+    if(present(assert)) as = assert
+    call MPI_WIN_FENCE(as,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_win_fence)",ierr)
     endif
@@ -6216,6 +6218,72 @@ contains
 #endif
   end subroutine lsmpi_wait
 
+  subroutine lsmpi_win_post(group,win,assert)
+     implicit none
+     integer(kind=ls_mpik), intent(in) :: group
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik), intent(in), optional :: assert
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_0
+     as = 0
+     if(present(assert))as=assert
+     call MPI_WIN_POST(group,as,win,ierr)
+#endif
+  end subroutine lsmpi_win_post
+
+  subroutine lsmpi_win_start(group,win,assert)
+     implicit none
+     integer(kind=ls_mpik), intent(in) :: group
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik), intent(in), optional :: assert
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_MPI
+     as = 0
+     if(present(assert))as=assert
+     call MPI_WIN_START(group,as,win,ierr)
+#endif
+  end subroutine lsmpi_win_start
+
+  subroutine lsmpi_win_complete(win)
+     implicit none
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_0
+     call MPI_WIN_COMPLETE(win,ierr)
+#endif
+  end subroutine lsmpi_win_complete
+  subroutine lsmpi_win_wait(win)
+     implicit none
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_0
+     call MPI_WIN_WAIT(win,ierr)
+#endif
+  end subroutine lsmpi_win_wait
+
+  subroutine lsmpi_comm_group(comm,group)
+     implicit none
+     integer(kind=ls_mpik), intent(in) :: comm
+     integer(kind=ls_mpik), intent(inout) :: group
+     integer(kind=ls_mpik) :: ierr
+     ierr = 0_ls_mpik
+#ifdef VAR_MPI
+     call MPI_COMM_GROUP(comm, group, ierr) 
+#endif
+  end subroutine lsmpi_comm_group
+  subroutine lsmpi_group_free(group)
+     implicit none
+     integer(kind=ls_mpik), intent(inout) :: group
+     integer(kind=ls_mpik) :: ierr
+     ierr = 0_ls_mpik
+#ifdef VAR_MPI
+     call MPI_GROUP_FREE(group, ierr) 
+#endif
+  end subroutine lsmpi_group_free
 end module lsmpi_type
 
 
