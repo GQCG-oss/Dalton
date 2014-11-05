@@ -18,6 +18,11 @@ module matrix_operations_scalapack
 
 !  use module_scalapack_aux, if mpi is on 32bits, then blacs is most probably
 !  too
+  integer(kind=ls_mpik) :: scalapack_nodtot
+  integer(kind=ls_mpik) :: scalapack_mynum
+  integer(kind=ls_mpik) :: scalapack_comm
+  logical :: scalapack_mpi_set
+  logical :: scalapack_member
   Type Grid
      integer(kind=ls_mpik) :: ictxt !Blacs context
      integer(kind=ls_mpik) :: Masterictxt !Blacs system context
@@ -346,8 +351,8 @@ module matrix_operations_scalapack
 #ifdef VAR_SCALAPACK  
       
        TMP(1:10) = 0      
-       IF(infpar%mynum.eq.infpar%master) then !code for master                              
-          !Wake up slaves
+       IF(scalapack_mynum.eq.infpar%master) then !code for master                              
+          !Wake up ALL slaves 
           call ls_mpibcast(PDMSLAVE,infpar%master,MPI_COMM_LSDALTON)
           IF (PRESENT(A)) THEN
              TMP(1)=A%nrow ; TMP(2)=A%ncol
@@ -405,7 +410,7 @@ module matrix_operations_scalapack
 #ifdef VAR_SCALAPACK  
       
        TMP(1:10) = 0      
-       IF(infpar%mynum.eq.infpar%master) then !code for master                              
+       IF(scalapack_mynum.eq.infpar%master) then !code for master                              
           IF (PRESENT(A)) THEN
              TMP(1)=A%nrow ; TMP(2)=A%ncol
           ENDIF
@@ -572,8 +577,8 @@ module matrix_operations_scalapack
      enddo
 #else
 !    CALL lsmpi_reduction(A%addr_on_grid(0:SLGrid%nprow-1,0:SLGrid%npcol-1),SLGrid%nprow,&
-!         & SLGrid%npcol,infpar%master,MPI_COMM_LSDALTON)
-     CALL lsmpi_reduction(A%addr_on_grid,SLGrid%nprow,SLGrid%npcol,infpar%master,MPI_COMM_LSDALTON)
+!         & SLGrid%npcol,infpar%master,scalapack_comm)
+     CALL lsmpi_reduction(A%addr_on_grid,SLGrid%nprow,SLGrid%npcol,infpar%master,scalapack_comm)
 #endif
      nsizeFULL = A%nrow*A%ncol*mem_realsize
      nsizeLOCAL= A%localnrow*A%localncol*mem_realsize
@@ -588,7 +593,7 @@ module matrix_operations_scalapack
 #ifdef VAR_SCALAPACK        
      do i=1,A%localnrow
         do j=1,A%localncol
-           A%p(i,j)=infpar%mynum+1
+           A%p(i,j)=scalapack_mynum+1
         enddo
      enddo
      CALL PDM_SYNC(Job_rand,A)
@@ -834,7 +839,7 @@ module matrix_operations_scalapack
     integer :: nRowBlocks,mynum,iBlock
     integer :: local_j,local_i,i,j,prowcoord,pcolcoord
 
-    mynum = infpar%mynum
+    mynum = scalapack_mynum
 
     IF(MOD(nbast,BLOCK_SIZE).EQ.0)THEN
        nRowBlocks = (nbast/BLOCK_SIZE)
@@ -843,7 +848,7 @@ module matrix_operations_scalapack
     ENDIF
     gridinfo_nBlocks = nRowBlocks*nRowBlocks
     gridinfo_nBlockssqrt = nRowBlocks
-!    print*,'nBlocks:',gridinfo_nBlocks,'mynum',infpar%mynum
+!    print*,'nBlocks:',gridinfo_nBlocks,'mynum',scalapack_mynum
     allocate(gridinfo_blocks(7,gridinfo_nBlocks))
     iBlock = 0
 !    print*,'nbast',nbast
@@ -905,7 +910,7 @@ module matrix_operations_scalapack
     TMP(2) = fullcol
     TMP(3) = insertrow
     TMP(4) = insertcol
-    call ls_mpibcast(TMP,4,infpar%master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
 
     LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
     CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
@@ -935,7 +940,7 @@ module matrix_operations_scalapack
     TMP(2) = fullcol
     TMP(3) = insertrow
     TMP(4) = insertcol
-    call ls_mpibcast(TMP,4,infpar%master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
 
     LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
     CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
@@ -963,7 +968,7 @@ module matrix_operations_scalapack
     TMP(2) = fullcol
     TMP(3) = insertrow
     TMP(4) = insertcol
-    call ls_mpibcast(TMP,4,infpar%master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
 
     LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
     CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
@@ -1609,8 +1614,8 @@ module matrix_operations_scalapack
 !!$       OFFSET = ABI+(ABJ2-1)*ABndim2 + boffset
 !!$       DO I=0,RowSize-1
 !!$          AfullBlock(AFI+I,AFJ2) = Abuffer(bufferproc)%elms(I+OFFSET)
-!!$          if(infpar%mynum.EQ.1)print*,'AfullBlock(',AFI+I,',',AFJ2,')=',AfullBlock(AFI+I,AFJ2)
-!!$          if(infpar%mynum.EQ.1)print*,'Abuffer(',iproc,')%elms(',I+OFFSET,')=',Abuffer(iproc)%elms(I+OFFSET)
+!!$          if(scalapack_mynum.EQ.1)print*,'AfullBlock(',AFI+I,',',AFJ2,')=',AfullBlock(AFI+I,AFJ2)
+!!$          if(scalapack_mynum.EQ.1)print*,'Abuffer(',iproc,')%elms(',I+OFFSET,')=',Abuffer(iproc)%elms(I+OFFSET)
 !!$       ENDDO
 !!$    ENDDO
 !!$  end  subroutine STA_BuildFullFromBuffer2
@@ -1631,7 +1636,7 @@ module matrix_operations_scalapack
     type(lsMatrix)      :: Abuffer(0:nbuffer)  
     !
     integer :: I,J,API,APJ,AFJ2,APJ2,ABJ2,OFFSET,boffset
-    IF(iproc.EQ.infpar%mynum)THEN 
+    IF(iproc.EQ.scalapack_mynum)THEN 
        !iproc is the node that has the matrix block
        !bufferproc the buffer index that has the contribution to the 
        !replace iproc with bufferproc to retrieve from Abuffer(bufferproc) instead of Abuffer(iproc)
@@ -1657,7 +1662,7 @@ module matrix_operations_scalapack
     logical :: debug
     !
     integer :: I,J,API,APJ,AFJ2,APJ2,ABJ2,OFFSET,boffset,ABndim2
-    IF(iproc.EQ.infpar%mynum)THEN 
+    IF(iproc.EQ.scalapack_mynum)THEN 
        !if the owner of the block (iproc) is the same as my rank (if I own the block)
        boffset = bufferoffset(bufferproc)
        ABndim2 = ABndim1(bufferproc)
@@ -1669,8 +1674,8 @@ module matrix_operations_scalapack
           OFFSET = ABI+(ABJ2-1)*ABndim2 + boffset
           DO I=0,RowSize-1
              A%p(API+I,APJ2) = Abuffer(bufferproc)%elms(I+OFFSET)
-!             if(infpar%mynum.EQ.1)print*,'A%p(',API+I,',',APJ2,')=',A%p(API+I,APJ2)
-!             if(infpar%mynum.EQ.1)print*,'Abuffer(',bufferproc,')%elms(',I+OFFSET,')=',Abuffer(bufferproc)%elms(I+OFFSET)
+!             if(scalapack_mynum.EQ.1)print*,'A%p(',API+I,',',APJ2,')=',A%p(API+I,APJ2)
+!             if(scalapack_mynum.EQ.1)print*,'Abuffer(',bufferproc,')%elms(',I+OFFSET,')=',Abuffer(bufferproc)%elms(I+OFFSET)
           ENDDO
        ENDDO
     ENDIF
@@ -1692,8 +1697,8 @@ module matrix_operations_scalapack
     type(lsMatrix)      :: Abuffer(0:nbuffer)  
     !
     integer :: I,J,API,APJ,AFJ2,APJ2,ABJ2,OFFSET,boffset,ABndim2
-!    print*,'iproc',iproc,'infpar%mynum',infpar%mynum
-    IF(iproc.EQ.infpar%mynum)THEN 
+!    print*,'iproc',iproc,'scalapack_mynum',scalapack_mynum
+    IF(iproc.EQ.scalapack_mynum)THEN 
        boffset = bufferoffset(bufferproc)
 !       print*,'bufferoffset(bufferproc)',bufferoffset(bufferproc)
 !       print*,'RowSize',RowSize,'ColSize',ColSize
@@ -1712,7 +1717,7 @@ module matrix_operations_scalapack
           ENDDO
        ENDDO
 !    ELSE
-!       print*,'no cont iproc',iproc,'infpar%mynum',infpar%mynum
+!       print*,'no cont iproc',iproc,'scalapack_mynum',scalapack_mynum
     ENDIF
   end  subroutine STA_BuildBufferFromAlocal
 
@@ -1766,7 +1771,7 @@ module matrix_operations_scalapack
 #ifdef VAR_SCALAPACK
     CALL PDM_SYNC(Job_scal_dia,A)
     CALL PDM_DSCINIT(DESC_A, A)
-    call ls_mpibcast(alpha,infpar%master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(alpha,infpar%master,scalapack_comm)
     call scalapack_scal_dia_aux(alpha,A,DESC_A)
 #endif
   end subroutine mat_scalapack_scal_dia
@@ -1811,7 +1816,7 @@ module matrix_operations_scalapack
     IF(ndim.NE.A%nrow)call lsquit('mat_scalapack_scal_dia_vec error',-1)
     CALL PDM_SYNC(Job_scal_dia_vec,A)
     CALL PDM_DSCINIT(DESC_A, A)
-    call ls_mpibcast(alpha,ndim,infpar%master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(alpha,ndim,infpar%master,scalapack_comm)
     call scalapack_scal_dia_vec_aux(alpha,A,DESC_A,ndim)
 #endif
   end subroutine mat_scalapack_scal_dia_vec
@@ -1912,7 +1917,7 @@ module matrix_operations_scalapack
      INTEGER      :: DESC_A(DLEN_)
 #ifdef VAR_SCALAPACK
      CALL PDM_DSCINIT(DESC_A,A)
-     write(*,'("I am number ",I3," at postion (",I3,",",I3,")")')infpar%mynum,SLGrid%myrow,SLGrid%mycol
+     write(*,'("I am number ",I3," at postion (",I3,",",I3,")")')scalapack_mynum,SLGrid%myrow,SLGrid%mycol
      write(*,'("and this is my block:A%localnrow,A%localncol:",I3,",",I3)')A%localnrow,A%localncol
      IF(A%localnrow*A%localncol.GT.0)THEN
         call ls_output(A%p,1,A%localnrow,1,A%localncol,A%localnrow,A%localncol,1,6)
@@ -1930,7 +1935,7 @@ module matrix_operations_scalapack
 #ifdef VAR_SCALAPACK
      CALL PDM_SYNC(Job_print_global,A)
      call mat_scaLapack_print_local(A)
-     call lsmpi_barrier(MPI_COMM_LSDALTON)
+     call lsmpi_barrier(scalapack_comm)
 #endif
    end subroutine mat_scalapack_print_global
 
@@ -1995,7 +2000,7 @@ module matrix_operations_scalapack
      CALL DGEBS2D(SLGrid%ictxt,'A','I',2,1,AB,2)
      
      T(1) = TA; T(2) = TB
-     call ls_mpibcast(T,2,infpar%master,MPI_COMM_LSDALTON)
+     call ls_mpibcast(T,2,infpar%master,scalapack_comm)
      CALL PDGEMM(TA,TB,m,n,k,ALPHA,A%p,1,1,DESC_A,&
           B%p,1,1,DESC_B,BETA,C%p,1,1,DESC_C)
 #endif     
@@ -2163,7 +2168,7 @@ module matrix_operations_scalapack
      CALL PDM_DSCINIT(DESC_A,A)
      CALL PDM_DSCINIT(DESC_B,B)
 
-     call ls_mpibcast(nocc,infpar%master,MPI_COMM_LSDALTON)
+     call ls_mpibcast(nocc,infpar%master,scalapack_comm)
      CALL PDGEMM('N','T',A%nrow,A%ncol,nocc,1E0_realk,A%p,1,1,DESC_A,&
           A%p,1,1,DESC_A,0E0_realk,B%p,1,1,DESC_B)
 #endif     
@@ -2263,7 +2268,7 @@ module matrix_operations_scalapack
            val = MAX(val,ABS(A%p(i,j)))
         ENDDO
      ENDDO
-     CALL lsmpi_max_realk_reduction(val,infpar%master,MPI_COMM_LSDALTON)
+     CALL lsmpi_max_realk_reduction(val,infpar%master,scalapack_comm)
 #endif
    end subroutine mat_scalapack_abs_max_elm
 
@@ -2400,7 +2405,7 @@ module matrix_operations_scalapack
      
      CALL PDLADIAG(A%nrow,A%p,1,1,DESC_A,PLUGIN_MAX,MAXA)
      val=MAXA(1)
-     CALL lsmpi_max_realk_reduction(val,infpar%master,MPI_COMM_LSDALTON)
+     CALL lsmpi_max_realk_reduction(val,infpar%master,scalapack_comm)
      pos = 0
 #endif
    end subroutine mat_scalapack_max_diag_elm
@@ -2678,7 +2683,7 @@ module matrix_operations_scalapack
 
     CALL PDM_SYNC(Job_dsyevx,A)
     CALL PDM_DSCINIT(DESC_A,A)
-    CALL ls_mpibcast(ieig,infpar%master,MPI_COMM_LSDALTON)
+    CALL ls_mpibcast(ieig,infpar%master,scalapack_comm)
     call mat_scalapack_dsyevx_aux(A,eival,ieig,DESC_A)
 #endif
   end subroutine mat_scalapack_dsyevx
@@ -2876,10 +2881,10 @@ module matrix_operations_scalapack
     integer :: irow,icol,prow,pcol,grow,gcol
     real(realk) :: denom
 
-    call ls_mpibcast(symm,infpar%master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(omega,infpar%master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(diagQP,nrow,infpar%master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(diagU,nrow,infpar%master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(symm,infpar%master,scalapack_comm)
+    call ls_mpibcast(omega,infpar%master,scalapack_comm)
+    call ls_mpibcast(diagQP,nrow,infpar%master,scalapack_comm)
+    call ls_mpibcast(diagU,nrow,infpar%master,scalapack_comm)
 
     call mem_alloc(vrow,A%localnrow)
     call mem_alloc(wrow,A%localnrow)
@@ -3107,43 +3112,34 @@ module matrix_operations_scalapack
    INTEGER :: PR, PC, TMP(4), IERR, I, NBAST
 #ifdef VAR_SCALAPACK
    integer, external :: blacs2sys_handle
-
    call ls_mpibcast(GRIDINIT,infpar%master,MPI_COMM_LSDALTON)   
    TMP(1)=PR; TMP(2)=PC; TMP(3)=NBAST; TMP(4)=infpar%inputblocksize
   
   
    ENTRY PDM_GRIDINIT_SLAVE
-   SLGrid%mynum = infpar%mynum
+   SLGrid%mynum = scalapack_mynum
    SLGrid%nprocs = infpar%nodtot   
-   call ls_mpibcast(TMP,4,infpar%master,MPI_COMM_LSDALTON)
+   print*,'call mpibcast(TMP,4,infpar%master,scalapack_comm)'
+   call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
+   print*,'done mpibcast(TMP,4,infpar%master,scalapack_comm)'
    !SLGrid%ICTXT specifies the BLACS context handle identifying the
 
    !created process grid.
-#ifdef VAR_CHEMSHELL
    ! In MPIBLACS the BLACS system contexts are MPI communicators so 
    ! we can assign them directly.
    ! SL_INIT (more specifically blacs_get) should not be called
    ! as it can only return a global context (i.e. world communicator)
    ! The calculation will therefore crash in the call to SL_INIT 
-   ! if MPI_COMM_LSDALTON is not equal to MPI_COMM_WORLD.
-   ! In the case of CHEM_SHELL, MPI_COMM_LSDALTON is not equal to
+   ! if scalapack_comm is not equal to MPI_COMM_WORLD.
+   ! In the case of CHEM_SHELL, scalapack_comm is not equal to
    ! MPI_COMM_WORLD and SL_INIT should not be called directly
-   SLGrid%ictxt = MPI_COMM_LSDALTON
+   SLGrid%ictxt = scalapack_comm
    ! Set up the process grid - sets ictxt to a BLACS handle
    CALL BLACS_GRIDINIT(SLGrid%ictxt, 'Row-major', TMP(1), TMP(2))
    ! Again, do not call blacs_get. The BLACS system context
    ! and corresponding communicator are simply MPI communicators.
-   SLGrid%Masterictxt = MPI_COMM_LSDALTON
-   SLGrid%comm = MPI_COMM_LSDALTON
-#else
-   ! SL_INIT returns a global context.
-   CALL SL_INIT(SLGrid%ictxt,TMP(1),TMP(2))   
-
-   ! Get grid communicator
-   ! Note this will always return MPI_COMM_WORLD
-   call blacs_get(SLGrid%ictxt,0,SLGrid%Masterictxt)
-   SLGrid%comm = blacs2sys_handle(SLGrid%Masterictxt)
-#endif
+   SLGrid%Masterictxt = scalapack_comm
+   SLGrid%comm = scalapack_comm
 
    IF(TMP(4).EQ.0)THEN
       IF(TMP(3).GT.200)THEN  !nbast > 200
@@ -3225,7 +3221,7 @@ module matrix_operations_scalapack
       call mem_alloc(address_on_grid,SLGrid%nprow,SLGrid%npcol)
       call ls_izero(address_on_grid,SLGrid%nprow*SLGrid%npcol)
       address_on_grid(SLGrid%myrow+1,SLGrid%mycol+1) = I
-      CALL lsmpi_reduction(address_on_grid,SLGrid%nprow,SLGrid%npcol,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(address_on_grid,SLGrid%nprow,SLGrid%npcol,infpar%master,scalapack_comm)
       call mem_dealloc(address_on_grid)
 #endif
       nsize1=A%localnrow*A%localncol*mem_realsize
@@ -3235,7 +3231,7 @@ module matrix_operations_scalapack
       CALL PDM_DSCINIT(DESC_A,A)
       do i=1,A%localnrow
          do j=1,A%localncol
-            A%p(i,j)=infpar%mynum+1
+            A%p(i,j)=scalapack_mynum+1
          enddo
       enddo
    CASE(Job_from_full)
@@ -3299,7 +3295,7 @@ module matrix_operations_scalapack
       CALL PDM_DSCINIT(DESC_C,C)
       CALL DGEBR2D(SLGrid%ictxt,'A','I',2,1,AB,2,&
            &SLGrid%myrow,SLGrid%mycol)
-      call ls_mpibcast(T,2,infpar%master,MPI_COMM_LSDALTON)
+      call ls_mpibcast(T,2,infpar%master,scalapack_comm)
      if (T(1) == 'n' .or. T(1) == 'N') then
        m = a%nrow
        k = a%ncol
@@ -3386,7 +3382,7 @@ module matrix_operations_scalapack
    CASE(Job_density_from_orbs)
       CALL PDM_DSCINIT(DESC_A,A)
       CALL PDM_DSCINIT(DESC_B,B)
-      call ls_mpibcast(nocc,infpar%master,MPI_COMM_LSDALTON)
+      call ls_mpibcast(nocc,infpar%master,scalapack_comm)
       CALL PDGEMM('N','T',A%nrow,A%ncol,nocc,1E0_realk,A%p,1,1,DESC_A,&
            A%p,1,1,DESC_A,0E0_realk,B%p,1,1,DESC_B)
 
@@ -3444,12 +3440,12 @@ module matrix_operations_scalapack
             AF = MAX(AF,ABS(A%p(i,j)))
          ENDDO
       ENDDO
-      CALL lsmpi_max_realk_reduction(AF,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_max_realk_reduction(AF,infpar%master,scalapack_comm)
    CASE(Job_maxdiag)
       CALL PDM_DSCINIT(DESC_A,A)
       AB = 0.0E0_realk
       CALL PDLADIAG(A%nrow,A%p,1,1,DESC_A,PLUGIN_MAX,AB)
-      CALL lsmpi_max_realk_reduction(AF,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_max_realk_reduction(AF,infpar%master,scalapack_comm)
    CASE(Job_outdia_sqnrm2)
       CALL PDM_DSCINIT(DESC_A,A)
       AB = 0.0E0_realk
@@ -3487,7 +3483,7 @@ module matrix_operations_scalapack
       DEALLOCATE(diag)
    CASE(Job_dsyevx)
       CALL PDM_DSCINIT(DESC_A,A)
-      CALL ls_mpibcast(ieig,infpar%master,MPI_COMM_LSDALTON)
+      CALL ls_mpibcast(ieig,infpar%master,scalapack_comm)
       call mat_scalapack_dsyevx_aux(A,eival,ieig,DESC_A)
    CASE(Job_dpotrf)
       CALL PDM_DSCINIT(DESC_A,A)
@@ -3505,7 +3501,7 @@ module matrix_operations_scalapack
       DEALLOCATE(diag2)
    CASE(Job_add_block)
       CALL PDM_DSCINIT(DESC_A, A)
-      call ls_mpibcast(TMP,4,infpar%master,MPI_COMM_LSDALTON)
+      call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
       fullrow = TMP(1)
       fullcol = TMP(2)
       insertrow = TMP(3)
@@ -3519,7 +3515,7 @@ module matrix_operations_scalapack
 
    CASE(Job_retrieve_block)
       CALL PDM_DSCINIT(DESC_A,A)
-      call ls_mpibcast(TMP,4,infpar%master,MPI_COMM_LSDALTON)
+      call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
       fullrow = TMP(1)
       fullcol = TMP(2)
       insertrow = TMP(3)
@@ -3533,7 +3529,7 @@ module matrix_operations_scalapack
 
    CASE(Job_create_block)
       CALL PDM_DSCINIT(DESC_A,A)
-      call ls_mpibcast(TMP,4,infpar%master,MPI_COMM_LSDALTON)
+      call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
       fullrow = TMP(1)
       fullcol = TMP(2)
       insertrow = TMP(3)
@@ -3548,21 +3544,21 @@ module matrix_operations_scalapack
 
 
    CASE(Job_print_global)
-      call sleep(infpar%mynum*5) !so first slave wait 5 sec, second slave wait for 10 sec
+      call sleep(scalapack_mynum*5) !so first slave wait 5 sec, second slave wait for 10 sec
                                   !hopefully the matrix is then printet one block at a time
       call mat_scaLapack_print_local(A)
-      call lsmpi_barrier(MPI_COMM_LSDALTON)
+      call lsmpi_barrier(scalapack_comm)
    CASE(Job_setlowertriangular_zero)
       CALL PDM_DSCINIT(DESC_A, A)
       call scalapack_setlowertriangular_zero_aux(A,DESC_A)
    CASE(Job_scal_dia)
       CALL PDM_DSCINIT(DESC_A, A)
-      call ls_mpibcast(AF,infpar%master,MPI_COMM_LSDALTON)
+      call ls_mpibcast(AF,infpar%master,scalapack_comm)
       call scalapack_scal_dia_aux(AF,A,DESC_A)
    CASE(Job_scal_dia_vec)
       CALL PDM_DSCINIT(DESC_A, A)
       call mem_alloc(diag3,A%nrow)
-      call ls_mpibcast(diag3,A%nrow,infpar%master,MPI_COMM_LSDALTON)
+      call ls_mpibcast(diag3,A%nrow,infpar%master,scalapack_comm)
       call scalapack_scal_dia_vec_aux(diag3,A,DESC_A,A%nrow)
       call mem_dealloc(diag3)
    CASE(Job_free)

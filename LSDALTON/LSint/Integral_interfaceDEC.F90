@@ -595,7 +595,7 @@ setting%sameMol=.FALSE.
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
 nullify(setting%output%resulttensor)
 call initIntegralOutputDims(setting%output,dim1,dim2,dim3,dim4,1)
-!setting%output%DECPACKED = .TRUE.
+setting%output%DECPACKEDK = .TRUE.
 setting%output%Resultmat => outputintegral
 
 ! Set to zero
@@ -622,6 +622,7 @@ CALL ls_getIntegrals1(ao(1),ao(2),ao(3),ao(4),oper,RegularSpec,ContractedInttype
 call mem_dealloc(setting%output%postprocess)
 !back to normal
 
+setting%output%DECPACKEDK = .FALSE.
 setting%batchindex(1)=0
 setting%batchindex(2)=0
 setting%batchindex(3)=0

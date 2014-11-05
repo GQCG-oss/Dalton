@@ -851,7 +851,7 @@ C              Compute distance dependent parameters
                RIJ(1) = NPCORD(1,I)-NPCORD(1,J)
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
-               RAD = DSQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+               RAD = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RAD2 = RAD*RAD
                RAD51 = D1/(RAD2*RAD2*RAD)
                IF (NPMQGAU) CALL GET_GG_AFACT(FACTA,FACTB,I,J,RAD)
@@ -918,7 +918,7 @@ C           Compute distance dependent parameters
             RIJ(1) = MMCORD(1,I)-MMCORD(1,J)
             RIJ(2) = MMCORD(2,I)-MMCORD(2,J)
             RIJ(3) = MMCORD(3,I)-MMCORD(3,J)
-            RAD = DSQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+            RAD = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
             RAD2 = RAD*RAD
             RAD51 = D1/(RAD2*RAD2*RAD)
 C           Distribute interaction tensor
@@ -967,10 +967,10 @@ C     Get polarizabilities
       RIPOL = NPFPOL(NPFTYP(IATM))/D3
       RJPOL = NPFPOL(NPFTYP(JATM))/D3
 C     Get damping radius
-      RDIM = DSQRT(D2)/SQRTPI
+      RDIM = SQRT(D2)/SQRTPI
       RIM  = (RDIM*RIPOL)**D13
       RJM  = (RDIM*RJPOL)**D13
-      RIJM = DSQRT(RIM*RIM+RJM*RJM)
+      RIJM = SQRT(RIM*RIM+RJM*RJM)
       RVAL = RAD/RIJM
 C     Compute factors
       FACTA = DERF(RVAL)-D2*RVAL*DEXP(-RVAL*RVAL)/SQRTPI
@@ -1024,7 +1024,7 @@ C              Compute distance dependent parameters
                RIJ(1) = NPCORD(1,I)-NPCORD(1,J)
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
-               RAD  = DSQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+               RAD  = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RVAL = D1/RAD
                IF (NPMQGAU) THEN
                   CALL GET_GG_CFACT(FACT,I,J,RAD)
@@ -1058,12 +1058,12 @@ C
 #include "qmnpmm.h"
 C
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0)
-      PARAMETER (D21 = DSQRT(D2))
+      PARAMETER (D21 = 1.41421356237309504880D0)
 C     Get capacitancies
       RICAP = D21*NPFCAP(NPFTYP(IATM))/SQRTPI
       RJCAP = D21*NPFCAP(NPFTYP(JATM))/SQRTPI
 C     Get damping radius & scalling factor
-      RIJM = DSQRT(RICAP*RICAP+RJCAP*RJCAP)
+      RIJM = SQRT(RICAP*RICAP+RJCAP*RJCAP)
       FACT = DERF(RAD/RIJM)
 C
       RETURN
@@ -1101,7 +1101,7 @@ C              Compute distance dependent parameters
                RIJ(1) = NPCORD(1,I)-NPCORD(1,J)
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
-               RAD  = DSQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+               RAD  = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RAD3 = D1/(RAD*RAD*RAD)
 C              Get damping factor
                IF (NPMQGAU) CALL GET_GG_MFACT(FACT,I,J,RAD)
@@ -1140,8 +1140,9 @@ C
 #include "qmnpmm.h"
 C
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
-      PARAMETER (D21 = DSQRT(D2))
+      PARAMETER (D21 = 1.41421356237309504880D0)
       PARAMETER (D13 = 1.0D0/3.0D0)
+
 C     Get polarizabilities
       RIPOL = NPFPOL(NPFTYP(IATM))/D3
 C     Get damping radius
@@ -1150,7 +1151,7 @@ C     Get damping radius
 C     Get j-th capacitancy
       RJCAP = RDIM*NPFCAP(NPFTYP(JATM))
 C     Get damping radius & scalling factor
-      RIJM = DSQRT(RIM*RIM+RJCAP*RJCAP)
+      RIJM = SQRT(RIM*RIM+RJCAP*RJCAP)
       RADX = RAD/RIJM
       FACT = DERF(RADX)-D2*RADX*DEXP(-RADX*RADX)/SQRTPI
 C
@@ -1346,7 +1347,7 @@ C
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
       PARAMETER (D13 = 1.0D0/3.0D0)
 C
-      RDIM = DSQRT(D2)/SQRTPI
+      RDIM = SQRT(D2)/SQRTPI
       DO I=1,TNPATM
          RIPOL = NPFPOL(NPFTYP(I))/D3
          RDVEC(I) = (RDIM*RIPOL)**D13

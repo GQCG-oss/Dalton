@@ -145,6 +145,13 @@ SUBROUTINE set_default_AOs(newAORegular,newAOdfAux)
   AODFdefault = newAOdfAux
 END SUBROUTINE set_default_AOs
 
+SUBROUTINE get_default_AOs(oldAORegular,oldAOdfAux)
+  implicit none
+  integer :: oldAORegular,oldAOdfAux
+  oldAORegular = AORdefault 
+  oldAOdfAux = AODFdefault  
+END SUBROUTINE get_default_AOs
+
 subroutine param_oper_paramfromString(Oper,Operparam)
   implicit none
   Character(len=7),intent(in)     :: Oper

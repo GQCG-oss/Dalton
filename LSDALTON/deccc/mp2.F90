@@ -1936,14 +1936,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
   real(realk) :: tcpuTOT,twallTOT
   real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate
-  integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc
-  logical :: useAlphaCD5,useAlphaCD6
+  integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
+  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault
   integer(kind=ls_mpik)  :: request5,request6
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
   TAG = 131124879
 #endif
+  ChangedDefault = .FALSE.
   ForcePrint = .TRUE.
   call time_start_phase(PHASE_WORK)
   myload = 0
@@ -1968,6 +1969,14 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
   call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
+  IF(nBasisAux.EQ.0)THEN
+     WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: Warning no Aux basis have been chosen for RIMP2, Using Regular'
+     ChangedDefault = .TRUE.
+     call get_default_AOs(oldAORegular,oldAOdfAux) !the current values for Regular and Aux Basis 
+     call set_default_AOs(oldAORegular,oldAORegular) !change to use Regular for Aux 
+     call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
+  ENDIF
+
 !#ifndef VAR_MPI
 !  do not use the Calpha or the alphaCD as a vector at any point
 !  call Test_if_64bit_integer_required(nBasisAux,nocc,nvirt)
@@ -2626,7 +2635,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call LSTIMER('RIMP2-INT TOTAL',tcpuTOT,twallTOT,DECinfo%output)
      call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
   end if
-
+  IF(ChangedDefault)THEN
+     call set_default_AOs(oldAORegular,oldAOdfAux) !revert Changes
+  ENDIF
 end subroutine RIMP2_integrals_and_amplitudes
 
 !alphaCD(NBA,nvirt,nocc) is in the diagonal basis 
