@@ -112,11 +112,12 @@ contains
   !> \brief Robust Purification of the density matrix D 
   !>  using steepest descent method 
   !>  Chem.Phys.Lett 360 (2002) 117
-  !> assumes the density is in the OAO basis
   !> \date 2014
   !> \author T. Kjaergaard
   !> 
-  subroutine Robust_McWeeney_purify(S,D,Robustfailed)
+ !FIXME minimize the function under a normalization constraint !
+ !this would also give a small paper. 
+  subroutine Robust_McWeeney_purify(S,D,Robustfailed,Nelectrons)
     implicit none
     !> Input: Overlap matrix
     type(matrix), intent(inout) :: S
@@ -124,10 +125,12 @@ contains
     type(matrix), intent(inout) :: D
     !> True if density matrix could not be purified in 100 iterations
     logical, intent(inout) :: Robustfailed
+    !> number of electrons in system
+    integer,intent(in) :: Nelectrons
     logical :: failed
-    type(Matrix) :: DS,SDS,SDSDS,G,GS,GSGS,DSDS,GSDS,TMP,R,RS,RSRS,DSD,DSDSD
+    type(Matrix) :: DS,G,TMP,TMP2,TMP3
     real(realk) :: A_CARDANO,B_CARDANO,C_CARDANO,Discriminant
-    real(realk) :: Initial_mat_sqnorm2
+    real(realk) :: Initial_mat_sqnorm2,TraceDS,scalingfactor
     real(realk) :: A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda
     real(realk) :: lambda1,lambda2,lambda3,lambda4,f,f1,f2,f3,lambda
     real(realk),parameter :: D2 = 2.0E0_realk,D3=3.0E0_realk,D1=1.0E0_realk
@@ -135,8 +138,7 @@ contains
     integer :: i,ndim,output,lupri,j
     lupri=6
     Robustfailed = .false.
-    ndim = D%nrow
-
+    ndim = D%nrow    
     !function to minimize 
     !f = 1/2 Tr(DSDSDSDS - 2 DSDSDS + DSDS)  
     !G = - 2 SDSDSDS + 3 SDSDS - SDS         Gradient 
@@ -148,85 +150,58 @@ contains
     !  - Tr(6*GSGSDS) + Tr(GSGS)
     !D = Tr(4*DSDSDSGS) - Tr(6*DSDSGS) + Tr(DSGS)
     !E = Tr(DSDSDSDS) - Tr(2*DSDSDS) + Tr(DSDS)
-    
+
+    ! 9 matrix multiplications for each iteration
+    ! Worth putting matrices on the GPU? 
+
     call mat_init(DS,ndim,ndim)
-    call mat_mul(D,S,'n','n',1E0_realk,0E0_realk,DS)
-    print*,'Robust_OAO_McWeeney_purify1'
-    call Robust_OAO_McWeeney_purify(DS,Robustfailed)
-    print*,'Done Robust_OAO_McWeeney_purify2'
-    call mat_init(SDS,ndim,ndim)
-    call mat_init(SDSDS,ndim,ndim)
     call mat_init(G,ndim,ndim) 
-    call mat_init(GS,ndim,ndim) 
-    call mat_init(GSGS,ndim,ndim) 
-    call mat_init(DSDS,ndim,ndim) 
-    call mat_init(GSDS,ndim,ndim) 
     call mat_init(TMP,ndim,ndim) 
-
-    call mat_init(R,ndim,ndim)
-    call mat_init(RS,ndim,ndim)
-    call mat_init(RSRS,ndim,ndim)
-    call mat_init(DSD,ndim,ndim)
-!    call mat_init(DSDS,ndim,ndim)
-    call mat_init(DSDSD,ndim,ndim)
-
-    print*,'mat_get_isym(S)',mat_get_isym(S)
+    call mat_init(TMP2,ndim,ndim) 
+    call mat_init(TMP3,ndim,ndim) 
     robustMcWD: DO I=1,100
+
+       TraceDS = 2.0E0_realk*mat_dotproduct(D,S)
+       Write(lupri,*)'2.0*Trace(D,S)',TraceDS
+       scalingfactor = Nelectrons/TraceDS 
+       IF(ABS(scalingfactor-1.0E0_realk).GT.1.0E-10)THEN
+          call mat_scal(scalingfactor,D)
+          TraceDS = 2.0E0_realk*mat_dotproduct(D,S)
+       ENDIF
+
        B_Lambda = 0.0E0_realk
        C_Lambda = 0.0E0_realk
        D_Lambda = 0.0E0_realk
        E_Lambda = 0.0E0_realk
 
-       call mat_mul(D,S,'n','n',1E0_realk,0E0_realk,DS) !KEEP 
-       call mat_mul(S,DS,'n','n',1E0_realk,0E0_realk,TMP) !scratch
-       call mat_mul(TMP,DS,'n','n',1E0_realk,0E0_realk,SDSDS) !scratc
-       call mat_mul(SDSDS,DS,'n','n',-2E0_realk,0E0_realk,G) !G = -2 SDSDSDS
-       call mat_daxpy(D3,SDSDS,G)  !G = -2 SDSDSDS + 3 SDSDS
-       call mat_daxpy(-D1,TMP,G)   !G = -2 SDSDSDS + 3 SDSDS - SDS
+       call mat_mul(D,S,'n','n',1E0_realk,0E0_realk,DS) 
+       call mat_mul(S,DS,'n','n',-1E0_realk,0E0_realk,G)     !G = -SDS
+       call mat_mul(G,DS,'n','n',-1E0_realk,0E0_realk,TMP)   !TMP = SDSDS
+       call mat_mul(TMP,DS,'n','n',-2E0_realk,1E0_realk,G) !G = -2 SDSDSDS -SDS
+       call mat_daxpy(D3,TMP,G)  !G = -2 SDSDSDS + 3 SDSDS - SDS
 
-       call mat_mul(G,S,'n','n',D1,D0,GS)    
-       C_Lambda = C_Lambda + mat_TrAB(GS,GS)
+       call mat_mul(G,S,'n','n',D1,D0,TMP3)        !TMP3 = GS     
+       C_Lambda = C_Lambda + mat_TrAB(TMP3,TMP3)   !C = C + mat_TrAB(GS,GS)
+       D_Lambda = D_Lambda + D2*mat_TrAB(DS,TMP3)  !D = D + D2*mat_TrAB(DS,GS)
+       E_Lambda = E_Lambda + mat_TrAB(DS,DS)       !E = E + mat_TrAB(DS,DS)
 
-       call mat_mul(GS,GS,'n','n',D1,D0,GSGS)    
-       A_Lambda = mat_TrAB(GSGS,GSGS)    
-       B_Lambda = B_Lambda- D2*mat_TrAB(GSGS,GS)
+       call mat_mul(TMP3,TMP3,'n','n',D1,D0,TMP2)  !TMP2 = GSGS    
+       A_Lambda = mat_TrAB(TMP2,TMP2)              !A = mat_TrAB(GSGS,GSGS)
+       B_Lambda = B_Lambda- D2*mat_TrAB(TMP2,TMP3) !B = B - D2*mat_TrAB(GSGS,GS)
+       C_Lambda = C_Lambda - D6*mat_TrAB(TMP2,DS)  !C = C - D6*mat_TrAB(GSGS,DS)
 
-       call mat_mul(DS,DS,'n','n',D1,D0,DSDS)     
-       E_Lambda = E_Lambda + mat_TrAB(DSDS,DSDS)
+       call mat_mul(DS,DS,'n','n',D1,D0,TMP)       !TMP = DSDS 
+       E_Lambda = E_Lambda + mat_TrAB(TMP,TMP)     !E = E + mat_TrAB(DSDS,DSDS)
+       C_Lambda = C_Lambda + D4*mat_TrAB(TMP,TMP2) !C = C + D4*mat_TrAB(DSDS,GSGS)
+       E_Lambda = E_Lambda - D2*mat_TrAB(TMP,DS)   !E =E - D2*mat_TrAB(DSDS,DS) 
 
-       call mat_mul(GS,DS,'n','n',D1,D0,GSDS)    
-       C_Lambda = C_Lambda + D2*mat_TrAB(GSDS,GSDS) 
-       B_Lambda = B_Lambda + D4*mat_TrAB(GSGS,GSDS)
-       D_Lambda = D_Lambda + D4*mat_TrAB(DSDS,GSDS)
+       call mat_mul(TMP3,DS,'n','n',D1,D0,TMP)     !NEW TMP = GSDS    
+       C_Lambda = C_Lambda + D2*mat_TrAB(TMP,TMP)  !C = C + D2*mat_TrAB(GSDS,GSDS)
+       B_Lambda = B_Lambda + D4*mat_TrAB(TMP2,TMP) !B = B + D4*mat_TrAB(GSGS,GSDS)
+       D_Lambda = D_Lambda - D6*mat_TrAB(DS,TMP)   !D = D - D6*mat_TrAB(DS,GSDS)
 
-       C_Lambda = C_Lambda - D6*mat_TrAB(GSGS,DS)
-       D_Lambda = D_Lambda + D2*mat_TrAB(DS,GS)
-
-
-       C_Lambda = C_Lambda + D4*mat_TrAB(DSDS,GSGS)
-       D_Lambda = D_Lambda - D6*mat_TrAB(DSDS,GS)
-       E_Lambda = E_Lambda - D2*mat_TrAB(DSDS,DS) + mat_TrAB(DS,DS)
-       E_Lambda = E_Lambda + mat_TrAB(DS,DS)
-       
-       print*,'A_Lambda'
-       print*, A_Lambda
-       print*,'B_Lambda'
-       print*, B_Lambda
-       print*,'C_Lambda'
-       print*, C_Lambda
-       print*,'D_Lambda'
-       print*, D_Lambda
-       print*,'E_Lambda'
-       print*, E_Lambda
-
-       !Function 
-       !0.5E0_realk*TrAB(RSRS-RS,RSRS-RS)
-       call mat_assign(R,D)
-       call mat_mul(R,S,'n','n',1E0_realk,0E0_realk,RS)
-       call mat_mul(RS,RS,'n','n',1E0_realk,0E0_realk,RSRS)
-       
-       print*,'FUNCTION using R'
-       print*, mat_TrAB(RSRS,RSRS) - D2*mat_TrAB(RSRS,RS) + mat_TrAB(RS,RS)
+       call mat_mul(DS,DS,'n','n',D1,D0,TMP2)      !NEW TMP2 = DSDS 
+       D_Lambda = D_Lambda + D4*mat_TrAB(TMP2,TMP) !D = D + D4*mat_TrAB(DSDS,GSDS)
        
        !The extrema of the polynomial equation ( D = D + lambda*G) 
        !can be obtained by solving (Eq. 20) 
@@ -248,25 +223,20 @@ contains
           output = 1 !the real solution
           lambda = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
           f = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda)
-          print*,'Function f=',f
        ELSEIF(ABS(Discriminant).LT.1.0E-14_realk)THEN
           output = 1 !the real solution
           lambda = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
           f = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda)
-          print*,'Function f=',f
        ELSEIF(Discriminant.LT.0.0E0_realk)THEN
           output = 1 !a real solution
           lambda1 = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
           f1 = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda1)
-          print*,'Function f1=',f1
           output = 2 !a real solution
           lambda2 = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
           f2 = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda2)
-          print*,'Function f2=',f2
           output = 3 !a real solution
           lambda3 = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
           f3 = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda3)
-          print*,'Function f3=',f3
           IF(ABS(f1).LT.MIN(ABS(f2),ABS(f3)))THEN
              lambda = lambda1
           ELSEIF(ABS(f2).LT.MIN(ABS(f1),ABS(f3)))THEN
@@ -279,14 +249,8 @@ contains
        ENDIF
        !obtain new D
        
-       call mat_assign(DS,D)       !DS used as temp = Old Density 
+       call mat_assign(DS,D)      !DS used as temp = Old Density 
        call mat_daxpy(lambda,G,D) !D = D + lambda*G
-
-       call mat_assign(R,D)
-       call mat_mul(R,S,'n','n',1E0_realk,0E0_realk,RS)
-       call mat_mul(RS,RS,'n','n',1E0_realk,0E0_realk,RSRS)
-       print*,'NEW FUNCTION using R = R + lambda*G'
-       print*, mat_TrAB(RSRS,RSRS) - D2*mat_TrAB(RSRS,RS) + mat_TrAB(RS,RS)
        call mat_add(D1,DS,-D1,D,TMP) !TMP = old P - new P
        if (mat_sqnorm2(TMP) .LT. 1.0E-10_realk) then
           print*,'Robust Purification converged in ',i,' iterations'
@@ -298,14 +262,15 @@ contains
              IF(mat_sqnorm2(TMP)/Initial_mat_sqnorm2.LT.1.0E-4_realk)THEN
                 print*,'Try a couple of "normal" McWeeney_purification steps'
                 !Try a couple of "normal" McWeeney_purification steps
-                call mat_assign(GSDS,D)
-                normalMcW: do j = 1,10
+                call mat_assign(G,D)
+                normalMcW: do j = 1,15
                    !DS,SDS,SDSDS are used as scratch matrices but on exit scr1 is the old density 
-                   call McWeeney_purification_step(D,S,SDS,DS,SDSDS)
+                   call McWeeney_purification_step(D,S,TMP,DS,TMP2)
                    call mat_add(1E0_realk,D,-1E0_realk,DS,TMP)
                    if (mat_sqnorm2(TMP) < 1E-10_realk) then
                       WRITE(*,*) 'Purification : mat_sqnorm2(TMP) = ',mat_sqnorm2(TMP)
-                      WRITE(*,*) 'Purification converged in ',i,' iterations'
+                      WRITE(*,*) 'Purification converged in ',j,' iterations'
+                      WRITE(*,*) 'Robust Purification converged in ',i,' iterations'
                       failed = .false.
                       Robustfailed = .false.
                       exit robustMcWD
@@ -319,7 +284,7 @@ contains
                 enddo normalMcW
                 IF(failed)THEN
                    !restore the matrix from before normalMcW loop
-                   call mat_assign(D,GSDS)
+                   call mat_assign(D,G)
                 ENDIF
              ENDIF
           ENDIF
@@ -328,14 +293,10 @@ contains
        IF(I.EQ.100)Robustfailed = .true.
     ENDDO robustMcWD
     call mat_free(DS)
-    call mat_free(SDS)
-    call mat_free(SDSDS)
     call mat_free(G) 
-    call mat_free(GS) 
-    call mat_free(GSGS) 
-    call mat_free(DSDS) 
-    call mat_free(GSDS) 
     call mat_free(TMP) 
+    call mat_free(TMP2) 
+    call mat_free(TMP3) 
  end subroutine Robust_McWeeney_purify
 
  function evalfunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda)
@@ -353,150 +314,6 @@ contains
    lambda4 = lambda3*lambda
    evalfunction = evalfunction + A_Lambda*lambda4
  end function evalfunction
-
-  !> \brief Robust Purification of the density matrix D 
-  !>  using steepest descent method 
-  !>  Chem.Phys.Lett 360 (2002) 117
-  !> assumes the density is in the OAO basis
-  !> \date 2014
-  !> \author T. Kjaergaard
-  !> 
-  subroutine Robust_OAO_McWeeney_purify(P,failed)
-    implicit none
-    !> Input: OAO density matrix. Output: Purified OAO density matrix
-    type(matrix), intent(inout) :: P
-    !> True if density matrix could not be purified in 100 iterations
-    logical, intent(inout) :: failed
-    type(Matrix) :: P2,TMP,G,G2 ! 4 tmp matrices 
-    real(realk) :: A_CARDANO,B_CARDANO,C_CARDANO
-    real(realk) :: A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda
-    real(realk) :: lambda
-    real(realk),parameter :: D2 = 2.0E0_realk,D3=3.0E0_realk,D1=1.0E0_realk
-    real(realk),parameter :: D0 = 0.0E0_realk,D4=4.0E0_realk
-    real(realk) :: Discriminant
-    real(realk) :: lambda1,lambda2,lambda3,lambda4,f,f1,f2,f3
-    integer :: i,ndim,output
-
-    failed = .false.
-    ndim = P%nrow
-    ! f = 0.5*(Tr(P*P,P*P) - 2*Tr(P*P,P) + Tr(P,P))
-    ! G = -0.5*(4 P*P*P - 2*3*P*P + 2*P)
-    ! G = - 2 P*P*P + 3*P*P - P
-    ! This subroutine guarentees convergence  
-    ! Chem.Phys.Lett 360 (2002) 117
-    ! Construct gradient minus G
-    ! G = 3 P*P - 2*P*P*P - P   (Eq. 11)
-
-    call mat_init(P2,ndim,ndim)
-    call mat_init(G,ndim,ndim)
-    call mat_init(G2,ndim,ndim)
-    call mat_init(TMP,ndim,ndim) 
-    DO I=1,100
-
-       call mat_mul(P,P,'n','n',D1,D0,P2)    
-       call mat_assign(G,P)              !G = P (currently)
-       call mat_daxpy(-D3,P2,G)          !G = P - 3*P*P (currently)
-       !G = - 2*P*P*P - (P - 3*P*P) =     G = 3*P*P - 2*P*P*P - P (final)
-       call mat_mul(P2,P,'n','n',-D2,-D1,G) !TMP = P*P*P 
-      
-       call mat_mul(G,G,'n','n',D1,D0,G2)
-       
-       A_Lambda = mat_TrAB(G2,G2)
-       !Build TMP = PG+GP-G
-       call mat_assign(TMP,G)
-       call mat_mul(G,P,'n','n',1E0_realk,-1E0_realk,TMP) !TMP = GP - G
-       call mat_mul(P,G,'n','n',1E0_realk,1E0_realk,TMP) !TMP = PG + GP - G
-       B_Lambda = D2*mat_TrAB(G2,TMP)
-       C_Lambda = mat_TrAB(TMP,TMP) + D2*mat_TrAB(G2,P2) - D2*mat_TrAB(G2,P)
-       D_Lambda = mat_TrAB(TMP,P2) - mat_TrAB(TMP,P)
-       E_Lambda = mat_TrAB(P2,P2)-2.0E0_realk*mat_TrAB(P2,P) + mat_TrAB(P,P)
-       !not used but parameter in fourth order
-       !polynomial in lambda (Eq. 13)
-       print*,'A_Lambda'
-       print*, A_Lambda
-       print*,'B_Lambda'
-       print*, B_Lambda
-       print*,'C_Lambda'
-       print*, C_Lambda
-       print*,'D_Lambda'
-       print*, D_Lambda
-       print*,'E_Lambda'
-       print*, E_Lambda
-       
-       !The extrema of the polynomial equation ( P = P + lambda*G) 
-       !can be obtained by solving (Eq. 20) 
-       !4*A*lambda**3 + 3*B*lambda**2 + 2*C*lambda + D = 0
-       
-       !CARDANO produces the roots of the equation x³+ax²+bx+c=0.
-       !This means 
-       A_CARDANO = 3.0E0_realk*B_Lambda/(D4*A_Lambda)
-       B_CARDANO = 2.0E0_realk*C_Lambda/(D4*A_Lambda)
-       C_CARDANO = D_Lambda/(D4*A_Lambda)
-       
-       output = 0 !request the discriminant D which classifies the solution
-       !        D>0: one real y(1) and two complex conjugate solutions
-       !             y(2)+y(3)i and y(2)-y(3)i
-       !        D=0: three real solutions including one double solution (y(3)=0)
-       !        D<0: three distinct real solutions y(1)<y(2)<y(3)       
-       Discriminant = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
-       IF(Discriminant.GT.0.0E0_realk)THEN
-          output = 1 !the real solution
-          lambda = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
-          f = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda)
-          print*,'Function f=',f
-       ELSEIF(ABS(Discriminant).LT.1.0E-14_realk)THEN
-          output = 1 !the real solution
-          lambda = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
-          f = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda)
-          print*,'Function f=',f
-       ELSEIF(Discriminant.LT.0.0E0_realk)THEN
-          output = 1 !a real solution
-          lambda1 = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
-          f1 = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda1)
-          print*,'Function f1=',f1
-          output = 2 !a real solution
-          lambda2 = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
-          f2 = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda2)
-          print*,'Function f2=',f2
-          output = 3 !a real solution
-          lambda3 = wy_cardano(A_CARDANO,B_CARDANO,C_CARDANO,output)
-          f3 = evalFunction(A_Lambda,B_Lambda,C_Lambda,D_Lambda,E_Lambda,lambda3)
-          print*,'Function f3=',f3
-          IF(ABS(f1).LT.MIN(ABS(f2),ABS(f3)))THEN
-             lambda = lambda1
-          ELSEIF(ABS(f2).LT.MIN(ABS(f1),ABS(f3)))THEN
-             lambda = lambda2         
-          ELSEIF(ABS(f3).LT.MIN(ABS(f1),ABS(f2)))THEN
-             lambda = lambda3
-          ELSE
-             call lsquit('Robust_McWeeney_purify: no proper solution in wy_cardano',-1)
-          ENDIF
-       ENDIF
-       !obtain new P
-       
-       call mat_assign(G2,P)      !G2 used as temp = Old Density 
-       call mat_daxpy(lambda,G,P) !P = P + lambda*G
-
-       print*,'Function Using Lambda:'
-       !Tr((P2-P)*(P2-P))
-       call mat_mul(P,P,'n','n',D1,D0,P2)    
-       print*,mat_trAB(P2,P2)-2.0E0_realk*mat_trAB(P,P2)+mat_trAB(P,P)
-
-       call mat_add(D1,G2,-D1,P,TMP) !TMP = old P - new P
-       if (mat_sqnorm2(TMP) < 1.0E-10_realk) then
-          print*, 'Purification : mat_sqnorm2(TMP) = ',mat_sqnorm2(TMP)
-          print*, 'Purification converged in ',i,' iterations'
-          exit
-       else
-          print*, 'Purification : mat_sqnorm2(TMP) = ',mat_sqnorm2(TMP)
-       endif
-       IF(I.EQ.100)failed = .true.
-    ENDDO
-    call mat_free(TMP)
-    call mat_free(G2)
-    call mat_free(G)
-    call mat_free(P2)
-  end subroutine Robust_OAO_McWeeney_purify
 
  !CARDANO produces the roots of the equation x³+ax²+bx+c=0.
  !output: 0 : discriminant D which classifies the solution:

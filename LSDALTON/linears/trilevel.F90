@@ -1463,38 +1463,33 @@ nbast = ls%input%BASIS%BINFO(REGBASPARAM)%nbast
 !The matrix D is not idempotent. We have 2 options: 
 !1. Do McWeeny purification
 !2. Perform a Fock matrix build followed by a diagonalization
-!In most cases the Density is too bad that the McWeeny purification works. 
-!A call to McWeeney_purify simply do not converge. 
-!But if a better scheme is devised/implemented it could be an option.
-McWeeny = .TRUE.    !Option 1 
+McWeeny = config%opt%MWPURIFYATOMSTART  !Option 1 
 DiagFmat = .FALSE.  !Option 2 
 IF(McWeeny)THEN
+   write(config%lupri,*)'Perform McWeeny purification on the non idempotent Atoms Density',1
+   Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
    call mat_init(Dpure,D(1)%nrow,D(1)%ncol)
    call mat_assign(Dpure,D(1))
-!   call x_to_oao_basis(config%decomp, D(1), Dpure)
-   call Robust_McWeeney_purify(S,Dpure,purify_failed)     
-!   call mat_init(Dpure2,D(1)%nrow,D(1)%ncol)
-!   if (.not.purify_failed)call x_from_oao_basis(config%decomp, Dpure, Dpure2)
+   call Robust_McWeeney_purify(S,Dpure,purify_failed,Nelectrons)     
    DiagFmat = purify_failed !revert to diagonalization if fail
    if (.not.purify_failed) then
-      Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
-      trace = mat_dotproduct(Dpure,S)-Nelectrons
-      if ( abs(2.0*trace) .gt. THRNEL*Nelectrons)then
+      trace = mat_dotproduct(Dpure,S)
+      if ( abs(2.0E0_realk*trace-Nelectrons) .le. THRNEL*Nelectrons)then
+         call mat_assign(D(1),Dpure)
+      else
          write(config%lupri,*)'Warning: Descrepancy between 2.0*Tr(DS) after purification and Nelectrons '
-         write(config%lupri,*)'2.0*Tr(DS) = ',2.0*trace,' Nelectrons = ', Nelectrons
+         write(config%lupri,*)'2.0*Tr(DS) = ',2.0E0_realk*trace,' Nelectrons = ', Nelectrons
          write(config%lupri,*)'We fall back to a diagonalization'
          DiagFmat = .TRUE.
-      else
-         call mat_assign(D(1),Dpure)
       endif
+   else
+      write(config%lupri,*)'McWeeny purification of atomic density failed. We fall back to a diagonalization'
    endif
    call mat_free(Dpure)
 !   call mat_free(Dpure2)
 ELSE
    DiagFmat = .TRUE. 
 ENDIF
-
-print*,'TESTFINAL DiagFmat',DiagFmat
 
 CALL mat_init(F(1),nbast,nbast)
 
@@ -1597,10 +1592,10 @@ TYPE(trilevel_atominfo) :: ai
 Type(Matrix) :: Dval(1),F(1),D(1),Cmo, fCmo,Dpure,Dpure2
 Type(Matrix),target :: H1,S
 Type(lsint_fock_data_type) :: lsint_fock_data_sav
-real(realk)         :: E(1), mx, Nelectrons
+real(realk)         :: E(1), mx
 real(realk)         :: maxelm_save, maxstep_save,thr_save,trace
 real(realk),pointer :: eival(:) 
-integer      :: nbast, len, nocc
+integer      :: nbast, len, nocc, Nelectrons
 integer, pointer :: vlist(:,:), list(:,:)
 integer :: lun, idum, ldum,iAO,sz,ndmat
 integer(8) :: fperm, vperm
@@ -1719,34 +1714,31 @@ type(LowAccuracyStartType)  :: LAStype
   !The matrix D is not idempotent. We have 2 options: 
   !1. Do McWeeny purification
   !2. Perform a Fock matrix build followed by a diagonalization
-  !In most cases the Density is too bad that the McWeeny purification works. 
-  !A call to McWeeney_purify simply do not converge. 
-  !But if a better scheme is devised/implemented it could be an option.
-  McWeeny = .TRUE.    !option 1   
+  McWeeny = config%opt%MWPURIFYATOMSTART  !Option 1 
   DiagFmat = .FALSE.  !option 2
   IF(McWeeny)THEN
+     write(config%lupri,*)'Perform McWeeny purification on the non idempotent Atoms Density',1
+     Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
      call mat_init(Dpure,Dval(1)%nrow,Dval(1)%ncol)
-!     call x_to_oao_basis(config%decomp, Dval(1), Dpure)
-!     call Robust_McWeeney_purify(Dpure,purify_failed)     
-!     call mat_init(Dpure2,Dval(1)%nrow,Dval(1)%ncol)
-!     if (.not.purify_failed)call x_from_oao_basis(config%decomp, Dpure, Dpure2)
-!     call mat_free(Dpure)
-     DiagFmat = purify_failed  !revert to diagonalization if fail
+     call mat_assign(Dpure,Dval(1))
+     call Robust_McWeeney_purify(S,Dpure,purify_failed,Nelectrons)
+     DiagFmat = purify_failed !revert to diagonalization if fail
      if (.not.purify_failed) then
-        Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
-        trace = mat_dotproduct(Dpure2,S)-Nelectrons
-        if ( abs(2.0*trace) .gt. THRNEL*Nelectrons)then
+        trace = mat_dotproduct(Dpure,S)
+        if ( abs(2.0E0_realk*trace) .le. THRNEL*Nelectrons)then
+           call mat_assign(Dval(1),Dpure)
+        else
            write(config%lupri,*)'Warning: Descrepancy between 2.0*Tr(DS) after purification and Nelectrons '
-           write(config%lupri,*)'2.0*Tr(DS) = ',2.0*trace,' Nelectrons = ', Nelectrons
+           write(config%lupri,*)'2.0*Tr(DS) = ',2.0E0_realk*trace,' Nelectrons = ', Nelectrons
            write(config%lupri,*)'We fall back to a diagonalization'
            DiagFmat = .TRUE.
-        else
-!           call mat_assign(Dval(1),Dpure2)
         endif
+     else
+        write(config%lupri,*)'McWeeny purification of atomic density failed. We fall back to a diagonalization'
      endif
-!     call mat_free(Dpure2)
+     call mat_free(Dpure)
   ELSE
-     DiagFmat = .TRUE.
+     DiagFmat = .TRUE. 
   ENDIF
   
   IF(DiagFmat)THEN
