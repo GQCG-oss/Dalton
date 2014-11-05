@@ -101,8 +101,10 @@ CONTAINS
       real(realk) :: Etest,E
       logical :: debugProp
       IF(ls%input%dalton%DEBUGDECPACKED)then
+#ifdef MOD_UNRELEASED
 !         call di_decbatchpacked(lupri,luerr,ls,nbast,D)
          call di_decpacked(lupri,luerr,ls,nbast,D)
+#endif
       ENDIF
       IF(ls%setting%scheme%interest)then
          print*,'di_debug_4center_eri_interest'
@@ -3576,7 +3578,7 @@ CONTAINS
                               Jcont = Jcont + integrals(batch_iA,batch_iB,batch_iC,batch_iD)*Dfull(iC,iD)
                            ENDDO
                         ENDDO
-                        JdecFULL(iA,iB)=Jcont
+                        JdecFULL(iA,iB)=JdecFULL(iA,iB) + Jcont
                      enddo
                   enddo
                   deallocate(integrals)
