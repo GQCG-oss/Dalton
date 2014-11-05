@@ -1058,7 +1058,7 @@ C
 #include "qmnpmm.h"
 C
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0)
-      PARAMETER (D21 = DSQRT(D2))
+      PARAMETER (D21 = 1.41421356237309504880D0)
 C     Get capacitancies
       RICAP = D21*NPFCAP(NPFTYP(IATM))/SQRTPI
       RJCAP = D21*NPFCAP(NPFTYP(JATM))/SQRTPI
@@ -1140,7 +1140,7 @@ C
 #include "qmnpmm.h"
 C
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
-      PARAMETER (D21 = DSQRT(D2))
+      PARAMETER (D21 = 1.41421356237309504880D0)
       PARAMETER (D13 = 1.0D0/3.0D0)
 C     Get polarizabilities
       RIPOL = NPFPOL(NPFTYP(IATM))/D3
