@@ -103,7 +103,7 @@ CONTAINS
       IF(ls%input%dalton%DEBUGDECPACKED)then
 #ifdef MOD_UNRELEASED
 !         call di_decbatchpacked(lupri,luerr,ls,nbast,D)
-         call di_decpacked(lupri,luerr,ls,nbast,D)
+!         call di_decpacked(lupri,luerr,ls,nbast,D)
 #endif
       ENDIF
       IF(ls%setting%scheme%interest)then
@@ -3475,7 +3475,7 @@ CONTAINS
       type(lsitem),intent(inout) :: ls
       !
       TYPE(Matrix)  :: J,Jdec,tempm3
-      real(realk),pointer   :: integrals(:,:,:,:)
+      real(realk),pointer   :: integrals(:,:,:,:),integralsFULL(:,:,:,:)
       real(realk) :: CoulombFactor,Jcont,t1,t2
       real(realk),pointer :: Dfull(:,:),JdecFull(:,:)
       integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesAB
@@ -3487,8 +3487,13 @@ CONTAINS
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
       type(batchtoorb), pointer :: batch2orb(:)
       character :: INTSPEC(5)
+      INTSPEC(1) = 'R' 
+      INTSPEC(2) = 'R'
+      INTSPEC(3) = 'R'
+      INTSPEC(4) = 'R'
+      INTSPEC(5) = 'C' !operator
       IF(ls%setting%IntegralTransformGC)THEN
-         call lsquit('di_decpackedJOLD requires .NOGCBASIS',-1)
+         call lsquit('di_decbatchpacked requires .NOGCBASIS',-1)
       ENDIF
       ForcePrint = .TRUE.
       doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
@@ -3520,11 +3525,6 @@ CONTAINS
          k = batch2orb(idx)%norbindex
          batch2orb(idx)%orbindex(k) = iorb
       end do
-      INTSPEC(1) = 'R' 
-      INTSPEC(2) = 'R'
-      INTSPEC(3) = 'R'
-      INTSPEC(4) = 'R'
-      INTSPEC(5) = 'C' !operator
       
       call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesAB,nbatchesAB,INTSPEC)      
       IF(doscreen)then
@@ -3542,6 +3542,12 @@ CONTAINS
 
       call mem_alloc(JdecFULL,nbast,nbast)
       JdecFULL = 0.0E0_realk
+
+
+!      call mem_alloc(integralsFULL,nbast,nbast,nbast,nbast)
+!      call II_get_4center_eri(LUPRI,LUERR,ls%setting,integralsFULL,nbast,nbast,nbast,nbast,intspec)
+!      write(lupri,*) 'integralsFULL'
+!      call ls_output(integralsFULL,1,nbast*nbast,1,nbast*nbast,nbast*nbast,nbast*nbast,1,lupri)
 
       call LSTIMER('START',t1,t2,LUPRI)
       print*,'nbatchesAB',nbatchesAB
@@ -3566,6 +3572,20 @@ CONTAINS
                        & integrals,A,B,C,D,1,1,1,1,&
                        & dimA,dimB,dimC,dimD,intSpec)
 
+!                  write(lupri,*) 'integrals A,B,C,D',A,B,C,D
+!                  write(lupri,*) 'BLOCK ',batch2orb(A)%orbindex(1),':',batch2orb(A)%orbindex(dimA)
+!                  write(lupri,*) 'BLOCK ',batch2orb(B)%orbindex(1),':',batch2orb(B)%orbindex(dimB)
+!                  write(lupri,*) 'BLOCK ',batch2orb(C)%orbindex(1),':',batch2orb(C)%orbindex(dimC)
+!                  write(lupri,*) 'BLOCK ',batch2orb(D)%orbindex(1),':',batch2orb(D)%orbindex(dimD)
+!                  call ls_output(integrals,1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
+!                  write(lupri,*) 'corresponding to '
+!                  call ls_output(integralsFULL(batch2orb(A)%orbindex(1):batch2orb(A)%orbindex(dimA),&
+!                       & batch2orb(B)%orbindex(1):batch2orb(B)%orbindex(dimB),&
+!                       & batch2orb(C)%orbindex(1):batch2orb(C)%orbindex(dimC),&
+!                       & batch2orb(D)%orbindex(1):batch2orb(D)%orbindex(dimD)),&
+!                       & 1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
+
+                  
                   do batch_iB = 1,dimB
                      iB = batch2orb(B)%orbindex(batch_iB)
                      do batch_iA = 1,dimA
@@ -3575,6 +3595,14 @@ CONTAINS
                            iD = batch2orb(D)%orbindex(batch_iD)
                            do batch_iC = 1,dimC
                               iC = batch2orb(C)%orbindex(batch_iC)
+!                              IF(ABS(integrals(batch_iA,batch_iB,batch_iC,batch_iD)-integralsFULL(iA,iB,iC,iD)).GT.1.0E-10)THEN
+!                                 print*,'integrals(batch_iA,batch_iB,batch_iC,batch_iD)',integrals(batch_iA,batch_iB,batch_iC,batch_iD)
+!                                 print*,'integralsFULL(iA,iB,iC,iD)',integralsFULL(iA,iB,iC,iD)
+!                                 print*,'batch_iA,batch_iB,batch_iC,batch_iD',batch_iA,batch_iB,batch_iC,batch_iD
+!                                 print*,'iA,iB,iC,iD',iA,iB,iC,iD
+!                                 call lsquit('elements wrong',-1)
+!                              ENDIF
+
                               Jcont = Jcont + integrals(batch_iA,batch_iB,batch_iC,batch_iD)*Dfull(iC,iD)
                            ENDDO
                         ENDDO
