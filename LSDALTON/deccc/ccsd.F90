@@ -2910,6 +2910,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Memory info - should synchronize the nodes
      ! ***********
      call get_currently_available_memory(MemFree)
+     MemFreeMin = MemFree
      call lsmpi_reduce_realk_min(MemFreeMin,infpar%master,infpar%lg_comm)
      call lsmpi_local_reduction(MemFree,infpar%master)
 
@@ -5004,6 +5005,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
              scheme=0
              mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
              frac_of_total_mem=0.60E0_realk
+             print *,"mem",mem_used,frac_of_total_mem,MemFree
              if (mem_used>frac_of_total_mem*MemFree)then
                 write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
                 write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
