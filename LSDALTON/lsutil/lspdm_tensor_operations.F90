@@ -2687,7 +2687,7 @@ module lspdm_tensor_operations_module
      integer, intent(inout)     :: order(C%mode)
      real(realk), intent(in),    optional :: mem !in GB
      real(realk), intent(inout), target, optional :: wrk(:)
-     integer, intent(in),        optional :: iwrk
+     integer(kind=long), intent(in),     optional :: iwrk
      logical, intent(in),        optional :: force_sync
      !internal variables
      logical :: test_all_master_access,test_all_all_access,master, use_wrk_space,contraction_mode,sync
@@ -2829,7 +2829,7 @@ module lspdm_tensor_operations_module
 
 
 
-     if(test_all_master_access)then
+     if(test_all_all_access)then
         if(present(mem))then
            !use provided memory information to allcate space
 
@@ -2857,6 +2857,7 @@ module lspdm_tensor_operations_module
            else
               nbuffsB = ((iwrk-(A%tsize + tsizeB + C%tsize))/ntens_to_get_from)/tsizeB
            endif
+
            if(nbuffsA==0.or.(nbuffsB==0.and..not.B_dense))then
               print *,"WARNING(tensor_contract_par): the specified work space is too small, switching to allocations"
               use_wrk_space = .false.
@@ -3022,7 +3023,8 @@ module lspdm_tensor_operations_module
                  nel_one_sided = 0
               endif
 
-              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+              !call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
               nel_one_sided = nel_one_sided + nelmsTA
 
            else
@@ -3044,7 +3046,8 @@ module lspdm_tensor_operations_module
                     nel_one_sided = 0
                  endif
 
-                 call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                 !call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                 call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
 
                  nel_one_sided = nel_one_sided + nelmsTB
               else
@@ -3090,7 +3093,8 @@ module lspdm_tensor_operations_module
                     nel_one_sided = 0
                  endif
 
-                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+                 !call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
 
                  nel_one_sided = nel_one_sided + nelmsTA
               else
@@ -3114,7 +3118,8 @@ module lspdm_tensor_operations_module
                        nel_one_sided = 0
                     endif
 
-                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                    !call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
 
                     nel_one_sided = nel_one_sided + nelmsTB
                  else
@@ -3157,7 +3162,8 @@ module lspdm_tensor_operations_module
            ibufA = mod(cm-1,nbuffsA)+1
            call time_start_phase( PHASE_COMM )
            if( alloc_in_dummy )then
-              call lsmpi_wait(reqA(ibufA))
+              !call lsmpi_wait(reqA(ibufA))
+              call tensor_flush_win(A, gtidx=cmidA,only_owner=.true.,local = .true.)
               nel_one_sided = nel_one_sided - nelmsTA
            else
               call tensor_unlock_win(A,cmidA)
@@ -3168,7 +3174,8 @@ module lspdm_tensor_operations_module
               ibufB = mod(cm-1,nbuffsB)+1
               call time_start_phase( PHASE_COMM )
               if( alloc_in_dummy )then
-                 call lsmpi_wait(reqB(ibufB))
+                 !call lsmpi_wait(reqB(ibufB))
+                 call tensor_flush_win(B, gtidx=cmidB,only_owner=.true.,local = .true.)
                  nel_one_sided = nel_one_sided - nelmsTB
               else
                  call tensor_unlock_win(B,cmidB)
