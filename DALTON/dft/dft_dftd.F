@@ -36,7 +36,7 @@ CAMT----------------------------------------------------------------------
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       DIMENSION WORK(LWORK)
 CAMT----------------------------------------------------------------------
 CAMT  Variable info:
@@ -124,7 +124,7 @@ CAMT Perform the memory allocations... (all in one go!)
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       DIMENSION WORK(LWORK)
 !C6AB has dimensions of No. elements x No. elements x Coord No. Refs x Coord No. Refs. x 3
       DIMENSION C6AB(N_ELEM,N_ELEM,MX_CORD,MX_CORD,3)      
@@ -2465,7 +2465,7 @@ C          91          92          93          94
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       DIMENSION FCOORD(NATOMS*3)
       DIMENSION FCOORD2(NATOMS,3)
       DIMENSION CHARGE2(NATOMS)
@@ -2495,15 +2495,15 @@ C
          ELSE
             JATOM = 0
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                   IPCMN = IPCMN + 1
                   JATOM  = JATOM + 1
                   NCENTS = NCENTS + 1
-                  FCOORD(ICRX  ) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
+                  FCOORD(ICRX  ) = PT(IAND(ISYMAX(1,1),ISYMOP))
      &                        *CORD(1,ICENT)
-                  FCOORD(ICRX+1) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
+                  FCOORD(ICRX+1) = PT(IAND(ISYMAX(2,1),ISYMOP))
      &                        *CORD(2,ICENT)
-                  FCOORD(ICRX+2) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  FCOORD(ICRX+2) = PT(IAND(ISYMAX(3,1),ISYMOP))
      &                        *CORD(3,ICENT)
                   CHARGE2(ICNT) = CHARGE(ICENT)
                   FCOORD2(ICNT,1) = FCOORD(ICRX)
@@ -2549,7 +2549,7 @@ C
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       DIMENSION WORK(LWORK)
       DIMENSION TEMPG(NATOMS*3)
       INTEGER NSIGN(8),NBASE(8)

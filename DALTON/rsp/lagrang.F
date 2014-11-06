@@ -1325,7 +1325,7 @@ C  /* Deck SETDEG */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
 C
       DO 50 I = 1, ESRNUC
           DEGEN(I) = 0.0D0
@@ -1375,7 +1375,7 @@ C  /* Deck SDOPER */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
 C
       NCOOR=0
       DEGEN(ATMIND) = 0.0D0

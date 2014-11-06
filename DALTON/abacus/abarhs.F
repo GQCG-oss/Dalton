@@ -2898,7 +2898,7 @@ C  /* Deck ofabh1 */
       INTEGER A, B, C, D
       DIMENSION HWORK(NBAST,NBAST), UMOG(NBAST,NBAST,NBAST,NBAST),
      &          HWRK(NNBAST), IBUF(4,LBUF), MBAS(8), WRK(LWORK)
-#include "ibtfun.h"
+
 C
       KFREE = 1
       LFREE = LWORK
@@ -2978,7 +2978,7 @@ C  /* Deck rumog1 */
       INTEGER P,Q,R,S,X
       DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), IBUF(600), WORK(*)
 #include "inftap.h"      
-#include "ibtfun.h"
+
 C
       LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
       KINT  = 1
@@ -2996,13 +2996,13 @@ C
             DO 100 I = 1, LENGTH
                LABEL = IBUF(I)
                VALUE = WORK(KINT + I - 1)
-               S = IBTAND(LABEL,255)
+               S = IAND(LABEL,255)
                IF (S .EQ. 0) THEN
-                  ICOMP = IBTAND(IBTSHR(LABEL,8),255)
+                  ICOMP = IAND(ISHFT(LABEL,-8),255)
                ELSE IF (ICOMP .EQ. X) THEN
-                  P = IBTAND(IBTSHR(LABEL,24),255)
-                  Q = IBTAND(IBTSHR(LABEL,16),255)
-                  R = IBTAND(IBTSHR(LABEL, 8),255)
+                  P = IAND(ISHFT(LABEL,-24),255)
+                  Q = IAND(ISHFT(LABEL,-16),255)
+                  R = IAND(ISHFT(LABEL, -8),255)
                   UMOGA(P,Q,R,S) = VALUE
                   UMOGA(R,S,P,Q) = VALUE
                   UMOGA(Q,P,S,R) = -VALUE
@@ -4202,7 +4202,7 @@ C
 #include "inforb.h"
 #include "dorps.h"
 #include "inftap.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from REORT2',-1)

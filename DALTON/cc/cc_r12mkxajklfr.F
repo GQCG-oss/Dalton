@@ -1103,7 +1103,7 @@ C  /* Deck r12gradaxd */
 #endif
       parameter (zero = 0.0d0,one = 1.0d0, two = 2.0d0)
 
-      index(i,j) = max(i,j)*(max(i,j)-3)/2 +i+j
+C      index(i,j) = max(i,j)*(max(i,j)-3)/2 +i+j
 
       call qenter('r12gradaxdfr')
 

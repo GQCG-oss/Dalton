@@ -885,7 +885,7 @@ C
       DIMENSION WMAT(NBASISAUX,NBASISAUX),
      &          IBUF(4,LBUF), MBAS(8), WRK(LWORK)
       DIMENSION ICLASSES(4)
-#include "ibtfun.h"
+
 C
       KFREE = 1
       LFREE = LWORK

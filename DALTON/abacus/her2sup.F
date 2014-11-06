@@ -401,7 +401,7 @@ C  /* Deck supsrt */
 C
 #include "iratdef.h"
 #include "inftap.h"
-#include "ibtfun.h"
+
 C
       CALL QENTER('SUP_SORT')
 C
@@ -579,7 +579,7 @@ C     IBITSHR_4 =       0 ! shift for index 4 in (12|34) -- not needed!
       IF(ABS(VALUE).LE.THRQ) GO TO 30
          LABEL  = INT4(IAOINT+I)
 C
-         NP = IBTAND(IBTSHR(LABEL,IBITSHR_1),IBITMASK)
+         NP = IAND(ISHFT(LABEL,-IBITSHR_1),IBITMASK)
 C        HERMIT: We know NP is largest index, thus we don't need NQ,NR,NS
 C                unless we check symmetry below
 C
@@ -588,11 +588,11 @@ C***  ARE TO BE KEPT
 C
          IF (NOSYM) GO TO 25
          ISP = IS(NP)
-         NQ = IBTAND(IBTSHR(LABEL,IBITSHR_2),IBITMASK)
+         NQ = IAND(ISHFT(LABEL,-IBITSHR_2),IBITMASK)
          IF (IS(NQ).EQ.ISP) GO TO 25
-         NR = IBTAND(IBTSHR(LABEL,IBITSHR_3),IBITMASK)
+         NR = IAND(ISHFT(LABEL,-IBITSHR_3),IBITMASK)
          IF (IS(NR).EQ.ISP) GO TO 25
-         NS = IBTAND(       LABEL,    IBITMASK)
+         NS = IAND(       LABEL,    IBITMASK)
          IF (IS(NS).EQ.ISP) GO TO 25
       GO TO 30
   25  CONTINUE
@@ -701,10 +701,10 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
-#include "ibtfun.h"
+
 C
 #if defined (VAR_DUPLCHCK)
-      JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
+      JO(L) = IAND(ISHFT(IBIT((L+31)/32),-((L+31)/32*32-L)),1)
 #endif
 C
 C
@@ -731,10 +731,10 @@ C
       DO 400 I = 1,LENGTH
          LDAI  = IDABUF+I
          IBL   = IBUF(LDAI)
-         NP    = IBTAND(IBTSHR(IBL,IBITSHR_1),IBITMASK)
-         NQ    = IBTAND(IBTSHR(IBL,IBITSHR_2),IBITMASK)
-         NR    = IBTAND(IBTSHR(IBL,IBITSHR_3),IBITMASK)
-         NS    = IBTAND(       IBL           ,IBITMASK)
+         NP    = IAND(ISHFT(IBL,-IBITSHR_1),IBITMASK)
+         NQ    = IAND(ISHFT(IBL,-IBITSHR_2),IBITMASK)
+         NR    = IAND(ISHFT(IBL,-IBITSHR_3),IBITMASK)
+         NS    = IAND(       IBL           ,IBITMASK)
          IJ    = IT(NP)+NQ
          KL    = IT(NR)+NS
          IJKL  = IT(IJ)+KL-IBEF
@@ -746,7 +746,7 @@ C
       IF (JO(IJKL).EQ.1) GO TO 400
          IK32  = (IJKL+31)/32
          IK322 = IK32*32-IJKL
-         IBIT(IK32) = IBTOR(IBIT(IK32),IBTSHL(1,IK322))
+         IBIT(IK32) = IOR(IBIT(IK32),ISHFT(1,IK322))
 #endif
 C
 C***  CONTRIBUTIONS TO P(NP,NQ,NR,NS),P(NP,NR,NQ,NS) AND
@@ -948,10 +948,10 @@ C
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
 C
-#include "ibtfun.h"
+
 C
 #if defined (VAR_DUPLCHCK)
-      JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
+      JO(L) = IAND(ISHFT(IBIT((L+31)/32),-((L+31)/32*32-L)),1)
 #endif
 C
 C***  PREPARE TEMPORARY STORAGE OF P-SUPERMATRIX
@@ -1001,9 +1001,9 @@ C
       LDAI = IDABUF+I
       IBL  = IBUF(LDAI)
 C
-      NQ = IBTAND(IBTSHR(IBL,IBITSHR_2),IBITMASK)
-      NR = IBTAND(IBTSHR(IBL,IBITSHR_3),IBITMASK)
-      NS = IBTAND(       IBL,           IBITMASK)
+      NQ = IAND(ISHFT(IBL,-IBITSHR_2),IBITMASK)
+      NR = IAND(ISHFT(IBL,-IBITSHR_3),IBITMASK)
+      NS = IAND(       IBL,           IBITMASK)
 #if defined (VAR_DUPLCHCK)
 C
 C***  FIRST CHECK IF INTEGRAL HAS OCCURRED BEFORE
@@ -1014,7 +1014,7 @@ C
       IF(JO(IJKL).EQ.1) GO TO 400
       IK31 = (IJKL+31)/32
       IK32 = IK31*32-IJKL
-      IBIT(IK31) = IBTOR(IBIT(IK31),IBTSHL(1,IK32))
+      IBIT(IK31) = IOR(IBIT(IK31),ISHFT(1,IK32))
 #endif
 C
       ISQ = IS(NQ)
@@ -1256,10 +1256,10 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
-#include "ibtfun.h"
+
 C
 #if defined (VAR_DUPLCHCK)
-      JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
+      JO(L) = IAND(ISHFT(IBIT((L+31)/32),-((L+31)/32*32-L)),1)
 #endif
 C
 C*** FIND NUMBER OF STEPS
@@ -1296,10 +1296,10 @@ C
       DO 400 I = 1,LENGTH
       LDAI = IDABUF+I
       IBL = IBUF(LDAI)
-      NP = IBTAND(IBTSHR(IBL,IBITSHR_1),IBITMASK)
-      NQ = IBTAND(IBTSHR(IBL,IBITSHR_2),IBITMASK)
-      NR = IBTAND(IBTSHR(IBL,IBITSHR_3),IBITMASK)
-      NS = IBTAND(       IBL,           IBITMASK)
+      NP = IAND(ISHFT(IBL,-IBITSHR_1),IBITMASK)
+      NQ = IAND(ISHFT(IBL,-IBITSHR_2),IBITMASK)
+      NR = IAND(ISHFT(IBL,-IBITSHR_3),IBITMASK)
+      NS = IAND(       IBL,           IBITMASK)
       IJ    = IT(NP)+NQ
       KL    = IT(NR)+NS
       IJKL  = IT(IJ)+KL-IBEF
@@ -1312,7 +1312,7 @@ C
       IF(JO(IJKL).EQ.1) GO TO 400
       IK32  = (IJKL+31)/32
       IK322 = IK32*32-IJKL
-      IBIT(IK32) = IBTOR(IBIT(IK32),IBTSHL(1,IK322))
+      IBIT(IK32) = IOR(IBIT(IK32),ISHFT(1,IK322))
 #endif
 C
 C***  CONTRIBUTIONS TO P(NP,NQ,NR,NS),P(NP,NR,NQ,NS) AND
@@ -1549,10 +1549,10 @@ C  /* Deck supd */
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
-#include "ibtfun.h"
+
 C
 #if defined (VAR_DUPLCHCK)
-      JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
+      JO(L) = IAND(ISHFT(IBIT((L+31)/32),-((L+31)/32*32-L)),1)
 #endif
 C
 C*** FIND NUMBER OF STEPS
@@ -1601,9 +1601,9 @@ C
       LDAI = IDABUF+I
       IBL = IBUF(LDAI)
 C
-      NQ = IBTAND(IBTSHR(IBL,IBITSHR_2),IBITMASK)
-      NR = IBTAND(IBTSHR(IBL,IBITSHR_3),IBITMASK)
-      NS = IBTAND(       IBL,           IBITMASK)
+      NQ = IAND(ISHFT(IBL,-IBITSHR_2),IBITMASK)
+      NR = IAND(ISHFT(IBL,-IBITSHR_3),IBITMASK)
+      NS = IAND(       IBL,           IBITMASK)
 #if defined (VAR_DUPLCHCK)
 C
 C***  FIRST CHECK IF INTEGRAL HAS OCCURRED BEFORE
@@ -1614,7 +1614,7 @@ C
       IF(JO(IJKL).EQ.1) GO TO 400
       IK31 = (IJKL+31)/32
       IK32 = IK31*32-IJKL
-      IBIT(IK31) = IBTOR(IBIT(IK31),IBTSHL(1,IK32))
+      IBIT(IK31) = IOR(IBIT(IK31),ISHFT(1,IK32))
 #endif
 C
       ISQ = IS(NQ)

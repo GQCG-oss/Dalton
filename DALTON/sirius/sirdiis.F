@@ -1163,7 +1163,7 @@ C        -- if we have tightened screening threshold we must
 C           calculate w/o DIFDEN or the error in the Fock matrix
 C           would correspond to the previous screening threshold.
 C
-#ifdef USE_OPT-SOLVERS
+#ifdef USE_OPT_SOLVERS
          CALL  DIISWEIGHTS(METHOD,ENERG,H1AO,SAOUNP,
      &                     DAOSAV,FAOSAV,EVCSAV,
      &                     INDEVC,NEVC,GVEC,BMAT,CVEC,MXERRV,

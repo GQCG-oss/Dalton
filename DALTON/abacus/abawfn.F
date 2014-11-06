@@ -466,7 +466,7 @@ C
       DIMENSION POMO(NPRIM,*)
 
       INTEGER IOS, ICENT, MCENT, LCENT, I, N
-#include "ibtfun.h"
+
 
 C     ----------------------------------------------------
 C     open wfn file and write header:
@@ -498,13 +498,13 @@ C     ----------------------------------------------------
          ELSE
            LCENT = 0
            DO ISYMOP = 0, MAXOPR
-             IF (IBTAND(ISYMOP,ISTBNU(ICENT)) .EQ. 0) THEN
+             IF (IAND(ISYMOP,ISTBNU(ICENT)) .EQ. 0) THEN
                LCENT = LCENT + 1
                MCENT = MCENT + 1
 
-               X = PT(IBTAND(ISYMAX(1,1),ISYMOP)) * CORD(1,ICENT)
-               Y = PT(IBTAND(ISYMAX(2,1),ISYMOP)) * CORD(2,ICENT)
-               Z = PT(IBTAND(ISYMAX(3,1),ISYMOP)) * CORD(3,ICENT)
+               X = PT(IAND(ISYMAX(1,1),ISYMOP)) * CORD(1,ICENT)
+               Y = PT(IAND(ISYMAX(2,1),ISYMOP)) * CORD(2,ICENT)
+               Z = PT(IAND(ISYMAX(3,1),ISYMOP)) * CORD(3,ICENT)
 
                WRITE(LUWFN,'(1X,A4,A1,I1,1X,A11,I3,A2,3F12.8,A10,F5.1)')
      &             NAMN(ICENT),'#',LCENT,'    (CENTRE',MCENT,') ',

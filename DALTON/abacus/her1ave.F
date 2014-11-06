@@ -46,7 +46,7 @@ C
 #else
 #include "energy.h"
 #endif
-#include "ibtfun.h"
+
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
@@ -144,7 +144,7 @@ C              Run over irreps
 C
                DO 400 IREP = 0, MAXREP
                IF (DOREPS(IREP)) THEN
-                  CHIC = PT(IBTAND(ISYMPC,IREP))
+                  CHIC = PT(IAND(ISYMPC,IREP))
                   CSCX = CHIC*SCX
                   CSCY = CHIC*SCY
                   CSCZ = CHIC*SCZ
@@ -239,7 +239,7 @@ C
 #include "symmet.h"
 #include "dorps.h"
 #include "energy.h"
-#include "ibtfun.h"
+
 C
 C     Multiply densities and Fock elements with integrals
 C
@@ -358,7 +358,7 @@ C
       IF (SECDER) THEN
          DO 300 IREP = 0, MAXREP
          IF (DOREPS(IREP)) THEN
-            CHI = PT(IBTAND(ISYMOP,IREP))
+            CHI = PT(IAND(ISYMOP,IREP))
             CSBX = CHI*SIGNBX
             CSBY = CHI*SIGNBY
             CSBZ = CHI*SIGNBZ
@@ -521,7 +521,7 @@ C
 #else
 #include "energy.h"
 #endif
-#include "ibtfun.h"
+
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
@@ -659,7 +659,7 @@ C
                TERMZZ = DAZZ00 + DA0Z0Z + DA0Z0Z + DA00ZZ
                DO 400 IREP = 0, MAXREP
                IF (DOREPS(IREP)) THEN
-                  CHIB = PT(IBTAND(ISYMOP,IREP))
+                  CHIB = PT(IAND(ISYMOP,IREP))
                   CSBX = CHIB*SIGNBX
                   CSBY = CHIB*SIGNBY
                   CSBZ = CHIB*SIGNBZ
@@ -769,7 +769,7 @@ C
             IF (SECDER) THEN
                DO 500 IREP = 0, MAXREP
                IF (DOREPS(IREP)) THEN
-                  CHIB = PT(IBTAND(ISYMOP,IREP))
+                  CHIB = PT(IAND(ISYMOP,IREP))
                   CSBX = CHIB*SIGNBX
                   CSBY = CHIB*SIGNBY
                   CSBZ = CHIB*SIGNBZ
@@ -897,8 +897,8 @@ C
                IF (NCENTB .EQ. KCENTC) FBC = D2
                DO 600 IREP = 0, MAXREP
                IF (DOREPS(IREP)) THEN
-                  CHIB = PT(IBTAND(ISYMOP,IREP))
-                  CHIC = PT(IBTAND(ISYMPC,IREP))
+                  CHIB = PT(IAND(ISYMOP,IREP))
+                  CHIC = PT(IAND(ISYMPC,IREP))
                   CSBX = CHIB*SIGNBX
                   CSBY = CHIB*SIGNBY
                   CSBZ = CHIB*SIGNBZ
@@ -1074,7 +1074,7 @@ C
 #include "dorps.h"
 #include "dipole.h"
 C
-#include "ibtfun.h"
+
 C
          NAX = 3*NCENTA - 2
          NAY = 3*NCENTA - 1
@@ -1137,7 +1137,7 @@ C
   400       CONTINUE
             DO 500 IREP = 0, MAXREP
             IF (DOREPS(IREP)) THEN
-               CHI  = PT(IBTAND(ISYMOP,IREP))
+               CHI  = PT(IAND(ISYMOP,IREP))
                CSBX = CHI*SIGNBX
                CSBY = CHI*SIGNBY
                CSBZ = CHI*SIGNBZ
@@ -1246,7 +1246,7 @@ C
 #include "cbiqpg.h"
 #include "difsec.h"
 C
-#include "ibtfun.h"
+
 C
          NAX = 3*NCENTA - 2
          NAY = 3*NCENTA - 1
@@ -1354,7 +1354,7 @@ C
   400       CONTINUE
             DO 500 IREP = 0, MAXREP
             IF (DOREPS(IREP)) THEN
-               CHI  = PT(IBTAND(ISYMOP,IREP))
+               CHI  = PT(IAND(ISYMOP,IREP))
                CSBX = CHI*SIGNBX
                CSBY = CHI*SIGNBY
                CSBZ = CHI*SIGNBZ
@@ -1518,7 +1518,7 @@ C
       LOGICAL DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(MAXCMP)
       DIMENSION PCMINT(KCKTAB,7,NTSIRR)
-#include "ibtfun.h"
+
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
