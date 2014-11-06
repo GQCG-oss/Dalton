@@ -263,7 +263,7 @@ module lspdm_basic_module
        print *,"THIS MESSAGE SHOULD NEVER APPEAR,WHY ARE MPI_WINs ALLOCD?"
 #endif
 
-       vector_size = dble(arr%nwins)
+       vector_size = dble(arr%nwins*ls_mpik)
        call mem_dealloc(arr%wi)
        !$OMP CRITICAL
        tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
@@ -299,7 +299,7 @@ module lspdm_basic_module
        arr%nwins = arr%ntiles
     endif
 
-    vector_size = dble( arr%nwins )
+    vector_size = dble( arr%nwins * ls_mpik ) 
    
     call mem_alloc( arr%wi, arr%nwins )
 
@@ -339,18 +339,18 @@ module lspdm_basic_module
     lg_me     = infpar%lg_mynum
     lg_master = (infpar%master==lg_me)
 #else
-    call lsquit("Do not use MPI-WINDOWS wihout MPI",lspdm_errout)
+    call lsquit("Do not use MPI-WINDOWS without MPI",lspdm_errout)
 #endif
 
     !get zero dummy matrix in size of largest tile --> size(dummy)=tsize
     if( alloc_in_dummy )then
-       call memory_allocate_dummy(arr, arr%tsize*arr%nlti)
+       call memory_allocate_dummy(arr, nel = arr%tsize*arr%nlti)
 #ifdef VAR_MPI
        call memory_allocate_window(arr,nwins = 1)
        call lsmpi_win_create(arr%dummy,arr%wi(1),arr%tsize*arr%nlti,infpar%lg_comm) 
 #endif
     else
-       call memory_allocate_dummy(arr)
+       call memory_allocate_dummy( arr, nel = 1)
        !prepare the integer window in the array --> ntiles windows should be created
        call memory_allocate_window(arr)
     endif
@@ -417,7 +417,7 @@ module lspdm_basic_module
           arr%ti(loc_idx)%gt=i
           
           call mem_alloc(arr%ti(loc_idx)%d,arr%mode)
-          vector_size = dble(size(arr%ti(loc_idx)%d))
+          vector_size = dble(size(arr%ti(loc_idx)%d)*INTK)
           !$OMP CRITICAL
           tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
           tensor_memory_in_use  = tensor_memory_in_use  + vector_size
