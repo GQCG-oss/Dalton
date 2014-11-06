@@ -23,13 +23,14 @@ MODULE dal_interface
    use AO_TypeType, only: AOITEM
    use files, only: lsclose, lsopen
    use BUILDAOBATCH, only: build_batchesOfAOs, build_ao, &
-        & determine_maxBatchOrbitalsize
+        & determine_maxBatchOrbitalsize, build_minimalbatchesofaos
    use daltoninfo, only: ls_free, build_ccfragmentlsitem
    use AO_Type, only: free_aoitem
    use lowdin_module, only: lowdin_diag
    use IntegralInterfaceDEC,only: II_precalc_decscreenmat, &
         & II_getBatchOrbitalScreenK, II_getBatchOrbitalScreen, &
-        & ii_get_decpacked4center_k_eri,ii_get_decpacked4center_j_eri
+        & ii_get_decpacked4center_k_eri,ii_get_decpacked4center_j_eri,&
+        & ii_get_decbatchpacked
    use memory_handling,only: mem_alloc, mem_dealloc
    use ks_settings, only: incremental_scheme, SaveF0andD0
    use lsdalton_fock_module, only: lsint_fock_data
@@ -74,6 +75,7 @@ END INTERFACE
         & di_decpackedJ, &
         & di_decpackedJOLD, &
 #endif
+!        & di_decbatchpacked, &
 !        & di_debug_ccfragment, &
         & di_get_fock_LSDALTON, &
         & di_GET_GbDs, &
@@ -98,11 +100,12 @@ CONTAINS
       type(matrix)          :: S,D
       real(realk) :: Etest,E
       logical :: debugProp
-#ifdef MOD_UNRELEASED
       IF(ls%input%dalton%DEBUGDECPACKED)then
-         call di_decpacked(lupri,luerr,ls,nbast,D)
-      ENDIF
+#ifdef MOD_UNRELEASED
+!         call di_decbatchpacked(lupri,luerr,ls,nbast,D)
+!         call di_decpacked(lupri,luerr,ls,nbast,D)
 #endif
+      ENDIF
       IF(ls%setting%scheme%interest)then
          print*,'di_debug_4center_eri_interest'
          call di_debug_4center_eri_interest(lupri,luerr,ls,nbast)
@@ -2135,7 +2138,7 @@ CONTAINS
 !!$    END SUBROUTINE di_debug_ccfragment
 #endif
 
-   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls)
+   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls,EcontADMMout)
    ! ===================================================================
    ! di_get_fock obtains total fock matrix and corresponding energy.
    ! WE have to go through the interface to dalton before the fock
@@ -2151,6 +2154,7 @@ CONTAINS
       TYPE(Matrix), INTENT(INOUT) :: F(ndmat)
       type(lsitem) :: ls
       real(realk), INTENT(INOUT) :: Etotal(ndmat)
+      real(realk),optional :: EcontADMMout(5)
       !local variables
       real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp,EK3,EK2
       integer nbast,idmat,LUADMM
@@ -2161,7 +2165,7 @@ CONTAINS
 #ifdef HAS_PCMSOLVER
       type(matrix) :: fockPCM(ndmat)
       real(realk)  :: Epol
-#endif      
+#endif
       !
       PRINT_EK3 = ls%setting%scheme%PRINT_EK3
       nbast = D(1)%nrow
@@ -2229,32 +2233,30 @@ CONTAINS
                   write(lupri,*) "===================================================================="
                   write(lupri,*) "ADMMmin: K(D) - k(d) - X(D) + x(d) = ",EcontADMM(5)                  
                   write(lupri,*) "===================================================================="
-                  CALL LSOPEN(LUADMM,'ADMMmin.dat','UNKNOWN','FORMATTED')
-                  WRITE(LUADMM,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)
-                  CALL LSCLOSE(LUADMM,'KEEP')
+!                  write(lupri,*) "ADMMminDATA"
+!                  CALL LSOPEN(LUADMM,'ADMMmin.dat','UNKNOWN','FORMATTED')
+!                  WRITE(LUADMM,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
+!                  WRITE(LUPRI,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
+!                  CALL LSCLOSE(LUADMM,'KEEP')
                ENDIF
             ENDIF
             
             IF(ls%input%dalton%ADMMBASISFILE)THEN
-               !add full exchange matrix contribution to the Coulomb matrix - Standard convergence
-               call mat_daxpy(1.E0_realk,Ksave,F(idmat))
                call mat_free(Ksave)
-               Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
-            ELSE
-               Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
-               call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
-               call mat_init(Ksave,nbast,nbast)
-               call mat_zero(Ksave)
-               write(lupri,*) "ADMM exchange energy contribution: ",fockenergy_f(K(idmat),D(idmat),Ksave,&
-                    & ls%input%dalton%unres,ls%input%potnuc,lupri)
-               call mat_free(Ksave)
-               Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
-               Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
-               EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
-               write(lupri,*) "ADMM EdXC: ",EdXC(idmat)
-               write(lupri,*) "ADMM exchange energy contribution: ",EADMM
-               call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
             ENDIF
+            Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
+            call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
+            call mat_init(Ksave,nbast,nbast)
+            call mat_zero(Ksave)
+            write(lupri,*) "ADMM exchange energy contribution: ",fockenergy_f(K(idmat),D(idmat),Ksave,&
+                 & ls%input%dalton%unres,ls%input%potnuc,lupri)
+            call mat_free(Ksave)
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+            Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
+            EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
+            write(lupri,*) "ADMM EdXC: ",EdXC(idmat)
+            write(lupri,*) "ADMM exchange energy contribution: ",EADMM
+            call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
                      
             call mat_free(K(idmat))
             call mat_free(dXC(idmat))
@@ -2299,6 +2301,7 @@ CONTAINS
       do idmat=1,ndmat
          call mat_daxpy(1E0_realk,H1,F(idmat))
       enddo
+      IF(present(EcontADMMout))EcontADMMout = EcontADMM
    END SUBROUTINE di_get_fock_LSDALTON
 
    real(realk) function fockenergy_F(F,D,H1,unres,pot_nuc,lupri)
@@ -3068,7 +3071,7 @@ CONTAINS
       ExchangeFactor = -1E0_realk
       call mat_init(K,nbast,nbast)
       call mat_zero(K)
-      CALL II_get_exchange_mat(lupri,luerr,ls%setting,D,1,.TRUE.,K)
+      CALL II_get_exchange_mat(lupri,luerr,ls%setting,D,1,.FALSE.,K)
 
       call mem_alloc(KdecLocFULL,nbast,nbast)
       KdecLocFULL = 0E0_realk
@@ -3464,6 +3467,198 @@ CONTAINS
     END SUBROUTINE DI_DECPACKEDJOLD
 
 #endif
+
+    SUBROUTINE di_decbatchpacked(lupri,luerr,ls,nbast,Dmat)
+      IMPLICIT NONE
+      TYPE(Matrix),intent(in) :: Dmat
+      integer,intent(in)      :: lupri,luerr,nbast
+      type(lsitem),intent(inout) :: ls
+      !
+      TYPE(Matrix)  :: J,Jdec,tempm3
+      real(realk),pointer   :: integrals(:,:,:,:),integralsFULL(:,:,:,:)
+      real(realk) :: CoulombFactor,Jcont,t1,t2
+      real(realk),pointer :: Dfull(:,:),JdecFull(:,:)
+      integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesAB
+      integer :: A,B,C,D,dimA,dimB,dimC,dimD,batch_iA,batch_iB
+      integer :: batch_iC,batch_iD,iC,iD
+      integer :: i,k,MinAObatch,MaxAllowedDim,MaxActualDim,iA,iB
+      logical :: doscreen,fullrhs,NOFAMILY,ForcePrint
+      TYPE(DECscreenITEM)    :: DecScreen
+      integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
+      type(batchtoorb), pointer :: batch2orb(:)
+      character :: INTSPEC(5)
+      INTSPEC(1) = 'R' 
+      INTSPEC(2) = 'R'
+      INTSPEC(3) = 'R'
+      INTSPEC(4) = 'R'
+      INTSPEC(5) = 'C' !operator
+      IF(ls%setting%IntegralTransformGC)THEN
+         call lsquit('di_decbatchpacked requires .NOGCBASIS',-1)
+      ENDIF
+      ForcePrint = .TRUE.
+      doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
+
+      NOFAMILY = ls%setting%SCHEME%NOFAMILY
+      ls%setting%SCHEME%NOFAMILY = .TRUE.
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+      
+      nullify(orb2batch)
+      nullify(batchdim)
+      nullify(batch2orb)
+      nullify(batchsize)
+      nullify(batchindex)
+      
+      call mem_alloc(orb2batch,nbast)
+      call build_minimalbatchesofAOS(lupri,ls%setting,&
+           & nbast,batchsize,batchdim,batchindex,nbatchesAB,orb2Batch,'R')
+      call mem_alloc(batch2orb,nbatchesAB)
+      do idx=1,nbatchesAB
+         call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
+         batch2orb(idx)%orbindex = 0
+         batch2orb(idx)%norbindex = 0
+      end do
+      do iorb=1,nbast
+         idx = orb2batch(iorb)
+         batch2orb(idx)%norbindex = batch2orb(idx)%norbindex+1
+         k = batch2orb(idx)%norbindex
+         batch2orb(idx)%orbindex(k) = iorb
+      end do
+      
+      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesAB,nbatchesAB,INTSPEC)      
+      IF(doscreen)then
+         call II_getBatchOrbitalScreen(DecScreen,ls%setting,&
+              & nbast,nbatchesAB,nbatchesAB,batchsize,batchsize,batchindex,&
+              & batchindex,batchdim,batchdim,INTSPEC,lupri,luerr)
+      endif
+
+      call mem_alloc(Dfull,Dmat%nrow,Dmat%ncol)
+      call mat_to_full(Dmat,1E0_realk,DFULL)
+      CoulombFactor = 2.0E0_realk
+      call mat_init(J,nbast,nbast)
+      call mat_zero(J)
+      CALL II_get_Coulomb_mat(lupri,luerr,ls%setting,Dmat,J,1)
+
+      call mem_alloc(JdecFULL,nbast,nbast)
+      JdecFULL = 0.0E0_realk
+
+
+!      call mem_alloc(integralsFULL,nbast,nbast,nbast,nbast)
+!      call II_get_4center_eri(LUPRI,LUERR,ls%setting,integralsFULL,nbast,nbast,nbast,nbast,intspec)
+!      write(lupri,*) 'integralsFULL'
+!      call ls_output(integralsFULL,1,nbast*nbast,1,nbast*nbast,nbast*nbast,nbast*nbast,1,lupri)
+
+      call LSTIMER('START',t1,t2,LUPRI)
+      print*,'nbatchesAB',nbatchesAB
+      BatchD: do D = 1,nbatchesAB
+         dimD = batchdim(D)
+
+         BatchC: do C = 1,nbatchesAB
+            dimC = batchdim(C)
+
+            BatchB: do B = 1,nbatchesAB
+               dimB = batchdim(B)
+               
+               BatchA: do A = 1,nbatchesAB
+                  dimA = batchdim(A)
+                  
+                  nullify(integrals)
+                  allocate(integrals(dimA,dimB,dimC,dimD))
+                  integrals = 0.0E0_realk
+                  IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%batchGab(A,B)%p
+                  IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(C,D)%p
+                  call II_GET_DECBATCHPACKED(LUPRI,LUERR,ls%SETTING,&
+                       & integrals,A,B,C,D,1,1,1,1,&
+                       & dimA,dimB,dimC,dimD,intSpec)
+
+!                  write(lupri,*) 'integrals A,B,C,D',A,B,C,D
+!                  write(lupri,*) 'BLOCK ',batch2orb(A)%orbindex(1),':',batch2orb(A)%orbindex(dimA)
+!                  write(lupri,*) 'BLOCK ',batch2orb(B)%orbindex(1),':',batch2orb(B)%orbindex(dimB)
+!                  write(lupri,*) 'BLOCK ',batch2orb(C)%orbindex(1),':',batch2orb(C)%orbindex(dimC)
+!                  write(lupri,*) 'BLOCK ',batch2orb(D)%orbindex(1),':',batch2orb(D)%orbindex(dimD)
+!                  call ls_output(integrals,1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
+!                  write(lupri,*) 'corresponding to '
+!                  call ls_output(integralsFULL(batch2orb(A)%orbindex(1):batch2orb(A)%orbindex(dimA),&
+!                       & batch2orb(B)%orbindex(1):batch2orb(B)%orbindex(dimB),&
+!                       & batch2orb(C)%orbindex(1):batch2orb(C)%orbindex(dimC),&
+!                       & batch2orb(D)%orbindex(1):batch2orb(D)%orbindex(dimD)),&
+!                       & 1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
+
+                  
+                  do batch_iB = 1,dimB
+                     iB = batch2orb(B)%orbindex(batch_iB)
+                     do batch_iA = 1,dimA
+                        iA = batch2orb(A)%orbindex(batch_iA)
+                        Jcont = 0E0_realk
+                        do batch_iD = 1,dimD
+                           iD = batch2orb(D)%orbindex(batch_iD)
+                           do batch_iC = 1,dimC
+                              iC = batch2orb(C)%orbindex(batch_iC)
+!                              IF(ABS(integrals(batch_iA,batch_iB,batch_iC,batch_iD)-integralsFULL(iA,iB,iC,iD)).GT.1.0E-10)THEN
+!                                 print*,'integrals(batch_iA,batch_iB,batch_iC,batch_iD)',integrals(batch_iA,batch_iB,batch_iC,batch_iD)
+!                                 print*,'integralsFULL(iA,iB,iC,iD)',integralsFULL(iA,iB,iC,iD)
+!                                 print*,'batch_iA,batch_iB,batch_iC,batch_iD',batch_iA,batch_iB,batch_iC,batch_iD
+!                                 print*,'iA,iB,iC,iD',iA,iB,iC,iD
+!                                 call lsquit('elements wrong',-1)
+!                              ENDIF
+
+                              Jcont = Jcont + integrals(batch_iA,batch_iB,batch_iC,batch_iD)*Dfull(iC,iD)
+                           ENDDO
+                        ENDDO
+                        JdecFULL(iA,iB)=JdecFULL(iA,iB) + Jcont
+                     enddo
+                  enddo
+                  deallocate(integrals)
+                  nullify(integrals)
+                  
+               ENDDO BatchA
+            ENDDO BatchB
+         ENDDO BatchC
+      ENDDO BatchD
+      call LSTIMER('DECJOLD',t1,t2,LUPRI,ForcePrint)
+      call mat_init(Jdec,nbast,nbast)
+      call mat_set_from_full(JdecFULL,CoulombFactor,Jdec)
+      call mem_dealloc(JdecFULL)
+
+      nullify(ls%setting%LST_GAB_LHS)
+      nullify(ls%setting%LST_GAB_RHS)
+      call free_decscreen(DECSCREEN)
+      call mem_dealloc(orb2batch)
+      call mem_dealloc(batchdim)
+      call mem_dealloc(batchsize)
+      call mem_dealloc(batchindex)
+      do A=1,nbatchesAB
+         call mem_dealloc(batch2orb(A)%orbindex)
+         nullify(batch2orb(A)%orbindex)
+      end do
+      call mem_dealloc(batch2orb)
+      
+      call mat_init(tempm3,nbast,nbast)
+      call mat_add(1E0_realk,Jdec,-1E0_realk,J,tempm3)
+      write(lupri,*) 'QQQ DI_DECBATCHPACKED J STD    ',mat_trab(J,J)
+      write(lupri,*) 'QQQ DI_DECBATCHPACKED J DECPACK',mat_trab(Jdec,Jdec)
+      write(lupri,*) 'QQQ DIFF',ABS(mat_trab(tempm3,tempm3))
+      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
+         write(lupri,*)'QQQ SUCCESFUL DI_DECBATCHPACKED TEST'
+      ELSE
+         WRITE(lupri,*)'the Jref'
+         call mat_print(J,1,nbast,1,nbast,lupri)
+         WRITE(lupri,*)'the Jdec'
+         call mat_print(Jdec,1,nbast,1,nbast,lupri)
+         WRITE(lupri,*)'the Diff'
+         call mat_print(tempm3,1,nbast,1,nbast,lupri)
+         CALL lsQUIT('DI_DECBATCHPACKED TEST FAILED',lupri)
+      ENDIF
+      call mat_free(J)
+      call mat_free(Jdec)
+      call mat_free(tempm3)
+      ls%setting%SCHEME%NOFAMILY = NOFAMILY
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+    END SUBROUTINE di_decbatchpacked
+
     SUBROUTINE di_debug_4center_eri_interest(lupri,lu_err,ls,nbast)
       IMPLICIT NONE
       integer,intent(in)      :: lupri,lu_err,nbast

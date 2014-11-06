@@ -1734,7 +1734,7 @@ contains
     implicit none
     type(decorbital), intent(in) :: orb
     integer, intent(in) :: iunit
-    integer(kind=8) :: orbitalnumber64,centralatom64,numberofatoms64,atoms64(orb%numberofatoms)
+    integer(kind=long) :: orbitalnumber64,centralatom64,numberofatoms64,atoms64(orb%numberofatoms)
 
     orbitalnumber64 = orb%orbitalnumber
     centralatom64   = orb%centralatom
@@ -1754,12 +1754,13 @@ contains
     type(decorbital) :: orb
     integer, intent(in) :: iunit
     integer :: i
-    integer(kind=8) :: orbitalnumber64,centralatom64,numberofatoms64
+    integer(kind=long) :: orbitalnumber64,centralatom64,numberofatoms64
     integer(kind=4) :: orbitalnumber32,centralatom32,numberofatoms32
-    integer(kind=8),pointer :: atoms64(:)
+    integer(kind=long),pointer :: atoms64(:)
     integer(kind=4),pointer :: atoms32(:)
 
     !ConvertFrom64Bit: if(DECinfo%convert64to32) then
+    !files always written in 64 bit integers
        read(iunit) orbitalnumber64
        read(iunit) centralatom64
        read(iunit) numberofatoms64

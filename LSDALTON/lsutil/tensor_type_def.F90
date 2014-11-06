@@ -55,7 +55,7 @@ module tensor_type_def_module
      integer :: ntiles,tsize                         !batching of tiles in one mode, number of tiles, tilesize (ts^mode), amount of modes of the array
      integer :: nlti                                 !number of local tiles
      integer :: offset                               !use offset in nodes for the distribution of arrays
-     integer :: access_type                          !type of access to the array
+     integer,pointer :: access_type                          !type of access to the array
      logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
      !logical :: allocd_w_c_p                         ! allocated with comm_threads or not?
      logical :: initialized = .false.                !check variable if array is initialized

@@ -100,6 +100,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mcmodel=medium")
     endif()
 
+# Simen: added to include c++ libraries needed for the final linking 
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -pgcpplibs")
+
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")

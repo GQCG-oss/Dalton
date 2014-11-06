@@ -168,6 +168,7 @@ contains
     DECinfo%PairEstimateIgnore      = .false.
     DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
     DECinfo%EstimateInitAtom        = 1
+    DECinfo%PairEstimateModel       = MODEL_MP2
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory     = 0E0_realk
@@ -249,7 +250,7 @@ contains
   !> configuration structure accordingly.
   !> \author Kasper Kristensen
   !> \date September 2010
-  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc,doF12)
+  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc,doF12,doRIMP2)
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
@@ -265,6 +266,8 @@ contains
     logical,intent(in) :: fullcalc
     !> do we do F12 calc (is a CABS basis required?)
     logical,intent(inout) :: doF12
+    !> do we do RIMP2 calc (is a AUX basis required?)
+    logical,intent(inout) :: doRIMP2
     logical,save :: already_called = .false.
     integer :: nworkers
 
@@ -372,6 +375,7 @@ contains
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles = .false.  
           DECinfo%NO_MO_CCSD  = .true.
+          doRIMP2 = .TRUE.
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -558,10 +562,12 @@ contains
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
        case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
+#endif
        case('.CCSDFORCE_SCHEME');         DECinfo%force_scheme         = .true.
                                           read(input,*) DECinfo%en_mem
        case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
+#ifdef MOD_UNRELEASED
        ! - PNO-CCSD SPECIFIC KEYWORDS
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
@@ -625,6 +631,9 @@ contains
           DECinfo%EstimateINITradius = DECinfo%EstimateINITradius/bohr_to_angstrom
        case('.ESTIMATEINITATOM')
           read(input,*) DECinfo%EstimateInitAtom
+       case('.PAIRESTIMATEMODEL')
+          read(input,*) myword
+          call find_model_number_from_input(myword, DECinfo%PairEstimateModel)
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom

@@ -160,6 +160,7 @@ implicit none
   config%doplt=.false.
   !F12 calc?
   config%doF12=.false.
+  config%doRIMP2=.false.
   config%doTestMPIcopy = .false.
   config%type_tensor_debug = .false.
   config%skipscfloop = .false.
@@ -637,6 +638,9 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
+            CASE('.MWPURIFYATOMSTART');               
+               !Perform McWeeny purification on the non idempotent Atoms Density
+               config%opt%MWPURIFYATOMSTART=.TRUE.
 #ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
@@ -700,7 +704,7 @@ DO
    DECInput: IF (WORD(1:5) == '**DEC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12)
+      call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12,config%doRIMP2)
    END IF DECInput
 
    ! Input for full molecular CC calculation
@@ -708,7 +712,7 @@ DO
    CCinput: IF (WORD(1:4) == '**CC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12)
+      call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12,config%doRIMP2)
    END IF CCinput
 
 
@@ -1100,6 +1104,8 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
+        CASE('.SCALAPACKNODES');
+           READ(LUCMD,*) infpar%ScalapackNodes
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
@@ -3461,6 +3467,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    if(config%integral%densfit .AND. (.NOT. config%integral%basis(AuxBasParam)))then
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified .DENSFIT in the dalton input but not supplied a fitting basis set'
+      CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
+   endif
+   if(config%doRIMP2 .AND. (.NOT. config%integral%basis(AuxBasParam)))then
+      WRITE(config%LUPRI,'(/A)') &
+           &     'Warning: You have specified .RIMP2 in the dalton input but not supplied a fitting basis set'
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
    if(config%doF12 .AND. (.NOT. config%integral%basis(CABBasParam)))then

@@ -28,7 +28,7 @@ f.add(string = 'Center-of-mass',
 
 f.add(string = 'omega B',
       ignore_sign = True,
-      abs_tolerance = 1.0e-4)
+      rel_tolerance = 1.0e-4)
 
 f.add(string = 'B term',
       rel_tolerance = 1.0e-3)

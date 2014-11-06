@@ -20,6 +20,6 @@ if [[ -e  DALTON-Source.tar.gz ]]; then
  cd DALTON-Source
  ./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage --blas=builtin --lapack=builtin -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-debug-rapid" build
  cd build
- ctest -D Nightly -L rapid
+ ctest -D Nightly --track NightlyMakeRelease -L rapid
 fi
 exit 0

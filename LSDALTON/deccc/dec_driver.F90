@@ -639,13 +639,16 @@ subroutine print_dec_info()
    if(DECinfo%PairEstimate) then
         write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom)           = ',&
           & DECinfo%pair_distance_threshold*bohr_to_angstrom
-        if (DECinfo%no_orb_based_fragopt) then 
-           write(LU,'(a,e15.3)') 'Use Pair Estimate initialisation radius (Angstrom)  = ',&
-             & DECinfo%estimateINITradius*bohr_to_angstrom
-        else
+        if (DECinfo%decco) then 
            write(LU,'(a,i5)') 'Use Pair Estimate initialisation number of atom     = ',&
              & DECinfo%estimateInitAtom
+        else
+           write(LU,'(a,e15.3)') 'Use Pair Estimate initialisation radius (Angstrom)  = ',&
+             & DECinfo%estimateINITradius*bohr_to_angstrom
         end if
+        ! Pair estimates
+        write(LU,'(a,a)')     'Pair estimate model                                 =     ', &
+             & DECinfo%cc_models(DECinfo%PairEstimateModel)
    endif
 
    write(LU,'(a,g15.3)') 'Simple orbital thr.                                 = ',&
@@ -699,6 +702,8 @@ subroutine print_dec_info()
       ENDIF
    ENDIF
   ENDIF
+  write(LU,*)
+
   ! print cc parameters
   write(LU,'(/,a)') '--------------------------'
   write(LU,'(a)')   '  Coupled-cluster input   '
@@ -1267,12 +1272,12 @@ subroutine print_dec_info()
        ! fragment opt. AND estimate pair fragments
        ! *****************************************
 
-       ! All estimates are done using MP2, set model for all fragments to MP2
-       ! (MyMolecule%ccmodel is then redefined below based on these estimates)
+       ! Which model to use for pair estimate calculations?
+       ! (MyMolecule%ccmodel is later redefined based on these estimates)
        do i=1,nfrags
           do j=i+1,nfrags
-             MyMolecule%ccmodel(i,j) = MODEL_MP2
-             MyMolecule%ccmodel(j,i) = MODEL_MP2
+             MyMolecule%ccmodel(i,j) = DECinfo%PairEstimateModel
+             MyMolecule%ccmodel(j,i) = DECinfo%PairEstimateModel
           end do
        end do
 
@@ -1330,9 +1335,9 @@ subroutine print_dec_info()
        ! Get estimated pair fragment energies for occupied partitioning scheme
        call mem_alloc(FragEnergiesPart,nfrags,nfrags)
        IF(DECinfo%onlyVirtPart)THEN
-          call get_virtfragenergies(nfrags,MODEL_MP2,FragEnergies,FragEnergiesPart)
+          call get_virtfragenergies(nfrags,DECinfo%PairEstimateModel,FragEnergies,FragEnergiesPart)
        ELSE
-          call get_occfragenergies(nfrags,MODEL_MP2,FragEnergies,FragEnergiesPart)
+          call get_occfragenergies(nfrags,DECinfo%PairEstimateModel,FragEnergies,FragEnergiesPart)
        ENDIF
        ! We do not want to consider atomic fragment energies now so zero them
        ! (they might be zero already but in this way we avoid wrong print out below).

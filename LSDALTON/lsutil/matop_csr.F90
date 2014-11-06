@@ -740,8 +740,12 @@ contains
     type(Matrix), intent(in) :: A
 #ifdef VAR_CSR
     integer :: i
+    integer(kind=long) :: ncol,nrow,nnz 
 
-    WRITE(iunit) A%nnz, A%nrow, A%ncol
+    nnz = A%nnz
+    nrow = A%Nrow
+    ncol = A%Ncol
+    WRITE(iunit) nnz, nrow, ncol
     WRITE(iunit) (A%val(I),I=1,A%nnz)
     WRITE(iunit) (A%col(I),I=1,A%nnz)
     WRITE(iunit) (A%row(I),I=1,A%nrow+1)
@@ -753,7 +757,8 @@ contains
     integer, intent(in) :: iunit
     type(Matrix), intent(inout) :: A
 #ifdef VAR_CSR
-    integer :: i, nnz,ncol,nrow
+    integer :: i
+    integer(kind=long) :: ncol,nrow,nnz 
 
     READ(iunit) nnz, nrow, ncol
     IF(Nrow.EQ.A%Nrow.AND.Ncol.EQ.A%Ncol)THEN

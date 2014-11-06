@@ -1515,6 +1515,7 @@ end subroutine mat_dense_insert_section
     type(Matrix), intent(in) :: A
 !    character(len=1), allocatable :: cmpd(:)
     integer :: i
+    integer(kind=long) :: ncol,nrow 
 
     if (.not.ASSOCIATED(A%elms)) CALL LSQUIT( 'A in mat_dense_WRITE_TO_DISK non-existant',-1)
 
@@ -1527,7 +1528,9 @@ end subroutine mat_dense_insert_section
  !   REWIND(iunit)
 !   if (.not.cfg_compress) then
 
-    WRITE(iunit) A%Nrow, A%Ncol
+    nrow = A%Nrow
+    ncol = A%Ncol
+    write(iunit) Nrow, Ncol
     WRITE(iunit)(A%elms(I),I=1,A%nrow*A%ncol)
     !WRITE(iunit) A%Nrow, A%Ncol
     !WRITE(iunit) A%elms
@@ -1557,7 +1560,8 @@ end subroutine mat_dense_insert_section
     implicit none
     integer, intent(in) :: iunit
     type(Matrix), intent(inout) :: A
-    integer :: i,Nrow,Ncol
+    integer :: i
+    integer(kind=long) :: Nrow,Ncol
 !   logical :: cfg_compress = .false.
 
 !    REWIND iunit

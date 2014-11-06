@@ -33,14 +33,25 @@ subroutine PASSsub
   integer :: iPrimLabelAux
   integer :: iseg,ifile,iseglabel
   logical :: Gen,SegQ,Segp,Seg,Seg1Prim,LOOPUNROLL,DoOpenMP,DoOpenACC
-  logical :: Collapse,CPU
+  logical :: Collapse,CPU,WRITETHING
+  integer :: nTUVTMPP2
   integer,pointer :: IfacX(:,:),TUVindexX(:,:)
+  logical,pointer :: UniqeTUVindexX(:,:),UniqeIfacX(:,:)
   !    LUSPECIAL = 2
   !    open(unit = LUSPECIAL, file="runNewTRQPBasic.F90",status="unknown")
   !    WRITE(LUSPECIAL,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODBASIC'
   !    WRITE(LUSPECIAL,'(A)')' use IchorPrecisionMod'
   !    WRITE(LUSPECIAL,'(A)')'  '
   !    WRITE(LUSPECIAL,'(A)')' CONTAINS'
+!  MaxAngmomQP = 8
+  MaxAngmomQP = 8-1 !PDDD highest possible 
+  nTUVTMPP=(MaxAngmomQP+1)*(MaxAngmomQP+2)*(MaxAngmomQP+3)/6
+  nTUVTMPP2=(MaxAngmomQP+1)*(MaxAngmomQP+2)*(MaxAngmomQP+3)/6
+  allocate(UniqeTUVindexX(nTUVTMPP,3))
+  allocate(UniqeIfacX(nTUVTMPP2,3))
+  UniqeTUVindexX = .TRUE.
+  UniqeIfacX = .TRUE.
+
   DO GPUrun = 1,2
     CPU = .TRUE.
     IF(GPUrun.EQ.2)CPU = .FALSE.
@@ -99,7 +110,6 @@ subroutine PASSsub
           WRITE(LUFILE1,'(A)')' use IchorPrecisionMod'
           WRITE(LUFILE1,'(A)')'  '
           WRITE(LUFILE1,'(A)')' CONTAINS'
-          MaxAngmomQP = 8-1 !PDDD highest possible 
 
           DO JMAX=2,MaxAngmomQP
              IF((ifile.EQ.3.OR.ifile.EQ.4).AND.JMAX.GT.MaxAngmomQP-1)CYCLE !PDPD higest possible
@@ -176,7 +186,9 @@ subroutine PASSsub
                    call AddToString(')')
                 ENDIF
                 call writeString(LUFILE)
-
+                IF(.NOT.LOOPUNROLL)THEN
+                   WRITE(LUFILE,'(A,A,A)')'  use AGC_',ARCSTRING,'_OBS_TRParamMod'
+                ENDIF
                 WRITE(LUFILE,'(A)')'  implicit none'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses'
                 IF(.NOT.Seg1Prim)THEN
@@ -348,20 +360,25 @@ subroutine PASSsub
                          Vp=JTMP-Tp-Up  
                          CALL DETERMINE_CARTDIR(CARTDIR,iTUVP,iTUVPminus1,iTUVPminus2,Tpminus1,Tp,Up,Vp,CREATED,JMAX,TUVINDEX)
                          nTUVTMPQ=(JPQ-JTMP+1)*(JPQ-JTMP+2)*(JPQ-JTMP+3)/6                         
+                         nTUVTMPP = nTUVTMPQ
                          IF(.NOT.DoneCartDir(CARTDIR))THEN
+                            WRITETHING=.FALSE.
                             IF(.NOT.LOOPUNROLL)THEN
-                               call initString(2)          
-                               call AddToString('!CARTDIR = ')
-                               call AddToString(CARTDIR)
-                               call writeString(LUFILE)
-                               call initString(2)          
-                               call AddToString('integer,parameter, dimension(')
-                               call AddToString(nTUVTMPQ)
-                               call AddToString(') :: TUVindex')
-                               !                      call AddToString(JTMQ)
-                               call AddToString('X')
-                               call AddToString(CARTDIR)
-                               call AddToString(' = (/ ')
+                               WRITETHING = .FALSE.
+!!$                               IF(UniqeTUVindexX(nTUVTMPP,CARTDIR))THEN
+!!$                                  call initString(2)          
+!!$                                  call AddToString('integer,parameter, dimension(')
+!!$                                  call AddToString(nTUVTMPQ)
+!!$                                  call AddToString(') :: TUVindex')
+!!$                                  !                      call AddToString(JTMQ)
+!!$                                  call AddToString('X')
+!!$                                  call AddToString(CARTDIR)
+!!$                                  call AddToString('_')
+!!$                                  call AddToString(nTUVTMPP)
+!!$                                  UniqeTUVindexX(nTUVTMPP,CARTDIR) = .FALSE.
+!!$                                  call AddToString(' = (/ ')
+!!$                                  WRITETHING = .TRUE.
+!!$                               ENDIF
                             ENDIF
                             nLength = 10
                             do iTUVQ = 1,nTUVTMPQ!nTUVQ
@@ -377,23 +394,27 @@ subroutine PASSsub
                                   iTUVQplus1 = TUVINDEX(Tq,Uq,Vq+1)
                                ENDIF
                                IF(.NOT.LOOPUNROLL)THEN
-                                  call AddToString(ituvqplus1)
+                                  IF(WRITETHING)call AddToString(ituvqplus1)
                                ENDIF
                                TUVindexX(iTUVQ,CARTDIR) = ituvqplus1
                                IF(.NOT.LOOPUNROLL)THEN
-                                  IF(iTUVQ.NE.nTUVTMPQ) call AddToString(',')
+                                  IF(iTUVQ.NE.nTUVTMPQ)THEN
+                                     IF(WRITETHING)call AddToString(',')
+                                  ENDIF
                                   IF(nLength.EQ.17)THEN
                                      nLength = 0
-                                     call AddToString('&')
-                                     call writeString(LUFILE)
-                                     call initString(5)          
-                                     call AddToString('     & ')
+                                     IF(WRITETHING)THEN
+                                        call AddToString('&')
+                                        call writeString(LUFILE)
+                                        call initString(5)          
+                                        call AddToString('     & ')
+                                     ENDIF
                                   ENDIF
                                ENDIF
                             enddo
                             IF(.NOT.LOOPUNROLL)THEN
-                               call AddToString(' /)')
-                               call writeString(LUFILE)                   
+                               IF(WRITETHING)call AddToString(' /)')
+                               IF(WRITETHING)call writeString(LUFILE)                   
                             ENDIF
                             DoneCartDir(CARTDIR) = .TRUE.
                          ENDIF
@@ -415,19 +436,24 @@ subroutine PASSsub
                          Vp=JTMP-Tp-Up  
                          CALL DETERMINE_CARTDIR(CARTDIR,iTUVP,iTUVPminus1,iTUVPminus2,Tpminus1,Tp,Up,Vp,CREATED,JMAX,TUVINDEX)
                          nTUVTMPQ2=(JPQ-JTMP)*(JPQ-JTMP+1)*(JPQ-JTMP+2)/6
+                         nTUVTMPP2 = nTUVTMPQ2
                          IF(.NOT.DoneCartDir(CARTDIR))THEN
+                            WRITETHING=.FALSE.
                             IF(.NOT.LOOPUNROLL)THEN
-                               call initString(2)          
-                               call AddToString('!CARTDIR = ')
-                               call AddToString(CARTDIR)
-                               call writeString(LUFILE)
-                               call initString(2)          
-                               call AddToString('integer,parameter, dimension(')
-                               call AddToString(nTUVTMPQ2)
-                               call AddToString(') :: Ifac')
-                               call AddToString('X')
-                               call AddToString(CARTDIR)
-                               call AddToString(' = (/ ')
+                               WRITETHING=.FALSE.
+!!$                               IF(UniqeIfacX(nTUVTMPP2,CARTDIR))THEN
+!!$                                  call initString(2)          
+!!$                                  call AddToString('integer,parameter, dimension(')
+!!$                                  call AddToString(nTUVTMPQ2)
+!!$                                  call AddToString(') :: Ifac')
+!!$                                  call AddToString('X')
+!!$                                  call AddToString(CARTDIR)
+!!$                                  call AddToString('_')
+!!$                                  call AddToString(nTUVTMPP2)
+!!$                                  UniqeIfacX(nTUVTMPP2,CARTDIR) = .FALSE.
+!!$                                  call AddToString(' = (/ ')
+!!$                                  WRITETHING=.TRUE.
+!!$                               ENDIF
                             ENDIF
                             nLength = 10
                             nTUVTMPQ2=(JPQ-JTMP)*(JPQ-JTMP+1)*(JPQ-JTMP+2)/6
@@ -444,23 +470,27 @@ subroutine PASSsub
                                   I = Vq+1
                                ENDIF
                                IF(.NOT.LOOPUNROLL)THEN
-                                  call AddToString(I)
+                                  IF(WRITETHING)call AddToString(I)
                                ENDIF
                                IfacX(iTUVQminus1,CARTDIR) = I                                
                                IF(.NOT.LOOPUNROLL)THEN
-                                  IF(iTUVQminus1.NE.nTUVTMPQ2) call AddToString(',')
+                                  IF(iTUVQminus1.NE.nTUVTMPQ2)THEN
+                                     IF(WRITETHING)call AddToString(',')
+                                  ENDIF
                                   IF(nLength.EQ.17)THEN
                                      nLength = 0
-                                     call AddToString('&')
-                                     call writeString(LUFILE)
-                                     call initString(5)          
-                                     call AddToString('     & ')
+                                     IF(WRITETHING)THEN
+                                        call AddToString('&')
+                                        call writeString(LUFILE)
+                                        call initString(5)          
+                                        call AddToString('     & ')
+                                     ENDIF
                                   ENDIF
                                ENDIF
                             enddo
                             IF(.NOT.LOOPUNROLL)THEN
-                               call AddToString(' /)')
-                               call writeString(LUFILE)
+                               IF(WRITETHING)call AddToString(' /)')
+                               IF(WRITETHING)call writeString(LUFILE)
                             ENDIF
                             DoneCartDir(CARTDIR) = .TRUE.
                          ENDIF
@@ -555,6 +585,26 @@ subroutine PASSsub
                    ENDDO
                    WRITE(LUFILE,'(A)')'!$ACC         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &'
                    WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&'
+                   IF(.NOT.LOOPUNROLL)THEN
+                      call initString(0)          
+                      call AddToString('!$ACC        TUVindexX1_')
+                      call AddToString(nTUVTMPP)
+                      call AddToString(',TUVindexX2_')
+                      call AddToString(nTUVTMPP)
+                      call AddToString(',TUVindexX3_')
+                      call AddToString(nTUVTMPP)
+                      call AddToString(', &')
+                      call writeString(LUFILE)
+                      call initString(0)          
+                      call AddToString('!$ACC        IfacX1_')
+                      call AddToString(nTUVTMPP2)
+                      call AddToString(',IfacX2_')
+                      call AddToString(nTUVTMPP2)
+                      call AddToString(',IfacX3_')
+                      call AddToString(nTUVTMPP2)
+                      call AddToString(', &')
+                      call writeString(LUFILE)
+                   ENDIF
                    WRITE(LUFILE,'(A,A,A,A,A)')'!$ACC        ',ToExpLabel,'exp,',FromExpLabel,'exp,&'
                    WRITE(LUFILE,'(A)')'!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)'
                 ENDIF
@@ -751,7 +801,7 @@ subroutine PASSsub
 
                 CALL SUBROUTINE_MAIN(LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS,TUVINDEX,&
                      & TINDEX,UINDEX,VINDEX,JINDEX,nTUVprev3,nTUVprev2,nTUVprev,IfacX,TUVindexX,LOOPUNROLL,&
-                     & PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                     & PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPP,nTUVTMPP2)
 
                 WRITE(LUFILE,'(A,I3)')'!    Warning Note Tmp0 have the opposite ordering so this is not that efficient. '
                 WRITE(LUFILE,'(A,I3)')'!    Hopefully Tmp0 is small enough that it can be in cache. '
@@ -868,9 +918,9 @@ END subroutine PASSsub
 
   subroutine SUBROUTINE_MAIN(LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS,TUVINDEX,&
                & TINDEX,UINDEX,VINDEX,JINDEX,nTUVprev3,nTUVprev2,nTUVprev,IfacX,TUVindexX,&
-               & LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+               & LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
     implicit none
-    INTEGER,intent(in) :: LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS
+    INTEGER,intent(in) :: LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS,nTUVTMPPX,nTUVTMPP2X
     integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
     integer :: TINDEX(nTUVPLUS),IfacX(:,:),TUVindexX(:,:)
     integer :: UINDEX(nTUVPLUS)
@@ -927,7 +977,7 @@ END subroutine PASSsub
                 IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                 WRITE(LUFILE,'(A,I3)')'     do iTUVQ = 1,',nTUVQ
                 !Theta(i,0,k,0) = -(b*X_{ab}+dX_{cd})/q Theta(i,0,k-1,0) + (k-1)/(2q)*Theta(i,0,k-2,0)
-                CALL LOOPRECURRENCE1(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,LUFILE,PrimLabelAux,iPrimLabelAux)
+                CALL LOOPRECURRENCE1(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,LUFILE,PrimLabelAux,iPrimLabelAux,nTUVTMPPX,nTUVTMPP2X)
                 WRITE(LUFILE,'(A,I3)')'     enddo'
                 !                   CREATED(Tq,Uq,Vq) = .TRUE.
              ENDDO
@@ -942,7 +992,7 @@ END subroutine PASSsub
                    IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                    WRITE(LUFILE,'(A,I3,A,I3)')'     do iTUVQ = ',nTUVQ+1,',',nTUVTMPQ !place in tmp array 
                    !Theta(i,0,k,0) = -(b*X_{ab}+dX_{cd})/q Theta(i,0,k-1,0) + (k-1)/(2q)*Theta(i,0,k-2,0)
-                   CALL LOOPRECURRENCE2(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,JTMP,LUFILE,PrimLabelAux,iPrimLabelAux)
+                   CALL LOOPRECURRENCE2(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,JTMP,LUFILE,PrimLabelAux,iPrimLabelAux,nTUVTMPPX,nTUVTMPP2X)
                    WRITE(LUFILE,'(A,I3,A,I3)')'     enddo'
                 ENDIF
                 
@@ -960,7 +1010,7 @@ END subroutine PASSsub
                 iTUVQminus1 = 1
                 ituvQminus1LEnTUVQ = .TRUE. 
                 CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,1,nTUVQ2,&
-                     & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.TRUE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                     & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.TRUE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
              ENDDO
           ENDDO
 
@@ -975,19 +1025,19 @@ END subroutine PASSsub
                       iTUVQminus1 = 1
                       ituvQminus1LEnTUVQ = .TRUE. !dummy
                       CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,nTUVQ2+1,nTUVTMPQ2,&
-                           & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                           & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                    ELSE
                       IF(nTUVTMPQ2.LE.nTUVQ)THEN
                          ituvqminus1LEnTUVQ = .TRUE.
                          CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,nTUVQ2+1,nTUVTMPQ2,&
-                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                       ELSE
                          ituvqminus1LEnTUVQ = .TRUE.
                          CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,nTUVQ2+1,nTUVQ,&
-                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvQminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                          ituvqminus1LEnTUVQ = .FALSE.
                          CALL WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,nTUVQ+1,nTUVTMPQ2,&
-                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvqminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                              & nTUVQ2,TUVINDEX,JTMP,JMAX,LUFILE,iTUVQminus1,.FALSE.,ituvqminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                       ENDIF
                    ENDIF
                 ENDIF                
@@ -1005,7 +1055,7 @@ END subroutine PASSsub
                 
                 IF(iTUVPminus1.EQ.1)THEN
                    ituvQplus1LEnTUVQ = .TRUE. !dummy argument 
-                   CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvQplus1LEnTUVQ,nTUVQ,nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                   CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvQplus1LEnTUVQ,nTUVQ,nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                 ELSE
                    allocate(ituvqplus1LEnTUVQarray(nTUVQ))
                    DO iTUVQ = 1, nTUVQ
@@ -1021,22 +1071,22 @@ END subroutine PASSsub
                       !all true
                       ituvqplus1LEnTUVQ = .TRUE.
                       CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvqplus1LEnTUVQ,nTUVQ,&
-                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                    ELSEIF(COUNT(ituvqplus1LEnTUVQarray).EQ.0)THEN
                       !all false
                       ituvqplus1LEnTUVQ = .FALSE.
                       CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvqplus1LEnTUVQ,nTUVQ,&
-                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                    ELSE                      
                       IF(ALL(ituvqplus1LEnTUVQarray(1:COUNT(ituvqplus1LEnTUVQarray))))THEN
                          !all T are sequential in the beginning
                          ituvqplus1LEnTUVQ = .TRUE.
                          CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,1,ituvqplus1LEnTUVQ,COUNT(ituvqplus1LEnTUVQarray),&
-                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                          !all F are sequential at the end
                          ituvqplus1LEnTUVQ = .FALSE.
                          CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,COUNT(ituvqplus1LEnTUVQarray)+1,ituvqplus1LEnTUVQ,nTUVQ,&
-                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                       ELSE
                          print*,'ituvqplus1LEnTUVQarray',ituvqplus1LEnTUVQarray
                          stop 'ERROR'
@@ -1049,7 +1099,7 @@ END subroutine PASSsub
                    IF(iTUVPminus1.EQ.1)THEN
                       ituvQplus1LEnTUVQ = .TRUE. !dummy argument 
                       CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+1,ituvqplus1LEnTUVQ,nTUVTMPQ,&
-                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                           & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                    ELSE
                       !Theta(i,0,k,0) += - p/q*Theta(i+1,0,k-1,0) 
                       allocate(ituvqplus1LEnTUVQarray(nTUVQ+1:nTUVTMPQ))
@@ -1066,22 +1116,22 @@ END subroutine PASSsub
                          !all true
                          ituvqplus1LEnTUVQ = .TRUE.
                          CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+1,ituvqplus1LEnTUVQ,nTUVTMPQ,&
-                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                       ELSEIF(COUNT(ituvqplus1LEnTUVQarray).EQ.0)THEN
                          !all false
                          ituvqplus1LEnTUVQ = .FALSE.
                          CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+1,ituvqplus1LEnTUVQ,nTUVTMPQ,&
-                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                              & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                       ELSE
                          IF(ALL(ituvqplus1LEnTUVQarray(nTUVQ+1:nTUVQ+COUNT(ituvqplus1LEnTUVQarray))))THEN
                             !all T are sequential in the beginning
                             ituvqplus1LEnTUVQ = .TRUE.
                             CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+1,ituvqplus1LEnTUVQ,nTUVQ+COUNT(ituvqplus1LEnTUVQarray),&
-                                 & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                                 & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                             !all F are sequential at the end
                             ituvqplus1LEnTUVQ = .FALSE.
                             CALL WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,nTUVQ+COUNT(ituvqplus1LEnTUVQarray)+1,ituvqplus1LEnTUVQ,nTUVTMPQ,&
-                                 & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+                                 & nTUVQ,TUVINDEX,JTMP,JMAX,LUFILE,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
                          ELSE
                             print*,'ituvpplus1LEnTUVParray',ituvqplus1LEnTUVQarray
                             stop 'ERROR2'
@@ -1170,9 +1220,9 @@ END subroutine PASSsub
   END subroutine DETERMINE_CARTDIR
 
   SUBROUTINE LOOPRECURRENCE1(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,&
-       & LUPRI,PrimLabelAux,iPrimLabelAux)
+       & LUPRI,PrimLabelAux,iPrimLabelAux,nTUVTMPPX,nTUVTMPP2X)
     implicit none
-    integer :: iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,lupri
+    integer :: iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,lupri,nTUVTMPPX,nTUVTMPP2X
     character(len=132) :: STRING 
     integer :: iString
     character(len=4) :: DIRECTIONSTRING
@@ -1250,11 +1300,11 @@ END subroutine PASSsub
   END SUBROUTINE LOOPRECURRENCE1
   
   SUBROUTINE LOOPRECURRENCE2(iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,JTMP,&
-       & LUPRI,PrimLabelAux,iPrimLabelAux)
+       & LUPRI,PrimLabelAux,iPrimLabelAux,nTUVTMPPX,nTUVTMPP2X)
     implicit none
     integer :: iTUVP,Tpminus1,iTUVPminus2,iTUVPminus1,CARTDIR,JTMP,LUPRI
     character(len=132) :: STRING 
-    integer :: iString
+    integer :: iString,nTUVTMPPX,nTUVTMPP2X
     character(len=4) :: DIRECTIONSTRING
     character(len=20),intent(in) :: PrimLabelAux
     integer,intent(in) :: iPrimLabelAux
@@ -1343,7 +1393,7 @@ END subroutine PASSsub
   subroutine WRITERECURRENCE5(CARTDIR,Tp,Up,Vp,iTUVstart,nTUVQ_tmp,&
        & nTUVQ,TUVINDEX,JTMP,JMAX,LUPRI,iTUVQminus1,iTUVQLEnTUVQ,&
        & ituvqminus1LEnTUVQ,IfacX,TUVindexX,LOOPUNROLL,&
-       & PrimLabelAux,iPrimLabelAux,DoOpenACC)
+       & PrimLabelAux,iPrimLabelAux,DoOpenACC,nTUVTMPP,nTUVTMPP2)
     implicit none
     !A to C
     !Theta(i,0,k,0) = i/(2p)*Theta(i-1,0,k-1,0) 
@@ -1352,7 +1402,7 @@ END subroutine PASSsub
     integer,intent(in) :: IfacX(:,:),TUVindexX(:,:)
     logical,intent(in) :: iTUVQLEnTUVQ,ituvqminus1LEnTUVQ,LOOPUNROLL,DoOpenACC
     character(len=20),intent(in) :: PrimLabelAux
-    integer,intent(in) :: iPrimLabelAux
+    integer,intent(in) :: iPrimLabelAux,nTUVTMPP,nTUVTMPP2
     !
     integer :: iTUVQ,iTUVP,iTUVPplus1,I,iTUVPminus1
     character(len=132) :: STRING 
@@ -1387,6 +1437,8 @@ END subroutine PASSsub
              call AddToString('iTUVQ = TUVindex')
              call AddToString('X')
              call AddToString(CARTDIR)
+             call AddToString('_')
+             call AddToString(nTUVTMPP)
              call AddToString('(ituvqminus1)')
              call writeString(LUPRI)
              call initString(6)          
@@ -1436,6 +1488,8 @@ END subroutine PASSsub
           ELSEIF(ituvqminus1x.EQ.iTUVstart)THEN
              call AddToString('+ IfacX')
              call AddToString(CARTDIR)
+             call AddToString('_')
+             call AddToString(nTUVTMPP2)
              call AddToString('(ituvqminus1)*inv2expP*')
           ENDIF
           
@@ -1488,7 +1542,8 @@ END subroutine PASSsub
   END subroutine WRITERECURRENCE5
 
 subroutine WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,iTUVstart,ituvqplus1LEnTUVQ,nTUVQ_tmp,&
-     & nTUVQ,TUVINDEX,JTMP,JMAX,LUPRI,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,DoOpenACC)
+     & nTUVQ,TUVINDEX,JTMP,JMAX,LUPRI,TUVindexX,LOOPUNROLL,PrimLabelAux,iPrimLabelAux,&
+     & DoOpenACC,nTUVTMPP,nTUVTMPP2)
   implicit none
   !A to C
   !Theta(i,0,k,0) = i/(2q)*Theta(i-1,0,k-1,0) - p/q*Theta(i+1,0,k-1,0) 
@@ -1496,7 +1551,7 @@ subroutine WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,iTUVstart,ituvqplus1LEnTUVQ,nTUVQ_t
   integer,intent(in) :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),LUPRI,TUVindexX(:,:)
   logical,intent(in) :: ituvqplus1LEnTUVQ,LOOPUNROLL,DoOpenACC
   character(len=20),intent(in) :: PrimLabelAux
-  integer,intent(in) :: iPrimLabelAux
+  integer,intent(in) :: iPrimLabelAux,nTUVTMPP,nTUVTMPP2
   !
   integer :: iTUVQ,iTUVP,iTUVQplus1,iTUVQminus1,I,iTUVPminus1
   character(len=132) :: STRING 
@@ -1533,6 +1588,8 @@ subroutine WRITERECURRENCE4(CARTDIR,Tp,Up,Vp,iTUVstart,ituvqplus1LEnTUVQ,nTUVQ_t
         call initString(6)          
         call AddToString('iTUVplus1 = TUVindexX')
         call AddToString(CARTDIR)
+        call AddToString('_')
+        call AddToString(nTUVTMPP)
         call AddToString('(iTUVQ)')
         call writeString(LUPRI)
         call initString(6)          

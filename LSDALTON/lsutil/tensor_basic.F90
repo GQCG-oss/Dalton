@@ -292,8 +292,8 @@ module tensor_basic_module
 
            arr%ti(i)%t => null()
 
-           call mem_dealloc(arr%ti(i)%d)
            dim2 = dble(size(arr%ti(i)%d(:)))
+           call mem_dealloc(arr%ti(i)%d)
            !$OMP CRITICAL
            tensor_aux_deallocd_mem   = tensor_aux_deallocd_mem   + dim2 
            tensor_memory_in_use      = tensor_memory_in_use      - dim2
@@ -485,6 +485,7 @@ module tensor_basic_module
     call tensor_free_aux(arr)
     if(associated(arr%elm1))call memory_deallocate_tensor_dense(arr)
     if(associated(arr%ti))  call memory_deallocate_tile(arr)
+    if(associated(arr%access_type)) deallocate( arr%access_type )
   end subroutine tensor_free_basic
 
   !> \author Patrick Ettenhuber
@@ -498,7 +499,6 @@ module tensor_basic_module
      arr%nlti        = -1
      arr%tsize       = -1
      arr%offset      = -1
-     arr%access_type = -1
      arr%zeros       = .false.
      arr%initialized = .false.
   end subroutine tensor_reset_value_defaults
@@ -523,6 +523,7 @@ module tensor_basic_module
     NULLIFY(arr%ntpm)     
     NULLIFY(arr%tdim)     
     NULLIFY(arr%addr_p_arr)
+    NULLIFY(arr%access_type)
     arr%dummyc = c_null_ptr
   end subroutine tensor_nullify_pointers
 

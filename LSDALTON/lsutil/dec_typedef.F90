@@ -426,6 +426,9 @@ module dec_typedef_module
      real(realk) :: EstimateINITradius
      !> number of average atoms that will be included in the estimated fragments
      integer :: EstimateInitAtom
+     !> Which model to use for pair estimates
+     integer :: PairEstimateModel
+
      ! --
 
 

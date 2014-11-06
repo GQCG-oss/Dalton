@@ -640,7 +640,7 @@ C        write startvec with new vectors
             CALL WRITT(LUIT1,NC4,WRK(JCVECS))
  9022    CONTINUE
 C        write nat. orb. occupation numbers, when available
-         IF (NASHT.EQ.1 .OR.
+         IF (NASHT.LE.1 .OR.
      &      (CNOLBL.NE.'ONLYFD' .AND. NASHT.GT.0)) THEN
             IF (NASHT.EQ.1) WRK(KAOCC) = NACTEL
             WRITE (LUIT1) LAB123,TABLE(9)

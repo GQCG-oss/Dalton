@@ -656,7 +656,7 @@ DO J=1,natomtypes
                  &Exponents, 1, nPrimitives, 1, 1, nPrimitives, 1, 1, LUPRI)
             WRITE(LUPRI,*)'segment BLOCK=',L
             CALL LS_OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%elms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
-            WRITE(LUPRI,*)'unmodified segment BLOCK=',L
+            WRITE(LUPRI,*)'The unmodified and non normalized segment read from basis set file BLOCK=',L
             CALL LS_OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
          ENDDO
       ELSE

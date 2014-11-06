@@ -135,6 +135,8 @@ type ConfigItem
    type(pltinfo) :: PLT
    !> Should we do an F12 calc which requires a CABS basis
    logical              :: doF12
+   !> Should we do an RIMP2 calc which requires a AUX basis
+   logical              :: doRIMP2
 #if defined(ENABLE_QMATRIX)
    logical :: do_qmatrix = .false.
    type(LSQMat) ls_qmat

@@ -920,9 +920,9 @@ contains
     MaxMemAllocated = 0
     MemAllocated = 0
     call set_LeakTool_memvar(MaxMemAllocated,MemAllocated)
-    TAG = 1023242411
-    TAG1 = 1023242412
-    TAG2 = 1023242413
+    TAG = 1411
+    TAG1 = 1412
+    TAG2 = 1413
 
     !sanity check
     if(.NOT.DECinfo%use_canonical) then

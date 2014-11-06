@@ -60,7 +60,7 @@ option(ENABLE_INTEREST       "Enable interest integrals"                        
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
-option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          ON)
+option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
@@ -68,7 +68,7 @@ option(ENABLE_QMATRIX        "Enable QMatrix library"                           
 option(ENABLE_OPENRSP        "Enable OPENRSP library (need QMatrix library)"    OFF)
 option(ENABLE_TDRSP          "Enable TDRSP library (need QMatrix library)"      OFF)
 
-option(ENABLE_EFS            "Enable Echidna Fock Solver"                       ON)
+option(ENABLE_EFS            "Enable Echidna Fock Solver"                       OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)

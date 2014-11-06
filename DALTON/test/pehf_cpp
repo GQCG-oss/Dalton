@@ -189,18 +189,18 @@ fi
 #
 #      Averaged value       0.200000       25.857631        0.459706
 
-CRIT1=`$GREP " XDIPLEN   XDIPLEN    0\.100000       21\.889...        0\.087..." $log | wc -l`
-CRIT2=`$GREP " YDIPLEN   YDIPLEN    0\.100000       35\.726...        0\.221..." $log | wc -l`
-CRIT3=`$GREP " ZDIPLEN   ZDIPLEN    0\.100000        4\.678...        0\.009..." $log | wc -l`
-CRIT4=`$GREP " XDIPLEN   YDIPLEN    0\.100000       \-9\.770...       \-0\.112..." $log | wc -l`
+CRIT1=`$GREP " XDIPLEN   XDIPLEN    0\.100000       21\.88....        0\.0877.." $log | wc -l`
+CRIT2=`$GREP " YDIPLEN   YDIPLEN    0\.100000       35\.72....        0\.2217.." $log | wc -l`
+CRIT3=`$GREP " ZDIPLEN   ZDIPLEN    0\.100000        4\.678...        0\.0091.." $log | wc -l`
+CRIT4=`$GREP " XDIPLEN   YDIPLEN    0\.100000       \-9\.770...       \-0\.1121.." $log | wc -l`
 CRIT5=`$GREP " XDIPLEN   ZDIPLEN    0\.100000       \-0\.0079..       \-0\.00002." $log | wc -l`
 CRIT6=`$GREP " YDIPLEN   ZDIPLEN    0\.100000       \-0\.0007..        0\.00002." $log | wc -l`
-CRIT7=`$GREP " XDIPLEN   XDIPLEN    0\.200000       25\.985198        0\.362055" $log | wc -l`
-CRIT8=`$GREP " YDIPLEN   YDIPLEN    0\.200000       46\.572526        0\.993228" $log | wc -l`
-CRIT9=`$GREP " ZDIPLEN   ZDIPLEN    0\.200000        5\.015170        0\.023834" $log | wc -l`
-CRIT10=`$GREP " XDIPLEN   YDIPLEN    0\.200000      \-15\.477325       \-0\.537649" $log | wc -l`
-CRIT11=`$GREP " XDIPLEN   ZDIPLEN    0\.200000       \-0\.009000       \-0\.000089" $log | wc -l`
-CRIT12=`$GREP " YDIPLEN   ZDIPLEN    0\.200000        0\.000422        0\.000119" $log | wc -l`
+CRIT7=`$GREP " XDIPLEN   XDIPLEN    0\.200000       25\.98....        0\.36205." $log | wc -l`
+CRIT8=`$GREP " YDIPLEN   YDIPLEN    0\.200000       46\.57....        0\.99322." $log | wc -l`
+CRIT9=`$GREP " ZDIPLEN   ZDIPLEN    0\.200000        5\.015...        0\.02383." $log | wc -l`
+CRIT10=`$GREP " XDIPLEN   YDIPLEN    0\.200000      \-15\.47....       \-0\.53764." $log | wc -l`
+CRIT11=`$GREP " XDIPLEN   ZDIPLEN    0\.200000       \-0\.00(89|90)..       \-0\.0000(89|90)" $log | wc -l`
+CRIT12=`$GREP " YDIPLEN   ZDIPLEN    0\.200000        0\.0004..        0\.00011." $log | wc -l`
 TEST[1]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
                 $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
 CTRL[1]=12
