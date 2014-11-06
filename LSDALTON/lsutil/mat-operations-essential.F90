@@ -171,12 +171,14 @@ MODULE matrix_operations
                          IF(MOD(nbast,infpar%inputblocksize).NE.0)THEN
                             nblocks = nblocks + 2*nbast/infpar%inputblocksize + 1
                          ENDIF
+                         WRITE(lupri,'(A,I5,A,I6,A)')'A BlockSize of ',infpar%inputblocksize,' gives ',nblocks,' blocks'
+                         WRITE(lupri,'(A,F9.1,A)') 'Resulting in ',(nblocks*1.0E0_realk)/infpar%nodtot,' blocks per node'
                          IF(nblocks .GE. 2*infpar%nodtot)THEN
-                            !too few blocks not all nodes have 2 blocks
-                            !We use a smaller block size, to reduce load imbalance
-                         ELSE
                             !more than 2 blocks per node, we can use all nodes efficiently
                             exit
+                         ELSE
+                            !too few blocks not all nodes have 2 blocks
+                            !We use a smaller block size, to reduce load imbalance
                          ENDIF
                          IF(I.EQ.size(blocklist).AND.(nblocks .GE. 2*infpar%nodtot))THEN
                             WRITE(lupri,'(A)')'The Minimum BlockSize = 128 Chosen.'
@@ -202,8 +204,8 @@ MODULE matrix_operations
                       nblocks = nblocks + 2*(nbast/infpar%inputblocksize) + 1
                    ENDIF
                    WRITE(lupri,'(A,I5)')'Number of Scalapack Blocks = ',nblocks
-                   IF(nblocks .GT. 2*infpar%nodtot)THEN
-                      !more than 2 block per node, we can use all nodes
+                   IF(nblocks .GE. 2*infpar%nodtot)THEN
+                      !2 or more blocks per node, we can use all nodes
                       infpar%ScalapackGroupSize = infpar%nodtot
                    ELSE
                       !not all nodes have 2 blocks. We cannot use all nodes efficiently
