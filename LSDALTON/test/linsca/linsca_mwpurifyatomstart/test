@@ -10,7 +10,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Final DFT energy',rel_tolerance = 1.0e-9)
-f.add(string = '###',rel_tolerance = 1.0e-5)
+f.add(string = '###',rel_tolerance = 1.0e-5,ignore_below = 1.0e-4)
 f.add(string = 'Perform McWeeny purification')
 f.add(string = 'Allocated memory (TOTAL)')
 
