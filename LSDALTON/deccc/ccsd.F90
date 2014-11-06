@@ -2960,7 +2960,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
            &MinAObatch,DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.)
 
-        if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 4 possible",-1)
+        print *,"I FOUND",MaxAllowedDimAlpha,MaxAllowedDimGamma,MemFreeMin,&
+           &get_min_mem_req(no,os,nv,vs,nb,MaxAllowedDimAlpha,MaxAllowedDimGamma,iter,4,scheme,.false.)
+
+        if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
      endif
 
 
@@ -3209,9 +3212,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call time_phases_get_current(current_wt=phase_cntrs)
 
      fullRHS=(nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
-
-     call get_currently_available_memory(MemFree)
-     MemFree = 0.4_realk * MemFree
 
      !**********************************
      ! Begin the loop over gamma batches
