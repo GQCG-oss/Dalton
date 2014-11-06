@@ -52,7 +52,7 @@ f.add(from_re = 'Molecular rotational g\-factor',
 # Chemical shielding
 f.add(from_re = 'Shielding tensors in symmetry coordinates \(ppm\)',
       num_lines = 30,
-      rel_tolerance = 2.0e-5)
+      abs_tolerance = 1.0e-3)
 
 f.add(from_re = 'Chemical shielding for ',
       num_lines = 45,
