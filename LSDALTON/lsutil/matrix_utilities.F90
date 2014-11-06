@@ -332,35 +332,36 @@ contains
    real(realk) :: y(3)
    real(realk) :: radicand
    integer :: output
+   real(realk), parameter :: PI=3.14159265358979323846E0_realk
    real(realk),parameter :: epsilon = 0.000001E0_realk
-   p=(3.*b-a*a)/3.
-   q=c+2.*a*a*a/27.-a*b/3.
-   D=(P/3.)**3.+q*q/4.
+   p=(3.0E0_realk*b-a*a)/3.0E0_realk
+   q=c+2.0E0_realk*a*a*a/27.0E0_realk-a*b/3.0E0_realk
+   D=(P/3.0E0_realk)**3.0E0_realk+q*q/4.0E0_realk
    if (D .LT. 0.) then !the irreducible case has a trigonometric form:
       phi=acos(-q/(2*sqrt((abs(p)/3)**3)))
-      x(1)=-a/3.+2*sqrt(abs(p)/3)*cos(phi/3.)
-      x(2)=-a/3.-2*sqrt(abs(p)/3)*cos((phi-3.141592654)/3.)
-      x(3)=-a/3.-2*sqrt(abs(p)/3)*cos((phi+3.141592654)/3.)
+      x(1)=-a/3.0E0_realk+2*sqrt(abs(p)/3)*cos(phi/3.0E0_realk)
+      x(2)=-a/3.0E0_realk-2*sqrt(abs(p)/3)*cos((phi-PI)/3.0E0_realk)
+      x(3)=-a/3.0E0_realk-2*sqrt(abs(p)/3)*cos((phi+PI)/3.0E0_realk)
       !                sort solutions according to order:
       y(1) = min(x(1),x(2),x(3))
       y(3) = max(x(1),x(2),x(3))
       y(2) = x(1)+x(2)+x(3)-y(1)-y(3)
    else
-      radicand =abs(-q/2.+sqrt(D))
+      radicand =abs(-q/2.0E0_realk+sqrt(D))
       if (radicand .ge. epsilon) then
-         u=sign(1.,-q/2.+sqrt(D))*exp(log(radicand)/3.)
+         u=sign(1.0E0_realk,-q/2.0E0_realk+sqrt(D))*exp(log(radicand)/3.0E0_realk)
       else
          u=0
       end if
-      radicand =abs(-q/2.-sqrt(D))
+      radicand =abs(-q/2.0E0_realk-sqrt(D))
       if (radicand .ge. epsilon) then
-         v=sign(1.,-q/2.-sqrt(D))*exp(log(radicand)/3.)
+         v=sign(1.0E0_realk,-q/2.0E0_realk-sqrt(D))*exp(log(radicand)/3.0E0_realk)
       else
          v=0
       end if
-      y(1)=-a/3.+u+v
-      y(2)=-a/3.-(u+v)/2.
-      y(3)=sqrt(3.)*(u-v)/2.
+      y(1)=-a/3.0E0_realk+u+v
+      y(2)=-a/3.0E0_realk-(u+v)/2.0E0_realk
+      y(3)=sqrt(3.0E0_realk)*(u-v)/2.0E0_realk
    end if
    select case (output)
    case (0)
