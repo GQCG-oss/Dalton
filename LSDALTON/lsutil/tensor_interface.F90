@@ -375,7 +375,7 @@ contains
      integer, intent(inout)     :: order(C%mode)
      real(realk), intent(in),    optional :: mem
      real(realk), intent(inout), optional :: wrk(:)
-     integer, intent(in),        optional :: iwrk
+     integer(kind=long), intent(in), optional :: iwrk
      logical, intent(in),        optional :: force_sync
      !internal variables
      integer :: i,j,k
@@ -485,7 +485,7 @@ contains
      integer, intent(inout)     :: order(C%mode)
      real(realk), intent(in),    optional :: mem
      real(realk), intent(inout), target, optional :: wrk(:)
-     integer, intent(in),        optional :: iwrk
+     integer(kind=long), intent(in),     optional :: iwrk
      !internal variables
      real(realk), pointer :: wA(:),  wB(:), wC(:)
      integer :: ordA(A%mode), ordB(B%mode), ro(C%mode), dims_product(C%mode)

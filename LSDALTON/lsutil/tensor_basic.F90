@@ -39,7 +39,7 @@ module tensor_basic_module
       endif
       if (associated(arr%dims))then
 !$OMP CRITICAL
-        vector_size = dble(size(arr%dims))
+        vector_size = dble(size(arr%dims)*INTK)
         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
         tensor_memory_in_use    = tensor_memory_in_use  - vector_size
 !$OMP END CRITICAL
@@ -48,7 +48,7 @@ module tensor_basic_module
       if(.not.associated(arr%dims))then
         call mem_alloc(arr%dims,arr%mode)
 !$OMP CRITICAL
-        vector_size = dble(size(arr%dims))
+        vector_size = dble(size(arr%dims)*INTK)
         tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
         tensor_memory_in_use  = tensor_memory_in_use  + vector_size
 !$OMP END CRITICAL
@@ -78,7 +78,7 @@ module tensor_basic_module
       endif
       if (associated(arr%tdim))then
 !$OMP CRITICAL
-        vector_size = dble(size(arr%tdim))
+        vector_size = dble(size(arr%tdim)*INTK)
         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
         tensor_memory_in_use    = tensor_memory_in_use  - vector_size
 !$OMP END CRITICAL
@@ -87,7 +87,7 @@ module tensor_basic_module
       if(.not.associated(arr%tdim))then
         call mem_alloc(arr%tdim,arr%mode)
 !$OMP CRITICAL
-        vector_size = dble(size(arr%tdim))
+        vector_size = dble(size(arr%tdim)*INTK)
         tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
         tensor_memory_in_use  = tensor_memory_in_use  + vector_size
 !$OMP END CRITICAL
@@ -105,7 +105,7 @@ module tensor_basic_module
       if(.not.associated(arr%lock_set))then
         call mem_alloc(arr%lock_set,arr%ntiles)
 !$OMP CRITICAL
-        vector_size = dble(size(arr%lock_set))
+        vector_size = dble(size(arr%lock_set)*INTK)
         tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
         tensor_memory_in_use  = tensor_memory_in_use  + vector_size
 !$OMP END CRITICAL
@@ -134,7 +134,7 @@ module tensor_basic_module
        endif
        if (associated(arr%ntpm))then
           !$OMP CRITICAL
-          vector_size = dble(size(arr%ntpm))
+          vector_size = dble(size(arr%ntpm)*INTK)
           tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
           tensor_memory_in_use    = tensor_memory_in_use  - vector_size
           !$OMP END CRITICAL
@@ -143,7 +143,7 @@ module tensor_basic_module
        if(.not.associated(arr%ntpm))then
           call mem_alloc(arr%ntpm,arr%mode)
           !$OMP CRITICAL
-          vector_size = dble(size(arr%ntpm))
+          vector_size = dble(size(arr%ntpm)*INTK)
           tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
           tensor_memory_in_use  = tensor_memory_in_use  + vector_size
           !$OMP END CRITICAL
@@ -163,7 +163,7 @@ module tensor_basic_module
 
       if (associated(arr%addr_p_arr))then
          !$OMP CRITICAL
-         vector_size = dble(size(arr%addr_p_arr))
+         vector_size = dble(size(arr%addr_p_arr)*INTK)
          tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
          tensor_memory_in_use    = tensor_memory_in_use  - vector_size
          !$OMP END CRITICAL
@@ -172,7 +172,7 @@ module tensor_basic_module
       if(.not.associated(arr%addr_p_arr))then
          call mem_alloc(arr%addr_p_arr,nnodes)
          !$OMP CRITICAL
-         vector_size = dble(size(arr%addr_p_arr))
+         vector_size = dble(size(arr%addr_p_arr)*INTK)
          tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
          tensor_memory_in_use  = tensor_memory_in_use  + vector_size
          !$OMP END CRITICAL
@@ -292,7 +292,7 @@ module tensor_basic_module
 
            arr%ti(i)%t => null()
 
-           dim2 = dble(size(arr%ti(i)%d(:)))
+           dim2 = dble(size(arr%ti(i)%d(:))*INTK)
            call mem_dealloc(arr%ti(i)%d)
            !$OMP CRITICAL
            tensor_aux_deallocd_mem   = tensor_aux_deallocd_mem   + dim2 
@@ -433,7 +433,7 @@ module tensor_basic_module
      real(realk) :: vector_size
      if (associated(arr%dims))then
         !$OMP CRITICAL
-        vector_size = dble(size(arr%dims))
+        vector_size = dble(size(arr%dims)*INTK)
         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
         tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
@@ -441,7 +441,7 @@ module tensor_basic_module
      endif
      if (associated(arr%tdim))then
         !$OMP CRITICAL
-        vector_size = dble(size(arr%tdim))
+        vector_size = dble(size(arr%tdim)*INTK)
         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
         tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
@@ -449,7 +449,7 @@ module tensor_basic_module
      endif
      if (associated(arr%ntpm))then
         !$OMP CRITICAL
-        vector_size = dble(size(arr%ntpm))
+        vector_size = dble(size(arr%ntpm)*INTK)
         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
         tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
@@ -457,7 +457,7 @@ module tensor_basic_module
      endif
      if (associated(arr%addr_p_arr))then
         !$OMP CRITICAL
-        vector_size = dble(size(arr%addr_p_arr))
+        vector_size = dble(size(arr%addr_p_arr)*INTK)
         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
         tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
@@ -465,7 +465,7 @@ module tensor_basic_module
      endif
      if (associated(arr%lock_set))then
         !$OMP CRITICAL
-        vector_size = dble(size(arr%lock_set))
+        vector_size = dble(size(arr%lock_set)*INTK)
         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
         tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
