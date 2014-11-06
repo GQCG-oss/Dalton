@@ -638,6 +638,9 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
+            CASE('.MWPURIFYATOMSTART');               
+               !Perform McWeeny purification on the non idempotent Atoms Density
+               config%opt%MWPURIFYATOMSTART=.TRUE.
 #ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
