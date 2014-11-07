@@ -6296,7 +6296,7 @@ module lspdm_tensor_operations_module
   subroutine collect_int_contributions(g,o2v2,win)
     implicit none
     integer(kind=long),intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
+    real(realk),intent(inout) :: g(o2v2)
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
     integer :: fe,ne,msg_len_mpi
@@ -6334,7 +6334,7 @@ module lspdm_tensor_operations_module
   subroutine collect_int_contributions_f(g,o2v2,win)
     implicit none
     integer(kind=long),intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
+    real(realk),intent(inout) :: g(o2v2)
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
     integer :: fe,ne,msg_len_mpi
@@ -6428,7 +6428,7 @@ module lspdm_tensor_operations_module
   end subroutine lsmpi_put_realkV_w8
   subroutine lsmpi_get_realkV_w8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
