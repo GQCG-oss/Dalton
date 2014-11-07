@@ -477,10 +477,10 @@ C
 C....    CHECK INTEGRAL AGAINST THRESHOLD
 C
          IF (ABS(VALUE).LT.THRQ) GOTO 3
-            ISS=IBTAND(IBTSHR(LABEL,IBITSHR_1),IBITMASK)
-            IR =IBTAND(IBTSHR(LABEL,IBITSHR_2),IBITMASK)
-            IQ =IBTAND(IBTSHR(LABEL,IBITSHR_3),IBITMASK)
-            IP =IBTAND(       LABEL           ,IBITMASK)
+            ISS=IAND(ISHFT(LABEL,-IBITSHR_1),IBITMASK)
+            IR =IAND(ISHFT(LABEL,-IBITSHR_2),IBITMASK)
+            IQ =IAND(ISHFT(LABEL,-IBITSHR_3),IBITMASK)
+            IP =IAND(       LABEL           ,IBITMASK)
             IF (IP.GE.IQ) THEN
                IPQ = IT(IP) + IQ
             ELSE
@@ -509,7 +509,7 @@ C
                SCR(IRBAD+LENGTH) = VALUE
 C              ISCR(IBAD+IDABUF+LENGTH) = IPQ*(2**16) + IRS
                ISCR(IBAD+IDABUF+LENGTH) =
-     *            IBTOR( IBTSHL( IPQ , 16 ) , IRS )
+     *            IOR( ISHFT( IPQ , 16 ) , IRS )
                ISCR(IBAD+LBUF) = LENGTH
                IF (LENGTH .EQ. LDABUF) THEN
 C
@@ -539,7 +539,7 @@ C
                SCR(IRBAD+LENGTH) = VALUE
 C              ISCR(IBAD+IDABUF+LENGTH) = IRS*(2**16) + IPQ
                ISCR(IBAD+IDABUF+LENGTH) =
-     *            IBTOR( IBTSHL( IRS , 16 ) , IPQ )
+     *            IOR( ISHFT( IRS , 16 ) , IPQ )
                ISCR(IBAD+LBUF) = LENGTH
                IF (LENGTH .EQ. LDABUF) THEN
 C
@@ -803,9 +803,9 @@ C....    PICK UP INTEGRAL AND LABEL, UNPACK IPQ, IC, AND ID
 C
             LABEL = IINT(M+LRINT)
             VALUE = RINT(M)
-            IPQ=IBTAND(IBTSHR(LABEL,16),IBT16)
-            IC =IBTAND(IBTSHR(LABEL, 8),IBT08)
-            ID =IBTAND(       LABEL,    IBT08)
+            IPQ=IAND(ISHFT(LABEL,-16),IBT16)
+            IC =IAND(ISHFT(LABEL, -8),IBT08)
+            ID =IAND(       LABEL,    IBT08)
 C
 C....    PACK IC AND ID TO THE INDEX FORM USED IN BUFFER ALLOCATION
 C
@@ -828,7 +828,7 @@ C
             SCR(IRBAD+LENGTH) = VALUE
 C           ISCR(IBAD+IDABUG+LENGTH) = IPQ*2**16 + ICDX
             ISCR(IBAD+IDABUG+LENGTH) =
-     *         IBTOR( IBTSHL( IPQ , 16 ) , ICDX )
+     *         IOR( ISHFT( IPQ , 16 ) , ICDX )
             ISCR(IBAD+LBUF) = LENGTH
             IF (LENGTH.GE.LDABUG) THEN
 C
@@ -984,7 +984,7 @@ C     space than was available when SORTA was called (first call).
             ISQ  = ITSAO(NQ)
             ISPQ = MUL(ISP,ISQ)
             IPQ  = IPQ + 1
-            IPQL16 = IBTSHL(IPQ,16)
+            IPQL16 = ISHFT(IPQ,16)
             LPQ  = LPQ + 1
             IF (LPQ .GT. NPQ) THEN
                ICHAIN = ICHAIN + 1
@@ -1003,8 +1003,8 @@ C     ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
                   DO 104 I = 1,LENGTH
                      LDAI = IDABUF + I
                      IBL  = IBUF(LDAI)
-                     MPQ  = IBTAND(IBTSHR(IBL,16),IBT16)
-                     MRS  = IBTAND(       IBL,    IBT16)
+                     MPQ  = IAND(ISHFT(IBL,-16),IBT16)
+                     MRS  = IAND(       IBL,    IBT16)
 C                    ***** FIND ADDRESS AND DISTRIBUTE INTEGRAL *****
                      IPQRS = IPQRS0 + NMBASX*MPQ + MRS
                      TRI(IPQRS) = BUF(I)
@@ -1217,9 +1217,9 @@ C                 ***** WRITE THIS BUFFER *****
                END IF
                OUTB(IOUT) = P
 C              IOUTB(LOUTI+IOUT) = IPQ*2**16 + IC*2**8 + ID
-               ICD               = IBTOR(IBTSHL(IC,  8),ID)
-               IOUTB(LOUTI+IOUT) = IBTOR(IPQL16,ICD)
-C              ... IPQL16 = IBTSHL(IPQ,16)
+               ICD               = IOR(ISHFT(IC,  8),ID)
+               IOUTB(LOUTI+IOUT) = IOR(IPQL16,ICD)
+C              ... IPQL16 = ISHFT(IPQ,16)
   160       CONTINUE
   170    CONTINUE
   100 CONTINUE
@@ -1412,8 +1412,8 @@ C           ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
 #include "nosync.h"
                DO 104 I=1,LENGTH
                   IBL=IBUF(IDABUG+I)
-                  MPQ=IBTAND(IBTSHR(IBL,16),IBT16)
-                  MCD=IBTAND(       IBL,    IBT16)
+                  MPQ=IAND(ISHFT(IBL,-16),IBT16)
+                  MCD=IAND(       IBL,    IBT16)
 C                 ***** FIND ADDRESS AND DISTRIBUTE INTEGRAL *****
                   IPQCD=NMBASX*(MCD-MCDOFF)+MPQ
                   TRI(IPQCD)=BUF(I)
@@ -1455,7 +1455,7 @@ C              INDCD = NC*2**24 + ND*2**16
 C              INDCD = ND*2**24 + NC*2**16
                INDCD = ND*2**8  + NC
             END IF
-            INDCD = IBTSHL( INDCD , 16 )
+            INDCD = ISHFT( INDCD , 16 )
 C           ***** SET THE ARRAY ABCD TO ZERO *****
             CALL DZERO(ABCD,MORBT*MORBT)
 C           ***** SET START ADDRESS IN TRI FOR INTEGRALS WITH *****
@@ -1633,7 +1633,7 @@ C     ***** BEEN CREATED. WRITE THEM ON UNIT LUINTM WITH   *****
 C     ***** INDICES A,B,C AND D.                           *****
 CHJ: new index order: C,D; A,B
       DO 170 NA=1,MORBT
-         INDCDA = IBTOR(INDCD , IBTSHL( NA, 8 ) )
+         INDCDA = IOR(INDCD , ISHFT( NA, 8 ) )
          ISA = ITSMO( NA )
          ISB = MUL( ISA, ISCD )
          NBST  = JORB(ISB) + 1
@@ -1665,7 +1665,7 @@ C              ***** WRITE THIS BUFFER *****
                END IF
             END IF
             OUTB(IOUT) = P
-            IOUTB(LOUTI+IOUT) = IBTOR( INDCDA , NB )
+            IOUTB(LOUTI+IOUT) = IOR( INDCDA , NB )
   160    CONTINUE
   170 CONTINUE
 CHJ 3 *** Going to next (CD), empty this buffer ***
@@ -2684,7 +2684,7 @@ C
             CALL QTRACE(LUPRI)
             CALL QUIT('*** ERROR ***(NXTH2M) no mo integrals on LUINTM')
          END IF
-         INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
+         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
       END IF
 C
 C *** Initialize H2CD
@@ -2708,8 +2708,8 @@ C        Last distribution has been read
       END IF
       INDCD = INDCDN
       IDIST = IDIST + 1
-      IC = IBTAND(IBTSHR(INDCD,8),IBT08)
-      ID = IBTAND(       INDCD,   IBT08)
+      IC = IAND(ISHFT(INDCD,-8),IBT08)
+      ID = IAND(       INDCD,   IBT08)
       ITYPC  = IOBTYP(IC)
       ITYPD  = IOBTYP(ID)
       ITYPCD = IDBTYP(ITYPC,ITYPD)
@@ -2727,7 +2727,7 @@ C
       IF (LENGTH.EQ.-1) THEN
          INDCDN = -1
       ELSE
-         INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
+         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
       END IF
       IF (INDCDN.NE.INDCD) THEN
 C        ... finished reading the INDCD distribution
@@ -2742,8 +2742,8 @@ C            new INDCDN distribution
       IF (ITYPCD.EQ.0) GO TO 300
 C
   400 DO 450 I = 1,LENGTH
-         IA = IBTAND(IBTSHR(IBUF(I),8),IBT08)
-         IB = IBTAND(       IBUF(I),   IBT08)
+         IA = IAND(ISHFT(IBUF(I),-8),IBT08)
+         IB = IAND(       IBUF(I),   IBT08)
          H2CD(IA,IB) = BUF(I)
          H2CD(IB,IA) = BUF(I)
   450 CONTINUE
@@ -2934,7 +2934,7 @@ C
             CALL QTRACE(LUPRI)
             CALL QUIT('*** ERROR ***(NXTH2D) no mo integrals on LUINTD')
          END IF
-         INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
+         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
       END IF
 C
 C *** Initialize H2CD
@@ -2958,8 +2958,8 @@ C        Last distribution has been read
       END IF
       INDCD = INDCDN
       IDIST = IDIST + 1
-      IC = IBTAND(IBTSHR(INDCD,8),IBT08)
-      ID = IBTAND(       INDCD,   IBT08)
+      IC = IAND(ISHFT(INDCD,-8),IBT08)
+      ID = IAND(       INDCD,   IBT08)
       ITYPC  = IOBTYP(IC)
       ITYPD  = IOBTYP(ID)
       ITYPCD = IDBTYP(ITYPC,ITYPD)
@@ -2975,7 +2975,7 @@ C
       IF (LENGTH.EQ.-1) THEN
          INDCDN = -1
       ELSE
-         INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
+         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
       END IF
       IF (INDCDN.NE.INDCD) THEN
 C        ... finished reading the INDCD distribution
@@ -2990,8 +2990,8 @@ C            new INDCDN distribution
       IF (ITYPCD.EQ.0) GO TO 300
 C
   400 DO 450 I = 1,LENGTH
-         IA = IBTAND(IBTSHR(IBUF(I),8),IBT08)
-         IB = IBTAND(       IBUF(I),   IBT08)
+         IA = IAND(ISHFT(IBUF(I),-8),IBT08)
+         IB = IAND(       IBUF(I),   IBT08)
          H2CD(IA,IB) = BUF(I)
   450 CONTINUE
       GO TO 300

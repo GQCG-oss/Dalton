@@ -1467,7 +1467,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '        oo     ')
       PARAMETER (UNDEF  = '      undefined')
-#include "ibtfun.h"
+
 
 C     Print title.
 C     ------------
@@ -1491,7 +1491,7 @@ C     ---------------------
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYM = 0, MAXOPR
-            IF (IBTAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
                JATOM = JATOM + 1
                NATTYP = NINT(CHARGE(IATOM))
                IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
@@ -1568,7 +1568,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '         oo    ')
       PARAMETER (UNDEF  = '      undefined')
-#include "ibtfun.h"
+
 
 C     Print title.
 C     ------------
@@ -1595,7 +1595,7 @@ C     ---------------------
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYM = 0, MAXOPR
-            IF (IBTAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
                JATOM = JATOM + 1
                NATTYP = NINT(CHARGE(IATOM))
                IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
@@ -1673,7 +1673,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '        oo     ')
       PARAMETER (UNDEF  = '      undefined')
-#include "ibtfun.h"
+
 
 C     Print title.
 C     ------------
@@ -1699,7 +1699,7 @@ C     ---------------------
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYM = 0, MAXOPR
-            IF (IBTAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
                JATOM = JATOM + 1
                NATTYP = NINT(CHARGE(IATOM))
                IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN

@@ -24,7 +24,7 @@ f.add(from_string = 'Dipole moment',
 
 f.add(from_string = 'Summary of chemical shieldings',
       num_lines = 14,
-      abs_tolerance = 1.0e-3)
+      rel_tolerance = 1.0e-4)
 
 test.run(['choles_kt3_ctocd.dal'], ['HCP_Turbomole-TZP.mol'], {'out': f},
          accepted_errors=['not implemented for parallel calculations.'])

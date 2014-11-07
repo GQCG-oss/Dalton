@@ -38,7 +38,7 @@ C
 #include "dftinf.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
       IF (MAXREP.EQ.0) THEN
          CALL DFTAOS(GSO(KSO0),GSO(KSO1),GSO(KSO2),GSO(KSOB),GSO(KSOB1),
@@ -85,7 +85,7 @@ C
 #include "orgcom.h"
 #include "dftinf.h"
 C
-#include "ibtfun.h"
+
 C
       CALL DZERO(GAO,NTYPSO*NBAST)
 C
@@ -100,11 +100,11 @@ C
          NUCA   = NUCO(ISHELA)
          MULA   = ISTBAO(ISHELA)
          DO ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,MULA).EQ.0) THEN
+         IF (IAND(ISYMOP,MULA).EQ.0) THEN
 C
-            PAX = CORPX-PT(IBTAND(ISYMAX(1,1),ISYMOP))*CENT(ISHELA,1,1)
-            PAY = CORPY-PT(IBTAND(ISYMAX(2,1),ISYMOP))*CENT(ISHELA,2,1)
-            PAZ = CORPZ-PT(IBTAND(ISYMAX(3,1),ISYMOP))*CENT(ISHELA,3,1)
+            PAX = CORPX-PT(IAND(ISYMAX(1,1),ISYMOP))*CENT(ISHELA,1,1)
+            PAY = CORPY-PT(IAND(ISYMAX(2,1),ISYMOP))*CENT(ISHELA,2,1)
+            PAZ = CORPZ-PT(IAND(ISYMAX(3,1),ISYMOP))*CENT(ISHELA,3,1)
             PA2 = PAX*PAX + PAY*PAY + PAZ*PAZ
 C
 C           This test has been commented out since in somce cases the 
@@ -579,7 +579,7 @@ C
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GE. 100) CALL HEADER('Subroutine DFTSOS',-1)
 C
 C     Loop over all irreps in molecule
@@ -589,16 +589,16 @@ C
       DO IREPA = 0, MAXREP
          NORBA = NAOS(IREPA+1)
          DO I = ISTRA,ISTRA + NORBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I), -8),  255)
             NHKTA = NHKT(IA)
             KHKTA = KHKT(IA)
             MULA  = ISTBAO(IA)
             INDA  = KSTRT(IA) + NA - KHKTA
             DO ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
-               FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+               FAC  = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
                DO J=1, NVEC
                   GSO(I,J) = GSO(I,J) + FAC*GAO(INDA,J)
                END DO
@@ -646,7 +646,7 @@ C
 #include "symmet.h"
 #include "dftinf.h"
 C
-#include "ibtfun.h"
+
 C
       IF (MAXREP.EQ.0) THEN
          CALL BLDFTAOS(NVCLEN,GSO,COOR,NBLCNT,IBLCKS,
@@ -696,7 +696,7 @@ c     grid point.
 #include "orgcom.h"
 #include "dftinf.h"
 C
-#include "ibtfun.h"
+
 
 
 C
@@ -723,11 +723,11 @@ c        fixme - this won't scale linearly
          NUCA   = NUCO(ISHELA)
          MULA   = ISTBAO(ISHELA)
          DO ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,MULA).EQ.0) THEN
+         IF (IAND(ISYMOP,MULA).EQ.0) THEN
 C
-            CENX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CENT(ISHELA,1,1)
-            CENY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CENT(ISHELA,2,1)
-            CENZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CENT(ISHELA,3,1)
+            CENX = PT(IAND(ISYMAX(1,1),ISYMOP))*CENT(ISHELA,1,1)
+            CENY = PT(IAND(ISYMAX(2,1),ISYMOP))*CENT(ISHELA,2,1)
+            CENZ = PT(IAND(ISYMAX(3,1),ISYMOP))*CENT(ISHELA,3,1)
             DO I=1,NVCLEN
                PA(1,i) = COOR(1,i)-CENX
                PA(2,i) = COOR(2,i)-CENY
@@ -1555,7 +1555,7 @@ C
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DFTSOS',-1)
 C
 C     Loop over all irreps in molecule
@@ -1565,16 +1565,16 @@ C
       DO IREPA = 0, MAXREP
          NORBA = NAOS(IREPA+1)
          DO I = ISTRA,ISTRA + NORBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I), -8),  255)
             NHKTA = NHKT(IA)
             KHKTA = KHKT(IA)
             MULA  = ISTBAO(IA)
             INDA  = KSTRT(IA) + NA - KHKTA
             DO ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
-               FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+               FAC  = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
                DO J=1, NVEC
 c                 
 c                 ifc cannot vectorize it because "subscript too complex"

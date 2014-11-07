@@ -293,7 +293,7 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       CHARACTER*8 ATNAME 
       LOGICAL FNONB
@@ -301,7 +301,7 @@ C
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 200 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                ATNAME='        '
                FNONB = .FALSE.
@@ -319,7 +319,7 @@ C
                ENDDO 
   17           CONTINUE 
                WRITE (LU,'(A,3(2X,F22.16))') ATNAME, 
-     *           (PT(IBTAND(ISYMAX(I,1),ISYMOP))*COORD(I,ICENT),I=1,3)
+     *           (PT(IAND(ISYMAX(I,1),ISYMOP))*COORD(I,ICENT),I=1,3)
             END IF
   200    CONTINUE
   100 CONTINUE
@@ -328,7 +328,7 @@ C
       DO 300 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 400 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                WRITE (LU,'(A)') NAMDEP(IATOM)
             END IF
@@ -352,16 +352,16 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 200 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                WRITE (LUPRI,'(1X,A,F17.10,2F24.10)') NAMDEP(IATOM),
-     *           (PT(IBTAND(ISYMAX(I,1),ISYMOP))*COORD(I,ICENT),I=1,3)
+     *           (PT(IAND(ISYMAX(I,1),ISYMOP))*COORD(I,ICENT),I=1,3)
             END IF
   200    CONTINUE
   100 CONTINUE
@@ -2025,14 +2025,14 @@ C
 #include "orgcom.h"
 #include "cbisol.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       ICHTOT = 0
       JATOM = 0
 C
       DO 10 IATOM = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                ICHARG = IZATOM(IATOM)
                IF ((ICHARG .NE. 0 .AND. .NOT.NOORBT(IATOM))
      &              .OR. (ICHARG .EQ. 0 .AND. SOLVNT 
@@ -2041,7 +2041,7 @@ C
                   ICHTOT = ICHTOT + ICHARG
                   DO 30 KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
      &                    *CORD(KCOOR,IATOM)
  30               CONTINUE
                   JATOM = JATOM + 1
@@ -2181,7 +2181,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
 C
       CARTRA = .TRUE.
 C
@@ -2206,7 +2206,7 @@ C
          J = 0
          DO IX = 1, 3
             DO IY = IX, 3
-               IF  (IBTXOR(ISYMAX(IX,ITYPEF),ISYMAX(IY,ITYPEF))
+               IF  (IEOR(ISYMAX(IX,ITYPEF),ISYMAX(IY,ITYPEF))
      &              .EQ. IREP) THEN
                   J = J + 1
                   PRICOR(J) = CHRXYZ(-IX)//CHRXYZ(-IY)
@@ -2222,7 +2222,7 @@ C
                   J = 0
                   DO IX = 1, 3
                      DO IY = IX, 3
-                       IF  (IBTXOR(ISYMAX(IX,ITYPEF),ISYMAX(IY,ITYPEF))
+                       IF  (IEOR(ISYMAX(IX,ITYPEF),ISYMAX(IY,ITYPEF))
      &                       .EQ. IREP) THEN
                           J = J +1
                           PRIVAL(J) = AMAT(IPTAX(IX,ITYPEF),

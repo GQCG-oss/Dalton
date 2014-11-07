@@ -1835,7 +1835,7 @@ C
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC3_CONVIR')
 C

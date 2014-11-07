@@ -683,7 +683,7 @@ C
      &          VXCZ(NBLEN), VXCRZ(NBLEN), VXCZZ(NBLEN)
       DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP), IXY2(9)
       DATA IXY2 / 5, 6, 7, 6, 8, 9, 7, 9, 10/
-#include "ibtfun.h"
+
 C
 C     Set Active orbitals
 C

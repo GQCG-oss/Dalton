@@ -3479,7 +3479,7 @@ cmbh end
 #include "symmet.h"
 #include "qm3.h"
 #include "nqcc.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GE. 0) THEN
          CALL TITLER('ABACUS - Nuclear Quadrupole moments','*',116)
@@ -3573,7 +3573,7 @@ C
       DO 100 IATOM = 1, NUCIND
         IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 110 ISYM = 0, MAXOPR
-            IF (IBTAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
+            IF (IAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
               NATOM = NATOM + 1
               NUCCHA = IZATOM(IATOM)
               IF (NUCCHA  .EQ. 0) GOTO 100
@@ -3651,14 +3651,14 @@ C  /* Deck efgpri */
       CHARACTER*33 TEXT
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       NATOM = 1
       DO 10 I = 1, NUCIND
 chj-s-090516 : defined ISUBSI, NSISY(0) for .NOT.QM3 so test is passed
         IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 20 J = 0, MAXOPR
-            IF (IBTAND(ISTBNU(I),J) .EQ. 0) THEN
+            IF (IAND(ISTBNU(I),J) .EQ. 0) THEN
               WRITE (LUPRI,'(/A,3X,A)') TEXT,NAMDEP(NATOM)
               CALL OUTPUT(VMAT(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
               NATOM = NATOM + 1

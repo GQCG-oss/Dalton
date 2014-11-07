@@ -280,7 +280,7 @@ C
       CHARACTER*4 CRDTXT
       CHARACTER*1 CHRIMG(0:1)
       DATA CHRIMG /' ','i'/
-#include "ibtfun.h"
+
 C
       SXFAMU = SQRT(XFAMU)
       IF (.NOT. (REDINT .OR. DELINT)) RETURN
@@ -4485,7 +4485,7 @@ C
       DIMENSION RADIUS_PCM(MXCENT), ALPHA_PCM(MXCENT)
       SAVE INDOLD
       DATA INDOLD /999/
-#include "ibtfun.h"
+
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
       CALL DZERO(TMPVEC,IINTCR)
@@ -4654,10 +4654,10 @@ C
          DO 70 I = 1, NONT(ITYP)
             MULCNT = ISTBNU(IATOM)
             DO 80 ISYMOP = 1, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-                  COOX=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-                  COOY=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-                  COOZ=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  COOX=PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  COOY=PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  COOZ=PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                   INSLIN = NCLINE(IATOM)
                   DO 90 J = NMLINE, INSLIN, -1
                      MLINE(J+1) = MLINE(J)

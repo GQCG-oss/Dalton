@@ -215,7 +215,7 @@ C
 #include "ericom.h"
 #include "eriao.h"
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
       IF (BDER3.OR.BDER4) THEN
          CALL CR2SVC(CSQ3,CSA3,CSV3,NCENTR(1,1),NCENTR(1,2),
@@ -280,7 +280,7 @@ C
 #include "ericom.h"
 #include "eriao.h"
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
       PATH1 = IPATH .EQ. 1
 C
@@ -364,7 +364,7 @@ C
                      IKMP34 = IKMP34 + 1
 C                    IODD34 = IODDCC(IPNTUV(IKMP34,INDX,IELCT2))
                      IODD34 = IODDCC(IPNTUV(IKMP34,0,IELCT2))
-                     IODD34 = IBTXOR(IODD34,IODX)
+                     IODD34 = IEOR(IODD34,IODX)
                      DO 320 IKMP12 = 1, KHKT12
                      IF (IODDCC(IPNTUV(IKMP12,0,IELCT1)).EQ.IODD34) THEN
                         IF (PATH1) THEN
@@ -427,7 +427,7 @@ C
                   ICMP34 = (ICOMP3 - 1)*KHKT4 + IKOMP4
                   IKMP34 = (IKOMP3 - 1)*KHKT4 + IKOMP4
                   IODD34 = IODDCC(IPNTUV(IKMP34,INDX,IELCT2))
-                  IODD34 = IBTXOR(IODD34,IODX)
+                  IODD34 = IEOR(IODD34,IODX)
                   DO 430 IKMP12 = 1, KHKT12
                   IF (IODDCC(IPNTUV(IKMP12,0,IELCT1)).EQ.IODD34) THEN 
                      IF (PATH1) THEN
@@ -485,7 +485,7 @@ C
                   IF (ABS(SPHFAC).GT.D0) THEN
                      IKMP34 = (IKOMP3 - 1)*KHKT4 + IKOMP4
                      IODD34 = IODDCC(IPNTUV(IKMP34,INDX,IELCT2))
-                     IODD34 = IBTXOR(IODD34,IODX)
+                     IODD34 = IEOR(IODD34,IODX)
                      DO 520 IKMP12 = 1, KHKT12
                      IF (IODDCC(IPNTUV(IKMP12,0,IELCT1)).EQ.IODD34) THEN
                         IF (PATH1) THEN
@@ -550,7 +550,7 @@ C
 #include "eriao.h"
 #include "hertop.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ERIBUN','*',103)
 C
