@@ -5208,7 +5208,7 @@ contains
   !=========================================================!
   subroutine lsmpi_put_realk(buf,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5227,7 +5227,7 @@ contains
   end subroutine lsmpi_put_realk
   subroutine lsmpi_put_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5257,7 +5257,7 @@ contains
   end subroutine lsmpi_put_realkV_wrapper8
   subroutine lsmpi_put_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5277,7 +5277,7 @@ contains
   end subroutine lsmpi_put_realkV
   subroutine lsmpi_put_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5328,7 +5328,7 @@ contains
   end subroutine lsmpi_put_realkV_parts_wrapper8
   subroutine lsmpi_put_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5368,7 +5368,7 @@ contains
 
   subroutine lsmpi_rput_realkV4(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5396,7 +5396,7 @@ contains
 
   subroutine lsmpi_rput_realkV8(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5949,7 +5949,7 @@ contains
   !=========================================================!
   subroutine lsmpi_acc_int8(buf,pos,dest,win)
     implicit none
-    integer(kind=8),intent(in) :: buf
+    integer(kind=8),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5967,7 +5967,7 @@ contains
   end subroutine lsmpi_acc_int8
   subroutine lsmpi_acc_int4(buf,pos,dest,win)
     implicit none
-    integer(kind=4),intent(in) :: buf
+    integer(kind=4),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5985,7 +5985,7 @@ contains
   end subroutine lsmpi_acc_int4
   subroutine lsmpi_acc_realk(buf,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -6003,7 +6003,7 @@ contains
   end subroutine lsmpi_acc_realk
   subroutine lsmpi_acc_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6032,7 +6032,7 @@ contains
   end subroutine lsmpi_acc_realkV_wrapper8
   subroutine lsmpi_acc_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6052,7 +6052,7 @@ contains
   end subroutine lsmpi_acc_realkV
   subroutine lsmpi_acc_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6090,7 +6090,7 @@ contains
   end subroutine lsmpi_acc_realkV_parts_wrapper8
   subroutine lsmpi_acc_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6130,7 +6130,7 @@ contains
 
   subroutine lsmpi_racc_realkV4(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6158,7 +6158,7 @@ contains
   end subroutine lsmpi_racc_realkV4
   subroutine lsmpi_racc_realkV8(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
