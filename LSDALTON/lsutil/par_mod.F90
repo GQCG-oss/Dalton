@@ -35,7 +35,7 @@ type infpar_struct
   integer(kind=ls_mpik) :: pc_nodtot
 
   !> number of nodes used in scalapack
-  integer(kind=ls_mpik) :: ScalapackNodes
+  integer(kind=ls_mpik) :: ScalapackGroupSize
 
   !> Are there more local jobs?
   logical :: lg_morejobs

@@ -1541,7 +1541,7 @@ DO idmat=1,nmat
   ! --- SYMMETRIZE or ANTI-SYMMETRIZE K, and MULTIPLY BY (1/2)
   ! --- add the contributions of the K matrix (K_ac = K_ac + K_ca = K_ca )
   Kfull_3cContrib(:,:,1,1,idmat) = Kfull_3cContrib(:,:,1,1,idmat) + Kfull_2cContrib(:,:,1,1,idmat)
-  Kfull_3cContrib(:,:,1,1,idmat) = Kfull_3cContrib(:,:,1,1,idmat) + transpose(Kfull_3cContrib(:,:,1,1,idmat))
+  call symmetrizeKfull_3cContrib(Kfull_3cContrib(:,:,1,1,idmat),nBastReg)
 ENDDO
   
 call freePariCoefficients(calpha_ab,orbitalInfo%nAtoms)
@@ -1573,6 +1573,15 @@ call mem_dealloc(alpha_beta)
 CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
 
 END SUBROUTINE II_get_pari_df_exchange_mat
+
+subroutine symmetrizeKfull_3cContrib(Kfull_3cContrib,nBastReg)
+  implicit none
+  integer,intent(in) :: nBastReg
+  real(realk),intent(inout) :: Kfull_3cContrib(nBastReg,nBastReg)
+  
+  Kfull_3cContrib = Kfull_3cContrib + transpose(Kfull_3cContrib)
+  
+end subroutine symmetrizeKfull_3cContrib
 
 !> \brief Calculates the coulomb matrix using regular density fitting
 !> \author S. Reine
