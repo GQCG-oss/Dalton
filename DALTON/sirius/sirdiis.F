@@ -1342,7 +1342,9 @@ c            make sure we get right HOMO-LUMO gap in the end.
 
 C        Level shift is only working for closed shell calculations ...
 C          (open shell problems reported by users ...) / hjaaj 22-Jun-2005
-         IF ( NASHT .GT. 0 ) SHFTLVL = 0.0D0
+!        IF ( NASHT .GT. 0 ) SHFTLVL = 0.0D0
+!        enabled again 6-Nov-2014 after testing a problematic open-shell DFT
+!        calculation which converged with level shift, but not without. /hjaaj
 
 C        No level shift at convergence, otherwise orbital energies
 C        for e.g. CC will not be correct
@@ -1437,8 +1439,12 @@ C        Perform "restricted step" step reduction (i.e. level shift)
 C        by adding 0.5*SHFTLVL*DENS(i,i) to all diagonal elements;
 C        /hjaaj-Feb.2001
 
-         IF (SHFTLVL .NE. D0) WRITE(LUPRI,'(I4,A,1P,D10.2)') ITDIIS,
-     &   '  Level shift: occupied orbital energies shifted by',SHFTLVL
+         IF (SHFTLVL .NE. D0) THEN
+            WRITE(LUPRI,'(I4,A,1P,D10.2)') ITDIIS,'  Level shift: '//
+     &      'doubly occupied orbital energies shifted by',SHFTLVL
+            IF (NASHT .GT. 0) WRITE(LUPRI,'(T16,A,1P,D10.2)')'and '//
+     &      'singly occupied orbital energies shifted by',0.5D0*SHFTLVL
+         END IF
 chjaaj: improve comment with something about "restricted step"
 chjaaj: and "0.5*occ(i)* " /23may09 hjaaj
 C
@@ -2251,10 +2257,9 @@ C
             DO K = 1,NISH(ISYM)
                FC(IFSYM+IROW(K+1)) = FC(IFSYM+IROW(K+1)) + SHFTLVL
             END DO
-            IF (NASH(ISYM) .GT. 0) THEN
-               K = NISH(ISYM) + 1
+            DO K = NISH(ISYM)+1, NISH(ISYM)+NASH(ISYM)
                FC(IFSYM+IROW(K+1)) = FC(IFSYM+IROW(K+1)) + DP5*SHFTLVL
-            END IF
+            END DO
          END IF
 C        zero rows and columns corresponding to frozen orbitals
          JFRZI = 0
