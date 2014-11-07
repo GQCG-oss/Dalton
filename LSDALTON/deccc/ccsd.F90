@@ -2711,7 +2711,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
 
      integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
-     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os,bs
+     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os,bs,as,gs
      integer(kind=8) :: nb4,o2v2,no4,buf_size
      integer :: tlen,tred,nor,nvr,goffs,aoffs
      integer :: prev_alphaB,mpi_buf,ccmodel_copy
@@ -2960,7 +2960,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
            &MinAObatch,DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.)
 
-        if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 4 possible",-1)
+        if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
      endif
 
 
@@ -3210,9 +3210,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      fullRHS=(nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
-     call get_currently_available_memory(MemFree)
-     MemFree = 0.4_realk * MemFree
-
      !**********************************
      ! Begin the loop over gamma batches
      !**********************************
@@ -3234,36 +3231,42 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         fg         = GammaStart
         lg         = dimGamma
 
+        if( lg > bs )then
+           gs = bs
+        else
+           gs = lg
+        endif
+
         call time_start_phase(PHASE_WORK, twall = time_yvfg )
-        call tensor_ainit(yv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[lg,vs])
+        call tensor_ainit(yv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[gs,vs])
         call copy_stripe_from_full_matrix(yv_f,w0%d,fg,lg,nb,nv)
         call tensor_convert(w0%d,yv_fg,wrk=w1%d,iwrk=w1%n)
         call time_start_phase(PHASE_WORK, ttot = time_yvfg )
         time_yv_fg_tot = time_yv_fg_tot + time_yvfg
 
         call time_start_phase(PHASE_WORK, twall = time_yofg )
-        call tensor_ainit(yo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[lg,os])
+        call tensor_ainit(yo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[gs,os])
         call copy_stripe_from_full_matrix(yo_f,w0%d,fg,lg,nb,no)
         call tensor_convert(w0%d,yo_fg,wrk=w1%d,iwrk=w1%n)
         call time_start_phase(PHASE_WORK, ttot = time_yofg )
         time_yo_fg_tot = time_yo_fg_tot + time_yofg
 
         call time_start_phase(PHASE_WORK, twall = time_xofg )
-        call tensor_ainit(xo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[lg,os])
+        call tensor_ainit(xo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[gs,os])
         call copy_stripe_from_full_matrix(xo_f,w0%d,fg,lg,nb,no)
         call tensor_convert(w0%d,xo_fg,wrk=w1%d,iwrk=w1%n)
         call time_start_phase(PHASE_WORK, ttot = time_xofg )
         time_xo_fg_tot = time_xo_fg_tot + time_xofg
 
         call time_start_phase(PHASE_WORK, twall = time_xvfg )
-        call tensor_ainit(xv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[lg,vs])
+        call tensor_ainit(xv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[gs,vs])
         call copy_stripe_from_full_matrix(xv_f,w0%d,fg,lg,nb,nv)
         call tensor_convert(w0%d,xv_fg,wrk=w1%d,iwrk=w1%n)
         call time_start_phase(PHASE_WORK, ttot = time_xvfg )
         time_xv_fg_tot = time_xv_fg_tot + time_xvfg
 
         call time_start_phase(PHASE_WORK, twall = time_uigcj )
-        call tensor_ainit( uigcj, [no,lg,nv,no], 4, local=local, atype='TDAR', tdims=[os,lg,vs,os] )
+        call tensor_ainit( uigcj, [no,lg,nv,no], 4, local=local, atype='TDAR', tdims=[os,gs,vs,os] )
         order4 = [3,1,2,4]
         call tensor_contract( 1.0E0_realk, yv_fg, u2, [2],[1],1,0.0E0_realk,uigcj, order4, force_sync=.true.,wrk=w1%d,iwrk=w1%n)
         call time_start_phase(PHASE_WORK, ttot = time_uigcj )
@@ -3291,41 +3294,48 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            !short hand notation
            fa         = AlphaStart
            la         = dimAlpha
+
+           if( la > bs )then
+              as = bs
+           else
+              as = la
+           endif
+
            myload     = myload + la * lg
 
            if(master.and.DECinfo%PL>2) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
               &alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
            call time_start_phase(PHASE_WORK, twall = time_xofa )
-           call tensor_ainit(xo_fa, [la,no], 2, local=local, atype="TDAR", tdims=[la,os])
+           call tensor_ainit(xo_fa, [la,no], 2, local=local, atype="TDAR", tdims=[as,os])
            call copy_stripe_from_full_matrix(xo_f,w0%d,fa,la,nb,no)
            call tensor_convert(w0%d,xo_fa,wrk=w1%d,iwrk=w1%n)
            call time_start_phase(PHASE_WORK, ttot = time_xofa )
            time_xo_fa_tot = time_xo_fa_tot + time_xofa
 
            call time_start_phase(PHASE_WORK, twall = time_xvfa )
-           call tensor_ainit(xv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[la,vs])
+           call tensor_ainit(xv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[as,vs])
            call copy_stripe_from_full_matrix(xv_f,w0%d,fa,la,nb,nv)
            call tensor_convert(w0%d,xv_fa,wrk=w1%d,iwrk=w1%n)
            call time_start_phase(PHASE_WORK, ttot = time_xvfa )
            time_xv_fa_tot = time_xv_fa_tot + time_xvfa
 
            call time_start_phase(PHASE_WORK, twall = time_yvfa )
-           call tensor_ainit(yv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[la,vs])
+           call tensor_ainit(yv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[as,vs])
            call copy_stripe_from_full_matrix(yv_f,w0%d,fa,la,nb,nv)
            call tensor_convert(w0%d,yv_fa,wrk=w1%d,iwrk=w1%n)
            call time_start_phase(PHASE_WORK, ttot = time_yvfa )
            time_yv_fa_tot = time_yv_fa_tot + time_yvfa
 
            call time_start_phase(PHASE_WORK, twall = time_cont1 )
-           call tensor_ainit( int1, [nv,la,no,lg], 4, local=local, atype="TDAR", tdims=[vs,la,os,lg] )
+           call tensor_ainit( int1, [nv,la,no,lg], 4, local=local, atype="TDAR", tdims=[vs,as,os,gs] )
            order4 = [3,4,1,2]
            call tensor_contract( 1.0E0_realk, uigcj, xo_fa, [4],[2],1,0.0E0_realk, int1, order4,wrk=w1%d,iwrk=w1%n)
            call time_start_phase(PHASE_WORK, ttot = time_cont1 )
            time_cont1_tot = time_cont1_tot + time_cont1
 
            call time_start_phase(PHASE_WORK, twall = time_int1 )
-           call tensor_ainit(Cint, [nb,nb,la,lg], 4, local=local, atype="TDAR", tdims=[bs,bs,la,lg])
+           call tensor_ainit(Cint, [nb,nb,la,lg], 4, local=local, atype="TDAR", tdims=[bs,bs,as,gs])
 
            !setup RHS screening - here we only have a set of AO basisfunctions
            !                      so we use the batchscreening matrices.
@@ -3356,9 +3366,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, ttot = time_int1 )
            time_int1_tot = time_int1_tot + time_int1
 
-           call time_start_phase(PHASE_WORK, twall = time_cont3 )
+           call time_start_phase(PHASE_WORK, twall = time_cont2 )
            ! I [beta delta alpha gamma] * Lambda^p [beta l] = I [alpha l gamma delta]
-           call tensor_ainit( int2, [la,no,lg,nb], 4, local=local, atype="TDAR", tdims=[la,os,lg,bs] )
+           call tensor_ainit( int2, [la,no,lg,nb], 4, local=local, atype="TDAR", tdims=[as,os,gs,bs] )
            order4 = [2,4,3,1]
            call tensor_contract( 1.0E0_realk, Cint, xo, [2],[1],1,0.0E0_realk, int2, order4,force_sync=.true.,wrk=w1%d,iwrk=w1%n)
            call time_start_phase(PHASE_WORK, ttot = time_cont2 )
@@ -3383,7 +3393,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
               call time_start_phase(PHASE_WORK, twall = time_cont4 )
-              call tensor_ainit( int3, [la,no,no,lg], 4, local=local, atype="TDAR", tdims=[la,os,os,lg] )
+              call tensor_ainit( int3, [la,no,no,lg], 4, local=local, atype="TDAR", tdims=[as,os,os,gs] )
               order4 = [1,2,4,3]
               call tensor_contract( 1.0E0_realk, int2, yo   , [4],[1],1, 0.0E0_realk, int3, order4,&
                  &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3392,7 +3402,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               !I [alpha  i j gamma] * Lambda^h [gamma b]            = I [alpha i j b]
               call time_start_phase(PHASE_WORK, twall = time_cont5 )
-              call tensor_ainit( int4, [la,no,no,nv], 4, local=local, atype="TDAR", tdims=[la,os,os,vs] )
+              call tensor_ainit( int4, [la,no,no,nv], 4, local=local, atype="TDAR", tdims=[as,os,os,vs] )
               order4 = [1,2,3,4]
               call tensor_contract( 1.0E0_realk, int3, yv_fg, [4],[1],1, 0.0E0_realk, int4, order4,&
                  &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3415,7 +3425,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
            call time_start_phase(PHASE_WORK, twall = time_cont7 )
-           call tensor_ainit( int1, [la,no,lg,nv], 4, local=local, atype="TDAR", tdims=[la,os,lg,vs] )
+           call tensor_ainit( int1, [la,no,lg,nv], 4, local=local, atype="TDAR", tdims=[as,os,gs,vs] )
            order4 = [1,2,3,4]
            call tensor_contract( 1.0E0_realk, int2, yv, [4],[1],1, 0.0E0_realk, int1, order4,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3426,7 +3436,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
            call time_start_phase(PHASE_WORK, twall = time_cont8 )
-           call tensor_ainit( int3, [la,no], 2, local=local, atype="TDAR", tdims=[la,os] )
+           call tensor_ainit( int3, [la,no], 2, local=local, atype="TDAR", tdims=[as,os] )
            order2 = [1,2]
            call tensor_contract( 1.0E0_realk, int1, uigcj, [2,3,4],[1,2,3],3, 0.0E0_realk, int3, order2,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3450,7 +3460,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if ( Ccmodel > MODEL_CC2 ) then
 
               call time_start_phase(PHASE_WORK, twall = time_cont9 )
-              call tensor_ainit( int3, [la,no,nv,no], 4, local=local, atype="TDAR", tdims=[la,os,vs,os] )
+              call tensor_ainit( int3, [la,no,nv,no], 4, local=local, atype="TDAR", tdims=[as,os,vs,os] )
 
               order4 = [1,2,3,4]
               !Reorder I [alpha j gamma b]  * Lambda^h [gamma i]          = I [alpha j b i]
@@ -3473,7 +3483,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call tensor_free( int1 )
 
            call time_start_phase(PHASE_WORK, twall = time_int2 )
-           call tensor_ainit(Cint, [la,nb,lg,nb], 4, local=local, atype="TDAR", tdims=[la,bs,lg,bs])
+           call tensor_ainit(Cint, [la,nb,lg,nb], 4, local=local, atype="TDAR", tdims=[as,bs,gs,bs])
            call time_start_phase(PHASE_WORK, at = time_intloop_work)
 #ifdef VAR_ICHOR
            !Build (batchA,full,batchC,full)
@@ -3496,7 +3506,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            !FIXME: REPLACE WITH SYMM AND ANTISYMM COMBINATIONS
            !Transform c
            call time_start_phase(PHASE_WORK, twall = time_cont11 )
-           call tensor_ainit( int1, [lg,la,nv,nb], 4, local=local, atype="TDAR", tdims=[lg,la,vs,bs] )
+           call tensor_ainit( int1, [lg,la,nv,nb], 4, local=local, atype="TDAR", tdims=[gs,as,vs,bs] )
            order4=[2,1,4,3]
            call tensor_contract( 1.0E0_realk, Cint, yv, [2],[1],1, 0.0E0_realk, int1, order4,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3505,7 +3515,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            !transform d
            call time_start_phase(PHASE_WORK, twall = time_cont12 )
-           call tensor_ainit( int2, [lg,la,nv,nv], 4, local=local, atype="TDAR", tdims=[lg,la,vs,vs] )
+           call tensor_ainit( int2, [lg,la,nv,nv], 4, local=local, atype="TDAR", tdims=[gs,as,vs,vs] )
            order4=[1,2,3,4]
            call tensor_contract( 1.0E0_realk, int1, yv, [4],[1],1, 0.0E0_realk, int2, order4,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3515,7 +3525,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call tensor_free( int1 )
            !contract t(cd) and int2(cd)
            call time_start_phase(PHASE_WORK, twall = time_cont13 )
-           call tensor_ainit( int1, [lg,la,no,no], 4, local=local, atype="TDAR", tdims=[lg,la,os,os] )
+           call tensor_ainit( int1, [lg,la,no,no], 4, local=local, atype="TDAR", tdims=[gs,as,os,os] )
            order4=[1,2,3,4]
            call tensor_contract( 1.0E0_realk, int2, t2, [3,4],[1,2],2, 0.0E0_realk, int1, order4,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3526,7 +3536,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            !transform gamma to b
            call time_start_phase(PHASE_WORK, twall = time_cont14 )
-           call tensor_ainit( int2, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[la,vs,os,os] )
+           call tensor_ainit( int2, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[as,vs,os,os] )
            order4=[2,1,3,4]
            call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int2, order4,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3545,7 +3555,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            !Do B2 term from int1 - transform occ i
            call time_start_phase(PHASE_WORK, twall = time_cont16 )
-           call tensor_ainit( int2, [lg,la,no,nb], 4, local=local, atype="TDAR", tdims=[lg,la,os,bs] )
+           call tensor_ainit( int2, [lg,la,no,nb], 4, local=local, atype="TDAR", tdims=[gs,as,os,bs] )
            order4=[2,1,4,3]
            call tensor_contract( 1.0E0_realk, Cint, yo, [2],[1],1, 0.0E0_realk, int2, order4,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3565,7 +3575,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            !backtransform t2
            order4=[1,2,3,4]
            call time_start_phase(PHASE_WORK, twall = time_cont18 )
-           call tensor_ainit( int4, [nv,nv,no,la], 4, local=local, atype="TDAR", tdims=[vs,vs,os,la] )
+           call tensor_ainit( int4, [nv,nv,no,la], 4, local=local, atype="TDAR", tdims=[vs,vs,os,as] )
 
            call tensor_contract( 1.0E0_realk, t2, xo_fa, [3],[2],1, 0.0E0_realk, int4, order4,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3573,7 +3583,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            time_cont18_tot = time_cont18_tot + time_cont18
 
            call time_start_phase(PHASE_WORK, twall = time_cont19 )
-           call tensor_ainit( int3, [nv,nv,la,lg], 4, local=local, atype="TDAR", tdims=[vs,vs,la,lg] )
+           call tensor_ainit( int3, [nv,nv,la,lg], 4, local=local, atype="TDAR", tdims=[vs,vs,as,gs] )
 
            call tensor_contract( 1.0E0_realk, int4, xo_fg, [3],[2],1, 0.0E0_realk, int3, order4,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -3655,7 +3665,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            !g´transform gamma->b
            call time_start_phase(PHASE_WORK, twall = time_cont22 )
-           call tensor_ainit( int4, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[la,vs,os,os] )
+           call tensor_ainit( int4, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[as,vs,os,os] )
            order4=[2,1,3,4]
            call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int4, order4,&
               &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
@@ -5387,8 +5397,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     case(0)
 
-       print *,"I have no idea what I am doing, a reasonable estimate is needed!!"
-
        !RIGHT NOW THIS IS SET TO THE SAME VALUE AS SCHEME 4 JUST /nnod
        ! u 2 + Omega 2 +  H +G  
        memrq = 1.0E0_realk*(2_long*no*no*nv*nv+ i8*nb*nv+i8*nb*no)
@@ -5401,11 +5409,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        !*******************
 
        !uigcj sio4
-       memin = memin +1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
+       memin = memin +1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)/float(nnod)
        !tpl tmi
-       memin = memin + (i8*nor)*nvr*2.0E0_realk
+       memin = memin + (i8*nor)*nvr*2.0E0_realk/float(nnod)
 
-       memin = memin/float(nnod)
 
        !OUTSIDE OF MAIN LOOP
        !********************
