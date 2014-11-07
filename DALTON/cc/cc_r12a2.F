@@ -3745,8 +3745,8 @@ c-----------------------------------------------------------------------
       character*10 model
       character*(*) aproxr12,fc12am
 
-      integer index
-      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+C      integer index
+C      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
 c
       call qenter('r12fdvint')
       do isym = 1, nsym

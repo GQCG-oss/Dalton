@@ -86,7 +86,7 @@ C
      &        IRREP, IERR, ILLL, IDEL, ISYDIS, IOPT, ISYMD, IVEC,
      &        IDLSTE, KFCKBUF, KINT1S, KINT2S, KFIELD, KFIELDAO
 
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
       CALL QENTER('CCSDT_BAMAT_NODDY')
 

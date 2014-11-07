@@ -216,7 +216,7 @@ C
 #include "dftcom.h"
 #include "expopt.h"
 C
-#include "ibtfun.h"
+
 C
       DO IREPA = 0, MAXREP
       DO IBL = 1, NBLCNT(IREPA+1)
@@ -233,13 +233,13 @@ C
             NUCA   = NUCO(ISHELA)
             MULA   = ISTBAO(ISHELA)
             DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULA).EQ.0) THEN
+            IF (IAND(ISYMOP,MULA).EQ.0) THEN
 C
 C              GB00VC, GB00VB, and GB01VB
 C
                DO ICOMPA = 1, KHKTA 
-                  FAC = PT(IBTAND(ISYMOP,
-     &                     IBTXOR(IREPA,ISYMAO(NHKTA,ICOMPA))))
+                  FAC = PT(IAND(ISYMOP,
+     &                     IEOR(IREPA,ISYMAO(NHKTA,ICOMPA))))
                   IA = IPTSYM(IORBA+ICOMPA,IREPA)
                   GD = D0 
                   DO IB = ISTR, IEND 
@@ -260,9 +260,9 @@ C
                   END IF
                END DO
 C
-               PAX=CORPX-PT(IBTAND(ISYMAX(1,1),ISYMOP))*CENT(ISHELA,1,1)
-               PAY=CORPY-PT(IBTAND(ISYMAX(2,1),ISYMOP))*CENT(ISHELA,2,1)
-               PAZ=CORPZ-PT(IBTAND(ISYMAX(3,1),ISYMOP))*CENT(ISHELA,3,1)
+               PAX=CORPX-PT(IAND(ISYMAX(1,1),ISYMOP))*CENT(ISHELA,1,1)
+               PAY=CORPY-PT(IAND(ISYMAX(2,1),ISYMOP))*CENT(ISHELA,2,1)
+               PAZ=CORPZ-PT(IAND(ISYMAX(3,1),ISYMOP))*CENT(ISHELA,3,1)
                PX2 = PAX**2
                PY2 = PAY**2
                PZ2 = PAZ**2

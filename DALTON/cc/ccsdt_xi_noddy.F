@@ -79,7 +79,7 @@ C
 * external functions:
       INTEGER ILRCAMP
 
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
 *---------------------------------------------------------------------*
 *     Do some tests:
@@ -1053,7 +1053,7 @@ C           ---------------------------------------
     
       INTEGER NAI, NBJ, NBK, NCK, NCJ, INDEX
 
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J 
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J 
 
       DO NAI = 1, NT1AMX
         DO J = 1,NRHFT

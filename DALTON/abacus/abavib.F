@@ -2120,17 +2120,17 @@ C  /* Deck getb */
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          BMAT(NINTER,NCORD), BDAG(NCORD,NINTER), CTYPE(NINTER)
       LOGICAL PRINT, QONLY
-#include "ibtfun.h"
+
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
-               XA(IATOM) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-               YA(IATOM) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-               ZA(IATOM) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               XA(IATOM) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+               YA(IATOM) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+               ZA(IATOM) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
             END IF
   110    CONTINUE
   100 CONTINUE
@@ -2167,17 +2167,17 @@ C
 #include "nuclei.h"
 #include "symmet.h"
       LOGICAL PRINT, QONLY
-#include "ibtfun.h"
+
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
-               XA(IATOM) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-               YA(IATOM) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-               ZA(IATOM) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               XA(IATOM) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+               YA(IATOM) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+               ZA(IATOM) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
             END IF
   110    CONTINUE
   100 CONTINUE
@@ -2288,7 +2288,7 @@ C
 #include "trkoor.h"
       REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
-#include "ibtfun.h"
+
 C
       IF (NCOOR .NE. NCORD) THEN
          WRITE (LUPRI,'(///A,2I10)')
@@ -2304,10 +2304,10 @@ C
       IATOM = 0
       DO 100 I = 1, NUCIND
          DO 200 J = 0, MAXOPR
-            IF (IBTAND(J,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(J,ISTBNU(I)) .EQ. 0) THEN
                ICHRG(IATOM + 1) = IZATOM(I)
                DO 300 K = 1, 3
-                  GEOM(3*IATOM+K) = PT(IBTAND(ISYMAX(K,1),J))*CORD(K,I)
+                  GEOM(3*IATOM+K) = PT(IAND(ISYMAX(K,1),J))*CORD(K,I)
   300          CONTINUE
                IATOM = IATOM + 1
             END IF
@@ -2429,7 +2429,7 @@ C
 #include "cbinum.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
-#include "ibtfun.h"
+
 C
       CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
      &          .FALSE.)
@@ -2648,12 +2648,12 @@ C
          DO ICENT = 1, NUCIND
             MULCNT = ISTBNU(ICENT)
             DO IOP = 0, MAXOPR
-               IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+               IF (IAND(IOP,MULCNT) .EQ. 0) THEN
                   IATOM = IATOM + 1
                   DO I = 1, 3
                      ICOOR = ICOOR + 1
                      POS(I,IATOM) = POS(I,IATOM)
-     &                    + PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+     &                    + PT(IAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
                   END DO
                END IF
             END DO
@@ -3132,7 +3132,7 @@ C
       CHARACTER*5 IRPTXT
       DIMENSION ICHRVC(0:7), ITMP(0:7), ITRANS(NCORD/3)
       LOGICAL FOUND, CHANGE
-#include "ibtfun.h"
+
       SXFAMU = SQRT(XFAMU)
 C
 C     First we have to expand the atomic coordinates. The geometry
@@ -3142,13 +3142,13 @@ C
       DO 10 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 15 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                GVC1(IATOM*3+1) =
-     &              PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+     &              PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                GVC1(IATOM*3+2) =
-     &              PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+     &              PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                GVC1(IATOM*3+3) =
-     &              PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+     &              PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                IATOM = IATOM + 1
                ATCHRG(IATOM) = CHARGE(ICENT)
             END IF
@@ -3174,17 +3174,17 @@ C
       DO 20 ISYMOP = 0, MAXREP
          DO 25 ICENT = 1, NCORD/3
             EVC2((ICENT-1)*3+1) =
-     &        PT(IBTAND(ISYMAX(1,1),ISYMOP))*EVC1((ICENT-1)*3+1)
+     &        PT(IAND(ISYMAX(1,1),ISYMOP))*EVC1((ICENT-1)*3+1)
             GVC2((ICENT-1)*3+1) =
-     &        PT(IBTAND(ISYMAX(1,1),ISYMOP))*GVC1((ICENT-1)*3+1)
+     &        PT(IAND(ISYMAX(1,1),ISYMOP))*GVC1((ICENT-1)*3+1)
             EVC2((ICENT-1)*3+2) =
-     &        PT(IBTAND(ISYMAX(2,1),ISYMOP))*EVC1((ICENT-1)*3+2)
+     &        PT(IAND(ISYMAX(2,1),ISYMOP))*EVC1((ICENT-1)*3+2)
             GVC2((ICENT-1)*3+2) =
-     &        PT(IBTAND(ISYMAX(2,1),ISYMOP))*GVC1((ICENT-1)*3+2)
+     &        PT(IAND(ISYMAX(2,1),ISYMOP))*GVC1((ICENT-1)*3+2)
             EVC2((ICENT-1)*3+3) =
-     &        PT(IBTAND(ISYMAX(3,1),ISYMOP))*EVC1((ICENT-1)*3+3)
+     &        PT(IAND(ISYMAX(3,1),ISYMOP))*EVC1((ICENT-1)*3+3)
             GVC2((ICENT-1)*3+3) =
-     &        PT(IBTAND(ISYMAX(3,1),ISYMOP))*GVC1((ICENT-1)*3+3)
+     &        PT(IAND(ISYMAX(3,1),ISYMOP))*GVC1((ICENT-1)*3+3)
  25      CONTINUE
 C
 C     If the geometry is affected by the symmetry operation,
@@ -3342,7 +3342,7 @@ C
 #include "cbiwlk.h"
 #include "abainf.h"
 #include "orgcom.h"
-#include "ibtfun.h"
+
 C
       PREFAC = D1/(D4*XFAMU)
 C
@@ -3869,7 +3869,7 @@ C
          JATOM = 0
          DO IATOM = 1, NUCIND
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   JATOM = JATOM + 1
                   NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN

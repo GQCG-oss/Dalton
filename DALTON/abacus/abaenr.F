@@ -984,7 +984,7 @@ C
 C Section 1: extend reduced PROJECTED HESSIAN matrix
 C            with N new b-vectors
 C
-      IF (IBTAND(ICTL,1).EQ.0) GO TO 1000
+      IF (IAND(ICTL,1).EQ.0) GO TO 1000
       IF (N.LT.1) GO TO 1000
       IREDH = NREDH - N
 C
@@ -1067,7 +1067,7 @@ C *********************************************************
 C Section 2: FIND SOLUTIONS TO THE NGR SET OF NEWTON-RAPHSON EQ.
 C
  1000 CONTINUE
-      IF (IBTAND(ICTL,2).EQ.0) GO TO 2000
+      IF (IAND(ICTL,2).EQ.0) GO TO 2000
 C
 C SOLVE NGD SET OF N-R EQ.
 C Copy REDH to SNRVEC and REDGD to soleq

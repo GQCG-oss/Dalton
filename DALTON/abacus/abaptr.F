@@ -732,12 +732,12 @@ C
 
       INTEGER*8  L_FIELD, IBIT_FIELD
       PARAMETER (L_FIELD = 16, IBIT_FIELD = (2**L_FIELD-1))
-      INTEGER*8 I, J, IBTAND, IBTSHR, IBTSHL    ! for ibtfun.h
-#include "ibtfun.h"
+      INTEGER*8 I, J
+
       INTEGER*8 LABV, LABEL
       INTEGER   LOCV
       GET_FIELD(LABV,LOCV)
-     &   = IBTAND(IBTSHR(LABV,L_FIELD*LOCV),IBIT_FIELD)
+     &   = IAND(ISHFT(LABV,-L_FIELD*LOCV),IBIT_FIELD)
 
       CALL QENTER('PT1SOR')
 C
@@ -925,13 +925,13 @@ C
       PARAMETER (FAC_1 = I8_2**(3*L_FIELD),
      &           FAC_2 = I8_2**(2*L_FIELD),
      &           FAC_3 = I8_2**   L_FIELD     )
-      INTEGER*8 I, J, IBTAND, IBTSHR, IBTSHL    ! for ibtfun.h
-#include "ibtfun.h"
+      INTEGER*8 I, J
+
 C
       INTEGER*8 LABV, LABEL, MUX, NUX, LSPACK
       INTEGER   LOCV
       GET_FIELD(LABV,LOCV)
-     &   = IBTAND(IBTSHR(LABV,L_FIELD*LOCV),IBIT_FIELD)
+     &   = IAND(ISHFT(LABV,-L_FIELD*LOCV),IBIT_FIELD)
 
       UNPAKK(IJ) = SQRT(2.0D0*IJ + 0.25D0) + 0.4999D0
 C
@@ -1529,11 +1529,11 @@ C
       INTEGER*8 L_FIELD, IBIT_FIELD
       PARAMETER (L_FIELD = 16, IBIT_FIELD = (2**L_FIELD-1))
       INTEGER   I4, J4, K4, L4
-      INTEGER*8 I, J, K, L, IBTAND, IBTSHR, IBTSHL    ! for ibtfun.h and below
-#include "ibtfun.h"
+      INTEGER*8 I, J, K, L
+
 
       INTEGER*8 IPART
-      IPART(I,J4) = IBTAND(IBTSHR(I,L_FIELD*(J4-1)),IBIT_FIELD)
+      IPART(I,J4) = IAND(ISHFT(I,-L_FIELD*(J4-1)),IBIT_FIELD)
 
       INTEGER   ISHLL,ICONTR,IANG,IRREP
       ISHLL(I4)   = INDGEN(4,I4)
@@ -1923,8 +1923,6 @@ C  /* Deck PSORT_SET */
 #include "symmet.h"
 #include "ptrbuf.h"
 
-! hjaaj: NB! standard INTEGER ibtfun here (not forced INTEGER*8)
-#include "ibtfun.h"
 C
       CALL QENTER('PSORT_SET')
       JORB = 0
@@ -1936,7 +1934,7 @@ C
             NUMCFA = NUMCF(I)
             DO 300 K = 1, KHKT(I)
                IK = IK + 1
-               IF(IBTAND(MULA,IBTXOR(IREP,ISYMAO(NHKT(I),K))).EQ.0)THEN
+               IF(IAND(MULA,IEOR(IREP,ISYMAO(NHKT(I),K))).EQ.0)THEN
                   JORB = JORB + 1
                   INDGEN(1,JORB) = IRREP(IK)
                   INDGEN(2,JORB) = K
@@ -2124,8 +2122,8 @@ C  /* Deck pvcmp */
 
       INTEGER*8  L_FIELD, IBIT_FIELD
       PARAMETER (L_FIELD = 16, IBIT_FIELD = (2**L_FIELD-1))
-      INTEGER*8 I, J, IBTAND, IBTSHR, IBTSHL    ! for ibtfun.h
-#include "ibtfun.h"
+      INTEGER*8 I, J
+
 C
       CALL QENTER('PVCMP')
 C
@@ -2142,10 +2140,10 @@ C
       IF (NUT .EQ. 0) GOTO 100
       IF (NUT .LT. 0) GOTO 200
       DO 300 I = 1,NUT
-         P = IBTAND(IBTSHR(IBUF(I),3*L_FIELD),IBIT_FIELD)
-         Q = IBTAND(IBTSHR(IBUF(I),2*L_FIELD),IBIT_FIELD)
-         R = IBTAND(IBTSHR(IBUF(I),  L_FIELD),IBIT_FIELD)
-         S = IBTAND(       IBUF(I)           ,IBIT_FIELD)
+         P = IAND(ISHFT(IBUF(I),-3*L_FIELD),IBIT_FIELD)
+         Q = IAND(ISHFT(IBUF(I),-2*L_FIELD),IBIT_FIELD)
+         R = IAND(ISHFT(IBUF(I),  -L_FIELD),IBIT_FIELD)
+         S = IAND(       IBUF(I)           ,IBIT_FIELD)
          PVTRA(P,Q,R,S) =      BUF(I)
          PVTRA(P,Q,S,R) = SGN*BUF(I)
          PVTRA(Q,P,R,S) = SGN*BUF(I)

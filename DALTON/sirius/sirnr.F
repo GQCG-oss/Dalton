@@ -1015,7 +1015,7 @@ C
 C
 C Section 1:extend reduced PROJECTED HESSIAN matrix with N new b-vectors
 C
-      IF (IBTAND(ICTL,1).EQ.0) GO TO 1000
+      IF (IAND(ICTL,1).EQ.0) GO TO 1000
       IF (N.LT.1) GO TO 1000
       IF (NREDH .GE. LIROW)
      *   CALL QUIT('SNRRED error: NREDH exceeds LIROW')
@@ -1076,7 +1076,7 @@ C *********************************************************
 C Section 2: FIND SOLUTION TO THE NEWTON-RAPHSON EQ.
 C
  1000 CONTINUE
-      IF (IBTAND(ICTL,2).EQ.0) GO TO 2000
+      IF (IAND(ICTL,2).EQ.0) GO TO 2000
 C
 C SOLVE  N-R EQ.
 C Copy REDH to SNRVEC and REDG to SOLNR

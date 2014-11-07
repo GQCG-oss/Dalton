@@ -344,8 +344,8 @@ C  /* Deck erindf */
 #include "hertop.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-      IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
+
+      IBTEST(I,J,K,L) = IAND(I,IEOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERINDF',-1)
 C
@@ -378,9 +378,9 @@ C
       DO B = 0, MAXREP
       IF (DOREP(B,2)) THEN
       DO C = 0, MAXREP
-      IF (DOREP(C,3) .AND. DOREP(IBTXOR(IBTXOR(A,B),C),4)) THEN
-         D = IBTXOR(IBTXOR(A,B),C)
-         CD = IBTXOR(C,D)
+      IF (DOREP(C,3) .AND. DOREP(IEOR(IEOR(A,B),C),4)) THEN
+         D = IEOR(IEOR(A,B),C)
+         CD = IEOR(C,D)
 C
          IF (DIAGAB .AND. B.GT.A) GO TO 100
          IF (DIAGCD .AND. D.GT.C) GO TO 100

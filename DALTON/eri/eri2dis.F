@@ -515,7 +515,7 @@ C
 #include "aobtch.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
       IF (DODIST) THEN
          NCTDST = 0
@@ -570,7 +570,7 @@ C tew: NB// The order of IDIST is not the same as before.
            DO IREP = 0, MAXREP
              IA = 0
              DO ICMP = 1, KHKDST
-               IF(IBTAND(ISTABL,IBTXOR(IREP,ISYMAO(NHKDST,ICMP)))
+               IF(IAND(ISTABL,IEOR(IREP,ISYMAO(NHKDST,ICMP)))
      &          .EQ. 0) THEN
                  IA = IA + 1
                  DO J = 1, NACDST

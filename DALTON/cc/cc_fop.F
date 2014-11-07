@@ -3575,7 +3575,7 @@ C
 #include "symmet.h"
 #include "chrxyz.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 C
       CALL QENTER('CCELEFG1')
 C
@@ -3591,13 +3591,13 @@ C
          DO 110 ICOOR1 = 1,3
             DO 120 ICOOR2 = ICOOR1,3
 C
-               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+               ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
 C
                IOFF = 0
 
                DO 130 IREPC = 0, MAXREP
 C
-                  IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ))
+                  IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ))
      *                .EQ.0) THEN
 C
 C---------------------------------------------------------------------
