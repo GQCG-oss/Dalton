@@ -37,6 +37,7 @@ module ccsdpt_module
 #endif
   use dec_workarounds_module
   use crop_tools_module
+  use cc_tools_module
   use dec_fragment_utils
   use array2_simple_operations
   use array3_simple_operations
@@ -729,7 +730,7 @@ contains
                if (ij .lt. 0) exit
 
                ! calculate i and j from composite ij value
-               call calc_i_and_j(ij,nocc,i,j)
+               call calc_i_leq_j(ij,nocc,i,j)
 
                ! has the i and j index changed?
                if ((i .eq. i_old) .and. (j .ne. j_old)) then
@@ -1548,7 +1549,7 @@ contains
 
               ij_test = jobs(ij_count_test)
 
-              call calc_i_and_j(ij_test,nocc,i_test,j_test)
+              call calc_i_leq_j(ij_test,nocc,i_test,j_test)
 
               !check for i
               new_i_needed = .true.
@@ -4429,60 +4430,6 @@ contains
 
   end subroutine job_distrib_ccsdpt
 
-
-  !> \brief: determine i and j from ij
-  !> \author: Janus Juul Eriksen
-  !> \date: july 2013
-  subroutine calc_i_and_j(ij,no,i,j)
-
-    implicit none
-
-    !> composite ij index
-    integer, intent(in) :: ij,no
-    !> i and j
-    integer, intent(inout) :: i,j
-    !> integers
-    integer :: gauss_sum,gauss_sum_old,series
-
-    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements.
-    ! in column 1, there are N rows, in column 2, there are (N-1) rows, ...,  in
-    ! column (N-1), there are 2 rows, and in column N, there are 1 row.
-    ! this is a gauss sum of 1 + 2 + 3 + ... + N-2 + N-1 + N
-    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum).
-    ! if gauss_sum for a given i (series) is smaller than ij, we loop.
-    ! when gauss_sum is greater than ij, we use the value of i for the present loop cycle
-    ! and calculate the value of j from the present ij and previous gauss_sum values.
-    ! when gauss_sum is equal to ij, we are on the diagonal and i == j (== series).
-
-    do series = 1,no
-
-       gauss_sum = int((series**2 + series)/2)
-
-       if (gauss_sum .lt. ij) then
-
-          gauss_sum_old = gauss_sum
-
-          cycle
-
-       else if (gauss_sum .eq. ij) then
-
-          j = series
-          i = series
-
-          exit
-
-       else
-
-          j = ij - gauss_sum_old
-          i = series
-
-          exit
-
-       end if
-
-    end do
-
-  end subroutine calc_i_and_j
 
 
   !> \brief: generator for triples amplitudes, case(1)

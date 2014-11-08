@@ -4,9 +4,13 @@ module cc_tools_module
    use precision
    use tensor_interface_module
    
+   interface get_tpl_and_tmi
+      module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
+   end interface get_tpl_and_tmi
+   
    
    contains
-   
+
    subroutine mo_work_dist(m,fai,tl,have_part,nod)
       implicit none
       integer,intent(in) :: m
@@ -53,19 +57,165 @@ module cc_tools_module
       endif
 
    end subroutine mo_work_dist
+   !> \brief Reorder t to use symmetry in both occupied and virtual indices,
+   !> thereby restricting the first virtual to be less equal to the second and
+   !> make symmetric and antisymmetric combinations of these 
+   !> \author Patrick Ettenhuber
+   !> \date October 2012
+   subroutine get_tpl_and_tmi_tensors(t2,tpl,tmi)
+      implicit none
+      !>input the full doubles ampitudes in the order nv nv no no
+      type(tensor),intent(inout) :: t2
+      !> output amplitudes with indices restricted c<d,i<j
+      type(tensor), intent(inout) :: tpl
+      !> output amplitudes with indices restricted c>d,i<j
+      type(tensor), intent(inout) :: tmi
+      integer ::crvd,no,nv
+      nv   = t2%dims(1)
+      no   = t2%dims(3)
+
+      if ( (t2%itype  == TT_DENSE .or. t2%itype  == TT_REPLICATED) .and. &
+          &(tpl%itype == TT_DENSE .or. tpl%itype == TT_REPLICATED) .and. &
+          &(tmi%itype == TT_DENSE .or. tmi%itype == TT_REPLICATED) ) then
+
+         call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%elm1,tmi%elm1)
+
+         !maybe a sync replicated is needed here
+ 
+      elseif( t2%itype == TT_TILED_DIST .and. tpl%itype == TT_TILED_DIST .and. tmi%itype == TT_TILED_DIST)then
+
+         call lspdm_get_tpl_and_tmi(t2,tpl,tmi)
+
+      else
+         call lsquit("ERROR(get_tpl_and_tmi_tensors): combination of itypes not implemented",-1)
+      endif
+
+   end subroutine get_tpl_and_tmi_tensors
+
+   subroutine lspdm_get_tpl_and_tmi(t2,tpl,tmi)
+      implicit none
+      type(tensor),intent(inout) :: t2, tpl, tmi
+
+      integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
+      integer :: otpl(2),ot2(4)
+      real(realk), pointer :: tt(:,:,:,:), ut(:,:,:,:)
+      real(realk), pointer :: ttile(:)
+      integer :: dcged,dilej,ccged,cilej,gcged,gilej
+      real(realk) :: sol
+      integer :: max_c, max_d, min_c, min_d, max_i, max_j, min_i, min_j
+      integer :: nor,no,nvr,nv,k,c,d
+
+#ifdef VAR_MPI
+      if( t2%access_type /= AT_ALL_ACCESS .or. tpl%access_type /= AT_ALL_ACCESS .or. tmi%access_type /= AT_ALL_ACCESS  )then
+         call lsquit("ERROR(lspdm_get_tpl_and_tmi): access types of the arrays not (yet) possible",-1)
+      endif
+
+      nv = t2%dims(1)
+      no = t2%dims(3)
+
+      nvr = nv * (nv + 1) / 2
+      nor = no * (no + 1) / 2
+
+
+      call mem_alloc(ttile,t2%tsize)
+
+      if(infpar%lg_mynum /=0 )call lsmpi_barrier(infpar%lg_comm)
+
+      do lt = 1, tpl%nlti
+
+         gtnr = tpl%ti(lt)%gt
+
+         call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
+
+         !build list of tiles to get for the current tpl tile
+         !get offset for tile counting
+         do j=1,tpl%mode
+            otpl(j)=(otpl(j)-1)*tpl%tdim(j)
+         enddo
+
+         dcged = tpl%ti(lt)%d(2)
+         dilej = tpl%ti(lt)%d(1)
+
+         max_c = 0
+         max_d = 0
+         min_c = huge(0)
+         min_d = huge(0)
+         max_i = 0
+         max_j = 0
+         min_i = huge(0)
+         min_j = huge(0)
+
+         do ccged=1,dcged
+            gcged = otpl(2) + ccged
+
+            call calc_i_geq_j(gcged,nv,c,d)
+
+            print *,ccged,gcged,"have",c,d,"with offs",otpl(2)
+
+         enddo
+         do cilej=1,dilej
+            gilej = otpl(1) + cilej
+
+            call calc_i_leq_j(gilej,no,i,j)
+
+            print *,cilej,gilej,"have",i,j,"with offs",otpl(1)
+
+         enddo
+         ! do cilej = 1, dilej
+         ! enddo
+
+
+
+
+
+         !call time_start_phase( PHASE_COMM )
+         !call tensor_get_tile(t2,gtnr,ttile,nelt,flush_it=(nelt>MAX_SIZE_ONE_SIDED))
+         !call time_start_phase( PHASE_WORK )
+
+         !!Facilitate access
+         !call ass_D1to4( u%ti(lt)%t, ut, u%ti(lt)%d )
+         !call ass_D1to4( ttile,      tt, u%ti(lt)%d )
+
+         !!get offset for tile counting
+         !do j=1,u%mode
+         !   o(j)=(o(j)-1)*u%tdim(j)
+         !enddo
+
+         !da = u%ti(lt)%d(1)
+         !di = u%ti(lt)%d(2)
+         !db = u%ti(lt)%d(3)
+         !dj = u%ti(lt)%d(4)
+
+         !do j=1,dj
+         !   do b=1,db
+         !      do i=1,di
+         !         do a=1,da
+         !            ut(a,i,b,j) = tt(a,i,b,j) + t1%elm2(o(1)+a,o(2)+i) * t1%elm2(o(3)+b,o(4)+j)
+         !         end do
+         !      end do
+         !   end do
+
+         !end do
+      enddo
+
+      if(infpar%lg_mynum ==0 )call lsmpi_barrier(infpar%lg_comm)
+      call lsmpi_barrier(infpar%lg_comm)
+      stop 0
+#endif
+   end subroutine lspdm_get_tpl_and_tmi
 
    !> \brief Reorder t to use symmetry in both occupied and virtual indices,
    !> thereby restricting the first virtual to be less equal to the second and
    !> make symmetric and antisymmetric combinations of these 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine get_tpl_and_tmi(t2,nv,no,tpl,tmi)
+   subroutine get_tpl_and_tmi_fort(t2,nv,no,tpl,tmi)
       implicit none
       !> number of virtual and occupied orbitals
       integer, intent(in) :: nv, no
       !>input the full doubles ampitudes in the order nv nv no no
       real(realk),intent(in) :: t2(nv,nv,no,no)
-      !> output amplitudes with indices restricted c<d,i<j
+      !> output amplitudes with indices restricted c>d,i<j
       real(realk), intent(inout) :: tpl(:)
       !> output amplitudes with indices restricted c>d,i<j
       real(realk), intent(inout) :: tmi(:)
@@ -104,7 +254,7 @@ module cc_tools_module
       enddo
       !OMP END DO
       !OMP END PARALLEL
-   end subroutine get_tpl_and_tmi
+   end subroutine get_tpl_and_tmi_fort
 
    !> \brief calculate a and b terms in a kobayashi fashion
    !> \author Patrick Ettenhuber
@@ -1377,5 +1527,100 @@ module cc_tools_module
 
    end subroutine squareup_block_triangular_squarematrix
 
+
+   !> \brief: determine i and j from ij
+   !> \author: Janus Juul Eriksen
+   !> \date: july 2013
+   subroutine calc_i_leq_j(ij,full,i,j)
+
+      implicit none
+
+      !> composite ij index
+      integer, intent(in) :: ij,full
+      !> i and j
+      integer, intent(inout) :: i,j
+      !> integers
+      integer :: gauss_sum,gauss_sum_old,series
+
+      ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements.
+      ! in column 1, there are N rows, in column 2, there are (N-1) rows, ...,  in
+      ! column (N-1), there are 2 rows, and in column N, there are 1 row.
+      ! this is a gauss sum of 1 + 2 + 3 + ... + N-2 + N-1 + N
+      ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum).
+      ! if gauss_sum for a given i (series) is smaller than ij, we loop.
+      ! when gauss_sum is greater than ij, we use the value of i for the present loop cycle
+      ! and calculate the value of j from the present ij and previous gauss_sum values.
+      ! when gauss_sum is equal to ij, we are on the diagonal and i == j (== series).
+
+      do series = 1,full
+
+         gauss_sum = int((series**2 + series)/2)
+
+         if (gauss_sum .lt. ij) then
+
+            gauss_sum_old = gauss_sum
+
+            cycle
+
+         else if (gauss_sum .eq. ij) then
+
+            j = series
+            i = series
+
+            exit
+
+         else
+
+            j = ij - gauss_sum_old
+            i = series
+
+            exit
+
+         end if
+
+      end do
+
+   end subroutine calc_i_leq_j
+
+   subroutine calc_i_geq_j(ij,full,i,j)
+
+      implicit none
+
+      !> composite ij index
+      integer, intent(in) :: ij,full
+      !> i and j
+      integer, intent(inout) :: i,j
+      !> integers
+      integer :: igeqj,series,gauss_sum,gauss_sum_old
+
+      do series = 1,full
+
+         gauss_sum = series + (series-1) * full - ((series-1)*series)/2
+
+         if (gauss_sum .lt. ij) then
+
+            gauss_sum_old = gauss_sum
+
+            cycle
+
+         else if (gauss_sum .eq. ij) then
+
+            j = series
+            i = series
+
+            exit
+
+         else
+
+            j = series - 1
+            i = j + ij - gauss_sum_old
+
+            exit
+
+         end if
+
+      end do
+
+   end subroutine calc_i_geq_j
 
 end module cc_tools_module

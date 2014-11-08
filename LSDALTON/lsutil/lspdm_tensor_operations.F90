@@ -1339,6 +1339,7 @@ module lspdm_tensor_operations_module
 
   end subroutine lspdm_get_combined_SingleDouble_amplitudes
 
+
   subroutine get_info_for_mpi_get_and_reorder_t1(arr,table_iajb,table_ibja, &
            & dims,ord,t1,t1tile)
     implicit none

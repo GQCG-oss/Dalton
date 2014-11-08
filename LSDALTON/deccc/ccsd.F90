@@ -1383,7 +1383,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      !if I am the working process, then
-     call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
+     call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%d,tmi%d)
 
      if(master.and.print_debug)then
         call print_norm(tpl%d,int(nor*nvr,kind=8)," NORM(tpl)   :")
@@ -3090,18 +3090,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ------------------------
 
      !get the t+ and t- for the Kobayshi-like B2 term
-     call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
-     call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
+     call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nor,nvr],atype="TDAR",fo=0)
+     call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nor,nvr],atype="TDAR",fo=0)
 
-     call tensor_zero(tpl)
+     call get_tpl_and_tmi(t2,tpl,tmi)
+
      call tensor_zero(tmi)
-     !call get_tpl_and_tmi(t2,nv,no,tpl,tmi)
 
      if(print_debug)then
         call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
         call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
      endif
 
+     call lsmpi_barrier(infpar%lg_comm)
+     stop 0
 
      call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
      call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
