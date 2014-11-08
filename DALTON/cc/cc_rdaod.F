@@ -422,7 +422,7 @@ C
       INTEGER NDIMPQ(NSYM)
 C
 C functions:
-#include "ibtfun.h"
+
 C
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'entered CCRDAOD1'
@@ -479,9 +479,9 @@ C
            IF (NIBUF.EQ.1) THEN
              DO I = 1,LENGTH4
                 I_PQR = IBUF4(I) ! change to default integer type
-                IP = IBTAND(       I_PQR         ,IBIT1)
-                IQ = IBTAND(IBTSHR(I_PQR,  NBITS),IBIT1)
-                IR = IBTAND(IBTSHR(I_PQR,2*NBITS),IBIT1)
+                IP = IAND(       I_PQR         ,IBIT1)
+                IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
+                IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IP,IQ)
 
@@ -500,9 +500,9 @@ C                 CALL FLSHFO(LUPRI)
              DO I = 1,LENGTH4
                 I_PQ = IBUF4(2*I  ) ! change to default integer type
                 I_RS = IBUF4(2*I-1) ! change to default integer type
-                IP = IBTAND(       I_PQ       ,IBIT1)
-                IQ = IBTAND(IBTSHR(I_PQ,NBITS),IBIT1)
-                IR = IBTAND(       I_RS       ,IBIT1)
+                IP = IAND(       I_PQ       ,IBIT1)
+                IQ = IAND(ISHFT(I_PQ,-NBITS),IBIT1)
+                IR = IAND(       I_RS       ,IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IP,IQ)
                   XINT(IADR) = SIGN*RBUF(I)
@@ -514,9 +514,9 @@ c          IF (LOCDBG .AND. NIBUF.EQ.1) THEN
 c            WRITE(LUPRI,*) 'INTEGRALS READ FROM RECORD:',NREC
 c            DO I = 1,LENGTH4
 c               I_PQR = IBUF4(I) ! change to default integer type
-c               IP = IBTAND(       I_PQR         ,IBIT1)
-c               IQ = IBTAND(IBTSHR(I_PQR,  NBITS),IBIT1)
-c               IR = IBTAND(IBTSHR(I_PQR,2*NBITS),IBIT1)
+c               IP = IAND(       I_PQR         ,IBIT1)
+c               IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
+c               IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
 c               IF (IOFFRD(IR,ID).GE.0) THEN
 c                 IADR = IOFFRD(IR,ID) + IADRPQ(IP,IQ)
 c                 WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8,5X,I5)')
@@ -551,9 +551,9 @@ C
            IF (NIBUF.EQ.1) THEN
              DO I = 1,LENGTH4
                 I_PQR = IBUF4(I) ! change to default integer type
-                IP = IBTAND(       I_PQR         ,IBIT1)
-                IQ = IBTAND(IBTSHR(I_PQR,  NBITS),IBIT1)
-                IR = IBTAND(IBTSHR(I_PQR,2*NBITS),IBIT1)
+                IP = IAND(       I_PQR         ,IBIT1)
+                IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
+                IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IQ,IP)
 
@@ -572,9 +572,9 @@ C                 CALL FLSHFO(LUPRI)
              DO I = 1,LENGTH4
                 I_PQ = IBUF4(2*I  ) ! change to default integer type
                 I_RS = IBUF4(2*I-1) ! change to default integer type
-                IP = IBTAND(       I_PQ       ,IBIT1)
-                IQ = IBTAND(IBTSHR(I_PQ,NBITS),IBIT1)
-                IR = IBTAND(       I_RS       ,IBIT1)
+                IP = IAND(       I_PQ       ,IBIT1)
+                IQ = IAND(ISHFT(I_PQ,-NBITS),IBIT1)
+                IR = IAND(       I_RS       ,IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IQ,IP)
                   XINT(IADR) = SIGN*RBUF(I)
@@ -586,9 +586,9 @@ C                 CALL FLSHFO(LUPRI)
              WRITE(LUPRI,*) 'INTEGRALS READ FROM RECORD:',NREC
              DO I = 1,LENGTH4
                 I_PQR = IBUF4(I) ! change to default integer type
-                IP = IBTAND(       I_PQR         ,IBIT1)
-                IQ = IBTAND(IBTSHR(I_PQR,  NBITS),IBIT1)
-                IR = IBTAND(IBTSHR(I_PQR,2*NBITS),IBIT1)
+                IP = IAND(       I_PQR         ,IBIT1)
+                IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
+                IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IQ,IP)
                   WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8,5X,I5)')

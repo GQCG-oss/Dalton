@@ -560,7 +560,7 @@ C
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
-#include "ibtfun.h"
+
 C defined parallel calculation types  
 #include "iprtyp.h"
       IPRTYP = QM3_NSP_WORK

@@ -283,7 +283,7 @@ C
       INTEGER   KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
 #include "ccsdsym.h"
 #include "r12int.h"
-#include "ibtfun.h"
+
 C
 C     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -301,10 +301,10 @@ C
             LABLE = IBUF4(I)
             VALUE = RBUF(I)
 C
-            IP = IBTAND(       LABLE         ,IBIT1)
-            IQ = IBTAND(IBTSHR(LABLE,  NBITS),IBIT1)
-            IR = IBTAND(IBTSHR(LABLE,2*NBITS),IBIT1)
-            IS = IBTAND(IBTSHR(LABLE,3*NBITS),IBIT1)
+            IP = IAND(       LABLE         ,IBIT1)
+            IQ = IAND(ISHFT(LABLE,  -NBITS),IBIT1)
+            IR = IAND(ISHFT(LABLE,-2*NBITS),IBIT1)
+            IS = IAND(ISHFT(LABLE,-3*NBITS),IBIT1)
             IF (NOAUXB) CALL IJKAUX(IP,IQ,IR,IS)
 C
             IF ((IS .GE. ID1) .AND. (IS .LE. ID2)) THEN
@@ -341,10 +341,10 @@ C
             LABLE2 = IBUF4(2*I  )
             VALUE = RBUF(I)
 C
-            IP = IBTAND(       LABLE1       ,IBIT1)
-            IQ = IBTAND(IBTSHR(LABLE1,NBITS),IBIT1)
-            IR = IBTAND(       LABLE2,       IBIT1)
-            IS = IBTAND(IBTSHR(LABLE2,NBITS),IBIT1)
+            IP = IAND(       LABLE1       ,IBIT1)
+            IQ = IAND(ISHFT(LABLE1,-NBITS),IBIT1)
+            IR = IAND(       LABLE2,       IBIT1)
+            IS = IAND(ISHFT(LABLE2,-NBITS),IBIT1)
             IF (NOAUXB) CALL IJKAUX(IP,IQ,IR,IS)
 C
             IF ((IS .GE. ID1) .AND. (IS .LE. ID2)) THEN

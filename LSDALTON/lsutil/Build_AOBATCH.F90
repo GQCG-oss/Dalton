@@ -1276,6 +1276,108 @@ enddo
 
 end subroutine build_batchesOfAOs
 
+subroutine DetermineBatchIndexAndSize(lupri,setting,startA,startB,startC,startD,&
+     & ndimA,ndimB,ndimC,ndimD,batchsizeA,batchsizeB,batchsizeC,batchsizeD,&
+     & batchindexA,batchindexB,batchindexC,batchindexD,&
+     & offsetA,offsetB,offsetC,offsetD,ndimAs,ndimBs,ndimCs,ndimDs,AOspec)
+implicit none
+integer,intent(in)         :: lupri,startA,startB,startC,startD
+integer,intent(in)         :: ndimA,ndimB,ndimC,ndimD
+type(lssetting) :: setting
+integer,intent(inout) :: batchsizeA,batchsizeB,batchsizeC,batchsizeD
+integer,intent(inout) :: batchindexA,batchindexB,batchindexC,batchindexD
+integer,intent(inout) :: ndimAs,ndimBs,ndimCs,ndimDs
+integer,intent(inout) :: offsetA,offsetB,offsetC,offsetD
+character(len=1),intent(in) :: AOspec
+!
+integer :: batchsize(4),batchindex(4),ndims(4),offset(4),start(4),ndim(4)
+integer :: I,A,norbitals,iOrb,tmporb,J
+logical :: uncont,intnrm,OutsideBatch,Family
+type(AOITEM) :: AO
+TYPE(BASISSETINFO),pointer :: AObasis
+
+start(1) = startA 
+start(2) = startB 
+start(3) = startC 
+start(4) = startD 
+ndim(1) = ndimA
+ndim(2) = ndimB
+ndim(3) = ndimC
+ndim(4) = ndimD
+
+uncont=.FALSE.
+intnrm = .false.
+IF(AOspec.EQ.'R')THEN   
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)!   The regular AO-basis
+ELSEIF(AOspec.EQ.'C')THEN   
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)!   The CABS AO-type basis
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
+
+call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+
+print*,'AO%nbatches',AO%nbatches
+Family = .FALSE.
+do I=1,AO%nbatches
+   IF(AO%BATCH(I)%nAngmom.GT.1) Family = .TRUE.
+enddo
+IF(Family)THEN
+   call lsquit('Family basis set not allowed in build_minimalbatchesOfAOs',-1)
+ENDIF
+
+do J=1,4
+   norbitals = 0
+   OutsideBatch = .TRUE.
+   do I=1,AO%nbatches
+      tmporb = AO%BATCH(I)%norbitals(1)
+      IF(OutsideBatch)THEN
+         !determine if we go inside batch
+         IF(norbitals + tmporb.GE.start(J))THEN !
+            OutsideBatch = .FALSE.
+            !first batch
+            batchindex(J) = I
+            batchsize(J) = 1
+            ndims(J) = tmporb            
+            offset(J) = start(J) - norbitals - 1
+            print*,'offset(',J,')=',start(J),'-',norbitals,'=',offset(J)
+            norbitals = norbitals + tmporb
+         ELSE
+            !still outside batch
+            norbitals = norbitals + tmporb
+         ENDIF
+      ELSE
+         !inside batch          
+         batchsize(J) = batchsize(J) + 1
+         ndims(J) = ndims(J) + tmporb
+         norbitals = norbitals + tmporb
+         !determine if this is the last batch
+         IF(norbitals.GE.start(J)+ndim(J)-1)THEN
+            EXIT
+         ENDIF
+      ENDIF
+   enddo
+enddo
+call free_aoitem(lupri,AO)
+batchsizeA = batchsize(1)
+batchsizeB = batchsize(2)
+batchsizeC = batchsize(3)
+batchsizeD = batchsize(4)
+batchindexA = batchindex(1)
+batchindexB = batchindex(2)
+batchindexC = batchindex(3)
+batchindexD = batchindex(4)
+ndimAs = ndims(1)
+ndimBs = ndims(2)
+ndimCs = ndims(3)
+ndimDs = ndims(4)
+offsetA = offset(1)
+offsetB = offset(2)
+offsetC = offset(3)
+offsetD = offset(4)
+end subroutine DetermineBatchIndexAndSize
+
 subroutine build_minimalbatchesOfAOs(lupri,setting,nbast,&
      & batchsize,batchdim,batchindex,nbatches,orbTobatch,AOspec)
 implicit none

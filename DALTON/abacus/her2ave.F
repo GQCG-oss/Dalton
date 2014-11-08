@@ -143,11 +143,11 @@ C  inforb.h : NASHT
 #include "inforb.h"
 #include "rspprp.h"
 #include "esg.h"
-#include "ibtfun.h"
+
 C     statement functions:
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
       DV = .NOT. NODV
@@ -224,7 +224,7 @@ C
    5        CONTINUE
          END IF
       END IF
-      ISYMTS   = IBTXOR(ISYMT,ISYMS)
+      ISYMTS   = IEOR(ISYMT,ISYMS)
       IF (DDFOCK .AND. LONDON) THEN
          DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
          DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
@@ -1879,10 +1879,10 @@ C
 #include "twocom.h"
 #include "symmet.h"
 #include "suscpt.h"
-#include "ibtfun.h"
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
       IF (IPRINT .GT. 10) THEN
@@ -1993,10 +1993,9 @@ C
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3)
 #include <twocom.h>
 #include <symmet.h>
-#include <ibtfun.h>
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
       IF (IPRINT .GT. 10) THEN
@@ -2065,10 +2064,9 @@ C
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3,3)
 #include <twocom.h>
 #include <symmet.h>
-#include <ibtfun.h>
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
       IF (IPRINT .GT. 10) THEN
@@ -2235,10 +2233,10 @@ C
 #include "maxorb.h"
 #include "symmet.h"
       DIMENSION PSO(*), PAO(*)
-#include "ibtfun.h"
+
       IAR(I,J,K,L) = KHKTA*(KHKTB*(KHKTC*(L-1)+K-1)+J-1)+I
       IRR(I,J,K,L) = MULTA*(MULTB*(MULTC*L+K)+J)+I+1
-      ISYMTS = IBTXOR(ISYMT,ISYMS)
+      ISYMTS = IEOR(ISYMT,ISYMS)
       MULTA = MULT(MULA)
       MULTB = MULT(MULB)
       MULTC = MULT(MULC)
@@ -2255,25 +2253,25 @@ C     Loop over irreps
 C
       IRCNTA = -1
       DO 100 IREPA = 0, MAXREP
-      IF(IBTAND(MULA,IBTXOR(IREPA,ITYNA)) .EQ. 0) THEN
+      IF(IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
          IRCNTA = IRCNTA + 1
          IRCNTB = -1
          DO 200 IREPB = 0, MAXREP
-         IF(IBTAND(MULB,IBTXOR(IREPB,ITYNB)) .EQ. 0) THEN
-            SIGNB = PT(IBTAND(ISYMR, IBTXOR(IREPB,ITYNB)))
+         IF(IAND(MULB,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
+            SIGNB = PT(IAND(ISYMR, IEOR(IREPB,ITYNB)))
             IRCNTB = IRCNTB + 1
             IRCNTC = -1
             DO 300 IREPC = 0, MAXREP
-            IF(IBTAND(MULC,IBTXOR(IREPC,ITYNC)) .EQ. 0) THEN
-               SIGNBC = SIGNB*PT(IBTAND(ISYMT, IBTXOR(IREPC,ITYNC)))
-               IRPABC = IBTXOR(IREPA,IBTXOR(IREPB,IREPC))
+            IF(IAND(MULC,IEOR(IREPC,ITYNC)) .EQ. 0) THEN
+               SIGNBC = SIGNB*PT(IAND(ISYMT, IEOR(IREPC,ITYNC)))
+               IRPABC = IEOR(IREPA,IEOR(IREPB,IREPC))
                IRCNTC = IRCNTC + 1
                IRCNTD = -1
                DO 400 IREPD = 0,MAXREP
-               IF (IBTAND(MULD,IBTXOR(IREPD,ITYND)) .EQ. 0) THEN
+               IF (IAND(MULD,IEOR(IREPD,ITYND)) .EQ. 0) THEN
                   IRCNTD = IRCNTD + 1
-                  IF (IBTXOR(IREPD,IRPABC) .EQ. 0) THEN
-                     SIGN =SIGNBC*PT(IBTAND(ISYMTS,IBTXOR(IREPD,ITYND)))
+                  IF (IEOR(IREPD,IRPABC) .EQ. 0) THEN
+                     SIGN =SIGNBC*PT(IAND(ISYMTS,IEOR(IREPD,ITYND)))
                      IOFF = NCABCD*(MULTOT
      &                      *(IAR(ICOMPA,ICOMPB,ICOMPC,ICOMPD) - 1)
      &                      + IRR(IRCNTA,IRCNTB,IRCNTC,IRCNTD) - 1)

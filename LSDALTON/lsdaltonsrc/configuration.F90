@@ -1104,8 +1104,10 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
-        CASE('.SCALAPACKNODES');
-           READ(LUCMD,*) infpar%ScalapackNodes
+        CASE('.SCALAPACKGROUPSIZE');
+           READ(LUCMD,*) infpar%ScalapackGroupSize
+        CASE('.SCALAPACKAUTOGROUPSIZE');
+           infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif

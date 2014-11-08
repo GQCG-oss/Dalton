@@ -99,7 +99,7 @@ c-----------------------------------------------------------------------
 #endif
       
       character*8 filback
-      index(i,j) = max(i,j)*(max(i,j) - 3)/2 + i + j
+C      index(i,j) = max(i,j)*(max(i,j) - 3)/2 + i + j
 
       call qenter('mofconr12')
 c

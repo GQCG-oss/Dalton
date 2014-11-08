@@ -218,7 +218,7 @@ C
       DATA COOR/'x','y','z'/
       DATA PRTHRS/1D-13/
 C
-#include "ibtfun.h"
+
 
       SDPRE(I) = (1.0D0*I)
 
@@ -508,7 +508,7 @@ C
       DIMENSION IBUF(600)
 C
 #include "inftap.h"
-#include "ibtfun.h"
+
       REWIND LUINP
       CALL MOLLAB(KEY,LUINP,LUPRI)
       SPNORB = KEY .EQ. 'AO2SOINT'
@@ -517,24 +517,24 @@ C
             DO 100 I = 1, LENGTH
                LABEL = IBUF(I)
                IF (SPNORB) THEN
-                  IS     = IBTAND(LABEL,255)
+                  IS     = IAND(LABEL,255)
                   IF (IS .EQ. 0) THEN
-                     ICOOR = IBTAND(IBTSHR(LABEL,8),255)
+                     ICOOR = IAND(ISHFT(LABEL,-8),255)
                   ELSE
-                     IP = IBTAND(IBTSHR(LABEL,24),255)
-                     IQ = IBTAND(IBTSHR(LABEL,16),255)
-                     IR = IBTAND(IBTSHR(LABEL, 8),255)
-                     IS = IBTAND(LABEL,255)
+                     IP = IAND(ISHFT(LABEL,-24),255)
+                     IQ = IAND(ISHFT(LABEL,-16),255)
+                     IR = IAND(ISHFT(LABEL, -8),255)
+                     IS = IAND(LABEL,255)
                      IPQ = IP*(IP - 1)/2 + IQ
                      IRS = IR*(IR - 1)/2 + IS
                      IPQRS = (IPQ - 1)*IBAS + IRS
                      DINT(IPQRS,ICOOR) = BUF(I)
                   ENDIF
                ELSE
-                  IP = IBTAND(IBTSHR(LABEL,24),255)
-                  IQ = IBTAND(IBTSHR(LABEL,16),255)
-                  IR = IBTAND(IBTSHR(LABEL, 8),255)
-                  IS = IBTAND(LABEL,255)
+                  IP = IAND(ISHFT(LABEL,-24),255)
+                  IQ = IAND(ISHFT(LABEL,-16),255)
+                  IR = IAND(ISHFT(LABEL, -8),255)
+                  IS = IAND(LABEL,255)
                   IPQ = IP*(IP - 1)/2 + IQ
                   IRS = IR*(IR - 1)/2 + IS
                   IPQRS = IPQ*(IPQ - 1)/2 + IRS
@@ -585,7 +585,7 @@ C
       DATA COOR/'x','y','z'/
       DATA ICOOR1/2,3,1/,ICOOR2/3,1,2/
 C
-#include "ibtfun.h"
+
 
       SDPRE(I) = (1.0D0*I)
 
@@ -2687,7 +2687,7 @@ C  /* Deck rdintm */
       LOGICAL DONE(IDIM,IDIM,IDIM,IDIM,NCOMP), NODUP
       CHARACTER*8 KEY
       DIMENSION ARRINT(IDIM,IDIM,IDIM,IDIM,*), BUF(600), IBUF(600)
-#include "ibtfun.h"
+
 C
       NODUP = .TRUE.
       IF (KEY .EQ. 'AO2MGINT') THEN
@@ -2707,10 +2707,10 @@ C
             LABEL = IBUF(I)
             VALUE = BUF(I)
             IF (KEY .EQ. 'BASTWOEL') THEN
-               P = IBTAND(IBTSHR(LABEL,24),255)
-               Q = IBTAND(IBTSHR(LABEL,16),255)
-               R = IBTAND(IBTSHR(LABEL, 8),255)
-               S = IBTAND(LABEL,255)
+               P = IAND(ISHFT(LABEL,-24),255)
+               Q = IAND(ISHFT(LABEL,-16),255)
+               R = IAND(ISHFT(LABEL, -8),255)
+               S = IAND(LABEL,255)
                ARRINT(P,Q,R,S,1) = VALUE
                ARRINT(P,Q,S,R,1) = VALUE
                ARRINT(Q,P,R,S,1) = VALUE
@@ -2720,13 +2720,13 @@ C
                ARRINT(S,R,P,Q,1) = VALUE
                ARRINT(S,R,Q,P,1) = VALUE
             ELSE
-               S = IBTAND(LABEL,255)
+               S = IAND(LABEL,255)
                IF (S .EQ. 0) THEN
-                  ICOMP = IBTAND(IBTSHR(LABEL,8),255)
+                  ICOMP = IAND(ISHFT(LABEL,-8),255)
                ELSE
-                  P = IBTAND(IBTSHR(LABEL,24),255)
-                  Q = IBTAND(IBTSHR(LABEL,16),255)
-                  R = IBTAND(IBTSHR(LABEL, 8),255)
+                  P = IAND(ISHFT(LABEL,-24),255)
+                  Q = IAND(ISHFT(LABEL,-16),255)
+                  R = IAND(ISHFT(LABEL, -8),255)
                   IF (DONE(P,Q,R,S,ICOMP)) THEN
                      WRITE (LUPRI,'(A,4I4)')
      &                 ' The following integral is duplicated: ',P,Q,R,S

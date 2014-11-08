@@ -18,14 +18,15 @@ MODULE IntegralInterfaceDEC
   use ao_typetype, only: aoitem, BATCHORBITALINFO
   use ao_type, only: free_aoitem, freebatchorbitalinfo, initbatchorbitalinfo, &
        & setbatchorbitalinfo
-  use BUILDAOBATCH, only: BUILD_SHELLBATCH_AO
+  use BUILDAOBATCH, only: BUILD_SHELLBATCH_AO,determinebatchindexandsize
   use lstiming
   use memory_handling,only: mem_alloc, mem_dealloc
   use basis_typetype, only: BASISSETINFO,RegBasParam,CABBasParam
   PUBLIC:: II_precalc_DECScreenMat,II_getBatchOrbitalScreen,&
        & II_getBatchOrbitalScreen2,II_getBatchOrbitalScreenK,&
        & II_getBatchOrbitalScreen2K,II_GET_DECPACKED4CENTER_J_ERI,&
-       & II_GET_DECPACKED4CENTER_K_ERI, II_GET_DECBATCHPACKED
+       & II_GET_DECPACKED4CENTER_K_ERI, II_GET_DECBATCHPACKED,&
+       & II_get_eri_integralblock, II_get_eri_integralblock_inquire
 !       & II_GET_DECPACKED4CENTER_J_ERI2
   PRIVATE
 CONTAINS
@@ -53,22 +54,7 @@ logical,pointer     :: OLDsameBAS(:,:)
 dummy=1
 IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
    !set geminal
-   IF (intSpec(5).NE.'C') THEN
-      nGaussian = 6
-      nG2 = nGaussian*(nGaussian+1)/2
-      GGem = 0E0_realk
-      call stgfit(1E0_realk,nGaussian,exponent,coeff)
-      IJ=0
-      DO I=1,nGaussian
-         DO J=1,I
-            IJ = IJ + 1
-            coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
-            prodexponent(IJ) = exponent(I) * exponent(J)
-            sumexponent(IJ) = exponent(I) + exponent(J)
-         ENDDO
-         coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
-      ENDDO
-   ENDIF
+   call InitGaussianGeminal(intSpec,setting,oper)
    ! ***** SELECT AO TYPES *****
    DO i=1,4
       IF (intSpec(i).EQ.'R') THEN
@@ -90,30 +76,6 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
       ENDDO
    ENDDO
    
-   ! ***** SELECT OPERATOR TYPE *****
-   IF (intSpec(5).EQ.'C') THEN
-      ! Regular Coulomb operator 1/r12
-      oper = CoulombOperator
-   ELSE IF (intSpec(5).EQ.'G') THEN
-      ! The Gaussian geminal operator g
-      oper = GGemOperator
-      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-   ELSE IF (intSpec(5).EQ.'F') THEN
-      ! The Gaussian geminal divided by the Coulomb operator g/r12
-      oper = GGemCouOperator
-      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-   ELSE IF (intSpec(5).EQ.'D') THEN
-      ! The double commutator [[T,g],g]
-      oper = GGemGrdOperator
-      call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-   ELSE IF (intSpec(5).EQ.'2') THEN
-      ! The Gaussian geminal operator squared g^2
-      oper = GGemOperator
-      call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-   ELSE
-      call lsquit('Error in specification of operator in ',-1)
-   ENDIF
-
    !RHS
    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
    call null_decscreen_and_associate_MasterGab_RHS(GAB,DecSCREEN)
@@ -497,47 +459,7 @@ integer             :: nGaussian,nG2
 real(realk)         :: GGem
 type(lstensor),pointer :: tmpP
 !call time_II_operations1()
-IF (intSpec(5).NE.'C') THEN
-  nGaussian = 6
-  nG2 = nGaussian*(nGaussian+1)/2
-  GGem = 0E0_realk
-  call stgfit(1E0_realk,nGaussian,exponent,coeff)
-  IJ=0
-  DO I=1,nGaussian
-     DO J=1,I
-        IJ = IJ + 1
-        coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
-        prodexponent(IJ) = exponent(I) * exponent(J)
-        sumexponent(IJ) = exponent(I) + exponent(J)
-     ENDDO
-     coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
-  ENDDO
-ENDIF
-    
-
-! ***** SELECT OPERATOR TYPE *****
-IF (intSpec(5).EQ.'C') THEN
-! Regular Coulomb operator 1/r12
-  oper = CoulombOperator
-ELSE IF (intSpec(5).EQ.'G') THEN
-! The Gaussian geminal operator g
-  oper = GGemOperator
-  call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-ELSE IF (intSpec(5).EQ.'F') THEN
-! The Gaussian geminal divided by the Coulomb operator g/r12
-  oper = GGemCouOperator
-  call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-ELSE IF (intSpec(5).EQ.'D') THEN
-! The double commutator [[T,g],g]
-  oper = GGemGrdOperator
-  call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-ELSE IF (intSpec(5).EQ.'2') THEN
-! The Gaussian geminal operator squared g^2
-  oper = GGemOperator
-  call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-ELSE
-  call lsquit('Error in specification of operator in II_GET_DECPACKED4CENTER_J_ERI',-1)
-ENDIF
+call InitGaussianGeminal(intSpec,setting,oper)
 
 ! ***** SELECT AO TYPES *****
 DO i=1,4
@@ -680,47 +602,7 @@ integer             :: nGaussian,nG2
 real(realk)         :: GGem
 type(lstensor),pointer :: tmpP
 call time_II_operations1()
-IF (intSpec(5).NE.'C') THEN
-  nGaussian = 6
-  nG2 = nGaussian*(nGaussian+1)/2
-  GGem = 0E0_realk
-  call stgfit(1E0_realk,nGaussian,exponent,coeff)
-  IJ=0
-  DO I=1,nGaussian
-     DO J=1,I
-        IJ = IJ + 1
-        coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
-        prodexponent(IJ) = exponent(I) * exponent(J)
-        sumexponent(IJ) = exponent(I) + exponent(J)
-     ENDDO
-     coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
-  ENDDO
-ENDIF
-    
-
-! ***** SELECT OPERATOR TYPE *****
-IF (intSpec(5).EQ.'C') THEN
-! Regular Coulomb operator 1/r12
-  oper = CoulombOperator
-ELSE IF (intSpec(5).EQ.'G') THEN
-! The Gaussian geminal operator g
-  oper = GGemOperator
-  call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-ELSE IF (intSpec(5).EQ.'F') THEN
-! The Gaussian geminal divided by the Coulomb operator g/r12
-  oper = GGemCouOperator
-  call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-ELSE IF (intSpec(5).EQ.'D') THEN
-! The double commutator [[T,g],g]
-  oper = GGemGrdOperator
-  call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-ELSE IF (intSpec(5).EQ.'2') THEN
-! The Gaussian geminal operator squared g^2
-  oper = GGemOperator
-  call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-ELSE
-  call lsquit('Error in specification of operator in II_GET_DECPACKED4CENTER_J_ERI',-1)
-ENDIF
+call InitGaussianGeminal(intSpec,setting,oper)
 
 ! ***** SELECT AO TYPES *****
 DO i=1,4
@@ -1068,46 +950,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
           & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
           & nbast2,nbast4,dim1,dim3,fullRHS,intSpec)
   ELSE
-     IF (intSpec(5).NE.'C') THEN
-        nGaussian = 6
-        nG2 = nGaussian*(nGaussian+1)/2
-        GGem = 0E0_realk
-        call stgfit(1E0_realk,nGaussian,exponent,coeff)
-        IJ=0
-        DO I=1,nGaussian
-           DO J=1,I
-              IJ = IJ + 1
-              coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
-              prodexponent(IJ) = exponent(I) * exponent(J)
-              sumexponent(IJ) = exponent(I) + exponent(J)
-           ENDDO
-           coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
-        ENDDO
-     ENDIF
-
-     ! ***** SELECT OPERATOR TYPE *****
-     IF (intSpec(5).EQ.'C') THEN
-        ! Regular Coulomb operator 1/r12
-        oper = CoulombOperator
-     ELSE IF (intSpec(5).EQ.'G') THEN
-        ! The Gaussian geminal operator g
-        oper = GGemOperator
-        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-     ELSE IF (intSpec(5).EQ.'F') THEN
-        ! The Gaussian geminal divided by the Coulomb operator g/r12
-        oper = GGemCouOperator
-        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-     ELSE IF (intSpec(5).EQ.'D') THEN
-        ! The double commutator [[T,g],g]
-        oper = GGemGrdOperator
-        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-     ELSE IF (intSpec(5).EQ.'2') THEN
-        ! The Gaussian geminal operator squared g^2
-        oper = GGemOperator
-        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-     ELSE
-        call lsquit('Error in specification of operator in II_GET_DECPACKED4CENTER_K_ERI',-1)
-     ENDIF
+     call InitGaussianGeminal(intSpec,setting,oper)
 
      ! ***** SELECT AO TYPES *****
      DO i=1,4
@@ -1191,5 +1034,176 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
   ENDIF
   call time_II_operations2(JOB_II_GET_DECPACKED4CENTER_K_ERI)
 END SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI
+
+
+!> \brief Calculates the decpacked explicit 4 center eri
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param outputintegral the output (batchA,full,batchC,full)
+!> \param batchA batch index 
+!> \param batchC batch index 
+!> \param dim1 the dimension of batch index 
+!> \param nbast2 full orbital dimension of ao 2
+!> \param dim3 the dimension of batch index 
+!> \param nbast4 full orbital dimension of ao 4
+!> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
+SUBROUTINE II_GET_ERI_INTEGRALBLOCK_INQUIRE(LUPRI,LUERR,SETTING,&
+     & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+     & ndimAs,ndimBs,ndimCs,ndimDs,intSpec)
+  IMPLICIT NONE
+  INTEGER,intent(in)            :: LUPRI,LUERR,startA,startB,startC,startD
+  INTEGER,intent(in)            :: ndimA,ndimB,ndimC,ndimD
+  INTEGER,intent(inout)         :: ndimAs,ndimBs,ndimCs,ndimDs
+  TYPE(LSSETTING),intent(inout) :: SETTING
+  Character,intent(IN)          :: intSpec(5)
+  !
+  integer :: batchsizeA,batchsizeB,batchsizeC,batchsizeD
+  integer :: batchindexA,batchindexB,batchindexC,batchindexD
+  integer :: offsetA,offsetB,offsetC,offsetD,i
+  DO i=1,4
+     IF (intSpec(i).NE.'R')THEN
+        call lsquit('AO Error in II_GET_ERI_INTEGRALBLOCK_INQUIRE',-1)
+     ENDIF
+  ENDDO
+  call DetermineBatchIndexAndSize(lupri,setting,startA,startB,startC,startD,&
+     & ndimA,ndimB,ndimC,ndimD,batchsizeA,batchsizeB,batchsizeC,batchsizeD,&
+     & batchindexA,batchindexB,batchindexC,batchindexD,&
+     & offsetA,offsetB,offsetC,offsetD,ndimAs,ndimBs,ndimCs,ndimDs,'R')
+
+  print*,'startA,startB,startC,startD',startA,startB,startC,startD
+  print*,'ndimA,ndimB,ndimC,ndimD',ndimA,ndimB,ndimC,ndimD
+  print*,'batchsizeA,batchsizeB,batchsizeC,batchsizeD',batchsizeA,batchsizeB,batchsizeC,batchsizeD
+  print*,'batchindexA,batchindexB,batchindexC,batchindexD',batchindexA,batchindexB,batchindexC,batchindexD
+  print*,'offsetA,offsetB,offsetC,offsetD',offsetA,offsetB,offsetC,offsetD
+  print*,'ndimAs,ndimBs,ndimCs,ndimDs',ndimAs,ndimBs,ndimCs,ndimDs
+END SUBROUTINE II_GET_ERI_INTEGRALBLOCK_INQUIRE
+
+SUBROUTINE II_GET_ERI_INTEGRALBLOCK(LUPRI,LUERR,SETTING,&
+     & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+     & ndimAs,ndimBs,ndimCs,ndimDs,intSpec,outputintegral,ScratchArray)
+  IMPLICIT NONE
+  INTEGER,intent(in)            :: LUPRI,LUERR,startA,startB,startC,startD
+  INTEGER,intent(in)            :: ndimA,ndimB,ndimC,ndimD
+  INTEGER,intent(in)            :: ndimAs,ndimBs,ndimCs,ndimDs
+  TYPE(LSSETTING),intent(inout) :: SETTING
+  Character,intent(IN)          :: intSpec(5)
+  REAL(REALK)                   :: outputintegral(ndimA,ndimB,ndimC,ndimD)
+  REAL(REALK)                   :: ScratchArray(ndimAs,ndimBs,ndimCs,ndimDs)
+  !
+  integer :: batchsizeA,batchsizeB,batchsizeC,batchsizeD
+  integer :: batchindexA,batchindexB,batchindexC,batchindexD
+  INTEGER :: ndimAs2,ndimBs2,ndimCs2,ndimDs2
+  integer :: offsetA,offsetB,offsetC,offsetD,I,A,B,C,D
+  real(realk) :: t1,t2
+  call LSTIMER('START',t1,t2,LUPRI)
+  call DetermineBatchIndexAndSize(lupri,setting,startA,startB,startC,startD,&
+       & ndimA,ndimB,ndimC,ndimD,batchsizeA,batchsizeB,batchsizeC,batchsizeD,&
+       & batchindexA,batchindexB,batchindexC,batchindexD,&
+       & offsetA,offsetB,offsetC,offsetD,ndimAs2,ndimBs2,ndimCs2,ndimDs2,'R')
+  IF(ndimAs2.NE.ndimAs)call lsquit('dim1 mismatch in II_GET_ERI_INTEGRALBLOCK')
+  IF(ndimBs2.NE.ndimBs)call lsquit('dim2 mismatch in II_GET_ERI_INTEGRALBLOCK')
+  IF(ndimCs2.NE.ndimCs)call lsquit('dim3 mismatch in II_GET_ERI_INTEGRALBLOCK')
+  IF(ndimDs2.NE.ndimDs)call lsquit('dim4 mismatch in II_GET_ERI_INTEGRALBLOCK')
+
+  DO i=1,4
+     IF (intSpec(i).NE.'R')call lsquit('AO Error in II_GET_ERI_INTEGRALBLOCK',-1)
+  ENDDO
+  !calc full integral block ScratchArray(ndimAs,ndimBs,ndimCs,ndimDs)
+  call LSTIMER('INTEGRALBLOCK INIT',t1,t2,LUPRI)
+  call II_GET_DECBATCHPACKED(LUPRI,LUERR,SETTING,&
+       & ScratchArray,batchindexA,batchindexB,batchindexC,batchindexD,&
+       & batchsizeA,batchSizeB,batchsizeC,batchSizeD,&
+       & ndimAs,ndimBs,ndimCs,ndimDs,intSpec)
+  call LSTIMER('INTEGRALBLOCK CALC',t1,t2,LUPRI)
+  IF(offsetA .EQ.0.AND.offsetB .EQ.0)THEN
+   DO D=1,ndimD
+    DO C=1,ndimC
+     DO B=1,ndimB
+      DO A=1,ndimA
+       outputintegral(A,B,C,D)=ScratchArray(A,B,C+offsetC,D+offsetD)
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+  ELSEIF(offsetA .EQ.0)THEN
+   DO D=1,ndimD
+    DO C=1,ndimC
+     DO B=1,ndimB
+      DO A=1,ndimA
+       outputintegral(A,B,C,D)=ScratchArray(A,B+offsetB,C+offsetC,D+offsetD)
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+  ELSE
+   DO D=1,ndimD
+    DO C=1,ndimC
+     DO B=1,ndimB
+      DO A=1,ndimA
+       outputintegral(A,B,C,D)=ScratchArray(A+offsetA,B+offsetB,C+offsetC,D+offsetD)
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDIF
+  call LSTIMER('INTEGRALBLOCK COPY',t1,t2,LUPRI)
+END SUBROUTINE II_GET_ERI_INTEGRALBLOCK
+
+subroutine InitGaussianGeminal(intSpec,Setting,oper)
+  IMPLICIT NONE
+  Character,intent(IN)          :: intSpec(5)
+  TYPE(LSSETTING),intent(inout) :: SETTING
+  integer,intent(inout)         :: oper
+  !
+  integer               :: I,J
+  real(realk)         :: coeff(6),exponent(6),tmp
+  real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
+  integer             :: iunit,k,l,IJ
+  integer             :: nGaussian,nG2
+  real(realk)         :: GGem
+  IF (intSpec(5).NE.'C') THEN
+     nGaussian = 6
+     nG2 = nGaussian*(nGaussian+1)/2
+     GGem = 0E0_realk
+     call stgfit(1E0_realk,nGaussian,exponent,coeff)
+     IJ=0
+     DO I=1,nGaussian
+        DO J=1,I
+           IJ = IJ + 1
+           coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+           prodexponent(IJ) = exponent(I) * exponent(J)
+           sumexponent(IJ) = exponent(I) + exponent(J)
+        ENDDO
+        coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+     ENDDO
+  ENDIF
+  
+  ! ***** SELECT OPERATOR TYPE *****
+  IF (intSpec(5).EQ.'C') THEN
+     ! Regular Coulomb operator 1/r12
+     oper = CoulombOperator
+  ELSE IF (intSpec(5).EQ.'G') THEN
+     ! The Gaussian geminal operator g
+     oper = GGemOperator
+     call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+  ELSE IF (intSpec(5).EQ.'F') THEN
+     ! The Gaussian geminal divided by the Coulomb operator g/r12
+     oper = GGemCouOperator
+     call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+  ELSE IF (intSpec(5).EQ.'D') THEN
+     ! The double commutator [[T,g],g]
+     oper = GGemGrdOperator
+     call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+  ELSE IF (intSpec(5).EQ.'2') THEN
+     ! The Gaussian geminal operator squared g^2
+     oper = GGemOperator
+     call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+  ELSE
+     call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
+  ENDIF
+end subroutine InitGaussianGeminal
 
 END MODULE IntegralInterfaceDEC

@@ -2414,7 +2414,7 @@ C
       DIMENSION RR(NSPAIR,NSPAIR)
       DIMENSION CCS(NSPAIR),CCT(NSPAIR)
       DIMENSION VOS(NSPAIR,NSPAIR),VOT(NSPAIR,NSPAIR)
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 
       N12 = NSPAIR * (NSPAIR + 1) / 2
@@ -2692,7 +2692,7 @@ C
 #include "ccsdsym.h"
 #include "ccsdinp.h"
 #include "r12int.h"
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J    
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J    
 C
 celena
       NORB1T = 0

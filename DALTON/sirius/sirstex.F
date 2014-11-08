@@ -1231,7 +1231,7 @@ C
      &          BUF(LENGTH), IBUF(4,LENGTH)
 #include "stex.h"
       LOGICAL DEBUG
-#include "ibtfun.h"
+
 C
       DEBUG=IPRSTX.GT.10
       IF (DEBUG) THEN
@@ -1296,7 +1296,7 @@ C
 #include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include "ibtfun.h"
+
 C
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)

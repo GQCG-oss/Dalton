@@ -42,7 +42,7 @@ f.add(string = 'Center-of-mass',
 #shield
 f.add(from_string = 'Indirect spin-spin coupling between ',
       num_lines = 17,
-      abs_tolerance = 1.0e-3)
+      abs_tolerance = 2.1e-3)
 
 test.run(['shield_spin.dal'], ['C2H3Li_STO-3G.mol'], {'out': f})
 

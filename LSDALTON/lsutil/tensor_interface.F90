@@ -1881,7 +1881,7 @@ contains
   subroutine tensor_convert_array22array(arraytwo,arr)
     implicit none
     !> array2 input
-    type(array2),intent(in) :: arraytwo
+    type(array2),intent(inout) :: arraytwo
     !> array output
     type(tensor), intent(inout) :: arr
     integer(kind=8) :: nel

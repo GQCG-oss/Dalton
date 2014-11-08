@@ -5399,8 +5399,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     case(0)
 
-       print *,"I have no idea what I am doing, a reasonable estimate is needed!!"
-
        !RIGHT NOW THIS IS SET TO THE SAME VALUE AS SCHEME 4 JUST /nnod
        ! u 2 + Omega 2 +  H +G  
        memrq = 1.0E0_realk*(2_long*no*no*nv*nv+ i8*nb*nv+i8*nb*no)
