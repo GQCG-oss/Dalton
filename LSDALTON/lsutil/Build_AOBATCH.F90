@@ -1318,7 +1318,6 @@ ENDIF
 call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
      & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
 
-print*,'AO%nbatches',AO%nbatches
 Family = .FALSE.
 do I=1,AO%nbatches
    IF(AO%BATCH(I)%nAngmom.GT.1) Family = .TRUE.
@@ -1341,7 +1340,6 @@ do J=1,4
             batchsize(J) = 1
             ndims(J) = tmporb            
             offset(J) = start(J) - norbitals - 1
-            print*,'offset(',J,')=',start(J),'-',norbitals,'=',offset(J)
             norbitals = norbitals + tmporb
          ELSE
             !still outside batch

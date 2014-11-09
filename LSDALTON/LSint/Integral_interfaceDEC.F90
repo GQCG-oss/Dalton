@@ -1230,13 +1230,6 @@ SUBROUTINE II_GET_ERI_INTEGRALBLOCK_INQUIRE(LUPRI,LUERR,SETTING,&
      & ndimA,ndimB,ndimC,ndimD,batchsizeA,batchsizeB,batchsizeC,batchsizeD,&
      & batchindexA,batchindexB,batchindexC,batchindexD,&
      & offsetA,offsetB,offsetC,offsetD,ndimAs,ndimBs,ndimCs,ndimDs,'R')
-
-  print*,'startA,startB,startC,startD',startA,startB,startC,startD
-  print*,'ndimA,ndimB,ndimC,ndimD',ndimA,ndimB,ndimC,ndimD
-  print*,'batchsizeA,batchsizeB,batchsizeC,batchsizeD',batchsizeA,batchsizeB,batchsizeC,batchsizeD
-  print*,'batchindexA,batchindexB,batchindexC,batchindexD',batchindexA,batchindexB,batchindexC,batchindexD
-  print*,'offsetA,offsetB,offsetC,offsetD',offsetA,offsetB,offsetC,offsetD
-  print*,'ndimAs,ndimBs,ndimCs,ndimDs',ndimAs,ndimBs,ndimCs,ndimDs
 END SUBROUTINE II_GET_ERI_INTEGRALBLOCK_INQUIRE
 
 SUBROUTINE II_GET_ERI_INTEGRALBLOCK(LUPRI,LUERR,SETTING,&
