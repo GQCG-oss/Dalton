@@ -2913,10 +2913,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Memory info - should synchronize the nodes
      ! ***********
      call get_currently_available_memory(MemFree)
-     MemFreeMin = MemFree
      call lsmpi_reduce_realk_min(MemFreeMin,infpar%master,infpar%lg_comm)
-     call lsmpi_local_reduction(MemFree,infpar%master)
-
+     ! Estimate free mem to be the min times the number of nodes
+     MemFree = MemFreeMin * nnod
 
      if(print_debug)then
         call print_norm(xo," NORM(xo)    :",print_on_rank = 0)
@@ -2949,20 +2948,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         ! Get free memory and determine maximum batch sizes
         ! -------------------------------------------------
-!#ifdef VAR_ICHOR
-!        !Determine the minimum allowed AObatch size MinAObatch
-!        !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
-!        !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
-!        !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
-!        !'R'  !Specifies that it is the Regular AO basis that should be batched
-!        iAO = 4 !the center that the batching should occur on (they are all the same in this case)  
-!        call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
-!#else
-!        call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
-!#endif
-!        call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-!           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.)
-
 
         if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
      endif
