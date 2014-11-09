@@ -1466,7 +1466,7 @@ nbast = ls%input%BASIS%BINFO(REGBASPARAM)%nbast
 McWeeny = config%opt%MWPURIFYATOMSTART  !Option 1 
 DiagFmat = .FALSE.  !Option 2 
 IF(McWeeny)THEN
-   write(config%lupri,*)'Perform McWeeny purification on the non idempotent Atoms Density',1
+   write(config%lupri,'(A,I3)')'Perform McWeeny purification on the non idempotent Atoms Density',1
    Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
    call mat_init(Dpure,D(1)%nrow,D(1)%ncol)
    call mat_assign(Dpure,D(1))
@@ -1717,7 +1717,7 @@ type(LowAccuracyStartType)  :: LAStype
   McWeeny = config%opt%MWPURIFYATOMSTART  !Option 1 
   DiagFmat = .FALSE.  !option 2
   IF(McWeeny)THEN
-     write(config%lupri,*)'Perform McWeeny purification on the non idempotent Atoms Density',1
+     write(config%lupri,'(A,I3)')'Perform McWeeny purification on the non idempotent Atoms Density',1
      Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
      call mat_init(Dpure,Dval(1)%nrow,Dval(1)%ncol)
      call mat_assign(Dpure,Dval(1))

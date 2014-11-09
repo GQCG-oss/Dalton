@@ -46,15 +46,56 @@ Character,intent(IN)          :: intSpec(5)
 TYPE(lstensor),pointer :: GAB
 LOGICAL :: IntegralTransformGC,CSintsave,PSintsave
 INTEGER :: I,J,nbast,natoms,Oper
+integer             :: IJ,ao(4),dummy
+logical,pointer     :: OLDsameBAS(:,:)
 real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
-integer             :: IJ,nGaussian,nG2,ao(4),dummy
+integer             :: nGaussian,nG2
 real(realk)         :: GGem
-logical,pointer     :: OLDsameBAS(:,:)
 dummy=1
 IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
    !set geminal
-   call InitGaussianGeminal(intSpec,setting,oper)
+   IF (intSpec(5).NE.'C') THEN
+      nGaussian = 6
+      nG2 = nGaussian*(nGaussian+1)/2
+      GGem = 0E0_realk
+      call stgfit(1E0_realk,nGaussian,exponent,coeff)
+      IJ=0
+      DO I=1,nGaussian
+         DO J=1,I
+            IJ = IJ + 1
+            coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+            prodexponent(IJ) = exponent(I) * exponent(J)
+            sumexponent(IJ) = exponent(I) + exponent(J)
+         ENDDO
+         coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+      ENDDO
+   ENDIF
+ 
+   ! ***** SELECT OPERATOR TYPE *****
+   IF (intSpec(5).EQ.'C') THEN
+      ! Regular Coulomb operator 1/r12
+      oper = CoulombOperator
+   ELSE IF (intSpec(5).EQ.'G') THEN
+     ! The Gaussian geminal operator g
+      oper = GGemOperator
+      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+   ELSE IF (intSpec(5).EQ.'F') THEN
+      ! The Gaussian geminal divided by the Coulomb operator g/r12
+      oper = GGemCouOperator
+      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+   ELSE IF (intSpec(5).EQ.'D') THEN
+      ! The double commutator [[T,g],g]
+      oper = GGemGrdOperator
+      call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+   ELSE IF (intSpec(5).EQ.'2') THEN
+      ! The Gaussian geminal operator squared g^2
+      oper = GGemOperator
+      call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+   ELSE
+      call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
+   ENDIF
+
    ! ***** SELECT AO TYPES *****
    DO i=1,4
       IF (intSpec(i).EQ.'R') THEN
@@ -459,7 +500,46 @@ integer             :: nGaussian,nG2
 real(realk)         :: GGem
 type(lstensor),pointer :: tmpP
 !call time_II_operations1()
-call InitGaussianGeminal(intSpec,setting,oper)
+IF (intSpec(5).NE.'C') THEN
+   nGaussian = 6
+   nG2 = nGaussian*(nGaussian+1)/2
+   GGem = 0E0_realk
+   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   IJ=0
+   DO I=1,nGaussian
+      DO J=1,I
+         IJ = IJ + 1
+         coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+         prodexponent(IJ) = exponent(I) * exponent(J)
+         sumexponent(IJ) = exponent(I) + exponent(J)
+      ENDDO
+      coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+   ENDDO
+ENDIF
+
+! ***** SELECT OPERATOR TYPE *****
+IF (intSpec(5).EQ.'C') THEN
+   ! Regular Coulomb operator 1/r12
+   oper = CoulombOperator
+ELSE IF (intSpec(5).EQ.'G') THEN
+   ! The Gaussian geminal operator g
+   oper = GGemOperator
+   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+ELSE IF (intSpec(5).EQ.'F') THEN
+   ! The Gaussian geminal divided by the Coulomb operator g/r12
+   oper = GGemCouOperator
+   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+ELSE IF (intSpec(5).EQ.'D') THEN
+   ! The double commutator [[T,g],g]
+   oper = GGemGrdOperator
+   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+ELSE IF (intSpec(5).EQ.'2') THEN
+   ! The Gaussian geminal operator squared g^2
+   oper = GGemOperator
+   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+ELSE
+   call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
+ENDIF
 
 ! ***** SELECT AO TYPES *****
 DO i=1,4
@@ -602,7 +682,46 @@ integer             :: nGaussian,nG2
 real(realk)         :: GGem
 type(lstensor),pointer :: tmpP
 call time_II_operations1()
-call InitGaussianGeminal(intSpec,setting,oper)
+IF (intSpec(5).NE.'C') THEN
+   nGaussian = 6
+   nG2 = nGaussian*(nGaussian+1)/2
+   GGem = 0E0_realk
+   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   IJ=0
+   DO I=1,nGaussian
+      DO J=1,I
+         IJ = IJ + 1
+         coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+         prodexponent(IJ) = exponent(I) * exponent(J)
+         sumexponent(IJ) = exponent(I) + exponent(J)
+      ENDDO
+      coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+   ENDDO
+ENDIF
+
+! ***** SELECT OPERATOR TYPE *****
+IF (intSpec(5).EQ.'C') THEN
+   ! Regular Coulomb operator 1/r12
+   oper = CoulombOperator
+ELSE IF (intSpec(5).EQ.'G') THEN
+   ! The Gaussian geminal operator g
+   oper = GGemOperator
+   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+ELSE IF (intSpec(5).EQ.'F') THEN
+   ! The Gaussian geminal divided by the Coulomb operator g/r12
+   oper = GGemCouOperator
+   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+ELSE IF (intSpec(5).EQ.'D') THEN
+   ! The double commutator [[T,g],g]
+   oper = GGemGrdOperator
+   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+ELSE IF (intSpec(5).EQ.'2') THEN
+   ! The Gaussian geminal operator squared g^2
+   oper = GGemOperator
+   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+ELSE
+   call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
+ENDIF
 
 ! ***** SELECT AO TYPES *****
 DO i=1,4
@@ -933,9 +1052,9 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
   integer               :: nAO,iA,iB,iC,iD
   logical,pointer       :: OLDsameMOLE(:,:),OLDsameBAS(:,:)
   integer               :: oper,ao(4)
+  integer               :: iunit,k,l,IJ
   real(realk)         :: coeff(6),exponent(6),tmp
   real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
-  integer             :: iunit,k,l,IJ
   integer             :: nGaussian,nG2
   real(realk)         :: GGem
   call time_II_operations1()
@@ -950,7 +1069,46 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
           & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
           & nbast2,nbast4,dim1,dim3,fullRHS,intSpec)
   ELSE
-     call InitGaussianGeminal(intSpec,setting,oper)
+     IF (intSpec(5).NE.'C') THEN
+        nGaussian = 6
+        nG2 = nGaussian*(nGaussian+1)/2
+        GGem = 0E0_realk
+        call stgfit(1E0_realk,nGaussian,exponent,coeff)
+        IJ=0
+        DO I=1,nGaussian
+           DO J=1,I
+              IJ = IJ + 1
+              coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+              prodexponent(IJ) = exponent(I) * exponent(J)
+              sumexponent(IJ) = exponent(I) + exponent(J)
+           ENDDO
+           coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+        ENDDO
+     ENDIF
+     
+     ! ***** SELECT OPERATOR TYPE *****
+     IF (intSpec(5).EQ.'C') THEN
+        ! Regular Coulomb operator 1/r12
+        oper = CoulombOperator
+     ELSE IF (intSpec(5).EQ.'G') THEN
+        ! The Gaussian geminal operator g
+        oper = GGemOperator
+        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+     ELSE IF (intSpec(5).EQ.'F') THEN
+        ! The Gaussian geminal divided by the Coulomb operator g/r12
+        oper = GGemCouOperator
+        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+     ELSE IF (intSpec(5).EQ.'D') THEN
+        ! The double commutator [[T,g],g]
+        oper = GGemGrdOperator
+        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+     ELSE IF (intSpec(5).EQ.'2') THEN
+        ! The Gaussian geminal operator squared g^2
+        oper = GGemOperator
+        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+     ELSE
+        call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
+     ENDIF
 
      ! ***** SELECT AO TYPES *****
      DO i=1,4
@@ -1072,13 +1230,6 @@ SUBROUTINE II_GET_ERI_INTEGRALBLOCK_INQUIRE(LUPRI,LUERR,SETTING,&
      & ndimA,ndimB,ndimC,ndimD,batchsizeA,batchsizeB,batchsizeC,batchsizeD,&
      & batchindexA,batchindexB,batchindexC,batchindexD,&
      & offsetA,offsetB,offsetC,offsetD,ndimAs,ndimBs,ndimCs,ndimDs,'R')
-
-  print*,'startA,startB,startC,startD',startA,startB,startC,startD
-  print*,'ndimA,ndimB,ndimC,ndimD',ndimA,ndimB,ndimC,ndimD
-  print*,'batchsizeA,batchsizeB,batchsizeC,batchsizeD',batchsizeA,batchsizeB,batchsizeC,batchsizeD
-  print*,'batchindexA,batchindexB,batchindexC,batchindexD',batchindexA,batchindexB,batchindexC,batchindexD
-  print*,'offsetA,offsetB,offsetC,offsetD',offsetA,offsetB,offsetC,offsetD
-  print*,'ndimAs,ndimBs,ndimCs,ndimDs',ndimAs,ndimBs,ndimCs,ndimDs
 END SUBROUTINE II_GET_ERI_INTEGRALBLOCK_INQUIRE
 
 SUBROUTINE II_GET_ERI_INTEGRALBLOCK(LUPRI,LUERR,SETTING,&
@@ -1152,58 +1303,58 @@ SUBROUTINE II_GET_ERI_INTEGRALBLOCK(LUPRI,LUERR,SETTING,&
   call LSTIMER('INTEGRALBLOCK COPY',t1,t2,LUPRI)
 END SUBROUTINE II_GET_ERI_INTEGRALBLOCK
 
-subroutine InitGaussianGeminal(intSpec,Setting,oper)
-  IMPLICIT NONE
-  Character,intent(IN)          :: intSpec(5)
-  TYPE(LSSETTING),intent(inout) :: SETTING
-  integer,intent(inout)         :: oper
-  !
-  integer               :: I,J
-  real(realk)         :: coeff(6),exponent(6),tmp
-  real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
-  integer             :: iunit,k,l,IJ
-  integer             :: nGaussian,nG2
-  real(realk)         :: GGem
-  IF (intSpec(5).NE.'C') THEN
-     nGaussian = 6
-     nG2 = nGaussian*(nGaussian+1)/2
-     GGem = 0E0_realk
-     call stgfit(1E0_realk,nGaussian,exponent,coeff)
-     IJ=0
-     DO I=1,nGaussian
-        DO J=1,I
-           IJ = IJ + 1
-           coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
-           prodexponent(IJ) = exponent(I) * exponent(J)
-           sumexponent(IJ) = exponent(I) + exponent(J)
-        ENDDO
-        coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
-     ENDDO
-  ENDIF
-  
-  ! ***** SELECT OPERATOR TYPE *****
-  IF (intSpec(5).EQ.'C') THEN
-     ! Regular Coulomb operator 1/r12
-     oper = CoulombOperator
-  ELSE IF (intSpec(5).EQ.'G') THEN
-     ! The Gaussian geminal operator g
-     oper = GGemOperator
-     call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-  ELSE IF (intSpec(5).EQ.'F') THEN
-     ! The Gaussian geminal divided by the Coulomb operator g/r12
-     oper = GGemCouOperator
-     call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-  ELSE IF (intSpec(5).EQ.'D') THEN
-     ! The double commutator [[T,g],g]
-     oper = GGemGrdOperator
-     call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-  ELSE IF (intSpec(5).EQ.'2') THEN
-     ! The Gaussian geminal operator squared g^2
-     oper = GGemOperator
-     call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-  ELSE
-     call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
-  ENDIF
-end subroutine InitGaussianGeminal
+!!$subroutine InitGaussianGeminal(intSpec,Setting,oper)
+!!$  IMPLICIT NONE
+!!$  Character,intent(IN)          :: intSpec(5)
+!!$  TYPE(LSSETTING),intent(inout) :: SETTING
+!!$  integer,intent(inout)         :: oper
+!!$  !
+!!$  integer               :: I,J
+!!$  real(realk)         :: coeff(6),exponent(6),tmp
+!!$  real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
+!!$  integer             :: iunit,k,l,IJ
+!!$  integer             :: nGaussian,nG2
+!!$  real(realk)         :: GGem
+!!$     IF (intSpec(5).NE.'C') THEN
+!!$        nGaussian = 6
+!!$        nG2 = nGaussian*(nGaussian+1)/2
+!!$        GGem = 0E0_realk
+!!$        call stgfit(1E0_realk,nGaussian,exponent,coeff)
+!!$        IJ=0
+!!$        DO I=1,nGaussian
+!!$           DO J=1,I
+!!$              IJ = IJ + 1
+!!$              coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+!!$              prodexponent(IJ) = exponent(I) * exponent(J)
+!!$              sumexponent(IJ) = exponent(I) + exponent(J)
+!!$           ENDDO
+!!$           coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+!!$        ENDDO
+!!$     ENDIF
+!!$     
+!!$     ! ***** SELECT OPERATOR TYPE *****
+!!$     IF (intSpec(5).EQ.'C') THEN
+!!$        ! Regular Coulomb operator 1/r12
+!!$        oper = CoulombOperator
+!!$     ELSE IF (intSpec(5).EQ.'G') THEN
+!!$        ! The Gaussian geminal operator g
+!!$        oper = GGemOperator
+!!$        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+!!$     ELSE IF (intSpec(5).EQ.'F') THEN
+!!$        ! The Gaussian geminal divided by the Coulomb operator g/r12
+!!$        oper = GGemCouOperator
+!!$        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+!!$     ELSE IF (intSpec(5).EQ.'D') THEN
+!!$        ! The double commutator [[T,g],g]
+!!$        oper = GGemGrdOperator
+!!$        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+!!$     ELSE IF (intSpec(5).EQ.'2') THEN
+!!$        ! The Gaussian geminal operator squared g^2
+!!$        oper = GGemOperator
+!!$        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+!!$     ELSE
+!!$        call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
+!!$     ENDIF
+!!$end subroutine InitGaussianGeminal
 
 END MODULE IntegralInterfaceDEC
