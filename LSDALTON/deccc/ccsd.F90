@@ -2862,29 +2862,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      nors                     = nor/int(sqrt(float(nnod))+2)
      nvrs                     = nvr/int(sqrt(float(nnod))+2)
 
-     print *,me,"splits",no,nv,nb," in ", os, vs, bs
-
-
 
      ! Set integral info
      ! *****************
-     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center 
-     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center 
-     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center 
-     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
-     INTSPEC(5)               = 'C' !C = Coulomb operator
-!#ifdef VAR_ICHOR
-!     iprint = 0           !print level for Ichor Integral code
-!     MoTrans = .FALSE.    !Do not transform to MO basis! 
-!     NoSymmetry = .FALSE. !Use Permutational Symmetry! 
-!     SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
-!     !Determine the full number of AO batches - not to be confused with the batches of AOs
-!     !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
-!     iAO = 1
-!     call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
-!#else
-!     doscreen = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
-!#endif
+     !R = Regular Basis set on the 1th center R = Regular Basis set on the 2th center R = Regular Basis set on the 3th center R = Regular Basis set on the 4th center 
+     !C = Coulomb operator
+     INTSPEC = ['R','R','R','R','C'] 
+     mylsitem%setting%SCHEME%CS_SCREEN = .FALSE.
+     mylsitem%setting%SCHEME%PS_SCREEN = .FALSE.
+     mylsitem%setting%SCHEME%NOFAMILY  = .TRUE.
+     doscreen = mylsitem%setting%SCHEME%CS_SCREEN.OR.mylsitem%setting%SCHEME%PS_SCREEN
 
 
      StartUpSlaves: if(master .and. nnod>1) then
@@ -2924,23 +2911,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(yv," NORM(yv)    :",print_on_rank = 0)
      endif
 
-     ! Initialize stuff
-#ifdef VAR_ICHOR
-     nullify(AOGammabatchinfo)
-     nullify(AOalphabatchinfo)    
-#else
-     nullify(orb2batchAlpha)
-     nullify(batchdimAlpha)
-     nullify(batchsizeAlpha)
-     nullify(batch2orbAlpha)
-     nullify(batchindexAlpha)
-     nullify(orb2batchGamma)
-     nullify(batchdimGamma)
-     nullify(batchsizeGamma)
-     nullify(batch2orbGamma)
-     nullify(batchindexGamma)
-#endif
-
      if(master) then
         !==================================================
         !                  Batch construction             !
@@ -2954,32 +2924,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      MaxAllowedDimAlpha = nb
      MaxAllowedDimGamma = nb
 
-     MaxActualDimAlpha = nb
-     MaxActualDimGamma = nb
+     MaxActualDimAlpha = nb/1
+     MaxActualDimGamma = nb/1
 
-     nbatchesAlpha = 1
-     nbatchesGamma = 1
-
-     mylsitem%setting%SCHEME%CS_SCREEN = .FALSE.
-     mylsitem%setting%SCHEME%PS_SCREEN = .FALSE.
-     doscreen = mylsitem%setting%SCHEME%CS_SCREEN.OR.mylsitem%setting%SCHEME%PS_SCREEN
-     mylsitem%setting%SCHEME%NOFAMILY = .TRUE.
+     nbatchesAlpha = nb / MaxActualDimAlpha
+     if( mod( nb, MaxActualDimAlpha ) > 0 ) nbatchesAlpha = nbatchesAlpha + 1
+     nbatchesGamma = nb / MaxActualDimGamma
+     if( mod( nb, MaxActualDimGamma ) > 0 ) nbatchesGamma = nbatchesGamma + 1
 
      !all communication for MPI prior to the loop
      call time_start_phase(PHASE_COMM, at = time_init_work )
-
-
      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
      call ls_mpi_buffer(scheme,infpar%master)
      call ls_mpi_buffer(print_debug,infpar%master)
      call ls_mpi_buffer(dynamic_load,infpar%master)
      call ls_mpi_buffer(restart,infpar%master)
-     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
-     call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
-     call ls_mpi_buffer(els2add,infpar%master)
      call ls_mpi_buffer(lock_outside,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-
      call time_start_phase(PHASE_WORK, at = time_init_comm)
 
      hstatus = 80
@@ -2988,14 +2949,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call tensor_lock_wins(omega2,'s',all_nodes = alloc_in_dummy)
      call tensor_zero(omega2)
 
+
      ! ************************************************
      ! *  Allocate matrices used in the batched loop  *
      ! ************************************************
 
-
      ! Use the dense amplitudes
      ! ------------------------
-
      !get the t+ and t- for the Kobayshi-like B2 term
      call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR",fo=0)
      call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR",fo=0)
@@ -3054,12 +3014,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      ! allocate working arrays depending on the batch sizes
-     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
-     w0size = i8*nb*nb*nb*nb
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0,bs = bs, nbuffs = 5)
      call mem_alloc( w0, w0size , simple = .false. )
 
-     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
-     w1size = i8*nb*nb*nb*nb
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0, bs = bs, nbuffs = 5)
      call mem_alloc( w1, w1size , simple = .false.)
 
 
@@ -3093,8 +3051,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         write( *,'("CCSD residual init work:",g10.3,"s, comm:",g10.3,"s")')time_init_work,time_init_comm
      endif
      call time_phases_get_current(current_wt=phase_cntrs)
-     print *,me," HERE 2"
-     call lsmpi_barrier(infpar%lg_comm)
 
      fullRHS=(nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
@@ -3105,8 +3061,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
         !short hand notation
-        fg         = 1
-        lg         = nb
+        fg = 1 + (gammaB-1)*MaxActualDimGamma
+        lg = nb - fg + 1
+        if( lg >= MaxActualDimGamma )then
+           lg = MaxActualDimGamma
+        endif
 
         if( lg > bs )then
            gs = bs
@@ -3156,8 +3115,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         BatchAlpha: do alphaB=1,nbatchesAlpha ! AO batches
 
            !short hand notation
-           fa         = 1
-           la         = nb
+           fa = 1 + (alphaB-1)*MaxActualDimAlpha
+           la = nb - fa + 1
+           if( la >= MaxActualDimAlpha )then
+              la = MaxActualDimAlpha
+           endif
 
            if( la > bs )then
               as = bs
@@ -3205,19 +3167,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               call get_midx(Cint%ti(i)%gt,starts,Cint%ntpm,Cint%mode)
 
-              do j=1,Cint%mode
-                 starts(j) = 1 + (starts(j)-1)*Cint%tdim(j)
-              enddo
-
               ndimA  = Cint%ti(i)%d(1)
               ndimB  = Cint%ti(i)%d(2)
               ndimC  = Cint%ti(i)%d(3)
               ndimD  = Cint%ti(i)%d(4)
 
-              startA = starts(1)
-              startB = starts(2)
-              startC = starts(3)
-              startD = starts(4)
+              startA = 1  + (starts(1)-1)*Cint%tdim(1)
+              startB = 1  + (starts(2)-1)*Cint%tdim(2)
+              startC = fa + (starts(3)-1)*Cint%tdim(3)
+              startD = fg + (starts(4)-1)*Cint%tdim(4)
 
               call II_GET_ERI_INTEGRALBLOCK_INQUIRE(DECinfo%output,DECinfo%output,Mylsitem%setting,&
                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
@@ -3351,19 +3309,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               call get_midx(Cint%ti(i)%gt,starts,Cint%ntpm,Cint%mode)
 
-              do j=1,Cint%mode
-                 starts(j) = 1 + (starts(j)-1)*Cint%tdim(j)
-              enddo
-
               ndimA  = Cint%ti(i)%d(1)
               ndimB  = Cint%ti(i)%d(2)
               ndimC  = Cint%ti(i)%d(3)
               ndimD  = Cint%ti(i)%d(4)
 
-              startA = starts(1)
-              startB = starts(2)
-              startC = starts(3)
-              startD = starts(4)
+              startA = fa + (starts(1)-1)*Cint%tdim(1)
+              startB = 1  + (starts(2)-1)*Cint%tdim(2)
+              startC = fg + (starts(3)-1)*Cint%tdim(3)
+              startD = 1  + (starts(4)-1)*Cint%tdim(4)
 
               call II_GET_ERI_INTEGRALBLOCK_INQUIRE(DECinfo%output,DECinfo%output,Mylsitem%setting,&
                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
@@ -7683,19 +7637,28 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine ccsd_debug_print
 
 
-  function get_wsize_for_ccsd_int_direct(wnr,no,os,nv,vs,nb,nba,nbg,s) result(wsize)
+  function get_wsize_for_ccsd_int_direct(wnr,no,os,nv,vs,&
+        &nb,nba,nbg,s,bs,nbuffs) result(wsize)
      implicit none
      integer, intent(in) :: wnr,no,os,nv,vs,nb,nba,nbg,s
+     integer, intent(in),optional :: bs,nbuffs
      integer(kind=long) :: wsize
      integer(kind=long) :: maxsize64,nor,nvr
      nor = (i8*(no*(no+1))/2)
      nvr = (i8*(nv*(nv+1))/2)
+     if(s == 0 .and. .not. present(bs))then
+        call lsquit("ERROR(get_wsize_for_ccsd_int_direct), bs needed for scheme 0",-1)
+     endif
+     if(s == 0 .and. .not. present(nbuffs))then
+        call lsquit("ERROR(get_wsize_for_ccsd_int_direct), nbuffs needed for scheme 0",-1)
+     endif
      select case(wnr)
      case(0)
         maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
         if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
         if(s==0)then
            maxsize64 = max(max(nbg*nv,nba*no),max(nbg*no,nba*nv))
+           maxsize64 = max(maxsize64,nbuffs*max(max(i8*bs,i8*vs),i8*os)**4)
         endif
      case(1)
         maxsize64 = max(int((i8*nb*nb)*nba*nbg,kind=8),int((i8*nv*nv*no)*nba,kind=8))
@@ -7704,7 +7667,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
         if(s==0)then
            maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
-           maxsize64 = max(maxsize64,int((5 *i8*vs**2)*os**2,kind=8))
+           maxsize64 = max(maxsize64,int((nbuffs*i8*vs**2)*os**2,kind=8))
         endif
      case(2)
         maxsize64 = max(int((i8*nb)*nb*nba*nbg,kind=8),(i8*no*no)*nv*nv)
