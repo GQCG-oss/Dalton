@@ -2676,7 +2676,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=long) :: maxsize64,dummy64
      integer :: myload,nelms,n4
      real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2, deb1,deb2,ActuallyUsed
-     real(realk) :: MemFree,MemFreeMin
+     real(realk) :: MemFree,MemFreeMin,MemUsed
      real(realk) :: tcpu_end,twall_end,time_a, time_c, time_d,time_singles
      real(realk) :: time_doubles,timewall_start,wait_time,max_wait_time,min_wait_time,ave_wait_time
      integer     :: scheme
@@ -2707,8 +2707,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(batchtoorb), pointer :: batch2orbGamma(:)
      Character            :: INTSPEC(5)
      logical :: fullRHS
-     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
-     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
+     integer :: MaxActualDimAlpha,nbatchesAlpha
+     integer :: MaxActualDimGamma,nbatchesGamma
      integer :: ndimA,ndimB,ndimC,ndimD
      integer :: ndimAs,ndimBs,ndimCs,ndimDs
      integer :: startA,startB,startC,startD
@@ -2768,6 +2768,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=long) :: xyz,zyx1,zyx2
      logical :: debug
      character(tensor_MSG_LEN) :: msg
+     real(realk), parameter :: frac = 0.8E0_realk
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef VAR_OMP
@@ -2858,9 +2859,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      vs                       = t2%tdim(1)
      os                       = t2%tdim(3)
      residual_nr              = RN_YET_ANOTHER_RES
-     bs                       = nb/int(sqrt(float(nnod))+2)
-     nors                     = nor/int(sqrt(float(nnod))+2)
-     nvrs                     = nvr/int(sqrt(float(nnod))+2)
+     bs                       = get_split_scheme_0(nb) 
+     nors                     = get_split_scheme_0(nor)
+     nvrs                     = get_split_scheme_0(nvr)
 
 
      ! Set integral info
@@ -2900,6 +2901,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Memory info - should synchronize the nodes
      ! ***********
      call get_currently_available_memory(MemFree)
+     !print *,"WHAAT",MemFree
+     MemFreeMin = MemFree
      call lsmpi_reduce_realk_min(MemFreeMin,infpar%master,infpar%lg_comm)
      ! Estimate free mem to be the min times the number of nodes
      MemFree = MemFreeMin * nnod
@@ -2915,22 +2918,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !==================================================
         !                  Batch construction             !
         !==================================================
+#ifdef VAR_ICHOR
+        iAO = 4 
+        call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
+#else
+        call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+#endif
 
         ! Get free memory and determine maximum batch sizes
         ! -------------------------------------------------
-
+        call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxActualDimAlpha,MaxActualDimGamma,&
+        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.)
         if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
+        
      endif
-     MaxAllowedDimAlpha = nb
-     MaxAllowedDimGamma = nb
-
-     MaxActualDimAlpha = nb/1
-     MaxActualDimGamma = nb/1
-
-     nbatchesAlpha = nb / MaxActualDimAlpha
-     if( mod( nb, MaxActualDimAlpha ) > 0 ) nbatchesAlpha = nbatchesAlpha + 1
-     nbatchesGamma = nb / MaxActualDimGamma
-     if( mod( nb, MaxActualDimGamma ) > 0 ) nbatchesGamma = nbatchesGamma + 1
 
      !all communication for MPI prior to the loop
      call time_start_phase(PHASE_COMM, at = time_init_work )
@@ -2939,9 +2940,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call ls_mpi_buffer(print_debug,infpar%master)
      call ls_mpi_buffer(dynamic_load,infpar%master)
      call ls_mpi_buffer(restart,infpar%master)
+     call ls_mpi_buffer(MaxActualDimAlpha,infpar%master)
+     call ls_mpi_buffer(MaxActualDimGamma,infpar%master)
      call ls_mpi_buffer(lock_outside,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
      call time_start_phase(PHASE_WORK, at = time_init_comm)
+
+
+     nbatchesAlpha = nb / MaxActualDimAlpha
+     if( mod( nb, MaxActualDimAlpha ) > 0 ) nbatchesAlpha = nbatchesAlpha + 1
+     nbatchesGamma = nb / MaxActualDimGamma
+     if( mod( nb, MaxActualDimGamma ) > 0 ) nbatchesGamma = nbatchesGamma + 1
+
 
      hstatus = 80
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
@@ -2957,21 +2967,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Use the dense amplitudes
      ! ------------------------
      !get the t+ and t- for the Kobayshi-like B2 term
-     call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR",fo=0)
-     call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR",fo=0)
+     call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
+     call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
 
-     !call get_tpl_and_tmi(t2,tpl,tmi)
-
-     call tensor_zero(tmi)
-     call tensor_zero(tpl)
+     call get_tpl_and_tmi(t2,tpl,tmi)
 
      if(print_debug)then
         call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
         call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
      endif
-
-     !call lsmpi_barrier(infpar%lg_comm)
-     !stop 0
 
      call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
      call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
@@ -2984,7 +2988,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if( print_debug )then
         call print_norm(u2," NORM(u2)    :",print_on_rank=0)
      endif
-
 
      call tensor_ainit(Had,[nv,nb],2,local=local,tdims=[vs,bs],atype="TDAR")
      call tensor_ainit(Gbi,[nb,no],2,local=local,tdims=[bs,os],atype="TDAR")
@@ -3014,10 +3017,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      ! allocate working arrays depending on the batch sizes
-     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0,bs = bs, nbuffs = 5)
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
      call mem_alloc( w0, w0size , simple = .false. )
 
-     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0, bs = bs, nbuffs = 5)
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
      call mem_alloc( w1, w1size , simple = .false.)
 
 
@@ -4979,7 +4982,25 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
   end subroutine get_max_batch_sizes
 
+  function get_nbuffs_scheme_0() result (nbuffs)
+     implicit none
+     integer :: nbuffs
+     nbuffs = 0
+  end function get_nbuffs_scheme_0
+  function get_split_scheme_0(full) result (split)
+     implicit none
+     integer,intent(in) :: full
+     integer :: split
+     integer :: nnod
 
+     nnod = 0
+#ifdef VAR_MPI
+     nnod = infpar%lg_nodtot
+#endif
+
+     split = full/int(sqrt(float(nnod))+2)
+
+  end function get_split_scheme_0
 
 !> \brief calculate the memory requirement for the matrices in the ccsd routine
 !> \author Patrick Ettenhuber
@@ -4999,7 +5020,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: l2,ml2,fai2,tl2
     integer :: l3,ml3,fai3,tl3
     integer :: l4,ml4,fai4,tl4
-    integer :: nloctiles
+    integer :: nloctiles, bs, nbuffs
     integer :: cd , e2
     integer(kind=long) :: w0size, w1size, w2size, w3size
     nor = no*(no+1)/2
@@ -5069,6 +5090,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       endif
     endif
     tl4 = tl4 * no
+
+    bs     = get_split_scheme_0(nb)
+    nbuffs = get_nbuffs_scheme_0()
 
     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,nba,nbg,s)
     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,nba,nbg,s)
@@ -7638,20 +7662,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
   function get_wsize_for_ccsd_int_direct(wnr,no,os,nv,vs,&
-        &nb,nba,nbg,s,bs,nbuffs) result(wsize)
+        &nb,nba,nbg,s) result(wsize)
      implicit none
      integer, intent(in) :: wnr,no,os,nv,vs,nb,nba,nbg,s
-     integer, intent(in),optional :: bs,nbuffs
      integer(kind=long) :: wsize
      integer(kind=long) :: maxsize64,nor,nvr
+     integer :: bs,nbuffs
+
      nor = (i8*(no*(no+1))/2)
      nvr = (i8*(nv*(nv+1))/2)
-     if(s == 0 .and. .not. present(bs))then
-        call lsquit("ERROR(get_wsize_for_ccsd_int_direct), bs needed for scheme 0",-1)
-     endif
-     if(s == 0 .and. .not. present(nbuffs))then
-        call lsquit("ERROR(get_wsize_for_ccsd_int_direct), nbuffs needed for scheme 0",-1)
-     endif
+
+     bs     = get_split_scheme_0(bs)
+     nbuffs = get_nbuffs_scheme_0()
+
      select case(wnr)
      case(0)
         maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)

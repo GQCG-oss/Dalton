@@ -97,13 +97,19 @@ module cc_tools_module
       type(tensor),intent(inout) :: t2, tpl, tmi
 
       integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
-      integer :: otpl(2),ot2(4)
-      real(realk), pointer :: tt(:,:,:,:), ut(:,:,:,:)
-      real(realk), pointer :: ttile(:)
+      integer :: otmi(2),otpl(2),ot2(4)
+      real(realk), pointer :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
+      real(realk), pointer :: buf1(:),buf2(:)
       integer :: dcged,dilej,ccged,cilej,gcged,gilej
       real(realk) :: sol
-      integer :: max_c, max_d, min_c, min_d, max_i, max_j, min_i, min_j
       integer :: nor,no,nvr,nv,k,c,d
+      integer :: maxtile(4), mintile(4),tdim(4)
+      integer :: tctr1,tctr2,tctr3,tctr4
+      integer :: nelms,nvrs,nors
+      integer :: gc,gd,gi,gj
+      integer :: mingilej,maxgilej,mingcged,maxgcged
+      integer :: check, nfound, founds(t2%ntiles), mtile(t2%mode), ctile
+      logical :: Already_in,contributed
 
 #ifdef VAR_MPI
       if( t2%access_type /= AT_ALL_ACCESS .or. tpl%access_type /= AT_ALL_ACCESS .or. tmi%access_type /= AT_ALL_ACCESS  )then
@@ -116,8 +122,11 @@ module cc_tools_module
       nvr = nv * (nv + 1) / 2
       nor = no * (no + 1) / 2
 
+      nvrs = tpl%tdim(2)
+      nors = tpl%tdim(1)
 
-      call mem_alloc(ttile,t2%tsize)
+      call mem_alloc(buf1,t2%tsize)
+      call mem_alloc(buf2,t2%tsize)
 
       if(infpar%lg_mynum /=0 )call lsmpi_barrier(infpar%lg_comm)
 
@@ -126,6 +135,9 @@ module cc_tools_module
          gtnr = tpl%ti(lt)%gt
 
          call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
+
+         !Facilitate access
+         call ass_D1to2( tpl%ti(lt)%t, tpm, tpl%ti(lt)%d )
 
          !build list of tiles to get for the current tpl tile
          !get offset for tile counting
@@ -136,71 +148,279 @@ module cc_tools_module
          dcged = tpl%ti(lt)%d(2)
          dilej = tpl%ti(lt)%d(1)
 
-         max_c = 0
-         max_d = 0
-         min_c = huge(0)
-         min_d = huge(0)
-         max_i = 0
-         max_j = 0
-         min_i = huge(0)
-         min_j = huge(0)
-
-         do ccged=1,dcged
-            gcged = otpl(2) + ccged
-
-            call calc_i_geq_j(gcged,nv,c,d)
-
-            print *,ccged,gcged,"have",c,d,"with offs",otpl(2)
-
-         enddo
+         nfound = 0
          do cilej=1,dilej
+
             gilej = otpl(1) + cilej
 
             call calc_i_leq_j(gilej,no,i,j)
 
-            print *,cilej,gilej,"have",i,j,"with offs",otpl(1)
+            do ccged=1,dcged
+
+               gcged = otpl(2) + ccged
+
+               call calc_i_geq_j(gcged,nv,c,d)
+
+               mtile = [ (c-1)/t2%tdim(1)+1 , (d-1)/t2%tdim(2)+1, (j-1)/t2%tdim(3)+1, (i-1)/t2%tdim(4)+1 ]
+
+               ctile = get_cidx(mtile,t2%ntpm,t2%mode)
+
+               Already_in = .false.
+
+               do check = 1, nfound
+                  if( founds(check) == ctile ) then
+                     Already_in = .true.
+                     exit
+                  endif
+               enddo
+
+               if(.not.Already_in)then
+                  founds(nfound+1) = ctile
+                  nfound = nfound + 1
+               endif
+
+            enddo
+         enddo
+
+         mingilej = otpl(1) + 1
+         maxgilej = otpl(1) + dilej
+         mingcged = otpl(2) + 1
+         maxgcged = otpl(2) + dcged
+
+         do check = 1,nfound
+
+            ctile = founds(check)
+
+            call get_midx(ctile,mtile,t2%ntpm,t2%mode)
+
+            call get_tile_dim(tdim,t2,mtile)
+
+            nelms = 1
+            do i=1,t2%mode
+               nelms = nelms * tdim(i)
+            enddo
+
+            call tensor_get_tile(t2,mtile,buf1,nelms)
+
+            if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
+
+            call ass_D1to4( buf1, tt1, tdim )
+            if(mtile(2)==mtile(1))then
+               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            else
+               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            endif
+
+            !get offset for tile counting
+            ot2(1)=(mtile(1)-1)*t2%tdim(1)
+            ot2(2)=(mtile(2)-1)*t2%tdim(2)
+            ot2(3)=(mtile(3)-1)*t2%tdim(3)
+            ot2(4)=(mtile(4)-1)*t2%tdim(4)
+
+            da = t2%ti(lt)%d(1)
+            db = t2%ti(lt)%d(2)
+            di = t2%ti(lt)%d(3)
+            dj = t2%ti(lt)%d(4)
+
+            contributed  = .false.
+
+            do j=1,dj
+               gj = ot2(4)+j
+               do i=1,di
+                  gi = ot2(3)+i
+
+                  if( gi <= gj )then
+                     gilej = gi + ((gj-1)*gj)/2
+
+                     if( mingilej <= gilej .and. gilej<= maxgilej )then
+
+                        do b=1,db
+                           gd = ot2(2)+b
+                           do a=1,da
+                              gc = ot2(1)+a
+
+                              gcged = gc + (gd - 1) * nv - ((gd-1)*gd)/2
+
+                              if( gc > gd .and. mingcged <= gcged .and. gcged<= maxgcged )then
+                                 !print *,infpar%lg_mynum,"ONE"
+
+                                 ccged = mod(gcged-1,nvrs)+1
+                                 cilej = mod(gilej-1,nors)+1
+
+                                 tpm(cilej,ccged) = tt1(a,b,i,j)+tt2(b,a,i,j)
+
+                                 contributed  = .true.
+
+                              else if( gc == gd .and. mingcged <= gcged .and. gcged<= maxgcged)then
+                                 !print *,infpar%lg_mynum,"TWO"
+
+                                 ccged = mod(gcged-1,nvrs)+1
+                                 cilej = mod(gilej-1,nors)+1
+
+
+                                 tpm(cilej,ccged) = 0.5E0_realk*(tt1(a,b,i,j)+tt2(b,a,i,j))
+
+                                 contributed  = .true.
+
+                              endif
+                           end do
+                        end do
+
+                     endif
+
+                  endif
+
+               end do
+            end do
 
          enddo
-         ! do cilej = 1, dilej
-         ! enddo
+
+      enddo
 
 
 
+      do lt = 1, tmi%nlti
 
+         gtnr = tmi%ti(lt)%gt
+
+         call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
+
+         !Facilitate access
+         call ass_D1to2( tmi%ti(lt)%t, tpm, tmi%ti(lt)%d )
+
+         !build list of tiles to get for the current tmi tile
+         !get offset for tile counting
+         do j=1,tmi%mode
+            otmi(j)=(otmi(j)-1)*tmi%tdim(j)
+         enddo
+
+         dcged = tmi%ti(lt)%d(2)
+         dilej = tmi%ti(lt)%d(1)
+
+         nfound = 0
+         do cilej=1,dilej
+
+            gilej = otmi(1) + cilej
+
+            call calc_i_leq_j(gilej,no,i,j)
+
+            do ccged=1,dcged
+
+               gcged = otmi(2) + ccged
+
+               call calc_i_geq_j(gcged,nv,c,d)
+
+               mtile = [ (c-1)/t2%tdim(1)+1 , (d-1)/t2%tdim(2)+1, (j-1)/t2%tdim(3)+1, (i-1)/t2%tdim(4)+1 ]
+
+               ctile = get_cidx(mtile,t2%ntpm,t2%mode)
+
+               Already_in = .false.
+
+               do check = 1, nfound
+                  if( founds(check) == ctile ) then
+                     Already_in = .true.
+                     exit
+                  endif
+               enddo
+
+               if(.not.Already_in)then
+                  founds(nfound+1) = ctile
+                  nfound = nfound + 1
+               endif
+
+            enddo
+         enddo
+
+         mingilej = otmi(1) + 1
+         maxgilej = otmi(1) + dilej
+         mingcged = otmi(2) + 1
+         maxgcged = otmi(2) + dcged
+
+         do check = 1,nfound
+
+            ctile = founds(check)
+
+            call get_midx(ctile,mtile,t2%ntpm,t2%mode)
+
+            call get_tile_dim(tdim,t2,mtile)
+
+            nelms = 1
+            do i=1,t2%mode
+               nelms = nelms * tdim(i)
+            enddo
+
+            call tensor_get_tile(t2,mtile,buf1,nelms)
+
+            if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
+
+            call ass_D1to4( buf1, tt1, tdim )
+            if(mtile(2)==mtile(1))then
+               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            else
+               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            endif
+
+            !get offset for tile counting
+            ot2(1)=(mtile(1)-1)*t2%tdim(1)
+            ot2(2)=(mtile(2)-1)*t2%tdim(2)
+            ot2(3)=(mtile(3)-1)*t2%tdim(3)
+            ot2(4)=(mtile(4)-1)*t2%tdim(4)
+
+            da = t2%ti(lt)%d(1)
+            db = t2%ti(lt)%d(2)
+            di = t2%ti(lt)%d(3)
+            dj = t2%ti(lt)%d(4)
+
+            do j=1,dj
+               gj = ot2(4)+j
+               do i=1,di
+                  gi = ot2(3)+i
+
+                  if( gi <= gj )then
+                     gilej = gi + ((gj-1)*gj)/2
+
+                     if( mingilej <= gilej .and. gilej<= maxgilej )then
+
+                        do b=1,db
+                           gd = ot2(2)+b
+                           do a=1,da
+                              gc = ot2(1)+a
+
+                              gcged = gc + (gd - 1) * nv - ((gd-1)*gd)/2
+
+                              if( gc >= gd .and. mingcged <= gcged .and. gcged<= maxgcged )then
+
+                                 ccged = mod(gcged-1,nvrs)+1
+                                 cilej = mod(gilej-1,nors)+1
+
+                                 tpm(cilej,ccged) = tt1(a,b,i,j) - tt2(b,a,i,j)
+
+                              endif
+                           end do
+                        end do
+
+                     endif
+
+                  endif
+
+               end do
+            end do
+
+         enddo
 
          !call time_start_phase( PHASE_COMM )
          !call tensor_get_tile(t2,gtnr,ttile,nelt,flush_it=(nelt>MAX_SIZE_ONE_SIDED))
          !call time_start_phase( PHASE_WORK )
 
-         !!Facilitate access
-         !call ass_D1to4( u%ti(lt)%t, ut, u%ti(lt)%d )
-         !call ass_D1to4( ttile,      tt, u%ti(lt)%d )
-
-         !!get offset for tile counting
-         !do j=1,u%mode
-         !   o(j)=(o(j)-1)*u%tdim(j)
-         !enddo
-
-         !da = u%ti(lt)%d(1)
-         !di = u%ti(lt)%d(2)
-         !db = u%ti(lt)%d(3)
-         !dj = u%ti(lt)%d(4)
-
-         !do j=1,dj
-         !   do b=1,db
-         !      do i=1,di
-         !         do a=1,da
-         !            ut(a,i,b,j) = tt(a,i,b,j) + t1%elm2(o(1)+a,o(2)+i) * t1%elm2(o(3)+b,o(4)+j)
-         !         end do
-         !      end do
-         !   end do
-
-         !end do
       enddo
 
+      call mem_dealloc(buf1)
+      call mem_dealloc(buf2)
+
+      !stop 0
       if(infpar%lg_mynum ==0 )call lsmpi_barrier(infpar%lg_comm)
       call lsmpi_barrier(infpar%lg_comm)
-      stop 0
+      !stop 0
 #endif
    end subroutine lspdm_get_tpl_and_tmi
 
