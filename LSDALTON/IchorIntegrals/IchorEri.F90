@@ -2293,7 +2293,8 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   MaxGPUmemory = FLOOR(IchorGPUMAXMEM,kind=long)*1000_long*1000_long*1000_long !given by input
   call DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
        & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
-       & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass,nStaticParamIfac)
+       & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,&
+       & nLocalIntPass,nAtomsC,nAtomsD,nStaticParamIfac)
 !  WRITE(lupri,*)'nAsyncHandles',nAsyncHandles
   IF(nAsyncHandles.EQ.0)call ichorquit('GPU Memory Error. Calc require too much memory transported to device',-1)
 #else
@@ -2345,7 +2346,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 !$ACC             nLocalIntPass,Acenter,Bcenter,&
 !$ACC             CcenterSpec,DcenterSpec,nAtomsA,nAtomsB,Spherical,&
 !$ACC             TMParray1maxsizePass,TMParray2maxsizePass,&
-!$ACC             IatomAPass,iatomBPass) &
+!$ACC             IatomAPass,iatomBPass,Dcenter,Ccenter) &
 !$ACC CREATE(LocalIntPass1) &
 !$ACC CREATE(TmpArray1,TmpArray2)
   DO IatomD = 1,nAtomsD
@@ -2371,13 +2372,15 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      IF(iCAH .EQ. -1)call ichorquit('iCAH .EQ. -1',-1)
 
      nPasses(iCAH) = nAtomsA*nAtomsB
+     !$ACC PARALLEL PRESENT(Dcenter,Ccenter,DcenterSpec,CcenterSpec) ASYNC(iSync(iCAH))
      DcenterSpec(1,iCAH) = Dcenter(1,IAtomD)
      DcenterSpec(2,iCAH) = Dcenter(2,IAtomD)
      DcenterSpec(3,iCAH) = Dcenter(3,IAtomD)
      CcenterSpec(1,iCAH) = Ccenter(1,IAtomC)
      CcenterSpec(2,iCAH) = Ccenter(2,IAtomC)
      CcenterSpec(3,iCAH) = Ccenter(3,IAtomC)
-     
+     !$ACC END PARALLEL      
+
      !output: IatomAPass,IatomBPass,nPasses
      CALL BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
           & nBatchB,nBatchA,iBatchIndexOfTypeA,iBatchIndexOfTypeB,&
@@ -2395,16 +2398,13 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
         enddo
      ENDIF
 
+     !$ACC UPDATE DEVICE(IatomAPass(:,iCAH),iatomBPass(:,iCAH),nPasses(iCAH)) ASYNC(iSync(iCAH))
+
      !output: Qcent,Qdistance12,QpreExpFac
-     CALL Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
+     CALL Build_qcent_Qdistance12_QpreExpFacGPU(nPrimC,nPrimD,nContC,nContD,&
           & expC,expD,CcenterSpec(:,iCAH),DcenterSpec(:,iCAH),&
           & ContractCoeffC,ContractCoeffD,Qsegmented,&
           & Qcent(:,:,iCAH),Qdistance12(:,iCAH),QpreExpFac(:,iCAH),INTPRINT)
-
-
-!$ACC UPDATE DEVICE(CcenterSpec(:,iCAH),DcenterSpec(:,iCAH),IatomAPass(:,iCAH),&
-!$ACC               iatomBPass(:,iCAH),nPasses(iCAH),Qcent(:,:,iCAH),&
-!$ACC               Qpreexpfac(:,iCAH),Qdistance12(:,iCAH)) ASYNC(iSync(iCAH))
 
      call ICI_GPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
           & nPrimQ,nPrimP*nPrimQ,nPasses(iCAH),MaxPasses,intprint,lupri,&
@@ -2531,13 +2531,13 @@ end subroutine IchorTypeIntegralLoopGPU
 subroutine DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
      & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
      & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,&
-     & nLocalIntPass,nStaticParamIfac)
+     & nLocalIntPass,nAtomsC,nAtomsD,nStaticParamIfac)
   implicit none
   integer(kind=long),intent(in) :: MaxGPUmemory
   integer,intent(in) :: maxnAsyncHandles,nPrimP,nPrimQ,nPrimA,nContA,nPrimB,nContB
   integer,intent(in) :: nPrimC,nContC,nPrimD,nContD,nTABFJW1,nTABFJW2,natomsA
   integer,intent(in) :: natomsB,TMParray1maxsize,MaxPasses,nLocalIntPass
-  integer,intent(in) :: TMParray2maxsize,nStaticParamIfac
+  integer,intent(in) :: TMParray2maxsize,nStaticParamIfac,nAtomsC,nAtomsD
   integer,intent(inout) :: nAsyncHandles
   !local variables
   integer(kind=long) :: nSizeStatic,nSizeAsync
@@ -2548,6 +2548,8 @@ subroutine DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nP
   !Copy of parameters in AGC_TransferRecurrenceParam.F90
   nSizeStatic = nStaticParamIfac*mem_intsize
   ! ACC DATA COPYIN OF                                                
+  !Ccenter,Dcenter
+  nSizeStatic = nSizeStatic + mem_realsize*(3*nAtomsC+3*nAtomsD)
   ! nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,                               
   nSizeStatic = nSizeStatic + mem_intsize*5 
   ! nPrimQ,nPasses,MaxPasses,intprint,lupri,                          
