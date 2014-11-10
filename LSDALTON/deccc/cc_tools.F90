@@ -2,6 +2,8 @@
 module cc_tools_module
 
    use precision
+   use typedeftype
+   use integralinterfaceDEC, only: II_GET_ERI_INTEGRALBLOCK_INQUIRE
    use tensor_interface_module
    
    interface get_tpl_and_tmi
@@ -407,10 +409,6 @@ module cc_tools_module
             end do
 
          enddo
-
-         !call time_start_phase( PHASE_COMM )
-         !call tensor_get_tile(t2,gtnr,ttile,nelt,flush_it=(nelt>MAX_SIZE_ONE_SIDED))
-         !call time_start_phase( PHASE_WORK )
 
       enddo
 
@@ -1842,5 +1840,112 @@ module cc_tools_module
       end do
 
    end subroutine calc_i_geq_j
+
+   function get_nbuffs_scheme_0() result (nbuffs)
+      implicit none
+      integer :: nbuffs
+      nbuffs = 5
+   end function get_nbuffs_scheme_0
+
+   function get_split_scheme_0(full) result (split)
+      implicit none
+      integer,intent(in) :: full
+      integer :: split
+      integer :: nnod
+
+      nnod = 0
+#ifdef VAR_MPI
+      nnod = infpar%lg_nodtot
+#endif
+
+      split = full/int(sqrt(float(nnod))+2)
+
+   end function get_split_scheme_0
+
+   subroutine simulate_intloop_and_get_worksize(maxint,nb,nbg,nba,bs,intspec,setting)
+      implicit none
+      integer(kind=long), intent(out) :: maxint
+      integer,intent(in) :: nb,nbg,nba,bs
+      type(lssetting),intent(inout) :: setting
+      Character,intent(in) :: intspec(5)
+      integer :: gb,ab,fg,lg,fa,la
+      integer :: ntiles
+      integer :: starts(4), tdim(4), dims(4), ntpm(4)
+      integer :: ndimA,  ndimB,  ndimC,  ndimD
+      integer :: ndimAs, ndimBs, ndimCs, ndimDs
+      integer :: startA, startB, startC, startD
+      integer :: nbtchsg, nbtchsa
+      integer :: i,nba1,nbg1,as,gs
+
+      nbtchsa = nb / nba
+      if( mod( nb, nba ) > 0 ) nbtchsa = nbtchsa + 1
+      nbtchsg = nb / nbg
+      if( mod( nb, nbg ) > 0 ) nbtchsg = nbtchsg + 1
+
+      nba1 = nba
+      nbg1 = nbg
+
+      maxint = 0
+      !simulate loop
+      do gb=1,nbtchsg
+
+         !short hand notation
+         fg = 1 + (gb-1)*nbg
+         lg = nb - fg + 1
+         if( lg >= nbg )then
+            lg = nbg
+         endif
+
+         if( lg > bs )then
+            gs = bs
+         else
+            gs = lg
+         endif
+
+
+         do ab=1,nbtchsa
+            !short hand notation
+            fa = 1 + (ab-1)*nba
+            la = nb - fa + 1
+            if( la >= nba )then
+               la = nba
+            endif
+
+            if( la > bs )then
+               as = bs
+            else
+               as = la
+            endif
+
+            dims = [nb,nb,la,lg]
+            tdim = [bs,bs,as,gs]
+
+            call tensor_get_ntpm(dims,tdim,4,ntpm,ntiles = ntiles)
+
+            do i = 1, ntiles
+
+               call get_midx(i,starts,ntpm,4)
+
+               ndimA  = dims(1)
+               ndimB  = dims(2)
+               ndimC  = dims(3)
+               ndimD  = dims(4)
+
+               startA = 1  + (starts(1)-1)*tdim(1)
+               startB = 1  + (starts(2)-1)*tdim(2)
+               startC = fa + (starts(3)-1)*tdim(3)
+               startD = fg + (starts(4)-1)*tdim(4)
+
+               call II_GET_ERI_INTEGRALBLOCK_INQUIRE(DECinfo%output,DECinfo%output,setting,&
+                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                  & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC)
+
+               maxint = max(maxint,(i8*ndimAs*ndimBs)*ndimCs*ndimDs)
+
+            enddo
+         enddo
+      enddo
+   end subroutine simulate_intloop_and_get_worksize
+
 
 end module cc_tools_module
