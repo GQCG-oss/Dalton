@@ -1,0 +1,2699 @@
+ THIS IS A DEBUG BUILD
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+  
+      This is output from LSDALTON 2014.0
+  
+  
+      IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
+      THE FOLLOWING PAPER SHOULD BE CITED:
+      
+      K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+      L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+      P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+      J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+      L. Ferrighi, H. Fliegl, L. Frediani, K. Hald,
+      A. Halkier, C. Haettig, H. Heiberg,
+      T. Helgaker, A. C. Hennum, H. Hettema,
+      E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+      M. F. Iozzi, B. Jansik, H. J. Aa. Jensen,
+      D. Jonsson, P. Joergensen, J. Kauczor,
+      S. Kirpekar, T. Kjaergaard, W. Klopper,
+      S. Knecht, R. Kobayashi, H. Koch, J. Kongsted,
+      A. Krapp, K. Kristensen, A. Ligabue,
+      O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+      C. Neiss, C. B. Nielsen, P. Norman,
+      J. Olsen, J. M. H. Olsen, A. Osted,
+      M. J. Packer, F. Pawlowski, T. B. Pedersen,
+      P. F. Provasi, S. Reine, Z. Rinkevicius,
+      T. A. Ruden, K. Ruud, V. Rybkin,
+      P. Salek, C. C. M. Samson, A. Sanchez de Meras,
+      T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
+      K. Sneskov, A. H. Steindal, K. O. Sylvester-Hvid,
+      P. R. Taylor, A. M. Teale, E. I. Tellgren,
+      D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+      O. Vahtras, M. A. Watson, D. J. D. Wilson,
+      M. Ziolkowski, and H. AAgren,
+      "The Dalton quantum chemistry program system",
+      WIREs Comput. Mol. Sci. (doi: 10.1002/wcms.1172)
+  
+  
+                                                
+      LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
+      ----------------------------------------------------------------------------
+      Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)
+      Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
+      Sonia Coriani,           University of Trieste,     Italy     (response)
+      Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
+      Trygve Helgaker,         University of Oslo,        Norway    (supervision)
+      Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)
+      Robert Izsak,            University of Oslo,        Norway    (ADMM)
+      Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)
+      Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
+      Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)
+      Patrick Merlot,          University of Oslo,        Norway    (ADMM)
+      Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
+      Jeppe Olsen,             Aarhus University,         Denmark   (supervision)
+      Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)
+      Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
+      Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
+      Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)
+      Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
+      Mark Watson,             University of Oslo,        Norway    (FMM)
+      Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
+  
+  
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     energies and properties using various electronic structure models.
+     The authors accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://daltonprogram.org"
+     for further information.
+  
+  
+ Who compiled             | tkjaer
+ Host                     | localhost.localdomain
+ System                   | Linux-3.16.6-200.fc20.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 14.0.3 20140422
+ C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
+ Static linking           | OFF
+ Last Git revision        | 0afe41ccac65e70ea52f4e91c5c369c73d67ec73
+ Git branch               | master
+ Configuration time       | 2014-11-10 10:43:04.083917
+
+
+             Input processing for the direct dynamics module
+             -----------------------------------------------
+
+
+
+ =====================================================
+    -----------------------------------------------
+      Calculation of classical trajectories using
+      direct ab initio molecular dynamics (AIMD)
+    -----------------------------------------------
+ =====================================================
+
+ Verlet algorithm (1st order) will be used.
+ Num. integ. step size  :    0.10000
+ Max # of iterations    :          2
+ Velocities have been explicitly specified.
+ Random seed:                   398465
+
+Start simulation
+     Date and time (Linux)  : Mon Nov 10 12:16:03 2014
+     Host name              : localhost.localdomain                   
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  STO-3G Aux=6-31G**                      
+  H20 trajectory                          
+                                          
+  Atomtypes=2                                                 
+  Charge=8.0 Atoms=1                                          
+  O  2.611850679414D-03   1.390169353183D-01   0.000000000000D
+  Charge=1.0 Atoms=2                                          
+  H   1.267233393399D+00  -1.086700743158D+00   0.000000000000
+  H  -1.308685358905D+00  -1.119598894475D+00   0.000000000000
+                      
+ -----------------------------------------
+          PRINTING THE LSDALTON.INP FILE 
+ -----------------------------------------
+                      
+  **GENERAL                                                                                           
+  .TIME                                                                                               
+  .NOGCBASIS                                                                                          
+  **INTEGRALS                                                                                         
+  .DENSFIT                                                                                            
+  **DYNAMI                                                                                            
+  .NUMTRA                                                                                             
+  1                                                                                                   
+  .VERLET                                                                                             
+  .TIMESTEP                                                                                           
+  0.1                                                                                                 
+  .MAX ITER                                                                                           
+  2                                                                                                   
+  .MWVEL                                                                                              
+  .VELOCI                                                                                             
+  3                                                                                                   
+  -6.608362194660D-2   -3.062517636631D-3    4.547762402073D-2                                        
+  -1.933563923674D-2    5.775468947979D-2   -2.503355504136D-2                                        
+   3.562796972853D-2   -5.264298483819D-2    1.097349580796D-2                                        
+  **WAVE FUNCTIONS                                                                                    
+  .DFT                                                                                                
+  PBE                                                                                                 
+  *DENSOPT                                                                                            
+  .ARH FULL                                                                                           
+  .RESTART                                                                                            
+  .CONVTHR                                                                                            
+  5.0d-6                                                                                              
+  *DFT INPUT                                                                                          
+  .GRID TYPE                                                                                          
+  LMG BECKE                                                                                           
+  .DFT-D3BJ                                                                                           
+  *END OF INPUT                                                                                       
+  
+  MOLPRINT IS SET TO       0
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates:  9
+   Written in atomic units    
+ 
+   1   O        x      0.0026118507
+   2            y      0.1390169353
+   3            z      0.0000000000
+ 
+   4   H        x      1.2672333934
+   5            y     -1.0867007432
+   6            z      0.0000000000
+ 
+   7   H        x     -1.3086853589
+   8            y     -1.1195988945
+   9            z      0.0000000000
+ 
+ 
+ BASISSETLIBRARY  : REGULAR  
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  STO-3G                                            
+  CHARGES:    8.0000    1.0000
+                      
+ BASISSETLIBRARY  : AUXILIARY
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  6-31G**                                           
+  CHARGES:    8.0000    1.0000
+                      
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
+   
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/DebugMasterBranch/build-debug/basis/STO-3G
+   
+  CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
+   
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/DebugMasterBranch/build-debug/basis/6-31G**
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+ Molecular Charge                    :    0.0000
+    Regular basisfunctions             :        7
+    Auxiliary basisfunctions           :       24
+    Valence basisfunctions             :        0
+    Primitive Regular basisfunctions   :       21
+    Primitive Auxiliary basisfunctions :       41
+    Primitive Valence basisfunctions   :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis      Auxiliarybasisset   Phantom   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   8.000  STO-3G        6-31G**                 F             15           5
+     2   1.000  STO-3G        6-31G**                 F              3           1
+     3   1.000  STO-3G        6-31G**                 F              3           1
+                      
+ The cartesian centers in Atomic units. 
+  ATOM  NAME  ISOTOPE            X                 Y                 Z     
+     1  O           1        0.00261185        0.13901694        0.00000000
+     2  H           1        1.26723339       -1.08670074        0.00000000
+     3  H           1       -1.30868536       -1.11959889        0.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      3
+  THE  REGULAR   is on R =   1
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 O      8.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      2 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+      3 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+---------------------------------------------------------------------
+total         10                               21        7
+---------------------------------------------------------------------
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      3
+  THE  AUXILIARY is on R =   2
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 O      8.000 6-31G**                   27       14 [10s4p1d|3s2p1d]                             
+      2 H      1.000 6-31G**                    7        5 [4s1p|2s1p]                                  
+      3 H      1.000 6-31G**                    7        5 [4s1p|2s1p]                                  
+---------------------------------------------------------------------
+total         10                               41       24
+---------------------------------------------------------------------
+                      
+ Configuration:
+ ==============
+    This is a Single core calculation. (no OpenMP)
+    This is a serial calculation (no MPI)
+ 
+     This is a DFT calculation of type: PBE
+ Weighted mixed functional:
+                      Pbex:    1.00000
+                      PBEC:    1.00000
+   
+  The Exchange-Correlation Grid specifications:
+  Radial Quadrature : LMG scheme
+                      Radial grid as proposed by R. Lindh, P.A. Malmqvist
+                      and L. Gagliardi. Theor. Chem. Acc. (2001) 106, 178
+  Space partitioning: Becke partitioning scheme with atomic size correction
+                      J. Chem. Phys. (1988) vol 88 page 2547
+ 
+  We use grid pruning according to Mol. Phys. (1993) vol 78 page 997
+ 
+     DFT LSint Radial integration threshold:   0.5012D-13
+     DFT LSint integration order range     :   [  5:  35]
+     Hardness of the partioning function   :   3
+     DFT LSint screening thresholds        :   0.10D-08   0.20D-09   0.20D-11
+     Threshold for number of electrons     :   0.10D-02
+     The Exact Exchange Factor             : 0.0000D+00
+ 
+   You have requested Augmented Roothaan-Hall optimization
+   => explicit averaging is turned off!
+ 
+Expand trust radius if ratio is larger than:            0.75
+Contract trust radius if ratio is smaller than:         0.25
+On expansion, trust radius is expanded by a factor      1.20
+On contraction, trust radius is contracted by a factor  0.70
+ 
+Density subspace min. method    : None                    
+Density optimization : Augmented RH optimization          
+ 
+ Maximum size of Fock/density queue in averaging:           7
+ 
+Convergence threshold for gradient:   0.50E-05
+We perform the calculation in the standard input basis
+ 
+    The Overall Screening threshold is set to              :  1.0000E-08
+    The Screening threshold used for Coulomb               :  1.0000E-10
+    The Screening threshold used for Exchange              :  1.0000E-08
+    The Screening threshold used for One-electron operators:  1.0000E-15
+ The SCF Convergence Criteria is applied to the gradnorm in OAO basis
+ 
+ End of configuration!
+ 
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359827670
+ >>>  CPU Time used in *INPUT is   0.02 seconds
+ >>> wall Time used in *INPUT is   0.02 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>>  CPU Time used in OVERLAP is   0.00 seconds
+ >>> wall Time used in OVERLAP is   0.00 seconds
+ >>>  CPU Time used in *S is   0.03 seconds
+ >>> wall Time used in *S is   0.03 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in *H1 is   0.01 seconds
+ >>> wall Time used in *H1 is   0.00 seconds
+ 
+ First density: Atoms in molecule guess
+ 
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.01 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.2892408567784     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.2892408567784     
+Total Number of grid points:       39460
+ >>>  CPU Time used in Boxify is   0.03 seconds
+ >>> wall Time used in Boxify is   0.03 seconds
+ 
+  Max allocated memory, Grid                    1.776 MB
+ 
+ >>>  CPU Time used in gridgeneration2 is   0.08 seconds
+ >>> wall Time used in gridgeneration2 is   0.08 seconds
+  KS electrons/energy:    9.99999967969819   -9.27529220996694 rel.err:-0.32E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359827670
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.60 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.61 seconds
+  Iteration 0 energy:  -78.3293614322063     
+ 
+Max no. of matrices allocated in Level 2 / get_initial_dens:          9
+ >>>  CPU Time used in *START is   0.62 seconds
+ >>> wall Time used in *START is   0.62 seconds
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG is   0.00 seconds
+ >>> wall Time used in LWDIAG is   0.00 seconds
+Matrix S     has nnz=        26 sparsity:     55.102 %
+Matrix AO D  has nnz=        37 sparsity:     75.510 %
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  5.000000000000000E-006
+ >>>  CPU Time used in INIT SCF is   0.00 seconds
+ >>> wall Time used in INIT SCF is   0.00 seconds
+** Get Fock matrix number   1
+ >>>  CPU Time used in GALPHA is   0.01 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.01 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.8088610754718     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.8088610754718     
+  KS electrons/energy:    9.99999980479410   -9.40721620990998 rel.err:-0.20E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359827670
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.57 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.57 seconds
+ >>>  CPU Time used in FCK_FO is   0.58 seconds
+ >>> wall Time used in FCK_FO is   0.58 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1    -76.0998042112    0.00000000000    0.00      0.00000    0.00    1.20E-01  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        37 sparsity:     75.510 %
+Matrix AO F  has nnz=        37 sparsity:     75.510 %
+Matrix OAO D has nnz=        37 sparsity:     75.510 %
+Matrix OAO F has nnz=        37 sparsity:     75.510 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.119577585964699     
+ Number of densities in queue:           0
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.351899 au
+   -E(HOMO):                     -0.036258 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.388157 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0540302201 (mu =       0.00, xmax =   0.637315E-01, xnorm =   0.157610E+00, THR =   0.119578E-02)
+  Error of red space iteration  2:        0.0456502085 (mu =       0.00, xmax =   0.643888E-01, xnorm =   0.161448E+00, THR =   0.119578E-02)
+  Error of red space iteration  3:        0.0059154974 (mu =       0.00, xmax =   0.649854E-01, xnorm =   0.174579E+00, THR =   0.119578E-02)
+  Error of red space iteration  4:        0.0001044199 (mu =       0.00, xmax =   0.647345E-01, xnorm =   0.177560E+00, THR =   0.119578E-02)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver is   0.00 seconds
+ >>> wall Time used in CROP solver is   0.00 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    51
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.58 seconds
+ >>> wall Time used in SCF iteration is   0.58 seconds
+** Get Fock matrix number   2
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.01 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    45.7428811216091     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -45.7428811216091     
+  KS electrons/energy:    9.99999970872280   -9.31471332495542 rel.err:-0.29E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359827670
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.57 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.58 seconds
+ 0.60000 (xnorm)    0.06473    0.17756    0.00        0.0791    0.0000         0          1    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  0.600000000000000     
+  0.420000000000000     
+ >>>  CPU Time used in FCK_FO is   0.58 seconds
+ >>> wall Time used in FCK_FO is   0.59 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  2    -76.1014358343   -0.00163162309    0.00      0.00000    0.00    1.20E-01  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        37 sparsity:     75.510 %
+Matrix AO F  has nnz=        37 sparsity:     75.510 %
+Matrix OAO D has nnz=        37 sparsity:     75.510 %
+Matrix OAO F has nnz=        37 sparsity:     75.510 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.120365701512225     
+ Number of densities in queue:           1
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.316473 au
+   -E(HOMO):                     -0.142196 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.458669 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0361721624 (mu =       0.00, xmax =   0.248699E-01, xnorm =   0.653826E-01, THR =   0.120366E-02)
+  Error of red space iteration  2:        0.0139501721 (mu =       0.00, xmax =   0.337027E-01, xnorm =   0.894209E-01, THR =   0.120366E-02)
+  Error of red space iteration  3:        0.0143901124 (mu =       0.00, xmax =   0.325551E-01, xnorm =   0.878799E-01, THR =   0.120366E-02)
+  Error of red space iteration  4:        0.0003656447 (mu =       0.00, xmax =   0.315464E-01, xnorm =   0.878441E-01, THR =   0.120366E-02)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver is   0.00 seconds
+ >>> wall Time used in CROP solver is   0.00 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    65
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.59 seconds
+ >>> wall Time used in SCF iteration is   0.59 seconds
+** Get Fock matrix number   3
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.00 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3440772016038     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3440772016038     
+  KS electrons/energy:    9.99999976108370   -9.36818133930238 rel.err:-0.24E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359827670
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.57 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.57 seconds
+ 0.42000 (xnorm)    0.03155    0.08784    0.00        0.9314    0.9704         1          2    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.20000000000000      h(old), h(new):
+  0.420000000000000       0.504000000000000     
+ >>>  CPU Time used in FCK_FO is   0.58 seconds
+ >>> wall Time used in FCK_FO is   0.58 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  3    -76.1110415813   -0.00960574698    0.00      0.00000    0.00    1.04E-02  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        37 sparsity:     75.510 %
+Matrix AO F  has nnz=        37 sparsity:     75.510 %
+Matrix OAO D has nnz=        37 sparsity:     75.510 %
+Matrix OAO F has nnz=        37 sparsity:     75.510 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.039321414357278E-002
+ Number of densities in queue:           2
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.341943 au
+   -E(HOMO):                     -0.082154 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.424097 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0131572263 (mu =       0.00, xmax =   0.110545E-02, xnorm =   0.271720E-02, THR =   0.103932E-03)
+  Error of red space iteration  2:        0.0006070140 (mu =       0.00, xmax =   0.245226E-02, xnorm =   0.634514E-02, THR =   0.103932E-03)
+  Error of red space iteration  3:        0.0001040296 (mu =       0.00, xmax =   0.239483E-02, xnorm =   0.628428E-02, THR =   0.103932E-03)
+  Error of red space iteration  4:        0.0000218662 (mu =       0.00, xmax =   0.239629E-02, xnorm =   0.627266E-02, THR =   0.103932E-03)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver is   0.00 seconds
+ >>> wall Time used in CROP solver is   0.00 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    62
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.58 seconds
+ >>> wall Time used in SCF iteration is   0.58 seconds
+** Get Fock matrix number   4
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.2999146461769     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.2999146461769     
+  KS electrons/energy:    9.99999975758794   -9.36384791909600 rel.err:-0.24E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359827670
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.57 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.57 seconds
+ 0.50400 (xnorm)    0.00240    0.00627    0.00        0.9725    0.8948         2          3    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO is   0.58 seconds
+ >>> wall Time used in FCK_FO is   0.58 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  4    -76.1111041494   -0.00006256807    0.00      0.00000    0.00    3.04E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        37 sparsity:     75.510 %
+Matrix AO F  has nnz=        37 sparsity:     75.510 %
+Matrix OAO D has nnz=        37 sparsity:     75.510 %
+Matrix OAO F has nnz=        37 sparsity:     75.510 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  3.039779540630211E-004
+ Number of densities in queue:           3
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.339960 au
+   -E(HOMO):                     -0.086443 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426404 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0003344805 (mu =       0.00, xmax =   0.350487E-04, xnorm =   0.109415E-03, THR =   0.303978E-06)
+  Error of red space iteration  2:        0.0000343433 (mu =       0.00, xmax =   0.806403E-04, xnorm =   0.193060E-03, THR =   0.303978E-06)
+  Error of red space iteration  3:        0.0000277444 (mu =       0.00, xmax =   0.823381E-04, xnorm =   0.188800E-03, THR =   0.303978E-06)
+  Error of red space iteration  4:        0.0000053914 (mu =       0.00, xmax =   0.837760E-04, xnorm =   0.188077E-03, THR =   0.303978E-06)
+Error went down by   84.30%
+  Error of red space iteration  5:        0.0000005010 (mu =       0.00, xmax =   0.844995E-04, xnorm =   0.187796E-03, THR =   0.303978E-06)
+  Error of red space iteration  6:        0.0000002951 (mu =       0.00, xmax =   0.845345E-04, xnorm =   0.187767E-03, THR =   0.303978E-06)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver is   0.01 seconds
+ >>> wall Time used in CROP solver is   0.01 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    81
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.59 seconds
+ >>> wall Time used in SCF iteration is   0.59 seconds
+** Get Fock matrix number   5
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.00 seconds
+ >>> wall Time used in FIT-J is   0.01 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3010853515131     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3010853515131     
+  KS electrons/energy:    9.99999975769670   -9.36396431155233 rel.err:-0.24E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359827670
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.58 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.58 seconds
+ 0.60000 (xnorm)    0.00008    0.00019    0.00        0.9973    0.9274         3          4    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO is   0.58 seconds
+ >>> wall Time used in FCK_FO is   0.59 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  5    -76.1111042043   -0.00000005491    0.00      0.00000    0.00    1.61E-05  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        37 sparsity:     75.510 %
+Matrix AO F  has nnz=        37 sparsity:     75.510 %
+Matrix OAO D has nnz=        37 sparsity:     75.510 %
+Matrix OAO F has nnz=        37 sparsity:     75.510 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.608074364967547E-005
+ Number of densities in queue:           4
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.340013 au
+   -E(HOMO):                     -0.086330 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426343 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0000122811 (mu =       0.00, xmax =   0.562881E-05, xnorm =   0.150866E-04, THR =   0.160807E-07)
+  Error of red space iteration  2:        0.0000014313 (mu =       0.00, xmax =   0.701031E-05, xnorm =   0.162350E-04, THR =   0.160807E-07)
+  Error of red space iteration  3:        0.0000009060 (mu =       0.00, xmax =   0.685687E-05, xnorm =   0.161286E-04, THR =   0.160807E-07)
+  Error of red space iteration  4:        0.0000003244 (mu =       0.00, xmax =   0.690631E-05, xnorm =   0.161073E-04, THR =   0.160807E-07)
+Error went down by   77.34%
+  Error of red space iteration  5:        0.0000000392 (mu =       0.00, xmax =   0.695192E-05, xnorm =   0.161453E-04, THR =   0.160807E-07)
+  Error of red space iteration  6:        0.0000000038 (mu =       0.00, xmax =   0.695389E-05, xnorm =   0.161474E-04, THR =   0.160807E-07)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver is   0.01 seconds
+ >>> wall Time used in CROP solver is   0.01 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    80
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.59 seconds
+ >>> wall Time used in SCF iteration is   0.59 seconds
+** Get Fock matrix number   6
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.00 seconds
+ >>> wall Time used in FIT-J is   0.01 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3011175831601     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3011175831601     
+  KS electrons/energy:    9.99999975769382   -9.36396726507741 rel.err:-0.24E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359827670
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.58 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.58 seconds
+ 0.60000 (xnorm)    0.00001    0.00002    0.00        0.9620    0.9074         4          5    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO is   0.59 seconds
+ >>> wall Time used in FCK_FO is   0.59 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  6    -76.1111042045   -0.00000000024    0.00      0.00000    0.00    1.57E-06  ###
+SCF converged in      6 iterations
+ >>>  CPU Time used in **ITER is   3.52 seconds
+ >>> wall Time used in **ITER is   3.53 seconds
+ 
+Total no. of matmuls in SCF optimization:        436
+ 
+ Number of occupied orbitals:           5
+ Number of virtual orbitals:           2
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+Calculation of occupied orbital energies converged in     4 iterations!
+ 
+Calculation of virtual orbital energies converged in     2 iterations!
+ 
+    E(LUMO):                         0.340015 au
+   -E(HOMO):                        -0.208570 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.548585 au
+ 
+ >>>  CPU Time used in HL GAP is   0.63 seconds
+ >>> wall Time used in HL GAP is   0.63 seconds
+ 
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.00163162309    0.0000    0.0000    0.0000000
+  3   -0.00960574698    0.0000    0.0000    0.0000000
+  4   -0.00006256807    0.0000    0.0000    0.0000000
+  5   -0.00000005491    0.0000    0.0000    0.0000000
+  6   -0.00000000024    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 OAO Gradient norm
+======================================================================
+    1           -76.09980421122162397296      0.119577585964699D+00
+    2           -76.10143583431404579187      0.120365701512225D+00
+    3           -76.11104158129795393961      0.103932141435728D-01
+    4           -76.11110414936530332852      0.303977954063021D-03
+    5           -76.11110420427476697114      0.160807436496755D-04
+    6           -76.11110420451389302343      0.157180125955380D-05
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final DFT energy:                      -76.111104204514
+      Nuclear repulsion:                       9.332109689752
+      Electronic energy:                     -85.443213894266
+ 
+
+
+                          Initial geometry (au)
+                          ---------------------
+
+ O        0.0026118507            0.1390169353            0.0000000000
+ H        1.2672333934           -1.0867007432            0.0000000000
+ H       -1.3086853589           -1.1195988945            0.0000000000
+
+
+
+                         Initial velocities (au)
+                         -----------------------
+
+ O       -0.0003870106           -0.0000179353            0.0002663341
+ H       -0.0004511136            0.0013474561           -0.0005840498
+ H        0.0008312247           -0.0012281966            0.0002560191
+
+ 
+ 
+ 
+        *************************************************************
+        *            MOLECULAR GRADIENT RESULTS (in a.u.)           *
+        *************************************************************
+ 
+ 
+
+
+                   nuclear rep contribution to gradient
+                   ------------------------------------
+
+   O        0.1050283910           -3.4719787196            0.0000000000
+   H       -2.0027565786            1.7931852118            0.0000000000
+   H        1.8977281876            1.6787935079            0.0000000000
+ >>>  CPU Time used in nn-grad is   0.00 seconds
+ >>> wall Time used in nn-grad is   0.00 seconds
+
+
+                     Coulomb contribution to gradient
+                     --------------------------------
+
+   O       -0.0822521252           -3.5909393165           -0.0000000000
+   H       -1.3071184446            1.7619334335           -0.0000000000
+   H        1.3893705698            1.8290058830            0.0000000000
+
+
+                    exchange contribution to gradient
+                    ---------------------------------
+
+   O        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+
+
+                   twoElectron contribution to gradient
+                   ------------------------------------
+
+   O       -0.0822521252           -3.5909393165           -0.0000000000
+   H       -1.3071184446            1.7619334335           -0.0000000000
+   H        1.3893705698            1.8290058830            0.0000000000
+ >>>  CPU Time used in two-grad is   0.02 seconds
+ >>> wall Time used in two-grad is   0.02 seconds
+
+
+                   nuc-el attr contribution to gradient
+                   ------------------------------------
+
+   O       -0.0045748063            7.5632301277            0.0000000000
+   H        3.4973609660           -3.7981509525           -0.0000000000
+   H       -3.4927861597           -3.7650791752           -0.0000000000
+ >>>  CPU Time used in ne-grad is   0.01 seconds
+ >>> wall Time used in ne-grad is   0.01 seconds
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359827670
+ >>>  CPU Time used in II_get_xc_geoderiv_molgrad is   1.05 seconds
+ >>> wall Time used in II_get_xc_geoderiv_molgrad is   1.05 seconds
+
+
+                  exchange-corr contribution to gradient
+                  --------------------------------------
+
+   O        0.0052195758            0.3442896266           -0.0000000000
+   H        0.1285298127           -0.1702082562           -0.0000000000
+   H       -0.1337486312           -0.1740842950           -0.0000000000
+ >>>  CPU Time used in xc-grad is   1.05 seconds
+ >>> wall Time used in xc-grad is   1.05 seconds
+
+
+                     kinetic contribution to gradient
+                     --------------------------------
+
+   O        0.0088578435           -0.7690147270           -0.0000000000
+   H       -0.3593516079            0.3905545324           -0.0000000000
+   H        0.3504937644            0.3784601947            0.0000000000
+ >>>  CPU Time used in kin-grad is   0.00 seconds
+ >>> wall Time used in kin-grad is   0.00 seconds
+
+
+                  reorthonomal contribution to gradient
+                  -------------------------------------
+
+   O        0.0009386960           -0.2549878831           -0.0000000000
+   H       -0.0764458572            0.1287104062            0.0000000000
+   H        0.0755071612            0.1262774769            0.0000000000
+ >>>  CPU Time used in reorth-g is   0.00 seconds
+ >>> wall Time used in reorth-g is   0.00 seconds
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+   O        0.0332175748           -0.1794008919           -0.0000000000
+   H       -0.1197817096            0.1060243751           -0.0000000000
+   H        0.0865648921            0.0733735922           -0.0000000000
+ 
+ 
+ RMS gradient norm (au):      0.0892898388819192
+ 
+ 
+
+ ----------------------------------
+   Trajectory Step Number       0
+ ----------------------------------
+
+ Current time       :    0.00000
+
+
+                          Current geometry (au)
+                          ---------------------
+
+ O        0.0026118507            0.1390169353            0.0000000000
+ H        1.2672333934           -1.0867007432            0.0000000000
+ H       -1.3086853589           -1.1195988945            0.0000000000
+
+
+
+                         Energy conservation (au)
+                         ------------------------
+
+ Total energy:    -76.103633   Potential energy:    -76.111104   Kinetic energy:      0.007471
+                               Energy conserv.:     0.00000000
+                               Temperature:    52.42506030
+
+
+                    Angular momentum conservation (au)
+                    ----------------------------------
+
+ J_tot:    8.8575053829   J_x:    1.7189529687   J_y:   -1.9549799481   J_z:    8.4663248049
+                          Angular moment conserv.:   0.00000000000000
+ 
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>>  CPU Time used in OVERLAP is   0.00 seconds
+ >>> wall Time used in OVERLAP is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ 
+ *** RESTART FROM DENSITY ON DISK - READ FROM dens.restart  ***
+ 
+ Basis check ok: Using standard basis consistently
+ Performing McWeeny purification for molecular gradient run.
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG is   0.00 seconds
+ >>> wall Time used in LWDIAG is   0.00 seconds
+Matrix S     has nnz=        31 sparsity:     63.265 %
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  5.000000000000000E-006
+ >>>  CPU Time used in INIT SCF is   0.00 seconds
+ >>> wall Time used in INIT SCF is   0.00 seconds
+** Get Fock matrix number   1
+ >>>  CPU Time used in GALPHA is   0.01 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.00 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3062242538489     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3062242538489     
+Total Number of grid points:       39459
+ >>>  CPU Time used in Boxify is   0.03 seconds
+ >>> wall Time used in Boxify is   0.03 seconds
+ 
+  Max allocated memory, Grid                    1.776 MB
+ 
+ >>>  CPU Time used in gridgeneration2 is   0.08 seconds
+ >>> wall Time used in gridgeneration2 is   0.08 seconds
+  KS electrons/energy:    9.99999978769184   -9.36448458833122 rel.err:-0.21E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359829771
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.64 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.64 seconds
+ >>>  CPU Time used in FCK_FO is   0.65 seconds
+ >>> wall Time used in FCK_FO is   0.65 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1    -76.1105880532    0.00000000000    0.00      0.00000    0.00    1.58E-03  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+Matrix AO F  has nnz=        49 sparsity:    100.000 %
+Matrix OAO D has nnz=        49 sparsity:    100.000 %
+Matrix OAO F has nnz=        49 sparsity:    100.000 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.578514373804801E-003
+ Number of densities in queue:           0
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.340352 au
+   -E(HOMO):                     -0.086544 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426896 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0025328183 (mu =       0.00, xmax =   0.860135E-03, xnorm =   0.233973E-02, THR =   0.157851E-04)
+  Error of red space iteration  2:        0.0005158933 (mu =       0.00, xmax =   0.926655E-03, xnorm =   0.240145E-02, THR =   0.157851E-04)
+  Error of red space iteration  3:        0.0001320436 (mu =       0.00, xmax =   0.910729E-03, xnorm =   0.236838E-02, THR =   0.157851E-04)
+  Error of red space iteration  4:        0.0000323733 (mu =       0.00, xmax =   0.906428E-03, xnorm =   0.235493E-02, THR =   0.157851E-04)
+Error went down by   93.72%
+  Error of red space iteration  5:        0.0000108666 (mu =       0.00, xmax =   0.904535E-03, xnorm =   0.235054E-02, THR =   0.157851E-04)
+Newton equations converged in  5 iterations!
+ >>>  CPU Time used in CROP solver is   0.00 seconds
+ >>> wall Time used in CROP solver is   0.00 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    53
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.66 seconds
+ >>> wall Time used in SCF iteration is   0.66 seconds
+** Get Fock matrix number   2
+ >>>  CPU Time used in GALPHA is   0.01 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.00 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3086626433024     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3086626433024     
+  KS electrons/energy:    9.99999978767957   -9.36471345535307 rel.err:-0.21E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359829771
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.56 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.56 seconds
+ 0.60000 (xnorm)    0.00090    0.00235    0.00        0.8701    0.0000         0          1    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.20000000000000      h(old), h(new):
+  0.600000000000000       0.720000000000000     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO is   0.57 seconds
+ >>> wall Time used in FCK_FO is   0.57 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  2    -76.1105910910   -0.00000303773    0.00      0.00000    0.00    4.00E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+Matrix AO F  has nnz=        49 sparsity:    100.000 %
+Matrix OAO D has nnz=        49 sparsity:    100.000 %
+Matrix OAO F has nnz=        49 sparsity:    100.000 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  3.999405137878288E-004
+ Number of densities in queue:           1
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.340511 au
+   -E(HOMO):                     -0.086306 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426817 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0004617626 (mu =       0.00, xmax =   0.203609E-03, xnorm =   0.432818E-03, THR =   0.399941E-06)
+  Error of red space iteration  2:        0.0001390140 (mu =       0.00, xmax =   0.200981E-03, xnorm =   0.440317E-03, THR =   0.399941E-06)
+  Error of red space iteration  3:        0.0000177649 (mu =       0.00, xmax =   0.214492E-03, xnorm =   0.470243E-03, THR =   0.399941E-06)
+  Error of red space iteration  4:        0.0000083852 (mu =       0.00, xmax =   0.214670E-03, xnorm =   0.471956E-03, THR =   0.399941E-06)
+Error went down by   93.97%
+  Error of red space iteration  5:        0.0000013525 (mu =       0.00, xmax =   0.215166E-03, xnorm =   0.472427E-03, THR =   0.399941E-06)
+  Error of red space iteration  6:        0.0000008706 (mu =       0.00, xmax =   0.215270E-03, xnorm =   0.472519E-03, THR =   0.399941E-06)
+  Error of red space iteration  7:        0.0000000153 (mu =       0.00, xmax =   0.215401E-03, xnorm =   0.472610E-03, THR =   0.399941E-06)
+Newton equations converged in  7 iterations!
+ >>>  CPU Time used in CROP solver is   0.01 seconds
+ >>> wall Time used in CROP solver is   0.01 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    91
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.58 seconds
+ >>> wall Time used in SCF iteration is   0.58 seconds
+** Get Fock matrix number   3
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.01 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3066318683266     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3066318683266     
+  KS electrons/energy:    9.99999978761227   -9.36452653516489 rel.err:-0.21E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359829771
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.56 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.56 seconds
+ 0.60000 (xnorm)    0.00022    0.00047    0.00        0.5947    0.5786         1          2    %%%
+ Trust radius based on max norm!
+ % trust-radius ok, h =   0.600000000000000     
+ >>>  CPU Time used in FCK_FO is   0.57 seconds
+ >>> wall Time used in FCK_FO is   0.57 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  3    -76.1105911982   -0.00000010725    0.00      0.00000    0.00    1.95E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+Matrix AO F  has nnz=        49 sparsity:    100.000 %
+Matrix OAO D has nnz=        49 sparsity:    100.000 %
+Matrix OAO F has nnz=        49 sparsity:    100.000 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.953355051998861E-004
+ Number of densities in queue:           2
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.340415 au
+   -E(HOMO):                     -0.086506 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426920 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0001030275 (mu =       0.00, xmax =   0.611583E-04, xnorm =   0.141522E-03, THR =   0.195336E-06)
+  Error of red space iteration  2:        0.0000288373 (mu =       0.00, xmax =   0.661560E-04, xnorm =   0.162947E-03, THR =   0.195336E-06)
+  Error of red space iteration  3:        0.0000178752 (mu =       0.00, xmax =   0.681159E-04, xnorm =   0.164827E-03, THR =   0.195336E-06)
+  Error of red space iteration  4:        0.0000019615 (mu =       0.00, xmax =   0.692337E-04, xnorm =   0.165689E-03, THR =   0.195336E-06)
+Error went down by   93.20%
+  Error of red space iteration  5:        0.0000006317 (mu =       0.00, xmax =   0.692281E-04, xnorm =   0.165737E-03, THR =   0.195336E-06)
+  Error of red space iteration  6:        0.0000003783 (mu =       0.00, xmax =   0.693140E-04, xnorm =   0.165922E-03, THR =   0.195336E-06)
+  Error of red space iteration  7:        0.0000000053 (mu =       0.00, xmax =   0.693105E-04, xnorm =   0.165940E-03, THR =   0.195336E-06)
+Newton equations converged in  7 iterations!
+ >>>  CPU Time used in CROP solver is   0.01 seconds
+ >>> wall Time used in CROP solver is   0.01 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    91
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.58 seconds
+ >>> wall Time used in SCF iteration is   0.58 seconds
+** Get Fock matrix number   4
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.00 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3077537697054     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3077537697054     
+  KS electrons/energy:    9.99999978768482   -9.36462883657035 rel.err:-0.21E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359829771
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.56 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.56 seconds
+ 0.60000 (xnorm)    0.00007    0.00017    0.00        0.7581    0.8194         2          3    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.20000000000000      h(old), h(new):
+  0.600000000000000       0.720000000000000     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO is   0.57 seconds
+ >>> wall Time used in FCK_FO is   0.57 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  4    -76.1105912220   -0.00000002375    0.00      0.00000    0.00    5.53E-05  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+Matrix AO F  has nnz=        49 sparsity:    100.000 %
+Matrix OAO D has nnz=        49 sparsity:    100.000 %
+Matrix OAO F has nnz=        49 sparsity:    100.000 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  5.532993823365585E-005
+ Number of densities in queue:           3
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.340459 au
+   -E(HOMO):                     -0.086395 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426855 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0000364442 (mu =       0.00, xmax =   0.122924E-04, xnorm =   0.263215E-04, THR =   0.553299E-07)
+  Error of red space iteration  2:        0.0000061972 (mu =       0.00, xmax =   0.174005E-04, xnorm =   0.399400E-04, THR =   0.553299E-07)
+  Error of red space iteration  3:        0.0000074218 (mu =       0.00, xmax =   0.173557E-04, xnorm =   0.396665E-04, THR =   0.553299E-07)
+  Error of red space iteration  4:        0.0000011455 (mu =       0.00, xmax =   0.178774E-04, xnorm =   0.400875E-04, THR =   0.553299E-07)
+Error went down by   81.52%
+  Error of red space iteration  5:        0.0000001510 (mu =       0.00, xmax =   0.178884E-04, xnorm =   0.400179E-04, THR =   0.553299E-07)
+  Error of red space iteration  6:        0.0000000922 (mu =       0.00, xmax =   0.179049E-04, xnorm =   0.400435E-04, THR =   0.553299E-07)
+  Error of red space iteration  7:        0.0000000010 (mu =       0.00, xmax =   0.179042E-04, xnorm =   0.400398E-04, THR =   0.553299E-07)
+Newton equations converged in  7 iterations!
+ >>>  CPU Time used in CROP solver is   0.01 seconds
+ >>> wall Time used in CROP solver is   0.01 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    90
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.58 seconds
+ >>> wall Time used in SCF iteration is   0.58 seconds
+** Get Fock matrix number   5
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.01 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3074977598265     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3074977598265     
+  KS electrons/energy:    9.99999978766075   -9.36460561522096 rel.err:-0.21E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359829771
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.57 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.57 seconds
+ 0.60000 (xnorm)    0.00002    0.00004    0.00        0.9809    0.9750         3          4    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO is   0.58 seconds
+ >>> wall Time used in FCK_FO is   0.58 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  5    -76.1105912240   -0.00000000207    0.00      0.00000    0.00    1.35E-06  ###
+SCF converged in      5 iterations
+ >>>  CPU Time used in **ITER is   2.97 seconds
+ >>> wall Time used in **ITER is   2.98 seconds
+ 
+Total no. of matmuls in SCF optimization:        867
+ 
+ Number of occupied orbitals:           5
+ Number of virtual orbitals:           2
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+Calculation of occupied orbital energies converged in     5 iterations!
+ 
+Calculation of virtual orbital energies converged in     2 iterations!
+ 
+    E(LUMO):                         0.340451 au
+   -E(HOMO):                        -0.086421 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.426871 au
+ 
+ >>>  CPU Time used in HL GAP is   0.63 seconds
+ >>> wall Time used in HL GAP is   0.63 seconds
+ 
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.00000303773    0.0000    0.0000    0.0000000
+  3   -0.00000010725    0.0000    0.0000    0.0000000
+  4   -0.00000002375    0.0000    0.0000    0.0000000
+  5   -0.00000000207    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 OAO Gradient norm
+======================================================================
+    1           -76.11058805324155684957      0.157851437380480D-02
+    2           -76.11059109097621444562      0.399940513787829D-03
+    3           -76.11059119822243701492      0.195335505199886D-03
+    4           -76.11059122197602277993      0.553299382336558D-04
+    5           -76.11059122404901700065      0.134656030155722D-05
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final DFT energy:                      -76.110591224049
+      Nuclear repulsion:                       9.340359642748
+      Electronic energy:                     -85.450950866797
+ 
+ >>>  CPU Time used in Energy calc. is   3.63 seconds
+ >>> wall Time used in Energy calc. is   3.64 seconds
+ 
+ 
+ 
+        *************************************************************
+        *            MOLECULAR GRADIENT RESULTS (in a.u.)           *
+        *************************************************************
+ 
+ 
+
+
+                   nuclear rep contribution to gradient
+                   ------------------------------------
+
+   O        0.1233393949           -3.4807478473           -0.0052347760
+   H       -2.0142096363            1.7952521676            0.0053821327
+   H        1.8908702414            1.6854956797           -0.0001473567
+ >>>  CPU Time used in nn-grad is   0.00 seconds
+ >>> wall Time used in nn-grad is   0.00 seconds
+
+
+                     Coulomb contribution to gradient
+                     --------------------------------
+
+   O       -0.0764080249           -3.5949404318           -0.0051294492
+   H       -1.3025194539            1.7572576934            0.0043501071
+   H        1.3789274787            1.8376827384            0.0007793421
+
+
+                    exchange contribution to gradient
+                    ---------------------------------
+
+   O        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+
+
+                   twoElectron contribution to gradient
+                   ------------------------------------
+
+   O       -0.0764080249           -3.5949404318           -0.0051294492
+   H       -1.3025194539            1.7572576934            0.0043501071
+   H        1.3789274787            1.8376827384            0.0007793421
+ >>>  CPU Time used in two-grad is   0.02 seconds
+ >>> wall Time used in two-grad is   0.02 seconds
+
+
+                   nuc-el attr contribution to gradient
+                   ------------------------------------
+
+   O       -0.0289664975            7.5761595665            0.0110681543
+   H        3.5029857679           -3.7944445951           -0.0103406300
+   H       -3.4740192704           -3.7817149714           -0.0007275243
+ >>>  CPU Time used in ne-grad is   0.01 seconds
+ >>> wall Time used in ne-grad is   0.01 seconds
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359829771
+ >>>  CPU Time used in II_get_xc_geoderiv_molgrad is   1.04 seconds
+ >>> wall Time used in II_get_xc_geoderiv_molgrad is   1.05 seconds
+
+
+                  exchange-corr contribution to gradient
+                  --------------------------------------
+
+   O        0.0044849564            0.3447704995            0.0004958315
+   H        0.1282563567           -0.1698884722           -0.0004237698
+   H       -0.1327404934           -0.1748849826           -0.0000720848
+ >>>  CPU Time used in xc-grad is   1.04 seconds
+ >>> wall Time used in xc-grad is   1.05 seconds
+
+
+                     kinetic contribution to gradient
+                     --------------------------------
+
+   O        0.0118545345           -0.7707365378           -0.0011382515
+   H       -0.3603466523            0.3906711701            0.0010642357
+   H        0.3484921177            0.3800653678            0.0000740158
+ >>>  CPU Time used in kin-grad is   0.00 seconds
+ >>> wall Time used in kin-grad is   0.00 seconds
+
+
+                  reorthonomal contribution to gradient
+                  -------------------------------------
+
+   O        0.0018057357           -0.2552113034           -0.0003739112
+   H       -0.0765524429            0.1286534551            0.0002925084
+   H        0.0747467072            0.1265578483            0.0000814028
+ >>>  CPU Time used in reorth-g is   0.00 seconds
+ >>> wall Time used in reorth-g is   0.00 seconds
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+   O        0.0361100992           -0.1807060544           -0.0003124022
+   H       -0.1223860608            0.1075014189            0.0003245841
+   H        0.0862767813            0.0732016802           -0.0000122051
+ 
+ 
+ RMS gradient norm (au):      0.0902440471240688
+ 
+ 
+ >>>  CPU Time used in Forces calc. is   1.08 seconds
+ >>> wall Time used in Forces calc. is   1.08 seconds
+ >>>  CPU Time used in LSDALTON RSP is   0.00 seconds
+ >>> wall Time used in LSDALTON RSP is   0.00 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   0.000000000000000E+000    **
+ *****************************************************
+
+
+                            New geometry (au)
+                            -----------------
+
+ O        0.0010021602            0.1389953687            0.0011010617
+ H        1.2659255944           -1.0816233485           -0.0024145423
+ H       -1.3056516197           -1.1250177264            0.0010584182
+
+ >>>  CPU Time used in Integr. step is   4.70 seconds
+ >>> wall Time used in Integr. step is   4.72 seconds
+
+ ----------------------------------
+   Trajectory Step Number       1
+ ----------------------------------
+
+ Current time       :    0.10000
+
+
+                          Current geometry (au)
+                          ---------------------
+
+ O        0.0010021602            0.1389953687            0.0011010617
+ H        1.2659255944           -1.0816233485           -0.0024145423
+ H       -1.3056516197           -1.1250177264            0.0010584182
+
+
+
+                         Energy conservation (au)
+                         ------------------------
+
+ Total energy:    -76.103632   Potential energy:    -76.110591   Kinetic energy:      0.006959
+                               Energy conserv.:     0.00000105
+                               Temperature:    48.83274999
+
+
+                    Angular momentum conservation (au)
+                    ----------------------------------
+
+ J_tot:    8.8575065175   J_x:    1.7189523733   J_y:   -1.9549798225   J_z:    8.4663261418
+                          Angular moment conserv.:   0.00000146883841
+ 
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>>  CPU Time used in OVERLAP is   0.00 seconds
+ >>> wall Time used in OVERLAP is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ 
+ *** RESTART FROM DENSITY ON DISK - READ FROM dens.restart  ***
+ 
+ Basis check ok: Using standard basis consistently
+ Performing McWeeny purification for molecular gradient run.
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG is   0.00 seconds
+ >>> wall Time used in LWDIAG is   0.00 seconds
+Matrix S     has nnz=        31 sparsity:     63.265 %
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  5.000000000000000E-006
+ >>>  CPU Time used in INIT SCF is   0.00 seconds
+ >>> wall Time used in INIT SCF is   0.00 seconds
+** Get Fock matrix number   1
+ >>>  CPU Time used in GALPHA is   0.01 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.02 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3080278058633     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3080278058633     
+Total Number of grid points:       39457
+ >>>  CPU Time used in Boxify is   0.03 seconds
+ >>> wall Time used in Boxify is   0.03 seconds
+ 
+  Max allocated memory, Grid                    1.776 MB
+ 
+ >>>  CPU Time used in gridgeneration2 is   0.08 seconds
+ >>> wall Time used in gridgeneration2 is   0.08 seconds
+  KS electrons/energy:    9.99999980012036   -9.36466744679893 rel.err:-0.20E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359832626
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.64 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.64 seconds
+ >>>  CPU Time used in FCK_FO is   0.65 seconds
+ >>> wall Time used in FCK_FO is   0.65 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1    -76.1104585282    0.00000000000    0.00      0.00000    0.00    1.54E-03  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+Matrix AO F  has nnz=        49 sparsity:    100.000 %
+Matrix OAO D has nnz=        49 sparsity:    100.000 %
+Matrix OAO F has nnz=        49 sparsity:    100.000 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.535106257534525E-003
+ Number of densities in queue:           0
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.340253 au
+   -E(HOMO):                     -0.086437 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426690 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0020605137 (mu =       0.00, xmax =   0.870683E-03, xnorm =   0.231454E-02, THR =   0.153511E-04)
+  Error of red space iteration  2:        0.0003768042 (mu =       0.00, xmax =   0.935270E-03, xnorm =   0.238809E-02, THR =   0.153511E-04)
+  Error of red space iteration  3:        0.0000669839 (mu =       0.00, xmax =   0.924133E-03, xnorm =   0.237211E-02, THR =   0.153511E-04)
+  Error of red space iteration  4:        0.0000093319 (mu =       0.00, xmax =   0.920466E-03, xnorm =   0.236766E-02, THR =   0.153511E-04)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver is   0.00 seconds
+ >>> wall Time used in CROP solver is   0.00 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    46
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.66 seconds
+ >>> wall Time used in SCF iteration is   0.66 seconds
+** Get Fock matrix number   2
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3071217614647     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3071217614647     
+  KS electrons/energy:    9.99999979984797   -9.36459590210702 rel.err:-0.20E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359832626
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.56 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.56 seconds
+ 0.60000 (xnorm)    0.00092    0.00237    0.00        0.8912    0.0000         0          1    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.20000000000000      h(old), h(new):
+  0.600000000000000       0.720000000000000     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO is   0.57 seconds
+ >>> wall Time used in FCK_FO is   0.57 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  2    -76.1104616264   -0.00000309811    0.00      0.00000    0.00    3.27E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+Matrix AO F  has nnz=        49 sparsity:    100.000 %
+Matrix OAO D has nnz=        49 sparsity:    100.000 %
+Matrix OAO F has nnz=        49 sparsity:    100.000 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  3.270453677041734E-004
+ Number of densities in queue:           1
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.340285 au
+   -E(HOMO):                     -0.086529 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426814 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0004167275 (mu =       0.00, xmax =   0.163490E-03, xnorm =   0.372743E-03, THR =   0.327045E-06)
+  Error of red space iteration  2:        0.0001316547 (mu =       0.00, xmax =   0.153291E-03, xnorm =   0.377709E-03, THR =   0.327045E-06)
+  Error of red space iteration  3:        0.0000185345 (mu =       0.00, xmax =   0.166293E-03, xnorm =   0.411570E-03, THR =   0.327045E-06)
+  Error of red space iteration  4:        0.0000029803 (mu =       0.00, xmax =   0.167936E-03, xnorm =   0.414208E-03, THR =   0.327045E-06)
+Error went down by   97.74%
+  Error of red space iteration  5:        0.0000032977 (mu =       0.00, xmax =   0.168146E-03, xnorm =   0.414230E-03, THR =   0.327045E-06)
+  Error of red space iteration  6:        0.0000003936 (mu =       0.00, xmax =   0.168423E-03, xnorm =   0.414295E-03, THR =   0.327045E-06)
+  Error of red space iteration  7:        0.0000000092 (mu =       0.00, xmax =   0.168494E-03, xnorm =   0.414315E-03, THR =   0.327045E-06)
+Newton equations converged in  7 iterations!
+ >>>  CPU Time used in CROP solver is   0.01 seconds
+ >>> wall Time used in CROP solver is   0.01 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    91
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.58 seconds
+ >>> wall Time used in SCF iteration is   0.58 seconds
+** Get Fock matrix number   3
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3081086876859     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3081086876859     
+  KS electrons/energy:    9.99999980000960   -9.36468387865034 rel.err:-0.20E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359832626
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.56 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.56 seconds
+ 0.60000 (xnorm)    0.00017    0.00041    0.00        0.6995    0.6030         1          2    %%%
+ Trust radius based on max norm!
+ % trust-radius ok, h =   0.600000000000000     
+ >>>  CPU Time used in FCK_FO is   0.57 seconds
+ >>> wall Time used in FCK_FO is   0.57 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  3    -76.1104617164   -0.00000009007    0.00      0.00000    0.00    1.19E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+Matrix AO F  has nnz=        49 sparsity:    100.000 %
+Matrix OAO D has nnz=        49 sparsity:    100.000 %
+Matrix OAO F has nnz=        49 sparsity:    100.000 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.186093731860749E-004
+ Number of densities in queue:           2
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.340302 au
+   -E(HOMO):                     -0.086431 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426733 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0000820023 (mu =       0.00, xmax =   0.525514E-04, xnorm =   0.110835E-03, THR =   0.118609E-06)
+  Error of red space iteration  2:        0.0000237945 (mu =       0.00, xmax =   0.536791E-04, xnorm =   0.114698E-03, THR =   0.118609E-06)
+  Error of red space iteration  3:        0.0000068367 (mu =       0.00, xmax =   0.555939E-04, xnorm =   0.117121E-03, THR =   0.118609E-06)
+  Error of red space iteration  4:        0.0000012644 (mu =       0.00, xmax =   0.560951E-04, xnorm =   0.117618E-03, THR =   0.118609E-06)
+Error went down by   94.69%
+  Error of red space iteration  5:        0.0000007936 (mu =       0.00, xmax =   0.561798E-04, xnorm =   0.117784E-03, THR =   0.118609E-06)
+  Error of red space iteration  6:        0.0000000728 (mu =       0.00, xmax =   0.562820E-04, xnorm =   0.117945E-03, THR =   0.118609E-06)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver is   0.01 seconds
+ >>> wall Time used in CROP solver is   0.00 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    80
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.57 seconds
+ >>> wall Time used in SCF iteration is   0.58 seconds
+** Get Fock matrix number   4
+ >>>  CPU Time used in GALPHA is   0.01 seconds
+ >>> wall Time used in GALPHA is   0.00 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.00 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3074378673199     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3074378673199     
+  KS electrons/energy:    9.99999979994069   -9.36462309751613 rel.err:-0.20E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359832626
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.56 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.56 seconds
+ 0.60000 (xnorm)    0.00006    0.00012    0.00        0.7179    0.8187         2          3    %%%
+ Trust radius based on max norm!
+ % trust-radius ok, h =   0.600000000000000     
+ >>>  CPU Time used in FCK_FO is   0.57 seconds
+ >>> wall Time used in FCK_FO is   0.57 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  4    -76.1104617262   -0.00000000973    0.00      0.00000    0.00    4.53E-05  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        49 sparsity:    100.000 %
+Matrix AO F  has nnz=        49 sparsity:    100.000 %
+Matrix OAO D has nnz=        49 sparsity:    100.000 %
+Matrix OAO F has nnz=        49 sparsity:    100.000 %
+ >>>  CPU Time used in AVERAG is   0.00 seconds
+ >>> wall Time used in AVERAG is   0.00 seconds
+** Get new density 
+ OAO gradnorm  4.534644213055553E-005
+ Number of densities in queue:           3
+CROP scheme with full subspace (DISK)
+ 
+    E(LUMO):                      0.340280 au
+   -E(HOMO):                     -0.086497 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.426778 au
+ 
+ >>>  CPU Time used in HOMO-LUMO gap is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap is   0.00 seconds
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0000285638 (mu =       0.00, xmax =   0.844565E-05, xnorm =   0.197900E-04, THR =   0.453464E-07)
+  Error of red space iteration  2:        0.0000050368 (mu =       0.00, xmax =   0.117823E-04, xnorm =   0.315850E-04, THR =   0.453464E-07)
+  Error of red space iteration  3:        0.0000054967 (mu =       0.00, xmax =   0.116387E-04, xnorm =   0.314589E-04, THR =   0.453464E-07)
+  Error of red space iteration  4:        0.0000007316 (mu =       0.00, xmax =   0.120218E-04, xnorm =   0.316341E-04, THR =   0.453464E-07)
+Error went down by   85.47%
+  Error of red space iteration  5:        0.0000000966 (mu =       0.00, xmax =   0.120290E-04, xnorm =   0.316184E-04, THR =   0.453464E-07)
+  Error of red space iteration  6:        0.0000000852 (mu =       0.00, xmax =   0.120386E-04, xnorm =   0.316346E-04, THR =   0.453464E-07)
+  Error of red space iteration  7:        0.0000000027 (mu =       0.00, xmax =   0.120393E-04, xnorm =   0.316324E-04, THR =   0.453464E-07)
+Newton equations converged in  7 iterations!
+ >>>  CPU Time used in CROP solver is   0.01 seconds
+ >>> wall Time used in CROP solver is   0.01 seconds
+ >>>  CPU Time used in NEW D is   0.00 seconds
+ >>> wall Time used in NEW D is   0.00 seconds
+No. of matmuls in get_density:    90
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.58 seconds
+ >>> wall Time used in SCF iteration is   0.58 seconds
+** Get Fock matrix number   5
+ >>>  CPU Time used in GALPHA is   0.00 seconds
+ >>> wall Time used in GALPHA is   0.01 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.00 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.01 seconds
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    46.3076577088201     
+ The Exchange energy contribution   0.000000000000000E+000
+ The Fock energy contribution   -46.3076577088201     
+  KS electrons/energy:    9.99999979995580   -9.36464313939127 rel.err:-0.20E-07
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359832626
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.56 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.56 seconds
+ 0.60000 (xnorm)    0.00001    0.00003    0.00        0.9582    0.9582         3          4    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO is   0.57 seconds
+ >>> wall Time used in FCK_FO is   0.58 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
+  5    -76.1104617275   -0.00000000133    0.00      0.00000    0.00    2.10E-06  ###
+SCF converged in      5 iterations
+ >>>  CPU Time used in **ITER is   2.96 seconds
+ >>> wall Time used in **ITER is   2.97 seconds
+ 
+Total no. of matmuls in SCF optimization:       1272
+ 
+ Number of occupied orbitals:           5
+ Number of virtual orbitals:           2
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+Calculation of occupied orbital energies converged in     5 iterations!
+ 
+Calculation of virtual orbital energies converged in     2 iterations!
+ 
+    E(LUMO):                         0.340289 au
+   -E(HOMO):                        -0.086476 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.426764 au
+ 
+ >>>  CPU Time used in HL GAP is   0.64 seconds
+ >>> wall Time used in HL GAP is   0.64 seconds
+ 
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.00000309811    0.0000    0.0000    0.0000000
+  3   -0.00000009007    0.0000    0.0000    0.0000000
+  4   -0.00000000973    0.0000    0.0000    0.0000000
+  5   -0.00000000133    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 OAO Gradient norm
+======================================================================
+    1           -76.11045852824639723622      0.153510625753453D-02
+    2           -76.11046162636014855707      0.327045367704173D-03
+    3           -76.11046171642969682125      0.118609373186075D-03
+    4           -76.11046172616448757253      0.453464421305555D-04
+    5           -76.11046172749024663062      0.210437566078593D-05
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final DFT energy:                      -76.110461727490
+      Nuclear repulsion:                       9.341394282520
+      Electronic energy:                     -85.451856010010
+ 
+ >>>  CPU Time used in Energy calc. is   3.63 seconds
+ >>> wall Time used in Energy calc. is   3.64 seconds
+ 
+ 
+ 
+        *************************************************************
+        *            MOLECULAR GRADIENT RESULTS (in a.u.)           *
+        *************************************************************
+ 
+ 
+
+
+                   nuclear rep contribution to gradient
+                   ------------------------------------
+
+   O        0.1404702041           -3.4840431741           -0.0105042985
+   H       -2.0220509241            1.7939922850            0.0108004418
+   H        1.8815807200            1.6900508891           -0.0002961433
+ >>>  CPU Time used in nn-grad is   0.00 seconds
+ >>> wall Time used in nn-grad is   0.00 seconds
+
+
+                     Coulomb contribution to gradient
+                     --------------------------------
+
+   O       -0.0695820124           -3.5998882518           -0.0102628333
+   H       -1.3011294864            1.7535233837            0.0086911849
+   H        1.3707114988            1.8463648682            0.0015716483
+
+
+                    exchange contribution to gradient
+                    ---------------------------------
+
+   O        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+
+
+                   twoElectron contribution to gradient
+                   ------------------------------------
+
+   O       -0.0695820124           -3.5998882518           -0.0102628333
+   H       -1.3011294864            1.7535233837            0.0086911849
+   H        1.3707114988            1.8463648682            0.0015716483
+ >>>  CPU Time used in two-grad is   0.02 seconds
+ >>> wall Time used in two-grad is   0.02 seconds
+
+
+                   nuc-el attr contribution to gradient
+                   ------------------------------------
+
+   O       -0.0534627401            7.5850385730            0.0221742338
+   H        3.5089338715           -3.7887296726           -0.0207058583
+   H       -3.4554711314           -3.7963089004           -0.0014683755
+ >>>  CPU Time used in ne-grad is   0.01 seconds
+ >>> wall Time used in ne-grad is   0.01 seconds
+
+
+                  DFT-D Empirical Dispersion Correction
+                  -------------------------------------
+
+         Running DFT-D Ver.   :    3
+                         Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
+                               J. Chem. Phys. 132 (2010), 154104
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
+               3-body terms   :   F
+
+
+                  DFT-D3 Functional Dependent Parameters
+                  --------------------------------------
+
+      s_6 =       1.000000000000     sr_6 =       0.428900000000
+      s_8 =       0.787500000000     sr_8 =       4.440700000000
+      alp =      14.000000000000
+
+
+                       Dispersion Energy Correction
+                       ----------------------------
+
+                       E_disp:         -0.000359832626
+ >>>  CPU Time used in II_get_xc_geoderiv_molgrad is   1.04 seconds
+ >>> wall Time used in II_get_xc_geoderiv_molgrad is   1.04 seconds
+
+
+                  exchange-corr contribution to gradient
+                  --------------------------------------
+
+   O        0.0036792469            0.3452458396            0.0009925088
+   H        0.1282103820           -0.1696000376           -0.0008471617
+   H       -0.1318887502           -0.1756487598           -0.0001453933
+ >>>  CPU Time used in xc-grad is   1.04 seconds
+ >>> wall Time used in xc-grad is   1.04 seconds
+
+
+                     kinetic contribution to gradient
+                     --------------------------------
+
+   O        0.0148088266           -0.7716713979           -0.0022818466
+   H       -0.3611642235            0.3903677056            0.0021323812
+   H        0.3463553970            0.3813036923            0.0001494654
+ >>>  CPU Time used in kin-grad is   0.00 seconds
+ >>> wall Time used in kin-grad is   0.00 seconds
+
+
+                  reorthonomal contribution to gradient
+                  -------------------------------------
+
+   O        0.0026798533           -0.2553102728           -0.0007487428
+   H       -0.0767963985            0.1285335601            0.0005855875
+   H        0.0741165453            0.1267767126            0.0001631553
+ >>>  CPU Time used in reorth-g is   0.00 seconds
+ >>> wall Time used in reorth-g is   0.00 seconds
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+   O        0.0385933784           -0.1806286841           -0.0006309785
+   H       -0.1239967791            0.1080872241            0.0006565754
+   H        0.0854042793            0.0725385021           -0.0000256431
+ 
+ 
+ RMS gradient norm (au):      0.0905113711142765
+ 
+ 
+ >>>  CPU Time used in Forces calc. is   1.08 seconds
+ >>> wall Time used in Forces calc. is   1.08 seconds
+ >>>  CPU Time used in LSDALTON RSP is   0.00 seconds
+ >>> wall Time used in LSDALTON RSP is   0.00 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   0.000000000000000E+000    **
+ *****************************************************
+
+
+                            New geometry (au)
+                            -----------------
+
+ O       -0.0006286972            0.1390797276            0.0022023065
+ H        1.2657563571           -1.0775460432           -0.0048321042
+ H       -1.3034205163           -1.1311175560            0.0021169499
+
+ >>>  CPU Time used in Integr. step is   4.70 seconds
+ >>> wall Time used in Integr. step is   4.72 seconds
+
+ ============================================
+   Final information for trajectory       1
+ ============================================
+
+ Final time       :    0.20000
+
+                           Final geometry (au)
+                           -------------------
+
+ O       -0.0006286972            0.1390797276            0.0022023065
+ H        1.2657563571           -1.0775460432           -0.0048321042
+ H       -1.3034205163           -1.1311175560            0.0021169499
+
+
+                          Final velocities (au)
+                          ---------------------
+
+ O       -0.0003972216            0.0000332110            0.0002664231
+ H        0.0000985782            0.0008646389           -0.0005855190
+ H        0.0004435857           -0.0015570948            0.0002560754
+
+
+                      Final energy conservation (au)
+                      ------------------------------
+
+ Total energy:    -76.103632   Potential energy:    -76.110462   Kinetic energy:      0.006830
+                               Energy conserv.:     0.00000138
+
+                 Final angular momentum conservation (au)
+                 ----------------------------------------
+
+ J_tot:    8.8575063764   J_x:    1.7189511849   J_y:   -1.9549795492   J_z:    8.4663262986
+                          Angular moment conserv.:   0.00000236054351
+
+
+
+
+ ==============================================
+    Final analysis of ab initio trajectories
+ ==============================================
+
+ DALTON.PHS contains       1 trajectories
+ The first trajectory is trajectory number       1
+ Starting to read trajectory information
+
+                         ------------------------------------
+                            Summary of trajectory #      1
+                         ------------------------------------
+
+ 
+     +----------------------------------------------------------------------------------------+
+     |                 Energy and conservation information - Complete version                 |
+     +------------------+---------------------------------------+-----------------------------+
+     |                  |     Total       Potential    Kinetic  |   Energy     Angular mom.   |
+     |   Step    Time   |     energy       energy      energy   |  conserv.      conserv.     |
+     +------------------+---------------------------------------+-----------------------------+
+     |      0     0.000 |   -76.103633   -76.111104  0.00747092 | 0.00000000 0.00000000000000 |
+     |      1     0.100 |   -76.103632   -76.110591  0.00695899 | 0.00000105 0.00000146883841 |
+     |      2     0.200 |   -76.103632   -76.110462  0.00682983 | 0.00000138 0.00000236054351 |
+     +------------------+---------------------------------------+-----------------------------+
+     |          Minimum |   -76.103633   -76.111104  0.00682983 | 0.00000105 0.00000146883841 |
+     |          Maximum |   -76.103632   -76.110462  0.00747092 | 0.00000138 0.00000236054351 |
+     +------------------+---------------------------------------+-----------------------------+
+ Energy drift, mHartree/ps  :   6900.000
+ Energy noise, mHartree     :      0.170
+ >>>  CPU Time used in *SCF is  14.64 seconds
+ >>> wall Time used in *SCF is  14.69 seconds
+ 
+Total no. of matmuls used:                      1282
+Total no. of Fock/KS matrix evaluations:          17
+Max no. of matrices allocated in Level 3:         33
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                      0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MPI):                       0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (complex):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (character):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (AOBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSAOTENSOR):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (SLSAOTENSOR):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (GLOBALLSAOTENSOR):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMTYPEITEM):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMITEM):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSMATRIX):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECORBITAL):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECFRAG):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlapType):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (PNOSpaceInfo):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2DENS):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (TRACEBACK):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2GRAD):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lvec_data)):           0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lattice_cell)):        0 byte  - Should be zero - otherwise a leakage is present
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Additional Memory information          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (linkshell):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                         90.224 MB
+  Max allocated memory, type(matrix)                  18.024 kB
+  Max allocated memory, real(realk)                    5.378 MB
+  Max allocated memory, MPI                            0.000 Byte
+  Max allocated memory, complex(complexk)              0.000 Byte
+  Max allocated memory, integer                      272.896 kB
+  Max allocated memory, logical                      200.700 kB
+  Max allocated memory, character                      1.808 kB
+  Max allocated memory, AOBATCH                       19.656 kB
+  Max allocated memory, DECORBITAL                     0.000 Byte
+  Max allocated memory, DECFRAG                        0.000 Byte
+  Max allocated memory, BATCHTOORB                     0.000 Byte
+  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
+  Max allocated memory, MYPOINTER                      0.000 Byte
+  Max allocated memory, ARRAY2                         0.000 Byte
+  Max allocated memory, ARRAY4                         0.000 Byte
+  Max allocated memory, ARRAY                         84.400 MB
+  Max allocated memory, PNOSpaceInfo                   0.000 Byte
+  Max allocated memory, MP2DENS                        0.000 Byte
+  Max allocated memory, TRACEBACK                      0.000 Byte
+  Max allocated memory, MP2GRAD                        0.000 Byte
+  Max allocated memory, ODBATCH                        1.760 kB
+  Max allocated memory, LSAOTENSOR                     6.360 kB
+  Max allocated memory, SLSAOTENSOR                    6.912 kB
+  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
+  Max allocated memory, ATOMTYPEITEM                 225.056 kB
+  Max allocated memory, ATOMITEM                       1.536 kB
+  Max allocated memory, LSMATRIX                       4.000 kB
+  Max allocated memory, OverlapT                      53.312 kB
+  Max allocated memory, linkshell                      0.000 Byte
+  Max allocated memory, integrand                     64.512 kB
+  Max allocated memory, integralitem                 921.600 kB
+  Max allocated memory, IntWork                      160.848 kB
+  Max allocated memory, Overlap                      581.828 kB
+  Max allocated memory, ODitem                         1.280 kB
+  Max allocated memory, LStensor                       8.981 kB
+  Max allocated memory, FMM                            0.000 Byte
+  Max allocated memory, XC                             0.000 Byte
+  Max allocated memory, Lvec_data                      0.000 Byte
+  Max allocated memory, Lattice_cell                   0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+  Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 3 The Full molecular Calculation             
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L3 mat_set_from_full       18            0.0000            0.0010
+   L3 mat_to_full             32            0.0010            0.0000
+   L3 mat_trans              547            0.0030            0.0030
+   L3 mat_assign             676            0.0000            0.0010
+   L3 mat_mul               1281            0.0020            0.0020
+   L3 mat_add               1558            0.0000            0.0010
+   L3 mat_daxpy             1807            0.0010            0.0010
+   L3 mat_dotproduct        1744            0.0020            0.0010
+   L3 mat_sqnorm2            434            0.0000            0.0030
+   L3 mat_diag_f               1            0.0000            0.0000
+   L3 mat_scal               599            0.0000            0.0010
+   L3 mat_zero               107            0.0000            0.0010
+   L3 mat_density_from_o       1            0.0000            0.0000
+   L3 mat_scal_dia_vec         6            0.0000            0.0000
+   L3 mat_dsyev                3            0.0000            0.0020
+   L3 mat_dsyevx              26            0.0000            0.0000
+   L3 mat_identity            19            0.0000            0.0000
+   L3 mat_write_to_disk      163            0.0030            0.0040
+   L3 mat_read_from_disk    1290            0.0080            0.0060
+      ==============================================================
+   L3 TOTAL MAT                             0.0200            0.0250
+      ==============================================================
+   L3     II_get_overlap       3            0.0030            0.0040
+   L3     II_get_kinetic       3            0.0030            0.0040
+   L3   II_get_nucel_mat       3            0.0120            0.0110
+   L3 II_GET_NN_GRADIENT       3            0.0000            0.0000
+   L3 II_precalc_ScreenM       3            0.0730            0.0710
+   L3 II_get_ne_gradient       3            0.0250            0.0270
+   L3 II_GET_KINETIC_GRA       3            0.0060            0.0070
+   L3 II_GET_REORTHONORM       3            0.0090            0.0090
+   L3  II_get_J_gradient       3            0.0570            0.0570
+   L3  II_get_K_gradient       3            0.0000            0.0000
+   L3  II_GET_K_GRADIENT       3            0.0000            0.0000
+   L3      II_get_nucpot       3            0.0000            0.0000
+   L3 II_get_coulomb_mat      17            0.1880            0.1860
+   L3 II_get_xc_Fock_mat      17            9.7960            9.8270
+   L3 II_get_xc_geoderiv       3            3.1330            3.1420
+   L3           homolumo       3            1.8970            1.9030
+      ==============================================================
+   L3 TOTAL INTEGRAL                       15.2370           15.2860
+      ==============================================================
+ >>>  CPU Time used in LSDALTON is  15.33 seconds
+ >>> wall Time used in LSDALTON is  15.38 seconds
+
+End simulation
+     Date and time (Linux)  : Mon Nov 10 12:16:19 2014
+     Host name              : localhost.localdomain                   
