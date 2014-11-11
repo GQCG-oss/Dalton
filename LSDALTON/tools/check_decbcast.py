@@ -7,6 +7,9 @@ variable_name_list  = []
 dec_typedef_lines = dec_typedef.readlines()
 dec_typedef.close()
 
+#ADD SPECIAL VARIABLES TO IGNORE TO THIS LIST
+ignore_variables = ["cc_models"]
+
 for line_nr in range(len(dec_typedef_lines)):
    if "type decsettings" in dec_typedef_lines[line_nr].lower():
       while not "end type decsettings" in dec_typedef_lines[line_nr].lower():
@@ -31,10 +34,20 @@ for line_nr in range(len(dec_typedef_lines)):
                   if( "(" in variable):
                      variable = variable[0:variable.find('(')]
 
-                  variable_name_list.append(variable.strip())
-                  found_in_bcast_list.append(False)
+                  variable = variable.strip()
+                  add_to_list = True
+                  for i in range(len(ignore_variables)):
+                     if variable == ignore_variables[i].lower() :
+                        add_to_list = False
+
+                  if add_to_list:
+                     variable_name_list.append(variable)
+                     found_in_bcast_list.append(False)
 
       break
+
+if( len(variable_name_list) != len(found_in_bcast_list) ):
+   print "SOMETHING WRONG FINDING THE VARIABLES"
 
 decmpi_file = open("../deccc/decmpi.F90",'r')
 decmpi_lines = decmpi_file.readlines()
