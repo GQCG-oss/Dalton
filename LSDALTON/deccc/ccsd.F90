@@ -2868,7 +2868,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      vs                       = t2%tdim(1)
      os                       = t2%tdim(3)
      residual_nr              = RN_YET_ANOTHER_RES
-     bs                       = get_split_scheme_0(nb) 
+     bs                       = vs
      nors                     = get_split_scheme_0(nor)
      nvrs                     = get_split_scheme_0(nvr)
 
@@ -2979,7 +2979,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
      call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
      
-     call get_tpl_and_tmi(t2,tpl,tmi)
+     !call get_tpl_and_tmi(t2,tpl,tmi)
+     call tensor_zero(tpl)
+     call tensor_zero(tmi)
 
      if(print_debug)then
         call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
@@ -2998,8 +3000,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(u2," NORM(u2)    :",print_on_rank=0)
      endif
 
+     print *,"alloc 1"
+     call lsmpi_barrier(infpar%lg_comm)
      call tensor_ainit(Had,[nv,nb],2,local=local,tdims=[vs,bs],atype="TDAR")
+     print *,"alloc 2"
+     call lsmpi_barrier(infpar%lg_comm)
      call tensor_ainit(Gbi,[nb,no],2,local=local,tdims=[bs,os],atype="TDAR")
+     print *,"alloc 3"
+     call lsmpi_barrier(infpar%lg_comm)
      call tensor_ainit(Gbi_local,[nb,no],2,local=local,atype="REAR")
 
      call tensor_zero( Had )
@@ -3008,9 +3016,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      if( CCmodel > MODEL_CC2 )then
 
+     print *,"alloc 4"
+     call lsmpi_barrier(infpar%lg_comm)
         call tensor_ainit(gvvoo, [nv,no,no,nv],4, local=local, atype="TDAR", tdims=[vs,os,os,vs])
+     print *,"alloc 5"
+     call lsmpi_barrier(infpar%lg_comm)
         call tensor_ainit(gvoov, [nv,no,nv,no],4, local=local, atype="TDAR", tdims=[vs,os,vs,os])
+     print *,"alloc 6"
+     call lsmpi_barrier(infpar%lg_comm)
         call tensor_ainit(sio4,  [no,no,no,no],4, local=local, atype="TDAR", tdims=[os,os,os,os])
+     print *,"alloc 7"
+     call lsmpi_barrier(infpar%lg_comm)
 
         call tensor_zero(gvvoo)
         call tensor_zero(gvoov)
@@ -3028,11 +3044,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! allocate working arrays depending on the batch sizes
      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
         &MaxActualDimGamma,0,setting = mylsitem%setting, intspec = intspec)
-     call mem_alloc( w0, w0size , simple = .false. )
+     print *,"alloc w0",w0size,nb,MaxActualDimAlpha,MaxActualDimGamma
+     call lsmpi_barrier(infpar%lg_comm)
+     call mem_alloc( w0, w0size , simple = .true. )
 
      w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
         &MaxActualDimGamma,0,setting = mylsitem%setting, intspec = intspec)
-     call mem_alloc( w1, w1size , simple = .false.)
+     print *,"alloc w1",w1size
+     call lsmpi_barrier(infpar%lg_comm)
+     call mem_alloc( w1, w1size , simple = .true. )
+
+     !first touch
+     w0%d(1) = 0.0E0_realk
+     w1%d(1) = 0.0E0_realk
 
 
 #ifdef VAR_OMP
@@ -4788,7 +4812,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \author Patrick Ettenhuber
   !> \date January 2012
   subroutine get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,nba,nbg,&
-  &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split,se,is)
+  &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split,se,is,nbuf)
     implicit none
     integer, intent(inout) :: scheme
     integer, intent(in)    :: nb,bs,nv,vs,no,os
@@ -4801,8 +4825,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     Character,intent(in) :: is(5)
     integer(kind=8), intent(inout) :: e2a
     logical, intent(in)    :: local, mpi_split
+    integer, intent(out),optional :: nbuf
     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size
-    integer :: nnod,magic
+    integer :: nnod,magic,nbuffs
 
     frac_of_total_mem=0.80E0_realk
     nba=minbsize
@@ -4911,8 +4936,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     ! This block is routinely used in a calculation
     else
-      !make batches larger until they do not fit anymore
 
+      !optimize buffers
+      nbuffs = 0
+      if(scheme==0)then
+         do nbuffs=11,5
+            mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
+            if (frac_of_total_mem*MemFree>mem_used) exit
+         enddo
+      endif
+      if(present(nbuf))nbuf=nbuffs
+
+      !make batches larger until they do not fit anymore
       !determine gamma batch first
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
 
@@ -4979,10 +5014,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !> \brief calculate the memory requirement for the matrices in the ccsd routine
 !> \author Patrick Ettenhuber
 !> \date January 2012
-  function get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,choice,s,print_stuff,se,is) result (memrq)
+  function get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,choice,s,print_stuff,se,is) result (memrq)
     implicit none
     integer, intent(in) :: no,os,nv,vs,nb,bs
-    integer, intent(in) :: nba,nbg
+    integer, intent(in) :: nba,nbg,nbuffs
     integer, intent(in) :: iter,choice
     real(realk) :: memrq, memin, memout
     logical, intent(in) :: print_stuff
@@ -4996,7 +5031,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: l2,ml2,fai2,tl2
     integer :: l3,ml3,fai3,tl3
     integer :: l4,ml4,fai4,tl4
-    integer :: nloctiles,  nbuffs
+    integer :: nloctiles
     integer :: cd , e2
     integer(kind=long) :: w0size, w1size, w2size, w3size
     nor = no*(no+1)/2
@@ -5067,12 +5102,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
     tl4 = tl4 * no
 
-    nbuffs = get_nbuffs_scheme_0()
-
-    w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,s,se,is)
-    w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,s,se,is)
-    w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,s,se,is)
-    w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,s,se,is)
+    w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,s,se,is)
+    w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,s,se,is)
+    w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
+    w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
     !w0
     memin = 1.0E0_realk * w0size
     !w1
@@ -7636,9 +7669,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
   function get_wsize_for_ccsd_int_direct(wnr,no,os,nv,vs,nb,bs,&
-        &nba,nbg,s,setting,intspec) result(wsize)
+        &nba,nbg,nbuffs,s,setting,intspec) result(wsize)
      implicit none
-     integer, intent(in) :: wnr,no,os,nv,vs,nb,bs,nba,nbg,s
+     integer, intent(in) :: wnr,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,s
      type(lssetting),intent(inout) :: setting
      Character,intent(in) :: intspec(5)
      integer(kind=long) :: wsize
@@ -7648,7 +7681,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      nor = (i8*(no*(no+1))/2)
      nvr = (i8*(nv*(nv+1))/2)
 
-     nbuffs    = get_nbuffs_scheme_0()
      maxsize64 = 0
      select case(wnr)
      case(0)
