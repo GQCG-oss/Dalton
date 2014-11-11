@@ -2472,28 +2472,6 @@ module lspdm_tensor_operations_module
 
   end subroutine tensor_default_batches
   
-  !> \brief calculate the number of tiles per mode
-  !> \author Patrick Ettenhuber
-  !> \date march 2013
-  subroutine tensor_get_ntpm(dims,tdim,mode,ntpm,ntiles)
-    implicit none
-    !> number of modes and number of tiles
-    integer :: mode,ntiles
-    !> full dimensions, tile dimensinos, number of tiles per mode
-    integer :: dims(mode),tdim(mode),ntpm(mode)
-    integer :: i
-
-    ntiles = 1
-
-    do i=1,mode
-      ntpm(i)= dims(i)/tdim(i)
-      if(mod(dims(i),tdim(i))>0)then
-        ntpm(i)=ntpm(i)+1
-      endif
-      ntiles = ntiles * ntpm(i)
-    enddo
-
-  end subroutine tensor_get_ntpm
 
   !> \author Patrick Ettenhuber
   !> \date September 2012
@@ -2605,13 +2583,9 @@ module lspdm_tensor_operations_module
     !begin with counting the number of tiles needed in each mode
     dflt=0
     p_arr%a(addr)%nelms=1
+    call tensor_get_ntpm(p_arr%a(addr)%dims,p_arr%a(addr)%tdim,p_arr%a(addr)%mode,dflt)
     do i=1,p_arr%a(addr)%mode
-      p_arr%a(addr)%nelms = p_arr%a(addr)%nelms * &
-      &p_arr%a(addr)%dims(i)
-      dflt(i)=p_arr%a(addr)%dims(i)/p_arr%a(addr)%tdim(i)
-      if(mod(p_arr%a(addr)%dims(i),p_arr%a(addr)%tdim(i))>0)then
-        dflt(i)=dflt(i)+1
-      endif
+      p_arr%a(addr)%nelms = p_arr%a(addr)%nelms * p_arr%a(addr)%dims(i)
     enddo
     call tensor_set_ntpm(p_arr%a(addr),dflt,p_arr%a(addr)%mode)
     !print *,infpar%mynum,"ntpm:",arr%ntpm,arr%nelms
@@ -2764,9 +2738,8 @@ module lspdm_tensor_operations_module
         enddo
 
         tsizeB = 1
+        call tensor_get_ntpm(B%dims,fBtdim,B%mode,ntpmB)
         do i=1,B%mode
-           ntpmB(i) = B%dims(i)/fBtdim(i)
-           if(mod(B%dims(i),fBtdim(i))>0)ntpmB(i) = ntpmB(i) + 1
            tsizeB = tsizeB * fBtdim(i)
         enddo
 

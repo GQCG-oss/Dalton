@@ -296,6 +296,8 @@ module dec_typedef_module
      logical :: manual_batchsizes
      !> Sizes of alpha and gamma batches defined manually
      integer :: ccsdAbatch,ccsdGbatch
+     !> test integral scheme, fully distributed, get_mo_integrals
+     logical :: test_fully_distributed_integrals
 
 
      !> General debug and simple tests

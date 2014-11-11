@@ -50,10 +50,7 @@ module lspdm_basic_module
     integer :: j,orig_addr(mode),offs,ntpm(mode)
     offs=1
     if(present(offset))offs=offset
-    do j=1,mode
-      ntpm(j)=dims(j)/tdim(j)
-      if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
-    enddo
+    call tensor_get_ntpm(dims,tdim,mode,ntpm)
     call get_midx(tileidx,orig_addr,ntpm,mode)
     sze=1
     do j=offs, mode
@@ -228,10 +225,7 @@ module lspdm_basic_module
     integer,intent(in) :: tileidx,mode,dims(mode),tdim(mode)
     integer, dimension(mode),intent(out) :: sze
     integer :: j,orig_addr(mode),ntpm(mode)
-    do j=1,mode
-      ntpm(j)=dims(j)/tdim(j)
-      if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
-    enddo
+    call tensor_get_ntpm(dims,tdim,mode,ntpm)
     call get_midx(tileidx,orig_addr,ntpm,mode)
     do j=1, mode
       if(((dims(j)-(orig_addr(j)-1)*tdim(j))/tdim(j))>=1)then
@@ -241,6 +235,24 @@ module lspdm_basic_module
       endif
     enddo
   end subroutine get_tileinfo_nelspmode_frombas
+
+  !> \brief calculate the number of tiles per mode
+  !> \author Patrick Ettenhuber
+  !> \date march 2013
+  subroutine tensor_get_ntpm(dims,tdim,mode,ntpm,ntiles)
+     implicit none
+     integer, intent(in)  :: mode
+     integer, intent(out) :: ntpm(mode)
+     integer, intent(in)  :: dims(mode), tdim(mode)
+     integer, optional, intent(out) :: ntiles
+     integer :: j
+     if(present(ntiles)) ntiles = 1
+     do j=1,mode
+        ntpm(j)=dims(j)/tdim(j)
+        if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
+        if(present(ntiles)) ntiles = ntiles * ntpm(j)
+     enddo
+  end subroutine tensor_get_ntpm
 
   subroutine memory_deallocate_window(arr)
     implicit none
