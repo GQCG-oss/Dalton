@@ -55,7 +55,7 @@ f.add(string = 'J_tot',
 f.add(from_string = 'Energy and conservation information',
       num_lines = 13,
       ignore_below = 1.0e-7,
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-6)
 
 f.add(string = 'Energy drift',
       rel_tolerance = 1.0e-8)
