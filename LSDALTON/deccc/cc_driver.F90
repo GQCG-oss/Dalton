@@ -1999,7 +1999,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    If_not_converged: if(.not.restart_from_converged)then
 
       mo_ccsd = .true.
-      if (DECinfo%NO_MO_CCSD.or.(nb>200).or.use_pnos.or.(ccmodel==MODEL_MP2) &
+      if (DECinfo%NO_MO_CCSD.or.(no+nv>200).or.use_pnos.or.(ccmodel==MODEL_MP2) &
        & .or. (ccmodel==MODEL_RPA)) mo_ccsd = .false.
        
       if (DECinfo%force_scheme) then

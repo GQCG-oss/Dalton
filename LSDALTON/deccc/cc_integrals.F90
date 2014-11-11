@@ -957,14 +957,14 @@ contains
             & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem,.false.)
        if (.not.mo_ccsd) return
 
+       if (local_moccsd) then 
+          write(DECinfo%output,*) 'Using MO-CCSD local scheme'
+       else if (.not.local) then
+          write(DECinfo%output,*) 'Using MO-CCSD: PDM scheme'
+       else
+          write(DECinfo%output,*) 'Using MO-CCSD: non-MPI scheme'
+       end if
        if (print_debug) then
-          if (local_moccsd) then 
-             write(DECinfo%output,*) 'MO-CCSD: local scheme'
-          else if (.not.local) then
-             write(DECinfo%output,*) 'MO-CCSD: PDM scheme'
-          else
-             write(DECinfo%output,*) 'MO-CCSD: non-MPI scheme'
-          end if
           write(DECinfo%output,'(a,I4,a,I4)') ' BATCH: Number of MO batches      = ', &
                & Nbatch*(Nbatch+1)/2, ' with maximum size', dimP
        end if
