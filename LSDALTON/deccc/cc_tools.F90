@@ -217,10 +217,10 @@ module cc_tools_module
             ot2(3)=(mtile(3)-1)*t2%tdim(3)
             ot2(4)=(mtile(4)-1)*t2%tdim(4)
 
-            da = t2%ti(lt)%d(1)
-            db = t2%ti(lt)%d(2)
-            di = t2%ti(lt)%d(3)
-            dj = t2%ti(lt)%d(4)
+            da = tdim(1)
+            db = tdim(2)
+            di = tdim(3)
+            dj = tdim(4)
 
             contributed  = .false.
 
@@ -366,10 +366,10 @@ module cc_tools_module
             ot2(3)=(mtile(3)-1)*t2%tdim(3)
             ot2(4)=(mtile(4)-1)*t2%tdim(4)
 
-            da = t2%ti(lt)%d(1)
-            db = t2%ti(lt)%d(2)
-            di = t2%ti(lt)%d(3)
-            dj = t2%ti(lt)%d(4)
+            da = tdim(1)
+            db = tdim(2)
+            di = tdim(3)
+            dj = tdim(4)
 
             do j=1,dj
                gj = ot2(4)+j
