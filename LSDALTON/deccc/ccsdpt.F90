@@ -1886,9 +1886,8 @@ contains
     
                     case(1)
 
-                       call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
-                                               & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
-                                               & ccsd_doubles_portions_k,&
+                       call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,k),&
+                                               & ccsd_doubles_portions_i,ccsd_doubles_portions_k,&
                                                & vvvo(:,:,:,i),vvvo(:,:,:,k),&
                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
@@ -1942,9 +1941,8 @@ contains
 
                     case(2)
 
-                       call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
-                                               & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
-                                               & ccsd_doubles_portions_j,&
+                       call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
+                                               & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                                & vvvo(:,:,:,i),vvvo(:,:,:,j),&
                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                                & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
@@ -1990,10 +1988,8 @@ contains
 
                     case(3)
 
-                       call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
-                                               & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
-                                               & ccsd_doubles(:,:,k,i),ccsd_doubles(:,:,k,j),&
-                                               & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
+                       call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
+                                               & ccsd_doubles(:,:,:,k),ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                                & ccsd_doubles_portions_k,vvvo(:,:,:,i),&
                                                & vvvo(:,:,:,j),vvvo(:,:,:,k),&
                                                & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
@@ -4423,8 +4419,8 @@ contains
   !> \brief: generator for triples amplitudes, case(1)
   !> \author: Janus Juul Eriksen
   !> \date: february 2014
-  subroutine trip_generator_ijk_case1(oindex1,oindex3,no,nv,ccsd_doubles_11,ccsd_doubles_13,&
-                                & ccsd_doubles_31,ccsd_doubles_portions_1,ccsd_doubles_portions_3,&
+  subroutine trip_generator_ijk_case1(oindex1,oindex3,no,nv,ccsd_doubles_1,ccsd_doubles_3,&
+                                & ccsd_doubles_portions_1,ccsd_doubles_portions_3,&
                                 & vvvo_tile_1,vvvo_tile_3,ovoo_tile_11,&
                                 & ovoo_tile_13,ovoo_tile_31,trip_tmp,trip_ampl,async_idx,num_idxs,cublas_handle)
 
@@ -4433,7 +4429,7 @@ contains
     !> i, j, k, nocc, and nvirt
     integer, intent(in) :: oindex1,oindex3,no,nv
     !> nv**2 tiles of ccsd_doubles
-    real(realk), dimension(nv,nv) :: ccsd_doubles_11, ccsd_doubles_13, ccsd_doubles_31
+    real(realk), dimension(nv,nv,no) :: ccsd_doubles_1, ccsd_doubles_3
     !> no*nv**2 tiles of ccsd_doubles
     real(realk), dimension(no,nv,nv) :: ccsd_doubles_portions_1,ccsd_doubles_portions_3
     !> tiles of ovoo 2-el integrals
@@ -4458,7 +4454,7 @@ contains
 #endif
 
     ! iik,iki
-    call trip_amplitudes_ijk_virt(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_11,&
+    call trip_amplitudes_ijk_virt(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_1(:,:,oindex1),&
                             & vvvo_tile_3,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_portions_1,&
                             & ovoo_tile_13,trip_tmp,async_idx(4),cublas_handle)
@@ -4481,7 +4477,7 @@ contains
 #endif
 
     ! kii,iik
-    call trip_amplitudes_ijk_virt(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_13,&
+    call trip_amplitudes_ijk_virt(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_3(:,:,oindex1),&
                             & vvvo_tile_1,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_portions_1,&
                             & ovoo_tile_31,trip_tmp,async_idx(4),cublas_handle)
@@ -4499,7 +4495,7 @@ contains
 #endif
 
     ! iki.kii
-    call trip_amplitudes_ijk_virt(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_31,&
+    call trip_amplitudes_ijk_virt(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_1(:,:,oindex3),&
                             & vvvo_tile_1,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_portions_3,&
                             & ovoo_tile_11,trip_tmp,async_idx(4),cublas_handle)
@@ -4613,8 +4609,8 @@ contains
   !> \brief: generator for triples amplitudes, case(2)
   !> \author: Janus Juul Eriksen
   !> \date: february 2014
-  subroutine trip_generator_ijk_case2(oindex1,oindex2,no,nv,ccsd_doubles_12,ccsd_doubles_21,&
-                                & ccsd_doubles_22,ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
+  subroutine trip_generator_ijk_case2(oindex1,oindex2,no,nv,ccsd_doubles_1,ccsd_doubles_2,&
+                                & ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
                                 & vvvo_tile_1,vvvo_tile_2,ovoo_tile_12,&
                                 & ovoo_tile_21,ovoo_tile_22,trip_tmp,trip_ampl,async_idx,num_idxs,cublas_handle)
 
@@ -4623,7 +4619,7 @@ contains
     !> i, j, k, nocc, and nvirt
     integer, intent(in) :: oindex1,oindex2,no,nv
     !> nv**2 tiles of ccsd_doubles
-    real(realk), dimension(nv,nv) :: ccsd_doubles_12, ccsd_doubles_21, ccsd_doubles_22
+    real(realk), dimension(nv,nv,no) :: ccsd_doubles_1, ccsd_doubles_2
     !> no*nv**2 tiles of ccsd_doubles
     real(realk), dimension(no,nv,nv) :: ccsd_doubles_portions_1,ccsd_doubles_portions_2
     !> tiles of ovoo 2-el integrals
@@ -4648,7 +4644,7 @@ contains
 #endif
 
     ! ijj.jji
-    call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_21,&
+    call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_1(:,:,oindex2),&
                             & vvvo_tile_2,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_portions_2,&
                             & ovoo_tile_12,trip_tmp,async_idx(4),cublas_handle)
@@ -4671,7 +4667,7 @@ contains
 #endif
 
     ! jij,ijj
-    call trip_amplitudes_ijk_virt(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_12,&
+    call trip_amplitudes_ijk_virt(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_2(:,:,oindex1),&
                             & vvvo_tile_2,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_portions_1,&
                             & ovoo_tile_22,trip_tmp,async_idx(4),cublas_handle)
@@ -4689,7 +4685,7 @@ contains
 #endif 
 
     ! jji,jij
-    call trip_amplitudes_ijk_virt(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_22,&
+    call trip_amplitudes_ijk_virt(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_2(:,:,oindex2),&
                             & vvvo_tile_1,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_portions_2,&
                             & ovoo_tile_21,trip_tmp,async_idx(4),cublas_handle)
@@ -4800,9 +4796,8 @@ contains
   !> \brief: generator for triples amplitudes, case(3)
   !> \author: Janus Juul Eriksen
   !> \date: february 2014
-  subroutine trip_generator_ijk_case3(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_12,ccsd_doubles_13,&
-                                & ccsd_doubles_21,ccsd_doubles_23,ccsd_doubles_31,ccsd_doubles_32,&
-                                & ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
+  subroutine trip_generator_ijk_case3(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_1,ccsd_doubles_2,&
+                                & ccsd_doubles_3,ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
                                 & ccsd_doubles_portions_3,vvvo_tile_1,vvvo_tile_2,vvvo_tile_3,&
                                 & ovoo_tile_12,ovoo_tile_13,ovoo_tile_21,ovoo_tile_23,ovoo_tile_31,&
                                 & ovoo_tile_32,trip_tmp,trip_ampl,async_idx,num_idxs,cublas_handle)
@@ -4812,8 +4807,7 @@ contains
     !> i, j, k, nocc, and nvirt
     integer, intent(in) :: oindex1,oindex2,oindex3,no,nv
     !> nv**2 tiles of ccsd_doubles
-    real(realk), dimension(nv,nv) :: ccsd_doubles_12, ccsd_doubles_13, ccsd_doubles_21
-    real(realk), dimension(nv,nv) :: ccsd_doubles_23, ccsd_doubles_31, ccsd_doubles_32
+    real(realk), dimension(nv,nv,no) :: ccsd_doubles_1, ccsd_doubles_2, ccsd_doubles_3
     !> no*nv**2 tiles of ccsd_doubles
     real(realk), dimension(no,nv,nv) :: ccsd_doubles_portions_1,ccsd_doubles_portions_2,ccsd_doubles_portions_3
     !> tiles of ovoo 2-el integrals
@@ -4839,13 +4833,13 @@ contains
 #endif
 
     ! ijk.jki
-    call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_21,&
+    call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_1(:,:,oindex2),&
                             & vvvo_tile_3,trip_ampl,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_portions_2,&
                             & ovoo_tile_13,trip_ampl,async_idx(4),cublas_handle)
 
     ! jik,ikj
-    call trip_amplitudes_ijk_virt(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_12,&
+    call trip_amplitudes_ijk_virt(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_2(:,:,oindex1),&
                             & vvvo_tile_3,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_portions_1,&
                             & ovoo_tile_23,trip_tmp,async_idx(4),cublas_handle)
@@ -4859,7 +4853,7 @@ contains
 #endif
 
     ! kij,ijk
-    call trip_amplitudes_ijk_virt(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_13,&
+    call trip_amplitudes_ijk_virt(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_3(:,:,oindex1),&
                             & vvvo_tile_2,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_portions_1,&
                             & ovoo_tile_32,trip_tmp,async_idx(4),cublas_handle)
@@ -4873,7 +4867,7 @@ contains
 #endif
 
     ! jki,kij
-    call trip_amplitudes_ijk_virt(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_32,&
+    call trip_amplitudes_ijk_virt(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_2(:,:,oindex3),&
                             & vvvo_tile_1,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_portions_3,&
                             & ovoo_tile_21,trip_tmp,async_idx(4),cublas_handle)
@@ -4887,7 +4881,7 @@ contains
 #endif
 
     ! ikj,kji
-    call trip_amplitudes_ijk_virt(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_31,&
+    call trip_amplitudes_ijk_virt(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_1(:,:,oindex3),&
                             & vvvo_tile_2,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_portions_3,&
                             & ovoo_tile_12,trip_tmp,async_idx(4),cublas_handle)
@@ -4904,7 +4898,7 @@ contains
 #endif 
 
     ! kji,jik
-    call trip_amplitudes_ijk_virt(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_23,&
+    call trip_amplitudes_ijk_virt(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_3(:,:,oindex2),&
                             & vvvo_tile_1,trip_tmp,async_idx(4),cublas_handle)
     call trip_amplitudes_ijk_occ(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_portions_2,&
                             & ovoo_tile_31,trip_tmp,async_idx(4),cublas_handle)
