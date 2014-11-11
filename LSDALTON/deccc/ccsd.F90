@@ -1002,7 +1002,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: unlock_time, waiting_time, flushing_time
      real(realk) :: phase_counters_int_dir(nphases)
      integer :: testmode(4)
-     integer(kind=long) :: xyz,zyx1,zyx2
+     integer(kind=long) :: xyz,zyx1,zyx2,mem_allocated,HeapMemoryUsage
      logical :: debug
      character(tensor_MSG_LEN) :: msg
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1012,10 +1012,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
      integer, parameter :: bs = 1
-
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
-
+     call DetectHeapMemoryInit()
      time_init_work       = 0.0E0_realk
      time_init_comm       = 0.0E0_realk
      time_intloop_work    = 0.0E0_realk
@@ -2572,7 +2571,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(omega1,int((i8*no)*nv,kind=8)," NORM(omega1):")
         call print_norm(omega2,                       " NORM(omega2):")
      endif
-
+     if(master.and.DECinfo%PL>1) then
+        call DetectHeapMemory(mem_allocated,HeapMemoryUsage,&
+             & 'get_ccsd_residual_integral_driven',DECinfo%output)
+        WRITE(DECinfo%output,'(A,f9.3,A)')'Expected Memory Used ',ActuallyUsed,' GB'
+     endif
   end subroutine get_ccsd_residual_integral_driven
 
   subroutine yet_another_ccsd_residual(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
