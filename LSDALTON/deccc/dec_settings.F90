@@ -71,6 +71,7 @@ contains
 
 
     ! -- Debug modes
+    DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%CRASHCALC            = .false.
     DECinfo%cc_driver_debug      = .false.
     DECinfo%CCDEBUG              = .false.
@@ -506,6 +507,8 @@ contains
 
        !KEYWORDS FOR DEC PARALLELISM
        !****************************
+       case('.TEST_FULLY_DISTRIBUTED_INTEGRALS') 
+          DECinfo%test_fully_distributed_integrals=.true.
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch

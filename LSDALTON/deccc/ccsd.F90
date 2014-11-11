@@ -1011,6 +1011,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
      character(4) :: def_atype
+     integer, parameter :: bs = 1
 
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
@@ -1189,8 +1190,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #else
         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
 #endif
-        call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.)
+        call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.,mylsitem%setting,intspec)
 
         !SOME WORDS ABOUT THE CHOSEN SCHEME:
         ! Depending on the availability of memory on the nodes a certain scheme
@@ -1358,11 +1359,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==3) write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
         if(scheme==2) write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
         if(scheme==1) write(DECinfo%output,'("Using Dmitry s scheme")')
-        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,3,scheme,.false.)
+        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,iter,3,scheme,.false.,&
+           &mylsitem%setting,intspec)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
-        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,2,scheme,.false.)
+        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,iter,2,scheme,.false.,&
+           &mylsitem%setting,intspec)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
-        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,4,scheme,.true.)
+        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,iter,4,scheme,.true.,&
+           &mylsitem%setting,intspec)
      endif
 
      ! Use the dense amplitudes
@@ -1383,7 +1387,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      !if I am the working process, then
-     call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
+     call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%d,tmi%d)
 
      if(master.and.print_debug)then
         call print_norm(tpl%d,int(nor*nvr,kind=8)," NORM(tpl)   :")
@@ -1479,16 +1483,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !call get_available_memory(DECinfo%output,MemFree4,memfound,suppress_print=.true.)
 
      ! allocate working arrays depending on the batch sizes
-     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
      call mem_alloc( w0, w0size , simple = .false. )
 
-     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
      call mem_alloc( w1, w1size , simple = .false.)
 
-     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
      call mem_alloc( w2, w2size , simple = .false. )
 
-     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
      call mem_alloc( w3, w3size , simple = .false. )
 
      !call get_currently_available_memory(MemFree3)
@@ -2676,7 +2684,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=long) :: maxsize64,dummy64
      integer :: myload,nelms,n4
      real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2, deb1,deb2,ActuallyUsed
-     real(realk) :: MemFree,MemFreeMin
+     real(realk) :: MemFree,MemFreeMin,MemUsed
      real(realk) :: tcpu_end,twall_end,time_a, time_c, time_d,time_singles
      real(realk) :: time_doubles,timewall_start,wait_time,max_wait_time,min_wait_time,ave_wait_time
      integer     :: scheme
@@ -2684,6 +2692,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      logical :: memfound
 
      ! variables used for BATCH construction and INTEGRAL calculation
+     logical :: save_cs_screen, save_ps_screen
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,K,MinAObatch
      integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
@@ -2707,8 +2716,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(batchtoorb), pointer :: batch2orbGamma(:)
      Character            :: INTSPEC(5)
      logical :: fullRHS
-     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
-     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
+     integer :: MaxActualDimAlpha,nbatchesAlpha
+     integer :: MaxActualDimGamma,nbatchesGamma
+     integer :: ndimA,ndimB,ndimC,ndimD
+     integer :: ndimAs,ndimBs,ndimCs,ndimDs
+     integer :: startA,startB,startC,startD
 
      integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
      integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os,bs,as,gs
@@ -2761,10 +2773,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: time_cont22_tot_max,  time_cont22_tot_min,  time_cont22_tot,   time_cont22
      real(realk) :: time_cont23_tot_max,  time_cont23_tot_min,  time_cont23_tot,   time_cont23
      real(realk) :: time_w_min, time_c_min, time_i_min, time_w_max, time_c_max, time_i_max
-     integer :: testmode(4),residual_nr
+     integer :: starts(4),residual_nr
      integer(kind=long) :: xyz,zyx1,zyx2
      logical :: debug
      character(tensor_MSG_LEN) :: msg
+     real(realk), parameter :: frac = 0.8E0_realk
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef VAR_OMP
@@ -2855,33 +2868,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      vs                       = t2%tdim(1)
      os                       = t2%tdim(3)
      residual_nr              = RN_YET_ANOTHER_RES
-     bs                       = nb/int(sqrt(float(nnod))+2)
-     nors                     = nor/int(sqrt(float(nnod))+2)
-     nvrs                     = nvr/int(sqrt(float(nnod))+2)
+     bs                       = get_split_scheme_0(nb) 
+     nors                     = get_split_scheme_0(nor)
+     nvrs                     = get_split_scheme_0(nvr)
 
-     print *,me,"splits",no,nv,nb," in ", os, vs, bs
-
-     
 
      ! Set integral info
      ! *****************
-     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center 
-     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center 
-     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center 
-     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
-     INTSPEC(5)               = 'C' !C = Coulomb operator
-#ifdef VAR_ICHOR
-     iprint = 0           !print level for Ichor Integral code
-     MoTrans = .FALSE.    !Do not transform to MO basis! 
-     NoSymmetry = .FALSE. !Use Permutational Symmetry! 
-     SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
-     !Determine the full number of AO batches - not to be confused with the batches of AOs
-     !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
-     iAO = 1
-     call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
-#else
-     doscreen = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
-#endif
+     !R = Regular Basis set on the 1th center R = Regular Basis set on the 2th center R = Regular Basis set on the 3th center R = Regular Basis set on the 4th center 
+     !C = Coulomb operator
+     INTSPEC = ['R','R','R','R','C'] 
+     save_cs_screen = mylsitem%setting%SCHEME%CS_SCREEN
+     save_ps_screen = mylsitem%setting%SCHEME%PS_SCREEN
+     mylsitem%setting%SCHEME%CS_SCREEN = .FALSE.
+     mylsitem%setting%SCHEME%PS_SCREEN = .FALSE.
+     doscreen = mylsitem%setting%SCHEME%CS_SCREEN.OR.mylsitem%setting%SCHEME%PS_SCREEN
 
 
      StartUpSlaves: if(master .and. nnod>1) then
@@ -2912,8 +2913,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call get_currently_available_memory(MemFree)
      MemFreeMin = MemFree
      call lsmpi_reduce_realk_min(MemFreeMin,infpar%master,infpar%lg_comm)
-     call lsmpi_local_reduction(MemFree,infpar%master)
-
+     ! Estimate free mem to be the min times the number of nodes
+     MemFree = MemFreeMin * nnod
 
      if(print_debug)then
         call print_norm(xo," NORM(xo)    :",print_on_rank = 0)
@@ -2922,64 +2923,44 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(yv," NORM(yv)    :",print_on_rank = 0)
      endif
 
-     ! Initialize stuff
-#ifdef VAR_ICHOR
-     nullify(AOGammabatchinfo)
-     nullify(AOalphabatchinfo)    
-#else
-     nullify(orb2batchAlpha)
-     nullify(batchdimAlpha)
-     nullify(batchsizeAlpha)
-     nullify(batch2orbAlpha)
-     nullify(batchindexAlpha)
-     nullify(orb2batchGamma)
-     nullify(batchdimGamma)
-     nullify(batchsizeGamma)
-     nullify(batch2orbGamma)
-     nullify(batchindexGamma)
-#endif
-
      if(master) then
         !==================================================
         !                  Batch construction             !
         !==================================================
-
-        ! Get free memory and determine maximum batch sizes
-        ! -------------------------------------------------
 #ifdef VAR_ICHOR
-        !Determine the minimum allowed AObatch size MinAObatch
-        !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
-        !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
-        !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
-        !'R'  !Specifies that it is the Regular AO basis that should be batched
-        iAO = 4 !the center that the batching should occur on (they are all the same in this case)  
+        iAO = 4 
         call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
 #else
         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
 #endif
-        call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.)
+
+        ! Get free memory and determine maximum batch sizes
+        ! -------------------------------------------------
+        call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxActualDimAlpha,MaxActualDimGamma,&
+        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.,mylsitem%setting,intspec)
 
         if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
+        
      endif
-
 
      !all communication for MPI prior to the loop
      call time_start_phase(PHASE_COMM, at = time_init_work )
-
-
      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
      call ls_mpi_buffer(scheme,infpar%master)
      call ls_mpi_buffer(print_debug,infpar%master)
      call ls_mpi_buffer(dynamic_load,infpar%master)
      call ls_mpi_buffer(restart,infpar%master)
-     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
-     call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
-     call ls_mpi_buffer(els2add,infpar%master)
+     call ls_mpi_buffer(MaxActualDimAlpha,infpar%master)
+     call ls_mpi_buffer(MaxActualDimGamma,infpar%master)
      call ls_mpi_buffer(lock_outside,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-
      call time_start_phase(PHASE_WORK, at = time_init_comm)
+
+     nbatchesAlpha = nb / MaxActualDimAlpha
+     if( mod( nb, MaxActualDimAlpha ) > 0 ) nbatchesAlpha = nbatchesAlpha + 1
+     nbatchesGamma = nb / MaxActualDimGamma
+     if( mod( nb, MaxActualDimGamma ) > 0 ) nbatchesGamma = nbatchesGamma + 1
+
 
      hstatus = 80
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
@@ -2989,119 +2970,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
      ! ************************************************
-     ! * Determine batch information for Gamma batch  *
-     ! ************************************************
-#ifdef VAR_ICHOR
-     iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
-     !Determine how many batches of AOS based on the MaxAllowedDimGamma, the requested
-     !size of the AO batches. iAO is the center that the batching should occur on. 
-     !'R'  !Specifies that it is the Regular AO basis that should be batched 
-     call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
-        & nbatchesGamma,DECinfo%output)
-     call mem_alloc(AOGammabatchinfo,nbatchesGamma)
-     !Construct the batches of AOS based on the MaxAllowedDimGamma, the requested
-     !size of the AO batches - MaxAllowedDimGamma must be unchanged since the call 
-     !to determine_Ichor_nbatchesofAOS
-     !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
-     !So MaxActualDimGamma must be less og equal to MaxAllowedDimGamma
-     call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
-        & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
-#else
-     ! Orbital to batch information
-     ! ----------------------------
-     call mem_alloc(orb2batchGamma,nb)
-     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
-        & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-        &nbatchesGamma,orb2BatchGamma,'R')
-#endif
-     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
-        & 'with maximum size',MaxActualDimGamma
-
-#ifndef VAR_ICHOR
-     ! Translate batchindex to orbital index
-     ! -------------------------------------
-     call mem_alloc(batch2orbGamma,nbatchesGamma)
-     do idx=1,nbatchesGamma
-        call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
-        batch2orbGamma(idx)%orbindex = 0
-        batch2orbGamma(idx)%norbindex = 0
-     end do
-     do iorb=1,nb
-        idx = orb2batchGamma(iorb)
-        batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-        K = batch2orbGamma(idx)%norbindex
-        batch2orbGamma(idx)%orbindex(K) = iorb
-     end do
-#endif
-
-     ! ************************************************
-     ! * Determine batch information for Alpha batch  *
-     ! ************************************************
-
-#ifdef VAR_ICHOR
-     iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
-     !Determine how many batches of AOS based on the MaxAllowedDimAlpha, the requested
-     !size of the AO batches. iAO is the center that the batching should occur on. 
-     !'R'  !Specifies that it is the Regular AO basis that should be batched 
-     call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
-        & nbatchesAlpha,DECinfo%output)
-     call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
-     !Construct the batches of AOS based on the MaxAllowedDimAlpha, the requested
-     !size of the AO batches - MaxAllowedDimAlpha must be unchanged since the call 
-     !to determine_Ichor_nbatchesofAOS
-     !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
-     !So MaxActualDimAlpha must be less og equal to MaxAllowedDimAlpha
-     call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
-        & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
-#else
-     ! Orbital to batch information
-     ! ----------------------------
-     call mem_alloc(orb2batchAlpha,nb)
-     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
-        & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-#endif
-
-     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
-        &, 'with maximum size',MaxActualDimAlpha
-
-#ifndef VAR_ICHOR
-     ! Translate batchindex to orbital index
-     ! -------------------------------------
-     call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-     do idx=1,nbatchesAlpha
-        call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-        batch2orbAlpha(idx)%orbindex = 0
-        batch2orbAlpha(idx)%norbindex = 0
-     end do
-     do iorb=1,nb
-        idx = orb2batchAlpha(iorb)
-        batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-        K = batch2orbAlpha(idx)%norbindex
-        batch2orbAlpha(idx)%orbindex(K) = iorb
-     end do
-#endif
-
-     ! ************************************************
      ! *  Allocate matrices used in the batched loop  *
      ! ************************************************
 
-
      ! Use the dense amplitudes
      ! ------------------------
-
      !get the t+ and t- for the Kobayshi-like B2 term
      call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
      call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
-
-     call tensor_zero(tpl)
-     call tensor_zero(tmi)
-     !call get_tpl_and_tmi(t2,nv,no,tpl,tmi)
+     
+     call get_tpl_and_tmi(t2,tpl,tmi)
 
      if(print_debug)then
         call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
         call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
      endif
-
 
      call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
      call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
@@ -3114,7 +2997,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if( print_debug )then
         call print_norm(u2," NORM(u2)    :",print_on_rank=0)
      endif
-
 
      call tensor_ainit(Had,[nv,nb],2,local=local,tdims=[vs,bs],atype="TDAR")
      call tensor_ainit(Gbi,[nb,no],2,local=local,tdims=[bs,os],atype="TDAR")
@@ -3144,38 +3026,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      ! allocate working arrays depending on the batch sizes
-     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+        &MaxActualDimGamma,0,setting = mylsitem%setting, intspec = intspec)
      call mem_alloc( w0, w0size , simple = .false. )
 
-     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+        &MaxActualDimGamma,0,setting = mylsitem%setting, intspec = intspec)
      call mem_alloc( w1, w1size , simple = .false.)
 
-
-
-#ifdef VAR_ICHOR
-     !Calculate Screening integrals 
-     SameMOL = .TRUE. !Specifies same molecule on all centers 
-     call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
-#else
-     ! This subroutine builds the full screening matrix.
-     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
-        & nbatchesAlpha,nbatchesGamma,INTSPEC)
-     IF(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
-        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
-           & nb,nbatchesAlpha,nbatchesGamma,&
-           & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-        call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
-           & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
-           & batchindexAlpha,batchindexGamma,&
-           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-     ENDIF
-     !setup LHS screening - the full AO basis is used so we can use the
-     !                      full matrices:        FilenameCS and FilenamePS
-     !Note that it is faster to calculate the integrals in the form
-     !(dimAlpha,dimGamma,nbasis,nbasis) so the full AO basis is used on the RHS
-     !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
-#endif
 
 #ifdef VAR_OMP
      nthreads=OMP_GET_MAX_THREADS()
@@ -3216,20 +3074,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call time_start_phase( PHASE_WORK, twall = tot_intloop )
 
      BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-#ifdef VAR_ICHOR
-        dimGamma     = AOGammabatchinfo(gammaB)%dim      ! Dimension of gamma batch
-        GammaStart   = AOGammabatchinfo(gammaB)%orbstart ! First orbital index in gamma batch
-        GammaEnd     = AOGammabatchinfo(gammaB)%orbEnd   ! Last orbital index in gamma batch
-        AOGammaStart = AOGammabatchinfo(gammaB)%AOstart  ! First AO batch index in gamma batch
-        AOGammaEnd   = AOGammabatchinfo(gammaB)%AOEnd    ! Last AO batch index in gamma batch
-#else
-        dimGamma     = batchdimGamma(gammaB)                         ! Dimension of gamma batch
-        GammaStart   = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-        GammaEnd     = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
-#endif
         !short hand notation
-        fg         = GammaStart
-        lg         = dimGamma
+        fg = 1 + (gammaB-1)*MaxActualDimGamma
+        lg = nb - fg + 1
+        if( lg >= MaxActualDimGamma )then
+           lg = MaxActualDimGamma
+        endif
 
         if( lg > bs )then
            gs = bs
@@ -3272,28 +3122,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, ttot = time_uigcj )
         time_uigcj_tot = time_uigcj_tot + time_uigcj
 
+
         !**********************************
         ! Begin the loop over alpha batches
         !**********************************
-
-
         BatchAlpha: do alphaB=1,nbatchesAlpha ! AO batches
 
-#ifdef VAR_ICHOR
-           dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
-           AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
-           AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
-           AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
-           AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
-#else
-           dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
-           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-           AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
-#endif
-
            !short hand notation
-           fa         = AlphaStart
-           la         = dimAlpha
+           fa = 1 + (alphaB-1)*MaxActualDimAlpha
+           la = nb - fa + 1
+           if( la >= MaxActualDimAlpha )then
+              la = MaxActualDimAlpha
+           endif
 
            if( la > bs )then
               as = bs
@@ -3305,6 +3145,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            if(master.and.DECinfo%PL>2) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
               &alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+
 
            call time_start_phase(PHASE_WORK, twall = time_xofa )
            call tensor_ainit(xo_fa, [la,no], 2, local=local, atype="TDAR", tdims=[as,os])
@@ -3336,33 +3177,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call time_start_phase(PHASE_WORK, twall = time_int1 )
            call tensor_ainit(Cint, [nb,nb,la,lg], 4, local=local, atype="TDAR", tdims=[bs,bs,as,gs])
+           do i = 1, Cint%nlti
 
-           !setup RHS screening - here we only have a set of AO basisfunctions
-           !                      so we use the batchscreening matrices.
-           !                      like BatchfilenamesCS(alphaB,gammaB)
-           !Note that it is faster to calculate the integrals in the form
-           !(dimAlpha,dimGamma,nbasis,nbasis) so the subset of the AO basis is used on the LHS
-           !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
-           call time_start_phase(PHASE_WORK, at = time_intloop_work)
-#ifdef VAR_ICHOR
-           dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array
-           call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,dimAlpha,dimGamma,&
-              & w1%d,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-              & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry)
-#else
-           IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-           IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
-           ! ************************************************************************************
-           dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array
-           ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-           !Mylsitem%setting%scheme%intprint=6
-           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1%d,batchindexAlpha(alphaB),&
-              &batchindexGamma(gammaB),&
-              &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
-           !Mylsitem%setting%scheme%intprint=0
-#endif
-           call tensor_convert(w1%d,Cint)
+              call get_midx(Cint%ti(i)%gt,starts,Cint%ntpm,Cint%mode)
+
+              ndimA  = Cint%ti(i)%d(1)
+              ndimB  = Cint%ti(i)%d(2)
+              ndimC  = Cint%ti(i)%d(3)
+              ndimD  = Cint%ti(i)%d(4)
+
+              startA = 1  + (starts(1)-1)*Cint%tdim(1)
+              startB = 1  + (starts(2)-1)*Cint%tdim(2)
+              startC = fa + (starts(3)-1)*Cint%tdim(3)
+              startD = fg + (starts(4)-1)*Cint%tdim(4)
+
+              call II_GET_ERI_INTEGRALBLOCK_INQUIRE(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                 & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC)
+
+              call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                 & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d)
+
+           enddo
            call time_start_phase(PHASE_WORK, ttot = time_int1 )
            time_int1_tot = time_int1_tot + time_int1
 
@@ -3384,8 +3221,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call tensor_free( int1 )
            call tensor_free( Cint )
-
-
 
 
            !VVOO
@@ -3484,22 +3319,30 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call time_start_phase(PHASE_WORK, twall = time_int2 )
            call tensor_ainit(Cint, [la,nb,lg,nb], 4, local=local, atype="TDAR", tdims=[as,bs,gs,bs])
-           call time_start_phase(PHASE_WORK, at = time_intloop_work)
-#ifdef VAR_ICHOR
-           !Build (batchA,full,batchC,full)
-           call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,dimAlpha,nb,dimGamma,nb,&
-              & w1%d,INTSPEC,FULLRHS,AOAlphaStart,AOAlphaEnd,1,nAObatches,AOGammaStart,AOGammaEnd,&
-              & 1,nAObatches,MoTrans,dimAlpha,nb,dimGamma,nb,NoSymmetry)
-#else
-           IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
-           IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
+           do i = 1, Cint%nlti
 
-           call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
-              & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-              & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,INTSPEC,fullRHS)
-#endif
+              call get_midx(Cint%ti(i)%gt,starts,Cint%ntpm,Cint%mode)
 
-           call tensor_convert(w1%d,Cint)
+              ndimA  = Cint%ti(i)%d(1)
+              ndimB  = Cint%ti(i)%d(2)
+              ndimC  = Cint%ti(i)%d(3)
+              ndimD  = Cint%ti(i)%d(4)
+
+              startA = fa + (starts(1)-1)*Cint%tdim(1)
+              startB = 1  + (starts(2)-1)*Cint%tdim(2)
+              startC = fg + (starts(3)-1)*Cint%tdim(3)
+              startD = 1  + (starts(4)-1)*Cint%tdim(4)
+
+              call II_GET_ERI_INTEGRALBLOCK_INQUIRE(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                 & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC)
+
+              call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                 & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d)
+
+           enddo
+
            call time_start_phase(PHASE_WORK, ttot = time_int2 )
            time_int2_tot = time_int2_tot + time_int2
 
@@ -3701,40 +3544,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase( PHASE_WORK, ttot = tot_intloop )
 
+     mylsitem%setting%SCHEME%CS_SCREEN = save_cs_screen
+     mylsitem%setting%SCHEME%PS_SCREEN = save_ps_screen
 
-     ! Free integral stuff
-     ! *******************
-#ifdef VAR_ICHOR
-     call FREE_SCREEN_ICHORERI()
-     call mem_dealloc(AOGammabatchinfo)
-     call mem_dealloc(AOAlphabatchinfo)
-#else
-     nullify(Mylsitem%setting%LST_GAB_LHS)
-     nullify(Mylsitem%setting%LST_GAB_RHS)
-     call free_decscreen(DECSCREEN)
-
-     ! Free gamma stuff
-     call mem_dealloc(orb2batchGamma)
-     call mem_dealloc(batchdimGamma)
-     call mem_dealloc(batchsizeGamma)
-     call mem_dealloc(batchindexGamma)
-     do idx=1,nbatchesGamma
-        call mem_dealloc(batch2orbGamma(idx)%orbindex)
-        batch2orbGamma(idx)%orbindex => null()
-     end do
-     call mem_dealloc(batch2orbGamma)
-
-     ! Free alpha stuff
-     call mem_dealloc(orb2batchAlpha)
-     call mem_dealloc(batchdimAlpha)
-     call mem_dealloc(batchsizeAlpha)
-     call mem_dealloc(batchindexAlpha)
-     do idx=1,nbatchesAlpha
-        call mem_dealloc(batch2orbAlpha(idx)%orbindex)
-        batch2orbAlpha(idx)%orbindex => null()
-     end do
-     call mem_dealloc(batch2orbAlpha)
-#endif
      ! free arrays only needed in the batched loops
      call time_start_phase(PHASE_COMM, at = time_intloop_work )
 
@@ -4922,11 +4734,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: dimMO, nMObatch, ntot,os,vs
     integer(kind=8) :: dummy
     logical :: mo_ccsd, local_moccsd, mpi_split
+    integer :: bs
 
     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
     ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
     nocc = MyFragment%noccAOS
     nvir = MyFragment%nunoccAOS 
+    bs   = get_split_scheme_0(MyFragment%nbasis)
 
     ! For MO-CCSD part
     ntot    = nocc + nvir
@@ -4963,9 +4777,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call get_symm_tensor_segmenting_simple(nocc,nvir,os,vs)
       call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
-      call get_max_batch_sizes(scheme,MyFragment%nbasis,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &
+      call get_max_batch_sizes(scheme,MyFragment%nbasis,bs,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &
            & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree, &
-           & .true.,dummy,(.not.DECinfo%solver_par),mpi_split)
+           & .true.,dummy,(.not.DECinfo%solver_par),mpi_split,MyFragment%mylsitem%setting,['R','R','R','R','C'])
     end if
 
   end subroutine wrapper_get_ccsd_batch_sizes
@@ -4973,16 +4787,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \brief calculate batch sizes automatically-->dirty but better than nothing
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine get_max_batch_sizes(scheme,nb,nv,vs,no,os,nba,nbg,&
-  &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split)
+  subroutine get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,nba,nbg,&
+  &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split,se,is)
     implicit none
     integer, intent(inout) :: scheme
-    integer, intent(in)    :: nb,nv,vs,no,os
+    integer, intent(in)    :: nb,bs,nv,vs,no,os
     integer :: iter
     integer, intent(inout) :: nba,nbg,minbsize
     real(realK),intent(in) :: MemFree
     real(realk)            :: mem_used,frac_of_total_mem,m
     logical,intent(in)     :: manual,first
+    type(lssetting),intent(inout) :: se
+    Character,intent(in) :: is(5)
     integer(kind=8), intent(inout) :: e2a
     logical, intent(in)    :: local, mpi_split
     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size
@@ -5001,19 +4817,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     magic = 2
     !test for scheme with highest reqirements --> fastest
     scheme=4
-    mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
     if (mem_used>frac_of_total_mem*MemFree)then
 #ifdef VAR_MPI
        !test for scheme with medium requirements
        scheme=3
-       mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+       mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
        if (mem_used>frac_of_total_mem*MemFree)then
           !test for scheme with low requirements
           scheme=2
-          mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+          mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
           if (mem_used>frac_of_total_mem*MemFree)then
              scheme=0
-             mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+             mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
              frac_of_total_mem=0.60E0_realk
              print *,"mem",mem_used,frac_of_total_mem,MemFree
              if (mem_used>frac_of_total_mem*MemFree)then
@@ -5021,9 +4837,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                 write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
                    &frac_of_total_mem*MemFree
                 write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-                mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,3,.false.)
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,3,.false.,se,is)
                 write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-                mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,4,.false.)
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,4,.false.,se,is)
                 write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
                 call lsquit("ERROR(CCSD): there is just not enough memory&
                    & available",DECinfo%output)
@@ -5087,7 +4903,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       if( nbg>=nb )       nbg = nb
       if( nba>=nb )       nba = nb
 
-      mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+      mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
 
       if (frac_of_total_mem*MemFree<mem_used) then
         print *, "ATTENTION your chosen batch sizes might be too large!!!"
@@ -5101,7 +4917,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
 
         nbg=nbg+1
-        mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,3,scheme,.false.)
+        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,3,scheme,.false.,se,is)
 
       enddo
 
@@ -5113,12 +4929,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         nbg=nbg-1
       endif
 
-
       !determine alpha batch
 
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba))
         nba      = nba+1
-        mem_used = get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,3,scheme,.false.)
+        mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,3,scheme,.false.,se,is)
       enddo
 
       if (nba>=nb)then
@@ -5129,31 +4944,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          nba=nba-1
       endif
 
-      !w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,scheme)
-      !w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,scheme)
-      !w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,scheme)
-      !w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,scheme)
-
-      !!check if none of the working matrices exceed a certain size
-      !thrsize = (no*no*i8)*nv*nv
-      !do while(nba>minbsize.and.(w0size>thrsize.or.w1size>thrsize.or.w2size>thrsize.or.w3size>thrsize))
-      !   w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,scheme)
-      !   w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,scheme)
-      !   w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,scheme)
-      !   w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,scheme)
-      !   nba = nba - 1
-      !enddo
-      !do while(nbg>minbsize.and.(w0size>thrsize.or.w1size>thrsize.or.w2size>thrsize.or.w3size>thrsize))
-      !   w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,scheme)
-      !   w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,scheme)
-      !   w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,scheme)
-      !   w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,scheme)
-      !   nbg = nbg - 1
-      !enddo
-
-
     endif
-    mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
 
     ! mpi_split should be true when we want to estimate the workload associated
     ! to a DEC fragment and eventually split the slots. In this case, the next
@@ -5179,24 +4971,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     if(scheme==2)then
-      mem_used = get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,2,scheme,.false.)
+      mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,2,scheme,.false.,se,is)
       e2a = min(v2o2,int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
     endif
   end subroutine get_max_batch_sizes
 
-
-
 !> \brief calculate the memory requirement for the matrices in the ccsd routine
 !> \author Patrick Ettenhuber
 !> \date January 2012
-  function get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,choice,s,print_stuff) result (memrq)
+  function get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,choice,s,print_stuff,se,is) result (memrq)
     implicit none
-    integer, intent(in) :: no,os,nv,vs,nb
+    integer, intent(in) :: no,os,nv,vs,nb,bs
     integer, intent(in) :: nba,nbg
     integer, intent(in) :: iter,choice
     real(realk) :: memrq, memin, memout
     logical, intent(in) :: print_stuff
     integer, intent(in) :: s
+    type(lssetting),intent(inout) :: se
+    Character,intent(in) :: is(5)
     integer :: nor, nvr, fe, ne , nnod, me, i
     integer :: d1(4),ntpm(4),tdim(4),mode,splt,ntiles,tsze
     integer(kind=ls_mpik) :: master
@@ -5204,7 +4996,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: l2,ml2,fai2,tl2
     integer :: l3,ml3,fai3,tl3
     integer :: l4,ml4,fai4,tl4
-    integer :: nloctiles
+    integer :: nloctiles,  nbuffs
     integer :: cd , e2
     integer(kind=long) :: w0size, w1size, w2size, w3size
     nor = no*(no+1)/2
@@ -5275,10 +5067,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
     tl4 = tl4 * no
 
-    w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,nba,nbg,s)
-    w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,nba,nbg,s)
-    w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,nba,nbg,s)
-    w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,nba,nbg,s)
+    nbuffs = get_nbuffs_scheme_0()
+
+    w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,s,se,is)
+    w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,s,se,is)
+    w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,s,se,is)
+    w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,s,se,is)
     !w0
     memin = 1.0E0_realk * w0size
     !w1
@@ -5412,7 +5206,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        memin = memin +1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)/float(nnod)
        !tpl tmi
        memin = memin + (i8*nor)*nvr*2.0E0_realk/float(nnod)
-
 
        !OUTSIDE OF MAIN LOOP
        !********************
@@ -7842,19 +7635,30 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine ccsd_debug_print
 
 
-  function get_wsize_for_ccsd_int_direct(wnr,no,os,nv,vs,nb,nba,nbg,s) result(wsize)
+  function get_wsize_for_ccsd_int_direct(wnr,no,os,nv,vs,nb,bs,&
+        &nba,nbg,s,setting,intspec) result(wsize)
      implicit none
-     integer, intent(in) :: wnr,no,os,nv,vs,nb,nba,nbg,s
+     integer, intent(in) :: wnr,no,os,nv,vs,nb,bs,nba,nbg,s
+     type(lssetting),intent(inout) :: setting
+     Character,intent(in) :: intspec(5)
      integer(kind=long) :: wsize
-     integer(kind=long) :: maxsize64,nor,nvr
+     integer(kind=long) :: maxsize64,nor,nvr, MAX_INTEGRAL_BUF
+     integer :: nbuffs,me
+
      nor = (i8*(no*(no+1))/2)
      nvr = (i8*(nv*(nv+1))/2)
+
+     nbuffs    = get_nbuffs_scheme_0()
+     maxsize64 = 0
      select case(wnr)
      case(0)
         maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
         if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
         if(s==0)then
+
            maxsize64 = max(max(nbg*nv,nba*no),max(nbg*no,nba*nv))
+           maxsize64 = max(maxsize64,nbuffs*max(max(i8*bs,i8*vs),i8*os)**4)
+
         endif
      case(1)
         maxsize64 = max(int((i8*nb*nb)*nba*nbg,kind=8),int((i8*nv*nv*no)*nba,kind=8))
@@ -7862,8 +7666,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==4.or.s==3) maxsize64 = max(maxsize64,int((i8*no*no*nv)*nba,kind=8))
         if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
         if(s==0)then
-           maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
-           maxsize64 = max(maxsize64,int((5 *i8*vs**2)*os**2,kind=8))
+           maxsize64 = nbuffs * int(max(max(os,vs),bs),kind=8)**4
+           maxsize64 = max(maxsize64,nbuffs*int((i8*vs**2)*os**2,kind=8))
+           MAX_INTEGRAL_BUF = 0
+           call simulate_intloop_and_get_worksize(MAX_INTEGRAL_BUF,nb,nbg,nba,bs,intspec,setting)
+           maxsize64 = max(maxsize64,MAX_INTEGRAL_BUF)
         endif
      case(2)
         maxsize64 = max(int((i8*nb)*nb*nba*nbg,kind=8),(i8*no*no)*nv*nv)
@@ -7898,22 +7705,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !Sanity checks for matrix sizes which need to be filled
      if(wsize>MAXINT)then
+        me = 0
+#ifdef VAR_MPI
+        me = infpar%lg_mynum
+#endif
+        print *,me,"ERROR(get_wsize_for_ccsd_int_direct)",wnr,no,os,nv,vs,nb,nba,nbg,s,wsize,MAXINT
         call lsquit("ERROR(CCSD):matrix sizes too large, please recompile with 64bit integers",-1)
      endif
 
   end function get_wsize_for_ccsd_int_direct
-
-  subroutine copy_stripe_from_full_matrix(Mi,Mo,f,l,d1,d2)
-     implicit none
-     integer, intent(in) :: f,l,d1,d2
-     real(realk), intent(in) :: Mi(d1,d2)
-     real(realk), intent(out) :: Mo(l, d2)
-
-     !$OMP WORKSHARE
-     Mo(:,:) = Mi(f:f+l-1,:)
-     !$OMP END WORKSHARE
-
-  end subroutine copy_stripe_from_full_matrix
 
 end module ccsd_module
 
