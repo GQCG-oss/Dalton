@@ -1063,6 +1063,9 @@ do I=1,MOLECULE%natoms
       RADJ = BondRadius(JCHARGE) !Radius in Angstrom
       DISTANCE = DISTANCE1 + X2*X2 + Y2*Y2 + Z2*Z2 - 2*X1*X2 - 2*Y1*Y2 - 2*Z1*Z2
       DISTANCE = SQRT(DISTANCE)*bohr_to_angstrom !now in Angstrom
+      IF(DISTANCE.LT.1.0E-6_realk)THEN
+         call lsquit('Atoms placed on top of each other',-1)
+      ENDIF
       IF (ICHARGE.NE.1.AND.JCHARGE.NE.1) THEN
          IF (DISTANCE .LE. 1.0E0_realk)THEN ! R(Y-X) .lt. 1.0 Angstrom is usually an error
             nShortYXbonds=nShortYXbonds+1

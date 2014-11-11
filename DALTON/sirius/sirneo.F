@@ -1189,7 +1189,7 @@ C
          DO 1200 ISIMX = JSIMX+1,JSIMX+NSIMX
             JROOTX = JROOT(ISIMX)
             IBTYPE = IBNDX(IBNOFF+ISIMX)
-            IF (IBTAND(IBTYPE,1) .NE. 0) THEN
+            IF (IAND(IBTYPE,1) .NE. 0) THEN
                ICSIMX = ICSIMX + 1
                IBNDX(ICSIMX) = JROOTX
                IF (JCRV.NE.JCRVX) THEN
@@ -1197,7 +1197,7 @@ C
                END IF
                JCRVX = JCRVX + NCONF
             END IF
-            IF (IBTAND(IBTYPE,2) .NE. 0) THEN
+            IF (IAND(IBTYPE,2) .NE. 0) THEN
                IOSIMX = IOSIMX + 1
                IBNDX(IOSIMX) = JROOTX
 CHJ-860921: currently KAPOPT only works correctly for ISTATE
@@ -1708,8 +1708,8 @@ C
 C
 C Section 1: extend reduced L-matrix with N new b-vectors
 C
-      EXTEND = (IBTAND(ICTL,1) .NE. 0)
-      SOLVE  = (IBTAND(ICTL,2) .NE. 0)
+      EXTEND = (IAND(ICTL,1) .NE. 0)
+      SOLVE  = (IAND(ICTL,2) .NE. 0)
       NTSIM = NCSIM + NOSIM
       IF (EXTEND .AND. NTSIM.GT.0) THEN
          IF (NREDL .GE. LIROW)

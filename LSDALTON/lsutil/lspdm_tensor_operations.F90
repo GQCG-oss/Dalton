@@ -63,7 +63,7 @@ module lspdm_tensor_operations_module
     subroutine put_acc_el(buf,pos,dest,win)
       use precision
       implicit none
-      real(realk),intent(in) :: buf
+      real(realk),intent(inout) :: buf
       integer, intent(in) :: pos
       integer(kind=ls_mpik),intent(in) :: dest
       integer(kind=ls_mpik),intent(in) :: win
@@ -71,7 +71,7 @@ module lspdm_tensor_operations_module
     subroutine put_acc_vec(buf,nelms,pos,dest,win)
       use precision
       implicit none
-      real(realk),intent(in) :: buf(*)
+      real(realk),intent(inout) :: buf(*)
       integer, intent(in) :: pos
       integer(kind=8) :: nelms
       integer(kind=ls_mpik),intent(in) :: dest
@@ -1339,6 +1339,7 @@ module lspdm_tensor_operations_module
 
   end subroutine lspdm_get_combined_SingleDouble_amplitudes
 
+
   subroutine get_info_for_mpi_get_and_reorder_t1(arr,table_iajb,table_ibja, &
            & dims,ord,t1,t1tile)
     implicit none
@@ -2471,28 +2472,6 @@ module lspdm_tensor_operations_module
 
   end subroutine tensor_default_batches
   
-  !> \brief calculate the number of tiles per mode
-  !> \author Patrick Ettenhuber
-  !> \date march 2013
-  subroutine tensor_get_ntpm(dims,tdim,mode,ntpm,ntiles)
-    implicit none
-    !> number of modes and number of tiles
-    integer :: mode,ntiles
-    !> full dimensions, tile dimensinos, number of tiles per mode
-    integer :: dims(mode),tdim(mode),ntpm(mode)
-    integer :: i
-
-    ntiles = 1
-
-    do i=1,mode
-      ntpm(i)= dims(i)/tdim(i)
-      if(mod(dims(i),tdim(i))>0)then
-        ntpm(i)=ntpm(i)+1
-      endif
-      ntiles = ntiles * ntpm(i)
-    enddo
-
-  end subroutine tensor_get_ntpm
 
   !> \author Patrick Ettenhuber
   !> \date September 2012
@@ -2604,13 +2583,9 @@ module lspdm_tensor_operations_module
     !begin with counting the number of tiles needed in each mode
     dflt=0
     p_arr%a(addr)%nelms=1
+    call tensor_get_ntpm(p_arr%a(addr)%dims,p_arr%a(addr)%tdim,p_arr%a(addr)%mode,dflt)
     do i=1,p_arr%a(addr)%mode
-      p_arr%a(addr)%nelms = p_arr%a(addr)%nelms * &
-      &p_arr%a(addr)%dims(i)
-      dflt(i)=p_arr%a(addr)%dims(i)/p_arr%a(addr)%tdim(i)
-      if(mod(p_arr%a(addr)%dims(i),p_arr%a(addr)%tdim(i))>0)then
-        dflt(i)=dflt(i)+1
-      endif
+      p_arr%a(addr)%nelms = p_arr%a(addr)%nelms * p_arr%a(addr)%dims(i)
     enddo
     call tensor_set_ntpm(p_arr%a(addr),dflt,p_arr%a(addr)%mode)
     !print *,infpar%mynum,"ntpm:",arr%ntpm,arr%nelms
@@ -2763,9 +2738,8 @@ module lspdm_tensor_operations_module
         enddo
 
         tsizeB = 1
+        call tensor_get_ntpm(B%dims,fBtdim,B%mode,ntpmB)
         do i=1,B%mode
-           ntpmB(i) = B%dims(i)/fBtdim(i)
-           if(mod(B%dims(i),fBtdim(i))>0)ntpmB(i) = ntpmB(i) + 1
            tsizeB = tsizeB * fBtdim(i)
         enddo
 
@@ -2896,17 +2870,17 @@ module lspdm_tensor_operations_module
         nbuffsA = nbuffs
         nbuffsB = nbuffs
      endif
-
+     
      if(use_wrk_space)then
         call ass_D1to2(wrk,buffA,[A%tsize,nbuffsA])
         if(B_dense)then
            buffB => null()
         else
-           call ass_D1to2(wrk(nbuffsA*A%tsize:nbuffsA*A%tsize+nbuffsB*tsizeB-1),buffB,[tsizeB,nbuffsB])
+           call ass_D1to2(wrk(nbuffsA*A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB),buffB,[tsizeB,nbuffsB])
         endif
-        wA => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize-1)
-        wB => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB-1)
-        wC => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize-1)
+        wA => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize)
+        wB => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB)
+        wC => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize)
      else
         call mem_alloc(buffA,A%tsize,nbuffs)
         if(.not.B_dense)then
@@ -5203,7 +5177,7 @@ module lspdm_tensor_operations_module
   subroutine cp_data2tiled_lowmem(arr,A,dims,mode)
     implicit none
     type(tensor),intent(inout) :: arr
-    real(realk),intent(in) :: A(*)
+    real(realk),intent(inout) :: A(*)
     integer,intent(in) :: mode, dims(mode)
     integer :: fib,lt,ce,j,step,mod_step,iter,nccblocks,st
     integer(kind=ls_mpik) :: nnod, me, dest, assert,ierr, act_step
@@ -6255,7 +6229,7 @@ module lspdm_tensor_operations_module
   subroutine dist_int_contributions(g,o2v2,win,lock_outside)
     implicit none
     integer(kind=long),intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
+    real(realk),intent(inout) :: g(o2v2)
     logical :: lock_outside
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
@@ -6296,7 +6270,7 @@ module lspdm_tensor_operations_module
   subroutine collect_int_contributions(g,o2v2,win)
     implicit none
     integer(kind=long),intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
+    real(realk),intent(inout) :: g(o2v2)
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
     integer :: fe,ne,msg_len_mpi
@@ -6334,7 +6308,7 @@ module lspdm_tensor_operations_module
   subroutine collect_int_contributions_f(g,o2v2,win)
     implicit none
     integer(kind=long),intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
+    real(realk),intent(inout) :: g(o2v2)
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
     integer :: fe,ne,msg_len_mpi
@@ -6416,7 +6390,7 @@ module lspdm_tensor_operations_module
 
   subroutine lsmpi_put_realkV_w8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6428,7 +6402,7 @@ module lspdm_tensor_operations_module
   end subroutine lsmpi_put_realkV_w8
   subroutine lsmpi_get_realkV_w8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6440,7 +6414,7 @@ module lspdm_tensor_operations_module
   end subroutine lsmpi_get_realkV_w8
   subroutine lsmpi_acc_realkV_w8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest

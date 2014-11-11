@@ -1661,7 +1661,7 @@ contains
   subroutine tensor_convert_fort2tensor_wrapper1(fortarr,arr,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
-    real(realk), intent(in) :: fortarr(arr%nelms)
+    real(realk), intent(inout) :: fortarr(arr%nelms)
     integer, intent(in),optional :: order(arr%mode)
     real(realk),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
@@ -1669,7 +1669,7 @@ contains
   end subroutine tensor_convert_fort2tensor_wrapper1
   subroutine tensor_convert_fort2tensor_wrapper2(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(realk), intent(in) :: fortarr(:,:)
+    real(realk), intent(inout) :: fortarr(:,:)
     type(tensor), intent(inout) :: arr
     real(realk),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
@@ -1678,7 +1678,7 @@ contains
   end subroutine tensor_convert_fort2tensor_wrapper2
   subroutine tensor_convert_fort2tensor_wrapper3(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(realk), intent(in) :: fortarr(:,:,:)
+    real(realk), intent(inout) :: fortarr(:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
     real(realk),intent(inout),target,optional :: wrk(*)
@@ -1687,7 +1687,7 @@ contains
   end subroutine tensor_convert_fort2tensor_wrapper3
   subroutine tensor_convert_fort2tensor_wrapper4(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(realk), intent(in) :: fortarr(:,:,:,:)
+    real(realk), intent(inout) :: fortarr(:,:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
     real(realk),intent(inout),target,optional :: wrk(*)
@@ -1702,7 +1702,7 @@ contains
   subroutine tensor_convert_fort2arr(fortarr,arr,nelms,order,wrk,iwrk)
     implicit none
     !> the fortran array with the data
-    real(realk), intent(in) :: fortarr(*)
+    real(realk), intent(inout) :: fortarr(*)
     !> the array which should contain the data after the operation
     type(tensor), intent(inout) :: arr
     !> number of elements to copy from the fortan array to the array
@@ -1881,7 +1881,7 @@ contains
   subroutine tensor_convert_array22array(arraytwo,arr)
     implicit none
     !> array2 input
-    type(array2),intent(in) :: arraytwo
+    type(array2),intent(inout) :: arraytwo
     !> array output
     type(tensor), intent(inout) :: arr
     integer(kind=8) :: nel

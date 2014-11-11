@@ -210,7 +210,7 @@ C
 #include "gdvec.h"
 #include "chrxyz.h"
       LOGICAL OLDDX
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from QPGCT1','*',103)
 C
@@ -277,7 +277,7 @@ C
       DO IX = 1, 3
          DO IY = IX, 3
             J = J + 1
-            IREP = IBTXOR(ISYMAX(IX,1),ISYMAX(IY,1))
+            IREP = IEOR(ISYMAX(IX,1),ISYMAX(IY,1))
             IXCOOR = IPTXYZ(IX,IREP,1)
             IYCOOR = IPTXYZ(IY,IREP,1)
             IF (IPRINT.GT.5) WRITE (LUPRI,'(1X,A,I5)')' Symmetry ',IREP
@@ -385,7 +385,7 @@ C
 #include "infinp.h"
       DIMENSION DIPATM(3,NUCDEP), DIPEAT(3,NUCDEP)
       DIMENSION GEOM(3*NATOMS), NATTYP(NATOMS)
-#include "ibtfun.h"
+
 C
       NCOOR = 3*NUCDEP
 C
@@ -409,12 +409,12 @@ C
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                ICHARG = NINT(CHARGE(IATOM))
                NATTYP(JATOM + 1) = ICHARG
                DO KCOOR = 1, 3
                   GEOM(3*JATOM + KCOOR) =
-     &                 PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                 PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
      &                 *CORD(KCOOR,IATOM)
                END DO
                JATOM = JATOM + 1
@@ -520,7 +520,7 @@ C
 #include "infinp.h"
       DIMENSION DIPA(3), SECA(3,3), THIRDA(3,3,3)
       DIMENSION DIPATM(3,NUCDEP), DIPEAT(3,NUCDEP), GEOM(3*NATOMS)
-#include "ibtfun.h"
+
 C
 C     Molecular dipole moment
 C

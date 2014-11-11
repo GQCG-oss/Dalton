@@ -291,6 +291,7 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
  subroutine TransferRecurrenceCPUP1Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+  use AGC_CPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -310,27 +311,6 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-  !CARTDIR = 1
-  integer,parameter, dimension(35) :: TUVindexX1 = (/ 2,5,6,7,11,12,13,&
-          & 14,15,16,21,22,23,24,25,26,27,28,29,30,36,37,38,39,&
-          & 40,41,42,43,44,45,46,47,48,49,50 /)
-  !CARTDIR = 2
-  integer,parameter, dimension(35) :: TUVindexX2 = (/ 3,6,8,9,12,14,15,&
-          & 17,18,19,22,24,25,27,28,29,31,32,33,34,37,39,40,42,&
-          & 43,44,46,47,48,49,51,52,53,54,55 /)
-  !CARTDIR = 3
-  integer,parameter, dimension(35) :: TUVindexX3 = (/ 4,7,9,10,13,15,16,&
-          & 18,19,20,23,25,26,28,29,30,32,33,34,35,38,40,41,43,&
-          & 44,45,47,48,49,50,52,53,54,55,56 /)
-  !CARTDIR = 1
-  integer,parameter, dimension(20) :: IfacX1 = (/ 1,2,1,1,3,2,2,&
-          & 1,1,1,4,3,3,2,2,2,1,1,1,1 /)
-  !CARTDIR = 2
-  integer,parameter, dimension(20) :: IfacX2 = (/ 1,1,2,1,1,2,1,&
-          & 3,2,1,1,2,1,3,2,1,4,3,2,1 /)
-  !CARTDIR = 3
-  integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
-          & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
 !$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
@@ -377,27 +357,27 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
       Tmp0(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX1_35(ituvqminus1)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1_20(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX2_35(ituvqminus1)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2_20(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX3_35(ituvqminus1)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3_20(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_35(iTUVQ)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_35(iTUVQ)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_35(iTUVQ)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
@@ -413,6 +393,7 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
  subroutine TransferRecurrenceCPUP2Q3CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+  use AGC_CPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -433,27 +414,6 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-  !CARTDIR = 1
-  integer,parameter, dimension(35) :: TUVindexX1 = (/ 2,5,6,7,11,12,13,&
-          & 14,15,16,21,22,23,24,25,26,27,28,29,30,36,37,38,39,&
-          & 40,41,42,43,44,45,46,47,48,49,50 /)
-  !CARTDIR = 2
-  integer,parameter, dimension(35) :: TUVindexX2 = (/ 3,6,8,9,12,14,15,&
-          & 17,18,19,22,24,25,27,28,29,31,32,33,34,37,39,40,42,&
-          & 43,44,46,47,48,49,51,52,53,54,55 /)
-  !CARTDIR = 3
-  integer,parameter, dimension(35) :: TUVindexX3 = (/ 4,7,9,10,13,15,16,&
-          & 18,19,20,23,25,26,28,29,30,32,33,34,35,38,40,41,43,&
-          & 44,45,47,48,49,50,52,53,54,55,56 /)
-  !CARTDIR = 1
-  integer,parameter, dimension(20) :: IfacX1 = (/ 1,2,1,1,3,2,2,&
-          & 1,1,1,4,3,3,2,2,2,1,1,1,1 /)
-  !CARTDIR = 2
-  integer,parameter, dimension(20) :: IfacX2 = (/ 1,1,2,1,1,2,1,&
-          & 3,2,1,1,2,1,3,2,1,4,3,2,1 /)
-  !CARTDIR = 3
-  integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
-          & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
 !$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
@@ -510,51 +470,51 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
       Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,10
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX1_35(ituvqminus1)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1_20(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,10
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX2_35(ituvqminus1)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2_20(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,10
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX3_35(ituvqminus1)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3_20(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 11,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX1_35(ituvqminus1)
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1_20(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 11,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX2_35(ituvqminus1)
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2_20(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 11,20
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX3_35(ituvqminus1)
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3_20(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_35(iTUVQ)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_35(iTUVQ)
       Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_35(iTUVQ)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_35(iTUVQ)
       Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_35(iTUVQ)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_35(iTUVQ)
       Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
  ! Building for Angular momentum Jp = 2
@@ -577,75 +537,75 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
       Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,10
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
+      iTUVQ = TUVindexX1_35(ituvqminus1)
+      Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + IfacX1_20(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
      enddo
      do ituvqminus1 = 1,10
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
+      iTUVQ = TUVindexX1_35(ituvqminus1)
+      Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + IfacX1_20(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
      do ituvqminus1 = 1,10
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX1_35(ituvqminus1)
+      Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + IfacX1_20(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do ituvqminus1 = 1,10
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
+      iTUVQ = TUVindexX2_35(ituvqminus1)
+      Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + IfacX2_20(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
      do ituvqminus1 = 1,10
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX2_35(ituvqminus1)
+      Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + IfacX2_20(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do ituvqminus1 = 1,10
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX3_35(ituvqminus1)
+      Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + IfacX3_20(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do iTUVQ = 1,10
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_35(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp0(iTUVplus1,2)
      enddo
      do iTUVQ = 11,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_35(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp1(iTUVplus1,2)
      enddo
      do iTUVQ = 1,10
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_35(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp0(iTUVplus1,3)
      enddo
      do iTUVQ = 11,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_35(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp1(iTUVplus1,3)
      enddo
      do iTUVQ = 1,10
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_35(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp0(iTUVplus1,4)
      enddo
      do iTUVQ = 11,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_35(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp1(iTUVplus1,4)
      enddo
      do iTUVQ = 1,10
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_35(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp0(iTUVplus1,3)
      enddo
      do iTUVQ = 11,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_35(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp1(iTUVplus1,3)
      enddo
      do iTUVQ = 1,10
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_35(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp0(iTUVplus1,4)
      enddo
      do iTUVQ = 11,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_35(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp1(iTUVplus1,4)
      enddo
      do iTUVQ = 1,10
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_35(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp0(iTUVplus1,4)
      enddo
      do iTUVQ = 11,20
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_35(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp1(iTUVplus1,4)
      enddo
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
@@ -661,6 +621,7 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
  subroutine TransferRecurrenceCPUP2Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+  use AGC_CPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -681,33 +642,6 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-  !CARTDIR = 1
-  integer,parameter, dimension(56) :: TUVindexX1 = (/ 2,5,6,7,11,12,13,&
-          & 14,15,16,21,22,23,24,25,26,27,28,29,30,36,37,38,39,&
-          & 40,41,42,43,44,45,46,47,48,49,50,57,58,59,60,61,62,&
-          & 63,64,65,66,67,68,69,70,71,72,73,74,75,76,77 /)
-  !CARTDIR = 2
-  integer,parameter, dimension(56) :: TUVindexX2 = (/ 3,6,8,9,12,14,15,&
-          & 17,18,19,22,24,25,27,28,29,31,32,33,34,37,39,40,42,&
-          & 43,44,46,47,48,49,51,52,53,54,55,58,60,61,63,64,65,&
-          & 67,68,69,70,72,73,74,75,76,78,79,80,81,82,83 /)
-  !CARTDIR = 3
-  integer,parameter, dimension(56) :: TUVindexX3 = (/ 4,7,9,10,13,15,16,&
-          & 18,19,20,23,25,26,28,29,30,32,33,34,35,38,40,41,43,&
-          & 44,45,47,48,49,50,52,53,54,55,56,59,61,62,64,65,66,&
-          & 68,69,70,71,73,74,75,76,77,79,80,81,82,83,84 /)
-  !CARTDIR = 1
-  integer,parameter, dimension(35) :: IfacX1 = (/ 1,2,1,1,3,2,2,&
-          & 1,1,1,4,3,3,2,2,2,1,1,1,1,5,4,4,3,&
-          & 3,3,2,2,2,2,1,1,1,1,1 /)
-  !CARTDIR = 2
-  integer,parameter, dimension(35) :: IfacX2 = (/ 1,1,2,1,1,2,1,&
-          & 3,2,1,1,2,1,3,2,1,4,3,2,1,1,2,1,3,&
-          & 2,1,4,3,2,1,5,4,3,2,1 /)
-  !CARTDIR = 3
-  integer,parameter, dimension(35) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
-          & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
-          & 2,3,1,2,3,4,1,2,3,4,5 /)
 !$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
@@ -764,51 +698,51 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
       Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX1_56(ituvqminus1)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1_35(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX2_56(ituvqminus1)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2_35(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX3_56(ituvqminus1)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3_35(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,35
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX1_56(ituvqminus1)
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1_35(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,35
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX2_56(ituvqminus1)
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2_35(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,35
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX3_56(ituvqminus1)
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3_35(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_56(iTUVQ)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,56
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_56(iTUVQ)
       Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_56(iTUVQ)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,56
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_56(iTUVQ)
       Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_56(iTUVQ)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,56
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_56(iTUVQ)
       Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
  ! Building for Angular momentum Jp = 2
@@ -831,75 +765,75 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
       Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
+      iTUVQ = TUVindexX1_56(ituvqminus1)
+      Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + IfacX1_35(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
+      iTUVQ = TUVindexX1_56(ituvqminus1)
+      Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + IfacX1_35(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX1_56(ituvqminus1)
+      Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + IfacX1_35(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
+      iTUVQ = TUVindexX2_56(ituvqminus1)
+      Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + IfacX2_35(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX2_56(ituvqminus1)
+      Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + IfacX2_35(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX3_56(ituvqminus1)
+      Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + IfacX3_35(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_56(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp0(iTUVplus1,2)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_56(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp1(iTUVplus1,2)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_56(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp0(iTUVplus1,3)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_56(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp1(iTUVplus1,3)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_56(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp0(iTUVplus1,4)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_56(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp1(iTUVplus1,4)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_56(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp0(iTUVplus1,3)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_56(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp1(iTUVplus1,3)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_56(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp0(iTUVplus1,4)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_56(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp1(iTUVplus1,4)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_56(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp0(iTUVplus1,4)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_56(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp1(iTUVplus1,4)
      enddo
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
@@ -915,6 +849,7 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
  subroutine TransferRecurrenceCPUP3Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
          & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+  use AGC_CPU_OBS_TRParamMod
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -936,42 +871,6 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-  !CARTDIR = 1
-  integer,parameter, dimension(84) :: TUVindexX1 = (/ 2,5,6,7,11,12,13,&
-          & 14,15,16,21,22,23,24,25,26,27,28,29,30,36,37,38,39,&
-          & 40,41,42,43,44,45,46,47,48,49,50,57,58,59,60,61,62,&
-          & 63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,85,86,&
-          & 87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,&
-          & 104,105,106,107,108,109,110,111,112 /)
-  !CARTDIR = 2
-  integer,parameter, dimension(84) :: TUVindexX2 = (/ 3,6,8,9,12,14,15,&
-          & 17,18,19,22,24,25,27,28,29,31,32,33,34,37,39,40,42,&
-          & 43,44,46,47,48,49,51,52,53,54,55,58,60,61,63,64,65,&
-          & 67,68,69,70,72,73,74,75,76,78,79,80,81,82,83,86,88,&
-          & 89,91,92,93,95,96,97,98,100,101,102,103,104,106,107,108,109,&
-          & 110,111,113,114,115,116,117,118,119 /)
-  !CARTDIR = 3
-  integer,parameter, dimension(84) :: TUVindexX3 = (/ 4,7,9,10,13,15,16,&
-          & 18,19,20,23,25,26,28,29,30,32,33,34,35,38,40,41,43,&
-          & 44,45,47,48,49,50,52,53,54,55,56,59,61,62,64,65,66,&
-          & 68,69,70,71,73,74,75,76,77,79,80,81,82,83,84,87,89,&
-          & 90,92,93,94,96,97,98,99,101,102,103,104,105,107,108,109,110,&
-          & 111,112,114,115,116,117,118,119,120 /)
-  !CARTDIR = 1
-  integer,parameter, dimension(56) :: IfacX1 = (/ 1,2,1,1,3,2,2,&
-          & 1,1,1,4,3,3,2,2,2,1,1,1,1,5,4,4,3,&
-          & 3,3,2,2,2,2,1,1,1,1,1,6,5,5,4,4,4,&
-          & 3,3,3,3,2,2,2,2,2,1,1,1,1,1,1 /)
-  !CARTDIR = 2
-  integer,parameter, dimension(56) :: IfacX2 = (/ 1,1,2,1,1,2,1,&
-          & 3,2,1,1,2,1,3,2,1,4,3,2,1,1,2,1,3,&
-          & 2,1,4,3,2,1,5,4,3,2,1,1,2,1,3,2,1,&
-          & 4,3,2,1,5,4,3,2,1,6,5,4,3,2,1 /)
-  !CARTDIR = 3
-  integer,parameter, dimension(56) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
-          & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
-          & 2,3,1,2,3,4,1,2,3,4,5,1,1,2,1,2,3,&
-          & 1,2,3,4,1,2,3,4,5,1,2,3,4,5,6 /)
 !$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
@@ -1029,51 +928,51 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
       Tmp1(iTUVQ,4) = facZ*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1_56(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX2_84(ituvqminus1)
+      Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2_56(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX3_84(ituvqminus1)
+      Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3_56(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,56
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1_56(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,56
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX2_84(ituvqminus1)
+      Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2_56(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do ituvqminus1 = 21,56
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
+      iTUVQ = TUVindexX3_84(ituvqminus1)
+      Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3_56(ituvqminus1)*inv2expP*Aux(ituvqminus1,iP) 
      enddo
      do iTUVQ = 1,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,84
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,84
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 1,35
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
      do iTUVQ = 36,84
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iTUVplus1,iP)
      enddo
  ! Building for Angular momentum Jp = 2
@@ -1114,123 +1013,123 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
       Tmp2(iTUVQ,10) = facZ*Tmp1(iTUVQ,4)+ inv2expP*Aux(iTUVQ,iP)
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
+      iTUVQ = TUVindexX2_84(ituvqminus1)
+      Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + IfacX2_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX2_84(ituvqminus1)
+      Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + IfacX2_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX3_84(ituvqminus1)
+      Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + IfacX3_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do ituvqminus1 = 21,35
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp2(iTUVQ,5) = Tmp2(iTUVQ,5) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp2(iTUVQ,5) = Tmp2(iTUVQ,5) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
      enddo
      do ituvqminus1 = 21,35
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp2(iTUVQ,6) = Tmp2(iTUVQ,6) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp2(iTUVQ,6) = Tmp2(iTUVQ,6) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
      do ituvqminus1 = 21,35
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp2(iTUVQ,7) = Tmp2(iTUVQ,7) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp2(iTUVQ,7) = Tmp2(iTUVQ,7) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do ituvqminus1 = 21,35
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp2(iTUVQ,8) = Tmp2(iTUVQ,8) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
+      iTUVQ = TUVindexX2_84(ituvqminus1)
+      Tmp2(iTUVQ,8) = Tmp2(iTUVQ,8) + IfacX2_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
      do ituvqminus1 = 21,35
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp2(iTUVQ,9) = Tmp2(iTUVQ,9) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX2_84(ituvqminus1)
+      Tmp2(iTUVQ,9) = Tmp2(iTUVQ,9) + IfacX2_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do ituvqminus1 = 21,35
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp2(iTUVQ,10) = Tmp2(iTUVQ,10) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
+      iTUVQ = TUVindexX3_84(ituvqminus1)
+      Tmp2(iTUVQ,10) = Tmp2(iTUVQ,10) + IfacX3_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp0(iTUVplus1,2)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp1(iTUVplus1,2)
      enddo
      do iTUVQ = 36,56
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp2(iTUVQ,5) = Tmp2(iTUVQ,5) + qinvp*Tmp1(iTUVplus1,2)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp0(iTUVplus1,3)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp1(iTUVplus1,3)
      enddo
      do iTUVQ = 36,56
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp2(iTUVQ,6) = Tmp2(iTUVQ,6) + qinvp*Tmp1(iTUVplus1,3)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp0(iTUVplus1,4)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp1(iTUVplus1,4)
      enddo
      do iTUVQ = 36,56
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp2(iTUVQ,7) = Tmp2(iTUVQ,7) + qinvp*Tmp1(iTUVplus1,4)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp0(iTUVplus1,3)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp1(iTUVplus1,3)
      enddo
      do iTUVQ = 36,56
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp2(iTUVQ,8) = Tmp2(iTUVQ,8) + qinvp*Tmp1(iTUVplus1,3)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp0(iTUVplus1,4)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp1(iTUVplus1,4)
      enddo
      do iTUVQ = 36,56
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp2(iTUVQ,9) = Tmp2(iTUVQ,9) + qinvp*Tmp1(iTUVplus1,4)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp0(iTUVplus1,4)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp1(iTUVplus1,4)
      enddo
      do iTUVQ = 36,56
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp2(iTUVQ,10) = Tmp2(iTUVQ,10) + qinvp*Tmp1(iTUVplus1,4)
      enddo
  ! Building for Angular momentum Jp = 3
@@ -1265,123 +1164,123 @@ MODULE AGC_CPU_OBS_TRMODCtoAGen
       Tmp0(iTUVQ,20) = facZ*Tmp0(iTUVQ,10)+2*inv2expP*Tmp0(iTUVQ,4)
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,11) = Tmp0(iTUVQ,11) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,5) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp0(iTUVQ,11) = Tmp0(iTUVQ,11) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,5) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,12) = Tmp0(iTUVQ,12) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,5) 
+      iTUVQ = TUVindexX2_84(ituvqminus1)
+      Tmp0(iTUVQ,12) = Tmp0(iTUVQ,12) + IfacX2_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,5) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,13) = Tmp0(iTUVQ,13) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,5) 
+      iTUVQ = TUVindexX3_84(ituvqminus1)
+      Tmp0(iTUVQ,13) = Tmp0(iTUVQ,13) + IfacX3_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,5) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,14) = Tmp0(iTUVQ,14) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,8) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp0(iTUVQ,14) = Tmp0(iTUVQ,14) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,8) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,15) = Tmp0(iTUVQ,15) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,9) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp0(iTUVQ,15) = Tmp0(iTUVQ,15) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,9) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX1(ituvqminus1)
-      Tmp0(iTUVQ,16) = Tmp0(iTUVQ,16) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,10) 
+      iTUVQ = TUVindexX1_84(ituvqminus1)
+      Tmp0(iTUVQ,16) = Tmp0(iTUVQ,16) + IfacX1_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,10) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,17) = Tmp0(iTUVQ,17) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,8) 
+      iTUVQ = TUVindexX2_84(ituvqminus1)
+      Tmp0(iTUVQ,17) = Tmp0(iTUVQ,17) + IfacX2_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,8) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,18) = Tmp0(iTUVQ,18) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,8) 
+      iTUVQ = TUVindexX3_84(ituvqminus1)
+      Tmp0(iTUVQ,18) = Tmp0(iTUVQ,18) + IfacX3_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,8) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX2(ituvqminus1)
-      Tmp0(iTUVQ,19) = Tmp0(iTUVQ,19) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,10) 
+      iTUVQ = TUVindexX2_84(ituvqminus1)
+      Tmp0(iTUVQ,19) = Tmp0(iTUVQ,19) + IfacX2_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,10) 
      enddo
      do ituvqminus1 = 1,20
-      iTUVQ = TUVindexX3(ituvqminus1)
-      Tmp0(iTUVQ,20) = Tmp0(iTUVQ,20) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,10) 
+      iTUVQ = TUVindexX3_84(ituvqminus1)
+      Tmp0(iTUVQ,20) = Tmp0(iTUVQ,20) + IfacX3_56(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,10) 
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,11) = Tmp0(iTUVQ,11) + qinvp*Tmp0(iTUVplus1,5)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,11) = Tmp0(iTUVQ,11) + qinvp*Tmp2(iTUVplus1,5)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,12) = Tmp0(iTUVQ,12) + qinvp*Tmp0(iTUVplus1,5)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,12) = Tmp0(iTUVQ,12) + qinvp*Tmp2(iTUVplus1,5)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp0(iTUVQ,13) = Tmp0(iTUVQ,13) + qinvp*Tmp0(iTUVplus1,5)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp0(iTUVQ,13) = Tmp0(iTUVQ,13) + qinvp*Tmp2(iTUVplus1,5)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,14) = Tmp0(iTUVQ,14) + qinvp*Tmp0(iTUVplus1,8)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,14) = Tmp0(iTUVQ,14) + qinvp*Tmp2(iTUVplus1,8)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,15) = Tmp0(iTUVQ,15) + qinvp*Tmp0(iTUVplus1,9)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,15) = Tmp0(iTUVQ,15) + qinvp*Tmp2(iTUVplus1,9)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,16) = Tmp0(iTUVQ,16) + qinvp*Tmp0(iTUVplus1,10)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX1(iTUVQ)
+      iTUVplus1 = TUVindexX1_84(iTUVQ)
       Tmp0(iTUVQ,16) = Tmp0(iTUVQ,16) + qinvp*Tmp2(iTUVplus1,10)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,17) = Tmp0(iTUVQ,17) + qinvp*Tmp0(iTUVplus1,8)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,17) = Tmp0(iTUVQ,17) + qinvp*Tmp2(iTUVplus1,8)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp0(iTUVQ,18) = Tmp0(iTUVQ,18) + qinvp*Tmp0(iTUVplus1,8)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp0(iTUVQ,18) = Tmp0(iTUVQ,18) + qinvp*Tmp2(iTUVplus1,8)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,19) = Tmp0(iTUVQ,19) + qinvp*Tmp0(iTUVplus1,10)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX2(iTUVQ)
+      iTUVplus1 = TUVindexX2_84(iTUVQ)
       Tmp0(iTUVQ,19) = Tmp0(iTUVQ,19) + qinvp*Tmp2(iTUVplus1,10)
      enddo
      do iTUVQ = 1,20
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp0(iTUVQ,20) = Tmp0(iTUVQ,20) + qinvp*Tmp0(iTUVplus1,10)
      enddo
      do iTUVQ = 21,35
-      iTUVplus1 = TUVindexX3(iTUVQ)
+      iTUVplus1 = TUVindexX3_84(iTUVQ)
       Tmp0(iTUVQ,20) = Tmp0(iTUVQ,20) + qinvp*Tmp2(iTUVplus1,10)
      enddo
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 

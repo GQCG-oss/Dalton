@@ -1236,8 +1236,7 @@ end function max_batch_dimension
     real(realk),pointer :: tmp(:,:)
     logical :: file_exist
     integer :: funit, i,j
-    integer(kind=8) :: i64,j64
-    integer(kind=4) :: i32,j32
+    integer(kind=long) :: i64,j64
 
 
     file_exist=.false.
@@ -1249,19 +1248,10 @@ end function max_batch_dimension
        call lsopen(funit,filename,'OLD','UNFORMATTED')
 
        ! Read dimensions stored on file
-       if(DECinfo%convert64to32) then
-          ! file uses 64 bit integers but current run uses 32 bit integers
-          read (funit) i64,j64
-          i=int(i64,4)
-          j=int(j64,4)
-       elseif(DECinfo%convert32to64) then
-          ! file uses 64 bit integers but current run uses 32 bit integers
-          read (funit) i32,j32
-          i=i32
-          j=j32
-       else
-          read (funit) i,j
-       end if
+       ! files always written using 64 bit integers
+       read (funit) i64,j64
+       i=int(i64,4)
+       j=int(j64,4)
 
        ! Sanity check
        if( (i /= dim1) .or. (j/=dim2) ) then

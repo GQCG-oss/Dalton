@@ -71,6 +71,7 @@ contains
 
 
     ! -- Debug modes
+    DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%CRASHCALC            = .false.
     DECinfo%cc_driver_debug      = .false.
     DECinfo%CCDEBUG              = .false.
@@ -168,6 +169,7 @@ contains
     DECinfo%PairEstimateIgnore      = .false.
     DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
     DECinfo%EstimateInitAtom        = 1
+    DECinfo%PairEstimateModel       = MODEL_MP2
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory     = 0E0_realk
@@ -249,7 +251,7 @@ contains
   !> configuration structure accordingly.
   !> \author Kasper Kristensen
   !> \date September 2010
-  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc,doF12)
+  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc,doF12,doRIMP2)
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
@@ -265,6 +267,8 @@ contains
     logical,intent(in) :: fullcalc
     !> do we do F12 calc (is a CABS basis required?)
     logical,intent(inout) :: doF12
+    !> do we do RIMP2 calc (is a AUX basis required?)
+    logical,intent(inout) :: doRIMP2
     logical,save :: already_called = .false.
     integer :: nworkers
 
@@ -372,6 +376,7 @@ contains
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles = .false.  
           DECinfo%NO_MO_CCSD  = .true.
+          doRIMP2 = .TRUE.
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -502,6 +507,8 @@ contains
 
        !KEYWORDS FOR DEC PARALLELISM
        !****************************
+       case('.TEST_FULLY_DISTRIBUTED_INTEGRALS') 
+          DECinfo%test_fully_distributed_integrals=.true.
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
@@ -627,6 +634,9 @@ contains
           DECinfo%EstimateINITradius = DECinfo%EstimateINITradius/bohr_to_angstrom
        case('.ESTIMATEINITATOM')
           read(input,*) DECinfo%EstimateInitAtom
+       case('.PAIRESTIMATEMODEL')
+          read(input,*) myword
+          call find_model_number_from_input(myword, DECinfo%PairEstimateModel)
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom

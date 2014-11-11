@@ -296,6 +296,8 @@ module dec_typedef_module
      logical :: manual_batchsizes
      !> Sizes of alpha and gamma batches defined manually
      integer :: ccsdAbatch,ccsdGbatch
+     !> test integral scheme, fully distributed, get_mo_integrals
+     logical :: test_fully_distributed_integrals
 
 
      !> General debug and simple tests
@@ -426,6 +428,9 @@ module dec_typedef_module
      real(realk) :: EstimateINITradius
      !> number of average atoms that will be included in the estimated fragments
      integer :: EstimateInitAtom
+     !> Which model to use for pair estimates
+     integer :: PairEstimateModel
+
      ! --
 
 

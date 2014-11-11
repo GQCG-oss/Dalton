@@ -124,7 +124,9 @@ MODULE matrix_operations
        implicit none
        INTEGER, INTENT(IN) :: a,lupri
        INTEGER, OPTIONAL :: nbast
-       integer :: nrow,ncol,tmpcol,tmprow,nproc,K
+       integer :: nrow,ncol,tmpcol,tmprow,nproc,K,I,nblocks
+       integer,parameter :: blocklist(4)=(/1024,512,256,128/)
+       WRITE(lupri,'(A)') ' '
        if(matrix_type.EQ.mtype_unres_dense.AND.a.EQ.mtype_scalapack)then
           WRITE(6,*)'mat_select_type: FALLBACK WARNING'
           WRITE(6,*)'SCALAPACK type matrices is not implemented for unrestricted calculations'
@@ -156,7 +158,69 @@ MODULE matrix_operations
                    call lsquit('scalapack error in mat_select_type',-1)
                 ENDIF
                 print*,'TYPE SCALAPACK HAVE BEEN SELECTED' 
-                nproc = infpar%nodtot
+                IF(infpar%ScalapackGroupSize.EQ.-1)THEN
+                   print*,'Automatic determination of how many scalapack groupsize' 
+                   IF(infpar%inputblocksize.EQ.0)THEN
+                      !blocksize not specified. 
+                      !determine block size. 
+                      !The optimal is a blocksize big enough to reduce communication and optimize lapack
+                      do I =1,size(blocklist)
+                         infpar%inputblocksize = blocklist(I)
+                         IF(infpar%inputblocksize.GT.nbast)CYCLE
+                         nblocks = (nbast/infpar%inputblocksize)*(nbast/infpar%inputblocksize)
+                         IF(MOD(nbast,infpar%inputblocksize).NE.0)THEN
+                            nblocks = nblocks + 2*nbast/infpar%inputblocksize + 1
+                         ENDIF
+                         WRITE(lupri,'(A,I5,A,I6,A)')'A BlockSize of ',infpar%inputblocksize,' gives ',nblocks,' blocks'
+                         WRITE(lupri,'(A,F9.1,A)') 'Resulting in ',(nblocks*1.0E0_realk)/infpar%nodtot,' blocks per node'
+                         IF(nblocks .GE. 2*infpar%nodtot)THEN
+                            !more than 2 blocks per node, we can use all nodes efficiently
+                            exit
+                         ELSE
+                            !too few blocks not all nodes have 2 blocks
+                            !We use a smaller block size, to reduce load imbalance
+                         ENDIF
+                         IF(I.EQ.size(blocklist).AND.(nblocks .GE. 2*infpar%nodtot))THEN
+                            WRITE(lupri,'(A)')'The Minimum BlockSize = 128 Chosen.'
+                            WRITE(lupri,'(A)')'This means that not all processes can take part in'
+                            WRITE(lupri,'(A)')'the matrix operation parallelization. '
+                            WRITE(lupri,'(A)')'You can manually set the BlockSize using the .SCALAPACKBLOCKSIZE keyword'
+                            WRITE(lupri,'(A)')'Under the **GENERAL section. A smaller BlockSize will include more nodes'
+                            WRITE(lupri,'(A)')'and improve load imbalance,'
+                            WRITE(lupri,'(A)')'but will reduce the efficiency of the underlying Lapack Lib.'
+                         ENDIF
+                      enddo
+                      IF(infpar%inputblocksize.GT.nbast)THEN
+                         WRITE(lupri,'(A)')'Warning: Due to the small size of matrices Scalapack is not recommended!'
+                         WRITE(lupri,'(A)')'We set the blocksize equal to the number of basis functions'
+                         infpar%inputblocksize = nbast
+                      ENDIF
+                      WRITE(lupri,'(A,I5)')'Automatic determined Scalapack BlockSize = ',infpar%inputblocksize
+                   ELSE
+                      WRITE(lupri,'(A,I5)')'Scalapack BlockSize From Input = ',infpar%inputblocksize
+                   ENDIF
+                   nblocks = (nbast/infpar%inputblocksize)*(nbast/infpar%inputblocksize)
+                   IF(MOD(nbast,infpar%inputblocksize).NE.0)THEN
+                      nblocks = nblocks + 2*(nbast/infpar%inputblocksize) + 1
+                   ENDIF
+                   WRITE(lupri,'(A,I5)')'Number of Scalapack Blocks = ',nblocks
+                   IF(nblocks .GE. 2*infpar%nodtot)THEN
+                      !2 or more blocks per node, we can use all nodes
+                      infpar%ScalapackGroupSize = infpar%nodtot
+                   ELSE
+                      !not all nodes have 2 blocks. We cannot use all nodes efficiently
+                      !We decide on a groupsize so that all nodes have 2 blocks
+                      IF(nblocks/2.GT.0)THEN
+                         infpar%ScalapackGroupSize = nblocks/2
+                      ELSE
+                         infpar%ScalapackGroupSize = nblocks
+                      ENDIF
+                   ENDIF
+                   WRITE(lupri,'(A,I5)')'Automatic determined Scalapack GroupSize = ',infpar%ScalapackGroupSize
+                ELSE
+                   WRITE(lupri,'(A,I5)')'Scalapack GroupSize From Input = ',infpar%ScalapackGroupSize
+                ENDIF
+                nproc = infpar%ScalapackGroupSize
                 nrow = nproc
                 ncol = 1
                 K=1
@@ -172,14 +236,53 @@ MODULE matrix_operations
                       ENDIF
                    ENDIF
                 enddo
-                print*,'nrow=',nrow,'ncol=',ncol,'nodtot=',infpar%nodtot
-                print*,'call PDM_GRIDINIT(',nrow,',',ncol,')'
+                print*,'nrow=',nrow,'ncol=',ncol,'nodtot=',infpar%ScalapackGroupSize
+                print*,'call PDM_GRIDINIT(',nrow,',',ncol,')'                
+                !make possible subset 
+                call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,MPI_COMM_LSDALTON)
+                IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN
+                   IF(scalapack_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(scalapack_comm)
+                      scalapack_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(scalapack_nodtot,&
+                   & scalapack_mynum,scalapack_comm,scalapack_member,&
+                   & infpar%ScalapackGroupSize,lupri)
+                   scalapack_mpi_set = .TRUE.
+                ELSE
+                   scalapack_nodtot = infpar%nodtot
+                   scalapack_mynum = infpar%mynum
+                   scalapack_comm = MPI_COMM_LSDALTON
+                   scalapack_member = .TRUE.
+                ENDIF
+                print*,'call PDM_GRIDINIT'
                 CALL PDM_GRIDINIT(nrow,ncol,nbast)
-                IF(infpar%mynum.EQ.infpar%master)then
-                   WRITE(lupri,*)'Scalapack Grid initiation Block Size = ',BLOCK_SIZE
-                   WRITE(lupri,*)'Scalapack Grid initiation nprow      = ',nrow
-                   WRITE(lupri,*)'Scalapack Grid initiation npcol      = ',ncol
-                endif
+                WRITE(lupri,'(A,I5)')'Scalapack Grid initiation Block Size = ',BLOCK_SIZE
+                WRITE(lupri,'(A,I5)')'Scalapack Grid initiation nprow      = ',nrow
+                WRITE(lupri,'(A,I5)')'Scalapack Grid initiation npcol      = ',ncol
+             endif
+          ELSE
+             !slave
+             if(matrix_type.EQ.mtype_scalapack)then
+                call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,&
+                     & MPI_COMM_LSDALTON)
+                IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN
+                   IF(scalapack_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(scalapack_comm)
+                      scalapack_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(scalapack_nodtot,&
+                        & scalapack_mynum,scalapack_comm,scalapack_member,&
+                        & infpar%ScalapackGroupSize,lupri)
+                   scalapack_mpi_set = .TRUE.
+                ELSE
+                   scalapack_nodtot = infpar%nodtot
+                   scalapack_mynum = infpar%mynum
+                   scalapack_comm = MPI_COMM_LSDALTON
+                   scalapack_member = .TRUE.
+                ENDIF
              endif
           ENDIF
 #endif
@@ -2181,6 +2284,7 @@ end subroutine set_lowertriangular_zero
          type(Matrix), intent(in) :: A
          logical,optional :: OnMaster !obsolete
          !
+         integer(kind=long) :: ncol,nrow 
          real(realk), allocatable :: afull(:,:)
          call time_mat_operations1
 
@@ -2195,7 +2299,9 @@ end subroutine set_lowertriangular_zero
             !The master collects the info and write to disk
             allocate(afull(a%nrow, a%ncol))
             call mat_to_full(a,1E0_realk,afull)
-            write(iunit) A%Nrow, A%Ncol
+            nrow = A%Nrow
+            ncol = A%Ncol
+            write(iunit) Nrow, Ncol
             write(iunit) afull
             deallocate(afull)
          case(mtype_unres_dense)
@@ -2204,7 +2310,9 @@ end subroutine set_lowertriangular_zero
             print *, "FALLBACK: mat_write_to_disk"
             allocate(afull(a%nrow, a%ncol))
             call mat_to_full(a,1E0_realk,afull)
-            write(iunit) A%Nrow, A%Ncol
+            nrow = A%Nrow
+            ncol = A%Ncol
+            write(iunit) Nrow, Ncol
             write(iunit) afull
             deallocate(afull)
          end select
@@ -2237,7 +2345,7 @@ end subroutine set_lowertriangular_zero
          integer, intent(in) :: iunit
          logical, intent(in) :: info
 
-      write(iunit) info
+         write(iunit) info
       end subroutine mat_write_info_to_disk
 
 !> \brief Read a type(matrix) from disk.
@@ -2252,7 +2360,7 @@ end subroutine set_lowertriangular_zero
          logical,optional :: OnMaster !obsolete
          !
          real(realk), allocatable :: afull(:,:)
-         integer                  :: nrow, ncol
+         integer(kind=long)       :: nrow, ncol
          call time_mat_operations1
          if (info_memory) write(mat_lu,*) 'Before mat_read_from_disk: mem_allocated_global =', mem_allocated_global
          !if (INFO_TIME_MAT) CALL LSTIMER('START ',mat_TSTR,mat_TEN,mat_lu)

@@ -422,7 +422,7 @@ C
       INTEGER ITYPE
 C
 #include "inftap.h"
-#include "ibtfun.h"
+
 C
       CALL REWSPL(LU2DER)
 C

@@ -37,7 +37,8 @@ contains
     type(LsItem),intent(inout) :: ls
     !> Information about which PLT information to calculation (see type pltinfo)
     type(pltinfo),intent(inout) :: MyPlt
-    integer :: nocc,nrow,ncol,funit, IOS
+    integer :: nrow,ncol,nocc,funit, IOS
+    integer(kind=long) :: nrow8,ncol8
     Type(Matrix) :: InputMat
     logical :: file_exist
 
@@ -69,7 +70,9 @@ contains
     funit = 33
     OPEN(UNIT=funit,FILE=trim(MyPlt%inputfile),STATUS='OLD', &
          & FORM='UNFORMATTED',IOSTAT=IOS)
-    READ (funit) nrow,ncol
+    READ (funit) nrow8,ncol8
+    nrow=nrow8
+    ncol=ncol8
     write(ls%lupri,*) 'Matrix size: ', nrow, ncol
     call mat_init(InputMat,nrow,ncol)
     READ(funit) InputMat%elms

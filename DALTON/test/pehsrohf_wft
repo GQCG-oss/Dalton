@@ -173,9 +173,9 @@ ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 #
 # dipole moment of formaldehyde
 #
-CRIT1=`$GREP "x *   0*\.05261[5-7].." $log | wc -l`
-CRIT2=`$GREP "y * \-0*\.429856.." $log | wc -l`
-CRIT3=`$GREP "z *   0*\.012363.." $log | wc -l`
+CRIT1=`$GREP "x *   0*\.05261" $log | wc -l`
+CRIT2=`$GREP "y * \-0*\.42985" $log | wc -l`
+CRIT3=`$GREP "z *   0*\.01236" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[4]=3
 ERROR[4]="DIPOLE MOMENT NOT CORRECT"

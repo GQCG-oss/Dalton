@@ -72,7 +72,7 @@ f.add(from_string = 'Gradient in Dalton symmetry coordinates',
 
 f.add(from_string = 'Next geometry (au)',
       num_lines = 7,
-      abs_tolerance = 1.0e-7)
+      abs_tolerance = 1.0e-6)
 
 f.add(re = 'Energy at this geometry is',
       rel_tolerance = 1.0e-7)
