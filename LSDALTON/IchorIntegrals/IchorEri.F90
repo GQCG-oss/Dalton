@@ -2273,6 +2273,8 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   integer(kind=long) :: nSizeStatic,nSizeAsync
   integer :: iAsyncHandles,nAsyncHandles
   !Variables unique for each Async Handle
+  real(realk) :: cHostWaitForGPU1,cHostWaitForGPU2
+  integer :: c1,c2
   integer :: nPasses(maxnAsyncHandles)
   integer,allocatable :: IatomAPass(:,:),IatomBPass(:,:)
   real(realk) :: DcenterSpec(3,maxnAsyncHandles),CcenterSpec(3,maxnAsyncHandles)
@@ -2280,6 +2282,8 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   real(realk),allocatable :: LocalIntPass1(:,:)
   real(realk),allocatable :: Qcent(:,:,:),Qdistance12(:,:),QpreExpFac(:,:)
 ! real(realk),intent(inout):: Qcent(3,nPrimQ),Qdistance12(3),QpreExpFac(nPrimQ)
+  cHostWaitForGPU1 = 0.0E0_realk
+  cHostWaitForGPU2 = 0.0E0_realk
   nLocalIntPass = nOrbA*nAtomsA*nOrbB*nAtomsB*nOrbC*nOrbD
   call DetermineMaxPasses(nAtomsD,iBatchIndexOfTypeD,nAtomsC,nAtomsA,nAtomsB,&
        & iBatchIndexOfTypeC,iBatchIndexOfTypeA,nBatchB,nBatchA,iBatchIndexOfTypeB,&
@@ -2427,11 +2431,13 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      !If all iSync(:) are not zero then all streams have been engaged
      !We need to extract result in order to assign that stream new jobs. 
      DO WHILE(MINVAL(iSync(1:nAsyncHandles)).NE.0)
-        
+        call system_clock( count=c1 )        
         DO iAsyncHandles=1,nAsyncHandles
 #ifdef VAR_OPENACC
            IF(acc_async_test(iSync(iAsyncHandles)))THEN
 #endif
+              call system_clock( count=c2 )
+              cHostWaitForGPU1 = cHostWaitForGPU1 + (c2 - c1)
               !The iAsyncHandles stream is done with the last async task (updating LocalIntPass1)
               iCAH = iAsyncHandles !CurrentAsyncHandles 
               IatomCcurr = mod(iSync(iCAH)-1,nAtomsC)+1
@@ -2470,13 +2476,14 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   !All the IatomC,IatomD have been assigned to streams and started to compute
   !we must wait for all streams to finish - must wait for all iSync to be zero
   DO WHILE(MAXVAL(iSync(1:nAsyncHandles)).NE.0)
-        
+     call system_clock( count=c1 )
      DO iAsyncHandles=1,nAsyncHandles
         !Wait untill the iAsyncHandles stream is done with the last async task (updating LocalIntPass1)
         iCAH = iAsyncHandles !CurrentAsyncHandles 
         IF(iSync(iCAH).EQ.0)CYCLE !already done
         !$ACC WAIT(iSync(iCAH))
-
+        call system_clock( count=c2 )
+        cHostWaitForGPU2 = cHostWaitForGPU2 + (c2 - c1)
         IatomCcurr = mod(iSync(iCAH)-1,nAtomsC)+1
         IatomDcurr = (iSync(iCAH)-1)/nAtomsC + 1
 
@@ -2505,6 +2512,10 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      ENDDO
   ENDDO
 !$ACC END DATA
+
+  print*,cHostWaitForGPU1+cHostWaitForGPU2,' microseconds spent waiting on GPU '
+  print*,cHostWaitForGPU1,' microseconds spent waiting on GPU in step 1'
+  print*,cHostWaitForGPU2,' microseconds spent waiting on GPU in step 2'
 
   call mem_ichor_dealloc(Qcent)
   deallocate(Qcent)
