@@ -1359,13 +1359,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==3) write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
         if(scheme==2) write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
         if(scheme==1) write(DECinfo%output,'("Using Dmitry s scheme")')
-        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,iter,3,scheme,.false.,&
+        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,0,iter,3,scheme,.false.,&
            &mylsitem%setting,intspec)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
-        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,iter,2,scheme,.false.,&
+        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,0,iter,2,scheme,.false.,&
            &mylsitem%setting,intspec)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
-        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,iter,4,scheme,.true.,&
+        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,0,iter,4,scheme,.true.,&
            &mylsitem%setting,intspec)
      endif
 
@@ -1484,19 +1484,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! allocate working arrays depending on the batch sizes
      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
      call mem_alloc( w0, w0size , simple = .false. )
 
      w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
      call mem_alloc( w1, w1size , simple = .false.)
 
      w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
      call mem_alloc( w2, w2size , simple = .false. )
 
      w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
      call mem_alloc( w3, w3size , simple = .false. )
 
      !call get_currently_available_memory(MemFree3)
@@ -2725,7 +2725,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
      integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os,bs,as,gs
      integer(kind=8) :: nb4,o2v2,no4,buf_size
-     integer :: tlen,tred,nor,nvr,goffs,aoffs
+     integer :: tlen,tred,nor,nvr,goffs,aoffs,nbuffs
      integer :: prev_alphaB,mpi_buf,ccmodel_copy
      logical :: jobtodo,first_round,dynamic_load,restart,print_debug
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2936,8 +2936,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         ! Get free memory and determine maximum batch sizes
         ! -------------------------------------------------
-        call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxActualDimAlpha,MaxActualDimGamma,&
-        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.,mylsitem%setting,intspec)
+        call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxActualDimAlpha,MaxActualDimGamma,MinAObatch,&
+           &DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.,mylsitem%setting,intspec,&
+           &nbuf=nbuffs)
 
         if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
         
@@ -2952,7 +2953,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call ls_mpi_buffer(restart,infpar%master)
      call ls_mpi_buffer(MaxActualDimAlpha,infpar%master)
      call ls_mpi_buffer(MaxActualDimGamma,infpar%master)
-     call ls_mpi_buffer(lock_outside,infpar%master)
+     call ls_mpi_buffer(nbuffs,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
      call time_start_phase(PHASE_WORK, at = time_init_comm)
 
@@ -3043,13 +3044,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! allocate working arrays depending on the batch sizes
      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-        &MaxActualDimGamma,0,setting = mylsitem%setting, intspec = intspec)
+        &MaxActualDimGamma,nbuffs,0,setting = mylsitem%setting, intspec = intspec)
      print *,"alloc w0",w0size,nb,MaxActualDimAlpha,MaxActualDimGamma
      call lsmpi_barrier(infpar%lg_comm)
      call mem_alloc( w0, w0size , simple = .true. )
 
      w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-        &MaxActualDimGamma,0,setting = mylsitem%setting, intspec = intspec)
+        &MaxActualDimGamma,nbuffs,0,setting = mylsitem%setting, intspec = intspec)
      print *,"alloc w1",w1size
      call lsmpi_barrier(infpar%lg_comm)
      call mem_alloc( w1, w1size , simple = .true. )
@@ -4829,6 +4830,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size
     integer :: nnod,magic,nbuffs
 
+
+    !minimum recommended buffer size
+    nbuffs = 5
     frac_of_total_mem=0.80E0_realk
     nba=minbsize
     nbg=minbsize
@@ -4842,19 +4846,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     magic = 2
     !test for scheme with highest reqirements --> fastest
     scheme=4
-    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
     if (mem_used>frac_of_total_mem*MemFree)then
 #ifdef VAR_MPI
        !test for scheme with medium requirements
        scheme=3
-       mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
+       mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
        if (mem_used>frac_of_total_mem*MemFree)then
           !test for scheme with low requirements
           scheme=2
-          mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
+          mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
           if (mem_used>frac_of_total_mem*MemFree)then
              scheme=0
-             mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
+             mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
              frac_of_total_mem=0.60E0_realk
              print *,"mem",mem_used,frac_of_total_mem,MemFree
              if (mem_used>frac_of_total_mem*MemFree)then
@@ -4862,9 +4866,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                 write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
                    &frac_of_total_mem*MemFree
                 write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,3,.false.,se,is)
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,3,.false.,se,is)
                 write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,4,.false.,se,is)
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,4,.false.,se,is)
                 write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
                 call lsquit("ERROR(CCSD): there is just not enough memory&
                    & available",DECinfo%output)
@@ -4928,7 +4932,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       if( nbg>=nb )       nbg = nb
       if( nba>=nb )       nba = nb
 
-      mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
+      mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
 
       if (frac_of_total_mem*MemFree<mem_used) then
         print *, "ATTENTION your chosen batch sizes might be too large!!!"
@@ -4952,7 +4956,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
 
         nbg=nbg+1
-        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,3,scheme,.false.,se,is)
+        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,3,scheme,.false.,se,is)
 
       enddo
 
@@ -4968,7 +4972,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba))
         nba      = nba+1
-        mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,3,scheme,.false.,se,is)
+        mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,3,scheme,.false.,se,is)
       enddo
 
       if (nba>=nb)then
@@ -4980,7 +4984,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       endif
 
     endif
-    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
 
     ! mpi_split should be true when we want to estimate the workload associated
     ! to a DEC fragment and eventually split the slots. In this case, the next
@@ -5006,7 +5010,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     if(scheme==2)then
-      mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,2,scheme,.false.,se,is)
+      mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,2,scheme,.false.,se,is)
       e2a = min(v2o2,int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
     endif
   end subroutine get_max_batch_sizes
@@ -7676,7 +7680,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      Character,intent(in) :: intspec(5)
      integer(kind=long) :: wsize
      integer(kind=long) :: maxsize64,nor,nvr, MAX_INTEGRAL_BUF
-     integer :: nbuffs,me
+     integer :: me
 
      nor = (i8*(no*(no+1))/2)
      nvr = (i8*(nv*(nv+1))/2)

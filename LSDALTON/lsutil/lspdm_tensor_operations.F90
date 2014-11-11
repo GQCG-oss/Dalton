@@ -2971,7 +2971,7 @@ module lspdm_tensor_operations_module
         wC = 0.0E0_realk
 
         !TODO:fill buffers also after changing the C tile
-        do cm=1, min(nbuffs-1,cci)
+        do cm=1, min(nbuffs,cci)
            !build full mode index for A and B
            call get_midx(cm,current_mode,max_mode_ci,nmodes2c)
            do i=1,nmodes2c
@@ -3036,74 +3036,6 @@ module lspdm_tensor_operations_module
         !loop over all tiles in the contraction modes via a combined contraction index
         do cm = 1, cci
 
-           !fill last buffer space
-           !TODO:fill buffers also after changing the C tile
-           buffer_cm = cm + nbuffs - 1
-           if(buffer_cm <= cci)then
-              !build full mode index for A and B
-              call get_midx( buffer_cm ,current_mode,max_mode_ci,nmodes2c)
-              do i=1,nmodes2c
-                 mA(m2cA(i)) = current_mode(i)
-                 mB(m2cB(i)) = current_mode(i)
-              enddo
-
-
-              cmidA = get_cidx(mA,A%ntpm,A%mode)
-              cmidB = get_cidx(mB,ntpmB, B%mode)
-
-              !get the tiles into the local buffer
-              !get number of elements in tiles for A and B
-              !get buffer positions for A and B bufs
-              !get tiles
-              call get_tile_dim(nelmsTA,A,mA)
-              ibufA = mod(buffer_cm-1,nbuffsA)+1
-
-              call time_start_phase( PHASE_COMM )
-              if( alloc_in_dummy )then
-
-                 if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                    call tensor_flush_win(A, local = .true.)
-                    if(.not.B_dense) call tensor_flush_win(B, local = .true.)
-                    nel_one_sided = 0
-                 endif
-
-                 !call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
-                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
-
-                 nel_one_sided = nel_one_sided + nelmsTA
-              else
-                 call tensor_lock_win(A,cmidA,'s')
-                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
-              endif
-              call time_start_phase( PHASE_WORK )
-              
-              !same for B if necessary
-              if(.not.B_dense)then
-
-                 call get_tile_dim(nelmsTB,B,mB)
-                 ibufB = mod(buffer_cm-1,nbuffsB)+1
-                 call time_start_phase( PHASE_COMM )
-
-                 if( alloc_in_dummy )then
-
-                    if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                       call tensor_flush_win(A, local = .true.)
-                       if(.not.B_dense) call tensor_flush_win(B, local = .true.)
-                       nel_one_sided = 0
-                    endif
-
-                    !call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
-                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
-
-                    nel_one_sided = nel_one_sided + nelmsTB
-                 else
-                    call tensor_lock_win(B,cmidB,'s')
-                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
-                 endif
-                 call time_start_phase( PHASE_WORK )
-              endif
-
-           endif
 
            !build full mode index for A and B
            call get_midx(cm,current_mode,max_mode_ci,nmodes2c)
@@ -3144,19 +3076,6 @@ module lspdm_tensor_operations_module
            endif
            call time_start_phase( PHASE_WORK )
 
-           if(.not.B_dense)then
-              ibufB = mod(cm-1,nbuffsB)+1
-              call time_start_phase( PHASE_COMM )
-              if( alloc_in_dummy )then
-                 !call lsmpi_wait(reqB(ibufB))
-                 call tensor_flush_win(B, gtidx=cmidB,only_owner=.true.,local = .true.)
-                 nel_one_sided = nel_one_sided - nelmsTB
-              else
-                 call tensor_unlock_win(B,cmidB)
-              endif
-              call time_start_phase( PHASE_WORK )
-           endif
-
            ! sort for the contraction such that in gemm the arguments are always 'n' and 'n', 
            ! always sort such, that the contraction modes are in the order of m2CA, something smarter could be done here!!
            ! > determine the dgemm parameter k_gemm
@@ -3177,9 +3096,58 @@ module lspdm_tensor_operations_module
                call lsquit("ERROR(lspdm_tensor_contract_simple): sorting A not implemented",-1)
            end select
 
+           !fill last buffer space A
+           !TODO:fill buffers also after changing the C tile
+           buffer_cm = cm + nbuffs
+           if(buffer_cm <= cci)then
+              !build full mode index for A and B
+              call get_midx( buffer_cm ,current_mode,max_mode_ci,nmodes2c)
+              do i=1,nmodes2c
+                 mA(m2cA(i)) = current_mode(i)
+              enddo
+
+              cmidA = get_cidx(mA,A%ntpm,A%mode)
+
+              !get the tiles into the local buffer
+              !get number of elements in tiles for A and B
+              !get buffer positions for A and B bufs
+              !get tiles
+              call get_tile_dim(nelmsTA,A,mA)
+              ibufA = mod(buffer_cm-1,nbuffsA)+1
+
+              call time_start_phase( PHASE_COMM )
+              if( alloc_in_dummy )then
+
+                 if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                    call tensor_flush_win(A, local = .true.)
+                    nel_one_sided = 0
+                 endif
+
+                 !call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
+
+                 nel_one_sided = nel_one_sided + nelmsTA
+              else
+                 call tensor_lock_win(A,cmidA,'s')
+                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
+              endif
+              call time_start_phase( PHASE_WORK )
+           endif
+
            if(B_dense)then
               call tile_from_fort(1.0E0_realk,B%elm1,B%dims,B%mode,0.0E0_realk,wB,cmidB,tdim_ord,ordB)
            else
+              ibufB = mod(cm-1,nbuffsB)+1
+              call time_start_phase( PHASE_COMM )
+              if( alloc_in_dummy )then
+                 !call lsmpi_wait(reqB(ibufB))
+                 call tensor_flush_win(B, gtidx=cmidB,only_owner=.true.,local = .true.)
+                 nel_one_sided = nel_one_sided - nelmsTB
+              else
+                 call tensor_unlock_win(B,cmidB)
+              endif
+              call time_start_phase( PHASE_WORK )
+
               select case(B%mode)
               case(2)
                  call array_reorder_2d(1.0E0_realk,buffB(:,ibufB),tdimB(1),tdimB(2),ordB,0.0E0_realk,wB)
@@ -3190,6 +3158,44 @@ module lspdm_tensor_operations_module
               case default
                  call lsquit("ERROR(lspdm_tensor_contract_simple): sorting B not implemented",-1)
               end select
+
+              !fill last buffer space B
+              !TODO:fill buffers also after changing the C tile
+              buffer_cm = cm + nbuffs
+              if(buffer_cm <= cci)then
+                 !build full mode index for A and B
+                 call get_midx( buffer_cm ,current_mode,max_mode_ci,nmodes2c)
+                 do i=1,nmodes2c
+                    mB(m2cB(i)) = current_mode(i)
+                 enddo
+
+                 cmidB = get_cidx(mB,ntpmB, B%mode)
+
+                 !same for B if necessary
+
+                 call get_tile_dim(nelmsTB,B,mB)
+                 ibufB = mod(buffer_cm-1,nbuffsB)+1
+                 call time_start_phase( PHASE_COMM )
+
+                 if( alloc_in_dummy )then
+
+                    if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                       call tensor_flush_win(A, local = .true.)
+                       if(.not.B_dense) call tensor_flush_win(B, local = .true.)
+                       nel_one_sided = 0
+                    endif
+
+                    !call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
+                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
+
+                    nel_one_sided = nel_one_sided + nelmsTB
+                 else
+                    call tensor_lock_win(B,cmidB,'s')
+                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
+                 endif
+                 call time_start_phase( PHASE_WORK )
+
+              endif
            endif
 
            !carry out the contraction
