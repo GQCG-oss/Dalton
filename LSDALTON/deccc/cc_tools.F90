@@ -1973,30 +1973,8 @@ module cc_tools_module
         ptr => bg_buf(:,pos)
 
      else
-        do i_search_buf = 1,nbuffs
-           if(.not.buf_log(i_search_buf))then
 
-              pos          = i_search_buf
-
-              if( .not. alloc_in_dummy ) call tensor_lock_win(arr,tilenr,'s',assert=mode)
-
-              call get_tile_dim(ts,arr,tilenr)
-
-              if( alloc_in_dummy )then
-                 call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,req=req(pos))
-              else
-                 call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
-              endif
-
-              buf_pos(pos) = tilenr
-              buf_log(pos) = .true.
-              found        = .true.
-              ptr          => bg_buf(:,pos)
-
-              exit
-
-           endif
-        enddo
+        call find_free_pos_in_buf(buf_log,nbuffs,pos,found)
 
         if( .not. found)then
 
@@ -2004,6 +1982,20 @@ module cc_tools_module
               & free position available to load",-1)
 
         endif
+
+        if( .not. alloc_in_dummy ) call tensor_lock_win(arr,tilenr,'s',assert=mode)
+
+        call get_tile_dim(ts,arr,tilenr)
+
+        if( alloc_in_dummy )then
+           call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,req=req(pos))
+        else
+           call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
+        endif
+
+        buf_pos(pos) = tilenr
+        buf_log(pos) = .true.
+        ptr          => bg_buf(:,pos)
 
      endif
 #endif
@@ -2027,9 +2019,10 @@ module cc_tools_module
      enddo
 
   end subroutine find_tile_pos_in_buf
+
   subroutine find_free_pos_in_buf(buf,nbuffs,pos,found)
      implicit none
-     integer, intent(in)  :: tilenr,nbuffs
+     integer, intent(in)  :: nbuffs
      logical, intent(in)  :: buf(nbuffs)
      logical, intent(out) :: found
      integer, intent(out) :: pos
@@ -2037,7 +2030,7 @@ module cc_tools_module
 
      found = .false.
      do i=1,nbuffs
-        if(buf(i)==tilenr)then
+        if(.not.buf(i))then
            pos   = i
            found = .true.
            exit
