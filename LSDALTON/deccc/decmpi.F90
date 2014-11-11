@@ -1944,7 +1944,7 @@ contains
   !> Author:  Pablo Baudin
   !> Date:    December 2013
   subroutine mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
-             & pgmo_diag,pgmo_up,nbas,nocc,nvir,nbatch,ccmodel)
+             & pgmo_diag,pgmo_up,nbas,nocc,nvir,nbatch)
 
     implicit none
      
@@ -1952,8 +1952,6 @@ contains
     integer :: nbas, nocc, nvir
     !> Number of MO batches
     integer :: nbatch
-    !> CC model:
-    integer ::  ccmodel
     !> SCF transformation matrices:
     real(realk), pointer  :: Co(:,:), Cv(:,:)
     !> performed MO-based CCSD calculation ?
@@ -1976,7 +1974,6 @@ contains
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(nvir,infpar%master)
     call ls_mpi_buffer(nbatch,infpar%master)
-    call ls_mpi_buffer(ccmodel,infpar%master)
     if(.not.master)then
       call mem_alloc(Co,nbas,nocc)
       call mem_alloc(Cv,nbas,nvir)
@@ -1984,20 +1981,18 @@ contains
     call ls_mpi_buffer(Co,nbas,nocc,infpar%master)
     call ls_mpi_buffer(Cv,nbas,nvir,infpar%master)
 
-    if (ccmodel/=MODEL_RPA) then 
-      if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
-      call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
+    if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
+    call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
 
-      if (nbatch>1) then 
-        if (master) pgmo_up_addr=pgmo_up%addr_p_arr
-        call ls_mpi_buffer(pgmo_up_addr,infpar%lg_nodtot,infpar%master)
-      end if
+    if (nbatch>1) then 
+      if (master) pgmo_up_addr=pgmo_up%addr_p_arr
+      call ls_mpi_buffer(pgmo_up_addr,infpar%lg_nodtot,infpar%master)
     end if
 
     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    if (.not.master.and.ccmodel/=MODEL_RPA) then
+    if (.not.master) then
       pgmo_diag = get_tensor_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
       if (nbatch>1) pgmo_up   = get_tensor_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
     endif
