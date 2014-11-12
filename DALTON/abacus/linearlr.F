@@ -62,7 +62,7 @@ C
 #include "abainf.h"
 #include "gnrinf.h"
 c#include "infsop.h"
-#include "ibtfun.h"
+
 C
 #include "lrescinf.h"
 #include "chrxyz.h"

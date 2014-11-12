@@ -171,6 +171,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
+     CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)
   ENDIF
 
 #ifdef MOD_UNRELEASED
@@ -220,9 +221,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         !with something like  
         !Reason: Error in Molecule_free - memory previously released
         call TestMPIcopySetting(ls%SETTING)
+        CALL LSTIMER('TestMPIcopySetting',TIMSTR,TIMEND,lupri)
      ENDIF
 #endif     
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+     CALL LSTIMER('II_precalc_ScreenMat',TIMSTR,TIMEND,lupri)
 
 #ifndef VAR_MPI
      IF(config%doTestMPIcopy)THEN

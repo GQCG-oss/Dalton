@@ -133,7 +133,7 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       ISYMJB = MULD2H(ISYMD,ISYMPC)
       ISKILJ = MULD2H(ISYMCM,ISYMOP)

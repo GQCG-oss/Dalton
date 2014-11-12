@@ -7,6 +7,7 @@ include ./Makefile.config
 
 DALTON_LIBS =             \
 -Llsdaltonsrc -llsdaltonsrc\
+-Lpcm -llspcm             \
 -Llinears -llinears       \
 -Lddynam -lddynam         \
 -Lgeomopt -lgeomopt       \
@@ -22,8 +23,7 @@ DALTON_LIBS =             \
 -Linterest/lib -linterest \
 -Lpdpack -lpdpack         \
 -Lxcfun_host -lxcfun_host  \
--Llsutil -llsutil \
--Lpcm -llspcm
+-Llsutil -llsutil
 
 # VAR_RSP needs MDO_OBJ ORS_OBJ 
 MODULES = LSU_OBJ XFH_OBJ PD_OBJ INT_OBJ FMM_OBJ ICH_OBJ LSI_OBJ PBC_OBJ2 \
@@ -32,7 +32,7 @@ MODULES = LSU_OBJ XFH_OBJ PD_OBJ INT_OBJ FMM_OBJ ICH_OBJ LSI_OBJ PBC_OBJ2 \
 
 # VAR_RSP needs ../external/matrix-defop/src ../external/openrsp/src
 SUBDIRS = lsutil xcfun_host pdpack interest/lib $(FMMDIR) IchorIntegrals LSint pbc2 dft SolverUtilities \
-	responsesolver rsp_properties deccc geomopt ddynam linears lsdaltonsrc pcm
+	responsesolver rsp_properties deccc geomopt ddynam linears pcm lsdaltonsrc
 
 PDLIB = pdpack/pdlib.a
 

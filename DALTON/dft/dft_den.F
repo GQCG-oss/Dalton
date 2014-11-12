@@ -267,7 +267,7 @@ C
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine QDRDAO',-1)
 C
@@ -281,32 +281,32 @@ C
          NORBI = NAOS(IREP+1)
          IF (NORBI .EQ. 0) GOTO 110
          DO 200 I = ISTR,ISTR + NORBI - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I), -8),  255)
             IOFF = KSTRT(IA)
             MULA = ISTBAO(IA)
             INDA = IOFF + NA
             DO 300 J = ISTR,I
-               IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-               NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+               IB   = IAND(ISHFT(IPIND(J),-16),65535)
+               NB   = IAND(ISHFT(IPIND(J), -8),  255)
                JOFF   = KSTRT(IB)
                NHKTB  = NHKT(IB)
                KHKTB  = KHKT(IB)
                MULB   = ISTBAO(IB)
-               MAB    = IBTOR(MULA,MULB)
-               KAB    = IBTAND(MULA,MULB)
+               MAB    = IOR(MULA,MULB)
+               KAB    = IAND(MULA,MULB)
                HKAB   = FMULT(KAB)
                ISOFF  = ISOFF + 1
                DSYMIJ = DSO(ISOFF)
                INDB   = JOFF + NB - KHKTB
                DO 400 ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MAB) .NE. 0) GOTO 400
+                  IF (IAND(ISYMOP,MAB) .NE. 0) GOTO 400
                   INDB = INDB + KHKTB
 C
 C                 Weight and parity factor
 C
                   FAC = HKAB*
-     *                  PT(IBTAND(ISYMOP,IBTXOR(IREP,ISYMAO(NHKTB,NB))))
+     *                  PT(IAND(ISYMOP,IEOR(IREP,ISYMAO(NHKTB,NB))))
                   INDM = MAX(INDA,INDB)
                   IND  = (INDM*(INDM - 3))/2 + INDA + INDB
                   DENMAT(IND) = DENMAT(IND) + FAC*DSYMIJ

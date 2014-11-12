@@ -1503,7 +1503,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !> Number of basis functions in full molecule/atomic extent
    integer, intent(in)                       :: nb
    !> Fock matrix in AO basis for fragment or full molecule
-   real(realk), dimension(nb,nb), intent(in) :: fock_f
+   real(realk), dimension(nb,nb), target, intent(in) :: fock_f
    !> Occupied MO coefficients for fragment/full molecule
    real(realk), dimension(nb,no), intent(in) :: Co_f
    !> Virtual MO coefficients for fragment/full molecule
@@ -1544,7 +1544,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(MObatchInfo) :: MOinfo
    !
    !work stuff
-   real(realk),pointer :: Co_d(:,:),Cv_d(:,:),focc(:),fvirt(:)
+   real(realk),pointer :: Co_d(:,:),Cv_d(:,:),focc(:),fvirt(:), dummy(:,:)
    real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:)
    real(realk) :: ccenergy_check
    integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims, ord2
@@ -1818,9 +1818,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(Cv  , virt_dims,2, local=local, atype="REAR" )
    call tensor_minit(fock, ao2_dims, 2, local=local, atype=atype )
 
+   dummy => fock_f
    call tensor_convert( Co_d,   Co   )
    call tensor_convert( Cv_d,   Cv   )
-   call tensor_convert( fock_f, fock )
+   call tensor_convert( dummy,  fock )
 
    call mem_dealloc( Co_d )
    call mem_dealloc( Cv_d )
@@ -1999,7 +2000,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    If_not_converged: if(.not.restart_from_converged)then
 
       mo_ccsd = .true.
-      if (DECinfo%NO_MO_CCSD.or.(nb>400).or.use_pnos.or.(ccmodel==MODEL_MP2) &
+      if (DECinfo%NO_MO_CCSD.or.(no+nv>200).or.use_pnos.or.(ccmodel==MODEL_MP2) &
        & .or. (ccmodel==MODEL_RPA)) mo_ccsd = .false.
        
       if (DECinfo%force_scheme) then
@@ -2023,8 +2024,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       if (mo_ccsd.or.(ccmodel == MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
 
-         call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,iajb,pgmo_diag,pgmo_up, &
-            & nb,no,nv,CCmodel,MOinfo)
+         call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,pgmo_diag,pgmo_up, &
+            & nb,no,nv,MOinfo)
 
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
             &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
@@ -3100,31 +3101,5 @@ subroutine save_current_guess(local,iter,nb,res_norm,energy,Uo,Uv,t2,safefilet21
    if (.not.local) call memory_deallocate_tensor_dense(t2)
 end subroutine save_current_guess
 
-#ifdef MOD_UNRELEASED
-!> Purpose: Wrapper for the RPA model: get MO integrals (non-T1 transformed)
-!
-!> Author:  Pablo Baudin
-!> Date:    January 2014
-subroutine wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co,Cv,govov,ccmodel,mylsitem)
-
-  implicit none
-
-  integer, intent(in) :: nb, no, nv
-  real(realk), pointer, intent(in) :: Co(:,:), Cv(:,:)
-  type(tensor), intent(inout) :: govov
-  integer, intent(in) :: ccmodel
-  !> LS item with information needed for integrals
-  type(lsitem), intent(inout) :: MyLsItem
-     
-  ! dummy arguments:
-  type(tensor) :: pgmo_diag, pgmo_up
-  type(MObatchInfo) :: MOinfo
-  logical :: mo_ccsd  
-  
-  call get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,govov,pgmo_diag,pgmo_up, &
-    & nb,no,nv,CCmodel,MOinfo)
- 
-end subroutine wrapper_to_get_real_t1_free_gmo
-#endif
 
 end module ccdriver

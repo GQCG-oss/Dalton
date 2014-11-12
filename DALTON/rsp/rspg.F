@@ -785,7 +785,7 @@ C
       LOGICAL FNDLB2
       LOGICAL OLDDX
       CHARACTER*7 RTNLBL(2)
-#include "ibtfun.h"
+
 C
       CALL QENTER('GETGC1')
 C
@@ -843,7 +843,7 @@ C
      &   WRK(KFREE),LFREE,IPRG
      &   )
       CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC1(3,3),10,'D1-SO ZZ')
-      IF (IBTXOR(ISYMAX(1,1),ISYMAX(2,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(1,1),ISYMAX(2,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D1-SO XY',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -855,7 +855,7 @@ C
      &      )
          CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC1(2,1),10,'D1-SO YX')
       END IF
-      IF (IBTXOR(ISYMAX(1,1),ISYMAX(3,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(1,1),ISYMAX(3,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D1-SO XZ',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -867,7 +867,7 @@ C
      &      )
          CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC1(3,1),10,'D1-SO ZX')
       END IF
-      IF (IBTXOR(ISYMAX(2,1),ISYMAX(3,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(2,1),ISYMAX(3,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D1-SO YZ',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -911,7 +911,7 @@ C Deck Scaled effective gauge correction
       LOGICAL FNDLB2
       LOGICAL OLDDX
       CHARACTER*7 RTNLBL(2)
-#include "ibtfun.h"
+
 C
       CALL QENTER('GETGC2SCA')
 C
@@ -969,7 +969,7 @@ C
      &   WRK(KFREE),LFREE,IPRG
      &   )
       CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC2(3,3),10,'D-SSO ZZ')
-      IF (IBTXOR(ISYMAX(1,1),ISYMAX(2,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(1,1),ISYMAX(2,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D-SSO XY',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -981,7 +981,7 @@ C
      &      )
          CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC2(2,1),10,'D-SSO YX')
       END IF
-      IF (IBTXOR(ISYMAX(1,1),ISYMAX(3,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(1,1),ISYMAX(3,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D-SSO XZ',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -993,7 +993,7 @@ C
      &      )
          CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC2(3,1),10,'D-SSO ZX')
       END IF
-      IF (IBTXOR(ISYMAX(2,1),ISYMAX(3,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(2,1),ISYMAX(3,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D-SSO YZ',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG

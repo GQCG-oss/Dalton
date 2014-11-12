@@ -26,7 +26,7 @@ C---------------------------------
 C
       DIMENSION TR1E(LTR1E), TR1D(LTR1E)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 C------------------
 C     Add to trace.

@@ -3121,9 +3121,7 @@ module matrix_operations_scalapack
    ENTRY PDM_GRIDINIT_SLAVE
    SLGrid%mynum = scalapack_mynum
    SLGrid%nprocs = infpar%nodtot   
-   print*,'call mpibcast(TMP,4,infpar%master,scalapack_comm)'
    call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
-   print*,'done mpibcast(TMP,4,infpar%master,scalapack_comm)'
    !SLGrid%ICTXT specifies the BLACS context handle identifying the
 
    !created process grid.

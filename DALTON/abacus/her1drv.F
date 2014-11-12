@@ -213,7 +213,7 @@ C
 
 C
 C
-#include "ibtfun.h"
+
       CALL QENTER('ONEDRV')
 C
       DOINT(1,1) = .TRUE.
@@ -367,7 +367,7 @@ C
 #include "rspprp.h"
 #include "esg.h"
 C
-#include "ibtfun.h"
+
 C... added by Bin Gao, Feb. 16, 2011
 C... for ECP
 #include "ecpinf.h"
@@ -646,7 +646,7 @@ C
 600      CONTINUE
          DO 620 NA = 1, KHKTA
             DO 630 IREP = 0, MAXREP
-            IF (IBTAND(MULA,IBTXOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
+            IF (IAND(MULA,IEOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
                ISOFRA(IREP+1)    = ISOFRA(IREP+1) + 1
                INDFA (IREP+1,NA) = ISOFRA(IREP+1)
             END IF
@@ -678,8 +678,8 @@ C
          CORBZ0 = CENT(ISHELB,3,1)
          KHKTAB = KHKTA*KHKTB
          KCKTAB = KCKTA*KCKTB
-         MAB    = IBTOR(MULA,MULB)
-         KAB    = IBTAND(MULA,MULB)
+         MAB    = IOR(MULA,MULB)
+         KAB    = IAND(MULA,MULB)
          HKAB   = FMULT(KAB)
 C
          SPHRAB = SPHRA .OR. SPHRB
@@ -695,7 +695,7 @@ C
 700      CONTINUE
          DO 720 NB = 1, KHKTB
             DO 730 IREP = 0, MAXREP
-            IF (IBTAND(MULB,IBTXOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
+            IF (IAND(MULB,IEOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
                ISOFRB(IREP+1)    = ISOFRB(IREP+1) + 1
                INDFB (IREP+1,NB) = ISOFRB(IREP+1)
             END IF
@@ -740,20 +740,20 @@ C
          IF (QM3) IMXATM = NCTOT
          DO 120 IATOMC = 1,IMXATM
             MULC   = ISTBNU(IATOMC)
-            MABC   = IBTOR(MULC,KAB)
+            MABC   = IOR(MULC,KAB)
             CORCX0 = CORD(1,IATOMC)
             CORCY0 = CORD(2,IATOMC)
             CORCZ0 = CORD(3,IATOMC)
             CHARG1 = CHARGE(IATOMC)
-            FACTOR = - FMULT(IBTAND(MULC,KAB))/HKAB
+            FACTOR = - FMULT(IAND(MULC,KAB))/HKAB
             DO 130 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,MABC) .EQ. 0) THEN
+               IF (IAND(ISYMOP,MABC) .EQ. 0) THEN
                   NATOMC = NATOMC + 1
                   JSYMC(NATOMC)   = ISYMOP
                   JCENTC(NATOMC)  = IATOMC
-                  SIGNC(1,NATOMC) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-                  SIGNC(2,NATOMC) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-                  SIGNC(3,NATOMC) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  SIGNC(1,NATOMC) = PT(IAND(ISYMAX(1,1),ISYMOP))
+                  SIGNC(2,NATOMC) = PT(IAND(ISYMAX(2,1),ISYMOP))
+                  SIGNC(3,NATOMC) = PT(IAND(ISYMAX(3,1),ISYMOP))
                   COORC(1,NATOMC) = SIGNC(1,NATOMC)*CORCX0
                   COORC(2,NATOMC) = SIGNC(2,NATOMC)*CORCY0
                   COORC(3,NATOMC) = SIGNC(3,NATOMC)*CORCZ0
@@ -1342,7 +1342,7 @@ C
 #include "dipole.h"
 #include "symmet.h"
 #include "dorps.h"
-#include "ibtfun.h"
+
 C
 C     Dipole moment
 C
@@ -1412,7 +1412,7 @@ C
 #include "difsec.h"
 #include "symmet.h"
 #include "dorps.h"
-#include "ibtfun.h"
+
 C
 C     Second moment gradient
 C
@@ -1423,7 +1423,7 @@ C
             FAC = FMULT(ISTBNU(IATOM))*CHA
             DO IXCOOR = 1, 3
                DO IYCOOR = 1, IXCOOR
-                  IREP = IBTXOR(ISYMAX(IXCOOR,1),ISYMAX(IYCOOR,1))
+                  IREP = IEOR(ISYMAX(IXCOOR,1),ISYMAX(IYCOOR,1))
                   IF (IXCOOR .EQ. IYCOOR) THEN
                      ISC = IPTCNT(3*(IATOM - 1) + IXCOOR,IREP,1)
                      IF (ISC .GT. 0) THEN
@@ -1632,7 +1632,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 
       FACT = 4.0D0 * PI * EPS/(EPS - D1)
       ISPP = 1
@@ -1648,9 +1648,9 @@ C
             YN = CORD(2,INUC) 
             ZN = CORD(3,INUC)
             DO JSYM = 0, MAXREP
-               SIGNX = PT(IBTAND(ISYMAX(1,1),JSYM))
-               SIGNY = PT(IBTAND(ISYMAX(2,1),JSYM))
-               SIGNZ = PT(IBTAND(ISYMAX(3,1),JSYM))
+               SIGNX = PT(IAND(ISYMAX(1,1),JSYM))
+               SIGNY = PT(IAND(ISYMAX(2,1),JSYM))
+               SIGNZ = PT(IAND(ISYMAX(3,1),JSYM))
                DO ITS = 1, NTSIRR
                   XI = SIGNX * XTSCOR(ITS)
                   YI = SIGNY * YTSCOR(ITS)
@@ -1688,13 +1688,13 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       DO ISYM = 0, MAXREP
          MTS = NTSIRR * ISYM
-         SIGNX = PT(IBTAND(ISYMAX(1,1),ISYM))
-         SIGNY = PT(IBTAND(ISYMAX(2,1),ISYM))
-         SIGNZ = PT(IBTAND(ISYMAX(3,1),ISYM))
+         SIGNX = PT(IAND(ISYMAX(1,1),ISYM))
+         SIGNY = PT(IAND(ISYMAX(2,1),ISYM))
+         SIGNZ = PT(IAND(ISYMAX(3,1),ISYM))
          DO ITS=1,NTSIRR
             L=ISPHE(ITS + MTS)
             XNI = - (XE(L) - SIGNX * XTSCOR(ITS)) / RE(L)

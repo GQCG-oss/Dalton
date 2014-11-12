@@ -428,9 +428,10 @@ module cc_debug_routines_module
      if (ccmodel==MODEL_RPA) then
        call tensor_minit(govov, [nocc,nvirt,nocc,nvirt],4,local=.true.,atype='TDAR')
        call tensor_zero(govov)
-
-       call  wrapper_to_get_t1_free_gmo(nbasis,nocc,nvirt,Co%val,Cv2%val,&
-             & govov,ccmodel,mylsitem)
+       ! FIXME: Johannes if this code is still suppose to work, you should
+       !        find govov in a different way, else please clean this file.
+       ! Date:  Nov. 2014
+       call lsquit("RPA in debug solver is missing govov",DECinfo%output)
      end if
 
 
@@ -2653,33 +2654,6 @@ module cc_debug_routines_module
       &number)",DECinfo%output)
     endif
   end subroutine save_current_guess_simple
-
-
-  
-  !> Purpose: Wrapper for the RPA model: get MO integrals (non-T1 transformed)
-  !
-  !> Author:  Pablo Baudin
-  !> Date:    January 2014
-  subroutine wrapper_to_get_t1_free_gmo(nb,no,nv,Co,Cv,govov,ccmodel,mylsitem)
-
-    implicit none
-
-    integer, intent(in) :: nb, no, nv
-    real(realk), pointer, intent(in) :: Co(:,:), Cv(:,:)
-    type(tensor), intent(inout) :: govov
-    integer, intent(in) :: ccmodel
-    !> LS item with information needed for integrals
-    type(lsitem), intent(inout) :: MyLsItem
-     
-    ! dummy arguments:
-    type(tensor) :: pgmo_diag, pgmo_up
-    type(MObatchInfo) :: MOinfo
-    logical :: mo_ccsd  
-  
-    call get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,govov,pgmo_diag,pgmo_up, &
-                        & nb,no,nv,CCmodel,MOinfo)
- 
-  end subroutine wrapper_to_get_t1_free_gmo
 
 
 end module cc_debug_routines_module

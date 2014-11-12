@@ -120,7 +120,7 @@ Clf#include "pcmlog.h"
 #include "symmet.h"
 #include "ecpinf.h"
 #include "expopt.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 4) CALL TITLER('Output from ONEPR1','*',103)
 C
@@ -377,9 +377,9 @@ C...#endif
             ELSE IF (PCM) THEN
                IADR = 1
                DO ISYM = 0, MAXREP
-                  SIGNX = PT(IBTAND(ISYMAX(1,1),ISYM))
-                  SIGNY = PT(IBTAND(ISYMAX(2,1),ISYM))
-                  SIGNZ = PT(IBTAND(ISYMAX(3,1),ISYM))
+                  SIGNX = PT(IAND(ISYMAX(1,1),ISYM))
+                  SIGNY = PT(IAND(ISYMAX(2,1),ISYM))
+                  SIGNZ = PT(IAND(ISYMAX(3,1),ISYM))
 Ckr Parallelizable PCM loop, but not optimal, must considered simultaneously with loop
 Ckr in PCMGRI
                   DO 310 ITS = 1,NTSIRR
@@ -438,7 +438,7 @@ C
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
 #include "gamcom.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(/A/)') ' <<<<< Output from Hernai >>>>> '
          WRITE (LUPRI,'(A,I10)')   ' JMAX   ', JMAX
@@ -476,7 +476,7 @@ C     **********************************
 C     ***** General Case: JMAX > 0 *****
 C     **********************************
 C
-      IF (IBTAND(JMAX,1) .EQ. 0) THEN
+      IF (IAND(JMAX,1) .EQ. 0) THEN
          ISTRTJ = IADR
          ISTEPJ = NRTUV
       ELSE

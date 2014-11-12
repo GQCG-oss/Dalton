@@ -1283,7 +1283,7 @@ C
       LOGICAL TOFILE, TRIMAT, VCHECK, EXP1VL
 C
 Clf Do not insert other definitions below the following include
-#include "ibtfun.h"
+
 C defined parallel calculation types  
 #include "iprtyp.h"
 C
@@ -1435,7 +1435,7 @@ C
       PARAMETER (LASTAR=99)
       PARAMETER (D0=0.0D0)
       DIMENSION RVDW(LASTAR)
-#include "ibtfun.h"
+
 C
 C       van der Waals radii taken from "The Elements", 2nd edition,
 C       John Emsley, Clarendon Press, Oxford, 1991.  Unknown values
@@ -1482,17 +1482,17 @@ C
       END DO
       DO K = 1, MAXREP
          DO N = 1, NNUC
-            IF (IBTAND(K,ISTBNU(N)) .EQ. 0) THEN
-               DS = (CORD(1,N)-CORD(1,N)*PT(IBTAND(ISYMAX(1,1),K)))**2
-     &            + (CORD(2,N)-CORD(2,N)*PT(IBTAND(ISYMAX(2,1),K)))**2
-     &            + (CORD(3,N)-CORD(3,N)*PT(IBTAND(ISYMAX(3,1),K)))**2
+            IF (IAND(K,ISTBNU(N)) .EQ. 0) THEN
+               DS = (CORD(1,N)-CORD(1,N)*PT(IAND(ISYMAX(1,1),K)))**2
+     &            + (CORD(2,N)-CORD(2,N)*PT(IAND(ISYMAX(2,1),K)))**2
+     &            + (CORD(3,N)-CORD(3,N)*PT(IAND(ISYMAX(3,1),K)))**2
                DIST = SQRT(DS)
                IF (DIST.LT.0.1D0) GOTO 5000
                I=I+1
                IF (I.GT.MXCENT) GOTO 5010
-               PCMCORD(1,I)=CORD(1,N)*PT(IBTAND(ISYMAX(1,1),K))
-               PCMCORD(2,I)=CORD(2,N)*PT(IBTAND(ISYMAX(2,1),K))
-               PCMCORD(3,I)=CORD(3,N)*PT(IBTAND(ISYMAX(3,1),K))
+               PCMCORD(1,I)=CORD(1,N)*PT(IAND(ISYMAX(1,1),K))
+               PCMCORD(2,I)=CORD(2,N)*PT(IAND(ISYMAX(2,1),K))
+               PCMCORD(3,I)=CORD(3,N)*PT(IAND(ISYMAX(3,1),K))
                PCMCHG(I)=CHARGE(N)
                RSPH(I) = RSPH(N)
                !print *, 'nucdep',i,rsph(i)
@@ -1517,15 +1517,15 @@ Clf            PCMCHG(IPCM) = CHARGE(ICENT)
 Clf         ELSE
 Clf            JATOM = 0
 Clf            DO 200 ISYMOP = 0, MAXOPR
-Clf               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+Clf               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
 Clf                  IPCM = IPCM + 1
 Clf                  JATOM  = JATOM + 1
 Clf                  NATOMS = NATOMS + 1
-Clf                  PCMCORD(1,IPCM) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
+Clf                  PCMCORD(1,IPCM) = PT(IAND(ISYMAX(1,1),ISYMOP))
 Clf     *                        *CORD(1,ICENT)
-Clf                  PCMCORD(2,IPCM) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
+Clf                  PCMCORD(2,IPCM) = PT(IAND(ISYMAX(2,1),ISYMOP))
 Clf     *                        *CORD(2,ICENT)
-Clf                  PCMCORD(3,IPCM) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+Clf                  PCMCORD(3,IPCM) = PT(IAND(ISYMAX(3,1),ISYMOP))
 Clf     *                        *CORD(3,ICENT)
 Clf                  PCMCHG(IPCM) = CHARGE(ICENT)
 Clf               END IF
