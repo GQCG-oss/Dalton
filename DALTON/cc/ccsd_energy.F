@@ -2346,7 +2346,7 @@ C
       CHARACTER*8 FILBACK
       CHARACTER*10 FILE_BACK 
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CCSD_IAJB')
 C-----------------------------------------------------------
@@ -3285,7 +3285,7 @@ C
       LOGICAL ANTISYM,LHTF,CCR12RSP
       CHARACTER*(*) FNFILE,FILER12,FILER12_2
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CCSD_AIBJ2')
 C
@@ -3459,7 +3459,7 @@ C
 C
       CHARACTER*(*) FNFILE
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CCSD_AIBJ3')
 C
@@ -3614,7 +3614,7 @@ C
       LOGICAL FIRST
       DATA FIRST /.TRUE./
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CCSD_INIT1')
 C

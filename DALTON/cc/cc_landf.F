@@ -2633,7 +2633,7 @@ C
 #include "ccfield.h"
 #include "leinf.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_RCC2FF')
 C
@@ -2754,7 +2754,7 @@ C
 #include "leinf.h"
 #include "qm3.h"
 !#include "qmmm.h"
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_LCC2FF')
 C
@@ -2858,7 +2858,7 @@ C
 C
       LOGICAL ETRAN,FCKCON
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_FCC2FF')
 C

@@ -10,7 +10,8 @@ MODULE ls_Integral_Interface
   use Matrix_Operations, only: mtype_unres_dense, matrix_type,&
        & mtype_scalapack, mat_to_full, mat_free, mat_retrieve_block,&
        & mat_init, mat_trans, mat_daxpy, mat_scal_dia, &
-       & mat_setlowertriangular_zero, mat_assign, mat_print
+       & mat_setlowertriangular_zero, mat_assign, mat_print,&
+       & mat_write_to_disk
   use matrix_operations_scalapack, only: PDM_MATRIXSYNC,&
        & free_in_darray
   use matrix_util, only : matfull_get_isym,mat_get_isym,mat_same
@@ -1295,7 +1296,7 @@ Integer              :: LUPRI,LUERR
 !
 TYPE(INTEGRALINPUT)  :: INT_INPUT
 TYPE(AOITEM),target  :: AObuild(4)
-Integer              :: nAObuilds,idmat,idmat2
+Integer              :: nAObuilds,idmat,idmat2,lupdmat
 logical              :: dograd
 
 CALL init_integral_input(INT_INPUT,SETTING)
@@ -1355,6 +1356,11 @@ IF(INT_INPUT%DO_LINK)THEN
          print*,'H mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
          print*,'I mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
          print*,'J mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         lupdmat = -1
+         CALL lsOPEN(lupdmat,'ProvocativeDens','UNKNOWN','UNFORMATTED')
+         call mat_write_to_disk(lupdmat,setting%DmatRHS(idmat)%p,.TRUE.)
+         call lsclose(lupdmat,'KEEP')
+         FLUSH(lupri)
          call lsquit('Exchange Called with nonsym Dmat',-1)
       ENDIF
       IF(Spec.EQ.MagDerivSpec)THEN
@@ -4520,6 +4526,7 @@ CASE('RHS')
   call mem_alloc(setting%DsymRHS,ndmat)
   DO idmat = 1,ndmat
     setting%DsymRHS(idmat) = mat_get_isym(Dmat(idmat)%p)
+    print*,'SET setting%DsymRHS(idmat)=',mat_get_isym(Dmat(idmat)%p)
   ENDDO
   setting%RHSdmatAOindex1 = AOindex1
   setting%RHSdmatAOindex2 = AOindex2
@@ -4598,6 +4605,7 @@ CASE('RHS')
   call mem_alloc(setting%DsymRHS,ndmat)
   DO idmat = 1,ndmat
     setting%DsymRHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2)
+    print*,'SET2 setting%DsymRHS(idmat)=',matfull_get_isym(Dmat(:,:,idmat),dim1,dim2)
   ENDDO
 CASE DEFAULT
   WRITE(LUPRI,'(1X,2A)') 'Error in ls_attachDmatToSetting. Side =',side

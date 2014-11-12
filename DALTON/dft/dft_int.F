@@ -383,13 +383,13 @@ c
 #include "mxcent.h"
 #include "symmet.h"
 c
-#include "ibtfun.h"
+
 c       Just to find out errors in the code.
       ISTRA = 1
       DO IREPA = 0, MAXREP
          NORBA = NAOS(IREPA+1)
          DO I = ISTRA,ISTRA + NORBA - 1
-            ISHEL = IBTAND(IBTSHR(IPIND(I),16),65535)
+            ISHEL = IAND(ISHFT(IPIND(I),-16),65535)
             ISHELL(I) = ISHEL
          END DO
          ISTRA = ISTRA + NORBA

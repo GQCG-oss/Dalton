@@ -638,6 +638,9 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
+            CASE('.MWPURIFYATOMSTART');               
+               !Perform McWeeny purification on the non idempotent Atoms Density
+               config%opt%MWPURIFYATOMSTART=.TRUE.
 #ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
@@ -1101,8 +1104,10 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
-        CASE('.SCALAPACKNODES');
-           READ(LUCMD,*) infpar%ScalapackNodes
+        CASE('.SCALAPACKGROUPSIZE');
+           READ(LUCMD,*) infpar%ScalapackGroupSize
+        CASE('.SCALAPACKAUTOGROUPSIZE');
+           infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif

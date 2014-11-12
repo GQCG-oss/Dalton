@@ -1002,7 +1002,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: unlock_time, waiting_time, flushing_time
      real(realk) :: phase_counters_int_dir(nphases)
      integer :: testmode(4)
-     integer(kind=long) :: xyz,zyx1,zyx2
+     integer(kind=long) :: xyz,zyx1,zyx2,mem_allocated,HeapMemoryUsage
      logical :: debug
      character(tensor_MSG_LEN) :: msg
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1011,10 +1011,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
      character(4) :: def_atype
-
+     integer, parameter :: bs = 1
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
-
+     call DetectHeapMemoryInit()
      time_init_work       = 0.0E0_realk
      time_init_comm       = 0.0E0_realk
      time_intloop_work    = 0.0E0_realk
@@ -1189,8 +1189,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #else
         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
 #endif
-        call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.)
+        call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.,mylsitem%setting,intspec)
 
         !SOME WORDS ABOUT THE CHOSEN SCHEME:
         ! Depending on the availability of memory on the nodes a certain scheme
@@ -1359,12 +1359,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==2) write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
         if(scheme==1) write(DECinfo%output,'("Using Dmitry s scheme")')
         if(DECinfo%PL>1)then
-           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,3,scheme,.false.)
+           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+              &MaxActualDimGamma,iter,3,scheme,.false.,mylsitem%setting,intspec)
            write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
-           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,2,scheme,.false.)
+           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+              &MaxActualDimGamma,iter,2,scheme,.false.,mylsitem%setting,intspec)
            write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
-           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,4,scheme,.true.)
-         endif
+           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+              &MaxActualDimGamma,iter,4,scheme,.true.,mylsitem%setting,intspec)
+        endif
      endif
 
      ! Use the dense amplitudes
@@ -1385,7 +1388,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      !if I am the working process, then
-     call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
+     call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%d,tmi%d)
 
      if(master.and.print_debug)then
         call print_norm(tpl%d,int(nor*nvr,kind=8)," NORM(tpl)   :")
@@ -1481,16 +1484,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !call get_available_memory(DECinfo%output,MemFree4,memfound,suppress_print=.true.)
 
      ! allocate working arrays depending on the batch sizes
-     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
      call mem_alloc( w0, w0size , simple = .false. )
 
-     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
      call mem_alloc( w1, w1size , simple = .false.)
 
-     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
      call mem_alloc( w2, w2size , simple = .false. )
 
-     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,scheme,mylsitem%setting,intspec)
      call mem_alloc( w3, w3size , simple = .false. )
 
      !call get_currently_available_memory(MemFree3)
@@ -1695,7 +1702,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
         !u [gamma c i j ] -> u [i gamma c j]
         call array_reorder_4d(1.0E0_realk,w1%d,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj%d)
-        call print_norm(uigcj%d,uigcj%n,"uigcj")
 
         alphaB=0
            
@@ -2275,7 +2281,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               &scheme,lock_outside,els2add,time_cnd_work,time_cnd_comm)
         else if(scheme==2)then
            call get_cnd_terms_mo_2(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
-              &scheme,lock_outside)
+              &scheme,lock_outside,local)
         endif
 
         call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
@@ -2567,7 +2573,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(omega1,int((i8*no)*nv,kind=8)," NORM(omega1):")
         call print_norm(omega2,                       " NORM(omega2):")
      endif
-
+     if(master.and.DECinfo%PL>1) then
+        call DetectHeapMemory(mem_allocated,HeapMemoryUsage,&
+             & 'get_ccsd_residual_integral_driven',DECinfo%output)
+        WRITE(DECinfo%output,'(A,f9.3,A)')'Expected Memory Used ',ActuallyUsed,' GB'
+     endif
   end subroutine get_ccsd_residual_integral_driven
 
   subroutine yet_another_ccsd_residual(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
@@ -2679,7 +2689,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=long) :: maxsize64,dummy64
      integer :: myload,nelms,n4
      real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2, deb1,deb2,ActuallyUsed
-     real(realk) :: MemFree,MemFreeMin
+     real(realk) :: MemFree,MemFreeMin,MemUsed
      real(realk) :: tcpu_end,twall_end,time_a, time_c, time_d,time_singles
      real(realk) :: time_doubles,timewall_start,wait_time,max_wait_time,min_wait_time,ave_wait_time
      integer     :: scheme
@@ -2687,6 +2697,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      logical :: memfound
 
      ! variables used for BATCH construction and INTEGRAL calculation
+     logical :: save_cs_screen, save_ps_screen
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,K,MinAObatch
      integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
@@ -2710,11 +2721,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(batchtoorb), pointer :: batch2orbGamma(:)
      Character            :: INTSPEC(5)
      logical :: fullRHS
-     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
-     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
+     integer :: MaxActualDimAlpha,nbatchesAlpha
+     integer :: MaxActualDimGamma,nbatchesGamma
+     integer :: ndimA,ndimB,ndimC,ndimD
+     integer :: ndimAs,ndimBs,ndimCs,ndimDs
+     integer :: startA,startB,startC,startD
 
      integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
-     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os,bs
+     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os,bs,as,gs
      integer(kind=8) :: nb4,o2v2,no4,buf_size
      integer :: tlen,tred,nor,nvr,goffs,aoffs
      integer :: prev_alphaB,mpi_buf,ccmodel_copy
@@ -2724,17 +2738,51 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: op_start,op_stop, dt_last_phase
      real(realk) :: time_init,    time_init_work,    time_init_comm, time_cndonly
      real(realk) :: time_intloop, time_intloop_work, time_intloop_comm, time_intloop_idle, time_intloop_int
-     real(realk) :: time_intloop_B1work, time_intloop_B1comm, time_intloop_stop
-     real(realk) :: time_fock_mat,commtime,time_reduction2,time_Bonly
-     real(realk) :: time_Bcnd,time_Bcnd_work,time_Bcnd_comm, time_Bcnd_idle
-     real(realk) :: time_cnd,time_cnd_work,time_cnd_comm,time_get_ao_fock, time_get_mo_fock
-     real(realk) :: time_Esing,time_Esing_work,time_Esing_comm, time_Esing_idle
-     real(realk) :: unlock_time, waiting_time, flushing_time
-     real(realk) :: phase_counters_int_dir(nphases)
-     integer :: testmode(4),residual_nr
+     real(realk) :: unlock_time_max  ,unlock_time_min  , unlock_time 
+     real(realk) :: waiting_time_max ,waiting_time_min , waiting_time
+     real(realk) :: flushing_time_max,flushing_time_min, flushing_time
+     real(realk) :: phase_cntrs(nphases)
+     real(realk) :: tot_intloop, tot_intloop_max, tot_intloop_min
+     real(realk) :: time_yv_fg_tot_max,   time_yv_fg_tot_min,   time_yv_fg_tot,    time_yvfg
+     real(realk) :: time_yo_fg_tot_max,   time_yo_fg_tot_min,   time_yo_fg_tot,    time_yofg 
+     real(realk) :: time_xo_fg_tot_max,   time_xo_fg_tot_min,   time_xo_fg_tot,    time_xofg 
+     real(realk) :: time_xv_fg_tot_max,   time_xv_fg_tot_min,   time_xv_fg_tot,    time_xvfg 
+     real(realk) :: time_uigcj_tot_max,   time_uigcj_tot_min,   time_uigcj_tot,    time_uigcj
+     real(realk) :: time_xo_fa_tot_max,   time_xo_fa_tot_min,   time_xo_fa_tot,    time_xofa
+     real(realk) :: time_xv_fa_tot_max,   time_xv_fa_tot_min,   time_xv_fa_tot,    time_xvfa 
+     real(realk) :: time_yv_fa_tot_max,   time_yv_fa_tot_min,   time_yv_fa_tot,    time_yvfa
+     real(realk) :: time_cont1_tot_max,   time_cont1_tot_min,   time_cont1_tot,    time_cont1 
+     real(realk) :: time_int1_tot_max,    time_int1_tot_min,    time_int1_tot ,    time_int1
+     real(realk) :: time_cont2_tot_max,   time_cont2_tot_min,   time_cont2_tot,    time_cont2
+     real(realk) :: time_cont3_tot_max,   time_cont3_tot_min,   time_cont3_tot,    time_cont3
+     real(realk) :: time_cont4_tot_max,   time_cont4_tot_min,   time_cont4_tot,    time_cont4
+     real(realk) :: time_cont5_tot_max,   time_cont5_tot_min,   time_cont5_tot,    time_cont5
+     real(realk) :: time_cont6_tot_max,   time_cont6_tot_min,   time_cont6_tot,    time_cont6 
+     real(realk) :: time_cont7_tot_max,   time_cont7_tot_min,   time_cont7_tot,    time_cont7 
+     real(realk) :: time_cont8_tot_max,   time_cont8_tot_min,   time_cont8_tot,    time_cont8 
+     real(realk) :: time_convGBI_tot_max, time_convGBI_tot_min, time_convGBI_tot,  time_convGBI
+     real(realk) :: time_cont9_tot_max,   time_cont9_tot_min,   time_cont9_tot,    time_cont9
+     real(realk) :: time_cont10_tot_max,  time_cont10_tot_min,  time_cont10_tot,   time_cont10
+     real(realk) :: time_int2_tot_max,    time_int2_tot_min,    time_int2_tot,     time_int2
+     real(realk) :: time_cont11_tot_max,  time_cont11_tot_min,  time_cont11_tot,   time_cont11
+     real(realk) :: time_cont12_tot_max,  time_cont12_tot_min,  time_cont12_tot,   time_cont12
+     real(realk) :: time_cont13_tot_max,  time_cont13_tot_min,  time_cont13_tot,   time_cont13
+     real(realk) :: time_cont14_tot_max,  time_cont14_tot_min,  time_cont14_tot,   time_cont14
+     real(realk) :: time_cont15_tot_max,  time_cont15_tot_min,  time_cont15_tot,   time_cont15
+     real(realk) :: time_cont16_tot_max,  time_cont16_tot_min,  time_cont16_tot,   time_cont16
+     real(realk) :: time_cont17_tot_max,  time_cont17_tot_min,  time_cont17_tot,   time_cont17
+     real(realk) :: time_cont18_tot_max,  time_cont18_tot_min,  time_cont18_tot,   time_cont18
+     real(realk) :: time_cont19_tot_max,  time_cont19_tot_min,  time_cont19_tot,   time_cont19
+     real(realk) :: time_cont20_tot_max,  time_cont20_tot_min,  time_cont20_tot,   time_cont20
+     real(realk) :: time_cont21_tot_max,  time_cont21_tot_min,  time_cont21_tot,   time_cont21
+     real(realk) :: time_cont22_tot_max,  time_cont22_tot_min,  time_cont22_tot,   time_cont22
+     real(realk) :: time_cont23_tot_max,  time_cont23_tot_min,  time_cont23_tot,   time_cont23
+     real(realk) :: time_w_min, time_c_min, time_i_min, time_w_max, time_c_max, time_i_max
+     integer :: starts(4),residual_nr
      integer(kind=long) :: xyz,zyx1,zyx2
      logical :: debug
      character(tensor_MSG_LEN) :: msg
+     real(realk), parameter :: frac = 0.8E0_realk
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef VAR_OMP
@@ -2748,19 +2796,41 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      time_init_work       = 0.0E0_realk
      time_init_comm       = 0.0E0_realk
-     time_intloop_work    = 0.0E0_realk
-     time_intloop_comm    = 0.0E0_realk
-     time_intloop_int     = 0.0E0_realk
-     time_intloop_B1work  = 0.0E0_realk
-     time_intloop_B1comm  = 0.0E0_realk
-     time_intloop_idle    = 0.0E0_realk
-     time_cnd_work        = 0.0E0_realk
-     time_cnd_comm        = 0.0E0_realk
-     time_Bcnd_work       = 0.0E0_realk
-     time_Bcnd_comm       = 0.0E0_realk
-     time_Esing_work      = 0.0E0_realk
-     time_Esing_comm      = 0.0E0_realk
-     commtime             = 0.0E0_realk
+     tot_intloop          = 0.0E0_realk
+     time_yv_fg_tot       = 0.0E0_realk
+     time_yo_fg_tot       = 0.0E0_realk
+     time_xo_fg_tot       = 0.0E0_realk
+     time_xv_fg_tot       = 0.0E0_realk
+     time_uigcj_tot       = 0.0E0_realk
+     time_xo_fa_tot       = 0.0E0_realk
+     time_xv_fa_tot       = 0.0E0_realk
+     time_yv_fa_tot       = 0.0E0_realk
+     time_cont1_tot       = 0.0E0_realk
+     time_int1_tot        = 0.0E0_realk
+     time_cont2_tot       = 0.0E0_realk
+     time_cont3_tot       = 0.0E0_realk
+     time_cont4_tot       = 0.0E0_realk
+     time_cont5_tot       = 0.0E0_realk
+     time_cont6_tot       = 0.0E0_realk
+     time_cont7_tot       = 0.0E0_realk
+     time_cont8_tot       = 0.0E0_realk
+     time_convGBI_tot     = 0.0E0_realk
+     time_cont9_tot       = 0.0E0_realk
+     time_cont10_tot      = 0.0E0_realk
+     time_int2_tot        = 0.0E0_realk
+     time_cont11_tot      = 0.0E0_realk
+     time_cont12_tot      = 0.0E0_realk
+     time_cont13_tot      = 0.0E0_realk
+     time_cont14_tot      = 0.0E0_realk
+     time_cont15_tot      = 0.0E0_realk
+     time_cont16_tot      = 0.0E0_realk
+     time_cont17_tot      = 0.0E0_realk
+     time_cont18_tot      = 0.0E0_realk
+     time_cont19_tot      = 0.0E0_realk
+     time_cont20_tot      = 0.0E0_realk
+     time_cont21_tot      = 0.0E0_realk
+     time_cont22_tot      = 0.0E0_realk
+     time_cont23_tot      = 0.0E0_realk
      unlock_time          = time_lsmpi_win_unlock 
      waiting_time         = time_lsmpi_wait
      flushing_time        = time_lsmpi_win_flush
@@ -2803,31 +2873,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      vs                       = t2%tdim(1)
      os                       = t2%tdim(3)
      residual_nr              = RN_YET_ANOTHER_RES
-     bs                       = nb/int(sqrt(float(nnod))+2)
-     nors                     = nor/int(sqrt(float(nnod))+2)
-     nvrs                     = nvr/int(sqrt(float(nnod))+2)
+     bs                       = get_split_scheme_0(nb) 
+     nors                     = get_split_scheme_0(nor)
+     nvrs                     = get_split_scheme_0(nvr)
 
-     
 
      ! Set integral info
      ! *****************
-     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center 
-     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center 
-     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center 
-     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
-     INTSPEC(5)               = 'C' !C = Coulomb operator
-#ifdef VAR_ICHOR
-     iprint = 0           !print level for Ichor Integral code
-     MoTrans = .FALSE.    !Do not transform to MO basis! 
-     NoSymmetry = .FALSE. !Use Permutational Symmetry! 
-     SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
-     !Determine the full number of AO batches - not to be confused with the batches of AOs
-     !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
-     iAO = 1
-     call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
-#else
-     doscreen = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
-#endif
+     !R = Regular Basis set on the 1th center R = Regular Basis set on the 2th center R = Regular Basis set on the 3th center R = Regular Basis set on the 4th center 
+     !C = Coulomb operator
+     INTSPEC = ['R','R','R','R','C'] 
+     save_cs_screen = mylsitem%setting%SCHEME%CS_SCREEN
+     save_ps_screen = mylsitem%setting%SCHEME%PS_SCREEN
+     mylsitem%setting%SCHEME%CS_SCREEN = .FALSE.
+     mylsitem%setting%SCHEME%PS_SCREEN = .FALSE.
+     doscreen = mylsitem%setting%SCHEME%CS_SCREEN.OR.mylsitem%setting%SCHEME%PS_SCREEN
 
 
      StartUpSlaves: if(master .and. nnod>1) then
@@ -2856,9 +2916,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Memory info - should synchronize the nodes
      ! ***********
      call get_currently_available_memory(MemFree)
+     MemFreeMin = MemFree
      call lsmpi_reduce_realk_min(MemFreeMin,infpar%master,infpar%lg_comm)
-     call lsmpi_local_reduction(MemFree,infpar%master)
-
+     ! Estimate free mem to be the min times the number of nodes
+     MemFree = MemFreeMin * nnod
 
      if(print_debug)then
         call print_norm(xo," NORM(xo)    :",print_on_rank = 0)
@@ -2867,64 +2928,44 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(yv," NORM(yv)    :",print_on_rank = 0)
      endif
 
-     ! Initialize stuff
-#ifdef VAR_ICHOR
-     nullify(AOGammabatchinfo)
-     nullify(AOalphabatchinfo)    
-#else
-     nullify(orb2batchAlpha)
-     nullify(batchdimAlpha)
-     nullify(batchsizeAlpha)
-     nullify(batch2orbAlpha)
-     nullify(batchindexAlpha)
-     nullify(orb2batchGamma)
-     nullify(batchdimGamma)
-     nullify(batchsizeGamma)
-     nullify(batch2orbGamma)
-     nullify(batchindexGamma)
-#endif
-
      if(master) then
         !==================================================
         !                  Batch construction             !
         !==================================================
-
-        ! Get free memory and determine maximum batch sizes
-        ! -------------------------------------------------
 #ifdef VAR_ICHOR
-        !Determine the minimum allowed AObatch size MinAObatch
-        !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
-        !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
-        !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
-        !'R'  !Specifies that it is the Regular AO basis that should be batched
-        iAO = 4 !the center that the batching should occur on (they are all the same in this case)  
+        iAO = 4 
         call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
 #else
         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
 #endif
-        call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.)
 
-        if(scheme /= 4 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 4 possible",-1)
+        ! Get free memory and determine maximum batch sizes
+        ! -------------------------------------------------
+        call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxActualDimAlpha,MaxActualDimGamma,&
+        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.,mylsitem%setting,intspec)
+
+        if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
+        
      endif
-
 
      !all communication for MPI prior to the loop
      call time_start_phase(PHASE_COMM, at = time_init_work )
-        
-
      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
      call ls_mpi_buffer(scheme,infpar%master)
      call ls_mpi_buffer(print_debug,infpar%master)
      call ls_mpi_buffer(dynamic_load,infpar%master)
      call ls_mpi_buffer(restart,infpar%master)
-     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
-     call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
-     call ls_mpi_buffer(els2add,infpar%master)
+     call ls_mpi_buffer(MaxActualDimAlpha,infpar%master)
+     call ls_mpi_buffer(MaxActualDimGamma,infpar%master)
      call ls_mpi_buffer(lock_outside,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-
      call time_start_phase(PHASE_WORK, at = time_init_comm)
+
+     nbatchesAlpha = nb / MaxActualDimAlpha
+     if( mod( nb, MaxActualDimAlpha ) > 0 ) nbatchesAlpha = nbatchesAlpha + 1
+     nbatchesGamma = nb / MaxActualDimGamma
+     if( mod( nb, MaxActualDimGamma ) > 0 ) nbatchesGamma = nbatchesGamma + 1
+
 
      hstatus = 80
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
@@ -2934,119 +2975,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
      ! ************************************************
-     ! * Determine batch information for Gamma batch  *
-     ! ************************************************
-#ifdef VAR_ICHOR
-    iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
-    !Determine how many batches of AOS based on the MaxAllowedDimGamma, the requested
-    !size of the AO batches. iAO is the center that the batching should occur on. 
-    !'R'  !Specifies that it is the Regular AO basis that should be batched 
-    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
-         & nbatchesGamma,DECinfo%output)
-    call mem_alloc(AOGammabatchinfo,nbatchesGamma)
-    !Construct the batches of AOS based on the MaxAllowedDimGamma, the requested
-    !size of the AO batches - MaxAllowedDimGamma must be unchanged since the call 
-    !to determine_Ichor_nbatchesofAOS
-    !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
-    !So MaxActualDimGamma must be less og equal to MaxAllowedDimGamma
-    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
-         & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
-#else
-     ! Orbital to batch information
-     ! ----------------------------
-     call mem_alloc(orb2batchGamma,nb)
-     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
-        & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-        &nbatchesGamma,orb2BatchGamma,'R')
-#endif
-     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
-        & 'with maximum size',MaxActualDimGamma
-
-#ifndef VAR_ICHOR
-     ! Translate batchindex to orbital index
-     ! -------------------------------------
-     call mem_alloc(batch2orbGamma,nbatchesGamma)
-     do idx=1,nbatchesGamma
-        call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
-        batch2orbGamma(idx)%orbindex = 0
-        batch2orbGamma(idx)%norbindex = 0
-     end do
-     do iorb=1,nb
-        idx = orb2batchGamma(iorb)
-        batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-        K = batch2orbGamma(idx)%norbindex
-        batch2orbGamma(idx)%orbindex(K) = iorb
-     end do
-#endif
-
-     ! ************************************************
-     ! * Determine batch information for Alpha batch  *
-     ! ************************************************
-
-#ifdef VAR_ICHOR
-    iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
-    !Determine how many batches of AOS based on the MaxAllowedDimAlpha, the requested
-    !size of the AO batches. iAO is the center that the batching should occur on. 
-    !'R'  !Specifies that it is the Regular AO basis that should be batched 
-    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
-         & nbatchesAlpha,DECinfo%output)
-    call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
-    !Construct the batches of AOS based on the MaxAllowedDimAlpha, the requested
-    !size of the AO batches - MaxAllowedDimAlpha must be unchanged since the call 
-    !to determine_Ichor_nbatchesofAOS
-    !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
-    !So MaxActualDimAlpha must be less og equal to MaxAllowedDimAlpha
-    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
-         & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
-#else
-     ! Orbital to batch information
-     ! ----------------------------
-     call mem_alloc(orb2batchAlpha,nb)
-     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
-        & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-#endif
-
-     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
-        &, 'with maximum size',MaxActualDimAlpha
-
-#ifndef VAR_ICHOR
-     ! Translate batchindex to orbital index
-     ! -------------------------------------
-     call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-     do idx=1,nbatchesAlpha
-        call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-        batch2orbAlpha(idx)%orbindex = 0
-        batch2orbAlpha(idx)%norbindex = 0
-     end do
-     do iorb=1,nb
-        idx = orb2batchAlpha(iorb)
-        batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-        K = batch2orbAlpha(idx)%norbindex
-        batch2orbAlpha(idx)%orbindex(K) = iorb
-     end do
-#endif
-
-     ! ************************************************
      ! *  Allocate matrices used in the batched loop  *
      ! ************************************************
 
-
      ! Use the dense amplitudes
      ! ------------------------
-
      !get the t+ and t- for the Kobayshi-like B2 term
      call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
      call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
-
-     call tensor_zero(tpl)
-     call tensor_zero(tmi)
-     !call get_tpl_and_tmi(t2,nv,no,tpl,tmi)
+     
+     call get_tpl_and_tmi(t2,tpl,tmi)
 
      if(print_debug)then
         call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
         call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
      endif
-
 
      call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
      call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
@@ -3059,7 +3002,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if( print_debug )then
         call print_norm(u2," NORM(u2)    :",print_on_rank=0)
      endif
-
 
      call tensor_ainit(Had,[nv,nb],2,local=local,tdims=[vs,bs],atype="TDAR")
      call tensor_ainit(Gbi,[nb,no],2,local=local,tdims=[bs,os],atype="TDAR")
@@ -3089,38 +3031,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      ! allocate working arrays depending on the batch sizes
-     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+        &MaxActualDimGamma,0,setting = mylsitem%setting, intspec = intspec)
      call mem_alloc( w0, w0size , simple = .false. )
 
-     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,0)
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+        &MaxActualDimGamma,0,setting = mylsitem%setting, intspec = intspec)
      call mem_alloc( w1, w1size , simple = .false.)
 
-
-
-#ifdef VAR_ICHOR
-     !Calculate Screening integrals 
-     SameMOL = .TRUE. !Specifies same molecule on all centers 
-     call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
-#else
-     ! This subroutine builds the full screening matrix.
-     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
-          & nbatchesAlpha,nbatchesGamma,INTSPEC)
-     IF(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
-        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
-             & nb,nbatchesAlpha,nbatchesGamma,&
-             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-             & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-        call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
-             & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
-             & batchindexAlpha,batchindexGamma,&
-             & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-     ENDIF
-     !setup LHS screening - the full AO basis is used so we can use the
-     !                      full matrices:        FilenameCS and FilenamePS
-     !Note that it is faster to calculate the integrals in the form
-     !(dimAlpha,dimGamma,nbasis,nbasis) so the full AO basis is used on the RHS
-     !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
-#endif
 
 #ifdef VAR_OMP
      nthreads=OMP_GET_MAX_THREADS()
@@ -3132,7 +3050,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         &'Starting CCSD integral/amplitudes - NO OMP!'
 #endif
 
-     
+
      if(master.and.DECinfo%PL>2)then
         write(*,'("CCSD time in lsmpi_win_unlock phase A",g10.3)') time_lsmpi_win_unlock - unlock_time
         write(*,'("CCSD time in lsmpi_wait       phase A",g10.3)') time_lsmpi_wait       - waiting_time
@@ -3151,155 +3069,194 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         write( *,'("-------------------------------------------------------------------")')
         write( *,'("CCSD residual init work:",g10.3,"s, comm:",g10.3,"s")')time_init_work,time_init_comm
      endif
-     call time_phases_get_current(current_wt=phase_counters_int_dir)
+     call time_phases_get_current(current_wt=phase_cntrs)
 
      fullRHS=(nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
      !**********************************
      ! Begin the loop over gamma batches
      !**********************************
+     call time_start_phase( PHASE_WORK, twall = tot_intloop )
 
      BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-#ifdef VAR_ICHOR
-        dimGamma     = AOGammabatchinfo(gammaB)%dim      ! Dimension of gamma batch
-        GammaStart   = AOGammabatchinfo(gammaB)%orbstart ! First orbital index in gamma batch
-        GammaEnd     = AOGammabatchinfo(gammaB)%orbEnd   ! Last orbital index in gamma batch
-        AOGammaStart = AOGammabatchinfo(gammaB)%AOstart  ! First AO batch index in gamma batch
-        AOGammaEnd   = AOGammabatchinfo(gammaB)%AOEnd    ! Last AO batch index in gamma batch
-#else
-        dimGamma     = batchdimGamma(gammaB)                         ! Dimension of gamma batch
-        GammaStart   = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-        GammaEnd     = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
-#endif
         !short hand notation
-        fg         = GammaStart
-        lg         = dimGamma
+        fg = 1 + (gammaB-1)*MaxActualDimGamma
+        lg = nb - fg + 1
+        if( lg >= MaxActualDimGamma )then
+           lg = MaxActualDimGamma
+        endif
 
-        call tensor_ainit(yv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[lg,vs])
+        if( lg > bs )then
+           gs = bs
+        else
+           gs = lg
+        endif
+
+        call time_start_phase(PHASE_WORK, twall = time_yvfg )
+        call tensor_ainit(yv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[gs,vs])
         call copy_stripe_from_full_matrix(yv_f,w0%d,fg,lg,nb,nv)
-        call tensor_convert(w0%d,yv_fg)
+        call tensor_convert(w0%d,yv_fg,wrk=w1%d,iwrk=w1%n)
+        call time_start_phase(PHASE_WORK, ttot = time_yvfg )
+        time_yv_fg_tot = time_yv_fg_tot + time_yvfg
 
-        call tensor_ainit(yo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[lg,os])
+        call time_start_phase(PHASE_WORK, twall = time_yofg )
+        call tensor_ainit(yo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[gs,os])
         call copy_stripe_from_full_matrix(yo_f,w0%d,fg,lg,nb,no)
-        call tensor_convert(w0%d,yo_fg)
+        call tensor_convert(w0%d,yo_fg,wrk=w1%d,iwrk=w1%n)
+        call time_start_phase(PHASE_WORK, ttot = time_yofg )
+        time_yo_fg_tot = time_yo_fg_tot + time_yofg
 
-        call tensor_ainit(xo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[lg,os])
+        call time_start_phase(PHASE_WORK, twall = time_xofg )
+        call tensor_ainit(xo_fg, [lg,no], 2, local=local, atype="TDAR", tdims=[gs,os])
         call copy_stripe_from_full_matrix(xo_f,w0%d,fg,lg,nb,no)
-        call tensor_convert(w0%d,xo_fg)
+        call tensor_convert(w0%d,xo_fg,wrk=w1%d,iwrk=w1%n)
+        call time_start_phase(PHASE_WORK, ttot = time_xofg )
+        time_xo_fg_tot = time_xo_fg_tot + time_xofg
 
-        call tensor_ainit(xv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[lg,vs])
+        call time_start_phase(PHASE_WORK, twall = time_xvfg )
+        call tensor_ainit(xv_fg, [lg,nv], 2, local=local, atype="TDAR", tdims=[gs,vs])
         call copy_stripe_from_full_matrix(xv_f,w0%d,fg,lg,nb,nv)
-        call tensor_convert(w0%d,xv_fg)
+        call tensor_convert(w0%d,xv_fg,wrk=w1%d,iwrk=w1%n)
+        call time_start_phase(PHASE_WORK, ttot = time_xvfg )
+        time_xv_fg_tot = time_xv_fg_tot + time_xvfg
 
-        call tensor_ainit( uigcj, [no,lg,nv,no], 4, local=local, atype='TDAR', tdims=[os,lg,vs,os] )
+        call time_start_phase(PHASE_WORK, twall = time_uigcj )
+        call tensor_ainit( uigcj, [no,lg,nv,no], 4, local=local, atype='TDAR', tdims=[os,gs,vs,os] )
         order4 = [3,1,2,4]
-        call tensor_contract( 1.0E0_realk, yv_fg, u2, [2],[1],1,0.0E0_realk,uigcj, order4)
+        call tensor_contract( 1.0E0_realk, yv_fg, u2, [2],[1],1,0.0E0_realk,uigcj, order4, force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+        call time_start_phase(PHASE_WORK, ttot = time_uigcj )
+        time_uigcj_tot = time_uigcj_tot + time_uigcj
 
-        call lsmpi_barrier(infpar%lg_comm)
 
         !**********************************
         ! Begin the loop over alpha batches
         !**********************************
-
-
         BatchAlpha: do alphaB=1,nbatchesAlpha ! AO batches
 
-#ifdef VAR_ICHOR
-           dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
-           AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
-           AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
-           AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
-           AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
-#else
-           dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
-           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-           AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
-#endif
-
            !short hand notation
-           fa         = AlphaStart
-           la         = dimAlpha
+           fa = 1 + (alphaB-1)*MaxActualDimAlpha
+           la = nb - fa + 1
+           if( la >= MaxActualDimAlpha )then
+              la = MaxActualDimAlpha
+           endif
+
+           if( la > bs )then
+              as = bs
+           else
+              as = la
+           endif
+
            myload     = myload + la * lg
 
-           call tensor_ainit(xo_fa, [la,no], 2, local=local, atype="TDAR", tdims=[la,os])
+           if(master.and.DECinfo%PL>2) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
+              &alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+
+
+           call time_start_phase(PHASE_WORK, twall = time_xofa )
+           call tensor_ainit(xo_fa, [la,no], 2, local=local, atype="TDAR", tdims=[as,os])
            call copy_stripe_from_full_matrix(xo_f,w0%d,fa,la,nb,no)
-           call tensor_convert(w0%d,xo_fa)
+           call tensor_convert(w0%d,xo_fa,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_xofa )
+           time_xo_fa_tot = time_xo_fa_tot + time_xofa
 
-           call tensor_ainit(xv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[la,vs])
+           call time_start_phase(PHASE_WORK, twall = time_xvfa )
+           call tensor_ainit(xv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[as,vs])
            call copy_stripe_from_full_matrix(xv_f,w0%d,fa,la,nb,nv)
-           call tensor_convert(w0%d,xv_fa)
+           call tensor_convert(w0%d,xv_fa,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_xvfa )
+           time_xv_fa_tot = time_xv_fa_tot + time_xvfa
 
-           call tensor_ainit(yv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[la,vs])
+           call time_start_phase(PHASE_WORK, twall = time_yvfa )
+           call tensor_ainit(yv_fa, [la,nv], 2, local=local, atype="TDAR", tdims=[as,vs])
            call copy_stripe_from_full_matrix(yv_f,w0%d,fa,la,nb,nv)
-           call tensor_convert(w0%d,yv_fa)
+           call tensor_convert(w0%d,yv_fa,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_yvfa )
+           time_yv_fa_tot = time_yv_fa_tot + time_yvfa
 
-           call tensor_ainit( int1, [nv,la,no,lg], 4, local=local, atype="TDAR", tdims=[vs,la,os,lg] )
-
+           call time_start_phase(PHASE_WORK, twall = time_cont1 )
+           call tensor_ainit( int1, [nv,la,no,lg], 4, local=local, atype="TDAR", tdims=[vs,as,os,gs] )
            order4 = [3,4,1,2]
-           call tensor_contract( 1.0E0_realk, uigcj, xo_fa, [4],[2],1,0.0E0_realk, int1, order4)
+           call tensor_contract( 1.0E0_realk, uigcj, xo_fa, [4],[2],1,0.0E0_realk, int1, order4,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont1 )
+           time_cont1_tot = time_cont1_tot + time_cont1
 
-           call tensor_ainit(Cint, [lg,nb,la,nb], 4, local=local, atype="TDAR", tdims=[lg,bs,la,bs])
+           call time_start_phase(PHASE_WORK, twall = time_int1 )
+           call tensor_ainit(Cint, [nb,nb,la,lg], 4, local=local, atype="TDAR", tdims=[bs,bs,as,gs])
+           do i = 1, Cint%nlti
 
-           !setup RHS screening - here we only have a set of AO basisfunctions
-           !                      so we use the batchscreening matrices.
-           !                      like BatchfilenamesCS(alphaB,gammaB)
-           !Note that it is faster to calculate the integrals in the form
-           !(dimAlpha,dimGamma,nbasis,nbasis) so the subset of the AO basis is used on the LHS
-           !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
-           call time_start_phase(PHASE_WORK, at = time_intloop_work)
-#ifdef VAR_ICHOR
-           dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array
-           call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,dimAlpha,dimGamma,&
-                & w1%d,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry)
-#else
-           IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-           IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
-           ! ************************************************************************************
-           dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array
-           ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-           !Mylsitem%setting%scheme%intprint=6
-           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1%d,batchindexAlpha(alphaB),&
-              &batchindexGamma(gammaB),&
-              &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
-           !Mylsitem%setting%scheme%intprint=0
-#endif
-           call tensor_convert(w1%d,Cint,order=[4,2,3,1])
+              call get_midx(Cint%ti(i)%gt,starts,Cint%ntpm,Cint%mode)
 
+              ndimA  = Cint%ti(i)%d(1)
+              ndimB  = Cint%ti(i)%d(2)
+              ndimC  = Cint%ti(i)%d(3)
+              ndimD  = Cint%ti(i)%d(4)
 
-           ! I [gamma delta alpha beta] * Lambda^p [beta l] = I [alpha l gamma delta]
-           call tensor_ainit( int2, [la,no,lg,nb], 4, local=local, atype="TDAR", tdims=[la,os,lg,bs] )
-           order4 = [3,4,1,2]
-           call tensor_contract( 1.0E0_realk, Cint, xo, [4],[1],1,0.0E0_realk, int2, order4,force_sync=.true.)
+              startA = 1  + (starts(1)-1)*Cint%tdim(1)
+              startB = 1  + (starts(2)-1)*Cint%tdim(2)
+              startC = fa + (starts(3)-1)*Cint%tdim(3)
+              startD = fg + (starts(4)-1)*Cint%tdim(4)
 
+              call II_GET_ERI_INTEGRALBLOCK_INQUIRE(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                 & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC)
+
+              call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                 & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d)
+
+           enddo
+           call time_start_phase(PHASE_WORK, ttot = time_int1 )
+           time_int1_tot = time_int1_tot + time_int1
+
+           call time_start_phase(PHASE_WORK, twall = time_cont2 )
+           ! I [beta delta alpha gamma] * Lambda^p [beta l] = I [alpha l gamma delta]
+           call tensor_ainit( int2, [la,no,lg,nb], 4, local=local, atype="TDAR", tdims=[as,os,gs,bs] )
+           order4 = [2,4,3,1]
+           call tensor_contract( 1.0E0_realk, Cint, xo, [2],[1],1,0.0E0_realk, int2, order4,force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont2 )
+           time_cont2_tot = time_cont2_tot + time_cont2
 
            !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
+           call time_start_phase(PHASE_WORK, twall = time_cont3 )
            order2 = [1,2]
-           call tensor_contract( 1.0E0_realk, int1, int2, [2,3,4],[1,2,3],3,1.0E0_realk, Had, order2,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int1, int2, [2,3,4],[1,2,3],3,1.0E0_realk, Had, order2,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont3 )
+           time_cont3_tot = time_cont3_tot + time_cont3
 
            call tensor_free( int1 )
-
-
+           call tensor_free( Cint )
 
 
            !VVOO
            if ( Ccmodel > MODEL_CC2 ) then
 
               !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
-              call tensor_ainit( int3, [la,no,no,lg], 4, local=local, atype="TDAR", tdims=[la,os,os,lg] )
+              call time_start_phase(PHASE_WORK, twall = time_cont4 )
+              call tensor_ainit( int3, [la,no,no,lg], 4, local=local, atype="TDAR", tdims=[as,os,os,gs] )
               order4 = [1,2,4,3]
-              call tensor_contract( 1.0E0_realk, int2, yo   , [4],[1],1, 0.0E0_realk, int3, order4,force_sync=.true.)
+              call tensor_contract( 1.0E0_realk, int2, yo   , [4],[1],1, 0.0E0_realk, int3, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+              call time_start_phase(PHASE_WORK, ttot = time_cont4 )
+              time_cont4_tot = time_cont4_tot + time_cont4
 
               !I [alpha  i j gamma] * Lambda^h [gamma b]            = I [alpha i j b]
-              call tensor_ainit( int4, [la,no,no,nv], 4, local=local, atype="TDAR", tdims=[la,os,os,vs] )
+              call time_start_phase(PHASE_WORK, twall = time_cont5 )
+              call tensor_ainit( int4, [la,no,no,nv], 4, local=local, atype="TDAR", tdims=[as,os,os,vs] )
               order4 = [1,2,3,4]
-              call tensor_contract( 1.0E0_realk, int3, yv_fg, [4],[1],1, 0.0E0_realk, int4, order4,force_sync=.true.)
+              call tensor_contract( 1.0E0_realk, int3, yv_fg, [4],[1],1, 0.0E0_realk, int4, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+              call time_start_phase(PHASE_WORK, ttot = time_cont5 )
+              time_cont5_tot = time_cont5_tot + time_cont5
 
               call tensor_free( int3 )
 
               !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
-              call tensor_contract( 1.0E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, gvvoo, order4,force_sync=.true.)
+              call time_start_phase(PHASE_WORK, twall = time_cont6 )
+              call tensor_contract( 1.0E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, gvvoo, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+              call time_start_phase(PHASE_WORK, ttot = time_cont6 )
+              time_cont6_tot = time_cont6_tot + time_cont6
 
               call tensor_free( int4 )
 
@@ -3307,39 +3264,57 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
            ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
-           call tensor_ainit( int1, [la,no,lg,nv], 4, local=local, atype="TDAR", tdims=[la,os,lg,vs] )
+           call time_start_phase(PHASE_WORK, twall = time_cont7 )
+           call tensor_ainit( int1, [la,no,lg,nv], 4, local=local, atype="TDAR", tdims=[as,os,gs,vs] )
            order4 = [1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int2, yv, [4],[1],1, 0.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int2, yv, [4],[1],1, 0.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont7 )
+           time_cont7_tot = time_cont7_tot + time_cont7
 
            call tensor_free( int2 )
 
            !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
-           call tensor_ainit( int3, [la,no], 2, local=local, atype="TDAR", tdims=[la,os] )
+           call time_start_phase(PHASE_WORK, twall = time_cont8 )
+           call tensor_ainit( int3, [la,no], 2, local=local, atype="TDAR", tdims=[as,os] )
            order2 = [1,2]
-           call tensor_contract( 1.0E0_realk, int1, uigcj, [2,3,4],[1,2,3],3, 0.0E0_realk, int3, order2,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int1, uigcj, [2,3,4],[1,2,3],3, 0.0E0_realk, int3, order2,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont8 )
+           time_cont8_tot = time_cont8_tot + time_cont8
 
            !FIXME: find a more elegant solution for this contraction
+           call time_start_phase(PHASE_WORK, twall = time_convGBI )
            if( me == 0 )then
-              call tensor_convert(int3,w0%d)
+              call tensor_convert(int3,w0%d,wrk=w1%d,iwrk=w1%n)
               call ass_D1to2(w0%d,p2,[la,no])
               !$OMP WORKSHARE
               Gbi_local%elm2(fa:fa+la-1,:) = Gbi_local%elm2(fa:fa+la-1,:) + p2(:,:)
               !$OMP END WORKSHARE
            endif
+           call time_start_phase(PHASE_WORK, ttot = time_convGBI )
+           time_convGBI_tot = time_convGBI_tot + time_convGBI
 
            call tensor_free( int3 )
-           call tensor_free( Cint )
 
            if ( Ccmodel > MODEL_CC2 ) then
 
-              call tensor_ainit( int3, [la,no,nv,no], 4, local=local, atype="TDAR", tdims=[la,os,vs,os] )
+              call time_start_phase(PHASE_WORK, twall = time_cont9 )
+              call tensor_ainit( int3, [la,no,nv,no], 4, local=local, atype="TDAR", tdims=[as,os,vs,os] )
 
               order4 = [1,2,3,4]
               !Reorder I [alpha j gamma b]  * Lambda^h [gamma i]          = I [alpha j b i]
-              call tensor_contract( 1.0E0_realk, int1, yo_fg, [3],[1],1, 0.0E0_realk, int3, order4,force_sync=.true.)
+              call tensor_contract( 1.0E0_realk, int1, yo_fg, [3],[1],1, 0.0E0_realk, int3, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+              call time_start_phase(PHASE_WORK, ttot = time_cont9 )
+              time_cont9_tot = time_cont9_tot + time_cont9
 
               !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
-              call tensor_contract( 1.0E0_realk, xv_fa, int3, [1],[1],1, 1.0E0_realk, gvoov, order4,force_sync=.true.)
+              call time_start_phase(PHASE_WORK, twall = time_cont10 )
+              call tensor_contract( 1.0E0_realk, xv_fa, int3, [1],[1],1, 1.0E0_realk, gvoov, order4,&
+                 &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+              call time_start_phase(PHASE_WORK, ttot = time_cont10 )
+              time_cont10_tot = time_cont10_tot + time_cont10
 
 
               call tensor_free( int3 )
@@ -3347,147 +3322,210 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call tensor_free( int1 )
 
-           call tensor_ainit(Cint, [la,nb,lg,nb], 4, local=local, atype="TDAR", tdims=[la,bs,lg,bs])
-           call time_start_phase(PHASE_WORK, at = time_intloop_work)
-#ifdef VAR_ICHOR
-           !Build (batchA,full,batchC,full)
-           call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,dimAlpha,nb,dimGamma,nb,&
-                & w1%d,INTSPEC,FULLRHS,AOAlphaStart,AOAlphaEnd,1,nAObatches,AOGammaStart,AOGammaEnd,&
-                & 1,nAObatches,MoTrans,dimAlpha,nb,dimGamma,nb,NoSymmetry)
-#else
-           IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
-           IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
+           call time_start_phase(PHASE_WORK, twall = time_int2 )
+           call tensor_ainit(Cint, [la,nb,lg,nb], 4, local=local, atype="TDAR", tdims=[as,bs,gs,bs])
+           do i = 1, Cint%nlti
 
-           call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
-              & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-              & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,INTSPEC,fullRHS)
-#endif
+              call get_midx(Cint%ti(i)%gt,starts,Cint%ntpm,Cint%mode)
 
-           call tensor_convert(w1%d,Cint)
+              ndimA  = Cint%ti(i)%d(1)
+              ndimB  = Cint%ti(i)%d(2)
+              ndimC  = Cint%ti(i)%d(3)
+              ndimD  = Cint%ti(i)%d(4)
+
+              startA = fa + (starts(1)-1)*Cint%tdim(1)
+              startB = 1  + (starts(2)-1)*Cint%tdim(2)
+              startC = fg + (starts(3)-1)*Cint%tdim(3)
+              startD = 1  + (starts(4)-1)*Cint%tdim(4)
+
+              call II_GET_ERI_INTEGRALBLOCK_INQUIRE(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                 & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC)
+
+              call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                 & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d)
+
+           enddo
+
+           call time_start_phase(PHASE_WORK, ttot = time_int2 )
+           time_int2_tot = time_int2_tot + time_int2
 
            !FIXME: REPLACE WITH SYMM AND ANTISYMM COMBINATIONS
            !Transform c
-           call tensor_ainit( int1, [lg,la,nv,nb], 4, local=local, atype="TDAR", tdims=[lg,la,vs,bs] )
+           call time_start_phase(PHASE_WORK, twall = time_cont11 )
+           call tensor_ainit( int1, [lg,la,nv,nb], 4, local=local, atype="TDAR", tdims=[gs,as,vs,bs] )
            order4=[2,1,4,3]
-           call tensor_contract( 1.0E0_realk, Cint, yv, [2],[1],1, 0.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, Cint, yv, [2],[1],1, 0.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont11 )
+           time_cont11_tot = time_cont11_tot + time_cont11
 
            !transform d
-           call tensor_ainit( int2, [lg,la,nv,nv], 4, local=local, atype="TDAR", tdims=[lg,la,vs,vs] )
+           call time_start_phase(PHASE_WORK, twall = time_cont12 )
+           call tensor_ainit( int2, [lg,la,nv,nv], 4, local=local, atype="TDAR", tdims=[gs,as,vs,vs] )
            order4=[1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int1, yv, [4],[1],1, 0.0E0_realk, int2, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int1, yv, [4],[1],1, 0.0E0_realk, int2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont12 )
+           time_cont12_tot = time_cont12_tot + time_cont12
 
            call tensor_free( int1 )
            !contract t(cd) and int2(cd)
-           call tensor_ainit( int1, [lg,la,no,no], 4, local=local, atype="TDAR", tdims=[lg,la,os,os] )
+           call time_start_phase(PHASE_WORK, twall = time_cont13 )
+           call tensor_ainit( int1, [lg,la,no,no], 4, local=local, atype="TDAR", tdims=[gs,as,os,os] )
            order4=[1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int2, t2, [3,4],[1,2],2, 0.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int2, t2, [3,4],[1,2],2, 0.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont13 )
+           time_cont13_tot = time_cont13_tot + time_cont13
 
            call tensor_free( int2 )
 
            !transform gamma to b
-           call tensor_ainit( int2, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[la,vs,os,os] )
+           call time_start_phase(PHASE_WORK, twall = time_cont14 )
+           call tensor_ainit( int2, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[as,vs,os,os] )
            order4=[2,1,3,4]
-           call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int2, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont14 )
+           time_cont14_tot = time_cont14_tot + time_cont14
 
            !transform alpha to a and add to omega2
+           call time_start_phase(PHASE_WORK, twall = time_cont15 )
            order4=[1,2,3,4]
-           call tensor_contract( 0.5E0_realk, xv_fa, int2, [1],[1],1, 1.0E0_realk, omega2, order4,force_sync=.true.)
+           call tensor_contract( 0.5E0_realk, xv_fa, int2, [1],[1],1, 1.0E0_realk, omega2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont15 )
+           time_cont15_tot = time_cont15_tot + time_cont15
 
            call tensor_free( int2 )
 
            !Do B2 term from int1 - transform occ i
-           call tensor_ainit( int2, [lg,la,no,nb], 4, local=local, atype="TDAR", tdims=[lg,la,os,bs] )
+           call time_start_phase(PHASE_WORK, twall = time_cont16 )
+           call tensor_ainit( int2, [lg,la,no,nb], 4, local=local, atype="TDAR", tdims=[gs,as,os,bs] )
            order4=[2,1,4,3]
-           call tensor_contract( 1.0E0_realk, Cint, yo, [2],[1],1, 0.0E0_realk, int2, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, Cint, yo, [2],[1],1, 0.0E0_realk, int2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont16 )
+           time_cont16_tot = time_cont16_tot + time_cont16
 
            call tensor_free( Cint )
 
            !transform occ j
+           call time_start_phase(PHASE_WORK, twall = time_cont17 )
            order4=[1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 1.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 1.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont17 )
+           time_cont17_tot = time_cont17_tot + time_cont17
 
            !backtransform t2
            order4=[1,2,3,4]
-           call tensor_ainit( int4, [nv,nv,no,la], 4, local=local, atype="TDAR", tdims=[vs,vs,os,la] )
+           call time_start_phase(PHASE_WORK, twall = time_cont18 )
+           call tensor_ainit( int4, [nv,nv,no,la], 4, local=local, atype="TDAR", tdims=[vs,vs,os,as] )
 
-           call tensor_contract( 1.0E0_realk, t2, xo_fa, [3],[2],1, 0.0E0_realk, int4, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, t2, xo_fa, [3],[2],1, 0.0E0_realk, int4, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont18 )
+           time_cont18_tot = time_cont18_tot + time_cont18
 
-           call tensor_ainit( int3, [nv,nv,la,lg], 4, local=local, atype="TDAR", tdims=[vs,vs,la,lg] )
+           call time_start_phase(PHASE_WORK, twall = time_cont19 )
+           call tensor_ainit( int3, [nv,nv,la,lg], 4, local=local, atype="TDAR", tdims=[vs,vs,as,gs] )
 
-           call tensor_contract( 1.0E0_realk, int4, xo_fg, [3],[2],1, 0.0E0_realk, int3, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int4, xo_fg, [3],[2],1, 0.0E0_realk, int3, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont19 )
+           time_cont19_tot = time_cont19_tot + time_cont19
 
            call tensor_free( int4 )
 
            order4=[1,2,3,4]
-           call tensor_contract( 0.5E0_realk, int3, int1, [3,4],[2,1],2, 1.0E0_realk, omega2, order4,force_sync=.true.)
+           call time_start_phase(PHASE_WORK, twall = time_cont20 )
+           call tensor_contract( 0.5E0_realk, int3, int1, [3,4],[2,1],2, 1.0E0_realk, omega2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont20 )
+           time_cont20_tot = time_cont20_tot + time_cont20
 
            call tensor_free( int3 )
 
 
-!           if( Ccmodel > MODEL_CC2 )then
-!              if(fa<=fg+lg-1)then
-!                 !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
-!                 !element in the alpha batch has a smaller index as the last element in
-!                 !the gamma batch, chose the trafolength as minimum of alpha batch-length
-!                 !and the difference between first element of alpha batch and last element
-!                 !of gamma batch
-!                 call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
-!                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
-!                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
-!
-!                 !start a new timing phase after these terms
-!                 call time_start_phase(PHASE_WORK)
-!
-!              endif
-!           endif
-!
-!
-!           !(w0%d):I[ delta gamma alpha beta] <- (w1%d):I[ alpha beta gamma delta ]
-!           call array_reorder_4d(1.0E0_realk,w1%d,la,nb,lg,nb,[2,3,1,4],0.0E0_realk,w0%d)
-!           call lsmpi_poke()
-!           ! (w3%d):I[i gamma alpha beta] = Lambda^h[delta i] I[delta gamma alpha beta]
-!           call dgemm('t','n',no,lg*la*nb,nb,1.0E0_realk,yo,nb,w0%d,nb,0.0E0_realk,w2%d,no)
-!           call lsmpi_poke()
-!           ! (w0%d):I[i gamma alpha j] = (w3%d):I[i gamma alpha beta] Lambda^h[beta j]
-!           call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la)
-!           call lsmpi_poke()
-!           if( Ccmodel > MODEL_CC2 )then
-!              select case(scheme)
-!              case(4,3)
-!                 ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
-!                 call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%elm1)
-!              case(2)
-!                 ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
-!                 call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d)
-!                 ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
-!                 call dgemm('t','n',no,no*no*la,lg,1.0E0_realk,xo(fg),nb,w3%d,lg,0.0E0_realk,w2%d,no)
-!                 ! (w3):I[ k l i j] <- (w2):Lambda^p [alpha l ]^T I[ l i j , alpha]^T
-!                 call dgemm('t','t',no,no*no*no,la,1.0E0_realk,xo(fa),nb,w2%d,no*no*no,0.0E0_realk,w3%d,no)
-!                 if(.not.alloc_in_dummy)call tensor_lock_wins(sio4,'s',mode)
-!                 call tensor_add(sio4,1.0E0_realk,w3%d,order = [1,2,3,4],wrk=w2%d,iwrk=w2%n)
-!                 if( alloc_in_dummy )then
-!                    call lsmpi_win_flush(sio4%wi(1),local=.true.)
-!                 else
-!                    call tensor_unlock_wins(sio4,.true.)
-!                 endif
-!              end select
-!           endif
-!           call lsmpi_poke()
-!
+           !           if( Ccmodel > MODEL_CC2 )then
+           !              if(fa<=fg+lg-1)then
+           !                 !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
+           !                 !element in the alpha batch has a smaller index as the last element in
+           !                 !the gamma batch, chose the trafolength as minimum of alpha batch-length
+           !                 !and the difference between first element of alpha batch and last element
+           !                 !of gamma batch
+           !                 call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
+           !                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
+           !                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
+           !
+           !                 !start a new timing phase after these terms
+           !                 call time_start_phase(PHASE_WORK)
+           !
+           !              endif
+           !           endif
+           !
+           !
+           !           !(w0%d):I[ delta gamma alpha beta] <- (w1%d):I[ alpha beta gamma delta ]
+           !           call array_reorder_4d(1.0E0_realk,w1%d,la,nb,lg,nb,[2,3,1,4],0.0E0_realk,w0%d)
+           !           call lsmpi_poke()
+           !           ! (w3%d):I[i gamma alpha beta] = Lambda^h[delta i] I[delta gamma alpha beta]
+           !           call dgemm('t','n',no,lg*la*nb,nb,1.0E0_realk,yo,nb,w0%d,nb,0.0E0_realk,w2%d,no)
+           !           call lsmpi_poke()
+           !           ! (w0%d):I[i gamma alpha j] = (w3%d):I[i gamma alpha beta] Lambda^h[beta j]
+           !           call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la)
+           !           call lsmpi_poke()
+           !           if( Ccmodel > MODEL_CC2 )then
+           !              select case(scheme)
+           !              case(4,3)
+           !                 ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
+           !                 call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%elm1)
+           !              case(2)
+           !                 ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
+           !                 call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d)
+           !                 ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
+           !                 call dgemm('t','n',no,no*no*la,lg,1.0E0_realk,xo(fg),nb,w3%d,lg,0.0E0_realk,w2%d,no)
+           !                 ! (w3):I[ k l i j] <- (w2):Lambda^p [alpha l ]^T I[ l i j , alpha]^T
+           !                 call dgemm('t','t',no,no*no*no,la,1.0E0_realk,xo(fa),nb,w2%d,no*no*no,0.0E0_realk,w3%d,no)
+           !                 if(.not.alloc_in_dummy)call tensor_lock_wins(sio4,'s',mode)
+           !                 call tensor_add(sio4,1.0E0_realk,w3%d,order = [1,2,3,4],wrk=w2%d,iwrk=w2%n)
+           !                 if( alloc_in_dummy )then
+           !                    call lsmpi_win_flush(sio4%wi(1),local=.true.)
+           !                 else
+           !                    call tensor_unlock_wins(sio4,.true.)
+           !                 endif
+           !              end select
+           !           endif
+           !           call lsmpi_poke()
+           !
 
-            
+
            !Transform second bas to occ in int2 to get T1 transformed integral contrib
            !transform occ j
+           call time_start_phase(PHASE_WORK, twall = time_cont21 )
            order4=[1,2,3,4]
-           call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 0.0E0_realk, int1, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 0.0E0_realk, int1, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont21 )
+           time_cont21_tot = time_cont21_tot + time_cont21
 
            !g´transform gamma->b
-           call tensor_ainit( int4, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[la,vs,os,os] )
+           call time_start_phase(PHASE_WORK, twall = time_cont22 )
+           call tensor_ainit( int4, [la,nv,no,no], 4, local=local, atype="TDAR", tdims=[as,vs,os,os] )
            order4=[2,1,3,4]
-           call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int4, order4,force_sync=.true.)
+           call tensor_contract( 1.0E0_realk, xv_fg, int1, [1],[1],1, 0.0E0_realk, int4, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont22 )
+           time_cont22_tot = time_cont22_tot + time_cont22
 
+           call time_start_phase(PHASE_WORK, twall = time_cont23 )
            order4=[1,2,3,4]
-           call tensor_contract( 0.5E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, omega2, order4,force_sync=.true.)
+           call tensor_contract( 0.5E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, omega2, order4,&
+              &force_sync=.true.,wrk=w1%d,iwrk=w1%n)
+           call time_start_phase(PHASE_WORK, ttot = time_cont23 )
+           time_cont23_tot = time_cont23_tot + time_cont23
 
 
            call tensor_free( int1 )
@@ -3509,40 +3547,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      end do BatchGamma
 
+     call time_start_phase( PHASE_WORK, ttot = tot_intloop )
 
-     ! Free integral stuff
-     ! *******************
-#ifdef VAR_ICHOR
-     call FREE_SCREEN_ICHORERI()
-     call mem_dealloc(AOGammabatchinfo)
-     call mem_dealloc(AOAlphabatchinfo)
-#else
-     nullify(Mylsitem%setting%LST_GAB_LHS)
-     nullify(Mylsitem%setting%LST_GAB_RHS)
-     call free_decscreen(DECSCREEN)
+     mylsitem%setting%SCHEME%CS_SCREEN = save_cs_screen
+     mylsitem%setting%SCHEME%PS_SCREEN = save_ps_screen
 
-     ! Free gamma stuff
-     call mem_dealloc(orb2batchGamma)
-     call mem_dealloc(batchdimGamma)
-     call mem_dealloc(batchsizeGamma)
-     call mem_dealloc(batchindexGamma)
-     do idx=1,nbatchesGamma
-        call mem_dealloc(batch2orbGamma(idx)%orbindex)
-        batch2orbGamma(idx)%orbindex => null()
-     end do
-     call mem_dealloc(batch2orbGamma)
-
-     ! Free alpha stuff
-     call mem_dealloc(orb2batchAlpha)
-     call mem_dealloc(batchdimAlpha)
-     call mem_dealloc(batchsizeAlpha)
-     call mem_dealloc(batchindexAlpha)
-     do idx=1,nbatchesAlpha
-        call mem_dealloc(batch2orbAlpha(idx)%orbindex)
-        batch2orbAlpha(idx)%orbindex => null()
-     end do
-     call mem_dealloc(batch2orbAlpha)
-#endif
      ! free arrays only needed in the batched loops
      call time_start_phase(PHASE_COMM, at = time_intloop_work )
 
@@ -3556,7 +3565,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call tensor_convert(Gbi_local%elm1,Gbi)
      call tensor_free(Gbi_local)
 
-     call time_start_phase(PHASE_WORK, at = time_intloop_comm )
+     call time_start_phase( PHASE_WORK )
+     call time_phases_get_diff(current_wt=phase_cntrs)
 
      call tensor_free(tpl)
      call tensor_free(tmi)
@@ -3564,15 +3574,322 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call mem_dealloc(w0)
      call mem_dealloc(w1)
 
-     if(master.and.DECinfo%PL>2)then
-        write(*,'("CCSD time in lsmpi_win_unlock phase B",g10.3)') time_lsmpi_win_unlock - unlock_time
-        write(*,'("CCSD time in lsmpi_wait       phase B",g10.3)') time_lsmpi_wait       - waiting_time
-        write(*,'("CCSD time in lsmpi_win_flush  phase B",g10.3)') time_lsmpi_win_flush  - flushing_time
+     if(DECinfo%PL>2)then
+
+        tot_intloop_min      =  tot_intloop 
+        time_yv_fg_tot_min   =  time_yv_fg_tot   
+        time_yo_fg_tot_min   =  time_yo_fg_tot   
+        time_xo_fg_tot_min   =  time_xo_fg_tot   
+        time_xv_fg_tot_min   =  time_xv_fg_tot   
+        time_uigcj_tot_min   =  time_uigcj_tot   
+        time_xo_fa_tot_min   =  time_xo_fa_tot   
+        time_xv_fa_tot_min   =  time_xv_fa_tot   
+        time_yv_fa_tot_min   =  time_yv_fa_tot   
+        time_cont1_tot_min   =  time_cont1_tot   
+        time_int1_tot_min    =  time_int1_tot   
+        time_cont2_tot_min   =  time_cont2_tot   
+        time_cont3_tot_min   =  time_cont3_tot   
+        time_cont4_tot_min   =  time_cont4_tot   
+        time_cont5_tot_min   =  time_cont5_tot   
+        time_cont6_tot_min   =  time_cont6_tot   
+        time_cont7_tot_min   =  time_cont7_tot   
+        time_cont8_tot_min   =  time_cont8_tot   
+        time_convGBI_tot_min =  time_convGBI_tot 
+        time_cont9_tot_min   =  time_cont9_tot 
+        time_cont10_tot_min  =  time_cont10_tot  
+        time_int2_tot_min    =  time_int2_tot    
+        time_cont11_tot_min  =  time_cont11_tot
+        time_cont12_tot_min  =  time_cont12_tot
+        time_cont13_tot_min  =  time_cont13_tot
+        time_cont14_tot_min  =  time_cont14_tot
+        time_cont15_tot_min  =  time_cont15_tot
+        time_cont16_tot_min  =  time_cont16_tot
+        time_cont17_tot_min  =  time_cont17_tot
+        time_cont18_tot_min  =  time_cont18_tot
+        time_cont19_tot_min  =  time_cont19_tot
+        time_cont20_tot_min  =  time_cont20_tot
+        time_cont21_tot_min  =  time_cont21_tot
+        time_cont22_tot_min  =  time_cont22_tot
+        time_cont23_tot_min  =  time_cont23_tot
+
+        tot_intloop_max      =  tot_intloop 
+        time_yv_fg_tot_max   =  time_yv_fg_tot   
+        time_yo_fg_tot_max   =  time_yo_fg_tot   
+        time_xo_fg_tot_max   =  time_xo_fg_tot   
+        time_xv_fg_tot_max   =  time_xv_fg_tot   
+        time_uigcj_tot_max   =  time_uigcj_tot   
+        time_xo_fa_tot_max   =  time_xo_fa_tot   
+        time_xv_fa_tot_max   =  time_xv_fa_tot   
+        time_yv_fa_tot_max   =  time_yv_fa_tot   
+        time_cont1_tot_max   =  time_cont1_tot   
+        time_int1_tot_max    =  time_int1_tot   
+        time_cont2_tot_max   =  time_cont2_tot   
+        time_cont3_tot_max   =  time_cont3_tot   
+        time_cont4_tot_max   =  time_cont4_tot   
+        time_cont5_tot_max   =  time_cont5_tot   
+        time_cont6_tot_max   =  time_cont6_tot   
+        time_cont7_tot_max   =  time_cont7_tot   
+        time_cont8_tot_max   =  time_cont8_tot   
+        time_convGBI_tot_max =  time_convGBI_tot 
+        time_cont9_tot_max   =  time_cont9_tot 
+        time_cont10_tot_max  =  time_cont10_tot  
+        time_int2_tot_max    =  time_int2_tot    
+        time_cont11_tot_max  =  time_cont11_tot
+        time_cont12_tot_max  =  time_cont12_tot
+        time_cont13_tot_max  =  time_cont13_tot
+        time_cont14_tot_max  =  time_cont14_tot
+        time_cont15_tot_max  =  time_cont15_tot
+        time_cont16_tot_max  =  time_cont16_tot
+        time_cont17_tot_max  =  time_cont17_tot
+        time_cont18_tot_max  =  time_cont18_tot
+        time_cont19_tot_max  =  time_cont19_tot
+        time_cont20_tot_max  =  time_cont20_tot
+        time_cont21_tot_max  =  time_cont21_tot
+        time_cont22_tot_max  =  time_cont22_tot
+        time_cont23_tot_max  =  time_cont23_tot
+
+
+        call lsmpi_reduce_realk_min( tot_intloop_min      , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_yv_fg_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_yo_fg_tot_min   , infpar%master, infpar%lg_comm  )
+        call lsmpi_reduce_realk_min( time_xo_fg_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_xv_fg_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_uigcj_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_xo_fa_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_xv_fa_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_yv_fa_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont1_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_int1_tot_min    , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont2_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont3_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont4_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont5_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont6_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont7_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont8_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_convGBI_tot_min , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont9_tot_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont10_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_int2_tot_min    , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont11_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont12_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont13_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont14_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont15_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont16_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont17_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont18_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont19_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont20_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont21_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont22_tot_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_cont23_tot_min  , infpar%master, infpar%lg_comm )
+
+        call lsmpi_reduce_realk_max( tot_intloop_max      , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_yv_fg_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_yo_fg_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_xo_fg_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_xv_fg_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_uigcj_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_xo_fa_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_xv_fa_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_yv_fa_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont1_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_int1_tot_max    , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont2_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont3_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont4_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont5_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont6_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont7_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont8_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_convGBI_tot_max , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont9_tot_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont10_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_int2_tot_max    , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont11_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont12_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont13_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont14_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont15_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont16_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont17_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont18_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont19_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont20_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont21_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont22_tot_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_cont23_tot_max  , infpar%master, infpar%lg_comm )
+
+        call lsmpi_local_reduction( tot_intloop      , infpar%master )
+        call lsmpi_local_reduction( time_yv_fg_tot   , infpar%master )
+        call lsmpi_local_reduction( time_yo_fg_tot   , infpar%master )
+        call lsmpi_local_reduction( time_xo_fg_tot   , infpar%master )
+        call lsmpi_local_reduction( time_xv_fg_tot   , infpar%master )
+        call lsmpi_local_reduction( time_uigcj_tot   , infpar%master )
+        call lsmpi_local_reduction( time_xo_fa_tot   , infpar%master )
+        call lsmpi_local_reduction( time_xv_fa_tot   , infpar%master )
+        call lsmpi_local_reduction( time_yv_fa_tot   , infpar%master )
+        call lsmpi_local_reduction( time_cont1_tot   , infpar%master )
+        call lsmpi_local_reduction( time_int1_tot    , infpar%master )
+        call lsmpi_local_reduction( time_cont2_tot   , infpar%master )
+        call lsmpi_local_reduction( time_cont3_tot   , infpar%master )
+        call lsmpi_local_reduction( time_cont4_tot   , infpar%master )
+        call lsmpi_local_reduction( time_cont5_tot   , infpar%master )
+        call lsmpi_local_reduction( time_cont6_tot   , infpar%master )
+        call lsmpi_local_reduction( time_cont7_tot   , infpar%master )
+        call lsmpi_local_reduction( time_cont8_tot   , infpar%master )
+        call lsmpi_local_reduction( time_convGBI_tot , infpar%master )
+        call lsmpi_local_reduction( time_cont9_tot   , infpar%master )
+        call lsmpi_local_reduction( time_cont10_tot  , infpar%master )
+        call lsmpi_local_reduction( time_int2_tot    , infpar%master )
+        call lsmpi_local_reduction( time_cont11_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont12_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont13_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont14_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont15_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont16_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont17_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont18_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont19_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont20_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont21_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont22_tot  , infpar%master )
+        call lsmpi_local_reduction( time_cont23_tot  , infpar%master )
+
+        unlock_time   = time_lsmpi_win_unlock - unlock_time
+        waiting_time  = time_lsmpi_wait       - waiting_time
+        flushing_time = time_lsmpi_win_flush  - flushing_time
+
+        unlock_time_min    = unlock_time
+        waiting_time_min   = waiting_time      
+        flushing_time_min  = flushing_time 
+
+        unlock_time_max    = unlock_time
+        waiting_time_max   = waiting_time      
+        flushing_time_max  = flushing_time 
+
+        call lsmpi_reduce_realk_min( unlock_time_min   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( waiting_time_min  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( flushing_time_min , infpar%master, infpar%lg_comm )
+
+        call lsmpi_reduce_realk_max( unlock_time_max   , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( waiting_time_max  , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( flushing_time_max , infpar%master, infpar%lg_comm )
+
+        call lsmpi_local_reduction( unlock_time   , infpar%master )
+        call lsmpi_local_reduction( waiting_time  , infpar%master )
+        call lsmpi_local_reduction( flushing_time , infpar%master )
+
+        time_w_min = phase_cntrs( PHASE_WORK_IDX )
+        time_c_min = phase_cntrs( PHASE_COMM_IDX )
+        time_i_min = phase_cntrs( PHASE_IDLE_IDX )
+
+        time_w_max = phase_cntrs( PHASE_WORK_IDX )
+        time_c_max = phase_cntrs( PHASE_COMM_IDX )
+        time_i_max = phase_cntrs( PHASE_IDLE_IDX )
+
+        call lsmpi_reduce_realk_min( time_w_min , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_c_min , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_min( time_i_min , infpar%master, infpar%lg_comm )
+
+        call lsmpi_reduce_realk_max( time_w_max , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_c_max , infpar%master, infpar%lg_comm )
+        call lsmpi_reduce_realk_max( time_i_max , infpar%master, infpar%lg_comm )
+
+        call lsmpi_local_reduction(phase_cntrs,nphases,infpar%master)
+
+        if(master)then
+           write(*,'("CCSD total time               phase B",g10.3,g10.3,g10.3)')&
+              & tot_intloop_max     ,      tot_intloop      /dble(nnod),tot_intloop_min 
+           write(*,'("CCSD time_yv_fg_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_yv_fg_tot_max  ,  time_yv_fg_tot   /dble(nnod),time_yv_fg_tot_min  ,  time_yv_fg_tot   / tot_intloop
+           write(*,'("CCSD time_yo_fg_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_yo_fg_tot_max  ,  time_yo_fg_tot   /dble(nnod),time_yo_fg_tot_min  ,  time_yo_fg_tot   / tot_intloop
+           write(*,'("CCSD time_xo_fg_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_xo_fg_tot_max  ,  time_xo_fg_tot   /dble(nnod),time_xo_fg_tot_min  ,  time_xo_fg_tot   / tot_intloop
+           write(*,'("CCSD time_xv_fg_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_xv_fg_tot_max  ,  time_xv_fg_tot   /dble(nnod),time_xv_fg_tot_min  ,  time_xv_fg_tot   / tot_intloop
+           write(*,'("CCSD time_uigcj_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_uigcj_tot_max  ,  time_uigcj_tot   /dble(nnod),time_uigcj_tot_min  ,  time_uigcj_tot   / tot_intloop
+           write(*,'("CCSD time_xo_fa_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_xo_fa_tot_max  ,  time_xo_fa_tot   /dble(nnod),time_xo_fa_tot_min  ,  time_xo_fa_tot   / tot_intloop
+           write(*,'("CCSD time_xv_fa_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_xv_fa_tot_max  ,  time_xv_fa_tot   /dble(nnod),time_xv_fa_tot_min  ,  time_xv_fa_tot   / tot_intloop
+           write(*,'("CCSD time_yv_fa_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_yv_fa_tot_max  ,  time_yv_fa_tot   /dble(nnod),time_yv_fa_tot_min  ,  time_yv_fa_tot   / tot_intloop
+           write(*,'("CCSD time_cont1_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont1_tot_max  ,  time_cont1_tot   /dble(nnod),time_cont1_tot_min  ,  time_cont1_tot   / tot_intloop
+           write(*,'("CCSD time_int1_tot            phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_int1_tot_max   ,  time_int1_tot    /dble(nnod),time_int1_tot_min   ,  time_int1_tot    / tot_intloop
+           write(*,'("CCSD time_cont2_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont2_tot_max  ,  time_cont2_tot   /dble(nnod),time_cont2_tot_min  ,  time_cont2_tot   / tot_intloop
+           write(*,'("CCSD time_cont3_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont3_tot_max  ,  time_cont3_tot   /dble(nnod),time_cont3_tot_min  ,  time_cont3_tot   / tot_intloop
+           write(*,'("CCSD time_cont4_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont4_tot_max  ,  time_cont4_tot   /dble(nnod),time_cont4_tot_min  ,  time_cont4_tot   / tot_intloop
+           write(*,'("CCSD time_cont5_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont5_tot_max  ,  time_cont5_tot   /dble(nnod),time_cont5_tot_min  ,  time_cont5_tot   / tot_intloop
+           write(*,'("CCSD time_cont6_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont6_tot_max  ,  time_cont6_tot   /dble(nnod),time_cont6_tot_min  ,  time_cont6_tot   / tot_intloop
+           write(*,'("CCSD time_cont7_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont7_tot_max  ,  time_cont7_tot   /dble(nnod),time_cont7_tot_min  ,  time_cont7_tot   / tot_intloop
+           write(*,'("CCSD time_cont8_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont8_tot_max  ,  time_cont8_tot   /dble(nnod),time_cont8_tot_min  ,  time_cont8_tot   / tot_intloop
+           write(*,'("CCSD time_convGBI_tot         phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_convGBI_tot_max,  time_convGBI_tot /dble(nnod),time_convGBI_tot_min,  time_convGBI_tot / tot_intloop
+           write(*,'("CCSD time_cont9_tot           phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont9_tot_max  ,  time_cont9_tot   /dble(nnod),time_cont9_tot_min  ,  time_cont9_tot   / tot_intloop
+           write(*,'("CCSD time_cont10_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont10_tot_max ,  time_cont10_tot  /dble(nnod),time_cont10_tot_min ,  time_cont10_tot  / tot_intloop
+           write(*,'("CCSD time_int2_tot            phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_int2_tot_max   ,  time_int2_tot    /dble(nnod),time_int2_tot_min   ,  time_int2_tot    / tot_intloop
+           write(*,'("CCSD time_cont11_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont11_tot_max ,  time_cont11_tot  /dble(nnod),time_cont11_tot_min ,  time_cont11_tot  / tot_intloop
+           write(*,'("CCSD time_cont12_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont12_tot_max ,  time_cont12_tot  /dble(nnod),time_cont12_tot_min ,  time_cont12_tot  / tot_intloop
+           write(*,'("CCSD time_cont13_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont13_tot_max ,  time_cont13_tot  /dble(nnod),time_cont13_tot_min ,  time_cont13_tot  / tot_intloop
+           write(*,'("CCSD time_cont14_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont14_tot_max ,  time_cont14_tot  /dble(nnod),time_cont14_tot_min ,  time_cont14_tot  / tot_intloop
+           write(*,'("CCSD time_cont15_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont15_tot_max ,  time_cont15_tot  /dble(nnod),time_cont15_tot_min ,  time_cont15_tot  / tot_intloop
+           write(*,'("CCSD time_cont16_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont16_tot_max ,  time_cont16_tot  /dble(nnod),time_cont16_tot_min ,  time_cont16_tot  / tot_intloop
+           write(*,'("CCSD time_cont17_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont17_tot_max ,  time_cont17_tot  /dble(nnod),time_cont17_tot_min ,  time_cont17_tot  / tot_intloop
+           write(*,'("CCSD time_cont18_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont18_tot_max ,  time_cont18_tot  /dble(nnod),time_cont18_tot_min ,  time_cont18_tot  / tot_intloop
+           write(*,'("CCSD time_cont19_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont19_tot_max ,  time_cont19_tot  /dble(nnod),time_cont19_tot_min ,  time_cont19_tot  / tot_intloop
+           write(*,'("CCSD time_cont20_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont20_tot_max ,  time_cont20_tot  /dble(nnod),time_cont20_tot_min ,  time_cont20_tot  / tot_intloop
+           write(*,'("CCSD time_cont21_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont21_tot_max ,  time_cont21_tot  /dble(nnod),time_cont21_tot_min ,  time_cont21_tot  / tot_intloop
+           write(*,'("CCSD time_cont22_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont22_tot_max ,  time_cont22_tot  /dble(nnod),time_cont22_tot_min ,  time_cont22_tot  / tot_intloop
+           write(*,'("CCSD time_cont23_tot          phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_cont23_tot_max ,  time_cont23_tot  /dble(nnod),time_cont23_tot_min ,  time_cont23_tot  / tot_intloop
+           write(*,'("CCSD time in lsmpi_win_unlock phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & unlock_time_max, unlock_time/dble(nnod),unlock_time_min,          unlock_time   / tot_intloop
+           write(*,'("CCSD time in lsmpi_wait       phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & waiting_time_max,   waiting_time  /dble(nnod),waiting_time_min,   waiting_time  / tot_intloop
+           write(*,'("CCSD time in lsmpi_win_flush  phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & flushing_time_max,  flushing_time /dble(nnod),flushing_time_min,  flushing_time / tot_intloop
+           write(*,'("CCSD time WORK                phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_w_max,phase_cntrs(PHASE_WORK_IDX)/dble(nnod),time_w_min,phase_cntrs(PHASE_WORK_IDX)/tot_intloop
+           write(*,'("CCSD time COMM                phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_c_max,phase_cntrs(PHASE_COMM_IDX)/dble(nnod),time_c_min,phase_cntrs(PHASE_COMM_IDX)/tot_intloop
+           write(*,'("CCSD time IDLE                phase B",g10.3,g10.3,g10.3,g10.3)')&
+              & time_i_max,phase_cntrs(PHASE_IDLE_IDX)/dble(nnod),time_i_min,phase_cntrs(PHASE_IDLE_IDX)/tot_intloop
+        endif
      endif
      unlock_time   = time_lsmpi_win_unlock 
      waiting_time  = time_lsmpi_wait
      flushing_time = time_lsmpi_win_flush
 
+     call ccsd_debug_print(ccmodel,1,master,local,scheme,print_debug,o2v2,w1,&
+        &omega2,govov,gvvoo,gvoov)
 
      if(Ccmodel>MODEL_CC2)then
 
@@ -3587,7 +3904,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !Get the C2 and D2 terms
         !***********************
         call get_cnd_terms_mo_2(w1%d,w2%d,w3%d,t2,u2,govov,gvoov,gvvoo,no,nv,omega2,&
-           &scheme,lock_outside)
+           &scheme,lock_outside,local)
+
+        call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
+           &omega2,govov,gvvoo,gvoov)
 
         call tensor_free( gvoov )
         call tensor_free( gvvoo )
@@ -3708,8 +4028,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !*************************
 
         !FIXME:this is a workaround, use complete pdm also in the trafos
-        call tensor_minit(int1, [nv,no], 2, atype="TDAR", tdims=[vs,os])
-        call tensor_minit(int2, [no,nv], 2, atype="TDAR", tdims=[os,vs])
+        call tensor_minit(int1, [nv,no], 2, atype="TDAR", tdims=[vs,os],local=local)
+        call tensor_minit(int2, [no,nv], 2, atype="TDAR", tdims=[os,vs],local=local)
         call tensor_convert(pqfock,int2,wrk=w0%d,iwrk=w0%n)
 
         ! u [a i k c] * F[k c] =+ Omega [a i]
@@ -3741,8 +4061,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !***********************************************************
      !Prepare the E2 term by transforming Had and Cbi and move them in
      !PDM, here rendundand work is performed, but only O^3, so cheap
-     call tensor_minit(int1,[nv,nv],2,tdims=[vs,vs],atype="TDAR")
-     call tensor_minit(int2,[no,no],2,tdims=[os,os],atype="TDAR")
+     call tensor_minit(int1,[nv,nv],2,tdims=[vs,vs],atype="TDAR",local=local)
+     call tensor_minit(int2,[no,no],2,tdims=[os,os],atype="TDAR",local=local)
      call tensor_convert(qqfock,int1,wrk=w0%d,iwrk=w0%n)
      call tensor_convert(ppfock,int2,wrk=w0%d,iwrk=w0%n)
 
@@ -3757,7 +4077,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      order4 = [1,2,3,4]
      call tensor_contract(-1.0E0_realk,t2,int2,[4],[1],1,1.0E0_realk,omega2,order4,force_sync=.true.)
 
-     call tensor_minit(int3,omega2%dims,4,tdims=omega2%tdim,atype="TDAR")
+     call tensor_minit(int3,omega2%dims,4,tdims=omega2%tdim,atype="TDAR",local=local)
 
      call tensor_free(int1)
      call tensor_free(int2)
@@ -4005,7 +4325,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \author Patrick Ettenhuber
   !> \Date January 2013 
   subroutine get_cnd_terms_mo_2(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
-        &no,nv,omega2,s,lock_outside)
+        &no,nv,omega2,s,lock_outside,local)
      implicit none
      !> input some empty workspace of zise v^2*o^2 
      real(realk), intent(inout) :: w1(:)
@@ -4026,7 +4346,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !> integer specifying the scheme
      integer, intent(in) :: s
      !> specifiaction if lock stuff
-     logical, intent(in) :: lock_outside
+     logical, intent(in) :: lock_outside,local
 
      !INTERNAL VARIABLES:
      type(tensor) :: Dvoov, Lovov, Coovv, O_pre
@@ -4057,7 +4377,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Cterm
      fdim1 = [no,no,nv,nv]
      sdim1 = [os,os,vs,vs]
-     call tensor_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype)
+     call tensor_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype,local=local)
      call tensor_lock_local_wins(Coovv,'e',mode)
 
      !Build C intermediate
@@ -4069,7 +4389,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
-     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
+     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,local=local,fo = omega2%offset)
      call tensor_lock_local_wins(O_pre,'e',mode)
 
      !now allow for access to the completed tiles
@@ -4097,8 +4417,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      sdim1  = [vs,os,os,vs]
      fdim2  = govov%dims
      sdim2  = govov%tdim
-     call tensor_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype)
-     call tensor_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype)
+     call tensor_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype,local=local)
+     call tensor_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype,local=local)
      call tensor_lock_local_wins(Dvoov,'e',mode)
      call tensor_lock_local_wins(Lovov,'e',mode)
 
@@ -4120,7 +4440,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
-     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
+     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,local=local,fo = omega2%offset)
      call tensor_lock_local_wins(O_pre,'e',mode)
 
      call tensor_unlock_local_wins(Dvoov)
@@ -4419,11 +4739,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: dimMO, nMObatch, ntot,os,vs
     integer(kind=8) :: dummy
     logical :: mo_ccsd, local_moccsd, mpi_split
+    integer :: bs
 
     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
     ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
     nocc = MyFragment%noccAOS
     nvir = MyFragment%nunoccAOS 
+    bs   = get_split_scheme_0(MyFragment%nbasis)
 
     ! For MO-CCSD part
     ntot    = nocc + nvir
@@ -4460,9 +4782,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call get_symm_tensor_segmenting_simple(nocc,nvir,os,vs)
       call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
-      call get_max_batch_sizes(scheme,MyFragment%nbasis,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &
+      call get_max_batch_sizes(scheme,MyFragment%nbasis,bs,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &
            & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree, &
-           & .true.,dummy,(.not.DECinfo%solver_par),mpi_split)
+           & .true.,dummy,(.not.DECinfo%solver_par),mpi_split,MyFragment%mylsitem%setting,['R','R','R','R','C'])
     end if
 
   end subroutine wrapper_get_ccsd_batch_sizes
@@ -4470,16 +4792,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \brief calculate batch sizes automatically-->dirty but better than nothing
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine get_max_batch_sizes(scheme,nb,nv,vs,no,os,nba,nbg,&
-  &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split)
+  subroutine get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,nba,nbg,&
+  &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split,se,is)
     implicit none
     integer, intent(inout) :: scheme
-    integer, intent(in)    :: nb,nv,vs,no,os
+    integer, intent(in)    :: nb,bs,nv,vs,no,os
     integer :: iter
     integer, intent(inout) :: nba,nbg,minbsize
     real(realK),intent(in) :: MemFree
     real(realk)            :: mem_used,frac_of_total_mem,m
     logical,intent(in)     :: manual,first
+    type(lssetting),intent(inout) :: se
+    Character,intent(in) :: is(5)
     integer(kind=8), intent(inout) :: e2a
     logical, intent(in)    :: local, mpi_split
     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size
@@ -4498,29 +4822,35 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     magic = 2
     !test for scheme with highest reqirements --> fastest
     scheme=4
-    mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
     if (mem_used>frac_of_total_mem*MemFree)then
 #ifdef VAR_MPI
-        !test for scheme with medium requirements
-        scheme=3
-        mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
-        if (mem_used>frac_of_total_mem*MemFree)then
+       !test for scheme with medium requirements
+       scheme=3
+       mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
+       if (mem_used>frac_of_total_mem*MemFree)then
           !test for scheme with low requirements
           scheme=2
-          mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+          mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
           if (mem_used>frac_of_total_mem*MemFree)then
-            write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
-            write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
-            &frac_of_total_mem*MemFree
-            write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,3,.false.)
-            write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,4,.false.)
-            write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
-            call lsquit("ERROR(CCSD): there is just not enough memory&
-            & available",DECinfo%output)
+             scheme=0
+             mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
+             frac_of_total_mem=0.60E0_realk
+             print *,"mem",mem_used,frac_of_total_mem,MemFree
+             if (mem_used>frac_of_total_mem*MemFree)then
+                write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
+                write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
+                   &frac_of_total_mem*MemFree
+                write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,3,.false.,se,is)
+                write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,4,.false.,se,is)
+                write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
+                call lsquit("ERROR(CCSD): there is just not enough memory&
+                   & available",DECinfo%output)
+             endif
           endif
-      endif
+       endif
 #endif
     endif
 
@@ -4544,8 +4874,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         print *,"SCHEME 1: DMITRY's SCHEME (PDM)"
       else if(scheme==0)then
         print *,"SCHEME 0: COMPLETE PDM"
-        !HACK
-        scheme = 4
       else
         print *,"SCHEME ",scheme," DOES NOT EXIST"
         call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme2",-1)
@@ -4580,7 +4908,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       if( nbg>=nb )       nbg = nb
       if( nba>=nb )       nba = nb
 
-      mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+      mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
 
       if (frac_of_total_mem*MemFree<mem_used) then
         print *, "ATTENTION your chosen batch sizes might be too large!!!"
@@ -4594,7 +4922,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
 
         nbg=nbg+1
-        mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,3,scheme,.false.)
+        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,3,scheme,.false.,se,is)
 
       enddo
 
@@ -4606,12 +4934,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         nbg=nbg-1
       endif
 
-
       !determine alpha batch
 
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba))
         nba      = nba+1
-        mem_used = get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,3,scheme,.false.)
+        mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,3,scheme,.false.,se,is)
       enddo
 
       if (nba>=nb)then
@@ -4622,31 +4949,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          nba=nba-1
       endif
 
-      !w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,scheme)
-      !w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,scheme)
-      !w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,scheme)
-      !w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,scheme)
-
-      !!check if none of the working matrices exceed a certain size
-      !thrsize = (no*no*i8)*nv*nv
-      !do while(nba>minbsize.and.(w0size>thrsize.or.w1size>thrsize.or.w2size>thrsize.or.w3size>thrsize))
-      !   w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,scheme)
-      !   w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,scheme)
-      !   w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,scheme)
-      !   w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,scheme)
-      !   nba = nba - 1
-      !enddo
-      !do while(nbg>minbsize.and.(w0size>thrsize.or.w1size>thrsize.or.w2size>thrsize.or.w3size>thrsize))
-      !   w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,scheme)
-      !   w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,scheme)
-      !   w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,scheme)
-      !   w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,scheme)
-      !   nbg = nbg - 1
-      !enddo
-
-
     endif
-    mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,4,scheme,.false.,se,is)
 
     ! mpi_split should be true when we want to estimate the workload associated
     ! to a DEC fragment and eventually split the slots. In this case, the next
@@ -4672,24 +4976,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     if(scheme==2)then
-      mem_used = get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,2,scheme,.false.)
+      mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,2,scheme,.false.,se,is)
       e2a = min(v2o2,int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
     endif
   end subroutine get_max_batch_sizes
 
-
-
 !> \brief calculate the memory requirement for the matrices in the ccsd routine
 !> \author Patrick Ettenhuber
 !> \date January 2012
-  function get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,choice,s,print_stuff) result (memrq)
+  function get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,iter,choice,s,print_stuff,se,is) result (memrq)
     implicit none
-    integer, intent(in) :: no,os,nv,vs,nb
+    integer, intent(in) :: no,os,nv,vs,nb,bs
     integer, intent(in) :: nba,nbg
     integer, intent(in) :: iter,choice
     real(realk) :: memrq, memin, memout
     logical, intent(in) :: print_stuff
     integer, intent(in) :: s
+    type(lssetting),intent(inout) :: se
+    Character,intent(in) :: is(5)
     integer :: nor, nvr, fe, ne , nnod, me, i
     integer :: d1(4),ntpm(4),tdim(4),mode,splt,ntiles,tsze
     integer(kind=ls_mpik) :: master
@@ -4697,7 +5001,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: l2,ml2,fai2,tl2
     integer :: l3,ml3,fai3,tl3
     integer :: l4,ml4,fai4,tl4
-    integer :: nloctiles
+    integer :: nloctiles,  nbuffs
     integer :: cd , e2
     integer(kind=long) :: w0size, w1size, w2size, w3size
     nor = no*(no+1)/2
@@ -4768,10 +5072,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
     tl4 = tl4 * no
 
-    w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,nba,nbg,s)
-    w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,nba,nbg,s)
-    w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,nba,nbg,s)
-    w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,nba,nbg,s)
+    nbuffs = get_nbuffs_scheme_0()
+
+    w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,s,se,is)
+    w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,s,se,is)
+    w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,s,se,is)
+    w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,s,se,is)
     !w0
     memin = 1.0E0_realk * w0size
     !w1
@@ -4890,8 +5196,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     case(0)
 
-       print *,"I have no idea what I am doing, a reasonable estimate is needed!!"
-
        !RIGHT NOW THIS IS SET TO THE SAME VALUE AS SCHEME 4 JUST /nnod
        ! u 2 + Omega 2 +  H +G  
        memrq = 1.0E0_realk*(2_long*no*no*nv*nv+ i8*nb*nv+i8*nb*no)
@@ -4904,11 +5208,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        !*******************
 
        !uigcj sio4
-       memin = memin +1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
+       memin = memin +1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)/float(nnod)
        !tpl tmi
-       memin = memin + (i8*nor)*nvr*2.0E0_realk
-
-       memin = memin/float(nnod)
+       memin = memin + (i8*nor)*nvr*2.0E0_realk/float(nnod)
 
        !OUTSIDE OF MAIN LOOP
        !********************
@@ -7150,19 +7452,30 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine ccsd_debug_print
 
 
-  function get_wsize_for_ccsd_int_direct(wnr,no,os,nv,vs,nb,nba,nbg,s) result(wsize)
+  function get_wsize_for_ccsd_int_direct(wnr,no,os,nv,vs,nb,bs,&
+        &nba,nbg,s,setting,intspec) result(wsize)
      implicit none
-     integer, intent(in) :: wnr,no,os,nv,vs,nb,nba,nbg,s
+     integer, intent(in) :: wnr,no,os,nv,vs,nb,bs,nba,nbg,s
+     type(lssetting),intent(inout) :: setting
+     Character,intent(in) :: intspec(5)
      integer(kind=long) :: wsize
-     integer(kind=long) :: maxsize64,nor,nvr
+     integer(kind=long) :: maxsize64,nor,nvr, MAX_INTEGRAL_BUF
+     integer :: nbuffs,me
+
      nor = (i8*(no*(no+1))/2)
      nvr = (i8*(nv*(nv+1))/2)
+
+     nbuffs    = get_nbuffs_scheme_0()
+     maxsize64 = 0
      select case(wnr)
      case(0)
         maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
         if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
         if(s==0)then
+
            maxsize64 = max(max(nbg*nv,nba*no),max(nbg*no,nba*nv))
+           maxsize64 = max(maxsize64,nbuffs*max(max(i8*bs,i8*vs),i8*os)**4)
+
         endif
      case(1)
         maxsize64 = max(int((i8*nb*nb)*nba*nbg,kind=8),int((i8*nv*nv*no)*nba,kind=8))
@@ -7170,7 +7483,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==4.or.s==3) maxsize64 = max(maxsize64,int((i8*no*no*nv)*nba,kind=8))
         if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
         if(s==0)then
-           maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
+           maxsize64 = nbuffs * int(max(max(os,vs),bs),kind=8)**4
+           maxsize64 = max(maxsize64,nbuffs*int((i8*vs**2)*os**2,kind=8))
+           MAX_INTEGRAL_BUF = 0
+           call simulate_intloop_and_get_worksize(MAX_INTEGRAL_BUF,nb,nbg,nba,bs,intspec,setting)
+           maxsize64 = max(maxsize64,MAX_INTEGRAL_BUF)
         endif
      case(2)
         maxsize64 = max(int((i8*nb)*nb*nba*nbg,kind=8),(i8*no*no)*nv*nv)
@@ -7205,22 +7522,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !Sanity checks for matrix sizes which need to be filled
      if(wsize>MAXINT)then
+        me = 0
+#ifdef VAR_MPI
+        me = infpar%lg_mynum
+#endif
+        print *,me,"ERROR(get_wsize_for_ccsd_int_direct)",wnr,no,os,nv,vs,nb,nba,nbg,s,wsize,MAXINT
         call lsquit("ERROR(CCSD):matrix sizes too large, please recompile with 64bit integers",-1)
      endif
 
   end function get_wsize_for_ccsd_int_direct
-
-  subroutine copy_stripe_from_full_matrix(Mi,Mo,f,l,d1,d2)
-     implicit none
-     integer, intent(in) :: f,l,d1,d2
-     real(realk), intent(in) :: Mi(d1,d2)
-     real(realk), intent(out) :: Mo(l, d2)
-
-     !$OMP WORKSHARE
-     Mo(:,:) = Mi(f:f+l-1,:)
-     !$OMP END WORKSHARE
-
-  end subroutine copy_stripe_from_full_matrix
 
 end module ccsd_module
 

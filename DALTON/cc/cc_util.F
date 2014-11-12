@@ -571,7 +571,7 @@ C
 #include "ccsdio.h"
 #include "r12int.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       XNORM = 0.0d0
 C
@@ -1667,7 +1667,7 @@ C
       PARAMETER (ONE = 1.0D0)
       DIMENSION T2PK(*), T2SQ(*)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       IF (ISYAMP.EQ.1) THEN
 C
@@ -1770,7 +1770,7 @@ C
 #include "maxorb.h"
 #include "ccsdio.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       XNORM = 0.0d0
 C
@@ -2109,7 +2109,7 @@ C
 #include "maxorb.h"
 #include "ccsdio.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       XNORM = 0.0d0
 C

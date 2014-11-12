@@ -205,7 +205,7 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "inftap.h"
-#include "ibtfun.h"
+
 C
       CALL QENTER('DKH_DRIV')
 C
@@ -214,7 +214,7 @@ C
       NBAST = 0
       DO 400 ISHELL = 1, KMAX
          DO 410 KB = 0,MAXREP
-            IF (IBTAND(KB,ISTBAO(ISHELL)) .EQ. 0)
+            IF (IAND(KB,ISTBAO(ISHELL)) .EQ. 0)
      *            NBAST = NBAST + KHKT(ISHELL)
   410    CONTINUE
   400 CONTINUE
@@ -753,7 +753,7 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "aosotr.h"
-#include "ibtfun.h"
+
 C
       ICNT   = 0
       IADR   = 0

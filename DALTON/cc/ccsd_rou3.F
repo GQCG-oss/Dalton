@@ -2695,7 +2695,7 @@ C  /* Deck ccrhs_cio */
       CHARACTER CFIL*(*)
       LOGICAL ANTISYM, NORMALCONT, PIJCONT
 !
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 !
       CALL QENTER('CCRHS3_CIO')
 !
@@ -3268,7 +3268,7 @@ C
 !
       LOGICAL ANTISYM, OM2CONT, LOGIC1
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       CALL QENTER('CCRHS3_DIO')
 C
@@ -3700,7 +3700,7 @@ C
 #endif
       PARAMETER(ZERO=0.0D00,ONE=1.0D00)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       CALL QENTER('CCRHS_H31')
 C
@@ -3901,7 +3901,7 @@ C
       PARAMETER(ZERO=0.0D00,ONE=1.0D00)
       PARAMETER(TWO=2.0D00)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       CALL QENTER('CCRHS_G31')
 C
@@ -4464,7 +4464,7 @@ C
 !
       PARAMETER(ZERO=0.0D00,HALF=0.5D00,ONE=1.0D00,TWO=2.0D00)
 !
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 !
       CALL QENTER('CCRHS3_EI1')
 !

@@ -194,7 +194,7 @@ CASE(5)
    iBasisC(1) = 7; iBasisC(2) = 8; iBasisC(3) = 9
    iBasisD(1) = 7; iBasisD(2) = 8; iBasisD(3) = 9
 CASE DEFAULT
-   FileName = 'IchorProfTestUnitTest_segS1pUnitTest_segS1pUnitTest_segS1pUnitTest_segS1p1'
+   FileName = 'IchorProfTestUnitTest_genDUnitTest_genDUnitTest_genDUnitTest_genD1'
    nBasisA = 1
    nBasisB = 1
    nBasisC = 1
@@ -244,21 +244,25 @@ do Ipass = IpassStart,IpassEnd
      ibasiselm(3) = iBasis3
      ibasiselm(4) = iBasis4
 
-     do A=1,100
-        filename(A:A) = ' '
-     enddo
-     filename(1:13) = 'IchorProfTest'
-     ifilename = 14
-     do A = 1,4       
-        filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
-        ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
-     enddo
-     WRITE(filename(ifilename:ifilename),'(I1)') Ipass
-     ifilename = ifilename + 1
-     LUOUTPUT = 12
-!     print*,'FileName',FileName
+     IF(DebugIchorOption.NE.9)THEN
+        print*,'DebugIchorOption'
+        do A=1,100
+           filename(A:A) = ' '
+        enddo
+        filename(1:13) = 'IchorProfTest'
+        ifilename = 14
+        do A = 1,4       
+           filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
+           ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
+        enddo
+        WRITE(filename(ifilename:ifilename),'(I1)') Ipass
+        ifilename = ifilename + 1
+        LUOUTPUT = 12
+        !        print*,'FileName',FileName
+     ELSE
+        print*,'DebugIchorOption = 9 ',Filename
+     ENDIF
      open(unit = LUOUTPUT, file=TRIM(FileName),status='OLD',FORM='FORMATTED')
-     
      !A
      call ReadCenterInfo1(luoutput,nTypesA,nBatchesA,MaxnAtomsA,MaxnPrimA,MaxnContA,spherical)
      allocate(nAtomsOfTypeA(ntypesA))
@@ -359,13 +363,13 @@ do Ipass = IpassStart,IpassEnd
      THRESHOLD_CS = 1.0d-10
      THRESHOLD_QQR = 1.0d-10
 
-     IF(DebugIchorOption.EQ.9)THEN
-        nRepetitions = 5
-     ELSEIF(DebugIchorOption2.EQ.3)THEN
-        nRepetitions = 3
-     ELSE
+!     IF(DebugIchorOption.EQ.9)THEN
+!        nRepetitions = 5
+!     ELSEIF(DebugIchorOption2.EQ.3)THEN
+!        nRepetitions = 3
+!     ELSE
         nRepetitions = 1
-     ENDIF
+!     ENDIF
 
      allocate(ComparisonInt(Outdim1,Outdim2,Outdim3,Outdim4))
 

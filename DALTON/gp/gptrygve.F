@@ -712,19 +712,19 @@ C
       IF (NIBUF .EQ. 1) THEN
          DO I = 1,N
             LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-24),IBT08)
+            IINDX4(2,I) = IAND(ISHFT(LABEL,-16),IBT08)
+            IINDX4(3,I) = IAND(ISHFT(LABEL, -8),IBT08)
+            IINDX4(4,I) = IAND(       LABEL,    IBT08)
          END DO
       ELSE
          DO I = 1,N
             LABEL = IINDPK(2*I-1)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(2,I) = IAND(       LABEL    ,IBT16)
             LABEL = IINDPK(2*I)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+            IINDX4(3,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(4,I) = IAND(       LABEL    ,IBT16)
          END DO
       END IF
 C
@@ -777,19 +777,19 @@ C
       IF (NIBUF .EQ. 1) THEN
          DO I = 1,N
             LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-24),IBT08)
+            IINDX4(2,I) = IAND(ISHFT(LABEL,-16),IBT08)
+            IINDX4(3,I) = IAND(ISHFT(LABEL, -8),IBT08)
+            IINDX4(4,I) = IAND(       LABEL,    IBT08)
          END DO
       ELSE
          DO I = 1,N
             LABEL = IINDPK(2*I-1)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(2,I) = IAND(       LABEL    ,IBT16)
             LABEL = IINDPK(2*I)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+            IINDX4(3,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(4,I) = IAND(       LABEL    ,IBT16)
          END DO
       END IF
 C
@@ -1408,7 +1408,7 @@ C
 #include "maxmom.h"
 #include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include "ibtfun.h"
+
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA

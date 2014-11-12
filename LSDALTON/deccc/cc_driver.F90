@@ -1503,7 +1503,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !> Number of basis functions in full molecule/atomic extent
    integer, intent(in)                       :: nb
    !> Fock matrix in AO basis for fragment or full molecule
-   real(realk), dimension(nb,nb), intent(in) :: fock_f
+   real(realk), dimension(nb,nb), target, intent(in) :: fock_f
    !> Occupied MO coefficients for fragment/full molecule
    real(realk), dimension(nb,no), intent(in) :: Co_f
    !> Virtual MO coefficients for fragment/full molecule
@@ -1544,7 +1544,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(MObatchInfo) :: MOinfo
    !
    !work stuff
-   real(realk),pointer :: Co_d(:,:),Cv_d(:,:),focc(:),fvirt(:)
+   real(realk),pointer :: Co_d(:,:),Cv_d(:,:),focc(:),fvirt(:), dummy(:,:)
    real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:)
    real(realk) :: ccenergy_check
    integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims, ord2
@@ -1818,9 +1818,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(Cv  , virt_dims,2, local=local, atype="REAR" )
    call tensor_minit(fock, ao2_dims, 2, local=local, atype=atype )
 
+   dummy => fock_f
    call tensor_convert( Co_d,   Co   )
    call tensor_convert( Cv_d,   Cv   )
-   call tensor_convert( fock_f, fock )
+   call tensor_convert( dummy,  fock )
 
    call mem_dealloc( Co_d )
    call mem_dealloc( Cv_d )

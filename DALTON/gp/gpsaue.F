@@ -1322,9 +1322,9 @@ C##############lbit##############################################
       LOGICAL FUNCTION LBIT(I,N)
 C	Based on an analogous DISCO routine(Jan Almloef)
 #include "implicit.h"
-#include "ibtfun.h"
+
       LBIT = .FALSE.
-      IF (IBTAND(IBTSHR(I,N-1),1).EQ.1) LBIT = .TRUE.
+      IF (IAND(ISHFT(I,-(N-1)),1).EQ.1) LBIT = .TRUE.
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lset */

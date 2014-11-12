@@ -52,7 +52,7 @@ C     for the transformation from Hermite to Cartesian functions
 C     for electron 2 (WK/UniKA/04-11-2002).
       LOGICAL LOCU12
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR2DRV','*',103)
 C
@@ -228,7 +228,7 @@ C               TEXPA, TEXPB, AOVERP, and BOVERP are dummies (WK/UniKA/04-11-200
 #include "ericom.h"
 #include "eriao.h"
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR2TWO','*',103)
 C
@@ -430,7 +430,7 @@ C
 #include "ericom.h"
 #include "eriao.h"
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR2UND','*',103)
 C
@@ -440,9 +440,9 @@ C
       MAXT = L3 + L4
       MAXU = M3 + M4
       MAXV = N3 + N4
-      MINT = IBTAND(MAXT,I340(1))
-      MINU = IBTAND(MAXU,I340(2))
-      MINV = IBTAND(MAXV,I340(3))
+      MINT = IAND(MAXT,I340(1))
+      MINU = IAND(MAXU,I340(2))
+      MINV = IAND(MAXV,I340(3))
 C
       IF (IPRINT .GT. 25) THEN
          WRITE(LUPRI,'(/,1X,A,2I5/)')' ICOMP3, ICOMP4',

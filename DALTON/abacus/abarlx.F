@@ -899,30 +899,30 @@ C
 #include "cbitrp.h"
 #include "spnout.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(SPNSD,MXCOOR*MXCOOR)
       IF (DOSD .OR. DOSDFC) THEN
          JATOM1 = 0
          DO IREP = 0, MAXREP
          DO IATOM1 = 1, NUCIND
-            IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
                JATOM1 = JATOM1 + 1
                JATOM2 = 0
                DO  IREP1 = 0, MAXREP
                DO  IATOM2 = 1, NUCIND
-                  IF (IBTAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
+                  IF (IAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
                      JATOM2 = JATOM2 + 1
                      DO ICOOR = 1, 3
-                        IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                        IREP2 = IEOR(ISYMAX(ICOOR,2),IREP)
                         ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR,IREP2,2)
                         DO JCOOR = 1, 3
-                           IREP3 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                           IREP3 = IEOR(ISYMAX(JCOOR,2),IREP1)
                            ISCOR2 = IPTCNT(3*(IATOM2-1)+JCOOR,IREP3,2)
                            IF (ISCOR1 .GT. 0 .AND. ISCOR2 .GT. 0) THEN
                               DO KCOOR = 1, 3
                                  IF (KCOOR .GT. ICOOR) THEN
-                                   IREP4 = IBTXOR(ISYMAX(KCOOR,2),IREP)
+                                   IREP4 = IEOR(ISYMAX(KCOOR,2),IREP)
                                    ISCOR3 = IPTCNT(3*(IATOM1-1)+KCOOR,
      &                                             IREP4,2)
                                    IADR1 = 3*(ISCOR3 - 1) + ICOOR
@@ -930,7 +930,7 @@ C
                                     IADR1 = 3*(ISCOR1 - 1) + KCOOR
                                  END IF
                                  IF (KCOOR .GT. JCOOR) THEN
-                                   IREP4 = IBTXOR(ISYMAX(KCOOR,2),IREP1)
+                                   IREP4 = IEOR(ISYMAX(KCOOR,2),IREP1)
                                    ISCOR3 = IPTCNT(3*(IATOM2-1)+KCOOR,
      &                                             IREP4,2)
                                    IADR2 = 3*(ISCOR3 - 1) + JCOOR
@@ -955,14 +955,14 @@ C
          DO 400 IREP = 0, MAXREP
             KATOM1 = JATOM1
             DO 500 IATOM1 = 1, NUCIND
-            IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
                JATOM1 = JATOM1 + 1
                JATOM2 = KATOM1
                DO 510 IATOM2 = 1, NUCIND
-               IF (IBTAND(IREP,ISTBNU(IATOM2)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM2)).EQ.0) THEN
                   JATOM2 = JATOM2 + 1
                   DO 520 ICOOR = 1, 3
-                     IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                     IREP2 = IEOR(ISYMAX(ICOOR,2),IREP)
                      ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR,IREP2,2)
                      ISCOR2 = IPTCNT(3*(IATOM2 - 1) + ICOOR,IREP2,2)
                      IF (ISCOR1 .GT. 0 .AND. ISCOR2 .GT. 0) THEN
@@ -979,32 +979,32 @@ C
          JATOM1 = 0
          DO 600 IREP = 0, MAXREP
          DO 610 IATOM1 = 1, NUCIND
-            IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
                JATOM1 = JATOM1 + 1
                JATOM2 = 0
                DO 615 IREP1 = 0, MAXREP
                DO 620 IATOM2 = 1, NUCIND
-                  IF (IBTAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
+                  IF (IAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
                      JATOM2 = JATOM2 + 1
                      DO 630 ICOOR = 1, 3
-                        IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                        IREP2 = IEOR(ISYMAX(ICOOR,2),IREP)
                         ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR,IREP2,2)
                         DO 640 JCOOR = 1, 3
-                           IREP3 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                           IREP3 = IEOR(ISYMAX(JCOOR,2),IREP1)
                            ISCOR2 = IPTCNT(3*(IATOM2-1)+JCOOR,IREP3,2)
                            IF (ISCOR1 .GT. 0 .AND. ISCOR2 .GT. 0) THEN
                               IF (JCOOR .GT. ICOOR) THEN
-                                 IREP4 = IBTXOR(ISYMAX(JCOOR,2),IREP)
+                                 IREP4 = IEOR(ISYMAX(JCOOR,2),IREP)
                                  ISCOR3 = IPTCNT(3*(IATOM1-1)+JCOOR,
      &                                             IREP4,2)
                                  IADR1 = 3*(ISCOR3 - 1) + ICOOR
-                                 IREP4 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                                 IREP4 = IEOR(ISYMAX(JCOOR,2),IREP1)
                                  ISCOR3 = IPTCNT(3*(IATOM2-1)+JCOOR,
      &                                           IREP4,2)
                                  IADR2 = 3*(ISCOR3 - 1) + ICOOR
                               ELSE
                                  IADR1 = 3*(ISCOR1 - 1) + JCOOR
-                                 IREP4 = IBTXOR(ISYMAX(ICOOR,2),IREP1)
+                                 IREP4 = IEOR(ISYMAX(ICOOR,2),IREP1)
                                  ISCOR3 = IPTCNT(3*(IATOM2-1)+ICOOR,
      &                                           IREP4,2)
                                  IADR2 = 3*(ISCOR3 - 1) + JCOOR

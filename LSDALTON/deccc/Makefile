@@ -37,6 +37,8 @@ F90_OBJS = dec_settings.o \
 	dec_driver_slave.o \
 	full_driver.o \
 	full_driver_f12contractions.o\
+	snoop_main.o\
+	snoop_tools.o\
 	dec_main.o
 C_OBJS = crayio.o
 
