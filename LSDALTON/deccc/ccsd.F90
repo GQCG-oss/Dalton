@@ -1360,13 +1360,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==1) write(DECinfo%output,'("Using Dmitry s scheme")')
         if(DECinfo%PL>1)then
            ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,iter,3,scheme,.false.,mylsitem%setting,intspec)
+              &MaxActualDimGamma,0,iter,3,scheme,.false.,mylsitem%setting,intspec)
            write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
            ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,iter,2,scheme,.false.,mylsitem%setting,intspec)
+              &MaxActualDimGamma,0,iter,2,scheme,.false.,mylsitem%setting,intspec)
            write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
            ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,iter,4,scheme,.true.,mylsitem%setting,intspec)
+              &MaxActualDimGamma,0,iter,4,scheme,.true.,mylsitem%setting,intspec)
         endif
      endif
 
