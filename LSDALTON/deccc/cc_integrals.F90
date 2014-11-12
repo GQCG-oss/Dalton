@@ -2187,6 +2187,9 @@ contains
     nnod          = 1
     magic         = 3
     dynamic_load  = DECinfo%dyn_load
+    unlock_time   = 0.0E0_realk 
+    waiting_time  = 0.0E0_realk
+    flushing_time = 0.0E0_realk
 #ifdef VAR_MPI
     master        = (infpar%lg_mynum == infpar%master)
     me            = infpar%lg_mynum
