@@ -2389,14 +2389,15 @@ contains
 
      max_mem_p_tile_in_GB = DECinfo%cc_solver_tile_mem
 
-     if(DECinfo%tensor_segmenting_scheme == 1)then
+     select case(DECinfo%tensor_segmenting_scheme)
+     case (1)
 
         counter  = 1
 
         !FIRST a then b
 
         do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-                     & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
+              & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
               & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
 
            a_seg = a / counter + mod(a,counter)
@@ -2423,7 +2424,7 @@ contains
 
         enddo
 
-     else if (DECinfo%tensor_segmenting_scheme == 2) then
+     case(2)
 
         !FIRST b then a
         counter  = 1
@@ -2455,7 +2456,64 @@ contains
            if(mod(a,a_seg)/=0)modtilea = 1
 
         enddo
-     else
+     case (3)
+
+        counter  = 1
+
+        !FIRST a then b
+
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
+              & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
+
+           a_seg = min(a,b) / counter + mod(min(a,b),counter)
+           b_seg = a_seg
+
+           counter = counter + 1
+
+           modtilea = 0
+           if(mod(a,a_seg)/=0)modtilea = 1
+
+        enddo
+
+     case (4)
+
+        counter  = 1
+
+        !BOTH a and b
+        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+              & .and. (b_seg>=10.or.a_seg>=10)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
+
+           b_seg = b / counter + mod(b,counter)
+           a_seg = a / counter + mod(a,counter)
+
+           counter = counter + 1
+
+           modtilea = 0
+           if(mod(a,a_seg)/=0)modtilea = 1
+
+           modtileb = 0
+           if(mod(b,b_seg)/=0)modtileb = 1
+
+        enddo
+
+        !then make sure that pure virtual batches have a size < thr
+
+        do while(   ( ( b_seg**4)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+              &  .or. ((b/b_seg+modtileb)**4 < nnodes) )&
+              & .and. ( b_seg>=10 )  )
+
+           b_seg = b / counter + mod(b,counter)
+
+           counter = counter + 1
+
+           modtileb = 0
+           if(mod(b,b_seg)/=0)modtileb = 1
+
+        enddo
+
+     case default
 
         counter  = 1
 
@@ -2477,7 +2535,7 @@ contains
 
         enddo
 
-     endif
+     end select
 
      if(DECinfo%PL>2)then
         print *,"SPLITTING OF DIMS IN A^2B^2"
