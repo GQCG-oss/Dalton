@@ -6359,6 +6359,7 @@ IF(.NOT.DSYM)THEN
       enddo
    endif
 ELSE
+   print*,'ByPass Symmetrization in ii_get_exchange_mat_mixed'
    call II_get_exchange_mat1(LUPRI,LUERR,SETTING,D,ndmat,F,AO1,AO3,AO2,AO4,Oper)
 ENDIF
 call time_II_operations2(JOB_II_GET_EXCHANGE_MAT)

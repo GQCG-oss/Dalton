@@ -1002,7 +1002,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: unlock_time, waiting_time, flushing_time
      real(realk) :: phase_counters_int_dir(nphases)
      integer :: testmode(4)
-     integer(kind=long) :: xyz,zyx1,zyx2
+     integer(kind=long) :: xyz,zyx1,zyx2,mem_allocated,HeapMemoryUsage
      logical :: debug
      character(tensor_MSG_LEN) :: msg
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1012,10 +1012,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
      integer, parameter :: bs = 1
-
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
-
+     call DetectHeapMemoryInit()
      time_init_work       = 0.0E0_realk
      time_init_comm       = 0.0E0_realk
      time_intloop_work    = 0.0E0_realk
@@ -1354,19 +1353,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! PRINT some information about the calculation
      ! --------------------------------------------
-     if(master.and.DECinfo%PL>1) then
+     if(master)then
         if(scheme==4) write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
         if(scheme==3) write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
         if(scheme==2) write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
         if(scheme==1) write(DECinfo%output,'("Using Dmitry s scheme")')
-        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,0,iter,3,scheme,.false.,&
-           &mylsitem%setting,intspec)
-        write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
-        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,0,iter,2,scheme,.false.,&
-           &mylsitem%setting,intspec)
-        write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
-        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,0,iter,4,scheme,.true.,&
-           &mylsitem%setting,intspec)
+        if(DECinfo%PL>1)then
+           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+              &MaxActualDimGamma,0,iter,3,scheme,.false.,mylsitem%setting,intspec)
+           write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
+           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+              &MaxActualDimGamma,0,iter,2,scheme,.false.,mylsitem%setting,intspec)
+           write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
+           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+              &MaxActualDimGamma,0,iter,4,scheme,.true.,mylsitem%setting,intspec)
+        endif
      endif
 
      ! Use the dense amplitudes
@@ -2572,7 +2573,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(omega1,int((i8*no)*nv,kind=8)," NORM(omega1):")
         call print_norm(omega2,                       " NORM(omega2):")
      endif
-
+     if(master.and.DECinfo%PL>1) then
+        call DetectHeapMemory(mem_allocated,HeapMemoryUsage,&
+             & 'get_ccsd_residual_integral_driven',DECinfo%output)
+        WRITE(DECinfo%output,'(A,f9.3,A)')'Expected Memory Used ',ActuallyUsed,' GB'
+     endif
   end subroutine get_ccsd_residual_integral_driven
 
   subroutine yet_another_ccsd_residual(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
@@ -5984,165 +5989,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine ccsd_energy_full_occ
 
 
-  !> \brief: print out CCSD fragment and pair interaction energies for full molecule calculation
-  !          Only for occupied partitioning scheme.
-  !          This routine should print the information in the same way as kasper's routine,
-  !          print_all_fragment_energies in dec_utils.F90
-  !
-  !> \author: Janus Juul Eriksen, modified by Pablo Baudin to print (T) contributions.
-  !> \date: February 2013
-  subroutine print_fragment_energies_full(nfrags,FragEnergies,ccenergies,dofrag,distancetable)
-
-    implicit none
-
-    !> number of atoms in molecule
-    integer, intent(in) :: nfrags
-    !> matrices containing Frag. energies and interatomic distances
-    real(realk), intent(in) :: FragEnergies(nfrags,nfrags,4), distancetable(nfrags,nfrags)
-    !> Total cc energies:
-    real(realk), intent(in) :: ccenergies(4)
-    !> vector handling how the orbitals are assigned?
-    logical, intent(inout) :: dofrag(nfrags)
-
-    !> local variables 
-    character(len=30) :: CorrEnergyString
-    integer :: iCorrLen, cc_sol, pT_full, pT_4, pT_5
-    logical :: print_pair, print_4pT_5pT
-
-    print_pair = count(dofrag)>1
-    print_4pT_5pT = DECinfo%PL>0
-    CorrEnergyString = 'correlation energy            '
-    iCorrLen = 18
-    cc_sol  = 1
-    pT_full = 2
-    pT_4    = 3
-    pT_5    = 4
-
-    ! Print Header:
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '             ==============================================='
-    write(DECinfo%output,*) '             |   Print single and pair fragment energies   |'
-    write(DECinfo%output,*) '             ==============================================='
-    write(DECinfo%output,*)
-
-    if(.not.DECinfo%CCDhack)then
-       if( DECinfo%ccmodel == MODEL_RPA)then
-          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
-             & 'RPA occupied single energies','AF_RPA_OCC')
-          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
-             & dofrag,Distancetable, 'RPA occupied pair energies','PF_RPA_OCC')
-
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'RPA ', &
-             & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
-          write(DECinfo%output,*)
-
-       else if( DECinfo%ccmodel == MODEL_MP2)then
-          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
-             & 'MP2 occupied single energies','AF_MP2_OCC')
-          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
-             & dofrag,Distancetable, 'MP2 occupied pair energies','PF_MP2_OCC')
-
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'MP2 ', &
-             & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
-          write(DECinfo%output,*)
-
-       else if( DECinfo%ccmodel == MODEL_CC2 )then
-          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
-             & 'CC2 occupied single energies','AF_CC2_OCC')
-          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
-             & dofrag,Distancetable, 'CC2 occupied pair energies','PF_CC2_OCC')
-
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'CC2 ', &
-             & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
-          write(DECinfo%output,*)
-
-       else if( DECinfo%ccmodel == MODEL_CCSD )then 
-          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
-             & 'CCSD occupied single energies','AF_CCSD_OCC')
-          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
-             & dofrag,Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
-
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'CCSD ', &
-             & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
-          write(DECinfo%output,*)
-
-       else if( DECinfo%ccmodel == MODEL_CCSDpT )then
-          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
-             & 'CCSD occupied single energies','AF_CCSD_OCC')
-          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
-             & dofrag,Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
-
-          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_full),dofrag,&
-             & '(T) occupied single energies','AF_ParT_OCC_BOTH')
-          if (print_4pT_5pT) then
-             call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_4),dofrag,&
-                & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
-             call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_5),dofrag,&
-                & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
-          end if
-          
-          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_full),&
-             & dofrag,Distancetable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
-          if (print_4pT_5pT.and.print_pair) then
-             call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_4),&
-                & dofrag,Distancetable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
-             call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_5),&
-                & dofrag,Distancetable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
-          end if
-
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD ', &
-             & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) correlation energy  : ', &
-             & ccenergies(pT_full)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) 4th order energy    : ', &
-             & ccenergies(pT_4)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) 5th order energy    : ', &
-             & ccenergies(pT_5)
-          write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'Total CCSD(T) ', &
-             & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)+ccenergies(pT_full)
-          write(DECinfo%output,*)
-
-       else
-          call lsquit("ERROR(print_fragment_energies_full) model not implemented",-1)
-       endif
-    else
-       call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
-          & 'CCD occupied single energies','AF_CCD_OCC')
-       if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
-          & dofrag,Distancetable, 'CCD occupied pair energies','PF_CCD_OCC')
-
-       write(DECinfo%output,*)
-       write(DECinfo%output,*)
-       write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,A,A,A,g20.10)') 'CCD ', &
-          & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
-       write(DECinfo%output,*)
-
-    endif
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)'============================================================================='
-
-  end subroutine print_fragment_energies_full
-
 #ifdef MOD_UNRELEASED
   !============================================================================!
   !                   MO-based CCSD residual subroutines                       !
@@ -6312,11 +6158,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Change array type to be dense:
     if (.not.local.and.master) then
       call tensor_cp_tiled2dense(t2,.false.)
-      if(iter==1) then
-        call memory_allocate_tensor_dense(govov)
-      else
-        call tensor_cp_tiled2dense(govov,.false.)
-      end if
+      call tensor_cp_tiled2dense(govov,.false.)
     end if 
 #endif
 
@@ -6414,7 +6256,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      govov%itype  = TT_DENSE
    end if
 #endif
-    if (iter==1) call tensor_zero(govov)
     call tensor_zero(omega2)
 
     call LSTIMER('MO-CCSD INIT',tcpu1,twall1,DECinfo%output)
@@ -6449,7 +6290,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       ! Get intermediate for the calculation of residual
       call wrapper_get_intermediates(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
                          & xvir,yocc,t2%elm1,u2,goooo,B2prep,omega2%elm1,G_Pi,H_aQ, &
-                         & govov%elm1,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
+                         & gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     end do BatchPQ
 
@@ -6473,7 +6314,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
-                & govoo,gvooo,gvoov,gvvoo,govov)
+                & govoo,gvooo,gvoov,gvvoo)
 
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
@@ -6621,12 +6462,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       govov%access_type  = AT_MASTER_ACCESS
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
-      if (iter==1) then
-        call tensor_mv_dense2tiled(govov,.true.)
-      else
-        call memory_deallocate_tensor_dense_pc(govov)
-        govov%itype      = TT_TILED_DIST
-      end if
+      call memory_deallocate_tensor_dense_pc(govov)
+      govov%itype      = TT_TILED_DIST
       call tensor_mv_dense2tiled(omega2,.true.)
       call tensor_mv_dense2tiled(t2,.true.)
     endif
@@ -6644,7 +6481,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Date:    November 2013
   subroutine wrapper_get_intermediates(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
                                      & xvir,yocc,t2,u2,goooo,B2prep,omega2,G_Pi,H_aQ, &
-                                     & govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
+                                     & gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     implicit none
 
@@ -6671,7 +6508,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> Intermediates used to calculate the E2, A1 and B1 terms:
     real(realk), intent(inout) :: G_Pi(ntot*nocc),  H_aQ(nvir*ntot)
     !> T1-transformed MO integrals:
-    real(realk), intent(inout) :: govov(:), gvoov(:), gvvoo(:)
+    real(realk), intent(inout) :: gvoov(:), gvvoo(:)
     real(realk), intent(inout) :: goooo(:), govoo(:), gvooo(:)
     !> working arrays:
     real(realk), intent(inout) :: tmp0(:), tmp1(:), tmp2(:)
@@ -6682,7 +6519,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call get_G_and_H_intermeditates(ntot,nocc,nvir,dimP,dimQ, &
                         &  P_sta,Q_sta,gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
     call get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                        & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
+                        & xvir,yocc,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
 
     ! If the PQ batch is an upper diagonal block, we repeat the oprerations
     ! with the transposed batch:
@@ -6697,7 +6534,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call get_G_and_H_intermeditates(ntot,nocc,nvir,dimQ,dimP, &
                           & Q_sta,P_sta,gmo,u2,G_Pi,H_aQ,tmp0,tmp1,tmp2)
       call get_MO_integrals(ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta,iter,gmo, &
-                          & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
+                          & xvir,yocc,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
     end if
 
   end subroutine wrapper_get_intermediates  
@@ -7107,7 +6944,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Author: Pablo Baudin
   !> Date:   November 2013
   subroutine get_MO_integrals(ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                             & xvir,yocc,govov,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
+                             & xvir,yocc,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1)
     implicit none
 
     !> dimensions for arrays:
@@ -7120,7 +6957,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> transformation matrices:
     real(realk), intent(in) :: xvir(nvir*ntot), yocc(nocc*ntot)
     !> T1-transformed MO integrals:
-    real(realk), intent(inout) :: govov(:), gvoov(:), gvvoo(:)
+    real(realk), intent(inout) :: gvoov(:), gvvoo(:)
     real(realk), intent(inout) :: govoo(:), gvooo(:)
     !> working arrays:
     real(realk), intent(inout) :: tmp0(:), tmp1(:)
@@ -7152,23 +6989,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
     I_sta = nocc - dimI + 1
 
-    !====================================================================
-    ! Get govov integrals:  g[iajb]
-    if ((iter==1).and.(dimI>0)) then 
-      do b=1,nvir
-        do j=1,nocc
-          do a=1,dimA
-            pos1 = 1 + dimP*dimK + (a-1)*dimP + (j-1)*dimP*dimQ &
-                 & + (nocc+b-1)*dimP*dimQ*ntot
-
-            pos2 = P_sta + (A_sta+a-2)*nocc + (j-1)*nocc*nvir + (b-1)*nocc*nvir*nocc
-
-            call dcopy(dimI,gmo(pos1),1,govov(pos2),1)
-          end do
-        end do
-      end do
-    end if
- 
     !====================================================================
     ! Get gvooo integrals: g[aijk]
     ! 1) get g[PQjs]
@@ -7279,7 +7099,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Author:  Pablo Baudin
   !> Date:    April 2014
   subroutine  mpi_reduction_after_main_loop(ccmodel,nt,nv,no,iter,G_Pi,H_aQ,goooo, &
-                & govoo,gvooo,gvoov,gvvoo,govov)
+                & govoo,gvooo,gvoov,gvvoo)
 
     implicit none
   
@@ -7287,7 +7107,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk), intent(inout) :: G_Pi(:), H_aQ(:)
     real(realk), intent(inout) :: goooo(:), govoo(:), gvooo(:)
     real(realk), intent(inout) :: gvoov(:), gvvoo(:)
-    type(tensor), intent(inout) :: govov
     
     integer(kind=long) :: no2v2
 
@@ -7304,11 +7123,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       ! ALL REDUCE FOR C2 AND D2 TERMS WITH MPI:
       call lsmpi_allreduce(gvoov,no2v2,infpar%lg_comm)
       call lsmpi_allreduce(gvvoo,no2v2,infpar%lg_comm)
-      if (iter==1) call lsmpi_allreduce(govov%elm1,no2v2,infpar%lg_comm)
     else if(ccmodel==MODEL_CC2) then
       call lsmpi_local_reduction(gvoov,no2v2,infpar%master)
       call lsmpi_local_reduction(gvvoo,no2v2,infpar%master)
-      if (iter==1) call lsmpi_local_reduction(govov%elm1,no2v2,infpar%master)
     end if
     call time_start_phase(PHASE_WORK)
 #endif
@@ -8017,7 +7834,6 @@ subroutine moccsd_data_slave()
   integer(kind=long) :: nelms
   logical :: local
 
-
   call mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,omega2, &
          & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,local)
   
@@ -8038,9 +7854,7 @@ subroutine moccsd_data_slave()
 
   nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
   call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
-  if (iter/=1) then
-    call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
-  endif
+  call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
 
   !==============================================================================
   ! the slave call the routine to get MO-CCSD residual:

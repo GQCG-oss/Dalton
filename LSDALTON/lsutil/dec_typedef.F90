@@ -1163,17 +1163,17 @@ module dec_typedef_module
      logical,pointer :: dofragopt(:)
      ! Does job use estimated fragments?
      logical,pointer :: esti(:)
-
-     ! MPI statistics
-
-     !> Number of nodes in MPI slot (local master + local slaves)
-     integer,pointer:: nslaves(:)
      !> Number of occupied orbitals for given fragment (AOS)
      integer,pointer :: nocc(:)
      !> Number of unoccupied orbitals for given fragment (AOS)
      integer,pointer :: nunocc(:)
      !> Number of basis functions for given fragment
      integer,pointer :: nbasis(:)
+
+     ! MPI statistics
+
+     !> Number of nodes in MPI slot (local master + local slaves)
+     integer,pointer:: nslaves(:)
      !> Number of MPI tasks used for integral/transformation (nalpha*ngamma)
      integer,pointer :: ntasks(:)
      !> FLOP count for all local nodes (local master + local slaves)

@@ -5225,6 +5225,7 @@ contains
   !> \brief Set fragment job list. The jobs are listed according to size
   !> with the largest jobs first.
   !> Note: MPI fragment statistics is not modified here.
+  !>       Also, the dofragopt component of jobs is set to false.
   !> \author Kasper Kristensen
   !> \date April 2013
   subroutine set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
@@ -5260,7 +5261,7 @@ contains
     logical,pointer :: occpairAOS(:), unoccpairAOS(:),basispair(:)
     integer :: i,j,k,njobs,nsingle
     real(realk) :: dist
-    integer,pointer :: atom1(:),atom2(:),order(:)
+    integer,pointer :: atom1(:),atom2(:),order(:),tmpnocc(:),tmpnunocc(:),tmpnbasis(:)
 
     ! Init stuff
     k=0
@@ -5270,8 +5271,14 @@ contains
     end if
     call mem_alloc(atom1,njobs)
     call mem_alloc(atom2,njobs)
+    call mem_alloc(tmpnocc,njobs)
+    call mem_alloc(tmpnunocc,njobs)
+    call mem_alloc(tmpnbasis,njobs)
     atom1=0
     atom2=0
+    tmpnocc=0
+    tmpnunocc=0
+    tmpnbasis=0
     nsingle=count(which_fragments)
     call mem_alloc(occpairAOS,nocc)
     call mem_alloc(unoccpairAOS,nunocc)
@@ -5298,9 +5305,9 @@ contains
           ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
           jobs%jobsize(k) = count(occAOS(1:nocc,i))*count(unoccAOS(1:nunocc,i))&
                &*count(fragbasis(1:nbasis,i))
-          jobs%nocc(k)    = count(occAOS(1:nocc,i))
-          jobs%nunocc(k)  = count(unoccAOS(1:nunocc,i))
-          jobs%nbasis(k)  = count(fragbasis(1:nbasis,i))
+          tmpnocc(k)    = count(occAOS(1:nocc,i))
+          tmpnunocc(k)  = count(unoccAOS(1:nunocc,i))
+          tmpnbasis(k)  = count(fragbasis(1:nbasis,i))
 
        end if
 
@@ -5330,9 +5337,9 @@ contains
 
              ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
              jobs%jobsize(k) = count(occpairAOS)*count(unoccpairAOS)*count(basispair)
-             jobs%nocc(k)    = count(occpairAOS)
-             jobs%nunocc(k)  = count(unoccpairAOS)
-             jobs%nbasis(k)  = count(basispair)
+             tmpnocc(k)    = count(occpairAOS)
+             tmpnunocc(k)  = count(unoccpairAOS)
+             tmpnbasis(k)  = count(basispair)
 
              if(jobs%jobsize(k)<1) then
                 print *, 'dist', dist
@@ -5358,14 +5365,21 @@ contains
     call mem_alloc(order,njobs)
     call integer_inv_sort_with_tracking(jobs%jobsize,order,njobs)
 
-    ! Arrange atoms in correct order and put into job structure
+    ! Arrange job info in correct order and put into job structure
+    ! (Jobs%jobsize has already been reordered)
     do i=1,njobs
        jobs%atom1(i) = atom1(order(i))
        jobs%atom2(i) = atom2(order(i))
+       jobs%nocc(i) = tmpnocc(order(i))
+       jobs%nunocc(i) = tmpnunocc(order(i))
+       jobs%nbasis(i) = tmpnbasis(order(i))
     end do
 
     ! No jobs have been done
     jobs%jobsdone=.false.
+
+    ! Not fragment opt.
+    jobs%dofragopt=.false.
 
     ! Estimated fragments?
     jobs%esti=esti
@@ -5373,6 +5387,9 @@ contains
     ! Clean up
     call mem_dealloc(atom1)
     call mem_dealloc(atom2)
+    call mem_dealloc(tmpnocc)
+    call mem_dealloc(tmpnunocc)
+    call mem_dealloc(tmpnbasis)
     call mem_dealloc(order)
     call mem_dealloc(occpairAOS)
     call mem_dealloc(unoccpairAOS)

@@ -2381,19 +2381,24 @@ CONTAINS
 
         Dsym = .TRUE. !matrix either symmetric or antisymmetric
         isym = mat_get_isym(Dens)
-        WRITE(lupri,*)'di_GET_GbDsSingle: mat_get_isym',isym
-        IF(isym.EQ.3)THEN
-           Dsym = .FALSE. !NON symmetric Density matrix
-        ENDIF
-        ndmat = 1
-        IF(present(setting))THEN
-           !This should be changed to a test like the MATSYM function
-           ! for full matrices
-           call II_get_Fock_mat(lupri,luerr,setting,Dens,Dsym,&
-                                 & GbDs,ndmat,.FALSE.)
+        print*,'di_GET_GbDsSingle: mat_get_isym',isym
+        IF(isym.EQ.4)THEN
+           !zero matrix
+           call mat_zero(GbDs)
         ELSE
-           call II_get_Fock_mat(lupri,luerr,lsint_fock_data%ls%setting,Dens,&
+           IF(isym.EQ.3)THEN
+              Dsym = .FALSE. !NON symmetric Density matrix
+           ENDIF
+           ndmat = 1
+           IF(present(setting))THEN
+              !This should be changed to a test like the MATSYM function
+              ! for full matrices
+              call II_get_Fock_mat(lupri,luerr,setting,Dens,Dsym,&
+                   & GbDs,ndmat,.FALSE.)
+           ELSE
+              call II_get_Fock_mat(lupri,luerr,lsint_fock_data%ls%setting,Dens,&
                                 & Dsym,GbDs,ndmat,.FALSE.)
+           ENDIF
         ENDIF
       end subroutine di_GET_GbDsSingle
 
@@ -2521,7 +2526,9 @@ CONTAINS
       Dsym = .TRUE. !all matrices either symmetric or antisymmetric
       DO idmat = 1,ndmat
          isym = mat_get_isym(Dens(idmat))
-         WRITE(lupri,*)'di_GET_GbDsArray: mat_get_isym',isym
+         print*,'di_GET_GbDsArray: mat_get_isym1:',isym
+         isym = mat_get_isym(Dens(idmat))
+         print*,'di_GET_GbDsArray: mat_get_isym2:',isym
          IF(isym.EQ.3)THEN
             Dsym = .FALSE. !NON symmetric Density matrix
          ENDIF
