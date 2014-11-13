@@ -1399,83 +1399,6 @@ contains
   end subroutine ijk_loop_par
 #endif
 
-  subroutine assoc_ptr_to_buf(tilenr,arr,nbuffs,buf_pos,buf_log,ptr,bg_buf,pos,req)
-     implicit none
-     integer, intent(in):: tilenr,nbuffs
-     type(tensor), intent(inout) :: arr
-     integer, intent(inout):: buf_pos(nbuffs)
-     logical, intent(inout):: buf_log(nbuffs)
-     real(realk), intent(out),   pointer :: ptr(:)
-     real(realk), intent(inout), pointer :: bg_buf(:,:)
-     integer, intent(out) :: pos
-     integer(kind=ls_mpik), intent(inout) :: req(nbuffs)
-     integer :: i_search_buf,ts
-     logical :: found
-     integer(kind=ls_mpik) :: mode
-     pos = 0
-#ifdef VAR_MPI
-     mode = MPI_MODE_NOCHECK
-
-
-     call find_tile_pos_in_buf(tilenr,buf_pos,nbuffs,pos,found)
-
-     if(found)then
-
-        ptr => bg_buf(:,pos)
-
-     else
-        do i_search_buf = 1,nbuffs
-           if(.not.buf_log(i_search_buf))then
-
-              pos          = i_search_buf
-
-              if( .not. alloc_in_dummy ) call tensor_lock_win(arr,tilenr,'s',assert=mode)
-
-              call get_tile_dim(ts,arr,tilenr)
-
-              if( alloc_in_dummy )then
-                 call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,req=req(pos))
-              else
-                 call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
-              endif
-
-              buf_pos(pos) = tilenr
-              buf_log(pos) = .true.
-              found        = .true.
-              ptr          => bg_buf(:,pos)
-
-              exit
-
-           endif
-        enddo
-
-        if( .not. found)then
-
-           call lsquit("ERROR(assoc_ptr_to_buf):tile not found in buf and no&
-              & free position available to load",-1)
-
-        endif
-
-     endif
-#endif
-  end subroutine assoc_ptr_to_buf
-
-  subroutine find_tile_pos_in_buf(tilenr,buf,nbuffs,pos,found)
-     implicit none
-     integer, intent(in):: tilenr,nbuffs
-     integer, intent(in):: buf(nbuffs)
-     logical, intent(out):: found
-     integer, intent(out):: pos
-     integer :: i
-     found = .false.
-     do i=1,nbuffs
-        if(buf(i)==tilenr)then
-           pos   = i
-           found = .true.
-           exit
-        endif
-     enddo
-  end subroutine find_tile_pos_in_buf
 
   subroutine preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,current_i,current_j,current_k,current_ij_count,nbuffs,needed,&
         &tiles_in_buf,vvvo_pdm_buff,req)
@@ -1490,7 +1413,7 @@ contains
 
      integer :: i_test,j_test,k_test,i_search_buf
      integer :: ibuf_test, jbuf_test, kbuf_test, ij_count_test, ij_test
-     logical :: keep_looping,ij_done, new_i_needed, new_j_needed, new_k_needed
+     logical :: keep_looping,ij_done, new_i_needed, new_j_needed, new_k_needed,found
      integer :: ts
      integer(kind=ls_mpik) :: mode
 #ifdef VAR_MPI
@@ -1513,42 +1436,29 @@ contains
         if(k_test<=j_test)then
 
            !Load the next k tile
-
-           new_k_needed = .true.
-           do i_search_buf=1,nbuffs
-              if(tiles_in_buf(i_search_buf) == k_test)then
-
-                 needed(i_search_buf) = .true.
-                 new_k_needed         = .false.
-
-                 exit
-
-              endif
-
-           enddo
+           call check_if_new_instance_needed(k_test,tiles_in_buf,nbuffs,new_k_needed,set_needed=needed)
 
            !load k
            if( new_k_needed )then
               !find pos in buff
-              do i_search_buf = 1, nbuffs
-                 if(.not.needed(i_search_buf))then
-                    kbuf_test = i_search_buf
-                    if( .not.alloc_in_dummy ) call tensor_lock_win(vvvo,k_test,'s',assert=mode)
-                    call get_tile_dim(ts,vvvo,k_test)
-                    if( alloc_in_dummy )then
-                       call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
-                          &lock_set=.true.,req=req(kbuf_test))
-                    else
-                       call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
-                          &lock_set=.true.,flush_it=.true.)
-                    endif
-                    needed(kbuf_test)       = .true.
-                    tiles_in_buf(kbuf_test) = k_test
+              call find_free_pos_in_buf(needed,nbuffs,kbuf_test,found)
 
-                    exit
+              if(found)then
 
+                 if( .not.alloc_in_dummy ) call tensor_lock_win(vvvo,k_test,'s',assert=mode)
+                 call get_tile_dim(ts,vvvo,k_test)
+                 if( alloc_in_dummy )then
+                    call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
+                       &lock_set=.true.,req=req(kbuf_test))
+                 else
+                    call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
+                       &lock_set=.true.,flush_it=.true.)
                  endif
-              enddo
+                 needed(kbuf_test)       = .true.
+                 tiles_in_buf(kbuf_test) = k_test
+
+              endif
+
 
            endif
 
@@ -1568,85 +1478,56 @@ contains
 
               call calc_i_leq_j(ij_test,nocc,i_test,j_test)
 
-              !check for i
-              new_i_needed = .true.
-              do i_search_buf=1,nbuffs
-                 if(tiles_in_buf(i_search_buf) == i_test)then
 
-                    needed(i_search_buf) = .true.
-                    new_i_needed         = .false.
-
-                    exit
-
-                 endif
-
-              enddo
-
-              !check for j
-              new_j_needed = .true.
-              do i_search_buf=1,nbuffs
-                 if(tiles_in_buf(i_search_buf) == j_test)then
-
-                    needed(i_search_buf) = .true.
-                    new_j_needed         = .false.
-
-                    exit
-
-                 endif
-
-              enddo
+              call check_if_new_instance_needed(j_test,tiles_in_buf,nbuffs,new_j_needed,set_needed=needed)
 
               !load new j
               if( new_j_needed )then
                  !find pos in buff
-                 do i_search_buf = 1, nbuffs
-                    if(.not.needed(i_search_buf))then
-                       jbuf_test = i_search_buf
-                       if( .not. alloc_in_dummy ) call tensor_lock_win(vvvo,j_test,'s',assert=mode)
-                       call get_tile_dim(ts,vvvo,j_test)
-                       if(alloc_in_dummy)then
-                          call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
-                             &lock_set=.true.,req=req(jbuf_test))
-                       else
-                          call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
-                             &lock_set=.true.,flush_it=.true.)
-                       endif
-                       needed(jbuf_test)       = .true.
-                       tiles_in_buf(jbuf_test) = j_test
+                 call find_free_pos_in_buf(needed,nbuffs,jbuf_test,found)
 
-                       exit
+                 if(found)then
 
+                    if( .not. alloc_in_dummy ) call tensor_lock_win(vvvo,j_test,'s',assert=mode)
+                    call get_tile_dim(ts,vvvo,j_test)
+                    if(alloc_in_dummy)then
+                       call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
+                          &lock_set=.true.,req=req(jbuf_test))
+                    else
+                       call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
+                          &lock_set=.true.,flush_it=.true.)
                     endif
-                 enddo
+                    needed(jbuf_test)       = .true.
+                    tiles_in_buf(jbuf_test) = j_test
+
+                 endif
 
               endif
+
+              call check_if_new_instance_needed(i_test,tiles_in_buf,nbuffs,new_i_needed,set_needed=needed)
 
               !load new i
               if( new_i_needed )then
 
                  !find pos in buff
-                 do i_search_buf = 1, nbuffs
-                    if(.not.needed(i_search_buf))then
+                 call find_free_pos_in_buf(needed,nbuffs,ibuf_test,found)
 
-                       ibuf_test = i_search_buf
+                 if(found)then
 
-                       if( .not. alloc_in_dummy ) call tensor_lock_win(vvvo,i_test,'s',assert=mode)
-                       call get_tile_dim(ts,vvvo,i_test)
-                       if(alloc_in_dummy )then
-                          call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
-                             &lock_set=.true.,req=req(ibuf_test))
-                       else
-                          call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
-                             &lock_set=.true.,flush_it=.true.)
-                       endif
-
-                       needed(ibuf_test)       = .true.
-                       tiles_in_buf(ibuf_test) = i_test
-
-                       exit
-
+                    if( .not. alloc_in_dummy ) call tensor_lock_win(vvvo,i_test,'s',assert=mode)
+                    call get_tile_dim(ts,vvvo,i_test)
+                    if(alloc_in_dummy )then
+                       call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
+                          &lock_set=.true.,req=req(ibuf_test))
+                    else
+                       call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
+                          &lock_set=.true.,flush_it=.true.)
                     endif
-                 enddo
+
+                    needed(ibuf_test)       = .true.
+                    tiles_in_buf(ibuf_test) = i_test
+
+                 endif
 
               endif
 
