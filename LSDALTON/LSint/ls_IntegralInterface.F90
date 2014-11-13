@@ -1344,23 +1344,6 @@ IF(INT_INPUT%DO_LINK)THEN
          print*,'This Error statement can occur if Symmetry threshold'
          print*,'too high and the Symmetric Dmat is judged to be nonsymmetric.'
          print*,'The Matrix Judged to be non symmetric:'
-         call mat_print(setting%DmatRHS(idmat)%p,1,setting%DmatRHS(idmat)%p%nrow,&
-	              & 1,setting%DmatRHS(idmat)%p%ncol,lupri)
-         print*,'A mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         print*,'B mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         print*,'C mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         print*,'D mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         print*,'E mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         print*,'F mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         print*,'G mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         print*,'H mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         print*,'I mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         print*,'J mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
-         lupdmat = -1
-         CALL lsOPEN(lupdmat,'ProvocativeDens','UNKNOWN','UNFORMATTED')
-         call mat_write_to_disk(lupdmat,setting%DmatRHS(idmat)%p,.TRUE.)
-         call lsclose(lupdmat,'KEEP')
-         FLUSH(lupri)
          call lsquit('Exchange Called with nonsym Dmat',-1)
       ENDIF
       IF(Spec.EQ.MagDerivSpec)THEN
@@ -4526,7 +4509,6 @@ CASE('RHS')
   call mem_alloc(setting%DsymRHS,ndmat)
   DO idmat = 1,ndmat
     setting%DsymRHS(idmat) = mat_get_isym(Dmat(idmat)%p)
-    print*,'SET setting%DsymRHS(idmat)=',mat_get_isym(Dmat(idmat)%p)
   ENDDO
   setting%RHSdmatAOindex1 = AOindex1
   setting%RHSdmatAOindex2 = AOindex2
@@ -4605,7 +4587,6 @@ CASE('RHS')
   call mem_alloc(setting%DsymRHS,ndmat)
   DO idmat = 1,ndmat
     setting%DsymRHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2)
-    print*,'SET2 setting%DsymRHS(idmat)=',matfull_get_isym(Dmat(:,:,idmat),dim1,dim2)
   ENDDO
 CASE DEFAULT
   WRITE(LUPRI,'(1X,2A)') 'Error in ls_attachDmatToSetting. Side =',side
