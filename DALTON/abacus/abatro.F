@@ -314,7 +314,7 @@ C
 #include "gdvec.h"
 C
 #include "chrnos.h"
-#include "ibtfun.h"
+
 C
 C     Some initialization for spin-spin couplings
 C
@@ -457,7 +457,7 @@ C
          IAXREC = 3*NUCDEP + 3
          DO IX = 1, 3
             DO IY = IX , 3
-               IREP = IBTXOR(ISYMAX(IX,1),ISYMAX(IY,1))
+               IREP = IEOR(ISYMAX(IX,1),ISYMAX(IY,1))
                NSYMCR = NGDVEC(IREP + 1,1)
                IAXREC = IAXREC + 1
                NSYMCR = NSYMCR + 1
@@ -488,7 +488,7 @@ C
                         ISCOR1 = IPTCNT(3*(JATOM - 1) + ICOOR1,IREP2,2)
                         IF (ISCOR1 .GT. 0) THEN
                         DO 429 ICOOR2 = 1, ICOOR1
-                           ISYM = IBTXOR(IREP2,ISYMAX(ICOOR2,2))
+                           ISYM = IEOR(IREP2,ISYMAX(ICOOR2,2))
                            IF (ISYM .EQ. IREP1) THEN
                               NSYMCR = NSYMCR + 1
                               ISYMCR = ISYMCR + 1
@@ -506,7 +506,7 @@ C
          END IF
          IF (DOFC) THEN
             DO 431 JATOM = 1, NUCIND
-               IF (IBTAND(IREP1,ISTBNU(JATOM)).EQ.0) THEN
+               IF (IAND(IREP1,ISTBNU(JATOM)).EQ.0) THEN
                   IATOM = IATOM + 1
                   IF (DOPERT(JATOM,2)) THEN
                      NSYMCR = NSYMCR + 1
@@ -1866,7 +1866,7 @@ C
 #include "trkoor.h"
 #include "symmet.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
 C
 C     (I) Set up TMAT for 6 trarot coordinates
 C
@@ -1909,8 +1909,8 @@ C
 C
 C              Rotation
 C
-               IF (IBTXOR(ISYMAX(IA,1),ISYMAX(IB,1)).EQ.IREP) THEN
-                  IC = IBTXOR(IA,IB)
+               IF (IEOR(ISYMAX(IA,1),ISYMAX(IB,1)).EQ.IREP) THEN
+                  IC = IEOR(IA,IB)
                   IF (IPRINT .GE. 2) THEN
                      IF (.NOT.DONE) WRITE (LUPRI,'(/1X,A,I2/)')
      *              ' Symmetry ', IREP + 1

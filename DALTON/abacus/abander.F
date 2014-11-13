@@ -781,7 +781,7 @@ C  /* Deck numdr1 */
      &          ISOTMP(NATOMS), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2), KDPMTX(LDPMTX,NSTRDR,IFRSTD),
      &          NMIDPC(LDPMTX)
-#include "ibtfun.h"
+
 C
 C     ******************************
 C     *** Restart initialization ***
@@ -824,12 +824,12 @@ C
       DO 200 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 300 IOP = 0, MAXOPR
-            IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(IOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                DO 400 I = 1, 3
                   ICOOR = ICOOR + 1
                   CSTART(ICOOR) =
-     &                 PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+     &                 PT(IAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
  400           CONTINUE
             END IF
  300     CONTINUE
@@ -2147,7 +2147,7 @@ C
       CHARACTER*1   KASYM(3,3), ID3, CRT
       DIMENSION COOR(3,NCOOR/3), NATOM(NUCIND), NLINE(NUCIND),
      &          NATIND(NUCIND), JCO1(MXAQN)
-#include "ibtfun.h"
+
 C
 C     Updates geometry in common block
 C
@@ -2192,7 +2192,7 @@ C
                  TMPTXT = '           '
               END IF
               DO 300 IOP = 0, MAXOPR
-                  IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+                  IF (IAND(IOP,MULCNT) .EQ. 0) THEN
                      IATOM = IATOM + 1
                      CRX = COOR(1,IATOM)
                      CRY = COOR(2,IATOM)
@@ -6403,7 +6403,7 @@ C     **************************************************************
        LOGICAL FOUND
        CHARACTER*9 PRPTXT
        DIMENSION TRAMAT(NCOOR,NCOOR), COOR(NCOOR), CRTPRG(NCOOR)
-#include "ibtfun.h"
+
 C
 C     *** Finding the cartesian coordinates used by the ***
 C     *** program at the moment.                        ***
@@ -6413,12 +6413,12 @@ C
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO IOP = 0, MAXOPR
-            IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(IOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                DO I = 1, 3
                   ICOOR = ICOOR + 1
                   CRTPRG(ICOOR) =
-     &                 PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+     &                 PT(IAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
                END DO
             END IF
          END DO

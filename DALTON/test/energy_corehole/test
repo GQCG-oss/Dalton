@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#    energy_corehole
+#    ---------------
+#    Molecule:         CO
+#    Wave Functions:   MCSCF (RAS)
+#    Test Purpose:     Core-hole excitations using both a frozen and a
+#                      relaxed core orbital
 
 import os
 import sys
@@ -42,13 +48,13 @@ f2.add(string = 'Final MCSCF energy:',
       rel_tolerance = 1.0e-9)
 f2.add(from_string = 'Symmetry  1',
        num_lines = 4,
-       rel_tolerance = 1.0e-8)
+       rel_tolerance = 3.0e-5)
 f2.add(from_string = 'Symmetry  2',
         num_lines = 3,
-        rel_tolerance = 1.0e-8)
+        rel_tolerance = 3.0e-5)
 f2.add(from_string = 'Symmetry  3',
         num_lines = 3,
-        rel_tolerance = 1.0e-8)
+        rel_tolerance = 3.0e-5)
 test.run(['energy_corehole__2.dal'], ['energy_corehole.mol'], {'out': f2}, args = '-put SIRIUS.RST -get SIRIUS.RST')
 shutil.move('energy_corehole__2_energy_corehole.SIRIUS.RST', 'SIRIUS.RST')
 
@@ -63,13 +69,13 @@ f3.add(string = 'Final MCSCF energy:',
       rel_tolerance = 1.0e-9)
 f3.add(from_string = 'Symmetry  1',
        num_lines = 4,
-       rel_tolerance = 1.0e-8)
+       rel_tolerance = 3.0e-5)
 f3.add(from_string = 'Symmetry  2',
         num_lines = 3,
-        rel_tolerance = 1.0e-8)
+        rel_tolerance = 3.0e-5)
 f3.add(from_string = 'Symmetry  3',
         num_lines = 3,
-        rel_tolerance = 1.0e-8)
+        rel_tolerance = 3.0e-5)
 test.run(['energy_corehole__3.dal'], ['energy_corehole.mol'], {'out': f3}, args = '-put SIRIUS.RST')
 
 os.remove('SIRIUS.RST')

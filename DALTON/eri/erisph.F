@@ -140,7 +140,7 @@ C
       DIMENSION CSQ(NROWS,NCOLS)
       PWD(I,J)   = FACULT(I)/FACULT(I-J)
       HCF(I,J,K) = FACULT(I)/(FACULT(J)*FACULT(K/2)*FACULT(I-J-K))
-#include "ibtfun.h"
+
 C
       M = M1 - L
       IF (L.EQ.1) THEN
@@ -222,11 +222,11 @@ C
                            AY0 = CORD(2,IATOM)
                            AZ0 = CORD(3,IATOM)
                            DO 800 LA = 0, MAXOPR 
-                           IF (IBTAND(ISTBNU(IATOM),LA).EQ.0) THEN
+                           IF (IAND(ISTBNU(IATOM),LA).EQ.0) THEN
                               IA = IA + 1
-                              AX = PT(IBTAND(ISYMAX(1,1),LA))*AX0
-                              AY = PT(IBTAND(ISYMAX(2,1),LA))*AY0
-                              AZ = PT(IBTAND(ISYMAX(3,1),LA))*AZ0
+                              AX = PT(IAND(ISYMAX(1,1),LA))*AX0
+                              AY = PT(IAND(ISYMAX(2,1),LA))*AY0
+                              AZ = PT(IAND(ISYMAX(3,1),LA))*AZ0
                               BFAC = FACTOR*(AX**PX)*(AY**PY)*(AZ**PZ)
                               CSQ(IADR,IA) = CSQ(IADR,IA) + BFAC
                               IF (IPRINT.GT.20) THEN

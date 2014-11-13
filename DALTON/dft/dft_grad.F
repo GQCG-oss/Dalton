@@ -107,7 +107,7 @@ c
       DIMENSION TMP(NBLEN), KVALS(3,3)
       DATA ((KVALS(I,J), I = 1,3), J = 1,3) /1, 2, 3, 2, 4, 5, 3, 5, 6/
 C
-#include "ibtfun.h"
+
 C 
       DO I = 0, NBAST
          ACTIVE(I) = .FALSE.
@@ -144,7 +144,7 @@ C
                DO ICOMPA = 1, KHKT(ISHELA)
                   IORBA = IORBA + 1
                   IA = IPTSYM(IORBA,ISYM-1)
-                  KA = IPTSYM(IORBA,IBTXOR(ISYM-1,ISYMAX(IX,1)))
+                  KA = IPTSYM(IORBA,IEOR(ISYM-1,ISYMAX(IX,1)))
                   IF (ACTIVE(IA) .AND. KA.GT.0) THEN
                      IF (.NOT.DOGGA) THEN
                         DO I = 1, NBLEN
@@ -229,7 +229,7 @@ c
       DIMENSION TMPA(NBLEN), TMPB(NBLEN), KVALS(3,3)
       DATA ((KVALS(I,J), I = 1,3), J = 1,3) /1, 2, 3, 2, 4, 5, 3, 5, 6/
 C                                                                          
-#include "ibtfun.h"
+
 C
        DO I = 0, NBAST
          ACTIVE(I) = .FALSE.
@@ -273,7 +273,7 @@ C
                DO ICOMPA = 1, KHKT(ISHELA)
                   IORBA = IORBA + 1
                   IA = IPTSYM(IORBA,ISYM-1)
-                  KA = IPTSYM(IORBA,IBTXOR(ISYM-1,ISYMAX(IX,1)))
+                  KA = IPTSYM(IORBA,IEOR(ISYM-1,ISYMAX(IX,1)))
                   IF (ACTIVE(IA) .AND. KA.GT.0) THEN
                      IF (.NOT.DOGGA) THEN
                         DO I = 1, NBLEN

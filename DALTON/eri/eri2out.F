@@ -324,7 +324,7 @@ C
 #include "hertop.h"
 #include "inftap.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIWRT',-1)
 C
@@ -585,8 +585,8 @@ C  /* Deck ericlt */
 #include "hertop.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-      IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
+
+      IBTEST(I,J,K,L) = IAND(I,IEOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERICLT',-1)
 C
@@ -642,9 +642,9 @@ C
          DO B = 0, MAXREP
          IF (DOREP(B,2)) THEN
          DO C = 0, MAXREP
-         D = IBTXOR(IBTXOR(A,B),C)
+         D = IEOR(IEOR(A,B),C)
          IF (DOREP(C,3) .AND. DOREP(D,4)) THEN
-            CD = IBTXOR(C,D)
+            CD = IEOR(C,D)
 C
             IF (DIAGAB .AND. B.GT.A) GO TO 100
             IF (DIAGCD .AND. D.GT.C) GO TO 100
@@ -813,9 +813,9 @@ C
          DO B = 0, MAXREP
          IF (DOREP(B,2)) THEN
          DO C = 0, MAXREP
-         D = IBTXOR(IBTXOR(A,B),C)
+         D = IEOR(IEOR(A,B),C)
          IF (DOREP(C,3) .AND. DOREP(D,4)) THEN
-            CD = IBTXOR(C,D)
+            CD = IEOR(C,D)
 C
             IF (DIAGAB .AND. B.GT.A) GO TO 200
             IF (DIAGCD .AND. D.GT.C) GO TO 200
@@ -1028,7 +1028,7 @@ C
 #include "aobtch.h"
 #include "hertop.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERILBL',-1)
 C
@@ -1099,7 +1099,7 @@ C
          S = IPNRST( D,2)
          DO IC = 1, NREP(3)
             C  = IPNREP(IC,3)
-            CD = IBTXOR(C,D)
+            CD = IEOR(C,D)
             T  = IPNRST(CD,3)
             DO I = 1, NCCS
                INDCD(I) = INDXTR(I,IC,3) + INDXTR(I,ID,4)
@@ -1108,7 +1108,7 @@ C
             DO IB = 1, NREP(2)
                B = IPNREP(IB,2)
                R = IPNRST( B,1)
-               A = IBTXOR(B,CD)
+               A = IEOR(B,CD)
                DO IA = 1, NREP(1)
                IF (IPNREP(IA,1).EQ.A) THEN
                   IF (NIBUF.EQ.1) THEN
@@ -1166,17 +1166,17 @@ C
                DO I = 1, NCCS
                   IF (NIBUF.EQ.1) THEN
                      IJKL = INDORB(I,R,S,T,ICMPAB,ICMPCD,1)
-                     I1 = IBTAND(IBTSHR(IJKL,24),2**NBITS - 1)
-                     I2 = IBTAND(IBTSHR(IJKL,16),2**NBITS - 1)
-                     I3 = IBTAND(IBTSHR(IJKL,8 ),2**NBITS - 1)
-                     I4 = IBTAND(       IJKL,    2**NBITS - 1)
+                     I1 = IAND(ISHFT(IJKL,-24),2**NBITS - 1)
+                     I2 = IAND(ISHFT(IJKL,-16),2**NBITS - 1)
+                     I3 = IAND(ISHFT(IJKL,-8 ),2**NBITS - 1)
+                     I4 = IAND(       IJKL,    2**NBITS - 1)
                   ELSE
                      IJ = INDORB(I,R,S,T,ICMPAB,ICMPCD,1)
                      KL = INDORB(I,R,S,T,ICMPAB,ICMPCD,2)
-                     I1 = IBTAND(IBTSHR(IJ,16),2**NBITS - 1)
-                     I2 = IBTAND(       IJ,    2**NBITS - 1)
-                     I3 = IBTAND(IBTSHR(KL,16),2**NBITS - 1)
-                     I4 = IBTAND(       KL,    2**NBITS - 1)
+                     I1 = IAND(ISHFT(IJ,-16),2**NBITS - 1)
+                     I2 = IAND(       IJ,    2**NBITS - 1)
+                     I3 = IAND(ISHFT(KL,-16),2**NBITS - 1)
+                     I4 = IAND(       KL,    2**NBITS - 1)
                   END IF
                   WRITE (LUPRI,'(1X,A,5X,4I5)') ' INDORB ', I1,I2,I3,I4
                END DO
@@ -1323,7 +1323,7 @@ C  /* Deck erichn */
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IOFCMP(MXAQN**4), INDORB(NCCS,*)
 #include "ericom.h"
-#include "ibtfun.h"
+
 C
       NCMPX = 0
       MLTAB = MLTPX
@@ -1365,7 +1365,7 @@ C
             IOFF = IOFCMP(ICMPX)
             IADR = IOFF*NCCS + ISTR - 1
             DO K = IOFF + 1, IOFF + MLTPX
-               IDIST = INDXDS(IBTAND(IBTSHR(INDORB(ISTR,K),NB3),IBT))
+               IDIST = INDXDS(IAND(ISHFT(INDORB(ISTR,K),-NB3),IBT))
                IBTCH = NBTCHX(IDIST) + 1
                NBTCHX(IDIST) = IBTCH
                LBTCHX(IDIST) = LENGTH
@@ -1473,9 +1473,9 @@ C  /* Deck erilbd */
 #include "hertop.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
-      IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
+      IBTEST(I,J,K,L) = IAND(I,IEOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) THEN
          CALL HEADER('Subroutine ERILA1',-1)
@@ -1527,9 +1527,9 @@ C
       DO B = 0, MAXREP
       IF (DOREP(B,2)) THEN
       DO C = 0, MAXREP
-      D = IBTXOR(IBTXOR(IBTXOR(A,B),C),IREPE)
+      D = IEOR(IEOR(IEOR(A,B),C),IREPE)
       IF (DOREP(C,3) .AND. DOREP(D,4)) THEN
-         CD = IBTXOR(C,D)
+         CD = IEOR(C,D)
 C
          CTRIAB = DIAGAB .AND. A.EQ.B .AND. .FALSE. 
          CTRICD = DIAGCD .AND. C.EQ.D .AND. .FALSE. 
@@ -1826,7 +1826,7 @@ C  /* Deck prprep */
       INTEGER A
       LOGICAL DOREP(0:7)
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       DO A = 0, MAXREP
          DOREP(A) = .FALSE.
@@ -1835,7 +1835,7 @@ C
 C
       DO ICMP = 1, KHKTA
          DO A = 0, MAXREP
-         IF (IBTAND(ISTBLA,IBTXOR(A,ISYMAO(NHKTA,ICMP))).EQ.0) THEN
+         IF (IAND(ISTBLA,IEOR(A,ISYMAO(NHKTA,ICMP))).EQ.0) THEN
             DOREP(A) = .TRUE.
          END IF
          END DO
@@ -1873,13 +1873,13 @@ C  /* Deck getrst */
       INTEGER R, R1, X
       DIMENSION IPNRST(0:7)
 #include "symmet.h"
-#include "ibtfun.h"
+
       DO X = 0, MAXREP
          R1 = 0
          DO R = 0, MAXREP
-         IF (IBTAND(R,ISTBLR) .EQ. 0) THEN
+         IF (IAND(R,ISTBLR) .EQ. 0) THEN
             R1 = R1 + 1
-            IF (IBTOR(X,ISTBLR) .EQ. IBTOR(R,ISTBLR)) THEN
+            IF (IOR(X,ISTBLR) .EQ. IOR(R,ISTBLR)) THEN
                IPNRST(X) = R1
                GO TO 100
             END IF
@@ -1907,7 +1907,7 @@ C  /* Deck getcmp */
      &          NREP(2), IPNREP(8,2)
 #include "symmet.h"
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
       CALL CMPADR(IADCMP,KHKTA,KHKTB,TKMPAB)
 C
@@ -1915,7 +1915,7 @@ C
          A = IPNREP(I,1)
          IKMPA = 0
          DO ICMPA = 1, KHKTA
-         IF (IBTAND(ISTBLA,IBTXOR(A,ISYMAO(NHKTA,ICMPA))).EQ.0) THEN
+         IF (IAND(ISTBLA,IEOR(A,ISYMAO(NHKTA,ICMPA))).EQ.0) THEN
             IKMPA = IKMPA + 1
             JCMP(IKMPA,I,1) = ICMPA
          END IF
@@ -1927,7 +1927,7 @@ C
          B = IPNREP(I,2)
          IKMPB = 0
          DO ICMPB = 1, KHKTB
-         IF (IBTAND(ISTBLB,IBTXOR(B,ISYMAO(NHKTB,ICMPB))).EQ.0) THEN
+         IF (IAND(ISTBLB,IEOR(B,ISYMAO(NHKTB,ICMPB))).EQ.0) THEN
             IKMPB = IKMPB + 1
             JCMP(IKMPB,I,2) = ICMPB
          END IF
@@ -1969,7 +1969,7 @@ C  /* Deck getrep */
       LOGICAL DOREP(0:7)
       DIMENSION NREP(1), IPNREP(8)
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       DO A = 0, MAXREP
          DOREP(A) = .FALSE.
@@ -1977,7 +1977,7 @@ C
 C
       DO ICMP = 1, KHKTA
          DO A = 0, MAXREP
-         IF (IBTAND(ISTBLA,IBTXOR(A,ISYMAO(NHKTA,ICMP))).EQ.0) THEN
+         IF (IAND(ISTBLA,IEOR(A,ISYMAO(NHKTA,ICMP))).EQ.0) THEN
             DOREP(A) = .TRUE.
          END IF
          END DO
@@ -2074,12 +2074,12 @@ C  /* Deck nrdint */
       LOGICAL NRDINT, DAB, DCD, DPQ
 #include "eribuf.h"
 #include "ibtpar.h"
-#include "ibtfun.h"
+
       IBIT1 = 2**NBITS - 1
-      I = IBTAND(IBTSHR(INDEX,3*NBITS),IBIT1)
-      J = IBTAND(IBTSHR(INDEX,2*NBITS),IBIT1)
-      K = IBTAND(IBTSHR(INDEX,  NBITS),IBIT1)
-      L = IBTAND(       INDEX,         IBIT1)
+      I = IAND(ISHFT(INDEX,-3*NBITS),IBIT1)
+      J = IAND(ISHFT(INDEX,-2*NBITS),IBIT1)
+      K = IAND(ISHFT(INDEX,  -NBITS),IBIT1)
+      L = IAND(       INDEX,         IBIT1)
       IJ = MAX(I,J)*IBIT1 + I + J
       KL = MAX(K,L)*IBIT1 + K + L
       NRDINT = .NOT.((DAB .AND. I.GT.J) .OR.
@@ -2093,27 +2093,30 @@ C  /* Deck erican */
 #include "priunit.h"
 #include "ibtpar.h"
       INTEGER*4 IBIN4(NIBUF,LBIN)
-#include "ibtfun.h"
+
 C
       IBIT1 = 2**   NBITS  - 1
       IBIT2 = 2**(2*NBITS) - 1
 C
       IF (NIBUF .EQ. 1) THEN
          DO INT = 1, INTS
-            I = IBTAND(IBTSHR(IBIN4(1,INT),3*NBITS),IBIT1)
-            J = IBTAND(IBTSHR(IBIN4(1,INT),2*NBITS),IBIT1)
-            K = IBTAND(IBTSHR(IBIN4(1,INT),  NBITS),IBIT1)
-            L = IBTAND(       IBIN4(1,INT),         IBIT1)
+            I_IJKL = IBIN4(1,INT)
+            I = IAND(ISHFT(I_IJKL,-3*NBITS),IBIT1)
+            J = IAND(ISHFT(I_IJKL,-2*NBITS),IBIT1)
+            K = IAND(ISHFT(I_IJKL,  -NBITS),IBIT1)
+            L = IAND(       I_IJKL,         IBIT1)
             IJ = MAX(I,J)*IBIT1 + I + J
             KL = MAX(K,L)*IBIT1 + K + L
             IBIN4(1,INT) = MAX(IJ,KL)*IBIT2 + IJ + KL
          END DO
       ELSE
          DO INT = 1, INTS
-            I = IBTAND(IBTSHR(IBIN4(1,INT),NBITS),IBIT1)
-            J = IBTAND(       IBIN4(1,INT),       IBIT1)
-            K = IBTAND(IBTSHR(IBIN4(2,INT),NBITS),IBIT1)
-            L = IBTAND(       IBIN4(2,INT),       IBIT1)
+            I_IJ = IBIN4(1,INT)
+            I_KL = IBIN4(2,INT)
+            I = IAND(ISHFT(I_IJ,-NBITS),IBIT1)
+            J = IAND(       I_IJ,       IBIT1)
+            K = IAND(ISHFT(I_KL,-NBITS),IBIT1)
+            L = IAND(       I_KL,       IBIT1)
             IJ = MAX(I,J)*IBIT1 + I + J
             KL = MAX(K,L)*IBIT1 + K + L
             IBIN4(1,INT) = MAX(IJ,KL)
@@ -2130,20 +2133,23 @@ C  /* Deck eripri */
 #include "ibtpar.h"
       DIMENSION BUF(NDIM)
       INTEGER*4 IBUF4(NIBUF,NDIM)
-#include "ibtfun.h"
+
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
       IBIT1 = 2**NBITS - 1
       DO INT = 1, ICOUNT
          IF (NIBUF .EQ. 1) THEN
-            I0 = IBTAND(IBTSHR(IBUF4(1,INT),3*NBITS),IBIT1)
-            J0 = IBTAND(IBTSHR(IBUF4(1,INT),2*NBITS),IBIT1)
-            K0 = IBTAND(IBTSHR(IBUF4(1,INT),  NBITS),IBIT1)
-            L0 = IBTAND(       IBUF4(1,INT),         IBIT1)
+            I_IJKL = IBUF4(1,INT)
+            I0 = IAND(ISHFT(I_IJKL,-3*NBITS),IBIT1)
+            J0 = IAND(ISHFT(I_IJKL,-2*NBITS),IBIT1)
+            K0 = IAND(ISHFT(I_IJKL,  -NBITS),IBIT1)
+            L0 = IAND(       I_IJKL,         IBIT1)
          ELSE
-            I0 = IBTAND(IBTSHR(IBUF4(1,INT),NBITS),IBIT1)
-            J0 = IBTAND(       IBUF4(1,INT),       IBIT1)
-            K0 = IBTAND(IBTSHR(IBUF4(2,INT),NBITS),IBIT1)
-            L0 = IBTAND(       IBUF4(2,INT),       IBIT1)
+            I_IJ = IBUF4(1,INT)
+            I_KL = IBUF4(2,INT)
+            I0 = IAND(ISHFT(I_IJ,-NBITS),IBIT1)
+            J0 = IAND(       I_IJ,       IBIT1)
+            K0 = IAND(ISHFT(I_KL,-NBITS),IBIT1)
+            L0 = IAND(       I_KL,       IBIT1)
          END IF
          IF (ITRI(I0,J0).GE.ITRI(K0,L0)) THEN
             I = MAX(I0,J0)
@@ -2185,7 +2191,7 @@ C
 #include "erithr.h"
 #include "eridst.h"
 C
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISOR',-1)
 C
       IF(.NOT.COMPRS)CALL QUIT('ERITRX not implemented for .NOT.COMPRS')
@@ -2202,7 +2208,7 @@ C
                DO I = 1, NCCT 
                   SOINT = SO(I,ICMPAB,ICMPCD)
                   LABEL = INDORB(I,ICMPAB,ICMPCD,1)
-                  IDSTR = INDXDS(IBTAND(IBTSHR(LABEL,3*NBITS),IBIT1))
+                  IDSTR = INDXDS(IAND(ISHFT(LABEL,-3*NBITS),IBIT1))
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
                      BIN  (  INT) = SOINT
@@ -2214,7 +2220,7 @@ C
                   SOINT  = SO(I,ICMPAB,ICMPCD)
                   LABEL1 = INDORB(I,ICMPAB,ICMPCD,1)
                   LABEL2 = INDORB(I,ICMPAB,ICMPCD,2)
-                  IDSTR  = INDXDS(IBTAND(IBTSHR(LABEL1,NBITS),IBIT1))
+                  IDSTR  = INDXDS(IAND(ISHFT(LABEL1,-NBITS),IBIT1))
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
                      BIN  (  INT) = SOINT

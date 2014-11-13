@@ -2867,7 +2867,7 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
 C--------------------------------------
 C     Calculate contribution.
@@ -3025,7 +3025,7 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       ISYINT = MULD2H(ISYMH1,ISYMOP)
       ISYALI = MULD2H(ISYINT,ISYMTR)
@@ -3193,7 +3193,7 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
 C
 C===================================
@@ -5039,7 +5039,7 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       ISYMKC = ISYMAG
 C
@@ -5756,9 +5756,9 @@ C
 #include "chrnos.h"
 #include "r12int.h"
 C
-#include "ibtfun.h"
+
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       IF (NEWDIS) THEN
 C
@@ -5779,7 +5779,7 @@ C
             LBFINP = LBUF
 C     
 #if defined (SYS_NEC)
-            LRECL =   LBFINP + NIBUF*LBFINP/2 + 1    ! in intger*8 units
+            LRECL =   LBFINP + NIBUF*LBFINP/2 + 1    ! in integer*8 units
 #else
             LRECL = 2*LBFINP + NIBUF*LBFINP   + 1    ! in integer*4 units
 #endif
@@ -7652,7 +7652,7 @@ C
 #include "maxorb.h"
 #include "ccsdio.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       IF (OMEGSQ) THEN
          WRITE(LUPRI,*)
@@ -8019,7 +8019,7 @@ C
 #include "maxorb.h"
 #include "ccsdio.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       IF (OMEGSQ) THEN
          WRITE(LUPRI,*)

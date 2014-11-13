@@ -269,11 +269,6 @@ C
 
       CALL QENTER('SIRRDI')
 C
-C  ***** Check dimension
-C
-      IF ( LCMO .LT. MXCORB*MXCORB )
-     *   CALL ERRWRK('SIRRDI.cmo',-MXCORB*MXCORB,LCMO)
-C
 C     Skip next section if processed earlier
 C
       IF (INPPRC) THEN

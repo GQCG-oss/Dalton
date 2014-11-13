@@ -61,7 +61,7 @@ C
 C inftap.h: LUINTA, LUSRINT
 #include "inftap.h"
 C
-#include "ibtfun.h"
+
 C
 
       LUINTA_save = LUINTA
@@ -112,7 +112,7 @@ C
          IREPA  = IPNTRP(1,I)
          IREPB  = IPNTRP(2,I)
          IREPC  = IPNTRP(3,I)
-         IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+         IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          IF (NOTEST) THEN
             IF (NIBUF .EQ. 1) THEN
                INT = 0
@@ -266,7 +266,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
       SAVE NBUF
-#include "ibtfun.h"
+
 C
       IF (ITYPE .EQ. -1) THEN ! initialize LUINTA
          CALL REWSPL(LUINTA)
@@ -292,15 +292,18 @@ C
             IBIT1 = 2**NBITS - 1
             DO 100 INT = 1, ICOUNT
                IF (NIBUF .EQ. 1) THEN
-                  I = IBTAND(IBTSHR(IBUF4(INT),3*NBITS),IBIT1)
-                  J = IBTAND(IBTSHR(IBUF4(INT),2*NBITS),IBIT1)
-                  K = IBTAND(IBTSHR(IBUF4(INT),  NBITS),IBIT1)
-                  L = IBTAND(       IBUF4(INT),         IBIT1)
+                  IJKL = IBUF4(INT)
+                  I = IAND(ISHFT(IJKL,-3*NBITS),IBIT1)
+                  J = IAND(ISHFT(IJKL,-2*NBITS),IBIT1)
+                  K = IAND(ISHFT(IJKL,  -NBITS),IBIT1)
+                  L = IAND(       IJKL,         IBIT1)
                ELSE
-                  I = IBTAND(IBTSHR(IBUF4(2*INT-1),  NBITS),IBIT1)
-                  J = IBTAND(       IBUF4(2*INT-1),         IBIT1)
-                  K = IBTAND(IBTSHR(IBUF4(2*INT  ),  NBITS),IBIT1)
-                  L = IBTAND(       IBUF4(2*INT  ),         IBIT1)
+                  IJ = IBUF4(2*INT-1)
+                  KL = IBUF4(2*INT  )
+                  I = IAND(ISHFT(IJ,  -NBITS),IBIT1)
+                  J = IAND(       IJ,         IBIT1)
+                  K = IAND(ISHFT(KL,  -NBITS),IBIT1)
+                  L = IAND(       KL,         IBIT1)
                END IF
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                      ' ## ', I, J, K, L, BUF(INT)
@@ -328,15 +331,18 @@ C
                IBIT1 = 2**NBITS - 1
                DO 200 INT = 1, ICOUNT
                   IF (NIBUF .EQ. 1) THEN
-                     I = IBTAND(IBTSHR(IBUF4(INT),3*NBITS),IBIT1)
-                     J = IBTAND(IBTSHR(IBUF4(INT),2*NBITS),IBIT1)
-                     K = IBTAND(IBTSHR(IBUF4(INT),  NBITS),IBIT1)
-                     L = IBTAND(       IBUF4(INT),         IBIT1)
+                     IJKL = IBUF4(INT)
+                     I = IAND(ISHFT(IJKL,-3*NBITS),IBIT1)
+                     J = IAND(ISHFT(IJKL,-2*NBITS),IBIT1)
+                     K = IAND(ISHFT(IJKL,  -NBITS),IBIT1)
+                     L = IAND(       IJKL,         IBIT1)
                   ELSE
-                     I = IBTAND(IBTSHR(IBUF4(2*INT-1),NBITS),IBIT1)
-                     J = IBTAND(       IBUF4(2*INT-1),       IBIT1)
-                     K = IBTAND(IBTSHR(IBUF4(2*INT  ),NBITS),IBIT1)
-                     L = IBTAND(       IBUF4(2*INT  ),       IBIT1)
+                     IJ = IBUF4(2*INT-1)
+                     KL = IBUF4(2*INT  )
+                     I = IAND(ISHFT(IJ,-NBITS),IBIT1)
+                     J = IAND(       IJ,       IBIT1)
+                     K = IAND(ISHFT(KL,-NBITS),IBIT1)
+                     L = IAND(       KL,       IBIT1)
                   END IF
                   WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                         ' ## ', I, J, K, L, BUF(INT)
@@ -409,7 +415,7 @@ C
 #include "symmet.h"
       SAVE BUF, IBUF, ICOUNT
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine FCKOUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -438,7 +444,7 @@ C
          IREPA  = IPNTRP(1,I)
          IREPB  = IPNTRP(2,I)
          IREPC  = IPNTRP(3,I)
-         IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+         IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          IF (NOTEST) THEN
             INT = 0
             DO 200 IAB = 1, NORBAB
@@ -551,7 +557,7 @@ C
 #include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST,NDMAT), DMAT(NBAST,NBAST,NDMAT),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include "ibtfun.h"
+
 C
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)
@@ -615,7 +621,7 @@ C
       SAVE      BUF, IBUF4, ICOUNT, NBUFCL
 
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)
 C
@@ -639,11 +645,11 @@ C
       IF (DOXYZ(ICOOR)) THEN
          DO 200 IREPE = 0,MAXREP
             IF (SPNORB) THEN
-             IRPXYZ=IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
-             IF (IREPE .NE. IBTXOR(ISYMAX(ICOOR,1),IRPXYZ)) GOTO 200
+             IRPXYZ=IEOR(ISYMAX(1,1),IEOR(ISYMAX(2,1),ISYMAX(3,1)))
+             IF (IREPE .NE. IEOR(ISYMAX(ICOOR,1),IRPXYZ)) GOTO 200
             ELSE
              IF(.NOT.DOREPS(IREPE)) GO TO 200
-             IF(IBTAND(MULE,IBTXOR(IREPE,ISYMAX(ICOOR,1))).NE.0)GOTO 200
+             IF(IAND(MULE,IEOR(IREPE,ISYMAX(ICOOR,1))).NE.0)GOTO 200
             END IF
             CALL DR2WRT(BUF,IBUF4,LBUF,NIBUF,ICOUNT,
      &                  IATOM,ICOOR,IREPE,2,SPNORB,IPRINT)
@@ -658,7 +664,7 @@ C
                IREPA  = IPNTRP(1,I,IREPX)
                IREPB  = IPNTRP(2,I,IREPX)
                IREPC  = IPNTRP(3,I,IREPX)
-               IREPD  = IBTXOR(IBTXOR(IBTXOR(IREPA,IREPB),IREPC),IREPE)
+               IREPD  = IEOR(IEOR(IEOR(IREPA,IREPB),IREPC),IREPE)
                IF (NOTEST) THEN
                   INT = 0
                   DO 400 IAB = 1, NORBAB
@@ -814,7 +820,7 @@ C
 #include "chrxyz.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
-#include "ibtfun.h"
+
 C
 C     Initialization
 C     ==============
@@ -944,18 +950,19 @@ C  /* Deck dr2pri */
       INTEGER*4 IBUF4(LBUF)
       SAVE IATOM, ICOOR, IREPE
 #include "chrxyz.h"
-#include "ibtfun.h"
+
       WRITE(LUPRI,'(2X,A,I5,A/)')
      &   'Integral buffer #',NBUF + 1,' has been written.'
       DO 100 INT = 1, ICOUNT
-         I = IBTAND(IBTSHR(IBUF4(INT),24),IBT08)
-         J = IBTAND(IBTSHR(IBUF4(INT),16),IBT08)
-         K = IBTAND(IBTSHR(IBUF4(INT),8), IBT08)
-         L = IBTAND(       IBUF4(INT),    IBT08)
+         IJKL = IBUF4(INT)
+         I = IAND(ISHFT(IJKL,-24),IBT08)
+         J = IAND(ISHFT(IJKL,-16),IBT08)
+         K = IAND(ISHFT(IJKL, -8),IBT08)
+         L = IAND(       IJKL,    IBT08)
          IF (L .EQ. 0) THEN
-            ICOOR = IBTAND(IBTSHR(IBUF4(INT), 8),IBT08)
-            IREPE = IBTAND(IBTSHR(IBUF4(INT),16),IBT08)
-            IATOM = IBTAND(IBTSHR(IBUF4(INT),24),IBT08)
+            ICOOR = IAND(ISHFT(IJKL, -8),IBT08)
+            IREPE = IAND(ISHFT(IJKL,-16),IBT08)
+            IATOM = IAND(ISHFT(IJKL,-24),IBT08)
          ELSE
             WRITE (LUPRI,'(10X,A,2X,4I4,5X,I2,A,I2,5X,1P,D16.8)')
      &         ' ## ',I,J,K,L,IATOM,CHRXYZ(ICOOR),IREPE,BUF(INT)
@@ -989,7 +996,7 @@ C
 #include "doxyz.h"
       SAVE BUF, IBUF4, ICOUNT, NBUFCL
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
 
@@ -1029,7 +1036,7 @@ C
             IREPA  = IPNTRP(1,I,IREPX)
             IREPB  = IPNTRP(2,I,IREPX)
             IREPC  = IPNTRP(3,I,IREPX)
-            IREPD  = IBTXOR(IBTXOR(IBTXOR(IREPA,IREPB),IREPC),IREPE)
+            IREPD  = IEOR(IEOR(IEOR(IREPA,IREPB),IREPC),IREPE)
             IF (NOTEST) THEN
                INT = 0
                DO 400 IAB = 1, NORBAB
@@ -1231,7 +1238,7 @@ Cholesky
 #include "ccdeco.h"
 Cholesky
 C
-#include "ibtfun.h"
+
 C
       IF (LBUF .NE. LDSBUF) THEN
         WRITE (LUPRI,*) 'LBUF  :',LBUF
@@ -1292,7 +1299,7 @@ C
          IREPA  = IPNTRP(1,I)
          IREPB  = IPNTRP(2,I)
          IREPC  = IPNTRP(3,I)
-         IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+         IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          IF (NOTEST) THEN
             IF (NIBUF .EQ. 1) THEN
                INT = 0
@@ -1556,7 +1563,7 @@ C  /* Deck un2wrn */
 #include "inftap.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       NBUFX(0) = NBUFX(0) + 1
       ICOUNT4  = ICOUNT
@@ -1575,19 +1582,22 @@ c        NBUFX(0) = 0
 C
          IF (IPRINT .GE. 6) THEN
             WRITE (LUPRI,'(2X,A,I5,A/)')
-     &         'Integral buffer #',NBUFX(0),' has been written.'
+     &         'UN2WRN: Integral buffer #',NBUFX(0),' has been written.'
             IBIT1 = 2**NBITS - 1
             DO 100 INT = 1, ICOUNT
                IF (NIBUF .EQ. 1) THEN
-                  I = IBTAND(IBTSHR(IBUF4(INT),3*NBITS),IBIT1)
-                  J = IBTAND(IBTSHR(IBUF4(INT),2*NBITS),IBIT1)
-                  K = IBTAND(IBTSHR(IBUF4(INT),  NBITS),IBIT1)
-                  L = IBTAND(       IBUF4(INT),         IBIT1)
+                  IJKL = IBUF4(INT)
+                  I = IAND(ISHFT(IJKL,-3*NBITS),IBIT1)
+                  J = IAND(ISHFT(IJKL,-2*NBITS),IBIT1)
+                  K = IAND(ISHFT(IJKL,  -NBITS),IBIT1)
+                  L = IAND(       IJKL,         IBIT1)
                ELSE
-                  I = IBTAND(IBTSHR(IBUF4(2*INT-1),NBITS),IBIT1)
-                  J = IBTAND(       IBUF4(2*INT-1),       IBIT1)
-                  K = IBTAND(IBTSHR(IBUF4(2*INT  ),NBITS),IBIT1)
-                  L = IBTAND(       IBUF4(2*INT  ),       IBIT1)
+                  IJ = IBUF4(2*INT-1)
+                  KL = IBUF4(2*INT  )
+                  I = IAND(ISHFT(IJ,-NBITS),IBIT1)
+                  J = IAND(       IJ,       IBIT1)
+                  K = IAND(ISHFT(KL,-NBITS),IBIT1)
+                  L = IAND(       KL,       IBIT1)
                END IF
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                      ' ## ', I, J, K, L, BUF(INT)
@@ -1604,20 +1614,24 @@ C
 C
          IF (IPRINT .GE. 6) THEN
             IF (ICOUNT .GT. 0) THEN
-               WRITE (LUPRI,'(2X,A,I5,A/)')
-     &            'Integral buffer #',NBUFX(0),' has been written.'
+               WRITE (LUPRI,'(2X,A,I5,A,I5/)')
+     &         'UN2WRN: Integral buffer #',NBUFX(0),' has been written.'
+     &         //'  INDA =',INDA
                IBIT1 = 2**NBITS - 1
                DO 200 INT = 1, ICOUNT
                   IF (NIBUF .EQ. 1) THEN
-                     I = IBTAND(IBTSHR(IBUF4(INT),3*NBITS),IBIT1)
-                     J = IBTAND(IBTSHR(IBUF4(INT),2*NBITS),IBIT1)
-                     K = IBTAND(IBTSHR(IBUF4(INT),  NBITS),IBIT1)
-                     L = IBTAND(       IBUF4(INT),         IBIT1)
+                     IJKL = IBUF4(INT)
+                     I = IAND(ISHFT(IJKL,-3*NBITS),IBIT1)
+                     J = IAND(ISHFT(IJKL,-2*NBITS),IBIT1)
+                     K = IAND(ISHFT(IJKL,  -NBITS),IBIT1)
+                     L = IAND(       IJKL,         IBIT1)
                   ELSE
-                     I = IBTAND(IBTSHR(IBUF4(2*INT-1),NBITS),IBIT1)
-                     J = IBTAND(       IBUF4(2*INT-1),       IBIT1)
-                     K = IBTAND(IBTSHR(IBUF4(2*INT  ),NBITS),IBIT1)
-                     L = IBTAND(       IBUF4(2*INT  ),       IBIT1)
+                     IJ = IBUF4(2*INT-1)
+                     KL = IBUF4(2*INT  )
+                     I = IAND(ISHFT(IJ,-NBITS),IBIT1)
+                     J = IAND(       IJ,       IBIT1)
+                     K = IAND(ISHFT(KL,-NBITS),IBIT1)
+                     L = IAND(       KL,       IBIT1)
                   END IF
                   WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                         ' ## ', I, J, K, L, BUF(INT)

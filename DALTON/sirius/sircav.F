@@ -676,7 +676,7 @@ C
       DIMENSION XE(*),YE(*),ZE(*),RE(*),V1(3),V2(3)
       DIMENSION NPERM(NUMSPH,*),NEWSPH(NUMSPH,2)
 C
-#include "ibtfun.h"
+
 C
 c  crea la tabella di permutazione delle sfere
 c  e completa per simmetria le sfere aggiunte
@@ -696,7 +696,7 @@ C
         DO J=1,MAXREP
            DO K=1,NESF
               DO L=1,3
-                 V2(L)=PT(IBTAND(ISYMAX(L,1),J))*V1(L)
+                 V2(L)=PT(IAND(ISYMAX(L,1),J))*V1(L)
               ENDDO
 Clf
 C            DIFF1=
@@ -754,7 +754,7 @@ c  ciclo sulle operazioni di simmetria
         DO J=1,MAXREP
            DO K=1,NESF1
               DO L=1,3
-                 V2(L)=PT(IBTAND(ISYMAX(L,1),J))*V1(L)
+                 V2(L)=PT(IAND(ISYMAX(L,1),J))*V1(L)
               ENDDO
               DIFF1 = DSQRT((XE(K)-V2(1))**2 + (YE(K)-V2(2))**2 +
      $             (ZE(K)-V2(3))**2 + (RE(K)-R1)**2)
@@ -816,7 +816,7 @@ C
 C
 c  Se la sfera non deve essere tassellata ritorna a pedra con 0 tessere
 c
-#include "ibtfun.h"
+
 Clf      IF (NPerm(NSFE,1).EQ.0.or.nsfe.ne.2) THEN      
       IF (NPerm(NSFE,1).EQ.0) THEN
          ITsEff=0
@@ -1070,7 +1070,7 @@ c
             Do I=1,NV
                II=I+NOpPt*NV
                Do K=1,3
-                  CV(II,K) = PT(IBTAND(ISYMAX(K,1),ISYMOP)) * CV(I,K)
+                  CV(II,K) = PT(IAND(ISYMAX(K,1),ISYMOP)) * CV(I,K)
                ENDDO
             ENDDO
 c
@@ -1133,7 +1133,7 @@ c
       DIMENSION NPERM(NUMSPH,*)
       DATA D0/0.0D0/
 C
-#include "ibtfun.h"
+
 C
 c  replication of the cavity
 c
@@ -1153,9 +1153,9 @@ CcheckWRITE(LUPRI,*)'IN REPCAV',NTS
           DO K=1,NVERT(I)
             DO L=1,3
                VERT(II,K,L)  = 
-     $              PT(IBTAND(ISYMAX(L,1),ISYMOP)) * VERT(I,K,L)
+     $              PT(IAND(ISYMAX(L,1),ISYMOP)) * VERT(I,K,L)
                CENTR(II,K,L) = 
-     $              PT(IBTAND(ISYMAX(L,1),ISYMOP)) * CENTR(I,K,L)
+     $              PT(IAND(ISYMAX(L,1),ISYMOP)) * CENTR(I,K,L)
             ENDDO
           ENDDO
         ENDDO
@@ -1175,14 +1175,14 @@ Clf      write(lupri,*) 'see if the pt are correct',nts
       DO ISYMOP=1,MAXREP
          DO I=1,NTSIRR
             II=I+NTSIRR*ISYMOP
-            XTSCOR(II)=PT(IBTAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(I)
-            YTSCOR(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(I)
-            ZTSCOR(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(I)
+            XTSCOR(II)=PT(IAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(I)
+            YTSCOR(II)=PT(IAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(I)
+            ZTSCOR(II)=PT(IAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(I)
 C            II=I+NTS*(ISYMOP+MAXREP+1)
 C            II2=I+NTS
-C            XTSCOR(II)=PT(IBTAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(II2)
-C            YTSCOR(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(II2)
-C            ZTSCOR(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(II2)
+C            XTSCOR(II)=PT(IAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(II2)
+C            YTSCOR(II)=PT(IAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(II2)
+C            ZTSCOR(II)=PT(IAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(II2)
          ENDDO
       ENDDO
 Clf
@@ -2362,7 +2362,7 @@ C
 #include "pgroup.h"
       LOGICAL LSYMOP(0:7)
       DIMENSION JTR(NUMTS,*),CV(NVERT,*)
-#include "ibtfun.h"
+
 C
 C      SYMOP(0) = ' E '
 C      SYMOP(1) = 'Oyz'
@@ -2402,7 +2402,7 @@ c
                II = I + NV
                DO K = 1,3
                   CV(II,K) =
-     $              PT(IBTAND(ISYMOP,2**(K-1))) * CV(I,K)
+     $              PT(IAND(ISYMOP,2**(K-1))) * CV(I,K)
                ENDDO
             ENDDO
 Clf            WRITE(LUPRI,*) 'I,II,JJ,K,JTR(II,K),JTR(I,K)'
@@ -2448,7 +2448,7 @@ C  /* Deck pcmtns */
       DIMENSION IAX(6),NORDER(3)
       LOGICAL PLANAR, LINEAR
       DATA IAX/1,2,3,3,2,1/
-#include "ibtfun.h"      
+      
       JATOM = 1
 C
 C As correctly pointed out by Kenneth, we want two molecules
@@ -2459,10 +2459,10 @@ C
          NATTYP = NINT(CHARGE(IATOM))
 Clf         NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
                DO 120 ICOOR = 1, 3
-                  GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                  GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                               *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120           CONTINUE
 Clf               WRITE(LUPRI,*) 'NATTYP, NUMIS,JATOM,AMASS',
@@ -2787,17 +2787,17 @@ C/* Deck UPDCAV*/
 #include "pcmnuclei.h"
 #include "symmet.h"
       DIMENSION COORD(3,*)
-#include "ibtfun.h"
+
       IF (ICESPH .EQ. 0 .OR. ICESPH .EQ. 2) THEN
          JATOM = 0
          DO I = 1, NUCIND
             MULCNT = ISTBNU(I)
             DO ISYM = 0, MAXREP
-               IF(IBTAND(ISYM,MULCNT) .EQ. 0) THEN
+               IF(IAND(ISYM,MULCNT) .EQ. 0) THEN
                   JATOM = JATOM + 1
                   DO JCORD = 1,3
                      PCMCORD(JCORD,JATOM) = 
-     $                    PT(IBTAND(ISYMAX(JCORD,1),ISYM)) 
+     $                    PT(IAND(ISYMAX(JCORD,1),ISYM)) 
      $                    *COORD(JCORD,I)
                   END DO
                END IF

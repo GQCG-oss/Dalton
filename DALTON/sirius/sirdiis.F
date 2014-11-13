@@ -42,8 +42,7 @@ C
 !2) fixed WR_SIRIFC call for open shell and solvent
 !   (required change in SOLFCK also)
 !=============================================================================
-!970326-hjaaj -- adjusted abort DIIS algorithm (allow more NEWOCC and more
-!  oscillations)
+!970326-hjaaj -- adjusted abort DIIS algorithm (allow more NEWOCC)
 !951130-hjaaj
 !DIIS_CTL: moved 'reset to not converged' for solvent and writing SIRIFC to
 !        DIIS_CTL from SIRCTL; it is a deficiency in the DIIS routines that
@@ -506,15 +505,14 @@ C       Also minimum accuracy corresponding to error in
 C       GRDNORM ~ 0.1 (IFTMIN). /31-Jul-2006 hjaaj
 C
 C       In iterations we want 0.001 times GRDNRM because we do
-C       keep vectors until GRDNRM fallen a factor 100
+C       keep vectors until GRDNRM lowered with a factor 100
       DAMP   = D0
       EMCLOW = D0
-      GRDNRM_old = -1.0D0
+      GRDNRM = -1.0D0
       ITNOCC = 0
       NEWOCC = 0
       LNEWOCC = AUTOCC
 C     if (LNEWOCC) then write new BASINFO to SIRIUS.RST in NEWORB
-      N_OSCIL = 0
       I_STALL = 0
 C------------------
       DODIFDEN = .NOT.FLAG(49) .AND. .NOT.HSFOCK
@@ -885,6 +883,9 @@ c        density
 
          ESOLT = D0
          IF (.NOT. MMPCM) THEN ! do as we usually do ...
+           IF (PCM .AND. (FLAG(16) .OR. QMMM .OR. QMNPMM .OR. QM3)) THEN
+             CALL QUIT("PCM not compatible with other solvent models")
+           END IF
            IF (QM3 .AND. .NOT. DOCCSD) THEN
              CALL MEMGET2('REAL','FCQM3',KFCSOL,NNBAST,WRK,KFREE,LFREE)
              CALL DZERO(WRK(KFCSOL),NNBAST)
@@ -940,6 +941,9 @@ c        density
            END IF
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd
+           IF (.NOT. QM3 .OR. .NOT. PCM) THEN
+             CALL QUIT("MMPCM have to be used with both PCM and QM3")
+           END IF
 C          parameters on input: MXITMP and THRSMP
            LCONV = .FALSE.
            XTEST1 = D0
@@ -1005,8 +1009,12 @@ C
          IF (QM3 .AND. (.NOT. OLDTG)) EMCSCF = EMCSCF - EELEL
 C        this also includes the case of MMPCM
 
-         EMCDIF = EMCSCF - EMCDIF
          EGSAV(1,INDEVC) = EMCSCF
+
+         EMCLOW = MIN(EMCLOW,EMCSCF)
+         EMCDIF = EMCSCF - EMCDIF
+         EMCDIFERR = THRINC*ABS(EMCLOW)
+         GRDNRM_old = GRDNRM
 C
          CALL DIIS_EVC(SMOAO,DAOSAV(1,1),DAOSAV(1,2),H1AO,
      &               FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),CMO1,
@@ -1071,58 +1079,8 @@ C           this also includes the case of MMPCM
             CALL FLSHFO(LUW4)
          END IF
          IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.FALSE.)
-C
-C        Test and exit if energy is increasing
-C        (from itdiis .ge. 7, second iteration is Roothaan step
-C        and often increases in energy; fourth iteration has been
-C        observed to increase in energy (perhaps in connection with
-C        new occupation for AUTOCC)).
-C        961113-hjaaj: use new ITNOCC>2 for test; ITNOCC counts
-C        number of diis iterations since last change of occupation.
-C        970326-hjaaj: changed to ITNOCC>4 test; have today observed
-C        increase in energy in iter 4 with fixed HF OCCUP; let us
-C        allow two oscillations before exiting.
-C        970402-hjaaj: Always allow two oscillations (N_OSCIL)
-C        after a "NEWOCC"
-C
-         EMCLOW = MIN(EMCLOW,EMCSCF)
-         EMCDIFERR = THRINC*ABS(EMCLOW)
-C        ... if EMCDIF positive, but increase < THRINC*abs(EMCLOW) then
-C            the increase are in digits which are not reliable
-C        ... by comparing to EMCDIFERR, an estimate of the numerical round-off
-C            error, this modified test should only be positive if the exact
-C            energy has increased.
-C
-         IF (EMCDIF .GT. EMCDIFERR .AND. ITNOCC .GT. 4) THEN
-            N_OSCIL = N_OSCIL + 1
-         IF (N_OSCIL .GT. 10) THEN
-            IF (AUTOCC .AND. NSYM .GT. 1 .AND. ITNOCC .LE. 6) THEN
-C              ... ITNOCC test because do not abort if same
-C                  occupation has been used in 6 iterations/970402-hjaaj
-               WRITE (LUPRI,4010)
-               IF (LUW4 .NE. LUPRI) WRITE (LUW4,4010)
-               CALL QUIT(
-     &         'FATAL ERROR: DIIS diverging and automatic occupation')
-            END IF
-            ICONV = 0
-            WRITE (LUPRI,4020)
-            IF (LUW4 .NE. LUPRI) WRITE (LUW4,4020)
-            CALL READMO(CMO,9,DUMMY,1)
-C           CALL READMO(CMO,JRDMO,WRK,LFREE)
-            GO TO 1100
-         END IF
-         END IF
-C
- 4010 FORMAT(' DIIS aborted because energy increased in this iteration.'
-     &      /' Program aborted because this means automatic symmetry'
-     &      /' designation of occupied orbitals is not possible!'
-     &      /' Please post this output as a bug report to the'//
-     &       ' dalton forum.'
-     &      /' You may try again with explicit specfication of .DOUBLY')
- 4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
-     &      /' Backstep to orbitals from previous iteration.')
-C
-         IF (GRDNRM .LE. THDIIS .and. SHFTLVL .EQ. D0) THEN
+
+         IF (GRDNRM .LE. THDIIS .and. SHFTLVL .EQ. D0) THEN  ! converged
          ! do not accept as converged if non-zero level shift
          ! because then the orbital energies are not correct /hjaaj
             IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
@@ -1205,7 +1163,7 @@ C        -- if we have tightened screening threshold we must
 C           calculate w/o DIFDEN or the error in the Fock matrix
 C           would correspond to the previous screening threshold.
 C
-#ifdef USE_OPT-SOLVERS
+#ifdef USE_OPT_SOLVERS
          CALL  DIISWEIGHTS(METHOD,ENERG,H1AO,SAOUNP,
      &                     DAOSAV,FAOSAV,EVCSAV,
      &                     INDEVC,NEVC,GVEC,BMAT,CVEC,MXERRV,
@@ -1384,14 +1342,14 @@ c            make sure we get right HOMO-LUMO gap in the end.
 
 C        Level shift is only working for closed shell calculations ...
 C          (open shell problems reported by users ...) / hjaaj 22-Jun-2005
-         IF ( NASHT .GT. 0 ) SHFTLVL = 0.0D0
+!        IF ( NASHT .GT. 0 ) SHFTLVL = 0.0D0
+!        enabled again 6-Nov-2014 after testing a problematic open-shell DFT
+!        calculation which converged with level shift, but not without. /hjaaj
 
 C        No level shift at convergence, otherwise orbital energies
 C        for e.g. CC will not be correct
          IF ( GRDNRM .LE. 100.00*THDIIS ) SHFTLVL = 0.D0
 
-         GRDNRM_OLD = GRDNRM
-C
 C        Iteration accepted; save current CMO for restart
          WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
          CALL NEWORB(CMOLBL,CMO,LNEWOCC)
@@ -1481,8 +1439,12 @@ C        Perform "restricted step" step reduction (i.e. level shift)
 C        by adding 0.5*SHFTLVL*DENS(i,i) to all diagonal elements;
 C        /hjaaj-Feb.2001
 
-         IF (SHFTLVL .NE. D0) WRITE(LUPRI,'(I4,A,1P,D10.2)') ITDIIS,
-     &   '  Level shift: occupied orbital energies shifted by',SHFTLVL
+         IF (SHFTLVL .NE. D0) THEN
+            WRITE(LUPRI,'(I4,A,1P,D10.2)') ITDIIS,'  Level shift: '//
+     &      'doubly occupied orbital energies shifted by',SHFTLVL
+            IF (NASHT .GT. 0) WRITE(LUPRI,'(T16,A,1P,D10.2)')'and '//
+     &      'singly occupied orbital energies shifted by',0.5D0*SHFTLVL
+         END IF
 chjaaj: improve comment with something about "restricted step"
 chjaaj: and "0.5*occ(i)* " /23may09 hjaaj
 C
@@ -1499,7 +1461,7 @@ C
             THR_FCKEIG = 0.8D0*THDIIS
             CALL ICOPY(8,NORB,1,NCAN,1) ! we need all orbitals canonical for CC
          ELSE
-            THR_FCKEIG = 0.05D0*GRDNRM
+            THR_FCKEIG = 0.01D0*GRDNRM
             CALL ICOPY(8,NOCC,1,NCAN,1) ! we only need oocupied orbitals canonical in global region
          END IF
 
@@ -1525,7 +1487,6 @@ C        Test if AUTOCC has changed occupation :
             NEWOCC = NEWOCC + 1
             LNEWOCC = .TRUE.
             ITNOCC = 0
-            N_OSCIL = 0
             IF (NEWOCC .GT. 6) THEN
                WRITE (LUPRI,4210) NEWOCC
                IF (LUW4 .NE. LUPRI) WRITE (LUW4,4210) NEWOCC
@@ -2296,10 +2257,9 @@ C
             DO K = 1,NISH(ISYM)
                FC(IFSYM+IROW(K+1)) = FC(IFSYM+IROW(K+1)) + SHFTLVL
             END DO
-            IF (NASH(ISYM) .GT. 0) THEN
-               K = NISH(ISYM) + 1
+            DO K = NISH(ISYM)+1, NISH(ISYM)+NASH(ISYM)
                FC(IFSYM+IROW(K+1)) = FC(IFSYM+IROW(K+1)) + DP5*SHFTLVL
-            END IF
+            END DO
          END IF
 C        zero rows and columns corresponding to frozen orbitals
          JFRZI = 0

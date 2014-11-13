@@ -418,14 +418,14 @@ c     normalized to Kab
 c
 c     C. Villani Uni-Ka, Feb 2005
 c
-#include "ibtfun.h"
+
 
       DO 100 K = 1, NUCAB
          AOVERP(K) =   SIGN * TEXPA(K) * HEXPPI(K)
          BOVERP(K) = - SIGN * TEXPB(K) * HEXPPI(K)
   100 CONTINUE
 C
-      GO TO (1) IBTAND(I120,1)
+      GO TO (1) IAND(I120,1)
 C
       DO 1000 I = 0, MAX1
          IF (I .EQ. 0) THEN
@@ -527,7 +527,7 @@ C
              C1(K,0,0,0) = (N-1)*TEXPA(K)*BOVERP(K)*CM2(K)
   333      CONTINUE
          ELSE IF (I .EQ. 1) THEN
-            IF (IBTAND(N,1) .EQ. 1) THEN
+            IF (IAND(N,1) .EQ. 1) THEN
                DO 301 K = 1, NUCAB
                   C1(K,0,1,0) = N*BOVERP(K)*C0(K,0,0,0)
   301          CONTINUE
@@ -538,8 +538,8 @@ c              case n even, C. Villani Uni-Ka, Feb 2005
                END DO
             END IF
          ELSE IF (I .GE. 2) THEN
-            IF (IBTAND(N,1) .EQ. 1) THEN
-               IF (IBTAND(I,1) .EQ. 1) THEN
+            IF (IAND(N,1) .EQ. 1) THEN
+               IF (IAND(I,1) .EQ. 1) THEN
                  DO 401 K = 1, NUCAB
                    C1(K,0,I,0) = N*BOVERP(K)*C0(K,0,I-1,0)
      &                         +      SIGN*C1(K,1,I-1,0)  
@@ -550,7 +550,7 @@ c              case n even, C. Villani Uni-Ka, Feb 2005
      &                          + N*BOVERP(K)*C0(K,I-1,I-1,0)
   402          CONTINUE
                IF (I .GE. 3) THEN
-                  DO 511 T = 1 + IBTAND(I,1), I - 2, 2
+                  DO 511 T = 1 + IAND(I,1), I - 2, 2
                   TPLUS1 = SIGN*(T + 1.0D0)
                   DO 521 K = 1, NUCAB
                      C1(K,T,I,0) = HEXPPI(K)*C1(K,T-1,I-1,0)
@@ -561,7 +561,7 @@ c              case n even, C. Villani Uni-Ka, Feb 2005
                END IF
             ELSE
 c              case n even, C. Villani Uni-Ka, Feb 2005
-               IF (IBTAND(I,1) .EQ. 0) THEN
+               IF (IAND(I,1) .EQ. 0) THEN
                  DO K = 1, NUCAB
                     C1(K,0,I,0) = N*BOVERP(K)*C0(K,0,I-1,0)
      &                        +      SIGN*C1(K,1,I-1,0)  
@@ -571,7 +571,7 @@ c              case n even, C. Villani Uni-Ka, Feb 2005
                   C1(K,I,I,0) = HEXPPI(K)*C1(K,I-1,I-1,0)
                END DO
                IF (I .GE. 3) THEN
-                  DO T = 1 + IBTAND(I+1,1), I - 1, 2
+                  DO T = 1 + IAND(I+1,1), I - 1, 2
                   TPLUS1 = SIGN*(T + 1.0D0)
                   DO K = 1, NUCAB
                      C1(K,T,I,0) = HEXPPI(K)*C1(K,T-1,I-1,0)
@@ -586,7 +586,7 @@ c              case n even, C. Villani Uni-Ka, Feb 2005
          DO 601 J = 1, MAX2
             IJ = I + J
             IF (IJ .EQ. 1) THEN
-               IF (IBTAND(N,1) .EQ. 1) THEN
+               IF (IAND(N,1) .EQ. 1) THEN
                   DO 701 K = 1, NUCAB
                      C1(K,0,I,J) = N*AOVERP(K)*C0(K,0,I,J-1)
   701             CONTINUE
@@ -597,8 +597,8 @@ c                 case n even, C. Villani Uni-Ka, Feb 2005
                   END DO
                END IF
             ELSE IF (IJ .GE. 2) THEN
-               IF (IBTAND(N,1) .EQ. 1) THEN
-                  IF (IBTAND(IJ,1) .EQ. 1) THEN
+               IF (IAND(N,1) .EQ. 1) THEN
+                  IF (IAND(IJ,1) .EQ. 1) THEN
                      DO 801 K = 1, NUCAB
                         C1(K,0,I,J) = N*AOVERP(K)*C0(K,0,I,J-1)
      &                              +      SIGN*C1(K,1,I,J-1)
@@ -609,7 +609,7 @@ c                 case n even, C. Villani Uni-Ka, Feb 2005
      &                              + N*AOVERP(K)*C0(K,IJ-1,I,J-1)
   802             CONTINUE
                   IF (IJ .GE. 3) THEN
-                     DO 911 T = 1 + IBTAND(IJ,1), IJ - 2, 2
+                     DO 911 T = 1 + IAND(IJ,1), IJ - 2, 2
                         TPLUS1 = SIGN*(T + 1.0D0)
                         DO 921 K = 1, NUCAB
                         C1(K,T,I,J) = HEXPPI(K)*C1(K,T-1,I,J-1)
@@ -620,7 +620,7 @@ c                 case n even, C. Villani Uni-Ka, Feb 2005
                   END IF
                ELSE
 c                 case n even, C. Villani Uni-Ka, Feb 2005
-                  IF (IBTAND(IJ,1) .EQ. 0) THEN
+                  IF (IAND(IJ,1) .EQ. 0) THEN
                      DO K = 1, NUCAB
                         C1(K,0,I,J) = N*AOVERP(K)*C0(K,0,I,J-1)
      &                              +      SIGN*C1(K,1,I,J-1)
@@ -630,7 +630,7 @@ c                 case n even, C. Villani Uni-Ka, Feb 2005
                      C1(K,IJ,I,J) = HEXPPI(K)*C1(K,IJ-1,I,J-1)
                   END DO
                   IF (IJ .GE. 3) THEN
-                     DO T = 1 + IBTAND(IJ+1,1), IJ - 1, 2
+                     DO T = 1 + IAND(IJ+1,1), IJ - 1, 2
                         TPLUS1 = SIGN*(T + 1.0D0)
                         DO K = 1, NUCAB
                            C1(K,T,I,J) = HEXPPI(K)*C1(K,T-1,I,J-1)
@@ -657,7 +657,7 @@ C
          DO 2100 J = 0, MAX2
             DO 2200 T = 0, I + J
 c              introduced n, C. Villani Uni-Ka, Feb 2005
-               IF (IBTAND(I + J  - T + N,1) .EQ. 0) THEN
+               IF (IAND(I + J  - T + N,1) .EQ. 0) THEN
                   WRITE (LUPRI, 1100) WORD, I, J, T
                   WRITE (LUPRI, 1130) (C1(K,T,I,J), K = 1, NUCAB)
                END IF
@@ -756,7 +756,7 @@ C
 #include "eriao.h"
 #include "hertop.h"
 #include "r12int.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1U12','*',103)
 C
@@ -766,12 +766,12 @@ C
       MAXT = L1 + L2
       MAXU = M1 + M2
       MAXV = N1 + N2
-      MINT = IBTAND(MAXT,I120(1))
-      MINU = IBTAND(MAXU,I120(2))
-      MINV = IBTAND(MAXV,I120(3))
-      MINTP = IBTAND(MAXT + 1,I120(1))
-      MINUP = IBTAND(MAXU + 1,I120(2))
-      MINVP = IBTAND(MAXV + 1,I120(3))
+      MINT = IAND(MAXT,I120(1))
+      MINU = IAND(MAXU,I120(2))
+      MINV = IAND(MAXV,I120(3))
+      MINTP = IAND(MAXT + 1,I120(1))
+      MINUP = IAND(MAXU + 1,I120(2))
+      MINVP = IAND(MAXV + 1,I120(3))
 C
       IF (IPRINT .GT. 25) THEN
          WRITE(LUPRI,'(/,1X,A,2I5/)')' ICOMP1, ICOMP2', ICOMP1,ICOMP2
@@ -1390,7 +1390,7 @@ C     (University of Oslo, 29 October 2001).
      &          RO000(NPPX,0:JMAX), RM000(NPPX,0:JMAX),
      &          ARGE(NPPX), ARGF(NPPX)
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -1558,7 +1558,7 @@ C     Written by Claire C.M. Samson (University of Oslo, 29 October 2001).
 #include "hertop.h"
 #include "ericom.h"
 #include "r12int.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(CURF,NPPX*NTUV)
       CALL DZERO(CURG,NPPX*NTUV)

@@ -426,13 +426,13 @@ C
             ID = ISX( NDW )
          END IF
          INDCD = IC*2**8  + ID
-         INDCD = IBTSHL( INDCD , 16 )
+         INDCD = ISHFT( INDCD , 16 )
 C
 C     ***** ALL INTEGRALS <AB/CD> FOR A GIVEN PAIR CD HAVE *****
 C     ***** BEEN CREATED. WRITE THEM ON UNIT LUINTD WITH   *****
 C     ***** INDICES C,D,A,B                                *****
          DO 170 IA=1,NORBT
-            INDCDA = IBTOR(INDCD , IBTSHL( IA, 8 ) )
+            INDCDA = IOR(INDCD , ISHFT( IA, 8 ) )
             DO 160 IB = 1,NORBT
                P = H2ACD(IA,IB,ICDDIS-IDISOF)
                IF (ABS(P).LT.THRP) GO TO 160
@@ -453,7 +453,7 @@ C           ***** WRITE THIS BUFFER *****
                   CALL WRITI(LUINTD,LOUT22,IOUTB)
                END IF
                OUTB(IOUT) = P
-               IOUTB(LOUTI+IOUT) = IBTOR( INDCDA , IB )
+               IOUTB(LOUTI+IOUT) = IOR( INDCDA , IB )
   160       CONTINUE
   170    CONTINUE
 C   *** Going to next (CD), empty this buffer ***

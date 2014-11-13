@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#    rsp_cpp_mcd
+#    -------
+#    Molecule:         H2O
+#    Wave Function:    DFT (CAMB3LYP)
+#    Test Purpose:     MCD calculations with damping using
+#                      the solver with symmetrized trial vectors
 
 import os
 import sys
@@ -13,10 +19,10 @@ f.add(string = 'Final DFT energy',
       rel_tolerance = 1.0e-10)
 
 f.add(re = '[XYZ]DIPLEN * [XYZ]DIPLEN',
-      abs_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-4)
 
 f.add(re = '[XYZ]DIPLEN * [XYZ]DIPLEN * [XYZ]ANGMOM',
-      abs_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-4)
 
 test.run(['rsp_cpp_mcd.dal'], ['H2O_cc-pVDZ.mol'], {'out': f})
 

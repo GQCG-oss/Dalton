@@ -132,7 +132,7 @@ C     4   XQ00 YQ00 ZQ00
 C     7   XXPP XYPP XZPP YYPP YZPP ZZPP
 C     13  XXQQ XYQQ XZQQ YYQQ YZQQ ZZQQ
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from U2HINT','*',103)
 C
@@ -316,7 +316,7 @@ C
 #include "twocom.h"
 #include "sphtrm.h"
 #include "codata.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from U2HIN1','*',103)
 C
@@ -490,9 +490,9 @@ C
                   MAXT = L3 + L4
                   MAXU = M3 + M4
                   MAXV = N3 + N4
-                  MINT = IBTAND(MAXT,INCRMT - 1)
-                  MINU = IBTAND(MAXU,INCRMU - 1)
-                  MINV = IBTAND(MAXV,INCRMV - 1)
+                  MINT = IAND(MAXT,INCRMT - 1)
+                  MINU = IAND(MAXU,INCRMU - 1)
+                  MINV = IAND(MAXV,INCRMV - 1)
                   DO 300 V = MINV, MAXV, INCRMV
                   DO 300 U = MINU, MAXU, INCRMU
                   DO 300 T = MINT, MAXT, INCRMT
@@ -548,9 +548,9 @@ C
                      END IF
   300             CONTINUE
 C
-                  MINT = IBTAND(MAXT + 1,INCRMT - 1)
-                  MINU = IBTAND(MAXU    ,INCRMU - 1)
-                  MINV = IBTAND(MAXV    ,INCRMV - 1)
+                  MINT = IAND(MAXT + 1,INCRMT - 1)
+                  MINU = IAND(MAXU    ,INCRMU - 1)
+                  MINV = IAND(MAXV    ,INCRMV - 1)
                   DO 301 V = MINV, MAXV, INCRMV
                   DO 301 U = MINU, MAXU, INCRMU
                   DO 301 T = MINT, MAXT, INCRMT
@@ -585,9 +585,9 @@ C
                      END IF
   331                CONTINUE
   301             CONTINUE
-                  MINT = IBTAND(MAXT    ,INCRMT - 1)
-                  MINU = IBTAND(MAXU + 1,INCRMU - 1)
-                  MINV = IBTAND(MAXV    ,INCRMV - 1)
+                  MINT = IAND(MAXT    ,INCRMT - 1)
+                  MINU = IAND(MAXU + 1,INCRMU - 1)
+                  MINV = IAND(MAXV    ,INCRMV - 1)
                   DO 302 V = MINV, MAXV, INCRMV
                   DO 302 U = MINU, MAXU, INCRMU
                   DO 302 T = MINT, MAXT, INCRMT
@@ -622,9 +622,9 @@ C
                      END IF
   332                CONTINUE
   302             CONTINUE
-                  MINT = IBTAND(MAXT    ,INCRMT - 1)
-                  MINU = IBTAND(MAXU    ,INCRMU - 1)
-                  MINV = IBTAND(MAXV + 1,INCRMV - 1)
+                  MINT = IAND(MAXT    ,INCRMT - 1)
+                  MINU = IAND(MAXU    ,INCRMU - 1)
+                  MINV = IAND(MAXV + 1,INCRMV - 1)
                   DO 303 V = MINV, MAXV, INCRMV
                   DO 303 U = MINU, MAXU, INCRMU
                   DO 303 T = MINT, MAXT, INCRMT
@@ -697,7 +697,7 @@ C
             DO 800 ICOOR = 1, NCOOR
                ITYPE  = IOFFCC(ICOOR)
                FAC    = FACTOR(ICOOR)
-               IODDIF = IBTXOR(JODDIF(ICOOR),JODD34)
+               IODDIF = IEOR(JODDIF(ICOOR),JODD34)
                ICMP   = ICMP34
                DO 810 ICMP12 = 1, KHKT12
                   IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
@@ -715,7 +715,7 @@ C
             DO 830 ICOOR = 1, NCOOR
                ITYPE  = IOFFCC(ICOOR)
                FAC    = FACTOR(ICOOR)
-               IODDIF = IBTXOR(JODDIF(ICOOR),JODD34)
+               IODDIF = IEOR(JODDIF(ICOOR),JODD34)
                DO 840 ICMP12 = 1, KHKT12
                IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
                   ICMP = ICMP0 + ICMP12

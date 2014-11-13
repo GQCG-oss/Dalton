@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#    rsp_absorp
+#    -------
+#    Molecule:         LiH
+#    Wave Function:    HF
+#    Test Purpose:     Response calculations (first and second order)
+#                      with damping (absorption)
 
 import os
 import sys
@@ -18,7 +24,7 @@ f.add(string = "ZDIPLEN  total ",
 
 # first and second hyperpolarizability
 f.add(re = '[XYZ]DIPLEN   [XYZ]DIPLEN',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 2.0e-5)
 
 test.run(['rsp_absorp.dal'], ['LiH_Sadlej-pVTZ.mol'], {'out': f})
 

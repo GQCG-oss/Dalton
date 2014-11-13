@@ -712,19 +712,19 @@ C
       IF (NIBUF .EQ. 1) THEN
          DO I = 1,N
             LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-24),IBT08)
+            IINDX4(2,I) = IAND(ISHFT(LABEL,-16),IBT08)
+            IINDX4(3,I) = IAND(ISHFT(LABEL, -8),IBT08)
+            IINDX4(4,I) = IAND(       LABEL,    IBT08)
          END DO
       ELSE
          DO I = 1,N
             LABEL = IINDPK(2*I-1)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(2,I) = IAND(       LABEL    ,IBT16)
             LABEL = IINDPK(2*I)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+            IINDX4(3,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(4,I) = IAND(       LABEL    ,IBT16)
          END DO
       END IF
 C
@@ -768,28 +768,28 @@ C
 #include "ibtdef.h"
 C
       IF (8*NIBUF .ne. NBITS) THEN
-         WRITE(LUPRI,*) 'AOLAB4 error, 8*NIBUF .ne. NBITS',NIBUF,NBITS
-         WRITE(LUPRI,*) '- N,NIBUF,NBITS:',N,NIBUF,NBITS
-         CALL QENTER('AOLAB4')
+         WRITE(LUPRI,*)'AOLAB4_cc error, 8*NIBUF .ne. NBITS',NIBUF,NBITS
+         WRITE(LUPRI,*)'- N,NIBUF,NBITS:',N,NIBUF,NBITS
+         CALL QENTER('AOLAB4_cc')
          CALL QUIT('Invalid NIBUF, NBITS combination')
       END IF
 C
       IF (NIBUF .EQ. 1) THEN
          DO I = 1,N
             LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-24),IBT08)
+            IINDX4(2,I) = IAND(ISHFT(LABEL,-16),IBT08)
+            IINDX4(3,I) = IAND(ISHFT(LABEL, -8),IBT08)
+            IINDX4(4,I) = IAND(       LABEL,    IBT08)
          END DO
       ELSE
          DO I = 1,N
             LABEL = IINDPK(2*I-1)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(2,I) = IAND(       LABEL    ,IBT16)
             LABEL = IINDPK(2*I)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+            IINDX4(3,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(4,I) = IAND(       LABEL    ,IBT16)
          END DO
       END IF
 C
@@ -804,14 +804,15 @@ C
          end do
       end do
       if (ierr .gt. 0) then
-         write(lupri,*) ierr,' errors in AOLAB4, n =',n
+         write(lupri,*) ierr,' errors in AOLAB4_cc, n =',n
          write(lupri,*) 'n, nibuf, nbits:',n,nibuf,nbits
+         write(lupri,*) 'nbast:',NBAST
          write(lupri,*) 'DUMP of IINDX4 array:'
          do i = 1,n
             write(lupri,'(I5,A,4I8,O12)') i,' : ',
      &         iindx4(1:4,i),IINDPK(i)
          end do
-         call quit('error in AOLAB4')
+         call quit('error in AOLAB4_cc')
       end if
 #endif
       RETURN
@@ -1407,7 +1408,7 @@ C
 #include "maxmom.h"
 #include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include "ibtfun.h"
+
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA
