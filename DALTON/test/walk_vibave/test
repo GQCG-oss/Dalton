@@ -24,8 +24,8 @@ f.add(from_string = 'Molecular properties transformed to the following Eckart fr
 #ADJUST
 f.add(from_string = 'Molecular gradient (au)',
       num_lines    = 6,
-      ignore_below = 1.0e-3,
-      rel_tolerance = 1.0e-4)
+#      ignore_below = 1.0e-3,
+      abs_tolerance = 1.0e-4)
 
 # Molecular hessians (Low numbers, so difficult to test)
 #ADJUST
@@ -37,13 +37,13 @@ f.add(from_string = 'Molecular Hessian (au)',
 # Initial static polarizabilities
 f.add(from_string = 'Static polarizability at effective geometry',
       num_lines = 8,
-      ignore_below = 1.0e-10,
-      rel_tolerance = 1.0e-8)
+#      ignore_below = 1.0e-10,
+      abs_tolerance = 1.0e-8)
 
 # Magnetizabilities (check SI numbers since they are largest)
 f.add(from_string = 'Magnetizabilities                    au',
       num_lines = 9,
-      rel_tolerance = 1.0e-5,
+      abs_tolerance = 1.0e-2,
       mask = [2])
 
 # g-tensor
@@ -54,20 +54,20 @@ f.add(from_string = 'Molecular rotational g-tensor\n',
 # Initial shielding tensor
 f.add(from_string = 'Chemical shielding tensors at effective geometry',
       num_lines = 24,
-      ignore_below = 1.0e-6,
-      rel_tolerance = 1.0e-5)
+#      ignore_below = 1.0e-6,
+      abs_tolerance = 1.0e-6)
 
 # Chemical shielding for nitrogen and hydrogen
 f.add(from_string = 'Chemical shielding for ',
       num_lines = 10,
-      ignore_below = 1.0e-4,
-      rel_tolerance = 1.0e-7)
+#      ignore_below = 1.0e-4,
+      abs_tolerance = 1.0e-2)
 
 # Chemical shielding summary
 f.add(string = '@1 N ',
-      rel_tolerance = 1.0e-10)
+      abs_tolerance = 1.0e-3)
 f.add(string = '@2 H ',
-      rel_tolerance = 1.0e-10)
+      abs_tolerance = 1.0e-3)
 
 # Projected gradient
 f.add(string = 'Norm of projected gradient',
@@ -80,8 +80,8 @@ f.add(string = 'Energy at effective geometry:',
 # Dipole moments
 f.add(from_string = 'Dipole moment components',
       num_lines = 8,
-      ignore_below = 1.0e-4,
-      rel_tolerance = 1.0e-8,
+#      ignore_below = 1.0e-4,
+      abs_tolerance = 1.0e-5,
       mask = [3])
 
 # Dipole moment at effective geometry 
@@ -102,33 +102,43 @@ f.add(from_string = 'Rotational g tensor at effective geometry',
       ignore_below = 1.0e-8,
       rel_tolerance = 1.0e-8)
 
-# Chemical shielding tensors at effective geometry 
-f.add(from_string = 'Chemical shielding tensors at effective geometry',
-      num_lines = 23,
-      ignore_below = 1.0e-8,
-      rel_tolerance = 1.0e-8)
-
 # Static polarizability at effective geometry
 f.add(from_string = 'Static polarizability at effective geometry',
       num_lines = 8,
-      ignore_below = 1.0e-8,
-      rel_tolerance = 1.0e-8)
+#      ignore_below = 1.0e-8,
+      abs_tolerance = 1.0e-8)
 
-# Second derivatives
-# (many small numbers, difficult to test with high enough precision)
-#ADJUST
-f.add(from_string = 'All displacements are now done',
-      to_string = 'Vibrationally averaged molecular properties', 
-      ignore_below = 1.0e-1,
-      rel_tolerance = 1.0e-5)
+######################
+# Second derivatives #
+######################
 
-# Vibrationally averaged molecular properties
-# (many small numbers, difficult to test with high enough precision)
-#ADJUST
+f.add(from_string = 'Dipole moment second derivatives:',
+      num_lines = 10,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_string = 'Magnetizability tensor second derivatives:',
+      num_lines = 11,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_string = 'Rotational g tensor second derivatives:',
+      num_lines = 11,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_string = 'Nuclear shielding tensor second derivatives for:',
+      num_lines = 11,
+      abs_tolerance = 1.0e-2)
+
+f.add(from_string = 'Polarizability second derivatives:',
+      num_lines = 11,
+      abs_tolerance = 1.0e-4)
+
+###############################################
+# Vibrationally averaged molecular properties #
+###############################################
+
 f.add(from_string = 'Vibrationally averaged molecular properties', 
       to_string = 'Numerical differentiation complete.',
-      ignore_below = 1.0e-3,
-      rel_tolerance = 2.0e-5)
+      abs_tolerance = 2.0e-5)
 
 test.run(['walk_vibave.dal'], ['nh3_sto-3g.mol'], {'out': f})
 

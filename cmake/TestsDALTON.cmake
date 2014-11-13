@@ -206,7 +206,7 @@ add_dalton_test(walk_gradex  "dalton;walk;short;parallel")
 add_dalton_test(walk_image   "dalton;walk;short;parallel")
 add_dalton_test(walk_modeflw "dalton;walk;short;parallel")
 add_dalton_test(walk_polar   "dalton;walk;short")
-add_dalton_test(walk_vibave  "dalton;walk;medium")
+add_dalton_runtest(walk_vibave  "dalton;runtest;walk;medium")
 add_dalton_test(walk_vibave2 "dalton;walk;short")
 
 add_dalton_test(r12_sym    "dalton;short")
