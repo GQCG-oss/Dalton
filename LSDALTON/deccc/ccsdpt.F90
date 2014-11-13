@@ -10213,7 +10213,7 @@ contains
      ! **************************
      call get_currently_available_memory(MemoryAvailable)
      ! Note: We multiply by 85 % to be on the safe side!
-     MemoryAvailable = 0.85*MemoryAvailable
+     MemoryAvailable = 0.95*MemoryAvailable
 
      nnod = 1
      me   = 0
@@ -10360,9 +10360,9 @@ contains
         endif
         write(DECinfo%output,*) '======================================================================='
         write(DECinfo%output,*)
-        write(DECinfo%output,*) 'To be on the safe side we use only 85% of the estimated available memory'
+        write(DECinfo%output,*) 'To be on the safe side we use only 95% of the estimated available memory'
         write(DECinfo%output,*)
-        write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
+        write(DECinfo%output,'(1X,a,g10.3)') '95% of available memory (GB)            =', MemoryAvailable
         write(DECinfo%output,*)
         write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
         write(DECinfo%output,'(1X,a,i8)')    'Number of occupied orbitals             =', nocc
