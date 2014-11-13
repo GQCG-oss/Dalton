@@ -92,6 +92,22 @@ module ccsdpt_module
 #endif
 #endif
 
+#ifdef VAR_OPENACC
+
+  interface
+  
+    subroutine get_dev_mem( total , free ) bind(C, name="get_dev_mem")
+  
+       use iso_c_binding
+  
+       integer (C_SIZE_T) :: total,free
+  
+    end subroutine get_dev_mem
+  
+  end interface
+
+#endif
+
 contains
 
 #ifdef MOD_UNRELEASED
@@ -133,7 +149,7 @@ contains
     ! if this is a parallel calculation
     type(tensor) :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
     integer :: nodtotal
-    integer :: tile_size
+    integer :: ijk_nbuffs,abc_tile_size
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
     !> MOs and unitary transformation matrices
@@ -231,26 +247,6 @@ contains
          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
 
-         if (DECinfo%abc_tile_size .gt. 1) then
-
-            write(DECinfo%output,*) 'Tile size for ABC-CCSD(T) partitioning was set manually, use that value instead!'
-            write(DECinfo%output,*) ''
-            tile_size = DECinfo%abc_tile_size
-
-         elseif (DECinfo%abc_tile_size .lt. 1) then
-
-            call lsquit('manually set tile size (.ABC_TILE) .lt. 1 - aborting...',DECinfo%output)
-
-         elseif (DECinfo%abc_tile_size .eq. 1) then
-
-!            ! here; determine tile_size based on available cpu/gpu memory
-!            if (tile_size .eq. 1) call new_routine()
-            tile_size = DECinfo%abc_tile_size
-
-         endif
-
-         if (tile_size .gt. nvirt) call lsquit('manually set tile size (.ABC_TILE) .gt. nvirt - aborting...',DECinfo%output)
-
       else
 
          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
@@ -259,6 +255,8 @@ contains
       endif
 
     end if
+
+    if (master) call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_tile_size,nodtotal)
 
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
@@ -280,7 +278,8 @@ contains
     call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
     call ls_mpi_buffer(C_can_occ%val,nbasis,nocc,infpar%master)
     call ls_mpi_buffer(C_can_virt%val,nbasis,nvirt,infpar%master)
-    call ls_mpi_buffer(tile_size,infpar%master)
+    call ls_mpi_buffer(ijk_nbuffs,infpar%master)
+    call ls_mpi_buffer(abc_tile_size,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
     call time_start_phase(PHASE_WORK)
@@ -293,15 +292,13 @@ contains
 
     if (abc) then
 
-       call get_CCSDpT_integrals_abc(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ooov,vovv,tile_size)
+       call get_CCSDpT_integrals_abc(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ooov,vovv,abc_tile_size)
 
     else
 
        call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ovoo,vvvo)
 
     endif
-
-    if (master) call print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size,nodtotal)
 
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
@@ -361,12 +358,12 @@ contains
        if (print_frags) then
 
           call abc_loop_par(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,nodtotal,tile_size,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                          & eivalocc,eivalvirt,nodtotal,abc_tile_size,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
 
        else
 
           call abc_loop_par(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,nodtotal,tile_size,ccsdpt_singles%elm1,e4=e4)
+                          & eivalocc,eivalvirt,nodtotal,abc_tile_size,ccsdpt_singles%elm1,e4=e4)
 
        endif
 
@@ -376,12 +373,12 @@ contains
        if (print_frags) then
    
           call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,nodtotal,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                          & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
    
        else
    
           call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,nodtotal,ccsdpt_singles%elm1,e4=e4)
+                          & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,ccsdpt_singles%elm1,e4=e4)
    
        endif
 
@@ -570,7 +567,7 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: january 2014
   subroutine ijk_loop_par(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
-                        & eivalocc,eivalvirt,nodtotal,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
+                        & eivalocc,eivalvirt,nodtotal,nbuffs,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
 
@@ -594,6 +591,7 @@ contains
     logical :: full_no_frags
     !> orbital energies
     real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
+    integer, intent(in) :: nbuffs
     !> job distribution
     real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
     real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch tiles
@@ -602,7 +600,7 @@ contains
     !> loop integers
     integer :: i,j,k,idx,ij_type,tuple_type
     !> ij loop and k loop buffer handling
-    integer ::  nbuffs, ibuf, jbuf, kbuf
+    integer :: ibuf, jbuf, kbuf
     integer,pointer :: tiles_in_buf(:)
     integer(kind=ls_mpik), pointer :: req(:)
     logical,pointer :: needed(:)
@@ -625,10 +623,6 @@ contains
 
     call time_start_phase(PHASE_WORK)
 
-    !init multiple buffering for mpi
-    !this should not be set below 3
-    nbuffs = DECinfo%CCSDPT_nbuffs_ijk
-    if(nbuffs < 3) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 3",-1)
     call mem_alloc( vvvo_pdm_buff, nvirt**3, nbuffs )
     call mem_alloc( needed,       nbuffs )
     call mem_alloc( tiles_in_buf, nbuffs )
@@ -10504,23 +10498,42 @@ contains
 
   end subroutine get_max_arraysizes_for_ccsdpt_integrals
 
-  subroutine print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size,nodtotal)
+  subroutine ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_tile_size,nodtotal)
+
+      use iso_c_binding
       implicit none
+
       integer, intent(in) :: nbasis,nocc,nvirt
       logical, intent(in) :: print_frags,abc
-      integer, intent(in) :: tile_size,nodtotal
-      logical :: ijk,gpu
+      integer, intent(in) :: nodtotal
+      logical :: ijk,manual_ijk,manual_abc,gpu
+      integer, intent(inout) :: ijk_nbuffs,abc_tile_size
       integer :: num_gpu
 #ifdef VAR_OPENACC
       integer(kind=acc_device_kind) :: acc_device_type
 #endif
+      real(realk) :: free_cpu ! in gb
+      integer(c_size_t) :: total_gpu,free_gpu ! in bytes
+      real(realk), parameter :: gb =  1.0E-9_realk ! 1 GB
+      integer, parameter :: ijk_default = 1000000, abc_default = 1000000
 
+      ijk_nbuffs = 0
+      abc_tile_size = 0
+      manual_abc = .false.
       gpu = .false.
       num_gpu = 0
+      free_cpu = 0.0E0_realk
+      total_gpu = 0
+      free_gpu = 0
+
+      call get_currently_available_memory(free_cpu)
 
 #ifdef VAR_OPENACC
+
       acc_device_type = acc_get_device_type() 
       num_gpu = acc_get_num_devices(acc_device_type)
+      call get_dev_mem(total_gpu,free_gpu)
+
 #endif
 
       if (num_gpu .lt. 0) gpu = .true.
@@ -10531,25 +10544,88 @@ contains
          ijk = .true.
       endif
 
+      if (ijk) then
+
+        if (DECinfo%ijk_nbuffs .lt. ijk_default) then
+
+            manual_ijk = .true.
+            ijk_nbuffs = DECinfo%ijk_nbuffs
+
+        endif
+
+         if (manual_ijk) then
+
+            if (ijk_nbuffs .lt. 3) call lsquit('manually set ijk_nbuffs (NBUFFS_IJK) .lt. 3 - aborting...',DECinfo%output)
+
+         else
+
+!            ! here; determine ijk_nbuffs based on available cpu/gpu memory
+!            if (ijk_nbuffs .eq. ijk_default) call new_ijk_routine()
+            ijk_nbuffs = 6
+
+         endif
+
+         if (ijk_nbuffs .gt. nvirt) call lsquit('manually set ijk_nbuffs (NBUFFS_IJK) .gt. nvirt - aborting...',DECinfo%output)
+
+      else ! abc == .true.
+
+         if (DECinfo%abc_tile_size .lt. abc_default) then
+
+            manual_abc = .true.
+            abc_tile_size = DECinfo%abc_tile_size
+
+         endif
+
+         if (manual_abc) then
+
+            if (abc_tile_size .lt. 1) call lsquit('manually set tile size (.ABC_TILE) .lt. 1 - aborting...',DECinfo%output)
+
+         else
+
+!            ! here; determine abc_tile_size based on available cpu/gpu memory
+!            if (abc_tile_size .eq. abc_default) call new_abc_routine()
+            abc_tile_size = 1
+
+         endif
+
+         if (abc_tile_size .gt. nvirt) call lsquit('manually set tile size (.ABC_TILE) .gt. nvirt - aborting...',DECinfo%output)
+
+      endif
+
       write(DECinfo%output,'(/,a)') '-----------------------------'
       write(DECinfo%output,'(a)')   '      CCSD(T) information    '
       write(DECinfo%output,'(a,/)') '-----------------------------'
-      write(DECinfo%output,'(a,i4)')     'Num. b.f.              = ',nbasis
-      write(DECinfo%output,'(a,i4)')     'Num. occ. orb.         = ',nocc
-      write(DECinfo%output,'(a,i4)')     'Num. unocc. orb.       = ',nvirt
 #ifdef VAR_MPI
       write(DECinfo%output,'(a,i4)')     'Number of nodes in lg  = ',nodtotal
 #endif
-      write(DECinfo%output,'(a,l4)')     'Print frag.energies    = ',print_frags
+      write(DECinfo%output,'(a,l4)')     'Print frag. energies    = ',print_frags
       write(DECinfo%output,'(a,l4)')     'IJK partitioning       = ',ijk
+      if (ijk) then
+         if (manual_ijk) then
+            write(DECinfo%output,'(a,i4)')     'Input # IJK buffers    = ',ijk_nbuffs
+         else
+            write(DECinfo%output,'(a,i4)')     '# IJK buffers          = ',ijk_nbuffs
+         endif
+      endif
       write(DECinfo%output,'(a,l4)')     'ABC partitioning       = ',abc
-      if (abc) write(DECinfo%output,'(a,i4)')     'Tile size for ABC      = ',tile_size
+      if (abc) then
+         if (manual_abc) then
+            write(DECinfo%output,'(a,i4)')     'Input ABC tile size    = ',abc_tile_size
+         else
+            write(DECinfo%output,'(a,i4)')     'ABC tile size          = ',abc_tile_size
+         endif
+      endif
+      write(DECinfo%output,'(a,g10.4)')     'Free CPU memory (GB)   = ',free_cpu
       write(DECinfo%output,'(a,l4)')     'Are we using GPUs?     = ',gpu
-      if (gpu) write(DECinfo%output,'(a,l4)')     'Number of GPUs         = ',num_gpu
+      if (gpu) then
+         write(DECinfo%output,'(a,i4)')     'Number of GPUs         = ',num_gpu
+         write(DECinfo%output,'(a,g10.4)')     'Total GPU memory (GB)  = ',total_gpu * gb
+         write(DECinfo%output,'(a,g10.4)')     'Free GPU memory (GB)   = ',free_gpu * gb
+      endif
       write(DECinfo%output,*)
       write(DECinfo%output,*)
 
-  end subroutine print_pt_info
+  end subroutine ccsdpt_info
 
 !endif mod_unreleased
 #endif

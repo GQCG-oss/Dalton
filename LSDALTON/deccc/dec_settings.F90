@@ -199,8 +199,8 @@ contains
 
     ! ccsd(t) settings
     DECinfo%abc               = .false.
-    DECinfo%abc_tile_size     = 1
-    DECinfo%CCSDPT_nbuffs_ijk = 6
+    DECinfo%abc_tile_size     = 1000000
+    DECinfo%ijk_nbuffs        = 1000000
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -421,7 +421,7 @@ contains
           ! ==============
        case('.PT_ABC'); DECinfo%abc= .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
-
+       case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
 
 
           ! DEC CALCULATION 
@@ -583,11 +583,6 @@ contains
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
-
-
-       ! (T) SPECIFIC KEYWORDS
-       !**********************
-       case('.(T)#BUFFS_IJK'); read(input,*) DECinfo%CCSDPT_nbuffs_ijk 
 
 
        !OTHER STUFF FIXME: SORT IT INTO BLOCKS
