@@ -910,13 +910,23 @@ contains
     real(realk),pointer :: EpsOcc(:),EpsVirt(:),Calpha3(:,:,:),AlphaCD3(:,:,:)
     integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2,comm,TAG1,TAG2
     integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
-    integer :: myOriginalRank,node,natoms,MynauxMPI,A
+    integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri
     logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
-    logical :: RoundRobin2,RoundRobin3,useAlphaCD2,useAlphaCD3
+    logical :: RoundRobin2,RoundRobin3,useAlphaCD2,useAlphaCD3,FORCEPRINT
     integer(kind=ls_mpik)  :: request1,request2,request5,request6,request7,request8
     integer,pointer :: nbasisauxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
     integer(KIND=long) :: MaxMemAllocated,MemAllocated
+    real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPU1,CPU2,WALL1,WALL2,CPU_MPICOMM,WALL_MPICOMM
+    real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT
+#ifdef VAR_TIME    
+    FORCEPRINT = .TRUE.
+#endif
+    CPU_MPICOMM = 0.0E0_realk
+    WALL_MPICOMM = 0.0E0_realk
+    CPU_MPIWAIT = 0.0E0_realk
+    WALL_MPIWAIT = 0.0E0_realk
     !use Memory leak tool
+    CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
     MaxMemAllocated = 0
     MemAllocated = 0
     call set_LeakTool_memvar(MaxMemAllocated,MemAllocated)
@@ -936,13 +946,14 @@ contains
     naux   = MyMolecule%nauxbasis
     noccfull = nocc
     nAtoms = MyMolecule%nAtoms
-
+    LUPRI = DECinfo%output
 #ifdef VAR_MPI
     comm = MPI_COMM_LSDALTON
     master= (infpar%mynum == infpar%master)
     mynum = infpar%mynum
     numnodes = infpar%nodtot
     wakeslaves = infpar%nodtot.GT.1
+    IF(.NOT.master)LUPRI = 6 !standard Output
 #else
     ! If MPI is not used, consider the single node to be "master"
     master=.true.
@@ -953,23 +964,29 @@ contains
 
     ! Memory check!
     ! ********************
+    CALL LSTIMER('START ',TS2,TE2,LUPRI,FORCEPRINT)
     call full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,numnodes)
     call Test_if_64bit_integer_required(nAux,nAux)
-
-#ifdef VAR_MPI
+    CALL LSTIMER('RIMP2: MemCheck ',TS2,TE2,LUPRI,FORCEPRINT)
+#ifdef VAR_MPI 
     ! Master starts up slave
     StartUpSlaves: if(wakeslaves .and. master) then
        ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
        ! and call full_canonical_rimp2_slave which communicate info 
        ! then calls full_canonical_rimp2.
+       CALL LS_GETTIM(CPU1,WALL1)
        call ls_mpibcast(RIMP2FULL,infpar%master,comm)
        ! Communicate fragment information to slaves
        call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
        call mpicopy_lsitem(MyLsitem,comm)
        call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
-       call mpi_bcast_fullmolecule(MyMolecule)
+       call mpi_bcast_fullmolecule(MyMolecule)    
+       CALL LS_GETTIM(CPU2,WALL2)
+       CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+       WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
     endif StartUpSlaves
 #endif
+    CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
 
     call mem_alloc(AlphaBeta_inv,nAux,nAux)
     call mem_LeakTool_alloc(AlphaBeta_inv,LT_RIMP2_AlphaBeta_inv)
@@ -981,8 +998,10 @@ contains
        !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full overlap
        !this should naturally be changed      
 
-       call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+       CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+       call II_get_RI_AlphaBeta_2centerInt(lupri,lupri,&
             & AlphaBeta_inv,Mylsitem%setting,nAux)
+       CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
 
        !=====================================================================================
        ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
@@ -1000,14 +1019,23 @@ contains
        call mem_leaktool_dealloc(work1,LT_TMP)
        call mem_dealloc(work1)
        call mem_dealloc(IPVT)
-#ifdef VAR_MPI
-       call ls_mpibcast(AlphaBeta_inv,naux,naux,infpar%master,comm)
-#endif
-    ELSE
-#ifdef VAR_MPI
-       call ls_mpibcast(AlphaBeta_inv,naux,naux,infpar%master,comm)
-#endif
+       CALL LSTIMER('AlphaBetaInv ',TS3,TE3,LUPRI,FORCEPRINT)
     ENDIF
+#ifdef VAR_MPI
+    !The barrier is mostly here to detect the time spent waiting vs the 
+    !time spent in communication. 
+    CALL LS_GETTIM(CPU1,WALL1)
+    call lsmpi_barrier(comm)
+    CALL LS_GETTIM(CPU2,WALL2)
+    CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+    WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+    CALL LS_GETTIM(CPU1,WALL1)
+    call ls_mpibcast(AlphaBeta_inv,naux,naux,infpar%master,comm)
+    CALL LS_GETTIM(CPU2,WALL2)
+    CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+    WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
+#endif
+    CALL LSTIMER('RIMP2: AlphaBeta ',TS2,TE2,LUPRI,FORCEPRINT)
 
     IF(wakeslaves)then 
        !all nodes have info about all nodes 
@@ -1020,9 +1048,17 @@ contains
             & nbasisauxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
        MynauxMPI = nbasisauxmpi(mynum+1)
        call mem_dealloc(AtomsMPI) !not used in this subroutine 
+#ifdef VAR_TIME    
+       IF(master)THEN
+          DO I=1,numnodes
+             WRITE(lupri,'(A,I5,A,I8)')'Aux Basis Functions assign to rank ',I,' :',nbasisauxMPI(I)
+          ENDDO
+       ENDIF
+#endif
     ELSE
        MynauxMPI = naux
     ENDIF
+    CALL LSTIMER('RIMP2: MPI Basis ',TS2,TE2,LUPRI,FORCEPRINT)
 
     IF(wakeslaves)then 
        IF(MynauxMPI.GT.0)THEN
@@ -1041,6 +1077,7 @@ contains
           call mem_dealloc(AlphaBeta_inv)          
        ENDIF
     ENDIF
+    CALL LSTIMER('RIMP2: MPI AlphaBetaTmp ',TS2,TE2,LUPRI,FORCEPRINT)
 
     IF(MynauxMPI.GT.0)THEN
        !call mem_alloc(AlphaCD,naux,nvirt,nocc)
@@ -1049,11 +1086,12 @@ contains
        !This Part of the Code is MPI/OpenMP parallel and AlphaCD will have the dimensions
        !(MynauxMPI,nvirt,nocc) 
        !nauxMPI is naux divided out on the nodes so roughly nauxMPI=naux/numnodes
-       call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
+       call II_get_RI_AlphaCD_3centerInt2(lupri,lupri,&
             & AlphaCD,mylsitem%setting,naux,nbasis,&
             & nvirt,nocc,MyMolecule%Cv,MyMolecule%Co,maxsize,mynum,numnodes)
        call mem_LeakTool_alloc(AlphaCD,LT_AlphaCD)
     ENDIF
+    CALL LSTIMER('RIMP2: AlphaCD ',TS2,TE2,LUPRI,FORCEPRINT)
 
     IF(wakeslaves)THEN !START BY SENDING MY OWN PACKAGE alphaCD
 #ifdef VAR_MPI
@@ -1066,7 +1104,11 @@ contains
        COUNT = MynauxMPI*nocc*nvirt !size of alphaCD
        IF(MynauxMPI.GT.0)THEN !only send package if I have been assigned some basis functions
           call Test_if_64bit_integer_required(MynauxMPI,nocc,nvirt)
+          CALL LS_GETTIM(CPU1,WALL1)
           call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request,ierr)
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+          WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
           call MPI_Request_free(request,ierr)
        ENDIF
        IF(MynauxMPI.GT.0)THEN 
@@ -1114,12 +1156,21 @@ contains
                 !have been recieved by the reciever.
                 IF(CurrentWait(1).EQ.5)THEN
                    !I need to wait for AlphaCD5 to be received before I can deallocate
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request5,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+
                    call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                    call mem_dealloc(AlphaCD5)
                 ELSEIF(CurrentWait(1).EQ.6)THEN
                    !I need to wait for AlphaCD5 to be received before I can deallocate
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request6,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
                    call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
                    call mem_dealloc(AlphaCD6)
                 ENDIF
@@ -1139,22 +1190,39 @@ contains
              IF(useAlphaCD5)THEN
                 !First time (node=1) RECV from the ISEND at line 1068, which sends AlphaCD
                 !all other times RECV AlphaCD5
+                CALL LS_GETTIM(CPU1,WALL1)
                 call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,lsmpi_status,ierr)
+                CALL LS_GETTIM(CPU2,WALL2)
+                CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+                WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
+
                 IF(node.NE.numnodes-1)THEN
                    RoundRobin5 = .TRUE.
                    !SEND AlphaCD5 to sender
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+                   WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
                 ELSE
                    !Last time (node=numnodes-1) Do not send because the sender is the 
                    !original owner of the block. Since I do not send, I do not need to MPI_WAIT
                    RoundRobin5 = .FALSE.
                 ENDIF
              ELSEIF(useAlphaCD6)THEN
+                CALL LS_GETTIM(CPU1,WALL1)                
                 call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,lsmpi_status,ierr)
+                CALL LS_GETTIM(CPU2,WALL2)
+                CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+                WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
                 IF(node.NE.numnodes-1)THEN
                    RoundRobin6 = .TRUE.
                    !SEND AlphaCD6 to sender
+                   CALL LS_GETTIM(CPU1,WALL1)                
                    call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+                   WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
                 ELSE
                    !Last time (node=numnodes-1) Do not send because the sender is the 
                    !original owner of the block. Since I do not send, I do not need to MPI_WAIT
@@ -1205,13 +1273,21 @@ contains
           do iAwaitDealloc=1,nAwaitDealloc
              IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
                 IF(RoundRobin5)THEN
+                   CALL LS_GETTIM(CPU1,WALL1)                
                    call MPI_WAIT(request5,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
                 ENDIF
                 call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                 call mem_dealloc(AlphaCD5)
              ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
                 IF(RoundRobin6)THEN
+                   CALL LS_GETTIM(CPU1,WALL1)                
                    call MPI_WAIT(request6,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
                 ENDIF
                 call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
                 call mem_dealloc(AlphaCD6)
@@ -1229,6 +1305,7 @@ contains
        call mem_dealloc(AlphaBeta_inv)
        NBA = naux
     ENDIF
+    CALL LSTIMER('RIMP2: Calpha ',TS2,TE2,LUPRI,FORCEPRINT)
 
     call mem_alloc(EpsOcc,nocc)
     call mem_leaktool_alloc(EpsOcc,LT_Eps)
@@ -1255,16 +1332,23 @@ contains
     nAwaitDealloc = 0
     RoundRobin2 = .FALSE.
     RoundRobin3 = .FALSE.
+    CALL LSTIMER('RIMP2: EpsOcc ',TS2,TE2,LUPRI,FORCEPRINT)
     IF(Wakeslaves)THEN
 #ifdef VAR_MPI
        IF(MynauxMPI.GT.0)THEN 
           !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
+          CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
           call RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
                & NBA,alphaCD,Calpha,rimp2_energy)
+          CALL LSTIMER('RIMP2: EcontOwn ',TS3,TE3,LUPRI,FORCEPRINT)
           !Energy = sum_{AIBJ} (AI|BJ)_K*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
           COUNT = NBA*nocc*nvirt
+          CALL LS_GETTIM(CPU1,WALL1)
           call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG1,comm,request1,ierr)
           call MPI_ISEND(Calpha,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG1,comm,request2,ierr)
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+          WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
        ENDIF
        DO node=1,numnodes-1 !should recieve numnodes-1 packages 
           myOriginalRank = MOD(mynum+node,numnodes)         
@@ -1276,19 +1360,37 @@ contains
                 !DEALLOCATE BLOCK IF NEEDED
                 IF(CurrentWait(1).EQ.2)THEN
                    !I need to wait for AlphaCD2 to be received before I can deallocate
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request5,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+
                    call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
                    call mem_dealloc(AlphaCD2)       
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request6,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
                    call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
                    call mem_dealloc(Calpha2)
                    nullify(AlphaCD2)
                    nullify(Calpha2)                
                 ELSEIF(CurrentWait(1).EQ.3)THEN
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request7,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+
                    call mem_leaktool_dealloc(AlphaCD3,LT_AlphaCD2)
                    call mem_dealloc(AlphaCD3)       
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request8,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
                    call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
                    call mem_dealloc(Calpha3)
                    nullify(AlphaCD3)
@@ -1314,9 +1416,14 @@ contains
              !RECV BLOCK ONWARDS
              IF(node.EQ.1)THEN
                 !recieve from the ISEND above 
+                CALL LS_GETTIM(CPU1,WALL1)
                 call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG1,comm,lsmpi_status,ierr)
                 call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG1,comm,lsmpi_status,ierr)
+                CALL LS_GETTIM(CPU2,WALL2)
+                CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+                WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
              ELSE
+                CALL LS_GETTIM(CPU1,WALL1)
                 IF(useAlphaCD2)THEN
                    call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,lsmpi_status,ierr)
                    call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,lsmpi_status,ierr)
@@ -1324,13 +1431,20 @@ contains
                    call MPI_RECV(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,lsmpi_status,ierr)
                    call MPI_RECV(Calpha3,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,lsmpi_status,ierr)
                 ENDIF
+                CALL LS_GETTIM(CPU2,WALL2)
+                CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+                WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
              ENDIF
              !SEND BLOCK ONWARDS
              IF(useAlphaCD2)THEN
                 IF(node.NE.numnodes-1)THEN
                    RoundRobin2 = .TRUE.
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_ISEND(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request5,ierr)
                    call MPI_ISEND(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request6,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+                   WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
                 ELSE
                    !No need to ISEND because the sender is the original owner of the block
                    RoundRobin2 = .FALSE.
@@ -1338,8 +1452,12 @@ contains
              ELSE
                 IF(node.NE.numnodes-1)THEN
                    RoundRobin3 = .TRUE.
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_ISEND(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request7,ierr)
                    call MPI_ISEND(Calpha3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request8,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+                   WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
                 ELSE
                    !No need to ISEND because the sender is the original owner of the block
                    RoundRobin3 = .FALSE.
@@ -1347,6 +1465,7 @@ contains
              ENDIF
              !CALCULATE ENERGY CONTRIBUTION
              IF(MynauxMPI.GT.0)THEN
+                CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
                 IF(useAlphaCD2)THEN
                    call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
                         & NBA,alphaCD,Calpha,alphaCD2,Calpha2,OriginalRanknauxMPI,rimp2_energy)
@@ -1354,6 +1473,7 @@ contains
                    call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
                         & NBA,alphaCD,Calpha,alphaCD3,Calpha3,OriginalRanknauxMPI,rimp2_energy)
                 ENDIF
+                CALL LSTIMER('RIMP2: EcontOther ',TS3,TE3,LUPRI,FORCEPRINT)
              ENDIF
              IF(node.NE.numnodes-1)THEN
                 IF(useAlphaCD2)THEN
@@ -1389,12 +1509,20 @@ contains
           do iAwaitDealloc=1,nAwaitDealloc
              IF(CurrentWait(iAwaitDealloc).EQ.2)THEN
                 IF(RoundRobin2)THEN
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request5,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
                 ENDIF
                 call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
                 call mem_dealloc(AlphaCD2)
                 IF(RoundRobin2)THEN       
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request6,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
                 ENDIF
                 call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
                 call mem_dealloc(Calpha2)
@@ -1402,12 +1530,20 @@ contains
                 nullify(Calpha2)                
              ELSEIF(CurrentWait(iAwaitDealloc).EQ.3)THEN
                 IF(RoundRobin3)THEN
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request7,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
                 ENDIF
                 call mem_leaktool_dealloc(AlphaCD3,LT_AlphaCD2)
                 call mem_dealloc(AlphaCD3)
                 IF(RoundRobin3)THEN       
+                   CALL LS_GETTIM(CPU1,WALL1)
                    call MPI_WAIT(request8,lsmpi_status,ierr)
+                   CALL LS_GETTIM(CPU2,WALL2)
+                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
                 ENDIF
                 call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
                 call mem_dealloc(Calpha3)
@@ -1417,10 +1553,18 @@ contains
           enddo
        ENDIF
        IF(MynauxMPI.GT.0)THEN
+          CALL LS_GETTIM(CPU1,WALL1)
           call MPI_WAIT(request1,lsmpi_status,ierr)
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+          WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
           call mem_leaktool_dealloc(AlphaCD,LT_AlphaCD)
           call mem_dealloc(AlphaCD)      
+          CALL LS_GETTIM(CPU1,WALL1)
           call MPI_WAIT(request2,lsmpi_status,ierr)
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+          WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
           call mem_leaktool_dealloc(Calpha,LT_Calpha)
           call mem_dealloc(Calpha)              
        ENDIF
@@ -1438,22 +1582,39 @@ contains
        call mem_leaktool_dealloc(Calpha,LT_Calpha)
        call mem_dealloc(Calpha)              
     ENDIF
-
+    CALL LSTIMER('RIMP2: EnergyCont ',TS2,TE2,LUPRI,FORCEPRINT)
+#ifdef VAR_MPI
+    !The barrier is mostly here to detect the time spent waiting vs the 
+    !time spent in communication. 
+    CALL LS_GETTIM(CPU1,WALL1)
+    call lsmpi_barrier(comm)
+    CALL LS_GETTIM(CPU2,WALL2)
+    CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+    WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+    CALL LS_GETTIM(CPU1,WALL1)
+    call lsmpi_reduction(rimp2_energy,infpar%master,comm)
+    CALL LS_GETTIM(CPU2,WALL2)
+    CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+    WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
+#endif    
     call mem_leaktool_dealloc(EpsOcc,LT_Eps)
     call mem_dealloc(EpsOcc)
     call mem_leaktool_dealloc(EpsVirt,LT_Eps)
     call mem_dealloc(EpsVirt)
-#ifdef VAR_MPI
-    call lsmpi_reduction(rimp2_energy,infpar%master,comm)
-#endif    
     IF(MASTER)THEN
-       write(DECinfo%output,*)  'RIMP2 CORRELATION ENERGY = ', rimp2_energy
+       write(lupri,*)  'RIMP2 CORRELATION ENERGY = ', rimp2_energy
        write(*,'(1X,a,f20.10)') 'RIMP2 CORRELATION ENERGY = ', rimp2_energy
     ENDIF
-
-    write(DECinfo%output,*)  'LEAK TOOL STATISTICS IN full_canonical_rimp2'
-    call LeakTools_stat_mem(DECinfo%output)
-
+    write(lupri,*)  'LEAK TOOL STATISTICS IN full_canonical_rimp2'
+    call LeakTools_stat_mem(lupri)
+    CALL LSTIMER('RIMP2: Finalize ',TS2,TE2,LUPRI,FORCEPRINT)
+    CALL LSTIMER('FULL RIMP2 ',TS,TE,DECINFO%OUTPUT)
+    write(lupri,*)'Overall Time spent in MPI Communication and MPI Wait for rank=',infpar%mynum
+    CALL ls_TIMTXT('>>>  WALL Time used MPI Communication inc. some Wait',WALL_MPICOMM,lupri)
+    CALL ls_TIMTXT('>>>  CPU Time used MPI Communication inc. some Wait',CPU_MPICOMM,lupri)
+    CALL ls_TIMTXT('>>>  WALL Time used in MPI Wait',WALL_MPIWAIT,lupri)
+    CALL ls_TIMTXT('>>>  CPU Time used in MPI Wait',CPU_MPIWAIT,lupri)
+    write(lupri,*) ' '
   end subroutine full_canonical_rimp2
 
 ! Calculate canonical MP2 energy
@@ -1529,11 +1690,9 @@ subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
                  gmoAIBJ2 = gmoAIBJ2 + alphaCD2(ALPHA,A,I)*Calpha2(ALPHA,B,J)
               ENDDO
               gmoAIBJ = 0.0E0_realk
-              DO ALPHA = 1,NBA
-                 gmoAIBJ = gmoAIBJ + alphaCD(ALPHA,A,I)*Calpha(ALPHA,B,J)
-              ENDDO
               gmoBIAJ = 0.0E0_realk                   
               DO ALPHA = 1,NBA
+                 gmoAIBJ = gmoAIBJ + alphaCD(ALPHA,A,I)*Calpha(ALPHA,B,J)
                  gmoBIAJ = gmoBIAJ + alphaCD(ALPHA,B,I)*Calpha(ALPHA,A,J)
               ENDDO
               !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
