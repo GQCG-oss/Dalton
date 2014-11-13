@@ -256,7 +256,7 @@ module dec_typedef_module
      !> force a specific tile size for use with abc scheme
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
-     integer :: CCSDPT_nbuffs_ijk
+     integer :: ijk_nbuffs
 
      !> F12 settings
      !> ************
