@@ -2778,6 +2778,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: time_sync9_tot_max,   time_sync9_tot_min,   time_sync9_tot,    time_sync9
      real(realk) :: time_sync10_tot_max,  time_sync10_tot_min,  time_sync10_tot,   time_sync10
      real(realk) :: time_w_min, time_c_min, time_i_min, time_w_max, time_c_max, time_i_max
+     real(realk) :: time_get_batch_sizes
      integer :: starts(4),residual_nr
      integer(kind=long) :: xyz,zyx1,zyx2
      integer(kind=long) :: mem_allocated,HeapMemoryUsage
@@ -2952,15 +2953,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #else
         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
 #endif
-
+        call time_start_phase(PHASE_WORK, twall = time_get_batch_sizes )
         ! Get free memory and determine maximum batch sizes
         ! -------------------------------------------------
         call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxActualDimAlpha,MaxActualDimGamma,MinAObatch,&
            &DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.,mylsitem%setting,intspec,&
            &nbuf=nbuffs)
+        call time_start_phase(PHASE_WORK, ttot = time_get_batch_sizes )
 
         ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
               &MaxActualDimGamma,nbuffs,iter,4,0,.true.,mylsitem%setting,intspec)
+
+        print *,"Getting batchs sizes took",time_get_batch_sizes
         if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
         
      endif
