@@ -583,30 +583,16 @@ module lspdm_basic_module
        integer,intent(in) :: globaltilenumber
        integer, intent(out), optional :: pos_on_node, idx_on_node, window_index
        integer :: nnod, pos, idx,widx
-
-       nnod=1
-#ifdef VAR_MPI
-       nnod=infpar%lg_nodtot
-#endif      
-
-       rank_of_node = mod(globaltilenumber-1+arr%offset,nnod)
-
-       if( alloc_in_dummy ) then
-          widx = 1
-          pos  = (globaltilenumber-1)/nnod + 1
-          idx  = 1 + ( pos - 1 ) * arr%tsize
-       else
-          widx = globaltilenumber
-          pos  = 1
-          idx  = 1 
-       endif
+       integer(kind=8) :: rank8
 
 
-       !Return the node local index of the tile
-       if(present(pos_on_node))  pos_on_node  = pos
-       if(present(idx_on_node))  idx_on_node  = idx
-       if(present(window_index)) window_index = widx
+       call get_residence_of_tile8(rank8,globaltilenumber,arr,&
+          &pos_on_node=pos_on_node,idx_on_node=idx_on_node,window_index=window_index)
+
+       rank_of_node = int(rank8,kind=4)
+
     end subroutine get_residence_of_tile4
+
     subroutine get_residence_of_tile8(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node,window_index)
        implicit none
        integer(kind=8), intent(out) :: rank_of_node

@@ -4935,10 +4935,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! This block is routinely used in a calculation
     else
 
-      !optimize buffers
+      !optimize buffers, deactivated for the moment
       nbuffs = 0
       if(scheme==0)then
-         do nbuffs=11,5
+         do nbuffs=5,5
             mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
             if (frac_of_total_mem*MemFree>mem_used) exit
          enddo
