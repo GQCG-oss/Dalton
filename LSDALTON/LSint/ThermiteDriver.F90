@@ -6612,12 +6612,12 @@ CASE (OverlapOperator)
 CASE (KineticOperator)
    CALL buildSJ000(Integral%IN,PQ,nPrim,JMAX,LUPRI,IPRINT)
 CASE (CAMOperator)
-   write(lupri,*) 'debug alpha=',INPUT%ATTalpha
-   write(lupri,*) 'debug beta=',INPUT%ATTbeta*INPUT%ATTalpha
-   ! (1 + beta erf(\omega r12) )/r12   (note Beta is now beta/alpha)
    call mem_alloc(SJ0002,JMAX,nPrim,.TRUE.,.FALSE.)
    CALL buildRJ000(Integral%IN,PQ,nPrim,JMAX,LUPRI,IPRINT,integral,INPUT%HIGH_RJ000_ACCURACY)
    CALL buildErfRJ000(SJ0002,PQ,nPrim,Jmax,LUPRI,IPRINT,integral,INPUT%ATTomega,INPUT%HIGH_RJ000_ACCURACY)
+   ! alpha /r12 
+   CALL DSCAL(NPrim*(JMAX+1),INPUT%ATTalpha,Integral%IN,1)
+   ! (alpha + beta erf(\omega r12) )/r12 
    CALL DAXPY(NPrim*(JMAX+1),INPUT%ATTbeta,SJ0002,1,Integral%IN,1)
    call mem_dealloc(SJ0002)
 CASE (ErfcOperator)
@@ -7070,8 +7070,8 @@ IF(INPUT%MBIE_SCREEN)THEN
          nomX = exp(-X*X)
          denomX = X + SQRT(X*X+D2)
          ERF_Rpq   = 1 - twosqPim * nomX/denomX
-         CAMcorr = 1 + input%ATTbeta * ERF_Rpq !note that alpha is actually 
-         !put into the exchangefactor and beta is in reality beta/alpha)
+         CAMcorr = input%ATTalpha + input%ATTbeta * ERF_Rpq !note that alpha is not  
+         !put into the exchangefactor anymore -> TO CHECK for consistency
          MBIEEST = CAMcorr*MBIEEST
       ENDIF
       screen = (MBIEEST.LE.INPUT%CS_THRESHOLD)

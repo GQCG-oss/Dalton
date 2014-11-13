@@ -811,7 +811,6 @@ subroutine read_dft_input(config,lucmd,lupri)
                     !EXX=1 sets hfweight and activates exchange integral evaluation
                     XCfunString = ('LDAERF EXX=1 RANGESEP_MU='//trim(MUWORD((IPOS+IPOS2):80))) 
                     write(LUPRI,*) XCfunString
-                    call lsquit('This functional does not work with LSDALTON yet',-1) 
                  ENDIF
               ELSE
                  CALL lsQUIT('Range-separation parameter mu required when using LDAERF',lupri)
@@ -868,7 +867,7 @@ subroutine read_dft_input(config,lucmd,lupri)
               write(XCfunString,FormatString) 'GGAKEY BECKECAMX=1',&
                    & ' CAM_ALPHA=',config%integral%CAMalpha,&
                    & ' CAM_BETA=',config%integral%CAMbeta,&
-                   & ' VWN5C=0.19 LYPC=0.81 EXX=',config%integral%CAMalpha,&
+                   & ' VWN5C=0.19 LYPC=0.81 EXX=',1.0,&
                    & ' RANGESEP_MU='
               WRITE(LUPRI,*) XCfunString
               WRITE(LUPRI,*) tmpword

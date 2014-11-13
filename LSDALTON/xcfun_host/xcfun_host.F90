@@ -55,6 +55,7 @@ module xcfun_host
        allocate(WeightSingle(nStrings))
        call trim_strings(DFTfuncString,nStrings,&
             & DFTfuncStringSingle,WeightSingle)
+       WeightSingle(1) = 1.0E0_realk
 !!$    else if ((INDEX(DFTfuncString,'CAM')).NE.0) then
 !!$       !FIX ME: ALPHA; BETA; MU
 !!$       call determine_nStrings(DFTfuncString,nStrings)
