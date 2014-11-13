@@ -35,16 +35,19 @@ module xcfun_host
     !Initialization
     !GGAkeyString = .FALSE.
     !ErfString = .false.
+    
     XCFUNfunctional = xc_new_functional()
 
     IPOS = INDEX(DFTfuncString,'GGAKEY')
     if (IPOS.NE.0) then
        !GGAkeyString = .TRUE.
-       call determine_nStrings(DFTfuncString(IPOS+7:80),nStrings)
+       call determine_nStrings(DFTfuncString(IPOS+7:),nStrings)
+       
        allocate(DFTfuncStringSingle(nStrings))
        allocate(WeightSingle(nStrings))
-       call trim_strings(DFTfuncString(IPOS+7:80),nStrings,&
+       call trim_strings(DFTfuncString(IPOS+7:),nStrings,&
             & DFTfuncStringSingle,WeightSingle)
+       
     else if ((INDEX(DFTfuncString,'LDAERF')).NE.0) then
        nStrings = 3
        !ErfString = .true.
@@ -72,6 +75,8 @@ module xcfun_host
             & DFTfuncStringSingle,WeightSingle)
        WeightSingle(1) = 1.0E0_realk
     ENDIF
+
+    
 
     !XCFUNfunctional = xc_new_functional()
     do I=1,nStrings

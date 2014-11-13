@@ -6612,6 +6612,8 @@ CASE (OverlapOperator)
 CASE (KineticOperator)
    CALL buildSJ000(Integral%IN,PQ,nPrim,JMAX,LUPRI,IPRINT)
 CASE (CAMOperator)
+   write(lupri,*) 'debug alpha=',INPUT%ATTalpha
+   write(lupri,*) 'debug beta=',INPUT%ATTbeta*INPUT%ATTalpha
    ! (1 + beta erf(\omega r12) )/r12   (note Beta is now beta/alpha)
    call mem_alloc(SJ0002,JMAX,nPrim,.TRUE.,.FALSE.)
    CALL buildRJ000(Integral%IN,PQ,nPrim,JMAX,LUPRI,IPRINT,integral,INPUT%HIGH_RJ000_ACCURACY)

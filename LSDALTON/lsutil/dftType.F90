@@ -161,35 +161,30 @@ character(80) :: word
 do iDFT=1,size(DFT%dftfuncObject)
    DFT%DFTfuncObject(iDFT) = DFT%dftfunc
 enddo
-IF ((INDEX(dft%dftfunc,'cam').NE.0).OR.(INDEX(dft%dftfunc,'CAM').NE.0)) THEN
-  !word = 'Camx'
-  ialpha = max (INDEX(dft%dftfunc,'alpha='),INDEX(dft%dftfunc,'ALPHA='))
-  IF (ialpha.NE.0) THEN
-    write(word,'(A8,X,A71)') 'Camcompx',dft%dftfunc(ialpha:)
-  ELSE
-    word = 'Camcompx'
-  ENDIF
-ELSE
-  word = 'BX'
-ENDIF
-
-!!$IF (integral%CAM) THEN
-!!$   write(word,'(A8,X,A71)') 'Camcompx',integral%CAMalpha
+!!$IF ((INDEX(dft%dftfunc,'cam').NE.0).OR.(INDEX(dft%dftfunc,'CAM').NE.0)) THEN
+!!$  !word = 'Camx'
+!!$  ialpha = max (INDEX(dft%dftfunc,'alpha='),INDEX(dft%dftfunc,'ALPHA='))
+!!$  IF (ialpha.NE.0) THEN
+!!$    write(word,'(A8,X,A71)') 'Camcompx',dft%dftfunc(ialpha:)
+!!$  ELSE
+!!$    word = 'Camcompx'
+!!$  ENDIF
 !!$ELSE
-!!$   word = 'BX'
+!!$  word = 'BX'
 !!$ENDIF
 
-call set_admmfun(dft,word)
+
+!call set_admmfun(dft,word)
 
 end subroutine init_dftfunc
 
-subroutine set_admmfun(dft,func)
-TYPE(dftparam) :: dft
-character(80)  :: func
-
-DFT%DFTfuncObject(dftfunc_ADMML2) = func
-
-end subroutine set_admmfun
+!!$subroutine set_admmfun(dft,func)
+!!$TYPE(dftparam) :: dft
+!!$character(80)  :: func
+!!$
+!!$DFT%DFTfuncObject(dftfunc_ADMML2) = func
+!!$
+!!$end subroutine set_admmfun
 
 
 !!$SUBROUTINE store_dft_grid(grid,filename,dft)
