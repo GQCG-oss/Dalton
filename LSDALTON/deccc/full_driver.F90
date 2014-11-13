@@ -1118,9 +1118,11 @@ contains
           call mem_alloc(Calpha,MynauxMPI,nvirt,nocc)
           call mem_leaktool_alloc(Calpha,LT_Calpha)
           !Use own AlphaCD to obtain part of Calpha
+          CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
           call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,&
                & natoms,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD,&
                & Calpha,TMPAlphaBeta_inv,naux)
+          CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
        ENDIF
        !To complete construction of  c_(nauxMPI,nvirt,nocc) we need all
        !alphaCD(nauxMPI,nvirt,nocc) contributions from all ranks
@@ -1231,6 +1233,7 @@ contains
              ENDIF
              IF(MynauxMPI.GT.0)THEN
                 !Step 2: Obtain part of Calpha from this contribution
+                CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
                 IF(useAlphaCD5)THEN
                    call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
                         & OriginalRanknauxMPI,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
@@ -1240,6 +1243,7 @@ contains
                         & OriginalRanknauxMPI,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
                         & AlphaCD6,Calpha,TMPAlphaBeta_inv,naux)
                 ENDIF
+                CALL LSTIMER('CalphaOther ',TS3,TE3,LUPRI,FORCEPRINT)
              ENDIF
              !Step 3: MPI send the recieved alphaCD to 'Sender' 
              IF(node.NE.numnodes-1)THEN
@@ -1609,11 +1613,13 @@ contains
     call LeakTools_stat_mem(lupri)
     CALL LSTIMER('RIMP2: Finalize ',TS2,TE2,LUPRI,FORCEPRINT)
     CALL LSTIMER('FULL RIMP2 ',TS,TE,DECINFO%OUTPUT)
+#ifdef VAR_MPI
     write(lupri,*)'Overall Time spent in MPI Communication and MPI Wait for rank=',infpar%mynum
     CALL ls_TIMTXT('>>>  WALL Time used MPI Communication inc. some Wait',WALL_MPICOMM,lupri)
     CALL ls_TIMTXT('>>>  CPU Time used MPI Communication inc. some Wait',CPU_MPICOMM,lupri)
     CALL ls_TIMTXT('>>>  WALL Time used in MPI Wait',WALL_MPIWAIT,lupri)
     CALL ls_TIMTXT('>>>  CPU Time used in MPI Wait',CPU_MPIWAIT,lupri)
+#endif    
     write(lupri,*) ' '
   end subroutine full_canonical_rimp2
 
