@@ -8,9 +8,10 @@ def main():
 
    all_good = True
    good     = True
-   compare_struct_and_its_bcast(good,"../lsutil/dec_typedef.F90","decsettings","../deccc/decmpi.F90","mpicopy_dec_settings",exceptions=["cc_models"])
+   good = compare_struct_and_its_bcast("../lsutil/dec_typedef.F90","decsettings","../deccc/decmpi.F90","mpicopy_dec_settings",exceptions=["cc_models"])
    all_good = all_good and good
-   #compare_struct_and_its_bcast(good,"../lsutil/TYPE-DEF.F90","LSSETTING","../lsutil/lsmpi-operations.F90","mpicopy_setting",exceptions=["MOLECULE","BASIS","FRAGMENT","SCHEME","IO","lst_dLHS","lst_dRHS","DmatLHS","DmatRHS","LST_GAB_LHS","LST_GAB_RHS","FRAGMENTS","OUTPUT","GGem","RedCS"])
+   good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","LSSETTING","../lsutil/lsmpi-operations.F90","mpicopy_setting",exceptions=["MOLECULE","BASIS","FRAGMENT","SCHEME","IO","lst_dLHS","lst_dRHS","DmatLHS","DmatRHS","LST_GAB_LHS","LST_GAB_RHS","FRAGMENTS","OUTPUT","GGem","RedCS"])
+   print "IS GOOD",good
    all_good = all_good and good
 
    if all_good:
@@ -23,7 +24,7 @@ def main():
 #struct_name:          name of the type to be bcasted
 #filename_with_bcast:  input the path to the file where the bcasting of the struct is defined relative to the path where the script is stored
 #bcast_routine_name:   name of the subroutine that is used to bcast the struct
-def compare_struct_and_its_bcast(ALL_OK,filename_with_struct,struct_name,filename_with_bcast,bcast_routine_name,exceptions=[]):
+def compare_struct_and_its_bcast(filename_with_struct,struct_name,filename_with_bcast,bcast_routine_name,exceptions=[]):
 
    swd = os.path.realpath(__file__)
    swd = swd[:swd.rfind("/")+1]
@@ -54,11 +55,19 @@ def compare_struct_and_its_bcast(ALL_OK,filename_with_struct,struct_name,filenam
             #ignore comment lines and empty lines
             line = dec_typedef_lines[line_nr].lower().strip()
             if( len(line) > 1 ):
-               if( line[0] != "!" ):
-                  variable_line = line.split(':',1)[-1].replace(':','').strip()
+
+               #skip comment lines and types, note that the pattern :: has to occur in a variable definition for this script to recognize it
+               if( line[0] != "!" and "::" in line and not "type" in line):
+
+                  #THE VARIABLE DECLARATION IS ASSUMED TO BEGIN WITH THE PATTERN ::
+                  variable_line = line[line.find("::")+2:].strip()
                   #truncate if there is an inline comment
                   if( "!" in variable_line):
                      variable_line = variable_line[0:variable_line.find('!')]
+
+                  #remove parenthesis from the definitions
+                  while "(" in variable_line or ")" in variable_line:
+                     variable_line = variable_line[:variable_line.find('(')] + variable_line[variable_line.find(')')+1:]
    
                   variables = variable_line.split(',')
    
@@ -92,7 +101,6 @@ def compare_struct_and_its_bcast(ALL_OK,filename_with_struct,struct_name,filenam
             line_nr += 1
             line = decmpi_lines[line_nr].lower().strip()
             if "call ls_mpi_buffer" in line and "%" in line:
-               print line
                variable = line[line.find("(")+1:line.find(")")].split(",",1)[0].split("%")[1].strip()
                for var_nr in range(len(variable_name_list)):
                   if variable_name_list[var_nr] == variable:
@@ -110,7 +118,7 @@ def compare_struct_and_its_bcast(ALL_OK,filename_with_struct,struct_name,filenam
    else:
       print "PROBLEMS DETECTED IN "+struct_name
 
-   ALL_OK = ALL_FOUND
+   return ALL_FOUND
 
 
 
