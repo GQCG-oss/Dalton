@@ -514,7 +514,7 @@ add_dalton_test(dpt_h2s_ff                    "dalton;dpt")
 add_dalton_test(cc2_r12_aux_ch4_a2            "dalton;ccr12;longccr12")
 add_dalton_test(cc2_r12_aux_ch4_sym_a2        "dalton;ccr12;longccr12")
 
-add_dalton_test(soppa_vibavg_twobas           "dalton;prop;soppa")
+add_dalton_runtest(soppa_vibavg_twobas        "dalton;runtest;prop;soppa")
 add_dalton_test(dcpt2                         "dalton;essential")
 add_dalton_runtest(pcmsoppa_excit             "dalton;runtest;pcm;soppa")
 
