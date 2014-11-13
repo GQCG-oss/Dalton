@@ -10,6 +10,8 @@ def main():
    good     = True
    compare_struct_and_its_bcast(good,"../lsutil/dec_typedef.F90","decsettings","../deccc/decmpi.F90","mpicopy_dec_settings",exceptions=["cc_models"])
    all_good = all_good and good
+   #compare_struct_and_its_bcast(good,"../lsutil/TYPE-DEF.F90","LSSETTING","../lsutil/lsmpi-operations.F90","mpicopy_setting",exceptions=["MOLECULE","BASIS","FRAGMENT","SCHEME","IO","lst_dLHS","lst_dRHS","DmatLHS","DmatRHS","LST_GAB_LHS","LST_GAB_RHS","FRAGMENTS","OUTPUT","GGem","RedCS"])
+   all_good = all_good and good
 
    if all_good:
       print "TESTSTATUS: GOOD"
@@ -89,7 +91,8 @@ def compare_struct_and_its_bcast(ALL_OK,filename_with_struct,struct_name,filenam
          while not "end subroutine "+bcast_routine_name.lower() in decmpi_lines[line_nr].lower().strip():
             line_nr += 1
             line = decmpi_lines[line_nr].lower().strip()
-            if "call ls_mpi_buffer" in line:
+            if "call ls_mpi_buffer" in line and "%" in line:
+               print line
                variable = line[line.find("(")+1:line.find(")")].split(",",1)[0].split("%")[1].strip()
                for var_nr in range(len(variable_name_list)):
                   if variable_name_list[var_nr] == variable:
