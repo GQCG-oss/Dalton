@@ -89,28 +89,30 @@
   
    This is an MPI run using       4 processes.
  Who compiled             | janusje
- Host                     | valhalla.st.client.au.dk
- System                   | Darwin-13.1.0
+ Host                     | Valhalla.local
+ System                   | Darwin-14.0.0
  CMake generator          | Unix Makefiles
  Processor                | i386
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /usr/local/mpi/mpich-gcc48-devel/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.8.0 20120930 (experimental)
- C compiler               | /usr/local/mpi/mpich-gcc48-devel/bin/mpicc
- C compiler version       | gcc (GCC) 4.8.0 20120930 (experimental)
- C++ compiler             | /usr/local/mpi/mpich-gcc48-devel/bin/mpic++
+ Fortran compiler         | /usr/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (Homebrew gcc49 4.9.1 --enable-all-lan
+                          | guages) 4.9.1
+ C compiler               | /usr/local/bin/mpicc
+ C compiler version       | gcc (Homebrew gcc49 4.9.1 --enable-all-languages) 
+                          | 4.9.1
+ C++ compiler             | /usr/local/bin/mpic++
  C++ compiler version     | unknown
  BLAS                     | /usr/lib/libblas.dylib
  LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 563dd906d9c65899f8dd42ef1a88a99657cae76d
+ Last Git revision        | 4ea5c5d6569f02a02c2f1f8911b0d578ef4aef15
  Git branch               | PE_titan_branch
- Configuration time       | 2014-10-20 15:23:19.870416
+ Configuration time       | 2014-11-13 11:57:38.881161
 
 Start simulation
-     Date and time (Linux)  : Mon Oct 20 15:25:10 2014
-     Host name              : valhalla.st.client.au.dk                
+     Date and time (Linux)  : Thu Nov 13 12:06:47 2014
+     Host name              : Valhalla.local                          
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -190,8 +192,8 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/janusje/programs/dalton/build_ls_gcc48_mpich_omp_debug/basis/3-21G
- OPENING FILE/Users/janusje/programs/dalton/build_ls_gcc48_mpich_omp_debug/basis/6-31G**
+ OPENING FILE/Users/janusje/programs/dalton/build_ls_gcc49_mpich_omp_debug/basis/3-21G
+ OPENING FILE/Users/janusje/programs/dalton/build_ls_gcc49_mpich_omp_debug/basis/6-31G**
                       
 THE MOLECULE
  --------------------------------------------------------------------
@@ -264,6 +266,7 @@ basis and perform integral evaluation using this basis
 
  >>>  CPU Time used in *INPUT is   0.00 seconds
  >>> wall Time used in *INPUT is   0.00 seconds
+ 
 Matrix type: mtype_dense
  
  A set of atomic calculations are performed in order to construct
@@ -287,8 +290,8 @@ Matrix type: mtype_dense
  >>> wall Time used in Kinetic is   0.00 seconds
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.2156543971648728     
- The Fock energy contribution   -1.2156543971648728     
+ The J+K energy contribution   -1.2156543971648730     
+ The Fock energy contribution   -1.2156543971648730     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -303,8 +306,8 @@ Matrix type: mtype_dense
   2     -2.8352629695   -0.10015306504    0.00      0.00000    0.00    1.10E-01  ###
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.0285468326107468     
- The Fock energy contribution   -1.0285468326107468     
+ The J+K energy contribution   -1.0285468326107470     
+ The Fock energy contribution   -1.0285468326107470     
   3     -2.8356798733   -0.00041690379   -1.00      0.00000    0.00    9.90E-05  ###
 
  Level 1 atomic calculation on 6-31G** Charge   2
@@ -317,8 +320,8 @@ Matrix type: mtype_dense
  >>> wall Time used in Kinetic is   0.00 seconds
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.2453287480865376     
- The Fock energy contribution   -1.2453287480865376     
+ The J+K energy contribution   -1.2453287480865378     
+ The Fock energy contribution   -1.2453287480865378     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -328,8 +331,8 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.0437602780601622     
- The Fock energy contribution   -1.0437602780601622     
+ The J+K energy contribution   -1.0437602780601618     
+ The Fock energy contribution   -1.0437602780601618     
   2     -2.8544117280   -0.11250492449    0.00      0.00000    0.00    1.24E-01  ###
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
@@ -338,12 +341,15 @@ Matrix type: mtype_dense
   3     -2.8551603951   -0.00074866708   -1.00      0.00000    0.00    7.98E-04  ###
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.0269078551215731     
- The Fock energy contribution   -1.0269078551215731     
-  4     -2.8551604262   -0.00000003110   -1.00      0.00000    0.00    5.07E-06  ###
+ The J+K energy contribution   -1.0269070825346718     
+ The Fock energy contribution   -1.0269070825346718     
+  4     -2.8551604262   -0.00000003110   -1.00      0.00000    0.00    6.38E-07  ###
+ 
 Matrix type: mtype_dense
- >>>  CPU Time used in *ATOM is   0.02 seconds
+ >>>  CPU Time used in *ATOM is   0.03 seconds
  >>> wall Time used in *ATOM is   0.02 seconds
+ >>>  CPU Time used in II_precalc_ScreenMat is   0.00 seconds
+ >>> wall Time used in II_precalc_ScreenMat is   0.00 seconds
  >>>  CPU Time used in OVERLAP is   0.00 seconds
  >>> wall Time used in OVERLAP is   0.00 seconds
  >>>  CPU Time used in *S is   0.00 seconds
@@ -361,12 +367,12 @@ Matrix type: mtype_dense
  >>> wall Time used in reg-J is   0.00 seconds
  >>>  CPU Time used in reg-Jbuild is   0.00 seconds
  >>> wall Time used in reg-Jbuild is   0.00 seconds
- The Coulomb energy contribution    5.4739895436362422     
+ The Coulomb energy contribution    5.4739879895189816     
  >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
  >>> wall Time used in LINK-Kbuild is   0.00 seconds
- The Exchange energy contribution    2.0733977608257090     
- The Fock energy contribution   -3.4005917828105332     
-  Iteration 0 energy:  -5.7123173322423284     
+ The Exchange energy contribution    2.0733970201936525     
+ The Fock energy contribution   -3.4005909693253291     
+  Iteration 0 energy:  -5.7123173717134375     
 
 Max no. of matrices allocated in Level 2 / get_initial_dens:         17
  >>>  CPU Time used in *START is   0.01 seconds
@@ -385,19 +391,19 @@ Matrix AO D  has nnz=        49 sparsity:    100.000 %
  >>> wall Time used in reg-J is   0.00 seconds
  >>>  CPU Time used in reg-Jbuild is   0.00 seconds
  >>> wall Time used in reg-Jbuild is   0.00 seconds
- The Coulomb energy contribution    5.4852568545902542     
+ The Coulomb energy contribution    5.4852567322374703     
  >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
  >>> wall Time used in LINK-Kbuild is   0.00 seconds
- The Exchange energy contribution    2.0712349931264309     
- The Fock energy contribution   -3.4140218614638216     
- >>>  CPU Time used in FCK_FO is   0.00 seconds
+ The Exchange energy contribution    2.0712349320373420     
+ The Fock energy contribution   -3.4140218002001279     
+ >>>  CPU Time used in FCK_FO is   0.01 seconds
  >>> wall Time used in FCK_FO is   0.00 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
-  1     -5.6754998048    0.00000000000    0.00      0.00000    0.00    6.95E-03  ###
+  1     -5.6754998045    0.00000000000    0.00      0.00000    0.00    6.95E-03  ###
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
@@ -409,7 +415,7 @@ Matrix OAO F has nnz=        49 sparsity:    100.000 %
  >>>  CPU Time used in AVERAG is   0.00 seconds
  >>> wall Time used in AVERAG is   0.00 seconds
 ** Get new density 
- OAO gradnorm   6.9483951743586243E-003
+ OAO gradnorm   6.9484478340784755E-003
  >>>  CPU Time used in DAVID. SOLVER is   0.00 seconds
  >>> wall Time used in DAVID. SOLVER is   0.00 seconds
  >>>  CPU Time used in NEW D is   0.00 seconds
@@ -421,22 +427,22 @@ No. of matmuls in get_density:    27
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
  >>>  CPU Time used in SCF iteration is   0.01 seconds
- >>> wall Time used in SCF iteration is   0.00 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   2
  >>>  CPU Time used in reg-J is   0.00 seconds
  >>> wall Time used in reg-J is   0.00 seconds
  >>>  CPU Time used in reg-Jbuild is   0.00 seconds
  >>> wall Time used in reg-Jbuild is   0.00 seconds
- The Coulomb energy contribution    5.4866286295889246     
+ The Coulomb energy contribution    5.4866286195442395     
  >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
  >>> wall Time used in LINK-Kbuild is   0.00 seconds
- The Exchange energy contribution    2.0720859995099992     
- The Fock energy contribution   -3.4145426300789254     
- >>>  CPU Time used in FCK_FO is   0.00 seconds
- >>> wall Time used in FCK_FO is   0.00 seconds
+ The Exchange energy contribution    2.0720859943833392     
+ The Fock energy contribution   -3.4145426251608995     
+ >>>  CPU Time used in FCK_FO is   0.01 seconds
+ >>> wall Time used in FCK_FO is   0.01 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
-  2     -5.6755175837   -0.00001777886    0.00      0.00000   -0.00    7.87E-04  ###
+  2     -5.6755175837   -0.00001777916    0.00      0.00000   -0.00    7.87E-04  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=        49 sparsity:    100.000 %
 Matrix AO F  has nnz=        49 sparsity:    100.000 %
@@ -445,7 +451,7 @@ Matrix OAO F has nnz=        49 sparsity:    100.000 %
  >>>  CPU Time used in AVERAG is   0.00 seconds
  >>> wall Time used in AVERAG is   0.00 seconds
 ** Get new density 
- OAO gradnorm   7.8698559862659841E-004
+ OAO gradnorm   7.8699429435530896E-004
  >>>  CPU Time used in DAVID. SOLVER is   0.00 seconds
  >>> wall Time used in DAVID. SOLVER is   0.00 seconds
  >>>  CPU Time used in NEW D is   0.00 seconds
@@ -457,25 +463,25 @@ No. of matmuls in get_density:    51
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
  >>>  CPU Time used in SCF iteration is   0.01 seconds
- >>> wall Time used in SCF iteration is   0.00 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   3
  >>>  CPU Time used in reg-J is   0.00 seconds
  >>> wall Time used in reg-J is   0.00 seconds
  >>>  CPU Time used in reg-Jbuild is   0.00 seconds
  >>> wall Time used in reg-Jbuild is   0.00 seconds
- The Coulomb energy contribution    5.4868174574844666     
+ The Coulomb energy contribution    5.4868174578763584     
  >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
  >>> wall Time used in LINK-Kbuild is   0.00 seconds
- The Exchange energy contribution    2.0722004385490509     
- The Fock energy contribution   -3.4146170189354170     
- >>>  CPU Time used in FCK_FO is   0.00 seconds
+ The Exchange energy contribution    2.0722004387474504     
+ The Fock energy contribution   -3.4146170191289071     
+ >>>  CPU Time used in FCK_FO is   0.01 seconds
  >>> wall Time used in FCK_FO is   0.00 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   3     -5.6755178154   -0.00000023174    0.00      0.00000   -0.00    1.02E-05  ###
 SCF converged in      3 iterations
  >>>  CPU Time used in **ITER is   0.02 seconds
- >>> wall Time used in **ITER is   0.01 seconds
+ >>> wall Time used in **ITER is   0.02 seconds
 
 Total no. of matmuls in SCF optimization:        148
 
@@ -490,16 +496,16 @@ Total no. of matmuls in SCF optimization:        148
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.00001777886    0.0000   -0.0000    0.0000000
+  2   -0.00001777916    0.0000   -0.0000    0.0000000
   3   -0.00000023174    0.0000   -0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1            -5.67549980482832872042      0.694839517435862D-02
-    2            -5.67551758368529313259      0.786985598626598D-03
-    3            -5.67551781542145938886      0.102347264318731D-04
+    1            -5.67549980451664204395      0.694844783407848D-02
+    2            -5.67551758367971359576      0.786994294355309D-03
+    3            -5.67551781542147004700      0.102346183090441D-04
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -607,8 +613,8 @@ Linesearch done, we choose previous point
 
  >>>  CPU Time used in OVERLAP is   0.00 seconds
  >>> wall Time used in OVERLAP is   0.00 seconds
- >>>  CPU Time used in Orbital Localization is   0.07 seconds
- >>> wall Time used in Orbital Localization is   0.07 seconds
+ >>>  CPU Time used in Orbital Localization is   0.08 seconds
+ >>> wall Time used in Orbital Localization is   0.09 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -630,13 +636,13 @@ FULL: Number of virt. orbitals   :      5
  Calculating carmom matrix for DEC calculation...
  >>>  CPU Time used in DEC: MOL INIT is   0.00 seconds
  >>> wall Time used in DEC: MOL INIT is   0.00 seconds
+ Memory set in input to be:    2.000     GB
 
 
 =============================================================================
              -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
 =============================================================================
 
- Memory set in input to be:    2.000     GB
 
 DEC calculation is carried out...
 
@@ -653,7 +659,8 @@ DEC calculation is carried out...
 FOT (Fragment Optimization Threshold)               =        0.10E-03
 Use Pair Estimates to screen pairs                  =            TRUE
 Pair distance cutoff threshold (Angstrom)           =       0.100E+04
-Use Pair Estimate initialisation number of atom     =     1
+Use Pair Estimate initialisation radius (Angstrom)  =       0.200E+01
+Pair estimate model                                 =     MP2     
 Simple orbital thr.                                 =       0.500E-01
 Expansion step size                                 =              10
 Print level                                         =               0
@@ -671,6 +678,7 @@ Wave function Model used for Atomic Fragment reduction scheme = MP2
 This wave function model can be changed using the .FRAGREDMODEL keyword
 .FRAGREDMODEL
 .CCSD(T) 
+
 
 --------------------------
   Coupled-cluster input   
@@ -735,8 +743,12 @@ Use F12 correction           =           FALSE
  *** Initiating optimization of atomic fragments ***
 
 
+ FOP Occ Radius for initial fragment:  3.78
+ FOP Virt Radius for initial fragment:  3.78
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
+ FOP Occ Radius for initial fragment:  3.78
+ FOP Virt Radius for initial fragment:  3.78
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
  Preparing job list...
@@ -747,11 +759,11 @@ Use F12 correction           =           FALSE
               Atomic fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
+      1      2      5      7     1.55    /  1.55       1.55    /  1.55              FRAG_SIZE
       2      2      5      7     1.55    /  1.55       1.55    /  1.55              FRAG_SIZE
-      1      2      4      7     1.55    /  1.55       1.55    /  1.55              FRAG_SIZE
 
  FRAGANALYSIS: Max/Ave/Min occ         :        2       /     2.0000    /       2
- FRAGANALYSIS: Max/Ave/Min unocc       :        5       /     4.5000    /       4
+ FRAGANALYSIS: Max/Ave/Min unocc       :        5       /     5.0000    /       5
  FRAGANALYSIS: Max/Ave/Min basis       :        7       /     7.0000    /       7
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      1.5481    /     1.5481    /     1.5481    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :      1.5481    /     1.5481    /     1.5481    
@@ -842,19 +854,19 @@ Master received job       3 from        1 -- missing #jobs:        0
 
 
      Job    #occ   #virt  #basis slotsiz  #tasks     GFLOPS     Time(s)    Load1      Load2
-       3       2       5       7       1       9     -1.00      0.210E-01   1.00       1.00    STAT
+       3       2       5       7       1       9     -1.00      0.260E-01   1.00       1.00    STAT
  -----------------------------------------------------------------------------
  Number of jobs done     =        3
- Time-to-solution (s)    =    0.230E-01
- TOTAL time(s) all nodes =    0.240E-01
- Global MPI loss (%)     =     65.2    
- Local MPI loss (%)      =     2.90    
- Total MPI loss (%)      =     68.1    
+ Time-to-solution (s)    =    0.290E-01
+ TOTAL time(s) all nodes =    0.290E-01
+ Global MPI loss (%)     =     66.7    
+ Local MPI loss (%)      =     2.30    
+ Total MPI loss (%)      =     69.0    
  -----------------------------------------------------------------------------
 
 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.02 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   0.02 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.03 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   0.03 seconds
  Preparing job list...
 
 
@@ -898,11 +910,11 @@ Master received job       3 from        1 -- missing #jobs:        0
  *** Calculating single and pair interaction energies ***
 
  *** MPI GROUPSIZE SET TO            3
-Master received job       3 from        2 -- missing #jobs:        2
-Master received job       1 from        1 -- missing #jobs:        1
+Master received job       1 from        1 -- missing #jobs:        2
+Master received job       3 from        2 -- missing #jobs:        1
 Master received job       2 from        3 -- missing #jobs:        0
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   0.05 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is   0.06 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   0.06 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is   0.07 seconds
 
 
  *********************************************************************
@@ -931,16 +943,16 @@ Master received job       2 from        3 -- missing #jobs:        0
 
 
      Job    #occ   #virt  #basis slotsiz  #tasks     GFLOPS     Time(s)    Load1      Load2
-       1       2       5       7       1       0     -1.00      0.560E-01   1.00       1.00    STAT
-       2       2       5       7       1       0     -1.00      0.570E-01  0.982      0.982    STAT
-       3       2       5       7       1       0     -1.00      0.560E-01   1.00       1.00    STAT
+       1       2       5       7       1       0     -1.00      0.650E-01   1.00       1.00    STAT
+       2       2       5       7       1       0     -1.00      0.650E-01   1.00       1.00    STAT
+       3       2       5       7       1       0     -1.00      0.650E-01   1.00      0.985    STAT
  -----------------------------------------------------------------------------
  Number of jobs done     =        3
- Time-to-solution (s)    =    0.570E-01
- TOTAL time(s) all nodes =    0.169    
- Global MPI loss (%)     =     1.17    
- Local MPI loss (%)      =    0.585    
- Total MPI loss (%)      =     1.75    
+ Time-to-solution (s)    =    0.660E-01
+ TOTAL time(s) all nodes =    0.195    
+ Global MPI loss (%)     =     1.52    
+ Local MPI loss (%)      =     0.00    
+ Total MPI loss (%)      =     1.52    
  -----------------------------------------------------------------------------
 
 
@@ -983,7 +995,7 @@ Master received job       2 from        3 -- missing #jobs:        0
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.5481         -0.3825404667E-03    PF_CCSD_VIR
+     1       2      1.5481         -0.3825404666E-03    PF_CCSD_VIR
 
 
  =================================================================
@@ -1022,11 +1034,11 @@ Master received job       2 from        3 -- missing #jobs:        0
 
 
  CCSD occupied correlation energy :    -0.4690289377E-01
- (T) occupied correlation energy  :    -0.6580329158E-05
+ (T) occupied correlation energy  :    -0.6580329157E-05
  (T) occupied 4th order energy    :    -0.6551341153E-05
  (T) occupied 5th order energy    :    -0.2898800430E-07
  CCSD virtual  correlation energy :    -0.4690289377E-01
- (T) virtual  correlation energy  :    -0.6580329158E-05
+ (T) virtual  correlation energy  :    -0.6580329157E-05
  (T) virtual  4th order energy    :    -0.6551341153E-05
  (T) virtual  5th order energy    :    -0.2898800430E-07
 
@@ -1070,13 +1082,13 @@ Master received job       2 from        3 -- missing #jobs:        0
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :        0.726220E-01 s
-Total Wall time used in DEC          :        0.840000E-01 s
+Total CPU  time used in DEC          :        0.940170E-01 s
+Total Wall time used in DEC          :        0.980000E-01 s
 ------------------------------------------------------
 
 
-Hostname       : valhalla.st.client.au.dk                          
-Job finished   : Date: 20/10/2014   Time: 15:25:10
+Hostname       : Valhalla.local                                    
+Job finished   : Date: 13/11/2014   Time: 12:06:47
 
 
 
@@ -1086,8 +1098,8 @@ Job finished   : Date: 20/10/2014   Time: 15:25:10
 
 
 
- >>>  CPU Time used in *SCF is   0.16 seconds
- >>> wall Time used in *SCF is   0.17 seconds
+ >>>  CPU Time used in *SCF is   0.20 seconds
+ >>> wall Time used in *SCF is   0.20 seconds
 
 Total no. of matmuls used:                       964
 Total no. of Fock/KS matrix evaluations:           4
@@ -1138,7 +1150,7 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         66.097 MB
+  Max allocated memory, TOTAL                         66.897 MB
   Max allocated memory, type(matrix)                  34.864 kB
   Max allocated memory, real(realk)                  110.408 kB
   Max allocated memory, MPI                            0.000 Byte
@@ -1147,14 +1159,14 @@ Max no. of matrices allocated in Level 3:         74
   Max allocated memory, logical                      204.704 kB
   Max allocated memory, character                     74.880 kB
   Max allocated memory, AOBATCH                        4.536 kB
-  Max allocated memory, DECORBITAL                     2.176 kB
+  Max allocated memory, DECORBITAL                     2.240 kB
   Max allocated memory, DECFRAG                       42.176 kB
   Max allocated memory, BATCHTOORB                     0.000 Byte
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         65.600 MB
+  Max allocated memory, ARRAY                         66.400 MB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
@@ -1181,12 +1193,12 @@ Max no. of matrices allocated in Level 3:         74
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
   The total memory used across all MPI nodes
-  Max allocated memory, TOTAL                        268.838 MB
-time spent in unlock:        0.0003069310
+  Max allocated memory, TOTAL                        272.057 MB
+time spent in unlock:        0.0003188209
   Largest memory allocated on a single MPI slave node (including Master)
-  Max allocated memory, TOTAL                         67.581 MB
+  Max allocated memory, TOTAL                         68.387 MB
   Largest memory allocated on a single MPI slave node (exclusing Master)
-  Max allocated memory, TOTAL                         67.581 MB
+  Max allocated memory, TOTAL                         68.387 MB
   Memory statistics for MPI node number         1 
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
@@ -1234,23 +1246,23 @@ time spent in unlock:        0.0003069310
   Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
   Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
   Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         67.580 MB
+  Max allocated memory, TOTAL                         68.386 MB
   Max allocated memory, type(matrix)                   3.120 kB
   Max allocated memory, real(realk)                    1.774 MB
-  Max allocated memory, MPI                            3.000 kB
+  Max allocated memory, MPI                            2.008 kB
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                       15.715 kB
   Max allocated memory, logical                      203.372 kB
   Max allocated memory, character                     75.680 kB
   Max allocated memory, AOBATCH                        6.552 kB
-  Max allocated memory, DECORBITAL                     1.728 kB
+  Max allocated memory, DECORBITAL                     1.792 kB
   Max allocated memory, DECFRAG                       42.176 kB
   Max allocated memory, BATCHTOORB                     0.336 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      1.296 kB
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.125 MB
+  Max allocated memory, ARRAY                         66.931 MB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.108 kB
@@ -1323,10 +1335,10 @@ time spent in unlock:        0.0003069310
   Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
   Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
   Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         67.580 MB
+  Max allocated memory, TOTAL                         68.386 MB
   Max allocated memory, type(matrix)                   3.120 kB
   Max allocated memory, real(realk)                    2.372 MB
-  Max allocated memory, MPI                            3.000 kB
+  Max allocated memory, MPI                            2.008 kB
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                       15.715 kB
   Max allocated memory, logical                      203.372 kB
@@ -1339,7 +1351,7 @@ time spent in unlock:        0.0003069310
   Max allocated memory, MYPOINTER                      0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.125 MB
+  Max allocated memory, ARRAY                         66.931 MB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.108 kB
@@ -1412,10 +1424,10 @@ time spent in unlock:        0.0003069310
   Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
   Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
   Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         67.581 MB
+  Max allocated memory, TOTAL                         68.387 MB
   Max allocated memory, type(matrix)                   3.120 kB
   Max allocated memory, real(realk)                  285.208 kB
-  Max allocated memory, MPI                            3.000 kB
+  Max allocated memory, MPI                            2.008 kB
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                       15.871 kB
   Max allocated memory, logical                      203.372 kB
@@ -1428,7 +1440,7 @@ time spent in unlock:        0.0003069310
   Max allocated memory, MYPOINTER                      0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.125 MB
+  Max allocated memory, ARRAY                         66.931 MB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.108 kB
@@ -1455,9 +1467,9 @@ time spent in unlock:        0.0003069310
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
- >>>  CPU Time used in LSDALTON is   0.22 seconds
- >>> wall Time used in LSDALTON is   0.23 seconds
+ >>>  CPU Time used in LSDALTON is   0.27 seconds
+ >>> wall Time used in LSDALTON is   0.28 seconds
 
 End simulation
-     Date and time (Linux)  : Mon Oct 20 15:25:10 2014
-     Host name              : valhalla.st.client.au.dk                
+     Date and time (Linux)  : Thu Nov 13 12:06:47 2014
+     Host name              : Valhalla.local                          

@@ -10427,12 +10427,12 @@ contains
 
       if (ijk) then
 
-        if (DECinfo%ijk_nbuffs .lt. ijk_default) then
+         if (DECinfo%ijk_nbuffs .lt. ijk_default) then
+ 
+             manual_ijk = .true.
+             ijk_nbuffs = DECinfo%ijk_nbuffs
 
-            manual_ijk = .true.
-            ijk_nbuffs = DECinfo%ijk_nbuffs
-
-        endif
+         endif
 
          if (manual_ijk) then
 
@@ -10445,8 +10445,6 @@ contains
             ijk_nbuffs = 6
 
          endif
-
-         if (ijk_nbuffs .gt. nvirt) call lsquit('manually set ijk_nbuffs (NBUFFS_IJK) .gt. nvirt - aborting...',DECinfo%output)
 
       else ! abc == .true.
 
@@ -10479,7 +10477,7 @@ contains
 #ifdef VAR_MPI
       write(DECinfo%output,'(a,i4)')     'Number of nodes in lg  = ',nodtotal
 #endif
-      write(DECinfo%output,'(a,l4)')     'Print frag. energies    = ',print_frags
+      write(DECinfo%output,'(a,l4)')     'Print frag. energies   = ',print_frags
       write(DECinfo%output,'(a,l4)')     'IJK partitioning       = ',ijk
       if (ijk) then
          if (manual_ijk) then
@@ -10496,12 +10494,12 @@ contains
             write(DECinfo%output,'(a,i4)')     'ABC tile size          = ',abc_tile_size
          endif
       endif
-      write(DECinfo%output,'(a,g10.4)')     'Free CPU memory (GB)   = ',free_cpu
+      write(DECinfo%output,'(a,g11.4)')     'Free CPU memory (GB)   = ',free_cpu
       write(DECinfo%output,'(a,l4)')     'Are we using GPUs?     = ',gpu
       if (gpu) then
          write(DECinfo%output,'(a,i4)')     'Number of GPUs         = ',num_gpu
-         write(DECinfo%output,'(a,g10.4)')     'Total GPU memory (GB)  = ',total_gpu * gb
-         write(DECinfo%output,'(a,g10.4)')     'Free GPU memory (GB)   = ',free_gpu * gb
+         write(DECinfo%output,'(a,g11.4)')     'Total GPU memory (GB)  = ',total_gpu * gb
+         write(DECinfo%output,'(a,g11.4)')     'Free GPU memory (GB)   = ',free_gpu * gb
       endif
       write(DECinfo%output,*)
       write(DECinfo%output,*)
