@@ -10,7 +10,41 @@ def main():
    good     = True
    good = compare_struct_and_its_bcast("../lsutil/dec_typedef.F90","decsettings","../deccc/decmpi.F90","mpicopy_dec_settings",exceptions=["cc_models"])
    all_good = all_good and good
-   good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","LSSETTING","../lsutil/lsmpi-operations.F90","mpicopy_setting",exceptions=["MOLECULE","BASIS","FRAGMENT","SCHEME","IO","lst_dLHS","lst_dRHS","DmatLHS","DmatRHS","LST_GAB_LHS","LST_GAB_RHS","FRAGMENTS","OUTPUT","GGem","RedCS"])
+
+   good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","LSSETTING","../lsutil/lsmpi-operations.F90","mpicopy_setting",exceptions=["comm","molbuild","basbuild","fragbuild","numnodes","node","lstensor_attached","lhsdmatalloc","rhsdmatalloc","lhsdalloc","rhsdalloc","lhssameasrhsdmat"])
+   print "IS GOOD",good
+   all_good = all_good and good
+
+   good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","integralconfig","../lsutil/lsmpi-operations.F90","mpicopy_integralconfig")
+   print "IS GOOD",good
+   all_good = all_good and good
+
+   good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","lsintscheme","../lsutil/lsmpi-operations.F90","mpicopy_scheme")
+   print "IS GOOD",good
+   all_good = all_good and good
+
+   good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","DALTONINPUT","../lsutil/lsmpi-operations.F90","mpicopy_daltoninput",exceptions=["numnodes","node"])
+   print "IS GOOD",good
+   all_good = all_good and good
+
+   good = compare_struct_and_its_bcast("../lsutil/dftType.F90","DFTparam","../lsutil/dft_operations.F90","mpicopy_DFTparam",exceptions=["dftfuncObject"])
+   print "IS GOOD",good
+   all_good = all_good and good
+
+   good = compare_struct_and_its_bcast("../lsutil/f12.F90","GaussianGeminal","../lsutil/lsmpi-operations.F90","mpicopy_GaussianGeminal")
+   print "IS GOOD",good
+   all_good = all_good and good
+
+   good = compare_struct_and_its_bcast("../lsutil/BasisinfoType.F90","basissetinfo","../lsutil/lsmpi-operations.F90","mpicopy_basissetinfo",exceptions=["Chargeindex"])
+   print "IS GOOD",good
+   all_good = all_good and good
+
+   good = compare_struct_and_its_bcast("../lsutil/BasisinfoType.F90","basissetinfo","../lsutil/lsmpi-operations.F90","mpicopy_basissetinfo",exceptions=["Chargeindex"])
+   print "IS GOOD",good
+   all_good = all_good and good
+
+   good = compare_struct_and_its_bcast("../lsutil/MoleculeType.F90","moleculeinfo","../lsutil/lsmpi-operations.F90","mpicopy_molecule",exceptions=["nbastreg","nbastaux","nbastcabs","nbastjk","nbastadmm","nbastval","nprimbastreg","nprimbastaux","nprimbastcabs","nprimbastjk","nprimbastadmm","nprimbastval","subsystemlabel"])
+
    print "IS GOOD",good
    all_good = all_good and good
 
