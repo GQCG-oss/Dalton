@@ -2305,9 +2305,7 @@ ENDIF
         integer :: ndmat 
 !       
         logical :: Dsym
-
-        Dsym = .TRUE. !matrix either symmetric or antisymmetric
-        IF(mat_get_isym(Dens).EQ.3) Dsym = .FALSE. !NON symmetric Density matrix
+        Dsym = .FALSE. !matrix can be non symmetric
         ndmat = 1
         IF(present(setting))THEN
            !This should be changed to a test like the MATSYM function
@@ -2439,15 +2437,8 @@ ENDIF
       type(lssetting),optional :: setting !intent(inout)
       !
       integer :: idmat
-      logical :: Dsym
-      
-      Dsym = .TRUE. !all matrices either symmetric or antisymmetric
-      DO idmat = 1,ndmat
-         IF(mat_get_isym(Dens(idmat)).EQ.3)THEN
-            Dsym = .FALSE. !NON symmetric Density matrix
-         ENDIF
-         IF(.NOT.Dsym)EXIT
-      ENDDO
+      logical :: Dsym      
+      Dsym = .FALSE. !Matrices can be non symmetric
       IF(present(setting))THEN
          call II_get_Fock_mat(lupri,luerr,&
               & setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
@@ -2455,8 +2446,8 @@ ENDIF
          call II_get_Fock_mat(lupri,luerr,&
               & lsint_fock_data%ls%setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
       ENDIF
-      !        write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
-      !        call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+      !write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
+      !call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
       
     end subroutine di_GET_GbDsArray
 
