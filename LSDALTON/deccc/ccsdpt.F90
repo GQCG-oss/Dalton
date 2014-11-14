@@ -92,21 +92,21 @@ module ccsdpt_module
 #endif
 #endif
 
-#ifdef VAR_OPENACC
-
-  interface
-  
-    subroutine get_dev_mem( total , free ) bind(C, name="get_dev_mem")
-  
-       use iso_c_binding
-  
-       integer (C_SIZE_T) :: total,free
-  
-    end subroutine get_dev_mem
-  
-  end interface
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!  interface
+!  
+!    subroutine get_dev_mem( total , free ) bind(C, name="get_dev_mem")
+!  
+!       use iso_c_binding
+!  
+!       integer (C_SIZE_T) :: total,free
+!  
+!    end subroutine get_dev_mem
+!  
+!  end interface
+!
+!#endif
 
 contains
 
@@ -10401,6 +10401,7 @@ contains
       ijk_nbuffs = 0
       abc_tile_size = 0
       manual_abc = .false.
+      manual_ijk = .false.
       gpu = .false.
       num_gpu = 0
       free_cpu = 0.0E0_realk
@@ -10413,7 +10414,7 @@ contains
 
       acc_device_type = acc_get_device_type() 
       num_gpu = acc_get_num_devices(acc_device_type)
-      call get_dev_mem(total_gpu,free_gpu)
+!      call get_dev_mem(total_gpu,free_gpu)
 
 #endif
 
