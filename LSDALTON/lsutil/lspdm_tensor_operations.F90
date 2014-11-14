@@ -3174,6 +3174,7 @@ module lspdm_tensor_operations_module
      integer, intent(inout)   :: M1ST
      integer :: i, flushed_node, another_node, ne2
 
+#ifdef VAR_MPI
      if( alloc_in_dummy )then
 
         !call lsmpi_wait(reqA(ibufA))
@@ -3213,6 +3214,7 @@ module lspdm_tensor_operations_module
         if(T%lock_set(cmidT))call tensor_unlock_win(T,cmidT)
 
      endif
+#endif
 
   end subroutine make_sure_tile_is_here
 
@@ -3238,10 +3240,8 @@ module lspdm_tensor_operations_module
      logical :: contM, TisA, TisB, get_new, found, break_condition, BDense
      integer :: me, maxcntr
 
-     me = 0
 #ifdef VAR_MPI
      me = infpar%lg_mynum
-#endif
 
      ! find the identity of T
      TisA   = ( A%addr_p_arr(me+1) == T%addr_p_arr(me+1) )
@@ -3380,6 +3380,7 @@ module lspdm_tensor_operations_module
         break_condition = ( (count(loglist) < nbuffs) .and. ( next <= maxcntr ) )
 
      enddo
+#endif
   
   end subroutine fill_buffer_for_tensor_contract_simple
 

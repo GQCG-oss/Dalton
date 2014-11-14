@@ -615,130 +615,132 @@ module matrix_operations_scalapack
    end subroutine mat_scalapack_free
 
 !> \brief See mat_set_from_full in mat-operations.f90
-  subroutine mat_scalapack_set_from_full(afull,alpha,a)
+   subroutine mat_scalapack_set_from_full(afull,alpha,a)
      implicit none
-    real(realk), INTENT(IN)    :: afull(*)
-    real(realk), intent(in) :: alpha
-    TYPE(Matrix)               :: a 
-    INTEGER      :: DESC_AF(9), DESC_A(9), I,nsize,n1,n2,shift
-    INTEGER :: J,IP,IQ,P,Q,ip2,iq2,NBJ,NBI,iproc,preproc,nprow,npcol
+     real(realk), INTENT(IN)    :: afull(*)
+     real(realk), intent(in) :: alpha
+     TYPE(Matrix)               :: a 
+     INTEGER      :: DESC_AF(9), DESC_A(9), I,nsize,n1,n2,shift
+     INTEGER :: J,IP,IQ,P,Q,ip2,iq2,NBJ,NBI,iproc,preproc,nprow,npcol
 #ifdef VAR_SCALAPACK        
-!    integer :: localnrow(0:infpar%nodtot-1)
-!    integer :: localncol(0:infpar%nodtot-1)
-!    TYPE(matrix),pointer :: localA(:)
+     integer :: localnrow(0:infpar%nodtot-1)
+     integer :: localncol(0:infpar%nodtot-1)
+     TYPE(matrix),pointer :: localA(:)
 
-    CALL PDM_SYNC(Job_from_full,A)
-    ! Set up descriptors                                                      
-    CALL PDM_DSCINIT(DESC_AF,A,A%nrow,A%ncol)
-    CALL PDM_DSCINIT(DESC_A,A)
-!    DESC_AF(CTXT_) = SLGrid%Masterictxt
-    ! Master Part: Distributes a full matrix AFull (on master) to SCALAPACK distributed matrix A
-    CALL PDGEMR2D(A%nrow,A%ncol,AFull,1,1,DESC_AF,&
-         & A%p,1,1,DESC_A,SLGrid%ictxt)
+     CALL PDM_SYNC(Job_from_full,A)
+     ! Set up descriptors                                                      
+     CALL PDM_DSCINIT(DESC_AF,A,A%nrow,A%ncol)
+     CALL PDM_DSCINIT(DESC_A,A)
+     !    DESC_AF(CTXT_) = SLGrid%Masterictxt
+     ! Master Part: Distributes a full matrix AFull (on master) to SCALAPACK distributed matrix A
+     IF(.TRUE.)THEN
+        CALL PDGEMR2D(A%nrow,A%ncol,AFull,1,1,DESC_AF,&
+             & A%p,1,1,DESC_A,SLGrid%ictxt)
+     ELSE
+        shift=infpar%nodtot/SLGrid%nprow
+        J=0
+        localncol = 0
+        jloop : do
+           preProc = 0
+           do npcol=1,SLGrid%npcol
+              do NBJ=1,BLOCK_SIZE
+                 J=J+1
+                 IF(J.GT.A%ncol)EXIT jloop
+                 Iproc = 0
+                 Ploop : DO
+                    IF(preProc+Iproc*shift.GT.infpar%nodtot-1)EXIT Ploop
+                    localncol(preProc+Iproc*shift) = localncol(preProc+Iproc*shift)+1 
+                    Iproc = Iproc+1
+                 ENDDO Ploop
+                 I=0
+                 iloop3 : do
+                    Iproc=preProc
+                    do nprow=1,SLGrid%nprow
+                       localnrow(Iproc) = 0
+                       do NBI=1,BLOCK_SIZE
+                          I=I+1
+                          IF(I.GT.A%nrow)EXIT iloop3               
+                       enddo
+                       Iproc=Iproc+shift
+                    enddo
+                 enddo iloop3
+                 I=0
+                 iloop : do
+                    Iproc=preProc
+                    do nprow=1,SLGrid%nprow
+                       do NBI=1,BLOCK_SIZE
+                          I=I+1
+                          IF(I.GT.A%nrow)EXIT iloop               
+                          localnrow(Iproc) = localnrow(Iproc)+1 
+                       enddo
+                       Iproc=Iproc+shift
+                    enddo
+                 enddo iloop
+              enddo
+              preProc = preProc+1
+           enddo
+        enddo jloop
 
-!     shift=infpar%nodtot/SLGrid%nprow
-!     J=0
-!     localncol = 0
-!     jloop : do
-!        preProc = 0
-!        do npcol=1,SLGrid%npcol
-!           do NBJ=1,BLOCK_SIZE
-!              J=J+1
-!              IF(J.GT.A%ncol)EXIT jloop
-!              Iproc = 0
-!              Ploop : DO
-!                 IF(preProc+Iproc*shift.GT.infpar%nodtot-1)EXIT Ploop
-!                 localncol(preProc+Iproc*shift) = localncol(preProc+Iproc*shift)+1 
-!                 Iproc = Iproc+1
-!              ENDDO Ploop
-!              I=0
-!              iloop3 : do
-!                 Iproc=preProc
-!                 do nprow=1,SLGrid%nprow
-!                    localnrow(Iproc) = 0
-!                    do NBI=1,BLOCK_SIZE
-!                       I=I+1
-!                       IF(I.GT.A%nrow)EXIT iloop3               
-!                    enddo
-!                    Iproc=Iproc+shift
-!                 enddo
-!              enddo iloop3
-!              I=0
-!              iloop : do
-!                 Iproc=preProc
-!                 do nprow=1,SLGrid%nprow
-!                    do NBI=1,BLOCK_SIZE
-!                       I=I+1
-!                       IF(I.GT.A%nrow)EXIT iloop               
-!                       localnrow(Iproc) = localnrow(Iproc)+1 
-!                    enddo
-!                    Iproc=Iproc+shift
-!                 enddo
-!              enddo iloop
-!           enddo
-!           preProc = preProc+1
-!        enddo
-!     enddo jloop
-    
-!     allocate(localA(0:infpar%nodtot-1))
-!     do I=0,infpar%nodtot-1
-!        localA(I)%nrow = localnrow(I)
-!        localA(I)%ncol = localncol(I)
-!        allocate(localA(I)%p(localnrow(I),localncol(I)))
-!     enddo
-    
-!     shift=infpar%nodtot/SLGrid%nprow
-!     J=0
-!     localncol = 0
-!     jloop2 : do
-!        preProc = 0
-!        do npcol=1,SLGrid%npcol
-!           do NBJ=1,BLOCK_SIZE
-!              J=J+1
-!              IF(J.GT.A%ncol)EXIT jloop2
-!              Iproc = 0
-!              Ploop2 : DO
-!                 IF(preProc+Iproc*shift.GT.infpar%nodtot-1)EXIT Ploop2
-!                 localncol(preProc+Iproc*shift) = localncol(preProc+Iproc*shift)+1 
-!                 Iproc = Iproc+1
-!              ENDDO Ploop2
-!              I=0
-!              localnrow = 0
-!              iloop2 : do
-!                 Iproc=preProc
-!                 do nprow=1,SLGrid%nprow
-!                    do NBI=1,BLOCK_SIZE
-!                       I=I+1
-!                       IF(I.GT.A%nrow)EXIT iloop2               
-!                       localnrow(Iproc) = localnrow(Iproc)+1 
-!                       localA(Iproc)%p(localnrow(Iproc),localncol(Iproc)) = AFULL(I+(J-1)*A%nrow) 
-! !                      write(6,'(A,I2,A,I2,A,I2,A,I2,A,I2,A,F16.8)')'Ap(',localnrow(Iproc),',',localncol(Iproc),',',iproc,') = AFULL(',&
-! !                           & I,',',J,')=',AFULL(I+(J-1)*A%nrow) 
-!                    enddo
-!                    Iproc=Iproc+shift
-!                 enddo
-!              enddo iloop2
-!           enddo
-!           preProc = preProc+1
-!        enddo
-!     enddo jloop2
+        allocate(localA(0:infpar%nodtot-1))
+        do I=0,infpar%nodtot-1
+           localA(I)%nrow = localnrow(I)
+           localA(I)%ncol = localncol(I)
+           allocate(localA(I)%p(localnrow(I),localncol(I)))
+        enddo
 
-!     do NBJ=1,A%localncol
-!        do NBI=1,A%localnrow
-!           A%p(NBI,NBJ) = localA(0)%p(NBI,NBJ)
-!        enddo
-!     enddo
-!     DO Iproc = 1,infpar%nodtot-1
-!        IF(localA(Iproc)%nrow*localA(Iproc)%ncol.GT. 0)THEN
-!           call ls_mpisend(localA(Iproc)%p,localA(Iproc)%nrow,localA(Iproc)%ncol,Iproc)
-!        ENDIF
-!     ENDDO
-!     do I=0,infpar%nodtot-1
-!        deallocate(localA(I)%p)
-!     enddo
-    if (ALPHA.ne. 1.0E0_realk)call mat_scalapack_scal(alpha,a)
+        shift=infpar%nodtot/SLGrid%nprow
+        J=0
+        localncol = 0
+        jloop2 : do
+           preProc = 0
+           do npcol=1,SLGrid%npcol
+              do NBJ=1,BLOCK_SIZE
+                 J=J+1
+                 IF(J.GT.A%ncol)EXIT jloop2
+                 Iproc = 0
+                 Ploop2 : DO
+                    IF(preProc+Iproc*shift.GT.infpar%nodtot-1)EXIT Ploop2
+                    localncol(preProc+Iproc*shift) = localncol(preProc+Iproc*shift)+1 
+                    Iproc = Iproc+1
+                 ENDDO Ploop2
+                 I=0
+                 localnrow = 0
+                 iloop2 : do
+                    Iproc=preProc
+                    do nprow=1,SLGrid%nprow
+                       do NBI=1,BLOCK_SIZE
+                          I=I+1
+                          IF(I.GT.A%nrow)EXIT iloop2               
+                          localnrow(Iproc) = localnrow(Iproc)+1 
+                          localA(Iproc)%p(localnrow(Iproc),localncol(Iproc)) = AFULL(I+(J-1)*A%nrow) 
+                          !                      write(6,'(A,I2,A,I2,A,I2,A,I2,A,I2,A,F16.8)')'Ap(',localnrow(Iproc),',',localncol(Iproc),',',iproc,') = AFULL(',&
+                          !                           & I,',',J,')=',AFULL(I+(J-1)*A%nrow) 
+                       enddo
+                       Iproc=Iproc+shift
+                    enddo
+                 enddo iloop2
+              enddo
+              preProc = preProc+1
+           enddo
+        enddo jloop2
+
+        do NBJ=1,A%localncol
+           do NBI=1,A%localnrow
+              A%p(NBI,NBJ) = localA(0)%p(NBI,NBJ)
+           enddo
+        enddo
+        DO Iproc = 1,infpar%nodtot-1
+           IF(localA(Iproc)%nrow*localA(Iproc)%ncol.GT. 0)THEN
+              call ls_mpisendrecv(localA(Iproc)%p,localA(Iproc)%nrow,localA(Iproc)%ncol,scalapack_comm,infpar%master,Iproc)
+           ENDIF
+        ENDDO
+        do I=0,infpar%nodtot-1
+           deallocate(localA(I)%p)
+        enddo
+     ENDIF
+     if (ALPHA.ne. 1.0E0_realk)call mat_scalapack_scal(alpha,a)
 #endif
-  end subroutine mat_scalapack_set_from_full
+   end subroutine mat_scalapack_set_from_full
 
 !> \brief See mat_to_full in mat-operations.f90
   subroutine mat_scalapack_to_full(a,alpha,afull)
@@ -3238,11 +3240,14 @@ module matrix_operations_scalapack
 !      DESC_AF(2)=-1
       CALL PDM_DSCINIT(DESC_A,A)
       ! Slave Part: Distributes a full matrix AFull (on master) to SCALAPACK distributed matrix A
-      CALL PDGEMR2D(A%nrow,A%ncol,AF,1,1,DESC_AF,&
-           &A%p,1,1,DESC_A,SLGrid%ictxt)
-!      IF(A%localnrow*A%localncol.GT. 0)THEN
-!         call ls_mpirecv(A%p,A%localnrow,A%localncol,infpar%master)
-!      ENDIF
+      IF(.TRUE.)THEN
+         CALL PDGEMR2D(A%nrow,A%ncol,AF,1,1,DESC_AF,&
+              &A%p,1,1,DESC_A,SLGrid%ictxt)
+      ELSE
+         IF(A%localnrow*A%localncol.GT. 0)THEN
+            call ls_mpisendrecv(A%p,A%localnrow,A%localncol,scalapack_comm,infpar%master,infpar%mynum)
+         ENDIF
+      ENDIF
    CASE(Job_to_full3D)
       CALL PDM_DSCINIT(DESC_AF,A,A%nrow,A%ncol)
       CALL PDM_DSCINIT(DESC_A,A)

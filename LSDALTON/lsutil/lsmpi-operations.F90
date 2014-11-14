@@ -1522,6 +1522,8 @@ call LS_MPI_BUFFER(scheme%ADMMS,Master)
 call LS_MPI_BUFFER(scheme%ADMMP,Master)
 call LS_MPI_BUFFER(scheme%ADMM_separateX,Master)
 call LS_MPI_BUFFER(scheme%PRINT_EK3,Master)
+call LS_MPI_BUFFER(scheme%ADMM_CONSTRAIN_FACTOR,Master)
+call LS_MPI_BUFFER(scheme%ADMM_LARGE_LAMBDA,Master)
 
 call LS_MPI_BUFFER(scheme%CAM,Master)
 call LS_MPI_BUFFER(scheme%CAMalpha,Master)
@@ -1871,7 +1873,9 @@ IF (GGem%is_set) THEN
   IF (GGem%N.GT.0) THEN
     call LS_MPI_BUFFER(GGem%coeff,GGem%N,Master)
     call LS_MPI_BUFFER(GGem%exponent,GGem%N,Master)
-    IF(isassociated)call LS_MPI_BUFFER(GGem%expProd,GGem%N,Master)
+    IF(isassociated)THEN
+       call LS_MPI_BUFFER(GGem%expProd,GGem%N,Master)
+    ENDIF
   ENDIF
 ENDIF
 END SUBROUTINE mpicopy_GaussianGeminal

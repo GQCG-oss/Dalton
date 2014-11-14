@@ -16,12 +16,17 @@ module tensor_interface_module
   use dec_workarounds_module
 
   !> Number of created arrays
-  integer(kind=long) :: ArraysCreated=0
+  integer(kind=long) :: ArraysCreated      = 0
   !> Number of destroyed arrays
-  integer(kind=long) :: ArraysDestroyed=0
+  integer(kind=long) :: ArraysDestroyed    = 0
   !> Number of created arrays
-  integer(kind=long) :: CreatedPDMArrays=0
-  integer(kind=long) :: DestroyedPDMArrays=0
+  integer(kind=long) :: CreatedPDMArrays   = 0
+  integer(kind=long) :: DestroyedPDMArrays = 0
+
+
+  
+  !> TIMINGS
+  real(realk) :: tensor_time_init = 0
 
 
   !> convert arrays, the idea is for a general conversion only the interface
@@ -1075,6 +1080,8 @@ contains
     character(4)  :: at
     integer       :: it
     logical :: loc
+    real(realk) :: time_minit
+    call time_start_phase(PHASE_WORK, twall = time_minit )
 
 
     ! Sanity check
@@ -1158,6 +1165,9 @@ contains
 #endif
     arr%initialized=.true.
 
+    call time_start_phase(PHASE_WORK, ttot = time_minit )
+    tensor_time_init = tensor_time_init + time_minit
+
   end subroutine tensor_minit
 
   subroutine tensor_ainit(arr, dims, nmodes, local, atype, tdims, fo )
@@ -1172,6 +1182,8 @@ contains
     character(4)  :: at
     integer       :: it
     logical :: loc
+    real(realk) :: time_ainit
+    call time_start_phase(PHASE_WORK, twall = time_ainit )
  
     ! Sanity check
     if(arr%initialized)call lsquit("ERROR(tensor_ainit):tensor already initialized",-1) 
@@ -1247,6 +1259,9 @@ contains
     arr%atype='LDAR'
 #endif
     arr%initialized=.true.
+
+    call time_start_phase(PHASE_WORK, ttot = time_ainit )
+    tensor_time_init = tensor_time_init + time_ainit
   end subroutine tensor_ainit
 
   !> \author Patrick Ettenhuber
@@ -1267,7 +1282,10 @@ contains
     integer, optional :: pdm,fo
     integer :: sel_type,pdmtype,it
     logical :: zeros_in_tiles,wcps
+    real(realk) :: time_init
+
     !choose which kind of array
+    call time_start_phase(PHASE_WORK, twall = time_init )
 
     !if(arr%initialized)call lsquit("ERROR(tensor_init):array already initialized",-1) 
 
@@ -1307,6 +1325,9 @@ contains
     arr%access_type   = pdmtype
     arr%itype         = it
     arr%initialized   = .true.
+
+    call time_start_phase(PHASE_WORK, ttot = time_init )
+    tensor_time_init = tensor_time_init + time_init
   end subroutine tensor_init
 
 
