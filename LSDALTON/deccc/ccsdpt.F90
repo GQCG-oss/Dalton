@@ -10401,6 +10401,7 @@ contains
       ijk_nbuffs = 0
       abc_tile_size = 0
       manual_abc = .false.
+      manual_ijk = .false.
       gpu = .false.
       num_gpu = 0
       free_cpu = 0.0E0_realk
