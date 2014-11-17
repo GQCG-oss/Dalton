@@ -1,3 +1,17 @@
+#check the LSDALTON source with a python script
+add_custom_command(
+   OUTPUT ${PROJECT_BINARY_DIR}/check-source # this is just a dummy
+   COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/CheckLSDALTON.cmake
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
+add_custom_target(
+   CheckLSDALTON
+   ALL DEPENDS ${PROJECT_BINARY_DIR}/check-source
+   #COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/CheckLSDALTON.cmake
+)
+
+
 set(LSDALTON_EXTERNAL_LIBS)
 
 if(ENABLE_SCALASCA)
@@ -42,6 +56,7 @@ if(ENABLE_VAMPIRTRACE)
     SET(CMAKE_C_COMPILER "vtcc")
     SET(CMAKE_CXX_COMPILER "vtc++")
 endif()
+
 
 add_library(
     lsutillib_precision
@@ -431,6 +446,8 @@ if(NOT ENABLE_CHEMSHELL)
         endif()
     endif()
 endif()
+
+
 
 if(ENABLE_INTEREST)
     MERGE_STATIC_LIBS(

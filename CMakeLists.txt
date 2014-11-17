@@ -83,6 +83,7 @@ option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             
 
 set(EXTERNAL_LIBS)
 
+
 include(ConfigVersion)
 include(SourcesDALTON)
 include(SourcesLSDALTON)
@@ -226,3 +227,4 @@ include(ConfigMakeRelease)
 # give information about system, compiler flags, and size of static allocations
 set(STATIC_MEM_INFO_BINARIES dalton lsdalton)
 include(ConfigInfo)
+
