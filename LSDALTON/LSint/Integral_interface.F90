@@ -5542,7 +5542,7 @@ IF (PRINT_EK3) THEN
 
    var = mat_trAB(S33,D) - mat_trAB(S22,D2(1))
    var = var*var
-   write(*,*) "Fitting error = ", var
+   write(lupri,*) "Fitting error = ", var
    call mat_free(S22)
    call mat_free(S33)
 
