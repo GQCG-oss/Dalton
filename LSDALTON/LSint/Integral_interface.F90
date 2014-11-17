@@ -5375,6 +5375,8 @@ logical,intent(in)            :: dsym,ADMMBASISFILE
 !
 logical             :: GC3
 TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33
+TYPE(Matrix)        :: S22
+real(realk)         :: var
 logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AORold,AO3,nelectrons
@@ -5532,6 +5534,18 @@ IF (PRINT_EK3) THEN
       write(*,*)     "E(X3)-E(x2)= ",EdXC
       write(lupri,*) "E(X3)-E(x2)= ",EdXC
    ENDIF
+
+   call mat_init(S22,nbast2,nbast2)
+   call mat_init(S33,nbast,nbast)
+   CALL get_S22(S22,AOadmm,.FALSE.,setting,lupri,luerr)
+   CALL get_S33(S33,AO3,GC3,setting,lupri,luerr)
+
+   var = mat_trAB(S33,D) - mat_trAB(S22,D2(1))
+   var = var*var
+   write(lupri,*) "Fitting error = ", var
+   call mat_free(S22)
+   call mat_free(S33)
+
 ENDIF
 
 
