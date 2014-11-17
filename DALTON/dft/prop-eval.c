@@ -2,12 +2,12 @@
 
 
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -309,6 +309,7 @@ void
 FSYM2(dft_lin_resp)(real* fmat, real *cmo, real *zymat, integer *trplet,
 		    integer *ksymop, real* work, integer* lwork, integer* iprint)
 {
+    static const real DP5R = 0.5;
     struct tms starttm, endtm; clock_t utm;
     real electrons;
     LinRespData lr_data; /* linear response data */
@@ -333,7 +334,8 @@ FSYM2(dft_lin_resp)(real* fmat, real *cmo, real *zymat, integer *trplet,
     dens.dmata = lr_data.dmat;
 
     FSYM2(dft_get_ao_dens_mat)(cmo, lr_data.dmat, work, lwork);
-    deq27_(cmo,zymat,&dummy,lr_data.kappa,&dummy,work,lwork);
+    FSYM(deq27)(cmo,zymat,&dummy,lr_data.kappa,&dummy,work,lwork);
+    dscal_(&inforb_.n2basx,&DP5R,lr_data.kappa,&ONEI);    
     if(DFTLR_DEBUG) {
         fort_print("kappa matrix in dft_lin_resp");
         outmat_(lr_data.kappa,&ONEI,&inforb_.nbast,&ONEI,&inforb_.nbast,
@@ -974,8 +976,8 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
 		      integer *trplet, integer *ksymop,
 		      real* work, integer* lwork, integer* iprint)
 {
-    const real DP5R = 0.5;
-    const real MONER = -1.0;
+    static const real DP5R = 0.5;
+    static const real MONER = -1.0;
     real electrons = 13.0; 
     struct tms starttm, endtm; clock_t utm;
     LinRespDataab lr_data;
@@ -1013,7 +1015,8 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
     dscal_(&inforb_.n2basx,&DP5R,lr_data.dmatb,&ONEI);    
     runit=calloc(inforb_.n2ashx,sizeof(real));
     dunit_(runit,&inforb_.nasht);
-    deq27_(cmo,zymat,runit,lr_data.kappab,lr_data.kappaa,work,lwork); 
+    FSYM(deq27)(cmo,zymat,runit,lr_data.kappab,lr_data.kappaa,work,lwork); 
+    dscal_(&inforb_.n2basx,&DP5R,lr_data.kappab,&ONEI);    
     free(runit);
     daxpy_(&inforb_.n2basx,&ONER,lr_data.kappab,&ONEI,lr_data.kappaa,&ONEI);
     
@@ -1474,6 +1477,7 @@ FSYM2(dft_lin_respf)(integer *nosim, real* fmat, real *cmo, real *zymat,
        memory utilization without positive impact on performance.
        FIXME: consider using work for this purpose. */
     static const integer MAX_VEC = 5;
+    static const real DP5R = 0.5;
     struct tms starttm, endtm; clock_t utm;
     real electrons = 0;
     LinRespBlData lr_data; /* linear response data */
@@ -1502,9 +1506,11 @@ FSYM2(dft_lin_respf)(integer *nosim, real* fmat, real *cmo, real *zymat,
         lr_data.vecs_in_batch = ivec + max_vecs > *nosim ? *nosim - ivec : max_vecs;
         sz = lr_data.vecs_in_batch * inforb_.n2basx;
         FSYM(dzero)(lr_data.kappa, &sz);
-        for(jvec=0; jvec<lr_data.vecs_in_batch; jvec++)
+        for(jvec=0; jvec<lr_data.vecs_in_batch; jvec++){
             FSYM(deq27)(cmo,zymat+(ivec+jvec)*inforb_.n2orbx,&dummy,
                         lr_data.kappa+jvec*inforb_.n2basx, &dummy,work,lwork);
+            dscal_(&inforb_.n2basx,&DP5R,lr_data.kappa+jvec*inforb_.n2basx,&ONEI);    
+        }
         FSYM(dzero)(lr_data.res, &sz);
         electrons = dft_integrate_ao_bl(1, lr_data.dmat, work, lwork, iprint, 0, 
                                         (DftBlockCallback)
@@ -2261,6 +2267,7 @@ FSYM2(dft_lin_respab_b)(integer *nosim, real* fmatc, real* fmato, real *cmo,
 		  lr_data.kappa_b+jvec*inforb_.n2basx,
 		  lr_data.kappa_a+jvec*inforb_.n2basx,
 		  work,lwork);
+    dscal_(&sz,&DP5R,lr_data.kappa_b,&ONEI);    
     FSYM(daxpy)(&sz,&ONER,lr_data.kappa_b,&ONEI,lr_data.kappa_a,&ONEI);
     FSYM(dzero)(lr_data.res_a, &sz);
     FSYM(dzero)(lr_data.res_b, &sz);

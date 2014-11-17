@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_dens */
       SUBROUTINE SO_DENS(DENSIJ,LDENSIJ,DENSAB,LDENSAB,

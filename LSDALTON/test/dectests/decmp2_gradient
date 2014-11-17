@@ -60,8 +60,10 @@ TIGHT
 **DEC
 .GRADIENT
 .FOT
-5
+1.0e-5
 .FROZENCORE
+.MEMORY
+2.0
 *END OF INPUT
 %EOF%
 #######################################################################

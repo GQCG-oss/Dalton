@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,19 +21,18 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
      &                  HESSEE,LWORK,ITYPE,MAXDIF,IATOM,NODV,NOPV,
      &                  NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
-     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP)
+     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,GENCTR)
 C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "mtags.h"
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME
+      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
       DIMENSION FMAT(*),DMAT(*),ISYMDM(*),IFCTYP(*),WORK(LWORK),
      &          NSTAT(NODTOT), HESSEE(*)
 CTROND
@@ -88,7 +87,7 @@ C
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                   DINTSKP,RELCAL)
+     &                   DINTSKP,RELCAL,GENCTR)
       ELSE
          if (iprint .gt. 3)
      &      write (lupri,*) 'Calling parallel ERI routines.'
@@ -963,35 +962,55 @@ C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
-      use polarizable_embedding, only: pe_mpi
+#ifdef MOD_CGTO_DIFF_ERI
+      use eri_basis_loops
+#endif
+#ifdef MOD_XCINT
+      use xcint_integrator, only: xc_integrate_worker
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
 C infpar.h: MASTER,MYNUM
 #include "maxorb.h"
 #include "infpar.h"
-C defined parallel calculation types
+C iprtyp.h: define parallel calculation types
 #include "iprtyp.h"
-      real(8), allocatable :: work(:)
-C
+
+      real(8), allocatable  :: work(:)
+      integer(4), parameter :: TEN_4 = 10
+
+! ======================================================
+
       CALL QENTER('DALTON_NODEDRIVER')
       CALL GETTIM(CSTR,WSTR)
       N_TASKS = 0
 C
 C     Get calculation type (IPRTYP)
 C
-  100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+  100 CONTINUE
+#ifdef VAR_IFORT
+!     Nov 2013 hjaaj: sleep 10 millisecond before next check for a task
+!     - this saves a lot of cpu time on other cores in a sequential section
+!     - may make it possible to go into turbo mode
+!     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
+!     - only intel ifort has a sleepqq counting in milliseconds (that I know of),
+!       the more common sleep(n) sleeps in at least one second, which is too long.
+!       (One could use an interface to the C routine usleep.)
+      CALL SLEEPQQ(TEN_4)
+#endif
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
          N_TASKS = N_TASKS + 1
 
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
-         IF (IPRINT .GT. 0)
+         IF (IPRINT .GT. 15)
      &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
      &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
-     &      'Print level is',IPRINT
+     &      ' Print level is',IPRINT
 
-!        allocate memory here if we don't call hermit (more to follow...).
+!        allocate memory here if we do not call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
 !              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons)
 !              which is severely hampered by a "static" WORK for everything.
@@ -1073,10 +1092,12 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL QMMMQRO_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMQRO_2_WORK) THEN
             CALL QMMMQRO_S2(WORK(1),MWORK,IPRINT)
+#ifdef MOD_UNRELEASED
          ELSE IF (IPRTYP.EQ.QMMMCRO_1_WORK) THEN
             CALL QMMMCRO_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMCRO_2_WORK) THEN
             CALL QMMMCRO_S2(WORK(1),MWORK,IPRINT)
+#endif
          ELSE IF (IPRTYP.EQ.QMMMFIRST_1_WORK) THEN
             CALL QMMMFIRST_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMFIRST_2_WORK) THEN
@@ -1097,8 +1118,10 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
-         else if (iprtyp == POLARIZABLE_EMBEDDING) then
-            call pe_mpi(work(1:mwork), iprint)
+#if defined (BUILD_PELIB)
+         ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
+            CALL PE_IFC_MPI(IPRINT)
+#endif
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
@@ -1110,6 +1133,41 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
+
+#ifdef MOD_CGTO_DIFF_ERI
+         ! added by Bin Gao, Oct. 27, 2012
+         ! cgto-diff-eri code to calculate arbitray order geometric derivatives
+         ! of two-electron integrals
+         ELSE IF (IPRTYP.EQ.CGTO_DIFF_ERI_INIT) THEN
+            CALL unopt_geodiff_loop_worker(LUPRI,IPRINT)
+#endif
+
+#ifdef MOD_XCINT
+         ! XCint: XC integration, added by R. Bast
+         else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
+            call xc_integrate_worker()
+#endif
+
+         ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
+#ifdef ENABLE_VPOTDAMP
+            CALL vpotdamped_slave()
+#else
+            call quit('VPOTDAMP not compiled in this version')
+#endif
+
+#if defined(ENABLE_EFS)
+         else if (IPRTYP.eq.efs_add_atomtype_work) then
+            call efs_add_atomtype_slave()
+         else if (IPRTYP.eq.efs_init_work) then
+            call efs_init_slave()
+         else if (IPRTYP.eq.efs_generate_basis_work) then
+            call efs_generate_basis_product_slave()
+         else if (IPRTYP.eq.efs_init_2efock_work) then
+            call efs_init_2efock_slave()
+         else if (IPRTYP.eq.efs_fock_update_work) then
+            call efs_fock_update_slave()
+#endif
+
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
@@ -1568,7 +1626,7 @@ C
      &          CCFBT(*), INDXBT(*),
      &          CLSCPU(MXCLS2), IWHICH(MXCLS2), IJS(NTASK),
      &          NCOUNT(*), CSQ(NCSQ1,NCSQ2), WORK(LWORK)
-#include "ibtfun.h"
+
 C
       CALL QENTER('ERI_NODDRV')
 C
@@ -1820,9 +1878,9 @@ C
             SPHRAB = SPHRA .OR. SPHRB
             SPHRCD = SPHRC .OR. SPHRD
 C
-            ISTBLR = IBTOR(ISTBLA,ISTBLB)
-            ISTBLS = IBTOR(ISTBLC,ISTBLD)
-            ISTBLT = IBTOR(IBTAND(ISTBLA,ISTBLB),IBTAND(ISTBLC,ISTBLD))
+            ISTBLR = IOR(ISTBLA,ISTBLB)
+            ISTBLS = IOR(ISTBLC,ISTBLD)
+            ISTBLT = IOR(IAND(ISTBLA,ISTBLB),IAND(ISTBLC,ISTBLD))
 C
             MLTPA = MULT(ISTBLA)
             MLTPB = MULT(ISTBLB)

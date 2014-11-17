@@ -6,6 +6,7 @@ endif()
 
 # guard against bad build-type strings
 if(NOT CMAKE_BUILD_TYPE)
+    message("INFO: build type was not defined, using type \"Debug\".")
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
 

@@ -67,12 +67,12 @@ X   1.6874280   2.8198310   0.0017045
 @MULTIPOLES
 ORDER 0
 6
-1    -0.7423294438  
-2     0.3699305781  
-3     0.3723988657  
-6    -0.7424407021  
-7     0.3699635356  
-8     0.3724771666  
+1    -0.7423294438
+2     0.3699305781
+3     0.3723988657
+6    -0.7424407021
+7     0.3699635356
+8     0.3724771666
 ORDER 1
 10
 1        0.0303539300        0.3280749969        0.0000894127
@@ -168,23 +168,23 @@ fi
 #
 # Test of PE-HF one-photon absorption properties
 #
- CRIT1=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*2\.0.......E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
- CRIT2=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0*\.922715.. * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
- CRIT3=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.37......E\-04 \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
- CRIT4=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*1\.2.......E\-05 \*ENERGY\(eV\)\: * 10\.359..." $log | wc -l`
- CRIT5=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*1\.7.......E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
- CRIT6=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*1\.59365.. * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
- CRIT7=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.84......E\-04 \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
- CRIT8=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*6\.7.......E\-05 \*ENERGY\(eV\)\: * 10\.3593.." $log | wc -l`
- CRIT9=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*5\.953.....E\-03 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
-CRIT10=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*2\.50......E\-04 \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
-CRIT11=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*0*\.151991.. * \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
-CRIT12=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*4\.159.....E\-03 \*ENERGY\(eV\)\: * 10\.359..." $log | wc -l`
+ CRIT1=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*[12]\.[09].......E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
+ CRIT2=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0*\.9227.... * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
+ CRIT3=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.3.......E\-04 \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
+ CRIT4=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*1\.........E\-05 \*ENERGY\(eV\)\: * 10\.359..." $log | wc -l`
+ CRIT5=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*1\.........E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
+ CRIT6=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*1\.5936... * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
+ CRIT7=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.8.......E\-04 \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
+ CRIT8=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*6\.........E\-05 \*ENERGY\(eV\)\: * 10\.3593.." $log | wc -l`
+ CRIT9=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*5\.95......E\-03 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
+CRIT10=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*2\.[45].......E\-04 \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
+CRIT11=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*0*\.15199... * \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
+CRIT12=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*4\.1[56]......E\-03 \*ENERGY\(eV\)\: * 10\.359..." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 `
 CTRL[1]=12
 ERROR[1]="ONE-PHOTON ABSORPTION PROPERTIES NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -200,7 +200,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 chmod +x pehf_1pa.check
 #######################################################################

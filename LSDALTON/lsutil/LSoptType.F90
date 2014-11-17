@@ -177,6 +177,16 @@ Type opt_setting
 ! Needed for scanning the internals
     Integer, pointer :: Atoms_to_move(:,:)
     Integer, dimension(2) :: N_to_Move
+    Logical :: New_stepping
+    Logical :: IBT
+    Logical :: OLDIBT
+    Logical :: Shanks
+    Integer :: Deriv_order
+! Force-modified PES
+    Logical :: FMPES
+    Integer, dimension(2) :: Att_atom
+    Real(realk) :: Ext_force
+!
 End type opt_setting
 
 contains

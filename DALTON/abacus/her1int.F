@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck pr1drv */
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,
@@ -114,7 +113,7 @@ C
 #include "symind.h"
 #include "huckel.h"
 C
-#include "ibtfun.h"
+
 C
       IF (THRS.LE.0.0D0) THEN
          TOLS   = 1.0D-30 ! to avoid log(0.0d0) below
@@ -581,6 +580,24 @@ cLig <<
          JMAXM  = 1
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
+C copied from linsca abacus/her1int.F, Bin Gao, December 17, 2009
+Cdj contributions to magnetic 2nd derivative of overlap
+Cdj integrals types 104 bra diff. 105 ket diff. 106 mixed bra-ket diff.
+      ELSE IF (INTTYP .EQ.104) THEN
+         JMAXD = 0
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.105) THEN
+         JMAXD = 0
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.106) THEN
+         JMAXD = 0
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
       ELSE
          WRITE(LUPRI,*) 'PR1DR1 - Unknown INTTYP : ',INTTYP
          CALL QUIT('PR1DR1: Unknown INTTYP')
@@ -678,7 +695,7 @@ C
  210        CONTINUE
             DO 230 NA = 1, KHKTA
                DO 240 IREP = 0, MAXREP
-               IF (IBTAND(MULA,IBTXOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
+               IF (IAND(MULA,IEOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
                   ISOFRA(IREP+1)    = ISOFRA(IREP+1) + 1
                   INDFA (IREP+1,NA) = ISOFRA(IREP+1)
                END IF
@@ -713,8 +730,8 @@ C
             CORBZ0 = CENT(ISHELB,3,IBCNT)
             KHKTAB = KHKTA*KHKTB
             KCKTAB = KCKTA*KCKTB
-            MAB    = IBTOR(MULA,MULB)
-            KAB    = IBTAND(MULA,MULB)
+            MAB    = IOR(MULA,MULB)
+            KAB    = IAND(MULA,MULB)
             HKAB   = FMULT(KAB)
 C
             SPHRAB = SPHRA .OR. SPHRB
@@ -729,7 +746,7 @@ C
  310           CONTINUE
                DO 330 NB = 1, KHKTB
                DO 340 IREP = 0, MAXREP
-               IF (IBTAND(MULB,IBTXOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
+               IF (IAND(MULB,IEOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
                   ISOFRB(IREP+1)    = ISOFRB(IREP+1) + 1
                   INDFB (IREP+1,NB) = ISOFRB(IREP+1)
                END IF
@@ -876,8 +893,8 @@ C
 #include "gnrinf.h"
 #include "elweak.h"
 C
-#include "ibtfun.h"
-      XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
+
+      XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 C
 C     Initialization for Coulomb integrals
@@ -993,13 +1010,13 @@ C
 C
             DO 301 IATOMC = 1, NPOINT
                MULC = MAXREP + 1
-               MABC = IBTOR(MULC,KAB)
+               MABC = IOR(MULC,KAB)
                CORCX0 = DIPORG(1)
                CORCY0 = DIPORG(2)
                CORCZ0 = DIPORG(3)
-               FACTOR = - FMULT(IBTAND(MULC,KAB))
+               FACTOR = - FMULT(IAND(MULC,KAB))
                DO 311 ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MABC) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,MABC) .EQ. 0) THEN
                      NATOMC = NATOMC + 1
                      JSYMC(NATOMC)  = ISYMOP
                      JCENTC(NATOMC) = IATOMC
@@ -1020,11 +1037,11 @@ C
             DO 300 IATOMC = 1, IMXATM
             IF (DOATOM(IATOMC)) THEN
                MULC   = ISTBNU(IATOMC)
-               MABC   = IBTOR(MULC,KAB)
+               MABC   = IOR(MULC,KAB)
                CORCX0 =  CORD(1,IATOMC)
                CORCY0 =  CORD(2,IATOMC)
                CORCZ0 =  CORD(3,IATOMC)
-               FACTOR = - FMULT(IBTAND(MULC,KAB))
+               FACTOR = - FMULT(IAND(MULC,KAB))
                IF (MULCHA) FACTOR = FACTOR*CHARGE(IATOMC)/HKAB
                IF ( FORQM3 .AND. (INTTYP .EQ. 35) ) THEN
                  IF (ISUBSY(IATOMC) .NE. 0) THEN
@@ -1041,7 +1058,7 @@ C
      &            -BGWEIN*CHARGE(IATOMC))
                END IF
                DO 310 ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MABC) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,MABC) .EQ. 0) THEN
                      NATOMC = NATOMC + 1
                      JSYMC(NATOMC)  = ISYMOP
                      JCENTC(NATOMC) = IATOMC
@@ -1069,7 +1086,7 @@ C     *****************************************
 C
       IDENB = IDENB0 - KHKTB
       DO 100 ISYMOP = 0, MAXOPR
-      IF(IBTAND(ISYMOP,MAB) .EQ. 0) THEN
+      IF(IAND(ISYMOP,MAB) .EQ. 0) THEN
          LDIAG  = (ISHELA .EQ. ISHELB) .AND. (.NOT.SQUARE)
          ONECEN = .FALSE. ! must be .false.,
                           ! .true. means: exclude these one-center
@@ -1193,6 +1210,11 @@ C
                CALL EFGTRA(SHLINT,EXPVAL,FACINT,JSYMC,JCENTC,NATOMC,
      &                     ISYMOP,1,NOPTYP,ANTI,INTADR,EXP1EL,
      &                     DENMAT,MULTA,MULTB,IPRINT)
+            ELSE IF (INTTYP .EQ. 52) THEN
+C            CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
+C     &                  INTADR,IPRINT)
+               CALL DPGTRA(SHLINT,EXPVAL,ISYMOP,1,NOPTYP,ANTI,
+     &                  INTADR,EXP1EL,DENMAT,MULTA,MULTB,IPRINT)
             ELSE
                DO ICOMP = 1, NOPTYP
                   ICOUNT = 0
@@ -1258,8 +1280,10 @@ cLig <> added the call to NSSTRA for INTTYP = 82
             CALL NPETRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 52) THEN
-            CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
-     &                  INTADR,IPRINT)
+c            CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
+c     &                  INTADR,IPRINT)
+               CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
+     &                  INTADR,EXP1EL,DUMMY,MULTA,MULTB,IPRINT)
          ELSE IF (INTTYP .EQ. 53) THEN
             CALL QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
@@ -2262,6 +2286,38 @@ C
      &                     SHGTF,SHLINT(1,19))
 C
             END IF
+C
+C copied from linsca abacus/her1int.F, Bin Gao, December 17, 2009
+C        Second order magnetic derivatives of overlap matrix
+C        ---------------------------------------------------
+Cdj bra part
+         ELSE IF (INTTYP .EQ. 104) THEN
+            DIFAOX = CORAX - GAGORG(1)
+            DIFAOY = CORAY - GAGORG(2)
+            DIFAOZ = CORAZ - GAGORG(3)
+            CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFAOX,DIFAOY,DIFAOZ)
+Cdj ket part
+         ELSE IF (INTTYP .EQ. 105) THEN
+            DIFOBX = GAGORG(1) - CORBX
+            DIFOBY = GAGORG(2) - CORBY
+            DIFOBZ = GAGORG(3) - CORBZ
+            CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFOBX,DIFOBY,DIFOBZ)
+Cdj mixed bra-ket part
+         ELSE IF (INTTYP .EQ. 106) THEN
+c            CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+c     &                  EXPPI,DIFABX,DIFABY,DIFABZ,DIFABX,DIFABY,DIFABZ)
+            DIFAOX = CORAX - GAGORG(1)
+            DIFAOY = CORAY - GAGORG(2)
+            DIFAOZ = CORAZ - GAGORG(3)
+            DIFOBX = GAGORG(1) - CORBX
+            DIFOBY = GAGORG(2) - CORBY
+            DIFOBZ = GAGORG(3) - CORBZ
+            CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
+c            CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+c     &                  EXPPI,DIFOBX,DIFOBY,DIFOBZ,DIFAOX,DIFAOY,DIFAOZ)
          END IF
   200 CONTINUE
   100 CONTINUE
@@ -2304,8 +2360,8 @@ C
 #include "primit.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-      XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
+
+      XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
 C
       DO 100 IPRIMA = 1,NUCA
          JPRIMA = JSTA + IPRIMA
@@ -2323,10 +2379,10 @@ C
          DO 200 IATOMD = 1, NUCIND
          IF (DOATOM(IATOMD)) THEN
             MULD = ISTBNU(IATOMD)
-            MABD = IBTOR(MULD,KAB)
-            KABD = IBTAND(MULD,KAB)
+            MABD = IOR(MULD,KAB)
+            KABD = IAND(MULD,KAB)
             DO 300 ISYMD = 0, MAXOPR
-            IF (IBTAND(ISYMD,MABD).EQ.0) THEN
+            IF (IAND(ISYMD,MABD).EQ.0) THEN
                CORDX = XYZ(1,ISYMD)*CORD(1,IATOMD)
                CORDY = XYZ(2,ISYMD)*CORD(2,IATOMD)
                CORDZ = XYZ(3,ISYMD)*CORD(3,IATOMD)
@@ -2346,11 +2402,11 @@ C
                IF (DOATOM(IATOMC)) THEN
                   SAMECD = IATOMC .EQ. IATOMD
                   MULC   = ISTBNU(IATOMC)
-                  MABCD  = IBTOR(MULC,KABD)
-                  FACTOR = - FMULT(IBTAND(MULC,KABD))
+                  MABCD  = IOR(MULC,KABD)
+                  FACTOR = - FMULT(IAND(MULC,KABD))
                   DO 500 ISYMC = 0, MAXOPR
                   IF (SAMECD .AND. ISYMC.EQ.ISYMD) GO TO 500
-                  IF (IBTAND(ISYMC,MABCD) .EQ. 0) THEN
+                  IF (IAND(ISYMC,MABCD) .EQ. 0) THEN
                      JATOMC = JATOMC + 1
                      CORCX(JATOMC) = XYZ(1,ISYMC)*CORD(1,IATOMC)
                      CORCY(JATOMC) = XYZ(2,ISYMC)*CORD(2,IATOMC)
@@ -3178,6 +3234,82 @@ C
          SHLINT(INT,1) = SHLINT(INT,1) - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
          SHLINT(INT,2) = SHLINT(INT,2) - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
          SHLINT(INT,3) = SHLINT(INT,3) - D2I*(DIFABX*DPLY - DIFABY*DPLX)
+ 100  CONTINUE
+      RETURN
+      END
+C copied from linsca abacus/her1int.F, Bin Gao, December 17, 2009
+C  /* Deck sm2bin */
+      SUBROUTINE SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFAX,DIFAY,DIFAZ,DIFBX,DIFBY,DIFBZ)
+C
+C     dj oct 08, based on SM2INT
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
+      DIMENSION SHLINT(KCKTAB,9)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+#include <onecom.h>
+#include <lmns.h>
+      INT = 0
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1,KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         INT = INT + 1
+C
+         SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         DX1 = SHGTF*ODC(LVALA,LVALB,0,0,1,1)
+         DY1 = SHGTF*ODC(MVALA,MVALB,0,0,1,2)
+         DZ1 = SHGTF*ODC(NVALA,NVALB,0,0,1,3)
+         DX2 = SHGTF*ODC(LVALA,LVALB,0,0,2,1)
+         DY2 = SHGTF*ODC(MVALA,MVALB,0,0,2,2)
+         DZ2 = SHGTF*ODC(NVALA,NVALB,0,0,2,3)
+C
+         SHLINT(INT,1) = SHLINT(INT,1) - (DIFAZ*DIFBY*SX0*DY1*DZ1 +
+     &                   DIFAY*DIFBZ*SX0*DY1*DZ1 -
+     &                   DIFAZ*DIFBZ*SX0*DY2*SZ0 -
+     &                   DIFAY*DIFBY*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,2) = SHLINT(INT,2) - (DIFAZ*DIFBZ*DX1*DY1*SZ0 -
+     &                   DIFAY*DIFBZ*DX1*SY0*DZ1 -
+     &                   DIFAZ*DIFBX*SX0*DY1*DZ1 +
+     &                   DIFAY*DIFBX*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,3) = SHLINT(INT,3) - (DIFAY*DIFBY*DX1*SY0*DZ1 -
+     &                   DIFAY*DIFBX*SX0*DY1*DZ1 +
+     &                   DIFAZ*DIFBX*DY2*SX0*SZ0 -
+     &                   DIFAZ*DIFBY*DX1*DY1*SZ0)*D4INV
+         SHLINT(INT,4) = SHLINT(INT,4) - (DIFAZ*DIFBZ*DX1*DY1*SZ0 -
+     &                   DIFAZ*DIFBY*DX1*SY0*DZ1 -
+     &                   DIFAX*DIFBZ*SX0*DY1*DZ1 +
+     &                   DIFAX*DIFBY*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,5) = SHLINT(INT,5) - (DIFAZ*DIFBX*DX1*SY0*DZ1 +
+     &                   DIFAX*DIFBZ*DX1*SY0*DZ1 -
+     &                   DIFAZ*DIFBZ*DX2*SY0*SZ0 -
+     &                   DIFAX*DIFBX*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,6) = SHLINT(INT,6) - (DIFAZ*DIFBY*DX2*SY0*SZ0 -
+     &                   DIFAZ*DIFBX*DX1*DY1*SZ0 -
+     &                   DIFAX*DIFBY*DX1*DZ1*SY0 +
+     &                   DIFAX*DIFBX*DY1*DZ1*SX0)*D4INV
+         SHLINT(INT,7) = SHLINT(INT,7) - (DIFAY*DIFBY*DX1*SY0*DZ1 -
+     &                   DIFAX*DIFBY*SX0*DY1*DZ1 +
+     &                   DIFAX*DIFBZ*SX0*DY2*SZ0 -
+     &                   DIFAY*DIFBZ*DX1*DY1*SZ0)*D4INV
+         SHLINT(INT,8) = SHLINT(INT,8) - (DIFAY*DIFBZ*DX2*SY0*SZ0 -
+     &                   DIFAX*DIFBZ*DX1*DY1*SZ0 -
+     &                   DIFAY*DIFBX*DX1*SY0*DZ1 +
+     &                   DIFAX*DIFBX*SX0*DY1*DZ1)*D4INV
+         SHLINT(INT,9) = SHLINT(INT,9) - (DIFAX*DIFBY*DX1*DY1*SZ0 +
+     &                   DIFAY*DIFBX*DX1*DY1*SZ0 -
+     &                   DIFAY*DIFBY*DX2*SY0*SZ0 -
+     &                   DIFAX*DIFBX*SX0*DY2*SZ0)*D4INV
  100  CONTINUE
       RETURN
       END
@@ -4715,7 +4847,7 @@ C
 #include "symmet.h"
 #include "onecom.h"
 #include "lmns.h"
-#include "ibtfun.h"
+
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -5443,7 +5575,7 @@ C
 #include "lmns.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5458,16 +5590,16 @@ C
          DO 200 IREP = 0, MAXREP
             DO 300 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
-            IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                INTTYP = INTTYP + 1
                FRM = D0
                DO 400 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-                  XC = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-                  YC = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-                  ZC = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+                  XC = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  YC = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  ZC = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                   RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
-                  FINT = PT(IBTAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
+                  FINT = PT(IAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
                   IF (LVALA .GT. 0) FINT = FINT*((XC - CORAX)**LVALA)
                   IF (MVALA .GT. 0) FINT = FINT*((YC - CORAY)**MVALA)
                   IF (NVALA .GT. 0) FINT = FINT*((ZC - CORAZ)**NVALA)
@@ -5506,7 +5638,7 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 C
-#include "ibtfun.h"
+
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5521,16 +5653,16 @@ C
          DO 200 IREP = 0, MAXREP
             DO 300 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
-            IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                INTTYP = INTTYP + 1
                FRM = D0
                DO 400 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-                  XC = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-                  YC = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-                  ZC = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+                  XC = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  YC = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  ZC = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                   RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
-                  FINT = PT(IBTAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
+                  FINT = PT(IAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
 C
 C     Contributions from center A
 C
@@ -5636,7 +5768,7 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 C
-#include "ibtfun.h"
+
       DFAC = SAAB*DWNFAC
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -5651,10 +5783,10 @@ C
          DO 300 IATOM = 1, NUCIND
             FRM = D0
             DO 400 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               XC = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-               YC = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-               ZC = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               XC = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+               YC = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+               ZC = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
                FINT = EXP(-EXPP*RCP2)
                IF (LVALA .GT. 0) FINT = FINT*((XC - CORAX)**LVALA)
@@ -6099,7 +6231,7 @@ C
       DIMENSION EXPVAL(*), DMAT(*)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -6110,16 +6242,16 @@ C
                ISCOOR = IPTCNT(3*(ICENTC - 1) + LCOOR,IREPC,2)
                IF (ISCOOR .GT. 0) THEN
                   DO 400 ICOOR = 1, 3
-                     IREPCD = IBTXOR(IREPC,ISYMAX(ICOOR,2))
-                     ISYMCA = IBTXOR(ISYMAX(ICOOR,2),ISYMAX(LCOOR,2))
+                     IREPCD = IEOR(IREPC,ISYMAX(ICOOR,2))
+                     ISYMCA = IEOR(ISYMAX(ICOOR,2),ISYMAX(LCOOR,2))
 cLig >> added how to set the symmetry for RPSO integrals
                      IF(INTTYP.EQ.82) THEN
-                       IREPCD = IBTXOR(IREPC,ISYMAX(ICOOR,1))
-                       ISYMCA = IBTXOR(ISYMAX(ICOOR,1),ISYMAX(LCOOR,2))
+                       IREPCD = IEOR(IREPC,ISYMAX(ICOOR,1))
+                       ISYMCA = IEOR(ISYMAX(ICOOR,1),ISYMAX(LCOOR,2))
                      ENDIF
 cLig <<
-                     FACSYM = - FACTOR*PT(IBTAND(ISYMCA,ISYMC))
-     &                                *PT(IBTAND(IREPCD,ISYMC))
+                     FACSYM = - FACTOR*PT(IAND(ISYMCA,ISYMC))
+     &                                *PT(IAND(IREPCD,ISYMC))
                      ITYP = 9*(IATOMC - 1) + 3*(LCOOR - 1) + ICOOR
                      IADR = INTADR(3*(ISCOOR - 1) + ICOOR)
                      IF (EXP1EL) THEN
@@ -6166,7 +6298,7 @@ C  /* Deck psotra */
      &          INTADR(*)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -6177,8 +6309,8 @@ C  /* Deck psotra */
                ISCOOR = IPTCNT(3*(ICENTC - 1) + ICOOR,IREPC,2)
                IF (ISCOOR .GT. 0) THEN
                   ISYMCR = ISYMAX(ICOOR,2)
-                  FACSYM = - FACTOR*PT(IBTAND(ISYMCR,ISYMC))
-     &                             *PT(IBTAND(IREPC ,ISYMC))
+                  FACSYM = - FACTOR*PT(IAND(ISYMCR,ISYMC))
+     &                             *PT(IAND(IREPC ,ISYMC))
                   ITYP = 3*(IATOMC - 1) + ICOOR
                   IADR = INTADR(ISCOOR)
                   IF (INTTYP .EQ. 92) THEN
@@ -6215,7 +6347,7 @@ C  /* Deck hdbtra */
      &          INTADR(*)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       ICOMP = 0
       DO 100 X = 1, 3
          DO 200 B = 1, 3
@@ -6224,8 +6356,8 @@ C  /* Deck hdbtra */
                ISCOOR = IPTCNT(3*(NCENTA - 1) + X,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + B)
-                  IREPCL = IBTXOR(IREPO,ISYMAX(B,2))
-                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
+                  IREPCL = IEOR(IREPO,ISYMAX(B,2))
+                  FACSYM = HKAB*PT(IAND(IREPCL,ISYMOP))
                   CALL SYMSQR(SHLINT(1,ICOMP),SOINT(1,ITYP),IREPCL,
      &                        ISYMOP,IORBA,IORBB,FACSYM,NBAST,IPRINT)
                END IF
@@ -6235,21 +6367,20 @@ C  /* Deck hdbtra */
       RETURN
       END
 C  /* Deck dpgtra */
-      SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
-     &                  INTADR,IPRINT)
-#include "implicit.h"
-#include "dummy.h"
-#include "maxaqn.h"
-#include "maxmom.h"
-#include "mxcent.h"
-#include "maxorb.h"
+       SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
+     &                  INTADR,EXP1EL,DMAT,MULTA,MULTB,IPRINT)
+#include <implicit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <maxorb.h>
       INTEGER B, X
-      LOGICAL FULMAT, ANTI
+      LOGICAL FULMAT, ANTI, EXP1EL
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
-     &          INTADR(*)
-#include "onecom.h"
-#include "symmet.h"
-#include "ibtfun.h"
+     &     INTADR(*), DMAT(*)
+#include <onecom.h>
+#include <symmet.h>
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -6268,13 +6399,17 @@ C  /* Deck dpgtra */
                ISCOOR = IPTCNT(3*(NCENTA - 1) + X,IREP,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + JCOMP)
-                  IREPO = IBTXOR(IREP,IREPC) ! irrep of operator
-ckr                  FACSYM = HKAB*PT(IBTAND(IREPO,ISYMOP))
-C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-C     &                         *PT(IBTAND(IREP,ISYMOP))
+                  IREPO = IEOR(IREP,IREPC) ! irrep of operator
+ckr                  FACSYM = HKAB*PT(IAND(IREPO,ISYMOP))
+C                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+C     &                         *PT(IAND(IREP,ISYMOP))
 ckr                  FACSYM = HKAB
                   FACSYM = HKAB
-                  IF (IREPO .EQ. 0) THEN
+                  IF (EXP1EL) THEN
+                     IF (IREPO .EQ. 0) CALL SYM1EV(SHLINT(1,ICOMP),DMAT,
+     &                                      SOINT(1,ITYP),FACSYM,
+     &                                      MULTA,MULTB,IPRINT)
+                  ELSE IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP),SOINT(1,ITYP),ISYMOP,
      &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
      &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
@@ -6288,13 +6423,17 @@ ckr                  FACSYM = HKAB
                ISCOOR = IPTCNT(3*(NCENTB - 1) + X,IREP,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + JCOMP)
-                  IREPO = IBTXOR(IREP,IREPC) ! irrep of operator
-ckr                  FACSYM = HKAB*PT(IBTAND(IREPO,ISYMOP))
-C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-C    &                          *PT(IBTAND(IREP,ISYMOP))
-                   FACSYM = HKAB*PT(IBTAND(ISYMAX(X,1),ISYMOP))
-     &                          *PT(IBTAND(IREP,ISYMOP))
-                  IF (IREPO .EQ. 0) THEN
+                  IREPO = IEOR(IREP,IREPC) ! irrep of operator
+ckr                  FACSYM = HKAB*PT(IAND(IREPO,ISYMOP))
+C                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+C    &                          *PT(IAND(IREP,ISYMOP))
+                   FACSYM = HKAB*PT(IAND(ISYMAX(X,1),ISYMOP))
+     &                          *PT(IAND(IREP,ISYMOP))
+                  IF (EXP1EL) THEN
+                     IF (IREPO .EQ. 0) CALL SYM1EV(SHLINT(1,ICOMP+9),
+     &                                      DMAT,SOINT(1,ITYP),FACSYM,
+     &                                      MULTA,MULTB,IPRINT)
+                  ELSE IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP + 9),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
      &                          KHKTB,FACSYM,LDIAG,FULMAT,DUM,IDUM,
@@ -6328,7 +6467,7 @@ C  /* Deck dphtra */
 #include "nuclei.h"
 ! nuclei.h needed for NUCDEP
 #include "symmet.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -6374,12 +6513,12 @@ C     Centre 2
                      IREPO = IREPC ! irrep of operator=irrep of dipole op.
                      FACSYM = HKAB
 
-ckr                  FACSYM = HKAB*PT(IBTAND(IREPO,ISYMOP))
-C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-C    &                          *PT(IBTAND(IREP,ISYMOP))
-                     FACSYM = HKAB*PT(IBTAND(IBTXOR(ISYMAX(X,1),
+ckr                  FACSYM = HKAB*PT(IAND(IREPO,ISYMOP))
+C                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+C    &                          *PT(IAND(IREP,ISYMOP))
+                     FACSYM = HKAB*PT(IAND(IEOR(ISYMAX(X,1),
      &                                ISYMAX(Y,1)),ISYMOP))
-     &                            *PT(IBTAND(IREP,ISYMOP))
+     &                            *PT(IAND(IREP,ISYMOP))
                      IF (IREPO .EQ. 0) THEN
                         CALL SYM1S(SHLINT(1,ICOMP + 18),SOINT(1,ITYP),
      &                             ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -6398,8 +6537,8 @@ C
 Ckr                  DO JREP = 0, MAXREP
 Ckr                     JSCOOR = IPTCNT(3*(NCENTB - 1) + Y,JREP,1)
 Ckr                     IF (JSCOOR .GT. 0) THEN 
-Cr                        IREPN = IBTXOR(IREP,JREP)
-Ckr                        IREPO = IBTXOR(IREPN,IREPC)
+Cr                        IREPN = IEOR(IREP,JREP)
+Ckr                        IREPO = IEOR(IREPN,IREPC)
                END DO
  200        CONTINUE
          END DO
@@ -6421,7 +6560,7 @@ C  /* Deck qugtra */
      &          INTADR(*)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       ICOMP = 0
       DO 100 X = 1, 3
@@ -6430,15 +6569,15 @@ C  /* Deck qugtra */
          DO 200 C = B, 3
             ICOMP = ICOMP + 1
             JCOMP = JCOMP + 1
-            IREPC  = IBTXOR(ISYMAX(B,1),ISYMAX(C,1))
+            IREPC  = IEOR(ISYMAX(B,1),ISYMAX(C,1))
             DO IREPO = 0, MAXREP
                ISCOOR = IPTCNT(3*(NCENTA - 1) + X,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(6*(ISCOOR - 1) + JCOMP)
-                  IREPCL = IBTXOR(IREPO,IREPC)
-ckr                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
-                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-     &                         *PT(IBTAND(IREPO,ISYMOP))
+                  IREPCL = IEOR(IREPO,IREPC)
+ckr                  FACSYM = HKAB*PT(IAND(IREPCL,ISYMOP))
+                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+     &                         *PT(IAND(IREPO,ISYMOP))
 ckr                  FACSYM = HKAB
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP),SOINT(1,ITYP),ISYMOP,
@@ -6454,10 +6593,10 @@ ckr                  FACSYM = HKAB
                ISCOOR = IPTCNT(3*(NCENTB - 1) + X,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(6*(ISCOOR - 1) + JCOMP)
-                  IREPCL = IBTXOR(IREPO,IREPC)
-ckr                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
-                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-     &                         *PT(IBTAND(IREPO,ISYMOP))
+                  IREPCL = IEOR(IREPO,IREPC)
+ckr                  FACSYM = HKAB*PT(IAND(IREPCL,ISYMOP))
+                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+     &                         *PT(IAND(IREPO,ISYMOP))
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP + 18),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -6490,7 +6629,7 @@ C  /* Deck ocgtra */
      &          INTADR(*)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       ICOMP = 0
       DO 100 X = 1, 3
@@ -6500,15 +6639,15 @@ C  /* Deck ocgtra */
          DO 200 D = C, 3
             ICOMP = ICOMP + 1
             JCOMP = JCOMP + 1
-            IREPB = IBTXOR(ISYMAX(B,1),ISYMAX(C,1))
-            IREPC = IBTXOR(IREPB,ISYMAX(D,1))
+            IREPB = IEOR(ISYMAX(B,1),ISYMAX(C,1))
+            IREPC = IEOR(IREPB,ISYMAX(D,1))
             DO IREPO = 0, MAXREP
                ISCOOR = IPTCNT(3*(NCENTA - 1) + X,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(10*(ISCOOR - 1) + JCOMP)
-                  IREPCL = IBTXOR(IREPO,IREPC)
-                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-     &                         *PT(IBTAND(IREPO,ISYMOP))
+                  IREPCL = IEOR(IREPO,IREPC)
+                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+     &                         *PT(IAND(IREPO,ISYMOP))
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP),SOINT(1,ITYP),ISYMOP,
      &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -6523,9 +6662,9 @@ C  /* Deck ocgtra */
                ISCOOR = IPTCNT(3*(NCENTB - 1) + X,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(10*(ISCOOR - 1) + JCOMP)
-                  IREPCL = IBTXOR(IREPO,IREPC)
-                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-     &                         *PT(IBTAND(IREPO,ISYMOP))
+                  IREPCL = IEOR(IREPO,IREPC)
+                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+     &                         *PT(IAND(IREPO,ISYMOP))
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP + 30),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -6553,7 +6692,7 @@ C  /* Deck hdotra */
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       DO 100 IREPO = 0, MAXREP
          DO 200 ICOOR = 1, 3
             IF (INTTYP .EQ. 14) THEN ! SQHDOL
@@ -6562,8 +6701,8 @@ C  /* Deck hdotra */
             ELSE ! SQHDOR or SQHD2OR
 C              ... INTTYP 44 and 98
                ISCOOR = IPTCNT(3*(NCENTB - 1) + ICOOR,IREPO,1)
-               FAC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
-     *                   *PT(IBTAND(IREPO, ISYMOP))
+               FAC = HKAB*PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
+     *                   *PT(IAND(IREPO, ISYMOP))
             END IF
             IF (ISCOOR .GT. 0) THEN
                CALL SYMSQR(SHLINT(1,ICOOR),SOINT(1,ISCOOR),IREPO,ISYMOP,
@@ -6585,17 +6724,17 @@ C
       DIMENSION AO(KHKTAB), SO(NBAST,NBAST)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       DO 100 IREPA = 0, MAXREP
-         IREPB = IBTXOR(IREPO,IREPA)
+         IREPB = IEOR(IREPO,IREPA)
          DO 200 NA = 1, KHKTA
-         IF (IBTAND(MULA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))).EQ.0) THEN
+         IF (IAND(MULA,IEOR(IREPA,ISYMAO(NHKTA,NA))).EQ.0) THEN
             NAT = KHKTB*(NA - 1)
             IA  = IPTSYM(IORBA + NA,IREPA)
             DO 300 NB = 1,KHKTB
-            IF (IBTAND(MULB,IBTXOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
+            IF (IAND(MULB,IEOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
                IB  = IPTSYM(IORBB + NB,IREPB)
-               FAC = PT(IBTAND(ISYMOP,IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+               FAC = PT(IAND(ISYMOP,IEOR(IREPB,ISYMAO(NHKTB,NB))))
                SO(IA,IB) = SO(IA,IB) + FAC*FACTOR*AO(NAT+NB)
             END IF
 300         CONTINUE
@@ -6619,7 +6758,7 @@ C
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       FULMAT = .TRUE.
 C
@@ -6650,8 +6789,8 @@ C        ========
 C
          ISCORB = IPTCNT(3*(NCENTB - 1) + ICOOR,IREP,1)
          IF (ISCORB .GT. 0) THEN
-            FC = -HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
-     &               *PT(IBTAND(IREP,ISYMOP))
+            FC = -HKAB*PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
+     &               *PT(IAND(IREP,ISYMOP))
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORB),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -6682,7 +6821,7 @@ C  /* Deck amdtra */
      &          INTADR(*)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -6702,10 +6841,10 @@ C  /* Deck amdtra */
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + JCOMP)
 ckr                  write (2,*) 'center 1',iscoor,jcomp,ityp
-                  IREPO = IBTXOR(IREP,IREPC) ! irrep of operator
-ckr                  FACSYM = HKAB*PT(IBTAND(IREPO,ISYMOP))
-C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-C     &                         *PT(IBTAND(IREP,ISYMOP))
+                  IREPO = IEOR(IREP,IREPC) ! irrep of operator
+ckr                  FACSYM = HKAB*PT(IAND(IREPO,ISYMOP))
+C                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+C     &                         *PT(IAND(IREP,ISYMOP))
 ckr                  FACSYM = HKAB
                   FACSYM = HKAB
                   IF (IREPO .EQ. 0) THEN
@@ -6723,12 +6862,12 @@ ckr                  FACSYM = HKAB
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + JCOMP)
 ckr                  write (2,*) 'center 2',iscoor,jcomp,ityp
-                  IREPO = IBTXOR(IREP,IREPC) ! irrep of operator
-ckr                  FACSYM = HKAB*PT(IBTAND(IREPO,ISYMOP))
-C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-C    &                          *PT(IBTAND(IREP,ISYMOP))
-                   FACSYM = -HKAB*PT(IBTAND(ISYMAX(X,1),ISYMOP))
-     &                          *PT(IBTAND(IREP,ISYMOP))
+                  IREPO = IEOR(IREP,IREPC) ! irrep of operator
+ckr                  FACSYM = HKAB*PT(IAND(IREPO,ISYMOP))
+C                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+C    &                          *PT(IAND(IREP,ISYMOP))
+                   FACSYM = -HKAB*PT(IAND(ISYMAX(X,1),ISYMOP))
+     &                          *PT(IAND(IREP,ISYMOP))
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -6762,7 +6901,7 @@ C      LOGICAL FULMAT
 C      DIMENSION SHLINT(KCKTAB,9), SOINT(NELMNT,NOPTYP)
 C#include "onecom.h"
 C#include "symmet.h"
-C#include "ibtfun.h"
+C
 CC
 C      FULMAT = .TRUE.
 CC
@@ -6775,7 +6914,7 @@ CC
 CC        Center A
 CC        ========
 CC
-C               IREP2 = IBTXOR(ISYMAX(JBCOR,2),IREP)
+C               IREP2 = IEOR(ISYMAX(JBCOR,2),IREP)
 C               ICOMP = (ICOOR - 1)*3 + JBCOR
 C               ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREP,1)
 Cckr               write (2,*) 'ncenta,icoor,iscora,irep',
@@ -6797,8 +6936,8 @@ CC               write (2,*) 'ncentb,icoor,iscorb,irep',
 CC     &              ncentb,icoor,iscorb,irep
 C               IF (ISCORB .GT. 0) THEN
 CCkr Things to do
-C                  FC = -HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
-C     &                 *PT(IBTAND(IREP,ISYMOP))
+C                  FC = -HKAB*PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
+C     &                 *PT(IAND(IREP,ISYMOP))
 C                  ISCORT = 3*(ISCORB - 1) + JBCOR
 CC                  write (2,*) 'iscorb,jbcor,ncenta,jscort,icoor',
 CC     &                 iscorb,jbcor,ncenta,iscort,icoor
@@ -6829,7 +6968,7 @@ C
      &          NCENTC(NATOMC),INTADR(*)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       FULMAT = .TRUE.
 C
@@ -6862,8 +7001,8 @@ C
          ICOORB = 3*(ICENTB - 1) + ICOOR
          ISCORB = IPTCNT(3*(NCENTB - 1) + ICOOR,IREP,1)
          IF (ISCORB .GT. 0) THEN
-            FC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
-     &               *PT(IBTAND(IREP,ISYMOP))
+            FC = HKAB*PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
+     &               *PT(IAND(IREP,ISYMOP))
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOORB,2),SOINT(1,ISCORB),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -6882,8 +7021,8 @@ C
             ICOORC = 3*(NCENTC(IATOM) - 1) + ICOOR
             ISCORC = IPTCNT(3*(JCENTC(IATOM) - 1) + ICOOR,IREP,1)
             IF (ISCORC .GT. 0) THEN
-               FC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),JSYMC(IATOM)))
-     &                  *PT(IBTAND(IREP,JSYMC(IATOM)))
+               FC = HKAB*PT(IAND(ISYMAX(ICOOR,1),JSYMC(IATOM)))
+     &                  *PT(IAND(IREP,JSYMC(IATOM)))
                IF (IREP .EQ. 0) THEN
                   CALL SYM1S(SHLINT(1,ICOORC,3),SOINT(1,ISCORC),
      &                       ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -7194,7 +7333,7 @@ C  /* Deck sdtra */
      &          JCENTC(NATOMC)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -7206,10 +7345,10 @@ C  /* Deck sdtra */
                IF (ISCOR1 .GT. 0) THEN
                   DO 400 ICOOR2 = 1, 3
                      ISCOOR = 3*(ISCOR1 - 1) + ICOOR2
-                     IREPCD = IBTXOR(IREPC,ISYMAX(ICOOR2,2))
-                     ISYMCR = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-                     FACSYM = FACTOR*PT(IBTAND(ISYMCR,ISYMC))
-     &                              *PT(IBTAND(IREPCD,ISYMC))
+                     IREPCD = IEOR(IREPC,ISYMAX(ICOOR2,2))
+                     ISYMCR = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+                     FACSYM = FACTOR*PT(IAND(ISYMCR,ISYMC))
+     &                              *PT(IAND(IREPCD,ISYMC))
                      IADR = INTADR(ISCOOR)
                      MXCR = MAX(ICOOR1,ICOOR2)
                      MNCR = MIN(ICOOR1,ICOOR2)
@@ -7255,7 +7394,7 @@ C
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC)
 #include "onecom.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       ITYP = 0
       DO IREPC = 0, MAXREP
@@ -7263,8 +7402,8 @@ C
             ICENTC = JCENTC(IATOMC)
             ISYMC  = JSYMC (IATOMC)
             FACTOR = FACINT(IATOMC)
-            IF (IBTAND(ISTBNU(ICENTC),IREPC) .EQ. 0) THEN
-               FACSYM = FACTOR*PT(IBTAND(IREPC,ISYMC))
+            IF (IAND(ISTBNU(ICENTC),IREPC) .EQ. 0) THEN
+               FACSYM = FACTOR*PT(IAND(IREPC,ISYMC))
                IADR = IPTNUC(ICENTC,IREPC)
                IF (IREPC .EQ. 0) THEN
                   CALL SYM1S(SHLINT(1,IATOMC),SOINT(1,IADR),ISYMOP,
@@ -7299,7 +7438,7 @@ C
       DIMENSION DMAT(*)
 #include "krcom.h"
 #include "onecom.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       ITYP = 0
       DO IREPC = 0, MAXREP
@@ -7307,8 +7446,8 @@ C
             ICENTC = JCENTC(IATOMC)
             ISYMC  = JSYMC (IATOMC)
             FACTOR = FACINT(IATOMC)
-            IF (IBTAND(MAXREP+1,IREPC) .EQ. 0) THEN
-               FACSYM = FACTOR*PT(IBTAND(IREPC,ISYMC))
+            IF (IAND(MAXREP+1,IREPC) .EQ. 0) THEN
+               FACSYM = FACTOR*PT(IAND(IREPC,ISYMC))
                IF (EXP1EL) THEN
                   IF (ISYMD .EQ. 0) THEN
                      CALL SYM1EV(SHLINT(1,IATOMC),DMAT,SOINT(1,IREPC+1),
@@ -7355,7 +7494,7 @@ C
 #include "onecom.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -7366,8 +7505,8 @@ C
                ISCOOR = IPTCNT(3*(ICENTC - 1) + ICOOR,IREPC,1)
                IF (ISCOOR .GT. 0) THEN
                   ISYMCR = ISYMAX(ICOOR,1)
-                  FACSYM = - FACTOR*PT(IBTAND(ISYMCR,ISYMC))
-     &                             *PT(IBTAND(IREPC ,ISYMC))
+                  FACSYM = - FACTOR*PT(IAND(ISYMCR,ISYMC))
+     &                             *PT(IAND(IREPC ,ISYMC))
                   ITYP = 3*(IATOMC - 1) +ICOOR
                   IF (EXP1EL .AND. (IREPC .EQ. 0)) THEN
                      CALL SYM1EV(SHLINT(1,ITYP),DMAT,EXPVAL(ISCOOR),
@@ -7405,7 +7544,7 @@ C  /* Deck efgtra */
      &          IFGTBL(NUCIND,6,0:MAXREP)
       DIMENSION DMAT(*)
 #include "onecom.h"
-#include "ibtfun.h"
+
 C
       FULMAT = .TRUE.
       ITYP = 0
@@ -7418,11 +7557,11 @@ C
          DO 200 ICOOR2 = ICOOR1, 3
             IJ = IJ + 1
             ITYP = ITYP + 1
-            ISYMXY = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMXY = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
             DO 300 IREPC = 0, MAXREP
-              IF (IBTAND(ISTBNU(ICENTC),IBTXOR(IREPC,ISYMXY)).EQ.0) THEN
-                  FACSYM = FACTOR*PT(IBTAND(ISYMXY,ISYMC))
-     &                           *PT(IBTAND(IREPC ,ISYMC))
+              IF (IAND(ISTBNU(ICENTC),IEOR(IREPC,ISYMXY)).EQ.0) THEN
+                  FACSYM = FACTOR*PT(IAND(ISYMXY,ISYMC))
+     &                           *PT(IAND(IREPC ,ISYMC))
                   IADR = IFGTBL(ICENTC,IJ,IREPC)
                   IF (EXP1EL) THEN
                      IF (IREPC .EQ. 0) CALL SYM1EV(SHLINT(1,ITYP),DMAT,
@@ -7459,7 +7598,7 @@ C  /* Deck dsotra */
      &          INTADR(*), DMAT(*)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       FULMAT = .TRUE.
 C
       DO 100 IREPO = 0, MAXREP
@@ -7471,8 +7610,8 @@ C
         IF (DOATOM(IATOMD)) THEN
           ISTABD = ISTBNU(IATOMD)
           DO 120 ISYMD = 0, MAXOPR
-          IF (IBTAND(ISYMD,IBTOR(ISTABD,KAB)) .EQ. 0) THEN
-            KABD = IBTAND(ISTABD,KAB)
+          IF (IAND(ISYMD,IOR(ISTABD,KAB)) .EQ. 0) THEN
+            KABD = IAND(ISTABD,KAB)
 C
 C           Atom C
 C
@@ -7484,10 +7623,10 @@ C
             DO 130 IATOMC = 1, MXATMC
             IF (DOATOM(IATOMC)) THEN
                SAMECD = IATOMC .EQ. IATOMD
-               MABCD  = IBTOR(ISTBNU(IATOMC),KABD)
+               MABCD  = IOR(ISTBNU(IATOMC),KABD)
                DO 135 ISYMC = 0, MAXOPR
                   IF (SAMECD .AND. ISYMC.EQ.ISYMD) GO TO 135
-                  IF (IBTAND(ISYMC,MABCD) .EQ. 0) JATOMC = JATOMC + 1
+                  IF (IAND(ISYMC,MABCD) .EQ. 0) JATOMC = JATOMC + 1
   135          CONTINUE
             END IF
   130       CONTINUE
@@ -7501,15 +7640,15 @@ C
                 TRICR = (TRIANG .AND. INTTYP .EQ. 12) .AND. SAMECD
                 DO 210 ISYMC = 0, MAXOPR
                 IF (SAMECD .AND. ISYMC.EQ.ISYMD) GO TO 210
-                IF (IBTAND(ISYMC,IBTOR(ISTBNU(IATOMC),KABD)).EQ.0) THEN
+                IF (IAND(ISYMC,IOR(ISTBNU(IATOMC),KABD)).EQ.0) THEN
 C
 C                 Cartesian directions
 C
                   DO 300 ICOORD = 1, 3
                     ISCORD = IPTCNT(3*(IATOMD - 1) + ICOORD,IREPO,2)
                     IF (ISCORD .GT. 0) THEN
-                      FACD = - PT(IBTAND(ISYMAX(ICOORD,2),ISYMD))
-     &                        *PT(IBTAND(IREPO ,ISYMD))
+                      FACD = - PT(IAND(ISYMAX(ICOORD,2),ISYMD))
+     &                        *PT(IAND(IREPO ,ISYMD))
                       MXCRC = 3
                       IF (TRICR) MXCRC = ICOORD
                       DO 310 ICOORC = 1, MXCRC
@@ -7527,8 +7666,8 @@ C
                              ISCOOR = 3*(ISCORD - 1) + ICOORC
                           END IF
                           IADR = INTADR(ISCOOR)
-                          FACSYM=FACD*PT(IBTAND(ISYMAX(ICOORC,2),ISYMC))
-     &                               *PT(IBTAND(IREPO ,ISYMC))
+                          FACSYM=FACD*PT(IAND(ISYMAX(ICOORC,2),ISYMC))
+     &                               *PT(IAND(IREPO ,ISYMC))
                           ITYP = ITYP0 + 3*(ICOORC - 1) + ICOORD
                           IF (INTTYP .EQ. 58) CALL DSCAL(KCKTAB,
      &                         CHARGE(IATOMC),SHLINT(1,ITYP),1)
@@ -7841,7 +7980,7 @@ C
 C
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
 C     Initialize work array.
 C
@@ -7876,10 +8015,10 @@ CAIX 4.x compiler fix provided by T.Saue, Nov.12-97
          IREPO = ISYMO - 1
          DO 200 IREPB = 0, MAXREP
             ISYMB = IREPB + 1
-            ISYMA = IBTXOR(IREPO,IREPB) + 1
+            ISYMA = IEOR(IREPO,IREPB) + 1
 #else
          DO 200 ISYMB = 1, MAXREP + 1
-            ISYMA = IBTXOR(ISYMO - 1,ISYMB - 1) + 1
+            ISYMA = IEOR(ISYMO - 1,ISYMB - 1) + 1
 #endif
             IF (ISYMA .GT. ISYMB) THEN
                NDIMA = NAOS(ISYMA)

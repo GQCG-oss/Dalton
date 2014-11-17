@@ -24,7 +24,7 @@ module LS_optimizer_mod
 CONTAINS
   SUBROUTINE LS_RUNOPT(E,config,H1,F,D,S,CMO,ls)
     use DEC_settings_mod
-    use dec_typedef_module,only: DECinfo
+    use dec_typedef_module
     Implicit none
     !  All these general entities needed to get energy and gradient
     Type(lsitem)                    :: ls   ! General information,used only to get E and gradient
@@ -34,31 +34,27 @@ CONTAINS
     Type(ConfigItem), intent(inout) :: Config ! General information
     Real(realk),intent(inout)       :: E(1)   ! Energy
     !
-    INTEGER :: iOpt,iPre, fotLevelSave, fotLevel
+    INTEGER :: iOpt, ipre
     Real(realk) :: GradThr, ThrStep, ThGradMax, ThStepMax, trsave
-
-
     ! Special preoptimization step currently only possible for DEC calculations
     config%noDecEnergy = .TRUE.
     IF (config%optinfo%dynopt) THEN
       IF (.NOT.DECinfo%doDec) THEN
         CALL LSQUIT('.DYNOPT currently just available for DEC-type calculations',ls%lupri)
-      ELSE
-        fotLevelSave = DECinfo%FOTlevel
-        fotlevel     = fotLevelSave
       ENDIF
       trsave    = config%optinfo%TrustRad
       GradThr   = config%optinfo%GradThr
       ThrStep   = config%optinfo%ThrStep
       ThGradMax = config%optinfo%ThGradMax
       ThStepMax = config%optinfo%ThStepMax
-      iPre=0
+      ipre=1
       DO 
-        config%optinfo%dynamicThreshold = fotlevel.NE.DECinfo%maxfotlevel
+        config%optinfo%dynamicThreshold = ipre.NE.nFOTs
         IF (DECinfo%doDec) THEN
-          CALL set_input_for_fot_level(FOTlevel)
+           DECinfo%FOT = DECinfo%GeoFOTs(Ipre)
+           DECinfo%FOTlevel=ipre
         ENDIF
-        WRITE(ls%lupri,'(A,I2)') '*** Starting dynamical optimization step number',iPre
+        WRITE(ls%lupri,'(A,I2)') '*** Starting dynamical optimization step number',ipre
         ! Reset trust radius to input value for each dynamical optimization step
         config%optinfo%TrustRad  = trsave
         config%optinfo%ItrNmr    = 0
@@ -69,9 +65,8 @@ CONTAINS
         CALL LS_FLSHFO(ls%lupri)
         CALL LS_RUNOP1(E,config,H1,F,D,S,CMO,ls)
         IF (config%optinfo%dynamicConvergence) EXIT
-        IF (fotlevel==DECinfo%maxfotlevel) EXIT
-        iPre     = iPre+1
-        FOTlevel = FOTlevel +1
+        IF (ipre==nFOTs) EXIT
+        Ipre = Ipre +1
       ENDDO
       IF (config%optinfo%dynamicConvergence) THEN
         WRITE(ls%lupri,'(A)') '*** Dynamical optimization converged'
@@ -79,7 +74,8 @@ CONTAINS
         WRITE(ls%lupri,'(A)') '*** Dynamical optimization did not converge!'
       ENDIF
       !Reset FOT level
-      CALL set_input_for_fot_level(FOTlevelSave)
+      DECinfo%FOTlevel=1
+      DECinfo%FOT = DECinfo%GeoFOTs(1)
     ! Deafult geoemetry optimization
     ELSE
       CALL LS_RUNOP1(E,config,H1,F,D,S,CMO,ls)
@@ -168,6 +164,9 @@ CONTAINS
     Do i = 1, NAtoms
        config%optinfo%Coordinates(:,i) = config%Molecule%Atom(i)%Center(:)  
     Enddo
+    ! Do the force modification of energy if asked
+    If (config%optinfo%FMPES) call FM_energy(E(1),config%optinfo)
+    config%optinfo%energy = E(1)
     ! Fourth, finding the number of internals if needed
     If (config%optinfo%RedInt .OR. config%optinfo%DelInt .OR. &
      &  config%optinfo%InmdHess.OR. config%optinfo%InrdHess) then  
@@ -324,6 +323,7 @@ Else
 !
 !  Entering normal optimizer
 !
+    
     IF (config%optinfo%DelInt .OR. config%optinfo%RedInt) THEN
        NCRDHS = config%optinfo%NIntCoord
     ELSE
@@ -531,7 +531,7 @@ Endif
        call ATOM_INI(KTEMP1,Config%Molecule,config%optinfo,NAtoms,.TRUE.,lupri)
        call ls_GETINT(NAtoms,config%optinfo%NIntCoord,KTEMP1,config%optinfo%CoordInt,lupri,config%optinfo)
        call lsheader(lupri,'New internal coordinates') 
-       call output(config%optinfo%CoordInt,1,1,1,config%optinfo%NIntCoord,1,config%optinfo%NIntCoord,1,LUPRI)
+       call ls_output(config%optinfo%CoordInt,1,1,1,config%optinfo%NIntCoord,1,config%optinfo%NIntCoord,1,LUPRI)
        WRITE(LUPRI,'(//)')
     END IF
     !
@@ -764,7 +764,7 @@ Endif
           call ATOM_INI(KTEMP1,Config%Molecule,config%optinfo,NAtoms,.TRUE.,lupri)
           call ls_GETINT(NAtoms,config%optinfo%NIntCoord,KTEMP1,config%optinfo%CoordInt,lupri,config%optinfo)
           call lsheader(lupri,'New internal coordinates')
-          call output(config%optinfo%CoordInt,1,1,1,config%optinfo%NIntCoord,1,config%optinfo%NIntCoord,1,LUPRI)
+          call ls_output(config%optinfo%CoordInt,1,1,1,config%optinfo%NIntCoord,1,config%optinfo%NIntCoord,1,LUPRI)
           WRITE(LUPRI,'(//)')
        END IF
 !
@@ -1067,7 +1067,8 @@ Endif ! Optimization
     !     If the step is acceptable, the geometry is updated
     !     and written to file.
     !
-    Implicit Real(realk) (A-H,O-Z)
+    implicit none
+!    Implicit Real(realk) (A-H,O-Z)
     !
     Type(ConfigItem), intent(inout) :: Config ! General information
     Type(lsitem) :: ls   ! General information,used only to get E and gradient
@@ -1079,10 +1080,10 @@ Endif ! Optimization
     TYPE(opt_setting) :: optinfo
     Real(realk) :: CSTEP(MXCOOR), EGRAD(MXCOOR)
     Real(realk) :: COONEW(3,MXCENT), COOOLD(3,MXCENT)
-    Integer     :: ICRD(3)
+    Integer     :: ICRD(3), IFAILD,IREJ,IJ,J,I,JJ
     Real(realk) :: GEINFO(0:optinfo%MaxIter+1,6)
     Real(realk) :: E(1)
-    Real(realk) :: Eerr, Egeodiff, Eerrsave
+    Real(realk) :: Eerr, Egeodiff, Eerrsave,graddi,fac
     CHARACTER*10 FILENM
     CHARACTER*12 molname
     LOGICAL REJGEO,NEWSTP,NEWBMT
@@ -1162,6 +1163,9 @@ Endif ! Optimization
        optinfo%Coordinates = COONEW
        Call Update_coordinates(ls,config,optinfo,NAtoms)
        Call Get_Energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
+       ! Do the force modification of energy if asked
+       If (optinfo%FMPES) call FM_energy(E(1),optinfo)
+       !
        IF (DECinfo%dodec) call Obtain_Gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,config%optinfo)
 
        optinfo%energy = E(1)
@@ -1353,6 +1357,10 @@ Endif ! Optimization
           optinfo%EvLini = 1.0E0_realk
           optinfo%TrustRad = 0.5E0_realk
           RETURN
+       ELSEIF(DECinfo%dodec) then
+          ! For DEC we have the possibility to tighten FOT and start over
+          goto 100
+
           !
           !     Otherwise we give up...
           !
@@ -1369,10 +1377,10 @@ Endif ! Optimization
 100 CONTINUE
     IF (optinfo%dynamicChange) THEN
        write(lupri,*) 
-       write(lupri,*) 'DEC ERROR IS LARGER THAN ENERGY DIFF BETWEEN GEOMETRIES!'
-       write(lupri,*) '========================================================'
+       write(lupri,*) 'UNSTABLE DEC GEOMETRY CONVERGENCE - TRY TO TIGHTEN FOT!'
+       write(lupri,*) '======================================================='
        write(lupri,'(1X,a,i5)')    'DECERR: Current FOT level              = ', DECinfo%FOTlevel
-       if(DECinfo%FOTlevel<DECinfo%maxFOTlevel) then
+       if(DECinfo%FOTlevel<nFOTs) then
           write(lupri,'(1X,a,i5)') 'DECERR: FOT level will be increased to = ', DECinfo%FOTlevel+1
        else
          write(lupri,'(1X,a)') 'DECERR: Stopping geometry optimization because the intrinsic'
@@ -1627,11 +1635,16 @@ Do i = 2, optinfo%MaxIter+1
    ! Get energy
    Call Update_coordinates(ls,config,optinfo,NAtoms)
    Call Get_Energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
+   ! Do the force modification of energy if asked
+   If (optinfo%FMPES) call FM_energy(E(1),optinfo)
+   ! Print Cartesian coordinates
+   call lsheader(lupri,'New Cartesian coordinates') 
+   call Print_Geometry(config%Molecule,lupri)
    ! Get and print new values of internal coordinates
    call ATOM_INI(Atom_array,config%Molecule,optinfo,NAtoms,.TRUE.,lupri)
    call ls_GETINT(NAtoms,optinfo%NIntCoord,Atom_array,optinfo%CoordInt,lupri,optinfo)
    call lsheader(lupri,'New internal coordinates') 
-   call output(optinfo%CoordInt,1,1,1,optinfo%NIntCoord,1,optinfo%NIntCoord,1,LUPRI)
+   call ls_output(optinfo%CoordInt,1,1,1,optinfo%NIntCoord,1,optinfo%NIntCoord,1,LUPRI)
    ! Reference the data
    optinfo%energy = E(1)
    optinfo%Scan_info(i,1) = optinfo%coordinates(1,Active_atom)
@@ -1676,6 +1689,7 @@ Type(ConfigItem), intent(inout) :: Config ! General information
 Real(realk), pointer :: Gradient(:,:)
 Real(realk) :: h,Eerr,E ! Energy
 Real(realk), pointer :: anaGrad(:,:)
+Real(realk) :: direction(3),R_a(3),R_b(3)
 logical    :: DEBUG_PAT
 ! Allocate gradient
 Call mem_alloc(Gradient,3,NAtoms)
@@ -1711,6 +1725,20 @@ Do i = 1,NAtoms
 Enddo
 ! Deallocate gradient
 Call mem_dealloc(Gradient)
+!
+If (optinfo%FMPES) then
+   ! Define the direction
+   R_a = optinfo%Coordinates(:,optinfo%Att_atom(1))
+   R_b = optinfo%Coordinates(:,optinfo%Att_atom(2))
+   direction = (R_b - R_a)/(sqrt(dot_product(R_b-R_a,R_b-R_a)))
+   ! Add external force
+   optinfo%GradMol(optinfo%Att_atom(1)*3-2:optinfo%Att_atom(1)*3) = &
+   optinfo%GradMol(optinfo%Att_atom(1)*3-2:optinfo%Att_atom(1)*3)+ &
+   &  direction*optinfo%Ext_force
+   optinfo%GradMol(optinfo%Att_atom(2)*3-2:optinfo%Att_atom(2)*3) = &
+   optinfo%GradMol(optinfo%Att_atom(2)*3-2:optinfo%Att_atom(2)*3) - &
+   &  direction*optinfo%Ext_force
+Endif
 !
 end subroutine Obtain_gradient
 !

@@ -23,7 +23,7 @@ C
       INTEGER NOSIMOLD, NOSIMFIRST, MXITMP
 C
       PARAMETER(NMMBA1 = 5000)
-      PARAMETER(MXQM3  = 200) ! should be equal to MXCENT_QM in include/mxcent.h
+      PARAMETER(MXQM3  = 500) ! should be equal to MXCENT_QM in include/mxcent.h
       PARAMETER(MXTYPE = 20)
       PARAMETER(MXQ = MXQM3)
       PARAMETER(NSTATES = 120)

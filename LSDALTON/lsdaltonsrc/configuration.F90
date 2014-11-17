@@ -36,8 +36,9 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
-use DEC_settings_mod, only: dec_set_default_config, config_dec_input
-use dec_typedef_module,only: DECinfo,MODEL_MP2
+use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
+     & check_cc_input
+use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -48,14 +49,15 @@ use davidson_settings, only: davidson_default_SCF, davidson_default
 use molecule_type, only: free_moleculeinfo
 use readmolefile, only: read_molfile_and_build_molecule
 use IntegralInterfaceMOD, only: ii_get_nucpot
-use ks_settings, only: ks_free_incremental_fock,ii_dftdispcheck
+use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
 use dft_typetype
+use dft_memory_handling
 use plt_driver_module
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
-use lsmpi_type, only: DFTSETFU
+use lsmpi_type, only: DFTSETFU,SPLIT_MPI_MSG,MAX_SIZE_ONE_SIDED
 #endif
 #ifdef BUILD_CGTODIFF
 use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
@@ -66,9 +68,14 @@ use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
 use ls_util,only: capitalize_string
+#ifdef HAS_PCMSOLVER
+use ls_pcm_config, only: pcmtype, ls_pcm_init, ls_pcm_input
+#endif
+use LSparameters
+
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
-     & config_free, set_final_config_and_print, scf_purify
+     & config_free, set_final_config_and_print
 contains
 
 !> \brief Call routines to set default values for different structures.
@@ -78,7 +85,7 @@ subroutine config_set_default_config(config)
 implicit none
    !> Contains info, settings and data for entire calculation
    type(ConfigItem), intent(inout) :: config
-  USEXCFUN = .TRUE.  
+  USEXCFUN = .FALSE.  
   nullify(config%solver)
   allocate(config%solver)
   call arh_set_default_config(config%solver)
@@ -117,6 +124,11 @@ implicit none
   ! RSP solver
   call RSPSOLVERiputitem_set_default_config(config%response%RSPSOLVERinput)
   call rsp_tasks_set_default_config(config%response%tasks)
+#ifdef VAR_RSP
+  config%response%noOpenRSP = .FALSE. !Use OpenRSP module - Default
+#else
+  config%response%noOpenRSP = .TRUE.  !Use LSDALTON own Response module
+#endif
 #ifdef MOD_UNRELEASED
   ! Molecular Hessian
   call geohessian_set_default_config(config%geoHessian)
@@ -125,11 +137,20 @@ implicit none
   call optimization_set_default_config(config%optinfo)
   ! Dynamics
   call LS_dynamics_init(config%dynamics)
+#ifdef HAS_PCMSOLVER
+  ! Polarizable Continuum Model
+  call ls_pcm_init(config%pcm)
+#endif
   !Only for testing new sparse matrix library, should be removed afterwards!
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
+  config%InteractionEnergy = .false.
+  config%SameSubSystems = .false.
+  config%SubSystemDensity = .false.
+  config%PrintMemory = .false.
   config%doESGopt = .false.
+  config%GPUMAXMEM = 2.0E0_realk
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
 #ifdef MOD_UNRELEASED
@@ -138,7 +159,12 @@ implicit none
   ! PLT info
   call pltinfo_set_default_config(config%Plt)
   config%doplt=.false.
-  
+  !F12 calc?
+  config%doF12=.false.
+  config%doRIMP2=.false.
+  config%doTestMPIcopy = .false.
+  config%type_tensor_debug = .false.
+  config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
 #endif
@@ -170,8 +196,8 @@ implicit none
 
    !read the MOLECULE.INP and set input
    call read_molfile_and_build_molecule(lupri,config%molecule,config%LIB,&
-        &.FALSE.,0,config%integral%DoSpherical,config%integral%Auxbasis,&
-        & config%integral%CABSbasis,config%integral%JKbasis,config%latt_config)
+        & .FALSE.,0,config%integral%DoSpherical,config%integral%basis,&
+        & config%latt_config)
    config%integral%nelectrons = config%molecule%nelectrons 
    config%integral%molcharge = INT(config%molecule%charge)
    !read the LSDALTON.INP and set input
@@ -208,7 +234,12 @@ end subroutine config_free
 !> \date March 2010
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
-! use IIDFTINT, only: II_DFTsetFunc
+
+#if defined(ENABLE_QMATRIX)
+use ls_qmatrix, only: ls_qmatrix_init, &
+                      ls_qmatrix_input
+#endif
+
 implicit none
 !> Logical unit number for LSDALTON.OUT
 INTEGER            :: LUPRI
@@ -270,8 +301,7 @@ DO
       IF (WAVE) CALL LSQUIT('**INTEGRAL section must be defined before **WAVE FUN in the lsdalton input',lupri)
       CALL INTEGRAL_INPUT(config%integral,readword,word,lucmd,lupri)
    ENDIF
-   IF ((WORD(1:10) == '**WAVE FUN').OR.(WORD(1:10) == '**WAVEFUNC')) THEN
-      WAVE = .TRUE.
+   IF (WORD(1:6) == '**WAVE') THEN
       READWORD=.TRUE.
       DO   
          IF(READWORD) THEN
@@ -369,9 +399,9 @@ DO
                 call lsquit('.NOECONTINCREM must be placed some pointer after .ARH DAVID',-1)
                ENDIF
                config%opt%cfg_saveF0andD0 = .false.
-#ifdef MOD_UNRELEASED
-            CASE('.ASYM');       config%opt%cfg_asym = .true.
-#endif
+!#ifdef MOD_UNRELEASED
+!            CASE('.ASYM');       config%opt%cfg_asym = .true.
+!#endif
             CASE('.CHOLESKY');   config%decomp%lowdin_diagonalize = .false.; config%decomp%cholesky_decomp   = .true.
             CASE('.CONFSHIFT');  config%diag%cfg_no_conf_shift = .false.
             CASE('.CONTFAC');    READ(LUCMD,*) config%solver%cfg_arh_contract
@@ -386,9 +416,9 @@ DO
             !CASE('.DISKQUEUE') ; config%solver%cfg_arh_disk_macro = .true. !Not active - get_from_modFIFO_disk won't work!
             CASE('.DORTH');      config%diag%CFG_lshift = diag_lshift_dorth
                                  config%av%CFG_lshift = diag_lshift_dorth
-            CASE('.PURESCF');    config%opt%purescf = .true.
             CASE('.DUMPMAT');    config%opt%dumpmatrices = .true.
-            CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
+!removed keyword - no testcase - and naturally it does not seem to work. TK
+!            CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
             CASE('.EXPAND');     READ(LUCMD,*) config%solver%cfg_arh_expand_crit
             CASE('.EXPFAC');     READ(LUCMD,*) config%solver%cfg_arh_expand 
             CASE('.FIXSHIFT');   READ(LUCMD,*) shift 
@@ -419,6 +449,8 @@ DO
             CASE('.MAXELM');     READ(LUCMD,*) config%solver%cfg_max_element
                                                config%solver%set_max_element = config%solver%cfg_max_element
             CASE('.MAXIT');      READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
+            CASE('.NOQUITMAXIT');READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
+                                               config%opt%opt_quit=.false.
             CASE('.MAXRATI');    READ(LUCMD,*) maxratio
                                                config%av%cfg_settings%max_dorth_ratio = maxratio
             CASE('.MAXSTEP');    READ(LUCMD,*) config%solver%cfg_max_step 
@@ -442,10 +474,10 @@ DO
             CASE('.NEWDAMP');    config%solver%cfg_arh_newdamp = .true.
             CASE('.NVEC');       READ(LUCMD,*) NVEC; config%av%cfg_settings%max_history_size = NVEC
                                  config%av%diis_history_size = NVEC
-                                 config%av%ediis_history_size = NVEC
+!                                 config%av%ediis_history_size = NVEC
             CASE('.NVECDII');    READ(LUCMD,*) NVEC
                                  config%av%diis_history_size = NVEC
-                                 config%av%ediis_history_size = NVEC
+!                                 config%av%ediis_history_size = NVEC
             CASE('.NOPREC');     config%solver%cfg_NOPREC = .true.
                                  config%decomp%cfg_NOPREC = .true.
             CASE('.INCREM');     config%opt%cfg_incremental = .true.
@@ -459,14 +491,19 @@ DO
             !CASE('.PURIFY');     config%opt%cfg_density_method = config%opt%cfg_f2d_purification - NO LONGER SUPPORTED! /Stinne 16-08-2010
             !                     read(LUCMD,*) config%opt%cfg_purification_method
             CASE('.PRINTFINALCMO'); config%opt%print_final_cmo=.true.
-            CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
+!            CASE('.MATRICESINMEMORY'); config%integral%MATRICESINMEMORY=.true.
+            CASE('.SKIPSCFLOOP');    
+               config%diag%CFG_restart =  .TRUE.
+               config%skipscfloop =  .TRUE.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
+            CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
             CASE('.REDO L2');    config%diag%cfg_redo_l2 = .true.
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
             CASE('.RH');         config%opt%CFG_density_method =  config%opt%CFG_F2D_ROOTHAAN
             CASE('.SAFE');       config%av%CFG_safe = .true.
-            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
+! obsolete keyword - noone knows what it does. Not in manual. Not in testcases
+!            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
             !SOEO keywords
             !To-do: Collect in some read-soeo-input
             CASE('.SOEO');       config%soeoinp%cfg_soeo = .true.
@@ -523,6 +560,9 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
+            CASE('.MWPURIFYATOMSTART');               
+               !Perform McWeeny purification on the non idempotent Atoms Density
+               config%opt%MWPURIFYATOMSTART=.TRUE.
 #ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
@@ -586,7 +626,7 @@ DO
    DECInput: IF (WORD(1:5) == '**DEC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.false.)
+      call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12,config%doRIMP2)
    END IF DECInput
 
    ! Input for full molecular CC calculation
@@ -594,7 +634,7 @@ DO
    CCinput: IF (WORD(1:4) == '**CC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.true.)
+      call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12,config%doRIMP2)
    END IF CCinput
 
 
@@ -643,7 +683,19 @@ DO
            & lucmd,lupri,config%molecule%NAtoms)
    ENDIF
 !
-   !SECTION MADE BY JOHANNES
+
+!
+! Find PCM input section
+!
+#ifdef HAS_PCMSOLVER
+   IF (WORD(1:5) .EQ. '**PCM') THEN
+      config%pcm%do_pcm = .true.
+      call ls_pcm_input(config%pcm,readword,word,&
+           & lucmd,lupri)
+   ENDIF
+#endif
+!
+   
 #ifdef MOD_UNRELEASED
    IF (WORD(1:5) == '**PBC') THEN
      READWORD=.TRUE.
@@ -661,6 +713,7 @@ DO
      config%latt_config%num_its_densmat=3
      config%latt_config%nf=6
      config%latt_config%ndmat=6
+     config%latt_config%realthr = -12
      config%latt_config%read_file=.false.
      config%latt_config%store_mats=.false.
      DO
@@ -691,6 +744,19 @@ DO
         CASE('.RECLAT')
           READ (LUCMD, '(3I2)')config%latt_config%nk1,config%latt_config%nk2,&
                                & config%latt_config%nk3
+          if(config%latt_config%nk2 .gt. 1 ) then
+            if(.not.config%latt_config%ldef%is_active(2)) then
+              WRITE(*,*) 'Reciprocal vector 2 should be set to 1'
+              call LSQUIT('ERROR IN RECIPROCAL VECTORS',lupri)
+            endif
+          endif
+
+          if(config%latt_config%nk3 .gt. 1 ) then
+            if(.not.config%latt_config%ldef%is_active(3)) then
+              WRITE(*,*) 'Reciprocal vector 3 should be set to 1'
+              call LSQUIT('ERROR IN RECIPROCAL VECTORS',lupri)
+            endif
+          endif
 
         CASE('.MLMAX')
           READ (LUCMD, '(I2)')config%latt_config%lmax
@@ -711,6 +777,9 @@ DO
           READ(LUCMD,*) config%latt_config%num_its,config%latt_config%num_store&
                &,config%latt_config%error
 
+        CASE('.REALTHR')
+          READ(LUCMD,*) config%latt_config%realthr
+
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **PBC readin.'
@@ -728,6 +797,18 @@ DO
    ENDIF
 #endif
 
+#if defined(ENABLE_QMATRIX)
+   ! QMatrix library
+   if (WORD=='**QMATRIX') then
+       config%do_qmatrix = .true.
+       ! initializes the QMatrix interface
+       call ls_qmatrix_init(config%ls_qmat)
+       ! processes input
+       READWORD = .true.
+       call ls_qmatrix_input(config%ls_qmat, LUCMD, LUPRI, READWORD, WORD)
+   end if
+#endif
+
    IF (WORD == '*END OF INPUT') THEN
       DONE=.TRUE.
    ENDIF
@@ -740,19 +821,14 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
-
-!Has to be done after both integral and dft sections have been read
-if(config%solver%do_dft)THEN
+if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
    call init_dftfunc(config%integral%DFT)
-   !call init_dftfunc(config%integral)
-
    IF (config%integral%CAM) THEN
-      write(word,'(A8,X,A71)') 'Camcompx',config%integral%CAMalpha
+      write(word,'(A15,G22.16)') 'Camcompx alpha=',config%integral%CAMalpha
    ELSE
-      word = 'BX'
+      word = config%integral%admm_func
    ENDIF
-   
    config%integral%DFT%DFTfuncObject(dftfunc_ADMML2) = word
 endif
 
@@ -893,8 +969,16 @@ subroutine read_dft_input(config,lucmd,lupri)
         !different from zero. 
         !note the 40 is harcoded in DFTsetFunc routine in general.c 
         config%integral%dft%dftfunc = XCfunString(IPOS:)
-        
-        CALL II_DFTsetFunc(XCfunString,hfweight,USEXCFUN,lupri)
+        IF(.NOT.USEXCFUN)THEN
+           if (len_trim(XCfunString(IPOS:)).gt.80) then 
+              call lsquit('Functional string length exceed 80',-1)
+           else 
+              CALL II_DFTsetFunc(XCfunString(IPOS:),hfweight)
+           endif
+        ELSE
+           !                        CALL II_DFTsetFunc(WORD,hfweight)
+           call xcfun_host_init(XCfunString(IPOS:),hfweight,lupri)
+        ENDIF
         config%integral%exchangeFactor = hfweight
         config%integral%dft%HFexchangeFac = hfweight
 #ifdef BUILD_CGTODIFF
@@ -924,6 +1008,10 @@ subroutine DEC_meaningful_input(config)
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
+     if(DECinfo%ccmodel == MODEL_CCSDpT) then
+        if (.not. DECinfo%full_molecular_cc) DECinfo%print_frags = .true.
+     endif
+
      ! CCSD does not work for SCALAPACK, Hubi please fix!
      if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .SCALAPACK!',-1)
@@ -933,17 +1021,25 @@ subroutine DEC_meaningful_input(config)
      if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
      end if
-
+     if(DECinfo%ccmodel.EQ.MODEL_RIMP2 .AND. (.NOT. config%integral%basis(AuxBasParam)))then
+        WRITE(config%LUPRI,'(/A)') &
+             &     'You have specified .RIMP2 in the input but not supplied a fitting basis set'
+        CALL lsquit('MP2 RI input inconsitensy: add fitting basis set',config%lupri)
+     endif
      ! DEC and response do not go together right now...
      if(config%response%tasks%doResponse) then
         call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
      end if
 
-     ! It is meaningless to run a DFT calculation and then build DEC (or full CC) on top of it...
      if(config%opt%calctype == config%opt%dftcalc) then
-        call lsquit('Error in input: DFT and DEC (or full molecular CC) calculation cannot &
-             & be combined!',-1)
+        DECinfo%DFTreference = .TRUE.
+        WRITE(config%lupri,*)' '
+        WRITE(config%lupri,*)'Warning you use a Kohn-Sham Reference for DEC or CC calculation!'
+        WRITE(config%lupri,*)'I hope you know what you are doing!'
+        WRITE(config%lupri,*)' '
      end if
+
+     DECinfo%GCBASIS = config%decomp%cfg_gcbasis
 
      ! DEC geometry optimization 
      ! *************************
@@ -1035,6 +1131,7 @@ subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
         CASE ('.XC ENERGY'); PROFINPUT%XCENERGY = .TRUE.
         CASE ('.FOCK');  PROFINPUT%FOCK = .TRUE.
         CASE ('.NEGRAD'); PROFINPUT%NEGRAD = .TRUE.
+        CASE ('.ICHORDEC'); PROFINPUT%IchorDEC = .TRUE.
         CASE ('.ICHOR'); PROFINPUT%Ichor = .TRUE.
            PROFINPUT%IchorProfDoIchor = .TRUE.
         CASE ('.ICHOR PURE THERMITE'); PROFINPUT%IchorProfDoIchor = .FALSE.;
@@ -1082,16 +1179,52 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
+        CASE('.INTERACTIONENERGY')
+           !Calculated the Interaction energy 
+           !using Counter Poise Correction
+           config%InteractionEnergy = .true.
+        CASE('.SAMESUBSYSTEMS')
+           config%SameSubSystems = .true.
+        CASE('.SUBSYSTEMDENSITY')
+           config%SubSystemDensity = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
+        CASE('.SCALAPACKGROUPSIZE');
+           READ(LUCMD,*) infpar%ScalapackGroupSize
+        CASE('.SCALAPACKAUTOGROUPSIZE');
+           infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
-        CASE('.TIME');         call SET_LSTIME_PRINT(.TRUE.)
-        CASE('.GCBASIS');      config%decomp%cfg_gcbasis = .true. ! left for backward compatibility
-        CASE('.NOGCBASIS');    config%decomp%cfg_gcbasis = .false.
-        CASE('.FORCEGCBASIS'); config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
+        CASE('.GCBASIS');               config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
+        CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
+        CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
+        CASE('.TYPE_TENSOR_DEBUG');     config%type_tensor_debug    = .true.
+           ! Max memory available on gpu measured in GB. By default set to 2 GB
+        CASE('.GPUMAXMEM');             
+           READ(LUCMD,*) config%GPUMAXMEM
+           IF(config%GPUMAXMEM.LT.0.0E0_realk)THEN
+              CALL LSQUIT('.GPUMAXMEM error: less than 0 GB supplied on input',-1)
+           ELSEIF(config%GPUMAXMEM.GT.100.0E0_realk)THEN
+              CALL LSQUIT('.GPUMAXMEM error: More than 100 GB supplied on input',-1)
+           ENDIF
+#ifdef VAR_MPI
+           call ls_mpibcast(SET_GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(config%GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
+#endif
+#ifdef VAR_MPI
+        CASE('.MAX_MPI_MSG_SIZE_NEL');
+           READ(LUCMD,*) SPLIT_MPI_MSG 
+           call ls_mpibcast(SET_SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+        CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  
+           READ(LUCMD,*) MAX_SIZE_ONE_SIDED
+           call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
+#endif
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'
@@ -1136,10 +1269,11 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
-        CASE ('.XCOLD')
+        CASE ('.XCFUN')
 #ifdef VAR_XCFUN
-           USEXCFUN = .FALSE. 
-           INTEGRAL%DFT%XCFUN = .FALSE.
+           USEXCFUN = .TRUE. 
+           INTEGRAL%DFT%XCFUN = .TRUE.
+           print*,'USEXCFUN',USEXCFUN
 #else
            call lsquit('.XCFUN requires ENABLE_XCFUN', -1)
 #endif
@@ -1153,7 +1287,13 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.4CENTERERI');  INTEGRAL%DO4CENTERERI = .TRUE.
         CASE ('.AOPRINT');  READ(LUCMD,*) INTEGRAL%AOPRINT
         CASE ('.BASPRINT');  READ(LUCMD,*) INTEGRAL%BASPRINT
-        CASE ('.DEBUGICHOR');  INTEGRAL%DEBUGICHOR = .TRUE.
+        CASE ('.DEBUGICHOR')
+           INTEGRAL%DEBUGICHOR = .TRUE.
+           READ(LUCMD,*) INTEGRAL%DEBUGICHORoption
+        CASE ('.DEBUGICHORLINK')
+           INTEGRAL%DEBUGICHORLINK = .TRUE.
+        CASE ('.DEBUGICHORLINKFULL')
+           INTEGRAL%DEBUGICHORLINKFULL = .TRUE.
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
 #ifdef BUILD_GEN1INT_LSDALTON
@@ -1249,46 +1389,68 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.NO PS');  INTEGRAL%PS_SCREEN = .FALSE. 
         CASE ('.NO PARISCREEN');  INTEGRAL%PARI_SCREEN = .FALSE. 
         CASE ('.MBIE');  INTEGRAL%MBIE_SCREEN = .TRUE. 
-        CASE ('.ADMM'); 
+        CASE ('.ADMM'); !Defaults to ADMM2 with B88 exchange
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_GCBASIS    = .FALSE.
-           INTEGRAL%ADMM_DFBASIS    = .FALSE.
-           INTEGRAL%ADMM_JKBASIS    = .TRUE.
-        CASE ('.ADMM-JK'); ! DEFAULT
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+        CASE ('.ADMM1');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_GCBASIS    = .FALSE.
-           INTEGRAL%ADMM_DFBASIS    = .FALSE.
-           INTEGRAL%ADMM_JKBASIS    = .TRUE.
-        CASE ('.ADMM-GC'); ! EXPERIMENTAL
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+           INTEGRAL%ADMM1           = .TRUE.
+        CASE ('.ADMM2');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_GCBASIS    = .TRUE.
-           INTEGRAL%ADMM_DFBASIS    = .FALSE.
-           INTEGRAL%ADMM_JKBASIS    = .FALSE.
-        CASE ('.ADMM-DF'); ! EXPERIMENTAL
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+        CASE ('.ADMMS');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_GCBASIS    = .FALSE.
-           INTEGRAL%ADMM_DFBASIS    = .TRUE.
-           INTEGRAL%ADMM_JKBASIS    = .FALSE.
-        CASE ('.ADMM-McWeeny'); ! EXPERIMENTAL
-           INTEGRAL%ADMM_MCWEENY    = .TRUE.
-        CASE ('.ADMM-CONST-EL');
-           IF (.NOT.(INTEGRAL%ADMM_EXCHANGE)) THEN
-             CALL LSQUIT('Illegal input under **INTEGRAL. works only if &
-                  &ADMM has been previously defined.',lupri)
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+           INTEGRAL%ADMMS           = .TRUE.
+        CASE ('.ADMMP');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_CONST_EL   = .TRUE.
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+           INTEGRAL%ADMMP           = .TRUE.
+        CASE ('.ADMMQ');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+           INTEGRAL%ADMMQ           = .TRUE.
+        CASE ('.ADMM-FUNC');
+           READ(LUCMD,*) INTEGRAL%ADMM_FUNC
+        CASE ('.ADMM-separateX'); !EXPERIMENTAL
+                                  !Calculates X and XC independently, default is to calculate
+                                  !X+XC with one call to dft (and x with a separate call)
+           INTEGRAL%ADMM_separateX  = .TRUE.
+        CASE ('.ADMM-BASIS-FILE'); ! EXPERIMENTAL
+           !Write file ADMMmin.dat containing info used for constructing a basis set optimized for ADMM
+           !We use PRINT_EK3 to calculate the full exchange matrix.
+           !We then use the full exchange matrix to converge the standard calculation but for every 
+           !iteration we print ADMM stuff:
+           !Exchange energy of aux density
+           !Exchange energy of full density 
+           !(GGA-type) Exchange functional energy of aux density
+           !(GGA-type) Exchange functional energy of full density 
+           !to easily obtain this infomation we use ADMM_separateX
+           IF (.NOT.INTEGRAL%ADMM_EXCHANGE) THEN
+              CALL LSQUIT('Illegal input under **INTEGRAL. .ADMM-BASIS-FILE require ADMM.',lupri)
+           ENDIF
+           INTEGRAL%ADMMBASISFILE   = .TRUE.
+           INTEGRAL%PRINT_EK3       = .TRUE. !to calculate the full exchange matrix
+           INTEGRAL%ADMM_separateX  = .TRUE. !to obtain the pure Exchange functional energy of full density 
+        CASE ('.ADMM-2ERI'); ! EXPERIMENTAL
+           INTEGRAL%ADMM_2ERI       = .TRUE.
+        CASE ('.PRINT_EK3'); ! EXPERIMENTAL
+        ! calculate and print full Exchange when doing ADMM exchange approx.
+        ! > Debugging purpose only
+	   INTEGRAL%PRINT_EK3       = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
@@ -1381,7 +1543,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
 END subroutine INTEGRAL_INPUT
 
 #ifdef MOD_UNRELEASED
-!> \brief Read the $INFO section under **GEOHESSIAN in the input file LSDALTON.INP
+!> \brief Read the **GEOHESSIAN section in the input file LSDALTON.INP
 !> \author Patrick Merlot
 !> \date 14/09/2012
 subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
@@ -1442,7 +1604,7 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
 END subroutine GEOHESSIAN_INPUT
 #endif
 
-!> \brief Read the $INFO section under *LINSCA in input file LSDALTON.INP and set configuration structure accordingly.
+!> \brief Read the **INFO section in input file LSDALTON.INP and set configuration structure accordingly.
 !> \author S. Host
 !> \date March 2010
 SUBROUTINE config_info_input(config,lucmd,readword,word)
@@ -1455,6 +1617,7 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
   character(len=80),intent(inout)  :: WORD
   character(len=2)   :: PROMPT
   integer :: i
+  integer(kind=8) :: PrintMemoryLowerLimit
 
   INFOLOOP: DO   
      IF(READWORD) THEN
@@ -1471,90 +1634,102 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         READWORD=.FALSE.
         EXIT INFOLOOP
      ENDIF
-     IF(PROMPT(1:1) .EQ. '.') THEN
-        SELECT CASE(WORD)
-        CASE('.DEBUG_SCF_MEM')
-           call Set_PrintSCFmemory(.TRUE.)
-        CASE('.DEBUG_MPI_MEM')
-           config%mpi_mem_monitor = .true.
-        CASE('.DEBUG_ARH_LINTRA')
-           config%solver%DEBUG_ARH_LINTRA = .true.
-        CASE('.DEBUG_ARH_PRECOND')
-           config%solver%DEBUG_ARH_PRECOND = .true.
-        CASE('.DEBUG_CONVERT')
-           config%opt%DEBUG_CONVERT = .true.
-           READ(LUCMD,*) config%opt%cfg_which_conversion 
-           !CASE('.DEBUG_DCHANGE')
-           !     DEBUG_DCHANGE = .true.
-        CASE('.DEBUG_DD')
-           READ(LUCMD,*) config%solver%cfg_nits_debug
-           config%decomp%cfg_check_converged_solution = .true.
-           config%solver%DEBUG_DD = .true.
-        CASE('.DEBUG_DD_LINTRA')
-           config%solver%DEBUG_DD_LINTRA = .true.
-        CASE('.DEBUG_DD_HOMOLUMO')
-           config%solver%DEBUG_DD_HOMOLUMO = .true.
-        CASE('.DEBUG_DIAG_REDSPACE')
-           config%solver%DEBUG_DIAG_REDSPACE = .true.
-        CASE('.DEBUG_DIAG_HESSIAN')
-           config%opt%DEBUG_DIAG_HESSIAN = .true.
-        CASE('.DEBUG_HESSIAN')
-           config%solver%DEBUG_HESSIAN = .true.
-        CASE('.DEBUG_HESSIAN_EXACT')
-           config%solver%DEBUG_HESSIAN_EXACT = .true. ; config%solver%DEBUG_HESSIAN = .true.
-        CASE('.DEBUG_IDEMPOTENCY')
-           config%diag%DEBUG_IDEMPOTENCY = .true.
-           !CASE('.DEBUG_OAO_GRADIENT')
-           !     DEBUG_OAO_GRADIENT = .true.
-           !CASE('.DEBUG_RH_MU_E')
-           !     DEBUG_RH_MU_E = .true.
-           !     READ(LUCMD,*) cfg_nits_debug,  cfg_mu_max_debug 
-           !     READ(LUCMD,*) (cfg_its_debug(i),i=1,cfg_nits_debug)
-           !CASE('.DEBUG_RSP')
-           !     DEBUG_RSP = .true.
-           !CASE('.DEBUG_RSP_LINSCA')
-           !     DEBUG_RSP_LINSCA = .true.
-        CASE('.INFO_CROP')
-           config%solver%INFO_CROP = .true.
-        CASE('.INFO_LEVELSHIFT')
-           config%solver%INFO_LEVELSHIFT    = .true.
-        CASE('.INFO_STABILITY')
-           config%decomp%INFO_STABILITY      = .true.
-        CASE('.INFO_DIIS')
-           config%av%INFO_DIIS = .true.
-           config%av%INFO_WEIGHT_FINAL = .true. 
-        CASE('.INFO_LINEQ')
-           config%solver%INFO_LINEQ = .true.
-        CASE('.INFO_MATOP')
-           config%opt%INFO_MATOP = .true.
-           !CASE('.INFO_ORB_E')
-           !     INFO_ORB_E = .true.
-        CASE('.INFO_STABILITY_REDSPACE')
-           config%decomp%info_stability_redspace = .true.
-        CASE('.INFO_RH')
-           config%diag%INFO_RH_ITERATIONS    = .true.
-           config%diag%INFO_RH_MU            = .true. 
-           config%diag%INFO_RH_GAP           = .true.
-        CASE('.INFO_RH_DETAIL')
-           !config%diag%INFO_RH_EPRED         = .true.
-           config%diag%INFO_RH_GAP           = .true.
-           config%diag%INFO_RH_GRADIENT      = .true.
-           config%diag%INFO_RH_ITERATIONS    = .true.
-           config%diag%INFO_RH_MU            = .true.
-        CASE('.INFO_RSP')
-           config%response%rspsolverinput%INFO_RSP = .true.
-        CASE('.INFO_RSP_REDSPACE')
-           config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
-           !CASE('.INFO_TIME_MAT_OPERATIONS')
-           !     INFO_TIME_MAT_OPERATIONS = .true.
-           !     call mat_timings
-        CASE('.INFO_WEIGHT')
-           config%av%INFO_WEIGHT_FINAL = .true.
-        CASE DEFAULT
-           WRITE(config%LUPRI,*) ' Keyword ',WORD,' not recognized in config_info_input'
-           CALL lsQUIT('Illegal keyword in config_info_input.',config%lupri)
-        END SELECT
-     ENDIF
+     SELECT CASE(WORD)
+     CASE('.PRINTMEMORY');  
+        config%PrintMemory = .TRUE.
+        call Set_MemModParamPrintMemory(config%PrintMemory,config%lupri)
+     CASE('.PRINTMEMORYLOWERLIMIT'); 
+        !Do not print stack everytime the Maximum Allocated memory is increased
+        !only print if Maximum Allocated memory is greater then PrintMemoryLowerLimit
+        !Give input in byte
+        IF(config%PrintMemory)THEN
+           READ(LUCMD,*) PrintMemoryLowerLimit
+           call Set_PrintMemoryLowerLimit(PrintMemoryLowerLimit)
+        ELSE
+           call lsquit('Error .PRINTMEMORYLOWERLIMIT requires .PRINTMEMORY',-1)
+        ENDIF
+     CASE('.DEBUG_SCF_MEM')
+        call Set_PrintSCFmemory(.TRUE.)
+        call setPrintDFTmem(.TRUE.)
+     CASE('.DEBUG_MPI_MEM')
+        config%mpi_mem_monitor = .true.
+     CASE('.DEBUG_ARH_LINTRA')
+        config%solver%DEBUG_ARH_LINTRA = .true.
+     CASE('.DEBUG_ARH_PRECOND')
+        config%solver%DEBUG_ARH_PRECOND = .true.
+     CASE('.DEBUG_CONVERT')
+        config%opt%DEBUG_CONVERT = .true.
+        READ(LUCMD,*) config%opt%cfg_which_conversion 
+        !CASE('.DEBUG_DCHANGE')
+        !     DEBUG_DCHANGE = .true.
+     CASE('.DEBUG_DD')
+        READ(LUCMD,*) config%solver%cfg_nits_debug
+        config%decomp%cfg_check_converged_solution = .true.
+        config%solver%DEBUG_DD = .true.
+     CASE('.DEBUG_DD_LINTRA')
+        config%solver%DEBUG_DD_LINTRA = .true.
+     CASE('.DEBUG_DD_HOMOLUMO')
+        config%solver%DEBUG_DD_HOMOLUMO = .true.
+     CASE('.DEBUG_DIAG_REDSPACE')
+        config%solver%DEBUG_DIAG_REDSPACE = .true.
+     CASE('.DEBUG_DIAG_HESSIAN')
+        config%opt%DEBUG_DIAG_HESSIAN = .true.
+!     CASE('.DEBUG_HESSIAN')
+!        config%solver%DEBUG_HESSIAN = .true.
+     CASE('.DEBUG_HESSIAN_EXACT')
+        config%solver%DEBUG_HESSIAN_EXACT = .true. ; config%solver%DEBUG_HESSIAN = .true.
+     CASE('.DEBUG_IDEMPOTENCY')
+        config%diag%DEBUG_IDEMPOTENCY = .true.
+        !CASE('.DEBUG_OAO_GRADIENT')
+        !     DEBUG_OAO_GRADIENT = .true.
+        !CASE('.DEBUG_RH_MU_E')
+        !     DEBUG_RH_MU_E = .true.
+        !     READ(LUCMD,*) cfg_nits_debug,  cfg_mu_max_debug 
+        !     READ(LUCMD,*) (cfg_its_debug(i),i=1,cfg_nits_debug)
+        !CASE('.DEBUG_RSP')
+        !     DEBUG_RSP = .true.
+        !CASE('.DEBUG_RSP_LINSCA')
+        !     DEBUG_RSP_LINSCA = .true.
+     CASE('.INFO_CROP')
+        config%solver%INFO_CROP = .true.
+     CASE('.INFO_LEVELSHIFT')
+        config%solver%INFO_LEVELSHIFT    = .true.
+     CASE('.INFO_STABILITY')
+        config%decomp%INFO_STABILITY      = .true.
+     CASE('.INFO_DIIS')
+        config%av%INFO_DIIS = .true.
+        config%av%INFO_WEIGHT_FINAL = .true. 
+     CASE('.INFO_LINEQ')
+        config%solver%INFO_LINEQ = .true.
+     CASE('.INFO_MATOP')
+        config%opt%INFO_MATOP = .true.
+        !CASE('.INFO_ORB_E')
+        !     INFO_ORB_E = .true.
+     CASE('.INFO_STABILITY_REDSPACE')
+        config%decomp%info_stability_redspace = .true.
+     CASE('.INFO_RH')
+        config%diag%INFO_RH_ITERATIONS    = .true.
+        config%diag%INFO_RH_MU            = .true. 
+        config%diag%INFO_RH_GAP           = .true.
+     CASE('.INFO_RH_DETAIL')
+        !config%diag%INFO_RH_EPRED         = .true.
+        config%diag%INFO_RH_GAP           = .true.
+        config%diag%INFO_RH_GRADIENT      = .true.
+        config%diag%INFO_RH_ITERATIONS    = .true.
+        config%diag%INFO_RH_MU            = .true.
+     CASE('.INFO_RSP')
+        config%response%rspsolverinput%INFO_RSP = .true.
+     CASE('.INFO_RSP_REDSPACE')
+        config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
+        !CASE('.INFO_TIME_MAT_OPERATIONS')
+        !     INFO_TIME_MAT_OPERATIONS = .true.
+        !     call mat_timings
+     CASE('.INFO_WEIGHT')
+        config%av%INFO_WEIGHT_FINAL = .true.
+     CASE DEFAULT
+        WRITE(config%LUPRI,*) ' Keyword ',WORD,' not recognized in config_info_input'
+        CALL lsQUIT('Illegal keyword in config_info_input.',config%lupri)
+     END SELECT
   ENDDO INFOLOOP
 END SUBROUTINE config_info_input
 
@@ -1604,6 +1779,13 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
      if (WORD(1:1) == '*') then
        !which type of response is wanted??
        SELECT CASE(WORD)
+       CASE('*NoOpenRSP')
+          config%response%noOpenRSP = .TRUE. !Use LSDALTON own Response module
+       CASE('*DIPOLE')
+          config%response%tasks%doDipole=.true.
+       CASE('*DIPOLEMOMENTMATRIX')
+          config%response%tasks%doDipoleMatrix=.true.
+          config%response%tasks%doResponse=.true.
        ! Kasper K
        CASE('*ALPHA')
            config%response%tasks%doALPHA=.true.
@@ -1674,6 +1856,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*GAMMA')
            config%response%tasks%doGAMMA=.true.
            config%response%tasks%doResponse=.true.
+           config%response%rspsolverinput%rsp_cmplxnew = .true.
+           config%response%rspsolverinput%rsp_cpp = .false.
            do
               READ(LUCMD,'(A40)') word
               if(word(1:1) == '!' .or. word(1:1) == '#') cycle
@@ -1781,6 +1965,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*DAMPED_TPA')
            config%response%tasks%doResponse=.true.
            config%response%tasks%doDTPA=.true.
+           config%response%rspsolverinput%rsp_cmplxnew = .true.
+           config%response%rspsolverinput%rsp_cpp = .false.
            do
               READ(LUCMD,'(A40)') word
               if(word(1:1) == '!' .or. word(1:1) == '#') cycle
@@ -1957,13 +2143,16 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_thresh
                CASE('.SYM_SOLVER')
                   config%response%rspsolverinput%rsp_stdnew = .true.
+                  config%response%rspsolverinput%rsp_cmplxnew = .true.
+                  config%response%rspsolverinput%rsp_cpp = .false.
                CASE('.PAIR_SOLVER')
                   config%response%rspsolverinput%rsp_cmplxnew = .false.
+                  config%response%rspsolverinput%rsp_cpp = .false.
                CASE('.MAXIT')
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_maxit 
                  config%response%rspsolverinput%rsp_maxred=2*config%response%rspsolverinput%rsp_maxit 
                CASE('.MAXRED')
-                  READ(LUCMD,*) config%response%rspsolverinput%rsp_maxred 
+                  READ(LUCMD,*) config%response%rspsolverinput%rsp_maxred
                CASE('.CONVDYN')
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_convdyn_type
                   config%response%rspsolverinput%rsp_convdyn =.true.
@@ -2001,6 +2190,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                CASE ('.NSTART');   READ(LUCMD,*) config%response%rspsolverinput%rsp_no_of_startvectors
                   config%response%rspsolverinput%rsp_startvectors = .true.  
                   config%decomp%cfg_startvectors = .TRUE.
+                  config%decomp%cfg_no_of_startvectors = config%response%rspsolverinput%rsp_no_of_startvectors
                CASE('.DTHR')
                   !threshold for when excited states is considered degenerate
                   READ(LUCMD,*) config%response%rspsolverinput%degenerateTHR
@@ -2048,6 +2238,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*QUASIMCD')
            config%response%tasks%doResponse=.true.
            config%response%tasks%doMCD=.true.
+           config%response%rspsolverinput%rsp_cmplxnew = .true.
+           config%response%rspsolverinput%rsp_cpp = .false.
            do
               READ(LUCMD,'(A40)') word
               if(word(1:1) == '!' .or. word(1:1) == '#') cycle
@@ -2513,6 +2705,7 @@ DO
          READ (LUCMD,*) DALTON%DFT%DFTIPT, DALTON%DFT%DFTBR1, DALTON%DFT%DFTBR2
       CASE ('.DFTELS'); READ(LUCMD,*) DALTON%DFT%DFTELS
       CASE ('.DFTTHR'); READ(LUCMD,*) DALTON%DFT%DFTHR0,DALTON%DFT%DFTHRL, DALTON%DFT%DFTHRI, DALTON%DFT%RHOTHR
+      CASE ('.MEMORY'); call setPrintDFTmem(.TRUE.)  
       CASE ('.LB94');
          DALTON%DFT%LB94=.TRUE.
       CASE ('.CS00');
@@ -2611,7 +2804,36 @@ DO
       CASE ('.HARDNESS' ); READ(LUCMD,*) DALTON%DFT%HRDNES
       CASE ('.DISPER' )
          DALTON%DFT%DODISP = .TRUE.
-         CALL II_DFTDISPCHECK(DALTON%DFT%dftfunc,lupri)
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+         DALTON%DFT%DO_BJDAMP = .TRUE.
+!AMT
+      CASE ('.DFT-D2')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP2 = .TRUE.
+         DALTON%DFT%DO_DFTD2 = .TRUE.
+      CASE ('.D2PAR')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%L_INP_D2PAR = .TRUE.
+         READ(LUCMD,*)DALTON%DFT%D2_s6_inp, DALTON%DFT%D2_alp_inp, DALTON%DFT%D2_rs6_inp
+      CASE ('.DFT-D3')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+      CASE ('.DFT-D3BJ')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+         DALTON%DFT%DO_BJDAMP = .TRUE.
+      CASE ('.3BODY')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%DO_3BODY = .TRUE.
+      CASE ('.D3PAR')
+         DALTON%DFT%DODISP = .TRUE.
+         DALTON%DFT%L_INP_D3PAR = .TRUE.
+         READ(LUCMD,*) DALTON%DFT%D3_s6_inp, DALTON%DFT%D3_alp_inp, DALTON%DFT%D3_rs6_inp, & 
+     &              DALTON%DFT%D3_rs18_inp, DALTON%DFT%D3_s18_inp
+!AMT
       CASE DEFAULT
          WRITE (LUPRI,'(/,3A,/)') ' Keyword ',WORD,&
               & ' not recognized in *DFT INPUT'
@@ -2821,7 +3043,7 @@ implicit none
         & 'Level shifting by ||Dorth|| ratio  ',&
         & 'No level shifting                  ',&
         & 'Van Lenthe fixed level shifts      '/)
-   integer :: nocc,nvirt
+   integer :: nocc,nvirt,nthreads_test,nthreads
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer, external :: OMP_GET_NESTED
@@ -2830,22 +3052,62 @@ integer, external :: OMP_GET_NESTED
 
    write(config%lupri,*) 'Configuration:'
    write(config%lupri,*) '=============='
-
+nthreads = 1
 #ifdef VAR_OMP
 !deactivates nested OpenMP behavior - this should be false per default-
 !but we want to be sure.
 !IF(OMP_GET_NESTED())THEN
 !   CALL LSQUIT('Nested OpenMP is set to true, deactivate using OMP_NESTED=FALSE',-1)
 !ENDIF
-!$OMP PARALLEL   
+!$OMP PARALLEL SHARED(nthreads)  
 !$OMP MASTER
-IF(OMP_GET_NUM_THREADS().GT. 1)THEN
-   WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',OMP_GET_NUM_THREADS(),' threads.'
-ELSEIF(OMP_GET_NUM_THREADS().EQ. 1)THEN
-   WRITE(lupri,'(4X,A)')'This is a Single core calculation.'
+nthreads = OMP_GET_NUM_THREADS()
+IF(nthreads.GT. 1)THEN
+   WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',nthreads,' threads.'
+ELSEIF(nthreads.EQ. 1)THEN
+   WRITE(lupri,'(4X,A)')'This is a Single core calculation. (no OpenMP)'
 ENDIF
 !$OMP END MASTER
 !$OMP END PARALLEL
+#else
+   WRITE(lupri,'(4X,A)')'This is a Single core calculation. (no OpenMP)'
+#endif
+
+#ifdef VAR_MPI
+
+if(mod(SPLIT_MPI_MSG,8)/=0)call lsquit("INPUT ERROR: MAX_MPI_MSG_SIZE_NEL has to be a multiple of 8",-1)
+
+
+IF(nthreads.EQ.1)THEN
+ IF(infpar%nodtot.GT.1)THEN
+  WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot, &
+                          & ' processors, but you are only using 1 OpenMP thread'
+  WRITE(lupri,'(4X,A)')     'WARNING: This is NOT recommended! LSDALTON is designed as a MPI/OpenMP hybrid code'
+  WRITE(lupri,'(4X,A)')     'WARNING: It is therefore HIGHLY recommended to use the command'
+  WRITE(lupri,'(4X,A)')     'WARNING: export OMP_NUM_THREADS=X'
+  WRITE(lupri,'(4X,A)')     'WARNING: Where X is the number of floating point cores on your system.'
+  WRITE(lupri,'(4X,A)')     'WARNING: Note due to hyper-threading, and vendors reporting number of integer cores instead of' 
+  WRITE(lupri,'(4X,A)')     'WARNING: floating point units/cores, the determination of the optimal X may require some testing'
+  WRITE(lupri,'(4X,A)')     'WARNING: and may easily be half what you expect'
+ ENDIF
+ENDIF
+#ifdef VAR_INT64
+#ifdef VAR_MPI_32BIT_INT
+!int64,mpi & mpi32
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A)')'linked to a 32 bit integer MPI library.'
+#else
+!int64,mpi nompi32
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A)')'linked to a 64 bit integer MPI library.'
+#endif
+#else
+!int32 mpi
+WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors'
+#endif
+#else
+!no MPI
+WRITE(lupri,'(4X,A)')'This is a serial calculation (no MPI)'
 #endif
 
 config%av%diis_history_size = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
@@ -3282,28 +3544,40 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       CALL lsQUIT('Cartesian basisfunction without H1DAIG starting guess.',config%lupri)
    endif
 
+! Check Counter Poise Input :
+   IF(config%InteractionEnergy.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
+      call lsquit('.INTERACTIONENERGY keyword require SubSystems in MOLECULE.INP',-1)
+   ENDIF
+
 ! Check integral input:
 !======================
 
-   if(config%integral%densfit .AND. (.NOT. config%integral%auxbasis))then
+   if(config%integral%densfit .AND. (.NOT. config%integral%basis(AuxBasParam)))then
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified .DENSFIT in the dalton input but not supplied a fitting basis set'
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
-!ADMM basis input
-   if(config%integral%ADMM_JKBASIS .AND. (.NOT. config%integral%JKbasis))then
+   if(config%doRIMP2 .AND. (.NOT. config%integral%basis(AuxBasParam)))then
       WRITE(config%LUPRI,'(/A)') &
-           &     'You have specified an ADMM-JK calculation in the dalton input but not supplied a JK fitting basis set as required'
-      WRITE(config%LUPRI,'(/A)') &
-           &     'Please read the ADMM part in the manual and supply JK basis set'
-      CALL lsQUIT('ADMM fitting input inconsitensy: add JK fitting basis set',config%lupri)
+           &     'Warning: You have specified .RIMP2 in the dalton input but not supplied a fitting basis set'
+      CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
-   if(config%integral%ADMM_DFBASIS .AND. (.NOT. config%integral%auxbasis))then
+   if(config%doF12 .AND. (.NOT. config%integral%basis(CABBasParam)))then
       WRITE(config%LUPRI,'(/A)') &
-           & 'You have specified an ADMM-DF calculation in the dalton input but not supplied an aux fitting basis set as required'
-      WRITE(config%LUPRI,'(/A)') &
-           &     'Please read the ADMM part in the manual and supply aux basis set'
-      CALL lsQUIT('ADMM fitting input inconsitensy: add aux fitting basis set',config%lupri)
+           &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
+      CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+   endif
+!ADMM basis input
+   if(config%integral%ADMM_EXCHANGE) THEN
+      IF (.NOT. config%integral%basis(ADMBasParam)) THEN
+        WRITE(config%LUPRI,'(/A)') &
+     &   'You have specified an ADMM calculation in the dalton input but not supplied a '
+        WRITE(config%LUPRI,'(A)') &
+     &   'ADMM fitting basis set in the molecule input as required'
+        WRITE(config%LUPRI,'(/A)') &
+             &     'Please read the ADMM part in the manual and supply an ADMM basis set'
+        CALL lsQUIT('ADMM fitting input inconsitensy: add ADMM fitting basis set',config%lupri)
+      ENDIF
    endif
 
    if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K))then
@@ -3356,13 +3630,14 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    IF(config%decomp%cfg_gcbasis)THEN
       IF(config%INTEGRAL%FORCEGCBASIS)THEN
          !do nothing
-         IF(ls%input%basis%REGULAR%DunningsBasis)THEN
+         IF(ls%input%basis%BINFO(REGBASPARAM)%DunningsBasis)THEN
             WRITE(config%lupri,*)'We have detected a Dunnings Basis but the ' 
             WRITE(config%lupri,*)'FORCEGCBASIS keyword is in effect.'
          ENDIF
-      ELSEIF(ls%input%basis%REGULAR%DunningsBasis)THEN
+      ELSEIF(ls%input%basis%BINFO(REGBASPARAM)%DunningsBasis)THEN
          WRITE(config%lupri,*)'We have detected a Dunnings Basis set so we deactivate the' 
          WRITE(config%lupri,*)'use of the Grand Canonical basis, which is normally default.'
+         WRITE(config%lupri,*)'The use of Grand Canonical basis can be enforced using the FORCEGCBASIS keyword' 
          config%decomp%cfg_gcbasis = .FALSE.         
       ENDIF
    ENDIF
@@ -3378,7 +3653,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%lupri,'(A)')' '
       WRITE(config%lupri,'(A)')'We perform the calculation in the Grand Canonical basis'
       WRITE(config%lupri,'(A)')'(see PCCP 2009, 11, 5805-5813)'
-      WRITE(config%lupri,'(A)')'To use the stanard input basis use .NOGCBASIS'
+      WRITE(config%lupri,'(A)')'To use the standard input basis use .NOGCBASIS'
       
       IF(ls%input%dalton%NOGCINTEGRALTRANSFORM)THEN
          WRITE(config%lupri,'(A)')' '
@@ -3389,7 +3664,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          ls%setting%integraltransformGC = .FALSE.
       ELSE!default
          WRITE(config%lupri,'(A)')' '
-         IF(.NOT.ls%input%basis%REGULAR%Gcont)THEN
+         IF(.NOT.ls%input%basis%BINFO(REGBASPARAM)%Gcont)THEN
             WRITE(lupri,'(A)')'Since the input basis set is a segmented contracted basis we'
             WRITE(lupri,'(A)')'perform the integral evaluation in the more efficient'
             WRITE(lupri,'(A)')'standard input basis and then transform to the Grand '
@@ -3415,20 +3690,20 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 ! Write Screening Thresholds:
 !======================
    WRITE(config%LUPRI,'(A)')' '
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Coulomb               :',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Coulomb               :',&
 & config%integral%THRESHOLD*config%integral%J_THR
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Exchange              :',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Exchange              :',&
 &config%integral%THRESHOLD*config%integral%K_THR
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for One-electron operators:',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for One-electron operators:',&
 &config%integral%THRESHOLD*config%integral%ONEEL_THR
    if(config%integral%DALINK)THEN
       WRITE(config%LUPRI,'(A)')' '
-      WRITE(config%LUPRI,'(A,ES10.4)')'   DaLink have been activated, so in addition to using ',&
+      WRITE(config%LUPRI,'(A,ES12.4)')'   DaLink have been activated, so in addition to using ',&
            & config%integral%THRESHOLD*config%integral%K_THR      
       WRITE(config%LUPRI,'(A)')'   as a screening threshold on the integrals contribution to'
       WRITE(config%LUPRI,'(A)')'   the Fock matrix, we also use a screening threshold'
-      WRITE(config%LUPRI,'(A,ES10.4)')'   on the integrals contribution to the Energy:       ',&
+      WRITE(config%LUPRI,'(A,ES12.4)')'   on the integrals contribution to the Energy:       ',&
       &config%integral%THRESHOLD*config%integral%K_THR*(1.0E+1_realk**(-config%INTEGRAL%DASCREEN_THRLOG))
    endif
 
@@ -3490,6 +3765,17 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       call scf_stats_arh_header(config%lupri)
    endif
 
+#ifdef HAS_PCMSOLVER
+! Cross-check for polarizable continuum model
+!=================================================
+   if (config%pcm%do_pcm .and. config%optinfo%optimize) then
+      call lsquit('Sorry, polarizable continuum model not available for geometry optimizations!',config%lupri)
+   endif
+   if (config%pcm%do_pcm .and. config%dynamics%do_dynamics) then
+      call lsquit('Sorry, polarizable continuum model not available for dynamics!',config%lupri)
+   endif
+#endif   
+
 !MKL sanity check:
 !==================
 
@@ -3501,7 +3787,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          CALL mat_select_type(mtype_csr,lupri)
          call mat_inquire_cutoff(cutoff)
          write(config%lupri,*)
-         write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d7.2)') cutoff
+         write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d10.2)') cutoff
 #else
          call lsquit('.CSR requires MKL library and -DVAR_MKL precompiler flag',config%lupri)
 #endif
@@ -3520,6 +3806,25 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('Combining diagonalization and CSR is inefficient!',-1)
       endif
    endif
+
+!OpenMP sanity check: -DVAR_OMP should be set if openMP is active
+!==================
+#ifndef VAR_OMP
+!OpenMP should be turned off
+nthreads_test = 0
+!$OMP PARALLEL SHARED(nthreads_test)
+
+!$OMP CRITICAL
+nthreads_test = nthreads_test + 1
+!$OMP END CRITICAL
+
+!$OMP END PARALLEL 
+IF(nthreads_test.NE.1)THEN
+   print*,'OpenMP compilation inconsistency: use -DVAR_OMP when using -openmp/-fopenmp flag'
+   call lsquit('OpenMP compilation inconsistency: use -DVAR_OMP',-1)
+ENDIF
+#endif
+
 
 !SCALAPACK sanity check:
 !==================
@@ -3615,71 +3920,19 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
        write(config%lupri,*) ' system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   '  
        write(config%lupri,*) 
    endif 
-
    ! Check that DEC input is consistent with geometry optimization and orbital localization.
    call DEC_meaningful_input(config)
 
+   if(config%doDEC) then
+      nocc = config%decomp%nocc
+      nvirt = (nbast-nocc)
+      call check_cc_input(ls,nocc,nvirt,nbast)
+   endif
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
-
+   ls%setting%GPUMAXMEM = config%GPUMAXMEM
 end subroutine set_final_config_and_print
-
-!> \brief Remove Some of the Rough integral approximations if applied.
-!> \author T. Kjaergaard
-!> \date March 2010
-!>
-!> If keywords specified in LSDALTON.INP do not conform, there are two options: \n
-!> 1. Clean up, i.e. change the settings specified by the user to something
-!>    meaningful. Remember to clarify this in output! E.g. \n
-!>    'H1DIAG does not work well with only few saved microvectors for ARH. 
-!>    Resetting max. size of subspace in ARH linear equations to', <something meaningful>. \n
-!> 2. Quit, if there is no logical way to recover. \n
-!> After deciding what the final configuration should be, print selected details
-!> which may be useful for the user.
-!>
-subroutine scf_purify(lupri,ls,config,purify)
-use scf_stats
-implicit none
-!> Contains info, settings and data for entire calculation
-type(configItem), intent(inout) :: config
-!> Logical unit number for LSDALTON.OUT
-integer, intent(in)             :: lupri
-!> Object containing integral settings and molecule
-type(lsitem), intent(inout)     :: ls
-!> if keywords have been changed to obtain a pure SCF energy we need to purify
-logical                         :: purify
-purify = .FALSE.
-write(config%lupri,*) 'Determine if purification is necessary'
-write(config%lupri,*) '======================================'
-IF(ls%Setting%scheme%densfit)THEN
-   Write(Lupri,'(A)') 'Deactivating Density fitting'
-   ls%Setting%scheme%densfit = .FALSE.
-   purify = .TRUE.
-ENDIF
-IF(ls%Setting%scheme%df_k)THEN
-   Write(Lupri,'(A)') 'Deactivating RI-K'
-   ls%Setting%scheme%df_k = .FALSE.
-   purify = .TRUE.
-ENDIF
-IF(ls%Setting%scheme%dalink)THEN
-   Write(Lupri,'(A)') 'Deactivating DaLinK'
-   ls%Setting%scheme%dalink = .FALSE.
-   purify = .TRUE.
-ENDIF
-IF(ls%Setting%scheme%SR_EXCHANGE)THEN
-   Write(Lupri,'(A)') 'Deactivating Short Range Exchange'
-   ls%Setting%scheme%SR_EXCHANGE = .FALSE.
-   purify = .TRUE.
-ENDIF
-IF(ls%Setting%scheme%INCREMENTAL)THEN
-   Write(Lupri,'(A)') 'Deactivating Incremental'
-   call ks_free_incremental_fock()
-   config%opt%cfg_incremental = .FALSE.
-   ls%Setting%scheme%INCREMENTAL = .FALSE.
-   purify = .TRUE.
-ENDIF
-end subroutine scf_purify
 
 SUBROUTINE TRIM_STRING(string,n,words)
   implicit none
@@ -3734,13 +3987,15 @@ END SUBROUTINE TRIM_STRING
 end module configuration
 
 #ifdef VAR_MPI
-subroutine lsmpi_setmasterToSlaveFunc(WORD)
+subroutine lsmpi_setmasterToSlaveFunc(WORD,hfweight)
 use infpar_module
 use xcfun_host,only: USEXCFUN
 use lsmpi_mod
   implicit none
   character(len=80)  :: WORD
+  real(realk) :: hfweight
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
 end subroutine lsmpi_setmasterToSlaveFunc
 
@@ -3754,8 +4009,8 @@ use typedef
   real(realk) :: hfweight
   integer :: ierror
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  hfweight=0E0_realk   
   IF(.NOT.USEXCFUN)THEN
      CALL DFTsetFunc(WORD(1:80),hfweight,ierror)
      IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
@@ -3777,8 +4032,8 @@ use typedef
   character(len=80)  :: WORD
   real(realk) :: hfweight
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  hfweight=0E0_realk 
   IF(.NOT.USEXCFUN)THEN
      CALL DFTaddFunc(WORD(1:80),hfweight)
   ELSE

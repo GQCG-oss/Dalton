@@ -45,6 +45,8 @@ H      0.55168  -0.77340   0.00000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_trilevel_64bit.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **INTEGRAL
 .DENSFIT
 **WAVE FUNCTIONS
@@ -84,17 +86,17 @@ fi
 
 
 # ENERGY test
-CRIT1=`$GREP "Final DFT energy:                  -76.263773" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy: * -76.263773" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="LEVEL 2 ENERGY NOT CORRECT -"
 
-CRIT1=`$GREP "Final DFT energy:                  -76.389237" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy: * -76.389237" $log | wc -l`
 TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="LEVEL 3 ENERGY NOT CORRECT -"
 
-CRIT1=`$GREP "HOMO-LUMO Gap \(iteratively\):     0.33302" $log | wc -l`
+CRIT1=`$GREP "HOMO-LUMO Gap \(iteratively\): * 0.33302" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="HOMO-LUMO GAP NOT CORRECT -"

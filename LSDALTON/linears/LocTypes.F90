@@ -4,15 +4,11 @@
 !*  MAIN ROUTINES TO COMPUTE GRADIENT,HESSIAN ON TRIAL VECTOR AND PRECOND  *
 !*                                                                         *
 !* Implemented for                                                         *
-!* - Pipek measure using Lowdin or Mulliken charge and power m             *
-!* (Charge localization using either Mulliken or Lowdin and power m)       *
 !* - Pipek-Mezey with external power m, Lowdin charge only                 *
 !* - Generalized Pipek-Mezey, external power m, Lowdin charge              *
 !*                                                                         *
 !* Lowdin orbitals may be optimized using orbspread scheme                 *
 !*                                                                         *
-!* NOTE: For Pipek measure -->   .CLL , m > 0                              *
-!* NOTE: For generalized Pipek measure --> .CLL,  m < 0                    *
 !* NOTE: For Pipek-Mezey --> .PML m=2, Lowdin pop.analysis                 *
 !* NOTE: For Pipek-Mezey --> .PMM m=2, Mulliken pop.analysis               *
 !*                                                                         *
@@ -35,10 +31,6 @@ real(realk) :: m
 logical :: PipekMezeyLowdin
 ! Use Pipek-Mezey scheme with Lowdin charge
 logical :: PipekMezeyMull
-! Use Pipek measure of locality w/Mulliken charge
-logical :: ChargeLocMulliken
-! Use Pipek measure of locality w/Lowdin charge
-logical :: ChargeLocLowdin
 ! use linesearch in optimization
 logical :: linesearch
 ! if using precond

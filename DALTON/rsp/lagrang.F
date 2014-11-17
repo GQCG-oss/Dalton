@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -49,7 +49,6 @@ Cbugfix: too little was allocated for KGP2
 C===========================================================================
 #endif
 C
-#include "single.h"
 C
 C  /* Deck lagran */
       SUBROUTINE LAGRAN(WORD,FC,FV,CMO,UDV,PV,XINDX,WRK,LWRK)
@@ -246,6 +245,7 @@ C
       DIMENSION XINDX(*),WRK(*)
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "infpri.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -301,8 +301,9 @@ C
       ELSE
          LABEL = 'SINGLAGR'
       END IF
-      WRITE (LUPRI,'(//A,I3,/2A)')
+      WRITE (LUPRI,'(//A,I2,3A/2A)')
      & ' RSPLAN -- linear response calculation for symmetry',KSYMOP,
+     & '  ( ',REP(KSYMOP-1),')',
      & ' RSPLAN -- operator label : ',LABEL
       CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,WRK(KGP),LWRK1)
       IF (IPRRSP.GT.120) THEN
@@ -336,7 +337,7 @@ C     CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
       IF ( IPRRSP.GE.10 ) THEN
          WRITE (LUPRI,'(/A)') ' SOLUTION VECTOR FOR LAGRANGIAN  '
          CALL RSPPRC(WRK(KBVECS),KZCONF,KZVAR,LUPRI)
-         CALL RSPPRO(WRK(KBVECS+KZCONF),KZVAR,LUPRI)
+         CALL RSPPRO(WRK(KBVECS+KZCONF),KZVAR,UDV,LUPRI)
       END IF
       CALL DCOPY(KZYVAR,WRK(KBVECS),1,WRK(1),1)
 C
@@ -1324,7 +1325,7 @@ C  /* Deck SETDEG */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
 C
       DO 50 I = 1, ESRNUC
           DEGEN(I) = 0.0D0
@@ -1374,7 +1375,7 @@ C  /* Deck SDOPER */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
 C
       NCOOR=0
       DEGEN(ATMIND) = 0.0D0

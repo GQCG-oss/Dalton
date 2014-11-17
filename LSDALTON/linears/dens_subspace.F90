@@ -8,7 +8,7 @@ module density_subspace_min
 !  use ARHmodule
   use configurationType,only: configitem
   use matrix_module,only: matrix
-  use av_utilities, only: util_HistoryStore
+  use av_utilities!, only: util_HistoryStore, add_to_queue, flush_queue
   use queue_module,only: modFIFO
   use queue_ops, only: add_to_modfifo
   use precision  
@@ -18,7 +18,7 @@ module density_subspace_min
   use matrix_util,only: dumpmats
   USE linsca_dsm
   USE linsca_diis
-  USE linsca_ediis
+!  USE linsca_ediis
   use rsp_util, only: util_save_moinfo, util_free_mostuff, util_ao_to_mo
   use diagonalization, only: SCF_iteration, diag_lshift_none
   use ARHmodule, only: arh_debug_print
@@ -164,7 +164,8 @@ CONTAINS
       else if (config%av%cfg_averaging == config%av%CFG_AVG_DIIS) then
          CALL diis(config%av, queue, D, F)
       else if (config%av%cfg_averaging == config%av%CFG_AVG_EDIIS) then
-         CALL ediis(config%av, queue, D, F)
+         call lsquit('EDIIS feature was removed',-1)
+!         CALL ediis(config%av, queue, D, F)
       else if (config%av%cfg_averaging == config%av%cfg_avg_van_lenthe) then
          if (config%av%vanlentheCounter > 0) then
             config%av%vanlentheCounter = config%av%vanlentheCounter + 1

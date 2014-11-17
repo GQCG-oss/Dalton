@@ -8,14 +8,14 @@ export LD_LIBRARY_PATH=/com/acml-4.1.0-pgi/pgi64_mp_int64/lib
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
-git checkout Dalton2013_release
+#git checkout Dalton2013_release
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 export OMP_NUM_THREADS=1
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 #./setup --fc=pgf90 --cc=pgcc --blas=builtin --lapack=builtin -D BUILDNAME="RB-Grendel-linux-PGI-debug" --type=debug --check
-./setup --fc=pgf90 --cc=pgcc -D BUILDNAME="RB-Grendel-linux-PGI-debug" --type=debug --check
+./setup --fc=pgf90 --cc=pgcc -D BUILDNAME="MB-Grendel-linux-PGI-debug" --type=debug --check
 cd $TMP_DIR/build
 #make clean
 #find . -exec touch {} \;

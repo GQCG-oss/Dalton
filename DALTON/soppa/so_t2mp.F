@@ -37,6 +37,7 @@ C------------------
 C
       CALL QENTER('SO_T2MP')
 C
+C
 C---------------------------------------------------
 C     Loop over T2-amplitudes for a =< b and i =< j.
 C---------------------------------------------------
@@ -125,6 +126,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('SO_T2MP')
 C

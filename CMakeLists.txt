@@ -3,12 +3,25 @@
 # exit if cmake version is below 2.8
 # we need at least 2.8 for external projects support
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+if("${CMAKE_MAJOR_VERSION}" GREATER 2)
+   cmake_policy(VERSION 3.0)
+#  allow add_executable in "tools/" subdirectory in cmake 3.?
+   cmake_policy(SET CMP0037 OLD)
+   MESSAGE(STATUS "Changed cmake policy to version 3.0, except for policy CMP037")
+endif("${CMAKE_MAJOR_VERSION}" GREATER 2)
+
+# set not CYGWIN_WIN32, to quench warning messages from CYGWIN cmake
+# will do no harm if not CYGWIN
+set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 # set project name and languanges that are involved
 project(DALTON Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
+
+# To link with fortran not c++
+set(CMAKE_CXX_LINKER_PREFERENCE_PROPAGATES FALSE)
 
 # these are paths that CMake will search for cmake
 # module files that end with .cmake
@@ -18,12 +31,14 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/mpi
-    ${CMAKE_SOURCE_DIR}/cmake/fortran-standard/
+    ${CMAKE_SOURCE_DIR}/cmake/fortran-standard
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_BINARY_DIR}
     )
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                           OFF)
+option(ENABLE_OPENACC        "Enable OpenACC"                                   OFF)
+option(ENABLE_COLLAPSE       "Enable COLLAPSE clause for reorderings"           OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
@@ -33,22 +48,38 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
+option(ENABLE_QFITLIB        "Enable charge fittling library (QFITLIB)"         ON)
+option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                         OFF)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
 option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
-option(ENABLE_XCFUN          "Enable XCFUN"                                     OFF)
+option(ENABLE_XCFUN          "Enable XCFUN"                                     ON)
 option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
+option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
+option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
+option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
+option(ENABLE_QMATRIX        "Enable QMatrix library"                           OFF)
+option(ENABLE_OPENRSP        "Enable OPENRSP library (need QMatrix library)"    OFF)
+option(ENABLE_TDRSP          "Enable TDRSP library (need QMatrix library)"      OFF)
+
+option(ENABLE_EFS            "Enable Echidna Fock Solver"                       OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
+option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
+
+# Gen1Int interface, OpenRSP and TDRSP needs QMatrix library
+#if(ENABLE_GEN1INT OR ENABLE_OPENRSP OR ENABLE_TDRSP)
+#    set(ENABLE_QMATRIX ON)
+#endif()
 
 set(EXTERNAL_LIBS)
 
@@ -60,7 +91,13 @@ include(ConfigCompilerFlags)
 include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
 include(ConfigOMP)
+
+# math detection
+set(BLAS_LANG "Fortran")
+set(LAPACK_LANG "Fortran")
+set(MKL_COMPILER_BINDINGS ${CMAKE_Fortran_COMPILER_ID})
 include(ConfigMath)
+
 include(ConfigExplicitLibs)
 include(ConfigMPI)
 include(ConfigSafeGuards)
@@ -78,12 +115,38 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
+if(ENABLE_PCMSOLVER)
+    find_package(ZLIB)
+    if(NOT ZLIB_FOUND)                              
+        set(ENABLE_PCMSOLVER OFF)
+        message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
+        message(STATUS " PCMSolver dependencies NOT satisfied:")
+        if(NOT ZLIB_FOUND)
+            message(STATUS "  - install Zlib development libraries")
+        endif()
+    else()
+        add_definitions(-DHAS_PCMSOLVER)                                                  
+        message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
+	
+	add_PCMSOLVER()
+        
+	set(PCMSOLVER_LIBS
+            stdc++
+            pcm
+            getkw
+            ${ZLIB_LIBRARIES}
+            ${EXTERNAL_LIBS})
+    endif()
+endif()
+
 include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
     ${CMAKE_SOURCE_DIR}/DALTON/dft
     ${CMAKE_SOURCE_DIR}/DALTON/abacus
     ${CMAKE_SOURCE_DIR}/LSDALTON/dft
+    ${CMAKE_SOURCE_DIR}/LSDALTON/geomopt
     ${CMAKE_Fortran_MODULE_DIRECTORY}
+    ${PROJECT_BINARY_DIR}
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -92,6 +155,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 # set definitions
 include(Definitions)
+if(ENABLE_OPENRSP)
+    include(DefinitionsOpenRSP)
+endif()
 
 # forward CPP directly to the code
 set(CPP)
@@ -109,6 +175,10 @@ configure_script(
 configure_script(
     ${CMAKE_SOURCE_DIR}/LSDALTON/lsdalton.in
     ${CMAKE_BINARY_DIR}/lsdalton
+    )
+configure_script(
+    ${CMAKE_SOURCE_DIR}/DALTON/dalton_config.in
+    ${CMAKE_BINARY_DIR}/dalton_config.h
     )
 
 # if BLAS and/or LAPACK not found, add own sources to the list of
@@ -134,11 +204,18 @@ if(USE_BUILTIN_LAPACK)
         )
 endif()
 
-include(LibsDALTON)
 include(LibsLSDALTON)
+# Dalton uses libraries of LSDalton if QMatrix built
+include(LibsDALTON)
 
 # copy basis/ to build directory
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
+
+# copy test scripts to build/test
+# FIXME this will not work on windows
+execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/test)
+execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest.py        ${CMAKE_BINARY_DIR}/test)
+execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_dalton.py ${CMAKE_BINARY_DIR}/test)
 
 # this controlls "make install" target
 include(ConfigMakeInstall)

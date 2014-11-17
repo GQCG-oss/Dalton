@@ -61,6 +61,8 @@ TIGHT
 .DEBUG_MPI_MEM
 **DEC
 .FROZENCORE
+.MEMORY
+2.0
 *END OF INPUT
 %EOF%
 #######################################################################

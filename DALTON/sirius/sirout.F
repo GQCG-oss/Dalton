@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sirout */
       SUBROUTINE SIROUT(ICONV,WRK,LWRK)
@@ -56,6 +55,9 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -63,6 +65,7 @@ C
 C
 C Used from common blocks:
 C   gnrinf : WFTYPE, ?
+C   pgroup : REP,GROUP
 C   INFINP : ISPIN,LSYM,ISTATE, NACTEL,POTNUC, THRPWF, DOCINO, MCTYPE
 C   INFVAR : NCONF,NWOPT
 C   INFORB : NCMOT,NORBT,NNASHX,NISHT,?
@@ -73,6 +76,7 @@ C
 #include "mxcent.h"
 #include "priunit.h"
 #include "gnrinf.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "inforb.h"
@@ -87,7 +91,6 @@ C
 #include "pcmlog.h"
 #include "qm3.h"
 #include "qmmm.h"
-#include "wavpcm.h"
 ! MOLDEN
 #include "molde.h"
 C
@@ -247,6 +250,7 @@ C
       LFREE = LWRK
       CALL MEMGET2('REAL','CMO',  KCMO  ,NCMOT, WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT, WRK,KFREE,LFREE)
+      CALL DZERO(WRK(KOCCNO),NORBT)
       CALL MEMGET2('REAL','CREF', KCREF ,NCONF, WRK,KFREE,LFREE)
       IF (FLAG(3)) THEN
          IF ( FLAG(2) .AND. ICONV.EQ.0 ) THEN
@@ -272,14 +276,24 @@ C           CALL SIRCAN(IPRCAN,CREF,CMO,OCC,WRK,KFREE,LFREE)
       END IF
 C
 C     Now read the final orbitals and occupation numbers from SIRIUS.RST
+C     (if label 'NATOCC  ' not found, then we assume any occupation numbers
+C      already in WRK(KOCCNO) are OK)
 C
       REWIND LUIT1
       CALL READMO(WRK(KCMO),9,WRK(KFREE),LFREE)
       REWIND LUIT1
       IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
          CALL READT(LUIT1,NORBT,WRK(KOCCNO))
-      ELSE
-         CALL DZERO(WRK(KOCCNO),NORBT)
+      ELSE IF (MCTYPE .EQ. 0) THEN
+         DO, ISYM = 1,NSYM
+            JOCC1  = KOCCNO -1 + IORB(ISYM)
+            NISHI  = NISH(ISYM)
+            WRK(JOCC1+1:JOCC1+NISHI) = 2.0D0
+            NASHI  = NASH(ISYM)
+         IF (NASHI.EQ.0) CYCLE
+            JOCC1  = JOCC1 + NISHI
+            WRK(JOCC1+1:JOCC1+NASHI) = 1.0D0
+         END DO
       END IF
 C
 C *** FINAL RESULTS
@@ -287,7 +301,7 @@ C
       CALL MOLCHR(ICHRG)
 C     ... get total molecular charge
       CALL TITLER('>>> Final results from SIRIUS <<<',' ',200)
-      WRITE (LUPRI,5000) ISPIN,LSYM,ICHRG
+      WRITE (LUPRI,5000) ISPIN,LSYM,REP(LSYM-1),GROUP,ICHRG
       IF (NFIELD .GT. 0) THEN
          WRITE (LUPRI,'(/A/A/A)')
      *      ' The molecule is placed in a static field.',
@@ -330,7 +344,12 @@ csonia 04/10/95
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
-
+#ifdef HAS_PCMSOLVER
+      ELSE IF (pcmmod_is_pcm_calculation) THEN
+         WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
+     *        'SOLVATION MODEL: polarizable continuum model (PCM),'
+         WRITE(LUPRI,'(5X,A24,F20.12)') 'Solvation energy:     ',ESOLT
+#endif
       ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
         WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
@@ -353,8 +372,7 @@ csonia 04/10/95
          WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
          WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       ELSE IF (QMNPMM) THEN
-         call quit('not implemented in this version')
-!        CALL SCF_QMNPMM_OUT()
+         CALL SCF_QMNPMM_OUT()
       else if (peqm) then
          continue
       ELSE
@@ -384,6 +402,7 @@ C        MCSCF calculation
      &         POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
          IF (FLAG(16) .OR. PCM) WRITE (LUPRI,5025) ESOLT
+         IF (PEQM) WRITE(LUPRI,5026) ESOLT
          WRITE (LUPRI,5030) GRDNRM
       ELSE IF (DORHF) THEN
          IF (DOHFSRDFT) THEN
@@ -406,7 +425,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
          IF (FLAG(16)) WRITE (LUPRI,5025) ESOLT
-         if (peqm) write(lupri,5026) esolt
+         IF (PEQM) WRITE(LUPRI,5026) ESOLT
          WRITE (LUPRI,5030) GRDNRM
       END IF
 
@@ -416,6 +435,7 @@ C        ... DIIS-DFT or QC-DFT optimization
 
  5000 FORMAT(/'@    Spin multiplicity:',T31,I5,
      *       /'@    Spatial symmetry:',T31,I5,
+     &        ' ( irrep  ',A,' in ',A,' )',
      *       /'@    Total charge of molecule:',T31,I5)
  5010 FORMAT(/'@    This was a CI-NO calculation.')
  5012 FORMAT(/'@    This was a CI calculation.')
@@ -437,9 +457,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *       /'@    Nuclear repulsion:',T31,F20.12,
      *       /'@    Electronic energy:',T31,F20.12)
  5025 FORMAT( '@    Solvation  energy:',T31,F20.12)
-#if defined (BUILD_PELIB)
  5026 FORMAT( '@    Embedding energy:',T31,F20.12)
-#endif
  5030 FORMAT(/'@    Final gradient norm:',T31,F20.12)
 C
 C       stamp date, time, and hostname to LUPRI
@@ -477,6 +495,10 @@ C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
 C
       IF (DOMEP) THEN
          CALL CALC_MEP(WRK(KCMO),WRK,KFREE,LFREE)
+      ENDIF
+
+      IF (QFIT) THEN
+         CALL QFITGSCALC(WRK(KCMO),WRK,KFREE,LFREE)
       ENDIF
 
       IF (MOLDEN) THEN

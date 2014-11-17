@@ -31,7 +31,7 @@ MODULE matrix_operations
    use matrix_operations_unres_dense
 
    private
-   public ::  matrixfiletype2, matrixfiletype, matrixmembuf, matmembuf,&
+   public ::  matrixfiletype2, matrixfiletype, &
         & mtype_symm_dense, mtype_dense, mtype_unres_dense, mtype_csr,&
         & mtype_scalapack, matrix_type, &
         & SET_MATRIX_DEFAULT, mat_select_type, mat_finalize, mat_pass_info,&
@@ -49,45 +49,8 @@ MODULE matrix_operations
         & mat_read_info_from_disk,mat_extract_diagonal,&
         & no_of_matmuls, mat_tr, mat_trab, mat_dotproduct, mat_sqnorm2, &
         & mat_outdia_sqnorm2, info_memory, max_no_of_matrices, no_of_matrices,&
-        & MatrixmemBuf_init, MatrixmemBuf_free,matrixmembuf_print,&
-        & matrixmembuf_open, matrixmembuf_close, matrixmembuf_overwrite,&
         & mat_to_full3D
 
-!        matrixmembuf_new_iunit
-!FindIunit,FindIunitFileUnit,matrixmembuf_FindFile
-!FindIunit2,FindIunitFileUnit2,Matrixmembuf_setmatrixcurrent
-!Setmatrixcurrent1
-!Free_fileUnit,Free_fileMatrix
-!print_fileUnit,print_fileMatrix,matrixmembuf_Open
-!Matrixmembuf_Overwrite,OverwriteIunitFileUnit2,matrixmembuf_Close
-!FindIunitAndFree,matrixmembuf_write_to_mem,FindIunitAnd_write_to_mem
-!matrixmembuf_write_to_mem1,matrixmembuf_read_from_mem,FindIunitAnd_read_from_mem
-!matrixmembuf_read_from_mem1,free_matlist,matrixmembuf_FreeFile,FreeIunit2
-!FreeIunitFileUnit2,lsmpi_set_matrix_type_master,lsmpi_set_matrix_type_slave
-
-!FrameWork to write to memory - usefull for scalapack 
-!and when disk space is limited
-type matrixfiletype2
-type(matrix) :: mat
-type(matrixfiletype2),pointer :: matnext
-end type matrixfiletype2
-
-type matrixfiletype
-character(len=80) :: filename
-integer           :: iunit
-type(matrixfiletype),pointer :: filenext
-type(matrixfiletype2),pointer :: matrixliststart
-type(matrixfiletype2),pointer :: matrixlistend
-type(matrixfiletype2),pointer :: matrixcurrent
-end type matrixfiletype
-
-type matrixmembuf
-type(matrixfiletype),pointer :: fileliststart
-type(matrixfiletype),pointer :: filelistend
-end type matrixmembuf
-
-!> type to contain all Matrices written to memory
-   type(matrixmembuf),save :: matmembuf
 !> Matrices are symmetric and dense (not implemented)
    integer, parameter :: mtype_symm_dense = 1
 !> Matrices are dense (default) 
@@ -161,7 +124,9 @@ end type matrixmembuf
        implicit none
        INTEGER, INTENT(IN) :: a,lupri
        INTEGER, OPTIONAL :: nbast
-       integer :: nrow,ncol,tmpcol,tmprow,nproc,K
+       integer :: nrow,ncol,tmpcol,tmprow,nproc,K,I,nblocks
+       integer,parameter :: blocklist(4)=(/1024,512,256,128/)
+       WRITE(lupri,'(A)') ' '
        if(matrix_type.EQ.mtype_unres_dense.AND.a.EQ.mtype_scalapack)then
           WRITE(6,*)'mat_select_type: FALLBACK WARNING'
           WRITE(6,*)'SCALAPACK type matrices is not implemented for unrestricted calculations'
@@ -193,7 +158,69 @@ end type matrixmembuf
                    call lsquit('scalapack error in mat_select_type',-1)
                 ENDIF
                 print*,'TYPE SCALAPACK HAVE BEEN SELECTED' 
-                nproc = infpar%nodtot
+                IF(infpar%ScalapackGroupSize.EQ.-1)THEN
+                   print*,'Automatic determination of how many scalapack groupsize' 
+                   IF(infpar%inputblocksize.EQ.0)THEN
+                      !blocksize not specified. 
+                      !determine block size. 
+                      !The optimal is a blocksize big enough to reduce communication and optimize lapack
+                      do I =1,size(blocklist)
+                         infpar%inputblocksize = blocklist(I)
+                         IF(infpar%inputblocksize.GT.nbast)CYCLE
+                         nblocks = (nbast/infpar%inputblocksize)*(nbast/infpar%inputblocksize)
+                         IF(MOD(nbast,infpar%inputblocksize).NE.0)THEN
+                            nblocks = nblocks + 2*nbast/infpar%inputblocksize + 1
+                         ENDIF
+                         WRITE(lupri,'(A,I5,A,I6,A)')'A BlockSize of ',infpar%inputblocksize,' gives ',nblocks,' blocks'
+                         WRITE(lupri,'(A,F9.1,A)') 'Resulting in ',(nblocks*1.0E0_realk)/infpar%nodtot,' blocks per node'
+                         IF(nblocks .GE. 2*infpar%nodtot)THEN
+                            !more than 2 blocks per node, we can use all nodes efficiently
+                            exit
+                         ELSE
+                            !too few blocks not all nodes have 2 blocks
+                            !We use a smaller block size, to reduce load imbalance
+                         ENDIF
+                         IF(I.EQ.size(blocklist).AND.(nblocks .GE. 2*infpar%nodtot))THEN
+                            WRITE(lupri,'(A)')'The Minimum BlockSize = 128 Chosen.'
+                            WRITE(lupri,'(A)')'This means that not all processes can take part in'
+                            WRITE(lupri,'(A)')'the matrix operation parallelization. '
+                            WRITE(lupri,'(A)')'You can manually set the BlockSize using the .SCALAPACKBLOCKSIZE keyword'
+                            WRITE(lupri,'(A)')'Under the **GENERAL section. A smaller BlockSize will include more nodes'
+                            WRITE(lupri,'(A)')'and improve load imbalance,'
+                            WRITE(lupri,'(A)')'but will reduce the efficiency of the underlying Lapack Lib.'
+                         ENDIF
+                      enddo
+                      IF(infpar%inputblocksize.GT.nbast)THEN
+                         WRITE(lupri,'(A)')'Warning: Due to the small size of matrices Scalapack is not recommended!'
+                         WRITE(lupri,'(A)')'We set the blocksize equal to the number of basis functions'
+                         infpar%inputblocksize = nbast
+                      ENDIF
+                      WRITE(lupri,'(A,I5)')'Automatic determined Scalapack BlockSize = ',infpar%inputblocksize
+                   ELSE
+                      WRITE(lupri,'(A,I5)')'Scalapack BlockSize From Input = ',infpar%inputblocksize
+                   ENDIF
+                   nblocks = (nbast/infpar%inputblocksize)*(nbast/infpar%inputblocksize)
+                   IF(MOD(nbast,infpar%inputblocksize).NE.0)THEN
+                      nblocks = nblocks + 2*(nbast/infpar%inputblocksize) + 1
+                   ENDIF
+                   WRITE(lupri,'(A,I5)')'Number of Scalapack Blocks = ',nblocks
+                   IF(nblocks .GE. 2*infpar%nodtot)THEN
+                      !2 or more blocks per node, we can use all nodes
+                      infpar%ScalapackGroupSize = infpar%nodtot
+                   ELSE
+                      !not all nodes have 2 blocks. We cannot use all nodes efficiently
+                      !We decide on a groupsize so that all nodes have 2 blocks
+                      IF(nblocks/2.GT.0)THEN
+                         infpar%ScalapackGroupSize = nblocks/2
+                      ELSE
+                         infpar%ScalapackGroupSize = nblocks
+                      ENDIF
+                   ENDIF
+                   WRITE(lupri,'(A,I5)')'Automatic determined Scalapack GroupSize = ',infpar%ScalapackGroupSize
+                ELSE
+                   WRITE(lupri,'(A,I5)')'Scalapack GroupSize From Input = ',infpar%ScalapackGroupSize
+                ENDIF
+                nproc = infpar%ScalapackGroupSize
                 nrow = nproc
                 ncol = 1
                 K=1
@@ -209,14 +236,53 @@ end type matrixmembuf
                       ENDIF
                    ENDIF
                 enddo
-                print*,'nrow=',nrow,'ncol=',ncol,'nodtot=',infpar%nodtot
-                print*,'call PDM_GRIDINIT(',nrow,',',ncol,')'
+                print*,'nrow=',nrow,'ncol=',ncol,'nodtot=',infpar%ScalapackGroupSize
+                print*,'call PDM_GRIDINIT(',nrow,',',ncol,')'                
+                !make possible subset 
+                call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,MPI_COMM_LSDALTON)
+                IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN
+                   IF(scalapack_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(scalapack_comm)
+                      scalapack_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(scalapack_nodtot,&
+                   & scalapack_mynum,scalapack_comm,scalapack_member,&
+                   & infpar%ScalapackGroupSize,lupri)
+                   scalapack_mpi_set = .TRUE.
+                ELSE
+                   scalapack_nodtot = infpar%nodtot
+                   scalapack_mynum = infpar%mynum
+                   scalapack_comm = MPI_COMM_LSDALTON
+                   scalapack_member = .TRUE.
+                ENDIF
+                print*,'call PDM_GRIDINIT'
                 CALL PDM_GRIDINIT(nrow,ncol,nbast)
-                IF(infpar%mynum.EQ.infpar%master)then
-                   WRITE(lupri,*)'Scalapack Grid initiation Block Size = ',BLOCK_SIZE
-                   WRITE(lupri,*)'Scalapack Grid initiation nprow      = ',nrow
-                   WRITE(lupri,*)'Scalapack Grid initiation npcol      = ',ncol
-                endif
+                WRITE(lupri,'(A,I5)')'Scalapack Grid initiation Block Size = ',BLOCK_SIZE
+                WRITE(lupri,'(A,I5)')'Scalapack Grid initiation nprow      = ',nrow
+                WRITE(lupri,'(A,I5)')'Scalapack Grid initiation npcol      = ',ncol
+             endif
+          ELSE
+             !slave
+             if(matrix_type.EQ.mtype_scalapack)then
+                call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,&
+                     & MPI_COMM_LSDALTON)
+                IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN
+                   IF(scalapack_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(scalapack_comm)
+                      scalapack_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(scalapack_nodtot,&
+                        & scalapack_mynum,scalapack_comm,scalapack_member,&
+                        & infpar%ScalapackGroupSize,lupri)
+                   scalapack_mpi_set = .TRUE.
+                ELSE
+                   scalapack_nodtot = infpar%nodtot
+                   scalapack_mynum = infpar%mynum
+                   scalapack_comm = MPI_COMM_LSDALTON
+                   scalapack_member = .TRUE.
+                ENDIF
              endif
           ENDIF
 #endif
@@ -305,7 +371,11 @@ end type matrixmembuf
          if (mat_mem_monitor) then
             no_of_matrices = no_of_matrices + 1
             !write(mat_lu,*) 'Init: matrices allocated:', no_of_matrices
-            if (no_of_matrices > max_no_of_matrices) max_no_of_matrices = no_of_matrices
+            if (no_of_matrices > max_no_of_matrices)then
+               max_no_of_matrices = no_of_matrices!
+!               WRITE(mat_lu,*)'increase max_no_of_matrices to ',no_of_matrices
+!               call LsTraceBack('increase max_no_of_matrices')
+            endif
          endif
          nullify(A%elms)
          nullify(A%elmsb)
@@ -337,8 +407,8 @@ end type matrixmembuf
          !to be free'ed, the matrix must be in the same location where it was init'ed.
          !If not, it is probably a duplicate (like 'a' in (/a,b,c/)), in which case
          !we may end up double-free'ing, so err
-         if (.not.ASSOCIATED(a%init_self_ptr,a)) &
-             & call lsQUIT('Error in mat_free: matrix moved or duplicated',-1)
+         !if (.not.ASSOCIATED(a%init_self_ptr,a)) &
+         !    & call lsQUIT('Error in mat_free: matrix moved or duplicated',-1)
          nullify(a%init_self_ptr)
          !look at magic tag to verify matrix is initialized, then clear tag
          if (a%init_magic_tag.NE.mat_init_magic_value) &
@@ -591,7 +661,7 @@ end type matrixmembuf
             print*,'FALLBACK scalapack print'
             ALLOCATE (afull(a%nrow,a%ncol))
             call mat_scalapack_to_full(a, 1E0_realk,afull)
-            CALL OUTPUT(afull, i_row1, i_rown, j_col1, j_coln,A%nrow,A%ncol,1, lu)
+            CALL LS_OUTPUT(afull, i_row1, i_rown, j_col1, j_coln,A%nrow,A%ncol,1, lu)
             DEALLOCATE(afull)
 #endif
          case(mtype_unres_dense)
@@ -1941,7 +2011,7 @@ end subroutine mat_insert_section
       subroutine mat_add_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          implicit none
          integer, intent(in) :: fullrow,fullcol,insertrow,insertcol
-         real(Realk), intent(inout) :: fullmat(fullrow,fullcol)
+         real(Realk), intent(in) :: fullmat(fullrow,fullcol)
          type(Matrix), intent(inout) :: A
          call time_mat_operations1
 
@@ -2212,40 +2282,40 @@ end subroutine set_lowertriangular_zero
          implicit none
          integer, intent(in) :: iunit
          type(Matrix), intent(in) :: A
-         logical,intent(in) :: OnMaster
+         logical,optional :: OnMaster !obsolete
          !
+         integer(kind=long) :: ncol,nrow 
          real(realk), allocatable :: afull(:,:)
          call time_mat_operations1
 
          if (info_memory) write(mat_lu,*) 'Before mat_write_to_disk: mem_allocated_global =', mem_allocated_global
          !if (INFO_TIME_MAT) CALL LSTIMER('START ',mat_TSTR,mat_TEN,mat_lu)
-         IF(OnMaster)THEN
-            select case(matrix_type)
-            case(mtype_dense)
-               call mat_dense_write_to_disk(iunit,A)
-            case(mtype_csr)
-               call mat_csr_write_to_disk(iunit,A)
-            case(mtype_scalapack)
-               !The master collects the info and write to disk
-               allocate(afull(a%nrow, a%ncol))
-               call mat_to_full(a,1E0_realk,afull)
-               write(iunit) A%Nrow, A%Ncol
-               write(iunit) afull
-               deallocate(afull)
-            case(mtype_unres_dense)
-               call mat_unres_dense_write_to_disk(iunit,A)
-            case default
-               print *, "FALLBACK: mat_write_to_disk"
-               allocate(afull(a%nrow, a%ncol))
-               call mat_to_full(a,1E0_realk,afull)
-               write(iunit) A%Nrow, A%Ncol
-               write(iunit) afull
-               deallocate(afull)
-            end select
-         ELSE
-            !write to own memory
-            call matrixmembuf_write_to_mem(iunit,A)
-         ENDIF
+         select case(matrix_type)
+         case(mtype_dense)
+            call mat_dense_write_to_disk(iunit,A)
+         case(mtype_csr)
+            call mat_csr_write_to_disk(iunit,A)
+         case(mtype_scalapack)
+            !The master collects the info and write to disk
+            allocate(afull(a%nrow, a%ncol))
+            call mat_to_full(a,1E0_realk,afull)
+            nrow = A%Nrow
+            ncol = A%Ncol
+            write(iunit) Nrow, Ncol
+            write(iunit) afull
+            deallocate(afull)
+         case(mtype_unres_dense)
+            call mat_unres_dense_write_to_disk(iunit,A)
+         case default
+            print *, "FALLBACK: mat_write_to_disk"
+            allocate(afull(a%nrow, a%ncol))
+            call mat_to_full(a,1E0_realk,afull)
+            nrow = A%Nrow
+            ncol = A%Ncol
+            write(iunit) Nrow, Ncol
+            write(iunit) afull
+            deallocate(afull)
+         end select
 
          !if (INFO_TIME_MAT) CALL LSTIMER('WRITE ',mat_TSTR,mat_TEN,mat_lu)
          if (info_memory) write(mat_lu,*) 'After mat_write_to_disk: mem_allocated_global =', mem_allocated_global
@@ -2275,7 +2345,7 @@ end subroutine set_lowertriangular_zero
          integer, intent(in) :: iunit
          logical, intent(in) :: info
 
-      write(iunit) info
+         write(iunit) info
       end subroutine mat_write_info_to_disk
 
 !> \brief Read a type(matrix) from disk.
@@ -2287,45 +2357,40 @@ end subroutine set_lowertriangular_zero
          implicit none
          integer, intent(in) :: iunit
          type(Matrix), intent(inout) :: A  !output
-         logical,intent(in) :: OnMaster
+         logical,optional :: OnMaster !obsolete
          !
          real(realk), allocatable :: afull(:,:)
-         integer                  :: nrow, ncol
+         integer(kind=long)       :: nrow, ncol
          call time_mat_operations1
          if (info_memory) write(mat_lu,*) 'Before mat_read_from_disk: mem_allocated_global =', mem_allocated_global
          !if (INFO_TIME_MAT) CALL LSTIMER('START ',mat_TSTR,mat_TEN,mat_lu)
-         IF(OnMaster)THEN
-            select case(matrix_type)
-            case(mtype_dense)
-               call mat_dense_read_from_disk(iunit,A)
-            case(mtype_csr)
-               call mat_csr_read_from_disk(iunit,A)
-            case(mtype_scalapack)
-               !The master Read full matrix from disk 
-               print *, "FALLBACK: mat_read_from_disk"
-               allocate(afull(a%nrow, a%ncol))
-               READ(iunit) Nrow, Ncol
-               if(Nrow /= A%nrow) call lsquit( 'mat_read_from_disk: Nrow /= A%nrow',-1)
-               if(Ncol /= A%ncol) call lsquit( 'mat_read_from_disk: Ncol /= A%ncol',-1)
-               read(iunit) afull
-               call mat_set_from_full(afull,1E0_realk,a)
-               deallocate(afull)
-            case(mtype_unres_dense)
-               call mat_unres_dense_read_from_disk(iunit,A)
-            case default
-               print *, "FALLBACK: mat_read_from_disk"
-               allocate(afull(a%nrow, a%ncol))
-               READ(iunit) Nrow, Ncol
-               if(Nrow /= A%nrow) call lsquit( 'mat_read_from_disk: Nrow /= A%nrow',-1)
-               if(Ncol /= A%ncol) call lsquit( 'mat_read_from_disk: Ncol /= A%ncol',-1)
-               read(iunit) afull
-               call mat_set_from_full(afull,1E0_realk,a)
-               deallocate(afull)
-            end select
-         ELSE
-            !reads from buffer 
-            call matrixmembuf_read_from_mem(iunit,A)
-         ENDIF
+         select case(matrix_type)
+         case(mtype_dense)
+            call mat_dense_read_from_disk(iunit,A)
+         case(mtype_csr)
+            call mat_csr_read_from_disk(iunit,A)
+         case(mtype_scalapack)
+            !The master Read full matrix from disk 
+            print *, "FALLBACK: mat_read_from_disk"
+            allocate(afull(a%nrow, a%ncol))
+            READ(iunit) Nrow, Ncol
+            if(Nrow /= A%nrow) call lsquit( 'mat_read_from_disk: Nrow /= A%nrow',-1)
+            if(Ncol /= A%ncol) call lsquit( 'mat_read_from_disk: Ncol /= A%ncol',-1)
+            read(iunit) afull
+            call mat_set_from_full(afull,1E0_realk,a)
+            deallocate(afull)
+         case(mtype_unres_dense)
+            call mat_unres_dense_read_from_disk(iunit,A)
+         case default
+            print *, "FALLBACK: mat_read_from_disk"
+            allocate(afull(a%nrow, a%ncol))
+            READ(iunit) Nrow, Ncol
+            if(Nrow /= A%nrow) call lsquit( 'mat_read_from_disk: Nrow /= A%nrow',-1)
+            if(Ncol /= A%ncol) call lsquit( 'mat_read_from_disk: Ncol /= A%ncol',-1)
+            read(iunit) afull
+            call mat_set_from_full(afull,1E0_realk,a)
+            deallocate(afull)
+         end select
 
          !if (INFO_TIME_MAT) CALL LSTIMER('READ  ',mat_TSTR,mat_TEN,mat_lu)
          if (info_memory) write(mat_lu,*) 'After mat_read_from_disk: mem_allocated_global =', mem_allocated_global
@@ -2369,439 +2434,6 @@ end subroutine set_lowertriangular_zero
 
     end subroutine mat_extract_diagonal
 
-    !Matrix Memory buffer Framework to write to memory
-
-    subroutine matrixmembuf_init()
-      implicit none
-      nullify(matmembuf%fileliststart)
-      nullify(matmembuf%filelistend)
-    end subroutine matrixmembuf_init
-
-    !==========================================
-    !matrixmembuf_new_iunit
-    !==========================================
-    subroutine matrixmembuf_new_iunit(filename,iunit)
-      integer :: iunit
-      character(len=80) :: filename
-      !
-      logical :: found
-      iunit = 50
-      Found = .FALSE.
-      DO 
-         call FindIunit(iunit,Found)
-         IF(Found)THEN
-            iunit = iunit+1
-            Found=.FALSE.
-         ELSE
-            EXIT
-         ENDIF
-      ENDDO
-    end subroutine matrixmembuf_new_iunit
-    subroutine FindIunit(iunit,Found)
-      implicit none
-      integer :: iunit
-      logical :: Found        
-      IF(associated(matmembuf%fileliststart))THEN
-         call FindIunitFileUnit(matmembuf%fileliststart,iunit,Found)
-      ENDIF
-    end subroutine FindIunit
-    recursive subroutine FindIunitFileUnit(item,iunit,Found)
-      implicit none
-      integer :: iunit
-      logical :: Found
-      type(matrixfiletype) :: item
-      IF(item%iunit.EQ.iunit)THEN
-         Found = .TRUE.
-      ELSEIF(associated(item%filenext))THEN
-         call FindIunitFileUnit(item%filenext,iunit,Found)
-      ENDIF
-    end subroutine FindIunitFileUnit
-
-    subroutine matrixmembuf_FindFile(filename,iunit,Found)
-      integer :: iunit
-      character(len=80) :: filename
-      logical :: found
-      Found = .FALSE.
-      call FindIunit2(iunit,Found,filename)
-    end subroutine matrixmembuf_FindFile
-    subroutine FindIunit2(iunit,Found,filename)
-      implicit none
-      integer :: iunit
-      logical :: Found        
-      character(len=80) :: filename
-      IF(associated(matmembuf%fileliststart))THEN
-         call FindIunitFileUnit2(matmembuf%fileliststart,iunit,Found,filename)
-      ENDIF
-    end subroutine FindIunit2
-    recursive subroutine FindIunitFileUnit2(item,iunit,Found,filename)
-      implicit none
-      integer :: iunit
-      logical :: Found
-      type(matrixfiletype) :: item
-      character(len=80) :: filename
-      IF(item%filename.EQ.filename)THEN
-         iunit=item%iunit
-         Found = .TRUE.
-      ELSEIF(associated(item%filenext))THEN
-         call FindIunitFileUnit2(item%filenext,iunit,Found,filename)
-      ENDIF
-    end subroutine FindIunitFileUnit2
-
-    subroutine matrixmembuf_setmatrixcurrent(iunit)
-      integer :: iunit
-      call setmatrixcurrent1(matmembuf%fileliststart,iunit)
-    end subroutine Matrixmembuf_setmatrixcurrent
-    recursive subroutine setmatrixcurrent1(item,iunit)
-      implicit none
-      integer :: iunit
-      type(matrixfiletype) :: item
-      IF(item%iunit.EQ.iunit)THEN
-         item%matrixcurrent => item%matrixliststart
-      ELSEIF(associated(item%filenext))THEN
-         call Setmatrixcurrent1(item%filenext,iunit)
-      ENDIF
-    end subroutine Setmatrixcurrent1
-
-    !==========================================
-    !matrixmembuf_free
-    !==========================================
-    subroutine matrixmembuf_free()
-      IF(associated(matmembuf%fileliststart))THEN
-         call free_FileUnit(matmembuf%fileliststart)
-         nullify(matmembuf%fileliststart)
-         nullify(matmembuf%filelistend)
-      ENDIF
-    end subroutine matrixmembuf_free
-    recursive subroutine Free_fileUnit(fileitem)
-      implicit none
-      type(matrixfiletype) :: fileitem
-      IF(associated(fileitem%matrixliststart))THEN
-         call Free_filematrix(fileitem%matrixliststart)
-         nullify(fileitem%matrixliststart)
-         nullify(fileitem%matrixlistend)
-      ENDIF
-      IF(associated(fileitem%filenext))THEN
-         call Free_fileUnit(fileitem%filenext)
-         nullify(fileitem%filenext)
-      ENDIF
-    end subroutine Free_fileUnit
-    recursive subroutine Free_fileMatrix(matitem)
-      type(matrixfiletype2) :: matitem
-      IF(associated(matitem%matnext))THEN
-         call Free_FileMatrix(matitem%matnext)
-         nullify(matitem%matnext)
-      ENDIF
-      call mat_free(matitem%mat)
-    end subroutine Free_fileMatrix
-
-    !==========================================
-    !matrixmembuf_print
-    !==========================================
-    subroutine matrixmembuf_print(lupri)
-      integer :: lupri
-      WRITE(lupri,*)'matrixmembuf Printing Routine:'
-      IF(associated(matmembuf%fileliststart))THEN
-         WRITE(lupri,*)'matrixmembuf Files'
-         call print_FileUnit(matmembuf%fileliststart,lupri)
-      ELSE
-         WRITE(lupri,*)'No files allocated int matrixmembuf'
-      ENDIF
-    end subroutine matrixmembuf_print
-    recursive subroutine print_fileUnit(fileitem,lupri)
-      implicit none
-      integer :: lupri
-      type(matrixfiletype) :: fileitem
-      !
-      integer :: number
-      WRITE(lupri,*)'the Filename:',fileitem%filename
-      WRITE(lupri,*)'the iunit   :',fileitem%iunit
-      IF(associated(fileitem%matrixliststart))THEN
-         number = 0
-         call print_filematrix(fileitem%matrixliststart,lupri,number,fileitem%filename)
-      ELSE
-         WRITE(lupri,*)'No Matrices written to this file'
-      ENDIF
-      IF(associated(fileitem%filenext))THEN
-         call print_fileUnit(fileitem%filenext,lupri)
-      ENDIF
-    end subroutine print_fileUnit
-    recursive subroutine print_fileMatrix(matitem,lupri,number,filename)
-      integer :: lupri,number
-      character(len=80) :: filename
-      type(matrixfiletype2) :: matitem
-      number = number + 1
-      WRITE(lupri,*)'the Matrix number ',number,' on file ',filename
-      call mat_print(matitem%mat,1,matitem%mat%nrow,1,matitem%mat%ncol,lupri)
-      IF(associated(matitem%matnext))THEN
-         call print_filematrix(matitem%matnext,lupri,number,filename)
-      ENDIF
-    end subroutine print_fileMatrix
-
-    !==========================================
-    !matrixmembuf_Open
-    !==========================================
-    !  Open File For writing and reading
-    subroutine matrixmembuf_Open(iunit,filename)
-      implicit none
-      integer :: iunit
-      character(len=80) :: filename
-      logical :: optionNew2,Found
-      IF(iunit.NE.-1)call lsquit('matrixmembuf_Open requires iunit=-1',-1)
-      !determine if file is already there
-      call matrixmembuf_FindFile(filename,iunit,Found) 
-      IF(.NOT.Found)THEN
-         !provide unique logical unit number
-         call  matrixmembuf_new_iunit(filename,iunit)
-         optionNew2 = .TRUE. !new file
-      ELSE
-         optionNew2 = .FALSE. !old file
-      ENDIF
-      IF(optionNew2)THEN
-         !new file
-         IF(associated(matmembuf%fileliststart))THEN
-            allocate(MATMEMBUF%filelistend%filenext)
-            nullify(MATMEMBUF%filelistend%filenext%filenext)
-            MATMEMBUF%filelistend%filenext%iunit = iunit
-            MATMEMBUF%filelistend%filenext%filename = filename
-            nullify(MATMEMBUF%filelistend%filenext%matrixliststart)
-            nullify(MATMEMBUF%filelistend%filenext%matrixlistend)
-            nullify(MATMEMBUF%filelistend%filenext%matrixcurrent)
-            MATMEMBUF%filelistend => MATMEMBUF%filelistend%filenext
-         ELSE
-            !first file
-            allocate(matmembuf%fileliststart)
-            MATMEMBUF%fileliststart%iunit = iunit
-            MATMEMBUF%fileliststart%filename = filename
-            nullify(MATMEMBUF%fileliststart%matrixliststart)
-            nullify(MATMEMBUF%fileliststart%matrixlistend)
-            nullify(MATMEMBUF%fileliststart%matrixcurrent)
-            MATMEMBUF%filelistend => MATMEMBUF%fileliststart
-            nullify(MATMEMBUF%fileliststart%filenext)
-         ENDIF
-      ELSE
-         !old file
-         call matrixmembuf_setmatrixcurrent(iunit) 
-      ENDIF
-    end subroutine matrixmembuf_Open
-
-    !==========================================
-    !matrixmembuf_Open
-    !==========================================
-    !  Open File For writing and reading
-    subroutine matrixmembuf_Overwrite(iunit,filename)
-      implicit none
-      integer :: iunit
-      character(len=80) :: filename
-      logical :: FOUND
-      FOUND=.FALSE.
-      call OverwriteIunitFileUnit2(matmembuf%fileliststart,iunit,Found,filename)
-    end subroutine Matrixmembuf_Overwrite
-    recursive subroutine OverwriteIunitFileUnit2(item,iunit,Found,filename)
-      implicit none
-      integer :: iunit
-      logical :: Found
-      type(matrixfiletype) :: item
-      character(len=80) :: filename
-      IF(item%filename.EQ.filename)THEN
-         IF(associated(item%matrixliststart))THEN
-            call Free_filematrix(item%matrixliststart)
-            nullify(item%matrixliststart)
-            nullify(item%matrixlistend)
-         ENDIF
-         FOUND = .TRUE.         
-      ELSEIF(associated(item%filenext))THEN
-         call OverwriteIunitFileUnit2(item%filenext,iunit,Found,filename)
-      ENDIF      
-    end subroutine OverwriteIunitFileUnit2
-
-    !==========================================
-    !matrixmembuf_Close
-    !==========================================
-    !  Open File For writing and reading
-    subroutine matrixmembuf_Close(iunit,optionDelete)
-      implicit none
-      integer :: iunit
-      character(len=80) :: filename
-      logical :: optionDelete,Found
-      IF(optionDelete)THEN
-         IF(associated(matmembuf%fileliststart))THEN
-            call FindIunitAndFree(matmembuf%fileliststart,iunit,Found)
-         ELSE
-            call lsquit('delete option but no files',-1)
-         ENDIF
-      ENDIF
-    end subroutine matrixmembuf_Close
-    recursive subroutine FindIunitAndFree(item,iunit,Found)
-      implicit none
-      integer :: iunit
-      logical :: Found
-      type(matrixfiletype) :: item
-      IF(item%iunit.EQ.iunit)THEN
-         Found = .TRUE.
-         IF(associated(item%matrixliststart))THEN
-            CALL free_matlist(item%matrixliststart)
-         ELSE
-            call lsquit('no mat list in close delete',-1)
-         ENDIF
-      ELSE
-         call FindIunitAndFree(item%filenext,iunit,Found)
-      ENDIF
-    end subroutine FindIunitAndFree
-    
-    !==========================================
-    !matrixmembuf_write_to_mem(iunit,A)
-    !==========================================
-    subroutine matrixmembuf_write_to_mem(iunit,A)
-      integer :: iunit
-      type(matrix) :: A
-      !
-      logical :: Found
-      Found=.FALSE.
-      call FindIunit(iunit,Found)
-      IF(.NOT.FOUND)call lsquit('file error in matrixmembuf_write_to_mem',-1)
-      IF(.NOT.associated(matmembuf%fileliststart))call lsquit('no files - file error in matrixmembuf_write_to_mem',-1)
-      call FindIunitAnd_write_to_mem(matmembuf%fileliststart,iunit,Found,A)
-    end subroutine matrixmembuf_write_to_mem
-    recursive subroutine FindIunitAnd_write_to_mem(item,iunit,Found,A)
-      implicit none
-      type(matrix) :: A
-      integer :: iunit
-      logical :: Found
-      type(matrixfiletype) :: item
-      IF(item%iunit.EQ.iunit)THEN
-         Found = .TRUE.
-         CALL matrixmembuf_write_to_mem1(item,iunit,A)
-      ELSEIF(associated(item%filenext))THEN
-         call FindIunitAnd_write_to_mem(item%filenext,iunit,Found,A)
-      ENDIF
-    end subroutine FindIunitAnd_write_to_mem
-    subroutine matrixmembuf_write_to_mem1(fileitem,iunit,A)
-      type(matrix) :: A
-      integer :: iunit
-      type(matrixfiletype) :: fileitem      
-      IF(associated(fileitem%matrixliststart))THEN
-         allocate(fileitem%matrixlistend%matnext)
-         nullify(FILEITEM%matrixlistend%matnext%matnext)
-         call mat_init(FILEITEM%matrixlistend%matnext%mat,A%nrow,A%ncol)
-         call mat_assign(FILEITEM%matrixlistend%matnext%mat,A)
-         FILEITEM%matrixlistend => FILEITEM%matrixlistend%matnext
-         FILEITEM%matrixcurrent => FILEITEM%matrixlistend
-      ELSE
-         !first matrix on file
-         allocate(fileitem%matrixliststart)
-         call mat_init(FILEITEM%matrixliststart%mat,A%nrow,A%ncol)
-         call mat_assign(FILEITEM%matrixliststart%mat,A)
-         FILEITEM%matrixlistend => FILEITEM%matrixliststart
-         FILEITEM%matrixcurrent => FILEITEM%matrixliststart
-         nullify(FILEITEM%matrixliststart%matnext)
-      ENDIF
-    end subroutine matrixmembuf_write_to_mem1
-
-    !==========================================
-    !matrixmembuf_read_from_mem(iunit,A)
-    !==========================================
-    subroutine matrixmembuf_read_from_mem(iunit,A)
-      integer :: iunit
-      type(matrix) :: A
-      !
-      logical :: Found
-      Found=.FALSE.
-      call FindIunit(iunit,Found)
-      IF(.NOT.FOUND)call lsquit('file error in matrixmembuf_read_from_mem',-1)
-      IF(.NOT.associated(matmembuf%fileliststart))call lsquit('no files - file error in matrixmembuf_read_from_mem',-1)
-      call FindIunitAnd_read_from_mem(matmembuf%fileliststart,iunit,Found,A)
-    end subroutine matrixmembuf_read_from_mem
-    recursive subroutine FindIunitAnd_read_from_mem(item,iunit,Found,A)
-      implicit none
-      type(matrix) :: A
-      integer :: iunit
-      logical :: Found
-      type(matrixfiletype) :: item
-      IF(item%iunit.EQ.iunit)THEN
-         Found = .TRUE.
-         CALL matrixmembuf_read_from_mem1(item,iunit,A)
-      ELSEIF(associated(item%filenext))THEN
-         call FindIunitAnd_read_from_mem(item%filenext,iunit,Found,A)
-      ENDIF
-    end subroutine FindIunitAnd_read_from_mem
-    subroutine matrixmembuf_read_from_mem1(fileitem,iunit,A)
-      type(matrix) :: A
-      integer :: iunit
-      type(matrixfiletype) :: fileitem      
-      IF(associated(FILEITEM%matrixcurrent))THEN
-         call mat_assign(A,FILEITEM%matrixcurrent%mat)
-         FILEITEM%matrixcurrent => FILEITEM%matrixcurrent%matnext 
-      ENDIF
-    end subroutine matrixmembuf_read_from_mem1
-
-    !==========================================
-    !matrixmembuf_free(iunit)
-    !==========================================
-!!$    subroutine matrixmembuf_free()
-!!$      IF(associated(matmembuf%fileliststart))THEN
-!!$         call free_fileunit(matmembuf%fileliststart)
-!!$         nullify(item%fileliststart)
-!!$         nullify(item%filelistend)
-!!$      ENDIF
-!!$    end subroutine matrixmembuf_free
-!!$    recursive subroutine Free_fileunit(item)
-!!$      implicit none
-!!$      type(matrixfiletype) :: item
-!!$      IF(associated(item%filenext))THEN
-!!$         call Free_fileunit(item%filenext)
-!!$         IF(associated(item%matrixliststart))THEN
-!!$            call free_matlist(item%matrixliststart)
-!!$            nullify(item%matrixliststart)
-!!$            nullify(item%matrixlistend)
-!!$         ENDIF
-!!$      ENDIF
-!!$    end subroutine Free_fileunit
-    recursive subroutine free_matlist(item)
-      type(matrixfiletype2) :: item      
-      IF(associated(ITEM%matnext))THEN
-         call free_matlist(item%matnext)
-         nullify(item%matnext)
-      ENDIF
-      call mat_free(item%mat)
-    end subroutine free_matlist
-
-    subroutine matrixmembuf_FreeFile(filename,iunit)
-      integer :: iunit
-      character(len=80) :: filename
-      logical :: found
-      Found = .FALSE.
-      call FreeIunit2(iunit,Found,filename)
-    end subroutine matrixmembuf_FreeFile
-    subroutine FreeIunit2(iunit,Found,filename)
-      implicit none
-      integer :: iunit
-      logical :: Found        
-      character(len=80) :: filename
-      IF(associated(matmembuf%fileliststart))THEN
-         call FreeIunitFileUnit2(matmembuf%fileliststart,iunit,Found,filename)
-      ENDIF
-    end subroutine FreeIunit2
-    recursive subroutine FreeIunitFileUnit2(item,iunit,Found,filename)
-      implicit none
-      integer :: iunit
-      logical :: Found
-      type(matrixfiletype) :: item
-      character(len=80) :: filename
-      IF(item%filename.EQ.filename)THEN
-         item%iunit=-1
-         item%filename = 'EMPTY                             '
-         IF(associated(item%matrixliststart))THEN
-            call Free_filematrix(item%matrixliststart)
-            nullify(item%matrixliststart)
-            nullify(item%matrixlistend)
-!            nullify(item%matrixlistcurrent)
-         ENDIF
-         FOUND = .TRUE.         
-      ELSEIF(associated(item%filenext))THEN
-         call FreeIunitFileUnit2(item%filenext,iunit,Found,filename)
-      ENDIF      
-    end subroutine FreeIunitFileUnit2
-    
 END MODULE Matrix_Operations
 
 #ifdef VAR_MPI

@@ -224,3 +224,115 @@ Need     x  0  0
 Need     x  0  z
 \end{verbatim}
 \end{itemize}
+
+\subsection*{A4: xyz2dalton, distances, and aces2dalton}
+
+This documents the use of three small utilities (\verb|xyz2dalton|,
+\verb|distances|, and \verb|aces2dalton|) that are written by
+Peter Robert Taylor and distributed with Dalton starting with release
+Dalton2013.  Two are designed to assist in the preparation of Dalton
+input files; one is less specifically Dalton-oriented but may be
+useful in a variety of 
+contexts when setting up calculations.  All three programs run as
+filters in traditional UNIX style, that is, they are invoked as
+
+\noindent
+\verb|program <input_file >output_file|
+
+\noindent
+and by default would read from standard input (the keyboard, which is
+almost certainly not what you want!) and write to standard output (the
+screen, which is probably not what you want either\ldots).  Error
+messages are written to standard error.  The 
+first few source lines of each program are fairly detailed explanations of
+how to use them.  
+
+\verb|xyz2dalton| reads an XYZ coordinate file from, e.g., the PDB,
+and produces a complete-except-for-the-basis 
+Dalton mol file (with coordinates in atomic units).  There is no
+default basis choice and so the mol file generated is not ``correct''
+until the user edits it to provide a basis choice of his/her own.
+The program currently writes "Choose basis here!" in \verb|output_file|
+where the basis should be specified.  This also implicitly assumes the
+user will make a global basis choice: for \verb|ATOMBASIS| inputs the
+user will need to edit the mol file further.  The program is invoked
+as
+
+\noindent
+\verb|xyz2dalton [-c] <input_file >output_file|
+
+\noindent
+where including the optional argument \verb|-c| causes the geometry
+origin to be translated to the molecular centre of mass (using IUPAC
+atomic weights for the most abundant isotope of each element).
+
+\verb|distances| reads an XYZ file and calculates a list of
+internuclear distances. 
+This is probably of limited interest to users but can be helpful to
+identify neighbouring atoms: something that is not always easy with
+XYZ files.  Command-line arguments can be specified to restrict both the
+minimum distances and maximum distances that appear in the output
+file, so the program can be invoked (there should be no line break in
+the command line here: the break shown is purely for typesetting
+convenience) as 
+
+\noindent
+\verb|distances [--min lower_bound] [--max upper_bound]|
+
+\noindent
+\verb|         < XYZinputfile > Distancesfile|
+
+\noindent
+where only distances between \verb|lower_bound| and \verb|upper_bound| will
+appear in the output file.  The default values for the bounds are
+respectively zero and infinity, so by default all distances are printed.
+
+The limitations on dimensioning for the numbers of nuclear centres in
+the codes (\verb|xyz2dalton| and \verb|distances|) are determined in large part by 
+the desire to ensure that every atom is numbered differently.  This means
+single letter atoms can go to 999 (the first carbon, say, will be labelled
+C001) but two-letter atoms only to 99 (the first helium will be He01).
+
+There are some idiosyncrasies that result from handling XYZ files.
+There is no convention/require\-ment that all atoms of a given
+type will be grouped together in the XYZ file.  For many reasons,
+however, it is desirable to have a Dalton
+mol file in which each atom type occurs only once, and this is how the
+coordinate information is eventually
+written to stdout.  The atom types are listed by decreasing atomic number.
+
+\verb|aces2dalton| reads a file output in ACES/C4 library format from
+the EMSL 
+basis set library server.  The EMSL server can
+export a variety of different formats, including a Dalton format.
+However, the EMSL developers insist on only one output format for each
+program they export for, and there are several different Dalton
+formats, related to the need to handle different exponent sizes, and
+the Dalton format EMSL produces is not always convenient/ideal.  With
+\verb|aces2dalton| a user can produce a library file in Dalton format
+for a desired basis set, for any or all atoms that set is available for.
+
+Specify the desired basis sets to be displayed by the EMSL server in
+ACES/C4 format, remember to ensure "Optimize general contractions" is
+checked, and save the page that EMSL generates as a text file from
+within the browser window, Such a file can contain basis sets for as
+many elements as you like.  After running
+
+\noindent
+\verb|aces2dalton <input_file >output_file|
+
+\noindent
+where \verb|input_file| is the text file you just saved from the EMSL
+webpage, 
+move \verb|output_file| to a directory where Dalton will find it
+(see the Dalton documentation).
+The code will work for angular momenta up to $l=7$ and for all
+elements up to copernicium ($Z=112$).
+It is assumed that no basis set will contain more than 100 exponents
+of a given angular type.
+No more than 7 decimal places are possible for any exponent, and
+no more than 6 for a contraction coefficient.  For exponents larger
+than 1,000,000 only 3 decimal places are available.  It should be
+straightforward for a user who wants to change any of these limits by
+editing the source: most limits are set in \verb|PARAMETER| statements
+in the various \verb|MODULES|.

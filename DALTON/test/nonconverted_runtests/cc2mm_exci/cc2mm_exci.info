@@ -1,0 +1,11 @@
+   cc2mm_exci
+   ---------------
+   Molecule:            Acetone (QM) and 2 water molecules (MM)
+   Wave Function:       CC2 / STO-3G
+   Molecular Mechanics: SPCE01 model: Point charges and isotropic
+                        polarizability introduced in the optimization of 
+                        the CC wave function. OLDTG=.TRUE. meaning that
+                        point charge relaxed HF orbitals are used.
+   Test Purpose:        Run checks energy, dipole moment, three lowest 
+                        ground state excitation energies and transition 
+                        properties.

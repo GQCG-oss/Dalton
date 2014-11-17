@@ -1,0 +1,7 @@
+   pehf_alpha
+   -----------
+   Molecule:         Acrolein and two classical water molecules
+   Wave Function:    PE-HF / STO-3G
+   Test Purpose:     Test of energies and frequency (in)dependent
+                     polarizabilities through RESPONSE using the
+                     PE library

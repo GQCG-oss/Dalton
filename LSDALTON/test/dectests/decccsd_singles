@@ -59,10 +59,12 @@ TRILEVEL
 **DEC
 .CCSD
 .FOT
-4
+1.0e-4
 .SinglesPolari
 .SinglesThr
 0.1
+.MEMORY
+2.0
 *END OF INPUT  
 %EOF%
 #######################################################################

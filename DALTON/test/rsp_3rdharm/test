@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+#    rsp_3rdharm
+#    -----------
+#    Molecule:         LiH
+#    Wave Function:    MCSCF (CAS) / 4-31G
+#    Test Purpose:     Third-Harmonic generation
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Basis set
+f.add(from_string = 'Basis set used is "4-31G" from the basis set library.',
+      num_lines = 10,
+      rel_tolerance = 1.0e-5)
+
+# Geometry
+f.add(from_string = 'Total number of coordinates',
+      num_lines = 4,
+      abs_tolerance = 1.0e-10)
+
+
+# Symmetry
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-5)
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-5)
+
+# Energies
+f.add(string = 'Hartree-Fock total energy',
+      rel_tolerance = 1.0e-5)
+f.add(string = 'MP2 second order energy',
+      rel_tolerance = 1.0e-5)
+f.add(string = 'Final MCSCF energy',
+      rel_tolerance = 1.0e-5)
+
+# Response setup
+f.add(from_string = 'Variable settings for Cubic Response calculation',
+      to_string = '1 D OPERATORS OF SYMMETRY NO:    3 AND LABELS:',
+      rel_tolerance = 1.0e-5)
+
+# Cubic response
+f.add(re = 'gamma\([XYZ];[XYZ],[XYZ],[XYZ]\)',
+      rel_tolerance = 1.0e-6)
+
+test.run(['rsp_3rdharm.dal'], ['LiH_4-31G.mol'], {'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

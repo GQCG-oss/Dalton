@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 !===========================================================================
 !  FILE : abarhs.F
@@ -438,7 +437,7 @@ C
      &          HESFS1(*)
       LOGICAL   DERIV(3), NOORBI, LONDON, DOSFD, DOREAL, DOIMAG,
      &          DOBRHS, DOPRHS, ANTI, DDFOCK, PERTUR, DOTD, FEXIST,
-     &          NOBLK, OLDDX, FOUND, PANTI, DIA2SO, ZFS2EL
+     &          NOBLK, OLDDX, FOUND, PANTI, DIA2SO, ZFS2EL, LDUMMY
 C
 C Used from common blocks:
 C   CBIRHS : *
@@ -750,7 +749,7 @@ C
 #if defined (SYS_CRAY) || defined (SYS_NEC) || defined (SYS_T90)
                         LWUSE = LWRK
 #else 
-                        CALL MEMSRT(MEMMIN,WORK(KNCONT))
+                        CALL MEM_PSORT(MEMMIN,WORK(KNCONT))
 C     
 C     1000000 is just an estimate of what the rest of the sorting 
 C     program needs
@@ -848,7 +847,7 @@ C
      &                        LWRK,ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
      &                        TKTIME,RETUR,IPRINT,IPRTYP,
      &                        IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                        DUMMY)
+     &                        DUMMY,LDUMMY)
                   HFXMU = HFXM0
                   IF (HFXMU.NE.D0) THEN
                      KFCTMP = KLAST
@@ -866,7 +865,7 @@ C
      &                    LWRK,ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
      &                    TKTIME,RETUR,IPRINT,IPRTYP,
      &                    IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                    DUMMY)
+     &                    DUMMY,LDUMMY)
                      CALL DAXPY(NFMAT*N2BASX,1D0,WORK(KFCTMP),1,
      &                    WORK(KFMAT),1)
                      HFXFAC = HFXFC0
@@ -889,7 +888,7 @@ C                IF (.NOT.DOERIP) THEN
      &                          RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
      &                          WORK(KNPRIM),WORK(KNCONT),
      &                          WORK(KIORBS),IDUMMY,IDUMMY,DUMMY,
-     &                          DUMMY,DUMMY,DUMMY,.FALSE.)
+     &                          DUMMY,DUMMY,DUMMY,.FALSE.,.false.)
                     HFXMU = HFXM0
                     IF (HFXMU.NE.D0) THEN
                        HFXFC0 = HFXFAC
@@ -902,7 +901,7 @@ C                IF (.NOT.DOERIP) THEN
      &                             RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
      &                             WORK(KNPRIM),WORK(KNCONT),
      &                             WORK(KIORBS),IDUMMY,IDUMMY,DUMMY,
-     &                             DUMMY,DUMMY,DUMMY,.FALSE.)
+     &                             DUMMY,DUMMY,DUMMY,.FALSE.,.false.)
                        HFXFAC = HFXFC0
                     END IF
 C                ELSE
@@ -1666,7 +1665,7 @@ ckr            IDORCI(ISCOOR,2) = 1
          ELSE
 ckr            IDORCI(ISCOOR,1) = 1
          END IF
-         CALL ABAWRITRS
+         CALL ABAWRIT_RESTART
   300    CONTINUE
   100 CONTINUE
 C
@@ -2899,7 +2898,7 @@ C  /* Deck ofabh1 */
       INTEGER A, B, C, D
       DIMENSION HWORK(NBAST,NBAST), UMOG(NBAST,NBAST,NBAST,NBAST),
      &          HWRK(NNBAST), IBUF(4,LBUF), MBAS(8), WRK(LWORK)
-#include "ibtfun.h"
+
 C
       KFREE = 1
       LFREE = LWORK
@@ -2917,24 +2916,18 @@ C
      &            .FALSE.)
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) MSYM, (MBAS(I),I=1,8), KBUF, NIBUF, NBITS
+      READ (LUINTA) MSYM, MBAS, KBUF, NIBUF, NBITS, LENINT4
       IF (KBUF .NE. LBUF) CALL QUIT('OFABH1: KBUF .ne. LBUF')
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('INTE',KINT ,LENINT,WRK,KFREE,LFREE)
+      CALL MEMGET('INT4',KINT ,LENINT4,WRK,KFREE,LFREE)
       KIINT = KINT + LBUF
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
       CALL DZERO(UMOG,N2BASX*N2BASX)
-      JBUF = 608
   200 CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LUINTA,LENINT,WRK(KINT),JBUF)
-#else
-         CALL READI(LUINTA,LENINT,WRK(KINT))
-#endif
+         CALL READI4(LUINTA,LENINT4,WRK(KINT))
          CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,NINT)
          IF (NINT .EQ. 0) GO TO 200
          IF (NINT .LT. 0) GO TO 400
@@ -2985,41 +2978,31 @@ C  /* Deck rumog1 */
       INTEGER P,Q,R,S,X
       DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), IBUF(600), WORK(*)
 #include "inftap.h"      
-#include "ibtfun.h"
+
 C
-      JBUF = 256
-C
-      LENINT = IRAT*LBUF + LBUF + 1
-      KINT = 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
+      KINT  = 1
       KIINT = KINT + LBUF
 C
       CALL DZERO(UMOGA,NORBT**4)
       IF (NOH2 .OR. NOLOND) RETURN
-#if defined (VAR_INT64)
-      call quit('RUMOGA1: NBITS=16 not implemented here yet')
-!     Feb 2011 TODO : see her2out.F for how LU2DER is written
-#endif
 C
       CALL REWSPL(LU2DER)
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
  150  CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LU2DER,LENINT,WORK(KINT),JBUF)
-#else
-         CALL READI(LU2DER,LENINT,WORK(KINT))
-#endif
+         CALL READI4(LU2DER,LENINT4,WORK(KINT))
          CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH
                LABEL = IBUF(I)
                VALUE = WORK(KINT + I - 1)
-               S = IBTAND(LABEL,255)
+               S = IAND(LABEL,255)
                IF (S .EQ. 0) THEN
-                  ICOMP = IBTAND(IBTSHR(LABEL,8),255)
+                  ICOMP = IAND(ISHFT(LABEL,-8),255)
                ELSE IF (ICOMP .EQ. X) THEN
-                  P = IBTAND(IBTSHR(LABEL,24),255)
-                  Q = IBTAND(IBTSHR(LABEL,16),255)
-                  R = IBTAND(IBTSHR(LABEL, 8),255)
+                  P = IAND(ISHFT(LABEL,-24),255)
+                  Q = IAND(ISHFT(LABEL,-16),255)
+                  R = IAND(ISHFT(LABEL, -8),255)
                   UMOGA(P,Q,R,S) = VALUE
                   UMOGA(R,S,P,Q) = VALUE
                   UMOGA(Q,P,S,R) = -VALUE
@@ -4219,7 +4202,7 @@ C
 #include "inforb.h"
 #include "dorps.h"
 #include "inftap.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from REORT2',-1)

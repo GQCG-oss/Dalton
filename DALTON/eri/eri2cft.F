@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck expcft */
       SUBROUTINE EXPCFT(ETIJ,NPP12,JMAX1,JMAX2,COOR12,EXP12,
@@ -263,7 +262,7 @@ C
       DIMENSION ETIJ(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM1(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM2(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
-#include "ibtfun.h"
+
 C
       DLEVEL = IDL
 C
@@ -527,7 +526,7 @@ C
                      ETIJ(K,0,0,0) = D1
                   END DO
                ELSE
-                  IF (IBTAND(1,IDL) .EQ. 0) THEN
+                  IF (IAND(1,IDL) .EQ. 0) THEN
                      DIDLM = D1 - DLEVEL
                      DO K = 1, NPP12
                         EXPH = EXP12(K,1)/EXP12(K,3)
@@ -548,7 +547,7 @@ C
                   DO K = 1, NPP12
                      ETIJ(K,0,1,0) = -DLEVEL*EXP12(K,2)
                   END DO
-               ELSE IF ((IDL .GT. 1) .AND. (IBTAND(1,IDL) .EQ. 0)) THEN
+               ELSE IF ((IDL .GT. 1) .AND. (IAND(1,IDL) .EQ. 0)) THEN
                   DO K = 1, NPP12
                      ETIJ(K,1,1,0) = HPI(K)*ETIJ(K,0,0,0)
                   END DO
@@ -573,7 +572,7 @@ C
                      EXP2 = -D2*EXP12(K,2)
                      ETIJ(K,1,2,0) = HPK*EXP2
                   END DO
-               ELSE IF ((IDL .GT. 1) .AND. (IBTAND(1,IDL) .EQ. 0)) THEN
+               ELSE IF ((IDL .GT. 1) .AND. (IAND(1,IDL) .EQ. 0)) THEN
                   DO K = 1, NPP12
                      EXP2 = -DLEVEL*EXP12(K,2)
                      ETIJ(K,0,2,0) = EXP2*ETIJM1(K,0,1,0)
@@ -593,8 +592,8 @@ C            E(I,0)
 C
             ELSE
                IF ((IDL .EQ. 0) .OR.
-     &             ((IDL .GT. 1) .AND. (IBTAND(1,IDL) .EQ. 0))) THEN
-                  IF (IBTAND(1,I) .EQ. 0) THEN
+     &             ((IDL .GT. 1) .AND. (IAND(1,IDL) .EQ. 0))) THEN
+                  IF (IAND(1,I) .EQ. 0) THEN
                      DO K = 1, NPP12
                         ETIJ(K,0,I,0) =   SIGN*ETIJ(K,  1,I-1,0)
                         ETIJ(K,I,I,0) = HPI(K)*ETIJ(K,I-1,I-1,0)
@@ -611,7 +610,7 @@ C
                         ETIJ(K,I,I,0) = HPI(K)*ETIJ(K,I-1,I-1,0)
                      END DO
                   END IF
-                  DO T = 2 - IBTAND(1,I), I - 2, 2
+                  DO T = 2 - IAND(1,I), I - 2, 2
                      T1 = SIGN*(T + 1.0D0)
                      DO K = 1, NPP12
                         ETIJ(K,T,I,0) = HPI(K)*ETIJ(K,T-1,I-1,0)
@@ -626,7 +625,7 @@ C
                      ENDIF
                   END DO
                ELSE 
-                  IF (IBTAND(1,I) .EQ. 0) THEN
+                  IF (IAND(1,I) .EQ. 0) THEN
                      DO K = 1,NPP12
                         HPK  = HPI(K)
                         EXP2 = -DLEVEL*EXP12(K,2)
@@ -643,7 +642,7 @@ C
      &                                  +   SIGN*ETIJ(K,  1,I-1,0)
                      END DO
                   ENDIF
-                  DO T = 1 + IBTAND(1,I), I - 3, 2
+                  DO T = 1 + IAND(1,I), I - 3, 2
                      T1   = SIGN*(T + 1.0D0)
                      DO K = 1, NPP12
                         HPK  = HPI(K)
@@ -674,7 +673,7 @@ C
                         ETIJ(K,0,0,1) = EXP12(K,1)
                      END DO
                   ELSE IF ((IDL .GT. 1) .AND.
-     &                     (IBTAND(1,IDL) .EQ. 0)) THEN
+     &                     (IAND(1,IDL) .EQ. 0)) THEN
                      DO K = 1, NPP12
                         ETIJ(K,1,0,1) = HPI(K)*ETIJ(K,0,0,0)
                      END DO
@@ -709,7 +708,7 @@ C
                         END DO
                      ENDIF
                   ELSE IF ((IDL .GT. 1) .AND.
-     &                     (IBTAND(1,IDL) .EQ. 0)) THEN
+     &                     (IAND(1,IDL) .EQ. 0)) THEN
                      IF (J .EQ. 1) THEN
                         DO K = 1, NPP12
                            HPK  = HPI(K)
@@ -749,8 +748,8 @@ C              E(I,J)
 C
                ELSE
                   IF ((IDL .EQ. 0) .OR.
-     &               ((IDL .GT. 1) .AND. (IBTAND(1,IDL) .EQ. 0))) THEN
-                     IF (IBTAND(1,IJ) .EQ. 0) THEN
+     &               ((IDL .GT. 1) .AND. (IAND(1,IDL) .EQ. 0))) THEN
+                     IF (IAND(1,IJ) .EQ. 0) THEN
                         DO K = 1, NPP12
                            ETIJ(K, 0,I,J) =   SIGN*ETIJ(K,   1,I,J-1)
                            ETIJ(K,IJ,I,J) = HPI(K)*ETIJ(K,IJ-1,I,J-1)
@@ -767,7 +766,7 @@ C
                            ETIJ(K,IJ,I,J) = HPI(K)*ETIJ(K,IJ-1,I,J-1)
                         END DO
                      END IF
-                     DO T = 2 - IBTAND(1,IJ), IJ - 2, 2
+                     DO T = 2 - IAND(1,IJ), IJ - 2, 2
                         T1 = SIGN*(T + 1.0D0)
                         DO K = 1, NPP12
                            ETIJ(K,T,I,J) = HPI(K)*ETIJ(K,T-1,I,J-1)
@@ -782,7 +781,7 @@ C
                         ENDIF
                      END DO
                   ELSE
-                     IF (IBTAND(1,IJ) .EQ. 0) THEN
+                     IF (IAND(1,IJ) .EQ. 0) THEN
                         DO K = 1, NPP12
                            HPK  = HPI(K)
                            EXP1 = DLEVEL*EXP12(K,1)
@@ -799,7 +798,7 @@ C
      &                                      +   SIGN*ETIJ(K,   1,I,J-1)
                         END DO
                      END IF
-                     DO T = 1 + IBTAND(1,IJ), IJ - 3, 2
+                     DO T = 1 + IAND(1,IJ), IJ - 3, 2
                         T1 = SIGN*(T + 1.0D0)
                         DO K = 1, NPP12
                            HPK  = HPI(K)
@@ -830,7 +829,7 @@ C
             DO I = 0, MAXI
             DO J = 0, MAXJ
             DO T = 0, I + J
-            IF (IBTAND(I + J - T + IDL,IAB0) .EQ. 0) THEN
+            IF (IAND(I + J - T + IDL,IAB0) .EQ. 0) THEN
                WRITE (LUPRI,'(/,2X,A4,A1,I1,A1,I1,A1,I1,A1,/)')
      &              WORD, '(', I, ',', J, ', ',  T, ')'
                WRITE (LUPRI,'(1X,6F12.8)') (ETIJ(K,T,I,J),K=1,NPP12)
@@ -851,7 +850,7 @@ C  /* Deck eriscl */
       INTEGER T, X, IAB0(3)
       DIMENSION ETIJ(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3),
      &          SCALE(NPP12), EXP12(NPP12,3)
-#include "ibtfun.h"
+
 C
       DO K = 1, NPP12
          SCALE(K) = ((EXP12(K,1)/EXP12(K,3))**ISCAL1)
@@ -884,7 +883,7 @@ C
                DO I = 0, MAX1
                DO J = 0, MAX2
                DO T = 0, I + J
-                  IF (IBTAND(I + J - T,IAB0(X)) .EQ. 0) THEN
+                  IF (IAND(I + J - T,IAB0(X)) .EQ. 0) THEN
                     WRITE (LUPRI,'(/,2X,A4,A1,I1,A1,I1,A1,I1,A1,/)')
      &                   WORD, '(', I, ',', J, ', ',  T, ')'
                     WRITE (LUPRI,'(1X,6F12.8)')

@@ -26,6 +26,7 @@ contains
     implicit none
     TYPE(Matrix) :: a 
     integer, intent(in) :: nrow, ncol
+#ifdef VAR_CSR
     integer(kind=long) :: nsize
     NULLIFY(a%val)
     NULLIFY(a%row)
@@ -40,12 +41,14 @@ contains
     a%nrow = nrow
     a%ncol = ncol
     a%nnz = 0 
+#endif
   end subroutine mat_csr_init
 
   subroutine mat_csr_allocate(a,nnz)
     implicit none
     TYPE(Matrix) :: a 
     integer, intent(in) :: nnz
+#ifdef VAR_CSR
     integer(kind=long) :: nsize
 
     if (a%nnz .ne. 0) then
@@ -70,6 +73,7 @@ contains
     call mem_allocated_mem_type_matrix(nsize)
 
     a%nnz = nnz 
+#endif
   end subroutine mat_csr_allocate
 
   subroutine mat_csr_copy(alpha,a,b)
@@ -77,18 +81,20 @@ contains
      REAL(REALK),  INTENT(IN)    :: alpha
      TYPE(Matrix), INTENT(IN)    :: a
      TYPE(Matrix), INTENT(INOUT) :: b
-
+#ifdef VAR_CSR
      call mat_csr_assign(b,a)
      if (ABS(alpha-1.0E0_realk).GT.1.0E-14_realk) then
         call mat_csr_scal(alpha,b)
      endif
+#endif
   end subroutine mat_csr_copy
 
   function mat_csr_TrAB(a,b)
      implicit none
      TYPE(Matrix), intent(IN) :: a,b
-     TYPE(Matrix) :: b_temp 
      REAL(realk) :: mat_csr_trAB 
+#ifdef VAR_CSR
+     TYPE(Matrix) :: b_temp 
 !     real(realk), external :: ddot
 !     print *,"in mat_csr nnz's are: ", a%nnz, b%nnz
      if ((a%nnz .eq. 0) .or. (b%nnz .eq. 0)) then
@@ -99,11 +105,15 @@ contains
         mat_csr_TrAB = mat_csr_dotproduct(a, b_temp)
         call mat_csr_free(b_temp)
      endif
+#else
+     mat_csr_TrAB = 0.0E0_realk
+#endif
   end function mat_csr_TrAB
 
   subroutine mat_csr_identity(a)
     implicit none
     type(matrix), intent(inout) :: a
+#ifdef VAR_CSR
     integer :: i
 
     ! Zero the matrix
@@ -117,6 +127,7 @@ contains
     enddo
     ! Set last row element
     a%row(a%nrow+1) = a%nrow+1
+#endif
   end subroutine mat_csr_identity
    
   !C = alpha*I + beta*B
@@ -124,18 +135,21 @@ contains
     TYPE(Matrix), intent(IN) :: B
     REAL(realk), INTENT(IN)  :: alpha, beta
     TYPE(Matrix)             :: C
+#ifdef VAR_CSR
     TYPE(Matrix)             :: I
 
     call mat_csr_init(I, B%nrow, B%ncol)
     call mat_csr_identity(I)
     call mat_csr_add(alpha,I,beta,b,c)
     call mat_csr_free(I)
+#endif
   end subroutine mat_csr_add_identity
 
   subroutine mat_csr_assign(a,b)
     implicit none
     TYPE(Matrix), INTENT(INOUT) :: a
     TYPE(Matrix), INTENT(IN)    :: b
+#ifdef VAR_CSR
     
     if (a%nnz .ne. 0) then
        call mat_csr_zero(a)
@@ -147,6 +161,7 @@ contains
     a%val = b%val
     a%col = b%col
     a%row = b%row  
+#endif
   end subroutine mat_csr_assign
 
   function mat_csr_dotproduct(a,b)
@@ -157,6 +172,7 @@ contains
      integer     :: i,j,k
  
      mat_csr_dotproduct = 0E0_realk
+#ifdef VAR_CSR
      if ((a%nnz .eq. 0) .or. (b%nnz .eq. 0)) then
         return
      endif
@@ -170,6 +186,7 @@ contains
            enddo
         enddo
      enddo
+#endif
   end function mat_csr_dotproduct
   
   function mat_csr_sqnorm2(a)
@@ -188,6 +205,7 @@ contains
     integer     :: i,j
     
     mat_csr_outdia_sqnorm2 = 0.0E0_realk
+#ifdef VAR_CSR
     do i = 1, a%nrow
        do j = a%row(i), a%row(i+1)-1
           if (a%col(j) .ne. i) then
@@ -196,12 +214,14 @@ contains
           endif
        enddo
     enddo
+#endif
   end function mat_csr_outdia_sqnorm2
 
   subroutine mat_csr_abs_max_elm(a,val)  
     implicit none
     type(matrix),intent(in)  :: a
-    real(realk), intent(out) :: val
+    real(realk), intent(inout) :: val
+#ifdef VAR_CSR
     integer                  :: i
     
     if (a%nnz .eq. 0) then 
@@ -214,12 +234,14 @@ contains
           endif
        enddo
     endif
+#endif
   end subroutine mat_csr_abs_max_elm
 
   subroutine mat_csr_max_elm(a,val)  
     implicit none
     type(matrix),intent(in)  :: a
-    real(realk), intent(out) :: val
+    real(realk), intent(inout) :: val
+#ifdef VAR_CSR
     integer                  :: i
     
     if (a%nnz .eq. 0) then 
@@ -232,6 +254,7 @@ contains
           endif
        enddo
     endif
+#endif
   end subroutine mat_csr_max_elm
 
 !RA: This one just converts to CSC, consider more optimal solution 
@@ -239,6 +262,7 @@ contains
     implicit none
     TYPE(Matrix), intent(IN) :: a
     TYPE(Matrix), intent(INOUT) :: b 
+#ifdef VAR_CSR
     integer :: info
     integer :: job(8)
     job(1) = 0
@@ -251,13 +275,10 @@ contains
        return
     endif
     call mat_csr_allocate(b, a%nnz)
-#ifdef VAR_CSR
-#ifdef VAR_CSR
     call mkl_dcsrcsc(job, a%nrow, a%val, a%col, a%row, b%val, b%col,b%row, info)
-#endif
-#endif
 !RA: Currently (mkl v. 10.2.1.017), info is not used in csrcsc as result status!
 !RA: When it comes, check it for the exit status
+#endif
   end subroutine mat_csr_trans
 
   function mat_csr_Tr(a)
@@ -267,6 +288,7 @@ contains
     integer :: i,j
     
     mat_csr_tr = 0E0_realk
+#ifdef VAR_CSR
     do i = 1, a%nrow
        do j = a%row(i), a%row(i+1)-1
           if (a%col(j) == i) then
@@ -275,6 +297,7 @@ contains
           endif
        enddo
     enddo
+#endif
   end function mat_csr_Tr
   
   subroutine mat_csr_scal(alpha, a)
@@ -282,11 +305,13 @@ contains
     implicit none
     real(realk), intent(in) :: alpha
     type(Matrix), intent(inout) :: a
+#ifdef VAR_CSR
     integer :: i
     
     do i=1, a%nnz
        a%val(i) = a%val(i) * alpha
     enddo
+#endif
   end subroutine mat_csr_scal
 
   subroutine mat_csr_add(alpha, a, beta, b, c)
@@ -295,6 +320,7 @@ contains
     TYPE(Matrix),intent(in)    :: a,b 
     REAL(realk), INTENT(in)    :: alpha,beta
     TYPE(Matrix), intent(inout):: c
+#ifdef VAR_CSR
 !
     TYPE(Matrix) :: a_temp 
     integer :: i
@@ -337,10 +363,8 @@ contains
        call mat_csr_zero(c)
     endif
     !calculate nnz
-#ifdef VAR_CSR
     call mkl_dcsradd('n', request, sort, m, n, a_temp%val, a_temp%col, a_temp%row, beta, &
          & b%val, b%col, b%row, ddummy, idummy, c%row, idummy, info)
-#endif
     
     !assert(info!=0)
     !nnz can now be found as the last element in c's row - 1.
@@ -348,12 +372,11 @@ contains
     call mat_csr_allocate(c, c%row(n+1)-1)
     !alter request to initiate addition
     request = 2
-#ifdef VAR_CSR
     call mkl_dcsradd('n', request, sort, m, n, a_temp%val, a_temp%col, a_temp%row, beta, &
          & b%val, b%col, b%row, c%val, c%col, c%row, c%nnz, info)
-#endif
 !assert(info!=0)
     call mat_csr_free(a_temp)
+#endif
   end subroutine mat_csr_add
 
 !RA: csr_add disallows reuse of a matrix for input and output, 
@@ -364,6 +387,7 @@ contains
     real(realk),intent(in)       :: a
     TYPE(Matrix), intent(IN)     :: x
     TYPE(Matrix), intent(INOUT)  :: y
+#ifdef VAR_CSR
     TYPE(Matrix) :: y_temp
     real(realk) :: beta
     
@@ -372,6 +396,7 @@ contains
     call mat_csr_assign(y_temp, y)
     call mat_csr_add(a, x, beta, y_temp, y) 
     call mat_csr_free(y_temp)
+#endif
   end subroutine mat_csr_daxpy
 
   subroutine mat_csr_mul(a,b, transa, transb, alpha, beta, c)
@@ -382,6 +407,7 @@ contains
     REAL(realk), INTENT(in)    :: alpha, beta
     TYPE(Matrix), intent(inout):: c
     TYPE(Matrix) :: b_temp
+#ifdef VAR_CSR
 !
     integer :: i,j,nnz
     !request calculation of nnz
@@ -426,10 +452,8 @@ contains
        call mat_csr_zero(c)
     endif
     !calculate nnz
-#ifdef VAR_CSR
     call mkl_dcsrmultcsr(transa, request, sort, m, n, k, a%val, a%col, a%row, &
          & b_temp%val, b_temp%col, b_temp%row, ddummy, idummy, c%row, idummy, info)
-#endif
 !RA: assert(info!=0)
     !nnz can now be found as the last element in c's row - 1
     nnz = c%row(n+1)-1
@@ -438,10 +462,8 @@ contains
     !alter request to initiate multiplication
     request = 2
 
-#ifdef VAR_CSR
     call mkl_dcsrmultcsr(transa, request, sort, m, n, k, a%val, a%col, a%row, &
          & b_temp%val, b_temp%col, b_temp%row, c%val, c%col, c%row, c%nnz, info)
-#endif
     !Stinne fix: multiply by alpha if different from one!
     if (abs(1.0E0_realk-alpha) > 1.0E-7_realk) then
        call mat_csr_scal(alpha,c)
@@ -459,6 +481,7 @@ contains
     !print *, "Done cleaning result matrix in matrix mult, nnz is now", c%nnz, ", result matrix:"
     ! RA: free b_temp hack
     call mat_csr_free(b_temp)
+#endif
   end subroutine mat_csr_mul
   
   subroutine mat_csr_ao_precond(symmetry,omega,FUP,FUQ,DU,X_AO)
@@ -467,6 +490,7 @@ contains
     real(realk), intent(in) :: omega
     type(Matrix), intent(in) :: FUP, FUQ, DU
     type(Matrix), intent(inout) :: X_AO
+#ifdef VAR_CSR
     real(realk) :: denom, err, fup_i, fup_j, fuq_i, fuq_j, du_i, du_j
     integer :: ndim,i,j,k
 
@@ -495,6 +519,7 @@ contains
           endif
        enddo
     enddo
+#endif
   end subroutine mat_csr_ao_precond
 
   subroutine mat_csr_set_from_full(afull,alpha,a)
@@ -502,6 +527,7 @@ contains
     real(realk), INTENT(IN) :: afull(*)
     real(realk), intent(in) :: alpha
     TYPE(Matrix)            :: a 
+#ifdef VAR_CSR
     INTEGER       job(8)
     INTEGER       m, n, lda, info, nnz
     !dummy variables for first call to ddnscsr
@@ -517,9 +543,7 @@ contains
     lda = a%nrow
     m = a%nrow
     n = a%ncol
-#ifdef VAR_CSR
     call mkl_ddnscsr(job, m, n, afull, lda, ddummy, idummy, a%row, info)
-#endif
     !nnz can now be found as the last element -1 in the row array
     nnz = a%row(n+1)-1
     job(5) = nnz
@@ -530,11 +554,10 @@ contains
     call mat_csr_allocate(a, nnz)
     !alter request to initiate actual conversion
     job(6) = 1
-#ifdef VAR_CSR
     call mkl_ddnscsr(job, m, n, afull, lda, a%val, a%col, a%row, info)
-#endif
      ! assert info     
      ! RA: maybe we should clean the matrix here?
+#endif
   end subroutine mat_csr_set_from_full
 
 !> \brief See mat_to_full in mat-operations.f90
@@ -542,7 +565,8 @@ contains
      implicit none
      TYPE(Matrix), intent(in) :: a
      real(realk), intent(in) :: alpha
-     real(realk), intent(out):: afull(*)  
+     real(realk), intent(inout):: afull(*)  
+#ifdef VAR_CSR
      integer                 :: i
 
      INTEGER       job(8)
@@ -562,14 +586,13 @@ contains
      if (a%nnz .eq. 0) then
         return
      endif
-#ifdef VAR_CSR
      call mkl_ddnscsr(job, m, n, afull, lda, a%val, a%col, a%row, info)
-#endif
     if (abs(1.0E0_realk-alpha) > 1.0E-7_realk) then
        do i=1, m*n
           afull(i) = afull(i) * alpha
        enddo
     endif
+#endif
   end subroutine mat_csr_to_full
 
 !> \brief See mat_to_full in mat-operations.f90
@@ -579,6 +602,7 @@ contains
      TYPE(Matrix), intent(in) :: a
      real(realk), intent(in) :: alpha
      real(realk), intent(inout):: afull(n1,n2,n3)  
+#ifdef VAR_CSR
      INTEGER      ::  job(8)
      INTEGER      ::  m, n, lda, info,j,i,offset,mp1
      real(realk),pointer  :: Afulltmp(:)
@@ -596,9 +620,7 @@ contains
      if (a%nnz .eq. 0) then
         return
      endif
-#ifdef VAR_CSR
      call mkl_ddnscsr(job, m, n, afulltmp, lda, a%val, a%col, a%row, info)
-#endif
      N = a%nrow    !change diff
      M = MOD(N,7)  !change diff
      IF (M.NE.0) THEN
@@ -638,13 +660,15 @@ contains
         ENDDO
      ENDIF
      call mem_dealloc(Afulltmp)
+#endif
   end subroutine mat_csr_to_full3D
 
   subroutine mat_csr_retrieve_block_full(A,fullmat,fullrow,fullcol,insertrow,insertcol)
     implicit none
     integer, intent(in)         :: fullrow,fullcol,insertrow,insertcol
-    real(Realk), intent(out)     :: fullmat(fullrow,fullcol)
+    real(Realk), intent(inout)     :: fullmat(fullrow,fullcol)
     type(Matrix), intent(in) :: A
+#ifdef VAR_CSR
     integer                     :: i, j, k
     
     fullmat = 0E0_realk
@@ -656,14 +680,16 @@ contains
           endif
        enddo
     enddo
+#endif
   end subroutine mat_csr_retrieve_block_full
 
 ! RA: todo: implement this one...
   subroutine mat_csr_retrieve_block_csr(A,fullmat,fullrow,fullcol,insertrow,insertcol)
     implicit none
     integer, intent(in)         :: fullrow,fullcol,insertrow,insertcol
-    real(Realk), intent(out)     :: fullmat(fullrow,fullcol)
+    real(Realk), intent(inout)     :: fullmat(fullrow,fullcol)
     type(Matrix), intent(in) :: A
+#ifdef VAR_CSR
     integer                     :: i, j, k
     
     fullmat = 0E0_realk
@@ -682,12 +708,14 @@ contains
     !do j = insertcol, insertcol+fullcol-1
        !do i = insertrow, insertrow+fullrow-1
 !          fullmat(i-insertrow+1,j-insertcol+1) = A%elms((j-1)*A%nrow+i)
+#endif
   end subroutine mat_csr_retrieve_block_csr
   
   subroutine mat_csr_report_sparsity(A,sparsity)
     implicit none
     type(Matrix) :: A
     real(realk)  :: sparsity
+#ifdef VAR_CSR
     integer      :: nnz
     
     if (A%nnz == 0) then
@@ -703,39 +731,57 @@ contains
 
        sparsity = A%nnz/(A%ncol*A%nrow)
     endif
+#endif
   end subroutine mat_csr_report_sparsity
 
   subroutine mat_csr_write_to_disk(iunit,A)
     implicit none
     integer, intent(in) :: iunit
     type(Matrix), intent(in) :: A
+#ifdef VAR_CSR
     integer :: i
+    integer(kind=long) :: ncol,nrow,nnz 
 
-    WRITE(iunit) A%nnz, A%nrow, A%ncol
+    nnz = A%nnz
+    nrow = A%Nrow
+    ncol = A%Ncol
+    WRITE(iunit) nnz, nrow, ncol
     WRITE(iunit) (A%val(I),I=1,A%nnz)
     WRITE(iunit) (A%col(I),I=1,A%nnz)
     WRITE(iunit) (A%row(I),I=1,A%nrow+1)
+#endif
   end subroutine mat_csr_write_to_disk
 
   subroutine mat_csr_read_from_disk(iunit,A)
     implicit none
     integer, intent(in) :: iunit
     type(Matrix), intent(inout) :: A
-    integer :: i, nnz
+#ifdef VAR_CSR
+    integer :: i
+    integer(kind=long) :: ncol,nrow,nnz 
 
-    READ(iunit) nnz, A%nrow, A%ncol
-    if (nnz .ne. A%nnz) then
-       call mat_csr_zero(A)
-       call mat_csr_allocate(A, nnz)
-    endif
-    READ(iunit) (A%val(I),I=1,A%nnz)
-    READ(iunit) (A%col(I),I=1,A%nnz)
-    READ(iunit) (A%row(I),I=1,A%nrow+1)
+    READ(iunit) nnz, nrow, ncol
+    IF(Nrow.EQ.A%Nrow.AND.Ncol.EQ.A%Ncol)THEN
+       if (nnz .ne. A%nnz) then
+          call mat_csr_zero(A)
+          call mat_csr_allocate(A, nnz)
+       endif
+       READ(iunit) (A%val(I),I=1,A%nnz)
+       READ(iunit) (A%col(I),I=1,A%nnz)
+       READ(iunit) (A%row(I),I=1,A%nrow+1)
+    ELSE
+       print*,'Error in reading CSR matrix from disk. Dimension mismatch'
+       print*,'Dimensions of the CSR matrix on Disk  :',Nrow,Ncol
+       print*,'Allocated Dimensions of the CSR matrix:',A%Nrow,A%Ncol
+       CALL LSQUIT('Error in reading CSR matrix from disk. Dimension mismatch',-1)
+    ENDIF
+#endif
   end subroutine mat_csr_read_from_disk
 
   function mat_csr_get_elem(a, i, j)
      TYPE(Matrix), intent(IN) :: a
      INTEGER, intent(IN)  :: i,j 
+#ifdef VAR_CSR
      REAL(realk) :: mat_csr_get_elem
      integer column
 
@@ -746,6 +792,9 @@ contains
            mat_csr_get_elem = a%val(column)
         endif
      enddo
+#else
+     mat_csr_get_elem = 0.0
+#endif
   end function mat_csr_get_elem
 
   !> \brief See mat_print in mat-operations.f90
@@ -754,6 +803,7 @@ contains
     TYPE(Matrix), intent(in) :: a
     integer, intent(in) :: lu 
     real(realk), allocatable :: afull(:,:)
+#ifdef VAR_CSR
     real(realk) :: alpha
 !    integer :: i,j,k,cur_row,cur_col, cur_val
 !    WRITE(lu,'(2X,A4,5E13.3,/(6X,5E13.3))')'VAL:',(a%val(j),j=1,a%nnz)
@@ -773,15 +823,17 @@ contains
     afull = 0.0E0_realk
     alpha = 1.0E0_realk
     call mat_csr_to_full(a, alpha, afull)
-    call OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, lu)
-    !call OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, 6)
+    call LS_OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, lu)
+    !call LS_OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, 6)
     deallocate(afull)
+#endif
   end subroutine mat_csr_print
   
   !> \brief See mat_free in mat-operations.f90
   subroutine mat_csr_free(a)
     implicit none
     TYPE(Matrix) :: a 
+#ifdef VAR_CSR
     integer(kind=long) :: nsize
 
     if (a%nnz .ne. 0) then
@@ -805,6 +857,7 @@ contains
     endif
     a%nrow = 0
     a%ncol = 0
+#endif
   end subroutine mat_csr_free
 
   
@@ -818,6 +871,7 @@ contains
   subroutine mat_csr_zero(a)
     implicit none
     TYPE(Matrix) :: a 
+#ifdef VAR_CSR
     integer :: i
     integer(kind=long) :: nsize
 
@@ -840,12 +894,13 @@ contains
     enddo
     a%nnz = 0
     !call mat_csr_cleanup(a%val, a%col, a%row, a%nrow, a%nnz, zeroCSR)
+#endif
   end subroutine mat_csr_zero
 
 !> See mat_inquire_cutoff in mat-operations.f90
   subroutine mat_csr_inquire_cutoff(cutoff)
     implicit none
-    real(realk), intent(out) :: cutoff
+    real(realk), intent(inout) :: cutoff
 
     cutoff = zeroCSR
 
@@ -855,9 +910,7 @@ contains
   subroutine mat_csr_zero_cutoff(cutoff)
     implicit none
     real(realk), intent(in) :: cutoff
-
     zeroCSR = cutoff
-
   end subroutine mat_csr_zero_cutoff
 
 end module matrix_operations_csr

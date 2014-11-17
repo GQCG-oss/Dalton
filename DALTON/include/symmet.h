@@ -30,6 +30,8 @@
 ! ...
 ! ICLASS(j) =
 ! ICNTAO(j) =
+! PCM_IGEN(4) : contains the number of generators and the generators of the group 
+!		to be passed to PCMSolver		 
 !
 #include "mxbsets.h"
 !
@@ -45,13 +47,14 @@
      &        ICLASS(MXCORB), ICNTAO(MXCORB), IPAR(0:7), JSOP(0:7),     &
      &        NCOS(8,-mxbsets:mxbsets), ICOS(8,-mxbsets:mxbsets),       &
      &        I2COSX(8,8,-mxbsets:mxbsets,-mxbsets:mxbsets),            &
-     &        I2_SYMMTI
+     &        PCM_IGEN(4), I2_SYMMTI 
 
       COMMON /SYMMTI/ I1_SYMMTI, MAXREP, MAXOPR, MULT, ISYMAX, ISYMAO,  &
      &                NPARSU, NAOS,  NPARNU, IPTSYM, IPTCNT, NCRREP,    &
      &                IPTCOR, NAXREP, IPTAX, IPTXYZ, IPTNUC,            &
      &                NROTS,  NINVC,  NREFL, IXVAL,  ICLASS, ICNTAO,    &
-     &                IPAR,   JSOP,   NCOS,  ICOS,   I2COSX, I2_SYMMTI
+     &                IPAR,   JSOP,   NCOS,  ICOS,   I2COSX, PCM_IGEN , &
+     &                I2_SYMMTI
 !     OBS! ALWAYS add new variables BEFORE the end tag: I2_SYMMTI
 
       INTEGER LEN_SYMMTR

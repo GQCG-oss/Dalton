@@ -86,7 +86,7 @@
 
    if (print_eivecs) then
       write (lupri,*) 'Eigenvectors of A:'
-      call OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
+      call LS_OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
    endif
 
    deallocate(eigenval)
@@ -142,8 +142,8 @@
      allocate(wrk(5))
      lwrk = -1
 #ifdef VAR_LSESSL
-     no_ref=0.0E0_realk
-     tol = 0.0E0_realk
+     no_ref = 0.0E0_realk
+     tol    = 0.0E0_realk
      call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
 #else
@@ -151,9 +151,16 @@
 #endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
-        stop "programming error in my_DSYGV input. workarray inquiry"
+        call lsquit("programming error in my_DSYGV input. workarray inquiry",-1)
      endif
+!#ifdef VAR_LSDEBUG
+!     ! sometimes the optimal batch sizes do not always work, especially when
+!     ! compiled with ifort --debug and --check so I introduced this, PE
+!     print *,"WARNING(my_sygv): using minimal lwrk instead of optimal in debug build"
+!     lwrk = 3*N-1
+!#else
      lwrk = NINT(wrk(1))
+!#endif
      deallocate(wrk)
      allocate(wrk(lwrk))
 #ifdef VAR_LSESSL
@@ -165,7 +172,18 @@
 #endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
-        stop "programming error in my_DSYGV input."
+        IF(ierr.LT.0) print *, "illegal value of argument number ",ABS(ierr)
+        IF(ierr.LE.N)then
+           print *, 'SYEV failed to converge;'
+           print *,  ierr, ' off-diagonal elements of an intermediate'
+           print *, 'tridiagonal form did not converge to zero;'
+        ENDIF
+        IF(ierr.GE.N.AND.ierr.LE.2*N)then
+           print *, 'the leading minor of order ',ierr-N,' of B is not positive definite.'
+           print *, 'The factorization of B could not be completed and'
+           print *, 'no eigenvalues or eigenvectors were computed '
+        endif
+        call lsquit("programming error in my_DSYGV input.",-1)
      endif
      deallocate(wrk)
    END SUBROUTINE my_DSYGV
@@ -557,6 +575,11 @@ end subroutine ls_dcopy
   use infpar_module
   use lsmpi_type
 #endif
+#ifdef VAR_IFORT
+#ifndef VAR_INT64
+  use IFCORE
+#endif
+#endif
   implicit none
       !> Text string to be printed
       CHARACTER(len=*), intent(in) :: TEXT
@@ -564,6 +587,7 @@ end subroutine ls_dcopy
       integer, intent(in) :: lupri
       integer             :: luprin
       real(realk) :: CTOT,WTOT
+      integer :: user_exit_code,qqstatus
 !
 !     Stamp date and time and hostname to output
 !
@@ -585,25 +609,63 @@ end subroutine ls_dcopy
 !     Write to stderr
       WRITE (0,'(/A/1X,A)') '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
+#ifdef VAR_IFORT
+      qqstatus = -1
+      user_exit_code = -1
+#ifndef VAR_INT64
+      CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE,qqSTATUS)
+#endif
+#endif
 
       CALL ls_GETTIM(CTOT,WTOT)
-      CALL ls_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
-      CALL ls_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
+      CALL ls_TIMTXT('>>>> Total CPU  time used in LSDALTON:',CTOT,LUPRIN)
+      CALL ls_TIMTXT('>>>> Total wall time used in LSDALTON:',WTOT,LUPRIN)
       CALL ls_FLSHFO(LUPRIN)
-
-#ifdef VAR_MPI
-      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
-#endif
+!It may seem like a good idea to wake up the slaves so that the slaves can all call mpi_finalize and quit. However in the case of MPI the lsquit can be called in many ways.
+! Option 1: The Master is awake and the slaves are sleeping. Master calls lsquit
+!           Here it can make sense to wake up the slaves and have the slaves 
+!           call mpi_finalize and quit
+! Option 2: The Master and the Slaves are awake. Master calls lsquit
+!           In this case Master should not broadcast a wake up call as the 
+!           slaves are already sleeping - so it does not make sense 
+!           and the calculation will hang in the MPI broadcast routine. 
+!           The MPI slaves will wait in some reduction routine or something
+!           While the Master i waiting in the bcast routine 
+! Option 3: The Master and the Slaves are awake. Slave calls lsquit
+!           Clearly it should not wake up the other slaves
+!
+!If master and slaves calls EXIT directly the mpiexec should kill the slaves!
+!#ifdef VAR_MPI
+!      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
+!#endif
       !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
-#ifdef VAR_IFORT
-      CALL TRACEBACKQQ()
-#endif
 #if defined (SYS_LINUX)
       CALL EXIT(100)
 #else
       STOP 100
 #endif
       end subroutine lsquit
+
+      !> \brief Print Stack
+      !> \author T. Kjaergaard
+      !> \date Jan 2014
+      subroutine LsTraceBack(text)
+        use precision
+#ifdef VAR_IFORT
+#ifndef VAR_INT64
+        use IFCORE
+        implicit none
+        !> Text string to be printed
+        CHARACTER(len=*), intent(in) :: TEXT
+        WRITE (*,'(/2A/)')"TRACEBACKQQ INFO:",TEXT
+        CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE=-1)
+#else
+        WRITE (*,'(/2A/)')"LsTraceBack do not work using -int64"
+#endif
+#else
+        WRITE (*,'(/2A/)')"LsTraceBack do not work unless ifort is used"
+#endif
+      end subroutine LsTraceBack
 
       !> \brief Print a header. Based on HEADER by T. Helgaker
       !> \author S. Host
@@ -734,11 +796,11 @@ end subroutine ls_dcopy
          first = .false.
          call cpu_time(TCPU0)
          call date_and_time(values=dateandtime0)
-         call get_walltime(dateandtime0,twall0)
+         call ls_get_walltime(dateandtime0,twall0)
       end if
       call cpu_time(tcpu1)
       call date_and_time(values=dateandtime1)
-      call get_walltime(dateandtime1,twall1)
+      call ls_get_walltime(dateandtime1,twall1)
 
       cputime = tcpu1 - TCPU0
       walltime = twall1 - twall0
@@ -804,7 +866,7 @@ end subroutine ls_dcopy
 !> Exception: Years that are evenly divisible by 100 are not leap years, 
 !> unless they are also evenly divisible by 400. Source: Wikipedia
 !>
-subroutine get_walltime(dateandtime,walltime)
+subroutine ls_get_walltime(dateandtime,walltime)
 use precision
 implicit none
    !> "values" output from fortran intrinsic subroutine date_and_time
@@ -854,7 +916,7 @@ implicit none
       else if (month == 4 .or. month == 6 .or. month == 9 .or. month == 11) then
          walltime = walltime + 30E0_realk*24E0_realk*3600E0_realk
       else
-         stop 'Unknown month (get_walltime)'
+         stop 'Unknown month (ls_get_walltime)'
       endif
    enddo
 
@@ -872,7 +934,7 @@ implicit none
       endif
    enddo
 
-end subroutine get_walltime
+end subroutine ls_get_walltime
 
 !> \brief Flush formatted output unit (empty buffers). 
 !> \author H. J. Aa. Jensen. F90'fied by S. Host
@@ -914,7 +976,7 @@ end subroutine ls_flshfo
 !>         Revised 15-Dec-1983 by Hans Jorgen Aa. Jensen.
 !>         16-Aug-2010 f90'fied by S. Host
 !> \date August 2010
-subroutine output(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,NCTL,LUPRI)
+subroutine ls_output(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,NCTL,LUPRI)
 use precision
 implicit none 
       !> ROW NUMBER AT WHICH OUTPUT IS TO BEGIN
@@ -989,7 +1051,7 @@ implicit none
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
  1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
-      END subroutine output
+      END subroutine ls_output
 
       subroutine shortint_output(MAT2,dim1,dim2,lupri)
         implicit none
@@ -1125,6 +1187,141 @@ WRITE(lupri,'(A)')'=============================================================
         ENDIF
         
       end subroutine shortint_output
+
+      subroutine loutput(MAT2,dim1,dim2,lupri)
+        implicit none
+        integer             :: dim1,dim2,lupri,dimT2,dimT
+        logical             :: MAT2(dim1,dim2)
+        integer             :: I,J,K
+        dimT=20*(dim2/20)
+        DO J=1,dimT,20
+           WRITE(lupri,'(A,20I4)')'Column:',&
+                &J,J+1,J+2,J+3,J+4,J+5,J+6,J+7,J+8,J+9,&
+                &J+10,J+11,J+12,J+13,J+14,J+15,J+16,J+17,J+18,J+19
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,20L4)')I,'   ',(MAT2(I,J+K),K=0,19)
+           ENDDO
+        ENDDO
+        dimT2=dim2-dimT
+        J=dimT
+        IF(dimT2.EQ.1)THEN        
+           WRITE(lupri,'(A,I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.2)THEN
+           WRITE(lupri,'(A,2I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,2L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.3)THEN
+           WRITE(lupri,'(A,3I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,3L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.4)THEN
+           WRITE(lupri,'(A,4I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,4L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.5)THEN
+           WRITE(lupri,'(A,5I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,5L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.6)THEN
+           WRITE(lupri,'(A,6I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,6L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.7)THEN
+           WRITE(lupri,'(A,7I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,7L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.8)THEN
+           WRITE(lupri,'(A,8I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,8L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.9)THEN
+           WRITE(lupri,'(A,9I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,9L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.10)THEN
+           WRITE(lupri,'(A,10I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,10L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.11)THEN
+           WRITE(lupri,'(A,11I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,11L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.12)THEN
+           WRITE(lupri,'(A,12I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,12L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.13)THEN
+           WRITE(lupri,'(A,13I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,13L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.14)THEN
+           WRITE(lupri,'(A,14I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,14L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.15)THEN
+           WRITE(lupri,'(A,15I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,15L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.16)THEN
+           WRITE(lupri,'(A,16I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,16L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.17)THEN
+           WRITE(lupri,'(A,17I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,17L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.18)THEN
+           WRITE(lupri,'(A,18I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,18L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ELSEIF(dimT2.EQ.19)THEN
+           WRITE(lupri,'(A,19I4)')'Column:',(J+K,K=1,dimT2)
+WRITE(lupri,'(A)')'======================================================================================='
+           DO I=1,dim1
+              WRITE(lupri,'(I4,A3,19L4)')I,'   ',(MAT2(I,J+K),K=1,dimT2)
+           ENDDO
+        ENDIF
+        
+      end subroutine loutput
 
       subroutine ls_transpose(array_in,array_out,ndim)
 use precision

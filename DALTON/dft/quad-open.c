@@ -1054,9 +1054,11 @@ FSYM2(dft_qr_ab)(real * fi, real * fo, real *cmo,
     /* Compute one index transformed densities */      
     isymsav = FSYM(isetksymop)(symY);
     FSYM(deq27)(cmo,kappaY,dv,qr_data.rhob_y,qr_data.rhoa_y,work,lwork);
+    dscal_(&inforb_.n2basx,&DP5R,qr_data.rhob_y,&ONEI);    
     FSYM(daxpy)(&inforb_.n2basx,&ONER,qr_data.rhob_y,&ONEI,qr_data.rhoa_y,&ONEI);
     FSYM(isetksymop)(symZ);
     FSYM(deq27)(cmo,kappaZ,dv,qr_data.rhob_z,qr_data.rhoa_z,work,lwork);
+    dscal_(&inforb_.n2basx,&DP5R,qr_data.rhob_z,&ONEI);    
     FSYM(daxpy)(&inforb_.n2basx,&ONER,qr_data.rhob_z,&ONEI,qr_data.rhoa_z,&ONEI);
     FSYM(isetksymop)(&isymsav);
     free(dv);

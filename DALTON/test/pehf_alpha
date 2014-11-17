@@ -68,12 +68,12 @@ X   1.6874280   2.8198310   0.0017045
 @MULTIPOLES
 ORDER 0
 6
-1    -0.7423294438  
-2     0.3699305781  
-3     0.3723988657  
-6    -0.7424407021  
-7     0.3699635356  
-8     0.3724771666  
+1    -0.7423294438
+2     0.3699305781
+3     0.3723988657
+6    -0.7424407021
+7     0.3699635356
+8     0.3724771666
 ORDER 1
 10
 1        0.0303539300        0.3280749969        0.0000894127
@@ -169,29 +169,29 @@ fi
 #
 # Frequency independent polarizability tensor
 #
-CRIT1=`$GREP "@ \-<< XDIPLEN  ; XDIPLEN  >> =  2\.10082.......D\+01" $log | wc -l`
-CRIT2=`$GREP "@ \-<< XDIPLEN  ; YDIPLEN  >> = \-8\.67354.......D\+00" $log | wc -l`
-CRIT3=`$GREP "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7\.726.........D\-03" $log | wc -l`
-CRIT4=`$GREP "@ \-<< YDIPLEN  ; YDIPLEN  >> =  3\.35324.......D\+01" $log | wc -l`
-CRIT5=`$GREP "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-9\.9(7|6)..........D\-04" $log | wc -l`
-CRIT6=`$GREP "@ \-<< ZDIPLEN  ; ZDIPLEN  >> =  4\.58232.......D\+00" $log | wc -l`
+CRIT1=`$GREP -l "@ \-<< XDIPLEN  ; XDIPLEN  >> =  2\.10082.......D\+01" $log | wc -l`
+CRIT2=`$GREP -l "@ \-<< XDIPLEN  ; YDIPLEN  >> = \-8\.6735........D\+00" $log | wc -l`
+CRIT3=`$GREP -l "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7\.7...........D\-03" $log | wc -l`
+CRIT4=`$GREP -l "@ \-<< YDIPLEN  ; YDIPLEN  >> =  3\.35324.......D\+01" $log | wc -l`
+CRIT5=`$GREP -l "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-[91]\.[09]...........D\-0[34]" $log | wc -l`
+CRIT6=`$GREP -l "@ \-<< ZDIPLEN  ; ZDIPLEN  >> =  4\.58232.......D\+00" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[1]=6
 ERROR[1]="FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
 #
 # Frequency dependent polarizability tensor
 #
-CRIT1=`$GREP "@ \-<< XDIPLEN  ; XDIPLEN  >> =  2.11397.......D\+01" $log | wc -l`
-CRIT2=`$GREP "@ \-<< XDIPLEN  ; YDIPLEN  >> = \-8.83363.......D\+00" $log | wc -l`
-CRIT3=`$GREP "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7.761.........D\-03" $log | wc -l`
-CRIT4=`$GREP "@ \-<< YDIPLEN  ; YDIPLEN  >> =  3.38562.......D\+01" $log | wc -l`
-CRIT5=`$GREP "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-9.66..........D\-04" $log | wc -l`
-CRIT6=`$GREP "@ \-<< ZDIPLEN  ; ZDIPLEN  >> =  4.59733.......D\+00" $log | wc -l`
+CRIT1=`$GREP -l "@ \-<< XDIPLEN  ; XDIPLEN  >> =  2.11397.......D\+01" $log | wc -l`
+CRIT2=`$GREP -l "@ \-<< XDIPLEN  ; YDIPLEN  >> = \-8.8336........D\+00" $log | wc -l`
+CRIT3=`$GREP -l "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7.7...........D\-03" $log | wc -l`
+CRIT4=`$GREP -l "@ \-<< YDIPLEN  ; YDIPLEN  >> =  3.38562.......D\+01" $log | wc -l`
+CRIT5=`$GREP -l "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-9.............D\-04" $log | wc -l`
+CRIT6=`$GREP -l "@ \-<< ZDIPLEN  ; ZDIPLEN  >> =  4.59733.......D\+00" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[2]=6
 ERROR[2]="FREQUENCY DEPENDENT POLARIZABILITY NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -207,7 +207,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 chmod +x pehf_alpha.check
 #######################################################################

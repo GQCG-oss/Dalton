@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C------------------------------------------------------------------------
 C||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -4435,15 +4434,15 @@ C
 C     Calculates the electric field from the PCM charges at the
 C     polarizable points
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <inftap.h>
-#include <pcmdef.h>
-#include <orgcom.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "inftap.h"
+#include "pcmdef.h"
+#include "orgcom.h"
+#include "pcm.h"
+#include "pcmlog.h"
 #include "nuclei.h"
  
       PARAMETER  (D0 = 0.0D0)
@@ -4515,15 +4514,15 @@ C  /* Deck GIVEMY */
 C
 C     Transfer the induced dipole moments to pcm
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <inftap.h>
-#include <pcmdef.h>
-#include <orgcom.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "inftap.h"
+#include "pcmdef.h"
+#include "orgcom.h"
+#include "pcm.h"
+#include "pcmlog.h"
 #include "nuclei.h"
  
       PARAMETER  (D0 = 0.0D0)
@@ -4578,8 +4577,8 @@ C     1: initialized
 C     0: not converged
 C    -1: converged 
 
-#include <implicit.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "qm3.h"
 
       DO 100 I=1,NSTATES
          ICQM3(I) = 1
@@ -4593,12 +4592,12 @@ C  /* Deck MMPCM_FIXMOM */
       SUBROUTINE MMPCM_FIXMOM()
 C*************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  MYIND(3,MXQM3)
 C

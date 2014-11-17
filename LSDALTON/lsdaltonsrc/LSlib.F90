@@ -1,6 +1,82 @@
 !> @file
 !> Contains general library routines for integral evaluation
 
+!> \brief Used to initialize LSlib functionality- must be called prior to other LSlib calls
+!> \author S. Reine
+!> \date 2014-01-22
+!> \param lupri The print unit
+!> \param luerr The error unit
+SUBROUTINE LSlib_init(OnMaster,lupri,luerr)
+use precision
+use lslib_state
+use configuration, only: config_set_default_config, config_read_input
+use daltoninfo, only: ls_init
+implicit none
+logical,intent(OUT)       :: OnMaster
+integer,intent(IN)        :: lupri,luerr
+!
+logical :: dodft
+
+call lsinit_all(OnMaster,lupri,luerr,tstart,tend)
+
+IF (OnMaster) THEN
+  call config_set_default_config(LSlibconfig)
+  call config_read_input(LSlibconfig,lupri,luerr)
+  doDFT = LSlibconfig%opt%calctype.EQ.LSlibconfig%opt%dftcalc
+  call ls_init(ls,lupri,luerr,nbasis,LSlibconfig%integral,dodft,.false.,.false.)
+  state_set = .TRUE.
+ENDIF
+
+END SUBROUTINE LSlib_init
+
+SUBROUTINE LSlib_free(OnMaster,lupri,luerr,meminfo_slaves)
+use precision
+use lslib_state
+use configuration, only: config_shutdown, config_free
+use daltoninfo, only: ls_free
+implicit none
+logical,intent(IN) :: OnMaster
+integer,intent(IN) :: lupri,luerr
+Logical,optional   :: meminfo_slaves
+logical :: memslave
+
+IF (OnMaster) THEN
+  call ls_free(ls)
+  call config_shutdown(LSlibconfig)
+  call config_free(LSlibconfig)
+  state_set = .FALSE.
+ENDIF
+memslave = .FALSE.
+IF (present(meminfo_slaves)) memslave = meminfo_slaves
+call lsfree_all(OnMaster,lupri,luerr,tstart,tend,memslave)
+
+END SUBROUTINE LSlib_free
+
+#ifdef VAR_MPI
+SUBROUTINE LSlib_set_external_comm(external_comm)
+use infpar_module, only : call_mpi_init
+use lsmpi_type,    only : MPI_COMM_LSDALTON
+use precision,     only : ls_mpik
+implicit none
+integer(kind=ls_mpik),intent(IN) :: external_comm
+
+MPI_COMM_LSDALTON = external_comm
+call_mpi_init = .FALSE.
+
+END SUBROUTINE LSlib_set_external_comm
+
+SUBROUTINE LSlib_exit_slave()
+use infpar_module,      only : infpar
+use lsmpi_type,         only : ls_mpibcast
+use LSparameters, only : LSMPIQUIT
+use lslib_state
+implicit none
+
+CALL ls_mpibcast(LSMPIQUIT,infpar%master,ls%setting%comm)
+
+END SUBROUTINE LSlib_exit_slave
+#endif
+
 !> \brief Returns the number of basis functions
 !> \author S. Reine
 !> \date 2013-01-20
@@ -11,8 +87,6 @@
 !> a file that is already open).
 SUBROUTINE LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -21,27 +95,16 @@ SUBROUTINE LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
   use daltonInfo
   use integralinterfaceMod
   use memory_handling
+  use lslib_state
 IMPLICIT NONE
 Integer,intent(OUT) :: nbast,natoms,nelectrons
 Integer,intent(IN)  :: lupri,luerr
 !
-type(lsitem)     :: ls
-Integer          :: nbasis
-type(configItem) :: config
-
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_dimensions error: LSlib not initialized',lupri)
+!
 nbast      = nbasis
 natoms     = ls%input%MOLECULE%nAtoms
 nelectrons = ls%input%MOLECULE%nelectrons
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_dimensions
 
@@ -57,30 +120,19 @@ END SUBROUTINE LSlib_get_dimensions
 !> a file that is already open).
 SUBROUTINE LSlib_get_overlap(S,nbast,lupri,luerr)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
-  use TYPEDEF  
-  use TYPEDEFTYPE  
   use Matrix_module
   use Matrix_Operations
-  use ls_Integral_Interface
-  use daltonInfo
   use integralinterfaceMod
   use memory_handling
+  use lslib_state
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,lupri,luerr
 Real(realk),intent(out) :: S(nbast,nbast)
 !
 TYPE(MATRIX),target :: h
-type(lsitem)        :: ls
-Integer             :: mtype_save, nbasis, mynum, nodtot, ierr
-type(configItem)    :: config
+Integer             :: mtype_save, mynum, nodtot, ierr
 
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_overlap error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_overlap. Basis-function mismatch',lupri)
 
 !this will most likely fail for MPI ask Thomas (or call call mat_select_type)
@@ -95,10 +147,6 @@ call dcopy(nbast*nbast,h%elms,1,S,1)
 
 CALL mat_free(h)
 matrix_type = mtype_save
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_overlap
 
@@ -116,36 +164,28 @@ END SUBROUTINE LSlib_get_overlap
 !> Note that if both LSDALTON.OUT and LSDALTON.ERR are already open, and the -1 
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
-SUBROUTINE LSlib_get_Fock(F,D,nbast,ndmat,dsym,lupri,luerr,testElectrons)
+SUBROUTINE LSlib_get_Fock(F,D,nbast,ndmat,dsym,lupri,luerr,testElectrons,h1)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
-  use TYPEDEF  
-  use TYPEDEFTYPE  
   use Matrix_module
   use Matrix_Operations
-  use ls_Integral_Interface
-  use daltonInfo
   use integralinterfaceMod
   use memory_handling
+  use lslib_state
+  use dal_interface, only: di_get_fock_lsdalton
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,ndmat,lupri,luerr
 Real(realk),intent(out) :: F(nbast,nbast,ndmat)
 Real(realk),intent(in)  :: D(nbast,nbast,ndmat)
+Real(realk),optional    :: h1(nbast,nbast)
 Logical,intent(IN)      :: Dsym
 Logical,optional        :: testElectrons
 !
 TYPE(MATRIX),target  :: Fmat(ndmat),Dmat(ndmat)
-type(lsitem)         :: ls
-Integer              :: mtype_save, nbasis,idmat
-type(configItem)    :: config
+Integer              :: mtype_save, idmat
+Real(realk)          :: Etotal(ndmat)
+TYPE(MATRIX)         :: h1mat
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_Fock error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_Fock. Basis-function mismatch',lupri)
 
 !this will most likely fail for ScaLapack
@@ -158,12 +198,16 @@ DO idmat=1,ndmat
   call dcopy(nbast*nbast,D(1,1,idmat),1,Dmat(idmat)%elms,1)
 ENDDO
 
+CALL mat_init(h1mat,nbast,nbast)
+IF (PRESENT(h1)) THEN
+  call dcopy(nbast*nbast,h1,1,h1mat%elms,1)
+ELSE
+  call II_get_h1(lupri,luerr,ls%setting,h1mat) 
+ENDIF
 IF (PRESENT(testElectrons)) ls%setting%scheme%dft%testNelectrons = testElectrons
 
-!Hack to make II_get_J_gradient to work (after call to LSlib_get_Coulomb)
-IF (ls%setting%scheme%densfit) ls%setting%scheme%MATRICESINMEMORY = .FALSE.
-
-CALL II_get_Fock_mat(lupri,luerr,ls%setting,Dmat,Dsym,Fmat,ndmat,.FALSE.)
+call di_get_fock_LSDALTON(Dmat,h1mat,Fmat,ndmat,Etotal,lupri,luerr,ls)
+CALL mat_free(h1mat)
 
 DO idmat=1,ndmat
   call dcopy(nbast*nbast,Fmat(idmat)%elms,1,F(1,1,idmat),1)
@@ -172,10 +216,6 @@ DO idmat=1,ndmat
 ENDDO
 
 matrix_type = mtype_save
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_Fock
 
@@ -193,32 +233,20 @@ END SUBROUTINE LSlib_get_Fock
 !> a file that is already open).
 SUBROUTINE LSlib_get_Coulomb(J,D,nbast,ndmat,lupri,luerr)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
-  use TYPEDEF  
-  use TYPEDEFTYPE  
   use Matrix_module
   use Matrix_Operations
-  use ls_Integral_Interface
-  use daltonInfo
   use integralinterfaceMod
   use memory_handling
+  use lslib_state
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,ndmat,lupri,luerr
 Real(realk),intent(out) :: J(nbast,nbast,ndmat)
 Real(realk),intent(in)  :: D(nbast,nbast,ndmat)
 !
 TYPE(MATRIX),target :: Jmat(ndmat),Dmat(ndmat)
-type(lsitem)        :: ls
-Integer             :: mtype_save, nbasis,idmat
-type(configItem)    :: config
+Integer             :: mtype_save, idmat
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_Coulomb error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_Coulomb. Basis-function mismatch',lupri)
 
 !this will most likely fail for ScaLapack
@@ -230,9 +258,6 @@ DO idmat=1,ndmat
   call dcopy(nbast*nbast,D(1,1,idmat),1,Dmat(idmat)%elms,1)
 ENDDO
 
-!Hack to make II_get_J_gradient to work (after call to LSlib_get_Coulomb)
-IF (ls%setting%scheme%densfit) ls%setting%scheme%MATRICESINMEMORY = .FALSE.
-
 CALL II_get_coulomb_mat(lupri,luerr,ls%setting,Dmat,Jmat,ndmat)
 
 DO idmat=1,ndmat
@@ -242,10 +267,6 @@ DO idmat=1,ndmat
 ENDDO
 
 matrix_type = mtype_save
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_Coulomb
 
@@ -264,16 +285,15 @@ END SUBROUTINE LSlib_get_Coulomb
 !> a file that is already open).
 SUBROUTINE LSlib_get_Exchange(K,D,nbast,ndmat,dsym,lupri,luerr,testElectrons)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
-  use TYPEDEF  
-  use TYPEDEFTYPE  
+!  use TYPEDEF  
+!  use TYPEDEFTYPE  
   use Matrix_module
   use Matrix_Operations
-  use ls_Integral_Interface
-  use daltonInfo
+!  use ls_Integral_Interface
+!  use daltonInfo
   use integralinterfaceMod
   use memory_handling
+  use lslib_state
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,ndmat,lupri,luerr
 Real(realk),intent(out) :: K(nbast,nbast,ndmat)
@@ -282,17 +302,10 @@ Logical,intent(IN)      :: Dsym
 Logical,optional        :: testElectrons
 !
 TYPE(MATRIX),target  :: Kmat(ndmat),Dmat(ndmat),dXCmat
-type(lsitem)         :: ls
-Integer              :: mtype_save, nbasis,idmat
-type(configItem)     :: config
-real(realk)          :: EdXC
+Integer              :: mtype_save, idmat
+real(realk)          :: EdXC,Econt(5)
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_Exchange error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_Exchange. Basis-function mismatch',lupri)
 
 !this will most likely fail for ScaLapack
@@ -309,7 +322,7 @@ IF (ls%input%dalton%ADMM_EXCHANGE) THEN
   IF (present(testElectrons)) ls%setting%scheme%dft%testNelectrons = testElectrons
   call mat_init(dXCmat,nbast,nbast)
   DO idmat=1,ndmat
-    CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,Dmat(idmat),Kmat(idmat),dXCmat,1,EdXC,Dsym)
+    CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,Dmat(idmat),Kmat(idmat),dXCmat,1,EdXC,Dsym,Econt,.FALSE.)
     call mat_daxpy(1.E0_realk,dXCmat,Kmat(idmat))
   ENDDO
   CALL mat_free(dXCmat)
@@ -324,10 +337,6 @@ DO idmat=1,ndmat
 ENDDO
 
 matrix_type = mtype_save
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_Exchange
 
@@ -347,17 +356,11 @@ END SUBROUTINE LSlib_get_Exchange
 !> a file that is already open).
 SUBROUTINE LSlib_get_XC(XC,D,EXC,nbast,ndmat,lupri,luerr,testElectrons)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
-  use TYPEDEF  
-  use TYPEDEFTYPE  
   use Matrix_module
   use Matrix_Operations
-  use ls_Integral_Interface
-  use daltonInfo
-  use integralinterfaceMod
   use memory_handling
   use II_XC_interfaceModule
+  use lslib_state
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,ndmat,lupri,luerr
 Real(realk),intent(out) :: XC(nbast,nbast,ndmat),EXC(ndmat)
@@ -365,18 +368,9 @@ Real(realk),intent(in)  :: D(nbast,nbast,ndmat)
 logical,optional        :: testElectrons
 !
 TYPE(MATRIX),target  :: XCmat(ndmat),Dmat(ndmat)
-type(lsitem)         :: ls
-Integer              :: mtype_save, nbasis,idmat
-type(configItem)     :: config
-logical              :: dodft
+Integer              :: mtype_save, idmat
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-doDFT = config%opt%calctype.EQ.config%opt%dftcalc
-call ls_init(ls,lupri,luerr,nbasis,config%integral,dodft,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_XC error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_XC. Basis-function mismatch',lupri)
 
 !this will most likely fail for ScaLapack
@@ -402,10 +396,6 @@ ENDDO
 
 matrix_type = mtype_save
 
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
-
 END SUBROUTINE LSlib_get_XC
 
 
@@ -421,8 +411,6 @@ END SUBROUTINE LSlib_get_XC
 !> a file that is already open).
 SUBROUTINE LSlib_get_h1(h1,nbast,lupri,luerr)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -431,21 +419,15 @@ SUBROUTINE LSlib_get_h1(h1,nbast,lupri,luerr)
   use daltonInfo
   use integralinterfaceMod
   use memory_handling
+  use lslib_state
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,lupri,luerr
 Real(realk),intent(out) :: h1(nbast,nbast)
 !
 TYPE(MATRIX),target :: h
-type(lsitem)        :: ls
-Integer             :: mtype_save, nbasis
-type(configItem)    :: config
+Integer             :: mtype_save
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_h1 error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_h1. Basis-function mismatch',lupri)
 
 !this will most likely fail for MPI ask Thomas (or call call mat_select_type)
@@ -459,10 +441,6 @@ call dcopy(nbast*nbast,h%elms,1,h1,1)
 
 CALL mat_free(h)
 matrix_type = mtype_save
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_h1
 
@@ -479,8 +457,6 @@ END SUBROUTINE LSlib_get_h1
 !> a file that is already open).
 SUBROUTINE LSlib_get_4center_eri(eri,nbast,dirac,lupri,luerr)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -489,27 +465,23 @@ SUBROUTINE LSlib_get_4center_eri(eri,nbast,dirac,lupri,luerr)
   use daltonInfo
   use integralinterfaceMod
   use memory_handling
+  use lslib_state
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,lupri,luerr
 Real(realk),intent(out) :: eri(nbast,nbast,nbast,nbast,1)
 Logical,intent(IN)      :: dirac
-!
-type(lsitem)        :: ls
-Integer             :: nbasis
-type(configItem)    :: config
+character :: intspec(5)
+intspec(1) = 'R'
+intspec(2) = 'R'
+intspec(3) = 'R'
+intspec(4) = 'R'
+intspec(5) = 'C'
 
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_4center_eri error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_4center_eri. Basis-function mismatch',lupri)
 
-CALL II_get_4center_eri(lupri,luerr,ls%setting,eri,nbast,nbast,nbast,nbast,dirac)
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
+CALL II_get_4center_eri(lupri,luerr,ls%setting,eri,&
+     & nbast,nbast,nbast,nbast,intspec,dirac)
 
 END SUBROUTINE LSlib_get_4center_eri
 
@@ -529,8 +501,6 @@ END SUBROUTINE LSlib_get_4center_eri
 !> a file that is already open).
 SUBROUTINE LSlib_get_4center_eri_geoderiv(eri,nbast,geoOrder,nGeoComp,dirac,lupri,luerr)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -539,28 +509,17 @@ SUBROUTINE LSlib_get_4center_eri_geoderiv(eri,nbast,geoOrder,nGeoComp,dirac,lupr
   use daltonInfo
   use integralinterfaceMod
   use memory_handling
+  use lslib_state
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,lupri,luerr
 Real(realk),intent(out) :: eri(nbast,nbast,nbast,nbast,nGeoComp)
 Integer,intent(IN)      :: geoOrder,nGeoComp
 Logical,intent(IN)      :: dirac
-!
-type(lsitem)        :: ls
-Integer             :: nbasis
-type(configItem)    :: config
 
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
-IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_4center_eri. Basis-function mismatch',lupri)
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_4center_eri_geoderiv error: LSlib not initialized',lupri)
+IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_4center_eri_geoderiv. Basis-function mismatch',lupri)
 
 CALL II_get_4center_eri_diff(lupri,luerr,ls%setting,eri,nbast,nbast,nbast,nbast,nGeoComp,dirac=dirac,geoderiv=geoOrder)
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_4center_eri_geoderiv
 
@@ -580,8 +539,6 @@ END SUBROUTINE LSlib_get_4center_eri_geoderiv
 !> a file that is already open).
 SUBROUTINE LSlib_get_1el_geoderiv(oneEl,oneElType,nbast,nAtoms,geoOrder,nGeoComp,lupri,luerr)
   use precision
-  use configurationType, only: configitem
-  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -590,28 +547,17 @@ SUBROUTINE LSlib_get_1el_geoderiv(oneEl,oneElType,nbast,nAtoms,geoOrder,nGeoComp
   use daltonInfo
   use integralinterfaceMod
   use memory_handling
+  use lslib_state
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,nAtoms,lupri,luerr
 Real(realk),intent(out) :: oneEl(nbast,nbast,1,1,nGeoComp)
 Integer,intent(IN)      :: geoOrder,nGeoComp
 Character(*),intent(IN) :: oneElType
-!
-type(lsitem)        :: ls
-Integer             :: nbasis
-type(configItem)    :: config
 
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_1el_geoderiv error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_1el_geoderiv. Basis-function mismatch',lupri)
 
 CALL II_get_1el_diff(lupri,luerr,ls%setting,oneEl,oneElType,nbast,nbast,nGeoComp,geoderiv=geoOrder)
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_1el_geoderiv
 
@@ -626,32 +572,19 @@ END SUBROUTINE LSlib_get_1el_geoderiv
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_nn_gradient(nucGrad,nAtoms,lupri,luerr)
-use configurationType, only: configitem
-use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
 use integralinterfaceMod
 use memory_handling
+use lslib_state
 implicit none
 Integer,intent(IN)      :: nAtoms,lupri,luerr
 Real(realk),intent(OUT) :: nucGrad(3,nAtoms)
-!
-type(lsitem) :: ls
-integer      :: nbasis
-type(configItem)    :: config
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_nn_gradient error: LSlib not initialized',lupri)
 
 call II_get_nn_gradient(nucGrad,ls%setting,lupri,luerr)
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_nn_gradient
 
@@ -668,8 +601,6 @@ END SUBROUTINE LSlib_get_nn_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_oneElectron_gradient(oneGrad,D,nbast,nAtoms,lupri,luerr)
-use configurationType, only: configitem
-use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -677,24 +608,18 @@ use matrix_module
 use matrix_operations
 use integralinterfaceMod
 use memory_handling
+use lslib_state
 implicit none
 Integer,intent(IN)      :: nAtoms,lupri,luerr,nbast
 Integer,parameter       :: ndmat = 1
 Real(realk),intent(OUT) :: oneGrad(3,nAtoms)
 Real(realk),intent(IN)  :: D(nbast,nbast,ndmat)
 !
-type(lsitem)        :: ls
 type(matrixp)       :: Dmat(ndmat)
 type(matrix),target :: Dtarget(ndmat)
-integer             :: idmat,nbasis
-type(configItem)    :: config
+integer             :: idmat
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_oneElectron_gradient error: LSlib not initialized',lupri)
 IF (ndmat.lt. 1) CALL lsQUIT('ndmat<1 in LSlib_get_oneElectron_gradient',lupri)
 IF (nAtoms.lt.ls%setting%molecule(1)%p%nAtoms) CALL lsQUIT('nAtoms inconsistency in LSlib_get_oneElectron_gradient',lupri)
 IF (nbasis.ne.nbast) CALL lsQUIT('nbasis .NE. nbast in LSlib_get_oneElectron_gradient',lupri)
@@ -714,10 +639,6 @@ DO idmat=1,ndmat
   call mat_free(Dmat(idmat)%p)
 ENDDO
 
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
-
 END SUBROUTINE LSlib_get_oneElectron_gradient
 
 !> \brief Calculates the nuclear-electronic-attraction gradient
@@ -733,8 +654,6 @@ END SUBROUTINE LSlib_get_oneElectron_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_ne_gradient(neGrad,D,nbast,nAtoms,lupri,luerr)
-use configurationType, only: configitem
-use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -742,24 +661,18 @@ use matrix_module
 use matrix_operations
 use integralinterfaceMod
 use memory_handling
+use lslib_state
 implicit none
 Integer,intent(IN)      :: nAtoms,lupri,luerr,nbast
 Integer,parameter       :: ndmat = 1
 Real(realk),intent(OUT) :: neGrad(3,nAtoms)
 Real(realk),intent(IN)  :: D(nbast,nbast,ndmat)
 !
-type(lsitem)        :: ls
 type(matrixp)       :: Dmat(ndmat)
 type(matrix),target :: Dtarget(ndmat)
-integer             :: idmat,nbasis
-type(configItem)    :: config
+integer             :: idmat
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_ne_gradient error: LSlib not initialized',lupri)
 IF (ndmat.lt. 1) CALL lsQUIT('ndmat<1 in LSlib_get_ne_gradient',lupri)
 IF (nbast.lt. 1) CALL lsQUIT('nbast<1 in LSlib_get_ne_gradient',lupri)
 IF (nAtoms.lt. 1) CALL lsQUIT('nAtoms<1 in LSlib_get_ne_gradient',lupri)
@@ -780,10 +693,6 @@ DO idmat=1,ndmat
   call mat_free(Dmat(idmat)%p)
 ENDDO
 
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
-
 END SUBROUTINE LSlib_get_ne_gradient
 
 !> \brief Calculates the electron-electron repulsion gradient
@@ -802,8 +711,6 @@ END SUBROUTINE LSlib_get_ne_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_twoElectron_gradient(eeGrad,DLHS,DRHS,nbast,ndlhs,ndrhs,nAtoms,lupri,luerr,testElectrons)
-use configurationType, only: configitem
-use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -812,6 +719,7 @@ use matrix_operations
 use integralinterfaceMod
 use memory_handling
 use io
+use lslib_state
 implicit none
 Integer,intent(IN)      :: nAtoms,lupri,luerr,nbast,ndlhs,ndrhs
 Real(realk),intent(OUT) :: eeGrad(3,nAtoms)
@@ -819,19 +727,13 @@ Real(realk),intent(IN)  :: DLHS(nbast,nbast,ndlhs)
 Real(realk),intent(IN)  :: DRHS(nbast,nbast,ndrhs)
 Logical,optional        :: testElectrons
 !
-type(lsitem)        :: ls
 type(matrixp)       :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 type(matrix),target :: DtargetLHS(ndlhs),DtargetRHS(ndrhs)
-integer             :: idmat,nbasis
-type(configItem)    :: config
+integer             :: idmat
 logical             :: coeff
 Character(80)       :: Filename
 
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_twoElectron_gradient error: LSlib not initialized',lupri)
 IF (ndlhs.lt. 1) CALL lsQUIT('ndlhs<1 in LSlib_get_twoElectron_gradient',lupri)
 IF (ndrhs.lt. 1) CALL lsQUIT('ndrhs<1 in LSlib_get_twoElectron_gradient',lupri)
 IF (nbast.lt. 1) CALL lsQUIT('nbast<1 in LSlib_get_twoElectron_gradient',lupri)
@@ -851,20 +753,7 @@ DO idmat=1,ndrhs
   call mat_set_from_full(DRHS(:,:,idmat),1E0_realk,DmatRHS(idmat)%p)
 ENDDO
 
-IF (ls%setting%scheme%densfit) THEN
-  DO idmat=1,ndrhs
-    write(Filename,'(A8,I3)') 'LSCALPHA',idmat
-    INQUIRE(file=Filename,exist=coeff)
-    IF (.not.coeff) &
-  &  CALL lsQUIT('Error in LSlib_get_twoElectron_gradient. No fitting coefficients CALPHA on file',-1)
-    call io_add_filename(ls%setting%io,Filename,lupri)
-  ENDDO
-ENDIF
-
 IF (present(testElectrons)) ls%setting%scheme%dft%testNelectrons = testElectrons
-
-!Hack to make II_get_J_gradient to work (after call to LSlib_get_Coulomb)
-IF (ls%setting%scheme%densfit) ls%setting%scheme%MATRICESINMEMORY = .FALSE.
 
 CALL II_get_twoElectron_gradient(eeGrad,nAtoms,DmatLHS,DmatRHS,ndlhs,ndrhs,ls%setting,lupri,luerr)
 
@@ -875,10 +764,6 @@ ENDDO
 DO idmat=1,ndrhs
   call mat_free(DmatRHS(idmat)%p)
 ENDDO
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_twoElectron_gradient
 
@@ -895,8 +780,6 @@ END SUBROUTINE LSlib_get_twoElectron_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_xc_gradient(exGrad,Dmat,nbast,nAtoms,lupri,luerr,testElectrons)
-use configurationTYPE, only: configitem
-use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -905,24 +788,17 @@ use matrix_operations
 use integralinterfaceMod
 use memory_handling
 use II_XC_interfaceModule
+use lslib_state
 implicit none
 Integer,intent(IN)      :: nAtoms,lupri,luerr,nbast
 Real(realk),intent(OUT) :: exGrad(3,nAtoms)
 Real(realk),intent(IN)  :: DMAT(nbast,nbast)
 Logical,optional        :: testElectrons
 !
-type(lsitem)     :: ls
-type(matrix)     :: D
-type(configItem) :: config
-integer          :: nbasis
-logical          :: doDFT
+type(matrix) :: D
+logical      :: doDFT,testNel_save
 
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-doDFT = config%opt%calctype.EQ.config%opt%dftcalc
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.TRUE.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_xc_gradient error: LSlib not initialized',lupri)
 IF (nbast.lt. 1) CALL lsQUIT('nbast<1 in LSlib_get_xc_gradient',lupri)
 IF (nAtoms.lt. 1) CALL lsQUIT('nAtoms<1 in LSlib_get_xc_gradient',lupri)
 IF (nbasis.ne.nbast) CALL lsQUIT('nbasis .NE. nbast in LSlib_get_xc_gradient',lupri)
@@ -930,17 +806,20 @@ IF (nbasis.ne.nbast) CALL lsQUIT('nbasis .NE. nbast in LSlib_get_xc_gradient',lu
 call mat_init(D,nbast,nbast)
 call mat_set_from_full(DMAT,1E0_realk,D)
 
-IF (present(testElectrons)) ls%setting%scheme%dft%testNelectrons = testElectrons
+IF (present(testElectrons)) THEN
+  testNel_save = ls%setting%scheme%dft%testNelectrons
+  ls%setting%scheme%dft%testNelectrons = testElectrons
+ENDIF
 
 !Calculate the exchange-correlation gradient
+doDFT = LSlibconfig%opt%calctype.EQ.LSlibconfig%opt%dftcalc
 IF (doDFT) THEN
   CALL II_get_xc_geoderiv_molgrad(lupri,luerr,ls%setting,nbast,D,exGrad,natoms)
 ENDIF
 
-call mat_free(D)
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
+IF (present(testElectrons)) THEN
+  ls%setting%scheme%dft%testNelectrons = testNel_save
+ENDIF
 
 END SUBROUTINE LSlib_get_xc_gradient
 
@@ -960,8 +839,6 @@ END SUBROUTINE LSlib_get_xc_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_J_gradient(coulombGrad,DLHS,DRHS,nbast,ndlhs,ndrhs,nAtoms,lupri,luerr)
-use configurationTYPE, only: configitem
-use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -970,26 +847,20 @@ use matrix_operations
 use integralinterfaceMod
 use memory_handling
 use io
+use lslib_state
 implicit none
 Integer,intent(IN)        :: nAtoms,lupri,luerr,nbast,ndlhs,ndrhs
 Real(realk),intent(INOUT) :: coulombGrad(3,nAtoms)
 Real(realk),intent(IN)    :: DLHS(nbast,nbast,ndlhs)
 Real(realk),intent(IN)    :: DRHS(nbast,nbast,ndrhs)
 !
-type(lsitem)        :: ls
 type(matrixp)       :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 type(matrix),target :: DtargetLHS(ndlhs),DtargetRHS(ndrhs)
-integer             :: idmat,nbasis
-type(configItem)    :: config
+integer             :: idmat
 Character(80)       :: Filename
 Logical             :: coeff
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_J_gradient error: LSlib not initialized',lupri)
 IF (ndlhs.lt. 1) CALL lsQUIT('ndlhs<1 in LSlib_get_J_gradient',lupri)
 IF (ndrhs.lt. 1) CALL lsQUIT('ndrhs<1 in LSlib_get_J_gradient',lupri)
 IF (nbast.lt. 1) CALL lsQUIT('nbast<1 in LSlib_get_J_gradient',lupri)
@@ -1009,19 +880,6 @@ DO idmat=1,ndrhs
   DmatRHS(idmat)%p => DtargetRHS(idmat)
 ENDDO
 
-IF (ls%setting%scheme%densfit) THEN
-  DO idmat=1,ndrhs
-    write(Filename,'(A8,I3)') 'LSCALPHA',idmat
-    INQUIRE(file=Filename,exist=coeff)
-    IF (.not.coeff) &
-  &  CALL lsQUIT('Error in LSlib_get_J_gradient. No fitting coefficients CALPHA on file',-1)
-    call io_add_filename(ls%setting%io,Filename,lupri)
-  ENDDO
-ENDIF
-
-!Hack to make II_get_J_gradient to work (after call to LSlib_get_Coulomb)
-IF (ls%setting%scheme%densfit) ls%setting%scheme%MATRICESINMEMORY = .FALSE.
-
 !Calculate the nuclear-electron attraction gradient
 CALL II_get_J_gradient(coulombGrad,DmatLHS,DmatRHS,ndlhs,ndrhs,ls%setting,lupri,luerr)
 
@@ -1032,10 +890,6 @@ ENDDO
 DO idmat=1,ndrhs
   call mat_free(DtargetRHS(idmat))
 ENDDO
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_J_gradient
 
@@ -1055,8 +909,6 @@ END SUBROUTINE LSlib_get_J_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_K_gradient(exchangeGrad,DLHS,DRHS,nbast,ndlhs,ndrhs,nAtoms,lupri,luerr)
-use configurationTYPE, only: configitem
-use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -1064,23 +916,18 @@ use matrix_module
 use matrix_operations
 use integralinterfaceMod
 use memory_handling
+use lslib_state
 implicit none
 Integer,intent(IN)      :: nAtoms,lupri,luerr,nbast,ndlhs,ndrhs
 Real(realk),intent(OUT) :: exchangeGrad(3,nAtoms)
 Real(realk),intent(IN)  :: DLHS(nbast,nbast,ndlhs)
 Real(realk),intent(IN)  :: DRHS(nbast,nbast,ndrhs)
 !
-type(lsitem)        :: ls
 type(matrixp)       :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 type(matrix),target :: DtargetLHS(ndlhs),DtargetRHS(ndrhs)
-integer             :: idmat,nbasis
-type(configItem)    :: config
+integer             :: idmat
 
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_K_gradient error: LSlib not initialized',lupri)
 IF (nbast.lt. 1) CALL lsQUIT('nbast<1 in LSlib_get_K_gradient',lupri)
 IF (nAtoms.lt. 1) CALL lsQUIT('nAtoms<1 in LSlib_get_K_gradient',lupri)
 IF (nbasis.ne.nbast) CALL lsQUIT('nbasis .NE. nbast in LSlib_get_K_gradient',lupri)
@@ -1109,10 +956,6 @@ DO idmat=1,ndrhs
   call mat_free(DmatRHS(idmat)%p)
 ENDDO
 
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
-
 END SUBROUTINE LSlib_get_K_gradient
 
 !> \brief Calculates the kinetic energy gradient
@@ -1128,8 +971,6 @@ END SUBROUTINE LSlib_get_K_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_kinetic_gradient(kinGrad,D,nbast,nAtoms,lupri,luerr)
-use configurationType, only: configitem
-use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -1137,24 +978,18 @@ use matrix_module
 use matrix_operations
 use integralinterfaceMod
 use memory_handling
+use lslib_state
 implicit none
 Integer,intent(IN)      :: nAtoms,lupri,luerr,nbast
 Real(realk),intent(OUT) :: kinGrad(3,nAtoms)
 Integer,parameter       :: ndmat = 1
 Real(realk),intent(IN)  :: D(nbast,nbast,ndmat)
 !
-type(lsitem)        :: ls
 type(matrixp)       :: Dmat(ndmat)
 type(matrix),target :: Dtarget(ndmat)
-integer             :: idmat,nbasis
-type(configItem)    :: config
+integer             :: idmat
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_kinetic_gradient error: LSlib not initialized',lupri)
 IF (ndmat.lt. 1) CALL lsQUIT('ndmat<1 in LSlib_get_kinetic_gradient',lupri)
 IF (nbast.lt. 1) CALL lsQUIT('nbast<1 in LSlib_get_kinetic_gradient',lupri)
 IF (nAtoms.lt. 1) CALL lsQUIT('nAtoms<1 in LSlib_get_kinetic_gradient',lupri)
@@ -1175,10 +1010,6 @@ DO idmat=1,ndmat
   call mat_free(Dmat(idmat)%p)
 ENDDO
 
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
-
 END SUBROUTINE LSlib_get_kinetic_gradient
 
 !> \brief Calculates the reorthonormalization gradient term
@@ -1195,8 +1026,6 @@ END SUBROUTINE LSlib_get_kinetic_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_reorthoNormalization(reOrtho,DFD,nbast,ndmat,nAtoms,lupri,luerr)
-use configurationType, only: configitem
-use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -1204,23 +1033,17 @@ use matrix_operations
 use matrix_module
 use integralinterfaceMod
 use memory_handling
+use lslib_state
 implicit none
 Integer,intent(IN)      :: nAtoms,lupri,luerr,nbast,ndmat
 Real(realk),intent(OUT) :: reOrtho(3,nAtoms)
 Real(realk),intent(IN)  :: DFD(nbast,nbast,ndmat)
 !
-type(lsitem)        :: ls
 type(matrixp)       :: DFDmat(ndmat)
 type(matrix),target :: DFDtarget(ndmat)
-integer             :: idmat,nbasis
-type(configItem)    :: config
+integer             :: idmat
 
-
-!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
-call config_set_default_config(config)
-call config_read_input(config,lupri,luerr)
-call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
-
+IF (.NOT.state_set) CALL LSQUIT('LSlib_get_reorthoNormalization error: LSlib not initialized',lupri)
 IF (ndmat.lt. 1) CALL lsQUIT('ndmat<1 in LSlib_get_reorthoNormalization',lupri)
 IF (nbast.lt. 1) CALL lsQUIT('nbast<1 in LSlib_get_reorthoNormalization',lupri)
 IF (nAtoms.lt. 1) CALL lsQUIT('nAtoms<1 in LSlib_get_reorthoNormalization',lupri)
@@ -1240,10 +1063,6 @@ CALL II_get_reorthoNormalization(reOrtho,DFDmat,ndmat,ls%setting,lupri,luerr)
 DO idmat=1,ndmat
   call mat_free(DFDtarget(idmat))
 ENDDO
-
-call ls_free(ls)
-call config_shutdown(config)
-call config_free(config)
 
 END SUBROUTINE LSlib_get_reorthoNormalization
 
@@ -1376,7 +1195,7 @@ ENDDO
 call mat_init(S,nbast,nbast)
 CALL II_get_overlap(lupri,luerr,setting,S)
 call mat_init(OverlapMat,nbast,nbast)
- call lsdalton_get_Overlap(Overlapmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_Overlap(Overlapmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(S,OverlapMat,'LSlib_debug: lsdalton_get_overlap',THR,lupri)
 call mat_free(S)
 call mat_free(OverlapMat)
@@ -1387,11 +1206,11 @@ call mat_init(DIPLEN(3),nbast,nbast)
 call II_get_prop(LUPRI,LUERR,SETTING,DIPLEN,3,'DIPLEN ')
 
 call mat_init(DIPLENMat,nbast,nbast)
- call lsdalton_get_XDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_XDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(DIPLEN(1),DIPLENmat,'LSlib_debug: lsdalton_get_XDIPLEN',THR,lupri)
- call lsdalton_get_YDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_YDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(DIPLEN(2),DIPLENmat,'LSlib_debug: lsdalton_get_YDIPLEN',THR,lupri)
- call lsdalton_get_ZDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_ZDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(DIPLEN(3),DIPLENmat,'LSlib_debug: lsdalton_get_ZDIPLEN',THR,lupri)
 
 call mat_free(DIPLENMat)
@@ -1465,9 +1284,9 @@ SUBROUTINE lsdalton_get_XDIPLEN(XDIPLENmat,nbast,nAtoms,Coord,Charge,BasisString
   use precision
   use Matrix_module
   use Matrix_Operations
+  use typedef
   use typedeftype
   use daltonInfo
-  use typedef
   use integralinterfaceMod
 IMPLICIT NONE
 character(len=3) :: BasisString
@@ -1516,9 +1335,9 @@ SUBROUTINE lsdalton_get_YDIPLEN(YDIPLENmat,nbast,nAtoms,Coord,Charge,BasisString
   use precision
   use Matrix_module
   use Matrix_Operations
-  use typedeftype
   use daltonInfo
   use typedef
+  use typedeftype
   use integralinterfaceMod
 IMPLICIT NONE
 character(len=3) :: BasisString
@@ -1567,9 +1386,9 @@ SUBROUTINE lsdalton_get_ZDIPLEN(ZDIPLENmat,nbast,nAtoms,Coord,Charge,BasisString
   use precision
   use Matrix_module
   use Matrix_Operations
+  use typedef
   use typedeftype
   use daltonInfo
-  use typedef
   use integralinterfaceMod
 IMPLICIT NONE
 character(len=3) :: BasisString
@@ -1632,7 +1451,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   !
   TYPE(integralconfig)   :: integral
   character(len=80) :: BasisString2
-  TYPE(BASISSETLIBRARYITEM) :: LIBRARY  
+  TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)  
   integer,pointer     :: UNIQUECHARGES(:)
   Integer             :: nbas,I,J,nUCharge
   integer(kind=ls_mpik)::ierr,mynum,nodtot
@@ -1686,20 +1505,20 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
         ENDIF
      ENDDO ATOMloop2
   ENDDO
-  LIBRARY%BASISSETNAME(1) = BasisString2
-  LIBRARY%nbasissets = 1
-  LIBRARY%nCharges(1) = nUCharge
-  LIBRARY%Charges(1,1:nUCharge) = UNIQUECHARGES(1:nUCharge)
-  LIBRARY%pointcharges = .FALSE.
-  LIBRARY%phantom = .FALSE.
+
+  call nullifyMainBasis(input%BASIS)
+  LIBRARY(RegBasParam)%BASISSETNAME = BasisString2
+  LIBRARY(RegBasParam)%nbasissets = 1
+  LIBRARY(RegBasParam)%nCharges(1) = nUCharge
+  LIBRARY(RegBasParam)%Charges(1,1:nUCharge) = UNIQUECHARGES(1:nUCharge)
+  LIBRARY(RegBasParam)%pointcharges = .FALSE.
+  LIBRARY(RegBasParam)%phantom = .FALSE.
+  LIBRARY(RegBasParam)%DunningsBasis = .TRUE.
   call mem_dealloc(UNIQUECHARGES)  
-  call Build_BASIS(LUPRI,0,input%MOLECULE,input%BASIS%REGULAR,LIBRARY,&
-       &'REGULAR  ',.FALSE.,.FALSE.,.FALSE.,.TRUE.)
-  input%BASIS%AUXILIARY%natomtypes = 0
-  input%BASIS%CABS%natomtypes = 0
-  input%BASIS%JK%natomtypes = 0
-  input%BASIS%GCtrans%natomtypes = 0
-  input%BASIS%VALENCE%natomtypes = 0
+  call Build_BASIS(LUPRI,0,input%MOLECULE,input%BASIS%BINFO(RegBasParam),LIBRARY,&
+       &'REGULAR  ',.FALSE.,.FALSE.,.FALSE.,.TRUE.,RegBasParam)
+  input%BASIS%WBASIS(RegBasParam)=.TRUE.
+
   CALL typedef_init_setting(setting)
   CALL typedef_set_default_setting(setting,input)
   setting%SCHEME%DoSpherical = .TRUE.
@@ -1712,4 +1531,3 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
 #endif
 
 end subroutine build_setting_from_scratch
-

@@ -1,0 +1,9 @@
+BASIS
+cc-pVDZ
+
+
+Atomtypes=2  Angstrom Nosymmetry
+Charge=9.0 Atoms=1
+F         -0.17632        0.11634       -1.09866
+Charge=1.0 Atoms=1
+H          0.70368        0.11634       -1.09866

@@ -241,6 +241,7 @@ do
   while [ "$step" -le "$numsteps" ]
   do
       potfile=
+      pcmfile=
       if [ "$multi" -eq 1 ]; then
           myprint "---------------------------------------------------------------------"
           myprint "  Start $item step $step of $numsteps :"
@@ -251,6 +252,7 @@ do
           fi
           molfile=$item
           if [ -r $item.pot ]; then potfile=$item ; fi
+	  if [ -r $item.pcm ]; then pcmfile=$item; fi
           cp $item'__'$step'.dal' $item'.dal'
           dalfile=$item
           logfile=./$item'__'$step'_'$item.log
@@ -260,6 +262,7 @@ do
       else
           molfile=$item
           if [ -r $item.pot ]; then potfile=$item ; fi
+	  if [ -r $item.pcm ]; then pcmfile=$item; fi
           dalfile=$item
           logfile=./$item.log
           checkfile=./$item.check
@@ -292,12 +295,27 @@ do
           failed=false
           if [ "$step" -eq "1" ]; then
 #             make sure that directory is clear before start
-              $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
-              if [ $? -ne 0 ]; then failed=true; fi
+	      if [ "x$potfile" != "x" ]; then
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile.pot > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	      elif [ "x$pcmfile" != "x" ]; then
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $pcmfile.pcm > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	      else
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile $pcmfile > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	      fi
           else
-#             copy $item.tar.gz for multistep jobs (-f option)
-              $TIMING_OF $DALTON -f $item $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
-              if [ $? -ne 0 ]; then failed=true; fi
+	      if [ "x$potfile" != "x" ]; then
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile.pot > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	      elif [ "x$pcmfile" != "x" ]; then
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $pcmfile.pcm > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	      else
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile $pcmfile > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	      fi
           fi
           grep -v '\*\*\*' $tmpfile | grep -v -i 'WARNING' | grep -v -i 'INFO'| \
           grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \

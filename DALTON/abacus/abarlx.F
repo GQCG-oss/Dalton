@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck rlxinp */
       SUBROUTINE RLXINP(WORD)
@@ -57,9 +56,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in RLXINP.'
+     *            '" not recognized for *RELAX.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in RLXINP.')
+               CALL QUIT('Illegal keyword for *RELAX.')
     1          CONTINUE
                   SKIP = .TRUE.
                GO TO 100
@@ -78,14 +77,14 @@ C
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in RLXINP.'
+     *            '" not recognized for *RELAX.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in RLXINP.')
+               CALL QUIT('Illegal prompt under *RELAX.')
             END IF
       END IF
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for RELAX:',0)
+         CALL HEADER('Changes of defaults by *RELAX:',0)
          IF (SKIP) THEN
             WRITE (LUPRI,'(A)') ' RELAX skipped in this run.'
          ELSE
@@ -276,9 +275,9 @@ C     ***** and orbital rotation matrix   *****
 C     *****************************************
 C
       IF (DOTRPL) THEN
-         CALL HESZER(SPNSD)
-         CALL HESZER(SPNFC)
-         CALL HESZER(SPSDFC)
+         CALL DZERO(SPNSD,MXCOOR*MXCOOR)
+         CALL DZERO(SPNFC,MXCOOR*MXCOOR)
+         CALL DZERO(SPSDFC,MXCOOR*MXCOOR)
          CALL DZERO(WORK(KWRKSD),9*9*NUCDEP*NUCDEP)
 #ifdef VAR_G95
 !bugfix for the G95 compiler May 2011
@@ -290,11 +289,11 @@ C
          CALL DZERO(WORK(KWRKSF),9*NUCDEP*NUCDEP)
       ELSE
          IF (POLAR)  CALL DZERO(POLARS,9)
-         IF (MOLHES) CALL HESZER(WORK(KHESRL))
+         IF (MOLHES) CALL DZERO(WORK(KHESRL),MXCOOR*MXCOOR)
          IF (DIPDER) CALL DZERO(DIP1,9*NUCDEP)
          IF (SHIELD) CALL DZERO(SIGMAR,9*NUCDEP)
          IF (SPINRO) CALL DZERO(ELSPRP,9*NUCDEP)
-         IF (SPNSPN) CALL HESZER(SPNPSO)
+         IF (SPNSPN) CALL DZERO(SPNPSO,MXCOOR*MXCOOR)
          IF (QPGRAD) CALL DZERO(SEC1,27*NUCDEP)
       END IF
       
@@ -328,8 +327,8 @@ C
             IF (NVEC .GT. 0) THEN
                CALL ABAVAR(ISYM,DOTRPL,IPRINT,WORK(KLAST),LWRK1)
                IF (IPRINT .GT. 10) THEN
-                  WRITE (LUPRI,'(1X,A,I10)') ' NCONST ', NCONST
-                  WRITE (LUPRI,'(1X,A,I10)') ' NVARPT ', NVARPT
+                  WRITE (LUPRI,'(A,I10)') '  NCONST', NCONST
+                  WRITE (LUPRI,'(A,I10)') '  NVARPT', NVARPT
                END IF
             IF (NVARPT .EQ. 0) GO TO 210
                KREL = KLAST
@@ -515,9 +514,9 @@ C
       PASS = .TRUE.
       IF (CUT) THEN
          WRITE (LUPRI,'(/A/A)')
-     &      ' Program stopped after RELAX as required.',
-     &      ' No restart file has been written.'
-         CALL QUIT(' ***** End of ABACUS (in RELAX) *****')
+     &      '@ Program stopped after RELAX as requested.',
+     &      '@ No restart file has been written.'
+         CALL QUIT(' ***** User requested end of ABACUS (in RELAX)')
       END IF
       CALL QEXIT('RELAX')
       RETURN
@@ -900,30 +899,30 @@ C
 #include "cbitrp.h"
 #include "spnout.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(SPNSD,MXCOOR*MXCOOR)
       IF (DOSD .OR. DOSDFC) THEN
          JATOM1 = 0
          DO IREP = 0, MAXREP
          DO IATOM1 = 1, NUCIND
-            IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
                JATOM1 = JATOM1 + 1
                JATOM2 = 0
                DO  IREP1 = 0, MAXREP
                DO  IATOM2 = 1, NUCIND
-                  IF (IBTAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
+                  IF (IAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
                      JATOM2 = JATOM2 + 1
                      DO ICOOR = 1, 3
-                        IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                        IREP2 = IEOR(ISYMAX(ICOOR,2),IREP)
                         ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR,IREP2,2)
                         DO JCOOR = 1, 3
-                           IREP3 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                           IREP3 = IEOR(ISYMAX(JCOOR,2),IREP1)
                            ISCOR2 = IPTCNT(3*(IATOM2-1)+JCOOR,IREP3,2)
                            IF (ISCOR1 .GT. 0 .AND. ISCOR2 .GT. 0) THEN
                               DO KCOOR = 1, 3
                                  IF (KCOOR .GT. ICOOR) THEN
-                                   IREP4 = IBTXOR(ISYMAX(KCOOR,2),IREP)
+                                   IREP4 = IEOR(ISYMAX(KCOOR,2),IREP)
                                    ISCOR3 = IPTCNT(3*(IATOM1-1)+KCOOR,
      &                                             IREP4,2)
                                    IADR1 = 3*(ISCOR3 - 1) + ICOOR
@@ -931,7 +930,7 @@ C
                                     IADR1 = 3*(ISCOR1 - 1) + KCOOR
                                  END IF
                                  IF (KCOOR .GT. JCOOR) THEN
-                                   IREP4 = IBTXOR(ISYMAX(KCOOR,2),IREP1)
+                                   IREP4 = IEOR(ISYMAX(KCOOR,2),IREP1)
                                    ISCOR3 = IPTCNT(3*(IATOM2-1)+KCOOR,
      &                                             IREP4,2)
                                    IADR2 = 3*(ISCOR3 - 1) + JCOOR
@@ -956,14 +955,14 @@ C
          DO 400 IREP = 0, MAXREP
             KATOM1 = JATOM1
             DO 500 IATOM1 = 1, NUCIND
-            IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
                JATOM1 = JATOM1 + 1
                JATOM2 = KATOM1
                DO 510 IATOM2 = 1, NUCIND
-               IF (IBTAND(IREP,ISTBNU(IATOM2)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM2)).EQ.0) THEN
                   JATOM2 = JATOM2 + 1
                   DO 520 ICOOR = 1, 3
-                     IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                     IREP2 = IEOR(ISYMAX(ICOOR,2),IREP)
                      ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR,IREP2,2)
                      ISCOR2 = IPTCNT(3*(IATOM2 - 1) + ICOOR,IREP2,2)
                      IF (ISCOR1 .GT. 0 .AND. ISCOR2 .GT. 0) THEN
@@ -980,32 +979,32 @@ C
          JATOM1 = 0
          DO 600 IREP = 0, MAXREP
          DO 610 IATOM1 = 1, NUCIND
-            IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
                JATOM1 = JATOM1 + 1
                JATOM2 = 0
                DO 615 IREP1 = 0, MAXREP
                DO 620 IATOM2 = 1, NUCIND
-                  IF (IBTAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
+                  IF (IAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
                      JATOM2 = JATOM2 + 1
                      DO 630 ICOOR = 1, 3
-                        IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                        IREP2 = IEOR(ISYMAX(ICOOR,2),IREP)
                         ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR,IREP2,2)
                         DO 640 JCOOR = 1, 3
-                           IREP3 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                           IREP3 = IEOR(ISYMAX(JCOOR,2),IREP1)
                            ISCOR2 = IPTCNT(3*(IATOM2-1)+JCOOR,IREP3,2)
                            IF (ISCOR1 .GT. 0 .AND. ISCOR2 .GT. 0) THEN
                               IF (JCOOR .GT. ICOOR) THEN
-                                 IREP4 = IBTXOR(ISYMAX(JCOOR,2),IREP)
+                                 IREP4 = IEOR(ISYMAX(JCOOR,2),IREP)
                                  ISCOR3 = IPTCNT(3*(IATOM1-1)+JCOOR,
      &                                             IREP4,2)
                                  IADR1 = 3*(ISCOR3 - 1) + ICOOR
-                                 IREP4 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                                 IREP4 = IEOR(ISYMAX(JCOOR,2),IREP1)
                                  ISCOR3 = IPTCNT(3*(IATOM2-1)+JCOOR,
      &                                           IREP4,2)
                                  IADR2 = 3*(ISCOR3 - 1) + ICOOR
                               ELSE
                                  IADR1 = 3*(ISCOR1 - 1) + JCOOR
-                                 IREP4 = IBTXOR(ISYMAX(ICOOR,2),IREP1)
+                                 IREP4 = IEOR(ISYMAX(ICOOR,2),IREP1)
                                  ISCOR3 = IPTCNT(3*(IATOM2-1)+ICOOR,
      &                                           IREP4,2)
                                  IADR2 = 3*(ISCOR3 - 1) + JCOOR

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck setaob */
       SUBROUTINE SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
@@ -37,14 +36,14 @@ C  /* Deck setaob */
 #include "symmet.h"
 #include "aobtch.h"
 #include "veclen.h" 
-#include "ibtfun.h"
+
 C
 C     Number of basis functions
 C
       NBASE  = 0
       DO K = 0, MAXREP
       DO I = 1, KMAXTOT
-         IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
+         IF (IAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
       END DO
       END DO
 C
@@ -461,12 +460,12 @@ C  /* Deck mltcmp */
 #include "maxorb.h"
 #include "mxcent.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       MLTCMP = 0
       DO ICMPA = 1, KHKTA
-         IPARA = IBTXOR(IREPA,ISYMAO(NHKTA,ICMPA))
-         IF (IBTAND(MULA,IPARA) .EQ. 0) MLTCMP = MLTCMP + 1
+         IPARA = IEOR(IREPA,ISYMAO(NHKTA,ICMPA))
+         IF (IAND(MULA,IPARA) .EQ. 0) MLTCMP = MLTCMP + 1
       END DO
 C
       RETURN

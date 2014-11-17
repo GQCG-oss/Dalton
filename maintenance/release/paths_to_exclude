@@ -1,3 +1,4 @@
+LSDALTON/cdash-recipes
 LSDALTON/test/rsp_properties
 LSDALTON/test/lsdaltonsrc/numerical_derivatives.F90
 LSDALTON/test/LSint/LSDALTON_uncontAObatch
@@ -30,6 +31,9 @@ LSDALTON/test/pbc2/pbc2_h2SCF_iter1
 LSDALTON/test/pbc2/pbc2_h2STO6G
 LSDALTON/doc_LSDALTON/TODO_BEFORE_RELEASE2013
 LSDALTON/deccc/dec_readme
+LSDALTON/deccc/cc_debug_routines
+LSDALTON/interest
+LSDALTON/test/LSint/interest
 DALTON/Doc_cc
 DALTON/test/cc3_findiff
 DALTON/test/cc3_h2o_resid_noddy
@@ -43,3 +47,6 @@ external/gen1int/.git
 external/xcfun/.git
 external/pelib/.git
 external/ls-matrix-defop/.git
+basis/cc-pVTZ_apra
+LSDALTON/IchorIntegrals/*
+DALTON/test/nonconverted_runtests

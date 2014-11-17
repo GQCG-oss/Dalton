@@ -587,20 +587,29 @@ publisher  ={The Royal Society of Chemistry},
 
 
 % DFT dispersion
-@article{dft-disp:Grimme1,
-   author = {S.~Grimme},
-   journal = jcc,
-   volume =  25,
-   pages = 1463,
-   year = 2004 }
+@article{dft:dftd2,
+        author = {S. Grimme},
+        title = {},
+        journal = jcc,
+        volume =  27,
+        pages = 1787,
+        year =  2006}
 
-@article{dft-disp:Grimme2,
-   author = {S.~Grimme},
-   journal = jcc,
-   volume =  27,
-   pages = 1787,
-   year = 2006 }
+@article{dft:dftd3,
+        author = {S. Grimme and J. Antony and S. Ehrlich and H. Krieg},
+        title = {},
+        journal = jcp,
+        volume =  132,
+        pages = 154104,
+        year =  2010}
 
+@article{dft:dftd3bj,
+        author = {S. Grimme and S. Ehrlich and L. Goerigk},
+        title = {},
+        journal = jcc,
+        volume =  32,
+        pages = 1456,
+        year =  2011}
 
 @article{McMurchie1978,
 author = {L E McMurchie and E R Davidson},
@@ -1041,9 +1050,47 @@ volume = {6},
 year = {2010}
 }
 
+@article{ADMM:2014,
+abstract = {Three new variants of the auxiliary-density-matrix method (ADMM) of Guidon, Hutter, and Vande-Vondele [J. Chem. Theory Comput. 6, 2348 (2010)] are presented with the common feature that they have a simplified constraint compared with the full orthonormality requirement of the earearlier
+ADMM1 method. All ADMM variants are tested for accuracy and performance in all-electron B3LYP calculations with several commonly used basis sets. The effect of the choice of the exchange functional for the ADMM exchange-correction term is also investigated.},
+author = {Merlot, Patrick and Izs'ak, R\'obert and Borgoo, Alex and Kj{\ae}rgaar, Thomas and Helgaker, Trygve and Reine, Simen},
+doi = {10.1063/1.4894267},
+journal = {Journal of Chemical Physics},
+keywords = {ADMM},
+month = aug,
+pages = {094104},
+publisher = {AIP Publishing},
+title = {Charge-constrained auxiliary-density-matrix methods for the Hartree-Fock exchange contribution},
+url = {http://dx.doi.org/10.1063/1.4894267},
+volume = {141},
+year = {2014}
+}
+
 @BOOK{MEST,
    AUTHOR="T. Helgaker and P. J{\o}rgensen and J. Olsen",
    TITLE="Molecular Electronic Structure Theory, First Edition",
    publisher = "Wiley",
    YEAR=2000}
 
+@Misc{PCMSolver,
+  Note                     = {\texttt{PCMSolver}, an Application Programming Interface for the Polarizable Continuum Model electrostatic problem, written by R. Di Remigio, L. Frediani and K. Mozgawa, (see http://pcmsolver.github.io/pcmsolver-doc)},
+
+  Owner                    = {roberto},
+  Timestamp                = {2012.08.21}
+}
+
+@Article{Tomasi2005,
+  Title                    = {{Quantum Mechanical Continuum Solvation Models}},
+  Author                   = {{T}omasi, {J}acopo and {M}ennucci, {B}enedetta and {C}ammi, {R}oberto},
+  Journal                  = {{C}hem. {R}ev.},
+  Year                     = {2005},
+  Number                   = {8},
+  Pages                    = {2999--3094},
+  Volume                   = {105},
+
+  Doi                      = {10.1021/cr9904009},
+  Eprint                   = {http://pubs.acs.org/doi/pdf/10.1021/cr9904009},
+  File                     = {:/home/roberto/Papers/Tomasi2005.pdf:PDF;Tomasi2005.pdf:Papers/Tomasi2005.pdf:PDF},
+  Owner                    = {Roberto Di Remigio},
+  Timestamp                = {12.08.2011}
+}

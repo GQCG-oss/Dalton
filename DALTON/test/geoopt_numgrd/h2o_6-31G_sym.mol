@@ -1,0 +1,10 @@
+BASIS
+6-31G
+MP2 geometry optimization using numerical gradients
+
+Generators=2 X     Y Atomtypes=2
+Charge=1.0 Atoms=1
+H1        0.00000000    -1.44761450     1.07875057
+Charge=8.0 Atoms=1
+O         0.00000000     0.00000000    -0.13594222
+H2        0.00000000     1.44761450     1.07875057

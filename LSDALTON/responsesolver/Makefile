@@ -10,6 +10,7 @@ INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../SolverUtilities
 F90_OBJS = \
         rsp_complex.o \
         rsp_cmplx_sym.o\
+        rsp_cmplx_sym_new.o\
         rsp_solver.o    \
         rsp_std_sym.o  
 

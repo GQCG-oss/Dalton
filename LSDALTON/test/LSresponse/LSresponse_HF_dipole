@@ -50,9 +50,11 @@ cat > LSresponse_HF_dipole.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.ARH DAVID                                                                                       
+.ARH DAVID
 .CONVDYN
 TIGHT
+**RESPONSE
+*DIPOLE
 *END OF INPUT  
 %EOF%
 #######################################################################

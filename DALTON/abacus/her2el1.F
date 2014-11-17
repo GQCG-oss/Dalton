@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck c1driv */
       SUBROUTINE C1DRIV(HERINT,INDHER,HCINT,COEF12,CONT1,CONT2,
@@ -45,7 +44,7 @@ C
      &          COEF12(*), CONT1(*),  CONT2(*), INDHSQ(*), IODDHR(*),
      &          LMNV12(*), IODD12(KCKT12,2),
      &          NPNT12(*), NRED12(*), WORK(LWORK)
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C1DRIV','*',103)
 C
@@ -265,7 +264,7 @@ C
                IF (DIAG12) MAX2 = ICOMP1
                DO 620 ICOMP2 = 1, MAX2
                   ICMP12 = ICMP12 + 1
-                  IODD = IBTXOR(IODD12(ICMP12,2),IHCSYM(IHCINT))
+                  IODD = IEOR(IODD12(ICMP12,2),IHCSYM(IHCINT))
                   DO 630 TUV = 1, MTUV34
                   IF (IODDHR(TUV) .EQ. IODD) THEN
                      WRITE (LUPRI,'(/,1X,A,I3,1X,A,2I3,1X,A,I3)' )
@@ -327,7 +326,7 @@ C
       DATA INCDPT/2, 0, 0, 0, 2, 0, 0, 0, 2/
       DATA ITYDPT/5, 1, 1, 1, 5, 1, 1, 1, 5/
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C10INT','*',103)
       IF (DPTINT) ECOFAC = DP25 * ALPHAC ** 2
@@ -380,9 +379,9 @@ C
                MAXT = L1 + L2
                MAXU = M1 + M2
                MAXV = N1 + N2
-               MINT = IBTAND(MAXT,INCRMT - 1)
-               MINU = IBTAND(MAXU,INCRMU - 1)
-               MINV = IBTAND(MAXV,INCRMV - 1)
+               MINT = IAND(MAXT,INCRMT - 1)
+               MINU = IAND(MAXU,INCRMU - 1)
+               MINV = IAND(MAXV,INCRMV - 1)
                IF (IPRINT .GE. 10) THEN
                   WRITE (LUPRI,'(1X,A,2I5)')'ICOMP1/2: ',ICOMP1,ICOMP2
                   WRITE (LUPRI,'(1X,A,3I5)')'L/M/N1:',L1,M1,N1
@@ -546,7 +545,7 @@ C
      &          LMNV12(KCKMX,5,2), IODD12(KCKT12,2), KODD12(KCKT12,2),
      &          SCR1(*), SCR2(*), CONT1(*), CONT2(*),
      &          NPCO1(*), NPCO2(*), NUCS12(*), NPNT12(*), NRED12(*)
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C1EINT','*',103)
 C
@@ -566,7 +565,7 @@ C
             JOFFEX(IHCINT) = 2
             JOFFEY(IHCINT) = 1
             JOFFEZ(IHCINT) = 1
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,1)
+            IHCSYM(IHCINT) = IAND(IHRSYM,1)
             IHCADR(3) = IHCINT
          END IF
          IF (DHCEX2) THEN
@@ -574,7 +573,7 @@ C
             JOFFEX(IHCINT) = 3
             JOFFEY(IHCINT) = 1
             JOFFEZ(IHCINT) = 1
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,1)
+            IHCSYM(IHCINT) = IAND(IHRSYM,1)
             IHCADR(4) = IHCINT
          END IF
          JENDAT(ICOOR) = IHCINT
@@ -593,7 +592,7 @@ C
             JOFFEX(IHCINT) = 1
             JOFFEY(IHCINT) = 2
             JOFFEZ(IHCINT) = 1
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,2)
+            IHCSYM(IHCINT) = IAND(IHRSYM,2)
             IHCADR(6) = IHCINT
          END IF
          IF (DHCEY2) THEN
@@ -601,7 +600,7 @@ C
             JOFFEX(IHCINT) = 1
             JOFFEY(IHCINT) = 3
             JOFFEZ(IHCINT) = 1
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,2)
+            IHCSYM(IHCINT) = IAND(IHRSYM,2)
             IHCADR(7) = IHCINT
          END IF
          JENDAT(ICOOR) = IHCINT
@@ -620,7 +619,7 @@ C
             JOFFEX(IHCINT) = 1
             JOFFEY(IHCINT) = 1
             JOFFEZ(IHCINT) = 2
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,4)
+            IHCSYM(IHCINT) = IAND(IHRSYM,4)
             IHCADR(9) = IHCINT
          END IF
          IF (DHCEZ2) THEN
@@ -628,7 +627,7 @@ C
             JOFFEX(IHCINT) = 1
             JOFFEY(IHCINT) = 1
             JOFFEZ(IHCINT) = 3
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,4)
+            IHCSYM(IHCINT) = IAND(IHRSYM,4)
             IHCADR(10) = IHCINT
          END IF
          JENDAT(ICOOR) = IHCINT
@@ -667,8 +666,8 @@ C
             WRITE (LUPRI,'(1X,A,I5)') ' ICOOR ', ICOOR
          END IF
          DO 110 I = 1, KCKT12
-            KODD12(I,1) = IBTXOR(IODD12(I,1),IHCSYM(IHCINT))
-            KODD12(I,2) = IBTXOR(IODD12(I,2),IHCSYM(IHCINT))
+            KODD12(I,1) = IEOR(IODD12(I,1),IHCSYM(IHCINT))
+            KODD12(I,2) = IEOR(IODD12(I,2),IHCSYM(IHCINT))
   110    CONTINUE
          ICMP12 = 0
          DO 200 ICOMP1 = 1, KCKT1
@@ -689,9 +688,9 @@ C
                MAXT = L1 + L2 + INCMXT(ICOOR)
                MAXU = M1 + M2 + INCMXU(ICOOR)
                MAXV = N1 + N2 + INCMXV(ICOOR)
-               MINT = IBTAND(MAXT,INCRMT - 1)
-               MINU = IBTAND(MAXU,INCRMU - 1)
-               MINV = IBTAND(MAXV,INCRMV - 1)
+               MINT = IAND(MAXT,INCRMT - 1)
+               MINU = IAND(MAXU,INCRMU - 1)
+               MINV = IAND(MAXV,INCRMV - 1)
                IF (IPRINT .GE. 10) THEN
                   WRITE (LUPRI,'(1X,A,2I5)')'ICOMP1/2:',ICOMP1,ICOMP2
                   WRITE (LUPRI,'(1X,A,3I5)')'L/M/N1:',L1,M1,N1
@@ -814,7 +813,7 @@ C
      &          LMNV12(KCKMX,5,2), IODD12(KCKT12,2),KODD12(KCKT12,2),
      &          NPCO1(*), NPCO2(*), NUCS12(*), NPNT12(*), NRED12(*)
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from COOINT','*',103)
       ECOFAC = DP5*ALPHAC**2
@@ -825,9 +824,9 @@ C
       IHCADR(1) = 1
       IHCADR(2) = 2 
       IHCADR(3) = 3 
-      IHCSYM(1) = IBTAND(IHRSYM,1)
-      IHCSYM(2) = IBTAND(IHRSYM,2)
-      IHCSYM(3) = IBTAND(IHRSYM,4)
+      IHCSYM(1) = IAND(IHRSYM,1)
+      IHCSYM(2) = IAND(IHRSYM,2)
+      IHCSYM(3) = IAND(IHRSYM,4)
 C
       INCRMT = I120X + 1
       INCRMU = I120Y + 1
@@ -854,9 +853,9 @@ C
             MAXT = MAXT0 + 1 
             MAXU = MAXU0 
             MAXV = MAXV0 
-            MINT = IBTAND(MAXT,INCRMT - 1)
-            MINU = IBTAND(MAXU,INCRMU - 1)
-            MINV = IBTAND(MAXV,INCRMV - 1)
+            MINT = IAND(MAXT,INCRMT - 1)
+            MINU = IAND(MAXU,INCRMU - 1)
+            MINV = IAND(MAXV,INCRMV - 1)
             DO V = MINV, MAXV, INCRMV
             DO U = MINU, MAXU, INCRMU
             DO T = MINT, MAXT, INCRMT
@@ -903,9 +902,9 @@ C
             MAXT = MAXT0 
             MAXU = MAXU0 + 1 
             MAXV = MAXV0 
-            MINT = IBTAND(MAXT,INCRMT - 1)
-            MINU = IBTAND(MAXU,INCRMU - 1)
-            MINV = IBTAND(MAXV,INCRMV - 1)
+            MINT = IAND(MAXT,INCRMT - 1)
+            MINU = IAND(MAXU,INCRMU - 1)
+            MINV = IAND(MAXV,INCRMV - 1)
             DO V = MINV, MAXV, INCRMV
             DO U = MINU, MAXU, INCRMU
             DO T = MINT, MAXT, INCRMT
@@ -952,9 +951,9 @@ C
             MAXT = MAXT0 
             MAXU = MAXU0
             MAXV = MAXV0 + 1
-            MINT = IBTAND(MAXT,INCRMT - 1)
-            MINU = IBTAND(MAXU,INCRMU - 1)
-            MINV = IBTAND(MAXV,INCRMV - 1)
+            MINT = IAND(MAXT,INCRMT - 1)
+            MINU = IAND(MAXU,INCRMU - 1)
+            MINV = IAND(MAXV,INCRMV - 1)
             DO V = MINV, MAXV, INCRMV
             DO U = MINU, MAXU, INCRMU
             DO T = MINT, MAXT, INCRMT
@@ -1001,7 +1000,7 @@ C           ====================
 C
             IF (SPHR12) THEN
                DO IX = 1, 3
-                  JODD12 = IBTXOR(IODD12(ICMP12,1),IHCSYM(IX))
+                  JODD12 = IEOR(IODD12(ICMP12,1),IHCSYM(IX))
                   CALL C1CONT(HCPRIM(1,1,IX),HCCONT(1,1,ICMP12,IX),
      &                        CONT1,CONT2,
      &                        SCR1,SCR2,IODDHR,JODD12,NTUV34,
@@ -1009,7 +1008,7 @@ C
                END DO
             ELSE
                DO IX = 1, 3
-                  JODD12 = IBTXOR(IODD12(ICMP12,1),IHCSYM(IX))
+                  JODD12 = IEOR(IODD12(ICMP12,1),IHCSYM(IX))
                   CALL C1CONT(HCPRIM(1,1,IX),HCINT(1,1,ICMP12,IX),
      &                        CONT1,CONT2,
      &                        SCR1,SCR2,IODDHR,JODD12,NTUV34,
@@ -1025,8 +1024,8 @@ C
          IF (SPHR12) THEN
             DO IX = 1, 3
                DO I = 1, KCKT12
-                  KODD12(I,1) = IBTXOR(IODD12(I,1),IHCSYM(IX))
-                  KODD12(I,2) = IBTXOR(IODD12(I,2),IHCSYM(IX))
+                  KODD12(I,1) = IEOR(IODD12(I,1),IHCSYM(IX))
+                  KODD12(I,2) = IEOR(IODD12(I,2),IHCSYM(IX))
                END DO
                CALL C1SPHR(HCCONT(1,1,1,IX),HCINT(1,1,1,IX),HCSINT,
      &                     CSP(ISPADR(NHKT1)),CSP(ISPADR(NHKT2)),

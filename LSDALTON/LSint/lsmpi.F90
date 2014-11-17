@@ -2,7 +2,7 @@ module lsmpi_mod
   use precision
   use lsmpi_type
   use lsmpi_op
-  use Integralparameters
+  use LSparameters
   use memory_handling
   use typedefType
   use typedef
@@ -66,6 +66,11 @@ CALL LS_GETTIM(t1,t2)
     IF (AO3.EQ.AOPcharge) nAtomsC_full = setting%molecule(3)%p%nAtoms
     IF (AO4.EQ.AOPcharge) nAtomsD_full = setting%molecule(4)%p%nAtoms
       
+    IF (AO1.EQ.AOelField) nAtomsA_full = setting%molecule(1)%p%nAtoms
+    IF (AO2.EQ.AOelField) nAtomsB_full = setting%molecule(2)%p%nAtoms
+    IF (AO3.EQ.AOelField) nAtomsC_full = setting%molecule(3)%p%nAtoms
+    IF (AO4.EQ.AOelField) nAtomsD_full = setting%molecule(4)%p%nAtoms
+      
     !Specify if auxiliary basis sets are used for left- or right-hand side, used when building fragments
     tasks%lhs_aux = AO1.EQ.AOdfdefault.OR.AO2.EQ.AOdfdefault
     tasks%rhs_aux = AO3.EQ.AOdfdefault.OR.AO4.EQ.AOdfdefault
@@ -96,6 +101,7 @@ CALL LS_GETTIM(t1,t2)
       tasks%target_nrhs = min(target_ntasks,natomsRHS)
       tasks%target_nlhs = 1
       IF (natomsRHS.LT.target_ntasks) tasks%target_nlhs = natomsLHS
+      IF (natomsLHS.EQ.0) tasks%target_nlhs=1
     ELSE IF ((AO1.EQ.AORdefault).AND.(AO2.EQ.AORdefault)) THEN
       tasks%target_nlhs = min(target_ntasks,natomsLHS)
       tasks%target_nrhs = 1
@@ -1057,7 +1063,7 @@ ENDIF
         IF (min_dev.EQ.-1) THEN
           write(lupri,*) 'Error in ls_time_tasks. Deviation too large'
           write(lupri,*) 'timeMatrix',natoms_row,natoms_col,ntasks
-          call output(timeMatrix,1,natoms_row,1,natoms_col,natoms_row,natoms_col,1,lupri)
+          call ls_output(timeMatrix,1,natoms_row,1,natoms_col,natoms_row,natoms_col,1,lupri)
           CALL LSQUIT('Error in ls_time_tasks. Deviation too large',lupri)
         ELSE
 IF (iprint.GT.10) THEN
@@ -1251,16 +1257,21 @@ ENDIF
         nAtoms(iAO) = 1
         noPart(iAO) = .TRUE.
       ELSE IF (AO(iAO).EQ.AOdfAux) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%AUXILIARY
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
       ELSE IF (AO(iAO).EQ.AORegular) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%REGULAR
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
       ELSE IF (AO(iAO).EQ.AOVAL) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%VALENCE
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
       ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%CABS
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
       ELSE IF (AO(iAO).EQ.AOdfJK) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%JK
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
+      ELSE IF (AO(iAO).EQ.AOadmm) THEN
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
       ELSE IF (AO(iAO).EQ.AOpCharge) THEN
+        nAtoms(iAO) = mol(iAO)%p%nAtoms
+        noPart(iAO) = .TRUE.
+      ELSE IF (AO(iAO).EQ.AOelField) THEN
         nAtoms(iAO) = mol(iAO)%p%nAtoms
         noPart(iAO) = .TRUE.
       ELSE IF (AO(iAO).EQ.AONuclear) THEN
@@ -1696,16 +1707,21 @@ DO iAO=1,4
     nAtoms(iAO) = 1
     noPart(iAO) = .TRUE.
   ELSE IF (AO(iAO).EQ.AOdfAux) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%AUXILIARY
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
   ELSE IF (AO(iAO).EQ.AORegular) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%REGULAR
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
   ELSE IF (AO(iAO).EQ.AOVAL) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%VALENCE
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
   ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%CABS
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
   ELSE IF (AO(iAO).EQ.AOdfJK) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%JK
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
+  ELSE IF (AO(iAO).EQ.AOadmm) THEN
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
   ELSE IF (AO(iAO).EQ.AOpCharge) THEN
+    nAtoms(iAO) = mol(iAO)%p%nAtoms
+    noPart(iAO) = .TRUE.
+  ELSE IF (AO(iAO).EQ.AOelField) THEN
     nAtoms(iAO) = mol(iAO)%p%nAtoms
     noPart(iAO) = .TRUE.
   ELSE IF (AO(iAO).EQ.AONuclear) THEN
@@ -2033,7 +2049,7 @@ ELSE
     ALLOCATE(Setting%fragment(aoA)%p)
   ENDIF
   CALL BUILD_FRAGMENT(Setting%molecule(aoA)%p,Setting%fragment(aoA)%p,&
-     &                Setting%basis(aoA)%p,aux,cabs,jk,task%row_atoms,task%nrow,lupri)
+     &                Setting%basis(aoA)%p,task%row_atoms,task%nrow,lupri)
   Setting%fragBuild(aoA) = .TRUE.
 ENDIF
 
@@ -2053,7 +2069,7 @@ ELSE
     ALLOCATE(Setting%fragment(aoB)%p)
   ENDIF
   CALL BUILD_FRAGMENT(Setting%molecule(aoB)%p,Setting%fragment(aoB)%p,&
-     &                Setting%basis(aoB)%p,aux,cabs,jk,task%col_atoms,task%ncol,lupri)
+     &                Setting%basis(aoB)%p,task%col_atoms,task%ncol,lupri)
   Setting%fragBuild(aoB) = .TRUE.
 ENDIF
 
@@ -2113,12 +2129,14 @@ ELSE
       ELSE
         iatomfull = task%row_atoms(iatom)
       ENDIF
-      IF ((AOA.EQ.AOdfAux).OR.(AOA.EQ.AOdfCABS).OR.(AOA.EQ.AOdfJK)) THEN
+      IF ((AOA.EQ.AOdfAux).OR.(AOA.EQ.AOdfCABS).OR.(AOA.EQ.AOdfJK).OR.(AOA.EQ.AOadmm)) THEN
         nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsAux(iatomfull)
       ELSE IF ((AOA.EQ.AORegular).OR.(AOA.EQ.AOVAL)) THEN
         nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsReg(iatomfull)
       ELSE IF (AOA.EQ.AOpCharge) THEN
         nbastA = nbastA + 1
+      ELSE IF (AOA.EQ.AOelField) THEN
+        nbastA = nbastA + 3
       ELSE
         CALL LSQUIT('Error in getTaskDimension. Not an implemented AOA option',lupri)
       ENDIF
@@ -2141,10 +2159,12 @@ ELSE
       ENDIF
       IF ((AOB.EQ.AORegular).OR.(AOB.EQ.AOVAL)) THEN
         nBastB = nBastB + orbInfo(iB)%numAtomicOrbitalsReg(iatomfull)
-      ELSE IF ((AOB.EQ.AOdfAux).OR.(AOB.EQ.AOdfCABS).OR.(AOB.EQ.AOdfJK)) THEN
+      ELSE IF ((AOB.EQ.AOdfAux).OR.(AOB.EQ.AOdfCABS).OR.(AOB.EQ.AOdfJK).OR.(AOB.EQ.AOadmm)) THEN
         nBastB = nBastB + orbInfo(iB)%numAtomicOrbitalsAux(iatomfull)
       ELSE IF (AOB.EQ.AOpCharge) THEN
         nbastB = nbastB + 1
+      ELSE IF (AOB.EQ.AOelField) THEN
+        nbastB = nbastB + 3
       ELSE
         CALL LSQUIT('Error in getTaskDimension. Not an implemented AOB option',lupri)
       ENDIF

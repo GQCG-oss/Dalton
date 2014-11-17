@@ -159,7 +159,7 @@ ERROR[8]="THIRD ITERATION NOT CORRECT"
 # geo 5  Final HF energy:   -78.306179650658 change 6.D-8
 # geo 5  Nuclear repulsion:  42.274202197306 change 2.d-4, NB! much more sensitive!
 
-TEST[9]=`$GREP "Nuclear repulsion\: * 42\.27407" $log | wc -l`
+TEST[9]=`$GREP "Nuclear repulsion\: * 42\.2740[67]" $log | wc -l`
 CTRL[9]=1
 ERROR[9]="FINAL GEOMETRY NOT CORRECT"
 

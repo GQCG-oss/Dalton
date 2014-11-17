@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck rp_rsplex */
       SUBROUTINE RP_RSPLEX(ISYMTR,NEXCI,EXVAL,LEXVAL,FOCKD,LFOCKD,
@@ -8,6 +7,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, June 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
+C     PFP & SPAS, November 2013: triplet excitation energies
 C
 C     PURPOSE: Drive the calculation and analysis of RPA excitation 
 C              energies and vectors.
@@ -23,9 +23,6 @@ C
 C
 #include "codata.h"
 #include "wrkrsp.h"
-CSPAS:15/03-2006: merge with Dalton-2.0      
-C#include <infpp.h>
-CKeinSPASmehr
 #include "inforb.h"
 #include "infpri.h"
 #include "ccsdsym.h"
@@ -99,8 +96,17 @@ C
 C
             WRITE(LUPRI,'(/1X,A)') '-------------------------------'//
      &                             '-------------------------------'
-            WRITE(LUPRI,'(A,I3,A,I3,//A,1P,G16.8,A,3(/24X,G16.8,A),/)')
-     &           ' Excitation symmetry',ISYMTR,', state no.',IEXCI,
+            IF (TRIPLET) THEN
+               WRITE(LUPRI,'(/17X,A)') 'Triplet Excitation Energies'
+            ELSE
+               WRITE(LUPRI,'(/17X,A)') 'Singlet Excitation Energies'
+            END IF
+            WRITE(LUPRI,'(/1X,A)') '-------------------------------'//
+     &                             '-------------------------------'
+            WRITE(LUPRI,'(A,I3,A,I3)')
+     &           ' Excitation symmetry',ISYMTR,', state no.',IEXCI
+C
+            WRITE(LUPRI,'(/A,1P,G16.8,A,3(/24X,G16.8,A),/)')
      &           ' RPA excitation energy :',EXVAL(IEXCI),
      &           ' au',
      &           EXVAL(IEXCI)*XTEV,  ' eV',
@@ -131,7 +137,6 @@ C        Analyse eigenvectors and write to output.
 C-------------------------------------------------
 C
             THR1 = 0.1D0
-            THR2 = 0.1D0
 C
             CALL RP_ANAL(WORK(KTR1E),WORK(KTR1D),LTR1E,THR1,ISYMTR)
 C
@@ -159,6 +164,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('RP_RSPLEX')
 C

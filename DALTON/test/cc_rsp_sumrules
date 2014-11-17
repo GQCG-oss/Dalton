@@ -123,7 +123,7 @@ CRIT2=`$GREP " 0      2.08922          2.08922          2.08922          2.08922
 CRIT3=`$GREP " 2      19.5593          19.5593          19.5593          19.5593 " $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[4]=3
-ERROR[4]="CCS LENGTH SUM RULE NOT CORRECT
+ERROR[4]="CCS LENGTH SUM RULE NOT CORRECT"
 
 
 

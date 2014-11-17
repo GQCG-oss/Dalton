@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C /* deck cc_gradient */
 C=====================================================================*
@@ -42,7 +41,7 @@ C=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -52,39 +51,30 @@ C=====================================================================*
 #include "mxcent.h"
 #include "nuclei.h"
 #include "energy.h"
-#include "taymol.h"
 #include "cch2d.h"
 #include "second.h"
 
 * local parameters:
 
-#if defined (SYS_CRAY)
-      REAL ZERO
-#else
-      DOUBLE PRECISION ZERO
-#endif
+      REAL*8 ZERO
       PARAMETER (ZERO = 0.0d0)
 
       CHARACTER*10 MODEL
       INTEGER LWORK
 
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK)
-      REAL TIM0, GRDNRM
-#else
-      DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION TIM0, GRDNRM
-#endif
+      REAL*8 WORK(LWORK)
+      REAL*8 TIM0, GRDNRM
 
       LOGICAL SYM1ONLY, LPTALSO
       INTEGER MAXDIF, IOPT
 
 * external functions
-#if defined (SYS_CRAY)
-      REAL DDOT
-#else
-      DOUBLE PRECISION DDOT
-#endif
+      REAL*8 DDOT
+
+! trkoor.h : NCOOR
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable :: GRDMOL(:), HESMOL(:,:)
 
 *---------------------------------------------------------------------*
 * print header for gradient section
@@ -215,19 +205,24 @@ C
 * calculated total gradient using ABACUS routines:
 * (uses ABACUS common block /TAYMOL/)
 *---------------------------------------------------------------------*
+      NCOOR = 3*NUCDEP ! define NCOOR in trkoor.h, used in ZERGRD, ADDGRD and ABAREAD_TAYMOL
       CALL ZERGRD
       CALL ADDGRD(GRADNN)
       CALL ADDGRD(GRADEE)
       CALL ADDGRD(GRADFS)
       CALL ADDGRD(GRADKE)
 
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL HEADER('Molecular gradient',-1)
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL PRIGRD(GRDMOL,WORK,WORK(MXCOOR*MXCOOR+1))
 
-      GRDNRM = DDOT(3*NUCDEP,GRDMOL,1,GRDMOL,1)
+      GRDNRM = DDOT(NCOOR,GRDMOL,1,GRDMOL,1)
 
       WRITE (LUPRI,'(/19X,A,1P,E10.2)')
      *   'Molecular gradient norm:', GRDNRM
+
+      deallocate ( GRDMOL, HESMOL )
 
 *---------------------------------------------------------------------*
 * print timing & return:

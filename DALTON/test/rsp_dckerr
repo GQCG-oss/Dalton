@@ -149,7 +149,7 @@ ERROR[5]="RESPONSE CALCULATION NOT CORRECT"
 CRIT1=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 207\.462(8|9)" $log | wc -l`
 CRIT2=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 214\.8152" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[6]=2
+CTRL[6]=4
 ERROR[6]="GAMMA VALUES NOT CORRECT"
 
 PASSED=1

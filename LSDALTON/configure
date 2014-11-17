@@ -162,15 +162,18 @@ case $WHICH in
     rs6000)   liblist='libessl.a libblas.a'
 	      complist='xlf f77 f90'
               compf90list='xlf90 f90'
-              ccmplist='xlc cc';;
+              ccmplist='xlc cc'
+              cxxcmplist='xlC';;
     linux)    liblist='libacml.a libmkl_p3.a libatlas.a libblas.a'
               complist='ifort ifc pgf77 gfortran'
               compf90list='ifort ifc pgf90 gfortran'
-              ccmplist='icc ecc pgcc gcc';;
+              ccmplist='icc ecpc pgcc gcc'
+              cxxcmplist='icpc ecc pgCC g++';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='gfortran gfortran-mp-4.7 gfortran-mp-4.8'
               compf90list='gfortran gfortran-mp-4.7 gfortran-mp-4.8'
-              ccmplist='gcc gcc-mp-4.7 gcc-mp-4.8';;
+              ccmplist='gcc gcc-mp-4.7 gcc-mp-4.8'
+              cxxcmplist='g++ g++-mp-4.7 g++-mp-4.8';;
 esac
 #
 if [ $WHICH = "linux" ]; then
@@ -398,6 +401,35 @@ if test -z "$CC"; then
     $ECHO   "   Cannot proceed without a C compiler in path\n"
     exit 1
 fi
+$ECHO "   Checking for C++ compiler ..."
+$ECHO "   from this list: $cxxcmplist \n\n"
+for comp in $cxxcmplist; do
+    set dummy $comp; ac_word=$2
+    IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+    for ac_dir in $PATH; do
+        test -z "$ac_dir" && ac_dir=.
+        if [ -f $ac_dir/$ac_word ]; then
+          get_yes_or_no "   $comp Compiler $ac_dir/$ac_word found, use this compiler?" y
+          if [ $answer = 'y' ]; then
+            ac_cv_prog_CXX=$ac_word
+            g2clib=`find $ac_dir/lib/ -name libg2c.a -print`
+            break
+          fi
+        fi
+    done
+    IFS="$ac_save_ifs"
+    test -z "$ac_cv_prog_CXX" && ac_cv_prog_CXX=""
+    CXX="$ac_cv_prog_CXX"
+    if test -n "$CXX"; then
+        $ECHO "\n   Compiler $CXX found and accepted.\n"
+        break
+    fi
+done
+if test -z "$CXX"; then
+    $ECHO "\n   No C++ compiler found on this computer\n"
+    $ECHO   "   Cannot proceed without a C++ compiler in path\n"
+    exit 1
+fi
 #
 # Check out mathematical libraries. May have to expand library list?
 #
@@ -425,7 +457,7 @@ for testdir in $dirlist; do
                        blas3="true";;
             libcomplib.sgimath.a) LIB='-lcomplib.sgimath'
                                   blas3='true';;
-            libmkl_p3.a) LIB="-L$mkllib -lmkl_p3 -lguide -lpthread -static"
+            libmkl_p3.a) LIB="-L$mkllib -lmkl_p3 -liomp5 -lpthread -static"
                          blas3="true";;
             lib[cd]xml.a) LIB='-ldxml'
                        blas3="true"; lapack="true"
@@ -472,6 +504,8 @@ for testdir in $dirlist; do
     fi
 done
 fi
+
+LIB="$LIB -lstdc++"
 
 #
 # Figure out list of needed numerical libraries.
@@ -688,12 +722,14 @@ case "$WHICH" in
                     cpp="-WF,-DSYS_AIX,-D'INSTALL_BASDIR=\"$INSTALL_BASDIR\"',-D$parop"
 		        set_parallel_def $mesp
                     copt="$copt -DVAR_MPI"
+                    cxxopt="$cxxopt -DVAR_MPI"
 		   fi
 #		   inc="-I${lsdalroot}/include"
                cpp=${cpp}",-DVAR_LINSCA,-DIMPLICIT_NONE"
                ;;
             esac
             copt="$copt -DSYS_AIX -D_LARGE_FILES -qlanglvl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto -q64"
+            cxxopt="$cxxopt -DSYS_AIX -D_LARGE_FILES -O3 -qarch=auto -qtune=auto -q64"
             opt='-O3 -qstrict -qarch=auto -qtune=auto -q64 -qextname'
 	      AR="$AR -X64"
 	      MAKE="gmake" # the only hope...
@@ -740,6 +776,17 @@ case "$WHICH" in
                      gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
 		 esac
 	     fi
+	     if [ $useDEBUG = "true" ]; then
+		 case $CXX in
+                     [ie]cpc) cxxopt="-Wall -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -fno-rtti -fno-exceptions -O0";;
+                     g++) cxxopt="-g -Wall -fno-rtti -fno-exceptions -O0";;
+		 esac
+	     else
+		 case $CXX in
+                     [ie]cpc) cxxopt="-Wall -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -fno-rtti -fno-exceptions -O3";;
+                     g++) cxxopt="-g -Wall -fno-rtti -fno-exceptions -O3";;
+		 esac
+	     fi
              LIB="$LIB -Vaxlib"
              #LIB="-L$g2clib -lg2c -lm $LIB"
 	     if [ $useDEBUG = "true" ]; then
@@ -752,9 +799,11 @@ case "$WHICH" in
              # vect=idiom gives 40% performance improvement on opteron (pgcc5.2).
 	     if [ $useDEBUG = "true" ]; then
 		 copt="-c9x -DRESTRICT=restrict"
+		 cxxopt="-c9x -DRESTRICT=restrict"
 		 opt=" "; safe_opt=" "
 	     else
 		 copt="-fastsse -Mvect=idiom -Munroll -c9x -DRESTRICT=restrict"
+		 cxxopt="-fastsse -Mvect=idiom -Munroll -c9x -DRESTRICT=restrict"
 		 opt="-fastsse -Munroll"; safe_opt="-fastsse"
 	     fi
              ;;
@@ -772,11 +821,13 @@ case "$WHICH" in
              cpp="$cpp -DGFORTRAN=$gfver"
 	     if [ $useDEBUG = "true" ]; then
 		 copt="$hopt -g -O0 -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -ffloat-store"
+		 cxxopt="$hopt -g -O0 -Wall -fno-rtti -fno-exceptions"
 		 opt="$hopt -g -O0 -ffloat-store"
 		 f90opt="$opt -fbounds-check -I. -x f95-cpp-input -ffloat-store -fbacktrace"
 		 safeopt="$safe_opt -ffloat-store"
 	     else
 		 copt="$hopt -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -ffloat-store"
+		 cxxopt="$hopt -g -O3 -Wall -fno-rtti -fno-exceptions"
 		 opt="$hopt -O3 -ffast-math -funroll-loops -ftree-vectorize -ffloat-store"
 		 f90opt="$opt -I. -x f95-cpp-input -ffloat-store"
 		 safeopt="$safe_opt -ffloat-store"
@@ -815,6 +866,7 @@ case "$WHICH" in
               x86_64) copt="-march=x86-64";;
                   *)  copt="-mcpu=$prc -malign-double" 
               esac
+              cxxopt="$copt -O3 -Wall -fno-rtti -fno-exceptions"
               copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
               opt="$copt -fno-globals -Wno-globals"
               copt="$copt -std=c99 -DRESTRICT=restrict"
@@ -839,12 +891,14 @@ case "$WHICH" in
                gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
                echo "gfortran version $gfver prc=$prc"
                cpp="-DVAR_GFORTRAN -DGFORTRAN=$gfver $cpp"
+               cxxopt="-O3 -Wall -fno-rtti -fno-exceptions"
                copt="-O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64"
                opt="-O3 -Wl,-framework -Wl,vecLib -ffast-math -funroll-loops -ftree-vectorize"
                f90opt="$opt -I. -x f95-cpp-input"
-#               cxx_ldflags="-lstdc++"
+               cxx_ldflags="-lstdc++"
                if [ "$mesp" != "dummy" ]; then
                   copt="$copt -D$parop"
+                  cxxopt="$cxxopt -D$parop"
                   opt="$opt -D$parop"
                   f90opt="$f90opt -D$parop"
                   def='linuxparallel.x'
@@ -874,29 +928,34 @@ if [ $useOMP = "true" ]; then
 
     case $WHICH in
     rs6000) f90opt="$f90opt -qsmp=omp"
+	    cxxopt="$cxxopt -qsmp=omp"
 	    copt="$copt -qsmp=omp"
             LIB="$LIB -L/usr/lib -lxlsmp"
             F90=$F90\_r;;
     linux)  case $F90 in
             ifort)   f90opt="$f90opt -openmp"
+          	     cxxopt="$cxxopt -openmp"
           	     copt="$copt -openmp"
                      if [ -d "$f90root/lib" ]; then
-                       LIB="$LIB -Wl,-rpath=$f90root/lib -lguide -lpthread"
+                       LIB="$LIB -Wl,-rpath=$f90root/lib -liomp5 -lpthread"
                      else
                        f90root=`dirname $f90root`;
 echo $f90root/lib/$libversion
                        if [ -d "$f90root/lib/$libversion" ]; then
-                         LIB="$LIB -Wl,-rpath=$f90root/lib/$libversion -lguide -lpthread"
+                         LIB="$LIB -Wl,-rpath=$f90root/lib/$libversion -liomp5 -lpthread"
                        else
-                        LIB="$LIB -lguide -lpthread"
+                        LIB="$LIB -liomp5 -lpthread"
                        fi
                      fi;;
             ifc)     f90opt="$f90opt -openmp"
+	             cxxopt="$cxxopt -openmp"
 	             copt="$copt -openmp"
-                     [[ -d "$f90root/lib" ]] && LIB="$LIB -Wl,-rpath=$f90root/lib -lguide -lpthread";;
+                     [[ -d "$f90root/lib" ]] && LIB="$LIB -Wl,-rpath=$f90root/lib -liomp5 -lpthread";;
             pgf90)   f90opt="$f90opt -mp"
+	             cxxopt="$cxxopt -mp"
 	             copt="$copt -mp";;
             gfortran)f90opt="$f90opt -fopenmp"
+	             cxxopt="$cxxopt -fopenmp"
 	             copt="$copt -fopenmp"
                      LIB="$LIB -lgomp";;
             esac;;
@@ -971,6 +1030,7 @@ fi
 # for safe compilers, set safe_opt to opt
 if [ -z "$safe_opt" ]; then safe_opt="$opt"; fi
 copt="$copt -DUSE_UNDERSCORES"
+cxxopt="$cxxopt -DUSE_UNDERSCORES"
 
 # leave untill we get the work version with Q5Cost
 # added by Bin Gao, Gen1Int library in linsca
@@ -1015,13 +1075,15 @@ F77            = $F77
 F90            = $F90
 FLNK           = $F90
 CC             = $CC
+CXX            = $CXX
 RM             = rm -f
 FFLAGS         = $opt
 F90OPTFLAGS    = $f90opt
 SAFEFFLAGS     = $safe_opt
 CFLAGS         = $copt
+CXXFLAGS       = $cxxopt
 INCLUDES       = $inc $parinc
-LIBS           = $LIB $ldflags
+LIBS           = $LIB $ldflags $cxx_ldflags
 INSTALLDIR     = $INSTALL_DIR
 PDPACK_EXTRAS  = $pdpackextras
 AR             = ar
@@ -1087,6 +1149,9 @@ $tab\$(RM) \$*.f
 
 .c.o:
 $tab\$(CC) \$(CFLAGS) -c \$*.c
+
+.cxx.o:
+$tab\$(CXX) \$(CXXFLAGS) -c \$*.cxx
 EOF
       else cat <<EOF>> Makefile.config
 #
@@ -1122,6 +1187,9 @@ $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F
 
 .c.o:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c
+
+.cpp.o:
+$tab\$(CXX) \$(INCLUDES) \$(CPPFLAGS) \$(CXXFLAGS) -c \$*.cpp
 EOF
 fi
 #

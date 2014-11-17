@@ -49,7 +49,7 @@ C    I = IJLIST(1,ij)
 C    J = IJLIST(2,ij)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IJLIST(2,NIJ)
       DIMENSION VWMAT(N2BASX,2,NIJ), CMO(NCMOT), WORK(*)
 C
@@ -57,9 +57,9 @@ C Used from common blocks:
 C  INFINP : DIRFCK
 C  INFORB : N2BASX, NCMOT
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
 C
 C Local arrays:
 C
@@ -140,7 +140,7 @@ C These will in subroutine SCA_F2VW be recombined to give:
 C VIJ(a,b) = <IJ || ab> and WIJ(a,b) = <Ia || Jb>.
 #endif
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DMAT(N2BASX,2), ISYMDM(2), IFCTYP(2), CMO(NCMOT)
       PARAMETER (DM2 = -2.0D0)
 C
@@ -148,10 +148,10 @@ C Used from common blocks:
 C  INFORB : MULD2H(), N2BASX, NCMOT, ICMO(),NBAS()
 C  INFIND : ISMO()
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
 C
       IF (I .EQ. J) THEN
 C        DMAT(a,b,*) = CMO(a,I)*CMO(b,I) = DMAT(b,a,*)
@@ -225,7 +225,7 @@ C                = FMAT(a,b,1) - FMAT(a,b,2)
 C    FMAT(a,b,2) = <IJ || ab> = (Ia | Jb) - (Ib | Ja)
 C                = FMAT(b,a,2) - FMAT(a,b,2)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FMAT(NBAST,NBAST,2,NFMAT)
 C
@@ -234,7 +234,7 @@ C
 C Used from common blocks:
 C  INFORB : NBAST
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DO IFMAT = 1,NFMAT
 C

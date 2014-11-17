@@ -156,29 +156,29 @@ fi
 #            1 ^1B3u      -14.4110366607
 #            1 ^1B2u      -14.4110366607
 #
-CRIT1=`$GREP "Total MP2-R12/B energy: *\-14\.6317815120" $log | wc -l`
+CRIT1=`$GREP "Total MP2-R12/B energy: *\-14\.6317815110" $log | wc -l`
 TEST[1]=`expr $CRIT1` 
 CTRL[1]=2
 ERROR[1]="MP2-R12/B ENERGY NOT CORRECT"
 
-CRIT2=`$GREP "Total CC2-R12/B energy: *\-14\.632448840[23]" $log | wc -l`
+CRIT2=`$GREP "Total CC2-R12/B energy: *\-14\.6324488399" $log | wc -l`
 TEST[2]=`expr $CRIT2`
 CTRL[2]=2
 ERROR[2]="CC2-R12/B ENERGY NOT CORRECT"
 
-CRIT3=`$GREP "Total CCSD\(R12\)/B energy: *\-14\.6487450643" $log | wc -l`
+CRIT3=`$GREP "Total CCSD\(R12\)/B energy: *\-14\.6487450634" $log | wc -l`
 TEST[3]=`expr $CRIT3`
 CTRL[3]=2
 ERROR[3]="CCSD(R12)/B ENERGY NOT CORRECT"
 
-CRIT4=`$GREP "1Ag *\-14\.150964667" $log | wc -l`
+CRIT4=`$GREP "1Ag *\-14\.150964690" $log | wc -l`
 CRIT5=`$GREP "1B3u *\-14\.410132176" $log | wc -l`
 CRIT6=`$GREP "1B2u *\-14\.410132176" $log | wc -l`
 TEST[4]=`expr $CRIT4 + $CRIT5 + $CRIT6`
 CTRL[4]=3
 ERROR[4]="CC2-R12/B EXCITATION ENERGIES NOT CORRECT"
 
-CRIT7=`$GREP "1Ag *\-14\.170339415" $log | wc -l`
+CRIT7=`$GREP "1Ag *\-14\.170339430" $log | wc -l`
 CRIT8=`$GREP "1B3u *\-14\.411036660" $log | wc -l`
 CRIT9=`$GREP "1B2u *\-14\.411036660" $log | wc -l`
 TEST[5]=`expr $CRIT7 + $CRIT8 + $CRIT9`

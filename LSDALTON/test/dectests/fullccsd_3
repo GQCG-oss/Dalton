@@ -56,14 +56,12 @@ TRILEVEL
 **INFO
 .DEBUG_MPI_MEM
 **CC
-.DECPRINT
-3
 .CCSD
 .CCSDforce_scheme
 3
 .ccThr
 1e-7
-.Memory
+.MEMORY
 1.0
 *END OF INPUT
 %EOF%

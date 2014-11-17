@@ -2,7 +2,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -20,7 +20,6 @@
 !
 C File: sirius/sirpop.F
 C
-#include "single.h"
 C
 C  /* Deck sirpop */
       SUBROUTINE SIRPOP(INP_POPKEY,DV,WRK,LFREE_INPUT)
@@ -73,14 +72,13 @@ C
       POPKEY = INP_POPKEY
       IPRMUL_SAVE  = IPRMUL
       IPOPTYP_SAVE = IPOPTYP
+      IF (IPOPTYP .LE. 0) IPOPTYP = 1
       IF (POPKEY(1:4) .EQ. 'DIIS') THEN
-         IPOPTYP = 1
          iprmul = -lim_poppri
          DIPOLM = .false.
          QUADRM = .false.
          MULLKM = .true.
       ELSE IF (POPKEY(1:6) .EQ. 'MCITER') THEN
-         IPOPTYP = 1
          iprmul = -lim_poppri
          DIPOLM = .false.
          QUADRM = .false.
@@ -1078,8 +1076,7 @@ C
 #include "infpop.h"
 #include "infpri.h"
 C
-      DIMENSION QUPOL(6),A(6),EIVR(9),WO(3),IWO(3),ELQPOL(6),
-     1          QOPOL(6)
+      DIMENSION QUPOL(6),A(6),EIVR(9),ELQPOL(6),QOPOL(6)
 C
       LOGICAL FOUND
 C
@@ -1224,7 +1221,7 @@ C
       A(5)=QPOL(6)*1.5D0
 C
   145 CALL DUNIT(EIVR,3)
-      CALL JACO(A,EIVR,3,3,3,WO,IWO)
+      CALL JACO_THR(A,EIVR,3,3,3,0.0D0)
       A(2)=A(3)
       A(3)=A(6)
       WRITE(LUPRI,140)

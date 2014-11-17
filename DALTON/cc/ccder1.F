@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c /* deck ccder1 */
 *=====================================================================*
@@ -37,7 +36,7 @@ c /* deck ccder1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "mxcent.h"
@@ -167,30 +166,25 @@ C
 *----------------------------------------------------------------------*
 *     set buffer information.
 *----------------------------------------------------------------------*
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBAST .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
+         IBIT1 = 2**8  - 1
+         IBIT2 = 2**16 - 1
       ELSE
-         CALL QUIT('CCSORTDERAO not implemented for more '//
-     &        'than 255 functions.')
          NIBUF = 2
          NBITS = 16
+         IBIT1 = 2**16 - 1
+         IBIT2 = 0   ! not used when NIBUF .eq. 2
       END IF
-#endif
-      IBIT1 = 2**NBITS     - 1
-      IBIT2 = 2**(2*NBITS) - 1
 
       
 *----------------------------------------------------------------------*
 *     Buffer allocation.
 *----------------------------------------------------------------------*
-      KIBUF = 1
-      KRBUF = KIBUF + (NIBUF*LBUF + 1)/IRAT + 1
-      KAOAB = KRBUF + LBUF
+      KRBUF = 1
+      KIBUF = KRBUF + LBUF
+      KAOAB = KIBUF + (NIBUF*LBUF + 1)/2 + 1  ! IBUF always integer*4
       KAOG  = KAOAB + (N2BASX     + 1)/IRAT + 1
       KEND1 = KAOG  + (NBAST*NSYM*NSYM*MXCOMP + 1)/IRAT + 1
       LWRK1 = LWORK - KEND1
@@ -407,7 +401,7 @@ C
       END
 *======================================================================*
 C  /* Deck ccsortder1 */
-      SUBROUTINE CCSORTDER1(XINT,IBUF,RBUF,KAOAB,KAOGDER,ISYMD,LENGTH,
+      SUBROUTINE CCSORTDER1(XINT,IBUF4,RBUF,KAOAB,KAOGDER,ISYMD,LENGTH,
      *                      IOFF,ID1,ID2,NIBUF,LBUF,NBITS,IBIT1,ITYPE)
 *----------------------------------------------------------------------*
 C
@@ -421,12 +415,14 @@ C
 #include "dummy.h"
 #include "ibtpar.h"
 #include "ccorb.h"
-      DIMENSION XINT(LENGTH,*),IBUF(LBUF,NIBUF),RBUF(LBUF)
+      DIMENSION XINT(LENGTH,*),RBUF(LBUF)
+      INTEGER*4 IBUF4(LBUF*NIBUF), LENGTH4
+      INTEGER   INDX4(4,LBUF)
       DIMENSION KAOAB(NBAST,NBAST),KAOGDER(NBAST,NSYM,NSYM,*)
       INTEGER ITYPE
 C
 #include "inftap.h"
-#include "ibtfun.h"
+
 C
       CALL REWSPL(LU2DER)
 C
@@ -442,29 +438,29 @@ C
         CALL QUIT('Unknown ITYPE in CCSORTDER1.')
       END IF
 C
-      IF (NIBUF .EQ. 1) THEN
 C
-   10    READ(LU2DER,ERR=2000) RBUF,IBUF,NINT
+   10    READ(LU2DER,ERR=2000) RBUF,IBUF4,LENGTH4
+         LENGTH = LENGTH4
 C
-         IF (NINT .GT. 0) THEN
+         IF (LENGTH .GT. 0) THEN
+           CALL AOLAB4_cc(IBUF4,NIBUF,NBITS,INDX4,LENGTH)
 
-           DO I = 1, NINT
+           DO I = 1, LENGTH
 
-              LABEL = IBUF(I,1)
-              IP = IBTAND(       LABEL         ,IBIT1)
+              IP = INDX4(4,I)
  
               IF (IP .EQ. 0) THEN
 
 *               ... FLAG : ICOOR,ICORSY...
-                ICOOR  = IBTAND(IBTSHR(LABEL,NBITS),IBIT1)
-                ICORSY = IBTAND(IBTSHR(LABEL,2*NBITS),IBIT1) + 1
+                ICOOR  = INDX4(3,I)
+                ICORSY = INDX4(2,I) + 1
 
               ELSE
 
 *               ... INTEGRAL : (IP IQ | IR IS) ...
-                IQ = IBTAND(IBTSHR(LABEL,  NBITS),IBIT1)
-                IR = IBTAND(IBTSHR(LABEL,2*NBITS),IBIT1)
-                IS = IBTAND(IBTSHR(LABEL,3*NBITS),IBIT1)
+                IQ = INDX4(3,I)
+                IR = INDX4(2,I)
+                IS = INDX4(1,I)
 C
                 IF ((IS .GE. ID1) .AND. (IS .LE. ID2)) THEN
                    ! store as (PQ|RS)
@@ -495,20 +491,13 @@ C
 C
            END DO
 
-         ELSE IF (NINT .LT. 0) THEN
+         ELSE IF (LENGTH .LT. 0) THEN
            GOTO 100
          END IF
 C
          GOTO 10
 C
   100    CONTINUE
-C
-      ELSE
-         CALL QUIT('Error: option NIBUF > 2 not '//
-     &        'implemented in CCSORTDER1.')
-      ENDIF
-C
-C
 C
       RETURN
  
@@ -704,7 +693,7 @@ c /* deck ccgeth2d */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -858,7 +847,7 @@ C        REWIND (LU2DER)
      &            RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
      &            WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &            DUMMY,RELCAL)
+     &            DUMMY,RELCAL,.false.)
 
       TIM1 = SECOND()
 

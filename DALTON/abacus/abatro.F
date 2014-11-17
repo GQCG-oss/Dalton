@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
@@ -181,7 +180,6 @@ C
 #include "cbitro.h"
 #include "abainf.h"
 #include "energy.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "dorps.h"
 #include "infdim.h"
@@ -191,7 +189,7 @@ C
 C
 C     The variable FIRST has been replaced with FTRONV in /EXEINF/,
 C     which can be controlled from outside. This is necessary because
-C     TROINV must be executed twice in each iterations, the first time
+C     TROINV must be executed twice in each iteration, the first time
 C     being an initialization.
 C
       IF (.NOT.FTRONV .AND. SKIP) RETURN
@@ -316,7 +314,7 @@ C
 #include "gdvec.h"
 C
 #include "chrnos.h"
-#include "ibtfun.h"
+
 C
 C     Some initialization for spin-spin couplings
 C
@@ -459,7 +457,7 @@ C
          IAXREC = 3*NUCDEP + 3
          DO IX = 1, 3
             DO IY = IX , 3
-               IREP = IBTXOR(ISYMAX(IX,1),ISYMAX(IY,1))
+               IREP = IEOR(ISYMAX(IX,1),ISYMAX(IY,1))
                NSYMCR = NGDVEC(IREP + 1,1)
                IAXREC = IAXREC + 1
                NSYMCR = NSYMCR + 1
@@ -490,7 +488,7 @@ C
                         ISCOR1 = IPTCNT(3*(JATOM - 1) + ICOOR1,IREP2,2)
                         IF (ISCOR1 .GT. 0) THEN
                         DO 429 ICOOR2 = 1, ICOOR1
-                           ISYM = IBTXOR(IREP2,ISYMAX(ICOOR2,2))
+                           ISYM = IEOR(IREP2,ISYMAX(ICOOR2,2))
                            IF (ISYM .EQ. IREP1) THEN
                               NSYMCR = NSYMCR + 1
                               ISYMCR = ISYMCR + 1
@@ -508,7 +506,7 @@ C
          END IF
          IF (DOFC) THEN
             DO 431 JATOM = 1, NUCIND
-               IF (IBTAND(IREP1,ISTBNU(JATOM)).EQ.0) THEN
+               IF (IAND(IREP1,ISTBNU(JATOM)).EQ.0) THEN
                   IATOM = IATOM + 1
                   IF (DOPERT(JATOM,2)) THEN
                      NSYMCR = NSYMCR + 1
@@ -580,6 +578,8 @@ C
 #include "dorps.h"
 #include "symmet.h"
 #include "trkoor.h"
+
+      CALL QENTER('TRCOOR')
 C
 C     *************************************************
 C     ***** Determine trarot coordinates and TMAT *****
@@ -637,6 +637,7 @@ C
             END IF
   600    CONTINUE
       END IF
+      CALL QEXIT('TRCOOR')
       RETURN
       END
 C  /* Deck setdep */
@@ -913,12 +914,18 @@ C
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
 #include "abainf.h"
 #include "cbitro.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "moldip.h"
-#include "trkoor.h"
 #include "symmet.h"
 #include "chrxyz.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
+      CALL QENTER('TRAROT')
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       IF (HESTRO) THEN
          CALL DZERO(HESTR,MXCOOR*MXCOOR)
          DO 50 I = 1, NCOOR
@@ -982,9 +989,9 @@ C
             CALL DGEINV(NDEP,WORK(KTDD),WORK(KTDINV),
      *                  WORK(KPVT),WORK(KSCR),INFO)
             IF (INFO .NE. 0) THEN
-               WRITE (LUPRI,'(//,A,I5,A,/)') ' INFO =', INFO,
-     *                                       ' from DGEINV in TRAROT '
-               CALL QUIT('ERROR in DGESOL.')
+               WRITE (LUPRI,'(//A,I5,A/)')
+     *               'ERROR:  INFO =', INFO,' from DGEINV in TRAROT'
+               CALL QUIT('TRAROT: ERROR in DGEINV')
             END IF
             IF (IPRINT .GE. 10) THEN
                CALL AROUND('TDDINV - TRAROT')
@@ -1275,13 +1282,19 @@ C
          END IF
          IF (COMPAR) THEN
             CALL CMPHES(HESTR,IPRINT,WORK(KCSTRA),WORK(KSCTRA))
-            DO 700 I = 1, NCOOR
-            DO 700 J = 1, I - 1
-               HESMOL(J,I) = HESMOL(I,J)
-  700       CONTINUE
+            DO, I = 2, NCOOR
+               DO, J = 1, I - 1
+                  HESMOL(J,I) = HESMOL(I,J)
+               END DO
+            END DO
          ELSE
-            CALL DCOPY(MXCOOR*MXCOOR,HESTR,1,HESMOL,1)
+            DO, J = 1, NCOOR
+               DO, I = 1, NCOOR
+                  HESMOL(I,J) = HESTR(I,J)
+               END DO
+            END DO
          END IF
+         CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       END IF
       IF (TRODIP) THEN
          IF (IPRINT .GE. 5) THEN
@@ -1294,6 +1307,8 @@ C
             CALL DCOPY(3*NCOOR,DIPTR,1,DIP1,1)
          END IF
       END IF
+
+      CALL QEXIT('TRAROT')
       RETURN
       END
 C  /* Deck cmpgrd */
@@ -1313,11 +1328,14 @@ C
       DIMENSION FD(NDEP)
       LOGICAL   LPRINT
 #include "abainf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "trkoor.h"
 #include "symmet.h"
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
       PARAMETER (D0 = 0.0D0)
+
       IF (IPRINT .GT. 0) THEN
          LPRINT = .TRUE.
       ELSE
@@ -1329,6 +1347,7 @@ C
          CALL HEADER(
      * 'Coordinate    Direct calc.     Tra.-rot. sym.   Difference  ',7)
       END IF
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       IIND = 0
       DIFMAX = D0
       DO 100 ISCOOR = 1, NCRREP(0,1)
@@ -1376,9 +1395,11 @@ C
 #include "mxcent.h"
       DIMENSION HESTR(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
-#include "taymol.h"
 #include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
       PARAMETER (D0 = 0.0D0)
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       DIFMAX = D0
       DO 100 I = 1, NCOOR
          DO 200 J = 1, I
@@ -1481,12 +1502,14 @@ C
       CHARACTER*(*) KEY1, KEY2, KEY3
       DIMENSION AMAT(NROW,NCOL), IPTCOL(NCOOR)
 C
-#include "taymol.h"
 #include "moldip.h"
 #include "nuclei.h"
-#include "trkoor.h"
 #include "symmet.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+      CALL QENTER('GETTRO')
       IF (IPRINT.GE.5) THEN
          CALL TITLER('Output from GETTRO','*',103)
          WRITE (LUPRI,'(/A,2I5)') ' NROW, NCOL ', NROW, NCOL
@@ -1495,6 +1518,7 @@ C
          WRITE (LUPRI,'(2A)') ' KEY3 ', KEY3
          WRITE (LUPRI,'(A,I2)') ' Symmetry ',IREP + 1
       END IF
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     Process key words
 C
@@ -1689,6 +1713,7 @@ C
          CALL AROUND('AMAT - GETTRO')
          CALL OUTPUT(AMAT,1,NROW,1,NCOL,NROW,NCOL,1,LUPRI)
       END IF
+      CALL QEXIT('GETTRO')
       RETURN
       END
 C  /* Deck vectra */
@@ -1841,7 +1866,7 @@ C
 #include "trkoor.h"
 #include "symmet.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
 C
 C     (I) Set up TMAT for 6 trarot coordinates
 C
@@ -1884,8 +1909,8 @@ C
 C
 C              Rotation
 C
-               IF (IBTXOR(ISYMAX(IA,1),ISYMAX(IB,1)).EQ.IREP) THEN
-                  IC = IBTXOR(IA,IB)
+               IF (IEOR(ISYMAX(IA,1),ISYMAX(IB,1)).EQ.IREP) THEN
+                  IC = IEOR(IA,IB)
                   IF (IPRINT .GE. 2) THEN
                      IF (.NOT.DONE) WRITE (LUPRI,'(/1X,A,I2/)')
      *              ' Symmetry ', IREP + 1
@@ -2047,6 +2072,7 @@ C
 #include "dorps.h"
 #include "trkoor.h"
 C
+      CALL QENTER('SETDCR')
       IF (KEY .EQ. 'HERMIT') THEN
          DO 100 IREP = 0, MAXREP
             DOREPS(IREP) = .TRUE.
@@ -2085,5 +2111,7 @@ C
   600      CONTINUE
          END IF
       END IF
+      CALL QEXIT('SETDCR')
       RETURN
       END
+!  -- end of abatro.F --

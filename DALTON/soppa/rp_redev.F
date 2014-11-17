@@ -1,5 +1,5 @@
 C
-C  /* Deck rp_redle */
+C  /* Deck rp_redev */
       SUBROUTINE RP_REDEV(NEXCI,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,
      &                    LREDS,LREDOL,EXVAL,LEXVAL,WORK,LWORK)
 C
@@ -247,6 +247,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('RP_REDEV')
 C

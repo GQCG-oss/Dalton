@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck orblin */
       SUBROUTINE ORBLIN(NOSIM,BOVECS,CMO,GORB,DV,PV,FC,FV,
@@ -457,6 +456,19 @@ C
          CALL PCMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KVTEX),WRK(KWPCM),LWPCM)
+         CALL GETTIM(T5,W5)
+      ELSEIF (QMMM) THEN
+         CALL PELIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
+     &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
+     &              WRK(K3A),L3A)
+         CALL FLSHFO(LUPRI)
+         CALL GETTIM(T5,W5)
+      ELSE IF (PEQM) THEN
+#if defined (BUILD_PELIB)
+         CALL PE_LIN(NCSIM, NOSIM, BCVECS, BOVECS, CREF, CMO, INDXCI,
+     &               DV, WRK(KDTV), WRK(KSCVEC), WRK(KSOVEC), ORBLIN,
+     &               WRK(K3A), L3A)
+#endif
          CALL GETTIM(T5,W5)
       ELSE
          T5 = T4

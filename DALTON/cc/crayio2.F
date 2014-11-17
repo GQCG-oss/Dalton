@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
 C
 *---------------------------------------------------------------------*
 c/* Deck WOPEN2 */
@@ -30,8 +29,8 @@ c/* Deck WOPEN2 */
 *---------------------------------------------------------------------*
 * Purpose: open file and test error flag, if not 0, stop
 *=====================================================================*
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdinp.h"
       INTEGER LUNIT, IADR, ILEN, IERR, BLOCKSIZE, STATUS, IUN
       INTEGER IUNCRAY, J
       CHARACTER*(*) FILE
@@ -94,7 +93,7 @@ c/* Deck PUTWA2 */
 *---------------------------------------------------------------------*
 * Purpose: call putwa and test error flag, if not 0, stop
 *=====================================================================*
-#include <priunit.h>
+#include "priunit.h"
       INTEGER LUNIT, IADR, LEN, IERR
       INTEGER LMAX, JADR, NBATCH, LETOT, IBATCH, IOFF
       INTEGER LREAD
@@ -154,7 +153,7 @@ c/* Deck GETWA2 */
 *---------------------------------------------------------------------*
 * Purpose: call GETWA and test error flag, if not 0, stop
 *=====================================================================*
-#include <priunit.h>
+#include "priunit.h"
       INTEGER LUNIT, IADR, LEN, IERR
       INTEGER LMAX, JADR, NBATCH, LETOT, IBATCH, IOFF
       INTEGER LREAD
@@ -218,8 +217,8 @@ c/* Deck WCLOSE2 */
 * Purpose: close file, test error flag, if not 0 bump...
 *          if MODE='DELETE' remove the file, else keep it
 *=====================================================================*
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdinp.h"
       INTEGER LUNIT, IERR, ILEN
       CHARACTER*(*) FILE, MODE
       CHARACTER*(80) COMMAND
@@ -308,8 +307,8 @@ c/* Deck WCLOSEALL */
 *---------------------------------------------------------------------*
 * Purpose: close all files opened by WOPEN2 which have not been closed
 *=====================================================================*
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdinp.h"
       COMMON /UNICRAYIO/ IUNCRAY(1:99)
 C
       DO LUNIT = 1, 70

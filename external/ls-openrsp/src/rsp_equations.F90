@@ -28,11 +28,11 @@
 !                                       dirac/trunk               revision 10659
 
 
-module rsp_equations
+module lsdalton_rsp_equations
 
    use precision
-   use matrix_defop  !matrix type and operators
-   use rsp_contribs  !integrals and integral contractions
+   use lsdalton_matrix_defop  !matrix type and operators
+   use lsdalton_rsp_contribs  !integrals and integral contractions
    use RSPsolver, only: rsp_molcfg
    implicit none
 
@@ -43,6 +43,7 @@ module rsp_equations
    public rsp_eq_sol  !saved solutions
    public rsp_eq_sol_grow  !reallocate rsp_eq_sol larger
    public rsp_eq_sol_empty !empty and deallocate rsp_eq_sol
+   public rsp_eq_truncate_order !above this order return zero instead of solving equations
 
    ! ajt Freqency derivative hack, not intended to be public
    public rsp_solve_eq
@@ -50,6 +51,8 @@ module rsp_equations
 
    !> turn on or off debugging in this file
    logical :: rsp_equations_debug = .false.
+
+   integer :: rsp_eq_truncate_order = huge(1)
 
    !> Type for saving/caching the solution of a response equation,
    !> so to avoid re-solving the same equation later in the program.
@@ -415,15 +418,27 @@ contains
       end do
       ! if first order FREQ equation, result is zero (so just return)
       if (size(p)==1 .and. p(1)=='FREQ') return
-      ! calculate all lower-order contributions to the
-      ! minus-right-hand-sides DSDp and FDSp
-      call pert_scf_eq(mol, S0, p, dimp, (/D,Dp(:pd)/), (/F,Fp(:pd)/), FDSp, DSDp, &
-                       comp=ccomp, freq=ffreq)
+      ! calculate all lower-order contributions to the minus-right-hand-sides
+      ! DSDp and FDSp. Do this only when the equation won't be truncated one line below
+      if (.not.(size(p) > rsp_eq_truncate_order)) &
+         call pert_scf_eq(mol, S0, p, dimp, (/D,Dp(:pd)/), (/F,Fp(:pd)/), FDSp, DSDp, &
+                          comp=ccomp, freq=ffreq)
 
       ! calculate all lower-order contributions to the p-perturbed Fock
       ! matrices, as well as the p-perturbed overlap matrices
       call pert_fock(mol, p, dimp, (/D,Dp(:pd)/), Fp(:pd), Sp, &
                      comp=ccomp, freq=ffreq)
+
+      ! AJT/TK if truncate order is has been set and this equation is above that order,
+      ! cleanup DSDp and FDSp and return the zeros already in Dp and the Fp already
+      ! containing lower-order contribs
+      if (size(p) > rsp_eq_truncate_order) then
+         Sp(:) = 0
+         deallocate(DSDp)
+         deallocate(FDSp)
+         deallocate(Sp)
+         return
+      end if
 
       ! top DSDp off with DSpD and FDSp with (F-w/2S)DSp-SpD(F+w/2S)
       do i = 1, pd
@@ -452,15 +467,15 @@ contains
                end if
             end if
          end if
-        ! if no symmetry can be exploited, calculate response parameter
-        call rsp_solve_eq(mol, S0, D(1), F(1), sym, sum(ffreq), 1, &
-                          DSDp(i:i), FDSp(i:i), Dp(i:i), Fp(i:i))
+         ! if no symmetry can be exploited, calculate response parameter
+         call rsp_solve_eq(mol, S0, D(1), F(1), sym, sum(ffreq), 1, &
+                           DSDp(i:i), FDSp(i:i), Dp(i:i), Fp(i:i))
 #ifdef SYS_AIX
-        !ajt For some reason Xlf copy-in-copy-out-s Dp(i) and Fp(i), which
-        !    will break Dp(i)%init_self_ptr => Dp(i), resulting in memory leak.
-        !    Until one figures out how to avoid this, re-associate here
-        call re_associate_self_ptrace(Dp(i))
-        call re_associate_self_ptrace(Fp(i))
+         !ajt For some reason Xlf copy-in-copy-out-s Dp(i) and Fp(i), which
+         !    will break Dp(i)%init_self_ptr => Dp(i), resulting in memory leak.
+         !    Until one figures out how to avoid this, re-associate here
+         call re_associate_self_ptrace(Dp(i))
+         call re_associate_self_ptrace(Fp(i))
 #endif
       end do
       ! if this is a 1-component equation, save the result
@@ -666,7 +681,7 @@ contains
               if (mol%solver%rsp_stdnew) then
                call rsp_sym_init(2, 2, 2, 1, 2)
               endif
-              if (mol%solver%rsp_cmplxnew) then
+              if (mol%solver%rsp_cmplxnew .or. mol%solver%rsp_cpp) then
                call rsp_sym_complex_init(1, 1, 1, 1, 1)
               endif
                IF(mol%solver%UseExcitationVecs)then
@@ -695,7 +710,7 @@ contains
             reXph(:) = (/mat_get_part(Xph(1), imag=.false.)/)
             imXph(:) = (/mat_get_part(Xph(1), imag=.true. )/)
             ! solve for the real and imaginary part of the FDSp simlultaneously
-            if (mol%solver%rsp_cmplxnew) then
+            if (mol%solver%rsp_cmplxnew .or. mol%solver%rsp_cpp) then
                call rsp_sym_complex_solver(mol, F0, D0, S0, 1,          &
                                (/mat_get_part(FDSp(i), imag=.false.)/), &
                                freq1, 1, reXph(:), imXph(:), .true.,    &

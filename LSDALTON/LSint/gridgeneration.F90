@@ -62,7 +62,7 @@ SUBROUTINE GenerateGrid(NBAST,radint,angmin,angint,ihardness,iprune,natoms,&
      & X,Y,Z,Charge,GRIDDONE,SHELL2ATOM,SHELLANGMOM,SHELLNPRIM,MAXANGMOM,&
      & MAXNSHELL,MXPRIM,PRIEXP,PRIEXPSTART,RSHEL,ITERATIONS,TURBO,MaxNbuflen,&
      & RADIALGRID,ZdependenMaxAng,PARTITIONING,nstart,MaxNactBast,LUPRI,&
-     & IPRINT,USE_MPI,numnodes,node,GridId)
+     & IPRINT,USE_MPI,numnodes,node,GridId,Gridnumnodes)
 IMPLICIT NONE
 !> How many times do we write (and should we read)  from disk 
 INTEGER  :: ITERATIONS
@@ -129,6 +129,7 @@ INTEGER,intent(in)    :: NSTART(MAXNSHELL)
 !> should we use MPI
 LOGICAL,intent(in)    :: USE_MPI
 integer(kind=ls_mpik),intent(in)    :: numnodes,node
+integer,intent(inout) :: Gridnumnodes
 !> if the grid id
 INTEGER :: GRIDID
 !
@@ -171,6 +172,7 @@ call mem_grid_dealloc(RADIALPOINTS)
 call mem_grid_dealloc(RADIALWEIGHT)
 call mem_grid_dealloc(nRadialPoints)   
 call mem_grid_dealloc(GRIDANG)
+Gridnumnodes = numnodes !number of nodes used to construct the grid. 
 GRIDDONE=1
 #ifdef VAR_MPI
 IF (infpar%mynum.EQ.infpar%master) THEN
@@ -184,7 +186,7 @@ END SUBROUTINE GENERATEGRID
 
 SUBROUTINE Computecoords(totalpoints,nRadialPoints,Natoms,RADIALPOINTS,RADIALWEIGHT,NRADPT,GRIDANG,&
      & atomcenterX,atomcenterY,atomcenterZ,ihardness,MAXNSHELL,RSHEL,SHELL2ATOM,NBAST,&
-     & maxNBUFLEN,ITERATIONS,PARTITIONING,Charge,nstart,MaxNactBast,iprint,lupri,USE_MPI,numnodes,node,GridId)
+     & maxNBUFLEN,ITERATIONS,PARTITIONING,Charge,nstart,FinalMaxNactBast,iprint,lupri,USE_MPI,numnodes,node,GridId)
 implicit none
 integer,intent(in) :: Natoms,NRADPT,ihardness,iprint,lupri,nbast,maxnbuflen,GridId
 !> X coordinate for each atom
@@ -209,7 +211,7 @@ INTEGER,intent(in) :: PARTITIONING !(1=SSF,2=BECKE,3=BECKEORIG,4=BLOCK,...)
 !> charge for each atom used in grid-generation
 INTEGER,intent(in)  :: CHARGE(natoms)
 !> maximum number of active orbitals for each box
-INTEGER,intent(inout) :: MaxNactBast
+INTEGER,intent(inout) :: FinalMaxNactBast
 !> for a given shell index it gives the corresponding starting orbital
 INTEGER,intent(in)    :: NSTART(MAXNSHELL)
 !> should we use MPI
@@ -218,7 +220,7 @@ INTEGER(kind=ls_mpik),intent(in)    :: numnodes,node
 !
 integer :: j,iatom,dummy,maxNR,N,N2,N3,I,idx,ipoint,iang
 integer :: IATOM1,IATOM2,I2,h,igrid,itmp,totalAtomicpointscompressed
-integer :: totalAtomicpoints,ix,iy,iz,NactBast
+integer :: totalAtomicpoints,ix,iy,iz,NactBast,MaxNactBast
 real(realk),parameter :: pim4=12.566370614359172E0_realk,D2=2E0_realk !4*pi
 real(realk),pointer :: locR(:),WG(:),COOR(:,:)
 real(realk),pointer :: WG2(:),COOR2(:,:)
@@ -249,6 +251,7 @@ integer :: infpar
 #endif
 !logical,pointer :: SHELLLIST(:)
 
+FinalMaxNactBast = 0
 ITERATIONS=0
 call mem_grid_alloc(inverseDistance12,NATOMS,NATOMS)
 !This subroutine actually the inversedistance 1/r12
@@ -290,13 +293,13 @@ call mem_grid_TurnONThread_Memory()
 !$OMP totalAtomicpointscompressed,igrid,ITMP,tid,nthreads,maxAtomicGridpoints,&
 !$OMP maxGridpoints,I,maxN,dummy,skip,IMyKey,Ikey,npoints2,ix,iy,iz,center,&
 !$OMP NSHELLBLOCKS,SHELLBLOCKS,w,rw,fac,NactBast,privatetotalpoints,WG3,&
-!$OMP COOR3) SHARED(COOR2,WG2,USE_MPI,&
+!$OMP COOR3,MaxNactBast) SHARED(COOR2,WG2,USE_MPI,&
 !$OMP atomcenterX,atomcenterY,atomcenterZ,totalpoints,inverseDistance12,ihardness,&
 !$OMP bfac,GRIDANG,NRADPT,LUPRI,RADIALPOINTS,RADIALWEIGHT,PARTITIONING,IPRINT,&
 !$OMP ATOMIDX,postprocess,skip2,SSF_ATOMIC_CUTOFF,nx,ny,nz,npoints,GridBox,&
 !$OMP nkey,keypointer,LUGRID,ITERATIONS,filename,nprocessors,numnodes,node,mynum,mykeys,&
 !$OMP mykeysnumber,MAXNSHELL,RSHEL,SHELL2ATOM,NBAST,GlobalmaxGridpoints,&
-!$OMP NATOMS,nRadialPoints,maxNBUFLEN,nstart,infpar,GridId) REDUCTION(+:MaxNactBast)
+!$OMP NATOMS,nRadialPoints,maxNBUFLEN,nstart,infpar,GridId,FinalMaxNactBast)
 call init_grid_threadmemvar()
 #ifdef VAR_OMP
 nthreads=OMP_GET_NUM_THREADS()
@@ -621,7 +624,9 @@ call mem_grid_dealloc(COOR3)
 
 call mem_grid_dealloc(SHELLBLOCKS)
 !call mem_grid_dealloc(SHELLLIST)
-
+!$OMP CRITICAL
+FinalMaxNactBast = MAX(FinalMaxNactBast,MaxNactBast)
+!$OMP END CRITICAL
 call collect_thread_grid_memory()
 !$OMP END PARALLEL
 call mem_grid_TurnOffThread_Memory()

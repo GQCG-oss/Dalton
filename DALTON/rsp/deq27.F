@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,9 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
+!
+! FILE: deq27.F
+!
 C
 C  /* Deck deq27 */
       SUBROUTINE DEQ27(CMO,UBO,DV,DXCAO,DXVAO,WRK,LFRSAV)
@@ -54,7 +56,7 @@ C   DV(*)   active part of one-electron density matrix
 C           (over MO's)
 C
 C Output:
-C   if NISHT>0: DXCAO(*) = half of DXC in AO basis (the factor 2 above is handled outside)
+C   if NISHT>0: DXCAO(*) = DXC in AO basis
 C   if NASHT>0: DXVAO(*) = DXV in AO basis
 C
 C Scratch:
@@ -64,22 +66,16 @@ C
       DIMENSION CMO(*),UBO(NORBT,*),DV(NASHT,*),DXCAO(*),DXVAO(*),
      *          WRK(*)
 C
-      PARAMETER (HALF = 0.5D0, D2 = 2.0D0, D4 = 4.0D0)
-      PARAMETER (HALFM = -0.5D0, D1 = 1.D0, DM1 = -1.D0)
+      PARAMETER ( DM1 = -1.D0 )
 C
 C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
-C  INFIND : IROW(*)
-C  INFVAR : ??????
 C  WRKRSP : KSYMOP
 C
 #include "maxash.h"
 #include "maxorb.h"
 #include "inforb.h"
-#include "infind.h"
-#include "infdim.h"
 #include "infrsp.h"
-#include "infvar.h"
 #include "wrkrsp.h"
 C
 #if defined (VAR_DEBUG)
@@ -91,7 +87,7 @@ C
 C     MAERKE 931116; mjp+hjaaj
 C      IF (SOPPA) THEN
 C     JJE 2013-07-20: allow for entry into deq27 if SOPRPA == .true.
-C                     due to PE module
+C                     due to PE library
       IF (SOPPA .and. (.not. SOPRPA)) THEN
          CALL QDUMP(LUPRI)
          CALL QUIT('DEQ27 fatal error: SOPPA not implemented yet!')
@@ -130,7 +126,7 @@ C
 C **     step 1 of active dm:
 C *****  first calculate one-index transformation of second index
 C *****  of DV(uv), the active density matrix.
-C        DXV_I(u,p) = sum(v) Bo(v,p) DV(v,u)
+C        DXV_I(p.u) = sum(v) Bo(v,p) DV(v,u)
          IASHI = IASH(ISYM)
          IF (NASHI .EQ. 0 .OR. NORBJ .EQ. 0) GO TO 2000
          CALL DGEMM('T','N',NORBJ,NASHI,NASHI,1.D0,
@@ -176,25 +172,24 @@ C
 C **     step 1 of active dm:
 C *****  first calculate one-index transformation of second index
 C *****  of DV(uv), the active density matrix.
-C        DXV_II(u,p) = sum(v) Bo(v,p) DV(u,v)
-C        DXV_I(p,u) = sum(v) Bo(v,p) DV(v,u)
+C        DXV_II(p,u) = sum(v) Bo(p,v) DV(v,u)
          IASHI = IASH(ISYM)
          IASHJ = IASH(JSYM)
          IF( NASHJ .EQ. 0 .OR. NORBI .EQ. 0) GO TO 3000
          CALL DGEMM('N','N',NORBI,NASHJ,NASHJ,1.D0,
-     &              UBO(IORBI+1,IORBJ+NISHJ+1),NORBT,  ! (p,u)
-     &              DV(IASHJ+1,IASHJ+1),NASHT,0.D0,    ! (u,v)
-     &              WRK(KDXV),NORBI)                   ! (p,v)
+     &              UBO(IORBI+1,IORBJ+NISHJ+1),NORBT,  ! (p,v)
+     &              DV(IASHJ+1,IASHJ+1),NASHT,0.D0,    ! (v,u)
+     &              WRK(KDXV),NORBI)                   ! (p,u)
 C **     step 2 of active dm:
          CALL DGEMM('N','N',NBASI,NASHJ,NORBI,1.D0,
      &              CMO(ICMOI+1),NBASI,                ! (pi,p)
-     &              WRK(KDXV),NORBI,0.D0,              ! (p,v)
-     &              WRK(KDXAO1),NBASI)                 ! (pi,v)
+     &              WRK(KDXV),NORBI,0.D0,              ! (p,u)
+     &              WRK(KDXAO1),NBASI)                 ! (pi,u)
          IOFMOV = ICMOJ + 1 + NISHJ*NBASJ
          IDXAO2 = KDXAO2 + IBAS(JSYM)*NBAST + IBAS(ISYM)
          CALL DGEMM('N','T',NBASI,NBASJ,NASHJ,1.D0,
-     &              WRK(KDXAO1),NBASI,                 ! (pi,v)
-     &              CMO(IOFMOV),NBASJ,0.D0,            ! (beta,v)T
+     &              WRK(KDXAO1),NBASI,                 ! (pi,u)
+     &              CMO(IOFMOV),NBASJ,0.D0,            ! (beta,u)T
      &              WRK(IDXAO2),NBAST)                 ! (pi,beta)
 C **  this symmetry block finished
  3000 CONTINUE
@@ -227,10 +222,10 @@ C     see eq. 22
          NBASJ = NBAS(JSYM)
 C
 C **     the inactive one-index transformed dm:
-C        DXC_I(i,p) = Bo(i,p) -> DXCAO_I(iota,pi)
+C        DXC_I(i,p) = 2 Bo(i,p) -> DXCAO_I(iota,pi)
 
          IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
-            CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,1.D0,
+            CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,2.D0,  ! 2
      &                 CMO(ICMOJ+1),NBASJ,              ! (pi,p)
      &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0, ! (i,p)T
      &                 WRK(KDXAO1),NBASJ)               ! (pi,i)
@@ -263,11 +258,12 @@ C
          NBASJ = NBAS(JSYM)
 C
 C **     the inactive one-index transformed dm:
+C        UBO not transposed for D-II (see eq. 25)
 C
-C        DXC_II(p,i) = Bo(p,i) -> DXCAO_II(pi,iota)
+C        DXC_II(p,i) = 2*Bo(p,i) -> DXCAO_II(pi,iota)
 
          IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
-            CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,1.D0,
+            CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,2.D0,    ! 2
      &                 CMO(ICMOJ+1),NBASJ,                ! (pi,p)
      &                 UBO(IORBJ+1,IORBI+1),NORBT,0.D0,   ! (p,i)
      &                 WRK(KDXAO1),NBASJ)                 ! (pi,i)
@@ -293,4 +289,151 @@ C
 C *** end of subroutine DEQ27
 C
       END
-!  -- end of rsp/deq27.F --
+C  /* Deck deq27mo */
+      SUBROUTINE DEQ27MO(IBOSYM,UBO,UDV,DXC,DXV,WRK,LFRSAV)
+C
+C 2-Oct-2013 Hans Joergen Aa. Jensen.
+C Based on DEQ27.
+C The difference is that this routine returns the one-index
+C transformed density matrices DXC and DXV in MO basis,
+C while DEQ27 transforms them to AO-basis (DXCAO and DXVAO).
+C Furthermore, we do not assume UDV is symmetric, thus DEQ27MO
+C can also be used for non-symmetric transition density matrices.
+C
+C Purpose:
+C To compute eq.27 for the inactive density matrix and its counterpart
+C for the active density matrix, following
+C the direct RPA article of Jensen et al C CP,119, 297 (1988).
+C That is to compute Inactive and Active  density matrices
+C later to be used for calculating one-index transformed
+C anti-symmetric Fock matrices over Atomic Orbitals.
+C
+C It follows TR1DEN in SIRIUS, which in turn
+C follows appendix C in Chem. Phys. 104 (1986) 229.
+C
+C DXC and DXV are unpacked, i.e. (NORBT,NORBT).
+C
+C General formula: DX(p,q) = sum(t) Bo(t,p) D(t,q) - D(p,t) Bo(q,t)
+C                          = DX-I(p,q) - DX-II(p,q)
+C where DXC-I (p,i) = 2 Bo(i,p)
+C       DXC-II(i,q) = 2 Bo(q,i)
+C       DXV-I (p,u) = sum(v) UDV(v,u) Bo(v,p)
+C       DXV-II(u,q) = sum(v) UDV(u,v) Bo(q,v)
+C 
+C
+C Input:
+C   UBO(NORBT,NORBT)  kappa matrix (orbital part of B), unpacked, symmetry IBOSYM
+C   UDV(NASHT,NASHT)  active part of one-electron density matrix (over MOs), symmetry 1
+C
+C Output:
+C   DXC(NORBT,NORBT)  one-index transformed inactive density matrix "DC"
+C   DXV(NORBT,NORBT)  one-index transformed UDV
+C
+C Scratch:
+C   WRK(LFRSAV)
+C
+#include "implicit.h"
+      DIMENSION UBO(NORBT,*),UDV(NASHT,*),DXC(NORBT,*),DXV(NORBT,*),
+     *          WRK(*)
+C
+C Used from common blocks:
+C  INFORB : NSYM,NASHT,...
+C
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infrsp.h"
+C
+      CALL QENTER('DEQ27MO')
+C
+      IF (SOPPA) THEN
+         CALL QDUMP(LUPRI)
+         CALL QUIT('DEQ27MO fatal error: SOPPA not implemented yet!')
+      END IF
+C
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LFRSAV
+C
+C     First DXV, if nasht.gt.0:
+C
+      IF (NASHT .GT. 0) THEN
+C
+C     *************************************************
+C     D-I and D-II:  D = D-I - D-II   Active matrices
+C     *************************************************
+C
+      DO 2000 ISYM = 1,NSYM
+         JSYM  = MULD2H(ISYM,IBOSYM)
+         NISHI = NISH(ISYM)
+         NISHJ = NISH(JSYM)
+         IASHI = IASH(ISYM)
+         NASHI = NASH(ISYM)
+         IASHJ = IASH(JSYM)
+         NASHJ = NASH(JSYM)
+         IORBI = IORB(ISYM)
+         NORBI = NORB(ISYM)
+         IORBJ = IORB(JSYM)
+         NORBJ = NORB(JSYM)
+C *****  first calculate one-index transformation of second index
+C *****  of UDV(uv), the active density matrix.
+C        DXV-I(p,u) = sum(v) Bo(v,p) UDV(v,u)
+         IF (NASHI .EQ. 0 .OR. NORBJ .EQ. 0) GO TO 2000
+         CALL DGEMM('T','N',NORBJ,NASHI,NASHI,1.D0,
+     &              UBO(IORBI+NISHI+1,IORBJ+1),NORBT,
+     &              UDV(IASHI+1,IASHI+1),NASHT,1.D0,
+     &              DXV(IORBJ+1,IORBI+NISHI+1),NORBT)
+C
+C
+C        DXV-II: subtact results to DXV
+C *****  first calculate one-index transformation of second index
+C *****  of UDV(uv), the active density matrix.
+C        DXV-II(p,u) = sum(v) Bo(v,p) UDV(v,u)
+C        subtract D_II from  D-I
+         IF( NASHJ .EQ. 0 .OR. NORBI .EQ. 0) GO TO 2000
+         CALL DGEMM('N','N',NORBI,NASHJ,NASHJ,-1.D0,
+     &              UBO(IORBI+1,IORBJ+NISHJ+1),NORBT,
+     &              UDV(IASHJ+1,IASHJ+1),NASHT,1.D0,
+     &              DXV(IORBJ+NISHJ+1,IORBI+1),NORBT)
+ 2000 CONTINUE
+C
+      END IF
+C
+C     DXV finished, now DXC, if nisht.gt.0:
+C
+      IF (NISHT .GT. 0) THEN
+C
+C     *************************************************
+C     D-I and D-II:  D = D-I - D-II   Inactive matrices
+C     *************************************************
+C     Loop over symmetries then put result in DXC (see eq. 22)
+C
+      DO 4000 ISYM = 1,NSYM
+         IORBI = IORB(ISYM)
+         NISHI = NISH(ISYM)
+         JSYM  = MULD2H(ISYM,IBOSYM)
+         IORBJ = IORB(JSYM)
+         NORBJ = NORB(JSYM)
+C
+C **     the inactive one-index transformed dm:
+C
+         DO I = IORBI+1,IORBI+NISHI
+            DO J = IORBJ+1,IORBJ+NORBJ
+C              DXC-I (p,i) = 2*Bo(i,p)
+               DXC(J,I) = DXC(J,I) + 2.0D0 * UBO(I,J)
+C              DXC-II(i,p) = -2*Bo(p,i)
+               DXC(I,J) = DXC(I,J) - 2.0D0 * UBO(J,I)
+            END DO
+         END DO
+C
+ 4000 CONTINUE
+C
+      END IF
+C
+      CALL QEXIT('DEQ27MO')
+      RETURN
+C
+C *** end of subroutine DEQ27MO
+C
+      END
+! -- end of file deq27.F --

@@ -17,7 +17,7 @@ C     LABEL      property label
 C     FREQ       frequency of the solution/residual
 C     LU         file where we have to write the property
 C
-#include"implicit.h"
+#include "implicit.h"
 C
       DIMENSION ARRAY(LARRAY)
 C

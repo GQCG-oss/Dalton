@@ -13,7 +13,7 @@ perturbations handled simultaneously (see
 Sec.~\ref{sec:abares}).  Otherwise, some redimensioning will be
 necessary.
 
-The program uses approximately 117 MB of static memory allocated as common
+The program uses approximately 95 MB of static memory allocated as common
 blocks and similar data structures. Most of the memory used during the
 calculation is taken from a large work array. The size of this work
 array\index{memory!scratch} is supplied to the program as a shell
@@ -44,9 +44,9 @@ file in which the variable appears and a short description of what
 it defines. However, we note that the program sometimes will
 require the user to change other parameters not included in this
 list, and these variables are then easily found in the include/
-directory by ``grep'ing for'' its occurrence. We also point out that
-whenever a change is made to one or more include files, it is strongly
-recommended to do \verb|make depend| and then rebuild the program using the
+directory by ``grep'ing for'' its occurrence. After a
+change is made to one or more include files, you need to
+rebuild the program using the
 command \verb|make|.
 
 \bigskip

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck oneprm */
       SUBROUTINE ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,
@@ -117,11 +116,11 @@ C
 #include "primit.h"
 #include "pcmdef.h"
 #include "pcm.h"
-Clf#include <pcmlog.h>
+Clf#include "pcmlog.h"
 #include "symmet.h"
 #include "ecpinf.h"
 #include "expopt.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 4) CALL TITLER('Output from ONEPR1','*',103)
 C
@@ -342,7 +341,7 @@ C
             ELSE IF (PROPTY) THEN
 C...           modified by Bin Gao, Jan. 18, 2011
 C...           ECP will be computed through Gen1Int library
-C...#ifndef BUILD_GEN1INT
+C...#if !defined(BUILD_GEN1INT)
                IF (ECP) CALL QUIT(
      &            'ECP not implemented yet in ONEPR1 for "PROPTY" !')
 C...#endif
@@ -363,7 +362,7 @@ C...#endif
 C...           modified by Bin Gao, Jul. 8, 2011
 C...           also needs ECPINT to debug the results from Gen1Int
 C...           ECP in Gen1Int library is not efficient, backs to ECPINT temporarily
-C...#ifndef BUILD_GEN1INT
+C...#if !defined(BUILD_GEN1INT)
                IF (ECP) THEN
                   CALL ECPINT(CORAX,CORAY,CORAZ,CORBX,CORBY,CORBZ,
      &                 EXPA,EXPB,JMAXA,JMAXB,CONTA,CONTB,ADER,
@@ -378,9 +377,9 @@ C...#endif
             ELSE IF (PCM) THEN
                IADR = 1
                DO ISYM = 0, MAXREP
-                  SIGNX = PT(IBTAND(ISYMAX(1,1),ISYM))
-                  SIGNY = PT(IBTAND(ISYMAX(2,1),ISYM))
-                  SIGNZ = PT(IBTAND(ISYMAX(3,1),ISYM))
+                  SIGNX = PT(IAND(ISYMAX(1,1),ISYM))
+                  SIGNY = PT(IAND(ISYMAX(2,1),ISYM))
+                  SIGNZ = PT(IAND(ISYMAX(3,1),ISYM))
 Ckr Parallelizable PCM loop, but not optimal, must considered simultaneously with loop
 Ckr in PCMGRI
                   DO 310 ITS = 1,NTSIRR
@@ -439,7 +438,7 @@ C
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
 #include "gamcom.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(/A/)') ' <<<<< Output from Hernai >>>>> '
          WRITE (LUPRI,'(A,I10)')   ' JMAX   ', JMAX
@@ -477,7 +476,7 @@ C     **********************************
 C     ***** General Case: JMAX > 0 *****
 C     **********************************
 C
-      IF (IBTAND(JMAX,1) .EQ. 0) THEN
+      IF (IAND(JMAX,1) .EQ. 0) THEN
          ISTRTJ = IADR
          ISTEPJ = NRTUV
       ELSE

@@ -26,7 +26,7 @@ MODULE initial_guess
   use precision
   implicit none
   private
-  public :: starting_guess_entry, get_initial_dens, asymmetrize_starting_guess
+  public :: starting_guess_entry, get_initial_dens!, asymmetrize_starting_guess
 
 CONTAINS
 
@@ -138,15 +138,19 @@ subroutine get_initial_dens(H1,S,D,ls,config)
 
      ! Quit in case orbitals on file are not localized lcv basis and we are
      ! trying to restart lcm calculation for which lcv is needed.
-     if (config%decomp%cfg_lcm .and. (.not.lcv_on_file)) &
-        &  call lsquit("CAN NOT RESTART .LCM calculation, LCV basis NOT ON FILE",config%lupri)
-
+     if (config%opt%cfg_start_guess=='TRILEVEL') then
+        if (config%decomp%cfg_lcm .and. (.not.lcv_on_file))then
+           call lsquit("CAN NOT RESTART TRILEVEL .LCM calculation, LCV basis NOT ON FILE",config%lupri)
+        endif
+     endif
 
      if (gcbasis .and. .not. config%decomp%cfg_gcbasis) then
         WRITE(config%lupri,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'
-        WRITE(config%lupri,*) 'while your LSDALTON.INP uses the standard basis. The GC basis is default'
-        WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
-        WRITE(config%lupri,*) 'add .GCBASIS under *LINSCA'
+        WRITE(config%lupri,*) 'while your LSDALTON.INP uses the standard basis.'
+        WRITE(config%lupri,*) 'The GC basis is default unless you use a dunnings basis set,'
+        WRITE(config%lupri,*) 'or you specify .NOGCBASIS under *GENERAL'
+        WRITE(config%lupri,*) 'Either contruct a new dens.restart or '
+        WRITE(config%lupri,*) 'remove .NOGCBASIS or add .FORCEGCBASIS under *GENERAL'
         call lsquit('Calculation in standard basis, dens.restart in GC basis!',config%lupri)
      else if (config%decomp%cfg_gcbasis .and. .not. gcbasis) then
         IF(config%decomp%cfg_transformrestart)THEN
@@ -155,9 +159,10 @@ subroutine get_initial_dens(H1,S,D,ls,config)
            call AO2GCAO_transform_matrixD(D(1),ls%setting,config%lupri)
         ELSE
            WRITE(config%lupri,*) 'Your dens.restart was constructed using the standard basis, while your'
-           WRITE(config%lupri,*) 'LSDALTON.INP uses the grand-canonical (GC) basis. The GC basis is default'
-           WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
-           WRITE(config%lupri,*) 'do not use grand-canonical basis!'
+           WRITE(config%lupri,*) 'LSDALTON.INP uses the grand-canonical (GC) basis.'
+           WRITE(config%lupri,*) 'The GC basis is default unless you use a dunnings basis set,'
+           WRITE(config%lupri,*) 'or you specify .NOGCBASIS under *GENERAL'
+           WRITE(config%lupri,*) 'Either contruct a new dens.restart or use GC basis!'
            WRITE(config%lupri,*) 'Alternativly you can add the keyword '
            WRITE(config%lupri,*) '.TRANSFORMRESTART'
            call lsquit('Calculation in GC basis, dens.restart in standard basis!',config%lupri)
@@ -276,7 +281,7 @@ end subroutine get_initial_dens
        write(*,*) 'Optimize first density for H1 operator'
        write(config%lupri,*) 'Optimize first density for H1 operator'
        write(config%lupri,*)
-       call starting_guess_h1(config,H1,D(1))
+       call starting_guess_h1(config,H1,D(1),S)
     else if (config%opt%cfg_start_guess=='HUCKEL') then
         call lsquit('Huckel guess not implemented',config%lupri)
     !   write(*,*) 'Take first density from Hueckel guess'
@@ -298,12 +303,13 @@ end subroutine get_initial_dens
     else if (config%opt%cfg_start_guess=='LINCOMB') then
        write(config%lupri,*) 'Starting guess is linear combination of densities on disk'
        write(config%lupri,*)
-       call starting_guess_lincomb(D(1),config%opt)
+       call lsquit('starting_guess_lincomb removed',-1)
+!       call starting_guess_lincomb(D(1),config%opt)
     else
        write(*,*) 'Optimize first density for H1 operator'
        write(config%lupri,*) 'Optimize first density for H1 operator'
        write(config%lupri,*)
-       call starting_guess_h1(config,H1,D(1))
+       call starting_guess_h1(config,H1,D(1),S)
     !ELSE
     !   ! Option to start from the fitted density. Works only in Coulomb,
     !   ! i.e. the Hartree approximation. Could prove useful for projecting
@@ -315,47 +321,48 @@ end subroutine get_initial_dens
     ENDIF
 
   end subroutine starting_guess_entry
-  
-!> \brief Asymmetrizes the starting guess when by mixing HOMO and LUMO
-!> \author C. Nygaard
-!> \date March 2010
-!> \param Cmo The MO orbital coefficients 
-  subroutine asymmetrize_starting_guess (Cmo, decomp)
 
-  implicit none
-
-  !I/O:
-  type(decompItem), intent(in) :: decomp
-  type(matrix), intent(inout)  :: Cmo
-  !Other
-  type(matrix)                 :: homo, lumo
-  integer                      :: i, ndim
-  real(realk)                  :: elms(2)
-
-  ndim = Cmo%nrow
-
-  call mat_init (homo, ndim, 1)
-  call mat_init (lumo, ndim, 1)
-  
-  write (decomp%lupri, *) "Assymetrized starting guess for UHF chosen"
-  write (decomp%lupri, *) "mixing HOMO and LUMO"
-
-  call mat_section (Cmo, 1, ndim, decomp%nocc, decomp%nocc, homo)
-  call mat_section (Cmo, 1, ndim, decomp%nocc+1, decomp%nocc+1, lumo)
-
-  call mat_mix_homolumo (homo, lumo)
-
-  do i=1,ndim
-    call mat_get_ab_elms (homo, i, 1, elms)
-    call mat_create_ab_elms (i, decomp%nocc, elms, Cmo)
-    call mat_get_ab_elms (lumo, i, 1, elms)
-    call mat_create_ab_elms (i, decomp%nocc+1, elms, Cmo)
-  enddo
-
-  call mat_free (homo)
-  call mat_free (lumo)
-
-  end subroutine asymmetrize_starting_guess
+! commentet out by Thomas Kjaergaard - no test case - not tested ....  
+!!$!> \brief Asymmetrizes the starting guess when by mixing HOMO and LUMO
+!!$!> \author C. Nygaard
+!!$!> \date March 2010
+!!$!> \param Cmo The MO orbital coefficients 
+!!$  subroutine asymmetrize_starting_guess (Cmo, decomp)
+!!$
+!!$  implicit none
+!!$
+!!$  !I/O:
+!!$  type(decompItem), intent(in) :: decomp
+!!$  type(matrix), intent(inout)  :: Cmo
+!!$  !Other
+!!$  type(matrix)                 :: homo, lumo
+!!$  integer                      :: i, ndim
+!!$  real(realk)                  :: elms(2)
+!!$
+!!$  ndim = Cmo%nrow
+!!$
+!!$  call mat_init (homo, ndim, 1)
+!!$  call mat_init (lumo, ndim, 1)
+!!$  
+!!$  write (decomp%lupri, *) "Assymetrized starting guess for UHF chosen"
+!!$  write (decomp%lupri, *) "mixing HOMO and LUMO"
+!!$
+!!$  call mat_section (Cmo, 1, ndim, decomp%nocc, decomp%nocc, homo)
+!!$  call mat_section (Cmo, 1, ndim, decomp%nocc+1, decomp%nocc+1, lumo)
+!!$
+!!$  call mat_mix_homolumo (homo, lumo)
+!!$
+!!$  do i=1,ndim
+!!$    call mat_get_ab_elms (homo, i, 1, elms)
+!!$    call mat_create_ab_elms (i, decomp%nocc, elms, Cmo)
+!!$    call mat_get_ab_elms (lumo, i, 1, elms)
+!!$    call mat_create_ab_elms (i, decomp%nocc+1, elms, Cmo)
+!!$  enddo
+!!$
+!!$  call mat_free (homo)
+!!$  call mat_free (lumo)
+!!$
+!!$  end subroutine asymmetrize_starting_guess
 
 
 !> \brief Obtain initial guess by diagonalizing one-el. Hamiltonian
@@ -364,93 +371,93 @@ end subroutine get_initial_dens
 !> \param lupri Logical unit number for output
 !> \param H1 The one-electron part of the Fock matrix
 !> \param D The AO density matrix
-  subroutine starting_guess_h1(config,H1,D)
+  subroutine starting_guess_h1(config,H1,D,S)
     implicit none
     type(configItem),intent(in) :: config
-    type(matrix), intent(in)    :: H1
+    type(matrix), intent(in)    :: H1,S
     type(matrix),intent(inout)  :: D
     type(Matrix)                :: Cmo
     real(realk), pointer    :: eival(:)
     integer :: cycles
 
-    call mem_alloc(eival,config%decomp%S%nrow*2) ! allow for unrestricted.
-    call mat_init(Cmo,config%decomp%S%nrow,config%decomp%S%nrow)
-    call mat_diag_f(H1,config%decomp%S,eival,Cmo)
+    call mem_alloc(eival,S%nrow*2) ! allow for unrestricted.
+    call mat_init(Cmo,S%nrow,S%nrow)
+    call mat_diag_f(H1,S,eival,Cmo)
 
-    if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
-      call asymmetrize_starting_guess (Cmo, config%decomp)
-    endif
+!    if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
+!      call asymmetrize_starting_guess (Cmo, config%decomp)
+!    endif
 
     call mat_density_from_orbs(Cmo,D,config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
     call mem_dealloc(eival)
     call mat_free(Cmo)
   end subroutine starting_guess_h1
 
-  !> \brief Obtain initial guess from the fitted density.
-  !> \author S. Reine
-  !> \date 2005
-  subroutine starting_guess_fit_density(decomp,D)
-    implicit none
-    !> Contains matrices from OAO decomposition of overlap matrix
-    type(decompItem),intent(in) :: decomp
-    !> Initial density matrix (output)
-    type(matrix)             :: D
-    type(matrix)             :: F
-    type(matrix)             :: cmo
-    integer                  :: ndim
-    real(realk)              :: Etotal
-    logical :: getd, getdv
-    real(realk), pointer :: orb(:), eival(:)
+!!$  !> \brief Obtain initial guess from the fitted density.
+!!$  !> \author S. Reine
+!!$  !> \date 2005
+!!$  subroutine starting_guess_fit_density(decomp,D)
+!!$    implicit none
+!!$    !> Contains matrices from OAO decomposition of overlap matrix
+!!$    type(decompItem),intent(in) :: decomp
+!!$    !> Initial density matrix (output)
+!!$    type(matrix)             :: D
+!!$    type(matrix)             :: F
+!!$    type(matrix)             :: cmo
+!!$    integer                  :: ndim
+!!$    real(realk)              :: Etotal
+!!$    logical :: getd, getdv
+!!$    real(realk), pointer :: orb(:), eival(:)
+!!$
+!!$    ndim=D%nrow
+!!$    call mat_init(F,ndim,ndim)
+!!$    call lsquit('CALL di_get_fock(D,F,Etotal) replaced with a quit statement in starting_guess_fit_density',-1)
+!!$    call mat_init(cmo,ndim,ndim)
+!!$    call mem_alloc(eival,ndim*2) ! allow for unrestricted
+!!$    call mat_diag_f(F,decomp%S,eival,cmo)
+!!$    call mem_dealloc(eival)
+!!$    call mat_density_from_orbs(cmo,D,decomp%nocc,decomp%nocca,decomp%noccb)
+!!$    call mat_free(cmo)
+!!$    call mat_free(F)
+!!$  end subroutine starting_guess_fit_density
 
-    ndim=D%nrow
-    call mat_init(F,ndim,ndim)
-    call lsquit('CALL di_get_fock(D,F,Etotal) replaced with a quit statement in starting_guess_fit_density',-1)
-    call mat_init(cmo,ndim,ndim)
-    call mem_alloc(eival,ndim*2) ! allow for unrestricted
-    call mat_diag_f(F,decomp%S,eival,cmo)
-    call mem_dealloc(eival)
-    call mat_density_from_orbs(cmo,D,decomp%nocc,decomp%nocca,decomp%noccb)
-    call mat_free(cmo)
-    call mat_free(F)
-  end subroutine starting_guess_fit_density
-
-  !> \brief Obtain initial guess from linear combination of saved densities.
-  !> \author S. Host
-  !> \date February 2010 
-  subroutine starting_guess_lincomb(D,opt)
-  implicit none
-      !> Initial density (output)
-      type(matrix), intent(inout) :: D
-      !> Contains general settings for SCF optimization
-      type(optItem), intent(in)   :: opt
-      type(matrix)                :: D1, D2
-      integer                     :: idum, ldum, D1lun, D2lun
-      logical                     :: D1_exists, D2_exists,OnMaster
-      OnMaster = .TRUE.
-      INQUIRE(file='D1',EXIST=D1_exists) 
-      INQUIRE(file='D2',EXIST=D2_exists)
-      if (.not. D1_exists) then
-         write(opt%lupri,*) 'File D1 must be present with .HESONLY'
-         call lsquit('File D1 must be present with .HESONLY',opt%lupri)
-      else if (.not. D2_exists) then
-         write(opt%lupri,*) 'File D2 must be present with .HESONLY'
-         call lsquit('File D2 must be present with .HESONLY',opt%lupri)
-      endif
-      call mat_init(D1,D%nrow,D%ncol)
-      call mat_init(D2,D%nrow,D%ncol)
-      D1lun = -1 ; D2lun = -1
-      CALL LSOPEN(D1lun,'D1','OLD','UNFORMATTED')
-      CALL LSOPEN(D2lun,'D2','OLD','UNFORMATTED')
-      call mat_read_from_disk(D1lun,D1,OnMaster)
-      call mat_read_from_disk(D2lun,D2,OnMaster)
-      call LSCLOSE(D1lun,'KEEP')
-      call LSCLOSE(D2lun,'KEEP')
-
-      call mat_add(opt%cfg_weight_param,D1,1.0E0_realk-opt%cfg_weight_param,D2,D)
-
-      call mat_free(D1)
-      call mat_free(D2)
-   end subroutine starting_guess_lincomb
+!!$  !> \brief Obtain initial guess from linear combination of saved densities.
+!!$  !> \author S. Host
+!!$  !> \date February 2010 
+!!$  subroutine starting_guess_lincomb(D,opt)
+!!$  implicit none
+!!$      !> Initial density (output)
+!!$      type(matrix), intent(inout) :: D
+!!$      !> Contains general settings for SCF optimization
+!!$      type(optItem), intent(in)   :: opt
+!!$      type(matrix)                :: D1, D2
+!!$      integer                     :: idum, ldum, D1lun, D2lun
+!!$      logical                     :: D1_exists, D2_exists,OnMaster
+!!$      OnMaster = .TRUE.
+!!$      INQUIRE(file='D1',EXIST=D1_exists) 
+!!$      INQUIRE(file='D2',EXIST=D2_exists)
+!!$      if (.not. D1_exists) then
+!!$         write(opt%lupri,*) 'File D1 must be present with .HESONLY'
+!!$         call lsquit('File D1 must be present with .HESONLY',opt%lupri)
+!!$      else if (.not. D2_exists) then
+!!$         write(opt%lupri,*) 'File D2 must be present with .HESONLY'
+!!$         call lsquit('File D2 must be present with .HESONLY',opt%lupri)
+!!$      endif
+!!$      call mat_init(D1,D%nrow,D%ncol)
+!!$      call mat_init(D2,D%nrow,D%ncol)
+!!$      D1lun = -1 ; D2lun = -1
+!!$      CALL LSOPEN(D1lun,'D1','OLD','UNFORMATTED')
+!!$      CALL LSOPEN(D2lun,'D2','OLD','UNFORMATTED')
+!!$      call mat_read_from_disk(D1lun,D1,OnMaster)
+!!$      call mat_read_from_disk(D2lun,D2,OnMaster)
+!!$      call LSCLOSE(D1lun,'KEEP')
+!!$      call LSCLOSE(D2lun,'KEEP')
+!!$
+!!$      call mat_add(opt%cfg_weight_param,D1,1.0E0_realk-opt%cfg_weight_param,D2,D)
+!!$
+!!$      call mat_free(D1)
+!!$      call mat_free(D2)
+!!$   end subroutine starting_guess_lincomb
 
 END MODULE initial_guess
 

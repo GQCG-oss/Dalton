@@ -10,8 +10,71 @@ use memory_handling
 private 
 public :: SET_EMPTY_AO, FREE_EMPTY_AO, copy_aobatch, copy_aobatch2,&
      & PRINT_AO, PRINT_AOBATCH, FREE_AOITEM, initBatchOrbitalInfo,&
-     & setBatchOrbitalInfo, freeBatchOrbitalInfo, SET_MAXJ
+     & setBatchOrbitalInfo, freeBatchOrbitalInfo, SET_MAXJ, &
+     & nullifyAOBATCH, nullifyAOITEM
 Contains
+
+subroutine nullifyAOITEM(AO)
+implicit none
+type(aoitem) :: AO
+
+AO%EMPTY = .TRUE.
+nullify(AO%BATCH)
+AO%nbatches = 0
+nullify(AO%CC)
+AO%nCC=0
+nullify(AO%Exponents)
+nullify(AO%Angmom)
+AO%nExp=0
+AO%natoms=0
+AO%ntype=0
+AO%nredtype=0
+AO%nbast=0
+AO%maxJ=0
+nullify(AO%ATOMICnORB)
+nullify(AO%ATOMICnBATCH)
+end subroutine nullifyAOITEM
+
+subroutine nullifyAOBATCH(AO)
+implicit none
+type(AOITEM) :: AO
+!
+integer :: i,n,J
+n = size(AO%BATCH)
+do I=1,n
+   AO%BATCH(I)%TYPE_Empty = .TRUE.
+   AO%BATCH(I)%TYPE_Nucleus = .FALSE.
+   AO%BATCH(I)%TYPE_pCharge = .FALSE.
+   AO%BATCH(I)%TYPE_elField = .FALSE.
+   AO%BATCH(I)%spherical = .FALSE.
+   AO%BATCH(I)%CENTER(1) = 0.0E0_realk
+   AO%BATCH(I)%CENTER(2) = 0.0E0_realk
+   AO%BATCH(I)%CENTER(3) = 0.0E0_realk
+   AO%BATCH(I)%nPrimitives = 0
+   AO%BATCH(I)%atom = 0
+   AO%BATCH(I)%molecularIndex = 0
+   AO%BATCH(I)%batch = 0
+   AO%BATCH(I)%maxContracted = 0
+   AO%BATCH(I)%maxAngmom = 0
+   nullify(AO%BATCH(I)%pExponents)
+   AO%BATCH(I)%nAngmom = 0
+   AO%BATCH(I)%extent = 0.0E0_realk
+   do J = 1,maxAOangmom
+      AO%BATCH(I)%ANGMOM(J) = 0
+      AO%BATCH(I)%nContracted(J) = 0
+      AO%BATCH(I)%startOrbital(J) = 0
+      AO%BATCH(I)%startprimOrbital(J) = 0
+      AO%BATCH(I)%nOrbComp(J) = 0
+      AO%BATCH(I)%nPrimOrbComp(J) = 0
+      AO%BATCH(I)%nOrbitals(J) = 0
+      nullify(AO%BATCH(I)%pCC(J)%p) 
+      AO%BATCH(I)%CCindex(J)  = 0
+   ENDDO
+   AO%BATCH(I)%itype = 0
+   AO%BATCH(I)%redtype = 0
+enddo
+end subroutine nullifyAOBATCH
+
 !> \brief make an empty AOITEM
 !> \author T. Kjaergaard
 !> \date 2010

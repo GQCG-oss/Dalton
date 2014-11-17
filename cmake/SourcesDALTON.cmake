@@ -159,12 +159,16 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/hersol.F
     DALTON/abacus/hersym.F
     DALTON/abacus/hertst.F
+    DALTON/abacus/her_lslib.F
     DALTON/abacus/huckel.F
     DALTON/abacus/abalresc.F
     DALTON/abacus/linearlr.F
     DALTON/abacus/average.F
     DALTON/abacus/angpso.F
     DALTON/abacus/angkin.F
+    DALTON/abacus/herqmnp.F
+    DALTON/rsp/rspqmnp.F
+    DALTON/sirius/sirqmnp.F
     DALTON/amfi/amfi.F
     DALTON/amfi/symtra.F
     DALTON/cc/asqr.F
@@ -370,6 +374,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/ccsd_diis.F
     DALTON/cc/ccsd_energy.F
     DALTON/cc/ccsd_input.F
+    DALTON/cc/ccsd_init0.F
     DALTON/cc/ccsd_rhs.F
     DALTON/cc/ccsd_rhs3.F
     DALTON/cc/ccsd_rou3.F
@@ -428,7 +433,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/densfit/denfit_noddy.F
     DALTON/densfit/df_dirac.F
     DALTON/dft/dft_aos.F
-    DALTON/dft/dft_ac.F 
+    DALTON/dft/dft_ac.F
     DALTON/dft/dft_aux.F
     DALTON/dft/dft_den.F
     DALTON/dft/dft_exp.F
@@ -610,6 +615,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirorb.F
     DALTON/sirius/sirout.F
     DALTON/sirius/sir_mep.F
+    DALTON/sirius/sir_qfit.F
     DALTON/sirius/sirpcm.F
     DALTON/sirius/sirpcmder.F
     DALTON/sirius/sirpop.F
@@ -758,7 +764,19 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/gp/memory_parallel.F90
     DALTON/abacus/rma_windows.F90
     DALTON/cc/dyn_index.F90
+    #    DALTON/pcm/electrostatic_potential.F90
+    DALTON/pcm/pcm_scf.F90
+    DALTON/pcm/pcm_integrals.F90
+    DALTON/pcm/pcm_linear_response.F90
+    DALTON/pcm/pcmmod_cfg.F90
+    DALTON/pcm/pcm_write.F90
+    DALTON/pcm/pcm_utils.F90
     )
+# interface of QMatrix library
+if(ENABLE_QMATRIX)
+    set(DAL_QMATRIX_SOURCES
+        DALTON/qmatrix/dalton_qmatrix.F90)
+endif()
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F
     )

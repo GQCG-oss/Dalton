@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sirneo */
       SUBROUTINE SIRNEO(CREF,G,CMO,INDXCI,DV,PV,
@@ -728,13 +727,7 @@ C
 #include "infdim.h"
 #include "inftap.h"
 #include "infpri.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 #include "gnrinf.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 C
 C     local variables:
 C
@@ -766,13 +759,8 @@ C     ... symmetrize CI vector
       DOPHP  = .FALSE.
 #else
       DOPHP  = (MAXPHP .GT. 0)
-C----------------------
 C CBN+JK 03.01.06
-C----------------------
-      IF (SOLVNT .OR. PCM .OR. QM3) DOPHP = .FALSE.
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
+      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM) DOPHP = .FALSE.
       IF (BETA .NE. D1) DOPHP = .FALSE.
 C     ... only use PHP for beta = 1
 C     PHPMAERKE: implement for beta .ne. 1
@@ -1201,7 +1189,7 @@ C
          DO 1200 ISIMX = JSIMX+1,JSIMX+NSIMX
             JROOTX = JROOT(ISIMX)
             IBTYPE = IBNDX(IBNOFF+ISIMX)
-            IF (IBTAND(IBTYPE,1) .NE. 0) THEN
+            IF (IAND(IBTYPE,1) .NE. 0) THEN
                ICSIMX = ICSIMX + 1
                IBNDX(ICSIMX) = JROOTX
                IF (JCRV.NE.JCRVX) THEN
@@ -1209,7 +1197,7 @@ C
                END IF
                JCRVX = JCRVX + NCONF
             END IF
-            IF (IBTAND(IBTYPE,2) .NE. 0) THEN
+            IF (IAND(IBTYPE,2) .NE. 0) THEN
                IOSIMX = IOSIMX + 1
                IBNDX(IOSIMX) = JROOTX
 CHJ-860921: currently KAPOPT only works correctly for ISTATE
@@ -1720,8 +1708,8 @@ C
 C
 C Section 1: extend reduced L-matrix with N new b-vectors
 C
-      EXTEND = (IBTAND(ICTL,1) .NE. 0)
-      SOLVE  = (IBTAND(ICTL,2) .NE. 0)
+      EXTEND = (IAND(ICTL,1) .NE. 0)
+      SOLVE  = (IAND(ICTL,2) .NE. 0)
       NTSIM = NCSIM + NOSIM
       IF (EXTEND .AND. NTSIM.GT.0) THEN
          IF (NREDL .GE. LIROW)
@@ -1831,12 +1819,7 @@ C
             I1 = I1 + I
  1050    CONTINUE
          CALL DUNIT(EVEC,NREDL)
-         KBIG  = 1     + KMA
-         KJBIG = KBIG  + NREDL
-         LNEED = KJBIG + NREDL
-         IF (LNEED .GT. LBVECS) CALL ERRWRK('NEORED.JACO',LNEED,LBVECS)
-         CALL JACO(BVECS,EVEC,NREDL,NREDL,NREDL,
-     *             BVECS(KBIG),BVECS(KJBIG))
+         CALL JACO_THR(BVECS,EVEC,NREDL,NREDL,NREDL,0.0D0)
          DO 1100 I=1,NREDL
             EVAL(I)=BVECS(IROW(I+1))
  1100    CONTINUE

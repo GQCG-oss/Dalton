@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,8 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
+C
+C FILE: abacus/aba2r12.F
 C
 C  /* Deck eriher */
       SUBROUTINE ABEQ52(Q,R,W,A,PQX,PQY,PQZ,INDHER,JMAX,
@@ -145,14 +146,7 @@ C  /* Deck r12wrt */
 #include "inftap.h"
 #include "nuclei.h"
 #include "symmet.h"
-      INTEGER JBUF(5), MBUF
-      SAVE JBUF, MBUF
-#if defined (VAR_SPLITFILES)
-#include "2gbdef.h"
-      CHARACTER*80 FNNAME, FNNM2
-#include "chrnos.h"
-#endif
-#include "ibtfun.h"
+
 C
        IF (ITYPE .EQ. -1) THEN
          IDUM = 0
@@ -179,62 +173,22 @@ C
             CALL GPOPEN(LUR12(I),'AOU21','UNKNOWN',' ',' ',IDUM,.FALSE.)
             CALL NEWLAB('AOU21INT',LUR12(I),LUPRI)
          END IF
-         IF (INDA .NE. 0) THEN
-            MBUF = LBUF*2 + 4/IRAT
-         ELSE
-            MBUF = LBUF*2 + 2/IRAT
-         END IF
       END IF
 C
       DO 100 KR12 = 1, NOPP12 + 1
        IF (ITYPE .EQ. -1) THEN
          ICOUNT = 0
-         JBUF(KR12) = MBUF + 8
        ELSE IF (ITYPE .EQ. 0) THEN
-#if defined (VAR_SPLITFILES)
-         IF (JBUF(KR12) + MBUF .GT. I2GB) THEN
-            INQUIRE(UNIT=LUR12(KR12),NAME=FNNAME)
-            LN = 1
- 10         CONTINUE
-            IF (FNNAME(LN:LN) .NE. ' ') THEN
-               LN = LN + 1
-               GOTO 10
-            END IF
-            LN = LN - 1
-            CALL GPCLOSE(LUR12(KR12),'KEEP')
-            I = LN - 1
-            IF (FNNAME(I:I) .NE. '-') THEN
-               FNNM2 = FNNAME(1:LN)//'-0'
-               LN = LN + 2
-            ELSE
-               READ(FNNAME(LN:),'(I1)') INUM
-               INUM = INUM + 1
-               IF (INUM .GT. 9) THEN
-                  WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &                 ' file more than 11 times.',
-     &                 ' This is currently not supported'
-                  CALL QUIT('Too many splittings of a file')
-               END IF
-               FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-            END IF
-            CALL GPOPEN(LUR12(KR12),FNNM2(1:LN),'UNKNOWN',' ',' ',
-     &           IDUMMY,.FALSE.)
-            JBUF(KR12) = MBUF
-         END IF
-#endif
          IF (INDA .NE. 0) WRITE (LUR12(KR12)) INDA
          WRITE (LUR12(KR12)) (BUF(L,KR12),L=1,LBUF),ICOUNT
-         JBUF(KR12) = JBUF(KR12) + MBUF
          IF (KR12 .EQ. NOPP12 + 1) ICOUNT = 0
        ELSE
          IF (INDA .NE. 0) THEN
             WRITE (LUR12(KR12)) -INDA
             WRITE (LUR12(KR12)) (BUF(L,KR12),L=1,LBUF),ICOUNT
-            JBUF(KR12) = JBUF(KR12) + MBUF
          ELSE
             IF (ICOUNT .GT. 0) THEN
                WRITE (LUR12(KR12)) (BUF(L,KR12),L=1,LBUF),ICOUNT
-               JBUF(KR12) = JBUF(KR12) + MBUF
             END IF
             WRITE (LUR12(KR12)) (BUF(L,KR12),L=1,LBUF),-1
          END IF
@@ -268,7 +222,7 @@ C
 #include "symmet.h"
       SAVE BUF, XBUF, ICOUNT
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine RN2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -302,7 +256,7 @@ C
          IREPA  = IPNTRP(1,I)
          IREPB  = IPNTRP(2,I)
          IREPC  = IPNTRP(3,I)
-         IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+         IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          IF (NOTEST) THEN
                INT = 0
                DO 200 IAB = 1, NORBAB
@@ -394,7 +348,7 @@ C
       RETURN
       END
 C  /* Deck us2out */
-      SUBROUTINE US2OUT(SO,N,WRKBUF,
+      SUBROUTINE US2OUT(SO,NSOINT,WRKBUF,
      &                  IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
      &                  THRESH,NINDAB,NINDCD,IORBSH,IPRINT)
 C
@@ -402,15 +356,15 @@ C
 #include "priunit.h"
 #include "iratdef.h"
       LOGICAL FIRST, LAST, IPNTLG(*)
-      DIMENSION SO(N,*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
-     &          NINDCD(*), IORBSH(*) 
+      DIMENSION SO(NSOINT,*), WRKBUF(*), IPNTNO(*), IPNTRP(*),
+     &          NINDAB(*), NINDCD(*), IORBSH(*) 
 #include "disbuf.h"
 C
 C---------------------------------
 C     Call sort and write routine.
 C---------------------------------
 C
-      CALL US2OU1(SO,N,WRKBUF(KDSBF),WRKBUF(KDUBF),
+      CALL US2OU1(SO,NSOINT,WRKBUF(KDSBF),WRKBUF(KDUBF),
      &            WRKBUF(KDSIBF),WRKBUF(KDSNCT),
      &            WRKBUF(KDSORB),WRKBUF(KORBDS),IPNTNO,IPNTRP,IPNTLG,
      &            FIRST,LAST,THRESH,NINDAB,NINDCD,LDSBUF,NDIST,IORBSH,
@@ -420,7 +374,7 @@ C
       END
 C  /* Deck us2ou1 */
       SUBROUTINE US2OU1(SO,NSOINT,BUF,CUF,
-     &                  IBUF,NCOUNT,IDSORB,IORBDS,IPNTNO,IPNTRP,
+     &                  IBUF4,NCOUNT,IDSORB,IORBDS,IPNTNO,IPNTRP,
      &                  IPNTLG,FIRST,LAST,THRESH,NINDAB,NINDCD,LDSBUF,
      &                  NDIST,IORBSH,IPRINT)
 C
@@ -438,10 +392,10 @@ C
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(NSOINT,*), BUF(LBUF,NDIST), CUF(LBUF,NDIST), 
-     &          IBUF(LBUF,2,NDIST),
      &          IPNTNO(4,*), IPNTRP(3,*), NCOUNT(NDIST),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IDSORB(NDIST), IORBDS(NBASIS), IORBSH(*)
+      INTEGER*4 IBUF4(LBUF*NIBUF,NDIST)
 #include "twocom.h"
 #include "symmet.h"
 #include "drw2el.h"
@@ -449,7 +403,7 @@ C
 C
       INTEGER*8 NWRIT
 C
-#include "ibtfun.h"
+
 C
       IF (LBUF .NE. LDSBUF) THEN
         WRITE (LUPRI,*) 'LBUF .ne. LDSBUF :',LBUF,LDSBUF
@@ -471,20 +425,17 @@ C
          WRITE (LUPRI,'(2X,A, I5)') 'NDIST ', NDIST
       END IF
 C
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
+      IF (NIBUF .EQ. 1) THEN
          NBITS = 8
-      ELSE
-         NIBUF = 2
+         IBIT1 = 2**8  - 1
+         IBIT2 = 2**16 - 1
+      ELSE IF (NIBUF .EQ. 2) THEN
          NBITS = 16
+         IBIT1 = 2**16 - 1
+         IBIT2 = 0   ! not used when NIBUF .eq. 2
+      ELSE
+         CALL QUIT('ERROR US2OU1: NIBUF .ne. 1 .and. NIBUF .ne. 2')
       END IF
-#endif
-      IBIT1 = 2**NBITS     - 1
-      IBIT2 = 2**(2*NBITS) - 1
 C
 C     *******************************************************
 C     ***** Initialization when subroutine first called *****
@@ -492,8 +443,8 @@ C     *******************************************************
 C
       IF (FIRST) THEN
          CALL IZERO(NCOUNT,NDIST)
-         CALL UN2WRU(BUF,CUF,IBUF,ICOUNT,-1,0,IPRINT)
-C         CALL UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,-1,NBITS,0,IPRINT)
+         CALL UN2WRU(BUF,CUF,IBUF4,ICOUNT,-1,0,IPRINT)
+C        CALL UN2WRT(BUF,IBUF4,LBUF,NIBUF,ICOUNT,-1,NBITS,0,IPRINT)
          DOINDX = .TRUE.
          CALL AINDEX(ISHELA,NAINTS,IDSORB,DOINDX,IORBSH,IPRINT)
          DO 50 IDIST = 1, NDIST
@@ -513,7 +464,7 @@ C
          IREPA  = IPNTRP(1,I)
          IREPB  = IPNTRP(2,I)
          IREPC  = IPNTRP(3,I)
-         IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+         IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          IF (NOTEST) THEN
             IF (NIBUF .EQ. 1) THEN
                INT = 0
@@ -543,14 +494,14 @@ C
                           BUF (ICOUNT,IDIST) =   SOINT1
                           CUF (ICOUNT,IDIST) =   SOINT2
                        END IF
-                       IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
+                       IBUF4(ICOUNT,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           NBUFCL = NBUFCL + 1
                           CALL UN2WRU(BUF(1,IDIST),CUF(1,IDIST),
-     &                                IBUF(1,1,IDIST),
+     &                                IBUF4(1,IDIST),
      &                                ICOUNT,0,INDA,IPRINT)
-C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
-C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
+C                         CALL UN2WRT(BUF(1,IDIST),IBUF4(1,IDIST),LBUF,
+C    &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NCOUNT(IDIST) = 0
                        END IF
                      END IF
@@ -585,12 +536,12 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           BUF (ICOUNT,IDIST) =   SOINT1
                           CUF (ICOUNT,IDIST) =   SOINT2
                        END IF
-                       IBUF(ICOUNT,1,IDIST) = INDAB
-                       IBUF(ICOUNT,2,IDIST) = INDCD
+                       IBUF4(2*ICOUNT-1,IDIST) = INDAB
+                       IBUF4(2*ICOUNT  ,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           NBUFCL = NBUFCL + 1
                           CALL UN2WRU(BUF(1,IDIST),CUF(1,IDIST),
-     &                                IBUF(1,1,IDIST),
+     &                                IBUF4(1,IDIST),
      &                                ICOUNT,0,INDA,IPRINT)
                           NCOUNT(IDIST) = 0
                        END IF
@@ -634,10 +585,10 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           BUF (ICOUNT,IDIST) =   SOINT1
                           CUF (ICOUNT,IDIST) =   SOINT2
                        END IF
-                       IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
+                       IBUF4(ICOUNT,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           CALL UN2WRU(BUF(1,IDIST),CUF(1,IDIST),
-     &                                IBUF(1,1,IDIST),
+     &                                IBUF4(1,IDIST),
      &                                ICOUNT,0,INDA,IPRINT)
                           NBUFCL = NBUFCL + 1
                           NCOUNT(IDIST) = 0
@@ -655,11 +606,11 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           BUF (ICOUNT,IDIST) =   SOINT1
                           CUF (ICOUNT,IDIST) =   SOINT2
                        END IF
-                       IBUF(ICOUNT,1,IDIST) = INDAB
-                       IBUF(ICOUNT,2,IDIST) = INDCD
+                       IBUF4(2*ICOUNT-1,IDIST) = INDAB
+                       IBUF4(2*ICOUNT  ,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           CALL UN2WRU(BUF(1,IDIST),CUF(1,IDIST),
-     &                                IBUF(1,1,IDIST),
+     &                                IBUF4(1,IDIST),
      &                                ICOUNT,0,INDA,IPRINT)
                           NBUFCL = NBUFCL + 1
                           NCOUNT(IDIST) = 0
@@ -680,7 +631,7 @@ C
       IF (LAST) THEN
          DO 400 IDIST = 1, NDIST
             NWRIT = NWRIT + NCOUNT(IDIST)
-            CALL UN2WRU(BUF(1,IDIST),CUF(1,IDIST),IBUF(1,1,IDIST),
+            CALL UN2WRU(BUF(1,IDIST),CUF(1,IDIST),IBUF4(1,IDIST),
      &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
   400    CONTINUE
          FNALL  = (NBASIS*(NBASIS + 1))/2
@@ -696,7 +647,7 @@ C
       RETURN
       END
 C  /* Deck un2wru */
-      SUBROUTINE UN2WRU(BUF,CUF,IBUF,ICOUNT,ITYPE,INDA,IPRINT)
+      SUBROUTINE UN2WRU(BUF,CUF,IBUF4,ICOUNT,ITYPE,INDA,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -705,16 +656,18 @@ C  /* Deck un2wru */
 #include "maxaqn.h"
 #include "ibtpar.h"
 #include "eribuf.h"
-      DIMENSION BUF(LBUF), CUF(LBUF), IBUF(LBUF,NIBUF)
+      DIMENSION BUF(LBUF), CUF(LBUF)
+      INTEGER*4 IBUF4(LBUF*NIBUF), ICOUNT4
 #include "drw2el.h"
 #include "r12int.h"
 #include "twosta.h"
 #include "inftap.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       NBUFX(0) = NBUFX(0) + 1
+      ICOUNT4  = ICOUNT
 C
       IF (ITYPE .EQ. -1) THEN
          REWIND LUINTR
@@ -726,24 +679,27 @@ c        ICOUNT = 0
 c        NBUFX(0) = 0
       ELSE IF (ITYPE .EQ. 0) THEN
          IF (INDA .NE. 0) WRITE (LUINTR) INDA
-         WRITE (LUAORC(0),REC=NBUFX(0)) BUF,IBUF,ICOUNT
-         WRITE (LU21INT  ,REC=NBUFX(0)) CUF,IBUF,ICOUNT
+         WRITE (LUAORC(0),REC=NBUFX(0)) BUF,IBUF4,ICOUNT4
+         WRITE (LU21INT  ,REC=NBUFX(0)) CUF,IBUF4,ICOUNT4
 C
          IF (IPRINT .GE. 6) THEN
-            WRITE (LUPRI,'(2X,A,I5,A/)')
+            WRITE (LUPRI,'(2X,A,I5,A/)') 'UN2WRU '//
      &         'Integral buffer #',NBUFX(0),' has been written.'
             IBIT1 = 2**NBITS - 1
             DO 100 INT = 1, ICOUNT
                IF (NIBUF .EQ. 1) THEN
-                  I = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-                  J = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-                  K = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-                  L = IBTAND(       IBUF(INT,1),         IBIT1)
+                  IJKL = IBUF4(INT) ! IJKL will always be standard integer
+                  I = IAND(ISHFT(IJKL,-3*NBITS),IBIT1)
+                  J = IAND(ISHFT(IJKL,-2*NBITS),IBIT1)
+                  K = IAND(ISHFT(IJKL,  -NBITS),IBIT1)
+                  L = IAND(       IJKL,         IBIT1)
                ELSE
-                  I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-                  J = IBTAND(       IBUF(INT,1),       IBIT1)
-                  K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-                  L = IBTAND(       IBUF(INT,2),       IBIT1)
+                  IJ = IBUF4(2*INT-1)
+                  KL = IBUF4(2*INT  )
+                  I = IAND(ISHFT(IJ,-NBITS),IBIT1)
+                  J = IAND(       IJ,       IBIT1)
+                  K = IAND(ISHFT(KL,-NBITS),IBIT1)
+                  L = IAND(       KL,       IBIT1)
                END IF
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,2(1P,D16.8))')
      &                      ' ## ', I, J, K, L, BUF(INT), CUF(INT)
@@ -753,28 +709,32 @@ C
       ELSE
          IF (INDA .NE. 0) THEN
             WRITE (LUINTR) INDA
-            WRITE (LUAORC(0),REC=NBUFX(0)) BUF,IBUF,ICOUNT
-            WRITE (LU21INT  ,REC=NBUFX(0)) CUF,IBUF,ICOUNT
+            WRITE (LUAORC(0),REC=NBUFX(0)) BUF,IBUF4,ICOUNT4
+            WRITE (LU21INT  ,REC=NBUFX(0)) CUF,IBUF4,ICOUNT4
          ELSE
-            CALL QUIT('Error in UN2WRN')
+            CALL QUIT('Error in UN2WRU')
          END IF
 C
          IF (IPRINT .GE. 6) THEN
             IF (ICOUNT .GT. 0) THEN
-               WRITE (LUPRI,'(2X,A,I5,A/)')
-     &            'Integral buffer #',NBUFX(0),' has been written.'
+               WRITE (LUPRI,'(2X,A,I5,A,I5/)') 'UN2WRU '//
+     &            'Integral buffer #',NBUFX(0),' has been written.'//
+     &            '   INDA =',INDA
                IBIT1 = 2**NBITS - 1
                DO 200 INT = 1, ICOUNT
                   IF (NIBUF .EQ. 1) THEN
-                     I = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-                     J = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-                     K = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-                     L = IBTAND(       IBUF(INT,1),         IBIT1)
+                     IJKL = IBUF4(INT) ! IJKL will always be standard integer
+                     I = IAND(ISHFT(IJKL,-3*NBITS),IBIT1)
+                     J = IAND(ISHFT(IJKL,-2*NBITS),IBIT1)
+                     K = IAND(ISHFT(IJKL,  -NBITS),IBIT1)
+                     L = IAND(       IJKL,         IBIT1)
                   ELSE
-                     I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-                     J = IBTAND(       IBUF(INT,1),       IBIT1)
-                     K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-                     L = IBTAND(       IBUF(INT,2),       IBIT1)
+                     IJ = IBUF4(2*INT-1)
+                     KL = IBUF4(2*INT  )
+                     I = IAND(ISHFT(IJ,-NBITS),IBIT1)
+                     J = IAND(       IJ,       IBIT1)
+                     K = IAND(ISHFT(KL,-NBITS),IBIT1)
+                     L = IAND(       KL,       IBIT1)
                   END IF
                   WRITE (LUPRI,'(10X,A,2X,4I4,5X,2(1P,D16.8))')
      &                         ' ## ', I, J, K, L, BUF(INT), CUF(INT)
@@ -808,3 +768,4 @@ C
       END IF
       RETURN
       END
+C end of FILE: abacus/aba2r12.F

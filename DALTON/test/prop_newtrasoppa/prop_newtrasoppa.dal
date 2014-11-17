@@ -1,0 +1,12 @@
+**DALTON INPUT
+.NEWTRA
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.TITLE
+ This will test the new integral transformation with a SOPPA calculation
+.HF
+.MP2
+**PROPERTIES
+.SPIN-S
+.SOPPA
+**END OF DALTON INPUT

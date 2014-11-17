@@ -1208,9 +1208,7 @@ module xcfun_host
                 call lsquit('Finished searching the string number mismatch',-1)
              endif
              if (string(i:i) == ' ') then
-                write(*,*) 'debug:',i,nweight,j,WeightSingle(j)
                 TMPweight(1:nweight) = string(i-nweight:i-1)
-                write(*,*) 'debug:',TMPweight
                 READ(TMPweight,*) WeightSingle(j)
                 print*,'found weight =',WeightSingle(j)
                 if (j == n) then

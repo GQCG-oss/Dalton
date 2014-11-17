@@ -52,6 +52,8 @@ cat > arraytest.dal <<'%EOF%'
 **DEC
 .RESTART
 .TESTARRAY
+.MEMORY
+2.0
 *END OF INPUT
 %EOF%
 #######################################################################

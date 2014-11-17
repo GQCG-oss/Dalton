@@ -399,20 +399,20 @@ endif
 !write(lupri,*) 'alpha'!, alpha(1:2*redsize); call flshfo(lupri)
 !if (no_pairing) then
 !    if ((cfg_cg_truncate) .and. (redsize>vec_truc)) then
-!        call OUTPUT(alpha,1,vec_truc,1,1,1,1,1,lupri)
+!        call LS_OUTPUT(alpha,1,vec_truc,1,1,1,1,1,lupri)
 !        write(lupri,*) 'Bmat'!, alpha(1:2*redsize); call flshfo(lupri)
 !          do i=1,vec_truc
 !              write(lupri,*)(Bmat(i,j), j=1,vec_truc); call flshfo(lupri)
 !          enddo
 !     else
-!        call OUTPUT(alpha,1,redsize,1,1,1,1,1,lupri)
+!        call LS_OUTPUT(alpha,1,redsize,1,1,1,1,1,lupri)
 !        write(lupri,*) 'Bmat'!, alpha(1:2*redsize); call flshfo(lupri)
 !          do i=1,redsize
 !              write(lupri,*)(Bmat(i,j), j=1,redsize); call flshfo(lupri)
 !          enddo
 !     endif
 !else
-!    call OUTPUT(alpha,1,2*redsize,1,1,1,1,1,lupri)
+!    call LS_OUTPUT(alpha,1,2*redsize,1,1,1,1,1,lupri)
 !    write(lupri,*) 'Bmat'!, alpha(1:2*redsize); call flshfo(lupri)
 !          do i=1,2*redsize
 !              write(lupri,*)(Bmat(i,j), j=1,2*redsize); call flshfo(lupri)
@@ -436,12 +436,12 @@ endif
 
 !if (no_pairing) then
 !   if ((cfg_cg_truncate) .and. (redsize>vec_truc)) then
-!        call OUTPUT(alpha,1,vec_truc,1,1,1,1,1,lupri)
+!        call LS_OUTPUT(alpha,1,vec_truc,1,1,1,1,1,lupri)
 !   else
-!        call OUTPUT(alpha,1,redsize,1,1,1,1,1,lupri)
+!        call LS_OUTPUT(alpha,1,redsize,1,1,1,1,1,lupri)
 !   endif
 !else
-!    call OUTPUT(alpha,1,2*redsize,1,1,1,1,1,lupri)
+!    call LS_OUTPUT(alpha,1,2*redsize,1,1,1,1,1,lupri)
 !endif
 
 if (no_pairing) then

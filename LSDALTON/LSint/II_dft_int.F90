@@ -6,7 +6,7 @@
 MODULE IIDFTINT
 use gridgenerationmodule
 use dft_memory_handling
-use Integralparameters
+use LSparameters
 !use memory_handling
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
@@ -15,6 +15,7 @@ use TYPEDEF
 use dft_type
 use dft_typetype
 use IIDFTKSMWORK
+use LS_UTIL,only: DGEMM_TS
 private
 public :: II_DFTINT, TEST_NELECTRONS, II_DFTDISP, II_DFTsetFunc, II_DFTaddFunc
 ! Notes 
@@ -195,16 +196,20 @@ IPRUNE = 1
 IF (GridObject%NOPRUN) IPRUNE = 0
 
 CALL LSTIMER('START',TS,TE,LUPRI)
-GridObject%NBUFLEN=1024
-BoxMemRequirement = NBAST*NBAST
-
+GridObject%NBUFLEN= 1024
+BoxMemRequirement = 160000
 CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
      & GridObject%HRDNES,iprune,BAS%natoms,BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,&
      & BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
      & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,&
      & GridObject%nbuflen,GridObject%RADIALGRID,GridObject%ZdependenMaxAng,&
      & GridObject%PARTITIONING,BAS%nstart,MaxNactBast,LUPRI,&
-     & IPRINT,USE_MPI,numnodes,node,GridObject%Id)
+     & IPRINT,USE_MPI,numnodes,node,GridObject%Id,GridObject%numnodes)
+IF(GridObject%numnodes.NE.numnodes)THEN
+   print*,'GridObject%numnodes',GridObject%numnodes
+   print*,'numnodes',numnodes
+   call lsquit('dim mismatch in Number of nodes used to construct/calc grid',-1)
+ENDIF
 IF(PRINTTIM)THEN
 #ifdef VAR_MPI
    IF (infpar%mynum.EQ.infpar%master) THEN
@@ -409,6 +414,7 @@ logical :: grid_exists
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
 LUGRID=-1
+call setNoOMP(noOMP)
 call get_quadfilename(filename,nbast,node,GridId)
 INQUIRE(file=filename,EXIST=grid_exists)
 IF(grid_exists)THEN 
@@ -571,7 +577,7 @@ DO XX=1+tid,IT,nthreads
       ENDIF
       CALL CB(LUPRI,NCURLEN,NSHELLBLOCKS,BLOCKS(:,:),INXACT(:),NactBas,NBAST,NDMAT,ACTIVE_DMAT(:),NTYPSO,GAO(:),&
            &RHOA(:,:),GRADA(:,:,:),TAU(:,:),MXBLLEN,COOR(:,IPT:IPT+NCURLEN-1),WEIGHT(IPT:IPT+NCURLEN-1),&
-           &myDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,maxNactBAST)
+           &myDFTDATA,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,maxNactBAST)
    ENDDO
 ENDDO
 
@@ -863,29 +869,29 @@ END DO
 !call mem_dft_dealloc(NVALUE)
 
 !write (lupri,*) 'integrals from II_BLGETSOS',nvclen,NactBAS
-!call output(gao(1,1,1),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,1),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'x integrals from II_BLGETSOS'
-!call output(gao(1,1,2),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,2),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'y integrals from II_BLGETSOS'
-!call output(gao(1,1,3),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,3),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'z integrals from II_BLGETSOS'
-!call output(gao(1,1,4),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,4),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !if (nder.eq. 2) then
 !   WRITE(lupri,*)'COOR(1,:)',(COOR(1,i),I=1,NVCLEN)
 !   WRITE(lupri,*)'COOR(2,:)',(COOR(2,i),I=1,NVCLEN)
 !   WRITE(lupri,*)'COOR(3,:)',(COOR(3,i),I=1,NVCLEN)
 !   write (lupri,*) ' xx integrals from II_BLGETSOS '
-!   call output(gao(1,1,5),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,5),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' xy integrals from II_BLGETSOS '
-!   call output(gao(1,1,6),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,6),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' xz integrals from II_BLGETSOS '
-!   call output(gao(1,1,7),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,7),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' yy integrals from II_BLGETSOS '
-!   call output(gao(1,1,8),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,8),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' yz integrals from II_BLGETSOS '
-!   call output(gao(1,1,9),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,9),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' zz integrals from II_BLGETSOS '
-!   call output(gao(1,1,10),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,10),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !end if
 call mem_dft_dealloc(PA)
 call mem_dft_dealloc(PA2)
@@ -992,9 +998,13 @@ IF (NRED.GT. 0) THEN
          ENDDO
       ENDDO
       ! First half-contraction of Gaussian AO with density-matrix
-      CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
-           &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
-      !           &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+              &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+              &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
+      ENDIF
       ! Second half-contraction
       DO K = 1, NVCLEN
          RHO(K,IDMAT)= GAORED(K,1)*TMP(K,1)
@@ -1100,8 +1110,13 @@ IF (NRED.GT. 0) THEN
       IF(NRED.EQ.NactBAS)THEN 
          !no screening
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP,NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP,NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP,NVCLEN)
+         ENDIF
       ELSE
          !Set up reduced density-matrix
          DO JRED=1,NRED
@@ -1113,8 +1128,13 @@ IF (NRED.GT. 0) THEN
             ENDDO
          ENDDO
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP,NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP,NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP,NVCLEN)
+         ENDIF
       ENDIF
       !Second half-contraction
       DO K = 1, NVCLEN
@@ -1239,14 +1259,25 @@ IF (NRED.GT. 0) THEN
       IF(NRED.EQ.NactBAS)THEN 
          !no screening
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ENDIF
       ELSE
          !Set up reduced density-matrix
          DO JRED=1,NRED
@@ -1258,14 +1289,25 @@ IF (NRED.GT. 0) THEN
             ENDDO
          ENDDO
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ENDIF
       ENDIF
       !Second half-contraction
       DO K = 1, NVCLEN
@@ -1597,13 +1639,6 @@ DO I = 2,CC%nrow
    END DO
 END DO
 
-IF (Spherical) THEN
-   call mem_dft_alloc(CAO,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOX,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOY,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOZ,NVCLEN,KCKTA)
-END IF
-
 !screening based on the maximum GA value for the batch of points: GMAX
 GMAX = D0
 DO K = 1, NVCLEN
@@ -1672,6 +1707,12 @@ ELSE IF (SHELLANGMOMA .EQ. 2) THEN
 ! d and higher orbitals
 ELSE
    IF (GMAX.GT.DFTHRI) THEN
+      IF (Spherical) THEN
+         call mem_dft_alloc(CAO,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOX,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOY,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOZ,NVCLEN,KCKTA)
+      END IF
       call mem_dft_alloc(GAX,NVCLEN)
       call mem_dft_alloc(GAY,NVCLEN)
       call mem_dft_alloc(GAZ,NVCLEN)
@@ -1799,6 +1840,12 @@ ELSE
       call mem_dft_dealloc(FX)
       call mem_dft_dealloc(FY)
       call mem_dft_dealloc(FZ)
+      IF (Spherical) THEN
+         call mem_dft_dealloc(CAO)
+         call mem_dft_dealloc(CAOX)
+         call mem_dft_dealloc(CAOY)
+         call mem_dft_dealloc(CAOZ)
+      END IF
    ELSE
       IF (.NOT.Spherical) THEN
          DO I = 1, KCKTA
@@ -1843,12 +1890,6 @@ ELSE
    END IF
 END IF
 
-IF (Spherical) THEN
-   call mem_dft_dealloc(CAO)
-   call mem_dft_dealloc(CAOX)
-   call mem_dft_dealloc(CAOY)
-   call mem_dft_dealloc(CAOZ)
-END IF
 call mem_dft_dealloc(GA)
 call mem_dft_dealloc(GU)
 
@@ -1984,14 +2025,14 @@ DO IV = 1, NVCLEN
          SPHZZ = D0 
          DO J = 1, KCKTA
             SPHFAC = CSP(I,J)
-            IF (ABS(SPHFAC).GT.D0) THEN
+!            IF (ABS(SPHFAC).GT.D0) THEN
                SPHXX = SPHXX + SPHFAC*CAOXX(J)
                SPHXY = SPHXY + SPHFAC*CAOXY(J)
                SPHXZ = SPHXZ + SPHFAC*CAOXZ(J)
                SPHYY = SPHYY + SPHFAC*CAOYY(J)
                SPHYZ = SPHYZ + SPHFAC*CAOYZ(J)
                SPHZZ = SPHZZ + SPHFAC*CAOZZ(J)
-            END IF
+!            END IF
          END DO
          TEMPI = ISTART+I
          GAOXX(IV,TEMPI) = SPHXX
@@ -2215,6 +2256,9 @@ REAL(realk), PARAMETER ::  CONV1=1.88972612E0_realk   ! convert angstrom to bohr
 REAL(realk), PARAMETER ::  CONV2=17.3452771E0_realk   ! convert Joule*nm^6/mol to Bohr^6*hartree
                                        !    1 Bohr = 52.9177 * 10^-3 nm
                                        !    1 Hartree = 2.6255*10^6 Joule/mol
+!  external function
+!EXTERNAL DISP_FUNCFAC
+!  external types
 TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
 !
 ! van der Waals radii for the elements H-Xe in Angstrom
@@ -2418,7 +2462,7 @@ TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
 
 !     final dispersion correction
 !     S6 factor is functional dependant
-      S6 = II_DISP_FUNCFAC(SETTING%SCHEME%DFT%dftfunc,lupri)
+      CALL DISP_FUNCFAC(S6)
       SETTING%EDISP = -S6 * E
 
 !     Add derivative
@@ -2456,68 +2500,9 @@ TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
       END IF
 
    RETURN
-CONTAINS
-  ! Give the s6 factor for the functional, needed in the empirical disp. corr.
-  FUNCTION II_DISP_FUNCFAC(Func,lupri)
-    implicit none
-    Character(len=80),intent(IN) :: func
-    Integer,intent(IN)           :: lupri
-    Real(realk) :: S6,II_DISP_FUNCFAC
-    
-    call capitalize_string(func)
-    IF (func == "BP86") THEN
-      S6 = 1.05D0
-    ELSE IF (func == "BLYP") THEN
-      S6 = 1.20D0
-    ELSE IF (func == "PBE") THEN
-      S6 = 0.75D0
-    ELSE IF (func == "B3LYP") THEN
-      S6 = 1.05D0
-    ELSE IF (func == "TPSS") THEN
-      S6 = 1.00D0
-    ELSE 
-      CALL LSQUIT('Non-valid functional in II_DISP_FUNCFAC',-1)
-    ENDIF
-    II_DISP_FUNCFAC = S6
-  END FUNCTION II_DISP_FUNCFAC
-
 END SUBROUTINE II_DFTDISP
 
-SUBROUTINE II_DFTsetFunc(Func,hfweight,useXCfun,lupri)
-#ifdef VAR_MPI
-use infpar_module
-use lsmpi_mod
-use lsmpi_type
-#endif
-implicit none
-Character(len=1024),intent(IN) :: Func
-Real(realk),intent(INOUT)      :: hfweight
-logical,intent(IN)             :: useXCfun
-integer,intent(IN)             :: lupri
-integer                        :: ierror
-IF(.NOT.useXCfun)THEN
-   if (len_trim(Func).gt.80) then 
-      call lsquit('Functional string length exceed 80',-1)
-   else 
-      CALL DFTsetFunc(Func,hfweight,ierror)
-      IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
-   endif
-ELSE
-   call xcfun_host_init(Func,hfweight,lupri)
-ENDIF
-
-#ifdef VAR_MPI
-!for MPI ne also need to set the functional on the slaves
-IF (infpar%mynum.EQ.infpar%master) THEN
-  call ls_mpibcast(DFTSETFU,infpar%master,MPI_COMM_LSDALTON)
-  call lsmpi_setmasterToSlaveFunc(Func)
-ELSE
-  call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
-ENDIF
-#endif
-END SUBROUTINE II_DFTsetFunc
-
-SUBROUTINE II_DFTaddFunc(Func,hfweight)
+SUBROUTINE II_DFTsetFunc(Func,hfweight)
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
@@ -2526,16 +2511,39 @@ use lsmpi_type
 implicit none
 Character(len=80),intent(IN) :: Func
 Real(realk),intent(INOUT)    :: hfweight
-CALL DFTaddFunc(Func,hfweight)
+integer                      :: ierror
+CALL DFTsetFunc(Func,hfweight,ierror)
+IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
+#ifdef VAR_MPI
+!for MPI ne also need to set the functional on the slaves
+IF (infpar%mynum.EQ.infpar%master) THEN
+  call ls_mpibcast(DFTSETFU,infpar%master,MPI_COMM_LSDALTON)
+  call lsmpi_setmasterToSlaveFunc(Func,hfweight)
+ELSE
+  call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
+ENDIF
+#endif
+END SUBROUTINE II_DFTsetFunc
+
+SUBROUTINE II_DFTaddFunc(Func,GGAfactor)
+#ifdef VAR_MPI
+use infpar_module
+use lsmpi_mod
+use lsmpi_type
+#endif
+implicit none
+Character(len=80),intent(IN) :: Func
+Real(realk),intent(IN)       :: GGAfactor
+!
+CALL DFTaddFunc(Func,GGAfactor)
 #ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTADDFU,infpar%master,MPI_COMM_LSDALTON)
-  call lsmpi_setmasterToSlaveFunc(Func)
+  call lsmpi_setmasterToSlaveFunc(Func,GGAfactor)
 ELSE
   call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
 ENDIF
 #endif
 END SUBROUTINE II_DFTaddFunc
-
 END MODULE IIDFTINT

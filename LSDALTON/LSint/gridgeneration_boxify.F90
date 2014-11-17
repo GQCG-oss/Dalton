@@ -50,11 +50,12 @@ INTEGER,intent(inout)  :: nBoxes
 type(bunchpoints),pointer :: keypointer(:)
 !
 real(realk) :: minR(3),maxR(3),Lengthinv,center1(3),center2(3),length(3),split
-integer :: maxDim,nBox1,nBox2,I,ix,NactBast,ip
+integer :: maxDim,nBox1,nBox2,I,ix,NactBast,ip,MaxnBox
 real(realk),parameter :: D05=0.5E0_realk,D8=8E0_realk
 real(realk) :: TS,TE,Volumen1
 real(realk) :: gridLengthX,gridLengthY,gridLengthZ
 type(gridboxtype),pointer :: TMPBOX
+integer,pointer :: IBLCKS(:,:),tmp(:)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 
@@ -140,32 +141,35 @@ nBox1=0
 nBox2=0
 DO I=1,totalpoints
    if(COOR2(maxDim,I).GT.split)THEN
-      nBox1 = nBox1 +1
+      nBox1 = nBox1 + 1
       gridBox%points(nBox1) = I
    else
-      nBox2 = nBox2 +1
+      nBox2 = nBox2 + 1
       tmpBox%points(nBox2) = I
    endif
 ENDDO
 
 gridBox%next => TmpBox
 TmpBox%prev => gridBox
-
+call mem_grid_alloc(IBLCKS,2,MAXNSHELL)
 call BOX_NactOrbGETBLOCKS(RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,&
-     & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,minR,maxR,LUPRI)
+     & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,minR,maxR,LUPRI,IBLCKS)
 call BOX_NactOrbGETBLOCKS(RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,&
-     & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,GridBox%minR,GridBox%maxR,LUPRI)
+     & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,GridBox%minR,GridBox%maxR,LUPRI,IBLCKS)
 call BOX_NactOrbGETBLOCKS(RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,&
-     & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,TmpBox%minR,TmpBox%maxR,LUPRI)
+     & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,TmpBox%minR,TmpBox%maxR,LUPRI,IBLCKS)
 Volumen1 = (maxR(1)-minR(1))*(maxR(2)-minR(2))*(maxR(3)-minR(3))
 
+MaxnBox = MAX(gridBox%npoints,tmpBox%npoints)
+call mem_grid_alloc(tmp,MaxnBox)
 call split_box(GridBox%next,COOR2,GlobalmaxGridpoints,totalpoints,RSHEL,&
      & MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,atomcenterX,atomcenterY,atomcenterZ,&
-     & NSTART,maxnbuflen,iprint,lupri)
-
+     & NSTART,maxnbuflen,iprint,lupri,IBLCKS,tmp,MaxnBox)
 call split_box(GridBox,COOR2,GlobalmaxGridpoints,totalpoints,RSHEL,&
      & MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,atomcenterX,atomcenterY,atomcenterZ,&
-     & NSTART,maxnbuflen,iprint,lupri)
+     & NSTART,maxnbuflen,iprint,lupri,IBLCKS,tmp,MaxnBox)
+call mem_grid_dealloc(tmp)
+call mem_grid_dealloc(IBLCKS)
 
 nBoxes=1
 call determine_nboxes(GridBox,nBoxes,lupri)
@@ -334,7 +338,7 @@ IF(full.AND.associated(GridBox%next))THEN
 ENDIF
 end subroutine print_box
 
-SUBROUTINE BOX_NactOrbGETBLOCKS(RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,X,Y,Z,NactBast,NSTART,minR,maxR,LUPRI)
+SUBROUTINE BOX_NactOrbGETBLOCKS(RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,X,Y,Z,NactBast,NSTART,minR,maxR,LUPRI,IBLCKS)
 use precision
 IMPLICIT NONE
 INTEGER,intent(in)    ::  NBAST,MAXNSHELL,NATOMS,LUPRI
@@ -342,13 +346,10 @@ INTEGER,intent(in)    ::  SHELL2ATOM(MAXNSHELL),NSTART(MAXNSHELL)
 REAL(REALK),intent(in)::  X(NATOMS),Y(NATOMS),Z(NATOMS),RSHEL(MAXNSHELL)
 REAL(REALK),intent(in) ::  minR(3),maxR(3)
 INTEGER,intent(inout)  ::  NactBast
+INTEGER,intent(inout) ::  IBLCKS(2,MAXNSHELL)
 !
-INTEGER     ::  IBLCKS(2,MAXNSHELL),NBLCNT
-INTEGER     ::  ISHLEN,IPREV,ICENT,ISHELA,I,J
+INTEGER     ::  NBLCNT,IPREV,ICENT,ISHELA,I
 REAL(REALK) ::  RSHEL1,center(3),LengthX,LengthY,LengthZ,CELLDG,PX,PY,PZ,DST
-INTEGER     :: ORBBLOCKS(2,MAXNSHELL),IBL,IORB
-LOGICAL     :: XVERIFY,YVERIFY,ZVERIFY
-real(realk),parameter :: D05=0.5E0_realk
 !each box can save which ISHELAs that contribute ... 
 !so that this does not need to be reevaluated.
 NBLCNT = 0
@@ -356,9 +357,9 @@ IPREV = -1111
 LengthX = maxR(1)-minR(1)
 LengthY = maxR(2)-minR(2)
 LengthZ = maxR(3)-minR(3)
-Center(1) = minR(1)+LengthX*d05
-Center(2) = minR(2)+LengthY*d05
-Center(3) = minR(3)+LengthZ*d05
+Center(1) = minR(1)+LengthX*0.5E0_realk
+Center(2) = minR(2)+LengthY*0.5E0_realk
+Center(3) = minR(3)+LengthZ*0.5E0_realk
 CELLDG = SQRT(LengthX*LengthX+LengthY*LengthY+LengthZ*LengthZ)*0.5E0_realk
 DO ISHELA=1,MAXNSHELL
    ICENT = SHELL2ATOM(ISHELA)
@@ -376,48 +377,61 @@ DO ISHELA=1,MAXNSHELL
       IBLCKS(2,NBLCNT) = ISHELA
    END IF
 END DO 
-
-DO I = 1,NBLCNT
-   ORBBLOCKS(1,I) = NSTART(IBLCKS(1,I))+1
-ENDDO
-
-DO I = 1,NBLCNT-1
-   ORBBLOCKS(2,I) = NSTART(IBLCKS(2,I)+1)
-ENDDO
-I=NBLCNT
-IF(IBLCKS(2,I) .LT. MAXNSHELL)THEN
-   ORBBLOCKS(2,I) = NSTART(IBLCKS(2,I)+1)
+IF(NBLCNT.GT.0)THEN
+!!$   DO I = 1,NBLCNT
+!!$      ORBBLOCKS(1,I) = NSTART(IBLCKS(1,I))+1
+!!$   ENDDO
+!!$   
+!!$   DO I = 1,NBLCNT-1
+!!$      ORBBLOCKS(2,I) = NSTART(IBLCKS(2,I)+1)
+!!$   ENDDO
+!!$   I=NBLCNT
+!!$   IF(IBLCKS(2,I) .LT. MAXNSHELL)THEN
+!!$      ORBBLOCKS(2,I) = NSTART(IBLCKS(2,I)+1)
+!!$   ELSE
+!!$      ORBBLOCKS(2,I) = NBAST
+!!$   ENDIF
+!!$
+!!$   NactBAST = 0
+!!$   DO IBL = 1, NBLCNT
+!!$      NactBAST = NactBAST + ORBBLOCKS(2,IBL) - ORBBLOCKS(1,IBL) + 1
+!!$   ENDDO
+   NactBAST = 0
+   DO I = 1,NBLCNT-1
+      NactBAST = NactBAST + NSTART(IBLCKS(2,I)+1) - NSTART(IBLCKS(1,I))
+   ENDDO   
+   I=NBLCNT
+   IF(IBLCKS(2,I) .LT. MAXNSHELL)THEN
+      NactBAST = NactBAST + NSTART(IBLCKS(2,I)+1) - NSTART(IBLCKS(1,I))
+   ELSE
+      NactBAST = NactBAST + NBAST - NSTART(IBLCKS(1,I))
+   ENDIF
 ELSE
-   ORBBLOCKS(2,I) = NBAST
+   NactBAST = 0
 ENDIF
-
-NactBAST = 0
-DO IBL = 1, NBLCNT
-   NactBAST = NactBAST + ORBBLOCKS(2,IBL) - ORBBLOCKS(1,IBL) + 1
-ENDDO
-
 END SUBROUTINE BOX_NACTORBGETBLOCKS
 
 recursive subroutine split_box(gridBox,COOR2,GlobalmaxGridpoints,totalpoints,&
      & RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,atomcenterX,atomcenterY,&
-     & atomcenterZ,NSTART,maxnbuflen,iprint,lupri)
+     & atomcenterZ,NSTART,maxnbuflen,iprint,lupri,IBLCKS,tmp,maxnBox)
 implicit none
-INTEGER,intent(in)     ::  NBAST,MAXNSHELL,NATOMS,LUPRI,IPRINT
+INTEGER,intent(in)     ::  NBAST,MAXNSHELL,NATOMS,LUPRI,IPRINT,MaxnBox
 integer,intent(in)     :: GlobalmaxGridpoints,totalpoints,maxnbuflen
 type(gridboxtype),pointer :: GridBox 
 real(realk),intent(in) :: COOR2(3,GlobalmaxGridpoints)
 INTEGER,intent(in)     ::  SHELL2ATOM(MAXNSHELL)
 REAL(REALK),intent(in) ::  atomcenterX(NATOMS),atomcenterY(NATOMS),atomcenterZ(NATOMS),RSHEL(MAXNSHELL)
 INTEGER,intent(in)     :: NSTART(MAXNSHELL)
+INTEGER,intent(inout) :: IBLCKS(2,MAXNSHELL)
+integer,intent(inout) :: tmp(maxnBox)
 !
-real(realk) :: Lengthinv,center1(3),center2(3),length(3),split,minR(3),maxR(3)
+real(realk) :: Lengthinv,length(3),split,minR(3),maxR(3)
 integer :: maxDim,nBox1,nBox2,I,ix,NactBast,ip
 real(realk),parameter :: D05=0.5E0_realk,D8=8E0_realk
-real(realk) :: CPUTIME,CPU2,CPU1,WALLTIME,WALL2,WALL1,Volumen1
-real(realk) :: gridLengthX,gridLengthY,gridLengthZ
+real(realk) :: Volumen1,gridLengthX,gridLengthY,gridLengthZ
 type(gridboxtype),pointer :: TMPBOX
-integer,pointer :: tmp(:)
-INTEGER :: SHELLBLOCKS(2,MAXNSHELL),NSHELLBLOCKS
+
+!FIXME we prefer boxes with GridBox%npoints and NactBast a multiple of 4 or better 8 - as much as possible. 
 
 IF(GridBox%npoints.LT.maxnbuflen)THEN
    !determine number of active orbitals in this box 
@@ -425,12 +439,19 @@ IF(GridBox%npoints.LT.maxnbuflen)THEN
    !requirements are too big we devide again
    call BOX_NactOrbGETBLOCKS(RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,&
         & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,&
-        & GridBox%minR,GridBox%maxR,LUPRI)
-   IF(MIN(MXBLLEN,GridBox%npoints)*NactBast.LT.MAX(BoxMemRequirement,100000000))THEN
+        & GridBox%minR,GridBox%maxR,LUPRI,IBLCKS)
+   IF(NactBAST.EQ.0)RETURN
+   IF(GridBox%npoints.LE.MXBLLEN)RETURN
+   IF(MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast.LT.BoxMemRequirement)THEN
+!      print*,'BoxMemRequirement',BoxMemRequirement
+!      print*,'MXBLLEN*NactBast',MXBLLEN*NactBast,'NactBast',NactBast
+!      print*,'MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast',MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast
       RETURN
-   ELSE
-      print*,'BoxMemRequirement',BoxMemRequirement,'NBAST',NBAST,100000000
-      print*,'MXBLLEN*NactBast',MXBLLEN*NactBast,'NactBast',NactBast
+!   ELSE
+!      continue to divide
+!      print*,'Continue to divide too big mem req'
+!      print*,'BoxMemRequirement',BoxMemRequirement
+!      print*,'MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast',MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast
    ENDIF
 ENDIF
 minR(1) = gridBox%minR(1)
@@ -461,8 +482,6 @@ tmpBox%npoints=nBox2
 call mem_grid_alloc(tmpBox%points,nBox2)
 nullify(tmpBox%next)
 nullify(tmpBox%prev)
-
-allocate(tmp(nBox1))
 
 gridBox%minR(1) = minR(1)
 gridBox%minR(2) = minR(2)
@@ -510,7 +529,6 @@ GridBox%npoints=nBox1
 do I=1,nBox1
    gridBox%points(I) = tmp(I)
 enddo
-deallocate(tmp)
 
 if(associated(gridBox%next))then
    !not the last box in the chain
@@ -521,11 +539,11 @@ TmpBox%prev => GridBox
 
 call split_box(GridBox%next,COOR2,GlobalmaxGridpoints,totalpoints,RSHEL,&
      & MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,atomcenterX,atomcenterY,atomcenterZ,&
-     & NSTART,maxnbuflen,iprint,lupri)
+     & NSTART,maxnbuflen,iprint,lupri,IBLCKS,tmp,MaxnBox)
 
 call split_box(GridBox,COOR2,GlobalmaxGridpoints,totalpoints,RSHEL,&
      & MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,atomcenterX,atomcenterY,atomcenterZ,&
-     & NSTART,maxnbuflen,iprint,lupri)
+     & NSTART,maxnbuflen,iprint,lupri,IBLCKS,tmp,MaxnBox)
 
 end subroutine split_box
 

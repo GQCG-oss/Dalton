@@ -45,10 +45,10 @@ first and second order molecular properties for limited models.
 In particular, it is possible to carry out Hartree-Fock
 \index{SCF}\index{HF}\index{Hartree--Fock},
 Density Functional Theory
-\index{DFT}\index{Density-Functional Theory},
+\index{DFT}\index{Density Functional Theory},
 second-order M{\o}ller-Plesset perturbation theory
 (MP2)\index{M{\o}ller-Plesset!second-order}\index{MP2}, and
-CC2 coupled cluster calculations\index{CC2}\index{Coupled-Cluster}. Note that
+CC2 coupled cluster calculations\index{CC2}\index{Coupled Cluster}. Note that
 the decomposition of differentiated integrals is not implemented yet and, therefore,
 gradients cannot be computed. Moreover, Cholesky CCSD(T)~\index{CCSD(T)}
 calculations, where the energy dominators are Cholesky decomposed,
@@ -62,8 +62,8 @@ constructed ``on the fly''
 and not written to disc as is the default. This keyword will only work
 for SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave functions,
 Density Functional Theory
-calculation\index{DFT}\index{Density-Functional Theory} and for
-coupled cluster (CC) calculations\index{CC}\index{Coupled-Cluster}. In
+calculation\index{DFT}\index{Density Functional Theory} and for
+coupled cluster (CC) calculations\index{CC}\index{Coupled Cluster}. In
 HF and DFT calculations the
 two-electron integrals (and differentiated
 two-electron integrals) will not be written to disc in any part of the
@@ -123,7 +123,7 @@ orbitals.
 
 \item[\Key{NMDDRV}] Calls for a generalized numerical geometry
 differentiation. These routines will take advantage of the full
-molecular point group in order to minimize the number of point to be
+molecular point group in order to minimize the number of points to be
 calculated. What order of derivatives and whether any analytical
 derivatives are to be used is determined in the \verb|*NMDDRV| input
 module.
@@ -131,7 +131,7 @@ module.
 \item[\Key{OPTIMIZE}] Perform a geometry optimization\index{geometry optimization!.OPTIMIZE module}.
 The default is a geometry minimization\index{geometry minimization!.OPTIMIZE module}:
 an optimization of the molecular geometry to a stationary point with no
-negative Hessian eigenvalues
+negative molecular Hessian eigenvalues
 (a local minimum) will be done using the default first-order
 methods. However, this may be changed using appropriate
 keywords in the submodule \Sec{OPTIMIZE}, and we refer to examples in
@@ -178,7 +178,7 @@ detailed description of possible options.
 %two-electron integrals should be
 %sorted and that the integral transformation routines of Bj\o rn
 %Roos should be used during execution of the program.
-%The keyword is needed if one attempts an MCSCF, CI or MP2 (run through the \sir\ module and not using the Coupled-Cluster module) with more than 255 basis functions.
+%The keyword is needed if one attempts an MCSCF, CI or MP2 (run through the \sir\ module and not using the Coupled Cluster module) with more than 255 basis functions.
 
 \item[\Key{PEQM}] Include environment effects by using the polarizable embedding (PE)
 model~(See Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa}
@@ -201,12 +201,15 @@ Reads in the print level that is to be used the rest of the subsequent
 calculations. Default is a print level of 0.
 
 \item[\Key{PROPERTIES}] Invoke the \aba\ module for the evaluation of static
-and dynamic properties, using a previously converged and saved wave function. See Chapter~\ref{ch:abacus}.
+and dynamic properties, using a previously converged and saved wave function and saved integral files. See Chapter~\ref{ch:abacus}.
+
+\item[\Key{QFIT}] Invoke the calculation of potential derived
+charges after the wave function has converged.
 
 \item[\Key{RESPONSE}]
 
 Invoke the \resp\ module for the evaluation of static and dynamic
-properties, using a previously converged and saved wave function. See Chapter~\ref{ch:response}.
+properties, using a previously converged and saved wave function and saved integral files. See Chapter~\ref{ch:response}.
 
 \item[\Key{RUN ALL}]
 
@@ -254,9 +257,9 @@ in the calculation.
 Do a geometry walk\index{geometry walk}\index{geometry optimization!.WALK module}.
 If no input is given in the
 \Sec{WALK} input submodule, an optimization of the molecular
-geometry to a stationary point with no negative Hessian eigenvalues (a
+geometry to a stationary point with no negative molecular Hessian eigenvalues (a
 local minimum) will be done using a second-order method with
-analytical Hessians. However, this may be changed by appropriate
+analytical molecular Hessians. However, this may be changed by appropriate
 keywords in the submodule \Sec{WALK}, and we refer to examples in
 the chapter on potential energy surfaces
 (Chapter~\ref{ch:geometrywalks}), and subsection~\ref{sec:abawalk}
@@ -267,8 +270,10 @@ detailed description of possible options.
 \index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{MCSCF}\index{CC}
 \index{NEVPT2}\index{GASCI}\index{DFT}
 Invoke the {\sir} module for the evaluation of SCF, MP2, Coupled
-Cluster, MCSCF, NEVPT2, GASCI wave functions as well as DFT calculations.
-Necessary one-electron integrals are already evaluated and saved on files.
+Cluster, MCSCF, NEVPT2, GASCI wave functions as well as DFT calculations, according to input.
+Necessary one-electron integrals \em{must} already be evaluated and available (AOPROPER and AOONEINT files).
+The two-electron integrals will be generated if needed and not available (AOTWOINT file).
+Invoke the modules {\her} and {\sir} for a single point energy calculation using old saved integral files (AOONEINT, AOPROPER, and - if not .DIRECT or .CHOLESKY - AOTWOINT).
 See Chapter~\ref{chap:sirius-inpref}.
 \end{description}
 
@@ -291,7 +296,7 @@ The \Sec{OPTIMIZE} module contains both first and second-order methods
 for locating minima and transition states (geometry optimization).
 \index{first-order geometry optimization}\index{geometry optimization!first-order}
 \index{second-order geometry optimization}\index{geometry optimization!second-order}
-Most of the Hessian updating\index{Hessian update} schemes were taken from
+Most of the molecular Hessian updating\index{molecular Hessian!Hessian update} schemes were taken from
 ref.~\cite{thkrprt95} and \cite{Fletcher}.
 The implementation of redundant internal coordinates
 \index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
@@ -302,7 +307,7 @@ In addition to this, several keywords for VRML visualization are included~\cite{
 
 \item[\Key{1STORD}]
 Use default first-order method\index{first-order geometry optimization}\index{geometry optimization!first-order}.
-This means that the BFGS update will\index{BFGS update}\index{Hessian update!BFGS}
+This means that the BFGS update will\index{BFGS update}\index{Molecular Hessian!Hessian update!BFGS}
 be used, and that the optimization is carried out in redundant internal
 coordinates\index{redundant internal coordinates}. Same effect as the
 combination of the two keywords \Key{BFGS} and \Key{REDINT}. Since the
@@ -341,7 +346,7 @@ updating schemes in the same fashion as Bofill's update. Only suitable
 for minimizations.
 
 \item[\Key{BOFILL}]
-Bofill's update\cite{jmbjcc15}\index{Bofill's update}\index{Hessian update!Bofill's update}
+Bofill's update\cite{jmbjcc15}\index{Bofill's update}\index{Molecular Hessian!Hessian update!Bofill's update}
 is the default updating scheme for
 transition state optimizations. It's a linear combination of the
 symmetric rank one and the PSB updating schemes, automatically giving
@@ -354,7 +359,7 @@ should be used in the optimization. This is the default for
 second-order methods.
 
 \item[\Key{CMBMOD}]
-Uses a combination of the BFGS update and the model Hessian (diagonal
+Uses a combination of the BFGS update and the model molecular Hessian (diagonal
 in redundant internal coordinates). The two have equal weight in the
 first iteration of the geometry optimization, then for each subsequent
 iteration the weight of the model Hessian is halved. Only suitable for
@@ -401,7 +406,7 @@ less stable.
 
 \item[\Key{DFP}]
 Specifies that a first-order\index{first-order geometry optimization} method with the
-Davidon-Fletcher-Powell (DFP) update\index{DFP update}\index{Hessian update!DFP}
+Davidon-Fletcher-Powell (DFP) update\index{DFP update}\index{molecular Hessian!Hessian update!DFP}
 formula should be used for optimization. May be used for both
 minimizations and transition state optimizations.
 
@@ -453,11 +458,11 @@ $1.0\cdot 10^{-4}$ and two times the threshold for the wave function
 gradient.
 
 \item[\Key{GRDINI}]
-Specifies that the Hessian\index{Hessian!reinitialization} should be
+Specifies that the molecular Hessian\index{molecular Hessian!reinitialization} should be
 reinitialized every time the norm
 of the gradient is larger than norm of the gradient two iterations
 earlier. This keyword should only be used when it's difficult to
-obtain a good approximation to the Hessian during optimization. Only
+obtain a good approximation to the molecular Hessian during optimization. Only
 applies to first-order methods\index{first-order geometry optimization}.
 
 \item[\Key{HELLMA}]
@@ -465,24 +470,23 @@ Use gradients and Hessians calculated using the Hellmann-Feynman
 approximation. Currently not working properly
 
 \item[\Key{HESFIL}]
-Specifies that the initial Hessian
-\index{initial Hessian!first-order geometry optimization}\index{Hessian!molecular, initial}
+Specifies that the initial molecular Hessian
+\index{initial Hessian!first-order geometry optimization}\index{molecular Hessian!initial}
 should be read from the file \verb|DALTON.HES|. This applies to first-order
 methods, and the Hessian in the file must have the correct
-dimensions. This option overrides other options for the initial
-Hessian.
+dimensions. This option overrides other options for the initial Hessian.
 
-Each time a Hessian is calculated or updated\index{Hessian update!geometry optimization},
+Each time a Hessian is calculated or updated\index{molecular Hessian!DALTON.HES file},
 it's written to this file (in Cartesian coordinates). If an
 optimization is interrupted, it can be restarted with the
-last geometry and the Hessian in \verb|DALTON.HES|, minimizing the
-loss of information. Another useful possibility, is to transfer
-the Hessian from a calculation on the same molecule with another
+last geometry and the molecular Hessian in \verb|DALTON.HES|, minimizing the
+loss of information. Another useful possibility is to transfer
+the molecular Hessian from a calculation on the same molecule with another
 (smaller) basis and/or a cheaper wave function. Finally, one can go in
 and edit the file directly to set up a specific force field.
 
 \item[\Key{INIMOD}]
-\index{model Hessian}\index{Hessian!model}\index{initial Hessian}\index{Hessian!initial}
+\index{model Hessian}\index{molecular Hessian!initial!model Hessian}
 Use a simple model Hessian~\cite{rlabgkpamcpl241} diagonal in redundant
 internal coordinates as the initial Hessian. All diagonal elements are
 determined based on an extremely simplified molecular mechanics model,
@@ -491,19 +495,19 @@ most systems, thus avoiding any calculation of the exact Hessian. This
 is the default for first-order methods.
 
 \item[\Key{INIRED}]
-Specifies that the initial Hessian\index{initial Hessian}\index{Hessian!initial}
+Specifies that the initial molecular Hessian\index{molecular Hessian!initial}
 should be diagonal in redundant internal coordinates. The different diagonal
 elements are set equal to 0.5 for bonds, 0.2 for angles and 0.1 for
 dihedral angles, unless \Key{INITEV} has been specified. If the
 optimization is run in Cartesian coordinates, the diagonal internal
-Hessian is transformed to Cartesians. Only applies to first-order
+molecular Hessian is transformed to Cartesians. Only applies to first-order
 methods\index{first-order geometry optimization}.
 
 \item[\Key{INITEV}]\verb| |
 \newline
 \verb|READ(LUCMD,*) EVLINI|
-\index{initial Hessian}\index{Hessian!initial}\index{Hessian!diagonal}
-The default initial Hessian for first-order
+\index{molecular Hessian!initial!diagonal}
+The default initial molecular Hessian for first-order
 minimizations\index{first-order geometry optimization} is the
 identity matrix when Cartesian coordinates are used, and a diagonal
 matrix when redundant internal coordinates are used. If \Key{INITEV}
@@ -513,12 +517,12 @@ first-order methods are used and \Key{INITHE} and \Key{HESFIL} are
 non-present.
 
 \item[\Key{INITHE}]
-\index{initial Hessian}\index{Hessian!initial}
-Specifies that the initial Hessian should be
-calculated (analytical Hessian), thus yielding a first step that is
+\index{molecular Hessian!initial}
+Specifies that the initial molecular Hessian should be
+calculated (analytical molecular Hessian), thus yielding a first step that is
 identical to that of second-order methods. This provides an excellent starting
 point for first-order methods, but should only be used when the
-Hessian can be calculated within a reasonable amount of time. It has only
+molecular Hessian can be calculated within a reasonable amount of time. It has only
 effect for first-order methods and overrides the keywords
 \Key{INITEV} and \Key{INIRED}. It has no effect when \Key{HESFIL} has
 been specified.
@@ -526,7 +530,7 @@ been specified.
 %\item[\Key{INTERA}]
 %Specifies a interactive run. The energy, gradient
 %norm\index{norm of gradient}, step length\index{norm of step} and
-%Hessian index\index{Hessian!index} is then written to the unit LUERR(=0)
+%molecular Hessian index\index{molecular Hessian!index} is then written to the unit LUERR(=0)
 %in each iteration, allowing easy monitoring of the optimization.
 
 \item[\Key{LINE S}]
@@ -539,7 +543,7 @@ used for minimizations.
 A list of old geometries and gradients are kept. At each new point,
 displacements and gradient difference for the last few steps are
 calculated, and all of these are then used to sequentially update the
-Hessian, the most weight being given to the last displacement and
+molecular Hessian, the most weight being given to the last displacement and
 gradient difference. Each update is done using the BFGS formula, and
 it's thus only suitable for minimizations. Only applies to first-order
 methods\index{first-order geometry optimization}.
@@ -569,21 +573,21 @@ in each iterations, default is 3.
 \verb|READ(LUCMD,*) NSPMOD|
 
 Only has effect when doing saddle point optimizations\index{mode following}\index{geometry optimization!mode following}.
-Determines which Hessian eigenmode should be maximized (inverted in the image
+Determines which molecular Hessian eigenmode should be maximized (inverted in the image
 method). By default this is the mode corresponding to the lowest
 eigenvalue, {\it i.e.\/} mode 1. If an optimization does not end up at
 the correct transition state, it may be worthwhile following other modes
 (only the lower ones are usually interesting).
 
 \item[\Key{MODHES}]
-Determine a new model Hessian (see \Key{INIMOD})
+Determine a new model molecular Hessian (see \Key{INIMOD})
 at every geometry without doing any updating. The model is thus used
-in much the same manner as an exact Hessian, though it is obviously
-only a relatively crude approximation to the analytical Hessian.
+in much the same manner as an exact molecular Hessian, though it is obviously
+only a relatively crude approximation to the analytical molecular Hessian.
 
 \item[\Key{NEWTON}]
 Specifies that a second-order Newton method should be used for\index{geometry optimization!second-order}
-optimization---that is, the analytical Hessian will be calculated at
+optimization---that is, the analytical molecular Hessian will be calculated at
 every geometry. By default the level-shifted trust region method will
 be used, but it is possible to override this by using one of the two
 keywords \Key{RF} or \Key{GDIIS}.
@@ -599,9 +603,9 @@ geometry optimization this is off by default (cannot be switched on).
 
 \item[\Key{NOBREA}]
 Disables breaking of symmetry\index{symmetry!breaking}\index{geometry optimization!symmetry breaking}.
-The geometry will be optimized within the given symmetry, even if a non-zero Hessian
+The geometry will be optimized within the given symmetry, even if a non-zero molecular Hessian
 index is found. The default is to let the symmetry be broken until
-a minimum is found with a Hessian index\index{Hessian!index} of
+a minimum is found with a molecular Hessian index\index{molecular Hessian!index} of
 zero. This option only has effect when second-order methods are used.
 
 \item[\Key{NODIHE}]
@@ -614,18 +618,18 @@ dihedral angles needs to be frozen).
 
 %\item[\Key{NOREIN}]
 %When first-order methods are used, the
-%Hessian\index{Hessian!reinitialization} is reinitialized every
-%time the Hessian index\index{Hessian!index} becomes non-zero (due to negative
-%eigenvalues). This guarantees that the Hessian describes a minimum,
-%but valuable information gathered in the Hessian may be
+%molecular Hessian\index{molecular Hessian!reinitialization} is reinitialized every
+%time the molecular Hessian index\index{molecular Hessian!index} becomes non-zero (due to negative
+%eigenvalues). This guarantees that the molecular Hessian describes a minimum,
+%but valuable information gathered in the molecular Hessian may be
 %lost.
 %
 %\Key{NOREIN}
 %Disables this reinitialization, relying on the
-%optimization method to restore the Hessian to its correct structure
+%optimization method to restore the molecular Hessian to its correct structure
 %(by locating the area near the minimum). This option is particularly
 %useful in conjunction with the keyword \Key{INITHE}, as it is usually
-%not meaningful to calculate the Hessian at the initial geometry, then
+%not meaningful to calculate the molecular Hessian at the initial geometry, then
 %resetting it to the identity matrix because some negative eigenvalue
 %showed up.
 
@@ -660,14 +664,14 @@ level output.
 
 \item[\Key{PSB}]
 Specifies that a first-order method\index{first-order geometry optimization} with the
-Powell-Symmetric-Broyden (PSB)\index{PSB update}\index{Hessian update!PSB}
+Powell-Symmetric-Broyden (PSB)\index{PSB update}\index{molecular Hessian!update!PSB}
 update formula should be used for optimization.
 
 %\item[\Key{QUADSD}]
 %Not implemented.
 
 \item[\Key{RANKON}]
-Specifies that a first-order method with the rank one update\index{rank one update}\index{Hessian update!rank one}\index{Hessian update!MS}\index{Hessian update!SR1}
+Specifies that a first-order method with the rank one update\index{rank one update}\index{molecular Hessian update!rank one}\index{molecular Hessian update!MS}\index{molecular Hessian update!SR1}
 formula should be used for optimization. This updating is also
 referred to as symmetric rank one (SR1) or Murtagh-Sargent (MS).
 
@@ -677,10 +681,10 @@ should be used in the optimization. This is the default for
 first-order methods\index{first-order optimization}.
 
 \item[\Key{REJINI}]
-Specifies that the Hessian should be
-reinitialized\index{Hessian!reinitialization} after every
+Specifies that the molecular Hessian should be
+reinitialized\index{molecular Hessian!reinitialization} after every
 rejected step\index{rejected geometry step}, as a rejected step
-indicates that the Hessian models the
+indicates that the molecular Hessian models the
 true potential surface poorly. Only applies to first-order
 methods\index{first-order geometry optimization}.
 
@@ -717,23 +721,23 @@ less stable than the default trust-region level-shifted image method
 
 \item[\Key{SADDLE}]
 Indicates that a saddle point optimization should be performed rather\index{geometry optimization!transition state}\index{transition state}
-than a minimization. The default method is to calculate the Hessian
-analytically at the initial geometry, then update it using Bofill's\index{Bofill's update}\index{Hessian update!Bofill's update}
+than a minimization. The default method is to calculate the molecular Hessian
+analytically at the initial geometry, then update it using Bofill's\index{Bofill's update}\index{molecular Hessian update!Bofill's update}
 update. The optimization is performed in redundant internal
 coordinates and using the trust-region level-shifted image method to
 control the step. That is by default all the keywords \Key{INITHE},
 \Key{BOFILL} and \Key{REDINT} are already set, but this can of course
 be overridden by specifying other keywords. If locating the desired
-transition state is difficult, and provided analytical Hessians are
+transition state is difficult, and provided analytical molecular Hessians are
 available, it may sometimes be necessary to use the \Key{NEWTON}
-keyword so that Hessians are calculated at every geometry.
+keyword so that molecular Hessians are calculated at every geometry.
 
 \item[\Key{SCHLEG}]
 Specifies that a first-order method\index{first-order geometry optimization}
 with Schlegel's updating scheme\index{Schlegel update!geometry optimization}
 \cite{Schlegel} should be used. This makes use of all previous
 displacements and gradients, not just the last, to update the
-Hessian.
+molecular Hessian.
 
 \item[\Key{SP BAS}]\verb| |
 \newline
@@ -755,14 +759,14 @@ number \verb|ISTBLZ|.
 \item[\Key{STEEPD}]
 Specifies that the first-order steepest descent\index{first-order geometry optimization}
 \index{steepest descent} method should be used.
-No update is done on the Hessian, so the optimization will be
+No update is done on the molecular Hessian, so the optimization will be
 guided by the gradient alone. The ``pure'' steepest descent method is
-obtained when the Hessian is set equal to the identity matrix. Each
+obtained when the molecular Hessian is set equal to the identity matrix. Each
 step will then be the negative of the gradient vector, and the
 convergence towards the minimum will be extremely slow. However, this
-option can be combined with other initial Hessians in Cartesian or
+option can be combined with other initial molecular Hessians in Cartesian or
 redundant internal coordinates\index{Cartesian coordinates}\index{redundant internal coordinates},
-giving a method where the main feature is the lack of Hessian updates (static Hessian).
+giving a method where the main feature is the lack of molecular Hessian updates (static molecular Hessian).
 
 \item[\Key{STEP T}]\verb| |
 \newline
@@ -780,7 +784,7 @@ This is one of the three convergence thresholds (the keywords \Key{ENERGY} and
 
 Determines the gradient threshold (in a.u.) for breaking of the
 symmetry\index{symmetry!breaking}. That is, if the index of the
-molecular Hessian\index{Hessian!index of molecular} is non-zero when the gradient norm
+molecular molecular Hessian\index{molecular Hessian!index of molecular} is non-zero when the gradient norm
 drops below this value, the symmetry is broken to avoid unnecessary
 iterations within the wrong symmetry. This option only applies to
 second-order\index{second-order geometry optimization} methods and when the
@@ -864,7 +868,7 @@ geometry by adjusting coordinates manually.
 Only has effect together with \Key{VRML} or
 \Key{VISUAL}\index{visualization!eigenvectors}\index{VRML}.
 Specifies that the eigenvectors of the molecule (that is the
-eigenvectors of the Hessian, which differs from the normal modes as
+eigenvectors of the molecular Hessian, which differs from the normal modes as
 they are not mass-scaled) should be visualized. These are written to
 the files \verb|eigv_###.wrl|.
 
@@ -977,14 +981,18 @@ given if the print level is 4 or higher.
 \subsection{Polarizable embedding model: \Sec{PEQM}}
 \label{subsec:peqm} \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}\index{multiscale model}\index{multiscale}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
 
-This input section controls calculations using polarizable
-embedding (PE) model which can include effects from a structured
+This input section controls calculations using the polarizable
+embedding (PE) model\cite{pemodel1,pemodel2} which can include effects from a structured
 environment on a core molecular system described using quantum mechanics.
 The core system is defined by the \molinp\ file.
 The environment can be described by multipole moment expansions
 and anisotropic dipole-dipole polarizabilities provided in the \potinp\
 file. See Chapter~\ref{ch:embedding} for an introduction to
-calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC.
+calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for
+details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA,
+Ref.~\cite{pemcscf} for PE-MCSCF and Ref.~\cite{pecc} for PE-CC. Note, that the input
+options shown here cannot be used with PE-CC, because it is based on an older
+implementation (see Section~\ref{sec:pecc} for PE-CC input examples).
 
 
 \begin{description}
@@ -1203,6 +1211,38 @@ xyz coordinates of the center of cavity spheres, given in \angstrom{}.
 
 \end{description}
 
+\subsection{Potential derived charges: \Sec{QFIT}}
+\label{subsec:qfit}
+
+Directives controlling the calculation of potential derived charges. Currently, the only supported grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from Van der Waal spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDVINC|.
+
+\begin{description}
+\item[\Key{CONSTR}]\verb| |\newline
+\verb|READ (LUCMD,*) CONSTR|
+
+Set the type of constraint on the derived charges. Options are \verb|NONE|, \verb|CHARGE| or \verb|DIPOLE| which sets no constraints, constrains the sum of potential derived charges to be equal to the molecular charge or constrains the sum and dipole moment of the potential derived charges to be equal to the molecular charge and permanent molecular dipole moment, respectively. Setting the constraint to \verb|NONE| will lead to additional charge being generated or removed and should be used carefully. The default value is \verb|CHARGE|.
+
+\item[\Key{VDWSCL}]\verb| |\newline
+\verb|READ (LUCMD,*) VDWSCL|
+
+Sets the scaling factor for the Van der Waal radii of the nuclei when generating the surface. The default value is 1.4.
+
+\item[\Key{VDWINC}]\verb| |\newline
+\verb|READ (LUCMD,*) VDWINC|
+
+Sets the increment of scaling for successive shells past the first. See option \verb|NSHELL|. The scaling factor for each Van der Waal sphere for shell $n$ can be calculated from $R = R_{vdw}\cdot (R_{scl}+(n-1)\cdot R_{inc})$ The default value is 0.2 per shell.
+
+\item[\Key{NSHELL}]\verb| |\newline
+\verb|READ (LUCMD,*) NSHELL|
+
+Generate \verb|NSHELL| shells of points around the molecule. The default value is 4.
+
+\item[\Key{PTDENS}]\verb| |\newline
+\verb|READ (LUCMD,*) PTDENS|
+
+The surface point density. Default value is 0.28 points au$^-2$.
+
+\end{description}
 
 %Not documented yet. Examples can be found by grepping for "PCM" in the "DALTON/test" directory in the distribution.
 
@@ -1222,14 +1262,14 @@ appear in the \Sec{WALK} section.
 \item[\Key{ANHARM}]
 Requests that a determination of the cubic force field is to be determined.
 By default this is done calculating numerical derivatives of analytical
-Hessians in Cartesian coordinates.
+molecular Hessians in Cartesian coordinates.
 
 \item[\Key{DISPLA}]\verb| |\newline
 \verb|READ (LUCMD, *) DISPLC|
 
 Displacement taken in a numerical differentiation\index{numerical
 differentiation!geometry}. This applies both for a numerical molecular
-Hessian\index{Hessian!numerical molecular Hessian}, as well as in calculation of Raman
+molecular Hessian\index{molecular Hessian!numerical}, as well as in calculation of Raman
 intensities and optical activity\index{Raman intensity}\index{Raman optical activity}\index{ROA}.
 Read one more
 line specifying value~(*).  Default is~10$^{-4}$ a.u. However,
@@ -1289,17 +1329,17 @@ radius\index{trust radius}. See also the keyword \Key{TRUST}.
 \item[\Key{IMAGE}] Locate a transition state\index{transition state} using a
 trust-region-based image surface\index{image surface} minimization.
 Note that only a
-point with a Hessian index of~1 can currently be located with this
+point with a molecular Hessian index of~1 can currently be located with this
 method, not higher-order stationary points. See also the discussion in
 Sec.~\ref{sec:image}.
 
 \item[\Key{INDEX}]\verb| |\newline
 \verb|READ (LUCMD,*) IWKIND|
 
-Desired Hessian index\index{Hessian!index} (strictly speaking, of the
-totally symmetric block of the Hessian) at the optimized geometry.
+Desired molecular Hessian index\index{molecular Hessian!index} (strictly speaking, of the
+totally symmetric block of the molecular Hessian) at the optimized geometry.
 Read one more line specifying value.  Default is~0 (minimum).
-Note that a stationary point with the wrong Hessian index will not
+Note that a stationary point with the wrong molecular Hessian index will not
 be accepted as an optimized geometry.
 
 \item[\Key{IRC}]\verb| |\newline
@@ -1505,7 +1545,7 @@ Trust region information\index{trust radius!.WALK geometry optimization}.  Read 
 line specifying three values~(*): initial trust radius, factor by
 which radius can be incremented, and factor by which it can be
 decremented.  Defaults are~0.5, 1.2 and 0.7, respectively; initial
-trust radius default is~0.3 if desired Hessian index is
+trust radius default is~0.3 if desired molecular Hessian index is
 greater than zero. In dynamic walks\index{dynamics} the trust radius
 is by default put
 to 0.005, and in walks along an Intrinsic Reaction Coordinate
@@ -1654,7 +1694,7 @@ derivatives from 2.order analytical derivatives.
 
 \item[\Key{DRYRUN}]\verb| |\newline
 \verb|READ (LUCMD,*) NMREDU|\newline
-\verb|READ (LUCMD,*)| (KDRYRN(II),II=1,NMREDU)
+\verb|READ (LUCMD,*) (KDRYRN(II),II=1,NMREDU)|
 
 The numerical derivatives will not be calculated, and the program will
 just set up the required displacement. An optional number of redundant
@@ -1664,7 +1704,7 @@ rotational degrees of freedom.
 \item[\Key{HARMONIC FORCE FIELD}]\verb| |\newline
 
 At the end of the calculation, perform a vibrational analysis using
-the calculated Hessian matrix.
+the calculated molecular Hessian matrix.
 
 \item[\Key{MANUAL}]\verb| |\newline
 
@@ -1674,14 +1714,14 @@ file. Primarily of interest for debugging purposes.
 \item[\Key{NORMAL}]
 Using this keyword the numerical differentiation will be carried out
 with respect to normal coordinates. The program will then do the
-necessary numerical differentiation to get the Hessian (and thus
+necessary numerical differentiation to get the molecular Hessian (and thus
 normal coordinates), before it will carry on calculating the
 higher-order force field requested with respect to the calculated normal
 coordinates.
 
 \item[\Key{PRECALCULATED HESSIAN}]\verb| |\newline
 
-Use a precalculated Hessian available on the \verb|DALTON.HES| file
+Use a precalculated molecular Hessian available on the \verb|DALTON.HES| file
 when defining normal coordinates. Only active in combination with the
 keyword \Key{NORMAL}.
 
@@ -1708,7 +1748,7 @@ derivatives cannot be taken advantage of, and the default value of $0$
 for \verb|NARDRP| should be used. Currently, dipole transition
 strengths and vibrationally averaged spin--spin coupling constants
 have been implemented, the former also for Coupled--Cluster wave
-functions\index{CC}\index{Coupled-Cluster}. Notice that vibrationally
+functions\index{CC}\index{Coupled Cluster}. Notice that vibrationally
 averaged spin--spin coupling constants also can be calculated using
 the \Key{VIBANA} and \Sec{VIBANA} keywords and input section.
 
@@ -1721,13 +1761,13 @@ used, \dalton\ will attempt to restart the calculation.
 
 \item[\Key{REUSE HESSIAN}]\verb| |\newline
 
-If a (mixed) numerical Hessian has been calculated, it will be saved
+If a (mixed) numerical molecular Hessian has been calculated, it will be saved
 in the file \verb|DALTON.HES| for possible future use.
 
 \item[\Key{SDRTST}]\verb| |\newline
-If analytical Hessian also has been requested and second-order
+If analytical molecular Hessian also has been requested and second-order
 numerical derivatives, a comparison of the numerical and analytical
-Hessian will be done. Primarily used for testing.
+molecular Hessians will be done. Primarily used for testing.
 
 \item[\Key{SPECTRO INTERFACE}]\verb| |\newline
 
@@ -1774,7 +1814,7 @@ implemented for spin--spin coupling constants.
 
 \item[\Key{CUBIC }]\verb| |\newline
 
-Calculate the Hessian and third derivatives and write the files
+Calculate the molecular Hessian and third derivatives and write the files
 \verb|DALTON.HES| and \verb|DALTON.WLK| for use in future 
 calculation of the vibrationally averaged properties using the
 \Key{ONLY-P} keyword.
@@ -1803,7 +1843,7 @@ to the total zero-point vibrational corrections to a molecular property.
 
 Calculate only the equilibrium value and derivatives of the molecular property
 required to calculate the (harmonic and anharmonic) vibrational average. 
-In order for this to work, \verb|DALTON.HES| and \verb|DALTON.WLK| files containing the Hessian 
+In order for this to work, \verb|DALTON.HES| and \verb|DALTON.WLK| files containing the molecular Hessian 
 and third derivatives of the molecule must be available from a previous calculation.
 
 \item[\Key{P-BASIS}]\verb| |\newline
@@ -1827,6 +1867,6 @@ calculated.
 
 This section is identical to the vibrational analysis module described
 in Chapter~\ref{sec:abavib}, but appears in the \Sec{*NMDDRV} module
-if the Hessian has been calculated numerically using the \Key{NMDDRV}
+if the molecular Hessian has been calculated numerically using the \Key{NMDDRV}
 keyword. We refer to Chapter~\ref{sec:abavib} for a list of available
 keywords.

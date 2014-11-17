@@ -14,14 +14,6 @@ C#######################################################################
       CALL TITLER('Orbital localization','*',105)
       KFREE = 1
       LFREE = LWORK
-!
-! R2 localization
-!
-C     IF (R2LOC) THEN
-C        CALL HEADER('Orbital localization for center',6)
-C        WRITE(*,'(5X3F10.6)') LOCCEN
-C        CALL LOCR2(CMO,WORK,LWORK)
-C     END IF
 C
       IF (BOYSEL) THEN
          CALL HEADER('Boys orbital localization ',LUPRI)
@@ -74,138 +66,6 @@ C
       CALL NEWORB('LOCCTL',CMO,.FALSE.)
       CALL QEXIT('LOCCTL')
       END
-C#######################################################################
-C /* Deck locr2 */
-C      SUBROUTINE LOCR2(CMO,WORK,LWORK)
-C#include <implicit.h>
-C      INTEGER LWORK
-C      REAL*8  WORK(LWORK)
-C      REAL*8  CMO(*)
-CC
-CC  Localize orbitals of a given core hole by minimizing average distance
-CC  to the center.
-CC
-C#include <inforb.h>
-C#include <inftap.h>
-C#include <dummy.h>
-C#include <orgcom.h>
-C#include <infloc.h>
-C#include <wrkrsp.h>
-CC
-CC  External
-CC
-C      LOGICAL FNDLB2
-C      EXTERNAL FNDLB2
-CC
-CC  Local
-CC
-C      CHARACTER*7 RTNLBL(2)
-C      INTEGER IPRINT
-C      data iprint/11/
-CC
-C      CALL QENTER('LOCR2')
-C      KFREE = 1
-C      LFREE = LWORK
-C      CALL MEMGET('REAL',KR2,N2ORBX,WORK,KFREE,LFREE)
-CC
-CC   Calculate quadrupole integrals, if necessary
-CC
-C      GDIFF=(DIPORG(1)-LOCCEN(1))**2
-C     &     +(DIPORG(2)-LOCCEN(2))**2
-C     &     +(DIPORG(3)-LOCCEN(3))**2
-C      IF (.NOT.FNDLB2('XXQUADRU',RTNLBL,LUPROP)
-C     &   .OR. GDIFF .GT.1E-5) THEN
-C         CALL DCOPY(3,LOCCEN,1,DIPORG,1)
-C         IF (IPRINT.GT.10) THEN
-C            CALL HEADER(
-C     &         'Recalculate quadrupole integrals with center',
-C     &         6
-C     &         )
-C            PRINT '(3F10.5)',DIPORG
-C         END IF
-C         BACKSPACE(LUPROP)
-C         CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUERR)
-C         CALL PR1INT('QUADRUP',WORK(KFREE),LFREE,IDUMMY,
-C     &      IDYMMY,.TRUE.,IPRINT.GT.10,0)
-C      END IF
-CC
-CC  Get x2 integrals and copy to r2
-CC
-C      KSYMOP = 1
-C      CALL MEMGET('REAL',KX2,N2ORBX,WORK,KFREE,LFREE)
-C      CALL PRPGET('XXQUADRU',CMO,WORK(KR2),WORK(KFREE),LFREE)
-C      IF (IPRINT.GT.10) THEN
-C         CALL OUTFUL(WORK(KR2),NORBT,NORBT,'XXQUADRU mo basis')
-C      END IF
-CC
-CC  Get y2 integrals and copy to r2
-CC
-C      D1 = 1.0D0
-C      CALL PRPGET('YYQUADRU',CMO,WORK(KX2),WORK(KFREE),LFREE)
-C      IF (IPRINT.GT.10) THEN
-C         CALL OUTFUL(WORK(KX2),NORBT,NORBT,'YYQUADRU mo basis')
-C      END IF
-C      CALL DAXPY(N2ORBX,D1,WORK(KX2),1,WORK(KR2),1)
-CC
-CC  Get z2 integrals and copy to r2
-CC
-C      CALL PRPGET('ZZQUADRU',CMO,WORK(KX2),WORK(KFREE),LFREE)
-C      IF (IPRINT.GT.10) THEN
-C         CALL OUTFUL(WORK(KX2),NORBT,NORBT,'ZZQUADRU mo basis')
-C      END IF
-C      CALL DAXPY(N2ORBX,D1,WORK(KX2),1,WORK(KR2),1)
-C      IF (IPRINT.GT.10) THEN
-C         CALL OUTFUL(WORK(KR2),NORBT,NORBT,'LOCR2: R2 matrix MO basis')
-C      END IF
-C      CALL MEMREL('LOCR2: after reading X2...',WORK,KR2,KX2,KFREE,LFREE)
-CC
-CC  Diagonalize
-CC
-C      NISH1=NISH(1)
-C      NBAS1=NBAS(1)
-C      CALL MEMGET('REAL',KR2II,NISH1*NISH1,WORK,KFREE,LFREE)
-C      CALL MCOPY(NISH1,NISH1,WORK(KR2),NORBT,WORK(KR2II),NISH1)
-C      CALL MEMGET('REAL',KW,NISH1,WORK,KFREE,LFREE)
-C      CALL DSYEV(
-C     &   'V','U',NISH1,WORK(KR2II),NISH1,WORK(KW),
-C     &   WORK(KFREE),LFREE,INFO
-C     &   )
-C      IF (INFO.NE.0) THEN
-C         CALL QUIT('LOCR2:SSYEV diagonalization failed')
-C      END IF
-C      IF (IPRINT.GT.10) THEN
-C         CALL OUTFUL(WORK(KR2II),NISH1,NISH1,'LOCR2:eigenvectors')
-C         CALL OUTFUL(WORK(KW),1,NISH1,'LOCR2:eigenvalues ')
-C      END IF
-C
-CC
-CC  Use the eigenvectors of R2 to transform occupied molecular orbitals
-CC  of symmetry one
-CC
-C      KTMP=KR2
-C      CALL MPAB(
-C     &   CMO,        NBAS1,NISH1,NBAS1,NISH1,
-C     &   WORK(KR2II),NISH1,NISH1,NISH1,NISH1,
-C     &   WORK(KTMP),NBAS1,NISH1
-C     &   )
-C      IOFF = NBAS1*NISH1
-C      CALL DCOPY(
-C     &   NCMOT-IOFF,
-C     &   CMO(1+IOFF),1,
-C     &   WORK(KTMP+IOFF),1
-C     &   )
-C
-C      IF (IPRINT.GT.1) THEN
-C         CALL HEADER('LOCR2:Input molecular orbitals',6)
-C         CALL PRORB(CMO,IPRINT.LT.10,6)
-C         CALL HEADER('LOCR2:Output molecular orbitals',6)
-C         CALL PRORB(WORK(KTMP),IPRINT.LT.10,6)
-C      END IF
-C      CALL DCOPY(NCMOT,WORK(KTMP),1,CMO,1)
-C      CALL MEMREL('LOCR2',WORK,1,1,KFREE,LFREE)
-C      CALL QEXIT('LOCR2')
-C      END
-C
 C /* Deck boys */
       SUBROUTINE BOYS(NAO,NMO,CMOIN,CMOOUT,WORK,LWORK)
 #ifdef __MAIN__
@@ -290,7 +150,7 @@ C
       REAL*8 F0, D1, D0, GNORM, DELTA0, DELTA1, KAPPA0, KAPPA1,
      &   SIN4K, COS4K, TAN4K, XKL, DKL, THRESROT , KAPPAM, PI
       INTEGER IMAX, LU, NAOT, I, J, ITER, K, L, KTMP,LTMP,KFREE,LFREE
-      INTEGER HSIG(3), MAXIT
+      INTEGER HSIG(2), MAXIT
       DATA THRESROT /1D-10/ , MAXIT /30/
       PARAMETER ( D1=1.0D0,  D0=0.0D0)
       PARAMETER (PI = 3.14159 26535 89793 23846 D00)
@@ -354,7 +214,7 @@ C
      &   WORK,KFREE,LFREE)
       WRITE (LUPR,'(/3X,A5,A,3A14)') 'Iter',':','Boys sum',
      &   'Gradient norm','   Hessian signature'
-      WRITE (LUPR,'(3X,I5,A,2F14.8,A5,3I3,A)')
+      WRITE (LUPR,'(3X,I5,A,2F14.8,A5,2I3,A)')
      &   ITER,':',F0,GNORM,'(',HSIG,')'
       DO WHILE ((.NOT. ISMAX.OR.ISMAX.AND.GNORM.GT.THRESB) 
      &   .AND. ITER.LT.MAXIT)
@@ -453,7 +313,7 @@ C
          CALL DCOPY(NAO*NMO,WORK(KTMP),1,CMO,1)
          CALL LOCSUM(NMO,NZ,IJ,
      &      D,X,F0,G0,H0,HSIG,ISMAX,GNORM,WORK,KFREE,LFREE)
-         WRITE (LUPR,'(3X,I5,A,2F14.8,A5,3I3,A)')
+         WRITE (LUPR,'(3X,I5,A,2F14.8,A5,2I3,A)')
      &      ITER,':',F0,GNORM,'(',HSIG,')'
       END DO !WHILE
       CALL MEMREL('BOYS1:TMP',WORK,KTMP,KTMP,KFREE,LFREE)
@@ -470,7 +330,7 @@ C
 C
 C Output
 C
-      INTEGER HSIG(3)
+      INTEGER HSIG(2)
       REAL*8 F0, G0(NZ), H0(NZ,NZ)
       LOGICAL ISMAX
       REAL*8 GNORM
@@ -553,13 +413,10 @@ C
       ISMAX=.TRUE.
       HSIG(1)=0
       HSIG(2)=0
-      HSIG(3)=0
       DO I=0,NZ-1
          ISMAX=ISMAX.AND.W(KH+I).LT.D0
-         IF (W(KH+I).GT.0 ) THEN
+         IF (W(KH+I).GE.0 ) THEN
             HSIG(1)=HSIG(1)+1
-         ELSE IF (W(KH+I).LT.0 ) THEN
-            HSIG(3)=HSIG(3)+1
          ELSE
             HSIG(2)=HSIG(2)+1
          END IF

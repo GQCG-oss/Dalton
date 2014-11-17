@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+#    prop_expgrad
+#    ------------
+#    Molecule:         N2
+#    Wave Function:    BLYP
+#    Test Purpose:     Calculate exponent gradient
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(string = 'Final DFT energy',
+      abs_tolerance = 1.0e-8)
+
+f.add(from_string = 'Orbital-exponent gradient for all atoms',
+      num_lines = 21,
+      abs_tolerance = 1.0e-6)
+
+test.run(['prop_expgrad.dal'], ['N2_intgrl.mol'], {'out': f})
+
+sys.exit(test.return_code)

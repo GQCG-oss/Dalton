@@ -1,12 +1,7 @@
-#include "single.h"
 C
 C  /* Deck so_excit1 */
-CSPAS:23/5-11: second and third moment sum rules
-C     SUBROUTINE SO_EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,SECMAT,EXENG,
-C    &                     WORK,LWORK)
       SUBROUTINE SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
      &                     BSRLON,SECMAT,EXENG,WORK,LWORK)
-CKeinSPASmehr
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -14,6 +9,7 @@ C     Keld Bak, July 1997
 C     SPAS :4/12-1997 : call to ccsd_init1 include. This should allow
 C                       to run the RPA part without going through the
 C                       CC program.
+C     SPAS & PFP: 5/11-2013: triplet excitation energies included
 C
 C     PURPOSE: Main driver routine for the calculation of excitation 
 C              energies and transition moments with the atomic integral
@@ -22,9 +18,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-CSPAS:15/03-2006: merge with Dalton-2.0  
-C#include <cbilrs.h>
-CKeinSPASmehr
 #include "cbiexc.h"
 #include "ccsdsym.h"
 #include "infdim.h"
@@ -33,26 +26,25 @@ CKeinSPASmehr
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
-CSPAS:10/11-2003: is merged with maxorb.h
-C#include <mxorb.h>
-CKeinSPASmehr
 #include "nuclei.h"
-CSPAS:10/11-2003: I cannot find the corresponding include file
-C#include <nuctap.h>
-CKeinSPASmehr
 #include "soppinf.h"
 #include "symmet.h"
 #include "wrkrsp.h"
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
-      DIMENSION TRLEN(3,NSYM,MXNEXI,4),  TRVEL(3,NSYM,MXNEXI,4)
-CSPAS:23/5-11: second and third moment sum rules
-      DIMENSION TQLEN(3,3,NSYM,MXNEXI,4),  TQVEL(3,3,NSYM,MXNEXI,4)
-      DIMENSION TTLEN(10,NSYM,MXNEXI,4)
+CSPAS:5/11-13: HRPA included
+C     DIMENSION TRLEN(3,NSYM,MXNEXI,4),  TRVEL(3,NSYM,MXNEXI,4)
+C     DIMENSION TQLEN(3,3,NSYM,MXNEXI,4),  TQVEL(3,3,NSYM,MXNEXI,4)
+C     DIMENSION TTLEN(10,NSYM,MXNEXI,4)
+C     DIMENSION TRLON(3,NSYM,MXNEXI,4),  TRMAG(3,NSYM,MXNEXI,4)
+C     DIMENSION BSRLON(3,NSYM,MXNEXI,4), EXENG(NSYM,MXNEXI,4)
+      DIMENSION TRLEN(3,NSYM,MXNEXI,5),  TRVEL(3,NSYM,MXNEXI,5)
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI,5),  TQVEL(3,3,NSYM,MXNEXI,5)
+      DIMENSION TTLEN(10,NSYM,MXNEXI,5)
+      DIMENSION TRLON(3,NSYM,MXNEXI,5),  TRMAG(3,NSYM,MXNEXI,5)
+      DIMENSION BSRLON(3,NSYM,MXNEXI,5), EXENG(NSYM,MXNEXI,5)
 CKeinSPASmehr
-      DIMENSION TRLON(3,NSYM,MXNEXI,4),  TRMAG(3,NSYM,MXNEXI,4)
-      DIMENSION BSRLON(3,NSYM,MXNEXI,4), EXENG(NSYM,MXNEXI,4)
       DIMENSION SECMAT(3,MXNEXI,NSYM)
       DIMENSION WORK(LWORK)
 C
@@ -73,6 +65,20 @@ C
       CALL GETTIM (DUMMY,WTIME)
       TIMWTO  = WTIME
 C
+CPFP 2009-Jun
+C
+C---------------------------------------------------------
+C     Initialize TRIPLET keyword used inside SOPPA module.
+C---------------------------------------------------------
+C
+      IF (EXCTRP) THEN
+        TRIPLET = .TRUE.
+      ELSE
+        TRIPLET = .FALSE.
+      END IF
+C
+Cend-PFP
+C
 C-------------------------------------------
 C     Initializes memory statistics routine.
 C-------------------------------------------
@@ -84,8 +90,9 @@ C     If only RPA initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
 C
-      IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP) 
-     &           .AND. (.NOT.AOSOC) )    CALL RP_INIT(WORK,LWORK)
+      IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA) 
+     &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC) )
+     &   CALL RP_INIT(WORK,LWORK)
 C
 C---------------------------------------------------
 C     Initialize a few pointerarrays and dimensions.
@@ -112,9 +119,19 @@ C
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
 C
-      IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
+CPFP: Higher RPA added
+C     IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
+      IF (AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+Cend-PFP
 C
+CSPAS:5/11-2013: Patricio had the following statement before the IF statement
          LT2AM   = NT2AMX
+CPFP
+C        For triplet calculations LT2AM has to be twice as large, 
+C        because there are two version of the correlation coefficients
+C
+         IF (TRIPLET) LT2AM = NT2AMX*2
+Cend-PFP
          LDENSIJ = NIJDEN(1)
          LDENSAB = NABDEN(1)
          LDENSAI = NAIDEN(1)
@@ -150,18 +167,28 @@ C---------------------------------------------------------------------
 C     Initialize arrays of transition moments and excitation energies.
 C---------------------------------------------------------------------
 C
-      CALL DZERO(TRLEN, 3*NSYM*MXNEXI*4)
-      CALL DZERO(TRVEL, 3*NSYM*MXNEXI*4)
-CSPAS:23/5-11: second and third moment sum rules
-      CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*4)
-      CALL DZERO(TQVEL, 3*3*NSYM*MXNEXI*4)
-      CALL DZERO(TTLEN, 10*NSYM*MXNEXI*4)
-CKeinSPASmehr
-      CALL DZERO(TRLON, 3*NSYM*MXNEXI*4)
-      CALL DZERO(TRMAG, 3*NSYM*MXNEXI*4)
-      CALL DZERO(BSRLON,3*NSYM*MXNEXI*4)
+CSPAS:5/11-13: HRPA included
+C     CALL DZERO(TRLEN, 3*NSYM*MXNEXI*4)
+C     CALL DZERO(TRVEL, 3*NSYM*MXNEXI*4)
+C     CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*4)
+C     CALL DZERO(TQVEL, 3*3*NSYM*MXNEXI*4)
+C     CALL DZERO(TTLEN, 10*NSYM*MXNEXI*4)
+C     CALL DZERO(TRLON, 3*NSYM*MXNEXI*4)
+C     CALL DZERO(TRMAG, 3*NSYM*MXNEXI*4)
+C     CALL DZERO(BSRLON,3*NSYM*MXNEXI*4)
+C     CALL DZERO(SECMAT,3*NSYM*MXNEXI)
+C     CALL DZERO(EXENG, NSYM*MXNEXI*4)
+      CALL DZERO(TRLEN, 3*NSYM*MXNEXI*5)
+      CALL DZERO(TRVEL, 3*NSYM*MXNEXI*5)
+      CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*5)
+      CALL DZERO(TQVEL, 3*3*NSYM*MXNEXI*5)
+      CALL DZERO(TTLEN, 10*NSYM*MXNEXI*5)
+      CALL DZERO(TRLON, 3*NSYM*MXNEXI*5)
+      CALL DZERO(TRMAG, 3*NSYM*MXNEXI*5)
+      CALL DZERO(BSRLON,3*NSYM*MXNEXI*5)
       CALL DZERO(SECMAT,3*NSYM*MXNEXI)
-      CALL DZERO(EXENG, NSYM*MXNEXI*4)
+      CALL DZERO(EXENG, NSYM*MXNEXI*5)
+CKeinSPASmehr
 C
 C========================================================
 C     Determine excitation energies, response vectors and 
@@ -251,29 +278,24 @@ C----------------------------------------------------
 C              Copy RPA excitation energies to EXENG.
 C----------------------------------------------------
 C
-               DO 10 IEXVAL = 1,NEXCI
+               DO IEXVAL = 1,NEXCI
                   IF (IEXVAL .LE. MXNEXI)
      &               EXENG(ISYM,IEXVAL,1) = WORK(KEXVAL-1+IEXVAL)
                   IF (IEXVAL .GT. MXNEXI)
      &               WRITE(LUPRI,*) 
      &                    'WARNING: IEXVAL greater than MXNEXI.'
-   10          CONTINUE
+               END DO
 C
 C-----------------------------------------------
 C              Determine RPA transition moments.
 C-----------------------------------------------
 C
                CALL RP_TRMOM(ISYMTR,NLBTOT,NEXCI,TRLEN(1,1,1,1),
-CSPAS:23/5-11: second and third moment sum rules
-C    &                       TRVEL(1,1,1,1),TRLON(1,1,1,1),
-C    &                       TRMAG(1,1,1,1),BSRLON(1,1,1,1),
-C    &                       EXENG(1,1,1),WORK(KEND2),LWORK2)
      &                       TRVEL(1,1,1,1),TQLEN(1,1,1,1,1),
      &                       TQVEL(1,1,1,1,1),TTLEN(1,1,1,1),
      &                       TRLON(1,1,1,1),TRMAG(1,1,1,1),
      &                       BSRLON(1,1,1,1),EXENG(1,1,1),
      &                       WORK(KEND2),LWORK2)
-CKeinSPASmehr
 C
 C--------------------------------------------------------
 C              Determine charge radius of excited states.
@@ -283,6 +305,85 @@ C
 C
             END IF
 C
+C======================================
+C           For HRPA do the following.
+C======================================
+C
+C
+cspas            IF (AOHRP) THEN
+cspas               NVARPT  = 2*NT1AM(ISYM)
+cspasC
+cspas               IF (IPRSOP .GE. 3) THEN
+cspas                  WRITE(LUPRI,9000)
+cspas                  WRITE(LUPRI,'(1X,A)') 'HRPA:'
+cspasC                 WRITE(LUPRI,'(3(A,I8,/),A,I8)')
+cspas                  WRITE(LUPRI,'(2(A,I8,/),A,I8)')
+cspas     &            ' Perturbation symmetry     :',ISYM,
+cspas     &            ' p-h variables.            :',2*NT1AM(ISYM),
+cspas     &            ' Total number of variables :',NVARPT
+cspas                  WRITE(LUPRI,9001)
+cspas               END IF
+cspasC
+cspas               NEXCI = MIN(NEXCIT(ISYM),NVARPT/2)
+cspas               IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
+cspas                  WRITE(LUPRI,'(1X,A,I5,/,1X,A)')
+cspas     &            'NOTICE: The number of excitations are reduced to '
+cspas     &            ,NEXCI,'as this is the full dimension of the '//
+cspas     &            'excitation space'
+cspas               END IF
+cspasC
+cspasC-----------------------------------------------------
+cspasC              Get T2 amplitudes and density matrices.
+cspasC-----------------------------------------------------
+cspasC
+cspas               CALL SO_GETT2('MP2 ',WORK(KT2AM),LT2AM,WORK(KDENSAI),
+cspas     &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
+cspas     &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
+cspasC
+cspasC--------------------------------
+cspasC              Initialize DENSAI.
+cspasC--------------------------------
+cspasC
+cspas               CALL DZERO(WORK(KDENSAI),LDENSAI)
+cspasC
+cspasC-------------------------------------------------------------------
+cspasC              Determine HRPA excitation energies and excitation
+cspasC              vectors. The excitation vectors are written to file.
+cspasC-------------------------------------------------------------------
+cspasC
+cspas               CALL HR_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
+cspas     &                        WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+cspas     &                        LDENSAB,WORK(KDENSAI),LDENSAI,WORK(KT2AM),
+cspas     &                        LT2AM,WORK(KFOCKD),LFOCKD,
+cspas     &                        WORK(KEND2),LWORK2)
+cspasC
+cspasC-------------------------------------------------------
+cspasC              Copy HRPA exciation energies to EXENG.
+cspasC-------------------------------------------------------
+cspasC
+cspas               DO IEXVAL = 1,NEXCI
+cspas                  IF (IEXVAL .LE. MXNEXI)
+cspas     &               EXENG(ISYM,IEXVAL,2) = WORK(KEXVAL-1+IEXVAL)
+cspas                  IF (IEXVAL .GT. MXNEXI)
+cspas     &               WRITE(LUPRI,*)
+cspas     &                    'WARNING: IEXVAL greater than MXNEXI.'
+cspas              END DO
+cspasC
+cspasC---------------------------------------------------
+cspasC              Determine HRPA transition moments.
+cspasC---------------------------------------------------
+cspasC
+cspas               CALL HR_TRMOM(ISYMTR,NLBTOT,NEXCI,WORK(KT2AM),
+cspas     &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+cspas     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
+cspas     &                       TRLEN(1,1,1,2),TRVEL(1,1,1,2),
+cspas     &                       TQLEN(1,1,1,1,2),TQVEL(1,1,1,1,2),
+cspas     &                       TTLEN(1,1,1,2),
+cspas     &                       TRLON(1,1,1,2),TRMAG(1,1,1,2),
+cspas     &                       BSRLON(1,1,1,2),EXENG(1,1,2),
+cspas     &                       WORK(KEND2),LWORK2)
+cspas            END IF
+C
 C=======================================
 C           For RPA(D) do the following.
 C=======================================
@@ -291,14 +392,20 @@ C
 C
                MODEL = 'DCRPA'
 C
-               NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+CPFP   2009-Jun
+C               NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               NVARPT = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
+Cend-PFP
 C
                IF (IPRSOP .GE. 3) THEN
                   WRITE(LUPRI,9000)
                   WRITE(LUPRI,'(1X,A,4(/A,I8))') 'RPA(D):',
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables.            :',2*NT1AM(ISYM),
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+CPFP   2009-Jun
+C     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
+Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
                END IF
@@ -341,13 +448,13 @@ C-------------------------------------------------------
 C              Copy RPA(D) excitation energies to EXENG.
 C-------------------------------------------------------
 C
-               DO 20 IEXVAL = 1,NEXCI
+               DO IEXVAL = 1,NEXCI
                   IF (IEXVAL .LE. MXNEXI)
-     &               EXENG(ISYM,IEXVAL,2) = WORK(KEXVAL-1+IEXVAL)
+     &               EXENG(ISYM,IEXVAL,3) = WORK(KEXVAL-1+IEXVAL)
                   IF (IEXVAL .GT. MXNEXI)
      &               WRITE(LUPRI,*) 
      &                    'WARNING: IEXVAL greater than MXNEXI.'
-   20          CONTINUE
+               END DO
 C
 C--------------------------------------------------
 C              Determine RPA(D) transition moments.
@@ -356,13 +463,11 @@ C
                CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,WORK(KT2AM),
      &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       TRLEN(1,1,1,2),TRVEL(1,1,1,2),
-CSPAS:23/5-11: second and third moment sum rules
-     &                       TQLEN(1,1,1,1,2),TQVEL(1,1,1,1,2),
-     &                       TTLEN(1,1,1,2),
-CKeinSPASmehr
-     &                       TRLON(1,1,1,2),TRMAG(1,1,1,2),
-     &                       BSRLON(1,1,1,2),EXENG(1,1,2),
+     &                       TRLEN(1,1,1,3),TRVEL(1,1,1,3),
+     &                       TQLEN(1,1,1,1,3),TQVEL(1,1,1,1,3),
+     &                       TTLEN(1,1,1,3),
+     &                       TRLON(1,1,1,3),TRMAG(1,1,1,3),
+     &                       BSRLON(1,1,1,3),EXENG(1,1,3),
      &                       WORK(KEND2),LWORK2)
 C
             END IF
@@ -375,7 +480,10 @@ C
 C
                MODEL = 'AOSOP'
 C
-               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+CPFP   2009-Jun
+C               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
+Cend-PFP
 C
                IF (IPRSOP .GE. 3) THEN
                   WRITE(LUPRI,9000)
@@ -383,7 +491,10 @@ C
                   WRITE(LUPRI,'(3(A,I8,/),A,I8)')
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables.            :',2*NT1AM(ISYM),
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+CPFP   2009-Jun
+C     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
+Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
                END IF
@@ -426,13 +537,13 @@ C-----------------------------------------------------
 C              Copy SOPPA exciation energies to EXENG.
 C-----------------------------------------------------
 C
-               DO 30 IEXVAL = 1,NEXCI
+               DO IEXVAL = 1,NEXCI
                   IF (IEXVAL .LE. MXNEXI)
-     &               EXENG(ISYM,IEXVAL,3) = WORK(KEXVAL-1+IEXVAL)
+     &               EXENG(ISYM,IEXVAL,4) = WORK(KEXVAL-1+IEXVAL)
                   IF (IEXVAL .GT. MXNEXI)
      &               WRITE(LUPRI,*) 
      &                    'WARNING: IEXVAL greater than MXNEXI.'
-   30          CONTINUE
+               END DO
 C
 C-------------------------------------------------
 C              Determine SOPPA transition moments.
@@ -441,13 +552,11 @@ C
                CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,WORK(KT2AM),
      &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       TRLEN(1,1,1,3),TRVEL(1,1,1,3),
-CSPAS:23/5-11: second and third moment sum rules
-     &                       TQLEN(1,1,1,1,3),TQVEL(1,1,1,1,3),
-     &                       TTLEN(1,1,1,3),
-CKeinSPASmehr
-     &                       TRLON(1,1,1,3),TRMAG(1,1,1,3),
-     &                       BSRLON(1,1,1,3),EXENG(1,1,3),
+     &                       TRLEN(1,1,1,4),TRVEL(1,1,1,4),
+     &                       TQLEN(1,1,1,1,4),TQVEL(1,1,1,1,4),
+     &                       TTLEN(1,1,1,4),
+     &                       TRLON(1,1,1,4),TRMAG(1,1,1,4),
+     &                       BSRLON(1,1,1,4),EXENG(1,1,4),
      &                       WORK(KEND2),LWORK2)
 C
             END IF
@@ -460,7 +569,10 @@ C
 C
                MODEL = 'AOSOC'
 C
-               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+CPFP   2009-Jun
+C               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
+Cend-PFP
 C
                IF (IPRSOP .GE. 3) THEN
                   WRITE(LUPRI,9000)
@@ -468,7 +580,10 @@ C
                   WRITE(LUPRI,'(3(A,I8,/),A,I8)')
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables.            :',2*NT1AM(ISYM),
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+CPFP   2009-Jun
+C     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
+Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
                END IF
@@ -505,13 +620,13 @@ C-----------------------------------------------------------
 C              Copy SOPPA(CCSD) exciation energies to EXENG.
 C-----------------------------------------------------------
 C
-               DO 40 IEXVAL = 1,NEXCI
+               DO IEXVAL = 1,NEXCI
                   IF (IEXVAL .LE. MXNEXI)
-     &               EXENG(ISYM,IEXVAL,4) = WORK(KEXVAL-1+IEXVAL)
+     &               EXENG(ISYM,IEXVAL,5) = WORK(KEXVAL-1+IEXVAL)
                   IF (IEXVAL .GT. MXNEXI)
      &               WRITE(LUPRI,*) 
      &                    'WARNING: IEXVAL greater than MXNEXI.'
-   40          CONTINUE
+               END DO  
 C
 C-------------------------------------------------------
 C              Determine SOPPA(CCSD) transition moments.
@@ -520,13 +635,11 @@ C
                CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,WORK(KT2AM),
      &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       TRLEN(1,1,1,4),TRVEL(1,1,1,4),
-CSPAS:23/5-11: second and third moment sum rules
-     &                       TQLEN(1,1,1,1,4),TQVEL(1,1,1,1,4),
-     &                       TTLEN(1,1,1,4),
-CKeinSPASmehr
-     &                       TRLON(1,1,1,4),TRMAG(1,1,1,4),
-     &                       BSRLON(1,1,1,4),EXENG(1,1,4),
+     &                       TRLEN(1,1,1,5),TRVEL(1,1,1,5),
+     &                       TQLEN(1,1,1,1,5),TQVEL(1,1,1,1,5),
+     &                       TTLEN(1,1,1,5),
+     &                       TRLON(1,1,1,5),TRMAG(1,1,1,5),
+     &                       BSRLON(1,1,1,5),EXENG(1,1,5),
      &                       WORK(KEND2),LWORK2)
 C
             END IF
@@ -563,6 +676,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('SO_EXCIT1')
 C

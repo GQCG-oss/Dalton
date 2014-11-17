@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_input */
       SUBROUTINE CC_INPUT(WORD,IREST,MSYM)
@@ -109,7 +108,6 @@ C
       CHARACTER*(80) LINE
 C
       SAVE SET
-CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
 CSONIA/FRAN/TBPEDERSEN
 CNew method keywords ring-CCD (rCCD), direct ring CCD (drCCD),
 Cring-CCD for triplet (rTCCD), and SOSEX added
@@ -146,236 +144,18 @@ C
       IF (SET) RETURN
       SET = .TRUE.
 C
+CSPAS:8/11-13: Initialization of CCSDINP, CCLR, CCSDSYM 
+C              and other common blocks is moved to a new routine
+C              CCSD_INIT0, because the initialization has to be done
+C              also in the AO-SOPPA module.
+C 
 C     Initialize /CCSDINP/ ,/CCLR / and /CCSDSYM/
 C
-      LGLO = .FALSE.
-      SKIP   = .FALSE.
-      CCRSTR = .FALSE.
-      CCSDT  = .FALSE.
-      CC2    = .FALSE.
-      MP2    = .FALSE.
-      DCPT2  = .FALSE.
-      CIS    = .FALSE.
-      CCS    = .FALSE.
-      CCD    = .FALSE.
-!SONIA/FRAN
-      rCCD   = .FALSE.
-      drCCD  = .FALSE.
-      rTCCD  = .FALSE.
-      SOSEX  = .FALSE.
-!
-      CCP2   = .FALSE.
-      CC1A   = .FALSE.
-      CC1B   = .FALSE.
-      CCPT   = .FALSE.
-      CCP3   = .FALSE.
-      CCRT   = .FALSE.
-      CCR3   = .FALSE.
-      CCR1A  = .FALSE.
-      CCR1B  = .FALSE.
-      RSPIM  = .FALSE.
-      TRIPIM = .FALSE.
-      LSEC   = .FALSE.
-      LCOR   = .FALSE.
-      NOCCIT = .FALSE.
-      FROIMP = .FALSE.
-      FROEXP = .FALSE.
-      CCFOP  = .FALSE.
-      CCSTST = .FALSE.
-      T2TCOR = .TRUE.
-      DEBUG  = .FALSE.
-      CCLR   = .FALSE.
-      CCQR   = .FALSE.
-      CCCR   = .FALSE.
-      CC4R   = .FALSE.
-      CC5R   = .FALSE.
-      CCTM   = .FALSE.
-      CCMCD  = .FALSE.
-      CCLRSD = .FALSE.
-      CCQR2R = .FALSE.
-      CCOPA  = .FALSE.
-      CCXOPA = .FALSE.
-      CCTPA  = .FALSE.
-      CCEXLR = .FALSE.
-      CCDERI = .FALSE.
-!     Lanczos
-      CCLRLCZ = .FALSE.
-C     
-Cholesky
-C 
-      CHOPT  = .FALSE.
-      CALL CC_CHOPTINIT
-      CHODBG = .FALSE.
-C     
-Cholesky
-C 
-      LVVVV  = .FALSE.
-
-      L0SKIP = .FALSE.
-
-      F1SKIP = .FALSE.
-      R1SKIP = .FALSE.
-      L1SKIP = .FALSE.
-
-      RCSKIP = .FALSE.
-      FCSKIP = .FALSE.
-      LCSKIP = .FALSE.
-
-      O2SKIP = .FALSE.
-      R2SKIP = .FALSE.
-      X2SKIP = .FALSE.
-      F2SKIP = .FALSE.
-      L2SKIP = .FALSE.
-
-      CO2SKIP= .FALSE.
-      CR2SKIP= .FALSE.
-      CX2SKIP= .FALSE.
-      CF2SKIP= .FALSE.
-      CL2SKIP= .FALSE.
-
-      RESKIP = .FALSE.
-      LESKIP = .FALSE.
-      E0SKIP = .FALSE.
-      IMSKIP = .FALSE.
-      LISKIP = .FALSE.
-      M1SKIP = .FALSE.
-      FRSKIP = .FALSE.
-      BESKIP = .FALSE.
-      N2SKIP = .FALSE.
-      BRSKIP = .FALSE.
-      ETADSC = .FALSE.
-
-      FREEZE = .FALSE.
-      ONLYMO = .FALSE.
-      CCSLV  = .FALSE.
-      NCCSLV = 0
-
-      HERDIR = .FALSE.
-
-      NOSORT = .FALSE.
-
-      ANAAOD   = .FALSE.
-      MAXRED   = 200
-      MXLRV    = MAXRED - 1
-      MXDIIS   = 8
-      MAXITE   = 40
-      NOEONL   = .FALSE.
-      THRLEQ   = 1.0D-05
-      THRENR   = 1.0D-08
-      THRVEC   = 1.0D9
-      MTRIP    = .FALSE.
-      THRLDPHF = 1.0D-13
-CWMK  NFIELD = 0
-      NSIMLE = 0
-      NEWCAU = .FALSE.
-      LBUF   = 250000
-C
-      KEEPAOTWO = 0
-      KEEPAOIN  = .FALSE.
-      LPACKINT  = .FALSE.
-      THRPCKINT = 1.0D-15
-C
-C DRCCD/DRPA related stuff
-C
-C IT2UPD: decide on doubles amplitude updating scheme for RCCD and DRCCD
-C         (not used for other methods)
-C   =0 --- use conventional MP2-like update
-C   =1 --- use gradient update of Henderson and Scuseria,
-C          Mol. Phys. 108, 2511-2517 (2010)
-      IT2UPD=1
-C
-C IT2START: decide on doubles amplitude start guess for RCCD and DRCCD
-C         (not used for other methods)
-C   =-1 --- use zero amplitudes as initial guess (DEC-CC)
-C   =0  --- use conventional MP2 guess
-C   =1  --- use gradient start guess along the lines of Henderson and Scuseria,
-C           Mol. Phys. 108, 2511-2517 (2010)
-      IT2START=1
-C
-C HURWITZ_CHECK: check that solution is stabilizing for DRCCD
-      HURWITZ_CHECK=.FALSE.
-C end
-
-C
-CSPAS 22.10.2003 implementing SOPPA(CCSD)
-      SIRSOP    = .FALSE.
-CKeinSPASmehr
-      AOSOPPA   = .FALSE.
-C
-      CONNECTION = 'SYMMETR'
-C
-      CALL CC_NODINP(WORD,.TRUE.)
+      CALL CCSD_INIT0(WORD)
 C
       MSYMS = MSYM 
-C----------------------------------------------------------------
-C Initialize additional labels for CCSD(T)-gradient optimization
-C and FOP
-C----------------------------------------------------------------
-
-      ETACCPT = .FALSE.
-      DIRKAPB = .FALSE.
 C
-C-----------------------------
-C     Cholesky initializations
-C-----------------------------
-C
-      CALL CC_CHOMP2INIT
-      CALL CC_CHOCC2INIT
-C
-C---------------------------------------------------------------------
-C     CCSAVE is true for all case, but can be turned of in *ccexci
-C     Only used for linear response - mandatory for oscstr and 
-C     polarizabilities
-C---------------------------------------------------------------------
-C
-      CCSAVE = .TRUE. 
-C
-C     Initialize the length of the list of response operator labels
-C
-      NPRLBL_CC = 0
-C
-C     Default for evaluation of first derivative integrals
-C
-      DIRGRD = DIRCAL
-C
-C     Default values based on gnrinf common block
-C
-      DIRECT = DIRCAL
-      IPRINT = IPRUSR
-C
-      CALL IZERO(NRHFFR,8)
-      CALL IZERO(NVIRFR,8)
-      CALL IZERO(KFRRHF,8*MAXFRO)
-      CALL IZERO(KFRVIR,8*MAXFRO)
-      CALL IZERO(NOMINP,3*8)
-C
-      ITEST = 0
-      DO I=1,8
-        NRHFFR(I) = LOCFRO(I)
-        ITEST = ITEST + NRHFFR(I)
-      END DO
-      FROIMP = ITEST .NE. 0
-C
-      CALL DZERO(EFIELD,MXFELT)
-C
-      ITEST  = 0
-C
-      MINSCR = .TRUE.
-      MINMEM = .FALSE.
-      CCPAIR = .FALSE.
-ccn      MKVAJKL = .FALSE.
-ckr      R12CAL = .TRUE.
-ckr      R12NOA = .FALSE.
-ckr      R12NOP = .FALSE.
-ckr      R12NOB = .FALSE.
-ckr      R12HYB = .TRUE.
-ckr      NORXR  = .FALSE.
-cwk      VCLTHR =  0D0
-cwk      SVDTHR =  1D-15
-ckr      R12XXL = .FALSE.
-
-      BRASCL = 1.0D0
-      KETSCL = 1.0D0
+CKeinSPASmehr
 C
 C     If this is a restart run, we read MSYM from SIRIFC
 C
@@ -670,11 +450,9 @@ C                '*CCXOPA'
                   CALL CC_FOPINP(WORD)
                GO TO 1000
    52          CONTINUE
-CSPAS 22.10.2003 implementing SOPPA(CCSD)
                   SIRSOP = .TRUE.
                   CCSD   = .TRUE.
                   KEEPAOTWO = MAX(KEEPAOTWO,2)
-CKeinSPASmehr
                GO TO 1000
    53          CONTINUE
                   CCR3   = .TRUE.
@@ -1026,6 +804,9 @@ C
          IF (DIRECT) MINSCR = .FALSE.
          MINMEM = .FALSE.
          IF (DIRECT) MINMEM = .FALSE.
+Casm
+         IF (CHEXDI) MINSCR = .TRUE.
+Casm
       ENDIF
       IF ( .NOT. MINSCR ) MINMEM = .TRUE.
 
@@ -1219,7 +1000,7 @@ C
       CHARACTER*6 FLDTYP
       CHARACTER*1 FLDDIR
 C
-#include "ibtfun.h"
+
 C
 C----------------------------------------------
 C     Calculate total electric field.
@@ -1280,7 +1061,7 @@ C
          ELSE
 C
             DO 320 ISYOPR = 0,MAXOPR
-               IF (IBTAND(ISYOPR,MULCNT) .EQ. 0) THEN
+               IF (IAND(ISYOPR,MULCNT) .EQ. 0) THEN
 C
                   JATOM = JATOM + 1
 C
@@ -1288,7 +1069,7 @@ C
 C
                   DO 330 I = 1,3
 C
-                     PTAT          = PT(IBTAND(ISYMAX(I,1),ISYOPR))
+                     PTAT          = PT(IAND(ISYMAX(I,1),ISYOPR))
                      GEOM(I,JATOM) = PTAT*CORD(I,ICENT)
 C
   330             CONTINUE
@@ -1395,6 +1176,9 @@ C=====================================================================*
 #include "ccrspprp.h"
 #include "ccexci.h"
 
+#include "maxorb.h"
+#include "ccdeco.h"
+
 * local parameters:
       CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_EXCINP')
@@ -1420,7 +1204,7 @@ C=====================================================================*
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
      *            '.OMEINP','.STVEC ','.STOLD ','.CCTREN','.THREXC',
      *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL',
-     *            '.ANALYS','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     *            '.ANALYS','.CHEXDI','.DV4DIS','.XXXXXX','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1453,6 +1237,9 @@ C
       MARGIN = .FALSE.
       EXCI_CONT = .FALSE.
       XMARGIN = 1.0
+C
+      CHEXDI = .FALSE.
+      DV4DIS = .FALSE.
 C
       SQROVLP    = .FALSE.
       CCSDTRENRM = .FALSE.
@@ -1724,17 +1511,20 @@ C
             GO TO 100
 C
 C----------------------------------------------------------------
-C           .XXXXXX  unused
+C           .CHEXDI  Use DIIS solver for Cholesky CC2 excitations
 C----------------------------------------------------------------
 C
 22          CONTINUE
+               CHEXDI = .TRUE.
+               MINSCR = .TRUE.
             GO TO 100
 C
 C----------------------------------------------------------------
-C           .XXXXXX  unused
+C           .DV4DIS Use Davidson with omega=zero before CC2/DIIS
 C----------------------------------------------------------------
 C
 23          CONTINUE
+               DV4DIS = .TRUE.
             GO TO 100
 C
 C----------------------------------------------------------------
@@ -4386,7 +4176,7 @@ C=====================================================================*
 C#if defined (IMPLICIT_NONE)
 C      IMPLICIT NONE  
 C#else
-#  include <implicit.h>
+#  include "implicit.h"
 C#endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -5802,13 +5592,13 @@ c /* deck cc_crinp */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
 #include "ccsections.h"
 #include "cccrinf.h"
-C#include <ccrspprp.h>
+C#include "ccrspprp.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -6502,7 +6292,7 @@ c /* deck CC_4RINP */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -6835,7 +6625,7 @@ c /* deck CC_5RINP */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -7349,7 +7139,7 @@ c /* deck cc_exlrinp */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -7725,7 +7515,7 @@ C           -----------------------------------------------------------
 C#if defined (IMPLICIT_NONE)
 C      IMPLICIT NONE  
 C#else
-#  include <implicit.h>
+#  include "implicit.h"
 C#endif
 #include "priunit.h"
 #include "cctm.h"
@@ -8065,7 +7855,7 @@ C           _______________________________________________
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccmcdinf.h"
@@ -9929,12 +9719,12 @@ C     Alfredo Sanchez de Meras. May 2008
 C
 C     Purpose: Read input for CC Active section
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*7 WORD
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <center.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "center.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_ACTINP')
@@ -10017,7 +9807,7 @@ C                    Select active atoms (no boxes)
                         WRITE(LUPRI,*) 'ERROR: From center.h, ' ,
      &                                 'maximum number of active ',
      &                                 'atoms is',MXACAT
-                        STOP 'Too many active atoms'
+                        CALL QUIT('Too many active atoms')
                      END IF
 C
                      IF (NACINP .GT. 0) THEN
@@ -10035,11 +9825,11 @@ C
                            WRITE(LUPRI,*) 'Error in number of ',
      &                            'active atoms : NACINP/ILAST',
      &                            NACINP,ILAST
-                           STOP 'Error defining active atoms'
+                           CALL QUIT('Error defining active atoms')
                         END IF
                      ELSE
                         WRITE(LUPRI,*) 'Number of active atoms is zero'
-                        STOP 'NACINP = 0'
+                        CALL QUIT('NACINP = 0')
                      END IF
 C
                      DO I = 1,NACINP
@@ -10048,7 +9838,7 @@ C
                               WRITE(LUPRI,*) 'ERROR : ',
      &                                       'One atom declared ',
      &                                       'twice as active'
-                              STOP 'One atom is hyperactive'
+                              CALL QUIT('One atom is hyperactive')
                            ELSE IF (LACINP(J) .GT. LACINP(I)) THEN
                               ITMP = LACINP(J)          ! Not needed,
                               LACINP(J) = LACINP(I)     ! but output
@@ -10109,7 +9899,8 @@ C                    Give list of diagonals to decompose
                         WRITE(LUPRI,*) 'Number of occupied diagonals',
      &                                 NABSOC
                         WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
-                        STOP 'Too many occupied diagonals under SELDIA'
+                        CALL QUIT(
+     &                  'Too many occupied diagonals under SELDIA')
                      END IF
                      READ(LUCMD,*) (LACBAS(I),I=1,NABSOC)
                      READ(LUCMD,*) NABSVI
@@ -10117,7 +9908,8 @@ C                    Give list of diagonals to decompose
                         WRITE(LUPRI,*) 'Number of virtual diagonals',
      &                                 NABSVI
                         WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
-                        STOP 'Too many virtual diagonals under SELDIA'
+                        CALL QUIT(
+     &                  'Too many occupied diagonals under SELDIA')
                      END IF
                      IF (NABSVI .LT. 0) THEN
                         NABSVI = -NABSVI
@@ -10132,7 +9924,7 @@ C                    Give list of diagonals to decompose
                            WRITE(LUPRI,*) 'Error in number of ',
      &                            'active basis : NABSVI/ILAST',
      &                            NABSVI,ILAST
-                           STOP 'Error defining active basis'
+                           CALL QUIT('Error defining active basis')
                         END IF
                      ELSE
                         READ(LUCMD,*) (LACBSV(I),I=1,NABSVI)
@@ -10154,7 +9946,7 @@ C                    Calculate orbital spread
                      IF (MSYM .GT. 1) THEN
                         WRITE(LUPRI,*) 'Calculation of orbital',
      &                       ' spreads is only possible w/o symmetry'
-                        STOP 'DOSPRE with NSYM .GT. 1'
+                        CALL QUIT('DOSPRE with NSYM .GT. 1')
                      END IF
                   GOTO 100
 C
@@ -10166,7 +9958,7 @@ C                    Select diagonals to minimize orbital spreads
                      IF (MSYM .GT. 1) THEN
                         WRITE(LUPRI,*) 'Calculation of orbital',
      &                       ' spreads is only possible w/o symmetry'
-                        STOP 'MINSPR with NSYM .GT. 1'
+                        CALL QUIT('MINSPR with NSYM .GT. 1')
                      END IF
                   GOTO 100
 C

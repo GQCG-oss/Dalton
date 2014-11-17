@@ -17,7 +17,7 @@ module plt_driver_module
   use typedefTYPE
   use grid_utilities_module
   use davidson_settings
-  use IntegralInterfaceMOD,only:II_Get_overlap
+  use IntegralInterfaceMOD!,only:II_Get_overlap
   private
   public :: plt_wrapper, pltinfo_set_default_config, config_plt_input, &
        & config_pltgrid_input, construct_plt_file_driver, &
@@ -37,7 +37,8 @@ contains
     type(LsItem),intent(inout) :: ls
     !> Information about which PLT information to calculation (see type pltinfo)
     type(pltinfo),intent(inout) :: MyPlt
-    integer :: nocc,nrow,ncol,funit, IOS
+    integer :: nrow,ncol,nocc,funit, IOS
+    integer(kind=long) :: nrow8,ncol8
     Type(Matrix) :: InputMat
     logical :: file_exist
 
@@ -69,7 +70,9 @@ contains
     funit = 33
     OPEN(UNIT=funit,FILE=trim(MyPlt%inputfile),STATUS='OLD', &
          & FORM='UNFORMATTED',IOSTAT=IOS)
-    READ (funit) nrow,ncol
+    READ (funit) nrow8,ncol8
+    nrow=nrow8
+    ncol=ncol8
     write(ls%lupri,*) 'Matrix size: ', nrow, ncol
     call mat_init(InputMat,nrow,ncol)
     READ(funit) InputMat%elms
@@ -525,10 +528,11 @@ contains
     integer                        :: orbnr, nORBITALS,nBASIS,iorb,jorb,iunit,ig
     real(4)                        :: X,Y,Z,X1,Y1,Z1,Xgrid, Ygrid,Zgrid,deltax, deltay, deltaz 
     real(4), allocatable           :: moorb(:),CMO(:,:),GAO(:),tmp(:)
-    real(4)                        :: fZ1,fY1,fX1,fZn,fYn,fXn, SDOT
+    real(4)                        :: fZ1,fY1,fX1,fZn,fYn,fXn
     integer                        :: II,TD, ijk
     integer                        :: reclen
-    real(4)                       :: br
+    real(4)                        :: br
+    double precision, external     :: SDOT
     br=real(bohr_to_angstrom,4)
 
     nORBITALS = dCMO%ncol
@@ -575,7 +579,8 @@ contains
 
              ijk = ijk + 1
 
-             moorb(ijk) = SDOT(nBASIS,CMO(:,iorb),1,GAO,1) * SDOT(nBASIS,CMO(:,jorb),1,GAO,1)
+             !moorb(ijk) = real(SDOT(nBASIS,CMO(:,iorb),1,GAO,1) * SDOT(nBASIS,CMO(:,jorb),1,GAO,1))
+             moorb(ijk) = dot_product(CMO(:,iorb),GAO) * dot_product(CMO(:,jorb),GAO)
 
 
           ENDDO
@@ -628,10 +633,11 @@ contains
     real(4)                        :: X,Y,Z,X1,Y1,Z1,Xgrid, Ygrid,Zgrid,deltax, deltay, deltaz 
     real(4),     pointer           :: GAO(:)
     real(4), allocatable           :: moorb(:),CMO(:)
-    real(4)                        :: fZ1,fY1,fX1,fZn,fYn,fXn,SDOT
+    real(4)                        :: fZ1,fY1,fX1,fZn,fYn,fXn
     integer                        :: II,TD, ijk
     integer                        :: reclen
-    real(4)                       :: br
+    real(4)                        :: br
+    double precision, external     :: SDOT
     br=real(bohr_to_angstrom,4)
 
     nORBITALS = dCMO%ncol
@@ -681,7 +687,8 @@ contains
 
              ijk = Xg + (Yg-1)*nX + (Zg-1)*nX*nY
 
-             moorb(ijk) = SDOT(nBASIS,CMO,1,GAO,1)
+             !moorb(ijk) = real(SDOT(nBASIS,CMO,1,GAO,1))
+             moorb(ijk) = dot_product(CMO,GAO)
 
 
           ENDDO
@@ -853,10 +860,11 @@ contains
     real(4)                        :: X,Y,Z,X1,Y1,Z1,Xgrid, Ygrid,Zgrid,deltax, deltay, deltaz 
     real(4), allocatable           :: GAO(:,:),D(:),tmp(:,:)
     real(4), allocatable           :: moorb(:),XgridB(:),YgridB(:),ZgridB(:)
-    real(4)                        :: fZ1,fY1,fX1,fZn,fYn,fXn,SDOT
+    real(4)                        :: fZ1,fY1,fX1,fZn,fYn,fXn
     integer                        :: II,TD, ijk, klm, nLeftover
     integer                        :: reclen
     real(4)                        :: br
+    double precision, external     :: SDOT
     br=real(bohr_to_angstrom,4)
 
     nBASIS    = dD%nrow
@@ -925,7 +933,7 @@ contains
 
                 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(klm)
                 DO klm=1,nBASIS
-                   moorb(ijk-nBASIS+klm) = 2.0*SDOT(nBASIS,GAO(:,klm),1,tmp(:,klm),1)
+                   moorb(ijk-nBASIS+klm) = 2.0*dot_product(GAO(:,klm),tmp(:,klm))
                 ENDDO
                 !$OMP END PARALLEL DO
 
@@ -962,7 +970,7 @@ contains
 
        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(klm)
        DO klm=1,nLeftover
-          moorb(ijk-nLeftover+klm) = 2.0*SDOT(nBASIS,GAO(:,klm),1,tmp(:,klm),1)
+          moorb(ijk-nLeftover+klm) = 2.0*dot_product(GAO(:,klm),tmp(:,klm))
        ENDDO
        !$OMP END PARALLEL DO
 

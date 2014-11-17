@@ -16,18 +16,34 @@ for the optimization of the wave function (mandatory)
 \item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
 \item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera} (optional).
 \item **PLTGRID contains information about grid used for construction of *.plt files (optional).
+\item **PCM contains information needed to set up a polarizable continuum model calculation using the \pcm external module~\cite{PCMSolver} (optional).
 \end{itemize}
 Each of these sections may contain subsections, indicated by a single asterisk. LSDALTON.INP
 should always end with *END OF INPUT. 
 
 \section{**GENERAL}\label{sec:general}
 
-This input module defines the way the integrals should be calculated.
+This input module contains general settings.
 \begin{description}
 
+\item[\Key{INTERACTIONENERGY}] Calculation of the Counter Poise Corrected Interaction energy (Hartree-Fock, DFT, DEC-MP2 and CCSD). \newline
+NB: Requires the use of SubSystem labels in the MOLECULE.INP file
+\item[\Key{SAMESUBSYSTEMS}] Assumes that the two subsystems of the Counter Poise Corrected Interaction energy calculation is identical.
+\item[\Key{SUBSYSTEMDENSITY}] Constructs a density matrix for the subsystems of the Counter Poise Corrected Interaction energy calculation using the full system density matrix.  
 \item[\Key{SCALAPACK}] Use SCALAPACK matrices. \newline
 NB: Requires linking to the scalapack lib (provided by MKL) and the use of the --scalapack keyword during installation.
-\item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
+This keyword will distribute the memory of matrices among the MPI processes. This keyword will also use the SCALAPACK library 
+to parallize the matrix operations like matrix multiplication. 
+\item[\Key{SCALAPACKBLOCKSIZE}] 
+\verb| | \newline
+\verb|<ScalapackBlockSize>|\newline
+The blocksize used in SCALAPACK matrices
+\item[\Key{SCALAPACKNODES}] 
+\verb| | \newline
+\verb|<ScalapackNodes>|\newline
+The number of MPI processes you wish to use for the SCALAPACK format. This must be a subset of the total MPI processes used. 
+It may be benficial to chose a subset of the total MPI processes because the matrix operations scale differently with MPI nodes than the 
+Integral evaluation. 
 \item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library and the use of the --csr keyword during installation!
 \item[\Key{TIME}] Activate the printout of timings.
 \item[\Key{NOGCBASIS}] Deactivate the use of the Grand Canonical basis \cite{trilevel1, trilevel2}
@@ -40,18 +56,46 @@ detects the use of a Dunning basis set like (cc-pVXZ) but the calculation will f
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM)~\cite{ADMM:2010} to approximate 
-the exact-exchange contribution. When using this keyword, an auxiliary basis set has to be 
-specified in the \mol\ file such as:
+\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM)~\cite{ADMM:2010,ADMM:2014} 
+to approximate the exact-exchange contribution; by projecting the density to a smaller
+basis for calculation of the exact exchange, and by including a GGA exchange correction 
+between the regular and smaller auxiliary basis. When using this keyword, an auxiliary 
+basis set has to be specified in the \mol\ file such as:
 \begin{verbatim}
 1     BASIS
-2     6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G
+2     6-31+G* Aux=df-def2 ADMM=3-21G
       ...
 \end{verbatim} 
-where the "JK" basis is used as ADMM auxiliary basis set. You also have to provide a valid 
-"CABS" basis from the library (which is needed for technical reasons, but will not actually 
-be used in the calculation). \emph{Note of caution: we do not recommend to use ADMM in combination 
-with geometry optimization.}
+where the "ADMM" basis is used as an auxiliary basis set for ADMM (and where "Aux" 
+specify the auxiliary basis for density fitting (optional)). 
+The \Key{ADMM} keyword defaults to ADMM2 with Becke type exchange for the GGA 
+correction term (identical to using \Key{ADMM2} together with \Key{ADMM-FUNC} 
+specified to B88X).
+Note that although calculations requesting ADMM and reponse properties are allowed, 
+the response part of the code does not actually apply the ADMM approximation.
+ADMM energy and gradients are implemented.
+
+\item[\Key{ADMM1}] Use the ADMM1 approximation of Ref.~\cite{ADMM:2010}. Note: This 
+approximation does not work for gradients!
+
+\item[\Key{ADMM2}] Use the ADMM2 approximation of Ref.~\cite{ADMM:2010}. Default.
+
+\item[\Key{ADMMS}] Use the ADMMS approximation of Ref.~\cite{ADMM:2014}.
+Reccomended.
+
+\item[\Key{ADMMP}] Use the ADMMP approximation of Ref.~\cite{ADMM:2014}.
+
+\item[\Key{ADMMQ}] Use the ADMMQ approximation of Ref.~\cite{ADMM:2014}.
+Not reccomended.
+
+\item[\Key{ADMM-FUNC}] Reads a GGA exchange functional from the next input line. 
+Specifies the GGA exchange functional to use for the correction 
+term. List of possible functionals: B88X, PBEX, RPBEX, REVPBEX, MPBEX, PW91X, 
+KT1X, KT2X, KT3X, G96X, LG93X and OPTX. KT3X together with ADMMS works well for 
+basis-set combinations 6-31G**/3-21G and cc-pVTZ/3-21G~\cite{ADMM:2014}.
+
+LDAX is also implemented, but is currently not working as expected. Its use is
+therefore discouraged.
 
 \item[\Key{AOPRINT}] 
 \verb| | \newline
@@ -701,7 +745,9 @@ which is multiplied with an angular grid (Lebedev-grids).
 The angular grids are by default pruned for radial points close to the nucleus,  
 following Murray, Handy and Laming.~\cite{dft-int:pruning} 
 Grid weights for the grid points are calculated following different schemes (see below). 
-Grid points with weights below $10^{-20}$ are disregarded.  
+Grid points with weights below $10^{-20}$ are disregarded. The default settings 
+corresponds to \Key{GRID4}, but with the BLOCKSSF rather than the BLOCK partitioning scheme
+(see details below).
 Please note that the grid construction routines in the \lsdalton\
 program changed compared to the \dalton\ program which may result in small deviations in the number of grid points etc.
 \begin{description}
@@ -730,10 +776,15 @@ safety threshold -- stop if the charge integration error becomes larger then thi
 \item[DFTHRI] threshold for screening product of gaussian atomic orbitals
 \item[RHOTHR] threshold for screening of the electron density 
 \end{description}
-\item[\Key{DISPER}] 
-Activates the addition of the empirical dispersion correction following S. Grimme.~\cite{dft-disp:Grimme1,dft-disp:Grimme2} The S6 factors and van der Waals radii of Ref.~\cite{dft-disp:Grimme2} are used.
-Implemented for the functionals BP86, BLYP, PBE, B3LYP for energies and gradients. 
-Does not work when functionals are defined with the \verb|combine| command.
+\item[\Key{DISPER}] defaults to .DFT-D3BJ (see below)
+\item[\Key{DFT-D2}] switches on Grimmes DFT-D2 empirical dispersion correction~\cite{dft:dftd2}. The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional. Analytic gradient contributions are available.
+\item[\Key{D2PAR}] \kw{READ (LUINP,*) D2\_s6\_inp, D2\_alp\_inp, D2\_rs6\_inp} \\ 
+using this keyword user input values of the $s_6$, $\alpha$ and $s_{r,6}$ DFT-D2 parameters may be specified. If supplied these values override any values defined within the code.
+\item[\Key{DFT-D3}] switches on Grimmes DFT-D3 empirical dispersion correction~\cite{dft:dftd3}. The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional. Analytic gradient contributions are available.
+\item[\Key{DFT-D3BJ}] switches on Grimmes DFT-D3 empirical dispersion correction with Becke-Johnson damping~\cite{dft:dftd3bj}.  The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional.  Analytic gradient contributions are available. This is the presently recommended version.
+\item[\Key{3BODY}] keyword for adding 3-body terms to the DFT-D3 dispersion energy. Note that gradients are not implemented for these corrections
+\item[\Key{D3PAR}] \kw{READ (LUINP,*) D3\_s6\_inp, D3\_alp\_inp, D3\_rs6\_inp, D3\_rs18\_inp, D3\_s18\_inp} \\
+  keyword for specifying the $s_6$, $\alpha$, $s_{r,6}$, $s_{r,8}$ and $s_8$ parameters of the DFT-D3 methods. Note, take care to match the parameter values to the correct version of the DFT-D3 correction.
 \item[\Key{FINE}]
 Shortcut keyword for radial integration accuracy $10^{-13}$ and angular expansion order equal to $42$.
 \item[\Key{GRID TYPE}] \verb||\newline
@@ -798,23 +849,24 @@ The \verb|GRIDX| keywords also imply specific \verb|RADINT| values.
 \item[\Key{ULTRAF}]
 Shortcut keyword for radial integration accuracy $10^{-15}$ and angular expansion order equal to $64$.
 \item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. This correction can be combined with all GGA type functionals
-\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{CasidaSalahub} 
+\item[\Key{CS00}] Using the Casida-Salahub asymptotic correction\cite{dixon,CasidaSalahub} 
 \begin{eqnarray}
-V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + V_{LB94,correction}\right),  
+V^{\prime}_{XC}(\textbf{r}) = \max \left(V_{XC} + \Delta , V_{XC} + (1-\mathrm{HFexchange}) \cdot V_{LB94,correction}\right),  
 \end{eqnarray}
-with a Zhan-Nichols-Dixon shift \cite{dixon,ZND}
+with a Zhan-Nichols-Dixon shift \cite{dixon,ZND} ($\mathrm{HFexchange}=0.2$ for B3LYP)
 \begin{eqnarray}
-\Delta = NZD_{1} \cdot \epsilon_{HOMO} - NZD_{2}
+\Delta = ZND_{1} \cdot \epsilon_{HOMO} - ZND_{2}
 \end{eqnarray}
-Where $NZD_{1} = 0.2332$ and $NZD_{2} = 0.315$. Note that NWCHEM have introduced the same correction but uses a $NZD_{2} = 0.0116$. The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords. Note that this keyword only works with GGA type functionals. The CS00 keyword only work with a method which calculates the HOMO energy.
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD1>|\newline
-Changes the parameter $NZD_{1}$ (default $NZD_{1} = 0.2332$) see .CS00
-\item[\Key{CS00 NZD1}] \verb| | \newline
-\verb|<NZD2>|\newline
-Changes the parameter $NZD_{2}$ (default $NZD_{1} = 0.315$) see .CS00
-\item[\Key{CS00}] \verb| | \newline
-\verb|<Delta>|\newline
+Where $ZND_{1} = 0.2332$ and $ZND_{2} = 0.0116$. Note that $ZND_{2} = 0.0116 au. = 0.315 eV$.
+The parameters have been optimized with respect to a B3LYP functional so these parameters can be changed using the following keywords. Note that this keyword only works with GGA type functionals. The CS00 keyword only work with a method which calculates the HOMO energy. 
+\item[\Key{CS00 ZND1}] \verb| | \newline
+\verb|<ZND1 in au.>|\newline
+Changes the parameter $ZND_{1}$ (default $ZND_{1} = 0.2332$) see .CS00
+\item[\Key{CS00 ZND1}] \verb| | \newline
+\verb|<ZND2 in au.>|\newline
+Changes the parameter $ZND_{2}$ (default $ZND_{1} = 0.0116$) see .CS00
+\item[\Key{CS00 SHIFT}] \verb| | \newline
+\verb|<Delta in au.>|\newline
 Using the Casida-Salahub correction with a shift of Delta see .CS00
 \end{description}
 
@@ -881,7 +933,7 @@ when solving linear equations ({\it memory-saving option}). Only referenced usin
 %\item[\Key{DSMXTRA}] The Density Subspace Minimization scheme is used to speed up SCF convergence,
 %including extra (more expensive) term.
 %\item[\Key{DUMPMAT}] Dump Fock/KS and density matrices from all iterations to disk for later investigation.
-\item[\Key{EDIIS}] The energy-DIIS scheme is used to speed up SCF convergence~\cite{ediis}.
+%\item[\Key{EDIIS}] The energy-DIIS scheme is used to speed up SCF convergence~\cite{ediis}.
 \item[\Key{EXPAND}] \verb| | \newline
 \verb|<Expansion criterion>|\newline 
 For update of trust-radius (used in ARH and second order optimization). Expand trust-radius
@@ -974,6 +1026,7 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
 \item[\Key{RESTART}] The code automatically saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
+\item[\Key{SKIPSCFLOOP}] The code automatically saves the density matrix and the Fock/Kohn-Sham matrix at the end of the SCF iterations in two files called dens.restart and fock.restart. This option reads the files and skips the SCF iterations.
 \item[\Key{RH}] Use standard Roothaan-Hall scheme (diagonalization) for density optimization.
 %\item[\Key{SCALVIR}]
 %\item[\Key{SOEO}]
@@ -1468,6 +1521,28 @@ Threshold for when excited states are to be considered degenerate
 Now follows a list of input keywords for the specific properties
 available in \lsdalton.
 
+\subsection{*DIPOLE}\label{subsec:dipole}
+Calculation of the permanent dipole moment
+
+\subsection{*DIPOLEMOMENTMATRIX}\label{subsec:dipolematrix}
+Calculation of the full dipole moment matrix:\newline
+\begin{eqnarray}
+\mu = \left(\begin{array}{cccc}
+\mu_{00} & \mu_{01} & \mu_{02} & \dots \\
+\mu_{10} & \mu_{11} & \mu_{12} & \dots \\
+\mu_{20} & \mu_{21} & \mu_{22} & \dots \\
+\dots & \dots & \dots & \dots \\
+\end{array}\right)
+\end{eqnarray}
+\begin{itemize}
+\item $\mu_{00}$ denote the permanent dipole moment for the ground state
+\item $\mu_{0i}$ denote the transition dipole moment between the ground state and the i'th excited state
+\item $\mu_{ii}$ denote the Permanent dipole moment for the i'th excited states
+\item $\mu_{ij}$ denote the transition dipole moment between the i'th and j'th excited state
+\end{itemize}
+
+{\bf Requires specification of .NEXCIT!}\newline
+
 \subsection{*ALPHA}\label{subsec:alpha}
 Calculation of the (possibly complex) 
 electric dipole polarizability tensor $\alpha_{AB}$ and its isotropic average.
@@ -1594,6 +1669,15 @@ Note that only the LSresponse/LSresponse\_mcd\_calc test case is a good example 
 \item[\Key{MCDEXCIT}] \verb| | \newline
 \verb|<Number of excited states to consider>|\newline
 The $\mathcal{B}$ terms will be calculated for all states, unless they are zero due to selection rules (dipole forbidden)
+\item[\Key{MCDEXSTATES}] \verb| | \newline
+\verb|<Number of specific excited states to consider in MCD calc>|\newline
+\verb|<Specific excited states to consider>|\newline
+This keyword only calculates the $\mathcal{B}$ and possible $\mathcal{A}$ terms for the selected excited states.
+The first line after .MCDEXSTATES contains the number of specific excited states for which the MCD is to be calculated,
+and the second line specifies such states (identified by their index in the .MCDNEXCIT list).
+{\bf Important:} The position of the highest lying excited state
+specified by .MCDEXSTATES must be smaller than or equal to
+the total number of excited states specified by .MCDNEXCIT!
 \item[\Key{DEGENERATE}] \verb| | \newline
 This keyword must be set in input if the molecule has a degenerate state so that $\mathcal{A}$ terms are possible, otherwise all states are assumed non-degenerate and no $\mathcal{A}$ terms will be calculated. When this keyword is set, the $\mathcal{A}$ terms are calculated and a derivative Lorentzian lineshape function is used to simulate the individual $\mathcal{A}$ term contributions to the MCD spectrum (See Ref. \cite{KjaergaardMCD}). The individual $\mathcal{A}$ terms contributions to the MCD spectrum are written to the files AtermAU.dat and Aterm.dat   
 \item[\Key{DAMPEDXCOOR}] \verb| | \newline
@@ -1643,8 +1727,7 @@ Nuclear magnetic shielding tensors and chemical shift can be calculated with thi
 Permanent dipole moment for excited states. 
 {\bf Always requires specification of .NEXCIT!}\newline
 If .EXSTATES is not specified, the excited state dipole moments
-for all excited states from 1 to NEXCIT
-are calculated. \newline
+for all excited states from 1 to NEXCIT are calculated. \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_esd
 \begin{description}
 \item[\Key{EXSTATES}] \verb| | \newline
@@ -1769,7 +1852,7 @@ Furthermore, conventional coupled-cluster energies for the MP2, CC2, and CCSD mo
 
 The **DEC and **CC implementations employ massive parallelism and will be highly effective only if many computing nodes are available.
 
-\textbf{Special note}: It is highly recommended that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
+\textbf{Special note}: It is mandatory that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
 
 The **DEC and **CC sections use local orbitals by default, although the orbitals are converted to the (semi-)canonical basis when the MP2
 and CC equations are solved.
@@ -1790,9 +1873,9 @@ Thus, the higher the FOT, the smaller is the error of the DEC calculation compar
 
 \item[\Key{MEMORY}] \verb| | \newline
 \verb|<Memory in gigabytes>| \newline
-It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
-If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
-(This keyword can also be used in **CC section).
+It is mandatory to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will stop with a quit statement informing about an error in the LSDALTON.INP file.
+(This keyword must also be used in **CC section).
 
 
 \item[\Key{PAIRTHR}] \verb| | \newline
@@ -1880,9 +1963,9 @@ Use the frozen core approximation (can also be used in **DEC section).
 
 \item[\Key{MEMORY}] \verb| | \newline
 \verb|<Memory in gigabytes>| \newline
-It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
-If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
-(This keyword can also be used in **DEC section).
+It is mandatory to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will stop with a quit statement informing about an error in the LSDALTON.INP file.
+(This keyword must also be used in **DEC section).
 
 \item[\Key{CCMAXITER}]  \verb| | \newline
 Maximum number of iterations in CC solver.
@@ -2024,6 +2107,15 @@ Manual definition of gridbox as described above. All input values are in a.u.
 \verb|<buffer>| \newline
 \verb|<deltax    deltay    deltaz>| \newline
 Molecule-specific definition of gridbox as described above. All input values are in a.u.
+
+\end{description}
+
+\section{**PCM}\label{sec:pcm}
+Keywords specified in this section set up the inclusion of a continuum description of the solvent using the polarizable continuum model for solvation~\cite{Tomasi2005}.
+
+\begin{description}
+\item[\Key{SEPARATE}] \verb| | \newline
+Triggers whether the nuclear and electronic electrostatic potential and apparent surface charge should be treated separately. This is a debug option.
 
 \end{description}
 

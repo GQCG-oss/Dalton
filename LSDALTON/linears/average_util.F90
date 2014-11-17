@@ -465,7 +465,7 @@ end subroutine av_shutdown
       call mat_free(SDS)
       !write(LUPRI,*) "Matrix array after update"
       !i = MIN(queue%used_entries,dsm_history_size)
-      !CALL OUTPUT(queue%metric,1,i,1,i,max_history_size,max_history_size,&
+      !CALL LS_OUTPUT(queue%metric,1,i,1,i,max_history_size,max_history_size,&
       !      &      1,lupri)
    end subroutine Queue_update_TrDSDS
 

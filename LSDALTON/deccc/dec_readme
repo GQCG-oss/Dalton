@@ -13,34 +13,45 @@ READ BEFORE IMPLEMENTING NEW DEC CODE.
 If you want to implement energies for a new model/correction in DEC, then please do the following:
 
 (i)
+Define whether you want to introduce a new MODEL (e.g. CC3)    OR
+a new CORRECTION (e.g. F12) which can be added to various existing models/corrections.
+
+(ii)
 The global integers MODEL_* in dec_typedef.F90 define the various models.
-If you include a new model (e.g. CCDST), then add it here. 
+If you include a new model, then add it here. 
 If you include a new correction (e.g. F12), then there is nothing to add here.
 
-(ii) 
-Since we have different partitioning schemes, it is necessary to have another set of global
+(iii) 
+Since we have different partitioning schemes for each CC model, 
+it is necessary to have another set of global
 integers which define the fragment model (e.g. occupied partitioning scheme for CCSD).
 These are defined as the global integers FRAGMODEL_* in dec_typedef.F90.
 If you include a new model OR correction, then add it here.
-At the same time, you need to increase the global integer ndecenergies in lsutil/dec_typedef.F90m accordingly.
-E.g. if your new model/correction requires N energies to be stored, increase ndecenergies by N.
-
-(iii)
-New model:
-Remember to set defaults for your model in dec_set_default_config and add model to 
-input keywords in config_dec_input. (For example, see what is done for CC2 and do something similar).
-Furthermore, whenever modifying the DECsettings type, REMEMBER TO MODIFY the 
-mpicopy_dec_settings routine accordingly!
-
-New correction: 
-Insert logical describing whether correction should be done or not in type DECsettings in lsutil/dec_typedef.f90.  (For example, see what is done for F12 and do something similar).
-Also set defaults in dec_set_default_config and add keyword in config_dec_input.
+At the same time, you need to increase the global integer ndecenergies in lsutil/dec_typedef.F90 accordingly.
+E.g. if your new model/correction requires N additional energies to be stored, 
+increase ndecenergies by N.
 
 (iv)
-For new model (e.g. RPA): Grep for "MODIFY FOR NEW MODEL" in all files in the DEC code. These are the main places you need to change to include your new model. It is hopefully clear from the context and the comments in the code what needs to be to include the new model.
+New model:
+* Define your model in dec_set_model_names and find_model_number_from_input.
+* Add model to input keyword(s) in config_dec_input. 
+(For example, see what is done for CCSD and do something similar).
+
+New correction: 
+* Insert logical describing whether correction should be done 
+  in type DECsettings in lsutil/dec_typedef.f90.  
+* Set defaults in dec_set_default_config and add input keyword(s) in config_dec_input.
+(For example, see what is done for F12 and do something similar).
+
+(v)
+For new model (e.g. RPA): Grep for "MODIFY FOR NEW MODEL" in all files in the DEC code. These are the main places you need to change to include your new model. It is hopefully clear from the context and the comments in the code what needs to be done to include the new model.
 
 For new correction (e.g. F12): Grep for "MODIFY FOR NEW CORRECTION" in all files in the DEC code. These are the main places you need to change to include your new model. It is hopefully clear from the context and the comments in the code what needs to be to include the new correction".
 
+
+(vi) 
+Workarounds:
+if you have to introduce workarounds on specific systems introduce them in dec_workarounds.F90 with a specific precompiler flag for your issue at hand. Rationale: Usually workarounds are compiler and system dependent and a clean version of the code should be maintained by default 
 
 Note: I have almost certainly forgotten something in the description above, so please feel free
 to update and improve the description!
@@ -92,18 +103,18 @@ Level 4
 rpa
 
 Level 3
-ccsd, dec_atom,ccsdpt,mp2_gradient
+pno_ccsd, ccsd, dec_atom, ccsdpt, mp2_gradient, f12_integrals
 
 Level 2 
-array_operations,  fullmolecule, mp2, cc_integrals, crop_tools
+fullmolecule, mp2, cc_integrals, crop_tools
 
 Level 1
-ccorbital, ccarray2_simple, ccarray3_simple, ccarray4_simple, dec_pdm, decmpi
+ccorbital, ccarray2_simple, ccarray3_simple, ccarray4_simple,  decmpi, dec_utils
 
 Level 0 
-dec_settings, full_driver_f12contractions, CABS,
-dec_utils, array3_memory, array4_memory, array_memory, manual_reorderings, ccri_simple
+dec_settings, full_driver_f12contractions, CABS, cc_tools
 
+array3_memory, array4_memory, f12_routines, dec_workarounds, dec_tools
 
 
 ------------------------

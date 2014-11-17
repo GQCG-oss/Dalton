@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *======================================================================*
 C  /* Deck cc_rdaod */
@@ -56,7 +55,7 @@ C
 #include "maxash.h"
 #include "iratdef.h"
 #include "ccorb.h"
-CCN #include <infind.h> replaced by #include <ccisao.h>
+CCN #include "infind.h" replaced by #include <ccisao.h>
 #include "ccisao.h"
 #include "ccsdsym.h"
 #include "cbieri.h"
@@ -288,16 +287,19 @@ C
 C
          LBFINP = LBUF
 C
-#if defined (VAR_INT64)
-         LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-         LRECL = LBFINP + LBFINP/IRAT + 1
-#else
-         IF (NBASIS .LE. 255) THEN
-            LRECL = 2*LBFINP + LBFINP + 1
+         IF (NIBUF .EQ. 1) THEN
+            IBIT1 = 2**8  - 1
+            IBIT2 = 2**16 - 1
+         ELSE IF (NIBUF .EQ. 2) THEN
+            IBIT1 = 2**16 - 1
+            IBIT2 = 0    ! not used when NIBUF .eq. 2
          ELSE
-            LRECL = 2*LBFINP + 2*LBFINP + 1
+            CALL QUIT('ERROR: NIBUF not equal 1 or 2')
          END IF
+#if defined (SYS_NEC)
+         LRECL = LBFINP   + NIBUF*LBFINP/2 + 1   ! in integer*8 units
+#else
+         LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! in integer*4 units
 #endif
 C
          IF (LOCDBG) THEN
@@ -306,16 +308,11 @@ C
 C
 C        Buffer allocation
 C
-         IBIT1 = 2**NBITS     - 1
-         IBIT2 = 2**(2*NBITS) - 1
-         LENINT = IRAT*LBUF + NIBUF*LBUF + 1
-         LRINT  = IRAT*LBUF
-
          KAOAB = 1
          KDIST = KAOAB + (NBAST*NBAST+1)/IRAT + 1
-         KIBUF = KDIST + (NUMD*NBAST+1)/IRAT + 1
-         KRBUF = KIBUF + (NIBUF*LBUF-1)/IRAT + 1
-         KEND1 = KRBUF + LBUF
+         KRBUF = KDIST + (NUMD*NBAST+1)/IRAT + 1
+         KIBUF = KRBUF + LBUF
+         KEND1 = KIBUF + (NIBUF*LBUF+1)/2  ! "/2" because in integer*4 units
          LWRK1 = LWORK - KEND1
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Insufficient work space in CC_RDAOD:'
@@ -417,15 +414,15 @@ C
       PARAMETER ( LOCDBG = .FALSE. )
 C
       DIMENSION XINT(*), RBUF(LBUF)
-      LOGICAL LONDON2
-      INTEGER IBUF(LBUF,NIBUF)
+      INTEGER*4 IBUF4(LBUF*NIBUF), LENGTH4
+      LOGICAL   LONDON2
       INTEGER UNIAO2,ICORSY,NUMG,NUMD,ITYPE,IBIT1
       INTEGER IGAM(NUMG),IDEL(NUMD),IRECNR(*), NRECORDS
       INTEGER IADRPQ(NBAST,NBAST), IOFFRD(NBAST,NUMD)
       INTEGER NDIMPQ(NSYM)
 C
 C functions:
-#include "ibtfun.h"
+
 C
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'entered CCRDAOD1'
@@ -478,12 +475,13 @@ C
           END DO
 
           IF (ID.GT.0) THEN
-           READ(UNIAO2,ERR=2000,REC=NREC) RBUF,IBUF,NINT
+           READ(UNIAO2,ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
            IF (NIBUF.EQ.1) THEN
-             DO I = 1,NINT
-                IP = IBTAND(       IBUF(I,1)         ,IBIT1)
-                IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
-                IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+             DO I = 1,LENGTH4
+                I_PQR = IBUF4(I) ! change to default integer type
+                IP = IAND(       I_PQR         ,IBIT1)
+                IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
+                IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IP,IQ)
 
@@ -499,10 +497,12 @@ C                 CALL FLSHFO(LUPRI)
                 END IF
              END DO
            ELSE
-             DO I = 1,NINT
-                IP = IBTAND(       IBUF(I,2)       ,IBIT1)
-                IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
-                IR = IBTAND(       IBUF(I,1)       ,IBIT1)
+             DO I = 1,LENGTH4
+                I_PQ = IBUF4(2*I  ) ! change to default integer type
+                I_RS = IBUF4(2*I-1) ! change to default integer type
+                IP = IAND(       I_PQ       ,IBIT1)
+                IQ = IAND(ISHFT(I_PQ,-NBITS),IBIT1)
+                IR = IAND(       I_RS       ,IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IP,IQ)
                   XINT(IADR) = SIGN*RBUF(I)
@@ -512,10 +512,11 @@ C                 CALL FLSHFO(LUPRI)
 
 c          IF (LOCDBG .AND. NIBUF.EQ.1) THEN
 c            WRITE(LUPRI,*) 'INTEGRALS READ FROM RECORD:',NREC
-c            DO I = 1,NINT
-c               IP = IBTAND(       IBUF(I,1)         ,IBIT1)
-c               IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
-c               IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+c            DO I = 1,LENGTH4
+c               I_PQR = IBUF4(I) ! change to default integer type
+c               IP = IAND(       I_PQR         ,IBIT1)
+c               IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
+c               IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
 c               IF (IOFFRD(IR,ID).GE.0) THEN
 c                 IADR = IOFFRD(IR,ID) + IADRPQ(IP,IQ)
 c                 WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8,5X,I5)')
@@ -546,12 +547,13 @@ C
           END DO
 
           IF (ID.GT.0) THEN
-           READ(UNIAO2,ERR=2000,REC=NREC) RBUF,IBUF,NINT
+           READ(UNIAO2,ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
            IF (NIBUF.EQ.1) THEN
-             DO I = 1,NINT
-                IP = IBTAND(       IBUF(I,1)         ,IBIT1)
-                IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
-                IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+             DO I = 1,LENGTH4
+                I_PQR = IBUF4(I) ! change to default integer type
+                IP = IAND(       I_PQR         ,IBIT1)
+                IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
+                IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IQ,IP)
 
@@ -567,10 +569,12 @@ C                 CALL FLSHFO(LUPRI)
                 END IF
              END DO
            ELSE
-             DO I = 1,NINT
-                IP = IBTAND(       IBUF(I,2)       ,IBIT1)
-                IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
-                IR = IBTAND(       IBUF(I,1)       ,IBIT1)
+             DO I = 1,LENGTH4
+                I_PQ = IBUF4(2*I  ) ! change to default integer type
+                I_RS = IBUF4(2*I-1) ! change to default integer type
+                IP = IAND(       I_PQ       ,IBIT1)
+                IQ = IAND(ISHFT(I_PQ,-NBITS),IBIT1)
+                IR = IAND(       I_RS       ,IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IQ,IP)
                   XINT(IADR) = SIGN*RBUF(I)
@@ -580,10 +584,11 @@ C                 CALL FLSHFO(LUPRI)
 
            IF (LOCDBG .AND. NIBUF.EQ.1) THEN
              WRITE(LUPRI,*) 'INTEGRALS READ FROM RECORD:',NREC
-             DO I = 1,NINT
-                IP = IBTAND(       IBUF(I,1)         ,IBIT1)
-                IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
-                IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+             DO I = 1,LENGTH4
+                I_PQR = IBUF4(I) ! change to default integer type
+                IP = IAND(       I_PQR         ,IBIT1)
+                IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
+                IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
                 IF (IOFFRD(IR,ID).GE.0) THEN
                   IADR = IOFFRD(IR,ID) + IADRPQ(IQ,IP)
                   WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8,5X,I5)')

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C     FILE : intsort.F
 C
@@ -161,6 +160,7 @@ C
 C
 #include "ibtdef.h"
 C
+      CALL QENTER('SORTAO')
       WRITE(LUPRI,1000)
  1000 FORMAT(10X,'AO INTEGRAL SORT PROGRAM ACTIVE - RELEASE 86 12 01',
      &  /10X,'Author: Bjoern Roos',
@@ -200,15 +200,16 @@ C
      &            .FALSE.)
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) NSYM, (NBAS(I),I=1,8), LBUF, NIBUF, NBITS
+      READ (LUINTA) NSYM, NBAS, LBUF, NIBUF, NBITS, LENINT4
 C
 C     LBUF  = number of AO integrals per buffer
 C             (= 600 in old MOLECULE format)
 C
-      NBUF2 = IRAT*LBUF + NIBUF*LBUF + 1
+      NBUF2 = 2*LBUF + NIBUF*LBUF + 1
       NBUF  = (NBUF2-1)/IRAT + 1
 C     ********** NBUF  = AO INTEGRAL BUFFER LENGTH
-C                NBUF2 = buffer length, counted in integers
+C                NBUF2 = buffer length, counted in integer*4
+      IF (NBUF2 .ne. LENINT4) CALL QUIT('NBUF .ne. LENINT4')
       IF (2*NBUF .GT. LRINT) THEN
          WRITE (LUPRI,'(/A/2(A,I8))')
      *      ' Insufficient length of RINT in common N_SORT',
@@ -459,24 +460,13 @@ C     ASYNCHRONOUS READ OF AO INTEGRAL FILE
 C
       KBUF1=1
       KBUF2=NBUF + 1
-      CALL REWSPL(LUINTA)
+      REWIND (LUINTA)
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
-#if defined (VAR_SPLITFILES)
-      JBUF = 608
-      CALL READSI(LUINTA,NBUF2,RINT(KBUF1),JBUF) 
-#else
-      CALL READI(LUINTA,NBUF2,RINT(KBUF1)) 
-#endif
+      CALL READI4(LUINTA,NBUF2,RINT(KBUF1)) 
    20 CONTINUE
       IIND1 = IRAT*(KBUF1-1 + LBUF)
-      IIND2 = IIND1 + LBUF
-C     ..... IIND2 for when NIBUF .eq. 2
       NINT  = IINT(IIND1 + NIBUF*LBUF + 1)
-#if defined (VAR_SPLITFILES)
-      IF(NINT.GE.0) CALL READSI(LUINTA,NBUF2,RINT(KBUF2),JBUF) 
-#else
-      IF(NINT.GE.0) CALL READI(LUINTA,NBUF2,RINT(KBUF2)) 
-#endif
+      IF(NINT.GE.0) CALL READI4(LUINTA,NBUF2,RINT(KBUF2)) 
       IF(NINT.EQ.-1) GO TO 35
 C     WRITE(LUPRI,'(Z16)') RINT(NBUF+KBUF1-1)
 C
@@ -491,26 +481,17 @@ C     WRITE(LUPRI,'(Z8,2Z16)') I,VALUE,XLABEL
 C
       IF (NIBUF .EQ. 1) THEN
          ILABEL = IINT(IIND1 + I)
-#if defined (VAR_INT64)
-         NP =IBTAND(IBTSHR(ILABEL,48),IBT16)
-         NQ =IBTAND(IBTSHR(ILABEL,32),IBT16)
-         NR =IBTAND(IBTSHR(ILABEL,16),IBT16)
-         NS =IBTAND(       ILABEL,    IBT16) 
+         NP =IAND(ISHFT(ILABEL,-24),IBT08)
+         NQ =IAND(ISHFT(ILABEL,-16),IBT08)
+         NR =IAND(ISHFT(ILABEL, -8),IBT08)
+         NS =IAND(       ILABEL,    IBT08) 
       ELSE
-         CALL QUIT('Programming error: NIBUF .ne. 1 for VAR_INT64')
-#else
-         NP =IBTAND(IBTSHR(ILABEL,24),IBT08)
-         NQ =IBTAND(IBTSHR(ILABEL,16),IBT08)
-         NR =IBTAND(IBTSHR(ILABEL, 8),IBT08)
-         NS =IBTAND(       ILABEL,    IBT08) 
-      ELSE
-         ILABEL = IINT(IIND1 + I)
-         NP =IBTAND(IBTSHR(ILABEL,16),IBT16)
-         NQ =IBTAND(       ILABEL,    IBT16) 
-         ILABEL = IINT(IIND2 + I)
-         NR =IBTAND(IBTSHR(ILABEL,16),IBT16)
-         NS =IBTAND(       ILABEL,    IBT16) 
-#endif
+         ILABEL = IINT(IIND1 + 2*I - 1)
+         NP =IAND(ISHFT(ILABEL,-16),IBT16)
+         NQ =IAND(       ILABEL,    IBT16) 
+         ILABEL = IINT(IIND1 + 2*I)
+         NR =IAND(ISHFT(ILABEL,-16),IBT16)
+         NS =IAND(       ILABEL,    IBT16) 
       END IF
 #if defined VAR_AOCANORDER
 C     --- indices are assumed to be in canonical order
@@ -670,6 +651,7 @@ C
       WRITE(LUPRI,1300) TCPU,TWALL
  1300 FORMAT(/' CPU  TIME USED (MINUTES)',F9.3,
      *       /' WALL TIME USED (MINUTES)',F9.3)
+      CALL QEXIT('SORTAO')
       RETURN
 C
 C     ERROR MESSAGE
