@@ -8,7 +8,6 @@ add_custom_command(
 add_custom_target(
    CheckLSDALTON
    ALL DEPENDS ${PROJECT_BINARY_DIR}/check-source
-   #COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/CheckLSDALTON.cmake
 )
 
 
