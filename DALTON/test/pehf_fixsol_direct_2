@@ -75,29 +75,18 @@ else
 fi
 
 #
-# Potential readin test
-#
-CRIT1=`$GREP "Direct solver for induced moments will be used\." $log | wc -l`
-CRIT2=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
-CRIT3=`$GREP "Number of surface points\: * 228" $log | wc -l`
-CRIT4=`$GREP "Surface area .* 107\.103" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[1]=4
-ERROR[1]="INCORRECT POTENTIAL"
-
-#
 # Energy tests
 #
 CRIT1=`$GREP "Electronic * 0*\.005768......" $log | wc -l`
 CRIT2=`$GREP "Nuclear * \-0*\.009101......" $log | wc -l`
 CRIT3=`$GREP "Total PE energy\: * \-0*\.00333[23]......" $log | wc -l`
 CRIT4=`$GREP "Final HF energy\: * \-188\.3029232....." $log | wc -l`
-TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
-CTRL[2]=4
-ERROR[2]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
+CTRL[1]=4
+ERROR[1]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
 
 PASSED=1
-for i in 1 2
+for i in 1
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "

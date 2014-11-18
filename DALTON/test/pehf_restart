@@ -203,24 +203,12 @@ else
 fi
 
 #
-# Potential readin
-#
-CRIT1=`$GREP "Number of classical sites: * 10" $log | wc -l`
-CRIT2=`$GREP "Multipole moments upto 3rd order." $log | wc -l`
-CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
-CRIT4=`$GREP "Iterative solver for induced moments will be used" $log | wc -l`
-CRIT5=`$GREP "with convergence threshold: 1\.0E\-10" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
-CTRL[1]=5
-ERROR[1]="INCORRECT POTENTIAL"
-
-#
 # Convergence
 #
 CRIT1=`$GREP " DIIS converged in  1[0-4] iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
+TEST[1]=`expr $CRIT1 `
+CTRL[1]=1
+ERROR[1]="CONVERGENCE PROBLEM"
 
 #
 # Energies
@@ -234,9 +222,9 @@ CRIT6=`$GREP "Nuclear * 0*\.042259......" $log | wc -l`
 CRIT7=`$GREP "Multipole * 0*\.000129......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * \-0*\.019184......" $log | wc -l`
 CRIT9=`$GREP "Final HF energy: * \-188\.317391......" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
-CTRL[3]=9
-ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
+CTRL[2]=9
+ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Induced dipole moments in environment
@@ -251,12 +239,12 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
  CRIT8=`$GREP "  8 * \-0*\.001365.. * \-0*\.000732.. * \-0*\.000003.." $log | wc -l`
  CRIT9=`$GREP "  9 * \-0*\.043516.. * \-0*\.013744.. * 0*\.000008.." $log | wc -l`
 CRIT10=`$GREP " 10 * \-0*\.002330.. * \-0*\.000193.. * \-0*\.000008.." $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
-CTRL[4]=10
-ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
+CTRL[3]=10
+ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -284,25 +272,12 @@ else
 fi
 
 #
-# Potential readin
-#
-CRIT1=`$GREP "Number of classical sites: * 10" $log | wc -l`
-CRIT2=`$GREP "Multipole moments upto 3rd order." $log | wc -l`
-CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
-CRIT4=`$GREP "Iterative solver for induced moments will be used" $log | wc -l`
-CRIT5=`$GREP "with convergence threshold: 1\.0E\-10" $log | wc -l`
-CRIT6=`$GREP "Existing files will be used to restart if possible." $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
-CTRL[1]=6
-ERROR[1]="INCORRECT POTENTIAL"
-
-#
 # Convergence
 #
 CRIT1=`$GREP " DIIS converged in   1 iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
+TEST[1]=`expr $CRIT1 `
+CTRL[1]=1
+ERROR[1]="CONVERGENCE PROBLEM"
 
 #
 # Energies
@@ -316,9 +291,9 @@ CRIT6=`$GREP "Nuclear * 0*\.042259......" $log | wc -l`
 CRIT7=`$GREP "Multipole * 0*\.000129......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * \-0*\.019184......" $log | wc -l`
 CRIT9=`$GREP "Final HF energy: * \-188\.317391......" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
-CTRL[3]=9
-ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
+CTRL[2]=9
+ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Induced dipole moments in environment
@@ -333,12 +308,12 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
  CRIT8=`$GREP "  8 * \-0*\.001365.. * \-0*\.000732.. * \-0*\.000003.." $log | wc -l`
  CRIT9=`$GREP "  9 * \-0*\.043516.. * \-0*\.013744.. * 0*\.000008.." $log | wc -l`
 CRIT10=`$GREP " 10 * \-0*\.002330.. * \-0*\.000193.. * \-0*\.000008.." $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
-CTRL[4]=10
-ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
+CTRL[3]=10
+ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -366,23 +341,12 @@ else
 fi
 
 #
-# Potential readin
-#
-CRIT1=`$GREP "Number of classical sites: * 10" $log | wc -l`
-CRIT2=`$GREP "Multipole moments upto 3rd order." $log | wc -l`
-CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
-CRIT4=`$GREP "Direct solver for induced moments will be used." $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
-CTRL[1]=4
-ERROR[1]="INCORRECT POTENTIAL"
-
-#
 # Convergence
 #
 CRIT1=`$GREP " DIIS converged in  1[0-4] iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
+TEST[1]=`expr $CRIT1 `
+CTRL[1]=1
+ERROR[1]="CONVERGENCE PROBLEM"
 
 #
 # Energies
@@ -396,9 +360,9 @@ CRIT6=`$GREP "Nuclear * 0*\.042259......" $log | wc -l`
 CRIT7=`$GREP "Multipole * 0*\.000129......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * \-0*\.019184......" $log | wc -l`
 CRIT9=`$GREP "Final HF energy: * \-188\.317391......" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
-CTRL[3]=9
-ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
+CTRL[2]=9
+ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Induced dipole moments in environment
@@ -413,12 +377,12 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
  CRIT8=`$GREP "  8 * \-0*\.001365.. * \-0*\.000732.. * \-0*\.000003.." $log | wc -l`
  CRIT9=`$GREP "  9 * \-0*\.043516.. * \-0*\.013744.. * 0*\.000008.." $log | wc -l`
 CRIT10=`$GREP " 10 * \-0*\.002330.. * \-0*\.000193.. * \-0*\.000008.." $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
-CTRL[4]=10
-ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
+CTRL[3]=10
+ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3 
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -446,24 +410,12 @@ else
 fi
 
 #
-# Potential readin
-#
-CRIT1=`$GREP "Number of classical sites: * 10" $log | wc -l`
-CRIT2=`$GREP "Multipole moments upto 3rd order." $log | wc -l`
-CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
-CRIT4=`$GREP "Direct solver for induced moments will be used." $log | wc -l`
-CRIT5=`$GREP "Existing files will be used to restart if possible." $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
-CTRL[1]=5
-ERROR[1]="INCORRECT POTENTIAL"
-
-#
 # Convergence
 #
 CRIT1=`$GREP " DIIS converged in   1 iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
+TEST[1]=`expr $CRIT1 `
+CTRL[1]=1
+ERROR[1]="CONVERGENCE PROBLEM"
 
 #
 # Energies
@@ -477,9 +429,9 @@ CRIT6=`$GREP "Nuclear * 0*\.042259......" $log | wc -l`
 CRIT7=`$GREP "Multipole * 0*\.000129......" $log | wc -l`
 CRIT8=`$GREP "Total PE energy: * \-0*\.019184......" $log | wc -l`
 CRIT9=`$GREP "Final HF energy: * \-188\.317391......" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
-CTRL[3]=9
-ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
+CTRL[2]=9
+ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Induced dipole moments in environment
@@ -494,12 +446,12 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
  CRIT8=`$GREP "  8 * \-0*\.001365.. * \-0*\.000732.. * \-0*\.000003.." $log | wc -l`
  CRIT9=`$GREP "  9 * \-0*\.043516.. * \-0*\.013744.. * 0*\.000008.." $log | wc -l`
 CRIT10=`$GREP " 10 * \-0*\.002330.. * \-0*\.000193.. * \-0*\.000008.." $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
-CTRL[4]=10
-ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
+CTRL[3]=10
+ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "

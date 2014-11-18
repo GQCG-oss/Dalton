@@ -154,25 +154,10 @@ else
    GREP="egrep"
 fi
 
-#
-# Potential readin test
-#
-CRIT1=`$GREP "Number of classical sites\: * 10" $log | wc -l`
-CRIT2=`$GREP "Multipole moments upto 2nd order\." $log | wc -l`
-CRIT3=`$GREP "Dipole-dipole polarizabilities\." $log | wc -l`
-CRIT4=`$GREP "Iterative DIIS solver for induced moments will be used" $log | wc -l`
-CRIT5=`$GREP "with convergence threshold\: 1\.0E\-08" $log | wc -l`
-CRIT6=`$GREP "Continuum solvation in H2O solvent\." $log | wc -l`
-CRIT7=`$GREP "Number of surface points\: * 377" $log | wc -l`
-CRIT8=`$GREP "Surface area .* 167\.899" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
-CTRL[1]=8
-ERROR[1]="INCORRECT POTENTIAL"
-
 CRIT1=`$GREP "Nuclear repulsion\: * 102.66484686...." $log | wc -l`
-TEST[2]=`expr $CRIT1`
-CTRL[2]=1
-ERROR[2]="NUCLEAR REPULSION NOT CORRECT"
+TEST[1]=`expr $CRIT1`
+CTRL[1]=1
+ERROR[1]="NUCLEAR REPULSION NOT CORRECT"
 
 #
 # Test of PE-HF shielding constants.
@@ -186,12 +171,12 @@ CRIT6=`$GREP "\@1 H * 22\.0883 * 34\.9336 * \-12\.8453 * \-0*\.1723 * 5\.1227 * 
 CRIT7=`$GREP "\@1 H * 25\.8086 * 34\.8252 * \-9\.0166 * 0*\.4338 * 6\.5466 * 5\.6199 * 0*\.4947" $log | wc -l`
 CRIT8=`$GREP "\@1 H * 26\.2644 * 32\.3492 * \-6\.0848 * 0*\.0729 * 7\.6633 * 5\.8871 * 0*\.9051" $log | wc -l`
 CRIT9=`$GREP "\@1 H * 26\.0486 * 20\.1503 * 5\.8983 * 0*\.0067 * 6\.700[78] * 5\.0368 * 0*\.9911" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
-CTRL[3]=9
-ERROR[3]="PE-HF MAGNETIC PROPERTIES NOT CORRECT"
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[2]=9
+ERROR[2]="PE-HF MAGNETIC PROPERTIES NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3
+for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
