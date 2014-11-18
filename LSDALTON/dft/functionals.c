@@ -141,6 +141,7 @@ Functional* available_functionals[] = {
     &CamxFunctional,
     &CamcompxFunctional,
     &GGAKeyFunctional,
+    &CombineFunctional,
     &KT1Functional,
     &KT2Functional,
     &KT3Functional,

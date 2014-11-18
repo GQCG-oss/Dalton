@@ -183,6 +183,7 @@ Functional OPTX_Functional      = GGA_FUNCTIONAL("OPTX",    optx_read);
 Functional BP86Functional       = GGA_FUNCTIONAL("BP86",    bp86_read);
 Functional BPW91Functional      = GGA_FUNCTIONAL("BPW91",   bpw91_read);
 Functional GGAKeyFunctional     = GGA_FUNCTIONAL("GGAKey",  gga_key_read);
+Functional CombineFunctional    = GGA_FUNCTIONAL("COMBINE", gga_key_read);
 Functional KT1Functional        = GGA_FUNCTIONAL("KT1",     kt1_read);
 Functional KT2Functional        = GGA_FUNCTIONAL("KT2",     kt2_read);
 Functional KT3Functional        = GGA_FUNCTIONAL("KT3",     kt3_read);

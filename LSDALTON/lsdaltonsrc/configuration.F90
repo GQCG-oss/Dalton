@@ -85,7 +85,7 @@ subroutine config_set_default_config(config)
 implicit none
    !> Contains info, settings and data for entire calculation
    type(ConfigItem), intent(inout) :: config
-  USEXCFUN = .FALSE.  
+  USEXCFUN = .TRUE.  
   nullify(config%solver)
   allocate(config%solver)
   call arh_set_default_config(config%solver)
@@ -234,7 +234,7 @@ end subroutine config_free
 !> \date March 2010
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
-
+use IIDFTINT, only: II_DFTsetFunc
 #if defined(ENABLE_QMATRIX)
 use ls_qmatrix, only: ls_qmatrix_init, &
                       ls_qmatrix_input
@@ -821,6 +821,32 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
+!For dft calculations, check whether xcfun is to be used or not and 
+!send the functional string accordingly either to the PS  
+!or to the XCfun interface
+if (config%solver%do_dft) then
+   IF(.NOT.USEXCFUN)THEN
+      if (len_trim(config%integral%dft%dftfunc).gt.80) then 
+         call lsquit('Functional string length exceed 80',-1)
+      else 
+         CALL II_DFTsetFunc(config%integral%dft%dftfunc,hfweight)
+      endif
+   ELSE
+      call xcfun_host_init(config%integral%dft%dftfunc,hfweight,lupri)
+   ENDIF
+   !it is assumed that hfweight is set to zero and only  
+   !changed if the functional require a HF weight  
+   !different from zero. 
+   config%integral%exchangeFactor = hfweight
+   config%integral%dft%HFexchangeFac = hfweight
+#ifdef BUILD_CGTODIFF
+#ifdef VAR_MPI
+   call lsquit('cgto_diff_eri not testet for MPI',-1)
+#endif                     
+   !call cgto_diff_eri_xfac_general(config%integral%exchangeFactor)
+#endif
+endif
+
 if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
    call init_dftfunc(config%integral%DFT)
@@ -836,7 +862,6 @@ END SUBROUTINE read_dalton_input
 
 
 subroutine read_dft_input(config,lucmd,lupri)
-  use IIDFTINT, only: II_DFTsetFunc
 
   implicit none
   !> Contains info, settings and data for entire calculation
@@ -865,35 +890,31 @@ subroutine read_dft_input(config,lucmd,lupri)
      ELSE
         call capitalize_string(WORD)
         IF ((INDEX(WORD,'LDAERF')).NE.0) THEN !LDAERF   
-           xcfun: IF (USEXCFUN) THEN !Works only with the XCfun module
-              config%integral%CAM=.TRUE. !Activate lr intergrals
-              config%integral%CAMalpha=0E0_realk !No exact exchange
-              config%integral%CAMbeta=1E0_realk !Lr HF exchange prefactor
-              READ (LUCMD, '(A80)') MUWORD
-              call capitalize_string(MUWORD)
-              IPOS = INDEX(MUWORD,'MU')
-              mu: IF (IPOS .NE. 0) THEN
-                 IPOS2 = INDEX(MUWORD(IPOS:),'=')
-                 IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 3)) THEN
-                    WRITE (LUPRI,'(2X,A40)') 'Incorrect input for ERF parameters'
-                    WRITE (LUPRI,'(2X,A40)') 'Format is "mu=?"'
-                    CALL lsQUIT('Incorrect range-separation parameter mu',lupri)
-                 ELSE
-                    !Set value of the range-separation parameter mu
-                    READ (MUWORD((IPOS+IPOS2):80),*) config%integral%CAMmu 
-                    write(LUPRI,*) ''
-                    WRITE(LUPRI,*) 'This is a LDAERF functional with mu=',config%integral%CAMmu
-                    !String to be passed to xcfun_host
-                    !EXX=1 sets hfweight and activates exchange integral evaluation
-                    XCfunString = ('LDAERF EXX=1 RANGESEP_MU='//trim(MUWORD((IPOS+IPOS2):80))) 
-                    write(LUPRI,*) XCfunString
-                 ENDIF
+           config%integral%CAM=.TRUE. !Activate lr intergrals
+           config%integral%CAMalpha=0E0_realk !No exact exchange
+           config%integral%CAMbeta=1E0_realk !Lr HF exchange prefactor
+           READ (LUCMD, '(A80)') MUWORD
+           call capitalize_string(MUWORD)
+           IPOS = INDEX(MUWORD,'MU')
+           mu: IF (IPOS .NE. 0) THEN
+              IPOS2 = INDEX(MUWORD(IPOS:),'=')
+              IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 3)) THEN
+                 WRITE (LUPRI,'(2X,A40)') 'Incorrect input for ERF parameters'
+                 WRITE (LUPRI,'(2X,A40)') 'Format is "mu=?"'
+                 CALL lsQUIT('Incorrect range-separation parameter mu',lupri)
               ELSE
-                 CALL lsQUIT('Range-separation parameter mu required when using LDAERF',lupri)
-              ENDIF mu
+                 !Set value of the range-separation parameter mu
+                 READ (MUWORD((IPOS+IPOS2):80),*) config%integral%CAMmu 
+                 write(LUPRI,*) ''
+                 WRITE(LUPRI,*) 'This is a LDAERF functional with mu=',config%integral%CAMmu
+                 !String to be passed to xcfun_host
+                 !EXX=1 sets hfweight and activates exchange integral evaluation
+                 XCfunString = ('LDAERF EXX=1 RANGESEP_MU='//trim(MUWORD((IPOS+IPOS2):80))) 
+                 write(LUPRI,*) XCfunString
+              ENDIF
            ELSE
-              call lsquit('This functional can only be used when the XCfun module is activated',-1) 
-           ENDIF xcfun
+              CALL lsQUIT('Range-separation parameter mu required when using LDAERF',lupri)
+           ENDIF mu
         ELSE IF ((INDEX(WORD,'CAM')).NE.0) THEN !CAM
            config%integral%CAM=.TRUE.
            IPOS = INDEX(WORD,'ALPHA')
@@ -939,16 +960,13 @@ subroutine read_dft_input(config,lucmd,lupri)
               DO IPOSMU=1,LEN(tmpword)
                  IF (tmpword(IPOSMU:IPOSMU).NE." ") EXIT
               ENDDO
-              FormatString= "(A18,A11,F6.4,A10,F6.4,A26,F6.4,A13)" 
+              FormatString= "(A18,A11,G22.16,A10,G22.16,A29,A13)" 
               write(XCfunString,FormatString) 'GGAKEY BECKECAMX=1',&
                    & ' CAM_ALPHA=',config%integral%CAMalpha,&
                    & ' CAM_BETA=',config%integral%CAMbeta,&
-                   & ' VWN5C=0.19 LYPC=0.81 EXX=',1.0,&
+                   & ' VWN5C=0.19 LYPC=0.81 EXX=1.0',&
                    & ' RANGESEP_MU='
-              WRITE(LUPRI,*) XCfunString
-              WRITE(LUPRI,*) tmpword
               XCfunString = ( trim(XCfunString) // tmpword(IPOSMU:(IPOSMU+8)) )
-              WRITE(LUPRI,*) XCfunString
            else
               XCfunString = WORD
            endif
@@ -964,29 +982,9 @@ subroutine read_dft_input(config,lucmd,lupri)
         DO IPOS=1,LEN(XCfunString)
            IF (XCfunString(IPOS:IPOS).NE." ") EXIT
         ENDDO
-        !it is assumed that hfweight is set to zero and only  
-        !changed if the functional require a HF weight  
-        !different from zero. 
-        !note the 40 is harcoded in DFTsetFunc routine in general.c 
+        ! Store functional string
+        ! Waiting for user to decide whether to use xcfun or not
         config%integral%dft%dftfunc = XCfunString(IPOS:)
-        IF(.NOT.USEXCFUN)THEN
-           if (len_trim(XCfunString(IPOS:)).gt.80) then 
-              call lsquit('Functional string length exceed 80',-1)
-           else 
-              CALL II_DFTsetFunc(XCfunString(IPOS:),hfweight)
-           endif
-        ELSE
-           !                        CALL II_DFTsetFunc(WORD,hfweight)
-           call xcfun_host_init(XCfunString(IPOS:),hfweight,lupri)
-        ENDIF
-        config%integral%exchangeFactor = hfweight
-        config%integral%dft%HFexchangeFac = hfweight
-#ifdef BUILD_CGTODIFF
-#ifdef VAR_MPI
-        call lsquit('cgto_diff_eri not testet for MPI',-1)
-#endif                     
-        !                     call cgto_diff_eri_xfac_general(config%integral%exchangeFactor)
-#endif
      ENDIF
      EXIT
   ENDDO
@@ -1179,6 +1177,20 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
+        CASE ('.XCFUN')
+#ifdef VAR_XCFUN
+           USEXCFUN = .TRUE. 
+           CONFIG%INTEGRAL%DFT%XCFUN = .TRUE.
+           print*,'USEXCFUN',USEXCFUN
+           write(lupri,*) 'The XCfun module is activated'
+#else
+           call lsquit('.XCFUN requires ENABLE_XCFUN', -1)
+#endif
+        CASE ('.PSFUN')
+           USEXCFUN = .FALSE. 
+           CONFIG%INTEGRAL%DFT%XCFUN = .FALSE.
+           print*,'USEXCFUN',USEXCFUN
+           write(lupri,*) 'The XCfun module is deactivated, PS functional evaluation is used instead'
         CASE('.INTERACTIONENERGY')
            !Calculated the Interaction energy 
            !using Counter Poise Correction
@@ -1269,14 +1281,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
-        CASE ('.XCFUN')
-#ifdef VAR_XCFUN
-           USEXCFUN = .TRUE. 
-           INTEGRAL%DFT%XCFUN = .TRUE.
-           print*,'USEXCFUN',USEXCFUN
-#else
-           call lsquit('.XCFUN requires ENABLE_XCFUN', -1)
-#endif
         CASE ('.CONTANG'); INTEGRAL%CONTANG=.TRUE. ! Specifies that the AO-shell ordering is contracted first then 
                                                    ! angular components (for genereally contracted functions)
         CASE ('.NOGCINTEGRALTRANSFORM'); INTEGRAL%NOGCINTEGRALTRANSFORM=.TRUE.

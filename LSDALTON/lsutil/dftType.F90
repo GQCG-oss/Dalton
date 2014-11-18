@@ -108,7 +108,7 @@ REAL(REALK)       :: CS00ZND2   !Zhan-Nichols-Dixon shift parameter
 REAL(REALK)       :: HFexchangeFac
 !type(dft_grid)    :: L2GRID     !Grid parameters for level 2/ADMM grid
 !type(dft_grid)    :: L3GRID     !Grid parameters for level 3/regular grid
-CHARACTER(len=80) :: dftfunc                 !""
+CHARACTER(len=1024) :: dftfunc                 !""
 LOGICAL           :: XCFUN                   !.FALSE.
 END type DFTPARAM
 
