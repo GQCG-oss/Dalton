@@ -5,5 +5,7 @@ execute_process(
    )
 
 if(NOT ${_output} MATCHES "TESTSTATUS: GOOD")
-   message(FATAL_ERROR "LSDALTON BCAST TYPE TEST NOT PASSED, PLEASE RERUN LSDALTON/tools/check_decbcast.py TO GET MORE INFORMATION")
+   message( "LSDALTON BCAST TYPE TEST RETURNED:" )
+   message( ${_output} )
+   message(FATAL_ERROR "LSDALTON BCAST TYPE TEST NOT PASSED" )
 endif()

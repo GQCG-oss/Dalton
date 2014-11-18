@@ -133,11 +133,13 @@ def compare_struct_and_its_bcast(filename_with_struct,struct_name,filename_with_
    ALL_FOUND = True
    for var_nr in range(len(found_in_bcast_list)):
       if not found_in_bcast_list[var_nr] :
-         print "VARIABLE:",variable_name_list[var_nr]," not found in bcast"
+         print "VARIABLE:",variable_name_list[var_nr].upper()," DEFINED BUT NOT COMMUNICATED"
          ALL_FOUND = False
    
    if not ALL_FOUND:
-      print "PROBLEMS DETECTED IN "+struct_name
+      print "PROBLEMS DETECTED IN "+struct_name.upper()
+      print "CHECK DEFINITIONS IN "+filename_with_struct
+      print "ALSO CHECK BROADCAST IN "+filename_with_bcast
 
    return ALL_FOUND
 
