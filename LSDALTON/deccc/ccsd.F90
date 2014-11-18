@@ -2691,6 +2691,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: dim1,dim2,dim3,K,MinAObatch
      integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
      integer :: iorb,nthreads,idx
+     logical :: FoundInMem,doscreen
 #ifdef VAR_ICHOR
      type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
      type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
@@ -2700,7 +2701,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      Character(80)        :: FilenameCS,FilenamePS
      Character(80),pointer:: BatchfilenamesCS(:,:)
      Character(80),pointer:: BatchfilenamesPS(:,:)
-     logical :: FoundInMem,doscreen
      integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
      integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
      TYPE(DECscreenITEM)    :: DecScreen

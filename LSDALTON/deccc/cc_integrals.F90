@@ -2119,6 +2119,7 @@ contains
     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
     integer :: iorb,nthreads,magic
     integer :: idx,nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload,nba,nbg,biA,biG,bsA,bsG
+    logical :: FoundInMem,doscreen
 #ifdef VAR_ICHOR
     type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
     type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
@@ -2130,7 +2131,6 @@ contains
     Character(80)        :: FilenameCS,FilenamePS
     Character(80),pointer:: BatchfilenamesCS(:,:)
     Character(80),pointer:: BatchfilenamesPS(:,:)
-    logical :: FoundInMem,doscreen
     integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
     TYPE(DECscreenITEM)  :: DecScreen

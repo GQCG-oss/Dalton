@@ -450,7 +450,7 @@ nfmat = DFTdata%nfmat
 ndmat = DFTdata%ndmat
 nbmat = DFTdata%nbmat
 natoms= DFTdata%natoms
-DFTdata%electrons = 0.0E0_realk
+!DFTdata%electrons = 0.0E0_realk
 CALL LS_MPI_BUFFER(DFTdata%dosympart,Master)
 
 ! BROADCAST DFTdata%energy

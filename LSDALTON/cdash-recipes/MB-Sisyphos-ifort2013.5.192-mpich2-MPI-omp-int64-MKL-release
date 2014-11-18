@@ -20,7 +20,8 @@ export MATH_ROOT=/opt/intel/composer_xe_2011_sp1.11.339/mkl
 export PATH=/home/sisyphos/mpich2-ifortbuild-exec/bin:$PATH
 export LD_LIBRARY_PATH=/home/sisyphos/mpich2-ifortbuild-exec/lib:$LD_LIBRARY_PATH
 
-./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --csr --scalapack --int64 --timings --mpi --omp -D FORCE_32BIT_MPI_INTERFACE=ON -D BUILDNAME="MB-Sisyphos-ifort2013.5.192-mpich2-MPI-omp-int64-MKL-release" build
+#SCALAPACK and int64 only work with a 64 bit MPI lib.  
+./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --csr --int64 --timings --mpi --omp -D FORCE_32BIT_MPI_INTERFACE=ON -D BUILDNAME="MB-Sisyphos-ifort2013.5.192-mpich2-MPI-omp-int64-MKL-release" build
 
 cd build
 ctest -D Nightly -L linsca
