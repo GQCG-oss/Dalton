@@ -1120,7 +1120,7 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL MEP_SLAVE(WORK(1),MWORK)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
             call dalwrk2pewrk(work(1:mwork))
-            CALL PE_IFC_MPI(IPRINT)
+            CALL PE_IFC_SLAVE(IPRINT)
             call nullify_pewrk()
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012

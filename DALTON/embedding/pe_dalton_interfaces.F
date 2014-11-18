@@ -60,6 +60,9 @@
         real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
         real*8, dimension(nmats), intent(out) :: energies
         call qenter('pe_ifc_fock')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(1)
+#endif
         call pe_master(runtype='fock', denmats=denmats, fckmats=fckmats,
      &                 nmats=nmats, energies=energies)
         call qexit('pe_ifc_fock')
@@ -85,6 +88,9 @@
         integer :: i, j
         real*8, dimension(3,natoms) :: molgrad
         call qenter('pe_ifc_grad')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(5)
+#endif
         molgrad = 0.0d0
         call pe_master(runtype='molgrad', denmats=denmats,
      &                 molgrads=molgrad, nmats=1)
@@ -103,6 +109,9 @@
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         call qenter('pe_ifc_energy')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(2)
+#endif
         call pe_master(runtype='energy', denmats=denmats, nmats=nmats)
         call qexit('pe_ifc_energy')
       end subroutine pe_ifc_energy
@@ -141,6 +150,9 @@
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         call qenter('pe_ifc_mepcalc')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(6)
+#endif
         if (mep_qmcube) then
             call pe_master(runtype='mep', denmats=denmats, nmats=nmats)
         end if
@@ -151,6 +163,9 @@
         use polarizable_embedding, only: pe_master
         implicit none
         call qenter('pe_ifc_mepcalc_noqm')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(6)
+#endif
         call pe_master(runtype='mep')
         call qexit('pe_ifc_mepcalc_noqm')
       end subroutine pe_ifc_mepcalc_noqm
@@ -162,19 +177,50 @@
         integer, intent(in) :: nmats
         real*8, dimension(3*nmats*n2basx), intent(out) :: fckmats
         call qenter('pe_ifc_london')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(4)
+#endif
         call pe_master('london', fckmats=fckmats, nmats=nmats)
         call qexit('pe_ifc_london')
       end subroutine pe_ifc_london
 
 #if defined(VAR_MPI)
-      subroutine pe_ifc_mpi(runtype)
-        use polarizable_embedding, only: pe_mpi
+      subroutine pe_ifc_slave(runtype)
+        use polarizable_embedding, only: pe_slave
         implicit none
         integer, intent(in) :: runtype
-        call qenter('pe_ifc_mpi')
-        call pe_mpi(runtype)
-        call qexit('pe_ifc_mpi')
-      end subroutine pe_ifc_mpi
+        call qenter('pe_ifc_slave')
+        if (runtype == 1) then
+            call pe_slave('fock')
+        else if (runtype == 2) then
+            call pe_slave('energy')
+        else if (runtype == 3) then
+            call pe_slave('response')
+        else if (runtype == 4) then
+            call pe_slave('london')
+        else if (runtype == 5) then
+            call pe_slave('molgrad')
+        else if (runtype == 6) then
+            call pe_slave('mep')
+        end if
+        call qexit('pe_ifc_slave')
+      end subroutine pe_ifc_slave
+
+      subroutine pe_ifc_start_slaves(runtyp)
+        implicit none
+        integer :: runtyp
+#include "iprtyp.h"
+#include "maxorb.h"
+#include "infpar.h"
+        integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
+        call qenter('pe_ifc_start_slaves')
+        if (master /= 0) call quit('ERROR: PElib assumes master id 0')
+        if (nodtot >= 1) then
+            call mpixbcast(iprtyp, 1, 'INTEGER', master)
+            call mpixbcast(runtyp, 1, 'INTEGER', master)
+        end if
+        call qexit('pe_ifc_start_slaves')
+      end subroutine pe_ifc_start_slaves
 #endif
 
       subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
@@ -314,6 +360,9 @@
       deallocate(dcao)
 
       allocate(fckao(nnbasx))
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(1)
+#endif
       call pe_master(runtype='fock', denmats=fdtao, fckmats=fckao,
      &               nmats=1, energies=energy)
       deallocate(fdtao)
@@ -437,6 +486,9 @@
         ! Fxc = -R<0|Fe|B>Fe in fxcaos
         !--------------------------------------
         allocate(fxcaos(ncsim*nnbasx))
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(3)
+#endif
         call pe_master(runtype='response', denmats=fdtvaos,
      &                 fckmats=fxcaos, nmats=ncsim)
         deallocate(fdtvaos)
@@ -556,6 +608,9 @@
         deallocate(ubodcao, ubodvao)
 
         allocate(fxoaos(nosim*nnbasx))
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(3)
+#endif
         call pe_master(runtype='response', denmats=bodtaos,
      &                 fckmats=fxoaos, nmats=nosim)
         deallocate(bodtaos)
@@ -767,6 +822,9 @@
 
          allocate(fxcaos(ncsim*nnbasx))
          fxcaos = 0.0d0
+#if defined(VAR_MPI)
+         call pe_ifc_start_slaves(3)
+#endif
          call pe_master(runtype='response', denmats=fdtvaos,
      &                 fckmats=fxcaos, nmats=ncsim)
          deallocate(fdtvaos)
@@ -997,6 +1055,9 @@ C
 !        end if
 
         allocate(fckaos(nosim*nnbasx))
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(3)
+#endif
         call pe_master(runtype='response', denmats=daos,
      &                 fckmats=fckaos, nmats=nosim)
         deallocate(daos)
@@ -1386,12 +1447,18 @@ C
             if (.not. tdhf) then
                allocate(fcaos(10*nnbasx))
                fcaos = 0.0d0
+#if defined(VAR_MPI)
+               call pe_ifc_start_slaves(3)
+#endif
                call pe_master(runtype='response',
      &                        denmats=dcaos, fckmats=fcaos,
      &                        nmats=10)
             else
                allocate(fcaos(4*nnbasx))
                fcaos = 0.0d0
+#if defined(VAR_MPI)
+               call pe_ifc_start_slaves(3)
+#endif
                call pe_master(runtype='response',
      &                        denmats=dcaos, fckmats=fcaos,
      &                        nmats=4)
@@ -1845,6 +1912,9 @@ C
 
          allocate(fcaos(4*nnbasx))
          fcaos = 0.0d0
+#if defined(VAR_MPI)
+         call pe_ifc_start_slaves(3)
+#endif
          call pe_master(runtype='response', denmats=dcaos,
      &                  fckmats=fcaos, nmats=4)
          deallocate(dcaos)
@@ -2001,6 +2071,9 @@ C
 
          allocate(fcaos(15*nnbasx))
          fcaos = 0.0d0
+#if defined(VAR_MPI)
+         call pe_ifc_start_slaves(3)
+#endif
          call pe_master(runtype='response', denmats=dcaos,
      &                  fckmats=fcaos, nmats=15)
          deallocate(dcaos)
