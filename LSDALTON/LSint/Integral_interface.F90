@@ -93,7 +93,8 @@ MODULE IntegralInterfaceMOD
        & II_get_ADMM_K_gradient, II_get_coulomb_mat,ii_get_exchange_mat_mixed,&
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
        & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
-       & II_get_2int_ScreenRealMat,transformed_f2_to_f3,transform_D3_to_D2
+       & II_get_2int_ScreenRealMat,transformed_f2_to_f3,transform_D3_to_D2,&
+       & ii_get_2int_batchscreenmat
   private
 
 INTERFACE II_get_coulomb_mat
@@ -2990,6 +2991,85 @@ integer(kind=ls_mpik) :: comm
 call screen_free
 end subroutine II_screenfree
 #endif
+
+!> \brief Calculates the 4 center 2 eri screening mat
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param Gab the output matrix
+SUBROUTINE II_get_2int_BatchScreenMat(LUPRI,LUERR,SETTING,nbatches,batchGAB,nbast)
+IMPLICIT NONE
+INTEGER,intent(in)                :: LUPRI,LUERR,nbatches,nbast
+REAL(realk),intent(inout)         :: batchGAB(nbatches,nbatches)
+TYPE(LSSETTING),intent(inout)     :: SETTING
+!
+REAL(realk),pointer        :: bastGAB(:,:)
+IF(setting%IntegralTransformGC)THEN
+   !I do not think it makes sense to transform afterwards 
+   !so here the basis needs to be transformed
+   call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
+ENDIF
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+setting%Output%RealGabMatrix = .TRUE.
+CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
+     &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
+setting%Output%RealGabMatrix = .FALSE.
+call mem_alloc(bastGAB,nbast,nbast)
+call ls_dzero(bastGAB,nbast*nbast)
+CALL retrieve_Output(lupri,setting,bastGAB,setting%IntegralTransformGC)
+call ConvertBASTGabToBatchesGab(nbast,nbatches,setting,bastGAB,batchGAB,&
+     & lupri,luerr)
+call mem_dealloc(bastGAB)
+END SUBROUTINE II_get_2int_BatchScreenMat
+
+subroutine ConvertBASTGabToBatchesGab(nbast,nbatches,setting,BastGAB,BatchGAB,&
+     & lupri,luerr)
+implicit none
+TYPE(LSSETTING),intent(inout)  :: SETTING
+real(realk),intent(in) :: BastGab(nbast,nbast)
+integer,intent(in) ::  nbast,nbatches,lupri,luerr
+real(realk),intent(inout) :: BatchGab(nbatches,nbatches)
+!
+type(AOITEM) :: AO
+integer,pointer :: batchdim(:)
+integer :: I,A,dimI,dimJ,J,offsetI,offsetJ,JJ,II,nbastout
+real(realk) :: TMP
+
+CALL setAObatch(AO,0,1,nbastout,AORdefault,Contractedinttype,Setting%scheme,&
+     & Setting%fragment(1)%p,setting%basis(1)%p,lupri,luerr)
+IF(nbastout.NE.nbast)call lsquit('Error in ConvertBASTGabToBatchesGab',-1)
+call mem_alloc(batchdim,AO%nbatches)
+do I=1,AO%nbatches
+   dimI = 0
+   DO A=1,AO%BATCH(I)%nAngmom
+      dimI = dimI + AO%BATCH(I)%norbitals(A)
+   ENDDO
+   batchdim(I) = dimI
+enddo
+
+offsetJ = 0
+do J=1,AO%nbatches
+   dimJ = batchdim(J)
+   offsetI = 0
+   do I=1,AO%nbatches
+      dimI = batchdim(I)
+      TMP = 0.0E0_realk
+      do JJ=1,dimJ
+         do II=1,dimI            
+            TMP = MAX(TMP,ABS(BastGAB(II+offsetI,JJ+offsetJ)))
+         enddo
+      enddo
+      BatchGAB(I,J) = TMP
+      offsetI = offsetI + dimI
+   enddo
+   offsetJ = offsetJ + dimJ
+enddo
+CALL free_aoitem(lupri,AO)
+call mem_dealloc(batchdim)
+end subroutine ConvertBASTGabToBatchesGab
 
 !> \brief Calculates the 4 center 2 eri screening mat
 !> \author T. Kjaergaard

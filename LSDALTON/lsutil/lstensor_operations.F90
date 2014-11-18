@@ -6548,6 +6548,55 @@ SUBROUTINE build_BatchGab(AOfull1,AOfull2,AO1,AO2,iBatch1,jBatch1,&
 
 end SUBROUTINE build_BatchGab
 
+!!$SUBROUTINE build_BatchGab_from_full(TENSOR2,batchA,batchB,batchsizeA,batchSizeB,FullGab,nbatches)
+!!$  implicit none
+!!$  INTEGER,intent(in)            :: batchA,batchB
+!!$  INTEGER,intent(in)            :: batchsizeA,batchSizeB  
+!!$  integer(kind=short)           :: FullGab(nbatches,nbatches)
+!!$  !
+!!$  logical :: CS_SCREEN,PS_SCREEN
+!!$  integer :: I,J
+!!$  CS_SCREEN = ASSOCIATED(TENSOR1%maxgab)
+!!$  PS_SCREEN = .FALSE.
+!!$  call lstensor_nullify(TENSOR2)
+!!$  TENSOR2%nSLSAO = 0
+!!$  TENSOR2%pChargetensor = .FALSE.
+!!$  TENSOR2%Econtrib = .FALSE.
+!!$  TENSOR2%Screentensor = .TRUE.
+!!$  TENSOR2%Screenoutput = .FALSE.
+!!$  TENSOR2%MagGradienttensor = .FALSE.
+!!$  TENSOR2%Gradienttensor = .FALSE.
+!!$  NULLIFY(TENSOR%SLSAO)
+!!$  NULLIFY(TENSOR%INDEX)
+!!$  TENSOR2%natom(1) = -1 !not used
+!!$  TENSOR2%natom(2) = -1
+!!$  TENSOR2%natom(3) = 1
+!!$  TENSOR2%natom(4) = 1
+!!$  TENSOR2%ndim5 = 1
+!!$
+!!$  TENSOR2%Screentensor = .TRUE.
+!!$  TENSOR2%nbatches(1) = batchsizeA
+!!$  TENSOR2%nbatches(2) = batchSizeB  
+!!$  TENSOR2%nbatches(3) = 0
+!!$  TENSOR2%nbatches(4) = 0
+!!$  dim = batchsizeA*batchsizeB
+!!$  IF(CS_SCREEN)THEN
+!!$     nullify(TENSOR2%maxgab)
+!!$     call mem_alloc(TENSOR2%maxgab,batchsizeA,batchsizeB)
+!!$     nsize = size(TENSOR2%maxgab,KIND=long)*mem_shortintsize
+!!$     call mem_allocated_mem_lstensor(nsize)
+!!$  ENDIF
+!!$  nullify(TENSOR2%maxprimgab)
+!!$  DO J=1,batchsizeB
+!!$     DO I=1,batchsizeA
+!!$        TENSOR2%maxgab(I,J) = FullGab(batchA+I-1,batchB+J-1)
+!!$     ENDDO
+!!$  ENDDO
+!!$  IF(CS_SCREEN)call set_lst_maxgabelms(TENSOR2)  
+!!$!  print*,'the sub LSTENSOR AFTER build_BatchGab_From_FULL'
+!!$!  call lstensor_print(TENSOR2,6)
+!!$end SUBROUTINE build_BatchGab_From_FULL
+
 !> \brief 
 !> \author T. Kjaergaard
 !> \date 2010
