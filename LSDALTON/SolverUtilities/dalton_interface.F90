@@ -3589,7 +3589,8 @@ CONTAINS
                               do batch_iC = 1,dimC
                                  iC = batch2orb(C)%orbindex(batch_iC)
                                  IF(ABS(integrals(batch_iA,batch_iB,batch_iC,batch_iD)-integralsFULL(iA,iB,iC,iD)).GT.1.0E-10)THEN
-                                    print*,'integrals(batch_iA,batch_iB,batch_iC,batch_iD)',integrals(batch_iA,batch_iB,batch_iC,batch_iD)
+                                    print*,'integrals(batch_iA,batch_iB,batch_iC,batch_iD)',&
+     &                                      integrals(batch_iA,batch_iB,batch_iC,batch_iD)
                                     print*,'integralsFULL(iA,iB,iC,iD)',integralsFULL(iA,iB,iC,iD)
                                     print*,'batch_iA,batch_iB,batch_iC,batch_iD',batch_iA,batch_iB,batch_iC,batch_iD
                                     print*,'iA,iB,iC,iD',iA,iB,iC,iD
