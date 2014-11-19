@@ -5731,7 +5731,7 @@ IF (PRINT_EK3) THEN
    !Factor 2 included here because the Coulomb factor used in the FTUVs are set to two for default AOs, and 
    !one for other.
    var = 2E0_realk * II_get_rho2(LUPRI,LUERR,SETTING,D2(1),D2(1),AOadmm,AOadmm,.FALSE.,.FALSE.,nbast2,nbast2)
-   var = 2E0_realk * var + II_get_rho2(LUPRI,LUERR,SETTING,D,D,AO3,AO3,GC3,GC3,nbast,nbast)
+   var = var + II_get_rho2(LUPRI,LUERR,SETTING,D,D,AO3,AO3,GC3,GC3,nbast,nbast)
    var = var - 2E0_realk * II_get_rho2(LUPRI,LUERR,SETTING,D2(1),D,AOadmm,AO3,.FALSE.,GC3,nbast2,nbast)
    write(*,*) "Fitting error = ", 2E0_realk * var
    write(lupri,*) "Fitting error = ", 2E0_realk * var
