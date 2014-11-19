@@ -8431,9 +8431,9 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> pair fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes

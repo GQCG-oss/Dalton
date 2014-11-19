@@ -3060,11 +3060,11 @@ end function max_batch_dimension
 
     implicit none
     ! Fragment 1 in pair
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     ! Fragment 2 in pair
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
-    type(decfrag),intent(inout) :: PairFragment
+    type(decfrag),intent(in) :: PairFragment
     !> Do pair or not - dimension: (noccEOS,noccEOS) for PAIR
     logical,dimension(PairFragment%noccEOS,PairFragment%noccEOS),&
          & intent(inout) :: dopair
@@ -3165,11 +3165,11 @@ end function max_batch_dimension
 
     implicit none
     ! Fragment 1 in pair
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     ! Fragment 2 in pair
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
-    type(decfrag),intent(inout) :: PairFragment
+    type(decfrag),intent(in) :: PairFragment
     !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
     logical,dimension(PairFragment%nunoccEOS,PairFragment%nunoccEOS),&
          & intent(inout) :: dopair
