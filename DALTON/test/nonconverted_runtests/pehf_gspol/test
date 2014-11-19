@@ -12,6 +12,6 @@ f = Filter()
 f.add(string = 'TEST STRING',
       rel_tolerance = 1.0e-7)
 
-test.run(['pehf_gspol.dal'], ['pehf_gspol.mol'], {'out': f})
+test.run(['pehf_gspol.dal'], ['pehf_gspol.mol'], {'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)

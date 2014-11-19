@@ -1,0 +1,51 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+#
+# Frequency independent polarizability tensor
+#
+CRIT1=`$GREP -l "@ \-<< XDIPLEN  ; XDIPLEN  >> =  2\.10082.......D\+01" $log | wc -l`
+CRIT2=`$GREP -l "@ \-<< XDIPLEN  ; YDIPLEN  >> = \-8\.6735........D\+00" $log | wc -l`
+CRIT3=`$GREP -l "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7\.7...........D\-03" $log | wc -l`
+CRIT4=`$GREP -l "@ \-<< YDIPLEN  ; YDIPLEN  >> =  3\.35324.......D\+01" $log | wc -l`
+CRIT5=`$GREP -l "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-[91]\.[09]...........D\-0[34]" $log | wc -l`
+CRIT6=`$GREP -l "@ \-<< ZDIPLEN  ; ZDIPLEN  >> =  4\.58232.......D\+00" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[1]=6
+ERROR[1]="FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
+#
+# Frequency dependent polarizability tensor
+#
+CRIT1=`$GREP -l "@ \-<< XDIPLEN  ; XDIPLEN  >> =  2.11397.......D\+01" $log | wc -l`
+CRIT2=`$GREP -l "@ \-<< XDIPLEN  ; YDIPLEN  >> = \-8.8336........D\+00" $log | wc -l`
+CRIT3=`$GREP -l "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7.7...........D\-03" $log | wc -l`
+CRIT4=`$GREP -l "@ \-<< YDIPLEN  ; YDIPLEN  >> =  3.38562.......D\+01" $log | wc -l`
+CRIT5=`$GREP -l "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-9.............D\-04" $log | wc -l`
+CRIT6=`$GREP -l "@ \-<< ZDIPLEN  ; ZDIPLEN  >> =  4.59733.......D\+00" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
+CTRL[2]=6
+ERROR[2]="FREQUENCY DEPENDENT POLARIZABILITY NOT CORRECT"
+
+PASSED=1
+for i in 1 2
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
