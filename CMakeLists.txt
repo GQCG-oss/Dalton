@@ -62,7 +62,7 @@ option(ENABLE_LSEEK          "Enable lseek"                                     
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
-option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
+option(ENABLE_ICHOR          "Enable ichor integrals"                           ON)
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
 option(ENABLE_QMATRIX        "Enable QMatrix library"                           OFF)
 option(ENABLE_OPENRSP        "Enable OPENRSP library (need QMatrix library)"    OFF)

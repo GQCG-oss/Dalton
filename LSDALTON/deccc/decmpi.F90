@@ -2274,6 +2274,7 @@ contains
        endif
        call ls_mpi_buffer(DECitem%frag_job_nr,DECitem%only_n_frag_jobs,Master)
     endif
+    call ls_mpi_buffer(DECitem%UseIchor,Master)
 
   end subroutine mpicopy_dec_settings
 

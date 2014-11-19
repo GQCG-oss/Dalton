@@ -225,6 +225,9 @@ contains
     !> MPI (undefined by default)
     DECinfo%MPIgroupsize=0
 
+    !> Use Ichor Integral Code
+    DECinfo%UseIchor = .false.
+
     ! Test stuff
 
 
@@ -600,7 +603,7 @@ contains
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
-
+       case('.ICHOR'); DECinfo%UseIchor = .true.
        case('.F12')
           DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     

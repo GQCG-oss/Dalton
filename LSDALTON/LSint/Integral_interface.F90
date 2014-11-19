@@ -93,7 +93,8 @@ MODULE IntegralInterfaceMOD
        & II_get_ADMM_K_gradient, II_get_coulomb_mat,ii_get_exchange_mat_mixed,&
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
        & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
-       & II_get_2int_ScreenRealMat,transformed_f2_to_f3,transform_D3_to_D2
+       & II_get_2int_ScreenRealMat,transformed_f2_to_f3,transform_D3_to_D2,&
+       & ii_get_2int_batchscreenmat
   private
 
 INTERFACE II_get_coulomb_mat
@@ -112,6 +113,10 @@ END INTERFACE II_get_coulomb_and_exchange_mat
 INTERFACE II_get_Fock_mat
    MODULE PROCEDURE II_get_Fock_mat_array,II_get_Fock_mat_single
 END INTERFACE II_get_Fock_mat
+
+INTERFACE II_get_rho2
+   MODULE PROCEDURE II_get_rho2_mat,II_get_rho2_full
+END INTERFACE II_get_rho2
 
 CONTAINS
 !> \brief Calculates overlap integral matrix
@@ -2998,6 +3003,85 @@ end subroutine II_screenfree
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
 !> \param Gab the output matrix
+SUBROUTINE II_get_2int_BatchScreenMat(LUPRI,LUERR,SETTING,nbatches,batchGAB,nbast)
+IMPLICIT NONE
+INTEGER,intent(in)                :: LUPRI,LUERR,nbatches,nbast
+REAL(realk),intent(inout)         :: batchGAB(nbatches,nbatches)
+TYPE(LSSETTING),intent(inout)     :: SETTING
+!
+REAL(realk),pointer        :: bastGAB(:,:)
+IF(setting%IntegralTransformGC)THEN
+   !I do not think it makes sense to transform afterwards 
+   !so here the basis needs to be transformed
+   call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
+ENDIF
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+setting%Output%RealGabMatrix = .TRUE.
+CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
+     &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
+setting%Output%RealGabMatrix = .FALSE.
+call mem_alloc(bastGAB,nbast,nbast)
+call ls_dzero(bastGAB,nbast*nbast)
+CALL retrieve_Output(lupri,setting,bastGAB,setting%IntegralTransformGC)
+call ConvertBASTGabToBatchesGab(nbast,nbatches,setting,bastGAB,batchGAB,&
+     & lupri,luerr)
+call mem_dealloc(bastGAB)
+END SUBROUTINE II_get_2int_BatchScreenMat
+
+subroutine ConvertBASTGabToBatchesGab(nbast,nbatches,setting,BastGAB,BatchGAB,&
+     & lupri,luerr)
+implicit none
+TYPE(LSSETTING),intent(inout)  :: SETTING
+real(realk),intent(in) :: BastGab(nbast,nbast)
+integer,intent(in) ::  nbast,nbatches,lupri,luerr
+real(realk),intent(inout) :: BatchGab(nbatches,nbatches)
+!
+type(AOITEM) :: AO
+integer,pointer :: batchdim(:)
+integer :: I,A,dimI,dimJ,J,offsetI,offsetJ,JJ,II,nbastout
+real(realk) :: TMP
+
+CALL setAObatch(AO,0,1,nbastout,AORdefault,Contractedinttype,Setting%scheme,&
+     & Setting%fragment(1)%p,setting%basis(1)%p,lupri,luerr)
+IF(nbastout.NE.nbast)call lsquit('Error in ConvertBASTGabToBatchesGab',-1)
+call mem_alloc(batchdim,AO%nbatches)
+do I=1,AO%nbatches
+   dimI = 0
+   DO A=1,AO%BATCH(I)%nAngmom
+      dimI = dimI + AO%BATCH(I)%norbitals(A)
+   ENDDO
+   batchdim(I) = dimI
+enddo
+
+offsetJ = 0
+do J=1,AO%nbatches
+   dimJ = batchdim(J)
+   offsetI = 0
+   do I=1,AO%nbatches
+      dimI = batchdim(I)
+      TMP = 0.0E0_realk
+      do JJ=1,dimJ
+         do II=1,dimI            
+            TMP = MAX(TMP,ABS(BastGAB(II+offsetI,JJ+offsetJ)))
+         enddo
+      enddo
+      BatchGAB(I,J) = TMP
+      offsetI = offsetI + dimI
+   enddo
+   offsetJ = offsetJ + dimJ
+enddo
+CALL free_aoitem(lupri,AO)
+call mem_dealloc(batchdim)
+end subroutine ConvertBASTGabToBatchesGab
+
+!> \brief Calculates the 4 center 2 eri screening mat
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param Gab the output matrix
 SUBROUTINE II_get_2int_ScreenMat(LUPRI,LUERR,SETTING,GAB)
 IMPLICIT NONE
 TYPE(MATRIX),target   :: GAB
@@ -5060,7 +5144,7 @@ IMPLICIT NONE
 INTEGER               :: LUPRI,LUERR,nbast
 real(realk)           :: D(nbast,nbast,1),F(nbast,nbast,1)
 TYPE(LSSETTING)       :: SETTING
-CALL II_get_coulomb_mat_mixed_full(LUPRI,LUERR,SETTING,nbast,D,F,&
+CALL II_get_coulomb_mat_mixed_full(LUPRI,LUERR,SETTING,nbast,nbast,nbast,nbast,D,F,&
      & AORdefault,AORdefault,AORdefault,AORdefault,coulombOperator)
 END SUBROUTINE II_get_coulomb_mat_full
 
@@ -5073,12 +5157,12 @@ END SUBROUTINE II_get_coulomb_mat_full
 !> \param D the density matrix
 !> \param F the coulomb matrix
 !> \param ndmat the number of density matrix
-SUBROUTINE II_get_coulomb_mat_mixed_full(LUPRI,LUERR,SETTING,nbast,D,F,&
+SUBROUTINE II_get_coulomb_mat_mixed_full(LUPRI,LUERR,SETTING,n1,n2,n3,n4,D,F,&
      & AO1,AO2,AO3,AO4,Oper)
 IMPLICIT NONE
-Integer               :: nbast
-Real(realk),target    :: D(nbast,nbast,1)
-Real(realk)           :: F(nbast,nbast,1)
+Integer               :: n1,n2,n3,n4
+Real(realk),target    :: D(n3,n4,1)
+Real(realk)           :: F(n1,n2,1)
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR,AO1,AO2,AO3,AO4,Oper
 !
@@ -5094,8 +5178,9 @@ CALL LSTIMER('START ',TS,TE,LUPRI)
 IF(setting%IntegralTransformGC)THEN
    setting%IntegralTransformGC = .FALSE. 
    !change D to AO basis (currently in GCAO basis)
-   call mem_alloc(DAO,nbast,nbast,1)
-   call GCAO2AO_transform_fullD(D,DAO,nbast,1,setting,lupri)
+   IF (n3.NE.n4) CALL LSQUIT('Error in II_get_coulomb_mat_mixed_full. n3.NE.n4 and TransformGC',lupri)
+   call mem_alloc(DAO,n3,n4,1)
+   call GCAO2AO_transform_fullD(D,DAO,n3,1,setting,lupri)
    Dmat => DAO
    IntegralTransformGC = .TRUE.
 ELSE
@@ -5111,7 +5196,7 @@ IF (SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J) THEN
 !  CALL II_get_df_coulomb_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
 ELSE
    IF(SETTING%SCHEME%JENGINE)THEN
-      call II_get_jengine_mat_full(LUPRI,LUERR,SETTING,nbast,D,F,AO1,AO2,AO3,AO4,Oper)
+      call II_get_jengine_mat_full(LUPRI,LUERR,SETTING,n1,n2,n3,n4,D,F,AO1,AO2,AO3,AO4,Oper)
    ELSE
       call lsquit('II_get_4center_coulomb_mat_full not impl. ',-1)
    ENDIF
@@ -5119,7 +5204,8 @@ ENDIF
 
 IF(IntegralTransformGC)THEN
    !transform back to GCAO basis 
-   call AO2GCAO_transform_fullF(F,nbast,setting,lupri)
+   IF (n1.NE.n2) CALL LSQUIT('Error in II_get_coulomb_mat_mixed_full. n1.NE.n2 and TransformGC',lupri)
+   call AO2GCAO_transform_fullF(F,n1,setting,lupri)
    CALL mem_dealloc(DAO)
    setting%IntegralTransformGC = .TRUE. 
 ENDIF
@@ -5147,6 +5233,112 @@ call time_II_operations2(JOB_II_get_coulomb_mat)
 
 END SUBROUTINE II_get_coulomb_mat_mixed_full
 
+!> \brief Calculates the overlap integral <rho1 rho2>
+!> \author S. Reine
+!> \date 2014-11-19
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param D1 density matrix number 1
+!> \param D2 density matrix number 2
+!> \param AO1 spcifies orbitals on density number 1
+!> \param AO2 spcifies orbitals on density number 2
+!> \param GCAO1 spcifies if AO1 is a GC basis
+!> \param GCAO2 spcifies if AO2 is a GC basis
+!> \param n1 dimension of AO1
+!> \param n2 dimension of AO2
+!> \param ndmat the number of density matrix
+Function II_get_rho2_mat(LUPRI,LUERR,SETTING,D1mat,D2mat,AO1,AO2,GCAO1,GCAO2,n1,n2)
+IMPLICIT NONE
+INTEGER               :: LUPRI,LUERR,n1,n2,AO1,AO2
+Logical               :: GCAO1,GCAO2
+TYPE(matrix)          :: D1mat,D2mat
+real(realk)           :: II_get_rho2_mat
+TYPE(LSSETTING)       :: SETTING
+!
+real(realk),pointer :: D1(:,:,:),D2(:,:,:)
+
+call mem_alloc(D1,n1,n1,1)
+call mem_alloc(D2,n2,n2,1)
+
+call mat_to_full(D1mat,1E0_realk,D1)
+call mat_to_full(D2mat,1E0_realk,D2)
+
+II_get_rho2_mat = II_get_rho2_full(LUPRI,LUERR,SETTING,D1,D2,AO1,AO2,GCAO1,GCAO2,n1,n2)
+
+call mem_dealloc(D1)
+call mem_dealloc(D2)
+
+END Function II_get_rho2_mat
+
+!> \brief Calculates the overlap integral <rho1 rho2>
+!> \author S. Reine
+!> \date 2014-11-19
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param D1 density matrix number 1
+!> \param D2 density matrix number 2
+!> \param AO1 spcifies orbitals on density number 1
+!> \param AO2 spcifies orbitals on density number 2
+!> \param GCAO1 spcifies if AO1 is a GC basis
+!> \param GCAO2 spcifies if AO2 is a GC basis
+!> \param n1 dimension of AO1
+!> \param n2 dimension of AO2
+!> \param ndmat the number of density matrix
+Function II_get_rho2_full(LUPRI,LUERR,SETTING,D1,D2,AO1,AO2,GCAO1,GCAO2,n1,n2)
+IMPLICIT NONE
+INTEGER               :: LUPRI,LUERR,n1,n2,AO1,AO2
+Logical               :: GCAO1,GCAO2
+real(realk),target    :: D2(n2,n2,1)
+real(realk)           :: D1(n1,n1,1),II_get_rho2_full
+TYPE(LSSETTING)       :: SETTING
+!
+real(realk),pointer :: F1(:,:,:)
+real(realk),pointer :: D2p(:,:,:)
+real(realk)         :: rho2
+Integer :: i,j
+Logical :: IntegralTransformGC, allocD2p
+
+allocD2p = .FALSE.
+IntegralTransformGC = setting%IntegralTransformGC
+D2p => D2
+IF (setting%IntegralTransformGC) THEN
+  IF (AO1.NE.AO2) THEN
+    IF (GCAO1) call LSQUIT('Error in II_get_rho2: GCAO1 and AO1.NE.AO2',lupri)
+    call mem_alloc(D2p,n2,n2,1)
+    call GCAO2AO_transform_fullD(D2,D2p,n2,1,setting,lupri)
+    setting%IntegralTransformGC = .FALSE.
+    allocD2p = .TRUE.
+  ELSE
+    IF (n1.NE.n2) CALL LSQUIT('Error in II_get_rho2: n1.NE.n2 and AO1.EQ.AO2',lupri)
+    !Do nothing - i.e. make GC transformations in II_get_coulomb_mat_mixed_full
+    setting%IntegralTransformGC = GCAO2
+  ENDIF
+ENDIF
+
+call mem_alloc(F1,n1,n1,1)
+
+CALL II_get_coulomb_mat_mixed_full(LUPRI,LUERR,SETTING,n1,n1,n2,n2,D2p,F1,&
+     & AO1,AO1,AO2,AO2,overlapOperator)
+
+rho2 = 0E0_realk
+DO j=1,n1
+  DO i=1,n1
+   rho2 = rho2 + D1(i,j,1)*F1(i,j,1)
+  ENDDO
+ENDDO
+call mem_dealloc(F1)
+
+IF (allocD2p) THEN
+  setting%IntegralTransformGC = IntegralTransformGC
+  call mem_dealloc(D2p)
+ENDIF
+
+II_get_rho2_full = rho2
+
+END Function II_get_rho2_full
+
 !> \brief Calculates the coulomb matrix using the jengine method (default)
 !> \author S. Reine
 !> \date 2010
@@ -5156,21 +5348,21 @@ END SUBROUTINE II_get_coulomb_mat_mixed_full
 !> \param D the density matrix
 !> \param F the coulomb matrix
 !> \param ndmat the number of density matrix
-SUBROUTINE II_get_jengine_mat_full(LUPRI,LUERR,SETTING,nbast,D,F,&
+SUBROUTINE II_get_jengine_mat_full(LUPRI,LUERR,SETTING,n1,n2,n3,n4,D,F,&
      & AO1,AO2,AO3,AO4,Oper)
 IMPLICIT NONE
-Integer             :: nbast,LUPRI,LUERR,AO1,AO2,AO3,AO4,Oper
-Real(realk)         :: D(nbast,nbast,1)
-Real(realk)         :: F(nbast,nbast,1)
+Integer             :: n1,n2,n3,n4,LUPRI,LUERR,AO1,AO2,AO3,AO4,Oper
+Real(realk)         :: D(n3,n4,1)
+Real(realk)         :: F(n1,n2,1)
 TYPE(LSSETTING)     :: SETTING
 !
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-CALL ls_dzero(F,nbast*nbast)
+CALL ls_dzero(F,n1*n2)
 IF(SETTING%SCHEME%FMM)THEN
    call lsquit('Error in II_get_jengine_mat_full: FMM',-1)
 ENDIF
-CALL ls_attachDmatToSetting(D,nbast,nbast,1,setting,'RHS',3,4,lupri)
-call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+CALL ls_attachDmatToSetting(D,n3,n4,1,setting,'RHS',3,4,lupri)
+call initIntegralOutputDims(setting%Output,n1,n2,1,1,1)
 call ls_jengine(AO1,AO2,AO3,AO4,Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 CALL retrieve_Output(lupri,setting,F,setting%IntegralTransformGC)
 CALL ls_freeDmatFromSetting(setting)
@@ -5535,16 +5727,15 @@ IF (PRINT_EK3) THEN
       write(lupri,*) "E(X3)-E(x2)= ",EdXC
    ENDIF
 
-   call mat_init(S22,nbast2,nbast2)
-   call mat_init(S33,nbast,nbast)
-   CALL get_S22(S22,AOadmm,.FALSE.,setting,lupri,luerr)
-   CALL get_S33(S33,AO3,GC3,setting,lupri,luerr)
+!***  Simen: 2014-11-19, Added for the basis-set optimization
+   !Factor 2 included here because the Coulomb factor used in the FTUVs are set to two for default AOs, and 
+   !one for other.
+   var = 2E0_realk * II_get_rho2(LUPRI,LUERR,SETTING,D2(1),D2(1),AOadmm,AOadmm,.FALSE.,.FALSE.,nbast2,nbast2)
+   var = var + II_get_rho2(LUPRI,LUERR,SETTING,D,D,AO3,AO3,GC3,GC3,nbast,nbast)
+   var = var - 2E0_realk * II_get_rho2(LUPRI,LUERR,SETTING,D2(1),D,AOadmm,AO3,.FALSE.,GC3,nbast2,nbast)
+   write(*,*) "Fitting error = ", 2E0_realk * var
+   write(lupri,*) "Fitting error = ", 2E0_realk * var
 
-   var = mat_trAB(S33,D) - mat_trAB(S22,D2(1))
-   var = var*var
-   write(lupri,*) "Fitting error = ", var
-   call mat_free(S22)
-   call mat_free(S33)
 
 ENDIF
 
