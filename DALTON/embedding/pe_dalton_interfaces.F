@@ -63,8 +63,13 @@
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(1)
 #endif
-        call pe_master(runtype='fock', denmats=denmats, fckmats=fckmats,
-     &                 nmats=nmats, energies=energies)
+        call pe_master(runtype='full_fock',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=nmats,
+     &                 denmats=denmats,
+     &                 fckmats=fckmats,
+     &                 expvals=energies)
         call qexit('pe_ifc_fock')
       end subroutine pe_ifc_fock
 
@@ -86,19 +91,16 @@
 #include "energy.h"
         real*8, dimension(nnbasx), intent(in) :: denmats
         integer :: i, j
-        real*8, dimension(3,natoms) :: molgrad
         call qenter('pe_ifc_grad')
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(5)
 #endif
-        molgrad = 0.0d0
-        call pe_master(runtype='molgrad', denmats=denmats,
-     &                 molgrads=molgrad, nmats=1)
-        j = 1
-        do i = 1, natoms
-            pegrad(j:j+2) = molgrad(:,i)
-            j = j + 3
-        end do
+        call pe_master(runtype='molecular_gradient',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=1,
+     &                 denmats=denmats,
+     &                 expvals=pegrad)
         call qexit('pe_ifc_grad')
       end subroutine pe_ifc_grad
 
@@ -112,7 +114,11 @@
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(2)
 #endif
-        call pe_master(runtype='energy', denmats=denmats, nmats=nmats)
+        call pe_master(runtype='print_energy',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=nmats,
+     &                 denmats=denmats)
         call qexit('pe_ifc_energy')
       end subroutine pe_ifc_energy
 
@@ -154,7 +160,11 @@
         call pe_ifc_start_slaves(6)
 #endif
         if (mep_qmcube) then
-            call pe_master(runtype='mep', denmats=denmats, nmats=nmats)
+            call pe_master(runtype='mep',
+     &                     triang=.true.,
+     &                     ndim=nbast,
+     &                     nmats=1,
+     &                     denmats=denmats)
         end if
         call qexit('pe_ifc_mepcalc')
       end subroutine pe_ifc_mepcalc
@@ -180,7 +190,11 @@
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(4)
 #endif
-        call pe_master('london', fckmats=fckmats, nmats=nmats)
+        call pe_master('magnetic_gradient',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=1,
+     &                 fckmats=fckmats)
         call qexit('pe_ifc_london')
       end subroutine pe_ifc_london
 
@@ -191,15 +205,15 @@
         integer, intent(in) :: runtype
         call qenter('pe_ifc_slave')
         if (runtype == 1) then
-            call pe_slave('fock')
+            call pe_slave('full_fock')
         else if (runtype == 2) then
-            call pe_slave('energy')
+            call pe_slave('print_energy')
         else if (runtype == 3) then
-            call pe_slave('response')
+            call pe_slave('dynamic_response')
         else if (runtype == 4) then
-            call pe_slave('london')
+            call pe_slave('magnetic_gradient')
         else if (runtype == 5) then
-            call pe_slave('molgrad')
+            call pe_slave('molecular_gradient')
         else if (runtype == 6) then
             call pe_slave('mep')
         end if
@@ -225,7 +239,7 @@
 
       subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !
-!     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
+!     Written by Erik Donovan Hedegård (edh) and Jogvan Magnus H. Olsen
 !                based on PCMGRAD
 !
 !     Purpose:  calculate (MCSCF) energy and gradient contribution
@@ -316,7 +330,7 @@
 
       subroutine pe_fckmo(cmo, dv, fckmo, energy, wrk, nwrk)
 !
-!     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
+!     Written by Erik Donovan Hedegård (edh) and Jogvan Magnus H. Olsen
 !
 !     Purpose:  Get PE operator in MO basis using PE library
 !
@@ -363,8 +377,13 @@
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(1)
 #endif
-      call pe_master(runtype='fock', denmats=fdtao, fckmats=fckao,
-     &               nmats=1, energies=energy)
+      call pe_master(runtype='full_fock',
+     &               triang=.true.,
+     &               ndim=nbast,
+     &               nmats=1,
+     &               denmats=fdtao,
+     &               fckmats=fckao,
+     &               expvals=energy)
       deallocate(fdtao)
 
       call uthu(fckao, fckmo, cmo, wrk, nbast, norbt)
@@ -379,7 +398,7 @@
       subroutine pe_lin(ncsim, nosim, bcvecs, bovecs, cref, cmo, cindx,
      &                  dv, dtv, scvecs, sovecs, orblin, wrk, nwrk)
 !
-! Written by Erik Donovan Hedegård and Jógvan Magnus H. Olsen
+! Written by Erik Donovan Hedegård and Jogvan Magnus H. Olsen
 !            after original code by  Hans Joergen Aa. Jensen
 !
 ! Common driver for pe_lnc and pe_lno
@@ -428,7 +447,7 @@
       subroutine pe_lnc(ncsim, bcvecs, cref, cmo, cindx, dv, dtv,
      &                  scvecs, wrk, nwrk)
 !
-!  Written by Erik Donovan Hedegaard and Jógvan Magnus H. Olsen
+!  Written by Erik Donovan Hedegaard and Jogvan Magnus H. Olsen
 !             after original routine by Hans Jørgen Aa. Jensen
 !
 !  Purpose:  Calculate Hessian contribution from a polarizable
@@ -489,8 +508,12 @@
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(3)
 #endif
-        call pe_master(runtype='response', denmats=fdtvaos,
-     &                 fckmats=fxcaos, nmats=ncsim)
+        call pe_master(runtype='dynamic_response',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=ncsim,
+     &                 denmats=fdtvaos,
+     &                 fckmats=fxcaos)
         deallocate(fdtvaos)
 
         do i = 1, ncsim
@@ -538,7 +561,7 @@
       subroutine pe_lno(nosim, bovecs, cref, cmo, cindx, dv,
      &                  sovecs, nso, wrk, nwrk)
 !
-!  Written by Erik Donovan Hedegaard and Jógvan Magnus H. Olsen
+!  Written by Erik Donovan Hedegaard and Jogvan Magnus H. Olsen
 !             after original code by Hans Jorgen Aa. Jensen
 !
 !  Purpose:  Calculate Hessian contribution from a
@@ -611,8 +634,12 @@
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(3)
 #endif
-        call pe_master(runtype='response', denmats=bodtaos,
-     &                 fckmats=fxoaos, nmats=nosim)
+        call pe_master(runtype='dynamic_response',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=nosim,
+     &                 denmats=bodtaos,
+     &                 fckmats=fxoaos)
         deallocate(bodtaos)
 
 
@@ -825,8 +852,12 @@
 #if defined(VAR_MPI)
          call pe_ifc_start_slaves(3)
 #endif
-         call pe_master(runtype='response', denmats=fdtvaos,
-     &                 fckmats=fxcaos, nmats=ncsim)
+         call pe_master(runtype='dynamic_response',
+     &                  triang=.true.,
+     &                  ndim=nbast,
+     &                  nmats=ncsim,
+     &                  denmats=fdtvaos,
+     &                  fckmats=fxcaos)
          deallocate(fdtvaos)
 
          do i = 1, ncsim
@@ -1058,8 +1089,12 @@ C
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(3)
 #endif
-        call pe_master(runtype='response', denmats=daos,
-     &                 fckmats=fckaos, nmats=nosim)
+        call pe_master(runtype='dynamic_response',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=nosim,
+     &                 denmats=daos,
+     &                 fckmats=fckaos)
         deallocate(daos)
 !        if (trplet) then
 !            allocate(fckaotrs(nosim*nnbasx))
@@ -1450,18 +1485,24 @@ C
 #if defined(VAR_MPI)
                call pe_ifc_start_slaves(3)
 #endif
-               call pe_master(runtype='response',
-     &                        denmats=dcaos, fckmats=fcaos,
-     &                        nmats=10)
+               call pe_master(runtype='dynamic_response',
+     &                        triang=.true.,
+     &                        ndim=nbast,
+     &                        nmats=10,
+     &                        denmats=dcaos,
+     &                        fckmats=fcaos)
             else
                allocate(fcaos(4*nnbasx))
                fcaos = 0.0d0
 #if defined(VAR_MPI)
                call pe_ifc_start_slaves(3)
 #endif
-               call pe_master(runtype='response',
-     &                        denmats=dcaos, fckmats=fcaos,
-     &                        nmats=4)
+               call pe_master(runtype='dynamic_response',
+     &                        triang=.true.,
+     &                        ndim=nbast,
+     &                        nmats=4,
+     &                        denmats=dcaos,
+     &                        fckmats=fcaos)
             end if
             deallocate(dcaos)
 
@@ -1915,8 +1956,12 @@ C
 #if defined(VAR_MPI)
          call pe_ifc_start_slaves(3)
 #endif
-         call pe_master(runtype='response', denmats=dcaos,
-     &                  fckmats=fcaos, nmats=4)
+         call pe_master(runtype='dynamic_response',
+     &                  triang=.true.,
+     &                  ndim=nbast,
+     &                  nmats=4,
+     &                  denmats=dcaos,
+     &                  fckmats=fcaos)
          deallocate(dcaos)
 
          allocate(fcmo(nnorbx))
@@ -2074,8 +2119,12 @@ C
 #if defined(VAR_MPI)
          call pe_ifc_start_slaves(3)
 #endif
-         call pe_master(runtype='response', denmats=dcaos,
-     &                  fckmats=fcaos, nmats=15)
+         call pe_master(runtype='dynamic_response',
+     &                  triang=.true.,
+     &                  ndim=nbast,
+     &                  nmats=15,
+     &                  denmats=dcaos,
+     &                  fckmats=fcaos)
          deallocate(dcaos)
 
          allocate(fcmo(nnorbx))
