@@ -1,5 +1,0 @@
-   energy_zmat
-   -----------
-   Molecule:         1,3,5-trifluorobenzene
-   Wave Function:    SCF / STO-3G
-   Test Purpose:     Energy calculation to check Z-matrix input
