@@ -2679,6 +2679,8 @@ contains
 
           jobidx = jobidx + 1
 
+          if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchLoop
+
           call get_midx(jobidx,modeBidx,modeBdim,2)
 
           gammaB = modeBidx(2)
@@ -2705,6 +2707,9 @@ contains
              call lsmpi_win_unlock(infpar%master,jobdistw)
 #endif
 #endif
+
+             if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchLoop
+
              call get_midx(jobidx,modeBidx,modeBdim,2)
              gammaB = modeBidx(2)
              alphaB = modeBidx(1)
@@ -2715,7 +2720,6 @@ contains
 
        endif
 
-       if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchLoop
 
        if(alphaB > nbatchesAlpha .or. gammaB > nbatchesGamma)then
           write (*, '("Rank",I3," has invalid job (",I3,"/",I3,",",I3,"/",I3,")")') &
