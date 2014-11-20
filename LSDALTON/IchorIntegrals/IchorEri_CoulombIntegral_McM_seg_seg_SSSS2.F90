@@ -1,9 +1,9 @@
-module IchorCoulombIntegral_seg_seg_SSSS_mod
+module ICI_seg_seg_SSSS_mod
 use precision
 private 
-public :: IchorCoulombIntegral_seg_seg_SSSS
+public :: ICI_seg_seg_SSSS
 CONTAINS
-  subroutine IchorCoulombIntegral_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,&
+  subroutine ICI_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & reducedExponents,integralPrefactor,PQorder,CDAB)
     implicit none
@@ -35,7 +35,7 @@ CONTAINS
     real(realk) :: WVAL,R,RWVAL,REXPW,GVAL,WDIFF,W2,W3,tmp
 !ifdef VAR_DEBUG
     IF(.NOT.PQorder)THEN
-       call lsquit('IchorCoulombIntegral_seg_seg_SSSS expect to get PQ ordering')
+       call lsquit('ICI_seg_seg_SSSS expect to get PQ ordering')
     ENDIF
     !nested OMP parallel or GPU/MIC
     !reducedExponents, integralPrefactor as input
@@ -102,6 +102,6 @@ CONTAINS
        CDAB(iPassQ) = tmp
     ENDDO
 !$OMP END PARALLEL DO
-  end subroutine IchorCoulombIntegral_seg_seg_SSSS
+  end subroutine ICI_seg_seg_SSSS
 
-END MODULE IchorCoulombIntegral_seg_seg_SSSS_mod
+END MODULE ICI_seg_seg_SSSS_mod

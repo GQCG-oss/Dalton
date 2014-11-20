@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_trmom */
       SUBROUTINE SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,T2AM,LT2AM,DENSIJ,

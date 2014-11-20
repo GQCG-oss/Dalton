@@ -4,7 +4,7 @@ MODULE IntegralInterfaceModuleDF
   use Typedef  
   use Matrix_module
   use Matrix_Operations
-  use Integralparameters
+  use LSparameters
   use LStiming
   use ls_Integral_Interface
   use IO
@@ -1002,6 +1002,7 @@ SUBROUTINE II_get_pari_df_coulomb_mat_simple(LUPRI,LUERR,SETTING,D,F)
   ENDDO
 ! alpha_beta_AB = alpha_beta_full(:,1,:,1,1)
   ! --- solve the linear system: (alpha|beta) Calpha_ab_AB = (ab|beta) e.g. A X = B
+  call Test_if_64bit_integer_required(nBastAux,nBastReg,nBastReg)
   call DPOSV('U',nBastAux,nBastReg*nBastReg,alpha_beta_AB,nBastAux,Calpha_ab_full,nBastAux,info)
   If (info.NE. 0) THEN
      WRITE(LUPRI,'(1X,A,I5)') 'DPOSV error in II_get_pari_df_coulomb_mat_simple. Info =',info
@@ -1142,6 +1143,7 @@ SUBROUTINE II_get_pari_df_coulomb_mat_simple(LUPRI,LUERR,SETTING,D,F)
         !write(*,'(A,I2,A,I2)') 'DPOSV: nAuxAB=',nAuxAB,' nRegAB=',nrega*nregB
 
         ! --- solve the linear system: (alpha|beta) Calpha_ab_AB = (ab|beta) e.g. A X = B
+        call Test_if_64bit_integer_required(nAuxAB,nRegA*nRegB)
         call DPOSV('U',nAuxAB,nRegA*nRegB,alpha_beta_AB,nAuxAB,ab_beta_AB,nAuxAB,info)
         If (info.NE. 0) THEN
            WRITE(LUPRI,'(1X,A,I5)') 'DPOSV error in II_get_pari_df_coulomb_mat_simple. Info =',info
@@ -1539,7 +1541,7 @@ DO idmat=1,nmat
   ! --- SYMMETRIZE or ANTI-SYMMETRIZE K, and MULTIPLY BY (1/2)
   ! --- add the contributions of the K matrix (K_ac = K_ac + K_ca = K_ca )
   Kfull_3cContrib(:,:,1,1,idmat) = Kfull_3cContrib(:,:,1,1,idmat) + Kfull_2cContrib(:,:,1,1,idmat)
-  Kfull_3cContrib(:,:,1,1,idmat) = Kfull_3cContrib(:,:,1,1,idmat) + transpose(Kfull_3cContrib(:,:,1,1,idmat))
+  call symmetrizeKfull_3cContrib(Kfull_3cContrib(:,:,1,1,idmat),nBastReg)
 ENDDO
   
 call freePariCoefficients(calpha_ab,orbitalInfo%nAtoms)
@@ -1572,6 +1574,15 @@ CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
 
 END SUBROUTINE II_get_pari_df_exchange_mat
 
+subroutine symmetrizeKfull_3cContrib(Kfull_3cContrib,nBastReg)
+  implicit none
+  integer,intent(in) :: nBastReg
+  real(realk),intent(inout) :: Kfull_3cContrib(nBastReg,nBastReg)
+  
+  Kfull_3cContrib = Kfull_3cContrib + transpose(Kfull_3cContrib)
+  
+end subroutine symmetrizeKfull_3cContrib
+
 !> \brief Calculates the coulomb matrix using regular density fitting
 !> \author S. Reine
 !> \date 2010
@@ -1596,18 +1607,12 @@ Real(realk),pointer :: DfullRHS(:,:,:)
 Real(realk),pointer :: Ffull(:,:,:)
 Real(realk)         :: TSTART,TEND
 Character(80)       :: Filename
-logical :: inc_scheme,do_inc,SaveInMemory
+logical :: inc_scheme,do_inc
 integer :: nmat,nrow,ncol
 integer :: i,j,natoms
 real(realk) :: tmp_sum
 Real(realk),pointer   :: eigValphaBeta(:), copy_alpBeta(:,:)
 Real(realk)         :: minEigv,maxEigv,conditionNum
-
-#ifdef VAR_SCALAPACK
-   SaveInMemory = .TRUE.
-#else
-   SaveInMemory = .FALSE.
-#endif
 
 IF (matrix_type .EQ. mtype_unres_dense)THEN
   IF (SETTING%SCHEME%FMM) call lsquit('Not allowed combination in II_get_regular_df_coulomb_mat. FMM and unrestricted',-1)
@@ -1669,71 +1674,26 @@ do Idmat=1,nmat
    CALL ls_freeDmatFromSetting(setting)
    call LSTIMER('GALPHA',TSTART,TEND,LUPRI)
    !(alpha|beta)
-   IF(.NOT.SaveInMemory)THEN
-      call mat_init(alphabeta,naux,naux)
-   ENDIF
+   call mat_init(alphabeta,naux,naux)
    call io_get_filename(Filename,'ALBE',AODFdefault,AOEmpty,AODFdefault,AOEmpty,0,0,&
         &CoulombOperator,Contractedinttype,.FALSE.,LUPRI,LUERR)
 
 !  Either calculate the (alpha|beta) matrix and its cholesky-factorization and write
 !  OR read cholesky-factorization from file
-   IF(SaveInMemory.AND.SaveAlphaBeta)THEN
-      !do nothing matrix is already in memory 
+   IF (io_file_exist(Filename,SETTING%IO)) THEN
+      call io_read_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
    ELSE
-      IF (io_file_exist(Filename,SETTING%IO)) THEN
-         call io_read_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
-      ELSE
-         !build Matrix 
-         IF(SaveInMemory)THEN
-            call mat_init(AlphaBetaSave,naux,naux)
-            call mat_zero(AlphaBetaSave)
-         ELSE
-            call mat_zero(alphabeta)
-         ENDIF
-         call initIntegralOutputDims(setting%output,naux,1,naux,1,1)
-         call ls_getIntegrals(AODFdefault,AOempty,&
-              &AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-         IF(SaveInMemory)THEN
-            call retrieve_Output(lupri,setting,alphabetaSave,.FALSE.)
-         ELSE
-            call retrieve_Output(lupri,setting,alphabeta,.FALSE.)
-         ENDIF
-#if 0
-         IF(.NOT.SaveInMemory)THEN
-            ! checking eigenvalues of the full (alpha|beta) matrix
-            call mem_alloc(copy_alpBeta,nAux,nAux)
-            !      DO j=i,nAux
-            !         DO i=1,nAux
-            !            copy_alpBeta(i,j) = alphabeta(i,j)
-            !         ENDDO
-            !      ENDDO
-            call mat_to_full(alphabeta,1E0_realk,copy_alpBeta)
-            call mem_alloc(eigValphaBeta,nAux)
-            call II_get_eigv_square_mat(lupri,luerr,copy_alpBeta,eigValphaBeta,nAux) 
-            call check_min_max_Array_elem(minEigV,maxEigV,conditionNum,eigValphaBeta,nAux,lupri,luerr)
-            call mem_dealloc(eigValphaBeta)
-            call mem_dealloc(copy_alpBeta)
-            write(lupri,*) "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
-            write(*,*)     "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
-            write(lupri,*) "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
-            write(*,*)     "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
-            write(lupri,*) "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
-            write(*,*)     "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
-            !call LSQUIT('Testing eigenvalues of the FULL (alpha|beta) matrix - quitting II_get_regular_df_coulomb_mat()',-1)
-         ENDIF
-#endif
-         IF(SaveInMemory)THEN
-            !Make Choleksy-factorization
-            CALL mat_dpotrf(alphabetaSave)            
-            SaveAlphaBeta = .TRUE.
-         ELSE
-            !Make Choleksy-factorization
-            CALL mat_dpotrf(alphabeta)
-            !Save Cholesky-factors to file
-            call io_add_filename(SETTING%IO,Filename,LUPRI)
-            call io_write_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
-         ENDIF
-      ENDIF
+      !build Matrix 
+      call mat_zero(alphabeta)
+      call initIntegralOutputDims(setting%output,naux,1,naux,1,1)
+      call ls_getIntegrals(AODFdefault,AOempty,&
+           &AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+      call retrieve_Output(lupri,setting,alphabeta,.FALSE.)
+      !Make Choleksy-factorization
+      CALL mat_dpotrf(alphabeta)
+      !Save Cholesky-factors to file
+      call io_add_filename(SETTING%IO,Filename,LUPRI)
+      call io_write_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
    ENDIF
    call LSTIMER('ALBE  ',TSTART,TEND,LUPRI)
 
@@ -1742,15 +1702,9 @@ do Idmat=1,nmat
    CALL mat_assign(calpha,galpha)
 
    !  Solve the system A*X = B, using the Cholesky-factorization if A and overwriting B with X.
-   IF(SaveInMemory)THEN
-      CALL mat_dpotrs(alphabetasave,calpha)
-   ELSE
-      CALL mat_dpotrs(alphabeta,calpha)
-   ENDIF
+   CALL mat_dpotrs(alphabeta,calpha)
 
-   IF(.NOT.SaveInMemory)THEN
-      call mat_free(alphabeta)
-   ENDIF
+   call mat_free(alphabeta)
    call mat_free(galpha)
 
    
@@ -1910,6 +1864,7 @@ SUBROUTINE II_get_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
         call retrieve_Output(lupri,setting,alphabeta,.FALSE.)
 
         !  Make Choleksy-factorization
+        call Test_if_64bit_integer_required(nbastaux,nbastaux)
         call DPOTRF('U',nbastaux,alphabeta,nbastaux,INFO)
         IF (info.ne. 0) THEN
            WRITE(LUPRI,'(1X,A,I5)') 'DPOTRF error in II_get_df_exchange_mat. Info =',info
@@ -1927,6 +1882,7 @@ SUBROUTINE II_get_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
      !  c_(alpha,aB) = (alpha|beta)^-1 (beta|aB)
      !  Solve the system A*X = B, overwriting B with X.
      !  Solve  A=(beta|alpha)  X=c_alpha   B = (beta|aB)
+     call Test_if_64bit_integer_required(nBastAux,nBast,nBast)
      CALL DPOTRS('U',nBastAux,nBast*nBast,alphabeta,nbastaux,Calpha,nbastaux,info)
      IF (info.ne. 0) THEN
         WRITE(LUPRI,'(1X,A,I5)') 'DPOTRS error in II_get_df_exchange_mat. Info =',info
@@ -2018,6 +1974,7 @@ SUBROUTINE II_get_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
 
            call mem_alloc(Calpha,nBastAux,nBastLocA,nBast)
            call DCOPY(nBastaux*nBast*nBastLocA,alphaAB,1,Calpha,1)
+           call Test_if_64bit_integer_required(nBastAux,nbast,nBastLocA)
            CALL DPOTRS('U',nBastAux,nbast*nBastLocA,alphabeta,nBastAux,Calpha,nBastAux,info)
 
            ! d_(alpha,aD) = sum_b c_(alpha,aB) * D_bd = [alpha*s,B]*[B,D] 
@@ -2392,13 +2349,17 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      N = nocc           !columns of Output Matrix
      K = nbast          !summation dimension
      call mem_alloc(AlphaCD2,nbastAux,nbast,nocc)
+     call Test_if_64bit_integer_required(N,K)
+     call Test_if_64bit_integer_required(M,K)
+     call Test_if_64bit_integer_required(M,N)
      call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,&
           & 0.0E0_realk,AlphaCD2,M)
      call mem_dealloc(AlphaCD)
      call mem_alloc(FullAlphaCD,nbasisAux,nvirt,nocc)
      !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
-!$OMP PARALLEL DO COLLAPSE(3) DEFAULT(shared) &
-!$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,GAMMA,TMP)
+!$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
+!$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,GAMMA,TMP) &
+!$OMP SHARED(Cvirt,AlphaCD2,FullAlphaCD,nvirt,nocc,nbasisAUX,nbasis)
      do BDIAG = 1,nvirt
         do IDIAG = 1,nocc
            do ALPHAAUX = 1,nbasisAUX
@@ -2461,23 +2422,13 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
            N = nocc               !columns of Output Matrix
            K = nbast              !summation dimension
            call mem_alloc(AlphaCD2,nAuxA,nBast,nocc)
+           call Test_if_64bit_integer_required(N,K)
+           call Test_if_64bit_integer_required(M,K)
+           call Test_if_64bit_integer_required(M,N)
            call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,0.0E0_realk,AlphaCD2,M)
            call mem_dealloc(AlphaCD)
            !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
-!$OMP PARALLEL DO COLLAPSE(3) DEFAULT(shared) &
-!$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,ALPHA,TMP)
-           do BDIAG = 1,nvirt
-            do IDIAG = 1,nocc
-             do ALPHAAUX = 1,nAUXA
-              TMP = 0.0E0_realk
-              do ALPHA = 1,nbast
-               TMP = TMP + Cvirt(ALPHA,BDIAG)*AlphaCD2(ALPHAAUX,ALPHA,IDIAG)
-              enddo
-              FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) = FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) + TMP
-             enddo
-            enddo
-           enddo
-!$OMP END PARALLEL DO
+           call DF3centerTrans(nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,Cvirt,AlphaCD2,FullAlphaCD,startF)
            call mem_dealloc(AlphaCD2)
            startF = startF + nAUXA
         ENDDO
@@ -2499,6 +2450,31 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   SETTING%scheme%OD_SCREEN = .TRUE.
   SETTING%scheme%OE_SCREEN = .TRUE.
 END SUBROUTINE II_get_RI_AlphaCD_3CenterInt2
+
+subroutine DF3centerTrans(nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,Cvirt,AlphaCD2,FullAlphaCD,startF)
+  implicit none
+  integer,intent(in) :: nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,startF
+  real(realk),intent(in) :: Cvirt(nbast,nvirt),AlphaCD2(nAuxA,nBast,nocc)
+  real(realk),intent(inout) :: FullAlphaCD(MynbasisAuxMPI,nvirt,nocc)
+  !
+  integer ::BDIAG,IDIAG,ALPHAAUX,ALPHA
+  real(realk) :: TMP 
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
+  !$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,ALPHA,TMP) &
+  !$OMP SHARED(nvirt,nocc,nbast,nAuxA,Cvirt,AlphaCD2,FullAlphaCD,startF) 
+  do BDIAG = 1,nvirt
+     do IDIAG = 1,nocc
+        do ALPHAAUX = 1,nAUXA
+           TMP = 0.0E0_realk
+           do ALPHA = 1,nbast
+              TMP = TMP + Cvirt(ALPHA,BDIAG)*AlphaCD2(ALPHAAUX,ALPHA,IDIAG)
+           enddo
+           FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) = FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) + TMP
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine DF3centerTrans
 
 subroutine getRIbasisMPI(molecule1,nAtoms,numnodes,nbasisAuxMPI,&
      & startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)

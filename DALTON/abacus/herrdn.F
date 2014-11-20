@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -25,7 +25,6 @@ C
 C FILE    : herrdn.F
 C
 C
-#include "single.h"
 C
 #ifdef OLD_REVISION_LOG
 c===========================================================================
@@ -470,7 +469,7 @@ C
 #include "aosotr.h"
 #include "infpar.h"
 #include "huckel.h"
-#include "optinf.h"
+#include "optinf.h" ! ITRNMR and IPRE
 C
       CHARACTER*(len_MLINE) TMP_MLINE
 C
@@ -791,6 +790,7 @@ C       THRS    - integral threshold
 C       ADDSYM  - flag for automatic determination of symmetry
 C***********************************************************************
       CALL RDLINE(LUINFO)
+      CALL UPCASE(MLINE(NMLINE))
       CALL LINE4(MLINE(NMLINE),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
      &           KASYM,ID3,DOCART,DOOWN)
 C --> Angstrom or Bohr?
@@ -1020,7 +1020,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "aosotr.h"
-#include "ibtfun.h"
+
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -1047,12 +1047,12 @@ C
       IF (NSYMOP .GT. 0) THEN
          MAXLO = 7
          DO 200 I = 1, NUCIND
-            MAXLO = IBTAND(ISTBNU(I),MAXLO)
+            MAXLO = IAND(ISTBNU(I),MAXLO)
   200    CONTINUE
          II = 1
          DO 300 I = 1, NSYMOP
             II = 2*II
-            IF(IBTAND(II,MAXLO).EQ.0) MAXOPR = II
+            IF(IAND(II,MAXLO).EQ.0) MAXOPR = II
   300    CONTINUE
       END IF
       MAXOPR = MAXOPR - 1
@@ -2133,7 +2133,7 @@ C
 
 #include "veclen.h"
 
-#include "ibtfun.h"
+
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
@@ -2146,7 +2146,7 @@ C
             LL = 1
             DO 140 L = 1, NSYMOP
                DO 150 M = 1,3
-                  IF(IBTAND(LL,ISYMAX(M,1)) .NE. 0) THEN
+                  IF(IAND(LL,ISYMAX(M,1)) .NE. 0) THEN
 C                 Basic operation LL moves coordinate M
                      IF(ABS(CORD(M,II)).GE.1.0D-06) GOTO 140
                   END IF
@@ -2603,7 +2603,7 @@ C
 #endif
      &   ) THEN
 #if defined(BUILD_PELIB)
-         CALL PE_IFC_INIT()
+            CALL PE_IFC_INIT()
 #endif
          END IF
       END IF
@@ -2896,10 +2896,11 @@ C     sufficient, as it will not stop duplication of AOs within a single
 C     block, as for instance may happen if you use Pople-type basis sets
 C     K.Ruud, Nov.-2006
 C
+         NWARN = NWARN + 1
          WRITE (LUPRI,'(//A/A/)')
-     &      ' WARNING GTOINP >>> If primitive exponents'//
+     &      '@ WARNING GTOINP >>> If primitive exponents'//
      &         ' are duplicated in several blocks,',
-     &      ' WARNING GTOINP >>> Douglas-Kroll will not work correctly'
+     &      '@ WARNING GTOINP >>> Douglas-Kroll will not work correctly'
       END IF
       RETURN
 C
@@ -3290,13 +3291,29 @@ C
 C     Process basis data
 C
 C******************************************************************************
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
+
 #include "implicit.h"
+
+#ifdef ENABLE_EFS
+      type(atom_type) :: atype
+      real(8)         :: DMthresh
+#endif
+
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
+
+#ifdef VAR_MPI
+#include "mpif.h"
+#include "infpar.h"
+#endif
+
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C
@@ -3416,6 +3433,92 @@ C
          JBLOCK = JBLOCK + NBLCK(I)
    10 CONTINUE ! DO 10 I = 1,NONTYP
 C
+#ifdef ENABLE_EFS
+      call MPI_COMM_RANK(MPI_COMM_WORLD, irank, ierror)
+      if ((.not. efs_interface_is_initialized) 
+     &    .and. (irank.eq.MASTER)) then
+
+        jblock = 0
+        icent  = 0
+
+        do i = 1, nontyp
+
+          ! copy list of atomic centers for current element
+          atype%nr_centers = nont(i)
+          allocate( atype%centers( nont(i) ) )
+
+          do n = 1, nont(i)
+            icent  = icent + 1
+            atype%centers(n)%x = cord(1, icent)
+            atype%centers(n)%y = cord(2, icent)
+            atype%centers(n)%z = cord(3, icent)
+          end do
+
+          ! copy basis set definition
+          nr_gtos = 0
+          do j = 1, iqm(i)
+             do k = 1, jco(j,i)
+                nr_gtos = nr_gtos + 1
+             end do
+          end do
+
+          atype%nr_gtos = nr_gtos
+          allocate(atype%gtos(nr_gtos))
+
+          lb = jblock
+
+          igto = 0
+          do j = 1, iqm(i)
+            do k = 1, jco(j, i)
+              igto = igto + 1
+              lb = lb + 1
+              atype%gtos(igto)%angular_momentum = j-1
+              atype%gtos(igto)%nr_primitives    = nuc(lb)
+              atype%gtos(igto)%nr_contractions  = nrc(lb)
+              do l = 1, nuc(lb)
+                atype%gtos(igto)%primitive_exp(l)
+     &              = alpha(l, lb)
+                do m = 1, nrc(lb)
+                  atype%gtos(igto)%contract_coef(m, l)
+     &                = cprim(l, m, lb)
+                end do
+              end do
+
+            end do
+          end do
+
+          jblock = jblock + nblck(i)
+
+          !add the atom type to the list in k4m
+#ifdef VAR_MPI
+          call mpixbcast (const_add_atomtype, 1, 'INTEGER', MASTER)
+          iprint = 0
+          call mpixbcast (iprint,             1, 'INTEGER', MASTER)
+#endif
+
+          call efs_add_atomtype( atype%centers,
+     &        atype%gtos, atype%nr_centers, 
+     &        atype%nr_gtos )
+
+          !free memory
+          deallocate( atype%centers )
+          deallocate( atype%gtos )
+
+        end do
+
+        !print the atom types to check everything is ok
+        !call efs_print()
+#ifdef VAR_MPI
+        call mpixbcast (const_init, 1, 'INTEGER', MASTER)
+        iprint = 0
+        call mpixbcast (iprint,     1, 'INTEGER', MASTER)
+#endif
+        call efs_init ()
+
+        efs_interface_is_initialized = .true.
+      end if
+#endif
+
       !Add exp(0) function (needed in 2- and 3-index integrals)
       !as an extra "0" class for ATOMDF case
       IF (LCOMP .EQ. 3) THEN
@@ -3706,12 +3809,12 @@ C
 #include "qm3.h"
 C
 C
-#include "ibtfun.h"
+
 C
 C     Statement function to "convert" 0 - 7 to a printable
 C     "binary" form
 C
-      IFAKBN(I) = 25*IBTAND(I,4) + 5*IBTAND(I,2) + IBTAND(I,1)
+      IFAKBN(I) = 25*IAND(I,4) + 5*IAND(I,2) + IAND(I,1)
 
       CALL QENTER('NUCPRO')
 C
@@ -3757,7 +3860,7 @@ C        ... only QM atoms contribute to nuclear dipole moment
          END IF
          II = 0
          DO 200 LA = 0,MAXREP
-            IF (IBTAND(IVARB,LA) .EQ. 0) THEN
+            IF (IAND(IVARB,LA) .EQ. 0) THEN
                II = II + 1
                IF (N .LE. NUCIND) NUCDEP = NUCDEP + 1
                NCDTOT = NCDTOT + 1
@@ -3794,16 +3897,16 @@ C
       DO 300 N = 1, NUCIND
         DO 310 M = N, NUCIND
           DO 320 KB = 0, MAXREP
-            IF (IBTAND(KB,ISTBNU(M)) .EQ. 0) THEN
+            IF (IAND(KB,ISTBNU(M)) .EQ. 0) THEN
               IF (M.EQ.N .AND. KB.EQ.0) GO TO 320
-              DS = (CORD(1,N)-CORD(1,M)*PT(IBTAND(ISYMAX(1,1),KB)))**2
-     &           + (CORD(2,N)-CORD(2,M)*PT(IBTAND(ISYMAX(2,1),KB)))**2
-     &           + (CORD(3,N)-CORD(3,M)*PT(IBTAND(ISYMAX(3,1),KB)))**2
+              DS = (CORD(1,N)-CORD(1,M)*PT(IAND(ISYMAX(1,1),KB)))**2
+     &           + (CORD(2,N)-CORD(2,M)*PT(IAND(ISYMAX(2,1),KB)))**2
+     &           + (CORD(3,N)-CORD(3,M)*PT(IAND(ISYMAX(3,1),KB)))**2
               DIST = SQRT(DS)
               IF (DIST.LT.0.1.AND.CHARGE(M)*CHARGE(N).NE.D0) GOTO 5000
-              IF (IBTAND(KB,ISTBNU(N)) .EQ. 0) THEN
+              IF (IAND(KB,ISTBNU(N)) .EQ. 0) THEN
                 IF (DIST.GT.D0) THEN
-                  HKAB  = FMULT(IBTAND(ISTBNU(M),ISTBNU(N)))
+                  HKAB  = FMULT(IAND(ISTBNU(M),ISTBNU(N)))
                   IF (M .EQ. N) HKAB = DP5*HKAB
                   POTNUC = POTNUC + CHARGE(M)*CHARGE(N)*HKAB/DIST
                 END IF
@@ -3829,9 +3932,9 @@ C
      &     ' Nucleus no.',N,' is too close to the',KB,
      &     'th transformation of nucleus no.',M,' DISTANCE =',DIST
       WRITE (LUPRI,'(A,2F30.10)')
-     &     ' X_A, X_B :',CORD(1,N),CORD(1,M)*PT(IBTAND(ISYMAX(1,1),KB)),
-     &     ' Y_A, Y_B :',CORD(2,N),CORD(2,M)*PT(IBTAND(ISYMAX(2,1),KB)),
-     &     ' Z_A, Z_B :',CORD(3,N),CORD(3,M)*PT(IBTAND(ISYMAX(3,1),KB))
+     &     ' X_A, X_B :',CORD(1,N),CORD(1,M)*PT(IAND(ISYMAX(1,1),KB)),
+     &     ' Y_A, Y_B :',CORD(2,N),CORD(2,M)*PT(IAND(ISYMAX(2,1),KB)),
+     &     ' Z_A, Z_B :',CORD(3,N),CORD(3,M)*PT(IAND(ISYMAX(3,1),KB))
       CALL QUIT('NUCPRO: Nuclei too close.')
  5010 CONTINUE
       WRITE (LUPRI,'(///A/2(A,I5/)/A,I5,A)')
@@ -3925,7 +4028,7 @@ C
 #endif
 
 C
-#include "ibtfun.h"
+
 C
 C*****************************************************************************
 C Determine ISYMAO:
@@ -3943,7 +4046,7 @@ C
                 LVAR = MOD(LVALUE(J),2)*ISYMAX(1,1)
                 MVAR = MOD(MVALUE(J),2)*ISYMAX(2,1)
                 NVAR = MOD(NVALUE(J),2)*ISYMAX(3,1)
-                ISYMAO(I,J) = IBTXOR(LVAR,IBTXOR(MVAR,NVAR))
+                ISYMAO(I,J) = IEOR(LVAR,IEOR(MVAR,NVAR))
   100    CONTINUE
 C
 C     II. Your own scheme
@@ -3964,7 +4067,7 @@ C
                    IJK = IJK + 1
                    IF (ABS(CSP(IJK)).GT.D0) THEN
                       IF (ISYMAO(I,K) .EQ. -1) THEN
-                         ISYMAO(I,K) = IBTXOR(LVAR,IBTXOR(MVAR,NVAR))
+                         ISYMAO(I,K) = IEOR(LVAR,IEOR(MVAR,NVAR))
                       ELSE
                          WRITE (LUPRI,'(/A/A/A,2I5)')
      &                   ' Incorrect Cartesian transformation input:',
@@ -4057,7 +4160,7 @@ C              for abs(JC) .gt. MXBSETS /hjaaj Oct 2007
             END IF
             DO 420 NA = 1, KHKTA ! loop over m_l components of this orbital shell
                NAORB = NAORB + 1
-               IVARB = IBTXOR(LA,ISYMAO(NHKTA,NA))
+               IVARB = IEOR(LA,ISYMAO(NHKTA,NA))
 C
 C              If orbital contributes to this representation:
 C
@@ -4069,7 +4172,7 @@ C                operations with different parities must then
 C                not be part of the stabilizer of the center
 C                for the AO).
 C
-               IF (IBTAND(MULA,IVARB) .NE. 0) THEN
+               IF (IAND(MULA,IVARB) .NE. 0) THEN
                   IPTSYM(NAORB,LA) = 0
                   NAORBD = NAORBD + MULT(MULA)
                ELSE
@@ -4090,10 +4193,10 @@ C                 loop over symmetry dependent centers
 C
                   JKB = 0
                   DO KB = 0, MAXREP
-                     IF (IBTAND(KB,MULA) .EQ. 0) THEN
+                     IF (IAND(KB,MULA) .EQ. 0) THEN
                         JKB              = JKB    + 1
                         NAORBD           = NAORBD + 1
-                        CTRAN(NSORB,JKB) = PT(IBTAND(KB,IVARB))
+                        CTRAN(NSORB,JKB) = PT(IAND(KB,IVARB))
                         ITRAN(NSORB,JKB) = NAORBD
 
                         IAOINFO(NAORBD,1) = IA                     !  sym. indep. AO index
@@ -4136,7 +4239,7 @@ C
       DO 500 IREPO = 1,MAXREP
          IBLK = 0
          DO 500 IREPA = 0,MAXREP
-            IREPB = IBTXOR(IREPO,IREPA)
+            IREPB = IEOR(IREPO,IREPA)
             IF (IREPA .GT. IREPB) THEN
                NPARNU(IREPO+1,IREPA+1) = IBLK
                IBLK = IBLK + NAOS(IREPA+1)*NAOS(IREPB+1)
@@ -4446,6 +4549,9 @@ C
       END
 C  /* Deck symnco */
       SUBROUTINE SYMNCO(LWORK,WORK)
+C     **********************************************************
+C     ***** Calculate symmetry-adapted nuclear coordinates *****
+C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -4457,9 +4563,10 @@ C
 #include "cbirea.h"
 #include "nuclei.h"
 #include "symmet.h"
+#include "trkoor.h"
       DIMENSION WORK(LWORK)
 #include "chrxyz.h"
-#include "ibtfun.h"
+
       LENGTH = 48*NCTOT
       CALL IZERO(IPTCNT(1,0,1),LENGTH)
       IOFFT = 0
@@ -4472,11 +4579,11 @@ c     IOFFTN = 0
             MULC = ISTBNU(ICENT)
             DO 200 IDIRN = 1,3
                ICENTA = ICENTA + 1
-               IF (IBTAND(MULC,IBTXOR(IREP,ISYMAX(IDIRN,1))).EQ.0)THEN
+               IF (IAND(MULC,IEOR(IREP,ISYMAX(IDIRN,1))).EQ.0)THEN
                   IOFFT = IOFFT + 1
                   IPTCNT(ICENTA,IREP,1) = IOFFT
                ENDIF
-               IF (IBTAND(MULC,IBTXOR(IREP,ISYMAX(IDIRN,2))).EQ.0)THEN
+               IF (IAND(MULC,IEOR(IREP,ISYMAX(IDIRN,2))).EQ.0)THEN
                   IOFFR = IOFFR + 1
                   IPTCNT(ICENTA,IREP,2) = IOFFR
                ENDIF
@@ -4484,8 +4591,8 @@ c     IOFFTN = 0
 c           DO 300 IDIR1 = 1, 3
 c           DO 300 IDIR2 = IDIR1, 3
 c              ICENTB = ICENTB + 1
-c              ISYMIJ = IBTXOR(ISYMAX(IDIR1,1),ISYMAX(IDIR2,1))
-c              IF (IBTAND(MULC,IBTXOR(IREP,ISYMIJ)) .EQ. 0) THEN
+c              ISYMIJ = IEOR(ISYMAX(IDIR1,1),ISYMAX(IDIR2,1))
+c              IF (IAND(MULC,IEOR(IREP,ISYMIJ)) .EQ. 0) THEN
 c                 IOFFTN = IOFFTN + 1
 c              ENDIF
 c 300       CONTINUE
@@ -4499,7 +4606,7 @@ C
   410    CONTINUE
          DO 420 ICENT = 1, NCTOT
             MULC = ISTBNU(ICENT)
-            IF (IBTAND(MULC,IREP) .EQ. 0) THEN
+            IF (IAND(MULC,IREP) .EQ. 0) THEN
                IOFF = IOFF + 1
                IPTNUC(ICENT,IREP) = IOFF
             END IF
@@ -4542,18 +4649,25 @@ C
   520    CONTINUE
       END IF
 C
-C     ***************************
-C     **** Initialize IPTCOR ****
-C     ***************************
+C     **************************************
+C     **** Initialize NCRREP and IPTCOR ****
+C     **************************************
 C
-      NCOOR  = 3*NUCDEP
+      NCOOR  = 3*NUCDEP ! also defining NCOOR in trkoor.h
       KCSTRA = 1
       KSCTRA = KCSTRA + NCOOR*NCOOR
       KLAST  = KSCTRA + NCOOR*NCOOR
       IF (KLAST.GT.LWORK) CALL STOPIT('NUCPRO','TRACOR',KLAST,LWORK)
+
+C     Initialize NCRREP(irep,1)
       CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,NCOOR,IPREAD)
+
+C     Initialize NCRREP(irep,2)
       CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),2,NCOOR,IPREAD)
+
+C     Initialize IPTCOR
       CALL TRACR(NCOOR)
+
       END
 C  /* Deck pricar */
       SUBROUTINE PRICAR(WORK,LWORK)
@@ -4563,6 +4677,10 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+#if defined (HAS_PCMSOLVER)
+      use pcm_scf, only: pcm_scf_initialize
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4587,7 +4705,7 @@ C
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 C
       NCOOR = 3*NUCDEP
 C
@@ -4642,17 +4760,17 @@ C
          ELSE
             JATOM = 0
             DO 200 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                   IPCMN = IPCMN + 1
                   JATOM = JATOM + 1
                   WORK(KMASS + NCENTS) =
      &                 DISOTP(IZATOM(ICENT),ISOTOP(ICENT),'MASS')
                   NCENTS = NCENTS + 1
-                  WORK(ICRX  ) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
+                  WORK(ICRX  ) = PT(IAND(ISYMAX(1,1),ISYMOP))
      &                        *CORD(1,ICENT)
-                  WORK(ICRX+1) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
+                  WORK(ICRX+1) = PT(IAND(ISYMAX(2,1),ISYMOP))
      &                        *CORD(2,ICENT)
-                  WORK(ICRX+2) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  WORK(ICRX+2) = PT(IAND(ISYMAX(3,1),ISYMOP))
      &                        *CORD(3,ICENT)
                   IF ( IPREAD .GT. IPTEST )
      &            WRITE (LUPRI,'(2X,A,"/",I2," : ",3(I5,2X,A,F15.10))')
@@ -4726,8 +4844,17 @@ C
 C     Print internuclear distances (if not an atom)
 C
          LUIP = -100
-         IF ((IPREAD .GT. 0) .OR. (GEOALL))
-     &   CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,WORK(ISTRT),LWORK)
+         IF ((IPREAD .GT. 0) .OR. (GEOALL)) THEN
+            CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,
+     &         WORK(ISTRT),LWORK)
+            IF (NUCDEP .GT. 2 .AND. NBONDS .LE. 0) THEN
+               NWARN = NWARN + 1
+               WRITE (LUPRI,'(//A/A/)') '@ WARNING:  No bonds - '//
+     &       ' no atom pairs are within normal bonding distances'
+     &       ,'@ WARNING:  maybe coordinates were in Bohr, '//
+     &        'but Dalton were told they were in Angstrom ?'
+            END IF
+         END IF
 C
 C        As a new default, we (almost) always print a rotational analysis, kr-02
 C
@@ -4737,6 +4864,13 @@ C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
+
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        call pcm_scf_initialize(lupri)
+        write(lupri, *) "PCMSolver interface correctly initialized"
+      end if
+#endif
 
       RETURN
       END
@@ -4956,7 +5090,7 @@ C
 #include "nuclei.h"
 #include "shells.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPREAD .GE. 10) CALL TITLER('Output from AOTOAO','*',103)
       DO I = 1,MXCORB
@@ -4972,7 +5106,7 @@ C
       DO 100 IATOM = 1, NUCIND
          ISTABA = ISTBNU(IATOM)
          DO 200 ISYMOP = 0, MAXREP
-         IF (IBTAND(ISYMOP,ISTABA) .EQ. 0) THEN
+         IF (IAND(ISYMOP,ISTABA) .EQ. 0) THEN
             JATOM = JATOM + 1
 C
 C           Loop over all orbitals
@@ -5015,7 +5149,7 @@ Clf
                   END IF
 
                   DO JSYMOP = 0, MAXREP
-                  IF (IBTAND(JSYMOP,ISTABO) .EQ. 0) THEN
+                  IF (IAND(JSYMOP,ISTABO) .EQ. 0) THEN
                      JAO = JAO + 1 ! AO in symmetry order
                      JCENT = NUCNUM(ICENT,JSYMOP+1)
                      IF (JATOM .EQ. JCENT) THEN
@@ -5063,14 +5197,14 @@ C
 #include "nuclei.h"
 #include "shells.h"
 C
-#include "ibtfun.h"
+
 C
       IORB = 0
       DO 100 LA = 0, MAXREP
       DO 200 IA = 1, KMAX
          DO 300 NA = 1, KHKT(IA)
-            IVARB = IBTXOR(LA,ISYMAO(NHKT(IA),NA))
-            IF (IBTAND(ISTBAO(IA),IVARB) .EQ. 0) THEN
+            IVARB = IEOR(LA,ISYMAO(NHKT(IA),NA))
+            IF (IAND(ISTBAO(IA),IVARB) .EQ. 0) THEN
                IORB = IORB + 1
                ICNTAO(IORB)  = NCENT(IA)
             END IF
@@ -5108,7 +5242,7 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 C
-#include "ibtfun.h"
+
 C
       IF (NMRISS .AND. MAXREP .GT. 0) THEN
          IF (IPREAD .GT. 0) THEN
@@ -5140,12 +5274,12 @@ C
                DO 220 ICOOR = 1, 3
                   ISCOOR = IPTCNT(3*(ICENT - 1) + ICOOR,IREP,2)
                   IF (ISCOOR .GT. 0) THEN
-                     IVAR = IBTXOR(IREP,ISYMAX(ICOOR,2))
+                     IVAR = IEOR(IREP,ISYMAX(ICOOR,2))
                      NB = 0
                      DO 230 ISYMOP = 0, MAXOPR
-                     IF (IBTAND(ISYMOP,ISTBNU(ICENT)) .EQ. 0) THEN
+                     IF (IAND(ISYMOP,ISTBNU(ICENT)) .EQ. 0) THEN
                         NB = NB + 1
-                        NSIGN(NB) = NINT(PT(IBTAND(ISYMOP,IVAR)))
+                        NSIGN(NB) = NINT(PT(IAND(ISYMOP,IVAR)))
                         NBASE(NB) = 3*(NUCNUM(ICENT,ISYMOP+1)-1) + ICOOR
                      END IF
  230                 CONTINUE
@@ -5184,7 +5318,7 @@ C
 C
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
 C
-#include "ibtfun.h"
+
 C
       CALL DZERO(CSTRA,NCOOR*NCOOR)
       CALL DZERO(SCTRA,NCOOR*NCOOR)
@@ -5202,11 +5336,11 @@ C
                   ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                   IF (ISCOOR .GT. 0) THEN
                      NCRREP(IREP,1) = NCRREP(IREP,1) + 1
-                     IVAR = IBTXOR(IREP,ISYMAX(ICOOR,1))
+                     IVAR = IEOR(IREP,ISYMAX(ICOOR,1))
                      DO 130 ISYMOP = 0, MAXOPR
-                        IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                        IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                            ICCOOR = 3*(NUCNUM(ICENT,ISYMOP+1) - 1)+ICOOR
-                           CSTRA(ISCOOR,ICCOOR)=PT(IBTAND(ISYMOP,IVAR))
+                           CSTRA(ISCOOR,ICCOOR)=PT(IAND(ISYMOP,IVAR))
                         END IF
  130                 CONTINUE
                   END IF
@@ -5214,11 +5348,11 @@ C
                   LSCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,2)
                   IF (LSCOOR .GT. 0) THEN
                      NCRREP(IREP,2) = NCRREP(IREP,2) + 1
-                     IVAR = IBTXOR(IREP,ISYMAX(ICOOR,2))
+                     IVAR = IEOR(IREP,ISYMAX(ICOOR,2))
                      DO 140 ISYMOP = 0, MAXOPR
-                        IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                        IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                            ICCOOR = 3*(NUCNUM(ICENT,ISYMOP+1) - 1)+ICOOR
-                           CSTRA(LSCOOR,ICCOOR)=PT(IBTAND(ISYMOP,IVAR))
+                           CSTRA(LSCOOR,ICCOOR)=PT(IAND(ISYMOP,IVAR))
                         END IF
  140                 CONTINUE
                   END IF
@@ -5636,7 +5770,7 @@ C
      &     TABLE5 /'********','        ','        ','SPHERICA'/,
      &     TABLE6 /'********','        ','        ','INTEGRAL'/
       DATA QPOL/6*DUMMY/, QQ/3*DUMMY/, JFXYZ/3*IDUMMY/
-#include "ibtfun.h"
+
 C
       CALL GETDAT(CDATE,CTIME)
       TABLE1(2) = CDATE
@@ -5655,12 +5789,12 @@ C
       ICENT = 0
       DO 100 N = 1, NUCIND
       DO 100 IREP = 0,MAXREP
-         IF (IBTAND(ISTBNU(N),IREP) .EQ. 0) THEN
+         IF (IAND(ISTBNU(N),IREP) .EQ. 0) THEN
             ICENT = ICENT + 1
             CHRN(ICENT)   = CHARGE(N)
-            COOO(ICENT,1) = PT(IBTAND(ISYMAX(1,1),IREP))*CORD(1,N)
-            COOO(ICENT,2) = PT(IBTAND(ISYMAX(2,1),IREP))*CORD(2,N)
-            COOO(ICENT,3) = PT(IBTAND(ISYMAX(3,1),IREP))*CORD(3,N)
+            COOO(ICENT,1) = PT(IAND(ISYMAX(1,1),IREP))*CORD(1,N)
+            COOO(ICENT,2) = PT(IAND(ISYMAX(2,1),IREP))*CORD(2,N)
+            COOO(ICENT,3) = PT(IAND(ISYMAX(3,1),IREP))*CORD(3,N)
       END IF
   100 CONTINUE
 C
@@ -6579,7 +6713,7 @@ C  /* Deck crtest */
 #include "cbieri.h"
 C
       IF (RUNERI.AND.DOCART) THEN
-         NWARN = NWARN + 1
+         NINFO = NINFO + 1
          RUNERI = .FALSE.
          WRITE (LUPRI,'(A)')
      &' INFO: Only spherical-harmonic basis is implemented in ERI.'//
@@ -6675,6 +6809,7 @@ C
 C
 C     Read in the fourth input line using the new input scheme
 C
+
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -6850,6 +6985,13 @@ C
 C     Since the number of atom types have not been specified,
 C     assume old input format
 C
+
+         NWARN = NWARN + 1
+         WRITE(LUPRI,'(///A/A/A///)') '@ WARNING - deprecated '//
+     &   'old .mol fixed format input has been detected:',
+     &   LINE4_in, '@ WARNING - '//
+     &   'this input format may not be supported in future releases.'
+
          READ (LINE4_in,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
      &        NONTYP,KCHARG1,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
          IF (LINE(21:30) .EQ. '          ') THRS = -1.0D0
@@ -6946,7 +7088,7 @@ C
          ISTART = ISTART + 10
       END IF
       IF (DOOWN) THEN
-         WRITE (TMPLN(ISTART:),'(A4)') 'OWN '
+         WRITE (TMPLN(ISTART:),'(A10)') 'OWN '
          ISTART = ISTART + 4
       END IF
 C

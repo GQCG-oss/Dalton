@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C FILE: rspoit.F
 C
@@ -1856,127 +1855,3 @@ C
       ID     = IDNEW
       RETURN
       END
-C  /* Deck oith1x */
-#if defined (VAR_OITH1X)
-#ifdef UNDEF
-===========================================================================
-/* Comdeck notes */
-940721-hjaaj: added sec-sec code if DEF,SECSEC from another file
-931004-pj+hjaaj:
-OITH1X: this routine written by OV is never called currently. It may be
-  called in rspoit instead of OITH1 if sec-sec block is not needed.
-===========================================================================
-#endif
-      SUBROUTINE OITH1X(LSYOIT,OITMAT,H1,H1X,IH1SYM)
-C
-C Copyright 16-Nov-1990 Hans Joergen Aa. Jensen
-C Nov 17 1991: secondary-secondary blocks in OITMAT avoided (ov)
-C
-C One-index transform H1(norbt,norbt) of symmetry IH1SYM
-C to H1X(norbt,norbt) using OITMAT(norbt,norbt) of symmetry
-C LSYOIT.
-C
-C Input : H1(a,b) of symmetry IH1SYM
-C Output: H1X(a,b) = H1X(a,b)
-C                  + H1(a,b) one-index transformed with OITMAT
-C                  = H1X(a,b)
-C                  + sum(c) [ OITMAT(a,c) H1(c,b)
-C                           - H1(a,c) OITMAT(c,b) ]
-C
-#include "implicit.h"
-      DIMENSION OITMAT(NORBT,NORBT), H1(NORBT,NORBT), H1X(NORBT,NORBT)
-C
-C Used from common blocks:
-C  INFORB : NSYM, MULD2H, NORBT, NORB(*), IORB(*)
-C
-#include "inforb.h"
-C
-C
-C One-index transform both indices and add to previous content.
-C
-C  (a~ b~) =  SUM(c) [ OITMAT(a,c)*(c b)
-C                    - (a c) OITMAT(c,b) ]
-C
-      DO 100 ICSYM = 1,NSYM
-         IBSYM = MULD2H(ICSYM,IH1SYM)
-         IASYM = MULD2H(ICSYM,LSYOIT)
-         NORBC = NORB(ICSYM)
-         NORBB = NORB(IBSYM)
-         NORBA = NORB(IASYM)
-         IF ((NORBA.NE.0) .AND. (NORBC.NE.0) .AND. (NORBB.NE.0)) THEN
-            NOCCC = NOCC(ICSYM)
-            NOCCB = NOCC(IBSYM)
-            NOCCA = NOCC(IASYM)
-            NSSHC = NSSH(ICSYM)
-            NSSHB = NSSH(IBSYM)
-            NSSHA = NSSH(IASYM)
-C
-C occ-occ
-C
-            ICST  = IORB(ICSYM) + 1
-            IBST  = IORB(IBSYM) + 1
-            IAST  = IORB(IASYM) + 1
-            CALL DGEMM('N','N',NOCCA,NOCCB,NORBC,1.D0,
-     &                 OITMAT(IAST,ICST),NORBT,
-     &                 H1(ICST,IBST),NORBT,1.D0,
-     &                 H1X(IAST,IBST),NORBT)
-            CALL DGEMM('N','N',NOCCB,NOCCA,NORBC,-1.D0,
-     &                 H1(IBST,ICST),NORBT,
-     &                 OITMAT(ICST,IAST),NORBT,1.D0,
-     &                 H1X(IBST,IAST),NORBT)
-C
-C occ-sec
-C
-            ICST  = IORB(ICSYM) + 1
-            IBST  = IORB(IBSYM) + 1 + NOCCB
-            IAST  = IORB(IASYM) + 1
-            CALL DGEMM('N','N',NOCCA,NSSHB,NORBC,1.D0,
-     &                 OITMAT(IAST,ICST),NORBT,
-     &                 H1(ICST,IBST),NORBT,1.D0,
-     &                 H1X(IAST,IBST),NORBT)
-            IBST  = IORB(IBSYM) + 1
-            IAST  = IORB(IASYM) + 1 + NOCCA
-            CALL DGEMM('N','N',NOCCB,NSSHA,NOCCC,-1.D0,
-     &                 H1(IBST,ICST),NORBT,
-     &                 OITMAT(ICST,IAST),NORBT,1.D0,
-     &                 H1X(IBST,IAST),NORBT)
-C
-C sec-occ
-C
-            ICST  = IORB(ICSYM) + 1
-            IBST  = IORB(IBSYM) + 1
-            IAST  = IORB(IASYM) + 1 + NOCCA
-            CALL DGEMM('N','N',NSSHA,NOCCB,NOCCC,1.D0,
-     &                 OITMAT(IAST,ICST),NORBT,
-     &                 H1(ICST,IBST),NORBT,1.D0,
-     &                 H1X(IAST,IBST),NORBT)
-            IBST  = IORB(IBSYM) + 1 + NOCCB
-            IAST  = IORB(IASYM) + 1
-            CALL DGEMM('N','N',NSSHB,NOCCA,NORBC,-1.D0,
-     &                 H1(IBST,ICST),NORBT,
-     &                 OITMAT(ICST,IAST),NORBT,1.D0,
-     &                 H1X(IBST,IAST),NORBT)
-#if defined (VAR_SECSEC)
-C
-C sec-sec
-C
-            ICST  = IORB(ICSYM) + 1
-            IBST  = IORB(IBSYM) + 1 + NOCCB
-            IAST  = IORB(IASYM) + 1 + NOCCA
-            CALL DGEMM('N','N',NSSHA,NSSHB,NOCCC,1.D0,
-     &                 OITMAT(IAST,ICST),NORBT,
-     &                 H1(ICST,IBST),NORBT,1.D0,
-     &                 H1X(IAST,IBST),NORBT)
-            CALL DGEMM('N','N',NSSHB,NSSHA,NOCCC,-1.D0,
-     &                 H1(IBST,ICST),NORBT,
-     &                 OITMAT(ICST,IAST),NORBT,1.D0,
-     &                 H1X(IBST,IAST),NORBT)
-#endif
-         END IF
-  100 CONTINUE
-C
-C     End of OITH1X
-C
-      RETURN
-      END
-#endif

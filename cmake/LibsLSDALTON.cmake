@@ -1,3 +1,5 @@
+set(LSDALTON_EXTERNAL_LIBS)
+
 if(ENABLE_SCALASCA)
     set(SCALASCA_INSTRUMENT ${CMAKE_Fortran_COMPILER})
     configure_script(
@@ -41,6 +43,7 @@ if(ENABLE_VAMPIRTRACE)
     SET(CMAKE_CXX_COMPILER "vtc++")
 endif()
 
+
 add_library(
     lsutillib_precision
     ${LSUTIL_PRECISION_SOURCES}
@@ -64,10 +67,20 @@ set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
@@ -135,6 +148,13 @@ add_library(
 
 target_link_libraries(matrixulib matrixolib)
 
+if(ENABLE_PCMSOLVER)
+    set(EXTERNAL_LIBS ${PCMSOLVER_LIBS} ${EXTERNAL_LIBS})
+    add_library(
+        lspcm
+        ${LSDALTON_PCM_SOURCES})
+endif()
+
 set(ExternalProjectCMakeArgs
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -144,9 +164,9 @@ set(ExternalProjectCMakeArgs
     )
 if(ENABLE_RSP)
 add_external(ls-matrix-defop)
-set(EXTERNAL_LIBS
+set(LSDALTON_EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libmatrix-defop.a
-    ${EXTERNAL_LIBS}
+    ${LSDALTON_EXTERNAL_LIBS}
     )
 
 add_dependencies(ls-matrix-defop matrixmlib)
@@ -157,16 +177,16 @@ add_library(
     pdpacklib
     ${LSDALTON_FIXED_FORTRAN_SOURCES}
     )
-
-target_link_libraries(pdpacklib matrixulib)
-
+# Bin Gao: matrixulib needs subroutines in pdpacklib
+target_link_libraries(matrixulib pdpacklib)
 
 
 add_library(
     lsutiltypelib_common
     ${LSUTIL_TYPE_SOURCES}
     )
-
+add_dependencies(lsutiltypelib_common lsutillib_common)
+add_dependencies(lsutiltypelib_common matrixulib)
 
 target_link_libraries(lsutiltypelib_common pdpacklib)
 
@@ -189,6 +209,7 @@ add_dependencies(xcfun_interface lsutillib_precision)
 
 if(ENABLE_XCFUN)
     set(ExternalProjectCMakeArgs
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -198,12 +219,13 @@ if(ENABLE_XCFUN)
         -DPARENT_DEFINITIONS="-DVAR_LSDALTON"
         )
     add_external(xcfun)
+    include_directories(${PROJECT_BINARY_DIR}/external/xcfun-build)
     add_dependencies(xcfun_interface xcfun)
     add_definitions(-DVAR_XCFUN)
-    set(EXTERNAL_LIBS
+    set(LSDALTON_EXTERNAL_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
-        ${EXTERNAL_LIBS}
+        ${LSDALTON_EXTERNAL_LIBS}
         )
 endif()
 
@@ -309,9 +331,9 @@ set(ExternalProjectCMakeArgs
     )
 if(ENABLE_RSP)
 add_external(ls-openrsp)
-set(EXTERNAL_LIBS
+set(LSDALTON_EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libopenrsp.a
-    ${EXTERNAL_LIBS}
+    ${LSDALTON_EXTERNAL_LIBS}
     )
 
 add_dependencies(ls-openrsp ls-matrix-defop)
@@ -344,6 +366,18 @@ add_library(
 
 target_link_libraries(geooptlib lsintlib)
 
+# QMatrix
+if(ENABLE_QMATRIX)
+    add_library(
+        ls_qmatrix_interface
+        ${LS_QMATRIX_SOURCES}
+        )
+    include(LibsQMatrix)
+    add_dependencies(ls_qmatrix_interface matrixulib)
+    add_dependencies(ls_qmatrix_interface qmatrix)
+    add_dependencies(linearslib ls_qmatrix_interface)
+endif()
+
 add_library(
     lsdaltonmain 
     ${LSDALTONMAIN_FORTRAN_SOURCES}
@@ -357,6 +391,20 @@ target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
+if(ENABLE_QMATRIX)
+    target_link_libraries(ls_qmatrix_interface
+                          ${LIB_LS_QMATRIX}
+                          matrixulib)
+    target_link_libraries(lsdaltonmain ls_qmatrix_interface)
+endif()
+
+if(ENABLE_PCMSOLVER)
+    target_link_libraries(lsdaltonmain lspcm)
+    add_dependencies(lsdaltonmain  pcmsolver lspcm)
+    add_dependencies(linearslib    pcmsolver lspcm)
+    add_dependencies(solverutillib pcmsolver lspcm)
+    add_dependencies(lspcm lsutillib lsintlib)
+endif()
 
 if(NOT ENABLE_CHEMSHELL)
     add_executable(
@@ -384,6 +432,8 @@ if(NOT ENABLE_CHEMSHELL)
         endif()
     endif()
 endif()
+
+
 
 if(ENABLE_INTEREST)
     MERGE_STATIC_LIBS(
@@ -428,6 +478,9 @@ set(LIBS_TO_MERGE
     xcfun_interface
     lsdaltonmain 
     )
+if(ENABLE_PCMSOLVER)
+	set(LIBS_TO_MERGE ${LIBS_TO_MERGE} lspcm)
+endif()	
 
 MERGE_STATIC_LIBS(
     rsp_prop
@@ -442,18 +495,35 @@ MERGE_STATIC_LIBS(
 
 target_link_libraries(
     lsdalton
-    lsdaltonmain
     ${EXTERNAL_LIBS}
+    ${LSDALTON_EXTERNAL_LIBS}
+    stdc++
     )
 
 if(NOT ENABLE_CHEMSHELL)
     target_link_libraries(
         lsdalton.x
         lsdalton
+	${PCMSOLVER_LIBS}
         )
 
     target_link_libraries(
         lslib_tester.x
         lsdalton
+	${PCMSOLVER_LIBS}
         )
 endif()
+
+# check the LSDALTON source with a python script
+add_custom_command(
+   OUTPUT ${PROJECT_BINARY_DIR}/check-source # this is just a dummy
+   COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/CheckLSDALTON.cmake
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
+add_custom_target(
+   CheckLSDALTON
+   ALL DEPENDS ${PROJECT_BINARY_DIR}/check-source
+)
+
+add_dependencies(lsdalton CheckLSDALTON)

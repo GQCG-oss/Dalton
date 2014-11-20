@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C FILE: sirius/drcctl.F
 C
@@ -427,13 +426,13 @@ C
             ID = ISX( NDW )
          END IF
          INDCD = IC*2**8  + ID
-         INDCD = IBTSHL( INDCD , 16 )
+         INDCD = ISHFT( INDCD , 16 )
 C
 C     ***** ALL INTEGRALS <AB/CD> FOR A GIVEN PAIR CD HAVE *****
 C     ***** BEEN CREATED. WRITE THEM ON UNIT LUINTD WITH   *****
 C     ***** INDICES C,D,A,B                                *****
          DO 170 IA=1,NORBT
-            INDCDA = IBTOR(INDCD , IBTSHL( IA, 8 ) )
+            INDCDA = IOR(INDCD , ISHFT( IA, 8 ) )
             DO 160 IB = 1,NORBT
                P = H2ACD(IA,IB,ICDDIS-IDISOF)
                IF (ABS(P).LT.THRP) GO TO 160
@@ -454,7 +453,7 @@ C           ***** WRITE THIS BUFFER *****
                   CALL WRITI(LUINTD,LOUT22,IOUTB)
                END IF
                OUTB(IOUT) = P
-               IOUTB(LOUTI+IOUT) = IBTOR( INDCDA , IB )
+               IOUTB(LOUTI+IOUT) = IOR( INDCDA , IB )
   160       CONTINUE
   170    CONTINUE
 C   *** Going to next (CD), empty this buffer ***

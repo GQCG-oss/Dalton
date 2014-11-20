@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -32,7 +32,6 @@ C
 #define VAR_INT64
 #endif
 !
-#include "single.h"
 C
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
@@ -683,56 +682,139 @@ C
 C     Written by Henrik Koch 22-Nov-1991 (as AOLABE)
 C     Generalized 25-Oct-1993 hjaaj
 C                 31-Jul-1996 hjaaj (new NIBUF parameter)
+C                 31-Jul-2014 hjaaj (always INTEGER*4 IINDPK)
 C
 C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
 C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION IINDPK(*), IINDX4(4,*)
+#ifdef VAR_DEBUG
+#include "inforb.h"
+#endif
+      INTEGER*4 IINDPK(*)
+      INTEGER   IINDX4(4,*)
 #include "ibtdef.h"
 C
       N = IINDPK(NIBUF*NMAX+1)
       IF (N .GT. NMAX) THEN
          WRITE(LUPRI,*) 'AOLAB4 error, N .gt. NMAX',N,NMAX
+         WRITE(LUPRI,*) '- NMAX,NIBUF,NBITS:',NMAX,NIBUF,NBITS
          CALL QENTER('AOLAB4')
          CALL QUIT('buffer length greater than max length')
       END IF
-C
-      IF (NIBUF .EQ. 1) THEN
-        IF (NBITS .EQ. 8) THEN
-          DO I = 1,N
-            LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
-          END DO
-        ELSE IF (NBITS .EQ. 16) THEN
-#ifdef VAR_INT64
-          DO I = 1,N
-            LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
-          END DO
-#else
-          CALL QUIT('AOLAB4 error; NBITS.eq.16 for INTEGER*4')
-#endif
-        ELSE
-          CALL QUIT('AOLAB4 error; NBITS neither 8 nor 16')
-        END IF
-      ELSE
-        DO I = 1,N
-          LABEL = IINDPK(I)
-          IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-          IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
-          LABEL = IINDPK(NMAX+I)
-          IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-          IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
-        END DO
+      IF (8*NIBUF .ne. NBITS) THEN
+         WRITE(LUPRI,*) 'AOLAB4 error, 8*NIBUF .ne. NBITS',NIBUF,NBITS
+         WRITE(LUPRI,*) '- NMAX,NIBUF,NBITS:',NMAX,NIBUF,NBITS
+         CALL QENTER('AOLAB4')
+         CALL QUIT('Invalid NIBUF, NBITS combination')
       END IF
 C
+      IF (NIBUF .EQ. 1) THEN
+         DO I = 1,N
+            LABEL = IINDPK(I)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-24),IBT08)
+            IINDX4(2,I) = IAND(ISHFT(LABEL,-16),IBT08)
+            IINDX4(3,I) = IAND(ISHFT(LABEL, -8),IBT08)
+            IINDX4(4,I) = IAND(       LABEL,    IBT08)
+         END DO
+      ELSE
+         DO I = 1,N
+            LABEL = IINDPK(2*I-1)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(2,I) = IAND(       LABEL    ,IBT16)
+            LABEL = IINDPK(2*I)
+            IINDX4(3,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(4,I) = IAND(       LABEL    ,IBT16)
+         END DO
+      END IF
+C
+#ifdef VAR_DEBUG
+      ierr = 0
+      do i = 1,n
+         if (iindx4(1,i) .eq. 0) cycle  ! new component info for spin-orbit or derivatives
+         do j = 1,4
+            if (IINDX4(j,i).gt.NBAST .or. IINDX4(j,i).le.0) THEN
+               ierr = ierr + 1
+            end if
+         end do
+      end do
+      if (ierr .gt. 0) then
+         write(lupri,*) ierr,' errors in AOLAB4, n =',n
+         write(lupri,*) 'nmax, nibuf, nbits:',nmax,nibuf,nbits
+         write(lupri,*) 'DUMP of IINDX4 array:'
+         do i = 1,n
+            write(lupri,'(I5,A,4I8,O12)') i,' : ',
+     &         iindx4(1:4,i),IINDPK(i)
+         end do
+         call quit('error in AOLAB4')
+      end if
+#endif
+      RETURN
+      END
+C  /* Deck aolab4_cc */
+      SUBROUTINE AOLAB4_cc(IINDPK,NIBUF,NBITS,IINDX4,N)
+C
+C     31-Jul-2014 hjaaj (special version of ALOAB4 for CC)
+C
+C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
+C
+#include "implicit.h"
+#include "priunit.h"
+#ifdef VAR_DEBUG
+#include "inforb.h"
+#endif
+      INTEGER*4 IINDPK(*)
+      INTEGER   IINDX4(4,*)
+#include "ibtdef.h"
+C
+      IF (8*NIBUF .ne. NBITS) THEN
+         WRITE(LUPRI,*)'AOLAB4_cc error, 8*NIBUF .ne. NBITS',NIBUF,NBITS
+         WRITE(LUPRI,*)'- N,NIBUF,NBITS:',N,NIBUF,NBITS
+         CALL QENTER('AOLAB4_cc')
+         CALL QUIT('Invalid NIBUF, NBITS combination')
+      END IF
+C
+      IF (NIBUF .EQ. 1) THEN
+         DO I = 1,N
+            LABEL = IINDPK(I)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-24),IBT08)
+            IINDX4(2,I) = IAND(ISHFT(LABEL,-16),IBT08)
+            IINDX4(3,I) = IAND(ISHFT(LABEL, -8),IBT08)
+            IINDX4(4,I) = IAND(       LABEL,    IBT08)
+         END DO
+      ELSE
+         DO I = 1,N
+            LABEL = IINDPK(2*I-1)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(2,I) = IAND(       LABEL    ,IBT16)
+            LABEL = IINDPK(2*I)
+            IINDX4(3,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(4,I) = IAND(       LABEL    ,IBT16)
+         END DO
+      END IF
+C
+#ifdef VAR_DEBUG
+      ierr = 0
+      do i = 1,n
+         if (iindx4(1,i) .eq. 0) cycle  ! new component info for spin-orbit or derivatives
+         do j = 1,4
+            if (IINDX4(j,i).gt.NBAST .or. IINDX4(j,i).le.0) THEN
+               ierr = ierr + 1
+            end if
+         end do
+      end do
+      if (ierr .gt. 0) then
+         write(lupri,*) ierr,' errors in AOLAB4_cc, n =',n
+         write(lupri,*) 'n, nibuf, nbits:',n,nibuf,nbits
+         write(lupri,*) 'nbast:',NBAST
+         write(lupri,*) 'DUMP of IINDX4 array:'
+         do i = 1,n
+            write(lupri,'(I5,A,4I8,O12)') i,' : ',
+     &         iindx4(1:4,i),IINDPK(i)
+         end do
+         call quit('error in AOLAB4_cc')
+      end if
+#endif
       RETURN
       END
 C  /* Deck GPOPEN */
@@ -1062,6 +1144,10 @@ C                  calculation.
          END IF
       END IF
  8000 IUNTAB(LUNIT) = 1
+#ifdef VAR_DEBUG
+      write (lugppri,*) 'GPOPEN opened unit',LUNIT,
+     &' with file name ',FILENM(1:FILELN)
+#endif
       CALL QEXIT('GPOPEN')
       RETURN
 C     
@@ -1276,6 +1362,9 @@ C
 C     We release that saved unit number by resetting it to -(code)-LUNIT
 C
  30   CONTINUE
+#ifdef VAR_DEBUG
+      write (lugppri,*) 'GPCLOSE closed unit',LUNIT
+#endif
       RETURN
 C     
 C error branches
@@ -1319,7 +1408,7 @@ C
 #include "maxmom.h"
 #include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include "ibtfun.h"
+
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA

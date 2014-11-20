@@ -9,7 +9,7 @@ use Typedef
 use ls_Integral_Interface
 use AtomSparse
 use mat3d_mod
-use Integralparameters
+use LSparameters
 use molecule_module
 use memory_handling
 use lstiming
@@ -1158,7 +1158,9 @@ ELSE
 !  call init_MoleculeInfo(AB,2,FRAGMENTNAME)
   iAtoms(1) = iAtomA
   iAtoms(2) = iAtomB
-  call build_fragment(molecule,AB,basis,.TRUE.,.FALSE.,.FALSE.,iAtoms,2,lupri)
+  IF(.NOT.basis%WBASIS(AUXBasParam))&
+       & CALL LSQUIT('Basis Aux error in pariSetPairFragment',-1)
+  call build_fragment(molecule,AB,basis,iAtoms,2,lupri)
   nAux = nAuxA + nAuxB
 ENDIF
 END SUBROUTINE pariSetPairFragment

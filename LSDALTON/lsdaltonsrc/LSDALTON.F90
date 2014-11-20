@@ -46,7 +46,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
        & no_of_matmuls, mat_init, mat_free, mat_assign,mat_scal, &
        & mat_mul, mat_no_of_matmuls, mat_write_to_disk, mat_read_from_disk, mat_diag_f,&
        & mat_TrAB, mat_print
-  use configuration, only: config_shutdown, config_free,scf_purify
+  use configuration, only: config_shutdown, config_free
   use files, only: lsopen,lsclose
   use lsdalton_fock_module, only: lsint_fock_data
   use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem
@@ -55,7 +55,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use lstiming, only: lstimer, init_timers, print_timers
   use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
-  use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2
+  use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2,read_fock_matrix_from_file
   use daltoninfo, only: ls_free 
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
@@ -70,13 +70,15 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #ifdef VAR_RSP
   use lsdalton_rsp_mod, only: lsdalton_response, get_excitation_energy
 #endif
+  use response_noOpenRSP_module, only: lsdalton_response_noOpenRSP
   ! DYNAMICS
   use dynamics_driver, only: LS_dyn_run
   ! SOEO
   use soeo_loop, only: soeoloop, soeo_restart
   ! GEO OPTIMIZER
   use ls_optimizer_mod, only: LS_RUNOPT
-  use SCFinteractionEnergyMod, only: SCFinteractionEnergy
+  use InteractionEnergyMod, only: InteractionEnergy
+  use ADMMbasisOptMod, only: ADMMbasisOptSub
   use lsmpi_type, only: lsmpi_finalize
   use lsmpi_op, only: TestMPIcopySetting,TestMPIcopyScreen
   use lstensorMem, only: lstmem_init, lstmem_free
@@ -96,9 +98,17 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter,&
        & II_get_Fock_mat
-  use integralinterfaceIchorMod, only: II_Unittest_Ichor
+  use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
+#if defined(ENABLE_QMATRIX)
+  use ls_qmatrix, only: ls_qmatrix_test, &
+                        ls_qmatrix_finalize
+#endif
+#ifdef HAS_PCMSOLVER
+  use ls_pcm_utils, only: init_molecule
+  use ls_pcm_scf, only: ls_pcm_scf_initialize, ls_pcm_scf_finalize
+#endif
   implicit none
   logical, intent(in) :: OnMaster
   logical, intent(inout):: meminfo_slaves
@@ -135,10 +145,25 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+   
+  call Test_if_64bit_integer_required(nbast,nbast)
+
+#ifdef HAS_PCMSOLVER
+        !
+        ! Polarizable continuum model calculation
+        !
+        if (config%pcm%do_pcm) then
+           ! Set molecule object in ls_pcm_utils
+           call init_molecule(ls%input%Molecule)
+           ! Now initialize PCM
+           call ls_pcm_scf_initialize(ls%setting, lupri, luerr)
+           write (lupri,*) 'PCMSolver interface correctly initialized'
+        end if
+#endif        
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
-     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption)
+     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption,config%integral%debugIchorLink)
      !the return statement leads to memory leaks but I do not care about this
      !for now atleast
      RETURN
@@ -146,6 +171,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
+     CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)
   ENDIF
 
 #ifdef MOD_UNRELEASED
@@ -195,9 +221,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         !with something like  
         !Reason: Error in Molecule_free - memory previously released
         call TestMPIcopySetting(ls%SETTING)
+        CALL LSTIMER('TestMPIcopySetting',TIMSTR,TIMEND,lupri)
      ENDIF
 #endif     
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+     CALL LSTIMER('II_precalc_ScreenMat',TIMSTR,TIMEND,lupri)
 
 #ifndef VAR_MPI
      IF(config%doTestMPIcopy)THEN
@@ -311,6 +339,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
         !debug integral routines
         call di_debug_general(lupri,luerr,ls,nbast,S,D(1),config%integral%debugProp)
+
+        IF(config%integral%debugIchorLinkFull)THEN
+           call II_ichor_LinK_test(lupri,luerr,ls%setting,D)
+        ENDIF
+
         if (mem_monitor) then
            write(lupri,*)
            WRITE(LUPRI,'("Max no. of matrices allocated in Level 2 / get_initial_dens: ",I10)') max_no_of_matrices
@@ -351,11 +384,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
               write (config%lupri, *) 'WARNING: .SOEORST specified but soeosave.out does not exist'
               write (config%lupri, *) '         Making regular optimization to get matrices!'
            endif
-           if (config%opt%purescf) then
-              !We do one or 2 iterations with a fast and app. exchange/coulomb
-              !so we do not need to be converged as hard as level 4
-              config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold*300E0_realk
-           endif
 
            IF(config%integral%LOW_ACCURACY_START)THEN
               call set_Low_accuracy_start_settings(lupri,ls,config,LAStype)
@@ -364,18 +392,16 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
               CALL Print_Memory_info(lupri,'after Low Accuracy Start')
            ENDIF
 
-           call scfloop(H1,F,D,S,E,ls,config)
-           CALL Print_Memory_info(lupri,'after scfloop')
-
-           !Level 4
-           if (config%opt%purescf) then
-              Write(lupri,*)'Begin Level 4'
-              print*,'Begin Level 4'
-              config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold
-              call scf_purify(lupri,ls,config,scfpurify)
+           if(config%skipscfloop)then              
+              WRITE(config%lupri,*)'The SCF Loop has been skipped!'
+              WRITE(config%lupri,*)'Warning: The use of the .SKIPSCFLOOP keyword assumes that the'
+              WRITE(config%lupri,*)'fock.restart exist and that it is the final Fock/Kohn-Sham matrix'
+              WRITE(config%lupri,*)'of the converged density matrix in dens.restart. Use at own risk.'
+              call read_fock_matrix_from_file(F(1))
+           else !default
               call scfloop(H1,F,D,S,E,ls,config)
-              CALL Print_Memory_info(lupri,'after scfpurify-scfloop')
            endif
+           CALL Print_Memory_info(lupri,'after scfloop')
         endif
 
         IF(config%decomp%cfg_DumpDensRestart)THEN !default true
@@ -410,9 +436,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 !        call mat_print(S,1,S%nrow,1,S%ncol,lupri)
 !        call lsquit('test done',-1)
 
-        !lcm basis
-        if (config%decomp%cfg_lcm .or. config%decomp%cfg_mlo) then
-           CALL Print_Memory_info(lupri,'before LCM')
+        IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
            ! get orbitals
            call mat_init(Cmo,nbast,nbast)
            allocate(eival(nbast))
@@ -424,26 +448,30 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            CALL LSOPEN(lun,'cmo_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
            call LSclose(LUN,'KEEP')
+        endif
 
-           ! localize orbitals
-           if (config%decomp%cfg_lcm)THEN
-              call leastchange_lcm(config%decomp,Cmo,config%decomp%nocc,ls)
-              CALL Print_Memory_info(lupri,'before LCM')
-           endif
+        !lcm basis: localize orbitals
+        if (config%decomp%cfg_lcm)THEN
+           call leastchange_lcm(config%decomp,Cmo,config%decomp%nocc,ls)
+           CALL Print_Memory_info(lupri,'before LCM')
+        endif
 
-           if (config%decomp%cfg_mlo ) then
-              CALL Print_Memory_info(lupri,'before ORBITAL LOCALIZATION')
-              write(ls%lupri,'(a)')'  %LOC%   '
-              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
-              write(ls%lupri,'(a)')'  %LOC%   *       LEVEL 3 ORBITAL LOCALIZATION       *'
-              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
-              write(ls%lupri,'(a)')'  %LOC%   '
-              call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
-              if (config%davidOrbLoc%make_orb_plot) then
-                 call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
-              end if
-              CALL Print_Memory_info(lupri,'after ORBITAL LOCALIZATION')
-           endif
+        !localize orbitals
+        if (config%decomp%cfg_mlo ) then
+           CALL Print_Memory_info(lupri,'before ORBITAL LOCALIZATION')
+           write(ls%lupri,'(a)')'  %LOC%   '
+           write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+           write(ls%lupri,'(a)')'  %LOC%   *       LEVEL 3 ORBITAL LOCALIZATION       *'
+           write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+           write(ls%lupri,'(a)')'  %LOC%   '
+           call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
+           if (config%davidOrbLoc%make_orb_plot) then
+              call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
+           end if
+           CALL Print_Memory_info(lupri,'after ORBITAL LOCALIZATION')
+        endif
+
+        if (config%decomp%cfg_lcm .or. config%decomp%cfg_mlo) then
            !write lcm to file
            lun = -1
            CALL LSOPEN(lun,'lcm_orbitals.u','unknown','UNFORMATTED')
@@ -453,7 +481,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            write(ls%lupri,'(a)') '  %LOC%'
            call LSclose(LUN,'KEEP')
 
-
            if (.not. config%decomp%cfg_mlo) then
               call leastchangeOrbspreadStandalone(mx,ls,Cmo,config%decomp%lupri,config%decomp%luerr)
               write(*,*) 'Orbspread standalone LCM: ', mx
@@ -462,18 +489,19 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            ! set basis to CMO
            call mat_assign(config%decomp%U_inv,Cmo)
            call mat_mul(config%decomp%U_inv,S,'t','n',1E0_realk,0E0_realk,config%decomp%U)
-           ! Vladimir Rybkin: We free CMO unless we do a dec geometry optimization
-           ! or run dynamics
-           If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
+        endif
 
-              ! Single point DEC calculation using current HF files
-              DECcalculation: IF(DECinfo%doDEC) then
-                 call dec_main_prog_input(ls,F(1),D(1),S,CMO)
-              endif DECcalculation
-              ! free Cmo
+        ! Vladimir Rybkin: We free CMO unless we do a dec geometry optimization
+        ! or run dynamics
+        If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
+           ! Single point DEC calculation using current HF files
+           DECcalculation: IF(DECinfo%doDEC) then
+              call dec_main_prog_input(ls,F(1),D(1),S,CMO,E(1))
+           endif DECcalculation
+           ! free Cmo
+           IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
               call mat_free(Cmo)
-           Endif
-           ! 
+           ENDIF
         endif
         !
         !  Debug integrals 
@@ -525,9 +553,13 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      ENDIF
 #endif     
 
-        if (config%SCFinteractionEnergy) then
-           CALL SCFinteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
+        if (config%InteractionEnergy) then
+           CALL InteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
         endif
+        if(ls%input%dalton%ADMMBASISFILE)then
+           call ADMMbasisOptSub(E,config,H1,F,D,S,CMO,ls)
+        endif
+
         !PROPERTIES SECTION
 
         if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. & 
@@ -536,14 +568,21 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call get_oao_transformed_matrices(config%decomp,F(1),D(1))
         endif
 
-#ifdef VAR_RSP
         IF(config%response%tasks%doDipole.OR.config%response%tasks%doResponse)THEN
            CALL Print_Memory_info(lupri,'before lsdalton_response')
-           call lsdalton_response(ls,config,F(1),D(1),S)
+           IF(config%response%noOpenRSP)THEN
+              !A pure LSDALTON
+              call lsdalton_response_noOpenRSP(ls,config,F,D,S)
+           ELSE
+#ifdef VAR_RSP
+              call lsdalton_response(ls,config,F(1),D(1),S)
+#else
+              call lsquit('lsdalton_response requires VAR_RSP defined',-1)
+#endif
+           ENDIF
            CALL Print_Memory_info(lupri,'after lsdalton_response')
         ENDIF
-#endif
-        
+
         call config_shutdown(config)
 
         !
@@ -561,6 +600,18 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
+
+#if defined(ENABLE_QMATRIX)
+        if (config%do_qmatrix) then
+            ! performs the Fortran test of the QMatrix library
+            call ls_qmatrix_test(config%ls_qmat)
+            !- performs Delta-SCF using the QMatrix library (NB! this is not linear-scaling)
+            !-call ls_qmatrix_scf()
+            ! finalizes the QMatrix interface
+            call ls_qmatrix_finalize(config%ls_qmat)
+            config%do_qmatrix = .false.
+        end if
+#endif
 
 #ifdef MOD_UNRELEASED
         ! Numerical Derivatives
@@ -697,6 +748,14 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   end if
   call config_free(config)
 
+#ifdef HAS_PCMSOLVER
+  if (config%pcm%do_pcm) then
+     ! Now finalize PCM
+     call ls_pcm_scf_finalize
+     write (lupri,*) 'PCMSolver interface correctly finalized'
+  end if
+#endif
+
   call ls_free(ls)
   
   meminfo_slaves = config%mpi_mem_monitor
@@ -711,6 +770,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use init_lsdalton_mod, only: open_lsdalton_files
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
+  use dft_memory_handling
   use memory_handling, only: init_globalmemvar
   use lstiming, only: init_timers, lstimer,  print_timers,time_start_phase,PHASE_WORK
   use lspdm_tensor_operations_module,only:init_persistent_array
@@ -720,7 +780,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use papi_module, only: mypapi_init, eventset
 #endif
 #ifdef VAR_ICHOR
-  use IchorSaveGabModule
+  use IchorSaveGabMod
 #endif
   use lsmpi_type,only: NullifyMPIbuffers
   implicit none
@@ -740,6 +800,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call set_matrix_default !initialize global matrix counters
   call init_rsp_util      !initialize response util module
   call lstmem_init
+  call setPrintDFTmem(.FALSE.)
   call init_IIDF_matrix
 #ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
@@ -773,7 +834,10 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use lsmpi_type
 #endif
 #ifdef VAR_ICHOR
-  use IchorSaveGabModule
+  use IchorSaveGabMod
+#endif
+#ifdef VAR_SCALAPACK
+use matrix_operations_scalapack
 #endif
 implicit none
   logical,intent(in)         :: OnMaster
@@ -781,20 +845,26 @@ implicit none
   logical,intent(inout)      :: meminfo
   real(realk), intent(inout) :: t1,t2
   
+  IF(OnMaster)THEN
+     !these routines free matrices and must be called while the 
+     !slaves are still in mpislave routine
+     call free_IIDF_matrix
+     call free_AO2GCAO_GCAO2AO()
+  ENDIF
+  call lstmem_free
+#ifdef VAR_ICHOR
+  if(OnMaster)call FreeIchorSaveGabModule()
+#endif
+  
+
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL
 #ifdef VAR_MPI
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
-  call free_IIDF_matrix
-  call lstmem_free
-
-#ifdef VAR_ICHOR
-  call FreeIchorSaveGabModule()
-#endif
-  call free_AO2GCAO_GCAO2AO()
   call free_persistent_array
   call free_decinfo()
+
 
   if(OnMaster) call stats_mem(lupri)
 
@@ -806,7 +876,18 @@ implicit none
 
   endif
 
+#ifdef VAR_SCALAPACK
+  IF(scalapack_mpi_set)THEN
+     !free communicator 
+     call LSMPI_COMM_FREE(scalapack_comm)
+  ENDIF
+#endif
+
   call lsmpi_finalize(lupri,.false.)
+#else
+  WRITE(LUPRI,'("  Allocated MPI memory a cross all slaves:  ",i9," byte  &
+       &- Should be zero - otherwise a leakage is present")') 0
+  WRITE(LUPRI,'(A)')'  This is a non MPI calculation so naturally no memory is allocated on slaves!'
 #endif
 
   if(OnMaster)then

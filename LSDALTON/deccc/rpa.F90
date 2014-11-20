@@ -21,7 +21,7 @@ module rpa_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
-  !use integralparameters!, only: AORdefault
+  !use lsparameters
 #endif
 
     ! DEC DEPENDENCIES (within deccc directory)   
@@ -67,21 +67,21 @@ contains
     !type(array4), intent(in) :: gmo
     !type(array2), intent(inout) :: pfock,qfock
     !type(array4) :: tmp
-    type(array), intent(inout) :: omega2,t2
-    type(array), intent(in) :: gmo
-    type(array), intent(inout) :: pfock,qfock
-    type(array) :: tmp
+    type(tensor), intent(inout) :: omega2,t2
+    type(tensor), intent(in) :: gmo
+    type(tensor), intent(inout) :: pfock,qfock
+    type(tensor) :: tmp
     integer, intent(in) :: nocc,nvirt
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
     real(realk) :: starttime,stoptime
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
 
 
     call cpu_time(starttime)
 
 
-    !call array_zero(omega2)
+    !call tensor_zero(omega2)
     call RPA_fock_part(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
     !msg = 'Norm of fockpart'
     !call print_norm(omega2,msg)
@@ -103,10 +103,10 @@ contains
     !type(array4), intent(in) :: gmo
     !type(array2), intent(inout) :: pfock,qfock
     !type(array4) :: tmp
-    type(array), intent(inout) :: omega2,t2
-    type(array), intent(in) :: gmo
-    type(array), intent(inout) :: pfock,qfock
-    type(array) :: tmp
+    type(tensor), intent(inout) :: omega2,t2
+    type(tensor), intent(in) :: gmo
+    type(tensor), intent(inout) :: pfock,qfock
+    type(tensor) :: tmp
     real(realk),pointer :: w_o2v2(:)
     integer, intent(in) :: no,nv
     integer, dimension(4) :: tmp_dims
@@ -129,14 +129,14 @@ contains
     ! F [a c] * t [c b i j] =+ Omega [a b i j]
     call dgemm('n','n',nv,o2v,nv,1.0E0_realk,qfock%elm1,nv,t2%elm1,nv,1.0E0_realk,w_o2v2,nv)
 
-    call array_convert(w_o2v2,omega2)
+    call tensor_convert(w_o2v2,omega2)
     call array_reorder_4d(1.0E0_realk,omega2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,w_o2v2)
-    call array_convert(w_o2v2,omega2)
+    call tensor_convert(w_o2v2,omega2)
     call mem_dealloc(w_o2v2)
 
-    !call array_convert(t2%elm4,t_par)
-    !call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
-    !call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
+    !call tensor_convert(t2%elm4,t_par)
+    !call tensor_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
+    !call tensor_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
 
     !For debugging
     !call array4_add_to(omega2,2.0E0_realk,gmo)
@@ -152,18 +152,18 @@ contains
     implicit none
     !type(array4), intent(inout) :: omega2,t2
     !type(array4), intent(in) :: gmo
-    type(array), intent(inout) :: omega2,t2
-    type(array), intent(in) :: gmo
+    type(tensor), intent(inout) :: omega2,t2
+    type(tensor), intent(in) :: gmo
     integer, intent(in) :: nocc,nvirt
-    type(array) :: Sckdl
+    type(tensor) :: Sckdl
     real(realk),pointer :: Dckbj(:),omegatmp(:)
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k,dim1
     real(realk) :: starttime,stoptime
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
 
     dim1 = nocc*nvirt
-    Sckdl = array_minit([nocc,nvirt,nocc,nvirt],4,atype='TDAR')
+    call tensor_minit(Sckdl, [nocc,nvirt,nocc,nvirt],4,atype='TDAR')
 
     call array_reorder_4d(1.0E0_realk,t2%elm4,nvirt,nvirt,nocc,nocc,&
       & [3,1,4,2],0.0E0_realk,Sckdl%elm4)
@@ -185,7 +185,7 @@ contains
          & 2.0E0_realk,Dckbj,dim1,Sckdl%elm4,dim1,0.0E0_realk,omegatmp,dim1)
     
     call mem_dealloc(Dckbj)
-    call array_free(Sckdl)
+    call tensor_free(Sckdl)
 
 
     call array_reorder_4d(1.0E0_realk,omegatmp,nocc,nvirt,nocc,nvirt,&
@@ -305,7 +305,7 @@ contains
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
     real(realk) :: starttime,stoptime
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
 
 
     call cpu_time(starttime)
@@ -344,7 +344,7 @@ contains
     type(array4) :: tmp
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
 
 
     ! 1
@@ -393,32 +393,32 @@ contains
 !  subroutine RPA_fock_part2(omega2,t2,pfock,qfock,nocc,nvirt)
 !
 !    implicit none
-!    type(array), intent(inout) :: omega2,t2
-!    type(array), intent(inout) :: pfock,qfock
+!    type(tensor), intent(inout) :: omega2,t2
+!    type(tensor), intent(inout) :: pfock,qfock
 !    integer, intent(in) :: nocc,nvirt
-!    type(array) :: tmp
+!    type(tensor) :: tmp
 !    integer, dimension(4) :: tmp_dims
 !    integer :: a,b,c,i,j,k
-!    character(ARR_MSG_LEN) :: msg
+!    character(tensor_MSG_LEN) :: msg
 !
 !
 !    ! 1
 !    !call array2_transpose(qfock)
 !    
-!    tmp = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
-!    call array_contract_outer_indices_rl(-1.0E0_realk,t2,pfock,0.0E0_realk,tmp)
-!    call array_add(omega2,1.0E0_realk,tmp)
+!    tmp = tensor_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+!    call tensor_contract_outer_indices_rl(-1.0E0_realk,t2,pfock,0.0E0_realk,tmp)
+!    call tensor_add(omega2,1.0E0_realk,tmp)
 !    ! 1
-!    call array_contract_outer_indices_rl(1.0E0_realk,qfock,t2,0.0E0_realk,tmp)
-!    call array_add(omega2,1.0E0_realk,tmp)
+!    call tensor_contract_outer_indices_rl(1.0E0_realk,qfock,t2,0.0E0_realk,tmp)
+!    call tensor_add(omega2,1.0E0_realk,tmp)
 !
-!    call array_contract_outer_indices_lr(-1.0E0_realk,pfock,t2,0.0E0_realk,tmp)
-!    call array_add(omega2,1.0E0_realk,tmp)
+!    call tensor_contract_outer_indices_lr(-1.0E0_realk,pfock,t2,0.0E0_realk,tmp)
+!    call tensor_add(omega2,1.0E0_realk,tmp)
 !    ! 2
-!    call array_contract_outer_indices_lr(1.0E0_realk,t2,qfock,0.0E0_realk,tmp)
-!    call array_add(omega2,1.0E0_realk,tmp)
+!    call tensor_contract_outer_indices_lr(1.0E0_realk,t2,qfock,0.0E0_realk,tmp)
+!    call tensor_add(omega2,1.0E0_realk,tmp)
 !
-!    call array_free(tmp)
+!    call tensor_free(tmp)
 !
 !    !call array4_contract1(t2,qfock,omega2,.false.)
 !    !call array2_transpose(qfock)
@@ -452,17 +452,18 @@ contains
   !\brief Calculate fock matrix part of the RPA residual 
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_fock_para(omega2,t2,pfock,qfock,no,nv)
+  subroutine RPA_fock_para(omega2,t2,pfock,qfock,no,nv,local)
 
     implicit none
-    type(array), intent(inout) :: t2,omega2
+    type(tensor), intent(inout) :: t2,omega2
+    logical,intent(in) :: local
     !type(array4), intent(inout) :: omega2
     integer, intent(inout) :: no,nv
     !type(array2), intent(inout) :: pfock,qfock
-    type(array), intent(inout) :: pfock,qfock
+    type(tensor), intent(inout) :: pfock,qfock
     !real(realk),pointer, intent(inout) :: pfock(:),qfock(:)
     !real(realk) intent(inout) :: pfock(no,no),qfock(nv,nv)
-    type(array) :: tmpt2,omegaw2
+    type(tensor) :: tmpt2,omegaw2
     real(realk),pointer :: tmp(:,:),w1(:),w2(:),w3(:),w4(:),omegw(:),w5(:)
     real(realk), pointer :: w_o2v2(:)
     integer, dimension(4) :: tmp_dims
@@ -473,7 +474,7 @@ contains
     integer :: i 
     real(realk) :: tw,tc
     integer(kind=ls_mpik) me,mode,nod, nnod
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
     logical :: master,trafo1,trafo2,trafoi
 
     master=.true.
@@ -495,6 +496,28 @@ contains
     v2o  = nv2*no 
     call mem_alloc(w_o2v2,t2%nelms)
 
+    if( local )then
+      !calculate first part of doubles E term and its permutation
+      ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
+      call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,pfock%elm1,no,0.0E0_realk,omega2%elm1,v2o)
+
+      !calculate second part of doubles E term
+      ! F [a c] * t [c b i j] =+ Omega [a b i j]
+      call dgemm('n','n',nv,o2v,nv,1.0E0_realk,qfock%elm1,nv,t2%elm1,nv,1.0E0_realk,omega2%elm1,nv)
+
+      !INTRODUCE PERMUTATION
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+      call assign_in_subblocks(w_o2v2,'=',omega2%elm1,o2v2)
+#else
+      !$OMP WORKSHARE
+      w_o2v2(1_long:o2v2) = omega2%elm1(1_long:o2v2)
+      !$OMP END WORKSHARE
+#endif
+
+      call array_reorder_4d(1.0E0_realk,w_o2v2,nv,nv,no,no,[2,1,4,3],1.0E0_realk,omega2%elm1)
+
+   else
+
 
 #ifdef VAR_MPI
      StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
@@ -506,10 +529,10 @@ contains
 
 #ifdef VAR_MPI
 
-    omega2%access_type = ALL_ACCESS
-    t2%access_type     = ALL_ACCESS
-    qfock%access_type    = ALL_ACCESS
-    pfock%access_type    = ALL_ACCESS
+    omega2%access_type = AT_ALL_ACCESS
+    t2%access_type     = AT_ALL_ACCESS
+    qfock%access_type    = AT_ALL_ACCESS
+    pfock%access_type    = AT_ALL_ACCESS
     nnod               = infpar%lg_nodtot
     me                 = infpar%lg_mynum
     mode               = int(MPI_MODE_NOCHECK,kind=ls_mpik)
@@ -520,14 +543,18 @@ contains
     call mo_work_dist(o2v,fai2,tl2,trafo2)
 
 
+
     w3size = max(tl1*no,tl2*nv)
     if(nnod>1)w3size = max(w3size,2*omega2%tsize)
     call mem_alloc(w3,w3size)
 
+
+
+
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
-    !if(me==0) call array_convert(t2,w_o2v2,t2%nelms)
+    !if(me==0) call tensor_convert(t2,w_o2v2,t2%nelms)
     call time_start_phase(PHASE_COMM, at = tw)
-    call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
+    call tensor_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
     do nod=1,nnod-1
     call mo_work_dist(nv*nv*no,fri,tri,trafoi,nod)
     if(me==0)then
@@ -555,7 +582,7 @@ contains
     endif
     call time_start_phase(PHASE_COMM, at = tw)
     call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-    call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
+    call tensor_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
     call time_start_phase(PHASE_WORK, at = tc)
 
 
@@ -564,7 +591,7 @@ contains
 
     ! F[a c] * t [c b i j] =+ Omega [a b i j]
     call time_start_phase(PHASE_COMM, at = tw)
-    call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
+    call tensor_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
     do nod=1,nnod-1
     call mo_work_dist(nv*no*no,fri,tri,trafoi,nod)
     if(me==0)then
@@ -590,27 +617,29 @@ contains
     endif
     call time_start_phase(PHASE_COMM, at = tw)
     call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-    call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
+    call tensor_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
     call time_start_phase(PHASE_WORK, at = tc)
 
 
 
     !INTRODUCE PERMUTATION
-    omega2%access_type = MASTER_ACCESS
-    t2%access_type     = MASTER_ACCESS
-    pfock%access_type    = MASTER_ACCESS
-    qfock%access_type    = MASTER_ACCESS
+    omega2%access_type = AT_MASTER_ACCESS
+    t2%access_type     = AT_MASTER_ACCESS
+    pfock%access_type    = AT_MASTER_ACCESS
+    qfock%access_type    = AT_MASTER_ACCESS
 
     call time_start_phase(PHASE_COMM, at = tw)
-    call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,wrk=w3,iwrk=w3size)
-    call array_gather(1.0E0_realk,omega2,1.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
-    call array_scatter_densetotiled(omega2,w_o2v2,o2v2,infpar%master)
+    call tensor_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,wrk=w3,iwrk=w3size)
+    call tensor_gather(1.0E0_realk,omega2,1.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
+    call tensor_scatter_densetotiled(omega2,w_o2v2,o2v2,infpar%master)
     call time_start_phase(PHASE_WORK, at = tc)
 
     call mem_dealloc(w3)
 
 
+
 #endif
+  endif
 
 
     call mem_dealloc(w_o2v2)
@@ -626,17 +655,17 @@ contains
   subroutine RPA_fock_para2(omega2,t2,pfock,qfock,no,nv)
 
     implicit none
-    type(array), intent(inout) :: t2,omega2
+    type(tensor), intent(inout) :: t2,omega2
     !type(array4), intent(inout) :: omega2
     integer, intent(inout) :: no,nv
     !type(array2), intent(inout) :: pfock,qfock
-    type(array), intent(inout) :: pfock,qfock
+    type(tensor), intent(inout) :: pfock,qfock
     !real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
-    type(array) :: tmpt2,omegaw2
+    type(tensor) :: tmpt2,omegaw2
     real(realk),pointer :: tmp(:,:),w1(:),w3(:),w4(:),omegw(:),w5(:)
     real(realk), pointer :: w_o2v2(:),w2(:)
     integer, dimension(4) :: tmp_dims
-    type(array) :: t_par
+    type(tensor) :: t_par
     integer(kind=long) :: o2v2
     integer :: no2,nv2,o2v,v2o
     integer(kind=8) :: w3size,b0
@@ -644,7 +673,7 @@ contains
     integer :: i 
     real(realk) :: tw,tc
     integer(kind=ls_mpik) me,mode,nod, nnod
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
     logical :: master,lock_outside,lock_safe,local,trafo1,trafo2,trafo
 
     master=.true.
@@ -689,15 +718,15 @@ contains
     call mem_alloc(w2,tl1*no)
 
 
-    !t_par = array_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
-    !call array_convert(t2%elm4,t_par)
+    !t_par = tensor_ainit([nv,nv,no,no],4,atype='TDAR',local=.false.)
+    !call tensor_convert(t2%elm4,t_par)
 #ifdef VAR_MPI
-    call arr_lock_wins(t2,'s',mode)
-    call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,3,fai1,tl1,.true.,debug=.false.)
+    call tensor_lock_wins(t2,'s',mode)
+    call tensor_two_dim_1batch(t2,[1,2,3,4],'g',w2,3,fai1,tl1,.true.,debug=.false.)
 
-    call arr_unlock_wins(t2)
+    call tensor_unlock_wins(t2)
 #endif
-    !call array_gather(1.0E0_realk,t2,0.0E0_realk,w2,o2v2)
+    !call tensor_gather(1.0E0_realk,t2,0.0E0_realk,w2,o2v2)
 
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
 
@@ -705,10 +734,10 @@ contains
 
 
 #ifdef VAR_MPI
-    call arr_lock_wins(omega2,'s',mode)
-    call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.,debug=.false.)
-    !call array_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.true.)
-    call arr_unlock_wins(omega2)
+    call tensor_lock_wins(omega2,'s',mode)
+    call tensor_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.,debug=.false.)
+    !call tensor_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.true.)
+    call tensor_unlock_wins(omega2)
 #endif
 
     call lsmpi_barrier(infpar%lg_comm)
@@ -723,13 +752,13 @@ contains
     call mem_alloc(w_o2v2,tl2*nv)
     !call mem_alloc(w2,tl2*nv)
     call mem_alloc(w2,tl2*nv)
-    !call array_convert(t2,w2)
+    !call tensor_convert(t2,w2)
     
 #ifdef VAR_MPI
-    call arr_lock_wins(t2,'s',mode)
-    call array_two_dim_2batch(t2,[1,2,3,4],'g',w2,3,fai2,tl2,.true.)
+    call tensor_lock_wins(t2,'s',mode)
+    call tensor_two_dim_2batch(t2,[1,2,3,4],'g',w2,3,fai2,tl2,.true.)
 
-    call arr_unlock_wins(t2)
+    call tensor_unlock_wins(t2)
 #endif
     ! F[a c] * t [c b i j] =+ Omega [a b i j]
     write(*,*) 'Starting with dgemm virtual'
@@ -739,12 +768,12 @@ contains
 
 
 #ifdef VAR_MPI
-    call arr_lock_wins(omega2,'s',mode)
-    call array_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,.true.)
+    call tensor_lock_wins(omega2,'s',mode)
+    call tensor_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,.true.)
     call lsmpi_barrier(infpar%lg_comm)
-    call arr_unlock_wins(omega2)
-    !call array_two_dim_1batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai2,tl2,.false.,debug=.false.)
-    !call array_two_dim_2batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai2,tl2,.true.)
+    call tensor_unlock_wins(omega2)
+    !call tensor_two_dim_1batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai2,tl2,.false.,debug=.false.)
+    !call tensor_two_dim_2batch(omega2,[2,1,4,3],'a',w_o2v2,3,fai2,tl2,.true.)
     !call lsmpi_barrier(infpar%lg_comm)
     write(*,*) 'Done with virtual'
 
@@ -758,15 +787,15 @@ contains
    if(master) then
      call mem_alloc(w_o2v2,no2*nv2)
      write(*,*) 'lock omega2'
-     call arr_lock_wins(omega2,'s',mode)
+     call tensor_lock_wins(omega2,'s',mode)
      write(*,*) 'gather omega2'
-     call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
+     call tensor_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
      write(*,*) 'unlock omega2'
-     call arr_unlock_wins(omega2,.true.)
-     call arr_lock_wins(omega2,'s',mode)
+     call tensor_unlock_wins(omega2,.true.)
+     call tensor_lock_wins(omega2,'s',mode)
      write(*,*) 'scatter to omega2'
-     call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
-     call arr_unlock_wins(omega2,.true.)
+     call tensor_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
+     call tensor_unlock_wins(omega2,.true.)
      call mem_dealloc(w_o2v2)
    endif
 #endif
@@ -790,7 +819,7 @@ contains
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k,dim1
     real(realk) :: starttime,stoptime
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
 
     !Sckdl = array4_init([nvirt,nocc,nvirt,nocc])
     Sckdl = array4_duplicate(t2)
@@ -831,25 +860,25 @@ contains
 
     implicit none
     type(array4), intent(inout) :: omega2,t2
-    !type(array), intent(inout) :: omega2,t2
+    !type(tensor), intent(inout) :: omega2,t2
     real(realk),pointer, intent(inout) :: gmo(:)
-    !type(array), intent(inout) :: gmo
+    !type(tensor), intent(inout) :: gmo
     type(array2), intent(inout) :: pfock,qfock
-    !type(array) :: foo,fvv
+    !type(tensor) :: foo,fvv
     integer, intent(in) :: nocc,nvirt
-    real(realk),pointer :: foo(:,:),fvv(:,:)
+    !real(realk),pointer :: foo(:,:),fvv(:,:)
     !real(realk), intent(inout) :: pfock(nocc,nocc),qfock(nvirt,nvirt)
     !type(array4) :: tmp
     real(realk),pointer :: w2(:)!,foo(:,:),fvv(:,:)
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
     real(realk) :: starttime,stoptime
-    type(array) :: om_par,t_par,t_par1
+    type(tensor) :: om_par,t_par,t_par1
     integer :: nnod,mynum,fai,tl
     integer :: nvir,noc
     logical :: master
-    character(ARR_MSG_LEN) :: msg
-    type(array) :: Sckdl
+    character(tensor_MSG_LEN) :: msg
+    type(tensor) :: Sckdl
     
 
     nvir=nvirt
@@ -858,22 +887,22 @@ contains
     !call mem_alloc(foo,noc,noc)
     !call mem_alloc(fvv,nvir,nvir)
 
-    !foo = array_minit([nocc,nocc],2,atype='TDAR')
-    !fvv = array_minit([nvirt,nvirt],2,atype='TDAR',local=.false.)
-    !call array_convert(pfock%val,foo)
-    !call array_convert(qfock%val,fvv)
-    call mem_alloc(foo,nocc,nocc)
-    call mem_alloc(fvv,nvirt,nvirt)
-    foo(:,:)=pfock%val(:,:)
-    fvv(:,:)=qfock%val(:,:)
+    !foo = tensor_minit([nocc,nocc],2,atype='TDAR')
+    !fvv = tensor_minit([nvirt,nvirt],2,atype='TDAR',local=.false.)
+    !call tensor_convert(pfock%val,foo)
+    !call tensor_convert(qfock%val,fvv)
+    !call mem_alloc(foo,nocc,nocc)
+    !call mem_alloc(fvv,nvirt,nvirt)
+    !foo(:,:)=pfock%val(:,:)
+    !fvv(:,:)=qfock%val(:,:)
 
 
     call cpu_time(starttime)
 
-    t_par = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+    call tensor_minit(t_par, [nvirt,nvirt,nocc,nocc],4,atype='TDAR')
 
     call array4_reorder(t2,[1,3,2,4])
-    call array_convert(t2%val,t_par)
+    call tensor_convert(t2%val,t_par)
     call array4_reorder(t2,[1,3,2,4])
 
 
@@ -886,15 +915,15 @@ contains
 
     !call array4_reorder(omega2,[1,3,2,4])
 
-    !call array_gather(1.0E0_realk,om_par,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
+    !call tensor_gather(1.0E0_realk,om_par,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 
     !call array4_reorder(omega2,[1,3,2,4])
 
 
-    Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+    call tensor_minit(Sckdl, [nvirt,nvirt,nocc,nocc],4,atype='TDAR')
     !call copy_array(t2,Sckdl)
     call array4_reorder(t2,[1,3,2,4])
-    call array_convert(t2%val,Sckdl)
+    call tensor_convert(t2%val,Sckdl)
     !Sckdl = array4_duplicate(t2)
     call array4_reorder(t2,[1,3,2,4])
 
@@ -928,16 +957,17 @@ contains
 !\brief Calculate RPA residual for current doubles amplitudes
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_residual_par(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+  subroutine RPA_residual_par(omega2,t2,gmo,pfock,qfock,nocc,nvirt,local)
 
     implicit none
     !type(array4), intent(inout) :: omega2,t2
-    type(array), intent(inout) :: omega2
-    type(array), intent(inout) :: t2
+    type(tensor), intent(inout) :: omega2
+    type(tensor), intent(inout) :: t2
     integer, intent(in) :: nocc,nvirt
     !real(realk),pointer, intent(inout) :: gmo(:)
-    type(array), intent(inout) :: gmo
-    type(array),intent(inout) :: pfock,qfock
+    type(tensor), intent(inout) :: gmo
+    type(tensor),intent(inout) :: pfock,qfock
+    logical,intent(in) :: local
     !type(array2), intent(inout) :: pfock,qfock
     !real(realk),pointer,intent(inout) :: pfock(:),qfock(:)
     !real(realk), intent(inout) :: pfock(nocc,nocc),qfock(nvirt,nvirt)
@@ -946,12 +976,13 @@ contains
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
     real(realk) :: starttime,stoptime
-    type(array) :: gtmp
+    type(tensor) :: gtmp
     integer :: nnod,mynum,fai,tl
     integer :: nvir,noc,dim1
     logical :: master
-    character(ARR_MSG_LEN) :: msg
-    type(array) :: Sckdl
+    character(tensor_MSG_LEN) :: msg
+    type(tensor) :: Sckdl
+
     
     nvir=nvirt
     noc=nocc
@@ -963,19 +994,19 @@ contains
 
     call cpu_time(starttime)
 
-    !t_par = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+    !t_par = tensor_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
 
 
     !call RPA_fock_para2(omega2,t2,pfock,qfock,noc,nvir)
-    call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir)
+    call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir,local)
 
     !msg = 'Norm of omega2 after fock para'
     !call print_norm(omega!2,msg)
     !call mem_alloc(w2,nvirt,nvirt,nocc,nocc)
     !w2=0._realk
 
-    Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,local=.true.,atype='TDAR')
-    call array_convert(t2,Sckdl%elm1)
+    call tensor_minit(Sckdl, [nvirt,nvirt,nocc,nocc],4,local=.true.,atype='TDAR')
+    call tensor_convert(t2,Sckdl%elm1)
 
     do a=1,nvirt
     do i=1,nocc
@@ -983,8 +1014,8 @@ contains
     enddo
     enddo
 
-    call array_cp_tiled2dense(gmo,.true.)
-    call RPA_residual_par_add(omega2,Sckdl,gmo,noc,nvir)
+    call tensor_cp_tiled2dense(gmo,.true.)
+    call RPA_residual_par_add(omega2,Sckdl,gmo,noc,nvir,local)
 
 
     call cpu_time(stoptime)
@@ -1022,12 +1053,12 @@ contains
 !!    call mo_work_dist(nvirt*nocc,fai,tl)
 !!    call mem_alloc(w2,tl*nocc*nvirt*nocc)
 !!
-!!    t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+!!    t_par = tensor_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
 !!
 !    call array4_reorder(t2,[1,3,2,4])
-!!    call array_convert(t2%val,t_par)
+!!    call tensor_convert(t2%val,t_par)
 !
-!!    call array_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
+!!    call tensor_two_dim_1batch(t_par,[1,3,2,4],'g',w2,2,fai,tl,.false.,debug=.true.)
 !
 !    ! 1
 !    call array2_transpose(qfock)
@@ -1072,23 +1103,24 @@ contains
   !\brief Calculate additional linear and quadratic terms of the RPA residual 
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_residual_par_add(omega2,u2,gmo,nocc,nvirt)
+  subroutine RPA_residual_par_add(omega2,u2,gmo,nocc,nvirt,local)
 
     implicit none
     !type(array4), intent(inout) :: omega2!,u2
-    type(array), intent(inout) :: u2 ,omega2
+    type(tensor), intent(inout) :: u2 ,omega2
     !real(realk), intent(inout),pointer :: gmo(:)
-    type(array), intent(inout):: gmo
+    type(tensor), intent(inout):: gmo
+    logical,intent(in) :: local
     integer,intent(inout) :: nocc,nvirt
     !type(array4) :: Sckdl,Dckbj
-    type(array) :: Sckdl
-    type(array) :: t_par,omegaw1
+    type(tensor) :: Sckdl
+    type(tensor) :: t_par,omegaw1
     integer, dimension(4) :: tmp_dims
-    integer :: a,b,c,i,j,k,dim1
+    integer :: a,b,c,i,j,k,dim1,no,nv
     integer :: fai,tl,mynum,nnod
     real(realk) :: starttime,stoptime
     real(realk),pointer :: w2(:),w3(:),omegw(:),w4(:)
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
     logical :: master,trafo
 
     master=.true.
@@ -1099,8 +1131,39 @@ contains
     nnod          = infpar%lg_nodtot
 #endif
 
-
+   
     dim1=nocc*nvirt
+    no = nocc
+    nv = nvirt
+    
+    if(local) then
+
+    call mem_alloc(w3,dim1*dim1)
+    !call mem_alloc(w4,dim1*dim1)
+
+    !call array_reorder_4d(1.0E0_realk,u2%elm4,no,nv,no,nv,[4,2,3,1],1.0E0_realk,w2)
+   call tensor_reorder(u2,[4,2,3,1])
+
+    call dgemm('n','n',dim1,dim1,dim1, &
+        & 1.0E0_realk,u2%elm4,dim1,gmo%elm1,dim1,0.0E0_realk,w3,dim1)
+
+    call tensor_reorder(omega2,[4,2,3,1])
+
+    call dgemm('n','n',dim1,dim1,dim1, &
+       &  2.0E0_realk,w3,dim1,u2%elm4,dim1,1.0E0_realk,omega2%elm1,dim1)
+
+    call tensor_reorder(omega2,[4,2,3,1])
+
+    !call array_reorder_4d(1.0E0_realk,w4,no,nv,no,nv,[4,2,3,1],1.0E0_realk,&
+    !   &  omega2%elm1)
+
+    call tensor_reorder(u2,[4,2,3,1])
+
+    call mem_dealloc(w3)
+    !call mem_dealloc(w4)
+    else
+
+
 #ifdef VAR_MPI
     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
       call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
@@ -1109,25 +1172,25 @@ contains
     endif StartUpSlaves
 #endif
 
-    !call array_cp_tiled2dense()
+    !call tensor_cp_tiled2dense()
 
 
     call mo_work_dist(nvirt*nocc,fai,tl,trafo)
 
-    t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
-    call array_convert(u2%elm4,t_par)
-    call array_free(u2)
+    call tensor_ainit(t_par, [nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
+    call tensor_convert(u2%elm4,t_par)
+    call tensor_free(u2)
     call mem_alloc(w2,tl*nocc*nvirt)
     call mem_alloc(w3,tl*nocc*nvirt)
     
 
-    call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.false.)
-    !call array_two_dim_1batch(u2,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.false.)
+    call tensor_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.false.)
+    !call tensor_two_dim_1batch(u2,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.false.)
 
     !write(msg,*) 'Norm of gmo',infpar%lg_mynum
     !call print_norm(gmo,msg)
-    !call array_gather(1.0E0_realk,gmo,0.0E0_realk,w4,i8*dim1*dim1)
-    !call array_convert(gmo,w4) ! does not work
+    !call tensor_gather(1.0E0_realk,gmo,0.0E0_realk,w4,i8*dim1*dim1)
+    !call tensor_convert(gmo,w4) ! does not work
 
 !    call lsmpi_barrier(infpar%lg_comm)
 
@@ -1143,12 +1206,12 @@ contains
 !    call print_norm(w3,i8*tl*nvirt*nocc,msg)
 
 !#ifdef VAR_MPI
-    !call array_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
-    !call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
+    !call tensor_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
+    !call tensor_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
     call mem_dealloc(w2)
     call mem_alloc(w4,nocc*nvirt*nocc*nvirt)
-    call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
-    !call array_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
+    call tensor_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
+    !call tensor_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
 !    write(msg,*) 'Norm of w4',infpar%lg_mynum
 !#else
 !    write(msg,*) 'Norm of w4'
@@ -1179,8 +1242,8 @@ contains
     call mem_dealloc(w4)
     
 
-    !call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
-    call array_two_dim_1batch(omega2,[4,2,3,1],'a',omegw,2,fai,tl,.false.,debug=.true.)
+    !call tensor_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
+    call tensor_two_dim_1batch(omega2,[4,2,3,1],'a',omegw,2,fai,tl,.false.,debug=.true.)
 
 #ifdef VAR_MPI
 
@@ -1188,10 +1251,15 @@ contains
 
 #endif
 
+    call mem_dealloc(omegw)
+    call tensor_free(t_par)
+
+    endif
+
 !#ifdef VAR_MPI
 !    if(master) then
 
-!      call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
+!      call tensor_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
       
 !      call array4_reorder(omega2,[1,3,2,4])
 
@@ -1202,9 +1270,7 @@ contains
 !    endif
 
 
-    call array_free(t_par)
-    !call array_free(omegaw1)
-    call mem_dealloc(omegw)
+    !call tensor_free(omegaw1)
 
 
   end subroutine RPA_residual_par_add
@@ -1217,19 +1283,19 @@ contains
 !
 !    implicit none
 !    type(array4), intent(inout) :: omega2!,u2
-!    type(array), intent(inout) :: u2 !,omega2
+!    type(tensor), intent(inout) :: u2 !,omega2
 !    real(realk), intent(inout),pointer :: gmo(:)
-!    !type(array), intent(inout):: gmo
+!    !type(tensor), intent(inout):: gmo
 !    integer,intent(inout) :: nocc,nvirt
 !    !type(array4) :: Sckdl,Dckbj
-!    type(array) :: Sckdl,Dckbj
-!    type(array) :: t_par,omegaw1
+!    type(tensor) :: Sckdl,Dckbj
+!    type(tensor) :: t_par,omegaw1
 !    integer, dimension(4) :: tmp_dims
 !    integer :: a,b,c,i,j,k,dim1
 !    integer :: fai,tl,mynum,nnod
 !    real(realk) :: starttime,stoptime
 !    real(realk),pointer :: w2(:),w3(:),omegw(:),w4(:)
-!    character(ARR_MSG_LEN) :: msg
+!    character(tensor_MSG_LEN) :: msg
 !    logical :: master
 !
 !    master=.true.
@@ -1250,7 +1316,7 @@ contains
 !#endif
 !   
 !
-!    omegaw1 = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
+!    omegaw1 = tensor_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
 !    !write(*,*) 'omegaw1 tdim=',omegaw1%tdim
 !    !write(*,*) 'omegaw1 dims=',omegaw1%dims
 !    !write(*,*) 'omegaw1 tile=',omegaw1%ntiles
@@ -1258,7 +1324,7 @@ contains
 !!#ifdef VAR_MPI
 !!    if(master) then
 !!      call array4_reorder(omega2,[1,3,2,4])
-!!      call array_convert(omega2%val,omegaw1)
+!!      call tensor_convert(omega2%val,omegaw1)
 !!      !write(msg,*) 'Norm of omegaw1',infpar%lg_mynum
 !!      write(*,*) 'omegaw1 tdim=',omegaw1%tdim
 !!      !call print_norm(omegaw1,msg)
@@ -1267,7 +1333,7 @@ contains
 !!#endif
 !
 !    call array4_reorder(omega2,[1,3,2,4])
-!    call array_convert(omega2%val,omegaw1)
+!    call tensor_convert(omega2%val,omegaw1)
 !!#endif
 !
 !
@@ -1282,12 +1348,12 @@ contains
 !    call mem_alloc(omegw,tl*nocc*nvirt)
 !    !call mem_alloc(omegw,tl*tl)
 !
-!    t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
+!    t_par = tensor_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
 !    !call array4_reorder(u2,[1,3,2,4])
 !    !call copy_array(u2,t_par)
-!    call array_convert(u2%elm4,t_par)
+!    call tensor_convert(u2%elm4,t_par)
 !
-!    call array_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.true.)
+!    call tensor_two_dim_1batch(t_par,[4,2,3,1],'g',w2,2,fai,tl,.false.,debug=.true.)
 !
 !
 !    omegw=0.0_realk
@@ -1303,9 +1369,9 @@ contains
 !!    call print_norm(w3,i8*tl*nvirt*nocc,msg)
 !
 !!#ifdef VAR_MPI
-!    !call array_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
-!    !call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
-!    call array_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
+!    !call tensor_gather(1.0E0_realk,u2,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
+!    !call tensor_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[1,3,2,4])
+!    call tensor_gather(1.0E0_realk,t_par,0.0E0_realk,w4,i8*dim1*dim1,oo=[4,2,3,1])
 !!    write(msg,*) 'Norm of w4',infpar%lg_mynum
 !!#else
 !!    write(msg,*) 'Norm of w4'
@@ -1332,8 +1398,8 @@ contains
 !!#endif
 !    
 !
-!    !call array_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
-!    call array_two_dim_1batch(omegaw1,[4,2,3,1],'a',omegw,2,fai,tl,.false.,debug=.true.)
+!    !call tensor_two_dim_1batch(omegaw1,[1,3,2,4],'a',omegw,2,fai,tl,.false.,debug=.true.)
+!    call tensor_two_dim_1batch(omegaw1,[4,2,3,1],'a',omegw,2,fai,tl,.false.,debug=.true.)
 !
 !#ifdef VAR_MPI
 !
@@ -1344,7 +1410,7 @@ contains
 !!#ifdef VAR_MPI
 !    if(master) then
 !
-!      call array_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
+!      call tensor_gather(1.0E0_realk,omegaw1,0.0E0_realk,omega2%val,i8*nvirt*nocc*nvirt*nocc)
 !      
 !      call array4_reorder(omega2,[1,3,2,4])
 !
@@ -1355,8 +1421,8 @@ contains
 !    endif
 !
 !
-!    call array_free(t_par)
-!    call array_free(omegaw1)
+!    call tensor_free(t_par)
+!    call tensor_free(omegaw1)
 !    call mem_dealloc(w2)
 !    call mem_dealloc(w3)
 !    call mem_dealloc(w4)
@@ -1416,8 +1482,8 @@ contains
   function get_rpa_energy_arrnew(t2,gmo,nocc,nvirt) result(ecorr)
 
     implicit none
-    type(array), intent(in) :: t2
-    type(array), intent(inout) :: gmo
+    type(tensor), intent(in) :: t2
+    type(tensor), intent(inout) :: gmo
     integer, intent(in) :: nocc,nvirt
     real(realk) :: ecorr,ecorr_d
     integer :: a,i,b,j
@@ -1425,7 +1491,7 @@ contains
     ecorr = 0.0E0_realk
     ecorr_d = 0.0E0_realk
 
-    if(t2%itype==DENSE.and.gmo%itype==DENSE)then
+    if(t2%itype==TT_DENSE.and.gmo%itype==TT_DENSE)then
       !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(nocc,&
       !$OMP nvirt,t2,gmo) REDUCTION(+:ecorr_d)
       do j=1,nocc
@@ -1442,7 +1508,7 @@ contains
 
       ecorr = ecorr_d
 
-    else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+    else if(t2%itype==TT_TILED_DIST.and.gmo%itype==TT_TILED_DIST)then
 
       ecorr=get_rpa_energy_parallel(t2,gmo)
 
@@ -1455,8 +1521,8 @@ contains
   function get_sosex_cont_arrnew(t2,gmo,nocc,nvirt) result(ecorr)
 
     implicit none
-    type(array), intent(in) :: t2
-    type(array), intent(inout) :: gmo
+    type(tensor), intent(in) :: t2
+    type(tensor), intent(inout) :: gmo
     integer, intent(in) :: nocc,nvirt
     real(realk) :: ecorr,ecorr_d
     integer :: a,i,b,j
@@ -1464,7 +1530,7 @@ contains
     ecorr = 0.0E0_realk
     ecorr_d = 0.0E0_realk
 
-    if(t2%itype==DENSE.and.gmo%itype==DENSE)then
+    if(t2%itype==TT_DENSE.and.gmo%itype==TT_DENSE)then
       !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(nocc,&
       !$OMP nvirt,t2,gmo) REDUCTION(+:ecorr_d)
       do j=1,nocc
@@ -1481,7 +1547,7 @@ contains
 
       ecorr = ecorr_d
 
-    else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+    else if(t2%itype==TT_TILED_DIST.and.gmo%itype==TT_TILED_DIST)then
 
       ecorr=get_sosex_cont_parallel(t2,gmo)
 
@@ -1494,9 +1560,9 @@ contains
 !  function get_rpa_energy_parallel(t2,gmo) result(Ec)
 !    implicit none
 !    !> two electron integrals in the mo-basis
-!    type(array), intent(inout) :: gmo
+!    type(tensor), intent(inout) :: gmo
 !    !> doubles amplitudes
-!    type(array), intent(in) :: t2
+!    type(tensor), intent(in) :: t2
 !    !> on return Ec contains the correlation energy
 !    real(realk) :: E1,E2,Ec
 !    real(realk),pointer :: t(:,:,:,:)
@@ -1505,9 +1571,9 @@ contains
 !#ifdef VAR_MPI
 !    !Get the slaves to this routine
 !    if(infpar%lg_mynum==infpar%master)then
-!      call pdm_array_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
+!      call pdm_tensor_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
 !    endif
-!    call memory_allocate_array_dense(gmo)
+!    call memory_allocate_tensor_dense(gmo)
 !    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
 !
 !    E2=0.0E0_realk
@@ -1540,7 +1606,7 @@ contains
 !      nullify(t)
 !    enddo
 !
-!    call arr_deallocate_dense(gmo)
+!    call tensor_deallocate_dense(gmo)
 !    
 !    call lsmpi_local_reduction(E2,infpar%master)
 !
@@ -1554,9 +1620,9 @@ contains
 !  function get_sosex_cont_parallel(t2,gmo) result(Ec)
 !    implicit none
 !    !> two electron integrals in the mo-basis
-!    type(array), intent(inout) :: gmo
+!    type(tensor), intent(inout) :: gmo
 !    !> doubles amplitudes
-!    type(array), intent(in) :: t2
+!    type(tensor), intent(in) :: t2
 !    !> on return Ec contains the correlation energy
 !    real(realk) :: E2,Ec
 !    real(realk),pointer :: t(:,:,:,:)
@@ -1565,9 +1631,9 @@ contains
 !#ifdef VAR_MPI
 !    !Get the slaves to this routine
 !    if(infpar%lg_mynum==infpar%master)then
-!      call pdm_array_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
+!      call pdm_tensor_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
 !    endif
-!    call memory_allocate_array_dense(gmo)
+!    call memory_allocate_tensor_dense(gmo)
 !    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
 !
 !    E2=0.0E0_realk
@@ -1599,7 +1665,7 @@ contains
 !      nullify(t)
 !    enddo
 !
-!    call arr_deallocate_dense(gmo)
+!    call tensor_deallocate_dense(gmo)
 !    
 !    call lsmpi_local_reduction(E2,infpar%master)
 !
@@ -1664,8 +1730,9 @@ subroutine rpa_res_slave()
   use rpa_module
   implicit none
   !> number of orbitals:
-  type(array) :: omega2,t2
-  type(array) :: gmo
+  type(tensor) :: omega2,t2
+  type(tensor) :: gmo
+  logical :: local
   !type(array4) :: omega2!,t2
   !real(realk),pointer :: gmo(:)!,t2(:,:,:,:)
   type(array2)  :: pfock,qfock
@@ -1674,7 +1741,8 @@ subroutine rpa_res_slave()
   
   !print*, infpar%lg_mynum,'rpa_res_slave'
   call rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
-  call RPA_residual_par_add(omega2,t2,gmo,nocc,nvirt)
+  local = .false.
+  call RPA_residual_par_add(omega2,t2,gmo,nocc,nvirt,local)
 
 end subroutine rpa_res_slave
 
@@ -1687,16 +1755,18 @@ subroutine rpa_fock_slave()
   use rpa_module
   implicit none
   !> number of orbitals:
-  type(array) :: t2
-  type(array) :: omega2!,t2
-  type(array)  :: pfock,qfock
+  type(tensor) :: t2
+  type(tensor) :: omega2!,t2
+  type(tensor)  :: pfock,qfock
   real(realk),pointer :: gmo(:)
+  logical :: local
   !real(realk),pointer  :: pfock(:),qfock(:)
   integer :: nbas, nocc, nvirt
   !> how to pack integrals:
   !print*, infpar%lg_mynum,'rpa_fock_slave'
   call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nocc,nvirt)
-  call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
+  local = .false.
+  call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt,local)
   !call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
 
 end subroutine rpa_fock_slave

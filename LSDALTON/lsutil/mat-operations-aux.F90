@@ -41,8 +41,34 @@ MODULE matrix_operations_aux
         & mat_write_to_disk2, mat_read_from_disk2, mat_VEC_TO_MAT,&
         & MAT_TO_VEC, mat_report_sparsity, mat_inquire_cutoff, mat_dmul,&
         & mat_hmul, mat_hdiv, mat_dger, mat_dhmul, mat_zero_cutoff,&
-        & mat_dE_dmu, mat_column_norm, mat_sum
+        & mat_dE_dmu, mat_column_norm, mat_sum, mat_Condition_Number
    contains
+
+SUBROUTINE Mat_Condition_Number(A,ConditionNumber)
+  implicit none
+  TYPE(Matrix), INTENT(in) :: A
+  Real(realk), INTENT(inout) :: ConditionNumber
+  !
+  integer :: nrow,ncol
+  TYPE(Matrix) :: A2
+  Real(realk) :: minEigv,maxEigv
+  Real(realk),pointer :: eival(:) 
+  nrow = A%nrow
+  ncol = A%ncol
+  IF(nrow.NE.ncol)then
+     call lsquit('MAT_CONDITION_NUMBER Require a square matrix',-1)
+  ENDIF
+  call mem_alloc(eival,nrow)
+  call mat_init(A2,nrow,ncol)
+  call mat_assign(A2,A)
+  call mat_dsyev(A2,eival,nrow)
+  call mat_free(A2)
+  minEigV = MINVAL(eival)
+  maxEigV = MAXVAL(eival)
+  call mem_dealloc(eival)
+  conditionNumber = abs(maxEigV)/abs(minEigV)
+END SUBROUTINE MAT_CONDITION_NUMBER
+
 !> \brief Make c = a(1:ndim,1:nocc)*a^T(1:nocc,1:ndim) where a and c are type(matrix) 
 !> \author T. Kjærgaard
 !> \date 2012

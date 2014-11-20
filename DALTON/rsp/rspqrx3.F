@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -23,7 +23,6 @@
 !
 #define DFTQRC dft_qr_respons
 c#define DFTQRC dftqrcf
-#include "single.h"
 C
 #ifdef REVLOG
 C=========================================================================
@@ -60,6 +59,7 @@ C
 #include "wrkrsp.h"
 #include "infpri.h"
 #include "infspi.h"
+#include "gnrinf.h"
 C
       LOGICAL ATEST, TEST
       DATA TEST /.FALSE./
@@ -398,32 +398,27 @@ C
       END IF
 
       IF (PEQM) THEN
+#ifdef BUILD_PELIB
          IF (.NOT. TDHF .AND. .NOT. TRPLET) THEN 
-!           edh: This part is not ready yet and should quit   
-!           write(lupri,*) '*** WARNING peqm MCSCF QR ***  '
-!           write(lupri,*) '    Highly experimental version'
-!           write(lupri,*) '    Results *WILL* be wrong    '
-!           call quit('ERROR: MCSCF quadratic response not'//
-!    &                ' implemented with the PE library.')
-!           write(lupri,*)'KFREE', KFREE
-!           write(lupri,*)'LFREE', LFREE
-
-            CALL PE_RSPMCQR(VECB, VECC, ETRS, XINDX, 
-     &                      WRK(KZYMB), WRK(KZYMC), WRK(KDEN1), UDV, 
-     &                      WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
-     &                      ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+!           write(lupri,*) '*** WARNING PE-MCSCF QR ***  '
+!           write(lupri,*) 'Highly experimental version'
+!           write(lupri,*) 'Results *WILL* be wrong'
+            call quit('ERROR: PE-MCSCF quadratic response not'//
+     &                ' implemented using the PE library.')
+!            CALL PE_RSPMCQR(VECB, VECC, ETRS, XINDX, 
+!     &                      WRK(KZYMB), WRK(KZYMC), WRK(KDEN1), UDV, 
+!     &                      WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
+!     &                      ISYMA, ISYMB, ISYMC, CMO, MJWOP)
          ELSE IF (NASHT > 0) THEN
             CALL QUIT('ERROR: quadratic response not implemented for'//
      &                ' open shell systems with the PE library.')
          ELSE IF (TRPLET) THEN
             CALL QUIT('ERROR: triplets not implemented for quadratic'//
      &                ' response with the PE library.')
-        ENDIF
-
-#ifdef BUILD_PELIB
-        CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
-     &                 UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
-     &                 ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+         ENDIF
+         CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
+     &                  UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
+     &                  ISYMA, ISYMB, ISYMC, CMO, MJWOP)
 #endif
       END IF
 
@@ -470,6 +465,19 @@ C
          END IF
       END IF
 C
+      IF (QMNPMM) THEN
+         IF (TDHF) THEN
+            CALL QMNPMMQRO(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
+     *                        WRK(KZYMC),UDV,WRK(KFREE),LFREE, KZYVA,
+     *                        KZYVB,KZYVC, ISYMA,ISYMB,ISYMC,CMO,MJWOP,
+     *                        ISPINA,ISPINB,ISPINC)
+               CALL QMNPMMQRO(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
+     *                        WRK(KZYMB), UDV,WRK(KFREE),LFREE,KZYVA,
+     *                        KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
+     *                        ISPINA,ISPINC,ISPINB) 
+            END IF   
+       END IF
+C
       IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
          IF (TDHF) THEN
@@ -490,6 +498,7 @@ C
      *                 KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP,
      *                 WRK(KSYRLM))
          END IF
+C
 C
 Clf 10/06/2002
 C quadratic PCM response (for the time beeing without memory efficent SCF)

@@ -14,9 +14,10 @@ module ccintegrals
   use matrix_operations
   use integralinterfaceDEC
   use screen_mod
-  use Integralparameters
+  use LSparameters
   use integralinterfaceMOD
   use II_XC_interfaceModule
+  use IchorErimoduleHost
 
   ! MO-CCSD module:
   use tensor_interface_module
@@ -35,6 +36,7 @@ module ccintegrals
   use array4_simple_operations
   ! MO-CCSD module:
   use dec_fragment_utils 
+  use cc_tools_module
 #ifdef VAR_MPI
   use decmpi_module
 #endif
@@ -44,10 +46,9 @@ module ccintegrals
      module procedure getL_simple_from_gmo
      module procedure getL_diff
   end interface
- 
+
   private :: get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
-             & get_AO_batches_size_rpa, get_mem_gmo_RPA, gao_to_gmo, gao_to_govov, &
-             & get_MO_batches_info, pack_and_add_gmo
+       & gao_to_gmo, get_MO_batches_info, pack_and_add_gmo
 
 contains
 
@@ -60,17 +61,33 @@ contains
     type(array4),intent(inout) :: g_ao
     type(matrix) :: g_matrix
     integer, dimension(4) :: ao_dims
-
+    character :: intspec(5)
+    logical :: SAMEMOL
+    integer :: iprint
+    intspec(1) = 'R'
+    intspec(2) = 'R'
+    intspec(3) = 'R'
+    intspec(4) = 'R'
+    intspec(5) = 'C'
     ao_dims=[nbasis,nbasis,nbasis,nbasis]
 
     write(DECinfo%output,'(a)') 'info :: calculating two-electron integrals'
     g_ao = array4_init_standard(ao_dims)
     ! KK Quick fix: Filename associated with g_ao
     g_ao%filename = 'gao'
-
-    call ii_get_4center_eri(DECinfo%output,DECinfo%output,&
-         & mylsitem%setting,g_ao%val,nbasis,nbasis,nbasis,nbasis)
-
+    IF(DECinfo%useIchor)THEN
+       SameMOL = .TRUE.
+       iprint = 0
+       call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,&
+            & INTSPEC,SameMOL)
+       call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,&
+            & nbasis,nbasis,nbasis,nbasis,g_ao%val,INTSPEC,.TRUE.,&
+            & 1,1,1,1,1,1,1,1,.FALSE.,nbasis,nbasis,nbasis,nbasis,.FALSE.)
+       call FREE_SCREEN_ICHORERI()
+    ELSE
+       call ii_get_4center_eri(DECinfo%output,DECinfo%output,&
+            & mylsitem%setting,g_ao%val,nbasis,nbasis,nbasis,nbasis,intspec)
+    ENDIF
     ! write ao integrals to disk
     call array4_write(g_ao)
 
@@ -483,7 +500,7 @@ contains
   !> where J(U) and K(U) are the coulomb and exchange transformations, respectively.
   !> \author Kasper Kristensen
   !> \date November 2010
-  subroutine dec_fock_transformation(FockU,U,MyLsitem,symmetric)
+  subroutine dec_fock_transformation(FockU,U,MyLsitem,symmetric,incl_h)
 
     implicit none
     !> Fock transformation on U matrix
@@ -494,8 +511,12 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
     !> Is U symmetric (true) or not (false)?
     logical, intent(in) :: symmetric
+    !> Include one-electron contribution to Fock matrix (default: not include)
+    logical,intent(in),optional :: incl_h
     real(realk) :: Edft(1),DFTELS
     logical :: doMPI 
+    integer :: igrid
+    type(matrix) :: h
     ! Sanity check
     if(U%nrow /= U%ncol) then
        call lsquit('dec_fock_transformation:&
@@ -506,21 +527,40 @@ contains
     call II_get_Fock_mat(DECinfo%output, DECinfo%output, &
          & MyLsitem%setting,U,symmetric,FockU,1,.FALSE.)
     IF(DECinfo%DFTreference)THEN
-       IF(DECinfo%FrozenCore)THEN
-          !not the full number of electrons we deactivate the testing
-          DFTELS = MyLsItem%setting%scheme%DFT%DFTELS
-          MyLsItem%setting%scheme%DFT%DFTELS = 100.0E0_realk
-       ENDIF
+       !rebuild the grid 
+       MyLsitem%setting%scheme%DFT%griddone = 0
+       igrid = MyLsitem%setting%scheme%DFT%igrid
+       MyLsitem%setting%scheme%DFT%GridObject(igrid)%GRIDDONE = 0
+
+       !not the full number of electrons we deactivate the testing
+       DFTELS = MyLsItem%setting%scheme%DFT%DFTELS
+       MyLsItem%setting%scheme%DFT%DFTELS = 100.0E0_realk
+
        !Deactivate MPI - done at the DEC level - maybe this could
        !be done in the local group - then the MyLsItem%setting%node
        !and MyLsItem%setting%comm needs to be set correctly
-       doMPI = MyLsItem%setting%scheme%doMPI
-       MyLsItem%setting%scheme%doMPI = .FALSE.
+       !       doMPI = MyLsItem%setting%scheme%doMPI
+       !       MyLsItem%setting%scheme%doMPI = .FALSE.
+       print*,'MyLsItem%setting%node',MyLsItem%setting%node
+       print*,'MyLsItem%setting%numnodes',MyLsItem%setting%numnodes
        call II_get_xc_fock_mat(DECinfo%output,DECinfo%output,&
             & MyLsItem%setting,U%nrow,U,FockU,Edft,1)       
-       MyLsItem%setting%scheme%doMPI = doMPI 
-       IF(DECinfo%FrozenCore)MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
+       !       MyLsItem%setting%scheme%doMPI = doMPI 
+       !       IF(DECinfo%FrozenCore)
+       MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
     ENDIF
+
+
+    ! Add one-electron contribution
+    if(present(incl_h)) then
+       if(incl_h) then
+          call mat_init(h,U%nrow,U%ncol)
+          call mat_zero(h)
+          call ii_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
+          call mat_daxpy(1E0_realk,h,FockU)
+          call mat_free(h)
+       end if
+    end if
 
   end subroutine dec_fock_transformation
 
@@ -538,8 +578,8 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     character(5),intent(IN) :: intSpec
     TYPE(DECscreenITEM)   :: DecScreen
-    logical :: doscreen
-    integer :: ndim(4),i
+    logical :: doscreen,SameMOL,NoSymmetry,FULLBATCH,MoTrans
+    integer :: ndim(4),i,iAO,nAObatches,iprint
     character(1) :: intSpecConvert(5)
 
     intSpecConvert(1) = intSpec(1:1)
@@ -549,27 +589,48 @@ contains
     intSpecConvert(5) = intSpec(5:5)
 
     DO i=1,4
-      IF (intSpecConvert(i).EQ.'R') THEN !Regular AO basis
-        ndim(i) = nbasis
-      ELSE IF (intSpecConvert(i).EQ.'C') THEN !CABS AO basis
-        ndim(i) = ncabs
-      ELSE
-        CALL LSQUIT('Error in get_full_AO_integrals in specification of AOs',-1)
-      ENDIF
+       IF (intSpecConvert(i).EQ.'R') THEN !Regular AO basis
+          ndim(i) = nbasis
+       ELSE IF (intSpecConvert(i).EQ.'C') THEN !CABS AO basis
+          ndim(i) = ncabs
+       ELSE
+          CALL LSQUIT('Error in get_full_AO_integrals in specification of AOs',-1)
+       ENDIF
     ENDDO
-
-    ! Set integral screening
-    doscreen = mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen
-    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,1,1,intspecConvert)
-    IF(doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-    IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-
-    ! Get AO integrals
-    call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output,Mylsitem%SETTING,&
-         & gao,1,1,ndim(3),ndim(4),ndim(1),ndim(2),ndim(3),ndim(4),.true.,intSpecConvert)
-    call free_decscreen(DECSCREEN)
-    nullify(mylsitem%setting%LST_GAB_RHS)
-    nullify(mylsitem%setting%LST_GAB_LHS)
+    IF(DECinfo%useIchor)THEN
+       !Use Ichor code to calculate Integrals     
+       !Calculate Screening integrals 
+       SameMOL = .TRUE. !Specifies same molecule on all centers 
+       call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+       !Determine the full number of AO batches - not to be confused with the batches of AOs
+       !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+       iAO = 1 !which center? 
+       call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+       ! Get AO integrals
+       FULLBATCH = .TRUE.   !Full set of AOs?
+       NoSymmetry = .FALSE. !Use Permutational symmetry?
+       MoTrans = .FALSE.    !Transformation to Molecular Orbital basis?
+       iprint = 0           !Printlevel 
+       call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,ndim(1),ndim(2),ndim(3),ndim(4),&
+            & gao,INTSPEC,FULLBATCH,1,nAObatches,1,nAObatches,1,nAObatches,1,nAObatches,&
+            & MoTrans,ndim(1),ndim(2),ndim(3),ndim(4),NoSymmetry)
+       !Free screening info
+       call FREE_SCREEN_ICHORERI()
+    ELSE
+       !Use Thermite code to calculate Integrals     
+       ! Set integral screening
+       doscreen = mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen
+       call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,1,1,intspecConvert)
+       IF(doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+       IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabRHS
+       
+       ! Get AO integrals
+       call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output,Mylsitem%SETTING,&
+            & gao,1,1,ndim(3),ndim(4),ndim(1),ndim(2),ndim(3),ndim(4),.true.,intSpecConvert)
+       call free_decscreen(DECSCREEN)
+       nullify(mylsitem%setting%LST_GAB_RHS)
+       nullify(mylsitem%setting%LST_GAB_LHS)       
+    ENDIF
 
   end subroutine get_full_AO_integrals
 
@@ -634,24 +695,24 @@ contains
 
 
     DO i=1,4
-      IF (intSpecConvert(i).EQ.'R') THEN !Regular AO basis
-        ndim(i) = nbasis
-        AO(i)   = AORegular
-      ELSE IF (intSpecConvert(i).EQ.'C') THEN !CABS AO basis
-        ndim(i) = ncabs
-        AO(i)   = AOdfCABS
-      ELSE
-        CALL LSQUIT('Error in get_full_AO_integrals in specification of AOs',-1)
-      ENDIF
+       IF (intSpecConvert(i).EQ.'R') THEN !Regular AO basis
+          ndim(i) = nbasis
+          AO(i)   = AORegular
+       ELSE IF (intSpecConvert(i).EQ.'C') THEN !CABS AO basis
+          ndim(i) = ncabs
+          AO(i)   = AOdfCABS
+       ELSE
+          CALL LSQUIT('Error in get_full_AO_integrals in specification of AOs',-1)
+       ENDIF
     ENDDO
 
     IF ((AO(3).NE.AORegular).OR.(AO(4).NE.AORegular)) &
-     &  CALL LSQUIT('Error in get_full_AO_integrals in AO3 or AO4. Both should be AOregular',-1)
+         &  CALL LSQUIT('Error in get_full_AO_integrals in AO3 or AO4. Both should be AOregular',-1)
 
     IF (intSpecConvert(5).EQ.'C') THEN
-      Oper = coulombOperator
+       Oper = coulombOperator
     ELSE
-      CALL LSQUIT('Error in get_full_AO_integrals in specification of operator',-1)
+       CALL LSQUIT('Error in get_full_AO_integrals in specification of operator',-1)
     ENDIF
 
     ! Quick fix because we need to pass an array
@@ -661,7 +722,7 @@ contains
     call mat_init(h,ndim(1),ndim(2))
     CALL II_get_h1_mixed(DECinfo%output,DECinfo%output,MyLsitem%SETTING,h,AO(1),AO(2))
     CALL II_get_coulomb_mat_mixed(DECinfo%output,DECinfo%output,MyLsitem%SETTING,(/D/),Jarr,ndmat,&
-     &                            AO(1),AO(2),AO(3),AO(4),Oper)
+         &                            AO(1),AO(2),AO(3),AO(4),Oper)
 
     call mat_assign(hJ,Jarr(1))
     call mat_free(Jarr(1))
@@ -707,61 +768,59 @@ contains
 
 
     DO i=1,4
-      IF (intspecConvert(i).EQ.'R') THEN !Regular AO basis
-        ndim(i) = nbasis
-        AO(i)   = AORegular
-      ELSE IF (intspecConvert(i).EQ.'C') THEN !CABS AO basis
-        ndim(i) = ncabs
-        AO(i)   = AOdfCABS
-      ELSE
-        CALL LSQUIT('Error in get_AO_K in specification of AOs',-1)
-      ENDIF
+       IF (intspecConvert(i).EQ.'R') THEN !Regular AO basis
+          ndim(i) = nbasis
+          AO(i)   = AORegular
+       ELSE IF (intspecConvert(i).EQ.'C') THEN !CABS AO basis
+          ndim(i) = ncabs
+          AO(i)   = AOdfCABS
+       ELSE
+          CALL LSQUIT('Error in get_AO_K in specification of AOs',-1)
+       ENDIF
     ENDDO
 
     IF ((AO(3).NE.AORegular).OR.(AO(4).NE.AORegular)) &
-     &  CALL LSQUIT('Error in get_AO_K in AO3 or AO4. Both should be AOregular',-1)
+         &  CALL LSQUIT('Error in get_AO_K in AO3 or AO4. Both should be AOregular',-1)
 
     IF (intspecConvert(5).EQ.'C') THEN
-      Oper = coulombOperator
+       Oper = coulombOperator
     ELSE
-      CALL LSQUIT('Error in get_AO_K in specification of operator',-1)
+       CALL LSQUIT('Error in get_AO_K in specification of operator',-1)
     ENDIF
-    
+
     ! Quick fix because we need to pass an array
     call mat_init(Karr(1),K%nrow,K%ncol)
     call mat_zero(Karr(1))
     CALL ii_get_exchange_mat_mixed(DECinfo%output,DECinfo%output,MyLsitem%SETTING,(/D/),ndmat,Dsym,&
-     &                             Karr,AO(1),AO(3),AO(2),AO(4),Oper)
+         &                             Karr,AO(1),AO(3),AO(2),AO(4),Oper)
     call mat_assign(K,Karr(1)) 
     call mat_free(Karr(1))
 
   end subroutine get_AO_K
 
 
+#ifdef MOD_UNRELEASED
   !> Purpose: calculate AO int. in batches and transform them to
   !           full MO basis (non T1-transformed)
   !           The batches are then packed using permutational
   !           symmetry and are kept in memory (PDM if MPI)
-  !           If the routine is call for RPA then only govov is 
-  !           calculated without batching and packing.
   !
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,govov,pgmo_diag,pgmo_up, &
-                          & nb,no,nv,CCmodel,MOinfo)
+  subroutine get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,pgmo_diag,pgmo_up, &
+       & nb,no,nv,MOinfo)
 
     implicit none
 
     !> number of orbitals:
-    integer, intent(in) :: nb, no, nv, CCmodel
+    integer, intent(in) :: nb, no, nv
     !> SCF transformation matrices:
     real(realk), pointer, intent(in) :: Co(:,:), Cv(:,:)
     !> performed MO-based CCSD calculation ?
     logical, intent(inout) :: mo_ccsd
     !> array with packed gmo on output:
     ! (intent in needed for the slaves)
-    type(array), intent(inout) :: govov
-    type(array), intent(inout) :: pgmo_diag, pgmo_up
+    type(tensor), intent(inout) :: pgmo_diag, pgmo_up
 
     !> variables used for MO batch and integral transformation
     integer :: ntot ! total number of MO
@@ -772,36 +831,41 @@ contains
     integer :: P_sta, P_end, Q_sta, Q_end
     type(MObatchInfo), intent(out) :: MOinfo
     logical :: local_moccsd
-     
+
     !> variables used for AO batch construction and AO integral calculation
     real(realk), pointer :: gao(:)
     integer(kind=long)   :: gaosize
     integer :: alphaB, gammaB, dimAlpha, dimGamma
     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
     integer :: iorb, idx, K
+!ICHOR
+    type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
+    type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
+    integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
+    logical :: MoTrans, NoSymmetry,SameMol
+!THERMITE
+    integer, pointer :: batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchAlpha(:),orb2batchGamma(:)
+    integer, pointer :: batchsizeGamma(:), batchindexGamma(:)
+    ! Screening integrals stuff:
+    type(DECscreenITEM) :: DecScreen
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
+    integer, pointer :: batchdimAlpha(:),batchdimGamma(:)
     Character :: INTSPEC(5)
     logical :: fullRHS, doscreen
     integer :: MaxAllowedDimAlpha, MaxActualDimAlpha, nbatchesAlpha
     integer :: MaxAllowedDimGamma, MaxActualDimGamma, nbatchesGamma
-    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), &
-                      & batchsizeAlpha(:), batchindexAlpha(:)
-    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), &
-                      & batchsizeGamma(:), batchindexGamma(:)
 
     !> CHECKING and MEASURING variables
     real(realk) :: tcpu, twall, time_start, timewall_start 
     logical :: print_debug
-       
+
     ! MPI variables:
     logical :: master, local, gdi_lk, gup_lk
     integer :: myload, win
     integer(kind=ls_mpik) :: ierr, myrank, nnod, dest
     integer, pointer      :: tasks(:)
-
-    ! Screening integrals stuff:
-    type(DECscreenITEM) :: DecScreen
 
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
@@ -817,10 +881,18 @@ contains
     INTSPEC(3)  = 'R' !R = Regular Basis set on the 3th center 
     INTSPEC(4)  = 'R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)  = 'C' !C = Coulomb operator
-
+    IF(DECinfo%useIchor)THEN
+       iprint = 0           !print level for Ichor Integral code
+       MoTrans = .FALSE.    !Do not transform to MO basis! 
+       NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+       SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+       !Determine the full number of AO batches - not to be confused with the batches of AOs
+       !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+       iAO = 1
+       call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+    ENDIF
     doscreen = MyLsItem%setting%scheme%cs_screen.OR. &
-             & MyLsItem%setting%scheme%ps_screen
-
+         & MyLsItem%setting%scheme%ps_screen
     ! Set MPI related info
     ! ********************
     master      = .true.
@@ -843,16 +915,21 @@ contains
     call LSTIMER('START',time_start,timewall_start,DECinfo%output)
 
     ! Initialize stuff
-    nullify(orb2batchAlpha)
-    nullify(batchdimAlpha)
-    nullify(batchsizeAlpha)
-    nullify(batch2orbAlpha)
-    nullify(batchindexAlpha)
-    nullify(orb2batchGamma)
-    nullify(batchdimGamma)
-    nullify(batchsizeGamma)
-    nullify(batch2orbGamma)
-    nullify(batchindexGamma)
+    IF(DECinfo%useIchor)THEN
+       nullify(AOGammabatchinfo)
+       nullify(AOalphabatchinfo)    
+    ELSE
+       nullify(orb2batchAlpha)
+       nullify(batchdimAlpha)
+       nullify(batchsizeAlpha)
+       nullify(batch2orbAlpha)
+       nullify(batchindexAlpha)
+       nullify(orb2batchGamma)
+       nullify(batchdimGamma)
+       nullify(batchsizeGamma)
+       nullify(batch2orbGamma)
+       nullify(batchindexGamma)
+    ENDIF
     nullify(Cov)
     nullify(CP)
     nullify(CQ)
@@ -871,34 +948,25 @@ contains
     !======================================================================
     ! Get minimum mem. required in the MO-CCSD residual calculation
     if (master) then 
-      select case(CCmodel)
 
-      case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
-        call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nb,no,nv, &
-               & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem,.false.)
-        if (.not.mo_ccsd) return
+       call get_MO_and_AO_batches_size(mo_ccsd,local_moccsd,ntot,nb,no,nv, &
+            & dimP,Nbatch,MaxAllowedDimAlpha,MaxAllowedDimGamma,MyLsItem,.false.)
+       if (.not.mo_ccsd) return
 
-        if (print_debug) then
-          if (local_moccsd) then 
-            write(DECinfo%output,*) 'MO-CCSD: local scheme'
-          else if (.not.local) then
-            write(DECinfo%output,*) 'MO-CCSD: PDM scheme'
-          else
-            write(DECinfo%output,*) 'MO-CCSD: non-MPI scheme'
-          end if
+       if (local_moccsd) then 
+          write(DECinfo%output,*) 'Using MO-CCSD local scheme'
+       else if (.not.local) then
+          write(DECinfo%output,*) 'Using MO-CCSD: PDM scheme'
+       else
+          write(DECinfo%output,*) 'Using MO-CCSD: non-MPI scheme'
+       end if
+       if (print_debug) then
           write(DECinfo%output,'(a,I4,a,I4)') ' BATCH: Number of MO batches      = ', &
                & Nbatch*(Nbatch+1)/2, ' with maximum size', dimP
-        end if
+       end if
 
-        ! Initialize gmo arrays:
-        call init_gmo_arrays(ntot,dimP,Nbatch,local,local_moccsd,pgmo_diag,pgmo_up)
-
-      case(MODEL_RPA)
-        call get_AO_batches_size_rpa(ntot,nb,no,nv,MaxAllowedDimAlpha, &
-                  & MaxAllowedDimGamma,MyLsItem)
-      case default
-          call lsquit('only RPA, CCSD and CCSD(T) model should use this routine',DECinfo%output)
-      end select
+       ! Initialize gmo arrays:
+       call init_gmo_arrays(ntot,dimP,Nbatch,local,local_moccsd,pgmo_diag,pgmo_up)
 
     end if
     !======================================================================
@@ -913,11 +981,11 @@ contains
     ! MPI: Waking slaves up:
 #ifdef VAR_MPI
     StartUpSlaves: if(master.and.nnod>1) then
-      call ls_mpibcast(CCGETGMO,infpar%master,infpar%lg_comm)
-      call mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
-           & pgmo_diag,pgmo_up,nb,no,nv,Nbatch,ccmodel)
+       call ls_mpibcast(CCGETGMO,infpar%master,infpar%lg_comm)
+       call mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
+            & pgmo_diag,pgmo_up,nb,no,nv,Nbatch)
     endif StartUpSlaves
-     
+
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(dimP,infpar%master)
     call ls_mpi_buffer(Nbatch,infpar%master)
@@ -932,66 +1000,102 @@ contains
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
-
-    ! Orbital to batch information
-    ! ----------------------------
-    call mem_alloc(orb2batchGamma,nb)
-    call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma, &
-         & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma, &
-         & nbatchesGamma,orb2BatchGamma,'R')
+    IF(DECinfo%useIchor)THEN
+       iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+       !Determine how many batches of AOS based on the MaxAllowedDimGamma, the requested
+       !size of the AO batches. iAO is the center that the batching should occur on. 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched 
+       call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+            & nbatchesGamma,DECinfo%output)
+       call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+       !Construct the batches of AOS based on the MaxAllowedDimGamma, the requested
+       !size of the AO batches - MaxAllowedDimGamma must be unchanged since the call 
+       !to determine_Ichor_nbatchesofAOS
+       !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+       !So MaxActualDimGamma must be less og equal to MaxAllowedDimGamma
+       call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+            & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+    ELSE
+       ! Orbital to batch information
+       ! ----------------------------
+       call mem_alloc(orb2batchGamma,nb)
+       call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma, &
+            & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma, &
+            & nbatchesGamma,orb2BatchGamma,'R')
+    ENDIF
 
     if (print_debug) write(DECinfo%output,'(a,I4,a,I4)') & 
-               & ' BATCH: Number of Gamma batches   = ', nbatchesGamma, &
-               & ' with maximum size', MaxActualDimGamma 
+         & ' BATCH: Number of Gamma batches   = ', nbatchesGamma, &
+         & ' with maximum size', MaxActualDimGamma 
 
 
-    ! Translate batchindex to orbital index
-    ! -------------------------------------
-    call mem_alloc(batch2orbGamma,nbatchesGamma)
-    do idx=1,nbatchesGamma
-       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
-       batch2orbGamma(idx)%orbindex = 0
-       batch2orbGamma(idx)%norbindex = 0
-    end do
-    do iorb=1,nb
-       idx = orb2batchGamma(iorb)
-       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-       K = batch2orbGamma(idx)%norbindex
-       batch2orbGamma(idx)%orbindex(K) = iorb
-    end do
+    IF(.NOT.DECinfo%useIchor)THEN
+       ! Translate batchindex to orbital index
+       ! -------------------------------------
+       call mem_alloc(batch2orbGamma,nbatchesGamma)
+       do idx=1,nbatchesGamma
+          call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
+          batch2orbGamma(idx)%orbindex = 0
+          batch2orbGamma(idx)%norbindex = 0
+       end do
+       do iorb=1,nb
+          idx = orb2batchGamma(iorb)
+          batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+          K = batch2orbGamma(idx)%norbindex
+          batch2orbGamma(idx)%orbindex(K) = iorb
+       end do
+    endif
 
 
     ! ************************************************
     ! * Determine batch information for Alpha batch  *
     ! ************************************************
 
-    ! Orbital to batch information
-    ! ----------------------------
-    call mem_alloc(orb2batchAlpha,nb)
-    call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha, &
-         & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha, &
-         & nbatchesAlpha,orb2BatchAlpha,'R')
+    IF(DECinfo%useIchor)THEN
+       iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+       !Determine how many batches of AOS based on the MaxAllowedDimAlpha, the requested
+       !size of the AO batches. iAO is the center that the batching should occur on. 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched 
+       call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+            & nbatchesAlpha,DECinfo%output)
+       call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+       !Construct the batches of AOS based on the MaxAllowedDimAlpha, the requested
+       !size of the AO batches - MaxAllowedDimAlpha must be unchanged since the call 
+       !to determine_Ichor_nbatchesofAOS
+       !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+       !So MaxActualDimAlpha must be less og equal to MaxAllowedDimAlpha
+       call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+            & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+    ELSE
+       ! Orbital to batch information
+       ! ----------------------------
+       call mem_alloc(orb2batchAlpha,nb)
+       call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha, &
+            & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha, &
+            & nbatchesAlpha,orb2BatchAlpha,'R')
+    ENDIF
 
     if (print_debug) write(DECinfo%output,'(a,I4,a,I4)') & 
-        & ' BATCH: Number of Alpha batches   = ', nbatchesAlpha, &
-        & ' with maximum size',MaxActualDimAlpha
+         & ' BATCH: Number of Alpha batches   = ', nbatchesAlpha, &
+         & ' with maximum size',MaxActualDimAlpha
 
 
-    ! Translate batchindex to orbital index
-    ! -------------------------------------
-    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-    do idx=1,nbatchesAlpha
-       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-       batch2orbAlpha(idx)%orbindex = 0
-       batch2orbAlpha(idx)%norbindex = 0
-    end do
-    do iorb=1,nb
-       idx = orb2batchAlpha(iorb)
-       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-       K = batch2orbAlpha(idx)%norbindex
-       batch2orbAlpha(idx)%orbindex(K) = iorb
-    end do
-
+    IF(.NOT.DECinfo%useIchor)THEN
+       ! Translate batchindex to orbital index
+       ! -------------------------------------
+       call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+       do idx=1,nbatchesAlpha
+          call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+          batch2orbAlpha(idx)%orbindex = 0
+          batch2orbAlpha(idx)%norbindex = 0
+       end do
+       do iorb=1,nb
+          idx = orb2batchAlpha(iorb)
+          batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+          K = batch2orbAlpha(idx)%norbindex
+          batch2orbAlpha(idx)%orbindex(K) = iorb
+       end do
+    ENDIF
 
     ! **************************************
     ! * Allocate Memory to working arrays  *
@@ -1002,76 +1106,97 @@ contains
     call mem_alloc(gao,gaosize)
 
 
-    if(ccmodel == MODEL_RPA) then
-      ! working arrays
-      gmosize = int(i8*no*nv*no*nv,kind=long)
-      call mem_alloc(gmo,gmosize)
-      gmo = 0.0_realk
-      tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, MaxActualDimGamma*no*nv)
-      tmp_size = int(i8*tmp_size*no, kind=long)
-      call mem_alloc(tmp1, tmp_size)
-      tmp_size = int(i8*MaxActualDimAlpha*MaxActualDimGamma*no*nv, kind=long)
-      call mem_alloc(tmp2, tmp_size)
-    else
-      ! Get full MO coeficients:
-      call mem_alloc(Cov,nb,ntot)
-      Cov(:,:no)       = Co
-      Cov(:,no+1:ntot) = Cv
- 
-      ! gmo batch array:
-      gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
-      call get_MO_batches_info(MOinfo, dimP, ntot, Nbatch)
-      call mem_alloc(CP,MaxActualDimAlpha,dimP)
-      call mem_alloc(CQ,MaxActualDimGamma,dimP)
-      call mem_alloc(gmo,gmosize)
+    ! Get full MO coeficients:
+    call mem_alloc(Cov,nb,ntot)
+    Cov(:,:no)       = Co
+    Cov(:,no+1:ntot) = Cv
 
-      ! working arrays
-      tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
-      tmp_size = int(i8*ntot*tmp_size, kind=long)
-      call mem_alloc(tmp1, tmp_size)
-      tmp_size = max(MaxActualDimAlpha*MaxActualDimGamma, dimP*dimP)
-      tmp_size = int(i8*ntot*ntot*tmp_size, kind=long)
-      call mem_alloc(tmp2, tmp_size)
-    endif
+    ! gmo batch array:
+    gmosize = int(i8*dimP*dimP*ntot*ntot,kind=long)
+    call get_MO_batches_info(MOinfo, dimP, ntot, Nbatch)
+    call mem_alloc(CP,MaxActualDimAlpha,dimP)
+    call mem_alloc(CQ,MaxActualDimGamma,dimP)
+    call mem_alloc(gmo,gmosize)
+
+    ! working arrays
+    tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
+    tmp_size = int(i8*ntot*tmp_size, kind=long)
+    call mem_alloc(tmp1, tmp_size)
+    tmp_size = max(MaxActualDimAlpha*MaxActualDimGamma, dimP*dimP)
+    tmp_size = int(i8*ntot*ntot*tmp_size, kind=long)
+    call mem_alloc(tmp2, tmp_size)
 
 
     ! Sanity checks for matrix sizes which need to be filled:
     if (gaosize>MaxInt) then
-      call lsquit("ERROR(CCSD):matrix sizes too large, &
-        & please recompile with 64bit integers",-1)
+       call lsquit("ERROR(CCSD):matrix sizes too large, &
+            & please recompile with 64bit integers",-1)
     endif
 
-
-    ! *******************************************************
-    ! *  This subroutine builds the full screening matrix.
-    call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting, &
-         & nbatchesAlpha,nbatchesGamma,INTSPEC)
-
-    if (mylsitem%setting%scheme%cs_screen .or. &
-         & mylsitem%setting%scheme%ps_screen) then
-
-       call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
-            & nb,nbatchesAlpha,nbatchesGamma,&
-            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-
-       call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
-            & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
-            & batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-    end if
-    ! *******************************************************
-
-    
-#ifdef VAR_MPI
-      ! Calculate the batches for a good load balance
-      call mem_alloc(tasks,nbatchesAlpha*nbatchesGamma)
+    IF(DECinfo%useIchor)THEN
+       !Calculate Screening integrals 
+       SameMOL = .TRUE. !Specifies same molecule on all centers 
+       call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+    ELSE
+       ! *******************************************************
+       ! *  This subroutine builds the full screening matrix.
+       call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting, &
+            & nbatchesAlpha,nbatchesGamma,INTSPEC)
        
-      myload = 0
-      tasks  = 0
-      call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
-         &batchdimGamma,myload,nnod,myrank,4,no,nv,nb,batch2orbAlpha,&
-         &batch2orbGamma)
+       if (mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen) then
+          call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+               & nb,nbatchesAlpha,nbatchesGamma,&
+               & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+               & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+       end if
+       ! *******************************************************
+    ENDIF
+
+#ifdef VAR_MPI
+    ! Calculate the batches for a good load balance
+    call mem_alloc(tasks,nbatchesAlpha*nbatchesGamma)
+
+    myload = 0
+    tasks  = 0
+    IF(DECinfo%useIchor)THEN
+       call mem_alloc(batchdimAlpha,nbatchesAlpha)
+       do idx=1,nbatchesAlpha
+          batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+       enddo
+       call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+       do idx=1,nbatchesAlpha
+          call mem_alloc(batch2orbAlpha(idx)%orbindex,1)
+          batch2orbAlpha(idx)%orbindex(1) = AOAlphabatchinfo(idx)%orbstart
+          batch2orbAlpha(idx)%norbindex = 1
+       end do
+       call mem_alloc(batchdimGamma,nbatchesGamma)
+       do idx=1,nbatchesGamma
+          batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+       enddo
+       call mem_alloc(batch2orbGamma,nbatchesGamma)
+       do idx=1,nbatchesGamma
+          call mem_alloc(batch2orbGamma(idx)%orbindex,1)
+          batch2orbGamma(idx)%orbindex(1) = AOGammabatchinfo(idx)%orbstart
+          batch2orbGamma(idx)%norbindex = 1
+       end do
+       call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
+            &batchdimGamma,myload,nnod,myrank,4,no,nv,nb,batch2orbAlpha,&
+            &batch2orbGamma)
+       call mem_dealloc(batchdimAlpha)
+       call mem_dealloc(batchdimGamma)
+       do idx=1,nbatchesAlpha
+          call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+       end do
+       call mem_dealloc(batch2orbAlpha)
+       do idx=1,nbatchesGamma
+          call mem_dealloc(batch2orbGamma(idx)%orbindex)
+       end do
+       call mem_dealloc(batch2orbGamma)
+    ELSE
+       call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
+            &batchdimGamma,myload,nnod,myrank,4,no,nv,nb,batch2orbAlpha,&
+            &batch2orbGamma)
+    ENDIF
 #endif
     myload = 0
 
@@ -1082,167 +1207,170 @@ contains
     !**********************************
 
 
-    BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-
-       dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
-       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-       GammaEnd   = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
-
-    !**********************************
-    ! Begin the loop over alpha batches
-    !**********************************
-
-    BatchAlpha: do alphaB = 1,nbatchesAlpha    ! AO batches
-      
-       if (nnod>1) then 
-         ! check if the current job is to be done by current node
-         if (tasks(alphaB + (gammaB-1)*nbatchesAlpha)/=myrank) cycle
-       end if
-
-       dimAlpha   = batchdimAlpha(alphaB)                        ! Dimension of alpha batch
-       AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)           ! First index in alpha batch
-       AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)    ! Last index in alpha batch
-       myload     = myload + dimAlpha*dimGamma
-
+    BatchGamma: do gammaB = 1,nbatchesGamma            ! batches of AO batches
+       IF(DECinfo%useIchor)THEN
+          dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+          GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+          GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+          AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch needed by MAIN_ICHORERI_DRIVER
+          AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch needed by MAIN_ICHORERI_DRIVER
+       ELSE
+          dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
+          GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+          GammaEnd   = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
+       ENDIF
        
-       ! setup RHS screening - here we only have a set of AO basisfunctions
-       !                      so we use the batchscreening matrices.
-       !                      like BatchfilenamesCS(alphaB,gammaB)
-       ! Note that it is faster to calculate the integrals in the form
-       ! (dimAlpha,dimGamma,nbasis,nbasis) so the subset of the AO basis is used on the LHS
-       ! but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
-       IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-       IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+       !**********************************
+       ! Begin the loop over alpha batches
+       !**********************************
 
-       ! Get AO integrals using (beta,delta,alphaB,gammaB) ordering
-       ! **********************************************************
-       call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-            & Mylsitem%setting,gao,batchindexAlpha(alphaB),batchindexGamma(gammaB), &
-            & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha, &
-            & dimGamma,fullRHS,INTSPEC)
-       call lsmpi_poke()
+       BatchAlpha: do alphaB = 1,nbatchesAlpha         ! batches of AO batches
 
-       if (ccmodel == MODEL_RPA) then
-         
+          if (nnod>1) then 
+             ! check if the current job is to be done by current node
+             if (tasks(alphaB + (gammaB-1)*nbatchesAlpha)/=myrank) cycle
+          end if
 
-         !call gao_to_govov(govov%elm1,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
-         !     & GammaStart,dimGamma,tmp1,tmp2)
-         call gao_to_govov(gmo,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
-              & GammaStart,dimGamma,tmp1,tmp2)
+          IF(DECinfo%useIchor)THEN
+             dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+             AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+             AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+             AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+             AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+          ELSE
+             dimAlpha   = batchdimAlpha(alphaB)                        ! Dimension of alpha batch
+             AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)           ! First index in alpha batch
+             AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)    ! Last index in alpha batch
+          ENDIF
+          myload     = myload + dimAlpha*dimGamma
 
-       else
-         idb = 0
-         iub = 0
-         ! Loop over MO batches:
-         BatchPQ: do PQ_batch = 1, MOinfo%nbatch
-          
-          
-           P_sta  = MOinfo%StartInd1(PQ_batch)
-           dimP   = MOinfo%DimInd1(PQ_batch)
-           Q_sta  = MOinfo%StartInd2(PQ_batch)
-           dimQ   = MOinfo%DimInd2(PQ_batch)
- 
-           call gao_to_gmo(gmo,gao,Cov,CP,CQ,nb,ntot,AlphaStart,dimAlpha, &
-                          & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1, &
-                          & tmp2,pgmo_diag,pgmo_up,gdi_lk,gup_lk,win,dest)
-          
-           if (P_sta==Q_sta) then
-             idb = idb + 1 
-             if (.not.local) then
-               !LOCK WINDOW AND LOCK_SET = .true.
-               win = idb
-               dest = get_residence_of_tile(win,pgmo_diag)
-               call lsmpi_win_lock(dest,pgmo_diag%wi(win),'s')
-               gdi_lk = .true. 
+
+          IF(DECinfo%useIchor)THEN
+             call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,dimAlpha,dimGamma,&
+                  & gao,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+                  & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry)
+          ELSE
+             ! setup RHS screening - here we only have a set of AO basisfunctions
+             !                      so we use the batchscreening matrices.
+             !                      like BatchfilenamesCS(alphaB,gammaB)
+             ! Note that it is faster to calculate the integrals in the form
+             ! (dimAlpha,dimGamma,nbasis,nbasis) so the subset of the AO basis is used on the LHS
+             ! but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
+             IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+             IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+             
+             ! Get AO integrals using (beta,delta,alphaB,gammaB) ordering
+             ! **********************************************************
+             call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
+                  & Mylsitem%setting,gao,batchindexAlpha(alphaB),batchindexGamma(gammaB), &
+                  & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha, &
+                  & dimGamma,fullRHS,INTSPEC)
+          ENDIF
+          idb = 0
+          iub = 0
+          ! Loop over MO batches:
+          BatchPQ: do PQ_batch = 1, MOinfo%nbatch
+
+
+             P_sta  = MOinfo%StartInd1(PQ_batch)
+             dimP   = MOinfo%DimInd1(PQ_batch)
+             Q_sta  = MOinfo%StartInd2(PQ_batch)
+             dimQ   = MOinfo%DimInd2(PQ_batch)
+
+             call gao_to_gmo(gmo,gao,Cov,CP,CQ,nb,ntot,AlphaStart,dimAlpha, &
+                  & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1, &
+                  & tmp2,pgmo_diag,pgmo_up,gdi_lk,gup_lk,win,dest)
+
+             if (P_sta==Q_sta) then
+                idb = idb + 1 
+                if (.not.local) then
+                   !LOCK WINDOW AND LOCK_SET = .true.
+                   win = idb
+#ifdef VAR_MPI
+                   call tensor_lock_win(pgmo_diag,win,'s')
+                   gdi_lk = .true. 
+#endif
+                end if
+                call pack_and_add_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp2)
+             else 
+                iub = iub + 1 
+                if (.not.local) then
+                   !LOCK WINDOW AND LOCK_SET = .true.
+                   win = iub
+#ifdef VAR_MPI
+                   call tensor_lock_win(pgmo_up,win,'s')
+                   gup_lk = .true.
+#endif
+                end if
+                call pack_and_add_gmo(gmo,pgmo_up,iub,ntot,dimP,dimQ,.false.,tmp2)
              end if
-             call pack_and_add_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp2)
-           else 
-             iub = iub + 1 
-             if (.not.local) then
-               !LOCK WINDOW AND LOCK_SET = .true.
-               win = iub
-               dest = get_residence_of_tile(win,pgmo_up)
-               call lsmpi_win_lock(dest,pgmo_up%wi(win),'s')
-               gup_lk = .true.
-             end if
-             call pack_and_add_gmo(gmo,pgmo_up,iub,ntot,dimP,dimQ,.false.,tmp2)
-           end if
 
-         end do BatchPQ
-
-       end if
+          end do BatchPQ
 
 
-    end do BatchAlpha
+       end do BatchAlpha
     end do BatchGamma
 
     ! Free integral stuff
     ! *******************
-    nullify(Mylsitem%setting%LST_GAB_LHS)
-    nullify(Mylsitem%setting%LST_GAB_RHS)
-    call free_decscreen(DECSCREEN)
-
-    ! Free gamma stuff
-    call mem_dealloc(orb2batchGamma)
-    call mem_dealloc(batchdimGamma)
-    call mem_dealloc(batchsizeGamma)
-    call mem_dealloc(batchindexGamma)
-    do idx=1,nbatchesGamma
-       call mem_dealloc(batch2orbGamma(idx)%orbindex)
-       batch2orbGamma(idx)%orbindex => null()
-    end do
-    call mem_dealloc(batch2orbGamma)
-
-    ! Free alpha stuff
-    call mem_dealloc(orb2batchAlpha)
-    call mem_dealloc(batchdimAlpha)
-    call mem_dealloc(batchsizeAlpha)
-    call mem_dealloc(batchindexAlpha)
-    do idx=1,nbatchesAlpha
-       call mem_dealloc(batch2orbAlpha(idx)%orbindex)
-       batch2orbAlpha(idx)%orbindex => null()
-    end do
-    call mem_dealloc(batch2orbAlpha)
-
-
-    if (ccmodel==MODEL_RPA) then 
-      !call array_scatter(1.0E0_realk,gmo,0.0E0_realk,govov,i8*no*nv*no*nv)
-      if(master) then
-      !  call print_norm(gmo,i8*no*no*nv*nv)
-        call array_convert(gmo,govov)
-      !  call print_norm(govov)
-      endif
-      !call daxpy(ncopy,1.0E0_realk,gmo,1,govov%elm1,1)
-    endif
-
-    ! UNLOCK REMAINING WINDOWS
-    if (gdi_lk) then
-      call lsmpi_win_unlock(dest,pgmo_diag%wi(win))
-    else if (gup_lk) then
-      call lsmpi_win_unlock(dest,pgmo_up%wi(win))
-    end if
+    IF(DECinfo%useIchor)THEN
+       call FREE_SCREEN_ICHORERI()
+       call mem_dealloc(AOGammabatchinfo)
+       call mem_dealloc(AOAlphabatchinfo)
+    ELSE
+       nullify(Mylsitem%setting%LST_GAB_LHS)
+       nullify(Mylsitem%setting%LST_GAB_RHS)
+       call free_decscreen(DECSCREEN)
+       
+       ! Free gamma stuff
+       call mem_dealloc(orb2batchGamma)
+       call mem_dealloc(batchdimGamma)
+       call mem_dealloc(batchsizeGamma)
+       call mem_dealloc(batchindexGamma)
+       do idx=1,nbatchesGamma
+          call mem_dealloc(batch2orbGamma(idx)%orbindex)
+          batch2orbGamma(idx)%orbindex => null()
+       end do
+       call mem_dealloc(batch2orbGamma)
+       
+       ! Free alpha stuff
+       call mem_dealloc(orb2batchAlpha)
+       call mem_dealloc(batchdimAlpha)
+       call mem_dealloc(batchsizeAlpha)
+       call mem_dealloc(batchindexAlpha)
+       do idx=1,nbatchesAlpha
+          call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+          batch2orbAlpha(idx)%orbindex => null()
+       end do
+       call mem_dealloc(batch2orbAlpha)
+    ENDIF
 
 #ifdef VAR_MPI
+    ! UNLOCK REMAINING WINDOWS
+    if (gdi_lk) then
+       call tensor_unlock_win(pgmo_diag,win)
+    else if (gup_lk) then
+       call tensor_unlock_win(pgmo_up,win)
+    end if
+
     call mem_dealloc(tasks)
     ! Problem specific to one sided comm. and maybe bcast,
     ! We must use a barrier after one sided communication epoc:
-    if (.not.local_moccsd.and.ccmodel/=MODEL_RPA) then
-      call time_start_phase(PHASE_IDLE)
-      call lsmpi_barrier(infpar%lg_comm)
-      call time_start_phase(PHASE_WORK)
+    if (.not.local_moccsd) then
+       call time_start_phase(PHASE_IDLE)
+       call lsmpi_barrier(infpar%lg_comm)
+       call time_start_phase(PHASE_WORK)
     end if
 #endif
-     
+
     ! Free matrices:
     call mem_dealloc(gao)
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
     call mem_dealloc(gmo)
-    if (ccmodel/=MODEL_RPA) then 
-      call mem_dealloc(Cov)
-      call mem_dealloc(CP)
-      call mem_dealloc(CQ)
-    end if
+    call mem_dealloc(Cov)
+    call mem_dealloc(CP)
+    call mem_dealloc(CQ)
 
     call LSTIMER('get_t1_free_gmo',tcpu,twall,DECinfo%output)
 
@@ -1258,10 +1386,10 @@ contains
   !> Author:  Pablo Baudin
   !> Date:    December 2013
   subroutine get_MO_and_AO_batches_size(mo_ccsd,local,ntot,nb,no,nv, &
-             & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem,mpi_split)
-    
+       & dimMO,Nbatch,MaxAlpha,MaxGamma,MyLsItem,mpi_split)
+
     implicit none
-  
+
     !> performed MO-based CCSD calculation ?
     logical, intent(inout) :: mo_ccsd, local
     !> number of orbitals:
@@ -1272,10 +1400,10 @@ contains
     integer, intent (inout) :: MaxAlpha, MaxGamma
     type(lsitem), intent(inout) :: MyLsItem
     logical, intent(in) :: mpi_split
-    
+
     real(realk) :: MemNeed, MemFree
     integer(kind=long) :: min_mem
-    integer :: MinAOBatch, MinMOBatch, na, ng, nnod, magic
+    integer :: MinAOBatch, MinMOBatch, na, ng, nnod, magic,iAO
 
     MinMOBatch = min(15,ntot)
     dimMO = MinMOBatch
@@ -1290,156 +1418,167 @@ contains
     call get_currently_available_memory(MemFree)
     if (nnod>1) then
 
-      ! SELECT SCHEME (storage of MO int.): 
-      !
-      ! 0-4 are reserved to standard CCSD (Patrick's code)
-      ! 
-      ! 5: Local scheme: more memory required but no one 
-      !    sided communication.
-      !
-      ! 6: PDM scheme: batches are distributed in PDM using
-      !    one sided communication.
+       ! SELECT SCHEME (storage of MO int.): 
+       !
+       ! 0-4 are reserved to standard CCSD (Patrick's code)
+       ! 
+       ! 5: Local scheme: more memory required but no one 
+       !    sided communication.
+       !
+       ! 6: PDM scheme: batches are distributed in PDM using
+       !    one sided communication.
 
-      if (DECinfo%force_scheme.and.DECinfo%en_mem==5) then
-        print *,"!!FORCING MO-CCSD LOCAL SCHEME!!"
-        local = .true.
-      else if (DECinfo%force_scheme.and.DECinfo%en_mem==6) then
-        print *,"!!FORCING MO-CCSD PDM SCHEME!!"
-        local = .false.
-      else
-        ! try first for scheme with highest requirements --> fastest
-        local = .true.
-        call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
-
-        ! if not enough mem then switch to full PDM scheme:
-        if (MeMNeed>0.8E0_realk*MemFree) then
+       if (DECinfo%force_scheme.and.DECinfo%en_mem==6) then
+          print *,"!!FORCING MO-CCSD LOCAL SCHEME!!"
+          local = .true.
+       else if (DECinfo%force_scheme.and.DECinfo%en_mem==5) then
+          print *,"!!FORCING MO-CCSD PDM SCHEME!!"
           local = .false.
-        end if
-      end if
+       else
+          ! try first for scheme with highest requirements --> fastest
+          local = .true.
+          call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
+
+          ! if not enough mem then switch to full PDM scheme:
+          if (MeMNeed>0.8E0_realk*MemFree) then
+             local = .false.
+          end if
+       end if
     end if
 
     call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
 
     do while ((MemNeed<0.8E0_realk*MemFree).and.(dimMO<=ntot))
-      dimMO = dimMO + 1
-      call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
+       dimMO = dimMO + 1
+       call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
     end do
 
     if (dimMO>=ntot) then
-      dimMO = ntot
+       dimMO = ntot
     else if (dimMO<=MinMOBatch) then
-      dimMO = MinMOBatch
+       dimMO = MinMOBatch
     else
-      dimMO = dimMO - 1
+       dimMO = dimMO - 1
     end if
 
     ! mpi_split should be true when we want to estimate the workload associated
     ! to a DEC fragment and eventually split the slots. In this case, the next
     ! step must be skiped.
     if (.not.mpi_split) then
-      ! Check that every nodes will have a job in residual calc.
-      ! But the dimension of the batch must stay above MinMOBatch.
-      magic  = int(1.5*nnod)
-      Nbatch = ((ntot-1)/dimMO+1)
-      Nbatch = Nbatch*(Nbatch+1)/2
-       
-      do while (Nbatch<magic.and.(dimMO>MinMOBatch).and.nnod>1)
-        dimMO = dimMO-1
-        Nbatch = ((ntot-1)/dimMO+1)
-        Nbatch = Nbatch*(Nbatch+1)/2
-        if (dimMO<MinMOBatch) then
-          dimMO = MinMOBatch
-          exit
-        end if
-      end do
+       ! Check that every nodes will have a job in residual calc.
+       ! But the dimension of the batch must stay above MinMOBatch.
+       magic  = int(1.5*nnod)
+       Nbatch = ((ntot-1)/dimMO+1)
+       Nbatch = Nbatch*(Nbatch+1)/2
+
+       do while (Nbatch<magic.and.(dimMO>MinMOBatch).and.nnod>1)
+          dimMO = dimMO-1
+          Nbatch = ((ntot-1)/dimMO+1)
+          Nbatch = Nbatch*(Nbatch+1)/2
+          if (dimMO<MinMOBatch) then
+             dimMO = MinMOBatch
+             exit
+          end if
+       end do
     end if
     ! sanity check:
     call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
     if ((MemFree-MemNeed)<=0.0E0_realk) then
-      mo_ccsd = .false.
-      write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
-      write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
-      if (DECinfo%force_scheme) then
-        call lsquit('Insufficient memory in MO-based CCSD (remove force scheme)',DECinfo%output)
-      else
-        write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
-                               & back to standard algorithm.'
-      end if
-      return
+       mo_ccsd = .false.
+       write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
+       write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+       if (DECinfo%force_scheme) then
+          call lsquit('Insufficient memory in MO-based CCSD (remove force scheme)',DECinfo%output)
+       else
+          write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+               & back to standard algorithm.'
+       end if
+       return
     end if
     Nbatch = (ntot-1)/dimMO + 1
 
     !===========================================================
     ! Get AO batche size depending on get_t1_free_gmo routine.
-    call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
-    call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
-                           & MinAObatch,MinAObatch,MinAObatch)
+    IF(DECinfo%useIchor)THEN
+       !Determine the minimum allowed AObatch size MinAObatch
+       !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
+       !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
+       !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched
+       iAO = 1 !the center that the batching should occur on.  
+       call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
+    ELSE
+       call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+    ENDIF
+
+    call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
+         & MinAObatch,MinAObatch,MinAObatch)
 
     MaxGamma = MinAObatch
     MaxAlpha = MinAObatch
     do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxGamma<=nb)) 
-      MaxGamma = MaxGamma + 1
-      call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
-                           & MaxAlpha,MaxGamma,MinAObatch)  
+       MaxGamma = MaxGamma + 1
+       call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
+            & MaxAlpha,MaxGamma,MinAObatch)  
     end do
     if (MaxGamma>=nb) then
-      MaxGamma = nb
+       MaxGamma = nb
     else if (MaxGamma<=MinAObatch) then
-      MaxGamma = MinAObatch
+       MaxGamma = MinAObatch
     else 
-      MaxGamma = MaxGamma - 1
+       MaxGamma = MaxGamma - 1
     end if
     do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAlpha<=nb)) 
-      MaxAlpha = MaxAlpha + 1
-       call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
-                           & MaxAlpha,MaxGamma,MinAObatch)  
+       MaxAlpha = MaxAlpha + 1
+       call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
+            & MaxAlpha,MaxGamma,MinAObatch)  
     end do
     if (MaxAlpha>=nb) then
-      MaxAlpha = nb
+       MaxAlpha = nb
     else if (MaxAlpha<=MinAObatch) then
-      MaxAlpha = MinAObatch
+       MaxAlpha = MinAObatch
     else 
-      MaxAlpha = MaxAlpha - 1
+       MaxAlpha = MaxAlpha - 1
     end if
 
     ! mpi_split should be true when we want to estimate the workload associated
     ! to a DEC fragment and eventually split the slots. In this case, the next
     ! step must be skiped.
     if (.not.mpi_split) then
-      ! Check that every nodes has a job:
-      magic = int(2*nnod)
-      ng    = ((nb-1)/MaxGamma+1)
-      na    = ((nb-1)/MaxAlpha+1)
-       
-      ! Number of Alpha batches must be at least magic
-      if (na*ng<magic.and.(MaxAlpha>MinAObatch).and.nnod>1)then
-        MaxAlpha = (nb/magic)
-        if (MaxAlpha<MinAObatch) MaxAlpha = MinAObatch
-      end if
-       
-      na    = ((nb-1)/MaxAlpha+1)
-      if (na*ng<magic.and.(MaxAlpha==MinAObatch).and.nnod>1)then
-        do while(na*ng<magic)
-          MaxGamma = MaxGamma - 1
-          if (MaxGamma<MinAObatch) then
-            MaxGamma = MinAObatch
-            exit
-          end if
-          ng    = ((nb-1)/MaxGamma+1)
-        end do
-      endif
+       ! Check that every nodes has a job:
+       magic = int(2*nnod)
+       ng    = ((nb-1)/MaxGamma+1)
+       na    = ((nb-1)/MaxAlpha+1)
+
+       ! Number of Alpha batches must be at least magic
+       if (na*ng<magic.and.(MaxAlpha>MinAObatch).and.nnod>1)then
+          MaxAlpha = (nb/magic)
+          if (MaxAlpha<MinAObatch) MaxAlpha = MinAObatch
+       end if
+
+       na    = ((nb-1)/MaxAlpha+1)
+       if (na*ng<magic.and.(MaxAlpha==MinAObatch).and.nnod>1)then
+          do while(na*ng<magic)
+             MaxGamma = MaxGamma - 1
+             if (MaxGamma<MinAObatch) then
+                MaxGamma = MinAObatch
+                exit
+             end if
+             ng    = ((nb-1)/MaxGamma+1)
+          end do
+       endif
     end if
 
     ! sanity check:
-    call get_mem_t1_free_gmo(MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
-                           & MaxAlpha,MaxGamma,MinAObatch)  
+    call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
+         & MaxAlpha,MaxGamma,MinAObatch)  
     if ((MemFree-MemNeed)<=0.0E0_realk) then
-      mo_ccsd = .false.
-      write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
-                             & back to standard algorithm.'
-      write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
-      write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
-      return
+       mo_ccsd = .false.
+       write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+            & back to standard algorithm.'
+       write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
+       write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+       return
     end if
 
   end subroutine get_MO_and_AO_batches_size
@@ -1451,10 +1590,10 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    December 2013
-  subroutine get_mem_t1_free_gmo(MemOut,M,N,O,V,X,nMOB,AlphaDim,GammaDim,MinDimAO)
+  subroutine get_mem_t1_free_gmo(local,MemOut,M,N,O,V,X,nMOB,AlphaDim,GammaDim,MinDimAO)
 
     implicit none 
-   
+
     ! M: tot number of MO
     ! N: tot number of AO
     ! O: number of occ. orbs.
@@ -1462,6 +1601,8 @@ contains
     ! X: dimension of MO batch.
     ! nMOB: number of MO batches.
     integer,  intent(in) :: M, N, O, V, X, nMOB
+    !> use local scheme?
+    logical :: local
     !> AO stuff:
     integer, intent(in) :: AlphaDim, GammaDim, MinDimAO
     !> memory needed:
@@ -1474,13 +1615,14 @@ contains
 #ifdef VAR_MPI
     nnod = infpar%lg_nodtot
 #endif
+    if (local) nnod = 1
 
     ! Transfo. matrices:
     MemNeed = N*M + AlphaDim*X + GammaDim*X
-  
+
     ! AO stuff:
     MemNeed = MemNeed + 4*N + N*N*AlphaDim*GammaDim 
-    
+
     ! Packed gmo diag blocks:
     nTileMax = (nMOB-1)/nnod + 3
     MemNeed = MEmNeed + nTileMax*X*(X+1)*M*(M+1)/4
@@ -1490,13 +1632,13 @@ contains
 
     ! MO stuff:
     MemNeed = MemNeed + X*X*M*M + 5*nMOB*nMOB + 1
-    
+
     ! Working arrays:
     MemNeed = MemNeed + max(M*N*AlphaDim*GammaDim, M*M*GammaDim*X)
     MemNeed = MemNeed + max(M*M*AlphaDim*GammaDim, M*M*X*X)
-    
+
     MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
-  
+
   end subroutine get_mem_t1_free_gmo
 
 
@@ -1509,7 +1651,7 @@ contains
   subroutine get_mem_MO_CCSD_residual(local,MemOut,M,N,O,V,X)
 
     implicit none 
-   
+
     ! M: tot number of MO
     ! N: tot number of AO
     ! O: number of occ. orbs.
@@ -1541,18 +1683,18 @@ contains
 
     ! Working arrays:
     MemNeed = MemNeed + max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
-    MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M)
+    MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M, O**4)
     MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
 
     ! T1-Transfo. matrices:
     MemNeed = MemNeed + V*M + O*M
-  
+
     ! Batch of MO int:
     MemNeed = MemNeed + X*X*M*M
-    
+
     ! Intermediates (B2prep, u2, G_Pi, H_aQ):
     MemNeed = MemNeed + O**4 + O*O*V*V + X*O + V*X
-    
+
     ! T1-transformed integrals:
     MemNeed = MemNeed + O**4 + 2*V*O**3 + 3*O*O*V*V 
 
@@ -1562,102 +1704,6 @@ contains
     MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
 
   end subroutine get_mem_MO_CCSD_residual
-
-
-  !> Purpose: Calculate Max. AO batches based on Min. AO batches size, 
-  !           available memory and mem. requirements in get_t1_free_gmo routine.
-  !
-  !> Author:  Johannes Rekkedal
-  !> Date:    January 2014
-  subroutine get_AO_batches_size_rpa(ntot,nbas,nocc,nvir,MaxAlpha, &
-             & MaxGamma,MyLsItem)
-    
-    implicit none
-  
-    !> number of orbitals:
-    integer, intent(in) :: ntot, nbas, nocc, nvir
-    !> AO batches stuff:
-    integer, intent (inout) :: MaxAlpha, MaxGamma
-    type(lsitem), intent(inout) :: MyLsItem
-    
-    real(realk) :: MemNeed, MemFree
-    integer(kind=long) :: min_mem
-    integer :: MinAOBatch
-
-    ! Get minimum mem. required to get gmo:
-    call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
-    call get_currently_available_memory(MemFree)
-    call get_mem_gmo_RPA(MemNeed,ntot,nbas,nocc,nvir,MinAObatch,MinAObatch,MinAObatch)
-
-
-    MaxGamma = MinAObatch
-    MaxAlpha = MinAObatch
-    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxGamma<=nbas)) 
-      MaxGamma = MaxGamma + 1
-      call get_mem_gmo_RPA(MemNeed,ntot,nbas,nocc,nvir,MaxAlpha,MaxGamma,MinAObatch)  
-    end do
-
-    if (MaxGamma>=nbas) then
-      MaxGamma = nbas
-    else if (MaxGamma<=MinAObatch) then
-      MaxGamma = MinAObatch
-    else 
-      MaxGamma = MaxGamma - 1
-    end if
-
-    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAlpha<=nbas)) 
-      MaxAlpha = MaxAlpha + 1
-      call get_mem_gmo_RPA(MemNeed,ntot,nbas,nocc,nvir,MaxAlpha,MaxGamma,MinAObatch)  
-    end do
-
-    if (MaxAlpha>=nbas) then
-      MaxAlpha = nbas
-    else if (MaxAlpha<=MinAObatch) then
-      MaxAlpha = MinAObatch
-    else 
-      MaxAlpha = MaxAlpha - 1
-    end if
-
-    ! sanity check:
-    call get_mem_gmo_RPA(MemNeed,ntot,nbas,nocc,nvir,MaxAlpha,MaxGamma,MinAObatch)  
-    if ((MemFree-MemNeed)<=0.0E0_realk) then
-      call lsquit('Not enough memory in RPA (MO int calc.)', DECinfo%output)
-    end if
-
-  end subroutine get_AO_batches_size_RPA
-
-
-  !> Purpose: Get memory required in get_t1_free_gmo for RPA model
-  !
-  !> Author:  Johannes Rekkedal
-  !> Date:    January 2014
-  subroutine get_mem_gmo_RPA(MemOut,M,N,O,V,AlphaDim,GammaDim,MinDimAO)
-
-    implicit none 
-   
-    ! M: tot number of MO
-    ! N: tot number of AO
-    ! O: number of occ. orbs.
-    ! V: number of virt. orbs.
-    integer,  intent(in) :: M, N, O, V
-    !> AO stuff:
-    integer, intent(in) :: AlphaDim, GammaDim, MinDimAO
-    !> memory needed:
-    real(realk), intent(inout) :: MemOut
-    ! intermediate memory:
-    integer :: MemNeed
-
-
-    ! AO stuff:
-    MemNeed = 4*N + N*N*AlphaDim*GammaDim 
-    
-    ! Working arrays:
-    MemNeed = MemNeed + max(N*AlphaDim*GammaDim*O, GammaDim*O*V*O)
-    MemNeed = MemNeed + AlphaDim*GammaDim*O*V
-    
-    MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
-  
-  end subroutine get_mem_gmo_RPA
 
 
   !> Purpose: Initialization of arrays for MO integrals: 
@@ -1672,35 +1718,35 @@ contains
   subroutine init_gmo_arrays(ntot,dimMO,Nbat,mpi,local_moccsd,pgmo_diag,pgmo_up)
 
     implicit none
- 
+
     !> dimension parameters: 
     integer, intent(in) :: ntot, dimMO, Nbat
     !> logical for the type of arrays:
     logical, intent(in) :: mpi, local_moccsd
     !> gmo arrays:
-    type(array), intent(inout) :: pgmo_diag, pgmo_up
+    type(tensor), intent(inout) :: pgmo_diag, pgmo_up
 
     character(4) :: at
     integer :: pgmo_dims
 
     ! define type of array:
     if (local_moccsd) then
-      at = 'RTAR'
+       at = 'RTAR'
     else 
-      at = 'TDAR'
+       at = 'TDAR'
     end if
 
     ! Declare one array for the diagonal batches:
     pgmo_dims = ntot*(ntot+1)*dimMO*(dimMO+1)/4
-    pgmo_diag = array_minit([pgmo_dims,Nbat],2,local=mpi,atype=at,tdims=[pgmo_dims,1])
-    call array_zero(pgmo_diag)
-     
+    call tensor_minit(pgmo_diag,[pgmo_dims,Nbat],2,local=mpi,atype=at,tdims=[pgmo_dims,1])
+    call tensor_zero(pgmo_diag)
+
     ! Declare one array for the upper diagonal batches if necesarry
     if (Nbat>1) then
       pgmo_dims = ntot*(ntot+1)*dimMO*dimMO/2
-      pgmo_up   = array_minit([pgmo_dims,Nbat*(Nbat-1)/2],2,local=mpi,atype=at, &
+      call tensor_minit(pgmo_up,[pgmo_dims,Nbat*(Nbat-1)/2],2,local=mpi,atype=at, &
                 & tdims=[pgmo_dims,1])
-      call array_zero(pgmo_up)
+      call tensor_zero(pgmo_up)
     end if
 
   end subroutine init_gmo_arrays
@@ -1711,8 +1757,8 @@ contains
   !> Author:  Pablo Baudin
   !> Date:    October 2013
   subroutine gao_to_gmo(gmo,gao,Cov,CP,CQ,nb,ntot,AlphaStart,dimAlpha, &
-             & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1,tmp2, &
-             & pgmo_diag,pgmo_up,gdi_lk,gup_lk,win,dest)
+       & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1,tmp2, &
+       & pgmo_diag,pgmo_up,gdi_lk,gup_lk,win,dest)
 
     implicit none
 
@@ -1721,7 +1767,7 @@ contains
     real(realk), intent(inout) :: gmo(dimP*dimQ*ntot*ntot)
     real(realk), intent(in) :: gao(nb*nb*dimAlpha*dimGamma), Cov(nb,ntot)
     !> MPI related:
-    type(array), intent(in) :: pgmo_diag, pgmo_up
+    type(tensor), intent(in) :: pgmo_diag, pgmo_up
     logical, intent(inout)  :: gdi_lk, gup_lk
     integer, intent(in) :: win
     integer(kind=ls_mpik), intent(in) :: dest
@@ -1734,7 +1780,7 @@ contains
     GammaEnd = GammaStart+dimGamma-1
     P_end     = P_sta+dimP-1
     Q_end     = Q_sta+dimQ-1
- 
+
     ! initialisation of transfo. matrices:
     CP = Cov(AlphaStart:AlphaEnd,P_sta:P_end)
     CQ = Cov(GammaStart:GammaEnd,Q_sta:Q_end)
@@ -1743,14 +1789,16 @@ contains
     call dgemm('t','n',nb*dimAlpha*dimGamma,ntot,nb,1.0E0_realk, &
          & gao,nb,Cov,nb,0.0E0_realk,tmp1,nb*dimAlpha*dimGamma)
 
+#ifdef VAR_MPI
     ! UNLOCK WINDOW IF (LOCK_SET)
     if (gdi_lk) then
-      call lsmpi_win_unlock(dest,pgmo_diag%wi(win))
-      gdi_lk = .false.
+       call tensor_unlock_win(pgmo_diag,win)
+       gdi_lk = .false.
     else if (gup_lk) then
-      call lsmpi_win_unlock(dest,pgmo_up%wi(win))
-      gup_lk = .false.
+       call tensor_unlock_win(pgmo_up,win)
+       gup_lk = .false.
     end if
+#endif
 
     ! transfo delta to s => [alphaB gammaB r, s]
     call dgemm('t','n',dimAlpha*dimGamma*ntot,ntot,nb,1.0E0_realk, &
@@ -1763,72 +1811,18 @@ contains
     ! transfo gammaB to Q_batch => [r s P, Q]
     call dgemm('t','n',ntot*ntot*dimP,dimQ,dimGamma,1.0E0_realk, &
          & tmp1,dimGamma,CQ,dimGamma,0.0E0_realk,tmp2,ntot*ntot*dimP)
-    
+
     ! transpose matrix => [P_batch, Q_batch, r, s]
     call mat_transpose(ntot*ntot,dimP*dimQ,1.0E0_realk,tmp2,0.0E0_realk,gmo)
 
   end subroutine gao_to_gmo
-
-  !> Purpose: Transform AO int. into MO (occ,virt,occ,virt) in batches
-  !           
-  !> Author:  Johannes Rekkedal
-  !> Date:    December 2013
-  subroutine gao_to_govov(govov,gao,Co,Cv,nb,no,nv,A_sta,dimAlpha, &
-                         & G_Sta,dimGamma,tmp1,tmp2)
-
-    implicit none
-
-    ! array dimensions:
-    integer, intent(in) :: nb, no, nv
-    integer, intent(in) :: A_Sta, dimAlpha, G_Sta, dimGamma
-
-    !> MO integral:
-    real(realk), intent(inout) :: govov(no*nv*no*nv) 
-    !> Batch of AO integral:
-    real(realk), intent(in) :: gao(dimAlpha*nb*dimGamma*nb)
-    !> Transfo. matrices:
-    real(realk), intent(in) :: Co(nb,no),Cv(nb,nv)
-    !> working arrays:
-    real(realk) :: tmp1(:), tmp2(:)
-
-    integer :: A_end, G_end
-
-    A_end = A_sta +dimAlpha - 1
-    G_end = G_sta +dimGamma - 1
-
-
-
-    ! we have (beta delta alpha gamma)
-
-    ! transfo Beta to j => [delta alphaB gammaB, j]
-    call dgemm('t','n',nb*dimAlpha*dimGamma,no,nb,1.0E0_realk, &
-         & gao,nb,Co,nb,0.0E0_realk,tmp1,nb*dimAlpha*dimGamma)
-    call lsmpi_poke() 
-
-    ! transfo delta to b => [alphaB gammaB j, b]
-    call dgemm('t','n',dimAlpha*dimGamma*no,nv,nb,1.0E0_realk, &
-         & tmp1,nb,Cv,nb,0.0E0_realk,tmp2,dimAlpha*dimGamma*no)
-    call lsmpi_poke() 
-
-    ! transfo alphaB to i => [gammaB j b, i]
-    call dgemm('t','n',dimGamma*no*nv,no,dimAlpha,1.0E0_realk,tmp2,dimAlpha, &
-         & Co(A_sta:A_end,:),dimAlpha,0.0E0_realk,tmp1,dimGamma*no*nv)
-    call lsmpi_poke() 
-
-    ! transfo gammaB to a => [j b i, a]
-    call dgemm('t','n',no*nv*no,nv,dimGamma,1.0E0_realk,tmp1,dimGamma, &
-         & Cv(G_sta:G_end,:),dimGamma,1.0E0_realk,govov,no*nv*no)
-    call lsmpi_poke() 
-   
-
-  end subroutine gao_to_govov
 
 
   !> Purpose: Get information regarding MO batches for two 
   !           equivalent nested loops:
   !
   !> Author:  Pablo Baudin
-  !> Date:    Novemeber 2013
+  !> Date:    November 2013
   subroutine get_MO_batches_info(PQbatchInfo, dimBat, TotSize, Nbat)
 
     implicit none
@@ -1861,41 +1855,41 @@ contains
     ! Loop over MO batches:
     BatchQ: do Qbatch = 1, Nbat
 
-      ! get dimension of last Q batch:
-      if (Qbatch == Nbat) dimQ = TotSize - Q_sta + 1
+       ! get dimension of last Q batch:
+       if (Qbatch == Nbat) dimQ = TotSize - Q_sta + 1
 
-      P_sta = 1
-      BatchP: do Pbatch = 1, Qbatch
+       P_sta = 1
+       BatchP: do Pbatch = 1, Qbatch
 
-        ! get dimension of last P batch:
-        if (Pbatch == Nbat) dimP = TotSize - P_sta + 1
- 
-        ! Store info about this PQ batch:
-        PQbatchInfo%StartInd1(PQ_batch) = P_sta
-        PQbatchInfo%StartInd2(PQ_batch) = Q_sta
-        PQbatchInfo%dimInd1(PQ_batch)   = dimP
-        PQbatchInfo%dimInd2(PQ_batch)   = dimQ
+          ! get dimension of last P batch:
+          if (Pbatch == Nbat) dimP = TotSize - P_sta + 1
 
-        ! DimTot contains the total dimension 
-        if (P_sta==Q_sta) then
-          idb = idb + 1
-          PQbatchInfo%tileInd(PQ_batch,1) = idb
-          PQbatchInfo%tileInd(PQ_batch,2) = 0
-          PQbatchInfo%dimTot(PQ_batch) = dimP*dimQ
-        else 
-          iub = iub + 1
-          PQbatchInfo%tileInd(PQ_batch,1) = iub
-          PQbatchInfo%tileInd(PQ_batch,2) = 1
-          PQbatchInfo%dimTot(PQ_batch) = 2*dimP*dimQ
-        end if
+          ! Store info about this PQ batch:
+          PQbatchInfo%StartInd1(PQ_batch) = P_sta
+          PQbatchInfo%StartInd2(PQ_batch) = Q_sta
+          PQbatchInfo%dimInd1(PQ_batch)   = dimP
+          PQbatchInfo%dimInd2(PQ_batch)   = dimQ
 
-        PQ_batch = PQ_batch + 1
-        P_sta = P_sta + dimP
+          ! DimTot contains the total dimension 
+          if (P_sta==Q_sta) then
+             idb = idb + 1
+             PQbatchInfo%tileInd(PQ_batch,1) = idb
+             PQbatchInfo%tileInd(PQ_batch,2) = 0
+             PQbatchInfo%dimTot(PQ_batch) = dimP*dimQ
+          else 
+             iub = iub + 1
+             PQbatchInfo%tileInd(PQ_batch,1) = iub
+             PQbatchInfo%tileInd(PQ_batch,2) = 1
+             PQbatchInfo%dimTot(PQ_batch) = 2*dimP*dimQ
+          end if
 
-      end do BatchP
-      ! restore dimension of P batch
-      dimP = dimQ
-      Q_sta = Q_sta + dimQ
+          PQ_batch = PQ_batch + 1
+          P_sta = P_sta + dimP
+
+       end do BatchP
+       ! restore dimension of P batch
+       dimP = dimQ
+       Q_sta = Q_sta + dimQ
     end do BatchQ
 
   end subroutine get_MO_batches_info
@@ -1909,12 +1903,12 @@ contains
   subroutine pack_and_add_gmo(gmo,pack_gmo,tile,ntot,dimP,dimQ,diag,tmp)
 
     implicit none
-   
+
     !> array with one batch of partial MO int.:
     real(realk), intent(in) :: gmo(:)
     !> array containing the previous contributions
     !  to this MO int. batch, packed.
-    type(array), intent(inout) :: pack_gmo
+    type(tensor), intent(inout) :: pack_gmo
     !> index corresponding to the current batch:
     integer, intent(in) :: tile
     !> dimensions of array:
@@ -1935,61 +1929,61 @@ contains
     ! 1st case: current batch corresponds to diagonal block, we 
     !           keep only the upper triangular part of the batch.
     if (diag) then
-  
-      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
-      !$OMP PRIVATE(q,r,s,rs,ibatch,ipack)
-      do s=1,ntot
-        do r=1,s
-          rs = r + (s-1)*ntot
-          do q=1,dimQ
-            ibatch = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
-            ipack = 1 + q*(q-1)/2 + (s*(s-1)/2 + r-1)*(dimQ*(dimQ+1)/2)
-            call dcopy(q,gmo(ibatch),1,tmp(ipack),1)
-          end do
-        end do
-      end do
-      !$OMP END PARALLEL DO
-  
-      ncopy = dimQ*(dimQ+1)/2 + (ntot*(ntot-1)/2 + ntot-1)*(dimQ*(dimQ+1)/2)
-      ! accumulate tile
-      if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call time_start_phase(PHASE_COMM)
-        call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
-        call time_start_phase(PHASE_WORK)
-      else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
-      else
-        call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
-      end if
 
-    ! 2nd case: current batch corresponds to an upper diagonal block,
-    !           we keep all the pq part and reduced r<=s.
+       !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
+       !$OMP PRIVATE(q,r,s,rs,ibatch,ipack)
+       do s=1,ntot
+          do r=1,s
+             rs = r + (s-1)*ntot
+             do q=1,dimQ
+                ibatch = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
+                ipack = 1 + q*(q-1)/2 + (s*(s-1)/2 + r-1)*(dimQ*(dimQ+1)/2)
+                call dcopy(q,gmo(ibatch),1,tmp(ipack),1)
+             end do
+          end do
+       end do
+       !$OMP END PARALLEL DO
+
+       ncopy = dimQ*(dimQ+1)/2 + (ntot*(ntot-1)/2 + ntot-1)*(dimQ*(dimQ+1)/2)
+       ! accumulate tile
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
+          call time_start_phase(PHASE_COMM)
+          call tensor_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
+          call time_start_phase(PHASE_WORK)
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
+          call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
+       else
+          call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+       end if
+
+       ! 2nd case: current batch corresponds to an upper diagonal block,
+       !           we keep all the pq part and reduced r<=s.
     else
-  
-      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
-      !$OMP PRIVATE(r,s,rs,ibatch,ipack,ncopy)
-      do s=1,ntot
-        do r=1,s
-          rs = r + (s-1)*ntot
-          ibatch = 1 + (rs-1)*dimP*dimQ
-          ipack = 1 + (s*(s-1)/2 + r-1)*dimP*dimQ
-          ncopy = dimP*dimQ
-          call dcopy(ncopy,gmo(ibatch),1,tmp(ipack),1)
-        end do
-      end do
-      !$OMP END PARALLEL DO
-  
-      ncopy = (ntot*(ntot-1)/2 + ntot)*dimP*dimQ
-      ! accumulate tile
-      if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call time_start_phase(PHASE_COMM)
-        call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
-        call time_start_phase(PHASE_WORK)
-      else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
-      else
-        call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
-      end if
+
+       !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
+       !$OMP PRIVATE(r,s,rs,ibatch,ipack,ncopy)
+       do s=1,ntot
+          do r=1,s
+             rs = r + (s-1)*ntot
+             ibatch = 1 + (rs-1)*dimP*dimQ
+             ipack = 1 + (s*(s-1)/2 + r-1)*dimP*dimQ
+             ncopy = dimP*dimQ
+             call dcopy(ncopy,gmo(ibatch),1,tmp(ipack),1)
+          end do
+       end do
+       !$OMP END PARALLEL DO
+
+       ncopy = (ntot*(ntot-1)/2 + ntot)*dimP*dimQ
+       ! accumulate tile
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
+          call time_start_phase(PHASE_COMM)
+          call tensor_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
+          call time_start_phase(PHASE_WORK)
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
+          call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
+       else
+          call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
+       end if
 
     end if
 
@@ -2003,12 +1997,12 @@ contains
   subroutine unpack_gmo(gmo,pack_gmo,tile,ntot,dimP,dimQ,diag,tmp)
 
     implicit none
-   
+
     !> array with one batch of partial MO int.:
     real(realk), intent(inout) :: gmo(:)
     !> array containing the previous contributions
     !  to this MO int. batch, packed.
-    type(array), intent(in) :: pack_gmo
+    type(tensor), intent(in) :: pack_gmo
     !> index corresponding to the current batch:
     integer, intent(in) :: tile
     !> dimensions of array:
@@ -2029,456 +2023,1219 @@ contains
 
     ! 1st case: current batch corresponds to diagonal block.
     if (diag) then
-  
-      ! get batch from pdm:
-      ncopy = ntot*(ntot+1)*dimP*(dimP+1)/4
 
-      if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call time_start_phase(PHASE_COMM)
-        call array_get_tile(pack_gmo,tile,tmp,ncopy)
-        call time_start_phase(PHASE_WORK)
-      else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
-      else
-        call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
-      end if
+       ! get batch from pdm:
+       ncopy = ntot*(ntot+1)*dimP*(dimP+1)/4
 
-      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
-      !$OMP PRIVATE(r,s,rs,sr,ibat1,ibat2,ipack)
-      do s=1,ntot
-        do r=1,s
-          rs = r + (s-1)*ntot
-          do q=1,dimQ
-            ipack = 1 + q*(q-1)/2 + (s*(s-1)/2 + r-1)*(dimQ*(dimQ+1)/2)
-            ibat1 = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
-            call dcopy(q,tmp(ipack),1,gmo(ibat1),1)
-            ibat2 = q + (rs-1)*dimP*dimQ
-            call dcopy(q-1,tmp(ipack),1,gmo(ibat2),dimP)
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
+          call time_start_phase(PHASE_COMM)
+          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
+          call time_start_phase(PHASE_WORK)
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
+          call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
+       else
+          call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
+       end if
+
+       !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
+       !$OMP PRIVATE(r,s,rs,sr,ibat1,ibat2,ipack)
+       do s=1,ntot
+          do r=1,s
+             rs = r + (s-1)*ntot
+             do q=1,dimQ
+                ipack = 1 + q*(q-1)/2 + (s*(s-1)/2 + r-1)*(dimQ*(dimQ+1)/2)
+                ibat1 = 1 + (q-1)*dimP + (rs-1)*dimP*dimQ
+                call dcopy(q,tmp(ipack),1,gmo(ibat1),1)
+                ibat2 = q + (rs-1)*dimP*dimQ
+                call dcopy(q-1,tmp(ipack),1,gmo(ibat2),dimP)
+             end do
+             if (r/=s) then
+                sr = s + (r-1)*ntot
+                sr = 1 + (sr-1)*dimP*dimQ
+                rs = 1 + (rs-1)*dimP*dimQ
+                call dcopy(dimP*dimQ,gmo(rs),1,gmo(sr),1)
+             end if
           end do
-          if (r/=s) then
-            sr = s + (r-1)*ntot
-            sr = 1 + (sr-1)*dimP*dimQ
-            rs = 1 + (rs-1)*dimP*dimQ
-            call dcopy(dimP*dimQ,gmo(rs),1,gmo(sr),1)
-          end if
-        end do
-      end do
-      !$OMP END PARALLEL DO
- 
-    ! 2nd case: current batch corresponds to an upper diagonal block,
+       end do
+       !$OMP END PARALLEL DO
+
+       ! 2nd case: current batch corresponds to an upper diagonal block,
     else
-  
-      ! get batch from pdm:
-      ncopy = dimP*dimQ*ntot*(ntot+1)/2
 
-      if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
-        call time_start_phase(PHASE_COMM)
-        call array_get_tile(pack_gmo,tile,tmp,ncopy)
-        call time_start_phase(PHASE_WORK)
-      else if (nnod>1.and.pack_gmo%itype==TILED) then
-        call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
-      else
-        call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
-      end if
+       ! get batch from pdm:
+       ncopy = dimP*dimQ*ntot*(ntot+1)/2
 
-      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
-      !$OMP PRIVATE(r,s,rs,sr,ibat1,ipack,ncopy)
-      do s=1,ntot
-        do r=1,s
-          rs = r + (s-1)*ntot
-          ipack = 1 + (s*(s-1)/2 + r-1)*dimP*dimQ
-          ibat1 = 1 + (rs-1)*dimP*dimQ
-          ncopy = dimP*dimQ
-          call dcopy(ncopy,tmp(ipack),1,gmo(ibat1),1)
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
+          call time_start_phase(PHASE_COMM)
+          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
+          call time_start_phase(PHASE_WORK)
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
+          call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
+       else
+          call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
+       end if
 
-          if (r/=s) then
-            sr = s + (r-1)*ntot
-            sr = 1 + (sr-1)*dimP*dimQ
-            call dcopy(dimP*dimQ,gmo(ibat1),1,gmo(sr),1)
-          end if
-        end do
-      end do
-      !$OMP END PARALLEL DO
+       !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ntot,gmo,tmp,dimP,dimQ)&
+       !$OMP PRIVATE(r,s,rs,sr,ibat1,ipack,ncopy)
+       do s=1,ntot
+          do r=1,s
+             rs = r + (s-1)*ntot
+             ipack = 1 + (s*(s-1)/2 + r-1)*dimP*dimQ
+             ibat1 = 1 + (rs-1)*dimP*dimQ
+             ncopy = dimP*dimQ
+             call dcopy(ncopy,tmp(ipack),1,gmo(ibat1),1)
+
+             if (r/=s) then
+                sr = s + (r-1)*ntot
+                sr = 1 + (sr-1)*dimP*dimQ
+                call dcopy(dimP*dimQ,gmo(ibat1),1,gmo(sr),1)
+             end if
+          end do
+       end do
+       !$OMP END PARALLEL DO
 
     end if
-  
+
   end subroutine unpack_gmo
+#endif
 
   subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective,order)
-     implicit none
-     type(array),intent(inout)   :: integral
-     type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
-     type(lsitem), intent(inout) :: mylsitem
-     logical, intent(in) :: local
-     logical, intent(inout) :: collective
-     integer, intent(in), optional :: order(4)
-     !Integral stuff
-     integer :: alphaB,gammaB,dimAlpha,dimGamma
-     integer :: dim1,dim2,dim3,MinAObatch
-     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
-     integer :: iorb,nthreads,magic
-     integer :: idx,nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload,nba,nbg,biA,biG,bsA,bsG
-     type(batchtoorb), pointer :: batch2orbAlpha(:)
-     type(batchtoorb), pointer :: batch2orbGamma(:)
-     Character(80)        :: FilenameCS,FilenamePS
-     Character(80),pointer:: BatchfilenamesCS(:,:)
-     Character(80),pointer:: BatchfilenamesPS(:,:)
-     Character            :: INTSPEC(5)
-     logical :: FoundInMem,fullRHS, doscreen
-     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
-     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
-     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
-     TYPE(DECscreenITEM)  :: DecScreen
-     real(realk), pointer :: w1(:),w2(:)
-     real(realk) :: MemFree,nrm
-     integer(kind=long) :: maxsize
-     logical :: master
-     integer(kind=ls_mpik) :: me, nnod
-     integer, pointer :: jobdist(:)
-     real(realk), pointer :: work(:)
-     integer(kind=long) :: w1size, w2size
-     real(realk), parameter :: fraction_of = 0.8E0_realk
-
-     call time_start_phase( PHASE_WORK )
-
-
-     master  = .true.
-     me      = 0
-     nnod    = 1
-     magic   = 3
+    implicit none
+    type(tensor),intent(inout)   :: integral
+    type(tensor),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
+    type(lsitem), intent(inout) :: mylsitem
+    logical, intent(in) :: local
+    logical, intent(inout) :: collective
+    integer, intent(in), optional :: order(4)
+    !Integral stuff
+    logical :: save_cs_screen, save_ps_screen
+    integer :: alphaB,gammaB,dimAlpha,dimGamma
+    integer :: dim1,dim2,dim3,MinAObatch
+    integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
+    integer :: iorb,nthreads,magic
+    integer :: idx,nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload,nba,nbg,biA,biG,bsA,bsG
+    logical :: FoundInMem,doscreen
+    type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
+    type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
+    integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
+    logical :: MoTrans, NoSymmetry,SameMol
+    type(batchtoorb), pointer :: batch2orbAlpha(:)
+    type(batchtoorb), pointer :: batch2orbGamma(:)
+    Character(80)        :: FilenameCS,FilenamePS
+    Character(80),pointer:: BatchfilenamesCS(:,:)
+    Character(80),pointer:: BatchfilenamesPS(:,:)
+    integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    TYPE(DECscreenITEM)  :: DecScreen
+    integer, pointer :: batchdimAlpha(:),batchdimGamma(:)
+    Character        :: INTSPEC(5)
+    logical :: fullRHS
+    integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
+    integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
+    real(realk), pointer :: w1(:),w2(:)
+    real(realk) :: MemFree,nrm
+    integer(kind=long) :: maxsize
+    logical :: master
+    integer(kind=ls_mpik) :: me, nnod
+    integer               :: lenI2, modeBidx(2), modeBdim(2), el,jobidx,pos
+    integer, pointer      :: jobdist(:)
+    type(c_ptr)           :: jobdistc
+    integer(kind=ls_mpik) :: jobdistw
+    real(realk), pointer :: work(:)
+    integer(kind=long) :: w1size, w2size
+    real(realk), parameter :: fraction_of = 0.8E0_realk
+    logical :: dynamic_load,completely_distributed
+    integer :: nbuffs
+    type(tensor) :: Cint, int1, int2, int3, t1_par, t2_par, t3_fa, t4_fg
+    integer :: ndimA,  ndimB,  ndimC,  ndimD
+    integer :: ndimAs, ndimBs, ndimCs, ndimDs
+    integer :: startA, startB, startC, startD
+    integer :: dims(4), tdim(4), starts(4), order4(4)
+    integer :: bs,as,gs,n1s,n2s,n3s,n4s
+    real(realk) :: tot_intloop,         tot_intloop_min,     tot_intloop_max
+    real(realk) :: time_t4fg_tot_max,   time_t4fg_tot_min,   time_t4fg_tot,    time_t4fg 
+    real(realk) :: time_t3fa_tot_max,   time_t3fa_tot_min,   time_t3fa_tot,    time_t3fa
+    real(realk) :: time_int1_tot_max,   time_int1_tot_min,   time_int1_tot ,   time_int1
+    real(realk) :: time_cont1_tot_max,  time_cont1_tot_min,  time_cont1_tot,   time_cont1 
+    real(realk) :: time_cont2_tot_max,  time_cont2_tot_min,  time_cont2_tot,   time_cont2
+    real(realk) :: time_cont3_tot_max,  time_cont3_tot_min,  time_cont3_tot,   time_cont3
+    real(realk) :: time_cont4_tot_max,  time_cont4_tot_min,  time_cont4_tot,   time_cont4
+    real(realk) :: phase_cntrs(nphases), total_integral_time
+    real(realk) :: flushing_time, flushing_time_min, flushing_time_max 
+    real(realk) :: unlock_time,   unlock_time_min,   unlock_time_max
+    real(realk) :: waiting_time,  waiting_time_min,  waiting_time_max
+    real(realk) :: time_w_min, time_w_max
+    real(realk) :: time_c_min, time_c_max
+    real(realk) :: time_i_min, time_i_max
 #ifdef VAR_MPI
-     master  = (infpar%lg_mynum == infpar%master)
-     me      = infpar%lg_mynum
-     nnod    = infpar%lg_nodtot
+    integer(kind=ls_mpik), parameter :: mode = MPI_MODE_NOCHECK
 #endif
 
-
-     nb = trafo1%dims(1)
-     n1 = trafo1%dims(2)
-     n2 = trafo2%dims(2)
-     n3 = trafo3%dims(2)
-     n4 = trafo4%dims(2)
-     if( integral%dims(1) /= n1 .or. integral%dims(2) /= n2 .or. &
-        & integral%dims(3) /= n3 .or. integral%dims(4) /= n4)then
-        call lsquit("EEROR(get_mo_integral_par)wrong dimensions of the integrals&
-        & or the transformation matrices",-1)
-     endif
-
-     ! Set integral info
-     ! *****************
-     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center 
-     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center 
-     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center 
-     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
-     INTSPEC(5)               = 'C' !C = Coulomb operator
-     doscreen                 = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
-
-     !==================================================
-     !                  Batch construction             !
-     !==================================================
+    call time_start_phase( PHASE_WORK, twall = total_integral_time )
 
 
-     ! Get free memory and determine maximum batch sizes
-     ! -------------------------------------------------
-     if(master)then
+    master        = .true.
+    me            = 0
+    nnod          = 1
+    magic         = 3
+    dynamic_load  = DECinfo%dyn_load
+    unlock_time   = 0.0E0_realk 
+    waiting_time  = 0.0E0_realk
+    flushing_time = 0.0E0_realk
 #ifdef VAR_MPI
-        call time_start_phase( PHASE_COMM )
-        if(.not.local)call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,&
-           &trafo4,mylsitem,collective)
-        call time_start_phase( PHASE_WORK )
+    master        = (infpar%lg_mynum == infpar%master)
+    me            = infpar%lg_mynum
+    nnod          = infpar%lg_nodtot
+    unlock_time   = time_lsmpi_win_unlock 
+    waiting_time  = time_lsmpi_wait
+    flushing_time = time_lsmpi_win_flush
+#endif
+    completely_distributed = .false.
+    nbuffs         = get_nbuffs_scheme_0()
+    time_t4fg_tot  = 0.0E0_realk
+    time_t3fa_tot  = 0.0E0_realk
+    time_cont1_tot = 0.0E0_realk
+    time_int1_tot  = 0.0E0_realk
+    time_cont2_tot = 0.0E0_realk
+    time_cont3_tot = 0.0E0_realk
+    time_cont4_tot = 0.0E0_realk
+
+
+    nb = trafo1%dims(1)
+    n1 = trafo1%dims(2)
+    n2 = trafo2%dims(2)
+    n3 = trafo3%dims(2)
+    n4 = trafo4%dims(2)
+    !Get default splits, they should never be the ones used later
+    n1s = get_split_scheme_0(n1)
+    n2s = get_split_scheme_0(n2)
+    n3s = get_split_scheme_0(n3)
+    n4s = get_split_scheme_0(n4)
+
+    !If the dim in the trafo matrix corresponds to the trafo dim then the
+    !segmets are set to the same lengths. Same dimensions are required to
+    !have the same segmenting, therefore it may be overwritten several times
+    do i = 1, integral%mode
+       if(integral%dims(i) == n1) n1s = integral%tdim(i)
+       if(integral%dims(i) == n2) n2s = integral%tdim(i)
+       if(integral%dims(i) == n3) n3s = integral%tdim(i)
+       if(integral%dims(i) == n4) n4s = integral%tdim(i)
+    enddo
+
+    if( integral%dims(1) /= n1 .or. integral%dims(2) /= n2 .or. &
+         & integral%dims(3) /= n3 .or. integral%dims(4) /= n4)then
+       call lsquit("EEROR(get_mo_integral_par)wrong dimensions of the integrals&
+            & or the transformation matrices",-1)
+    endif
+    bs            = get_split_scheme_0(nb)
+
+    ! Set integral info
+    ! *****************
+    INTSPEC = ['R','R','R','R','C'] !R = Regular Basis set on the 1th center !R = Regular Basis set on the 2th center 
+                                    !R = Regular Basis set on the 3th center !R = Regular Basis set on the 4th center !C = Coulomb operator
+
+    IF(DECinfo%useIchor)THEN
+       iprint     = 0       !print level for Ichor Integral code
+       MoTrans    = .FALSE. !Do not transform to MO basis! 
+       NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+       SameMol    = .TRUE.  !Same molecule on all centers of the 4 center 2 electron integral
+       !Determine the full number of AO batches - not to be confused with the batches of AOs
+       !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+       iAO = 1
+       call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+       nullify(AOGammabatchinfo)
+       nullify(AOalphabatchinfo)    
+    ELSE
+       doscreen                 = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
+       nullify(orb2batchAlpha)
+       nullify(batchdimAlpha)
+       nullify(batchsizeAlpha)
+       nullify(batch2orbAlpha)
+       nullify(batchindexAlpha)
+       nullify(orb2batchGamma)
+       nullify(batchdimGamma)
+       nullify(batchsizeGamma)
+       nullify(batch2orbGamma)
+       nullify(batchindexGamma)
+    ENDIF
+    !==================================================
+    !                  Batch construction             !
+    !==================================================
+
+
+    ! Get free memory and determine maximum batch sizes
+    ! -------------------------------------------------
+    if(master)then
+#ifdef VAR_MPI
+       call time_start_phase( PHASE_COMM )
+       if(.not.local)call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,&
+            &trafo4,mylsitem,collective)
+       call time_start_phase( PHASE_WORK )
+#endif
+       IF(DECinfo%useIchor)THEN
+          !Determine the minimum allowed AObatch size MinAObatch
+          !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
+          !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
+          !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
+          !'R'  !Specifies that it is the Regular AO basis that should be batched
+          iAO = 4 !the center that the batching should occur on (they are all the same in this case)  
+          call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
+       ELSE
+          call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+       ENDIF
+
+       call get_currently_available_memory(MemFree)
+
+
+       nba = nb
+       nbg = nb
+       alp: do i = MinAObatch, nb
+          gamm: do k = MinAObatch, nb
+
+             w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
+                &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+             w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
+                &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+
+             maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
+
+             if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+
+                if(i <= MinAObatch .and. k <= MinAObatch .and. collective)then
+
+                   collective = .false.
+                   exit alp
+
+                else
+
+                   nba = i
+                   nbg = k - 1
+
+                   exit alp
+
+                endif
+             endif
+
+          enddo gamm
+       enddo alp
+
+       if(.not. collective)then
+          alp_nc: do i = MinAObatch, nb
+             gamm_nc: do k = MinAObatch, nb
+
+                w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
+                   &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+                w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
+                   &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+
+                maxsize = w1size + w2size
+
+                if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+
+                   nba = i
+                   nbg = k - 1
+
+                   exit alp_nc
+
+                endif
+
+             enddo gamm_nc
+          enddo alp_nc
+       endif
+
+
+       if(DECinfo%manual_batchsizes)then
+          nbg = max(DECinfo%ccsdGbatch,MinAObatch)
+          nba = max(DECinfo%ccsdAbatch,MinAObatch)
+       else
+          if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>MinAObatch).and.nnod>1)then
+             nba=(nb/(magic*nnod))
+             if(nba<MinAObatch)nba=MinAObatch
+          endif
+
+          if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==MinAObatch).and.nnod>1)then
+             do while((nb/nba)*(nb/nbg)<magic*nnod)
+                nbg=nbg-1
+                if(nbg<=MinAObatch)exit
+             enddo
+             if(nbg<MinAObatch)nbg=MinAObatch
+          endif
+       endif
+
+       w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
+          &nbuffs,INTSPEC,MyLsItem%setting)
+       w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
+          &nbuffs,INTSPEC,MyLsItem%setting)
+
+       if(DECinfo%PL>2)then
+          print *,"INFO(get_mo_integral_par): c",collective,"MinAObatch",MinAObatch,&
+             &"nba",nba,"nbg",nbg,"size 1",w1size,"size 2",w2size
+       endif
+
+       maxsize = w1size
+       maxsize = maxsize + w2size
+
+       if(collective) maxsize = maxsize + (i8*n1*n2)*n3*n4
+
+       if(DECinfo%test_fully_distributed_integrals)then
+          collective = .false.
+          maxsize    = huge(maxsize)/8
+       endif
+
+       if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree)then
+          if( local )then
+             call lsquit("ERROR(get_mo_integral_par): not enough memory, try running with MPI/more nodes",-1)
+          else
+             completely_distributed = .true.
+
+             nba = nb
+             nbg = nb
+
+             alp_cd: do i = MinAObatch, nb
+                gamm_cd: do k = MinAObatch, nb
+
+                   w1size = 0
+                   w2size = 0
+
+                   w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
+                      &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+                   w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
+                      &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+
+                   maxsize = w1size + w2size
+
+                   if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+
+                      nba = i
+                      nbg = k - 1
+
+                      exit alp_cd
+
+                   endif
+
+                enddo gamm_cd
+             enddo alp_cd
+
+
+          endif
+       endif
+
+       MaxAllowedDimGamma = nbg
+       MaxAllowedDimAlpha = nba
+
+    endif
+
+    if(.not.local)then
+       integral%access_type = AT_ALL_ACCESS
+       trafo1%access_type   = AT_ALL_ACCESS
+       trafo2%access_type   = AT_ALL_ACCESS
+       trafo3%access_type   = AT_ALL_ACCESS
+       trafo4%access_type   = AT_ALL_ACCESS
+#ifdef VAR_MPI
+       call time_start_phase( PHASE_COMM )
+       call ls_mpibcast(MaxAllowedDimAlpha,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(MaxAllowedDimGamma,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(collective,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(completely_distributed,infpar%master,infpar%lg_comm)
+       call time_start_phase( PHASE_WORK )
+#endif
+    endif
+
+    if(completely_distributed) then
+       dynamic_load = .false.
+       if( collective ) call lsquit("ERROR(get_mo_integral_par)&
+       & completly_distributed and collective is impossible",-1)
+    endif
+
+    if(.not.completely_distributed)then
+       ! ************************************************
+       ! * Determine batch information for Gamma batch  *
+       ! ************************************************
+       IF(DECinfo%useIchor)THEN
+          iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+          !Determine how many batches of AOS based on the MaxAllowedDimGamma, the requested
+          !size of the AO batches. iAO is the center that the batching should occur on. 
+          !'R'  !Specifies that it is the Regular AO basis that should be batched 
+          call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+               & nbatchesGamma,DECinfo%output)
+          call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+          !Construct the batches of AOS based on the MaxAllowedDimGamma, the requested
+          !size of the AO batches - MaxAllowedDimGamma must be unchanged since the call 
+          !to determine_Ichor_nbatchesofAOS
+          !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+          !So MaxActualDimGamma must be less og equal to MaxAllowedDimGamma
+          call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+               & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+       ELSE
+          ! Orbital to batch information
+          ! ----------------------------
+          call mem_alloc(orb2batchGamma,nb)
+          call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
+               & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
+               &nbatchesGamma,orb2BatchGamma,'R')
+       ENDIF
+
+       if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
+          & 'with maximum size',MaxActualDimGamma
+
+       IF(.NOT.DECinfo%useIchor)THEN
+          ! Translate batchindex to orbital index
+          ! -------------------------------------
+          call mem_alloc(batch2orbGamma,nbatchesGamma)
+          do idx=1,nbatchesGamma
+             call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
+             batch2orbGamma(idx)%orbindex = 0
+             batch2orbGamma(idx)%norbindex = 0
+          end do
+          do iorb=1,nb
+             idx = orb2batchGamma(iorb)
+             batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+             K = batch2orbGamma(idx)%norbindex
+             batch2orbGamma(idx)%orbindex(K) = iorb
+          end do
+       ENDIF
+
+       ! ************************************************
+       ! * Determine batch information for Alpha batch  *
+       ! ************************************************
+
+       IF(DECinfo%useIchor)THEN
+          iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+          !Determine how many batches of AOS based on the MaxAllowedDimAlpha, the requested
+          !size of the AO batches. iAO is the center that the batching should occur on. 
+          !'R'  !Specifies that it is the Regular AO basis that should be batched 
+          call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+               & nbatchesAlpha,DECinfo%output)
+          call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+          !Construct the batches of AOS based on the MaxAllowedDimAlpha, the requested
+          !size of the AO batches - MaxAllowedDimAlpha must be unchanged since the call 
+          !to determine_Ichor_nbatchesofAOS
+          !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+          !So MaxActualDimAlpha must be less og equal to MaxAllowedDimAlpha
+          call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+               & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+       ELSE
+          ! Orbital to batch information
+          ! ----------------------------
+          call mem_alloc(orb2batchAlpha,nb)
+          call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
+               & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
+       ENDIF
+
+       if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
+          &, 'with maximum size',MaxActualDimAlpha
+
+       IF(.NOT.DECinfo%useIchor)THEN
+          ! Translate batchindex to orbital index
+          ! -------------------------------------
+          call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+          do idx=1,nbatchesAlpha
+             call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+             batch2orbAlpha(idx)%orbindex = 0
+             batch2orbAlpha(idx)%norbindex = 0
+          end do
+          do iorb=1,nb
+             idx = orb2batchAlpha(iorb)
+             batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+             K = batch2orbAlpha(idx)%norbindex
+             batch2orbAlpha(idx)%orbindex(K) = iorb
+          end do
+       ENDIF
+    else
+
+       MaxActualDimAlpha = MaxAllowedDimAlpha
+       MaxActualDimGamma = MaxAllowedDimGamma
+       save_cs_screen = mylsitem%setting%SCHEME%CS_SCREEN
+       save_ps_screen = mylsitem%setting%SCHEME%PS_SCREEN
+       mylsitem%setting%SCHEME%CS_SCREEN = .FALSE.
+       mylsitem%setting%SCHEME%PS_SCREEN = .FALSE.
+       doscreen = mylsitem%setting%SCHEME%CS_SCREEN.OR.mylsitem%setting%SCHEME%PS_SCREEN
+
+       call tensor_ainit( t1_par, [nb,n1], 2, local=local, atype="TDAR", tdims=[bs,n1s] )
+       call tensor_convert(trafo1%elm1,t1_par)
+       call tensor_ainit( t2_par, [nb,n2], 2, local=local, atype="TDAR", tdims=[bs,n2s] )
+       call tensor_convert(trafo2%elm1,t2_par)
+
+       nbatchesAlpha = nb / MaxActualDimAlpha
+       if( mod( nb, MaxActualDimAlpha ) > 0 ) nbatchesAlpha = nbatchesAlpha + 1
+       nbatchesGamma = nb / MaxActualDimGamma
+       if( mod( nb, MaxActualDimGamma ) > 0 ) nbatchesGamma = nbatchesGamma + 1
+
+    endif
+    w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
+       &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+    w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
+       &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+
+    call mem_alloc( w1, w1size )
+    call mem_alloc( w2, w2size )
+
+    !First touch
+    w1(1) = 0.0E0_realk
+    w2(1) = 0.0E0_realk
+
+    if(collective)then
+       call mem_alloc(work,(i8*n1)*n2*n3*n4)
+       work = 0.0E0_realk
+    endif
+
+
+    ! ************************************************
+    ! *  precalculate the full schreening matrix     *
+    ! ************************************************
+    if(.not.completely_distributed)then
+       IF(DECinfo%useIchor)THEN
+          !Calculate Screening integrals 
+          SameMOL = .TRUE. !Specifies same molecule on all centers 
+          call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+       ELSE
+          ! This subroutine builds the full screening matrix.
+          call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
+               & nbatchesAlpha,nbatchesGamma,INTSPEC)
+          if(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
+             call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+                  & nb,nbatchesAlpha,nbatchesGamma,&
+                  & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+                  & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+             call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
+                  & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
+                  & batchindexAlpha,batchindexGamma,&
+                  & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+          endif
+       ENDIF
+    endif
+
+
+#ifdef VAR_MPI
+    if(.not.completely_distributed)then
+       IF(DECinfo%useIchor)THEN
+          call mem_alloc(batchdimAlpha,nbatchesAlpha)
+          do idx=1,nbatchesAlpha
+             batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+          enddo
+          call mem_alloc(batchdimGamma,nbatchesGamma)
+          do idx=1,nbatchesGamma
+             batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+          enddo
+       ENDIF
+       !JOB distribution
+       if(.not.dynamic_load)then
+          lenI2 = nbatchesAlpha*nbatchesGamma
+          call mem_alloc(jobdist,lenI2)
+          myload   = 0
+          jobdist  = 0
+          call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
+             &batchdimGamma,myload,nnod,me)
+       else
+          lenI2 = 1
+          call mem_alloc( jobdist, jobdistc, lenI2 ) 
+          jobdist = 0
+          if(me == infpar%master) jobdist(1) = nnod + 1
+
+          call lsmpi_win_create(jobdist,jobdistw,1,infpar%lg_comm)
+#ifdef VAR_HAVE_MPI3
+          call lsmpi_win_lock_all(jobdistw,ass=mode)
 #endif
 
-        call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
-        call get_currently_available_memory(MemFree)
-
-
-        nba = nb
-        nbg = nb
-        alp: do i = MinAObatch, nb
-           gamm: do k = MinAObatch, nb
-
-              maxsize=max(max(nb**2*i*k,n1*n2*k*i),n1*n2*n3*n4)
-              maxsize=maxsize + max(n1*nb*i*k,n1*n2*n3*k)
-              if(collective) maxsize = maxsize + n1*n2*n3*n4
-
-              if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
-                 if(nba <= MinAObatch .and. nbg<= MinAObatch .and. collective)then
-                    collective = .false.
-                 else
-                    nba = i
-                    nbg = k - 1
-                    exit alp
-                 endif
-              endif
-
-           enddo gamm
-        enddo alp
-
-
-        if(DECinfo%manual_batchsizes)then
-           nbg = max(DECinfo%ccsdGbatch,MinAObatch)
-           nba = max(DECinfo%ccsdAbatch,MinAObatch)
-        else
-           if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>MinAObatch).and.nnod>1)then
-              nba=(nb/(magic*nnod))
-              if(nba<MinAObatch)nba=MinAObatch
-           endif
-
-           if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==MinAObatch).and.nnod>1)then
-              do while((nb/nba)*(nb/nbg)<magic*nnod)
-                 nbg=nbg-1
-                 if(nbg<=MinAObatch)exit
-              enddo
-              if(nbg<MinAObatch)nbg=MinAObatch
-           endif
-        endif
-
-        maxsize=max(max(nb**2*nba*nbg,n1*n2*nba*nbg),n1*n2*n3*n4)
-        maxsize=maxsize + max(n1*nb*nba*nbg,n1*n2*n3*nbg)
-        if(collective) maxsize = maxsize + n1*n2*n3*n4
-
-        if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree)call lsquit("ERROR(get_mo_integral_par)not enough memory",-1)
-
-        MaxAllowedDimGamma = nbg
-        MaxAllowedDimAlpha = nba
-
-     endif
-
-
-     if(.not.local)then
-        integral%access_type = ALL_ACCESS
-        trafo1%access_type   = ALL_ACCESS
-        trafo2%access_type   = ALL_ACCESS
-        trafo3%access_type   = ALL_ACCESS
-        trafo4%access_type   = ALL_ACCESS
-#ifdef VAR_MPI
-        call time_start_phase( PHASE_COMM )
-        call ls_mpibcast(MaxAllowedDimAlpha,infpar%master,infpar%lg_comm)
-        call ls_mpibcast(MaxAllowedDimGamma,infpar%master,infpar%lg_comm)
-        call time_start_phase( PHASE_WORK )
-#endif
-     endif
-
-     ! ************************************************
-     ! * Determine batch information for Gamma batch  *
-     ! ************************************************
-
-     ! Orbital to batch information
-     ! ----------------------------
-     call mem_alloc(orb2batchGamma,nb)
-     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
-        & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-        &nbatchesGamma,orb2BatchGamma,'R')
-     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
-        & 'with maximum size',MaxActualDimGamma
-
-     ! Translate batchindex to orbital index
-     ! -------------------------------------
-     call mem_alloc(batch2orbGamma,nbatchesGamma)
-     do idx=1,nbatchesGamma
-        call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
-        batch2orbGamma(idx)%orbindex = 0
-        batch2orbGamma(idx)%norbindex = 0
-     end do
-     do iorb=1,nb
-        idx = orb2batchGamma(iorb)
-        batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-        K = batch2orbGamma(idx)%norbindex
-        batch2orbGamma(idx)%orbindex(K) = iorb
-     end do
-
-
-     ! ************************************************
-     ! * Determine batch information for Alpha batch  *
-     ! ************************************************
-
-     ! Orbital to batch information
-     ! ----------------------------
-     call mem_alloc(orb2batchAlpha,nb)
-     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
-        & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
-        &, 'with maximum size',MaxActualDimAlpha
-
-     ! Translate batchindex to orbital index
-     ! -------------------------------------
-     call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-     do idx=1,nbatchesAlpha
-        call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-        batch2orbAlpha(idx)%orbindex = 0
-        batch2orbAlpha(idx)%norbindex = 0
-     end do
-     do iorb=1,nb
-        idx = orb2batchAlpha(iorb)
-        batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-        K = batch2orbAlpha(idx)%norbindex
-        batch2orbAlpha(idx)%orbindex(K) = iorb
-     end do
-
-
-     maxsize=max(max(nb**2*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*MaxActualDimAlpha*MaxActualDimGamma),n1*n2*n3*n4)
-     w1size = maxsize
-     call mem_alloc( w1, w1size )
-     maxsize=max(n1*nb*MaxActualDimAlpha*MaxActualDimGamma,n1*n2*n3*MaxActualDimGamma)
-     w2size = maxsize
-     call mem_alloc( w2, w2size )
-     if(collective)then
-        call mem_alloc(work,(i8*n1)*n2*n3*n4)
-        work = 0.0E0_realk
-     endif
-
-
-     ! ************************************************
-     ! *  precalculate the full schreening matrix     *
-     ! ************************************************
-
-     ! This subroutine builds the full screening matrix.
-     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
-        & nbatchesAlpha,nbatchesGamma,INTSPEC)
-     IF(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
-        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
-           & nb,nbatchesAlpha,nbatchesGamma,&
-           & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-        call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
-           & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
-           & batchindexAlpha,batchindexGamma,&
-           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-     ENDIF
-
-     call mem_alloc(jobdist,nbatchesAlpha*nbatchesGamma)
-     !JOB distribution
-#ifdef VAR_MPI
-     call distribute_mpi_jobs(jobdist,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
-              &batchdimGamma,myload,nnod,me)
+       endif
+       IF(DECinfo%useIchor)THEN
+          call mem_dealloc(batchdimAlpha)
+          call mem_dealloc(batchdimGamma)
+       ENDIF
+    else
+       !ALL nodes go through the loops together
+       lenI2 = nbatchesAlpha*nbatchesGamma
+       call mem_alloc(jobdist,lenI2)
+       myload   = 0
+       jobdist  = me
+    endif
 #else
-     jobdist = 0
+    call mem_alloc(jobdist,nbatchesAlpha*nbatchesGamma)
+    jobdist = 0
 #endif
 
-     !print *,me,"has",batchindexGamma,batchindexAlpha
-     !call lsmpi_barrier(infpar%lg_comm)
-
-     myload = 0
-     fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
-
-     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-
-        lg  = batchdimGamma(gammaB)                         ! Dimension of gamma batch
-        fg  = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-        biG = batchindexGamma(gammaB)
-        bsG = batchsizeGamma(gammaB)
-
-        BatchAlpha: do alphaB = 1, nbatchesAlpha
-
-           la  = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
-           fa  = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-           biA = batchindexAlpha(alphaB)
-           bsA = batchsizeAlpha(alphaB)
-
-           !print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
-           !call lsmpi_barrier(infpar%lg_comm)
-
-           if( me /= jobdist(gammaB + (alphaB-1) *nbatchesGamma) ) cycle BatchAlpha
-
-           if(DECinfo%PL>2)write (*, '("Rank",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
-              &me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
-
-           myload     = myload + la * lg
-
-           IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-           IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-
-           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,biA,&
-              &biG,bsA,bsG,nb,nb,la,lg,fullRHS,INTSPEC)
-
-
-           !something more sophisticated can be implemented here
-           call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
-           call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
-           call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
-
-           if(collective) then
-              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,1.0E0_realk,work,n1*n2*n3)
-           else
-              call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
-
-              call time_start_phase( PHASE_COMM )
-              call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize, order = order)
-              call time_start_phase( PHASE_WORK )
-           endif
-
-        enddo BatchAlpha
-     enddo BatchGamma
-
-     ! Free integral stuff
-     ! *******************
-     nullify(Mylsitem%setting%LST_GAB_LHS)
-     nullify(Mylsitem%setting%LST_GAB_RHS)
-     call free_decscreen(DECSCREEN)
-
-     ! Free gamma stuff
-     call mem_dealloc(orb2batchGamma)
-     call mem_dealloc(batchdimGamma)
-     call mem_dealloc(batchsizeGamma)
-     call mem_dealloc(batchindexGamma)
-     do i=1,nbatchesGamma
-        call mem_dealloc(batch2orbGamma(i)%orbindex)
-        batch2orbGamma(i)%orbindex => null()
-     end do
-     call mem_dealloc(batch2orbGamma)
-
-     ! Free alpha stuff
-     call mem_dealloc(orb2batchAlpha)
-     call mem_dealloc(batchdimAlpha)
-     call mem_dealloc(batchsizeAlpha)
-     call mem_dealloc(batchindexAlpha)
-     do i=1,nbatchesAlpha
-        call mem_dealloc(batch2orbAlpha(i)%orbindex)
-        batch2orbAlpha(i)%orbindex => null()
-     end do
-     call mem_dealloc(batch2orbAlpha)
-
-     call mem_dealloc(jobdist)
-
-
-     call mem_dealloc( w1 )
-     call mem_dealloc( w2 )
+    myload = 0
+    fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
 
 #ifdef VAR_MPI
-     call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
-     if(collective)then
-        call time_start_phase( PHASE_COMM )
-        call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm,SPLIT_MSG_REC)
-        call array_convert(work,integral, order = order )
-     endif
-     call time_start_phase( PHASE_WORK )
-#else
-     call array_convert(work,integral, order = order )
+    if(.not.collective .and. alloc_in_dummy)then
+       call tensor_lock_wins(integral, 's', all_nodes = .true. )
+    endif
 #endif
-     if(collective) call mem_dealloc( work )
 
-     if(DECinfo%PL>2)then
-        call print_norm(integral,nrm)
-        if(master) print *," NORM of the integral :",nrm
-     endif
+    gammaB   = 0
+    alphaB   = 0
+    modeBdim = [nbatchesAlpha,nbatchesGamma]
+    jobidx   = 0
 
-     if(.not.local)then
-        integral%access_type = MASTER_ACCESS
-        trafo1%access_type = MASTER_ACCESS
-        trafo2%access_type = MASTER_ACCESS
-        trafo3%access_type = MASTER_ACCESS
-        trafo4%access_type = MASTER_ACCESS
-     endif
+    call time_start_phase( PHASE_WORK, twall = tot_intloop )
+    call time_phases_get_current(current_wt=phase_cntrs)
 
+    BatchLoop: do while(gammaB <= nbatchesGamma.or.alphaB<= nbatchesAlpha)  ! AO batches
+
+
+       !SET ALPHAB AND GAMMAB
+       if(.not.dynamic_load)then
+
+          jobidx = jobidx + 1
+
+          call get_midx(jobidx,modeBidx,modeBdim,2)
+
+          gammaB = modeBidx(2)
+          alphaB = modeBidx(1)
+
+          if( me /= jobdist(gammaB + (alphaB-1) *nbatchesGamma) ) cycle BatchLoop
+
+       else
+
+          if(alphaB == 0)then
+             call get_midx(int(me + 1),modeBidx,modeBdim,2)
+             gammaB = modeBidx(2)
+             alphaB = modeBidx(1)
+          else
+#ifdef VAR_MPI
+             el  = 1
+             pos = 1
+#ifdef VAR_HAVE_MPI3
+             call lsmpi_get_acc(el,jobidx,infpar%master,pos,jobdistw)
+             call lsmpi_win_flush(jobdistw,rank = infpar%master, local=.true.)
+#else
+             call lsmpi_win_lock(infpar%master,jobdistw,'e')
+             call lsmpi_get_acc(el,jobidx,infpar%master,pos,jobdistw)
+             call lsmpi_win_unlock(infpar%master,jobdistw)
+#endif
+#endif
+             call get_midx(jobidx,modeBidx,modeBdim,2)
+             gammaB = modeBidx(2)
+             alphaB = modeBidx(1)
+
+          endif
+
+
+
+       endif
+
+       if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchLoop
+
+       if(alphaB > nbatchesAlpha .or. gammaB > nbatchesGamma)then
+          write (*, '("Rank",I3," has invalid job (",I3,"/",I3,",",I3,"/",I3,")")') &
+             & me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+          call lsquit("ERROR(get_mo_integral_par) error in jobassignment",-1)
+       endif
+
+
+       if(DECinfo%PL>2)then
+          if(completely_distributed)then
+             if( me == 0 )then
+                write (*, '("Starting job (",I3,"/",I3,",",I3,"/",I3,")")') &
+                   & alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+             endif
+          else
+             write (*, '("Rank",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') &
+                & me,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+          endif
+       endif
+
+       if(.not.completely_distributed)then
+          IF(DECinfo%useIchor)THEN
+             lg = AOGammabatchinfo(gammaB)%dim               ! Dimension of gamma batch
+             fg = AOGammabatchinfo(gammaB)%orbstart          ! First orbital index in gamma batch
+             GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+             AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+             AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+          ELSE
+             lg  = batchdimGamma(gammaB)                     ! Dimension of gamma batch
+             fg  = batch2orbGamma(gammaB)%orbindex(1)        ! First index in gamma batch
+             biG = batchindexGamma(gammaB)
+             bsG = batchsizeGamma(gammaB)
+          ENDIF
+
+          IF(DECinfo%useIchor)THEN
+             la = AOAlphabatchinfo(alphaB)%dim               ! Dimension of alpha batch
+             fa = AOAlphabatchinfo(alphaB)%orbstart          ! First orbital index in alpha batch
+             AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+             AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+             AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+          ELSE
+             la  = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
+             fa  = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+             biA = batchindexAlpha(alphaB)
+             bsA = batchsizeAlpha(alphaB)
+          ENDIF
+          !print '(I3,"have",8I7)',me,lg,fg,biG,bsG,la,fa,biA,bsA
+          !call lsmpi_barrier(infpar%lg_comm)
+
+          myload     = myload + la * lg
+
+
+          call time_start_phase(PHASE_WORK, twall = time_int1 )
+          IF(DECinfo%useIchor)THEN
+             call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,la,lg,&
+                  & w1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+                  & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,la,lg,NoSymmetry)
+          ELSE
+             IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+             IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+             
+             call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,biA,&
+                  &biG,bsA,bsG,nb,nb,la,lg,fullRHS,INTSPEC)
+          ENDIF
+          call time_start_phase(PHASE_WORK, ttot = time_int1 )
+          time_int1_tot = time_int1_tot + time_int1
+
+
+#ifdef VAR_MPI
+          if( .not.collective.and.alloc_in_dummy )then
+             call lsmpi_win_flush(integral%wi(1),local=.true.)
+          endif
+#endif
+
+          !something more sophisticated can be implemented here
+          call time_start_phase(PHASE_WORK, twall = time_cont1 )
+          call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
+          call time_start_phase(PHASE_WORK, ttot = time_cont1 )
+          time_cont1_tot = time_cont1_tot + time_cont1
+
+          call time_start_phase(PHASE_WORK, twall = time_cont2 )
+          call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
+          call time_start_phase(PHASE_WORK, ttot = time_cont2 )
+          time_cont2_tot = time_cont2_tot + time_cont2
+
+          call time_start_phase(PHASE_WORK, twall = time_cont3 )
+          call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
+          call time_start_phase(PHASE_WORK, ttot = time_cont3 )
+          time_cont3_tot = time_cont3_tot + time_cont3
+
+          call time_start_phase(PHASE_WORK, twall = time_cont4 )
+          if(collective) then
+             call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,1.0E0_realk,work,n1*n2*n3)
+          else
+             call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
+
+             call time_start_phase( PHASE_COMM )
+             call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size, order = order)
+             call time_start_phase( PHASE_WORK )
+          endif
+          call time_start_phase(PHASE_WORK, ttot = time_cont4 )
+          time_cont4_tot = time_cont4_tot + time_cont4
+
+       else
+
+          !short hand notation
+          fg = 1 + (gammaB-1)*MaxActualDimGamma
+          lg = nb - fg + 1
+          if( lg >= MaxActualDimGamma )then
+             lg = MaxActualDimGamma
+          endif
+
+          if( lg > bs )then
+             gs = bs
+          else
+             gs = lg
+          endif
+          
+          call time_start_phase(PHASE_WORK, twall = time_t4fg )
+          call tensor_ainit(t4_fg, [lg,n4], 2, local=local, atype="TDAR", tdims=[gs,n4s])
+          call copy_stripe_from_full_matrix(trafo4%elm1,w1,fg,lg,nb,n4)
+          call tensor_convert(w1,t4_fg)
+          call time_start_phase(PHASE_WORK, ttot = time_t4fg )
+          time_t4fg_tot = time_t4fg_tot + time_t4fg
+
+          !short hand notation
+          fa = 1 + (alphaB-1)*MaxActualDimAlpha
+          la = nb - fa + 1
+          if( la >= MaxActualDimAlpha )then
+             la = MaxActualDimAlpha
+          endif
+
+          if( la > bs )then
+             as = bs
+          else
+             as = la
+          endif
+
+          myload = myload + la * lg
+
+          call time_start_phase(PHASE_WORK, twall = time_t3fa )
+          call tensor_ainit(t3_fa, [la,n3], 2, local=local, atype="TDAR", tdims=[as,n3s])
+          call copy_stripe_from_full_matrix(trafo3%elm1,w1,fa,la,nb,n3)
+          call tensor_convert(w1,t3_fa)
+          call time_start_phase(PHASE_WORK, ttot = time_t3fa )
+          time_t3fa_tot = time_t3fa_tot + time_t3fa
+
+          call time_start_phase(PHASE_WORK, twall = time_int1 )
+          call tensor_ainit(Cint, [nb,nb,la,lg], 4, local=local, atype="TDAR", tdims=[bs,bs,as,gs])
+          do i = 1, Cint%nlti
+
+             call get_midx(Cint%ti(i)%gt,starts,Cint%ntpm,Cint%mode)
+
+             ndimA  = Cint%ti(i)%d(1)
+             ndimB  = Cint%ti(i)%d(2)
+             ndimC  = Cint%ti(i)%d(3)
+             ndimD  = Cint%ti(i)%d(4)
+
+             startA = 1  + (starts(1)-1)*Cint%tdim(1)
+             startB = 1  + (starts(2)-1)*Cint%tdim(2)
+             startC = fa + (starts(3)-1)*Cint%tdim(3)
+             startD = fg + (starts(4)-1)*Cint%tdim(4)
+
+             call II_GET_ERI_INTEGRALBLOCK_INQUIRE(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC)
+
+             call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
+                & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1)
+
+          enddo
+          call time_start_phase(PHASE_WORK, ttot = time_int1 )
+          time_int1_tot = time_int1_tot + time_int1
+
+          !call print_norm(Cint,"Integral",print_on_rank=0)
+
+          call time_start_phase(PHASE_WORK, twall = time_cont1 )
+          call tensor_ainit( int1, [nb,la,lg,n1], 4, local=local, atype="TDAR", tdims=[bs,as,gs,n1s] )
+          order4 = [2,3,4,1]
+          call tensor_contract( 1.0E0_realk, t1_par,Cint,[1],[1],1,0.0E0_realk, int1, order4, &
+             & force_sync=.true.,wrk=w1,iwrk=w1size)
+          call time_start_phase(PHASE_WORK, ttot = time_cont1 )
+          time_cont1_tot = time_cont1_tot + time_cont1
+
+          !call print_norm(int1,"int1",print_on_rank=0)
+
+          call time_start_phase(PHASE_WORK, twall = time_cont2 )
+          call tensor_ainit( int2, [la,lg,n1,n2], 4, local=local, atype="TDAR", tdims=[as,gs,n1s,n2s] )
+          call tensor_free( Cint )
+          order4 = [2,3,4,1]
+          call tensor_contract( 1.0E0_realk, t2_par,int1,[1],[1],1,0.0E0_realk, int2, order4, &
+             & force_sync=.true.,wrk=w1,iwrk=w1size)
+          call time_start_phase(PHASE_WORK, ttot = time_cont2 )
+          time_cont2_tot = time_cont2_tot + time_cont2
+
+          !call print_norm(int2,"int2",print_on_rank=0)
+
+          call time_start_phase(PHASE_WORK, twall = time_cont3 )
+          call tensor_ainit( int3, [lg,n1,n2,n3], 4, local=local, atype="TDAR", tdims=[gs,n1s,n2s,n3s] )
+          call tensor_free(int1)
+          order4 = [2,3,4,1]
+          call tensor_contract( 1.0E0_realk, t3_fa,int2,[1],[1],1,0.0E0_realk, int3, order4, &
+             & force_sync=.true.,wrk=w1,iwrk=w1size)
+          call time_start_phase(PHASE_WORK, ttot = time_cont3 )
+          time_cont3_tot = time_cont3_tot + time_cont3
+
+          !call print_norm(int3,"int3",print_on_rank=0)
+
+          call time_start_phase(PHASE_WORK, twall = time_cont4 )
+          call tensor_free(int2)
+          order4 = [2,3,4,1]
+          call tensor_contract( 1.0E0_realk, t4_fg,int3,[1],[1],1,1.0E0_realk, integral, order4, &
+             & force_sync=.true.,wrk=w1,iwrk=w1size)
+          call time_start_phase(PHASE_WORK, ttot = time_cont4 )
+          time_cont4_tot = time_cont4_tot + time_cont4
+
+          !call print_norm(integral,"integral",print_on_rank=0)
+
+          call tensor_free( int3 )
+
+          call tensor_free( t3_fa )
+          call tensor_free( t4_fg )
+       endif
+
+    enddo BatchLoop
+
+    call time_phases_get_diff(current_wt=phase_cntrs)
+    call time_start_phase( PHASE_WORK, ttot = tot_intloop )
+
+    ! Free integral stuff
+    ! *******************
+    if( .not. completely_distributed )then
+
+       IF(DECinfo%useIchor)THEN
+          call FREE_SCREEN_ICHORERI()
+          call mem_dealloc(AOGammabatchinfo)
+          call mem_dealloc(AOAlphabatchinfo)
+       ELSE
+          nullify(Mylsitem%setting%LST_GAB_LHS)
+          nullify(Mylsitem%setting%LST_GAB_RHS)
+          call free_decscreen(DECSCREEN)
+          
+          ! Free gamma stuff
+          call mem_dealloc(orb2batchGamma)
+          call mem_dealloc(batchdimGamma)
+          call mem_dealloc(batchsizeGamma)
+          call mem_dealloc(batchindexGamma)
+          do i=1,nbatchesGamma
+             call mem_dealloc(batch2orbGamma(i)%orbindex)
+             batch2orbGamma(i)%orbindex => null()
+          end do
+          call mem_dealloc(batch2orbGamma)
+          
+          ! Free alpha stuff
+          call mem_dealloc(orb2batchAlpha)
+          call mem_dealloc(batchdimAlpha)
+          call mem_dealloc(batchsizeAlpha)
+          call mem_dealloc(batchindexAlpha)
+          do i=1,nbatchesAlpha
+             call mem_dealloc(batch2orbAlpha(i)%orbindex)
+             batch2orbAlpha(i)%orbindex => null()
+          end do
+          call mem_dealloc(batch2orbAlpha)
+       ENDIF
+
+    else
+
+       mylsitem%setting%SCHEME%CS_SCREEN = save_cs_screen
+       mylsitem%setting%SCHEME%PS_SCREEN = save_ps_screen
+       call tensor_free( t1_par )
+       call tensor_free( t2_par )
+
+    endif
+
+
+#ifdef VAR_MPI
+    if(.not.collective .and. alloc_in_dummy)then
+       call tensor_unlock_wins(integral, all_nodes = .true. )
+    endif
+#endif
+
+    call mem_dealloc( w1 )
+    call mem_dealloc( w2 )
+
+#ifdef VAR_MPI
+
+    call time_start_phase( PHASE_IDLE )
+    call lsmpi_barrier(infpar%lg_comm)
+
+    if(collective)then
+       call time_start_phase( PHASE_COMM )
+       call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm)
+       call time_start_phase( PHASE_WORK )
+       call tensor_convert(work,integral, order = order )
+    endif
+
+#else
+
+
+    call time_start_phase( PHASE_WORK )
+    call tensor_convert(work,integral, order = order )
+
+#endif
+
+    if(.not.dynamic_load)then
+       call mem_dealloc(jobdist)
+    else
+#ifdef VAR_MPI
+#ifdef VAR_HAVE_MPI3
+       call lsmpi_win_unlock_all(jobdistw)
+#endif
+       call lsmpi_win_free(jobdistw)
+       call mem_dealloc(jobdist,jobdistc)
+#endif
+    endif
+
+    !TIMING INFORMATION
+    if(DECinfo%PL>2)then
+
+       tot_intloop_min    = tot_intloop 
+       time_t4fg_tot_min  = time_t4fg_tot   
+       time_t3fa_tot_min  = time_t3fa_tot   
+       time_int1_tot_min  = time_int1_tot   
+       time_cont1_tot_min = time_cont1_tot   
+       time_cont2_tot_min = time_cont2_tot   
+       time_cont3_tot_min = time_cont3_tot   
+       time_cont4_tot_min = time_cont4_tot   
+
+#ifdef VAR_MPI
+       call lsmpi_reduce_realk_min( tot_intloop_min   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_t4fg_tot_min , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_t3fa_tot_min , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_int1_tot_min , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_cont1_tot_min, infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_cont2_tot_min, infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_cont3_tot_min, infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_cont4_tot_min, infpar%master, infpar%lg_comm )
+#endif
+
+       tot_intloop_max    = tot_intloop 
+       time_t4fg_tot_max  = time_t4fg_tot   
+       time_t3fa_tot_max  = time_t3fa_tot   
+       time_int1_tot_max  = time_int1_tot   
+       time_cont1_tot_max = time_cont1_tot   
+       time_cont2_tot_max = time_cont2_tot   
+       time_cont3_tot_max = time_cont3_tot   
+       time_cont4_tot_max = time_cont4_tot   
+
+#ifdef VAR_MPI
+       call lsmpi_reduce_realk_max( tot_intloop_max   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_t4fg_tot_max , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_t3fa_tot_max , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_int1_tot_max , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_cont1_tot_max, infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_cont2_tot_max, infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_cont3_tot_max, infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_cont4_tot_max, infpar%master, infpar%lg_comm )
+
+       call lsmpi_local_reduction( tot_intloop   , infpar%master )
+       call lsmpi_local_reduction( time_t4fg_tot , infpar%master )
+       call lsmpi_local_reduction( time_t3fa_tot , infpar%master )
+       call lsmpi_local_reduction( time_int1_tot , infpar%master )
+       call lsmpi_local_reduction( time_cont1_tot, infpar%master )
+       call lsmpi_local_reduction( time_cont2_tot, infpar%master )
+       call lsmpi_local_reduction( time_cont3_tot, infpar%master )
+       call lsmpi_local_reduction( time_cont4_tot, infpar%master )
+
+       call lsmpi_local_reduction(phase_cntrs,nphases,infpar%master)
+#endif
+       unlock_time   = time_lsmpi_win_unlock - unlock_time
+       waiting_time  = time_lsmpi_wait       - waiting_time
+       flushing_time = time_lsmpi_win_flush  - flushing_time
+
+       unlock_time_min    = unlock_time
+       waiting_time_min   = waiting_time      
+       flushing_time_min  = flushing_time 
+
+       unlock_time_max    = unlock_time
+       waiting_time_max   = waiting_time      
+       flushing_time_max  = flushing_time 
+
+#ifdef VAR_MPI
+       call lsmpi_reduce_realk_min( unlock_time_min   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( waiting_time_min  , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( flushing_time_min , infpar%master, infpar%lg_comm )
+
+       call lsmpi_reduce_realk_max( unlock_time_max   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( waiting_time_max  , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( flushing_time_max , infpar%master, infpar%lg_comm )
+
+       call lsmpi_local_reduction( unlock_time   , infpar%master )
+       call lsmpi_local_reduction( waiting_time  , infpar%master )
+       call lsmpi_local_reduction( flushing_time , infpar%master )
+#endif
+
+       time_w_min = phase_cntrs( PHASE_WORK_IDX )
+       time_c_min = phase_cntrs( PHASE_COMM_IDX )
+       time_i_min = phase_cntrs( PHASE_IDLE_IDX )
+
+       time_w_max = phase_cntrs( PHASE_WORK_IDX )
+       time_c_max = phase_cntrs( PHASE_COMM_IDX )
+       time_i_max = phase_cntrs( PHASE_IDLE_IDX )
+
+#ifdef VAR_MPI
+       call lsmpi_reduce_realk_min( time_w_min , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_c_min , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_i_min , infpar%master, infpar%lg_comm )
+
+       call lsmpi_reduce_realk_max( time_w_max , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_c_max , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_i_max , infpar%master, infpar%lg_comm )
+
+       call lsmpi_local_reduction(phase_cntrs,nphases,infpar%master)
+#endif
+
+       if(master)then
+          write(*,'("INTEGRAL total time               ",g10.3,g10.3,g10.3)')&
+             & tot_intloop_max     ,      tot_intloop      /dble(nnod),tot_intloop_min 
+          write(*,'("INTEGRAL time_t4fg_tot           ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_t4fg_tot_max  ,  time_t4fg_tot   /dble(nnod),time_t4fg_tot_min  ,  time_t4fg_tot   / tot_intloop
+          write(*,'("INTEGRAL time_t3fa_tot           ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_t3fa_tot_max  ,  time_t3fa_tot   /dble(nnod),time_t3fa_tot_min  ,  time_t3fa_tot   / tot_intloop
+          write(*,'("INTEGRAL time_int1_tot            ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_int1_tot_max   ,  time_int1_tot    /dble(nnod),time_int1_tot_min   ,  time_int1_tot    / tot_intloop
+          write(*,'("INTEGRAL time_cont1_tot           ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_cont1_tot_max  ,  time_cont1_tot   /dble(nnod),time_cont1_tot_min  ,  time_cont1_tot   / tot_intloop
+          write(*,'("INTEGRAL time_cont2_tot           ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_cont2_tot_max  ,  time_cont2_tot   /dble(nnod),time_cont2_tot_min  ,  time_cont2_tot   / tot_intloop
+          write(*,'("INTEGRAL time_cont3_tot           ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_cont3_tot_max  ,  time_cont3_tot   /dble(nnod),time_cont3_tot_min  ,  time_cont3_tot   / tot_intloop
+          write(*,'("INTEGRAL time_cont4_tot           ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_cont4_tot_max  ,  time_cont4_tot   /dble(nnod),time_cont4_tot_min  ,  time_cont4_tot   / tot_intloop
+          write(*,'("INTEGRAL time in lsmpi_win_unlock ",g10.3,g10.3,g10.3,g10.3)')&
+             & unlock_time_max, unlock_time/dble(nnod),unlock_time_min,          unlock_time   / tot_intloop
+          write(*,'("INTEGRAL time in lsmpi_wait       ",g10.3,g10.3,g10.3,g10.3)')&
+             & waiting_time_max,   waiting_time  /dble(nnod),waiting_time_min,   waiting_time  / tot_intloop
+          write(*,'("INTEGRAL time in lsmpi_win_flush  ",g10.3,g10.3,g10.3,g10.3)')&
+             & flushing_time_max,  flushing_time /dble(nnod),flushing_time_min,  flushing_time / tot_intloop
+          write(*,'("INTEGRAL time WORK                ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_w_max,phase_cntrs(PHASE_WORK_IDX)/dble(nnod),time_w_min,phase_cntrs(PHASE_WORK_IDX)/tot_intloop
+          write(*,'("INTEGRAL time COMM                ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_c_max,phase_cntrs(PHASE_COMM_IDX)/dble(nnod),time_c_min,phase_cntrs(PHASE_COMM_IDX)/tot_intloop
+          write(*,'("INTEGRAL time IDLE                ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_i_max,phase_cntrs(PHASE_IDLE_IDX)/dble(nnod),time_i_min,phase_cntrs(PHASE_IDLE_IDX)/tot_intloop
+       endif
+    endif
+
+
+    if(collective) call mem_dealloc( work )
+
+    if(DECinfo%PL>2)then
+       call print_norm(integral," NORM of the integral :",print_on_rank=0)
+    endif
+
+    if(.not.local)then
+       integral%access_type = AT_MASTER_ACCESS
+       trafo1%access_type = AT_MASTER_ACCESS
+       trafo2%access_type = AT_MASTER_ACCESS
+       trafo3%access_type = AT_MASTER_ACCESS
+       trafo4%access_type = AT_MASTER_ACCESS
+    endif
+
+    contains
+
+
+    function get_work_array_size(which_array,mo1,mo2,mo3,mo4,mo1s,mo2s,mo3s,mo4s,nb,bsplit,nba,nbg,&
+          &cd,nbuf,intspec,setting) result(s)
+       implicit none
+       integer, intent(in) :: which_array,mo1,mo2,mo3,mo4,mo1s,mo2s,mo3s,mo4s,nb,bsplit,nba,nbg,nbuf
+       logical, intent(in) :: cd
+       Character,intent(in) :: intspec(5)
+       type(lssetting),intent(inout) :: setting
+       integer(kind=long)  :: s,maxbuf,MAX_INTEGRAL_BUF
+       integer :: ab,gb,starts(4),ntpm(4)
+
+       select case(which_array)
+       case(1)
+          if(cd)then
+
+             maxbuf = nbuf * max(max(max(bsplit**3*mo1s,bsplit**2*mo1s*mo2s),&
+                &i8*bsplit*mo1s*mo2s*mo3s),i8*mo1s*mo2s*mo3s*mo4s)
+
+             MAX_INTEGRAL_BUF = 0
+
+             call simulate_intloop_and_get_worksize(MAX_INTEGRAL_BUF,nb,nbg,nba,bsplit,intspec,setting)
+             s = max(max(max(i8*nba*mo3,i8*nbg*mo4),maxbuf),MAX_INTEGRAL_BUF)
+          else
+             s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
+          endif
+       case(2)
+          if(cd)then
+             s = 1
+          else
+             s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
+          endif
+       case default
+          call lsquit("ERROR(get_work_array_size):wrong selection of array",-1)
+       end select
+    end function get_work_array_size
 
   end subroutine get_mo_integral_par
 
-  end module ccintegrals
+  subroutine copy_stripe_from_full_matrix(Mi,Mo,f,l,d1,d2)
+     implicit none
+     integer, intent(in) :: f,l,d1,d2
+     real(realk), intent(in) :: Mi(d1,d2)
+     real(realk), intent(out) :: Mo(l, d2)
+
+     !$OMP WORKSHARE
+     Mo(:,:) = Mi(f:f+l-1,:)
+     !$OMP END WORKSHARE
+
+  end subroutine copy_stripe_from_full_matrix
+
+end module ccintegrals
 
 #ifdef VAR_MPI
-  !> Purpose: Intermediate routine for the slaves, they get data
+#ifdef MOD_UNRELEASED
+!> Purpose: Intermediate routine for the slaves, they get data
 !           from the local master and then call the routine to 
 !           calculate MO integrals (non-T1 transformed)
 !
@@ -2498,58 +3255,54 @@ subroutine cc_gmo_data_slave()
   integer :: nb, no, nv
   !> number of MO batch
   integer :: nbatch
-  !> CC model:
-  integer ::  ccmodel
   !> SCF transformation matrices:
   real(realk), pointer  :: Co(:,:), Cv(:,:)
   !> performed MO-based CCSD calculation ?
   logical :: mo_ccsd
   !> array with gmo on output:
-  type(array) :: pgmo_diag, pgmo_up, govov
+  type(tensor) :: pgmo_diag, pgmo_up
   !> variables used for MO batch and integral transformation
   type(MObatchInfo) :: MOinfo
   !> LS item information
   type(lsitem) :: MyLsItem
-  
+
 
   call mpi_communicate_get_gmo_data(mo_ccsd,MyLsItem,Co,Cv, &
-       & pgmo_diag,pgmo_up,nb,no,nv,nbatch,ccmodel)
-  
+       & pgmo_diag,pgmo_up,nb,no,nv,nbatch)
+
   ! the slave call the routine to get MO int.
-  call get_t1_free_gmo(mo_ccsd,MyLsItem,Co,Cv,govov, &
-       & pgmo_diag,pgmo_up,nb,no,nv,ccmodel,MOinfo)
+  call get_t1_free_gmo(mo_ccsd,MyLsItem,Co,Cv, &
+       & pgmo_diag,pgmo_up,nb,no,nv,MOinfo)
 
   ! deallocate slave stuff:
   call mem_dealloc(Co)
   call mem_dealloc(Cv)
   call ls_free(MyLsItem)
-  if (ccmodel/=MODEL_RPA) then 
-    call mem_dealloc(MOinfo%dimInd1)
-    call mem_dealloc(MOinfo%dimInd2)
-    call mem_dealloc(MOinfo%StartInd1)
-    call mem_dealloc(MOinfo%StartInd2)
-    call mem_dealloc(MOinfo%dimTot)
-    call mem_dealloc(MOinfo%tileInd)
-  end if
+  call mem_dealloc(MOinfo%dimInd1)
+  call mem_dealloc(MOinfo%dimInd2)
+  call mem_dealloc(MOinfo%StartInd1)
+  call mem_dealloc(MOinfo%StartInd2)
+  call mem_dealloc(MOinfo%dimTot)
+  call mem_dealloc(MOinfo%tileInd)
 
 end subroutine cc_gmo_data_slave
+#endif
 
 subroutine get_mo_integral_par_slave()
-   use dec_typedef_module
-   use ccintegrals
-   use daltoninfo
-   !use tensor_interface
-   use typedeftype, only: lsitem
-   use decmpi_module, only: wake_slaves_for_simple_mo
-   use ccintegrals, only : get_mo_integral_par
+  use dec_typedef_module
+  use daltoninfo
+  use tensor_type_def_module
+  use typedeftype, only: lsitem
+  use decmpi_module, only: wake_slaves_for_simple_mo
+  use ccintegrals, only : get_mo_integral_par
 
-   implicit none
-   type(array) :: integral,trafo1,trafo2,trafo3,trafo4
-   type(lsitem) :: mylsitem
-   logical :: c
+  implicit none
+  type(tensor) :: integral,trafo1,trafo2,trafo3,trafo4
+  type(lsitem) :: mylsitem
+  logical :: c
 
-   call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
-   call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.,c)
+  call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
+  call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.,c)
   call ls_free(mylsitem)
 
 end subroutine get_mo_integral_par_slave

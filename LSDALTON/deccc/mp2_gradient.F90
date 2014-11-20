@@ -38,7 +38,7 @@ module mp2_gradient_module
   public :: init_fullmp2grad,free_fullmp2grad,single_calculate_mp2gradient_driver,&
        &pair_calculate_mp2gradient_driver,read_gradient_and_energies_for_restart, &
        &write_gradient_and_energies_for_restart,free_mp2grad,get_mp2gradient_main,&
-       &dec_get_error_difference,update_full_mp2gradient,nullify_mp2dens,nullify_mp2grad
+       &dec_get_error_for_geoopt,update_full_mp2gradient,nullify_mp2dens,nullify_mp2grad
   private
 
 contains
@@ -270,17 +270,17 @@ contains
      !> Atomic fragment
      type(decfrag),intent(inout) :: MyFragment
      !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
-     type(array),intent(inout) :: t2occ  ! ordered as (C,I,J,D) at output
+     type(tensor),intent(inout) :: t2occ  ! ordered as (C,I,J,D) at output
      !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
-     type(array),intent(in) :: t2virt
+     type(tensor),intent(in) :: t2virt
      !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
-     type(array),intent(in) :: VOOO
+     type(tensor),intent(in) :: VOOO
      !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
-     type(array),intent(in) :: VOVV
+     type(tensor),intent(in) :: VOVV
      !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
-     type(array),intent(inout) :: VOVOocc   ! ordered as (C,I,J,D) at output
+     type(tensor),intent(inout) :: VOVOocc   ! ordered as (C,I,J,D) at output
      !> (A K | B L) integrals stored as (A,K,B,L)   [using virt partitioning]
-     type(array),intent(in)    :: VOVOvirt
+     type(tensor),intent(in)    :: VOVOvirt
      type(array4) :: t2occ_arr4
      type(array4) :: t2virt_arr4
      type(array4) :: VOOO_arr4
@@ -296,8 +296,8 @@ contains
      call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
 
-     if( t2occ%itype == DENSE .and. t2virt%itype == DENSE .and. VOOO%itype == DENSE .and.&
-        & VOVV%itype == DENSE .and. VOVOocc%itype == DENSE .and. VOVOvirt%itype == DENSE ) then
+     if( t2occ%itype == TT_DENSE .and. t2virt%itype == TT_DENSE .and. VOOO%itype == TT_DENSE .and.&
+        & VOVV%itype == TT_DENSE .and. VOVOocc%itype == TT_DENSE .and. VOVOvirt%itype == TT_DENSE ) then
 
         write(DECinfo%output,*) 'Calculating MP2 gradient for fragment', MyFragment%EOSatoms(1)
 
@@ -334,10 +334,10 @@ contains
         ! Theta(C,I,D,J) --> Theta(C,I,J,D)
         call array4_reorder(ThetaOCC,[1,2,4,3])
         ! t2(C,I,D,J) --> t2(C,I,J,D)
-        call array_reorder(t2occ,[1,2,4,3])
+        call tensor_reorder(t2occ,[1,2,4,3])
         t2occ_arr4%dims = t2occ%dims
         ! VOVOocc(C,I,D,J) --> VOVOocc(C,I,J,D)
-        call array_reorder(VOVOocc,[1,2,4,3])
+        call tensor_reorder(VOVOocc,[1,2,4,3])
         VOVOocc_arr4%dims =  VOVOocc%dims
    
         ! Calculate MP2 density contributions to gradient
@@ -644,23 +644,23 @@ contains
 
      implicit none
      !> Fragment 1 in the pair fragment
-     type(decfrag),intent(inout) :: Fragment1
+     type(decfrag),intent(in) :: Fragment1
      !> Fragment 2 in the pair fragment
-     type(decfrag),intent(inout) :: Fragment2
+     type(decfrag),intent(in) :: Fragment2
      !> Pair fragment
      type(decfrag),intent(inout) :: pairfragment
      !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
-     type(array),intent(in) :: t2occ
+     type(tensor),intent(in) :: t2occ
      !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
-     type(array),intent(in) :: t2virt
+     type(tensor),intent(in) :: t2virt
      !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
-     type(array),intent(in) :: VOOO
+     type(tensor),intent(in) :: VOOO
      !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
-     type(array),intent(in) :: VOVV
+     type(tensor),intent(in) :: VOVV
      !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
-     type(array),intent(inout) :: VOVOocc
+     type(tensor),intent(inout) :: VOVOocc
      !> (A K | B L) integrals stored as (A,K,B,L)   [using virt partitioning]
-     type(array),intent(in) :: VOVOvirt
+     type(tensor),intent(in) :: VOVOvirt
      type(array4) :: t2occ_arr4
      type(array4) :: t2virt_arr4
      type(array4) :: VOOO_arr4
@@ -675,8 +675,8 @@ contains
      call LSTIMER('START',tcpu,twall,DECinfo%output)
      call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-     if( t2occ%itype == DENSE .and. t2virt%itype == DENSE .and. VOOO%itype == DENSE &
-        &.and.  VOVV%itype == DENSE .and. VOVOocc%itype == DENSE .and. VOVOvirt%itype == DENSE ) then
+     if( t2occ%itype == TT_DENSE .and. t2virt%itype == TT_DENSE .and. VOOO%itype == TT_DENSE &
+        &.and.  VOVV%itype == TT_DENSE .and. VOVOocc%itype == TT_DENSE .and. VOVOvirt%itype == TT_DENSE ) then
 
         write(DECinfo%output,*) 'Calculating MP2 gradient for pair fragment', &
            & PairFragment%EOSatoms
@@ -766,9 +766,9 @@ contains
     implicit none
 
     !> Fragment 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
     type(decfrag),intent(inout) :: pairfragment
     !> Theta array, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
@@ -1332,6 +1332,7 @@ contains
        call mat_set_from_full(MyMolecule%fock(1:nbasis,1:nbasis), 1E0_realk, F)
 
        ! Reorthonormalization matrix W
+       call util_get_symm_part(rho)
        call get_mp2_reorthonormalization_matrix(F,D,Phi,rho,C,MyLsitem,W)
        call mat_free(C)
 
@@ -2061,13 +2062,17 @@ contains
   end subroutine convert_mp2gradient_matrices_to_typematrix
 
 
-  !> \brief Get difference in intrinsic DEC errors for this and
-  !> the previous geometry (only to be used for geometry optimizations).
-  !> Note: DECinfo%EerrOLD is also set equal to the current
-  !> intrinsic DEC error here.
+  !> \brief Get intrinsic DEC energy error for geometry optimization
+  !>
+  !> UNDER INVESTIGATION!!!
+  !> 
+  !> It is not yet clear what the best strategy is here.
+  !> We could simply take the estimated error as it is ( DECinfo%EerrFactor = 1)
+  !> or scale it ( DECinfo%EerrFactor /= 1)
+  !> or compare it to the error at the previous geometry (code currently commented out).
   !> \author Kasper Kristensen
   !> \date December 2012
-  subroutine dec_get_error_difference(Eerr)
+  subroutine dec_get_error_for_geoopt(Eerr)
     implicit none
     !> Input: Estimated intrinsic DEC energy error
     !> Output: Absolute difference between intrinsic energy error from this
@@ -2079,27 +2084,28 @@ contains
     Eerr = DECinfo%EerrFactor*Eerr
     Eerrsave = Eerr
 
-    ! Energy error returned to optimizer is difference between error at this 
-    ! geometry and the previous geometry.
-    if( DECinfo%ncalc(DECinfo%FOTlevel)==0 ) then  
-       ! This is the very first gradient calculation for the current FOT level.
-       ! Therefore, we don't have an error at a different geometry to compare against,
-       ! and we simply set error to zero to avoid artefacts for the dynamic geometry optimizer
-       Eerr = 0.0_realk
-    else
-       ! Set error equal to difference in errors between this and the previous geometry.
-       Eerr = abs(Eerr - DECinfo%EerrOLD)
-    end if
-
     ! Save existing energy error in DECinfo%EerrOLD
     DECinfo%EerrOLD = Eerrsave
-    write(DECinfo%output,'(1X,a)') 'DEC STABILITY'
-    write(DECinfo%output,'(1X,a,g20.10)') 'DEC STABILITY: Intrinsic absolute error   :', Eerrsave
-    if( DECinfo%ncalc(DECinfo%FOTlevel)/=0 ) then
-       write(DECinfo%output,'(1X,a,g20.10)') 'DEC STABILITY: Intrinsic error difference :', Eerr
-    end if
 
-  end subroutine dec_get_error_difference
+!!$    ! Energy error returned to optimizer is difference between error at this 
+!!$    ! geometry and the previous geometry.
+!!$    if( DECinfo%ncalc(DECinfo%FOTlevel)==0 ) then  
+!!$       ! This is the very first gradient calculation for the current FOT level.
+!!$       ! Therefore, we don't have an error at a different geometry to compare against,
+!!$       ! and we simply set error to zero to avoid artefacts for the dynamic geometry optimizer
+!!$       Eerr = 0.0_realk
+!!$    else
+!!$       ! Set error equal to difference in errors between this and the previous geometry.
+!!$       Eerr = abs(Eerr - DECinfo%EerrOLD)
+!!$    end if
+!!$
+!!$    write(DECinfo%output,'(1X,a)') 'DEC STABILITY'
+!!$    write(DECinfo%output,'(1X,a,g20.10)') 'DEC STABILITY: Intrinsic absolute error   :', Eerrsave
+!!$    if( DECinfo%ncalc(DECinfo%FOTlevel)/=0 ) then
+!!$       write(DECinfo%output,'(1X,a,g20.10)') 'DEC STABILITY: Intrinsic error difference :', Eerr
+!!$    end if
+
+  end subroutine dec_get_error_for_geoopt
 
 
 
@@ -2410,9 +2416,9 @@ contains
 
     implicit none
     !> Fragment 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
     type(decfrag),intent(inout) :: pairfragment
     !> t2 amplitudes, only for EOS orbitals using occupied partitioning, order:  (A,I,B,J)
@@ -3174,6 +3180,7 @@ call mem_TurnOffThread_Memory()
     ! ***********************************************************************
 
     call mat_init(FockM_AO,nbasis,nbasis)
+    call util_get_symm_part(M)
     call dec_fock_transformation(FockM_AO,M,MyLsitem,.true.)
     call mat_free(M)
 
@@ -3860,6 +3867,7 @@ call mem_TurnOffThread_Memory()
 
     ! GkappabarAO = 2*J(kappabar_sym) - K(kappabar_sym)
     call mat_init(GkappabarAO,nbasis,nbasis)
+    call util_get_symm_part(kappabar_sym)
     call dec_fock_transformation(GkappabarAO,kappabar_sym,MyLsitem,.true.)
 
     ! Done with kappabar_sym

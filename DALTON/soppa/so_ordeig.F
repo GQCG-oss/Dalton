@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_ordeig */
       SUBROUTINE SO_ORDEIG(NTRIAL,rede,REDS,LREDS,ALFAR,LALFAR,ALFAI,

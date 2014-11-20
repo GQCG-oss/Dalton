@@ -1,10 +1,10 @@
 
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C File: herpar.F
 C
@@ -1956,7 +1955,7 @@ Cef begin
      &     SQ12EL,INDHER,INDHSQ,IODDHR,TSKCPU,IWHICH,IJS,
      &     ISYMDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
      &     IORBSH,I2TYP,ICEDIF,IFTHRS,
-     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCTR)
+     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCALC,GENCTR)
 C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 
@@ -1972,12 +1971,13 @@ C
 #include "dummy.h"
 #include "mtags.h"
 #include "pcmlog.h"
+#include "gnrinf.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DIA2SO, ZFS2EL,
      &        DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DONE,
-     &        SOFOCK,RELCAL,GENCTR
-      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*), 
+     &        SOFOCK,RELCALC,GENCTR
+      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*),
      & IODDHR(*), INDHER(*), WORK(LWORK), ISYMDM(*), IFCTYP(*),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK), IJS(NTASK),
@@ -1986,7 +1986,6 @@ C
 #include "twocom.h"
 #include "nuclei.h"
 #include "energy.h"
-#include "taymol.h"
 #include "taysol.h"
 #include "suscpt.h"
 #include "blocks.h"
@@ -1995,6 +1994,9 @@ C
 #include "inftap.h"
 #include "inforb.h"
 #include "incore.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
 C For MPE event logging
 C      evIDb2 = MPE_Log_get_event_number()
@@ -2013,7 +2015,7 @@ C
       END IF
 C
       FIRST = .TRUE.
-      DIRAC = RELCAL
+      DIRAC = RELCALC
       IF (EXPECT .AND. .NOT.NOPV) THEN
          CALL REWSPL(LUPAO)
       END IF
@@ -2109,7 +2111,7 @@ C
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
       ELSE
-        WRITE(LUPRI,'(A,I5)') 'TWOLOP: Unknown I2TYP =' ,I2TYP
+        WRITE(LUPRI,'(A,I5)') 'PARLOP: Unknown I2TYP =' ,I2TYP
         CALL QUIT('Unknown I2TYP !!!')
       ENDIF
 C
@@ -2437,6 +2439,7 @@ C
             CALL ADDGRD(GRADNN)
             CALL ADDGRD(GRADNA)
             CALL ADDGRD(GRADEE)
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             CALL HEADER('Molecular gradient',-1)
             CALL ADDGRD(GRADFS)
@@ -2446,7 +2449,8 @@ C
                CALL ADDGRD(GSOLNN)
             END IF
             IF (PCM) CALL ADDGRD(GSOLCV)
-C            if (peqm) call addgrd(pegrad)
+            IF (PEQM) call ADDGRD(PEGRAD)
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             NCDEP3 = 3*NUCDEP
             GRDNRM = DDOT(NCDEP3,GRDMOL,1,GRDMOL,1)

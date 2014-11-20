@@ -170,7 +170,7 @@ call mat_free(temp)
 call mem_dft_dealloc(DFTDATA%FKSM)
 
 CALL LSTIMER('II_get_xc_Fock_mat',TS,TE,LUPRI)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_Fock_mat)
 
 END SUBROUTINE II_get_xc_Fock_mat_array
@@ -234,7 +234,7 @@ call mem_dft_dealloc(EDFT2)
 call DAXPY(nbast*nbast*ndmat2,0.5E0_realk,DFTDATA%FKSM,1,FmatAO,1)
 call mem_dft_dealloc(DFTDATA%FKSM)
 CALL LSTIMER('II_get_xc_Fock_mat_full',TS,TE,LUPRI)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_Fock_mat)
 END SUBROUTINE II_get_xc_Fock_mat_full
 
@@ -431,7 +431,7 @@ ENDIF
 call mem_dft_dealloc(EDFT2)
 
 CALL LSTIMER('II_get_xc_energy',TS,TE,LUPRI)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 
 END SUBROUTINE II_get_xc_energy
 
@@ -439,7 +439,7 @@ END SUBROUTINE II_get_xc_energy
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_get_xc_geoderiv_molgrad(LUPRI,LUERR,SETTING,nbast,D,grad,natoms)
-use Integralparameters
+use LSparameters
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER                   :: LUPRI
@@ -499,6 +499,8 @@ DO I=1,nAtoms
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbJK
    case(AOVAL)
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbVAL
+   case(AOadmm)
+     nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbADMM
    case default
      CALL LSQUIT('Non-valid AORdefault in II_get_xc_geoderiv_molgrad',-1)
    end select
@@ -518,7 +520,7 @@ CALL LSTIMER('II_get_xc_geoderiv_molgrad',TS,TE,LUPRI)
 call mem_dft_dealloc(DFTDATA%orb2atom)
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%grad)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_geoderiv_molgrad)
 
 END SUBROUTINE II_get_xc_geoderiv_molgrad
@@ -604,7 +606,7 @@ CALL LSTIMER('II_get_xc_linrsp',TS,TE,LUPRI)
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%FKSM)
 call mem_dft_dealloc(DFTDATA%BMAT)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 
 call time_II_operations2(JOB_II_get_xc_linrsp)
 END SUBROUTINE II_get_xc_linrsp
@@ -690,7 +692,7 @@ CALL LSTIMER('II_get_xc_quadrsp',TS,TE,LUPRI)
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%FKSM)
 call mem_dft_dealloc(DFTDATA%BMAT)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_quadrsp)
 
 END SUBROUTINE II_get_xc_quadrsp
@@ -772,7 +774,7 @@ CALL LSTIMER('II_get_xc_magderiv_kohnsham',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%FKSM)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_magderiv_kohnsham_mat)
 
 END SUBROUTINE II_get_xc_magderiv_kohnsham_mat
@@ -889,7 +891,7 @@ call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%FKSM)
 IF(DFTDATA%dosympart)call mem_dft_dealloc(DFTDATA%FKSMS)
 call mem_dft_dealloc(DFTDATA%BMAT)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_magderiv_linrsp)
 
 END SUBROUTINE II_get_xc_magderiv_linrsp
@@ -976,7 +978,7 @@ call mem_dft_dealloc(DFTDATA%orb2atom)
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%grad)
 call mem_dft_dealloc(DFTDATA%BMAT)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_geoderiv_FxDgrad)
 
 END SUBROUTINE II_get_xc_geoderiv_FxDgrad
@@ -1063,7 +1065,7 @@ call mem_dft_dealloc(DFTDATA%orb2atom)
 call mem_dft_dealloc(DmatAO)
 call mem_dft_dealloc(DFTDATA%grad)
 call mem_dft_dealloc(DFTDATA%BMAT)
-call stats_dft_mem(lupri)
+IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_geoderiv_GxDgrad)
 
 END SUBROUTINE II_get_xc_geoderiv_GxDgrad

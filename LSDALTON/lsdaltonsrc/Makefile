@@ -8,6 +8,7 @@ INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../dd
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
 
 F90_OBJS = \
+	ADMMbasisOpt.o\
 	numerical_derivatives.o\
         LS_optimizer.o \
 	LSdynamics.o \
@@ -20,7 +21,7 @@ F90_OBJS = \
 	Profile.o\
 	IchorTesting.o\
 	IchorProfile.o\
-	SCFCounterPoiseCorrection.o\
+	InteractionEnergy.o\
 	LSDALTON.o
 SMALLF90_OBJS = \
         lsdalton_wrapper.o

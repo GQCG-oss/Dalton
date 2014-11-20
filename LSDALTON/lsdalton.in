@@ -37,10 +37,13 @@ paramlist="$*"
 OUTEXT="out"
 DALEXT="dal"
 MOLEXT="mol"
+PCMEXT="pcm"
 AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
 opt_lslib_test=0
 opt_restart=0
+opt_nobackup=0
+opt_noarch=0
 optd=0
 optdens=0
 optpg=0
@@ -48,13 +51,14 @@ optD=1
 optf=
 optn=0
 opto=0
+opt_noappend=0
 #
 # Define usage message
 #
 usage (){
       echo
       echo "Usage:    lsdalton [-b directory] [-d] [-D] [-ext log | -o file] [-f] [-m mem | -M mem]"
-      echo  "[-N cores] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
+      echo  "[-N cores] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT} pcm.{.$PCMEXT}"
       echo
       echo 'Options:'
       echo ' -b dir    change directory where basis sets are searched for to dir'
@@ -64,6 +68,10 @@ usage (){
       echo ' -restart  run the calc twice to test restart option'
       echo ' -lslib_test run lslib test'
       echo ' -D        do not delete DALTON_TMPDIR after calculation stops'
+      echo ' -noappend do not append anything to the scratch directory; be careful'
+      echo '           with this option since by default scratch is wiped after'
+      echo '           calculation'
+      echo ' -put "file1 ..." : put files to DALTON_TMPDIR before calculation starts'
       echo ' -ext log  change output extension from ".out" to ".log"'
       echo ' -o FILE   redirect output from program to FILE in WRKDIR'
       echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
@@ -73,6 +81,9 @@ usage (){
       echo ' -t dir    change DALTON_TMPDIR from default to dir'
       echo ' -w dir    change WRKDIR from default to dir'
       echo " -exe exec change the executable from default ($LSDALTON_EXECUTABLE) to exec"
+      echo " -nobackup do not backup files, simply overwrite outputs"
+      echo " -noarch   do not create tar.gz archive"
+
       echo
       echo "Environment variables understood by the $0 script:"
       echo '    DALTON_TMPDIR             : scratch directory'
@@ -82,22 +93,24 @@ usage (){
 # Define backup function
 #
 backup () {
-  if [ "$1" = "-v" ]; then ekko=1; shift
-  else ekko=0;
+  if [ $opt_nobackup -eq 0 ]; then
+    if [ "$1" = "-v" ]; then ekko=1; shift
+    else ekko=0;
+    fi
+    for i in $* ; do
+       if [ -f "${i}" ]; then
+          for j in 6 5 4 3 2 1 0 ; do
+             jp=`expr $j + 1`
+             if [ -f "${i}.${j}" ]; then
+                [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
+                mv -f "${i}.${j}" "${i}.${jp}"
+             fi
+          done
+          if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
+          mv -f "${i}" "${i}.0"
+       fi
+    done
   fi
-  for i in $* ; do
-     if [ -f "${i}" ]; then
-        for j in 6 5 4 3 2 1 0 ; do
-           jp=`expr $j + 1`
-           if [ -f "${i}.${j}" ]; then
-              [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
-              mv -f "${i}.${j}" "${i}.${jp}"
-           fi
-        done
-        if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
-        mv -f "${i}" "${i}.0"
-     fi
-  done
 }
 #
 # Interpret input
@@ -107,11 +120,13 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -b ) BASDIR="$2:$BASDIR"; shift;;
       -d ) optd=1;;
       -D ) optD=0;;
+      -noappend ) opt_noappend=1;;
       -pg ) optpg=1;;
       -lslib_test ) opt_lslib_test=1;;
       -restart ) opt_restart=1;;
       -dens ) optdens=1;;
       -ext ) OUTEXT=$2; shift;;
+      -put ) PUT_FILES=$2; shift;;
       -f ) optf="$2"; shift;;
       -N ) optn=$2; shift;;
       -m ) WRKMEM=$2; export WRKMEM; shift;;
@@ -120,6 +135,8 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -t ) DALTON_TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
       -exe ) LSDALTON_EXECUTABLE=$2; shift;;
+      -nobackup ) opt_nobackup=1;;
+      -noarch ) opt_noarch=1;;
       * ) usage; exit 1;;
    esac
    shift
@@ -166,8 +183,27 @@ else
    fi
 fi
 #
-export DALTON_TMPDIR
+#  Added option for including a pcmsolver.pcm file for PCM calculations
+is_pcm=false
+if [ -n "$3" ]; then
+   filename=`echo $3`
+#  remove .pcm, if added by user
+   pcmfil=`echo $3 | sed "s/\.$PCMEXT//"`                                           
+   if [ "$pcmfil" = "$molfil" ] && [ "$pcmfil" = "$dalfil" ]; then
+      outnam=$pcmfil
+   else
+      outnam=${dalfil}_${molfil}_${pcmfil}
+   fi
+fi
 #
+export DALTON_TMPDIR
+
+if [ $opt_noappend -eq 1 ]; then
+    DALTON_SCRATCH=$DALTON_TMPDIR
+else
+    DALTON_SCRATCH=$DALTON_TMPDIR/$outnam
+fi
+
 echo
 echo "   ******************************************* "
 echo "   **** OUTPUT FROM LSDALTON SHELL SCRIPT **** "
@@ -176,26 +212,27 @@ echo "   ******************************************* "
 echo; echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
 echo;
+if [ "$is_pcm" = true ]; then
+echo "   Calculation: $outnam  (input files: $dalfil, $molfil and $pcmfil)"
+fi
 echo "   Calculation: $outnam  (input files: $dalfil and $molfil)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
-echo "   Scratch dir: $DALTON_TMPDIR/$outnam"
+echo "   Scratch dir: $DALTON_SCRATCH"
 echo;
 #
-if [ ! -d "$DALTON_TMPDIR" ]; then
-   mkdir -p $DALTON_TMPDIR
+if [ ! -d "$DALTON_SCRATCH" ]; then
+   mkdir -p $DALTON_SCRATCH
 fi
 
-SCRATCHDIR=$DALTON_TMPDIR/$2;
-
-if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
+if [ -d "$DALTON_SCRATCH" -a -w "$DALTON_SCRATCH" ]; then
    if [ $optd -eq 1 ] ; then
-      rm -rf $DALTON_TMPDIR/$outnam
+      rm -rf $DALTON_SCRATCH
    fi
-   if [ ! -d "$DALTON_TMPDIR/$outnam" ]; then
-      mkdir -p $DALTON_TMPDIR/$outnam
+   if [ ! -d "$DALTON_SCRATCH" ]; then
+      mkdir -p $DALTON_SCRATCH
    fi
-   cd $DALTON_TMPDIR/$outnam
+   cd $DALTON_SCRATCH
    if [ -s $WRKDIR/$dalfil.$DALEXT -a -r $WRKDIR/$dalfil.$DALEXT ]; then
       cp $WRKDIR/$dalfil.$DALEXT LSDALTON.INP
    else
@@ -208,6 +245,21 @@ if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
       echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
       echo "===> assuming single-input file calculation."
       cp $WRKDIR/$dalfil.$DALEXT MOLECULE.INP
+   fi
+   if [ "x$pcmfil" != "x" ]; then 
+     if [ -s $WRKDIR/$pcmfil.$PCMEXT -a -r $WRKDIR/$pcmfil.$PCMEXT ]; then
+        cp $WRKDIR/$pcmfil.$PCMEXT pcmsolver.inp
+     else
+        echo "$WRKDIR/$pcmfil.$PCMEXT for PCM does not exist or is not readable"
+        ierr=1
+     fi
+   fi
+   # put files listed under -put to scratch directory
+   if [ "$PUT_FILES" != "" ]; then
+      for file in $PUT_FILES; do
+          echo copying $file to scratch directory
+          cp $WRKDIR/$file $file
+      done
    fi
    if [ $optdens -eq 1 ] ; then
       echo "copy $WRKDIR/$molfil.dens.restart"
@@ -233,7 +285,7 @@ if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
     fi
    fi
 else
-   echo "$DALTON_TMPDIR does not exist or is not writeable"
+   echo "$DALTON_SCRATCH does not exist or is not writeable"
    exit 1
 fi
 
@@ -254,11 +306,11 @@ if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -a $MPI -a -x $MPI ]; then
         $MPIRUN -np $optn $MPI
-            if [ $opt_restart -eq 1 ] ; then
-             cp LSDALTON.INP.2 LSDALTON.INP
-           $MPIRUN -np $optn $MPI
-            fi
         lsdalton_exitcode=$?
+        if [ $opt_restart -eq 1 ] ; then
+           cp LSDALTON.INP.2 LSDALTON.INP
+           $MPIRUN -np $optn $MPI
+        fi
       else
      echo "$MPI does not exist or is not executeable"
      exit 1
@@ -285,11 +337,15 @@ else
         fi
 
         $LSDALTON_EXE
+        lsdalton_exitcode=$?
         if [ $opt_restart -eq 1 ] ; then
             cp LSDALTON.INP.2 LSDALTON.INP
             $LSDALTON_EXE
+            restart_exitcode=$?
+            if [ $lsdalton_exitcode -eq 0 ] ; then
+                lsdalton_exitcode=$restart_exitcode
+            fi
         fi
-        lsdalton_exitcode=$?
     fi
 
     if [ $optpg -eq 1 ] ; then
@@ -312,7 +368,7 @@ if [ $lsdalton_exitcode -ne 0 ] ; then
    du -h
 fi
 
-filelist="LSDALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.PHS DALTON.PHS DALTON.WLK molden.inp dens.restart fock.restart lcm_orbitals.u runopt.history"
+filelist="LSDALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.PHS DALTON.PHS DALTON.WLK molden.inp dens.restart fock.restart lcm_orbitals.u runopt.history MOLECULE.OUT"
 
 for i in $filelist ; do
    if [ -s $i -a -r $i ] ; then
@@ -320,10 +376,12 @@ for i in $filelist ; do
    fi
 done
 
-if [ -s "first.wrl" -a -r "first.wrl" ] ; then
-   tar cf - $tarfilelist *wrl | gzip -9 > $outnam.tar.gz
-else
-   tar cf - $tarfilelist | gzip -9 > $outnam.tar.gz
+if [ $opt_noarch -eq 0 ]; then
+    if [ -s "first.wrl" -a -r "first.wrl" ] ; then
+       tar cf - $tarfilelist *wrl | gzip -9 > $outnam.tar.gz
+    else
+       tar cf - $tarfilelist | gzip -9 > $outnam.tar.gz
+    fi
 fi
 
 if [ -s $outnam.tar.gz ] ; then
@@ -340,7 +398,7 @@ fi
       else
          echo "$WRKDIR/$OUTFIL has not been created from the present run"
          if [ $optD -eq 1 ] ; then
-            echo "$DALTON_TMPDIR/$outnam is therefore not deleted by this script."
+            echo "$DALTON_SCRATCH is therefore not deleted by this script."
          fi
          exit 2
       fi
@@ -352,16 +410,16 @@ fi
       else
          echo "LSDALTON.OUT has not been created from the present run."
          if [ $optD -eq 1 ] ; then
-            echo "$DALTON_TMPDIR/$outnam is therefore not deleted by this script."
+            echo "$DALTON_SCRATCH is therefore not deleted by this script."
          fi
-         echo "List of created files in $DALTON_TMPDIR/$outnam :"
+         echo "List of created files in $DALTON_SCRATCH :"
          ls -sltr
          exit 2
       fi
    fi
 cd $WRKDIR
 if [ $optD -eq 1 ] ; then
-   rm -rf $DALTON_TMPDIR/$outnam
+   rm -rf $DALTON_SCRATCH
 fi
 
 exit $lsdalton_exitcode

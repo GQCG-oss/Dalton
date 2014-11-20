@@ -2,7 +2,7 @@
 !> Contains soubroutines that bridges integral interface routines to the main Thermite driver
 MODULE ls_Integral_Interface
   use precision
-  use Integralparameters
+  use lsparameters
   use TYPEDEFTYPE, only: lssetting, LSINTSCHEME
   use integraloutput_typetype, only: INTEGRALOUTPUT
   use integral_type, only: INTEGRALINPUT
@@ -10,13 +10,15 @@ MODULE ls_Integral_Interface
   use Matrix_Operations, only: mtype_unres_dense, matrix_type,&
        & mtype_scalapack, mat_to_full, mat_free, mat_retrieve_block,&
        & mat_init, mat_trans, mat_daxpy, mat_scal_dia, &
-       & mat_setlowertriangular_zero, mat_assign
+       & mat_setlowertriangular_zero, mat_assign, mat_print,&
+       & mat_write_to_disk
   use matrix_operations_scalapack, only: PDM_MATRIXSYNC,&
        & free_in_darray
   use matrix_util, only : matfull_get_isym,mat_get_isym,mat_same
   use ao_typetype, only: aoitem
   use ao_type, only: free_aoitem
-  use basis_typetype, only: BASISINFO, BASIS_PT, BASISSETINFO
+  use basis_typetype, only: BASISINFO, BASIS_PT, BASISSETINFO, RegBasParam, &
+       & AUXBasParam,CABBasParam,JKBasParam,VALBasParam,GCTBasParam,ADMBasParam
   use molecule_typetype, only: MOLECULE_PT, MOLECULEINFO
   use lstensor_typetype, only: lstensor
   use lstensor_operationsmod, only: lstensor_nullify, &
@@ -48,7 +50,7 @@ MODULE ls_Integral_Interface
   use MBIEintegraldriver, only: mbie_integral_driver
   use BUILDAOBATCH, only: build_empty_ao, build_empty_nuclear_ao,&
        & build_empty_pcharge_ao, build_ao, build_shellbatch_ao, &
-       & BUILD_EMPTY_ELFIELD_AO
+       & BUILD_EMPTY_ELFIELD_AO, build_empty_single_nuclear_ao
   use lstiming, only: lstimer, print_timers
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
@@ -283,6 +285,7 @@ END SUBROUTINE addSubGradient2
 !>     DF-Aux       AOdfAux         Auxiliary basis for density-fitting
 !>     DF-CABS      AOdfCABS        Complementary Auxiliary basis for F12
 !>     DF-JK        AOdfJK          Density-fitting basis set for Fock matrix for F12
+!>     ADMM         AOadmm          Auxiliary Density matrix method basis set
 !>     VALENCE      AOVAL           Regular Level 2  or Valence basis 
 !>     Empty        AOEmpty         Empty, used for two and three-center integrals
 !>
@@ -1293,7 +1296,7 @@ Integer              :: LUPRI,LUERR
 !
 TYPE(INTEGRALINPUT)  :: INT_INPUT
 TYPE(AOITEM),target  :: AObuild(4)
-Integer              :: nAObuilds,idmat,idmat2
+Integer              :: nAObuilds,idmat,idmat2,lupdmat
 logical              :: dograd
 
 CALL init_integral_input(INT_INPUT,SETTING)
@@ -1308,6 +1311,12 @@ INT_INPUT%DO_DALINK = SETTING%SCHEME%DALINK
 IF(.NOT.INT_INPUT%DO_EXCHANGE)CALL LSQUIT('ERROR',-1)
 
 IF(INT_INPUT%DO_LINK)THEN 
+   !The Input Matrix (normally density matrix) is symmetric
+   !or it is split into symmetric and antisymmetric part
+   !the anti symmetric part is still treated as symmetric when
+   !construction the Fock matrix contribution but 
+   !it is followed by anti symmetrization in Post Processing 
+   INT_INPUT%DRHS_SYM=.TRUE.
    DO idmat = 1,setting%nDmatRHS
       idmat2 = idmat
       IF(matrix_type.EQ.mtype_unres_dense)then
@@ -1320,15 +1329,25 @@ IF(INT_INPUT%DO_LINK)THEN
       IF(setting%DsymRHS(idmat).EQ.1)THEN
          !Symmetric D => Symmetric K
          setting%output%postprocess(idmat2) = SymmetricPostprocess
-         INT_INPUT%DRHS_SYM=.TRUE.
       ELSEIF(setting%DsymRHS(idmat).EQ.2)THEN
          !AntiSymmetric D => AntiSymmetric K
          setting%output%postprocess(idmat2) = AntiSymmetricPostprocess
-         INT_INPUT%DRHS_SYM=.TRUE.
+      ELSEIF(setting%DsymRHS(idmat).EQ.4)THEN
+         !zero matrix 
+         setting%output%postprocess(idmat2) = 0
+      ELSE
+         print*,'the code can handle nonsym densities but'
+         print*,'from a perfomance perspective it is better'
+         print*,'to divide matrix up into a Sym and antiSym Part'
+         print*,'This should be done per default unless bypassed'
+         print*,'by specifying that D is symmetric. '
+         print*,'This Error statement can occur if Symmetry threshold'
+         print*,'too high and the Symmetric Dmat is judged to be nonsymmetric.'
+         print*,'The Matrix Judged to be non symmetric:'
+         call lsquit('Exchange Called with nonsym Dmat',-1)
       ENDIF
       IF(Spec.EQ.MagDerivSpec)THEN
-         setting%output%postprocess(idmat2) = 0
-         INT_INPUT%DRHS_SYM=.FALSE.
+         setting%output%postprocess(idmat2) = 0         
       ENDIF
    ENDDO
    IF(AO1.NE.AO2)then
@@ -1336,7 +1355,6 @@ IF(INT_INPUT%DO_LINK)THEN
       INT_INPUT%DRHS_SYM=.FALSE.
       setting%output%postprocess=0
    ENDIF
-   INT_INPUT%DRHS_SYM=.TRUE.
    IF (setting%LHSdmat) THEN
       DO idmat = 1,setting%nDmatLHS
          idmat2 = idmat
@@ -1758,6 +1776,7 @@ END SUBROUTINE ls_get_coulomb_and_exchange_mat
 !>     DF-Aux       AOdfAux         Auxiliary basis for density-fitting
 !>     DF-CABS'     AOdfCABS        Complementary Auxiliary basis for F12
 !>     DF-JK'       AOdfJK          Density-fitting basis set for Fock matrix for F12
+!>     ADMM         AOadmm          Auxiliary Density matrix method basis set
 !>     VALENCE      AOVAL           Regular Level 2  or Valence basis 
 !>     Empty        AOEmpty         Empty, used for two and three-center integrals
 SUBROUTINE ls_jengine(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
@@ -2010,6 +2029,7 @@ END SUBROUTINE ls_jengine
 !>     DF-Aux       AOdfAux         Auxiliary basis for density-fitting
 !>     DF-CABS'     AOdfCABS        Complementary Auxiliary basis for F12
 !>     DF-JK'       AOdfJK          Density-fitting basis set for Fock matrix for F12
+!>     ADMM         AOadmm          Auxiliary Density matrix method basis set
 !>     VALENCE      AOVAL           Regular Level 2  or Valence basis 
 !>     Empty        AOEmpty         Empty, used for two and three-center integrals
 SUBROUTINE ls_jengine_memdist(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
@@ -3706,7 +3726,8 @@ Integer,intent(IN)                :: LUPRI,LUERR
 !
 TYPE(BASISSETINFO),pointer :: AObasis
 Logical :: uncont,intnrm,emptyAO
-integer :: AObatchdim
+integer :: AObatchdim,iATOM
+Character(len=8)     :: AOstring
 uncont = scheme%uncont
 IF (intType.EQ.Primitiveinttype) THEN
   intnrm = .TRUE.
@@ -3720,15 +3741,17 @@ ENDIF
 emptyAO = .false.
 SELECT CASE(AO)
 CASE (AORegular)
-   AObasis => Basis%REGULAR
+   AObasis => Basis%BINFO(RegBasParam)  !Regular Basis
 CASE (AOdfAux)
-   AObasis => Basis%AUXILIARY
+   AObasis => Basis%BINFO(AUXBasParam)  !AUXILIARY Basis
 CASE (AOdfCABS)
-   AObasis => Basis%CABS
+   AObasis => Basis%BINFO(CABBasParam)  !CABS Basis
 CASE (AOdfJK)
-   AObasis => Basis%JK
+   AObasis => Basis%BINFO(JKBasParam)   !JK Basis
 CASE (AOVAL)
-   AObasis => Basis%VALENCE
+   AObasis => Basis%BINFO(VALBasParam)  !VALENCE Basis
+CASE (AOadmm)
+   AObasis => Basis%BINFO(ADMBasParam)  !ADMM Basis
 CASE (AOEmpty)
    emptyAO = .true.
    CALL BUILD_EMPTY_AO(AObatch,LUPRI)
@@ -3736,6 +3759,12 @@ CASE (AOEmpty)
 CASE (AONuclear)
    emptyAO = .true.
    CALL BUILD_EMPTY_NUCLEAR_AO(AObatch,Molecule,LUPRI)
+   nDim = 1
+CASE (AONuclearSpec)
+   !specific nuclei 
+   emptyAO = .true.
+   IATOM = 1 !FIXME
+   CALL BUILD_EMPTY_SINGLE_NUCLEAR_AO(AObatch,Molecule,LUPRI,IATOM)
    nDim = 1
 CASE (AOpCharge)
    emptyAO = .true.
@@ -3746,9 +3775,10 @@ CASE (AOelField)
    CALL BUILD_EMPTY_ELFIELD_AO(AObatch,Molecule,LUPRI)
    nDim = 3
 CASE DEFAULT
-   print*,'case: ',AO
-   WRITE(lupri,*) 'case: ',AO
-   WRITE(luerr,*) 'case: ',AO
+   print*,'Programming error: Not a case in SetAObatch: case: ',AO
+   WRITE(lupri,*) 'Programming error: Not a case in SetAObatch: case: ',AO
+   call param_AO_Stringfromparam(AOstring,AO)
+   WRITE(luerr,*) 'Programming error: Not a case in SetAObatch: case: ',AOstring
    CALL LSQuit('Programming error: Not a case in SetAObatch!',lupri)
 END SELECT
 IF (.not.emptyAO) THEN
@@ -4451,9 +4481,6 @@ TYPE(LSSETTING),intent(INOUT)   :: setting
 character*(*)                   :: side
 !
 integer                :: idmat
-real(realk)            :: thresh
-thresh = MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-!you can chose a screening threshold below 15 but not this thresh.
 SELECT CASE(side)
 CASE('LHS')
   IF (setting%LHSdmat) CALL LSQUIT('Error in ls_attachDmatToSetting. LHS',lupri)
@@ -4466,7 +4493,7 @@ CASE('LHS')
   enddo
   call mem_alloc(setting%DsymLHS,ndmat)
   DO idmat = 1,ndmat
-    setting%DsymLHS(idmat) = mat_get_isym(Dmat(idmat)%p,thresh)
+    setting%DsymLHS(idmat) = mat_get_isym(Dmat(idmat)%p)
   ENDDO
   setting%LHSdmatAOindex1 = AOindex1
   setting%LHSdmatAOindex2 = AOindex2
@@ -4481,7 +4508,7 @@ CASE('RHS')
   enddo
   call mem_alloc(setting%DsymRHS,ndmat)
   DO idmat = 1,ndmat
-    setting%DsymRHS(idmat) = mat_get_isym(Dmat(idmat)%p,thresh)
+    setting%DsymRHS(idmat) = mat_get_isym(Dmat(idmat)%p)
   ENDDO
   setting%RHSdmatAOindex1 = AOindex1
   setting%RHSdmatAOindex2 = AOindex2
@@ -4509,9 +4536,6 @@ TYPE(LSSETTING),intent(INOUT)   :: setting
 character*(*)                   :: side
 !
 integer                :: idmat
-real(realk)            :: thresh
-thresh = MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-!you can chose a screening threshold below 15 but not this thresh.
 
 SELECT CASE(side)
 CASE('LHS')
@@ -4537,7 +4561,7 @@ CASE('LHS')
   setting%LHSdmatAOindex2 = AOindex2
   call mem_alloc(setting%DsymLHS,ndmat)
   DO idmat = 1,ndmat
-    setting%DsymLHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2,thresh)
+    setting%DsymLHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2)
   ENDDO
 CASE('RHS')
   IF (setting%RHSdfull) CALL LSQUIT('Error in ls_attachDmatToSetting. RHS',lupri)
@@ -4562,7 +4586,7 @@ CASE('RHS')
   setting%RHSdmatAOindex2 = AOindex2
   call mem_alloc(setting%DsymRHS,ndmat)
   DO idmat = 1,ndmat
-    setting%DsymRHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2,thresh)
+    setting%DsymRHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2)
   ENDDO
 CASE DEFAULT
   WRITE(LUPRI,'(1X,2A)') 'Error in ls_attachDmatToSetting. Side =',side
@@ -4672,7 +4696,7 @@ Logical                  :: ls_same_mats
 !
 logical :: same
 integer :: id
-real(realk),parameter :: thresh = 1E-14_realk
+real(realk),parameter :: thresh = 1E-12_realk
 
 IF (nd.EQ.np) THEN
   same = .TRUE.
@@ -4696,10 +4720,8 @@ FUNCTION ls_mat_sym(D)
 implicit none
 TYPE(matrix),intent(IN) :: D
 Integer                 :: ls_mat_sym
-!
-real(realk),parameter :: thresh = 1E-14_realk
 
-ls_mat_sym = mat_get_isym(D,thresh)
+ls_mat_sym = mat_get_isym(D)
 
 END FUNCTION ls_mat_sym
 
@@ -5626,9 +5648,9 @@ integer                       :: AO1,AO2,AO3,AO4,Oper,intType,Spec
 TYPE(LSTENSOR),pointer        :: result_tensor,result_tensor_other,dmat_lhs,dmat_rhs
 TYPE(LSTENSOR),pointer        :: CS_rhs_full,CS_lhs_full
 INTEGER,intent(IN)            :: lupri,luerr
-Logical,intent(OUT)           :: lhs_created,rhs_created,ForceRHSsymDMAT,ForceLHSsymDMAT
-Logical,intent(OUT)           :: rhsCS_created,lhsCS_created
-Logical,intent(OUT)           :: PermuteResultTensor,doscreen
+Logical,intent(INOUT)         :: lhs_created,rhs_created,ForceRHSsymDMAT,ForceLHSsymDMAT
+Logical,intent(INOUT)         :: rhsCS_created,lhsCS_created
+Logical,intent(INOUT)         :: PermuteResultTensor,doscreen
 Logical,intent(IN)            :: LHSpartioning,RHSpartioning,BOTHpartioning
 !
 #ifdef VAR_MPI
@@ -6917,7 +6939,7 @@ END MODULE ls_Integral_Interface
 #ifdef VAR_MPI
 SUBROUTINE lsmpi_getIntegrals_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,geoOrder,SETTING,LUPRI,LUERR)
 use lsmpi_op, only: mpicopy_setting
-use Integralparameters
+use lsparameters
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
 use infpar_module
@@ -6950,7 +6972,7 @@ SUBROUTINE lsmpi_getIntegrals_Slave(comm)
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_getIntegrals
@@ -6986,7 +7008,7 @@ use precision
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 !use lstiming, only: lstimer
@@ -7021,7 +7043,7 @@ SUBROUTINE lsmpi_jengine_Slave(comm)
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_jengine
@@ -7050,7 +7072,7 @@ SUBROUTINE lsmpi_LinK_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LU
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_get_exchange_mat
@@ -7082,7 +7104,7 @@ use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
 use infpar_module
-use Integralparameters
+use lsparameters
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_get_exchange_mat
 implicit none

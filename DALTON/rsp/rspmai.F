@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -64,7 +64,6 @@
 !===========================================================================
 #endif
 C
-#include "single.h"
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)
 C
@@ -142,15 +141,10 @@ C
 C
 C  If SOPPA then set up information from MP2 and find number of 2p-2h
 C  excitations and offsets to various index arrays.
-C  The call to MP2SET is only for a dummy array IADR1 which will
-C  be properly set up later (in SET2SOPPA). 970206-ekd
 C
       IF (SOPPA) THEN
-         KIADR1 = 1
-         KLAST  = KIADR1 + (MAXOCC * MAXVIR + 1)/IRAT
-         LWSOP = LWRK - KLAST + 1
-         IF (LWSOP .LT. 1) CALL ERRWRK('RSPDRV 0',KLAST-1,LWSOP)
-         CALL MP2SET(WRK(KIADR1))
+         CALL MP2SET
+         CALL PHADR1(WRK,1) ! to calculate NPHTOT(1) needed in RSPACT
          CALL SETSOPPA
       END IF
 C
@@ -344,6 +338,7 @@ C
       END IF
 C
 C
+      CALL ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
 C
       IF ( NEED_PVX ) THEN
 C
@@ -789,12 +784,16 @@ C
       GO TO 200
 C
  1    CONTINUE
-      IPRRSP = MAX(IPRPP,IPRLR,IPRC6)
-      IPRRSP = MAX(IPRRSP,IPRHYP,IPRSMO)
+      IPRRSP_default = IPRRSP
+      IPRRSP = MAX(IPRPP ,IPRLR ,IPRC6)         ! LR
+      IPRRSP = MAX(IPRRSP,IPRHYP,IPRSMO)        ! QR
+      IPRRSP = MAX(IPRRSP,IPRCR,IPRTMO,IPRTPA)  ! CR
       IPRRSP = MAX(IPRRSP,IPRESR)
-      IPRRSP = MAX(IPRRSP,IPRCR)
-      IPRRSP = MAX(IPRRSP,IPRTMO)
-      IPRRSP = MAX(IPRRSP,IPRTPA,IPRABS)
+      IPRRSP = MAX(IPRRSP,IPRABS)
+      IF (IPRRSP .ne. IPRRSP_default) THEN
+         WRITE(LUPRI,'(/A,I10)')
+     &   ' General print level in RESPONS is IPRRSP =',IPRRSP
+      END IF
 C
 C     We arrive at 2100 if no input file found. We return.
 C
@@ -831,7 +830,7 @@ C
 #include "abslrs.h"
 C
       LOGICAL NEWDEF, SET
-      PARAMETER ( NTABLE = 24 )
+      PARAMETER ( NTABLE = 25 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE TABLE, SET
@@ -843,7 +842,8 @@ C
      *            '.MAXRM ', '.QRREST', '.PROPAV',
      *            '.HIRPA ', '.SOPW4 ', '.SOPPA(',
      *            '.NODOIT', '.DFT-SO', '.PROP2A',
-     *            '.TDA   ', '.CIS   ', '.SOPRPA'/
+     *            '.TDA   ', '.CIS   ', '.SOPRPA',
+     *            '.TRDQF '/
       DATA SET /.FALSE./
 C
       IF (.NOT.SET) THEN
@@ -856,6 +856,7 @@ C
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0
+         TRDQF = .FALSE.
       END IF
       NEWDEF = (WORD .EQ. '*RESPON')
       ICHANG = 0
@@ -872,7 +873,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
      *                      11,12,13,14,15,16,17,18,19,20,21,22,23,
-     *                      24), I
+     *                      24,25), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -888,21 +889,14 @@ C
     2          CONTINUE
                   AVDIA  = .FALSE.
                GO TO 100
-    3          CONTINUE
+    3          CONTINUE ! .SOPPA
                   SOPPA = .TRUE.
-                  IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
+                  IF (PARCAL) THEN
+                    CALL PARQUIT("SOPPA combined with linear response")
+                  END IF
                   IF (SOPPA .AND. EMBEDDING) THEN
-                    WRITE (LUPRI,'(/A)')
-     &              '@ **INFO**'//
-     &               ' This is a solvent-SOPPA calculation w/ dynamic'
-                    WRITE (LUPRI,'(/A)')
-     &              '@ **INFO**'//
-     &               ' solvent response at RPA level only,'
-                    WRITE (LUPRI,'(/A)')
-     &              '@ **INFO**'//
-     &               ' cf. JCC, 2012-2022, 33, (2012) for reference.'
 cjje: change this if full solvent soppa is ever implemented
-                    SOPRPA = .TRUE.
+                    GO TO 24 ! go to .SOPRPA option
                   END IF
                GO TO 100
     4          CONTINUE
@@ -956,7 +950,7 @@ cjje: change this if full solvent soppa is ever implemented
    17          CONTINUE
                   SOPW4 = .TRUE.
                GO TO 100
-   18          CONTINUE
+   18          CONTINUE ! .SOPPA(CCSD)
                   SOPPA = .TRUE.
                   CCPPA = .TRUE.
                GO TO 100
@@ -984,12 +978,12 @@ C              .PROP2Average
  23            CONTINUE
                   CISRPA = .TRUE.
                GO TO 100
- 24            CONTINUE
+ 24            CONTINUE ! .SOPRPA
                  SOPRPA = .TRUE.
-                 SOPPA = .TRUE.
+                 SOPPA  = .TRUE.
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
-     &            ' This is a solvent-SOPPA calculation w/ dynamic'
+     &            ' This is a SOPPA embedding calculation w/ dynamic'
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
      &            ' solvent response at RPA level only,'
@@ -997,10 +991,16 @@ C              .PROP2Average
      &           '@ **INFO**'//
      &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
                  IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
-                  WRITE (LUPRI,'(/A)')
-     &             'Vacuum calc. - use .SOPPA instead'
+                  WRITE (LUPRI,'(/A)') '**RESPONSE INPUT ERROR: '//
+     &             'Vacuum calculation - use .SOPPA instead of .SOPRPA'
                   CALL QUIT('RSPINP: Vacuum calc. - use .SOPPA instead')
                  END IF
+               GO TO 100
+ 25            CONTINUE
+                 IF(.NOT. QFIT) THEN
+                   CALL QUIT('RSPINP: Charge fitting requires .QFIT')
+                 ENDIF
+                 TRDQF = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1089,17 +1089,17 @@ C              .PROP2Average
      &      ' .DFT-SO: DFT spin-orbit integrals calculated.'
       END IF
       IF (CCPPA .AND. RSPCI) THEN
-         WRITE (LUPRI,'(/A)')
-     &      ' Input ERROR: CI response and ".SOPPCC" are incompatible.'
-         CALL QUIT('RSPINP: Input error')
+         WRITE (LUPRI,'(/A)') ' Input ERROR:'//
+     &      ' CI response and ".SOPPA(CCSD)" are incompatible.'
+         CALL QUIT('**RESPONSE: Input error')
       ELSEIF (HIRPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
      &      ' Input ERROR: CI response and ".HIRPA " are incompatible.'
-         CALL QUIT('RSPINP: Input error')
+         CALL QUIT('**RESPONSE: Input error')
       ELSEIF (SOPPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
      &      ' Input ERROR: CI response and ".SOPPA " are incompatible.'
-         CALL QUIT('RSPINP: Input error')
+         CALL QUIT('**RESPONSE: Input error')
       END IF
 C
 C *** END OF RSPINP
@@ -1192,7 +1192,9 @@ C     Initialization of TRHSO for HSOINP
 C     Initialization of INFHSO for HSOINP
       DATA TESTZY/.FALSE./, DOSO1/.TRUE./, DOSO2/.TRUE./, IPRHSO/0/
       DATA X2MAT/.FALSE./, A2MAT/.FALSE./, X2GRAD/.FALSE./,
-     &     PHOSPH/.FALSE./, MNFPHO/.FALSE./, ECPHOS/.FALSE./
+     &     PHOSPH/.FALSE./, MNFPHO/.FALSE./, ECPHOS/.FALSE./,           !MK
+     &     PHOSPV/.FALSE./, CPPHOL/.FALSE./, CPPHOV/.FALSE./,           !MK
+     &     CPPHMF/.FALSE./, CPPHEC/.FALSE./                             !MK
 C     Initialization of INFHYP
       DATA HYPCAL/.FALSE./
       DATA QRSPEC/.FALSE./,QRSHG/.FALSE./,QRPOCK/.FALSE./
@@ -3925,9 +3927,6 @@ C
 C CALCULATE DIAGONAL CONFIGURATION PART OF E[2]
 C
          CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-         JRSP4 = 0
-#endif
          IF (KZCONF.GE.1) THEN
             KECDIA = 1
             KWRK1  = KECDIA + KZCONF
@@ -3939,7 +3938,7 @@ C
                CALL SOPDIAG(KSYMOP,FC,WRK(KECDIA),XINDX(KABSAD),
      *                      XINDX(KABTAD),XINDX(KIJSAD),XINDX(KIJTAD),
      *                      XINDX(KIJ1AD),XINDX(KIJ2AD),XINDX(KIJ3AD),
-     *                      WRK(KWRK1),LWRK1)
+     *                      WRK(KWRK1),LWRK1,IPRRSP)
             ELSE
 C              LUIT2 = 0 means do not write CI diag. to file
                LUIT2S = LUIT2
@@ -3957,11 +3956,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
                   WRK(KECDIA-1+I) = WRK(KECDIA-1+I) - EACTIV
  50            CONTINUE
             ENDIF
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZCONF,WRK(KECDIA),JRSP4)
-#else
             CALL WRITT(LURSP4,KZCONF,WRK(KECDIA))
-#endif
             IF (IPRRSP.GT.110) THEN
                WRITE(LUPRI,'(/A)')
      *         ' DIAGONAL CONFIGURATION PART OF E[2] '
@@ -3995,11 +3990,7 @@ C           CALL ORBDIA(FOCK,FC,FV,UDV,EDIA,SDIA)
 C
 C WRITE diagonals of orbital part of E[2]-matrix needed for RSPLIN
 C
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZWOPT,WRK(KEODIA),JRSP4)
-#else
             CALL WRITT(LURSP4,KZWOPT,WRK(KEODIA))
-#endif
 C
             IF (IPRRSP.GT.100) THEN
                IF (KZWOPT.GT.0) THEN
@@ -4019,11 +4010,7 @@ C
 C *** now WRITE orbital diagonal of S[2]-matrix
 C
          IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZWOPT,WRK(KSODIA),JRSP4)
-#else
             CALL  WRITT(LURSP4,KZWOPT,WRK(KSODIA))
-#endif
          END IF
 C
          IF (IPRRSP.GT.100) THEN
@@ -4543,18 +4530,20 @@ C
 #include "rspprp.h"
 #include "infpp.h"
 C
-      PARAMETER ( NTABLE = 8 )
+      PARAMETER ( NTABLE = 13 )                                         !MK
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
       PARAMETER ( STRING = '*QUADRA' )
       DATA TABLE /'.SINGLE', '.DOUBLE', '.PHOSPH', '.TWO-PH',
-     &            '.MNFPHO', '.TPCD  ', '.ESA   ', '.ECPHOS'/
+     &            '.MNFPHO', '.TPCD  ', '.ESA   ', '.ECPHOS',           !MK
+     &            '.PHOSPV', '.CPPHOL', '.CPPHOV', '.CPPHMF',           !MK
+     &            '.CPPHEC'/                                            !MK
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
       CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
-            GO TO (1,2,3,4,5,4,6,8), I
+            GO TO (1,2,3,4,5,4,6,8,3,3,3,5,8), I                        !MK
          END IF
       END DO
       GO TO 100
@@ -4919,4 +4908,21 @@ C
 C  *** END OF ESG
 C
       RETURN
+      END
+    
+      SUBROUTINE ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
+      IMPLICIT NONE
+#include <maxorb.h>
+#include <infinp.h>
+#include <infrsp.h>
+#include <priunit.h>
+      CALL QENTER('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
+      IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
+         WRITE(LUPRI, *) 
+     &      'Please use **WAVE FUNCTION *OPTIMIZATION .DETERMINANTS'
+         CALL QUIT(
+     &      'A TRIPLET RESPONSE CALCULATION REQUIRES DETERMINANTS'
+     &      ) 
+      END IF
+      CALL QEXIT('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
       END

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
@@ -111,7 +110,7 @@ C
          PROPTY = .TRUE.
          EXPGRA = EXPGRD
          CALL ONEINT(WORK,LWORK,PASONE,PROPTY,PCM)
-         IF (PASONE) CALL ABAWRITRS
+         IF (PASONE) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMONE,TIMDUM)
@@ -142,7 +141,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT. PASMAG) THEN
          CALL MAGINT(WORK(KDSO),WORK(KLAST),LWRK,PASMAG)
-         IF (PASMAG) CALL ABAWRITRS
+         IF (PASMAG) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMMAG,TIMDUM)
@@ -161,7 +160,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT. PASTWO) THEN
          CALL TWOEXP(WORK(KLAST),LWRK,PASTWO)
-         IF (PASTWO) CALL ABAWRITRS
+         IF (PASTWO) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMTEX,TIMDUM)
@@ -197,7 +196,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT. PASORT) THEN
          CALL MCORL(WORK(KLAST),LWRK,PASORT)
-         IF (PASORT) CALL ABAWRITRS
+         IF (PASORT) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMORT,TIMDUM)
@@ -213,9 +212,9 @@ C     ***** Dipole moment gradient *****
 C     **********************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (.NOT. PASDIP .AND. .NOT. peqm) THEN
+      IF (.NOT. PASDIP .AND. .NOT. PEQM) THEN
          CALL DIPCTL(WORK(KLAST),LWRK,PASDIP)
-         IF (PASDIP) CALL ABAWRITRS
+         IF (PASDIP) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMDIP,TIMDUM)
@@ -235,7 +234,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT. PASQPG) THEN
          CALL QPGCTL(WORK(KLAST),LWRK,PASQPG)
-         IF (PASQPG) CALL ABAWRITRS
+         IF (PASQPG) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMQPG,TIMDUM)
@@ -286,8 +285,8 @@ C     *****************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (CTOCD) THEN
-        CALL CTOABA(WORK(KLAST),LWRK)
-        CALL FLSHFO(LUPRI)
+         CALL CTOABA(WORK(KLAST),LWRK)
+         CALL FLSHFO(LUPRI)
       END IF
       CALL GETTIM(TIMCTO,TIMDUM)
       TIMCTO = TIMCTO - TIMSTR
@@ -301,11 +300,11 @@ C
       IF (.NOT. PASREL) THEN
       IF (MOLHES .OR. SHIELD .OR. MAGSUS .OR. VCD .OR.
      &    DIPDER .OR. POLAR .OR. QPGRAD .OR. (SPNSPN .AND. DOPSO) .OR.
-     &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT 
-     &    .AND. .NOT. peqm) THEN
+     &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT
+     &    .AND. .NOT. PEQM) THEN
          CALL RELAX(WORK(KPSO),WORK(KSD),WORK(KFC),WORK(KSDFC),
      &              WORK(KLAST),LWRK,PASREL,.FALSE.)
-         IF (PASREL) CALL ABAWRITRS
+         IF (PASREL) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
       END IF
       END IF
@@ -318,7 +317,7 @@ C
       IF (SPNSPN .AND. (DOSD .OR. DOFC .OR. DOSDFC) ) THEN
          CALL RELAX(WORK(KPSO),WORK(KSD),WORK(KFC),WORK(KSDFC),
      &              WORK(KLAST),LWRK,PASRTR,.TRUE.)
-         IF (PASRTR) CALL ABAWRITRS
+         IF (PASRTR) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
       END IF
       END IF
@@ -333,7 +332,7 @@ C
       IF (.NOT. PASAAT) THEN
          CALL AATDRV(WORK(KLAST),LWRK,PASAAT)
          CALL FLSHFO(LUPRI)
-         IF (PASAAT) CALL ABAWRITRS
+         IF (PASAAT) CALL ABAWRIT_RESTART
       END IF
       CALL GETTIM(TIMAAT,TIMDUM)
       TIMAAT = TIMAAT - TIMSTR
@@ -361,7 +360,7 @@ C
             CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
      &                  WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
      &                  WORK(KFOVIB),WORK(KLST1),LWRK1,PASLNR)
-            IF (PASLNR) CALL ABAWRITRS
+            IF (PASLNR) CALL ABAWRIT_RESTART
             CALL FLSHFO(LUPRI)
          END IF
       ELSE
@@ -397,10 +396,8 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
       NMODEL = 1
 CPFP 2009-Jun NMODEL increased from 4 to 5
-C      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) NMODEL = 4
       IF (AORPA .OR. AOHRP .OR. DCRPA 
      &          .OR. AOSOP .OR. AOSOC) NMODEL = 5
-Cend-PFP
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
          KTRVEL = KTRLEN + 3*NSYM*MXNEXI*NMODEL
@@ -429,7 +426,7 @@ Cend-PFP
      &               WORK(KBSRLO),WORK(KTTLEN),WORK(KEXENG),
      &               WORK(KFONAC),WORK(KFONA2),WORK(KSECMT),
      &               WORK(KLST2),LWRK2,PASEXC)
-         IF (PASEXC) CALL ABAWRITRS
+         IF (PASEXC) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
       ELSE
          KTRLEN = KLST1
@@ -543,7 +540,7 @@ CAMT Add empirical DFT-D gradient...
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLTT)
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLNN)
          IF (PCM) CALL ADDGRD(GSOLCV)
-         if (peqm) call addgrd(pegrad)
+         IF (PEQM) CALL ADDGRD(PEGRAD)
       END IF
 C
 C     Calculated dipole moment
@@ -554,7 +551,7 @@ C     Calculated elements of dipole gradient
 C
       IF (.NOT. PEQM) CALL DZERO(DIP1,9*NUCDEP)
 Clf to be adjusted for PCM IR intensities calculation
-      IF (DIPDER .and. .not. peqm) THEN
+      IF (DIPDER .AND. .NOT. PEQM) THEN
          CALL DIPADD(DDIPN)
          CALL DIPADD(DDIPE)
          CALL DIPADD(DDIPS)
@@ -705,7 +702,7 @@ C
       PARAMETER (NDIR = 28, NTABLE = 60, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
-      LOGICAL   GRDINP
+      LOGICAL   GRDINP, NO_ABACUS_INPUT
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, RSTLBL(10)*6, WORD1*7, WRDSRC*7,
      *          WORDL*12
@@ -974,8 +971,10 @@ C         geometry if not overridden with '**START'
             GO TO 900
          END IF
          CALL ABAINIALL
+         NO_ABACUS_INPUT = .TRUE.
          GOTO 1
   930 CONTINUE
+      NO_ABACUS_INPUT = .FALSE.
       WORD1 = WORD
 C
       CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
@@ -1307,7 +1306,7 @@ C-----RESTART-------------------------------------------------
 C
       IF (RESTAR) THEN
          CALL HEADER('This is a restart run!',0)
-         CALL ABAREADRS
+         CALL ABAREAD_RESTART
          IF (RWORD .EQ.'      ') THEN
             IF (DIPDER .AND. .NOT.PASDIP) PASONE = .FALSE.
             IF (QPGRAD .AND. .NOT.PASQPG) PASONE = .FALSE.
@@ -1432,7 +1431,7 @@ C
 cs    write session
 cs
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
-         WRITE(LUPRI,'(A/A)') '@ Properties not ' //
+         WRITE(LUPRI,'(3A/A)') '@ ',WRDSRC,' properties not ' //
      &        'available for MP2 wave functions!',
      &      '@ You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
@@ -2004,9 +2003,10 @@ C
 C     Properties not available for MP2, ABACUS run will be skipped
 C
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
-         WRITE(LUPRI,'(A/A)') '@ WARNING Properties not ' //
+         IF (.NOT. NO_ABACUS_INPUT)
+     &   WRITE(LUPRI,'(/3A/A)') '@ INFO ',WRDSRC,' properties not ' //
      &        'available for MP2 wave functions!',
-     &      '@ WARNING You may consider using SOPPA instead.'
+     &      '@ INFO You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789
       END IF
@@ -2040,11 +2040,8 @@ C     Aug. 97/spas+hjaaj
 C
       IF (ABASOP) THEN
          SOPPA = ABASOP
-         KIADR1 = 1
-         KLAST  = KIADR1 + (MAXOCC * MAXVIR + 1)/IRAT
-         IF (KLAST .GT. LWORK) CALL STOPIT('ABADRV','MP2SET',KLAST,
-     &                                     LWORK)
-         CALL MP2SET(WORK(KIADR1))
+         CALL MP2SET
+         CALL PHADR1(WORK,1) ! to calculate NPHTOT(1) used in RSPACT
          CALL SETSOPPA
          NCONMA = 0
          DO ISYM = 1, NSYM
@@ -2211,7 +2208,6 @@ C
      &          RMVEL(*), RQVEL(*), RVEL(*), SLEN(*), SVEL(*)
       LOGICAL OD, FIRST
 #include "abainf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "inftap.h"
 #include "shells.h"
@@ -2226,6 +2222,12 @@ C
 #include "expopt.h"
 #include "primit.h"
 #include "soppinf.h"
+C
+#include "trkoor.h"
+#include "taymol.h"
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
+      CALL QENTER('ABARESULT')
 C
 C     Heading
 C
@@ -2248,6 +2250,8 @@ C
      *            LSYM
       READ (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT
 C
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       ERGMOL = EMCSCF
 C
 C     Geometry, Energy, Gradient, and Hessian output is
@@ -2450,7 +2454,7 @@ C
          IF (MOLHES) THEN
 C            IF (NFLOAT .EQ. 0) THEN
                CALL HEADER('Molecular Hessian (au)',-1)
-               CALL PRIHES(HESMOL,'CENTERS',CSTRA,SCTRA)
+               CALL PRIHES(HESMOL,'HESMOL',CSTRA,SCTRA)
 C            ELSE
 C               CALL HEADER('Hessian with respect to nuclear and '//
 C     *              'orbital displacements (au)',-1)
@@ -2689,11 +2693,15 @@ C
       IF (SPNSPN) THEN
          CALL SPIRES(SPNDSO,SPNPSO,SPNSD,SPNFC,SPSDFC,WORK,LWORK)
       END IF
+
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      deallocate ( GRDMOL, HESMOL )
+
+      CALL QEXIT('ABARESULT')
       RETURN
- 1000 FORMAT (1X,A6,F17.10,2F24.10)
       END
-C  /* Deck readrs */
-      SUBROUTINE ABAREADRS
+C  /* Deck abaread_restart */
+      SUBROUTINE ABAREAD_RESTART
 C
 C     Read ABACUS restart information
 C     TUH 1985
@@ -2706,11 +2714,10 @@ C
 #include "mxcent.h"
 C
       CHARACTER*8 LABEL(4)
-      LOGICAL AROUND
+      LOGICAL     AROUND
 #include "abainf.h"
 #include "past.h"
 #include "energy.h"
-#include "taymol.h"
 #include "dipole.h"
 #include "moldip.h"
 #include "sigma.h"
@@ -2721,6 +2728,7 @@ C
 #include "nqcc.h"
 #include "aatens.h"
 #include "gdvec.h"
+#include "trkoor.h"
 C
       LUSTAR = -1
       CALL GPINQ('ABACUS.RESTART','EXIST',AROUND)
@@ -2738,13 +2746,16 @@ C
      *              PASCRS, PASCZR, PASCTR, PASCRL, PASMAG, PASRTR,
      &              PASAAT, PASLRS, PASTRP, PASLNR, PASEXC, PASQPG
       READ (LUSTAR) NCOR
+      IF (NCOR .NE. NCOOR) THEN
+         CALL QENTER('ABAREAD_RESTART')
+         CALL QUIT('ABAREAD_RESTART: NCOR on ABACUS.RESTART .ne. NCOOR')
+      END IF
       READ (LUSTAR) ENERKE, ENERNA, ENEREE, ENERNN,
      *              (GRADKE(I), I=1,NCOR),
      *              (GRADNA(I), I=1,NCOR),
      *              (GRADEE(I), I=1,NCOR),
      *              (GRADNN(I), I=1,NCOR),
-     *              (GRADFS(I), I=1,NCOR),
-     *              ((HESMOL(I,J), I=1,NCOR), J=1,NCOR)
+     *              (GRADFS(I), I=1,NCOR)
       READ (LUSTAR) DIPMN,  DIPME,
      *              ((DDIPN(I,J), I=1,3), J=1,NCOR),
      *              ((DDIPE(I,J), I=1,3), J=1,NCOR),
@@ -2796,12 +2807,50 @@ C
   900 CONTINUE
       NWNABA = NWNABA + 1
       WRITE (LUPRI,'(//A/A/)')
-     *   ' WARNING: No restart file found.',
-     *   ' WARNING: Calculation proceeds without restart.'
+     *   ' WARNING: No ABACUS.RESTART restart file found.',
+     *   ' WARNING: ABACUS calculation proceeds without restart.'
       RETURN
       END
-C  /* Deck abawritrs */
-      SUBROUTINE ABAWRITRS
+C  /* Deck abaread_taymol */
+      SUBROUTINE ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOR)
+C
+C     Read ABACUS energy Taylor expansion to second order
+C     (May 2014 hjaaj: moved ERGMOL, GRDMOL, HESMOL from common block
+C      in taymol.h to ABACUS.RESTART file to save static memory)
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+C
+C
+      LOGICAL AROUND
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOR), HESMOL(NCOR,NCOR)
+C
+      IF (NCOR .NE. NCOOR) THEN
+         CALL QENTER('ABAREAD_TAYMOL')
+         CALL QUIT('ERROR in ABAREAD_TAYMOL: NCOOR input .ne. NCOOR')
+      END IF
+      CALL GPINQ('ABACUS.RESTART','EXIST',AROUND)
+      IF (AROUND) THEN
+         LUSTAR = -1
+         CALL GPOPEN(LUSTAR,'ABACUS.RESTART','OLD',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         REWIND LUSTAR
+         CALL MOLLAB('TAY MOL ',LUSTAR,LUPRI)
+         READ (LUSTAR) ERGMOL, GRDMOL, HESMOL
+         CALL GPCLOSE(LUSTAR,'KEEP')
+      ELSE
+         ERGMOL      = 0.0D0
+         GRDMOL(:)   = 0.0D0
+         HESMOL(:,:) = 0.0D0
+      END IF
+C
+      RETURN
+      END
+C  /* Deck abawrit_restart */
+      SUBROUTINE ABAWRIT_RESTART
 C
 C     Write ABACUS restart information
 C     tuh 1985
@@ -2814,7 +2863,6 @@ C
 C
 #include "past.h"
 #include "energy.h"
-#include "taymol.h"
 #include "dipole.h"
 #include "moldip.h"
 #include "nuclei.h"
@@ -2827,33 +2875,51 @@ C
 #include "aatens.h"
 #include "gdvec.h"
 C
+      LOGICAL AROUND
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+C
+      IF (NCOOR .NE. 3*NUCDEP) THEN
+         CALL QENTER('ABAWRIT_RESTART')
+         CALL QUIT('ERROR in ABAWRIT_RESTART: NCOOR .ne. 3*NUCDEP')
+      END IF
       LUSTAR = -1
-      CALL GPOPEN(LUSTAR,'ABACUS.RESTART','UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
-      NCOR = 3*NUCDEP
+      CALL GPINQ('ABACUS.RESTART','EXIST',AROUND)
+      IF (AROUND) THEN
+         CALL GPOPEN(LUSTAR,'ABACUS.RESTART','OLD',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         REWIND LUSTAR
+         CALL MOLLAB('TAY MOL ',LUSTAR,LUPRI)
+         READ (LUSTAR) ERGMOL, GRDMOL, HESMOL
+      ELSE
+         CALL GPOPEN(LUSTAR,'ABACUS.RESTART','NEW',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         ERGMOL      = 0.0D0
+         GRDMOL(:)   = 0.0D0
+         HESMOL(:,:) = 0.0D0
+      END IF
       REWIND LUSTAR
-      CALL NEWLAB('ABARSTR',LUSTAR,LUPRI)
+      CALL NEWLAB('ABARSTRT',LUSTAR,LUPRI)
       WRITE (LUSTAR) PASTWO, PASORT, PASDIP, PASONE, PASRES, PASREL,
      *               PASCRS, PASCZR, PASCTR, PASCRL, PASMAG, PASRTR,
      &               PASAAT, PASLRS, PASTRP, PASLNR, PASEXC, PASQPG
-      WRITE (LUSTAR) NCOR
+      WRITE (LUSTAR) NCOOR,0,0,0,0,0,0,0 ! min record length 32 bytes
       WRITE (LUSTAR) ENERKE, ENERNA, ENEREE, ENERNN,
-     *               (GRADKE(I), I=1,NCOR),
-     *               (GRADNA(I), I=1,NCOR),
-     *               (GRADEE(I), I=1,NCOR),
-     *               (GRADNN(I), I=1,NCOR),
-     *               (GRADFS(I), I=1,NCOR),
-     *               ((HESMOL(I,J), I=1,NCOR), J=1,NCOR)
+     *               (GRADKE(I), I=1,NCOOR),
+     *               (GRADNA(I), I=1,NCOOR),
+     *               (GRADEE(I), I=1,NCOOR),
+     *               (GRADNN(I), I=1,NCOOR),
+     *               (GRADFS(I), I=1,NCOOR)
       WRITE (LUSTAR) DIPMN,  DIPME,
-     *               ((DDIPN(I,J), I=1,3), J=1,NCOR),
-     *               ((DDIPE(I,J), I=1,3), J=1,NCOR),
-     *               ((DDIPS(I,J), I=1,3), J=1,NCOR),
-     *               ((DDIPR(I,J), I=1,3), J=1,NCOR),
+     *               ((DDIPN(I,J), I=1,3), J=1,NCOOR),
+     *               ((DDIPE(I,J), I=1,3), J=1,NCOOR),
+     *               ((DDIPS(I,J), I=1,3), J=1,NCOOR),
+     *               ((DDIPR(I,J), I=1,3), J=1,NCOOR),
      *               POLARS
-      WRITE (LUSTAR) ((SIGMAD(I,J), I=1,3), J=1,NCOR),
-     &               ((SIGMAS(I,J), I=1,3), J=1,NCOR),
-     &               ((SIGMAR(I,J), I=1,3), J=1,NCOR),
-     &               ((SIGMAT(I,J), I=1,3), J=1,NCOR)
+      WRITE (LUSTAR) ((SIGMAD(I,J), I=1,3), J=1,NCOOR),
+     &               ((SIGMAS(I,J), I=1,3), J=1,NCOOR),
+     &               ((SIGMAR(I,J), I=1,3), J=1,NCOOR),
+     &               ((SIGMAT(I,J), I=1,3), J=1,NCOOR)
       WRITE (LUSTAR) ((SUSDIA(I,J), I=1,3), J=1,3),
      &               ((SUS2EL(I,J), I=1,3), J=1,3),
      &               ((SUSDFT(I,J), I=1,3), J=1,3),
@@ -2861,15 +2927,15 @@ C
      &               ((SUSREL(I,J), I=1,3), J=1,3),
      &               ((SUSTOT(I,J), I=1,3), J=1,3),
      &               ((SUSFSY(I,J), I=1,3), J=1,3)
-C      WRITE (LUSTAR) ((SPNDSO(I,J), I=1,NCOR), J=1,NCOR),
-C     &               ((SPNPSO(I,J), I=1,NCOR), J=1,NCOR),
-C     &               ((SPNSD (I,J), I=1,NCOR), J=1,NCOR),
-C     &               ((SPNFC (I,J), I=1,NCOR), J=1,NCOR),
-C     &               ((SPSDFC(I,J), I=1,NCOR), J=1,NCOR)
+C      WRITE (LUSTAR) ((SPNDSO(I,J), I=1,NCOOR), J=1,NCOOR),
+C     &               ((SPNPSO(I,J), I=1,NCOOR), J=1,NCOOR),
+C     &               ((SPNSD (I,J), I=1,NCOOR), J=1,NCOOR),
+C     &               ((SPNFC (I,J), I=1,NCOOR), J=1,NCOOR),
+C     &               ((SPSDFC(I,J), I=1,NCOOR), J=1,NCOOR)
       WRITE(LUSTAR)  (((TOTSPR(I,J,K), I=1,3), J=1,3), K=1,NUCDEP),
      &               (((SPRNUC(I,J,K), I=1,3), J=1,3), K=1,NUCDEP),
-     &               ((ELSPRD(I,J), I=1,3), J=1, NCOR),
-     &               ((ELSPRP(I,J), I=1,3), J=1, NCOR),
+     &               ((ELSPRD(I,J), I=1,3), J=1, NCOOR),
+     &               ((ELSPRP(I,J), I=1,3), J=1, NCOOR),
      &               (((SPRDNL(I,J,K), I=1,3), J=1,3), K=1,NUCDEP)
       WRITE (LUSTAR) ((TOTMGF(I,J), I=1,3), J=1,3),
      &               ((GFANUC(I,J), I=1,3), J=1,3),
@@ -2880,13 +2946,64 @@ C     &               ((SPSDFC(I,J), I=1,NCOR), J=1,NCOR)
      &               ((QDRTOT(I,J), I=1,3), J=1,3)
       WRITE (LUSTAR) (((UCNNQC(I,J,K), I=1,3), J=1,3), K=1,NUCDEP),
      &               (((ELNQC(I,J,K), I=1,3), J=1,3), K=1,NUCDEP)
-      WRITE (LUSTAR) ((AATNUC(I,J), I=1,3), J=1,NCOR),
-     &               ((AATORB(I,J), I=1,3), J=1,NCOR),
-     &               ((AATCI (I,J), I=1,3), J=1,NCOR),
-     &               ((AAT2ND(I,J), I=1,3), J=1,NCOR),
-     &               ((AATTOT(I,J), I=1,3), J=1,NCOR)
+      WRITE (LUSTAR) ((AATNUC(I,J), I=1,3), J=1,NCOOR),
+     &               ((AATORB(I,J), I=1,3), J=1,NCOOR),
+     &               ((AATCI (I,J), I=1,3), J=1,NCOOR),
+     &               ((AAT2ND(I,J), I=1,3), J=1,NCOOR),
+     &               ((AATTOT(I,J), I=1,3), J=1,NCOOR)
       WRITE (LUSTAR) (IDORCT(I), I=1,80*MXCENT)
       WRITE (LUSTAR) ((IDORCI(I,J), I=1,24*(MXCENT + 1)), J=1,2)
+C
+C     save Taylor expansion of energy again
+C
+      CALL NEWLAB('TAY MOL ',LUSTAR,LUPRI)
+      WRITE (LUSTAR) ERGMOL, GRDMOL, HESMOL
+C
+      CALL GPCLOSE(LUSTAR,'KEEP')
+      RETURN
+      END
+C  /* Deck abawrit_taymol */
+      SUBROUTINE ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOR)
+C
+C     Write ABACUS energy Taylor expansion to second order
+C     (May 2014 hjaaj: moved ERGMOL, GRDMOL, HESMOL from common block
+C      in taymol.h to ABACUS.RESTART file to save static memory)
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "nuclei.h"
+C
+C
+      LOGICAL AROUND
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOR), HESMOL(NCOR,NCOR)
+C
+      IF (NCOR .NE. NCOOR) THEN
+         CALL QENTER('ABAWRIT_TAYMOL')
+         CALL QUIT('ERROR in ABAWRIT_TAYMOL: NCOOR input .ne. NCOOR')
+      END IF
+      IF (NCOOR .NE. 3*NUCDEP) THEN
+         CALL QENTER('ABAWRIT_TAYMOL')
+         WRITE(LUPRI,'(//A,I10,A,I10)')
+     &      'ERROR in ABAWRIT_TAYMOL: NCOOR =',NCOOR,' .ne. ',3*NUCDEP
+         CALL QUIT('ERROR in ABAWRIT_TAYMOL: NCOOR .ne. 3*NUCDEP')
+      END IF
+      LUSTAR = -1
+      CALL GPINQ('ABACUS.RESTART','EXIST',AROUND)
+      IF (AROUND) THEN
+         CALL GPOPEN(LUSTAR,'ABACUS.RESTART','OLD',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         REWIND LUSTAR
+         CALL MOLLAB('TAY MOL ',LUSTAR,LUPRI)
+         WRITE (LUSTAR) ERGMOL, GRDMOL, HESMOL
+      ELSE
+         CALL GPOPEN(LUSTAR,'ABACUS.RESTART','NEW',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         CALL NEWLAB('TAY MOL ',LUSTAR,LUPRI)
+         WRITE (LUSTAR) ERGMOL, GRDMOL, HESMOL
+      END IF
 C
       CALL GPCLOSE(LUSTAR,'KEEP')
       RETURN
@@ -3375,7 +3492,7 @@ cmbh end
 #include "symmet.h"
 #include "qm3.h"
 #include "nqcc.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GE. 0) THEN
          CALL TITLER('ABACUS - Nuclear Quadrupole moments','*',116)
@@ -3469,7 +3586,7 @@ C
       DO 100 IATOM = 1, NUCIND
         IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 110 ISYM = 0, MAXOPR
-            IF (IBTAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
+            IF (IAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
               NATOM = NATOM + 1
               NUCCHA = IZATOM(IATOM)
               IF (NUCCHA  .EQ. 0) GOTO 100
@@ -3547,14 +3664,14 @@ C  /* Deck efgpri */
       CHARACTER*33 TEXT
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       NATOM = 1
       DO 10 I = 1, NUCIND
 chj-s-090516 : defined ISUBSI, NSISY(0) for .NOT.QM3 so test is passed
         IF( (ISUBSY(I) .EQ. 0) .AND. (ISUBSI(I) .LE. NSISY(0)) ) THEN
           DO 20 J = 0, MAXOPR
-            IF (IBTAND(ISTBNU(I),J) .EQ. 0) THEN
+            IF (IAND(ISTBNU(I),J) .EQ. 0) THEN
               WRITE (LUPRI,'(/A,3X,A)') TEXT,NAMDEP(NATOM)
               CALL OUTPUT(VMAT(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
               NATOM = NATOM + 1

@@ -50,11 +50,12 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'use IchorEriGabintegralOBSGeneralModGen'
   WRITE(LUMOD2,'(A)')'use IchorEriGabintegralOBSGeneralModSeg'
   DO ILUMOD=2,4
-     WRITE(ILUMOD,'(A)')'use IchorprecisionModule'
-     WRITE(ILUMOD,'(A)')'use IchorCommonModule'
+     WRITE(ILUMOD,'(A)')'use IchorprecisionMod'
+     WRITE(ILUMOD,'(A)')'use IchorCommonMod'
      WRITE(ILUMOD,'(A)')'use IchorMemory'
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000MODGen'
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000MODSeg1Prim'
+     WRITE(ILUMOD,'(A)')'use IchorEriGabintegral'//ARCSTRING//'McMGeneralMod'
   ENDDO
   !Since we need primitivecontractiongenXXX
   WRITE(LUMOD3,'(A)')'use IchorEriCoulombintegralCPUOBSGeneralModGen'
@@ -72,35 +73,40 @@ PROGRAM TUV
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODDSeg'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODCSeg'
 
-  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCGen'
-  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDGen'
-  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCGen'
-  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoDGen'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCGen1'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCGen2'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDGen1'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDGen2'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCGen1'
+  WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoDGen1'
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoAGen'
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoAGen'
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoBGen'
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBGen'
-  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSeg'
-  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoDSeg'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg1'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg2'
+!  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg3'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSeg1'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSeg2'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSeg1'
+  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoDSeg1'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoASeg'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoASeg'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoBSeg'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSeg'
   DO ILUMOD=3,4
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceLHSModAtoB'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceLHSModBtoA'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceRHSModCtoD'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceRHSModDtoC'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_Sphcontract1Mod'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_Sphcontract2Mod'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceLHSModAtoB'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceLHSModBtoA'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceRHSModCtoD'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceRHSModDtoC'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_Sphcontract1Mod'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_Sphcontract2Mod'
      WRITE(ILUMOD,'(A)')'  '
      WRITE(ILUMOD,'(A)')'private   '
   ENDDO
-  WRITE(LUMOD2,'(A)')'public :: IchorGabIntegral_OBS_general,IchorGabIntegral_OBS_general_size  '
-  WRITE(LUMOD3,'(A)')'public :: IchorGabIntegral_OBS_Gen,IchorGabIntegral_OBS_general_sizeGen  '
-  WRITE(LUMOD6,'(A)')'public :: IchorGabIntegral_OBS_Seg,IchorGabIntegral_OBS_general_sizeSeg  '
+  WRITE(LUMOD2,'(A)')'public :: IGI_OBS_general,IGI_OBS_general_size  '
+  WRITE(LUMOD3,'(A)')'public :: IGI_OBS_Gen,IGI_OBS_general_sizeGen  '
+  WRITE(LUMOD6,'(A)')'public :: IGI_OBS_Seg,IGI_OBS_general_sizeSeg  '
 
   DO ILUMOD=2,4
      WRITE(ILUMOD,'(A)')'  '
@@ -108,9 +114,11 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'  '
      WRITE(ILUMOD,'(A)')'  '
   ENDDO
-  WRITE(LUMOD2,'(A)')'  subroutine IchorGabIntegral_OBS_general(nPrimA,nPrimB,&'
+  WRITE(LUMOD2,'(A)')'  subroutine IGI_OBS_general(nPrimA,nPrimB,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContP,pexp,ACC,BCC,&'
+  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&'
   WRITE(LUMOD2,'(A)')'       & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&'
   WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&'
@@ -121,6 +129,8 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: IntPrint,lupri'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nContA,nContB,nContP,nTABFJW1,nTABFJW2'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: AngmomA,AngmomB'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nCartOrbCompP,nOrbCompP,nTUVP,nTUV'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB)'
   WRITE(LUMOD2,'(A)')'    logical,intent(in)     :: Psegmented'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: pexp(nPrimP)'
@@ -150,25 +160,29 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'    ENDIF'
   WRITE(LUMOD2,'(A)')'    '
   WRITE(LUMOD2,'(A)')'   IF(Psegmented)THEN'
-  WRITE(LUMOD2,'(A)')'    call IchorGabIntegral_OBS_Seg(nPrimA,nPrimB,&'
+  WRITE(LUMOD2,'(A)')'    call IGI_OBS_Seg(nPrimA,nPrimB,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContP,pexp,ACC,BCC,&'
+  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&'
   WRITE(LUMOD2,'(A)')'       & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&'
   WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&'
   WRITE(LUMOD2,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
   WRITE(LUMOD2,'(A)')'       & BasisContmaxsize,BasisCont)'
   WRITE(LUMOD2,'(A)')'   ELSE'
-  WRITE(LUMOD2,'(A)')'    call IchorGabIntegral_OBS_Gen(nPrimA,nPrimB,&'
+  WRITE(LUMOD2,'(A)')'    call IGI_OBS_Gen(nPrimA,nPrimB,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContP,pexp,ACC,BCC,&'
+  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&'
   WRITE(LUMOD2,'(A)')'       & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&'
   WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&'
   WRITE(LUMOD2,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
   WRITE(LUMOD2,'(A)')'       & BasisContmaxsize,BasisCont)'
   WRITE(LUMOD2,'(A)')'   ENDIF'
-  WRITE(LUMOD2,'(A)')'  end subroutine IchorGabIntegral_OBS_general'
+  WRITE(LUMOD2,'(A)')'  end subroutine IGI_OBS_general'
   WRITE(LUMOD2,'(A)')'  '
 
   DO ISEG = 1,2
@@ -180,14 +194,16 @@ PROGRAM TUV
      ENDIF
 
      IF(Gen)THEN
-        WRITE(LUMOD3,'(A)')'  subroutine IchorGabIntegral_OBS_Gen(nPrimA,nPrimB,&'
+        WRITE(LUMOD3,'(A)')'  subroutine IGI_OBS_Gen(nPrimA,nPrimB,&'
         ILUMOD = 3
      ELSEIF(Seg)THEN
-        WRITE(LUMOD6,'(A)')'  subroutine IchorGabIntegral_OBS_Seg(nPrimA,nPrimB,&'
+        WRITE(LUMOD6,'(A)')'  subroutine IGI_OBS_Seg(nPrimA,nPrimB,&'
         ILUMOD = LUMOD6
      ENDIF
      WRITE(ILUMOD,'(A)')'       & nPrimP,IntPrint,lupri,&'
      WRITE(ILUMOD,'(A)')'       & nContA,nContB,nContP,pexp,ACC,BCC,&'
+     WRITE(ILUMOD,'(A)')'       & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&'
+     WRITE(ILUMOD,'(A)')'       & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&'
      WRITE(ILUMOD,'(A)')'       & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
      WRITE(ILUMOD,'(A)')'       & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&'
      WRITE(ILUMOD,'(A)')'       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&'
@@ -198,6 +214,8 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: IntPrint,lupri'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nContA,nContB,nContP,nTABFJW1,nTABFJW2'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: AngmomA,AngmomB'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nCartOrbCompP,nOrbCompP,nTUVP,nTUV'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB)'
      WRITE(ILUMOD,'(A)')'    logical,intent(in)     :: Psegmented'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: pexp(nPrimP)'
@@ -232,6 +250,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'!    nlmA = 2*AngmomA+1'
      WRITE(ILUMOD,'(A)')'!    nlmB = 2*AngmomB+1'
      WRITE(ILUMOD,'(A)')'    AngmomID = 10*AngmomA+AngmomB'
+     WRITE(ILUMOD,'(A)')'    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code'
      WRITE(ILUMOD,'(A)')'    SELECT CASE(AngmomID)'
 
      DO AngmomA = 0,2
@@ -324,24 +343,28 @@ PROGRAM TUV
         ENDDO
      ENDDO
      WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
-
-     IF(Gen)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorGabIntegral_OBS_Gen'',-1)'
-     ELSEIF(Seg)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorGabIntegral_OBS_Seg'',-1)'
-     ENDIF
+     WRITE(ILUMOD,'(A)')'        call IGI_'//ARCSTRING//'_McM_general(nPrimA,nPrimB,&'
+     WRITE(ILUMOD,'(A)')'           & nPrimP,IntPrint,lupri,&'
+     WRITE(ILUMOD,'(A)')'           & nContA,nContB,nContP,pexp,ACC,BCC,&'
+     WRITE(ILUMOD,'(A)')'           & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&'
+     WRITE(ILUMOD,'(A)')'           & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&'
+     WRITE(ILUMOD,'(A)')'           & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
+     WRITE(ILUMOD,'(A)')'           & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&'
+     WRITE(ILUMOD,'(A)')'           & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,&'
+     WRITE(ILUMOD,'(A)')'           & Acenter,Bcenter,spherical,&'
+     WRITE(ILUMOD,'(A)')'           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)'
      WRITE(ILUMOD,'(A)')'    END SELECT'
      IF(Gen)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorGabIntegral_OBS_Gen'
+        WRITE(ILUMOD,'(A)')'  end subroutine IGI_OBS_Gen'
      ELSEIF(Seg)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorGabIntegral_OBS_Seg'
+        WRITE(ILUMOD,'(A)')'  end subroutine IGI_OBS_Seg'
      ENDIF
      WRITE(ILUMOD,'(A)')'  '
   ENDDO
 
 
   WRITE(LUMOD2,'(A)')'  '
-  WRITE(LUMOD2,'(A)')'  subroutine IchorGabIntegral_OBS_general_size(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'  subroutine IGI_OBS_general_size(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,&'
   WRITE(LUMOD2,'(A)')'         & nContP,nPrimB,Psegmented)'
   WRITE(LUMOD2,'(A)')'    implicit none'
@@ -351,15 +374,15 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimP,nContP,nPrimB'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: Psegmented'
   WRITE(LUMOD2,'(A)')'    IF(Psegmented)THEN'
-  WRITE(LUMOD2,'(A)')'     call IchorGabIntegral_OBS_general_sizeSeg(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call IGI_OBS_general_sizeSeg(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nContP,nPrimB)'
   WRITE(LUMOD2,'(A)')'    ELSE'
-  WRITE(LUMOD2,'(A)')'     call IchorGabIntegral_OBS_general_sizeGen(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call IGI_OBS_general_sizeGen(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nContP,nPrimB)'
   WRITE(LUMOD2,'(A)')'    ENDIF'
-  WRITE(LUMOD2,'(A)')'  end subroutine IchorGabIntegral_OBS_general_size'
+  WRITE(LUMOD2,'(A)')'  end subroutine IGI_OBS_general_size'
   WRITE(LUMOD2,'(A)')'  '
 
 
@@ -373,10 +396,10 @@ PROGRAM TUV
 
      WRITE(ISEG+2,'(A)')'  '
      IF(Gen)THEN
-        WRITE(LUMOD3,'(A)')'  subroutine IchorGabIntegral_OBS_general_sizeGen(TMParray1maxsize,&'
+        WRITE(LUMOD3,'(A)')'  subroutine IGI_OBS_general_sizeGen(TMParray1maxsize,&'
         ILUMOD = LUMOD3
      ELSEIF(Seg)THEN
-        WRITE(LUMOD6,'(A)')'  subroutine IchorGabIntegral_OBS_general_sizeSeg(TMParray1maxsize,&'
+        WRITE(LUMOD6,'(A)')'  subroutine IGI_OBS_general_sizeSeg(TMParray1maxsize,&'
         ILUMOD = LUMOD6
      ENDIF
      WRITE(ILUMOD,'(A)')'         &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,nContP,nPrimB)'
@@ -388,6 +411,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'    integer :: AngmomID'
      WRITE(ILUMOD,'(A)')'    '
      WRITE(ILUMOD,'(A)')'    AngmomID = 10*AngmomA+AngmomB'
+     WRITE(ILUMOD,'(A)')'    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code'
      WRITE(ILUMOD,'(A)')'    TMParray2maxSize = 1'
      WRITE(ILUMOD,'(A)')'    TMParray1maxSize = 1'
      WRITE(ILUMOD,'(A)')'    BasisContmaxsize = 1'
@@ -419,14 +443,20 @@ PROGRAM TUV
         ENDDO
      ENDDO
      WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
-     WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorGabIntegral_OBS_general_size'',-1)'
+     WRITE(ILUMOD,'(A)')'      call IGI_'//ARCSTRING//'_McM_general_size(TMParray1maxsize,&'
+     WRITE(ILUMOD,'(A)')'          & TMParray2maxsize,AngmomA,AngmomB,&'
+     IF(Gen)THEN
+        WRITE(ILUMOD,'(A)')'          & nPrimP,nContP,nPrimB,.FALSE.)'
+     ELSE !Seg
+        WRITE(ILUMOD,'(A)')'          & nPrimP,nContP,nPrimB,.TRUE.)'
+     ENDIF
      WRITE(ILUMOD,'(A)')'    END SELECT'
 
      IF(Gen)THEN
-        WRITE(LUMOD3,'(A)')'  end subroutine IchorGabIntegral_OBS_general_sizeGen'
+        WRITE(LUMOD3,'(A)')'  end subroutine IGI_OBS_general_sizeGen'
         ILUMOD = LUMOD3
      ELSEIF(Seg)THEN
-        WRITE(LUMOD6,'(A)')'  end subroutine IchorGabIntegral_OBS_general_sizeSeg'
+        WRITE(LUMOD6,'(A)')'  end subroutine IGI_OBS_general_sizeSeg'
         ILUMOD = LUMOD6
      ENDIF
   ENDDO

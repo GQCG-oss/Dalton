@@ -20,6 +20,7 @@ use lattice_type
 use lsmpi_module
 #endif
 private
+public DetectHeapMemoryInit,DetectHeapMemory
 public Set_PrintSCFmemory,MemInGB,stats_globalmem
 public Set_MemModParamPrintMemory, Print_Memory_info
 public MemModParamPrintMemorylupri,MemModParamPrintMemory
@@ -82,6 +83,7 @@ integer,save :: longintbuffersize
 !Monitor memory for integral code and possibly other parts!
 !GLOBAL VARIABLES
 integer(KIND=long),save :: mem_allocated_global, max_mem_used_global         !Count all memory
+integer(KIND=long),save :: mem_allocated_Heap_global, max_mem_used_Heap_global !Count all memory to determine Heap Memory Usage
 integer(KIND=long),save :: mem_allocated_type_matrix, max_mem_used_type_matrix !Count memory, density opt code
 integer(KIND=long),save :: mem_allocated_type_matrix_MPIFULL, max_mem_used_type_matrix_MPIFULL !Count memory across MPI nodes
 integer(KIND=long),save :: mem_allocated_real, max_mem_used_real             !Count 'real' memory, integral code
@@ -136,6 +138,7 @@ logical,save :: mem_InsideOMPsection
 ! max_mem_used will here be an estimate and not the absolute correct value. TK
 !
 integer(KIND=long),save :: mem_tp_allocated_global, max_mem_tp_used_global         !Count all memory
+integer(KIND=long),save :: mem_tp_allocated_Heap_global, max_mem_tp_used_Heap_global !Count all memory to determine Heap Memory Usage
 integer(KIND=long),save :: mem_tp_allocated_type_matrix, max_mem_tp_used_type_matrix !Count memory, density opt code
 integer(KIND=long),save :: mem_tp_allocated_type_matrix_MPIFULL, max_mem_tp_used_type_matrix_MPIFULL
 integer(KIND=long),save :: mem_tp_allocated_real, max_mem_tp_used_real             !Count 'real' memory, integral code
@@ -177,6 +180,7 @@ integer(KIND=long),save :: mem_tp_allocated_FMM, max_mem_tp_used_FMM
 integer(KIND=long),save :: mem_tp_allocated_lstensor, max_mem_tp_used_lstensor
 ! integers used to collect OMP thread mem !NOT THREAD PRIVATE - BUT SHARED
 integer(KIND=long),save :: max_mem_used_global_tmp,max_mem_used_type_matrix_tmp
+integer(KIND=long),save :: max_mem_used_Heap_global_tmp
 integer(KIND=long),save :: max_mem_used_type_matrix_MPIFULL_tmp,max_mem_used_real_tmp
 integer(KIND=long),save :: max_mem_used_complex_tmp
 integer(KIND=long),save :: max_mem_used_mpi_tmp
@@ -190,7 +194,7 @@ integer(KIND=long),save :: max_mem_used_DecAObatchinfo_tmp
 integer(KIND=long),save :: max_mem_used_MYPOINTER_tmp
 integer(KIND=long),save :: max_mem_used_ARRAY2_tmp
 integer(KIND=long),save :: max_mem_used_ARRAY4_tmp
-integer(KIND=long),save :: max_mem_used_ARRAY_tmp
+integer(KIND=long),save :: max_mem_used_tensor_tmp
 integer(KIND=long),save :: max_mem_used_PNOSPACEINFO_tmp
 integer(KIND=long),save :: max_mem_used_MP2DENS_tmp
 integer(KIND=long),save :: max_mem_used_TRACEBACK_tmp
@@ -254,6 +258,7 @@ integer(KIND=long),save :: mem_lvec_datasize
 integer(KIND=long),save :: mem_lattice_cellsize
 #endif
 !$OMP THREADPRIVATE(mem_tp_allocated_global, max_mem_tp_used_global,&
+!$OMP mem_tp_allocated_Heap_global, max_mem_tp_used_Heap_global,&
 !$OMP mem_tp_allocated_type_matrix, max_mem_tp_used_type_matrix,&
 !$OMP mem_tp_allocated_type_matrix_MPIFULL, max_mem_tp_used_type_matrix_MPIFULL,&
 !$OMP mem_tp_allocated_real, max_mem_tp_used_real,&
@@ -329,7 +334,7 @@ INTERFACE mem_alloc
       &             BATCHTOORB_allocate_1dim,MYPOINTER_allocate_1dim, MYPOINTER_allocate_2dim, &
       &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
       &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,PNOSPACEINFO_allocate_1dim, &
-      &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
+      &             OVERLAPT_allocate_1dim,tensor_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
       &             lsmpi_allocate_dV4,lsmpi_allocate_dV8, lsmpi_local_allocate_dV8, &
       &             lsmpi_local_allocate_I8V8,lsmpi_local_allocate_I4V4,&
       &             lsmpi_allocate_d,DECAOBATCHINFO_allocate_1dim,&
@@ -361,7 +366,7 @@ INTERFACE mem_alloc
          &             BATCHTOORB_deallocate_1dim,MYPOINTER_deallocate_1dim,MYPOINTER_deallocate_2dim, &
          &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
          &             TRACEBACK_deallocate_1dim,MP2GRAD_deallocate_1dim, &
-         &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,PNOSPACEINFO_deallocate_1dim,&
+         &             OVERLAPT_deallocate_1dim,tensor_deallocate_1dim,PNOSPACEINFO_deallocate_1dim,&
          &             lsmpi_local_deallocate_I4V,lsmpi_local_deallocate_I8V,&
          &             lsmpi_deallocate_d,DECAOBATCHINFO_deallocate_1dim,&
 #ifdef MOD_UNRELEASED
@@ -457,7 +462,7 @@ INTERFACE mem_alloc
       TYPE(MYPOINTER) :: MYPOINTERitem
       TYPE(ARRAY2) :: ARRAY2item
       TYPE(ARRAY4) :: ARRAY4item
-      TYPE(ARRAY) :: ARRAYitem
+      type(tensor) :: ARRAYitem
       TYPE(PNOSpaceInfo) :: PNOSpaceitem
       TYPE(MP2DENS) :: MP2DENSitem
       TYPE(TRACEBACK) :: TRACEBACKitem
@@ -475,7 +480,7 @@ INTERFACE mem_alloc
       TYPE(lattice_cell_info_t) :: lattice_cellitem
 #endif
       ! Size of buffer handling for long integer buffer
-      longintbuffersize = 78
+      longintbuffersize = 79
 
 #if defined (VAR_XLF) || defined (VAR_G95) || defined (VAR_CRAY)
 #ifdef VAR_LSDEBUG
@@ -586,6 +591,7 @@ INTERFACE mem_alloc
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,max_mem_used_global_tmp)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,max_mem_used_Heap_global_tmp)
       max_mem_used_type_matrix = MAX(max_mem_used_type_matrix,max_mem_used_type_matrix_tmp)
       max_mem_used_type_matrix_MPIFULL = MAX(max_mem_used_type_matrix_MPIFULL,max_mem_used_type_matrix_MPIFULL_tmp)
       max_mem_used_real = MAX(max_mem_used_real,max_mem_used_real_tmp)
@@ -602,7 +608,7 @@ INTERFACE mem_alloc
       max_mem_used_MYPOINTER = MAX(max_mem_used_MYPOINTER,max_mem_used_MYPOINTER_tmp)
       max_mem_used_ARRAY2 = MAX(max_mem_used_ARRAY2,max_mem_used_ARRAY2_tmp)
       max_mem_used_ARRAY4 = MAX(max_mem_used_ARRAY4,max_mem_used_ARRAY4_tmp)
-      max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,max_mem_used_ARRAY_tmp)
+      max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,max_mem_used_tensor_tmp)
       max_mem_used_PNOSpaceInfo = MAX(max_mem_used_PNOSpaceInfo,max_mem_used_PNOSpaceInfo_tmp)
       max_mem_used_MP2DENS = MAX(max_mem_used_MP2DENS,max_mem_used_MP2DENS_tmp)
       max_mem_used_TRACEBACK = MAX(max_mem_used_TRACEBACK,max_mem_used_TRACEBACK_tmp)
@@ -635,6 +641,7 @@ INTERFACE mem_alloc
       implicit none
       mem_InsideOMPsection = .TRUE.
       max_mem_used_global_tmp = 0
+      max_mem_used_Heap_global_tmp = 0
       max_mem_used_type_matrix_tmp = 0
       max_mem_used_type_matrix_MPIFULL_tmp = 0
       max_mem_used_real_tmp = 0
@@ -651,7 +658,7 @@ INTERFACE mem_alloc
       max_mem_used_MYPOINTER_tmp = 0
       max_mem_used_ARRAY2_tmp = 0
       max_mem_used_ARRAY4_tmp = 0
-      max_mem_used_ARRAY_tmp = 0
+      max_mem_used_tensor_tmp = 0
       max_mem_used_PNOSpaceInfo_tmp = 0
       max_mem_used_MP2DENS_tmp = 0
       max_mem_used_TRACEBACK_tmp = 0
@@ -689,6 +696,8 @@ INTERFACE mem_alloc
       mem_InsideOMPsection = .FALSE.
       mem_allocated_global = 0
       max_mem_used_global = 0
+      mem_allocated_Heap_global = 0
+      max_mem_used_Heap_global = 0
       mem_allocated_type_matrix = 0
       max_mem_used_type_matrix = 0
       mem_allocated_type_matrix_MPIFULL = 0
@@ -780,6 +789,8 @@ INTERFACE mem_alloc
 
       mem_tp_allocated_global = 0
       max_mem_tp_used_global = 0
+      mem_tp_allocated_Heap_global = 0
+      max_mem_tp_used_Heap_global = 0
       mem_tp_allocated_type_matrix = 0
       max_mem_tp_used_type_matrix = 0
       mem_tp_allocated_type_matrix_MPIFULL = 0
@@ -880,6 +891,7 @@ INTERFACE mem_alloc
          ENDIF
       ENDIF
       max_mem_used_global_tmp = max_mem_used_global_tmp+max_mem_tp_used_global
+      max_mem_used_Heap_global_tmp = max_mem_used_Heap_global_tmp+max_mem_tp_used_Heap_global
       mem_allocated_type_matrix = mem_allocated_type_matrix+mem_tp_allocated_type_matrix
       max_mem_used_type_matrix_tmp = max_mem_used_type_matrix_tmp+max_mem_tp_used_type_matrix
       mem_allocated_type_matrix_MPIFULL = mem_allocated_type_matrix_MPIFULL+mem_tp_allocated_type_matrix_MPIFULL
@@ -917,7 +929,7 @@ INTERFACE mem_alloc
       max_mem_used_MYPOINTER_tmp = max_mem_used_MYPOINTER_tmp+max_mem_tp_used_MYPOINTER
       max_mem_used_ARRAY2_tmp = max_mem_used_ARRAY2_tmp+max_mem_tp_used_ARRAY2
       max_mem_used_ARRAY4_tmp = max_mem_used_ARRAY4_tmp+max_mem_tp_used_ARRAY4
-      max_mem_used_ARRAY_tmp = max_mem_used_ARRAY_tmp+max_mem_tp_used_ARRAY
+      max_mem_used_tensor_tmp = max_mem_used_tensor_tmp+max_mem_tp_used_ARRAY
       max_mem_used_PNOSpaceInfo_tmp = max_mem_used_PNOSpaceInfo_tmp+max_mem_tp_used_PNOSpaceInfo
       max_mem_used_MP2DENS_tmp = max_mem_used_MP2DENS_tmp+max_mem_tp_used_MP2DENS
       max_mem_used_TRACEBACK_tmp = max_mem_used_TRACEBACK_tmp+max_mem_tp_used_TRACEBACK
@@ -974,6 +986,43 @@ INTERFACE mem_alloc
       call print_mem_alloc(lupri,mem_allocated_global,'TOTAL')
       call print_maxmem(lupri,max_mem_used_global,'TOTAL')
     end subroutine stats_globalmem
+
+   !> \brief Tool to detect Heap Memory usage in part of code
+   !> \author T. Kjaergaard
+   !> \date 2014
+   subroutine DetectHeapMemoryInit()
+      implicit none
+      mem_allocated_Heap_global = 0
+      max_mem_used_Heap_global = 0
+    end subroutine DetectHeapMemoryInit
+
+   !> \brief Tool to detect Heap Memory usage in part of code
+   !> \author T. Kjaergaard
+   !> \date 2014
+   subroutine DetectHeapMemory(mem_allocated,Max_mem_used,String,lupri)
+      implicit none
+      integer(kind=long),intent(inout) :: mem_allocated,Max_mem_used
+      Character*(*),intent(in) ::  STRING
+      integer,intent(in) :: lupri
+      !
+      character(len=100) :: trimstring
+      trimstring = adjustl(string)
+      mem_allocated = mem_allocated_Heap_global
+      Max_mem_used = max_mem_used_Heap_global
+!      if (max_mem_used_Heap_global < 100) then !Divide by 1 to typecast real
+!         WRITE(LUPRI,'(A,A,A,f9.3,A)')'Max Memory Usage in ',TRIM(trimstring),' = ', &
+!              & max_mem_used_Heap_global/1.0E0_realk,' Byte'
+!      else if (max_mem_used_Heap_global < 1000000) then
+!         WRITE(LUPRI,'(A,A,A,f9.3,A)')'Max Memory Usage in ',TRIM(trimstring),' = ', &
+!              & max_mem_used_Heap_global/1000.0E0_realk,' kB'
+!      else if (max_mem_used_Heap_global < 1000000000) then
+!         WRITE(LUPRI,'(A,A,A,f9.3,A)')'Max Memory Usage in ',TRIM(trimstring),' = ', &
+!              & max_mem_used_Heap_global/(1000.0E0_realk*1000.0E0_realk),' MB'
+!      else
+         WRITE(LUPRI,'(A,A,A,f9.3,A)')'Max Memory Usage in ',TRIM(trimstring),' = ', &
+              & max_mem_used_Heap_global/(1000.0E0_realk*1000.0E0_realk*1000.0E0_realk),' GB'
+!      endif
+    end subroutine DetectHeapMemory
 
    !> \brief Print current and max. amount of memory allocated for different data types.
    !> \author S. Host
@@ -1186,7 +1235,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated MPI memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated MPI memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2DENS
@@ -1337,7 +1386,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MP2DENS
@@ -1816,46 +1865,46 @@ subroutine debug_mem_stats(lupri)
      IF (error_size.LT.0) THEN
         write(ERR,'(A8)') ' < zero '
         ELSEIF (error_size.LT.1000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E0," B "
+        write(ERR,'(F5.1,A3)') error_size*1E0_realk," B "
         ELSEIF (error_size.LT.1000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-3," kB"
+        write(ERR,'(F5.1,A3)') error_size*1E-3_realk," kB"
         ELSEIF (error_size.LT.1000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-6," MB"
+        write(ERR,'(F5.1,A3)') error_size*1E-6_realk," MB"
 #ifdef VAR_INT64
         ELSEIF (error_size.LT.1000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+        write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
         ELSEIF (error_size.LT.1000000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-12," TB"
+        write(ERR,'(F5.1,A3)') error_size*1E-12_realk," TB"
         ELSEIF (error_size.LT.1000000000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-15," PB"
+        write(ERR,'(F5.1,A3)') error_size*1E-15_realk," PB"
      ELSE
-        write(ERR,'(F5.1,A3)') error_size*1E-18," EB"
+        write(ERR,'(F5.1,A3)') error_size*1E-18_realk," EB"
      ENDIF
 #else
   ELSE
-     write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+     write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
   ENDIF
 #endif
 
   IF (max_mem_used_global.LT.0) THEN
      write(GLOB,'(A8)') ' < zero '
      ELSEIF (max_mem_used_global.LT.1000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0," B "
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
      ELSEIF (max_mem_used_global.LT.1000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3," kB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
      ELSEIF (max_mem_used_global.LT.1000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6," MB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
 #ifdef VAR_INT64
      ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12," TB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
      ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15," PB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
   ELSE
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18," EB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
   ENDIF
 #else
 ELSE
-   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9," GB"
+   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
 ENDIF
 #endif
 
@@ -4405,40 +4454,40 @@ END SUBROUTINE ARRAY4_deallocate_1dim
 
 !----- ALLOCATE ARRAY POINTERS -----!
 
-SUBROUTINE ARRAY_allocate_1dim(ARRAYITEM,n)
+SUBROUTINE tensor_allocate_1dim(ARRAYITEM,n)
    implicit none
    integer,intent(in) :: n
-   TYPE(ARRAY),pointer    :: ARRAYITEM(:)
+   type(tensor),pointer    :: ARRAYITEM(:)
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(ARRAYITEM)
    ALLOCATE(ARRAYITEM(n),STAT = IERR)
    nsize = size(ARRAYITEM,KIND=long)*mem_ARRAYsize
    IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in ARRAY_allocate_1dim',IERR,n
-      CALL MEMORY_ERROR_QUIT('Error in ARRAY_allocate_1dim',nsize)
+      write(*,*) 'Error in tensor_allocate_1dim',IERR,n
+      CALL MEMORY_ERROR_QUIT('Error in tensor_allocate_1dim',nsize)
    ENDIF
    call mem_allocated_mem_ARRAY(nsize)
-END SUBROUTINE ARRAY_allocate_1dim
+END SUBROUTINE tensor_allocate_1dim
 
-SUBROUTINE ARRAY_deallocate_1dim(ARRAYITEM)
+SUBROUTINE tensor_deallocate_1dim(ARRAYITEM)
    implicit none
-   TYPE(ARRAY),pointer :: ARRAYITEM(:)
+   type(tensor),pointer :: ARRAYITEM(:)
    integer :: IERR
    integer (kind=long) :: nsize
    nsize = size(ARRAYITEM,KIND=long)*mem_ARRAYsize
    call mem_deallocated_mem_ARRAY(nsize)
    if (.not.ASSOCIATED(ARRAYITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ARRAY_deallocate_1dim - memory previously released',nsize)
+      call memory_error_quit('Error in tensor_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(ARRAYITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in ARRAY_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in ARRAY_deallocate_1dim',nsize)
+      write(*,*) 'Error in tensor_deallocate_1dim',IERR
+      CALL MEMORY_ERROR_QUIT('Error in tensor_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(ARRAYITEM)
-END SUBROUTINE ARRAY_deallocate_1dim
+END SUBROUTINE tensor_deallocate_1dim
 
 !----- ALLOCATE MP2DENS POINTERS -----!
 
@@ -5047,6 +5096,7 @@ subroutine mem_add_external_memory(nsize)
    implicit none
    integer (kind=long), intent(in) :: nsize
    max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global+nsize)
+   max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global+nsize)
    if (mem_allocated_global  + nsize < 0) then
       write(*,*) 'Allocated Memory                               =', mem_allocated_global
       write(*,*) 'Added Memory                                   =', nsize
@@ -5072,11 +5122,13 @@ subroutine mem_allocated_mem_real(nsize)
       max_mem_tp_used_real = MAX(max_mem_tp_used_real,mem_tp_allocated_real)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       if (mem_tp_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
          call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
       endif
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    else
       mem_allocated_real = mem_allocated_real + nsize
       if (mem_allocated_real < 0) then
@@ -5087,6 +5139,7 @@ subroutine mem_allocated_mem_real(nsize)
       max_mem_used_real = MAX(max_mem_used_real,mem_allocated_real)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       if (mem_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
          call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
@@ -5104,6 +5157,7 @@ subroutine mem_allocated_mem_real(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    endif
 end subroutine mem_allocated_mem_real
 
@@ -5119,6 +5173,7 @@ subroutine mem_deallocated_mem_real(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_real - something wrong with deallocation!',nsize)
@@ -5131,6 +5186,7 @@ subroutine mem_deallocated_mem_real(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
          call memory_error_quit('Error in mem_deallocated_mem_real - something wrong with deallocation!',nsize)
@@ -5152,11 +5208,13 @@ subroutine mem_allocated_mem_mpi(nsize)
       max_mem_tp_used_mpi = MAX(max_mem_tp_used_mpi,mem_tp_allocated_mpi)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       if (mem_tp_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
          call memory_error_quit('Error in mem_tp_allocated_mem_tp_mpi - probably integer overflow!',nsize)
       endif
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    else
       mem_allocated_mpi = mem_allocated_mpi + nsize
       if (mem_allocated_mpi < 0) then
@@ -5167,6 +5225,7 @@ subroutine mem_allocated_mem_mpi(nsize)
       max_mem_used_mpi = MAX(max_mem_used_mpi,mem_allocated_mpi)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       if (mem_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
          call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!',nsize)
@@ -5185,6 +5244,7 @@ subroutine mem_allocated_mem_mpi(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    endif
 end subroutine mem_allocated_mem_mpi
 
@@ -5200,6 +5260,7 @@ subroutine mem_deallocated_mem_mpi(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_mpi - something wrong with deallocation!',nsize)
@@ -5212,6 +5273,7 @@ subroutine mem_deallocated_mem_mpi(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
          call memory_error_quit('Error in mem_deallocated_mem_mpi - something wrong with deallocation!',nsize)
@@ -5234,11 +5296,13 @@ subroutine mem_allocated_mem_complex(nsize)
       max_mem_tp_used_complex = MAX(max_mem_tp_used_complex,mem_tp_allocated_complex)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       if (mem_tp_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
          call memory_error_quit('Error in mem_tp_allocated_mem_tp_complex - probably integer overflow!',nsize)
       endif
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    else
       mem_allocated_complex = mem_allocated_complex + nsize
       if (mem_allocated_complex < 0) then
@@ -5249,6 +5313,7 @@ subroutine mem_allocated_mem_complex(nsize)
       max_mem_used_Complex = MAX(max_mem_used_Complex,mem_allocated_Complex)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       if (mem_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
          call memory_error_quit('Error in mem_allocated_mem_Complex - probably integer overflow!',nsize)
@@ -5266,6 +5331,7 @@ subroutine mem_allocated_mem_complex(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    endif
 end subroutine mem_allocated_mem_complex
 
@@ -5281,6 +5347,7 @@ subroutine mem_deallocated_mem_complex(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_complex - something wrong with deallocation!',nsize)
@@ -5293,6 +5360,7 @@ subroutine mem_deallocated_mem_complex(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
          call memory_error_quit('Error in mem_deallocated_mem_complex - something wrong with deallocation!',nsize)
@@ -5310,12 +5378,15 @@ subroutine mem_allocated_mem_integer(nsize)
       max_mem_tp_used_integer = MAX(max_mem_tp_used_integer,mem_tp_allocated_integer)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_integer = mem_allocated_integer + nsize
       max_mem_used_integer = MAX(max_mem_used_integer,mem_allocated_integer)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5329,6 +5400,7 @@ subroutine mem_allocated_mem_integer(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_integer
 
@@ -5348,6 +5420,7 @@ subroutine mem_deallocated_mem_integer(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
 #ifdef VAR_OMP
          print*,'Global: OMP THREAD ID:',OMP_GET_THREAD_NUM()
@@ -5361,6 +5434,7 @@ subroutine mem_deallocated_mem_integer(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_integer2 - probably integer overflow!',nsize)
       endif
@@ -5375,12 +5449,15 @@ subroutine mem_allocated_mem_character(nsize)
       max_mem_tp_used_character = MAX(max_mem_tp_used_character,mem_tp_allocated_character)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_character = mem_allocated_character + nsize
       max_mem_used_character = MAX(max_mem_used_character,mem_allocated_character)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5394,6 +5471,7 @@ subroutine mem_allocated_mem_character(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_character
 
@@ -5407,6 +5485,7 @@ subroutine mem_deallocated_mem_character(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_character - probably integer overflow!',nsize)
       endif
@@ -5417,6 +5496,7 @@ subroutine mem_deallocated_mem_character(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_character - probably integer overflow!',nsize)
       endif
@@ -5431,12 +5511,15 @@ subroutine mem_allocated_mem_logical(nsize)
       max_mem_tp_used_logical = MAX(max_mem_tp_used_logical,mem_tp_allocated_logical)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_logical = mem_allocated_logical + nsize
       max_mem_used_logical = MAX(max_mem_used_logical,mem_allocated_logical)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5450,6 +5533,7 @@ subroutine mem_allocated_mem_logical(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_logical
 
@@ -5463,6 +5547,7 @@ subroutine mem_deallocated_mem_logical(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
       endif
@@ -5473,6 +5558,7 @@ subroutine mem_deallocated_mem_logical(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
       endif
@@ -5487,12 +5573,15 @@ subroutine mem_allocated_mem_AOBATCH(nsize)
       max_mem_tp_used_AOBATCH = MAX(max_mem_tp_used_AOBATCH,mem_tp_allocated_AOBATCH)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_AOBATCH = mem_allocated_AOBATCH + nsize
       max_mem_used_AOBATCH = MAX(max_mem_used_AOBATCH,mem_allocated_AOBATCH)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5506,6 +5595,7 @@ subroutine mem_allocated_mem_AOBATCH(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_AOBATCH
 
@@ -5519,6 +5609,7 @@ subroutine mem_deallocated_mem_AOBATCH(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_AOBATCH - probably integer overflow!',nsize)
       endif
@@ -5529,6 +5620,7 @@ subroutine mem_deallocated_mem_AOBATCH(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_AOBATCH - probably integer overflow!',nsize)
       endif
@@ -5543,12 +5635,15 @@ subroutine mem_allocated_mem_OVERLAPT(nsize)
       max_mem_tp_used_OVERLAPT = MAX(max_mem_tp_used_OVERLAPT,mem_tp_allocated_OVERLAPT)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_OVERLAPT = mem_allocated_OVERLAPT + nsize
       max_mem_used_OVERLAPT = MAX(max_mem_used_OVERLAPT,mem_allocated_OVERLAPT)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5562,6 +5657,7 @@ subroutine mem_allocated_mem_OVERLAPT(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_OVERLAPT
 
@@ -5575,6 +5671,7 @@ subroutine mem_deallocated_mem_OVERLAPT(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_OVERLAPT - probably integer overflow!',nsize)
       endif
@@ -5585,6 +5682,7 @@ subroutine mem_deallocated_mem_OVERLAPT(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_OVERLAPT - probably integer overflow!',nsize)
       endif
@@ -5599,12 +5697,15 @@ subroutine mem_allocated_mem_DECORBITAL(nsize)
       max_mem_tp_used_DECORBITAL = MAX(max_mem_tp_used_DECORBITAL,mem_tp_allocated_DECORBITAL)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_DECORBITAL = mem_allocated_DECORBITAL + nsize
       max_mem_used_DECORBITAL = MAX(max_mem_used_DECORBITAL,mem_allocated_DECORBITAL)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5618,6 +5719,7 @@ subroutine mem_allocated_mem_DECORBITAL(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_DECORBITAL
 
@@ -5631,6 +5733,7 @@ subroutine mem_deallocated_mem_DECORBITAL(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECORBITAL - probably integer overflow!',nsize)
       endif
@@ -5640,6 +5743,7 @@ subroutine mem_deallocated_mem_DECORBITAL(nsize)
          call memory_error_quit('Error in mem_deallocated_mem_DECORBITAL - probably integer overflow!',nsize)
       endif
       !Count also the total memory:
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       mem_allocated_global = mem_allocated_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_DECORBITAL - probably integer overflow!',nsize)
@@ -5659,12 +5763,15 @@ subroutine mem_allocated_mem_DECFRAG(nsize)
       max_mem_tp_used_DECFRAG = MAX(max_mem_tp_used_DECFRAG,mem_tp_allocated_DECFRAG)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_DECFRAG = mem_allocated_DECFRAG + nsize
       max_mem_used_DECFRAG = MAX(max_mem_used_DECFRAG,mem_allocated_DECFRAG)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5678,6 +5785,7 @@ subroutine mem_allocated_mem_DECFRAG(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_DECFRAG
 
@@ -5691,6 +5799,7 @@ subroutine mem_deallocated_mem_DECFRAG(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECFRAG - probably integer overflow!',nsize)
       endif
@@ -5701,6 +5810,7 @@ subroutine mem_deallocated_mem_DECFRAG(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_DECFRAG - probably integer overflow!',nsize)
       endif
@@ -5716,12 +5826,15 @@ subroutine mem_allocated_mem_BATCHTOORB(nsize)
       max_mem_tp_used_BATCHTOORB = MAX(max_mem_tp_used_BATCHTOORB,mem_tp_allocated_BATCHTOORB)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_BATCHTOORB = mem_allocated_BATCHTOORB + nsize
       max_mem_used_BATCHTOORB = MAX(max_mem_used_BATCHTOORB,mem_allocated_BATCHTOORB)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5736,6 +5849,7 @@ subroutine mem_allocated_mem_BATCHTOORB(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_BATCHTOORB
 
@@ -5749,6 +5863,7 @@ subroutine mem_deallocated_mem_BATCHTOORB(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_BATCHTOORB - probably integer overflow!',nsize)
       endif
@@ -5759,6 +5874,7 @@ subroutine mem_deallocated_mem_BATCHTOORB(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_BATCHTOORB - probably integer overflow!',nsize)
       endif
@@ -5773,12 +5889,15 @@ subroutine mem_allocated_mem_DECAOBATCHINFO(nsize)
       max_mem_tp_used_DECAOBATCHINFO = MAX(max_mem_tp_used_DECAOBATCHINFO,mem_tp_allocated_DECAOBATCHINFO)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_DECAOBATCHINFO = mem_allocated_DECAOBATCHINFO + nsize
       max_mem_used_DECAOBATCHINFO = MAX(max_mem_used_DECAOBATCHINFO,mem_allocated_DECAOBATCHINFO)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5793,6 +5912,7 @@ subroutine mem_allocated_mem_DECAOBATCHINFO(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_DECAOBATCHINFO
 
@@ -5806,6 +5926,7 @@ subroutine mem_deallocated_mem_DECAOBATCHINFO(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_DECAOBATCHINFO - probably integer overflow!',nsize)
       endif
@@ -5816,6 +5937,7 @@ subroutine mem_deallocated_mem_DECAOBATCHINFO(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_DECAOBATCHINFO - probably integer overflow!',nsize)
       endif
@@ -5831,12 +5953,15 @@ subroutine mem_allocated_mem_MYPOINTER(nsize)
       max_mem_tp_used_MYPOINTER = MAX(max_mem_tp_used_MYPOINTER,mem_tp_allocated_MYPOINTER)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_MYPOINTER = mem_allocated_MYPOINTER + nsize
       max_mem_used_MYPOINTER = MAX(max_mem_used_MYPOINTER,mem_allocated_MYPOINTER)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5850,6 +5975,7 @@ subroutine mem_allocated_mem_MYPOINTER(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_MYPOINTER
 
@@ -5863,6 +5989,7 @@ subroutine mem_deallocated_mem_MYPOINTER(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MYPOINTER - probably integer overflow!',nsize)
       endif
@@ -5873,6 +6000,7 @@ subroutine mem_deallocated_mem_MYPOINTER(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_MYPOINTER - probably integer overflow!',nsize)
       endif
@@ -5888,12 +6016,15 @@ subroutine mem_allocated_mem_ARRAY2(nsize)
       max_mem_tp_used_ARRAY2 = MAX(max_mem_tp_used_ARRAY2,mem_tp_allocated_ARRAY2)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_ARRAY2 = mem_allocated_ARRAY2 + nsize
       max_mem_used_ARRAY2 = MAX(max_mem_used_ARRAY2,mem_allocated_ARRAY2)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5906,6 +6037,7 @@ subroutine mem_allocated_mem_ARRAY2(nsize)
             ENDIF
          ENDIF
       ENDIF
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
    ENDIF
 end subroutine mem_allocated_mem_ARRAY2
@@ -5920,6 +6052,7 @@ subroutine mem_deallocated_mem_ARRAY2(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY2 - probably integer overflow!',nsize)
       endif
@@ -5930,6 +6063,7 @@ subroutine mem_deallocated_mem_ARRAY2(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_ARRAY2 - probably integer overflow!',nsize)
       endif
@@ -5945,12 +6079,15 @@ subroutine mem_allocated_mem_ARRAY4(nsize)
       max_mem_tp_used_ARRAY4 = MAX(max_mem_tp_used_ARRAY4,mem_tp_allocated_ARRAY4)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_ARRAY4 = mem_allocated_ARRAY4 + nsize
       max_mem_used_ARRAY4 = MAX(max_mem_used_ARRAY4,mem_allocated_ARRAY4)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -5964,6 +6101,7 @@ subroutine mem_allocated_mem_ARRAY4(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_ARRAY4
 
@@ -5977,6 +6115,7 @@ subroutine mem_deallocated_mem_ARRAY4(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY4 - probably integer overflow!',nsize)
       endif
@@ -5987,6 +6126,7 @@ subroutine mem_deallocated_mem_ARRAY4(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_ARRAY4 - probably integer overflow!',nsize)
       endif
@@ -6001,12 +6141,15 @@ subroutine mem_allocated_mem_ARRAY(nsize)
       max_mem_tp_used_ARRAY = MAX(max_mem_tp_used_ARRAY,mem_tp_allocated_ARRAY)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_ARRAY = mem_allocated_ARRAY + nsize
       max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,mem_allocated_ARRAY)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6020,6 +6163,7 @@ subroutine mem_allocated_mem_ARRAY(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_ARRAY
 
@@ -6033,6 +6177,7 @@ subroutine mem_deallocated_mem_ARRAY(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY - probably integer overflow!',nsize)
       endif
@@ -6043,6 +6188,7 @@ subroutine mem_deallocated_mem_ARRAY(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_ARRAY - probably integer overflow!',nsize)
       endif
@@ -6057,13 +6203,17 @@ end subroutine mem_deallocated_mem_ARRAY
         max_mem_tp_used_PNOSpaceInfo = MAX(max_mem_tp_used_PNOSpaceInfo,mem_tp_allocated_PNOSpaceInfo)
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+        mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+        max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
      ELSE
         mem_allocated_PNOSpaceInfo = mem_allocated_PNOSpaceInfo + nsize
         max_mem_used_PNOSpaceInfo = MAX(max_mem_used_PNOSpaceInfo,mem_allocated_PNOSpaceInfo)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
+        mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+        max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
      ENDIF
    end subroutine mem_allocated_mem_PNOSpaceInfo
 
@@ -6077,6 +6227,7 @@ end subroutine mem_deallocated_mem_ARRAY
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
+        mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
         if (mem_tp_allocated_global < 0) then
            call memory_error_quit('Error in mem_tp_deallocated_mem_tp_PNOSpaceInfo - probably integer overflow!',nsize)
         endif
@@ -6087,6 +6238,7 @@ end subroutine mem_deallocated_mem_ARRAY
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
+        mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
         if (mem_allocated_global < 0) then
            call memory_error_quit('Error in mem_deallocated_mem_PNOSpaceInfo - probably integer overflow!',nsize)
         endif
@@ -6100,12 +6252,15 @@ subroutine mem_allocated_mem_MP2DENS(nsize)
       max_mem_tp_used_MP2DENS = MAX(max_mem_tp_used_MP2DENS,mem_tp_allocated_MP2DENS)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_MP2DENS = mem_allocated_MP2DENS + nsize
       max_mem_used_MP2DENS = MAX(max_mem_used_MP2DENS,mem_allocated_MP2DENS)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6119,6 +6274,7 @@ subroutine mem_allocated_mem_MP2DENS(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_MP2DENS
 
@@ -6132,6 +6288,7 @@ subroutine mem_deallocated_mem_MP2DENS(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2DENS - probably integer overflow!',nsize)
       endif
@@ -6142,6 +6299,7 @@ subroutine mem_deallocated_mem_MP2DENS(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_MP2DENS - probably integer overflow!',nsize)
       endif
@@ -6158,12 +6316,15 @@ subroutine mem_allocated_mem_TRACEBACK(nsize)
       max_mem_tp_used_TRACEBACK = MAX(max_mem_tp_used_TRACEBACK,mem_tp_allocated_TRACEBACK)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_TRACEBACK = mem_allocated_TRACEBACK + nsize
       max_mem_used_TRACEBACK = MAX(max_mem_used_TRACEBACK,mem_allocated_TRACEBACK)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6177,6 +6338,7 @@ subroutine mem_allocated_mem_TRACEBACK(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_TRACEBACK
 
@@ -6190,6 +6352,7 @@ subroutine mem_deallocated_mem_TRACEBACK(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_TRACEBACK - probably integer overflow!',nsize)
       endif
@@ -6200,6 +6363,7 @@ subroutine mem_deallocated_mem_TRACEBACK(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_TRACEBACK - probably integer overflow!',nsize)
       endif
@@ -6215,12 +6379,15 @@ subroutine mem_allocated_mem_MP2GRAD(nsize)
       max_mem_tp_used_MP2GRAD = MAX(max_mem_tp_used_MP2GRAD,mem_tp_allocated_MP2GRAD)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_MP2GRAD = mem_allocated_MP2GRAD + nsize
       max_mem_used_MP2GRAD = MAX(max_mem_used_MP2GRAD,mem_allocated_MP2GRAD)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6235,6 +6402,7 @@ subroutine mem_allocated_mem_MP2GRAD(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_MP2GRAD
 
@@ -6248,6 +6416,7 @@ subroutine mem_deallocated_mem_MP2GRAD(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2GRAD - probably integer overflow!',nsize)
       endif
@@ -6258,6 +6427,7 @@ subroutine mem_deallocated_mem_MP2GRAD(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_MP2GRAD - probably integer overflow!',nsize)
       endif
@@ -6274,12 +6444,15 @@ subroutine mem_allocated_mem_ODBATCH(nsize)
       max_mem_tp_used_ODBATCH = MAX(max_mem_tp_used_ODBATCH,mem_tp_allocated_ODBATCH)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_ODBATCH = mem_allocated_ODBATCH + nsize
       max_mem_used_ODBATCH = MAX(max_mem_used_ODBATCH,mem_allocated_ODBATCH)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6293,6 +6466,7 @@ subroutine mem_allocated_mem_ODBATCH(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_ODBATCH
 
@@ -6306,6 +6480,7 @@ subroutine mem_deallocated_mem_ODBATCH(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODBATCH - probably integer overflow!',nsize)
       endif
@@ -6316,6 +6491,7 @@ subroutine mem_deallocated_mem_ODBATCH(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_ODBATCH - probably integer overflow!',nsize)
       endif
@@ -6330,12 +6506,15 @@ subroutine mem_allocated_mem_LSAOTENSOR(nsize)
       max_mem_tp_used_LSAOTENSOR = MAX(max_mem_tp_used_LSAOTENSOR,mem_tp_allocated_LSAOTENSOR)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_LSAOTENSOR = mem_allocated_LSAOTENSOR + nsize
       max_mem_used_LSAOTENSOR = MAX(max_mem_used_LSAOTENSOR,mem_allocated_LSAOTENSOR)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6349,6 +6528,7 @@ subroutine mem_allocated_mem_LSAOTENSOR(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_LSAOTENSOR
 
@@ -6362,6 +6542,7 @@ subroutine mem_deallocated_mem_LSAOTENSOR(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSAOTENSOR - probably integer overflow!',nsize)
       endif
@@ -6372,6 +6553,7 @@ subroutine mem_deallocated_mem_LSAOTENSOR(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_LSAOTENSOR - probably integer overflow!',nsize)
       endif
@@ -6386,12 +6568,15 @@ subroutine mem_allocated_mem_SLSAOTENSOR(nsize)
       max_mem_tp_used_SLSAOTENSOR = MAX(max_mem_tp_used_SLSAOTENSOR,mem_tp_allocated_SLSAOTENSOR)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_SLSAOTENSOR = mem_allocated_SLSAOTENSOR + nsize
       max_mem_used_SLSAOTENSOR = MAX(max_mem_used_SLSAOTENSOR,mem_allocated_SLSAOTENSOR)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6405,6 +6590,7 @@ subroutine mem_allocated_mem_SLSAOTENSOR(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_SLSAOTENSOR
 
@@ -6418,6 +6604,7 @@ subroutine mem_deallocated_mem_SLSAOTENSOR(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_SLSAOTENSOR - probably integer overflow!',nsize)
       endif
@@ -6428,6 +6615,7 @@ subroutine mem_deallocated_mem_SLSAOTENSOR(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_SLSAOTENSOR - probably integer overflow!',nsize)
       endif
@@ -6442,12 +6630,15 @@ subroutine mem_allocated_mem_GLOBALLSAOTENSOR(nsize)
       max_mem_tp_used_GLOBALLSAOTENSOR = MAX(max_mem_tp_used_GLOBALLSAOTENSOR,mem_tp_allocated_GLOBALLSAOTENSOR)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_GLOBALLSAOTENSOR = mem_allocated_GLOBALLSAOTENSOR + nsize
       max_mem_used_GLOBALLSAOTENSOR = MAX(max_mem_used_GLOBALLSAOTENSOR,mem_allocated_GLOBALLSAOTENSOR)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6461,6 +6652,7 @@ subroutine mem_allocated_mem_GLOBALLSAOTENSOR(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_GLOBALLSAOTENSOR
 
@@ -6474,6 +6666,7 @@ subroutine mem_deallocated_mem_GLOBALLSAOTENSOR(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_GLOBALLSAOTENSOR - probably integer overflow!',nsize)
       endif
@@ -6484,6 +6677,7 @@ subroutine mem_deallocated_mem_GLOBALLSAOTENSOR(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_GLOBALLSAOTENSOR - probably integer overflow!',nsize)
       endif
@@ -6498,12 +6692,15 @@ subroutine mem_allocated_mem_ATOMTYPEITEM(nsize)
       max_mem_tp_used_ATOMTYPEITEM = MAX(max_mem_tp_used_ATOMTYPEITEM,mem_tp_allocated_ATOMTYPEITEM)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_ATOMTYPEITEM = mem_allocated_ATOMTYPEITEM + nsize
       max_mem_used_ATOMTYPEITEM = MAX(max_mem_used_ATOMTYPEITEM,mem_allocated_ATOMTYPEITEM)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6517,6 +6714,7 @@ subroutine mem_allocated_mem_ATOMTYPEITEM(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_ATOMTYPEITEM
 
@@ -6530,6 +6728,7 @@ subroutine mem_deallocated_mem_ATOMTYPEITEM(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMTYPEITEM - probably integer overflow!',nsize)
       endif
@@ -6540,6 +6739,7 @@ subroutine mem_deallocated_mem_ATOMTYPEITEM(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_ATOMTYPEITEM - probably integer overflow!',nsize)
       endif
@@ -6554,12 +6754,15 @@ subroutine mem_allocated_mem_ATOMITEM(nsize)
       max_mem_tp_used_ATOMITEM = MAX(max_mem_tp_used_ATOMITEM,mem_tp_allocated_ATOMITEM)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_ATOMITEM = mem_allocated_ATOMITEM + nsize
       max_mem_used_ATOMITEM = MAX(max_mem_used_ATOMITEM,mem_allocated_ATOMITEM)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6573,6 +6776,7 @@ subroutine mem_allocated_mem_ATOMITEM(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_ATOMITEM
 
@@ -6586,6 +6790,7 @@ subroutine mem_deallocated_mem_ATOMITEM(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMITEM - probably integer overflow!',nsize)
       endif
@@ -6596,6 +6801,7 @@ subroutine mem_deallocated_mem_ATOMITEM(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_ATOMITEM - probably integer overflow!',nsize)
       endif
@@ -6610,12 +6816,15 @@ subroutine mem_allocated_mem_LSMATRIX(nsize)
       max_mem_tp_used_LSMATRIX = MAX(max_mem_tp_used_LSMATRIX,mem_tp_allocated_LSMATRIX)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_LSMATRIX = mem_allocated_LSMATRIX + nsize
       max_mem_used_LSMATRIX = MAX(max_mem_used_LSMATRIX,mem_allocated_LSMATRIX)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       IF(MemModParamPrintMemory)THEN
          IF(mem_allocated_global.GT.max_mem_used_global)THEN              
             IF(max_mem_used_global.GT.PrintMemoryLowerLimit)THEN
@@ -6629,6 +6838,7 @@ subroutine mem_allocated_mem_LSMATRIX(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_LSMATRIX
 
@@ -6642,6 +6852,7 @@ subroutine mem_deallocated_mem_LSMATRIX(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSMATRIX - probably integer overflow!',nsize)
       endif
@@ -6652,6 +6863,7 @@ subroutine mem_deallocated_mem_LSMATRIX(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_LSMATRIX - probably integer overflow!',nsize)
       endif
@@ -6856,11 +7068,13 @@ subroutine mem_allocated_mem_FMM(nsize,global)
       IF(global)THEN
          !Count also the total memory:
          mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+         mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
          if (mem_tp_allocated_global < 0) then
             write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
             call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
          endif
          max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+         max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
       ENDIF
    ELSE
       mem_allocated_FMM = mem_allocated_FMM + nsize
@@ -6868,6 +7082,7 @@ subroutine mem_allocated_mem_FMM(nsize,global)
       IF(global)THEN
          !Count also the total memory:
          mem_allocated_global = mem_allocated_global  + nsize
+         mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
          if (mem_allocated_global < 0) then
             write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
             call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
@@ -6885,6 +7100,7 @@ subroutine mem_allocated_mem_FMM(nsize,global)
             ENDIF
          ENDIF
          max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+         max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
       ENDIF
    ENDIF
 end subroutine mem_allocated_mem_FMM
@@ -6901,6 +7117,7 @@ subroutine mem_deallocated_mem_FMM(nsize,global)
       IF(global)THEN
          !Count also the total memory:
          mem_tp_allocated_global = mem_tp_allocated_global - nsize
+         mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
          if (mem_tp_allocated_global < 0) then
             call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
          endif
@@ -6913,6 +7130,7 @@ subroutine mem_deallocated_mem_FMM(nsize,global)
       IF(global)THEN
          !Count also the total memory:
          mem_allocated_global = mem_allocated_global - nsize
+         mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
          if (mem_allocated_global < 0) then
             call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
          endif
@@ -6927,28 +7145,8 @@ subroutine mem_allocated_mem_lstensor(nsize)
    IF(mem_InsideOMPsection)THEN!we add to thread private variables
       mem_tp_allocated_lstensor = mem_tp_allocated_lstensor + nsize
       max_mem_tp_used_lstensor = MAX(max_mem_tp_used_lstensor,mem_tp_allocated_lstensor)
-      !Count also the total memory:
-      mem_tp_allocated_global = mem_tp_allocated_global  + nsize
-      if (mem_tp_allocated_global < 0) then
-         write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-         call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
-      endif
-      max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
    ELSE
-      !        CALL print_maxmem(6,nsize,'add LStensor')
       mem_allocated_lstensor = mem_allocated_lstensor + nsize
-      IF(MemModParamPrintMemory)THEN
-         !           IF(mem_allocated_lstensor.GT.max_mem_used_lstensor)THEN              
-         !              IF(max_mem_used_lstensor.GT.PrintMemoryLowerLimit)THEN
-         !                 WRITE(MemModParamPrintMemorylupri,'(A)')&
-         !                      & 'Increased LStensor Memory Usage'
-         !                 call print_mem_alloc(MemModParamPrintMemorylupri,mem_allocated_lstensor,'LSTENSOR')
-         !                 WRITE(*,'(A)')'Increased LStensor Memory Usage'
-         !                 call print_mem_alloc(6,mem_allocated_lstensor,'TOTAL')
-         !                 call LsTraceBack('Increased Maximum Memory Usage in mem_allocated_mem_LSTENSOR')
-         !              ENDIF
-         !           ENDIF
-      ENDIF
       max_mem_used_lstensor = MAX(max_mem_used_lstensor,mem_allocated_lstensor)
    ENDIF
 end subroutine mem_allocated_mem_lstensor
@@ -6979,16 +7177,19 @@ subroutine mem_allocated_mem_type_matrix(nsize,nsizeFULL)
       max_mem_tp_used_type_matrix = MAX(max_mem_tp_used_type_matrix,mem_tp_allocated_type_matrix)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       if (mem_tp_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
          call memory_error_quit('Error in mem_tp_allocated_mem_type_matrix - probably integer overflow!',nsize)
       endif
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       mem_allocated_type_matrix = mem_allocated_type_matrix + nsize
       max_mem_used_type_matrix = MAX(max_mem_used_type_matrix,mem_allocated_type_matrix)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       if (mem_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
          call memory_error_quit('Error in mem_allocated_mem_type_matrix - probably integer overflow!',nsize)
@@ -7006,6 +7207,7 @@ subroutine mem_allocated_mem_type_matrix(nsize,nsizeFULL)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
    IF(present(nsizeFULL))THEN
 #ifdef VAR_SCALAPACK
@@ -7031,6 +7233,7 @@ subroutine mem_deallocated_mem_type_matrix(nsize,nsizeFULL)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_type_matrix - probably integer overflow!',nsize)
       endif
@@ -7041,6 +7244,7 @@ subroutine mem_deallocated_mem_type_matrix(nsize,nsizeFULL)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
       endif
@@ -7067,17 +7271,20 @@ subroutine mem_allocated_mem_lvec_data(nsize)
       max_mem_tp_used_lvec_data = MAX(max_mem_tp_used_lvec_data,mem_tp_allocated_lvec_data)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       if (mem_tp_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
          call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
       endif
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       !        CALL print_maxmem(6,nsize,'add Lvec_data')
       mem_allocated_lvec_data = mem_allocated_lvec_data + nsize
       max_mem_used_lvec_data = MAX(max_mem_used_lvec_data,mem_allocated_lvec_data)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       if (mem_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
          call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
@@ -7095,6 +7302,7 @@ subroutine mem_allocated_mem_lvec_data(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_lvec_data
 
@@ -7108,6 +7316,7 @@ subroutine mem_deallocated_mem_lvec_data(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
       endif
@@ -7118,6 +7327,7 @@ subroutine mem_deallocated_mem_lvec_data(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
       endif
@@ -7132,17 +7342,20 @@ subroutine mem_allocated_mem_lattice_cell(nsize)
       max_mem_tp_used_lattice_cell = MAX(max_mem_tp_used_lattice_cell,mem_tp_allocated_lattice_cell)
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global  + nsize
       if (mem_tp_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
          call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',nsize)
       endif
       max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+      max_mem_tp_used_Heap_global = MAX(max_mem_tp_used_Heap_global,mem_tp_allocated_Heap_global)
    ELSE
       !        CALL print_maxmem(6,nsize,'add Lattice_cell')
       mem_allocated_lattice_cell = mem_allocated_lattice_cell + nsize
       max_mem_used_lattice_cell = MAX(max_mem_used_lattice_cell,mem_allocated_lattice_cell)
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global  + nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global  + nsize
       if (mem_allocated_global < 0) then
          write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
          call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',nsize)
@@ -7160,6 +7373,7 @@ subroutine mem_allocated_mem_lattice_cell(nsize)
          ENDIF
       ENDIF
       max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+      max_mem_used_Heap_global = MAX(max_mem_used_Heap_global,mem_allocated_Heap_global)
    ENDIF
 end subroutine mem_allocated_mem_lattice_cell
 
@@ -7173,6 +7387,7 @@ subroutine mem_deallocated_mem_lattice_cell(nsize)
       endif
       !Count also the total memory:
       mem_tp_allocated_global = mem_tp_allocated_global - nsize
+      mem_tp_allocated_Heap_global = mem_tp_allocated_Heap_global - nsize
       if (mem_tp_allocated_global < 0) then
          call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',nsize)
       endif
@@ -7183,6 +7398,7 @@ subroutine mem_deallocated_mem_lattice_cell(nsize)
       endif
       !Count also the total memory:
       mem_allocated_global = mem_allocated_global - nsize
+      mem_allocated_Heap_global = mem_allocated_Heap_global - nsize
       if (mem_allocated_global < 0) then
          call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',nsize)
       endif
@@ -7201,56 +7417,59 @@ end subroutine mem_deallocated_mem_lattice_cell
 !> 1 GB be default.
 !> \author Kasper Kristensen, modified by Patrick Ettenhuber
 !> \date January 2012
-subroutine get_available_memory(lupri,MemoryAvailable,memfound)
+subroutine get_available_memory(lupri,MemoryAvailable,memfound,suppress_print)
    !> Logical unit number for output file
    integer,intent(in) :: lupri
    !> Available memory measured in GB (using 1GB = 1000000000 bytes)
    real(realk),intent(inout) :: MemoryAvailable
    !> Was the memory information found?
    logical,intent(inout) :: MemFound
+   logical,intent(in),optional :: suppress_print
    !> check for /proc/meminfo
-   logical :: meminfo_found
+   logical :: meminfo_found,sp
 
    ! If System will not be identified, use default values
    memfound=.false.
    MemoryAvailable=1.0E0_realk
+
+   sp = .false.
+   if(present(suppress_print))sp = suppress_print
 
    INQUIRE(FILE="/proc/meminfo", EXIST=meminfo_found)
 
    ! Is this a LINUX system?
    if(meminfo_found) then
       call get_available_memory_specific('MENFO',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be LINUX!'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       end if
    endif
 
    ! meminfo not found or mem in meminfo not found  --> Is this a MAC system?
    if((.not. meminfo_found).or.(.not.memfound)) then
       call get_available_memory_specific('MAC  ',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be MAC!'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       end if
    endif
 
    ! Still no result --> Is this a LINUX system without a  readable /proc/memninfo?
    if(.not.memfound) then
       call get_available_memory_specific('LINUX',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be LINUX!(using the top command)'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       endif
    endif
 
 
-   write(lupri,*) '******************** WARNING WARNING WARNING ***********************'
-   write(lupri,*) 'get_available_memory: System type NOT identified!'
-   write(lupri,'(1X,a,g16.5)') 'Default setting: Available Memory (GB) = ', MemoryAvailable
+   if(.not.memfound)then
+      write(lupri,*) '******************** WARNING WARNING WARNING ***********************'
+      write(lupri,*) 'get_available_memory: System type NOT identified!'
+      write(lupri,'(1X,a,g16.5)') 'Default setting: Available Memory (GB) = ', MemoryAvailable
+   endif
 
 
 end subroutine get_available_memory
@@ -7563,9 +7782,10 @@ subroutine copy_from_mem_stats(longintbufferInt)
    longintbufferInt(74) = max_mem_used_DECAOBATCHINFO
    longintbufferInt(75) = mem_allocated_PNOSpaceInfo
    longintbufferInt(76) = max_mem_used_PNOSpaceInfo
+   longintbufferInt(77) = max_mem_used_type_matrix_MPIFULL
 #ifdef MOD_UNRELEASED
-   longintbufferInt(77) = mem_allocated_lvec_data
-   longintbufferInt(78) = mem_allocated_lattice_cell
+   longintbufferInt(78) = mem_allocated_lvec_data
+   longintbufferInt(79) = mem_allocated_lattice_cell
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!
@@ -7648,9 +7868,10 @@ subroutine copy_to_mem_stats(longintbufferInt)
    max_mem_used_DECAOBATCHINFO = longintbufferInt(74)
    mem_allocated_PNOSpaceInfo = longintbufferInt(75)
    max_mem_used_PNOSpaceInfo = longintbufferInt(76)
+   max_mem_used_type_matrix_MPIFULL = longintbufferInt(77)
 #ifdef MOD_UNRELEASED
-   mem_allocated_lvec_data = longintbufferInt(77)
-   mem_allocated_lattice_cell = longintbufferInt(78)
+   mem_allocated_lvec_data = longintbufferInt(78)
+   mem_allocated_lattice_cell = longintbufferInt(79)
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!

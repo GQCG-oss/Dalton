@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck rlmset */
       SUBROUTINE RLMSET_CBISOL(LMAX)
@@ -55,12 +54,12 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       IREPLM = 0
       IF (MOD(L + M,2) .EQ. 1)  IREPLM = ISYMAX(3,1)
-      IF (MOD(ABS(M),2) .EQ .1) IREPLM = IBTXOR(IREPLM,ISYMAX(1,1))
-      IF (M.LT.0) IREPLM=IBTXOR(IREPLM,IBTXOR(ISYMAX(1,1),ISYMAX(2,1)))
+      IF (MOD(ABS(M),2) .EQ .1) IREPLM = IEOR(IREPLM,ISYMAX(1,1))
+      IF (M.LT.0) IREPLM=IEOR(IREPLM,IEOR(ISYMAX(1,1),ISYMAX(2,1)))
       RETURN
       END
 C  /* Deck wrtsol */
@@ -281,7 +280,7 @@ C
 C
 C     Statement functions
 C
-#include "ibtfun.h"
+
 C
 C     Cartesian orders
 C     ----------------
@@ -334,12 +333,12 @@ C
 C        ... skip cavity center
          MULCNT = ISTBNU(ICENT)
       DO 700 ISYMOP = 0, MAXOPR
-      IF (IBTAND(ISYMOP,MULCNT) .NE. 0) GO TO 700
+      IF (IAND(ISYMOP,MULCNT) .NE. 0) GO TO 700
          IATOM = IATOM + 1
       IF (CHARGE(ICENT) .EQ. D0) GO TO 700
-         PX    = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-         PY    = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-         PZ    = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+         PX    = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+         PY    = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+         PZ    = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
          PXDIF = PX - PXCAV
          PYDIF = PY - PYCAV
          PZDIF = PZ - PZCAV
@@ -990,9 +989,10 @@ C
       END
 #ifdef UNDEF
 /* Comdeck log */
-960417- kr
- TLMD is also needed for dipole gradient, thus TLMD for MAXDIF .ge. 2 or DIFDIP
-921209- get cavity center from CBISOL; only calc. TLMD for MAXDIF .ge. 2;
+960417- kr TLMD is also needed for dipole gradient,
+           thus TLMD for MAXDIF .ge. 2 or DIFDIP
+921209- get cavity center from CBISOL;
+        only calc. TLMD for MAXDIF .ge. 2;
         only calc. GSOLT for MAXDIF .ge. 1
 921013-kvm+hjaaj
  removed FAC, center C always different from center A
@@ -1036,7 +1036,7 @@ C
       DIMENSION DSHELL(MAXCMP), FCM(LMNTOT), TLMD(LMNTOT,*)
       DIMENSION RLMINT(KCKTAB,LMNTOT,7), RLMTAB(KCKTAB,21),
      &          LMNO(LMNTOT,3), HSOLT2(MXCOOR,MXCOOR)
-#include "ibtfun.h"
+
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
@@ -1237,7 +1237,7 @@ C
 C
          IF (MAXDIF .GE. 2) THEN
             DO 600 IREP = 0, MAXREP
-               CHIB = PT(IBTAND(ISYMOP,IREP))
+               CHIB = PT(IAND(ISYMOP,IREP))
                CSBX = CHIB*SIGNBX
                CSBY = CHIB*SIGNBY
                CSBZ = CHIB*SIGNBZ
@@ -1407,8 +1407,8 @@ C
             ISX = MOD(LMNO(I,1),2)*ISYMAX(1,1)
             ISY = MOD(LMNO(I,2),2)*ISYMAX(2,1)
             ISZ = MOD(LMNO(I,3),2)*ISYMAX(3,1)
-            IREP = IBTXOR(ISX,IBTXOR(ISY,ISZ))
-            CHIB = PT(IBTAND(ISYMOP,IREP))
+            IREP = IEOR(ISX,IEOR(ISY,ISZ))
+            CHIB = PT(IAND(ISYMOP,IREP))
             CSBX = CHIB*SIGNBX
             CSBY = CHIB*SIGNBY
             CSBZ = CHIB*SIGNBZ

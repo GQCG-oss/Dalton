@@ -1,10 +1,38 @@
 
 
-This is the next patch, document new changes here
-=================================================
+2014.0 (2014-09-08)
+===================
+
+See the release notes at http://daltonprogram.org for a list of new features in
+Dalton and LSDalton.
+
+
+2013.4 (2014-07-10)
+===================
+
+DALTON
+------
+
+- Memory bugfix for serial PCM calculations (segmentation fault for large PCM cavities).
+
+
+LSDALTON
+--------
+
+- Fixed a bug in the basis set reading. This bugfix affects almost no basis sets,
+  and none of the standard basis sets, but a very few general contracted basis sets
+  where the first contracted function had much smaller number of
+  primitives compared to the last: Basis sets such as the pcS-1 basis set.
+- Reduced the memory requirements for internal MPI buffer handling.
+
+
+2013.3 (2014-06-11)
+===================
 
 Common
 ------
+
+- aug-cc-pVTZ-lresc basis set added to $BASDIR.
 
 
 DALTON
@@ -12,10 +40,9 @@ DALTON
 
 - Default DIIS space increased from 5 to 8, often resulting in 1-2 fewer SCF iterations.
 - Removed the maximum of 20 excitations in summary output for second and third order transition moments.
-- aug-cc-pVTZ-lresc basis set added to $BASDIR
-- A Warning is issued when orbitals are deleted due to linear dependencies(before SCF),
-  AngPso (a 0th order LRESC diamagentic corr) is not calculated in this case. 
-- Bugfix for parallel calculations and some type of geometry optimizations with ano basis sets
+- Warning is issued when orbitals are deleted due to linear dependencies (before SCF),
+  AngPso (a 0th order LRESC diamagnetic corr) is not calculated in this case.
+- Bugfix for parallel calculations and some type of geometry optimizations with ANO basis sets
   (this bug resulted in aborted calculations, not in wrong results).
 - Print irrep names together with symmetry numbers for easier interpretation of output.
 - More important output with '@' in column 1 (can be obtained with 'grep @' on the output).
@@ -32,9 +59,9 @@ DALTON
 - Fix for \*\*RESPONSE .EXMOM .ISPABC=1,0,1 (only half the excited state spin-orbit transition moments were calculated).
 - Fix for Molden file when exponent greater than 1.0D8.
 - Fix for MNF-SO (amfi) if more than 40 nuclei.
-- Bug fix in quadratic response function using CPP in the tensor contraction routine of the A[2] terms.
+- Bugfix in quadratic response function using CPP in the tensor contraction routine of the A[2] terms.
 - Added interface to ChemShell.
-- Bugfix for small non-default WORK array sizes. For specific small custom values of the WORK array size,
+- Bugfix for small non-default WORK array sizes. For specific small custom values of the WORK array size
   KBLOCK was larger than MXBLCK leading to unpredictable results due to array length mismatch in DALTON/abacus/herrdn.F.
 
 
@@ -42,11 +69,6 @@ LSDALTON
 --------
 
 - Environment variable LSDALTON_LAUNCHER introduced.
-
-
-===========================
-DO NOT EDIT BELOW THIS LINE
-===========================
 
 
 2013.2 (2014-03-05)

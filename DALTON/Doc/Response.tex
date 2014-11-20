@@ -209,6 +209,12 @@ calculations. Note that this keyword requires that \Key{SOPPA} or
 Invoke the Tamm-Dancoff approximation to RPA/TDHF or TDDFT. Equivalent to the
 use of \Key{CIS} on a Hartree-Fock calculation.
 
+\item{\Key{TRDQF}}
+Invoke the calculation of transition density fitted charges. Only implemented for
+\Sec{LINEAR} with \Key{SINGLE RESIDUE}. The fitted charges will be calculated for
+all \Key{ROOTS}. It requires that \Key{QFIT} has been specified in
+\Sec{*WAVE FUNCTIONS}.
+
 \item{\Key{TRPFLG}}
 Triplet flag. This option is set whenever triplet
 (spin-dependent)\index{triplet response}
@@ -740,6 +746,51 @@ frequencies\index{frequency}. Two lines
 following this option must contain 1) The number of frequencies, 2)
 Frequencies.
 
+\item{\Key{CPPHEC}}
+Specifies a circularly polarized phosphorescence\index{circularly polarized phosphorescence} 
+calculation using the effective charge approximation for the spin--orbit operator, {\it i.e.\/}
+the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the
+calculation so that no further response input is required except \Key{ROOTS}; the
+$A$ operator is set to the dipole velocity operators\index{dipole velocity} and
+the $B$ operator is set to the effective charge spin-orbit\index{spin-orbit}
+operators. The set of effective charges is obtained from Koseki et al.
+\cite{skmsgmwsnm99,skmwsmsgjpca102} for atoms with ECP:s and Ref.\cite{skmwsmsgjpc96} for "all-electron" atoms.
+The reference state {\em must} be a singlet spin state. See  also \Key{PHOSPHORESCENCE}, \Key{ECPHOS}, 
+\Key{CPPHMF}, \Key{CPPHOL}, and \Key{CPPHOV}.
+
+\item{\Key{CPPHMF}}
+Specifies a circularly polarized phosphorescence\index{circularly polarized phosphorescence} 
+calculation using the atomic mean-field approximation for the spin--orbit operator, {\it i.e.\/}
+the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the
+calculation so that no further response input is required except \Key{ROOTS}; the
+$A$ operator is set to the dipole velocity operators\index{dipole velocity} and
+the $B$ operator is set to the atomic mean-field spin-orbit\index{spin-orbit}
+operators.
+The reference state {\em must} be a singlet spin state. See also \Key{PHOSPHORESCENCE}, \Key{MNFPHO},
+\Key{CPPHEC}, \Key{CPPHOL}, and \Key{CPPHOV}.
+
+\item{\Key{CPPHOL}}
+Specifies a circularly polarized phosphorescence\index{circularly polarized phosphorescence} 
+calculation, {\it i.e.\/} the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition} in the length gauge.
+This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}; 
+the $A$ operator is set to the dipole length operators\index{dipole length} and
+the $B$ operator is set to the spin-orbit\index{spin-orbit}
+operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27}
+The reference state {\em must} be a singlet spin state. See also \Key{CPPHEC}, \Key{CPPHMF} and \Key{CPPHOV}.
+
+\item{\Key{CPPHOV}}
+Specifies a circularly polarized phosphorescence\index{circularly polarized phosphorescence} 
+calculation, {\it i.e.\/} the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition} in the velocity gauge. 
+This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}; 
+the $A$ operator is set to the dipole velocity operators\index{dipole velocity} and
+the $B$ operator is set to the spin-orbit\index{spin-orbit}
+operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27}
+The reference state {\em must} be a singlet spin state. See also \Key{CPPHEC}, \Key{CPPHMF} and \Key{CPPHOL}.
+
 \item{\Key{DIPLEN}}
 Sets $A$ and $B$ to $x, y, z$ dipole operators\index{dipole length}.
 
@@ -751,6 +802,9 @@ Sets $A$ and $B$ to the $y$ dipole operator\index{dipole length}.
 
 \item{\Key{DIPLNZ}}
 Sets $A$ and $B$ to the $z$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPVEL}}
+Sets $A$ and $B$ to $x, y, z$ dipole velocity operators\index{dipole velocity}.
 
 \item{\Key{E3TEST}}
 Test the contributions to the quadratic response function arising from
@@ -769,7 +823,6 @@ is set to the effective charge spin-orbit\index{spin-orbit}
 operators. The set of effective charges is obtained from Koseki et al.
 \cite{skmsgmwsnm99,skmwsmsgjpca102} for atoms with ECP:s and Ref.\cite{skmwsmsgjpc96} for "all-electron" atoms.
 The reference state {\em must} be a singlet spin state. See  also \Key{PHOSPHORESCENCE}
-
 
 \item{\Key{ISPABC}}\\
 \verb|READ *, ISPINA,ISPINB,ISPINC|\\
@@ -837,9 +890,18 @@ Specifies a phosphorescence\index{phosphorescence} calculation, {\it i.e.\/}
 the spin-orbit\index{spin-orbit}
 induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the
 calculation so that no further response input is required except \Key{ROOTS}; the
-$A$ operator is set to the dipole operators\index{dipole length} and
-the $B$ operator
-is set to the spin-orbit\index{spin-orbit}
+$A$ operator is set to the dipole length operators\index{dipole length} and
+the $B$ operator is set to the spin-orbit\index{spin-orbit}
+operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27}
+The reference state {\em must} be a singlet spin state.
+
+\item{\Key{PHOSPV}}
+Specifies a phosphorescence\index{phosphorescence} calculation, {\it i.e.\/}
+the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition} in the velocity gauge. 
+This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}; 
+the $A$ operator is set to the dipole velocity operators\index{dipole velocity} and
+the $B$ operator is set to the spin-orbit\index{spin-orbit}
 operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27}
 The reference state {\em must} be a singlet spin state.
 
@@ -1455,7 +1517,14 @@ with symmetrized trial vectors \cite{kauczor:2011} is used.
 Calculate the linear polarizability.
 
 \item{\Key{MCD}} \\
-Calculate the magnetic circular dichroism (MCD).
+Calculate the magnetic circular dichroism (MCD) and the Magnetic Optical Rotation Dispersion.
+
+\item{\Key{NSCD}} \\
+Calculate the Nuclear Spin Circular Dichroism (NSCD) and the Nuclear Spin Optical Rotation~\cite{vaara2014}.
+It requires specification of the \verb|.PSO| integrals in 
+the \verb|*INTEGRALS| input section.
+Note that at present NSCD calculations only work {\bf{without symmetry}}.
+See \verb|rsp_cpp_nscd| for an example of NSCD calculations.
 
 \item{\Key{BETA}}\\
 Calculate the first-order hyperpolarizability.

@@ -681,7 +681,7 @@ contains
               if (mol%solver%rsp_stdnew) then
                call rsp_sym_init(2, 2, 2, 1, 2)
               endif
-              if (mol%solver%rsp_cmplxnew) then
+              if (mol%solver%rsp_cmplxnew .or. mol%solver%rsp_cpp) then
                call rsp_sym_complex_init(1, 1, 1, 1, 1)
               endif
                IF(mol%solver%UseExcitationVecs)then
@@ -710,7 +710,7 @@ contains
             reXph(:) = (/mat_get_part(Xph(1), imag=.false.)/)
             imXph(:) = (/mat_get_part(Xph(1), imag=.true. )/)
             ! solve for the real and imaginary part of the FDSp simlultaneously
-            if (mol%solver%rsp_cmplxnew) then
+            if (mol%solver%rsp_cmplxnew .or. mol%solver%rsp_cpp) then
                call rsp_sym_complex_solver(mol, F0, D0, S0, 1,          &
                                (/mat_get_part(FDSp(i), imag=.false.)/), &
                                freq1, 1, reXph(:), imXph(:), .true.,    &

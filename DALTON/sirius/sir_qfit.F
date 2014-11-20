@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE QFITINP(WORD)
 #if defined (BUILD_QFITLIB)
@@ -53,8 +52,11 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "inforb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
+#include "maxaqn.h"
+#include "symmet.h"
 #include "moldip.h"
 #include "magone.h"
 #include "orgcom.h"
@@ -63,9 +65,8 @@ C
       integer :: icharg
 C
 #if defined (BUILD_QFITLIB)
-      write(*,*) "css: dpi0", dip0
       call molchr(icharg)
-      call qfit_initialize(cord(1:3,1:natoms), charge(1:natoms),
+      call qfit_initialize(cord(1:3,1:nucdep), charge(1:nucdep),
      *                     icharg, dip0, diporg)
       call qfit_fit(FDENS)
 #endif
@@ -89,19 +90,19 @@ C
 #if defined (BUILD_QFITLIB)
       CALL HEADER('Potential fitted charges (QFITLIB)',-1)
 
-      allocate( charges( natoms ) )
+      allocate( charges( nucdep ) )
       call qfit_get_results( charges )
 
       write(lupri,9000)
       write(lupri,*)
 
-      do m = 1, natoms
+      do m = 1, size(charges)
           write(lupri,'(a,a4,f9.4)') '@ ',namdep(m), charges(m)
       enddo
       write(lupri,*)
       write(lupri,'(a,f9.4)') '  Sum = total charge:', sum(charges)
 
-      call qfit_finalize
+      !call qfit_finalize
       deallocate( charges )
 #endif
  9000 format(4x,'Charges have been fitted to the molecular ',
@@ -173,19 +174,19 @@ C     NUCLEAR CONTRIBUTION
       CALL DIPNUC(DUM,DUM,0,.FALSE.)
 C
 C     ELECTRONIC CONTRIBUTION
-      lu = -1
-      call gpopen(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
+      LU = -1
+      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
      &     .FALSE.)
 
-      rewind lu
+      REWIND LU
 
-      call mollab('XDIPLEN ', LU, LUPRI)
-      call readt(LU, nnbasx, WRK(KXDIP))
-      call mollab('YDIPLEN ', LU, LUPRI)
-      call readt(LU, nnbasx, WRK(KYDIP))
-      call mollab('ZDIPLEN ', LU, LUPRI)
-      call readt(LU, nnbasx, WRK(KZDIP))
-      call gpclose(lu, 'keep')
+      CALL MOLLAB('XDIPLEN ', LU, LUPRI)
+      CALL READT(LU, NNBASX, WRK(KXDIP))
+      CALL MOLLAB('YDIPLEN ', LU, LUPRI)
+      CALL READT(LU, NNBASX, WRK(KYDIP))
+      CALL MOLLAB('ZDIPLEN ', LU, LUPRI)
+      CALL READT(LU, NNBASX, WRK(KZDIP))
+      CALL GPCLOSE(LU, 'KEEP')
 
       DIPME(1) = -DDOT(NNBASX, WRK(KDENS), 1, WRK(KXDIP), 1)
       DIPME(2) = -DDOT(NNBASX, WRK(KDENS), 1, WRK(KYDIP), 1)

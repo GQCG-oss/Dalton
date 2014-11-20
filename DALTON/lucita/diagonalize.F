@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -4967,7 +4967,7 @@ C     END IF
 *
       IF(NOCSF.EQ.0) THEN
         WRITE(6,*) ' Please turn off csf''s '
-        STOP'NO CSF''s in PERTCTL !! '
+        CALL QUIT('NO CSF''s in PERTCTL !! ')
       END IF
 *
       NTEST = 10

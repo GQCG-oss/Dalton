@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_twofock */
       SUBROUTINE SO_TWOFOCK(RES1E,LRES1E,RES1D,LRES1D,FOCK,LFOCK,ISYRES)

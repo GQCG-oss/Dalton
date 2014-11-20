@@ -3,8 +3,8 @@
 !> \brief Contains common routine for the Ichor Code
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorBatchToolsModule
-use IchorprecisionModule
+MODULE IchorBatchToolsMod
+use IchorprecisionMod
 public:: DetermineBatchSize, ConstructBatchIndexOfType, ObtainMaxGabForType
 private
 CONTAINS
@@ -69,4 +69,4 @@ DO Itype=1,nTypes
 ENDDO
 END subroutine CONSTRUCTBATCHINDEXOFTYPE
 
-END MODULE IchorBatchToolsModule
+END MODULE IchorBatchToolsMod

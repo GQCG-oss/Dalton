@@ -401,7 +401,7 @@ CONTAINS
           WRITE(lupri,'(A)') ' The LSAOTENSOR structure'
           WRITE(lupri,'(A16,I8)')' nelms ' ,LSAOTENSORitem%nelms
           IF(ASSOCIATED(LSAOTENSORitem%elms))THEN
-             call output(LSAOTENSORitem%elms,1,LSAOTENSORitem%nLocal(1),1,LSAOTENSORitem%nLocal(2),&
+             call ls_output(LSAOTENSORitem%elms,1,LSAOTENSORitem%nLocal(1),1,LSAOTENSORitem%nLocal(2),&
                   & LSAOTENSORitem%nLocal(1),LSAOTENSORitem%nLocal(2),1,lupri)
           ELSE
              WRITE(lupri,'(A16,A)')' elms ' , ' NOT ASSOCIATED ' 
@@ -592,7 +592,7 @@ CONTAINS
        n1 = size(LSTENSORitem%MBIE,2)
        n2 = size(LSTENSORitem%MBIE,3)
        DO I=1,LSTENSORitem%nMBIE
-          call output(LSTENSORitem%MBIE(I,:,:),1,n1,1,n2,n1,n2,1,lupri)
+          call ls_output(LSTENSORitem%MBIE(I,:,:),1,n1,1,n2,n1,n2,1,lupri)
        ENDDO
     ELSE
        WRITE(lupri,'(A16,A)')' MBIE ' , ' NOT ASSOCIATED ' 
@@ -1084,6 +1084,7 @@ CONTAINS
     ENDDO
     TENSOR%nLSAO = I
     CALL MEM_ALLOC(TENSOR%LSAO,I)
+    call nullifyTENSORLSAO(TENSOR%LSAO)
 !    call lstimer('START',ts,te,6)
     call init_lstensorMem(AllocInt,AllocRealk,AllocInts,lstmem_index)
 !    call lstimer('tensmem',ts,te,6)
@@ -1959,7 +1960,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
 !       Print*,'I am ',infpar%mynum,' should I send to ',Iproc,'?',CommunicationNodesGlobalSend(iproc)
 !       IF(CommunicationNodesGlobalSend(iproc))THEN
 !          Print*,'I am ',infpar%mynum,' and I send this block to ',Iproc
-!          CALL output(ASendbuffer(Iproc)%elms,1,nsizesend(iProc),1,1,nsizesend(iProc),1,1,6)
+!          CALL ls_output(ASendbuffer(Iproc)%elms,1,nsizesend(iProc),1,1,nsizesend(iProc),1,1,6)
 !       ENDIF
 !    enddo
 
@@ -2049,7 +2050,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
 !          Print*,'I am ',infpar%mynum,'did I recieved from ',Iproc,'?',CommunicationNodesGlobalRecv(iproc)
 !          IF(CommunicationNodesGlobalRecv(iproc))THEN
 !             Print*,'I am ',infpar%mynum,'and I recieved this block from ',Iproc,'size',nsizeRecv(iProc)
-!             CALL output(ARecvbuffer(Iproc)%elms,1,nsizeRecv(iProc),1,1,nsizeRecv(iProc),1,1,6)
+!             CALL ls_output(ARecvbuffer(Iproc)%elms,1,nsizeRecv(iProc),1,1,nsizeRecv(iProc),1,1,6)
 !          ENDIF
 !       enddo
 !    ENDIF
@@ -2333,7 +2334,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
 !       Print*,'BUILDSCALAPACK: I am ',infpar%mynum,' should I send to ',Iproc,'CommNodes',CommunicationNodesGlobalSend(iproc)
 !       IF(CommunicationNodesGlobalSend(iproc))THEN
 !          Print*,'BUILDSCALAPACK: I am ',infpar%mynum,'and I will send this block to ',Iproc
-!          CALL output(ASendbuffer(Iproc)%elms,1,nsizesend(iProc),1,1,nsizesend(iProc),1,1,6)
+!          CALL ls_output(ASendbuffer(Iproc)%elms,1,nsizesend(iProc),1,1,nsizesend(iProc),1,1,6)
 !       ENDIF
 !    enddo
 !    ENDIF
@@ -2430,7 +2431,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
 !          print*,'RECV:',CommunicationNodesGlobalRecv(iproc),'mynum',infpar%mynum
 !          IF(CommunicationNodesGlobalRecv(iproc))THEN
 !             Print*,'BUILDSCALAPACK: I am ',infpar%mynum,' and I recieved this block from ',Iproc
-!             CALL output(ARecvbuffer(Iproc)%elms,1,nsizeRecv(iProc),1,1,nsizeRecv(iProc),1,1,6)
+!             CALL ls_output(ARecvbuffer(Iproc)%elms,1,nsizeRecv(iProc),1,1,nsizeRecv(iProc),1,1,6)
 !          ENDIF
 !       enddo
 !    ENDIF
@@ -5068,13 +5069,13 @@ case(mtype_scalapack)
       do I=1,TENSOR%ndim5
          call mat_set_from_full(fullmat(:,1,:,1,I),1E0_realk, MAT(I))
       enddo
-!      call output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(3),TENSOR%nbast(1),TENSOR%nbast(3),1,lupri)
+!      call ls_output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(3),TENSOR%nbast(1),TENSOR%nbast(3),1,lupri)
    ENDIF
    IF(TENSOR%nbast(3) .EQ. 1) THEN
       do I=1,TENSOR%ndim5
          call mat_set_from_full(fullmat(:,:,1,1,I),1E0_realk, MAT(I))
       enddo
-!      call output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(2),TENSOR%nbast(1),TENSOR%nbast(2),1,lupri)
+!      call ls_output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(2),TENSOR%nbast(1),TENSOR%nbast(2),1,lupri)
    ENDIF
    call mem_dealloc(fullMAT)
 case(mtype_unres_dense)
@@ -6546,6 +6547,55 @@ SUBROUTINE build_BatchGab(AOfull1,AOfull2,AO1,AO2,iBatch1,jBatch1,&
 !  call lstensor_print(TENSOR2,6)
 
 end SUBROUTINE build_BatchGab
+
+!!$SUBROUTINE build_BatchGab_from_full(TENSOR2,batchA,batchB,batchsizeA,batchSizeB,FullGab,nbatches)
+!!$  implicit none
+!!$  INTEGER,intent(in)            :: batchA,batchB
+!!$  INTEGER,intent(in)            :: batchsizeA,batchSizeB  
+!!$  integer(kind=short)           :: FullGab(nbatches,nbatches)
+!!$  !
+!!$  logical :: CS_SCREEN,PS_SCREEN
+!!$  integer :: I,J
+!!$  CS_SCREEN = ASSOCIATED(TENSOR1%maxgab)
+!!$  PS_SCREEN = .FALSE.
+!!$  call lstensor_nullify(TENSOR2)
+!!$  TENSOR2%nSLSAO = 0
+!!$  TENSOR2%pChargetensor = .FALSE.
+!!$  TENSOR2%Econtrib = .FALSE.
+!!$  TENSOR2%Screentensor = .TRUE.
+!!$  TENSOR2%Screenoutput = .FALSE.
+!!$  TENSOR2%MagGradienttensor = .FALSE.
+!!$  TENSOR2%Gradienttensor = .FALSE.
+!!$  NULLIFY(TENSOR%SLSAO)
+!!$  NULLIFY(TENSOR%INDEX)
+!!$  TENSOR2%natom(1) = -1 !not used
+!!$  TENSOR2%natom(2) = -1
+!!$  TENSOR2%natom(3) = 1
+!!$  TENSOR2%natom(4) = 1
+!!$  TENSOR2%ndim5 = 1
+!!$
+!!$  TENSOR2%Screentensor = .TRUE.
+!!$  TENSOR2%nbatches(1) = batchsizeA
+!!$  TENSOR2%nbatches(2) = batchSizeB  
+!!$  TENSOR2%nbatches(3) = 0
+!!$  TENSOR2%nbatches(4) = 0
+!!$  dim = batchsizeA*batchsizeB
+!!$  IF(CS_SCREEN)THEN
+!!$     nullify(TENSOR2%maxgab)
+!!$     call mem_alloc(TENSOR2%maxgab,batchsizeA,batchsizeB)
+!!$     nsize = size(TENSOR2%maxgab,KIND=long)*mem_shortintsize
+!!$     call mem_allocated_mem_lstensor(nsize)
+!!$  ENDIF
+!!$  nullify(TENSOR2%maxprimgab)
+!!$  DO J=1,batchsizeB
+!!$     DO I=1,batchsizeA
+!!$        TENSOR2%maxgab(I,J) = FullGab(batchA+I-1,batchB+J-1)
+!!$     ENDDO
+!!$  ENDDO
+!!$  IF(CS_SCREEN)call set_lst_maxgabelms(TENSOR2)  
+!!$!  print*,'the sub LSTENSOR AFTER build_BatchGab_From_FULL'
+!!$!  call lstensor_print(TENSOR2,6)
+!!$end SUBROUTINE build_BatchGab_From_FULL
 
 !> \brief 
 !> \author T. Kjaergaard

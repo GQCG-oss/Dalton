@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef OLD_LOG
 ===========================================================================
@@ -134,10 +133,6 @@ C
 C
       CALL REWSPL(LURSP3)
       CALL REWSPL(LURSP5)
-#if defined (VAR_SPLITFILES)
-      JRSP3 = 0
-      JRSP5 = 0
-#endif
       JBOOFF = KBOVEC
       JBCOFF = KBCVEC
       JE2OFF = KE2LIN
@@ -147,25 +142,12 @@ C
       IF (SOPPA) THEN
          JDIAE = KDIAE
          CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-         JRSP4 = 0
-         CALL READST(LURSP4,LRSP4,WRK(JDIAE),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in E2SYM')
-#else
          CALL READT(LURSP4,KZCONF,WRK(JDIAE))
-#endif
       ENDIF
       CALL DZERO(WRK(KBCVEC),2*NCTOT*KZYCON)
       DO 15 J = 1,KZDIM
          IF (IBTYP(J).EQ.JBONDX) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK(JBOOFF),JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in E2SYM')
-#else
             CALL READT(LURSP3,KZYWOP,WRK(JBOOFF))
-#endif
             CALL DCOPY(KZWOPT,WRK(JBOOFF),1,WRK(JBOOFF+JOTOT+KZWOPT),1)
             CALL DCOPY(KZWOPT,WRK(JBOOFF+KZWOPT),1,WRK(JBOOFF+JOTOT),1)
             CALL DZERO(WRK(JS2OFF),KZYVAR)
@@ -173,49 +155,25 @@ C
      *      CALL RSPSLI(0,1,WRK(JBOOFF),WRK(JBOOFF),UDV,WRK(JS2OFF),
      *                  XINDX,WRK(KWRK1),LWRK1)
             JBOOFF = JBOOFF + KZYWOP
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,WRK(JE2OFF),JRSP5,.TRUE.)
-            IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP5 in E2SYM')
-#else
             CALL READT(LURSP5,KZYVAR,WRK(JE2OFF))
-#endif
          ELSE
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK(JBCOFF),JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in E2SYM (2)')
-#else
             CALL READT(LURSP3,KZCONF,WRK(JBCOFF))
-#endif
             CALL DCOPY(KZCONF,WRK(JBCOFF),1,WRK(JBCOFF+JCTOT+KZCONF),1)
             CALL DZERO(WRK(JS2OFF),KZYVAR)
             IF (KZCONF.GT.0)
      *      CALL RSPSLI(1,0,WRK(JBCOFF),WRK(JBCOFF),UDV,WRK(JS2OFF),
      *                  XINDX,WRK(KWRK1),LWRK1)
             IF (SOPPA) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP5,LRSP5,WRK(JE2OFF+KZCONF),JRSP5,.TRUE.)
-               IF (LRSP5 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP5 in E2SYM (2)')
-#else
                CALL READT(LURSP5,KZYWOP,WRK(JE2OFF+KZCONF))
-#endif
                CALL DCOPY(KZWOPT,WRK(JE2OFF+KZVAR),1,
      *                    WRK(JE2OFF+KZVAR+KZCONF),1)
                DO I=0,KZCONF-1
                   WRK(JE2OFF+I) = WRK(JDIAE+I) * WRK(JBCOFF+I)
-               ENDDO
+               END DO
                CALL DZERO(WRK(JE2OFF+KZVAR),KZCONF)
             ELSE
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP5,LRSP5,WRK(JE2OFF),JRSP5,.TRUE.)
-               IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP5 in E2SYM (2)')
-#else
                CALL READT(LURSP5,KZYVAR,WRK(JE2OFF))
-#endif
-            ENDIF
+            END IF
             CALL DCOPY(KZVAR,WRK(JE2OFF+KZVAR),1,
      *                 WRK(JE2OFF+KZDIM*KZYVAR),1)
             CALL DCOPY(KZVAR,WRK(JE2OFF),1,
@@ -226,28 +184,28 @@ C
      *                 WRK(JS2OFF+KZDIM*KZYVAR+KZVAR),1)
             CALL DSCAL(KZYVAR,DM1,WRK(JS2OFF+KZDIM*KZYVAR),1)
             JBCOFF = JBCOFF + KZYCON
-         ENDIF
+         END IF
          JE2OFF = JE2OFF + KZYVAR
          JS2OFF = JS2OFF + KZYVAR
  15   CONTINUE
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,'(2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
+         WRITE(LUPRI,'(/2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
-         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,1,LUPRI)
-         WRITE(LUPRI,'(2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
+         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,-1,LUPRI)
+         WRITE(LUPRI,'(/2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
-         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,1,LUPRI)
+         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,-1,LUPRI)
          IF ( NOTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NOTOT
-            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,KZYWOP,
-     *                                              2*NOTOT,1,LUPRI)
+            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,
+     *                              KZYWOP,2*NOTOT,-1,LUPRI)
          END IF
          IF ( NCTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' CONFIGURATION TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' CONFIGURATION TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NCTOT
-            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,KZYCON,
-     *                                              2*NCTOT,1,LUPRI)
+            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,
+     *                              KZYCON,2*NCTOT,-1,LUPRI)
          END IF
       END IF
       JBOOFF = KBOVEC + JOTOT
@@ -277,32 +235,32 @@ C
          END IF
  20   CONTINUE
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,'(2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
+         WRITE(LUPRI,'(/2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZYDIM,KZYVAR,KZYDIM,1,
-     &               LUPRI)
-         WRITE(LUPRI,'(2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
+         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZYDIM,
+     &               KZYVAR,KZYDIM,-1,LUPRI)
+         WRITE(LUPRI,'(/2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZYDIM,KZYVAR,KZYDIM,1,
-     &               LUPRI)
+         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZYDIM,
+     &               KZYVAR,KZYDIM,-1,LUPRI)
          IF ( NOTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NOTOT
-            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,KZYWOP,
-     *                                              2*NOTOT,1,LUPRI)
+            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,
+     *                  KZYWOP,2*NOTOT,-1,LUPRI)
          END IF
          IF ( NCTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' CONFIGURATION TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' CONFIGURATION TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NCTOT
-            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,KZYCON,
-     *                                              2*NCTOT,1,LUPRI)
+            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,
+     *                  KZYCON,2*NCTOT,-1,LUPRI)
          END IF
       END IF
 C
 C CHECK IF TRIAL VECTORS ARE ORTHONORMAL
 C
       IF ( NOTOT.GT.0) THEN
-         IJ = 0
+         IJ   = 0
          XMAX = D0
          IMAX = 0
          JMAX = 0
@@ -311,20 +269,20 @@ C
             DO 40 J = 1,I
                IJ = IJ + 1
                JOFF = KBOVEC+(J-1)*KZYWOP
-               XIJ = DDOT(KZYWOP,WRK(IOFF),1,WRK(JOFF),1)
+               XIJ  = DDOT(KZYWOP,WRK(IOFF),1,WRK(JOFF),1)
                WRK(KWRK1-1+IJ) = XIJ
                IF ((ABS(XIJ).GT.XMAX).AND.(I.NE.J)) THEN
                   IMAX = I
                   JMAX = J
                   XMAX = XIJ
-               ENDIF
+               END IF
  40         CONTINUE
  30      CONTINUE
          WRITE(LUPRI,'(/A)')' OVERLAP FOR ORBITAL TRIAL VECTORS'
-         CALL OUTPAK(WRK(KWRK1),2*NOTOT,1,LUPRI)
          IF ( XMAX.GT.DTOL )
-     *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
-     *   ' LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+     &      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     &   'WARNING: LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+         CALL OUTPAK(WRK(KWRK1),2*NOTOT,-1,LUPRI)
       END IF
       IF ( NCTOT.GT.0 ) THEN
          IJ = 0
@@ -342,21 +300,21 @@ C
                   IMAX = I
                   JMAX = J
                   XMAX = XIJ
-               ENDIF
+               END IF
  60         CONTINUE
  50      CONTINUE
          WRITE(LUPRI,'(/A)')' OVERLAP FOR CONFIGURATION TRIAL VECTORS'
-         CALL OUTPAK(WRK(KWRK1),2*NCTOT,1,LUPRI)
          IF ( XMAX.GT.DTOL )
-     *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
-     *   ' LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+     &   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     &   'WARNING: LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+         CALL OUTPAK(WRK(KWRK1),2*NCTOT,-1,LUPRI)
       END IF
 C
 C SET UP REDUCED E2 AND S2 MATRICES
 C
       JBOVEC = KBOVEC
       JBCVEC = KBCVEC
-      DO 70 J = 1,KZYDIM
+      DO J = 1,KZYDIM
          JCHK = J
          IF ( J.GT.KZDIM ) THEN
             JCHK = JCHK - KZDIM
@@ -376,7 +334,7 @@ C
             JBVEC  = JBOVEC
             JBOVEC = JBOVEC + KZYWOP
          END IF
-         DO 80 I = 1,KZYDIM
+         DO I = 1,KZYDIM
             X1 = DDOT(JZVAR,WRK(JBVEC),1,
      *                WRK(KE2LIN+(I-1)*KZYVAR+JZOFF),1)
             X2 = DDOT(JZVAR,WRK(JBVEC+JZVAR),1,
@@ -387,12 +345,12 @@ C
             X2 = DDOT(JZVAR,WRK(JBVEC+JZVAR),1,
      *                WRK(KS2LIN+(I-1)*KZYVAR+JYOFF),1)
             WRK(KS2MAT-1+(I-1)*KZYDIM+J) = X1 + X2
- 80      CONTINUE
- 70   CONTINUE
-      WRITE(LUPRI,'(A,I8)')' REDUCED E(2) MATRIX : DIMENSION ',KZYDIM
-      CALL OUTPUT(WRK(KE2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,1,LUPRI)
-      WRITE(LUPRI,'(A,I8)')' REDUCED S(2) MATRIX : DIMENSION ',KZYDIM
-      CALL OUTPUT(WRK(KS2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,1,LUPRI)
+         END DO  !  I = 1,KZYDIM
+      END DO  !  J = 1,KZYDIM
+      WRITE(LUPRI,'(/A,I8)')' REDUCED E(2) MATRIX : DIMENSION ',KZYDIM
+      CALL OUTPUT(WRK(KE2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
+      WRITE(LUPRI,'(/A,I8)')' REDUCED S(2) MATRIX : DIMENSION ',KZYDIM
+      CALL OUTPUT(WRK(KS2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
 C
 C CHECK BLOCK STRUCTURE OF E2 AND S2 AND WRITE OUT LARGEST DEVIATIONS
 C
@@ -462,50 +420,70 @@ C
       JZ=JA
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZAMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
-      IF ( ZAMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JZ),
      *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IZ),
      *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JY),
      *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IY)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(IA),IBTYP(JA)
       IZ=IB
       JZ=JB
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZBMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
-      IF ( ZBMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(IB),IBTYP(JB)
       IZ=IS
       JZ=JS
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZSMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IS,' J=',JS,' DEV=',ZSMAX
-      IF ( ZSMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IS,' J=',JS,' DEV=',ZSMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(IS),IBTYP(JS)
       IZ=ID
       JZ=JD
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
-     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZDMAX
-      IF ( ZDMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+      IF ( ZDMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
+     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(ID),IBTYP(JD)
 C
 C CHECK EIGENVALUES OF E2
 C
@@ -518,30 +496,31 @@ C
       KJBIG  = KBIG  + KZYDIM
       KWRK1  = KJBIG + KZYDIM
 C
-      WRITE(LUPRI,'(/A,/A)')' ********************************',
+      WRITE(LUPRI,'(/A/A)')' ********************************',
      *' CHECK EIGENVALUES OF E2 WITH JACO ROUTINE '
-      IF ( KOFFTY.EQ.1 ) WRITE(LUPRI,'(/A,/A)')
+      IF ( KOFFTY.EQ.1 ) WRITE(LUPRI,'(/A/A)')
      *' *** E2 *** HAVE TWO ZERO EIGENVALUES BECAUSE REFERENCE STATE',
      *'            IS INCLUDED IN REDUCED SPACE'
       IJ = 0
-      DO 500 J = 1,KZYDIM
-         DO 600 I = 1,J
+      DO J = 1,KZYDIM
+         DO I = 1,J
             IJ = IJ + 1
             WRK(KE2-1+IJ) = WRK(KE2MAT-1+(I-1)*KZYDIM+J)
- 600     CONTINUE
- 500  CONTINUE
+         END DO
+      END DO
       CALL JACO(WRK(KE2),WRK(KEIVEC),KZYDIM,KZYDIM,0,
      *          WRK(KBIG),WRK(KJBIG))
 C     CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
-      DO 610 I = 1,KZYDIM
- 610     WRK(KEIVAL-1+I) = WRK(KE2-1 + (I*I+I)/2)
+      DO I = 1,KZYDIM
+         WRK(KEIVAL-1+I) = WRK(KE2-1 + (I*I+I)/2)
+      END DO
       CALL ORDER(WRK(KEIVEC),WRK(KEIVAL),KZYDIM,0)
 C     CALL ORDER(EVEC,EVAL,N,NEVEC)
       WRITE(LUPRI,'(/A)') '   The eigenvalues of E2 :'
-      DO 620 I = 1,KZYDIM,2
+      DO I = 1,KZYDIM,2
          WRITE(LUPRI,'(1P,2(I10,D20.10))')
      *      I,WRK(KEIVAL-1+I), I+1, WRK(KEIVAL+I)
- 620  CONTINUE
+      END DO
 C
 C CHECK EIGENVALUES OF S2
 C
@@ -1239,12 +1218,7 @@ C
          JRSP5 = 0
          JZDIM = 0
          DO 50 I = 1,KZDIM
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-            IF (LRSP5 .EQ. -1) GOTO 51
-#else
             READ (LURSP5,END=51,ERR=51) JUNK
-#endif
             JZDIM = I
   50     CONTINUE
   51     CONTINUE
@@ -1266,37 +1240,18 @@ C
          JLRSTV = KZDIM
          CALL REWSPL(LURSP3)
          CALL REWSPL(LURSP5)
-#if defined (VAR_SPLITFILES)
-         JRSP3 = 0
-         JRSP5 = 0
-#endif
  200     CONTINUE
             NLOAD  = NLOAD +1
             IF ((NLOAD.EQ.1).AND.(KOFFTY.EQ.1)) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-               CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
                READ (LURSP3)
                READ (LURSP5)
-#endif
                JLRSTV = JLRSTV - 1
             ENDIF
             IF ( NLOAD .GT. 1) THEN
                CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
                IF ( KOFFTY.EQ.1)READ (LURSP3)
-#else
-               JRSP3 = 0
-               IF (KOFFTY.EQ.1)
-     &              CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
                DO 61 IVEC = 1,KZRED
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else
                   READ (LURSP3)
-#endif
  61            CONTINUE
             END IF
             NSIM   = MIN(MAXSIM,JLRSTV)
@@ -1327,37 +1282,17 @@ C
             ISTEO  = KEOVEC
             IF (SOPPA) THEN
                CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-               JRSP4 = 0
-               CALL READST(LURSP4,LRSP4,WRK(KDIAE),JRSP4,.TRUE.)
-               IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record '//
-     &              'length on unit LURSP4 in LRST')
-#else
                CALL READT(LURSP4,KZCONF,WRK(KDIAE))
-#endif
             ENDIF
             DO 400 ISIM=1,NSIM
                IF (IBTYP(KOFFTY+KZRED+ISIM).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBC),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in LRST')
-#else
                   CALL READT(LURSP3,KZCONF,WRK(ISTBC))
-#endif
 C
 C   If SOPPA read in the p-h part of the transformed vector
 C   and construct the 2p-2h part and put everything as if read
 C
                   IF (SOPPA) THEN
-#if defined (VAR_SPLITFILES)
-                     CALL READST(LURSP5,LRSP5,
-     &                           WRK(ISTEC+KZCONF),JRSP5,.TRUE.)
-                     IF (LRSP5 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                    'record length on unit LURSP5 in LRST')
-#else
                      CALL READT(LURSP5,KZYWOP,WRK(ISTEC+KZCONF))
-#endif
                      CALL DCOPY(KZWOPT,WRK(ISTEC+KZVAR),1,
      *                          WRK(ISTEC+KZVAR+KZCONF),1)
                      DO I=0,KZCONF-1
@@ -1365,28 +1300,13 @@ C
                      ENDDO
                      CALL DZERO(WRK(ISTEC+KZVAR),KZCONF)
                   ELSE
-#if defined (VAR_SPLITFILES)
-                     CALL READST(LURSP5,LRSP5,WRK(ISTEC),JRSP5,.TRUE.)
-                     IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent '//
-     &                    'record length on unit LURSP5 in LRST (2)')
-#else
                      CALL READT(LURSP5,KZYVAR,WRK(ISTEC))
-#endif
                   ENDIF
                   ISTBC = ISTBC + KZCONF
                   ISTEC = ISTEC + KZYVAR
                ELSE
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBO),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in LRST')
-                  CALL READST(LURSP5,LRSP5,WRK(ISTEO),JRSP5,.TRUE.)
-                     IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent '//
-     &                    'record length on unit LURSP5 in LRST (3)')
-#else
                   CALL READT(LURSP3,KZYWOP,WRK(ISTBO))
                   CALL READT(LURSP5,KZYVAR,WRK(ISTEO))
-#endif
                   ISTBO = ISTBO + KZYWOP
                   ISTEO = ISTEO + KZYVAR
                ENDIF
@@ -1416,18 +1336,9 @@ C        ^--------------
          IF (KOFFTY.EQ.1) THEN
             CALL REWSPL(LURSP3)
             CALL REWSPL(LURSP5)
-#if defined (VAR_SPLITFILES)
-            JRSP3 = 0
-            JRSP5 = 0
-#endif
             CALL GETREF(WRK,KZCONF)
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP3,KZCONF,WRK,JRSP3)
-            CALL WRITST(LURSP5,1,DUMMY,JRSP5)
-#else
             CALL WRITT(LURSP3,KZCONF,WRK)
             WRITE (LURSP5) D0, D0, D0, D0
-#endif
 Chj         ... rec. 1 on LURSP5 should never be read when KOFFTY .eq. 1
             IBTYP(1) = JBCNDX
             IF (IPRRSP.GT.75) THEN
@@ -2727,8 +2638,8 @@ C
 C        CALL RSPES2(GD,REDGD,REDE,REDS,EIVAL,EIVEC,
 C    *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C    *               XINDX,WRK,LWRK)
-         WRITE(LUPRI,'(/A)')' .ABCHK E2 AND S2 CONSTUCTED : STOP'
-         CALL QUIT('RSPCTL: ABCHK FINISHED')
+         WRITE(LUPRI,'(/A)')' .ABCHK E2 AND S2 CONSTRUCTED : STOP'
+         CALL QUIT('RSPCTL: .ABCHK FINISHED')
       END IF
 C
 C     Initialize micro iteration counter
@@ -2836,39 +2747,17 @@ C
          IF (LWRK1.LT.0) CALL ERRWRK('RSPCTL 1',KWRK1-1,LWRK)
          IF (.NOT.BINMEM) THEN
             CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
             IF (KOFFTY.EQ.1) READ (LURSP3)
-#else
-            JRSP3 = 0
-            IF (KOFFTY.EQ.1)
-     &           CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
             DO 210 I=1,KZRED
-#if defined (VAR_SPLITFILES)
- 210           CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else
  210           READ (LURSP3)
-#endif
             ISTBC = KBCVEC
             ISTBO = KBOVEC
             DO 400 ISIM=1,NSIM
                IF (IBTYP(KZRED+ISIM+KOFFTY).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBC),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in RSPCTL')
-#else
                   CALL READT(LURSP3,KZCONF,WRK(ISTBC))
-#endif
                   ISTBC = ISTBC + KZCONF
                ELSE
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBO),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in RSPCTL')
-#else
                   CALL READT(LURSP3,KZYWOP,WRK(ISTBO))
-#endif
                   ISTBO = ISTBO + KZYWOP
                ENDIF
  400        CONTINUE
@@ -2913,19 +2802,11 @@ C
          CALL REWSPL(LURSP5)
          JRSP5 = 0
          IF (KOFFTY.EQ.1) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
             READ (LURSP5)
-#endif
          ENDIF
-         DO 215 I=1,KZRED
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
+         DO, I=1,KZRED
             READ (LURSP5)
-#endif
- 215     CONTINUE
+         END DO
          ISTEC = KEVECS
          ISTEO = ISTEC + NCSIM*KZYVAR
          DO 216 ISIM=1,NSIM
@@ -2939,23 +2820,13 @@ C
      *                       WRK(KSOP1),1)
                   CALL DCOPY(KZWOPT,WRK(ISTEC+KZVAR+KZCONF),1,
      *                       WRK(KSOP1+KZWOPT),1)
-#if defined (VAR_SPLITFILES)
-                  CALL WRITST(LURSP5,KZYWOP,WRK(KSOP1),JRSP5)
-               ELSE
-                  CALL WRITST(LURSP5,KZYVAR,WRK(ISTEC),JRSP5)
-#else
                   CALL WRITT(LURSP5,KZYWOP,WRK(KSOP1))
                ELSE
                   CALL WRITT(LURSP5,KZYVAR,WRK(ISTEC))
-#endif
                ENDIF
                ISTEC = ISTEC + KZYVAR
             ELSE
-#if defined (VAR_SPLITFILES)
-               CALL WRITST(LURSP5,KZYVAR,WRK(ISTEO),JRSP5)
-#else
                CALL WRITT(LURSP5,KZYVAR,WRK(ISTEO))
-#endif
                ISTEO = ISTEO + KZYVAR
             ENDIF
  216     CONTINUE
@@ -3106,29 +2977,14 @@ C
 #include "infpri.h"
 C
       CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-      JRSP4 = 0
-#endif
 C
 C *** now READ diagonals of E[2]-matrix needed for RSPLIN
 C
       IF (KZCONF .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A,JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPDIA')
-#else
          CALL READT (LURSP4,KZCONF,A)
-#endif
       END IF
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A(1+KZCONF),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZWOPT) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPDIA (2)')
-#else
          CALL READT (LURSP4,KZWOPT,A(1+KZCONF))
-#endif
       END IF
 C
 C A(1:KZVAR):         (E+SHIFT*S)
@@ -3144,13 +3000,7 @@ Chj            A(I+KZVAR) = A(I+KZVAR)*SHIFT
          END IF
          IF (KZWOPT .GT. 0) THEN
 C *** now READ orbital diagonal of S[2]-matrix
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP4,LRSP4,A(1+KZVAR+KZCONF),JRSP4,.TRUE.)
-            IF (LRSP4 .NE. KZWOPT) CALL QUIT('Inconsistent record'//
-     &           ' length on unit LURSP4 in RSPDIA (3)')
-#else
             CALL READT (LURSP4,KZWOPT,A(1+KZVAR+KZCONF))
-#endif
             CALL DSCAL(KZWOPT,SHIFT,A(1+KZVAR+KZCONF),1)
          END IF
          CALL DAXPY(KZVAR,D1,A(KZVAR+1),1,A,1)
@@ -3176,35 +3026,14 @@ C
 #include "infpri.h"
 C
       CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-      JRSP4 = 0
-#endif
 C
 C *** now READ diagonals of E[2]-matrix needed for RSPLIN
 C
       IF (KZCONF .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A,JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZCONF) THEN
-            WRITE(LUPRI,*) 'ERROR, LRSP4 .ne. KZCONF',LRSP4,KZCONF
-            CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPEDG - conf')
-         END IF
-#else
          CALL READT (LURSP4,KZCONF,A)
-#endif
       END IF
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A(1+KZCONF),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZWOPT) THEN
-            WRITE(LUPRI,*) 'ERROR, LRSP4 .ne. KZWOPT',LRSP4,KZWOPT
-            CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPEDG - orb')
-         END IF
-#else
          CALL READT (LURSP4,KZWOPT,A(1+KZCONF))
-#endif
       END IF
 C
 C *** END OF RSPEDG
@@ -3231,30 +3060,16 @@ C
 C *** now SKIP diagonals of E[2]-matrix needed for RSPLIN
 C
       IF (KZCONF .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,DUMMY,JRSP4,.FALSE.)
-#else
          READ(LURSP4)
-#endif
       END IF
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,DUMMY,JRSP4,.FALSE.)
-#else
          READ(LURSP4)
-#endif
       END IF
 C
 C *** now READ orbital diagonal of S[2]-matrix needed for RSPTRN
 C
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A(1),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZWOPT) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPSOD')
-#else
          CALL READT (LURSP4,KZWOPT,A(1))
-#endif
       END IF
 C
 C *** END OF RSPSOD
@@ -3308,6 +3123,7 @@ C
 #include "rspprp.h"
 #include "infpp.h"
 #include "inflr.h"
+#include "inflin.h"
 #include "inforb.h"
 #include "infdim.h"
 #include "infinp.h"
@@ -3795,6 +3611,15 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
+            IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
+     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
+     &                             WRK(KWRK2),LWRK2)
+     
+
+            IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
+     &                             KZYVAR,KZVAR,CMO,LUPRI,
+     &                             WRK(KWRK2),LWRK2)
+
             IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
      &                             KZVAR,WRK(KCMO2),LUPRI)
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS+(INUM-1)*KZYVAR),
@@ -3851,8 +3676,8 @@ C
 
             ELSE
 
-             WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)')
-     &         '@',LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
+               WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)') '@',
+     &         LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
 
                ROTVEL = 0.0D0
 
@@ -4551,14 +4376,7 @@ C
       IF (LWRK1.LT.0) CALL ERRWRK('RSPRES',KWRK1-1,LWRK)
       IF (SOPPA) THEN
          CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-         JRSP4 = 0
-         CALL READST(LURSP4,LRSP4,RD(KDIAE),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPRES')
-#else
          CALL READT(LURSP4,KZCONF,RD(KDIAE))
-#endif
       ENDIF
       DO 50 IBX = 1,NBX
          IRDOFF = (IBX-1)*KZYVAR + 1
@@ -4608,38 +4426,16 @@ C
       KRD   = 1
       KWRK1 = KRD + NBX*KZYVAR
       CALL REWSPL(LURSP5)
-#if !defined (VAR_SPLITFILES)
       IF (KOFFTY.EQ.1) READ(LURSP5)
-#else
-      JRSP5 = 0
-      IF (KOFFTY .EQ. 1)
-     &     CALL READST(LURSP5,LRSP5,RD(KWRK1),JRSP5,.FALSE.)
-#endif
       DO 600 K = 1,KZRED
          IF (SOPPA) THEN
             IF (IBTYP(KOFFTY+K) .EQ. JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP5,LRSP5,RD(KWRK1),JRSP5,.TRUE.)
-               IF (LRSP5 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &              'length on unit LURSP5 in RSPRES')
-            ELSE
-               CALL READST(LURSP5,LRSP5,RD(KWRK1),JRSP5,.TRUE.)
-               IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &              'length on unit LURSP5 in RSPRES (2)')
-#else
                CALL READT(LURSP5,KZYWOP,RD(KWRK1))
             ELSE
                CALL READT(LURSP5,KZYVAR,RD(KWRK1))
-#endif
             ENDIF
          ELSE
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,RD(KWRK1),JRSP5,.TRUE.)
-            IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &              'length on unit LURSP5 in RSPRES (3)')
-#else
             CALL READT(LURSP5,KZYVAR,RD(KWRK1))
-#endif
          ENDIF
          DO 700 JR = 1,NBX
             JRDOFF  = (JR-1)*KZYVAR + 1
@@ -4705,22 +4501,11 @@ C
       NTOT= NBX*KZYVAR
       CALL DZERO(BVECS,NTOT)
       CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
       IF (KOFFTY.EQ.1) READ(LURSP3)
-#else
-      JRSP3 = 0
-      IF (KOFFTY.EQ.1) CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
       DO 200 K = 1,KZRED
          IBTYPK = IBTYP(K+KOFFTY)
          IF (IBTYPK.EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK,JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in RSPEVE')
-#else
             CALL READT(LURSP3,KZCONF,WRK)
-#endif
             DO 300 JR = 1,NBX
                CALL DAXPY(KZCONF,EIVEC((2*K-1),IBOFF+JR),
      *                    WRK(1),1,BVECS(1,JR),1)
@@ -4729,13 +4514,7 @@ C
      *                 WRK(1),1,BVECS(JYOFF,JR),1)
  300        CONTINUE
          ELSE
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK,JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in RSPEVE')
-#else
             CALL READT(LURSP3,KZYWOP,WRK)
-#endif
             JZOFF = 1 + KZCONF
             JYOFF = 1 + KZVAR +  KZCONF
             DO 301 JR = 1,NBX
@@ -4885,10 +4664,10 @@ C
          CALL DCOPY(KZVAR,WRK(KS2+JTOT+KZVAR),1,WRK(KS2+JTOT+KTOT),1)
          CALL DSCAL(KZYVAR,-1.0D0,WRK(KS2+JTOT+KTOT),1)
  105  CONTINUE
-      WRITE(LUPRI,'(A,I8)')' E(2) MATRIX : DIMENSION ',KZYVAR
-      CALL OUTPUT(WRK(KE2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,1,LUPRI)
-      WRITE(LUPRI,'(A,I8)')' S(2) MATRIX : DIMENSION ',KZYVAR
-      CALL OUTPUT(WRK(KS2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,1,LUPRI)
+      WRITE(LUPRI,'(/A,I8)')' E(2) MATRIX : DIMENSION ',KZYVAR
+      CALL OUTPUT(WRK(KE2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,-1,LUPRI)
+      WRITE(LUPRI,'(/A,I8)')' S(2) MATRIX : DIMENSION ',KZYVAR
+      CALL OUTPUT(WRK(KS2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,-1,LUPRI)
       ZAMAX = D0
       IA    = 0
       JA    = 0
@@ -4955,50 +4734,66 @@ C
       JZ=JA
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZAMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
-      IF ( ZAMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JZ),
      *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IZ),
      *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JY),
      *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IY)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
+      END IF
       IZ=IB
       JZ=JB
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF (ZBMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
-      IF (ZBMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
+      END IF
       IZ=IS
       JZ=JS
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF (ZSMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',JS,' J=',IS,' DEV=',ZSMAX
-      IF(ZSMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JZ),
      *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IZ),
      *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JY),
      *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IY)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',JS,' J=',IS,' DEV=',ZSMAX
+      END IF
       IZ=ID
       JZ=JD
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF (ZDMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
-      IF(ZDMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
+      END IF
       IF ( KZYVAR.GT.MAXRM ) RETURN
       KZYRED = KZYVAR
       KZRED  = KZVAR
@@ -5027,7 +4822,7 @@ C
       WRITE(LUPRI,'(/A,/A)')' ********************************',
      *' CHECK EIGENVALUES OF E2 WITH RSPRED ROUTINE '
       IJ = 0
-      DO 500 J = 1,KZYVAR
+      DO J = 1,KZYVAR
          DO 600 I = 1,J
             IJ = IJ + 1
             IF (I.EQ.J) THEN
@@ -5036,7 +4831,7 @@ C
                REDS(IJ) = D0
             END IF
  600     CONTINUE
- 500  CONTINUE
+      END DO
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *            EIVAL,EIVEC,WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)
@@ -5264,7 +5059,7 @@ C
             WRITE(LUPRI,'(/A)')
      *      ' OVERLAP FOR ORBITAL TRIAL VECTORS'
          IF (IPRRSP.GT.90) THEN
-            CALL OUTPAK(WRK(KWRK1),2*KZDIM,1,LUPRI)
+            CALL OUTPAK(WRK(KWRK1),2*KZDIM,-1,LUPRI)
          END IF
          IF ( XMAX.GT.DTOL )
      *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
@@ -5413,7 +5208,7 @@ C
       WRITE(LUPRI,'(/A,/A)')' ********************************',
      *' CHECK EIGENVALUES OF E2 WITH RSPRED ROUTINE '
       IJ = 0
-      DO 500 J = 1,KZYDIM
+      DO J = 1,KZYDIM
          DO 600 I = 1,J
             IJ = IJ + 1
             WRK(KE2-1+IJ) = WRK(KE2MAT-1+(I-1)*KZYDIM+J)
@@ -5423,7 +5218,7 @@ C
                WRK(KS2-1+IJ) = D0
             END IF
  600     CONTINUE
- 500  CONTINUE
+      END DO
       ICTL = 2
       NSIM = 0
       KZSAV = KZRED
@@ -5623,7 +5418,7 @@ C
             WRITE(LUPRI,'(/A)')
      *      ' OVERLAP FOR ORBITAL TRIAL VECTORS'
          IF (IPRRSP.GT.130) THEN
-            CALL OUTPAK(WRK(KWRK1),2*KZDIM,1,LUPRI)
+            CALL OUTPAK(WRK(KWRK1),2*KZDIM,-1,LUPRI)
          END IF
          IF ( XMAX.GT.DTOL )
      *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
@@ -6017,7 +5812,7 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
                   tot=tot+sopr(ksymop,i,j)*2867.081D0
                endif
                if (lab2.eq.'Z2SPNORB' .and. lab1 .eq.'PVIOLA Z') then
-                  tot=tot+sopr(ksymop,i,j)*2867.081D0
+                tot=tot+sopr(ksymop,i,j)*2867.081D0
                endif
             enddo
          enddo
@@ -6091,6 +5886,367 @@ C
          END IF
          WRITE(LUPRI,'(/"@ Overlap diagnostic LAMBDA =",F10.4)') ALAMBDA
       END IF
+      RETURN
+      END
+
+C  /* Deck RSPMO2 */
+      SUBROUTINE RSPMO2 (WOP,NDIM2,NDIM1,CMO,LUPRI,WRK,LWRK)
+C
+C     Author: Casper Steinmann            2014-04-16
+C
+C     NDIM2 = KZYVAR
+C     NDIM1 = KZVAR
+C
+#include "implicit.h"
+      DIMENSION WOP(*),CMO(*),WRK(*)
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL LOCDEB, ANTSYM
+C
+#include "codata.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+
+      IF ((NASHT .GT. 0) .OR. (NSYM .NE. 1)) RETURN
+
+      LOCDEB = .FALSE.
+
+      CALL HEADER('MO Overlap Diagnostic',-1)
+
+C     Memory allocation   
+      KUCMO   = 1
+      KWOPXY  = KUCMO  + NORBT*NBAST
+      KINT    = KWOPXY + NDIM1
+      KINTMO  = KINT   + 3*NNBASX
+      KINUMO  = KINTMO + 3*NNORBX 
+      KDIAX   = KINUMO + 3*N2ORBX
+      KDIAY   = KDIAX  + NORBT
+      KDIAZ   = KDIAY  + NORBT
+      KDIFX   = KDIAZ  + NORBT
+      KDIFY   = KDIFX  + NDIM1
+      KDIFZ   = KDIFY  + NDIM1
+      KDIFR   = KDIFZ  + NDIM1
+      KINDXI  = KDIFR  + NDIM1
+      KINDXA  = KINDXI + NDIM1
+      KWRK2   = KINDXA + NDIM1
+      LWRK2   = LWRK   - KWRK2 
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('RSPMO2',-KWRK2,LWRK2)
+
+      CALL DZERO(WRK(KUCMO),NORBT*NBAST)
+      CALL DZERO(WRK(KWOPXY),NDIM1)
+      CALL DZERO(WRK(KINT),3*NNBASX)
+      CALL DZERO(WRK(KINTMO),3*NNORBX) 
+      CALL DZERO(WRK(KINUMO),3*N2ORBX)
+      CALL DZERO(WRK(KDIAX),NORBT)
+      CALL DZERO(WRK(KDIAY),NORBT)
+      CALL DZERO(WRK(KDIAZ),NORBT)
+      CALL DZERO(WRK(KDIFX),NDIM1)
+      CALL DZERO(WRK(KDIFY),NDIM1)
+      CALL DZERO(WRK(KDIFZ),NDIM1)
+      CALL DZERO(WRK(KDIFR),NDIM1)
+      CALL DZERO(WRK(KINDXI),NDIM1)
+      CALL DZERO(WRK(KINDXA),NDIM1)
+
+      CALL UPKCMO(CMO,WRK(KUCMO))
+
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*) 'NWOPPT: ', NWOPPT
+        WRITE(LUPRI,*) 'Response Vector in RSPMO2'
+        DO 111 I=1,NDIM2
+          WRITE(LUPRI,*) I, WOP(I)
+ 111    CONTINUE
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'X part of Response Vector in RSPMO2' 
+        DO 112 I=1,NDIM1
+          WRITE(LUPRI,*) I, WOP(I)
+ 112    CONTINUE
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'Y part of Response Vector in RSPMO2'
+        DO 113 I=1,NDIM1
+          WRITE(LUPRI,*) I, WOP(I+NDIM1)
+ 113    CONTINUE
+      ENDIF
+
+C ADD X AND Y PARTS OF RESPONSE VECTOR
+
+      DO 114 I=1,NDIM1
+         WRK(KWOPXY+I-1) = WOP(I) - WOP(I+NDIM1)
+ 114  CONTINUE     
+
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'X+Y Response Vector in RSPMO2'
+        DO 115 I=1,NDIM1
+          WRITE(LUPRI,*) I, WRK(KWOPXY+I-1)
+ 115    CONTINUE
+      ENDIF
+
+C
+C READ DIPOLE MATRIX FROM FILE
+C
+      LU=-1
+      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
+     &   .FALSE.)
+
+      REWIND LU
+      CALL MOLLAB('XDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT))
+     
+      CALL MOLLAB('YDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+NNBASX)) 
+
+      CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
+
+      CALL GPCLOSE(LU,'KEEP')
+
+      IF (LOCDEB)  THEN
+         WRITE (LUPRI,'(/A)') ' XDIPLEN AO Basis:'
+         CALL OUTPAK(WRK(KINT),NBAST,1,LUPRI)
+
+         WRITE (LUPRI,'(/A)') ' YDIPLEN AO Basis:'
+         CALL OUTPAK(WRK(KINT+NNBASX),NBAST,1,LUPRI)
+
+         WRITE (LUPRI,'(/A)') ' ZDIPLEN AO Basis:'
+         CALL OUTPAK(WRK(KINT+2*NNBASX),NBAST,1,LUPRI)
+      END IF
+
+
+      CALL UTHU(WRK(KINT),WRK(KINTMO),WRK(KUCMO),
+     &          WRK(KWRK2),NBAST,NORBT)
+
+      CALL DSPTSI(NORBT,WRK(KINTMO),WRK(KINUMO))
+
+      CALL UTHU(WRK(KINT+NNBASX),WRK(KINTMO+NNORBX),WRK(KUCMO),
+     &          WRK(KWRK2),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KINTMO+NNORBX),WRK(KINUMO+N2ORBX))
+
+      CALL UTHU(WRK(KINT+2*NNBASX),WRK(KINTMO+2*NNORBX),WRK(KUCMO),
+     &          WRK(KWRK2),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KINTMO+2*NNORBX),WRK(KINUMO+2*N2ORBX))
+
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'XDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'YDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO+N2ORBX),1,NORBT,1,NORBT,NORBT,
+     &              NORBT,1,LUPRI)
+        WRITE(LUPRI,*) 
+        WRITE(LUPRI,*) 'ZDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO+2*N2ORBX),1,NORBT,1,NORBT,NORBT,
+     &              NORBT,1,LUPRI)
+      ENDIF
+
+C Take out the diagonal elements
+
+        DO 116 I=1,NORBT
+          WRK(KDIAX+I-1) = WRK(KINUMO+I-1+NORBT*(I-1))
+          WRK(KDIAY+I-1) = WRK(KINUMO+I-1+NORBT*(I-1)+N2ORBX)
+          WRK(KDIAZ+I-1) = WRK(KINUMO+I-1+NORBT*(I-1)+2*N2ORBX)
+ 116    CONTINUE
+
+        IF (LOCDEB) THEN
+          WRITE(LUPRI,*) 'NORBT:', NORBT
+          WRITE(LUPRI,*) 'DIAGONAL ELEMENTS IN XDIP YDIP ZDIP'
+          DO 117 I=1,NORBT
+            WRITE(LUPRI,*) I, WRK(KDIAX+I-1), WRK(KDIAY+I-1), 
+     &                        WRK(KDIAZ+I-1)
+ 117      CONTINUE
+        ENDIF
+
+        IF (LOCDEB) THEN
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,*) 'Number of occ. orbitals: ', NRHFT
+          WRITE(LUPRI,*) 'Number of vir. orbitals: ', NVIRT
+        ENDIF
+
+        IF (LOCDEB) THEN
+          XDIPMOM = 0.0D0
+          YDIPMOM = 0.0D0
+          ZDIPMOM = 0.0D0
+          DO 222 I=1,NRHFT
+            XDIPMOM = XDIPMOM + WRK(KDIAX+I-1)
+            YDIPMOM = YDIPMOM + WRK(KDIAY+I-1)
+            ZDIPMOM = ZDIPMOM + WRK(KDIAZ+I-1)
+ 222      CONTINUE
+          XDIPMOM = 2*XDIPMOM
+          YDIPMOM = 2*YDIPMOM
+          ZDIPMOM = 2*ZDIPMOM
+
+          WRITE(LUPRI,*) 'Ground state electronic dipole moment'
+          WRITE(LUPRI,*) XDIPMOM, YDIPMOM, ZDIPMOM
+          WRITE(LUPRI,*)
+        ENDIF
+
+        KK=1
+        DO 118 I=1,NRHFT
+          DO 119 J=1,NVIRT
+             WRK(KDIFX+KK-1) = WRK(KDIAX+NRHFT+J-1) - WRK(KDIAX+I-1)
+             WRK(KDIFY+KK-1) = WRK(KDIAY+NRHFT+J-1) - WRK(KDIAY+I-1)
+             WRK(KDIFZ+KK-1) = WRK(KDIAZ+NRHFT+J-1) - WRK(KDIAZ+I-1)
+             WRK(KINDXI+KK-1) = I
+             WRK(KINDXA+KK-1) = NRHFT+J
+             KK=KK+1
+ 119      CONTINUE
+ 118   CONTINUE
+
+       IF ((KK-1) .NE. NDIM1) THEN
+         CALL QUIT('RSPMO2: Error in Dimension')
+       ENDIF
+
+        DO 120 I=1,NDIM1
+          TEMP=D0
+          TEMP = WRK(KDIFX+I-1)*WRK(KDIFX+I-1)+
+     &           WRK(KDIFY+I-1)*WRK(KDIFY+I-1)+
+     &           WRK(KDIFZ+I-1)*WRK(KDIFZ+I-1)
+          TEMP = SQRT(TEMP)
+          WRK(KDIFR+I-1) = TEMP
+ 120   CONTINUE
+
+        IF (LOCDEB) THEN
+          write(lupri,*) 'Norms for hole-particle component'
+          DO 333 I=1,NDIM1
+            KK = Int(WRK(KINDXI+I-1))
+            LL = Int(WRK(KINDXA+I-1))
+            Write(lupri,*) WRK(KDIFR+I-1), WRK(KWOPXY+I-1), KK, LL
+ 333      CONTINUE 
+        ENDIF
+
+        TEMP1=D0
+        TEMP2=D0
+        DO 121 I=1,NDIM1
+          TEMP1 = TEMP1 + WRK(KDIFR+I-1)*WRK(KWOPXY+I-1)*WRK(KWOPXY+I-1)
+          TEMP2 = TEMP2 + WRK(KWOPXY+I-1)*WRK(KWOPXY+I-1)
+121    CONTINUE
+
+       DELTAR = (TEMP1/TEMP2)*XTANG
+       WRITE(LUPRI,*)
+       WRITE(LUPRI,'(/A,F10.4)') 'Delta_R Diagnostic (Aa): ', DELTAR
+       WRITE(LUPRI,*)
+
+
+      RETURN
+      END
+C  /* Deck TRCHAR */
+      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
+c
+#ifdef BUILD_QFITLIB
+      use qfit
+#endif
+C
+C
+C     NDIM2 = KZYVAR
+C     NDIM1 = KZVAR
+C
+#include "implicit.h"
+      DIMENSION WOP(*),CMO(*),WRK(*), UDV(*)
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL LOCDEB, ANTSYM
+      real*8, dimension(:), allocatable :: dens
+      DIMENSION TRDIP(3)
+C
+#include "mxcent.h"
+#include "codata.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "nuclei.h"
+
+      LOCDEB = .FALSE.
+
+      CALL HEADER('Calculation of Transition Density charges',-1)
+
+C     Memory allocation
+      KUBOVE  = 1
+      KDCAO   = KUBOVE + N2ORBX
+      KDVAO   = KDCAO  + N2BASX
+      KDENS   = KDVAO  + N2BASX
+      KINT    = KDENS  + NNBASX
+      KWRK2   = KINT   + 3*NNBASX
+      LWRK2   = LWRK   - KWRK2
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('TRCHAR',-KWRK2,LWRK2)
+
+      CALL DZERO(WRK(KUBOVE),N2ORBX)
+      CALL DZERO(WRK(KDCAO),N2BASX)
+      CALL DZERO(WRK(KDVAO),N2BASX)
+      CALL DZERO(WRK(KDENS),NNBASX)
+      CALL DZERO(WRK(KINT),3*NNBASX)
+
+      CALL RSPZYM(1,WOP,WRK(KUBOVE))
+      CALL DSCAL(N2ORBX,-1.0D0,WRK(KUBOVE),1) 
+
+      CALL DEQ27(CMO,WRK(KUBOVE),UDV,WRK(KDCAO),WRK(KDVAO),
+     &           WRK(KWRK2),LWRK2)
+
+      IF (NASHT .GT. 1) THEN
+        CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
+        CALL DZERO(WRK(KDVAO),N2BASX) 
+      ENDIF 
+
+      CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDVAO))
+      CALL PKSYM1(WRK(KDVAO),WRK(KDENS),NBAS,NSYM,1)
+
+      IF (LOCDEB)  THEN
+         WRITE (LUPRI,'(/A)') ' Transition Density Matrix'
+         CALL OUTPAK(WRK(KDENS),NBAST,1,LUPRI)
+      ENDIF
+
+      !write(*,*) "rsp:", cord
+      !write(*,*) "rsp:", charge
+      !call qfit_initialize(cord(:,1:natoms),charge(1:natoms))
+
+      LU=-1
+      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
+     &     .FALSE.)
+
+      REWIND LU
+      CALL MOLLAB('XDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT))
+
+      CALL MOLLAB('YDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+NNBASX))
+
+      CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
+
+      CALL GPCLOSE(LU,'KEEP')
+
+      IF (LOCDEB) THEN
+          WRITE (LUPRI,'(/A)') ' XDIPLEN AO Basis:'
+          CALL OUTPAK(WRK(KINT),NBAST,1,LUPRI)
+
+          WRITE (LUPRI,'(/A)') ' YDIPLEN AO Basis:'
+          CALL OUTPAK(WRK(KINT+NNBASX),NBAST,1,LUPRI)
+
+          WRITE (LUPRI,'(/A)') ' ZDIPLEN AO Basis:'
+          CALL OUTPAK(WRK(KINT+2*NNBASX),NBAST,1,LUPRI)
+      ENDIF
+
+      TRDIP(1) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT),1)
+      TRDIP(2) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+NNBASX),1)
+      TRDIP(3) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+2*NNBASX),1) 
+
+      WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
+      WRITE(LUPRI,'(5x,3F12.6)') TRDIP
+
+      allocate( dens( nnbasx ) )
+      CALL DCOPY(NNBASX,WRK(KDENS),1,dens,1)
+#ifdef BUILD_QFITLIB
+      call qfit_set_transition_dipole( TRDIP )
+      call qfit_fit(dens)
+#endif
+      deallocate( dens )
+      CALL QFITRES
       RETURN
       END
 ! -- end of rspe2c.F --

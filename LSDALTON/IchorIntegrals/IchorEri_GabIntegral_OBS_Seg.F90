@@ -1,11 +1,12 @@
 MODULE IchorEriGabintegralOBSGeneralModSeg
 !Automatic Generated Code (AGC) by runGABdriver.f90 in tools directory
 !Contains routines for Segmented contracted Basisset 
-use IchorprecisionModule
-use IchorCommonModule
+use IchorprecisionMod
+use IchorCommonMod
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000MODGen
 use AGC_CPU_OBS_BUILDRJ000MODSeg1Prim
+use IchorEriGabintegralCPUMcMGeneralMod
 use AGC_CPU_OBS_VERTICALRECURRENCEMODAGen
 use AGC_CPU_OBS_VERTICALRECURRENCEMODBGen
 use AGC_CPU_OBS_VERTICALRECURRENCEMODDGen
@@ -14,30 +15,34 @@ use AGC_CPU_OBS_VERTICALRECURRENCEMODASeg
 use AGC_CPU_OBS_VERTICALRECURRENCEMODBSeg
 use AGC_CPU_OBS_VERTICALRECURRENCEMODDSeg
 use AGC_CPU_OBS_VERTICALRECURRENCEMODCSeg
-use AGC_CPU_OBS_TRMODAtoCSeg
-use AGC_CPU_OBS_TRMODAtoDSeg
-use AGC_CPU_OBS_TRMODBtoCSeg
-use AGC_CPU_OBS_TRMODBtoDSeg
+use AGC_CPU_OBS_TRMODAtoCSeg1
+use AGC_CPU_OBS_TRMODAtoCSeg2
+use AGC_CPU_OBS_TRMODAtoDSeg1
+use AGC_CPU_OBS_TRMODAtoDSeg2
+use AGC_CPU_OBS_TRMODBtoCSeg1
+use AGC_CPU_OBS_TRMODBtoDSeg1
 use AGC_CPU_OBS_TRMODCtoASeg
 use AGC_CPU_OBS_TRMODDtoASeg
 use AGC_CPU_OBS_TRMODCtoBSeg
 use AGC_CPU_OBS_TRMODDtoBSeg
-use AGC_OBS_HorizontalRecurrenceLHSModAtoB
-use AGC_OBS_HorizontalRecurrenceLHSModBtoA
-use AGC_OBS_HorizontalRecurrenceRHSModCtoD
-use AGC_OBS_HorizontalRecurrenceRHSModDtoC
-use AGC_OBS_Sphcontract1Mod
-use AGC_OBS_Sphcontract2Mod
+use AGC_CPU_OBS_HorizontalRecurrenceLHSModAtoB
+use AGC_CPU_OBS_HorizontalRecurrenceLHSModBtoA
+use AGC_CPU_OBS_HorizontalRecurrenceRHSModCtoD
+use AGC_CPU_OBS_HorizontalRecurrenceRHSModDtoC
+use AGC_CPU_OBS_Sphcontract1Mod
+use AGC_CPU_OBS_Sphcontract2Mod
   
 private   
-public :: IchorGabIntegral_OBS_Seg,IchorGabIntegral_OBS_general_sizeSeg  
+public :: IGI_OBS_Seg,IGI_OBS_general_sizeSeg  
   
 CONTAINS
   
   
-  subroutine IchorGabIntegral_OBS_Seg(nPrimA,nPrimB,&
+  subroutine IGI_OBS_Seg(nPrimA,nPrimB,&
        & nPrimP,IntPrint,lupri,&
        & nContA,nContB,nContP,pexp,ACC,BCC,&
+       & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&
+       & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
@@ -48,6 +53,8 @@ CONTAINS
     integer,intent(in) :: IntPrint,lupri
     integer,intent(in) :: nContA,nContB,nContP,nTABFJW1,nTABFJW2
     integer,intent(in) :: AngmomA,AngmomB
+    integer,intent(in) :: nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB
+    integer,intent(in) :: nCartOrbCompP,nOrbCompP,nTUVP,nTUV
     real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB)
     logical,intent(in)     :: Psegmented
     real(realk),intent(in) :: pexp(nPrimP)
@@ -81,6 +88,7 @@ CONTAINS
 !    nlmA = 2*AngmomA+1
 !    nlmB = 2*AngmomB+1
     AngmomID = 10*AngmomA+AngmomB
+    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -519,11 +527,20 @@ CONTAINS
             & TMParray2)
         call ExtractGabElmP15Seg(TMParray2,LOCALINTS)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorGabIntegral_OBS_Seg',-1)
+        call IGI_CPU_McM_general(nPrimA,nPrimB,&
+           & nPrimP,IntPrint,lupri,&
+           & nContA,nContB,nContP,pexp,ACC,BCC,&
+           & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&
+           & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&
+           & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+           & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
+           & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,&
+           & Acenter,Bcenter,spherical,&
+           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
     END SELECT
-  end subroutine IchorGabIntegral_OBS_Seg
+  end subroutine IGI_OBS_Seg
   
-  subroutine IchorGabIntegral_OBS_general_sizeSeg(TMParray1maxsize,&
+  subroutine IGI_OBS_general_sizeSeg(TMParray1maxsize,&
          &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,nContP,nPrimB)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize
@@ -533,6 +550,7 @@ CONTAINS
     integer :: AngmomID
     
     AngmomID = 10*AngmomA+AngmomB
+    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code
     TMParray2maxSize = 1
     TMParray1maxSize = 1
     BasisContmaxsize = 1
@@ -598,9 +616,11 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,900)
        TMParray2maxSize = MAX(TMParray2maxSize,625)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorGabIntegral_OBS_general_size',-1)
+      call IGI_CPU_McM_general_size(TMParray1maxsize,&
+          & TMParray2maxsize,AngmomA,AngmomB,&
+          & nPrimP,nContP,nPrimB,.TRUE.)
     END SELECT
-  end subroutine IchorGabIntegral_OBS_general_sizeSeg
+  end subroutine IGI_OBS_general_sizeSeg
   
   subroutine ExtractGabElmP1Seg(AUXarray,Output)
     implicit none

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck onesop */
       SUBROUTINE ONESOP(STHMAT,DENMAT,FOCMAT,FACINT,COORC,WORK,LWORK,
@@ -170,7 +169,7 @@ C     ... note that STDER2 is not implemented yet, and will require more than 6
 #include "expopt.h"
 C
 #include "energy.h"
-#include "ibtfun.h"
+
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
       IF (IPRINT .GT. 4) CALL TITLER('Output from ONESO1','*',103)
 C
@@ -180,13 +179,13 @@ C     *****************************************
 C
       IDENB = IDENB0 - KHKTB
       DO 100 ISYMOP = 0, MAXOPR
-      IF(IBTAND(ISYMOP,MAB) .EQ. 0) THEN
+      IF(IAND(ISYMOP,MAB) .EQ. 0) THEN
          IDENB  = IDENB + KHKTB
          ICENTB = NUCNUM(NCENTB,ISYMOP+1)
          ONECEN = ICENTA .EQ. ICENTB
-         SIGNBX = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-         SIGNBY = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-         SIGNBZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+         SIGNBX = PT(IAND(ISYMAX(1,1),ISYMOP))
+         SIGNBY = PT(IAND(ISYMAX(2,1),ISYMOP))
+         SIGNBZ = PT(IAND(ISYMAX(3,1),ISYMOP))
          CORBX  = SIGNBX*CORBX0
          CORBY  = SIGNBY*CORBY0
          CORBZ  = SIGNBZ*CORBZ0
@@ -524,7 +523,7 @@ C
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSYM1',-1)
 C
 C     Loop over all irreps in molecule
@@ -539,33 +538,33 @@ C
          NAOSI = NAOS(IREP+1)
          IF (NAOSI .EQ. 0) GOTO 110
          DO 200 I = ISTR,ISTR + NAOSI - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I), -8),  255)
             IOFF = KSTRT(IA)
             MULA = ISTBAO(IA)
             INDA = IOFF + NA
             DO 300 J = ISTR,I
-               IB     = IBTAND(IBTSHR(IPIND(J),16),65535)
-               NB     = IBTAND(IBTSHR(IPIND(J), 8),  255)
+               IB     = IAND(ISHFT(IPIND(J),-16),65535)
+               NB     = IAND(ISHFT(IPIND(J), -8),  255)
                JOFF   = KSTRT(IB)
                NHKTB  = NHKT(IB)
                KHKTB  = KHKT(IB)
                MULB   = ISTBAO(IB)
-               MAB    = IBTOR(MULA,MULB)
-               KAB    = IBTAND(MULA,MULB)
+               MAB    = IOR(MULA,MULB)
+               KAB    = IAND(MULA,MULB)
                HKAB   = FMULT(KAB)
                ISOFF  = ISOFF + 1
                DSYMIJ = DSO(ISOFF)
                IF (DOFOCK) FSYMIJ = FSO(ISOFF)
                INDB   = JOFF + NB - KHKTB
                DO 400 ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MAB) .NE. 0) GOTO 400
+                  IF (IAND(ISYMOP,MAB) .NE. 0) GOTO 400
                   INDB = INDB + KHKTB
 C
 C                 Weight and parity factor
 C
                   FAC = HKAB*
-     *                  PT(IBTAND(ISYMOP,IBTXOR(IREP,ISYMAO(NHKTB,NB))))
+     *                  PT(IAND(ISYMOP,IEOR(IREP,ISYMAO(NHKTB,NB))))
                   INDM = MAX(INDA,INDB)
                   IND  = (INDM*(INDM - 3))/2 + INDA + INDB
                   DENMAT(IND) = DENMAT(IND) + FAC*DSYMIJ
@@ -614,7 +613,7 @@ C
       LOGICAL LDIAG, FULMAT, ANTI
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM1',-1)
          WRITE (LUPRI,'(A,2I5)') ' ICENTA/B ', ICENTA, ICENTB
@@ -647,12 +646,12 @@ C
 C     Run over irrep's of the differentiation operator
 C
       DO 30 IREPD = 0,MAXREP
-         IF (IBTAND(MULJ,IBTXOR(IREPD,ISYTYJ)) .EQ. 0) THEN
+         IF (IAND(MULJ,IEOR(IREPD,ISYTYJ)) .EQ. 0) THEN
             IF (ICL .EQ. 1) THEN
                FAC = HKAB
             ELSE
-               FAC = - HKAB*PT(IBTAND(ISYTYJ,ISYMOP))
-     *                     *PT(IBTAND(IREPD, ISYMOP))
+               FAC = - HKAB*PT(IAND(ISYTYJ,ISYMOP))
+     *                     *PT(IAND(IREPD, ISYMOP))
             END IF
             IF (IPRINT .GT. 20) THEN
                WRITE (LUPRI, '(/A,3I5)') ' ICL, JCDIR, IREPD ',
@@ -725,7 +724,7 @@ C
 #include "csym1.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DASYM1',-1)
          WRITE (LUPRI,'(A,2I5)') ' ICENTA/B ', ICENTA, ICENTB
@@ -773,23 +772,23 @@ C
 C     Run over irreps of the differentiation operator
 C
       DO 30 IREPD = 0,MAXREP
-         IF (IBTAND(MULJ,IBTXOR(IREPD,ISYTYJ)) .EQ. 0) THEN
+         IF (IAND(MULJ,IEOR(IREPD,ISYTYJ)) .EQ. 0) THEN
             IF (ONECEN) THEN
                IF (ICL .EQ. 1) THEN
-                  FAC = HKAB*PT(IBTAND(ISYTYJ,JSYMOP))
-     *                      *PT(IBTAND(IREPD ,JSYMOP))
+                  FAC = HKAB*PT(IAND(ISYTYJ,JSYMOP))
+     *                      *PT(IAND(IREPD ,JSYMOP))
                ELSE
                   FAC = - HKAB
                ENDIF
             ELSE
                IF (ICL .EQ. 1) THEN
-                  FAC = HKAB*PT(IBTAND(ISYTYJ,JSYMOP))
-     *                      *PT(IBTAND(IREPD ,JSYMOP))
+                  FAC = HKAB*PT(IAND(ISYTYJ,JSYMOP))
+     *                      *PT(IAND(IREPD ,JSYMOP))
                ELSE IF (ICL .EQ. 2) THEN
                   FAC = HKAB
                ELSE
-                  FAC = - HKAB*PT(IBTAND(ISYTYJ,ISYMOP))
-     *                        *PT(IBTAND(IREPD, ISYMOP))
+                  FAC = - HKAB*PT(IAND(ISYTYJ,ISYMOP))
+     *                        *PT(IAND(IREPD, ISYMOP))
                END IF
             END IF
             IF (IPRINT .GT. 20) THEN
@@ -853,7 +852,7 @@ C
 #include "csym1.h"
 #include "symmet.h"
 #include "symind.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1S',-1)
          WRITE (LUPRI, '(A, I5)') ' KB ', KB
@@ -872,7 +871,7 @@ C
 C        Loop over AOs which are of symmetry IREP in stabilizer MULA
 C
          DO 200 NA = 1, KHKTA
-         IF (IBTAND(MULA,IBTXOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
+         IF (IAND(MULA,IEOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
             NAT = KHKTB*(NA - 1)
             IF (LDIAG) THEN
                KHKTBB = NA
@@ -880,11 +879,11 @@ C
                KHKTBB = KHKTB
             END IF
             DO 300 NB = 1,KHKTBB
-            IF (IBTAND(MULB,IBTXOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
+            IF (IAND(MULB,IEOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
 C
 C              Weight and parity factor
 C
-               FAC = HKAB*PT(IBTAND(KB,IBTXOR(IREP,ISYMAO(NHKTB,NB))))
+               FAC = HKAB*PT(IAND(KB,IEOR(IREP,ISYMAO(NHKTB,NB))))
 C
 C              Locate SO integrals to which AO's contribute
 C
@@ -938,12 +937,12 @@ C
       DIMENSION AO(*), DMAT(*)
 #include "onecom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 C
       DO JREP = 0, MAXREP
          DO NA = 1, KHKTA
-            IF (IBTAND(MULA,IBTXOR(JREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
+            IF (IAND(MULA,IEOR(JREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
                NAT = KHKTB*(NA - 1)
                IF (LDIAG) THEN
                   KHKTBB = NA
@@ -951,10 +950,10 @@ C
                   KHKTBB = KHKTB
                END IF
                DO NB = 1, KHKTBB
-                  IF (IBTAND(MULB,IBTXOR(JREP,ISYMAO(NHKTB,NB))).EQ.0) 
+                  IF (IAND(MULB,IEOR(JREP,ISYMAO(NHKTB,NB))).EQ.0) 
      &                 THEN
-                     FAC = FACSYM*PT(IBTAND(0,
-     &                     IBTXOR(JREP,ISYMAO(NHKTB,NB))))/(MULTA*MULTB)
+                     FAC = FACSYM*PT(IAND(0,
+     &                     IEOR(JREP,ISYMAO(NHKTB,NB))))/(MULTA*MULTB)
                      IORBAB = ITRI(IDENA+NA,IDENB+NB)
                      EXPVAL = EXPVAL + FAC*AO(NAT+NB)*DMAT(IORBAB)
                   END IF
@@ -990,7 +989,7 @@ C
 #include "csym1.h"
 #include "symmet.h"
 #include "symind.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1N',-1)
          WRITE (LUPRI, '(A,2I5)') ' IREPO, KB ', IREPO, KB
@@ -1001,7 +1000,7 @@ C     Loop over irreps for first basis function - those for second
 C     are obtained from operator symmetry IREPO
 C
       DO 100 IREPA = 0, MAXREP
-         IREPB = IBTXOR(IREPO,IREPA)
+         IREPB = IEOR(IREPO,IREPA)
          IF (FULMAT) INDOFF = NPARNU(IREPO+1,MAX(IREPA,IREPB)+1)
          IF (ANTI .AND. (IREPA .LT. IREPB)) THEN
             FAB = - HKAB
@@ -1012,7 +1011,7 @@ C
 C        Loop over AOs which are of symmetry IREPA in stabilizer MULA
 C
          DO 200 NA = 1, KHKTA
-         IF (IBTAND(MULA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))).EQ.0) THEN
+         IF (IAND(MULA,IEOR(IREPA,ISYMAO(NHKTA,NA))).EQ.0) THEN
             NAT = KHKTB*(NA - 1)
             IF (LDIAG) THEN
                KHKTBB = NA
@@ -1021,11 +1020,11 @@ C
             ENDIF
             DO 300 NB = 1,KHKTBB
             IF (NA.EQ.NB .AND. LDIAG .AND. IREPA .LT. IREPB) GOTO 300
-            IF (IBTAND(MULB,IBTXOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
+            IF (IAND(MULB,IEOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
 C
 C              Weight and parity factor
 C
-               FAC = FAB*PT(IBTAND(KB,IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+               FAC = FAB*PT(IAND(KB,IEOR(IREPB,ISYMAO(NHKTB,NB))))
 C
 C              Locate SO integrals to which AOs contribute
 C
@@ -1092,7 +1091,7 @@ C
 #include "csym1.h"
 #include "symmet.h"
 #include "symind.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1NC',-1)
          WRITE (LUPRI, '(A,2I5)') ' IREPO, KB ', IREPO, KB
@@ -1103,7 +1102,7 @@ C     Loop over irreps for first basis function - those for second
 C     are obtained from operator symmetry IREPO
 C
       DO 100 IREPA = 0, MAXREP
-         IREPB = IBTXOR(IREPO,IREPA)
+         IREPB = IEOR(IREPO,IREPA)
          JOFFA = 0
          JOFFB = 0
          IF (IREPA .GT. 0) JOFFA = JOFFA + ISUM(IREPA,NAOS,1)
@@ -1118,7 +1117,7 @@ C
 C        Loop over AOs which are of symmetry IREPA in stabilizer MULA
 C
          DO 200 NA = 1, KHKTA
-         IF (IBTAND(MULA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))).EQ.0) THEN
+         IF (IAND(MULA,IEOR(IREPA,ISYMAO(NHKTA,NA))).EQ.0) THEN
             NAT = KHKTB*(NA - 1)
             IF (LDIAG) THEN
                KHKTBB = NA
@@ -1127,11 +1126,11 @@ C
             ENDIF
             DO 300 NB = 1,KHKTBB
             IF (NA.EQ.NB .AND. LDIAG .AND. IREPA .LT. IREPB) GOTO 300
-            IF (IBTAND(MULB,IBTXOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
+            IF (IAND(MULB,IEOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
 C
 C              Weight and parity factor
 C
-               FAC = FAB*PT(IBTAND(KB,IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+               FAC = FAB*PT(IAND(KB,IEOR(IREPB,ISYMAO(NHKTB,NB))))
 C
 C              Locate SO integrals to which AOs contribute
 C
@@ -1192,7 +1191,7 @@ C
 #include "onecom.h"
 #include "sphtrm.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 10) THEN
          WRITE(LUPRI,'(A,2I6)') ' KCKT? ', KCKTA, KCKTB

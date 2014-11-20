@@ -3,6 +3,9 @@ subroutine lsmpi_init(OnMaster)
    use lsmpi_type
    use infpar_module
    use ls_env
+#ifdef VAR_SCALAPACK  
+   use matrix_operations_scalapack
+#endif
    implicit none
    logical, intent(inout) :: OnMaster
    integer(kind=ls_mpik)  :: ierr
@@ -17,26 +20,42 @@ subroutine lsmpi_init(OnMaster)
    nInteger8 = 0
    nCha      = 0
 
+   if (call_mpi_init) then
 #ifdef VAR_CHEMSHELL
-   MPI_COMM_LSDALTON = lsdalton_chemsh_comm()
+     MPI_COMM_LSDALTON = lsdalton_chemsh_comm()
 #else
+     call MPI_INIT( ierr )
+     MPI_COMM_LSDALTON        = MPI_COMM_WORLD
+#endif
+   endif
 
-   call MPI_INIT( ierr )
+   !Set default mpi message sizes
+   SPLIT_MPI_MSG      = 100000000
+   MAX_SIZE_ONE_SIDED =  12500000
 
-   MPI_COMM_LSDALTON        = MPI_COMM_WORLD
    lsmpi_enabled_comm_procs = .false.
+
+   !TEST WHETHER THE MPI VARIABLES AND THE INTERNALLY DECLARED ls_mpik have the
+   !same kind
+   if(huge(ierr) /= huge(MPI_COMM_WORLD))then
+      print *,"WARNING: THE MPI INTRINSIC VARIABLES AND THE ls_mpik ARE OF&
+      & DIFFERENT KIND, YOUR JOB IS LIKELY TO FAIL",huge(ierr),huge(MPI_COMM_WORLD)
+   endif
 
    !asynchronous progress is off per default, might be switched on with an
    !environment variable, or by spawning communication processes
    LSMPIASYNCP             = .false.
    call ls_getenv(varname="LSMPI_ASYNC_PROGRESS",leng=20,output_bool=LSMPIASYNCP)
 
-#endif
 
    call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
    call get_rank_for_comm( MPI_COMM_LSDALTON, infpar%mynum  )
    call get_size_for_comm( MPI_COMM_LSDALTON, infpar%nodtot )
-
+   !default number of nodes to be used with scalapack - can be changed
+   infpar%ScalapackGroupSize = infpar%nodtot
+#ifdef VAR_SCALAPACK  
+   scalapack_mpi_set = .FALSE.
+#endif   
    infpar%master = int(0,kind=ls_mpik);
 
    !CHECK IF WE ARE ON THE MAIN MAIN MAIN MASTER PROCESS (NOT IN LOCAL GROUP,
@@ -75,6 +94,7 @@ end subroutine lsmpi_init
 #ifdef VAR_MPI
 
 subroutine lsmpi_slave(comm)
+   use lsparameters
    use lstiming
    use infpar_module
    use lsmpi_type
@@ -82,6 +102,9 @@ subroutine lsmpi_slave(comm)
    use integralinterfaceMod
    use dec_driver_slave_module
    use lspdm_tensor_operations_module
+#ifdef VAR_SCALAPACK  
+   use matrix_operations_scalapack
+#endif
    implicit none
    !> Communicator from which task is to be received
    integer(kind=ls_mpik) :: comm 
@@ -94,10 +117,9 @@ subroutine lsmpi_slave(comm)
    do while(stay_in_slaveroutine)
 
       call time_start_phase(PHASE_IDLE)
-
       call ls_mpibcast(job,infpar%master,comm)
-
       call time_start_phase(PHASE_WORK)
+
 
       select case(job)
       case(MATRIXTY);
@@ -141,18 +163,14 @@ subroutine lsmpi_slave(comm)
          ! DEC MP2 integrals and amplitudes
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
-      case(MP2INAMPRI);
-         call MP2_RI_EnergyContribution_slave
-      case(CCGETGMO);
-         call cc_gmo_data_slave
-      case(MOCCSDDATA);
-         call moccsd_data_slave
+      case(RIMP2INAMP);
+         call RIMP2_integrals_and_amplitudes_slave
+      case(RIMP2FULL);
+         call full_canonical_rimp2_slave
       case(DEC_SETTING_TO_SLAVES);
          call set_dec_settings_on_slaves
       case(CCSDDATA);
          call ccsd_data_preparation
-      case(CCSD_COMM_PROC_MASTER);
-         call get_master_comm_proc_to_wrapper
       case(MO_INTEGRAL_SIMPLE);
          call get_mo_integral_par_slave
       case(CCSDSLV4E2);
@@ -162,13 +180,17 @@ subroutine lsmpi_slave(comm)
       case(RPAGETFOCK);
          call rpa_fock_slave
 #ifdef MOD_UNRELEASED
+      case(CCGETGMO);
+         call cc_gmo_data_slave
+      case(MOCCSDDATA);
+         call moccsd_data_slave
       case(CCSDPTSLAVE);
          call ccsdpt_slave
 #endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
       case(ARRAYTEST);
-         call get_slaves_to_array_test
+         call get_slaves_to_tensor_test
       case(GROUPINIT);
          call init_mpi_groups_slave
          ! DEC driver - main loop
@@ -178,14 +200,24 @@ subroutine lsmpi_slave(comm)
          call lsmpi_default_mpi_group
 #ifdef VAR_SCALAPACK
       case(GRIDINIT);
-         call PDM_GRIDINIT_SLAVE
+         IF(scalapack_member)THEN
+            call PDM_GRIDINIT_SLAVE
+         ENDIF
       case(GRIDEXIT);
-         call PDM_GRIDEXIT_SLAVE
+         IF(scalapack_member)THEN
+            call PDM_GRIDEXIT_SLAVE
+         ENDIF
       case(PDMSLAVE);
-         call PDM_SLAVE
+         IF(scalapack_member)THEN
+            !inside the PDM_SLAVE the 
+            !scalapack_comm communicator is used
+            !only call PDM_SLAVE if this rank is 
+            !a member of this communicator
+            call PDM_SLAVE()
+         ENDIF
 #endif
       case(PDMA4SLV);
-         call PDM_ARRAY_SLAVE(comm)
+         call PDM_tensor_SLAVE(comm)
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);
@@ -211,6 +243,14 @@ subroutine lsmpi_slave(comm)
       case(LSPDM_SLAVES_SHUT_DOWN_CHILD)
          if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
          call lspdm_shut_down_comm_procs
+
+      case(SET_GPUMAXMEM);
+         call ls_mpibcast(GPUMAXMEM,infpar%master,comm)
+
+      case(SET_SPLIT_MPI_MSG);
+         call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
+      case(SET_MAX_SIZE_ONE_SIDED);
+         call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########
@@ -238,6 +278,7 @@ subroutine lsmpi_slave(comm)
          call lsmpi_finalize(6,.FALSE.)
          stay_in_slaveroutine = .false.
       end select
+
    end do
 
 end subroutine lsmpi_slave

@@ -35,6 +35,8 @@ class decinfo_class:
       self.ecorrlag   = []
       self.ecorrtype  = []
       self.esterr     = 0.0
+      self.OccSize    = [0.0,0.0,0.0]
+      self.VirSize    = [0.0,0.0,0.0]
       self.enable_fragread = False
 
    ####################################
@@ -42,11 +44,17 @@ class decinfo_class:
    ####################################
 
    plot_pair_energies = plot_pair_energies
+   plot_SF_energy_errors = plot_SF_energy_errors
 
    #READ DEC SPECIFIC INFO
    def get_dec_info(self,filelines,fragtype,fromfrag):
       
-      if(fragtype=="MP2"):
+      if(fragtype=="RPA"):
+        self.ecorrtype.append("RPA")
+        self.ecorrocc.append(0.0)
+        self.ecorrvirt.append(0.0)
+        self.ecorrlag.append(0.0)
+      elif(fragtype=="MP2"):
         self.ecorrtype.append("MP2")
         self.ecorrocc.append(0.0)
         self.ecorrvirt.append(0.0)
@@ -67,9 +75,9 @@ class decinfo_class:
         self.ecorrvirt.append(0.0)
         self.ecorrlag.append(0.0)
       elif(fragtype=="CCSD(T)"):
-        self.ecorrtype.append("CCSD(T)")
         self.ecorrtype.append("CCSD")
         self.ecorrtype.append("(T)")
+        self.ecorrtype.append("CCSD(T)")
         self.ecorrocc.append(0.0)
         self.ecorrocc.append(0.0)
         self.ecorrocc.append(0.0)
@@ -79,17 +87,28 @@ class decinfo_class:
         self.ecorrlag.append(0.0)
         self.ecorrlag.append(0.0)
         self.ecorrlag.append(0.0)
+      else:
+        print "ERROR(get_dec_info): fragtype,",fragtype,"not understood"
+        exit()
 
       #FIRST ROUND GET BASIC INFO 
+      found_fot = False
       found_sf = False
       found_pf = False
       found_nf = False
+      found_Ec = False
+      found_os = False
+      found_vs = False
 
       allfound = False
 
       for i in range(len(filelines)):
         line = filelines[i]
         if(fromfrag):
+          #READ FOT:
+          if ("FOT (Fragment Optimization Threshold)" in line):
+            self.fotfloat = float(line.split()[-1])
+            found_fot = True
           #READ NUMBER OF JOBS
           if ("DEC JOB SUMMARY: Number of single jobs =" in line):
             self.sfragjobs = int(line.split()[-1])
@@ -100,51 +119,107 @@ class decinfo_class:
           if ("DEC JOB SUMMARY: Total number of jobs  =" in line):
             self.nfragjobs = int(line.split()[-1])
             found_nf = True
+          if ("SUMMARY FOR PAIR ESTIMATE ANALYSIS" in line):
+            self.ecorrtype.append("Estimated")
           #READ DEC CORRELATION ENEGIES
-          if ("Lagrangian scheme energy      :"    in line):
-            self.ecorrlag[0]  = float(line.split()[-1])
-          if ("Occupied scheme energy        :"    in line):
+          # RPA
+          if("RPA occupied   correlation energy :"  in line):
             self.ecorrocc[0]  = float(line.split()[-1])
-          if ("Virtual scheme energy         :"    in line):
+            found_Ec = True
+          if("RPA virtual    correlation energy :"  in line):
             self.ecorrvirt[0] = float(line.split()[-1])
+            found_Ec = True
+          # MP2
+          if("MP2 occupied   correlation energy :"  in line):
+            self.ecorrocc[0]  = float(line.split()[-1])
+            found_Ec = True
+          if("MP2 virtual    correlation energy :"  in line):
+            self.ecorrvirt[0] = float(line.split()[-1])
+            found_Ec = True
+          if("MP2 Lagrangian correlation energy :"  in line):
+            self.ecorrlag[0] = float(line.split()[-1])
+            found_Ec = True
+          # CCSD
           if("CCSD occupied correlation energy :"  in line):
-            self.ecorrocc[1]  = float(line.split()[-1])
+            self.ecorrocc[0]  = float(line.split()[-1])
+            found_Ec = True
           if("CCSD virtual  correlation energy :"  in line):
+            self.ecorrvirt[0] = float(line.split()[-1])
+            found_Ec = True
+          # (T)
+          if(" (T) occupied correlation energy :"   in line):
+            self.ecorrocc[1]  = float(line.split()[-1])
+            found_Ec = True
+          if(" (T) virtual  correlation energy :"   in line):
             self.ecorrvirt[1] = float(line.split()[-1])
-          if("(T) occupied correlation energy :"   in line):
+            found_Ec = True
+          # CCSD(T)
+          if("Total CCSD(T) occupied correlation energy :"   in line):
             self.ecorrocc[2]  = float(line.split()[-1])
-          if("(T) virtual  correlation energy :"   in line):
+            found_Ec = True
+          if("Total CCSD(T) virtual  correlation energy :"   in line):
             self.ecorrvirt[2] = float(line.split()[-1])
+            found_Ec = True
+          # Estimated intrinsic error
           if ("*** Estimated intrinsic error :"    in line):
             self.esterr = float(line.split()[-1])
+          #READ FRAGMENT SIZES:
+          # if the estimates size are present they are first read
+          # and then overwritten by the final sizes
+          #read occ size
+          if ("FRAGANALYSIS: Max/Ave/Min occ         :" in line):
+            self.OccSize[0] = float(line.split()[-5]) # read max occ size
+            self.OccSize[1] = float(line.split()[-3]) # read ave occ size
+            self.OccSize[2] = float(line.split()[-1]) # read min occ size
+            found_os = True
+          #read vir size
+          if ("FRAGANALYSIS: Max/Ave/Min unocc       :" in line):
+            self.VirSize[0] = float(line.split()[-5]) # read max vir size
+            self.VirSize[1] = float(line.split()[-3]) # read ave vir size
+            self.VirSize[2] = float(line.split()[-1]) # read min vir size
+            found_vs = True
+        
+          allfound = (found_fot and found_sf and found_pf and found_nf and found_Ec and found_os and found_vs)
+
         else:
           #READ NUMBER OF JOBS
-          if ("ORBITAL DISTRIBUTION INFORMATION" in line):
-            j=4
-            while("Total:" not in filelines[i+j]):
-              if(int(filelines[i+j].split()[-2]) != 0 and int(filelines[i+j].split()[-2]) != 0):
-                self.sfragjobs += 1
-              j += 1
+          if ("FULL JOB SUMMARY: Number of single jobs =" in line):
+            self.sfragjobs = int(line.split()[-1])
+            found_sf = True
+          if ("FULL JOB SUMMARY: Number of pair jobs   =" in line):
+            self.pfragjobs = int(line.split()[-1])
+            found_pf = True
+          if ("FULL JOB SUMMARY: Total number of jobs  =" in line):
+            self.nfragjobs = int(line.split()[-1])
+            found_nf = True
+
           #READ REFERENCE FULL CALCULATION
-          if("Total CCSD(T) correlation energy        ="  in line):
+          if("RPA correlation energy :"  in line):
             self.ecorrocc[0]  = float(line.split()[-1])
-          if("Total CCSD correlation energy           ="  in line):
+            found_Ec = True
+          if("MP2 correlation energy :"  in line):
+            self.ecorrocc[0]  = float(line.split()[-1])
+            found_Ec = True
+          if("CC2 correlation energy :"  in line):
+            self.ecorrocc[0]  = float(line.split()[-1])
+            found_Ec = True
+          if("CCD correlation energy :"  in line):
+            self.ecorrocc[0]  = float(line.split()[-1])
+            found_Ec = True
+          if("CCSD correlation energy :"  in line):
+            self.ecorrocc[0]  = float(line.split()[-1])
+            found_Ec = True
+          if(" (T) correlation energy  :"  in line):
             self.ecorrocc[1]  = float(line.split()[-1])
-          if("Total CCSD(T) energy contribution       ="  in line):
+            found_Ec = True
+          if("CCSD(T) correlation energy  :"  in line):
             self.ecorrocc[2]  = float(line.split()[-1])
-          if("Total CCD correlation energy           ="  in line):
-            self.ecorrocc[1]  = float(line.split()[-1])
+            found_Ec = True
 
-        #allfound = (found_sf and found_pf and found_nf)
-        #if(allfound):
-        #  break
+          allfound = (found_sf and found_pf and found_nf and found_Ec)
 
-      if(not fromfrag):
-        self.pfragjobs = self.sfragjobs*(self.sfragjobs - 1)/2
-        self.nfragjobs = self.pfragjobs + self.sfragjobs
-        nfithorderfragjobs = self.sfragjobs*self.sfragjobs
-
-      #print fragtype,self.ecorrocc,self.ecorrvirt,self.ecorrlag,self.pfragjobs,self.sfragjobs
+      if (allfound):
+        print "All basic DEC/CC information has been found\n"
 
 
       for i in range(self.pfragjobs):
@@ -184,7 +259,7 @@ class decinfo_class:
         exclude = False
         if("(fourth order)" in filelines[i] or "(fifth order)" in filelines[i]):
           exclude = True
-      
+
         for k in range(len(self.ecorrtype)):
           if(self.ecorrtype[k]+" Lagrangian single energies" in filelines[i]):
             foundlags = True
@@ -230,6 +305,10 @@ class decinfo_class:
               self.pfrags[j].ecorrvirt[k] = float(filelines[i+skip+j].split()[elenpair])
               self.pfrags[j].ecorrtype[k] = self.ecorrtype[k]
 
+      found_s = (foundlags or foundoccs or foundvirts)
+      found_p = (foundlagp or foundoccp or foundvirtp)
+      if (found_s and found_p):
+         print "Single and pair fragment energies have been found\n"
 
       #OUTSIDE SECOND LOOP    
         

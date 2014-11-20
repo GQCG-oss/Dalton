@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -142,7 +142,7 @@ C
       VRML_SYM = .FALSE.
       TRSTCH = .FALSE.
       TRSTFC = .FALSE.
-      IPRINT = 0
+      IPRINT = IPDEF
       TRSTRA = 0.5D0
       TRSTIN = 1.2D0
       TRSTDE = 0.7D0
@@ -160,7 +160,7 @@ C
       NOAUX  = .FALSE.
       NODIHE = .FALSE.
       NOADDA = .FALSE.
-      PRJTRO = .TRUE.  ! Project Translation-Rotation out of gradient and Hessian
+      PRJTRO = .TRUE.  ! Project translation-rotation out of gradient and Hessian
       IF (PEQM) THEN 
           PRJTRO = .FALSE.  ! no translation and rotation invariance when PE sites are fixed
           IF (.NOT. CARTCO) CARTCO = .TRUE.
@@ -1549,7 +1549,6 @@ C  /* Deck runopt */
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "taymol.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
@@ -1563,9 +1562,7 @@ C  /* Deck runopt */
       DIMENSION GRDOLD(MXRCRD), GRDMAT(25,MXRCRD)
       DIMENSION STPMAT(25,MXRCRD), HESOLD(MXRCRD,MXRCRD)
       DIMENSION GRDARR(25,MXRCRD), STPARR(MXRCRD,MXRCRD)
-C emg
-      CHARACTER LABEL1*8, STHELP*10
-C emg
+      CHARACTER LABEL1*8, STHELP*10 ! emg
       INTEGER IORDR
 C
 C     The array geinfo contains optimization information for each
@@ -1582,6 +1579,7 @@ C
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION HESINT(MXRCRD,MXRCRD), VECMOD(MXCOOR)
       DIMENSION WORK(LWORK)
+
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       logical infld_save
 C
@@ -1727,30 +1725,41 @@ C emg -----------------------------------------------------------------
       IF (ITRMAX.EQ.0) THEN
          LUHES = -1
          IF (NEWTON) THEN
-            KCSTRA = KWRK2
-            KSCTRA = KCSTRA + (3*NUCDEP)**2
-            KH2    = KSCTRA + (3*NUCDEP)**2
-            KWRK3  = KH2    + MXCOOR*MXCOOR
-            IF (KWRK3 .GT.LWORK) CALL STOPIT('RUNOPT',' ',KWRK3,LWORK)
-            CALL TRAHES(HESMOL,MXCOOR,WORK(KH2),WORK(KCSTRA),
-     &                  WORK(KSCTRA),MXCOOR,NUCDEP*3,1)
+            KFREE  = 1
+            LFREE  = LWRK2
+            JWRK2  = KWRK2 - 1
+            CALL MEMGET2('REAL','GRDMOL',KGRDMOL,NCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL MEMGET2('REAL','HESMOL',KHESMOL,NCOOR*NCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL MEMGET2('REAL','CSTRA',KCSTRA,NCOOR*NCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL MEMGET2('REAL','SCTRA',KSCTRA,NCOOR*NCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL MEMGET2('REAL','H2',KH2,MXCOOR*MXCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL ABAREAD_TAYMOL(ERGMOL,WORK(JWRK2+KGRDMOL),
+     &         WORK(JWRK2+KHESMOL),NCOOR)
+            CALL TRAHES(WORK(JWRK2+KHESMOL),NCOOR,WORK(JWRK2+KH2),
+     &         WORK(JWRK2+KCSTRA),WORK(JWRK2+KSCTRA),MXCOOR,NCOOR,1)
+            CALL MEMREL('RUNOPT.TRAHES',WORK(KWRK2),1,1,KFREE,LFREE)
          ENDIF
          CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,WRKDLM)
          CALL GPOPEN(LUHES,'midasifc.ederivs','UNKNOWN',' ',
      &            'FORMATTED', IDUMMY,.FALSE.)
          WRITE(LUHES,'(I6)') 3*NUCDEP
          WRITE(LUHES,*)
-         DO 413 I = 1, 3*NUCDEP
-            WRITE(LUHES,'(E25.16)') EGRAD(I)
-413      CONTINUE
+         DO, I = 1, NCOOR
+            WRITE(LUHES,'(1P,E25.16)') EGRAD(I)
+         END DO
          IF (NEWTON) THEN
             WRITE(LUHES,*)
-            DO 411 J = 1, 3*NUCDEP
-               DO 412 I = 1, 3*NUCDEP
-                  WRITE(LUHES,'(E25.16)')
+            DO, J = 1, NCOOR
+               DO, I = 1, NCOOR
+                  WRITE(LUHES,'(1P,E25.16)')
      &                  WORK(KH2+(J-1)*MXCOOR+I-1)
-412            CONTINUE
-411         CONTINUE
+               END DO
+            END DO
          ENDIF
          CALL GPCLOSE(LUHES,'KEEP')
 
@@ -1762,8 +1771,8 @@ C emg -----------------------------------------------------------------
 
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
-         CALL QUIT 
-     &   ('Manually stop after punching the Hessian and Gradient')
+         CALL QUIT(
+     &   'Manually stop after punching the Hessian and Gradient')
 
       ENDIF
 C
@@ -1872,7 +1881,7 @@ C
          CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
          CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
          CALL HEADER('New internal coordinates',-1)
-         CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
+         CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,-1,LUPRI)
          WRITE(LUPRI,'(//)')
       END IF
 C
@@ -2062,7 +2071,7 @@ C
             CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
             CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
             CALL HEADER('New internal coordinates',-1)
-            CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
+            CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,-1,LUPRI)
             WRITE(LUPRI,'(//)')
          END IF
          NEWSTP = .FALSE.
@@ -2181,7 +2190,6 @@ C
 C     Finished case 1: Geometry has converged.
 C
       ELSE IF (GECONV) THEN
-
 C
 C     Final results are printed, partially through PRIINF.
 C
@@ -2257,10 +2265,9 @@ Chj aug 99: reset IPRUSR to original level
          IPRUSR = IPRUSR_orig
          IPREAD = IPREAD_orig
          CALL ABAINP('**PROPE',WORK(2),LWORK)
-C        Computation of numerical Hessian NHL 10/13
 
+C        Computation of numerical Hessian NHL 10/13
          CALL FNDANA(IORDR)
-         
          IF (IORDR .LT. 2 .AND. VIB) THEN 
             CALL TITLER(
      &            'Calculate numerical Hessian',
@@ -2272,6 +2279,7 @@ C        Computation of numerical Hessian NHL 10/13
             CALL QUIT('The order of analytical derivatives'//
      &                         'is unexpected')          
          END IF
+
 C
 C     We check to see if there is any properties to be calculated
 C
@@ -2314,7 +2322,7 @@ C
          CALL TITLER('Optimization Control Center','<',120)
          CALL PRIINF(GEINFO,WORK(2),LWORK)
          DOSPE = TMPLOG
-         WRITE(LUPRI,'(/A/A,I3,A/A/A/)')
+         WRITE(LUPRI,'(/A/A,I3,A/A/)')
      &      '@ WARNING: Geometry has NOT converged!',
      &      '@ Maximum number of iterations (', ITRMAX,
      &         ') has been reached and',
@@ -2395,9 +2403,9 @@ C
       WRITE(LUPRI,678) ' Norm of step                   : ', STPNRM
       WRITE(LUPRI,678) ' Updated trust radius           : ', TRSTRA
       IF (IPRINT .GE. 3 .OR. INDTOT .NE. INDHES(0)) THEN
-         DO I = 0, MAXREP
+         DO, I = 0, MAXREP
             IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I2,A,I8)')
-     &           ' Hessian index (irrep',I,')     :', INDHES(I)
+     &                 ' Hessian index (irrep',I,')        :', INDHES(I)
          END DO
       END IF
       WRITE(LUPRI,'(A,I8//)')' Total effective Hessian index  :',INDTOT
@@ -2471,7 +2479,7 @@ C
      & // 'StepLen    TrustRad #Rej',
      & '@ ------------------------------------------------------'
      & // '------------------------'
-      DO I = 0, ITRNMR
+      DO, I = 0, ITRNMR
          IF (I .GT. 0) TMPNRG = GEINFO(I,1) - GEINFO(I-1,1)
 C
 C        There's three special marks for each iteration:
@@ -2702,7 +2710,6 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "taymol.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -2717,8 +2724,12 @@ C
 #include "rspprp.h"
 #include "esg.h"
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
-      DIMENSION WORK(LWORK)
-      DIMENSION EGRAD(MXCOOR)
+      REAL*8  EGRAD(MXCOOR), WORK(LWORK)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
       CALL QENTER('GTGRAD')
       WORK(1) = WRKDLM
       KFREE = 2
@@ -2789,15 +2800,20 @@ C
             HELFEY = .FALSE.
          END IF
       END IF
+
+!     transform symmetry gradient in GRDMOL to cartesian gradient in EGRAD
+      allocate ( grdmol(ncoor), hesmol(ncoor,ncoor) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL TRAGRD(GRDMOL,EGRAD,WORK(KFREE),
      &            WORK(KFREE + MXCOOR*MXCOOR),NCRREP(0,1),3*NUCDEP)
+      deallocate( grdmol, hesmol )
       CALL QEXIT('GTGRAD')
       RETURN
       END
 
 C  /* Deck gthess */
       SUBROUTINE GTHESS(EGRAD,EHESS,ALLHES,EXHER,EXSIR,EXABA,
-     &                                 WORK,LWORK,WRKDLM)
+     &                  WORK,LWORK,WRKDLM)
 C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
@@ -2806,20 +2822,23 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "taymol.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
 #include "gnrinf.h"
 #include "optinf.h"
-#include "trkoor.h"
 #include "cbiwlk.h"
 #include "pvibav.h"
-      LOGICAL EXHER, EXSIR, EXABA, TMP_PEQM
+      LOGICAL EXHER, EXSIR, EXABA, SAVE_PEQM
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
       CALL QENTER('GTHESS')
       WORK(1) = WRKDLM
       KFREE = 2
@@ -2836,14 +2855,14 @@ C         NAORDR = 1; Analytical gradients available
 C         NAORDR = 2; Analytical gradients and hessians available.
 C
 
-      if (peqm .and. iniths) then
-         tmp_peqm = peqm
-         peqm = .false.
-      end if
+      IF (PEQM .AND. INITHS) THEN
+         SAVE_PEQM = PEQM
+         PEQM = .FALSE.
+      END IF
 
       CALL FNDANA(NAORDR)
 
-      if (tmp_peqm) peqm = tmp_peqm
+      IF (SAVE_PEQM) PEQM = SAVE_PEQM
 
       IF (NAORDR .LT. 2) THEN
          CALL QUIT('2nd order optimization aborted because'//
@@ -2882,8 +2901,11 @@ C        *** "desymmetrized".                          ***
 C
          KCSTRA = KFREE
          KSCTRA = KCSTRA + NCOOR**2
-         CALL TRAHES(HESMOL,MXCOOR,EHESS,WORK(KCSTRA),WORK(KSCTRA),
+         allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+         CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+         CALL TRAHES(HESMOL,NCOOR,EHESS,WORK(KCSTRA),WORK(KSCTRA),
      &               MXCOOR,NCOOR,1)
+         deallocate ( GRDMOL, HESMOL )
       ELSE IF ((ITRNMR .GT. 0) .AND. (.NOT. NWSYMM)) THEN
 C
 C        For all iterations except the first, MINCGH is run here.
@@ -2907,7 +2929,6 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -2917,11 +2938,33 @@ C
       DIMENSION BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR), HESINT(MXRCRD,MXRCRD)
       DIMENSION WORK(LWORK)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
+      CALL QENTER('INIHES')
+      IF (IPRINT .GE. IPRMED) THEN
+         CALL TITLER('Output from INIHES','*',103)
+         WRITE (LUPRI,*) 'HSFILE',HSFILE
+         WRITE (LUPRI,*) 'INITHS',INITHS
+         WRITE (LUPRI,*) 'REDINT',REDINT
+         WRITE (LUPRI,*) 'DELINT',DELINT
+         WRITE (LUPRI,*) 'INMDHS',INMDHS
+         WRITE (LUPRI,*) 'INRDHS',INRDHS
+      END IF
       CALL DZERO(HESOLD,MXRCRD*MXRCRD)
       CALL DZERO(GRDOLD,MXRCRD)
       CALL DZERO(SCLVEC,MXCOOR)
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      IF (IPRINT .GE. IPRDBG) THEN
+         CALL HEADER(
+     &'INIHES: Symmetry coordinate gradient from ABAREAD_TAYMOL',-1)
+         CALL OUTPUT(GRDMOL,1,1,1,NCOOR,1,NCOOR,-1,LUPRI)
+      END IF
 C
 C     We initialize the scaling vector (the inverse of the
 C     normalization vector in WLKCGH).
@@ -2939,10 +2982,9 @@ C
  1    CONTINUE
 C
       IF (IPRINT .GE. IPRMED) THEN
-         CALL TITLER('Output from INIHES','*',103)
          IF (IPRINT .GE. IPRMAX) THEN
             CALL HEADER('Scaling vector',-1)
-            CALL OUTPUT(SCLVEC,1,1,1,NCRTOT,1,MXCOOR,1,LUPRI)
+            CALL OUTPUT(SCLVEC,1,1,1,NCRTOT,1,MXCOOR,-1,LUPRI)
          END IF
       END IF
 C
@@ -3012,20 +3054,20 @@ C
                GRADNM = SQRT(DDOT(ICRTCR,TMPMAT,1,TMPMAT,1))
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Cartesian gradient',-1)
-                  CALL OUTPUT(TMPMAT,1,1,1,ICRTCR,1,MXCOOR,1,LUPRI)
+                  CALL OUTPUT(TMPMAT,1,1,1,ICRTCR,1,MXCOOR,-1,LUPRI)
                   CALL HEADER('Internal gradient',-1)
-                  CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
+                  CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,-1,LUPRI)
                END IF
                CALL DZERO(HESOLD,MXRCRD*MXRCRD)
-               CALL TRAHES(HESMOL,MXCOOR,HESOLD,TMPMT2,TMPMT3,
+               CALL TRAHES(HESMOL,NCOOR,HESOLD,TMPMT2,TMPMT3,
      &                     MXCOOR,3*NUCDEP,1)
                CALL HX2HQ(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,
-     &              HESOLD,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
+     &              HESOLD,MXRCRD,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
      &              WORK,LWORK)
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Cartesian Hessian',-1)
                   CALL OUTPUT(HESOLD,1,ICRTCR,1,ICRTCR,
-     &                                      MXCOOR,MXCOOR,1,LUPRI)
+     &                        MXCOOR,MXCOOR,-1,LUPRI)
                END IF
                CALL DZERO(HESOLD,MXRCRD*MXRCRD)
             ELSE
@@ -3033,17 +3075,17 @@ C
                GRADNM = SQRT(DDOT(ICRTCR,GRDMOL,1,GRDMOL,1))
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Cartesian gradient',-1)
-                  CALL OUTPUT(GRDMOL,1,1,1,ICRTCR,1,MXCOOR,1,LUPRI)
+                  CALL OUTPUT(GRDMOL,1,1,1,ICRTCR,1,NCOOR,-1,LUPRI)
                   CALL HEADER('Internal gradient',-1)
-                  CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
+                  CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,-1,LUPRI)
                END IF
                CALL HX2HQ(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,
-     &              HESMOL,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
+     &              HESMOL,NCOOR,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
      &              WORK,LWORK)
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Cartesian Hessian',-1)
                   CALL OUTPUT(HESMOL,1,ICRTCR,1,ICRTCR,
-     &                                      MXCOOR,MXCOOR,1,LUPRI)
+     &                        NCOOR,NCOOR,-1,LUPRI)
                END IF
             END IF
             DO 15 J = 1, IINTCR
@@ -3060,14 +3102,15 @@ C
                GRDOLD(J) = GRDMOL(J)
  18         CONTINUE
          END IF
-         WRITE(LUPRI,'(/A)') 'Initial Hessian has been calculated'
          IF (REDINT) THEN
-            WRITE(LUPRI,'(A)') ' in redundant internal coordinates.'
+            WRITE(LUPRI,'(/A)') 'Initial Hessian has been calculated'//
+     &                          ' in redundant internal coordinates.'
          ELSE IF (DELINT) THEN
-            WRITE(LUPRI,'(A)')
-     &         ' in delocalized redundant internal coordinates.'
+            WRITE(LUPRI,'(/A)') 'Initial Hessian has been calculated'//
+     &              ' in delocalized redundant internal coordinates.'
          ELSE
-            WRITE(LUPRI,'(A)') ' in cartesian coordinates.'
+            WRITE(LUPRI,'(/A)') 'Initial Hessian has been calculated'//
+     &                          ' in Cartesian coordinates.'
          END IF
 C
 C     Next line makes reinitialization possible:
@@ -3093,11 +3136,11 @@ C
 C
          IF (IPRINT .GE. IPRDBG) THEN
             CALL HEADER('Cartesian gradient',-1)
-            CALL OUTPUT(GRDMOL,1,1,1,NCART,1,MXCOOR,1,LUPRI)
+            CALL OUTPUT(GRDMOL,1,1,1,NCART,1,NCART,-1,LUPRI)
          END IF
          IF (IPRINT .GE. IPRMAX) THEN
             CALL HEADER('Internal gradient',-1)
-            CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
+            CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,-1,LUPRI)
          END IF
 C
 C     The default is different values for bonds and other internal
@@ -3148,22 +3191,21 @@ C
          IF (IPRINT .GE. IPRMAX) THEN
             CALL HEADER('Internal Hessian',-1)
             CALL OUTPUT(HESINT,1,IINTCR,1,IINTCR,
-     &                                       MXRCRD,MXRCRD,1,LUPRI)
+     &                  MXRCRD,MXRCRD,-1,LUPRI)
          END IF
 !        if (initial Hessian in internal coordinates and
 !            not optimization in internal coordinates) then
              
          WRITE(LUPRI,'(/A)') 'Initial model Hessian '//
      &      'in internal coordinates has been calculated'
-         IF ( (INRDHS .OR. INMDHS) .AND. 
-     &        .NOT.( REDINT .OR. DELINT) ) THEN
+         IF ((INRDHS .OR. INMDHS) .AND. .NOT. (REDINT .OR. DELINT)) THEN
             WRITE(LUPRI,'(A)')
      &         ' and transformed to cartesian coordinates'
 !           Then transform Hessian HESINT in internal coordinates
 !           to Hessian HESMOL in Cartesian coordinates
-            CALL DZERO(HESMOL,MXCOOR*MXCOOR)
+            HESMOL(:,:) = 0.0D0
             CALL HQ2HX(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,HESINT,
-     &           GRDINT,HESMOL,WILBMT,BMTRAN,WORK,LWORK)
+     &           GRDINT,HESMOL,NCOOR,WILBMT,BMTRAN,WORK,LWORK)
             IF (MAXOPR .GT. 0) THEN
                CALL DZERO(TMPMT4,MX2CRD*MX2CRD)
                DO 100 J = 1, ICRTCR
@@ -3173,8 +3215,8 @@ C
  100           CONTINUE
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Expanded Cartesian Hessian',-1)
-                  CALL OUTPUT(HESMOL,1,ICRTCR,1,ICRTCR,MXCOOR,MXCOOR,
-     &                                                       1,LUPRI)
+                  CALL OUTPUT(HESMOL,1,ICRTCR,1,ICRTCR,
+     &                        NCOOR,NCOOR,-1,LUPRI)
                END IF
                DO 715 J = 1, ICRTCR
                   DO 717 I = 1, J-1
@@ -3188,30 +3230,28 @@ C
 C
                CALL DGEMM('T','N',ICRTCR,ICRTCR,ICRTCR,1.D0,
      &                    TMPMT3,ICRTCR,
-     &                    HESMOL,MXCOOR,0.D0,
+     &                    HESMOL,NCOOR,0.D0,
      &                    TMPMAT,MXCOOR)
-               CALL DZERO(HESMOL,MXCOOR*MXCOOR)
+               HESMOL(:,:) = 0.0D0
                CALL DGEMM('N','N',ICRTCR,ICRTCR,ICRTCR,1.D0,
      &                    TMPMAT,MXCOOR,
      &                    TMPMT3,ICRTCR,0.D0,
-     &                    HESMOL,MXCOOR)
+     &                    HESMOL,NCOOR)
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Totally Symmetric Cartesian Hessian',-1)
-                  CALL OUTPUT(HESMOL,1,NCART,1,NCART,MXCOOR,MXCOOR,
-     &                                                         1,LUPRI)
+                  CALL OUTPUT(HESMOL,1,NCART,1,NCART,
+     &                        NCOOR,NCOOR,-1,LUPRI)
                END IF
             END IF
-C
+
 C           Zero elements of initial Hessian in HESMOL for nuclei frozen with .FREEZE
-C
             CALL FREEZE_COORDINATES(WORK,LWORK)
 
             DO 25 J = 1, ICRTCR
                GRDOLD(J) = GRDMOL(J)
                DO 27 I = 1, ICRTCR
                   HESOLD(I,J) = HESMOL(I,J)*SCLVEC(I)*SCLVEC(J)
-                  HESMOL(I,J) = HESMOL(I,J)*SCLVEC(I)*SCLVEC(I)
-     &                                             *SCLVEC(J)*SCLVEC(J)
+                  HESMOL(I,J) = HESOLD(I,J)*SCLVEC(I)*SCLVEC(J)
  27            CONTINUE
  25         CONTINUE
          ELSE
@@ -3229,27 +3269,30 @@ C     symmetry is used, the Hessian must be scaled so that it will be
 C     correct after normalization.
 C
       ELSE
-         CALL DZERO(HESMOL,MXCOOR*MXCOOR)
+         HESMOL(:,:) = 0.0D0
          DO 40 I = 1, NCRTOT
             HESMOL(I,I) = EVLINI*SCLVEC(I)*SCLVEC(I)
             HESOLD(I,I) = EVLINI
             GRDOLD(I) = GRDMOL(I)
  40      CONTINUE
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Initial Hessian is a diagonal matrix.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A/)') 'Initial Hessian is a diagonal matrix.'
       END IF
 C
       IF (IPRINT .GE. IPRMED) THEN
          CALL HEADER('Initial Hessian',-1)
          IF (REDINT .OR. DELINT) THEN
             CALL OUTPUT(HESOLD,1,IINTCR,1,IINTCR,MXRCRD,MXRCRD,
-     &                                                       1,LUPRI)
+     &                  -1,LUPRI)
          ELSE
             CALL OUTPUT(HESOLD,1,NCART,1,NCART,MXRCRD,MXRCRD,
-     &                                                       1,LUPRI)
+     &                  -1,LUPRI)
          END IF
       END IF
+
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      deallocate ( GRDMOL, HESMOL )
+
+      CALL QEXIT('INIHES')
       RETURN
       END
 
@@ -3269,7 +3312,6 @@ C
 #include "optinf.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION GRDMAT(25,MXRCRD), STPMAT(25,MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), GAMMA(MXRCRD)
@@ -3280,9 +3322,16 @@ C
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR), HESINT(MXRCRD,MXRCRD)
       DIMENSION WORK(LWORK)
-      LOGICAL RESET, REJLST
-C
+      LOGICAL   RESET, REJLST
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+C     =====
       CALL QENTER('UPDHES')
+
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     If redundant internal coordinates are used, we have to transform
 C     the calculated Cartesian gradient
@@ -3374,7 +3423,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              RESET,GRADNM,IPRINT,ITYPE,.TRUE.)
             ELSE
                CALL UPMULT(MXRCRD,STPSYM,STPMAT,GAMMA,GRDMAT,HESOLD,
-     &              HESMOL,NCART,MXCOOR,TMPMAT(1),TMPMAT(MX2CRD+1),
+     &              HESMOL,NCART,NCOOR,TMPMAT(1),TMPMAT(MX2CRD+1),
      &              TMPMT2,TMPMT3,TMPMT4,TMPMT5,TMPMT6,NCART-NPROJ,
      &              RESET,GRADNM,IPRINT,ITYPE,.TRUE.)
             END IF
@@ -3385,7 +3434,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              IINTCR,MXRCRD,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             ELSE
                CALL UPBFGS(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,
-     &              NCART,MXCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
+     &              NCART,NCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             END IF
          ELSE IF (DFP) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPDFP ')
@@ -3394,7 +3443,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              IINTCR,MXRCRD,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             ELSE
                CALL UPDFP(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,
-     &              NCART,MXCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
+     &              NCART,NCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             END IF
          ELSE IF (PSB) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPPSB ')
@@ -3403,7 +3452,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              IINTCR,MXRCRD,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             ELSE
                CALL UPPSB(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,
-     &              NCART,MXCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
+     &              NCART,NCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             END IF
          ELSE IF (RANKON) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPRNKO')
@@ -3412,7 +3461,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              IINTCR,MXRCRD,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             ELSE
                CALL UPRNKO(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,
-     &              NCART,MXCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
+     &              NCART,NCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             END IF
          ELSE IF (BOFILL) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPBOFL')
@@ -3421,7 +3470,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              MXRCRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
             ELSE
                CALL UPBOFL(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,NCART,
-     &              MXCOOR,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
+     &              NCOOR,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
             END IF
          ELSE IF (BFGSR1) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPBFR1')
@@ -3430,7 +3479,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              MXRCRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
             ELSE
                CALL UPBFR1(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,NCART,
-     &              MXCOOR,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
+     &              NCOOR,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
             END IF
          ELSE IF (SCHLEG) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPSCHL')
@@ -3443,7 +3492,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              TMPMT2,TMPMT3,IINTCR-NPROJ,RESET,GRADNM,IPRINT)
             ELSE
                CALL UPSCHL(MXRCRD,STPSYM,STPMAT,GAMMA,GRDMAT,HESOLD,
-     &              HESMOL,NCART,MXCOOR,TMPMAT(1),TMPMAT(MX2CRD+1),
+     &              HESMOL,NCART,NCOOR,TMPMAT(1),TMPMAT(MX2CRD+1),
      &              TMPMT2,TMPMT3,NCART-NPROJ,RESET,GRADNM,IPRINT)
             END IF
          END IF
@@ -3479,6 +3528,9 @@ C
  30         CONTINUE
          END IF
       END IF
+
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      deallocate ( GRDMOL, HESMOL )
       CALL QEXIT('UPDHES')
       RETURN
       END
@@ -3494,41 +3546,50 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "symmet.h"
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION GAMMA(MXRCRD), HESOLD(MXRCRD,MXRCRD)
       CHARACTER UPDTXT*6, OUTTXT*18
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 C
-      NCOOR = NCART
-      IF (REDINT .OR. DELINT) NCOOR = IINTCR
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
+      IF (REDINT .OR. DELINT) THEN
+         NCRD = IINTCR
+      ELSE
+         NCRD = NCART
+      END IF
       OUTTXT = 'Output from ' // UPDTXT
       IF (IPRINT .GE. IPRMIN) THEN
          CALL TITLER(OUTTXT,'*',103)
          IF ((IPRINT .GE. IPRDBG) .AND. (.NOT. REDINT)
      &        .AND. (.NOT. DELINT)) THEN
             CALL HEADER('Scaling vector in UPOUTP',-1)
-            CALL OUTPUT(SCLVEC,1,1,1,NCART,1,MXCOOR,1,LUPRI)
+            CALL OUTPUT(SCLVEC,1,1,1,NCART,1,NCART,-1,LUPRI)
          END IF
       END IF
       IF (IPRINT .GE. IPRMED) THEN
          CALL HEADER('Step from last geometry',-1)
          IF (REDINT .OR. DELINT) THEN
-            CALL OUTPUT(STPINT,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+            CALL OUTPUT(STPINT,1,1,1,NCRD,1,NCRD,-1,LUPRI)
          ELSE
-            CALL OUTPUT(STPSYM,1,1,1,NCOOR,1,MXCOOR,1,LUPRI)
+            CALL OUTPUT(STPSYM,1,1,1,NCRD,1,NCRD,-1,LUPRI)
          END IF
          CALL HEADER('Previous Hessian',-1)
-         CALL OUTPUT(HESOLD,1,NCOOR,1,NCOOR,MXRCRD,MXRCRD,1,LUPRI)
+         CALL OUTPUT(HESOLD,1,NCRD,1,NCRD,MXRCRD,MXRCRD,-1,LUPRI)
          CALL HEADER('Gradient at last geometry',-1)
-         CALL OUTPUT(GRDOLD,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+         CALL OUTPUT(GRDOLD,1,1,1,NCRD,1,MXRCRD,-1,LUPRI)
          CALL HEADER('Gradient at current geometry',-1)
          IF (REDINT .OR. DELINT) THEN
-            CALL OUTPUT(GRDINT,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+            CALL OUTPUT(GRDINT,1,1,1,NCRD,1,MXRCRD,-1,LUPRI)
          ELSE
-            CALL OUTPUT(GRDMOL,1,1,1,NCOOR,1,MXCOOR,1,LUPRI)
+            CALL OUTPUT(GRDMOL,1,1,1,NCRD,1,NCRD,-1,LUPRI)
          END IF
       END IF
 C
@@ -3537,7 +3598,7 @@ C     vector has to be scaled, to make it "compatible" with the step
 C     vector and the Hessian.
 C
       CALL DZERO(GAMMA,MXRCRD)
-      DO 20 I = 1, NCOOR
+      DO 20 I = 1, NCRD
          IF (REDINT .OR. DELINT) THEN
             GAMMA(I) = GRDINT(I) - GRDOLD(I)
          ELSE
@@ -3546,8 +3607,9 @@ C
  20   CONTINUE
       IF (IPRINT .GE. IPRMED) THEN
          CALL HEADER('Scaled gradient difference',-1)
-         CALL OUTPUT(GAMMA,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+         CALL OUTPUT(GAMMA,1,1,1,NCRD,1,MXRCRD,-1,LUPRI)
       END IF
+      deallocate ( GRDMOL, HESMOL )
       RETURN
       END
 
@@ -3562,13 +3624,17 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "symmet.h"
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESINT(MXRCRD,MXRCRD)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 C
+
       IF (REDINT .OR. DELINT) THEN
          CALL DZERO(HESINT,MXRCRD*MXRCRD)
          CALL DZERO(GRDOLD,MXRCRD)
@@ -3579,7 +3645,9 @@ C
             GRDOLD(J) = GRDINT(J)
  10      CONTINUE
       ELSE
-         CALL DZERO(HESMOL,MXCOOR*MXCOOR)
+         allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+         CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+         HESMOL(:,:) = 0.0D0
          CALL DZERO(GRDOLD,MXRCRD)
          DO 20 J = 1, NCART
             DO 25 I = 1, NCART
@@ -3590,21 +3658,24 @@ C
          DO 30 I = NCART+1, NCRTOT
             HESMOL(I,I) = SCLVEC(I)*SCLVEC(I)
  30      CONTINUE
+         CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+         deallocate ( GRDMOL, HESMOL )
       END IF
 C
       IF (IPRINT .GE. IPRMED) THEN
          CALL TITLER('Output from UPDOLD','*',103)
          IF (IPRINT .GE. IPRMAX) THEN
             CALL HEADER('Unchanged Hessian',-1)
-            CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+            CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
             CALL HEADER('Gradient at current geometry',-1)
-            CALL OUTPUT(GRDOLD,1,1,1,ICRD,1,MCRD,1,LUPRI)
+            CALL OUTPUT(GRDOLD,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          ELSE
             WRITE(LUPRI,*)
      &           'Hessian will not be updated in this iteration.'
          END IF
       END IF
       KEEPHE = .FALSE.
+
       RETURN
       END
 
@@ -3661,7 +3732,7 @@ C
  20   CONTINUE
       IF (IPRINT .GE. IPRMAX) THEN
          CALL HEADER('(gamma*gamma^T)/(gamma^T*delta)',-1)
-         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     The first two terms of the BFGS formula is placed in TMPMT2.
@@ -3674,7 +3745,7 @@ C
  30   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Sum of first two terms',-1)
-         CALL OUTPUT(TMPMT2,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMT2,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     We place (B*delta) in TMPVEC and calculate (delta^T*B*delta)
@@ -3691,7 +3762,7 @@ C
  40   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('(H*delta)',-1)
-         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          CALL HEADER('(delta^T*B*delta)',-1)
          WRITE(LUPRI,'(A,F16.6)') 'Value :    ', FAC
       END IF
@@ -3709,7 +3780,7 @@ C
  50   CONTINUE
       IF (IPRINT .GE. IPRMAX) THEN
          CALL HEADER('(B*delta*delta^T*B)/(delta^T*B*delta)',-1)
-         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     Finally we obtain the updated Hessian
@@ -3721,7 +3792,7 @@ C
  60   CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -3805,7 +3876,7 @@ C
  25   CONTINUE
       IF (IPRINT .GE. IPRMAX) THEN
          CALL HEADER('(gamma*gamma^T)/(gamma^T*delta)',-1)
-         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     The first two terms of the DFP formula is placed in TMPMT2.
@@ -3818,7 +3889,7 @@ C
  30   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Sum of first two terms',-1)
-         CALL OUTPUT(TMPMT2,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMT2,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     Next is (delta^T*B)
@@ -3831,7 +3902,7 @@ C
  40   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('(delta^T*B)',-1)
-         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,-1,LUPRI)
       END IF
 C
 C     Then (gamma*delta^T*B + B*delta*gamma^T)
@@ -3844,7 +3915,7 @@ C
  45   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('(gamma*delta^T*B + B*delta*gamma^T)',-1)
-         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     And then (gamma*delta^T*B + B*delta*gamma^T)/(gamma^T*delta)
@@ -3856,8 +3927,8 @@ C
  50   CONTINUE
       IF (IPRINT .GE. IPRMAX) THEN
          CALL HEADER('(gamma*delta^T*B + B*delta*gamma^T)/' //
-     &                                           '(gamma^T*delta)',-1)
-         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+     &               '(gamma^T*delta)',-1)
+         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     Finally we obtain the updated Hessian
@@ -3869,7 +3940,7 @@ C
  60   CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -3924,7 +3995,7 @@ C
  10   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('(T = gamma-B*delta)',-1)
-         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,-1,LUPRI)
       END IF
 C
 C     We calculate (delta^T*delta)
@@ -3969,7 +4040,7 @@ C
  30   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Second term of formula',-1)
-         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     Finally we obtain the updated Hessian
@@ -3981,7 +4052,7 @@ C
  40   CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -4028,17 +4099,17 @@ C
       R1PHI = 1.0D0-CPHI
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Old Hessian',-1)
-         CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          CALL HEADER('Rank one update',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          CALL HEADER('Powell update',-1)
-         CALL OUTPUT(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          CALL HEADER('delta',-1)
-         CALL OUTPUT(DELTA,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(DELTA,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          CALL HEADER('gamma',-1)
-         CALL OUTPUT(GAMMA,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(GAMMA,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          CALL HEADER('ksi',-1)
-         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'phi:',CPHI
          WRITE(LUPRI,*)
@@ -4050,7 +4121,7 @@ C
  20   CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -4099,17 +4170,17 @@ C     Output for debugging
 C
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Old Hessian',-1)
-         CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          CALL HEADER('Rank one update',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          CALL HEADER('BFGS update',-1)
-         CALL OUTPUT(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          CALL HEADER('delta',-1)
-         CALL OUTPUT(DELTA,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(DELTA,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          CALL HEADER('gamma',-1)
-         CALL OUTPUT(GAMMA,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(GAMMA,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          CALL HEADER('ksi',-1)
-         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'phi:',CPHI
          WRITE(LUPRI,*)
@@ -4121,7 +4192,7 @@ C
  20   CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -4170,7 +4241,7 @@ C
  10   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('(gamma-B*delta)',-1)
-         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,-1,LUPRI)
       END IF
 C
 C     (gamma-B*delta)(gamma-B*delta)^T is calculated
@@ -4183,7 +4254,7 @@ C
  20   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('(gamma-B*delta)(gamma-B*delta)^T',-1)
-         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     ((gamma-B*delta)^T*delta) is calculated
@@ -4208,7 +4279,7 @@ C
       IF (IPRINT .GE. IPRMAX) THEN
          CALL HEADER('((gamma-B*delta)(gamma-B*delta)^T)/' //
      &                                 '((gamma-B*delta)^T*delta)',-1)
-         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     Finally we obtain the updated Hessian
@@ -4221,7 +4292,7 @@ C
  40   CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -4353,7 +4424,7 @@ C
  26      CONTINUE
          IF(IPRINT .GE. IPRDBG) THEN
             CALL HEADER('r(j)''',-1)
-            CALL OUTPUT(TMPVC2,1,1,1,ICRD,1,MCRD,1,LUPRI)
+            CALL OUTPUT(TMPVC2,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          END IF
          TMP = 0.0D0
          DO 32 J = 1, ICRD
@@ -4380,9 +4451,9 @@ C
  40      CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
             CALL HEADER('Original displacement vector',-1)
-            CALL OUTPUT(STPMAT,II,II,1,ICRD,25,MXRCRD,1,LUPRI)
+            CALL OUTPUT(STPMAT,II,II,1,ICRD,25,MXRCRD,-1,LUPRI)
             CALL HEADER('Orthonormalized vector',-1)
-            CALL OUTPUT(TMPVC2,1,1,1,ICRD,1,MCRD,1,LUPRI)
+            CALL OUTPUT(TMPVC2,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          END IF
  20   CONTINUE
 C
@@ -4402,7 +4473,7 @@ C
  45   CONTINUE
       IF (IPRINT .GE. IPRMAX) THEN
          CALL HEADER('Matrix of orthonormalized vectors',-1)
-         CALL OUTPUT(RMAT,1,INUM,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(RMAT,1,INUM,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     Next task is to calculate the matrix elements b(jk)
@@ -4411,7 +4482,7 @@ C
          DO 52 J = K, 1, -1
             IF(IPRINT .GE. IPRDBG) THEN
                CALL HEADER('g(j)-g(i)',-1)
-               CALL OUTPUT(GRDMAT,J,J,1,ICRD,25,MCRD,1,LUPRI)
+               CALL OUTPUT(GRDMAT,J,J,1,ICRD,25,MCRD,-1,LUPRI)
             END IF
             BMAT(J,K) = 0.0D0
             DO 58 I = 1, ICRD
@@ -4420,7 +4491,7 @@ C
 C
             IF(IPRINT .GE. IPRDBG) THEN
                CALL HEADER('x(j)-x(i)',-1)
-               CALL OUTPUT(STPMAT,J,J,1,ICRD,25,MCRD,1,LUPRI)
+               CALL OUTPUT(STPMAT,J,J,1,ICRD,25,MCRD,-1,LUPRI)
             END IF
 C
             DO 70 M = J+1, INUM
@@ -4440,7 +4511,7 @@ C
  50   CONTINUE
       IF (IPRINT .GE. IPRMAX) THEN
          CALL HEADER('B-matrix of coefficients',-1)
-         CALL OUTPUT(BMAT,1,INUM,1,INUM,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(BMAT,1,INUM,1,INUM,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     And finally we are ready to update the Hessian
@@ -4456,7 +4527,7 @@ C
  82      CONTINUE
          IF(IPRINT .GE. IPRDBG) THEN
             CALL HEADER('B*r(k)^T',-1)
-            CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+            CALL OUTPUT(TMPVEC,1,1,1,ICRD,1,MCRD,-1,LUPRI)
          END IF
          DO 85 J = 1, INUM
             TMP = 0.0D0
@@ -4468,7 +4539,7 @@ C
  80   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('b(jk)-r(j)^T*B*r(k)',-1)
-         CALL OUTPUT(BMAT,1,INUM,1,INUM,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(BMAT,1,INUM,1,INUM,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     The old Hessian is moved to HESNEW, so that HESOLD can be used for
@@ -4495,7 +4566,7 @@ C
             IF (IPRINT .GE. IPRDBG) THEN
                CALL HEADER('r(j)*r(k)^T',-1)
                CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,
-     &              1,LUPRI)
+     &              -1,LUPRI)
             END IF
             DO 120 II = 1, ICRD
                DO 122 JJ = 1, ICRD
@@ -4506,7 +4577,7 @@ C
  100  CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -4622,9 +4693,9 @@ C
       STPMAT(INUM+1,1) = 1.1D10
       RMAT(INUM+1,1) = 1.1D10
       CALL HEADER('Original displacements',-1)
-      CALL OUTPUT(STPMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
+      CALL OUTPUT(STPMAT,1,INUM,1,ICRD,25,MCRD,-1,LUPRI)
       CALL HEADER('Original gradient vectors',-1)
-      CALL OUTPUT(GRDMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
+      CALL OUTPUT(GRDMAT,1,INUM,1,ICRD,25,MCRD,-1,LUPRI)
 C
 C     Displacements larger than 100 times the last step,
 C     and displacements with a gradient difference
@@ -4712,9 +4783,9 @@ C     Some output
 C
       IF (IPRINT .GE. IPRMAX) THEN
          CALL HEADER('Displacements',-1)
-         CALL OUTPUT(RMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
+         CALL OUTPUT(RMAT,1,INUM,1,ICRD,25,MCRD,-1,LUPRI)
          CALL HEADER('Gradient vectors',-1)
-         CALL OUTPUT(GMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
+         CALL OUTPUT(GMAT,1,INUM,1,ICRD,25,MCRD,-1,LUPRI)
       END IF
 C
 C     Finally we use do the updating, suppressing output.
@@ -4741,7 +4812,7 @@ C
          END IF
          IF ((IPRINT .GE. IPRDBG) .AND. (K .LT. INUM)) THEN
             CALL HEADER('Updating the Hessian',-1)
-            CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+            CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          END IF
 C
 C     The various contributions are collected in UPDHES.
@@ -4753,12 +4824,12 @@ C
  65      CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
             CALL HEADER('Update',-1)
-            CALL OUTPUT(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,1,LUPRI)
+            CALL OUTPUT(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,-1,LUPRI)
          END IF
  60   CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Total Update',-1)
-         CALL OUTPUT(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,1,LUPRI)
+         CALL OUTPUT(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,-1,LUPRI)
       END IF
       IF (INUM .GE. 1) THEN
          FAC = 1.0D0/(1.0D0*INUM)
@@ -4771,11 +4842,11 @@ C
       END IF
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Scaled Update',-1)
-         CALL OUTPUT(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,1,LUPRI)
+         CALL OUTPUT(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,-1,LUPRI)
       END IF
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -4840,11 +4911,11 @@ C
 C
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Old Hessian',-1)
-         CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          CALL HEADER('BFGS-updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          CALL HEADER('Model Hessian',-1)
-         CALL OUTPUT(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       IF (IFAC .GT. 20) THEN
          FAC  = 0.0D0
@@ -4860,7 +4931,7 @@ C
  310  CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       IFAC = MIN(IFAC*2,25)
       RETURN
@@ -4914,7 +4985,7 @@ C
       END IF
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Model Hessian',-1)
-         CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     Then we do the updating, suppressing output.
@@ -4925,7 +4996,7 @@ C
      &     GNRM,IPRINT,ITYPE,.FALSE.)
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -5136,13 +5207,13 @@ C     Some output
 C
       IF (IPRINT .GE. IPRMAX) THEN
          CALL HEADER('Original displacements',-1)
-         CALL OUTPUT(STPMAT,1,INUM,1,ICRD,25,MXRCRD,1,LUPRI)
+         CALL OUTPUT(STPMAT,1,INUM,1,ICRD,25,MXRCRD,-1,LUPRI)
          CALL HEADER('Normalized displacements',-1)
-         CALL OUTPUT(RMAT,1,INUM,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(RMAT,1,INUM,1,ICRD,MCRD,MCRD,-1,LUPRI)
          CALL HEADER('Original gradient vectors',-1)
-         CALL OUTPUT(GRDMAT,1,INUM,1,ICRD,25,MXRCRD,1,LUPRI)
+         CALL OUTPUT(GRDMAT,1,INUM,1,ICRD,25,MXRCRD,-1,LUPRI)
          CALL HEADER('Scaled gradient vectors',-1)
-         CALL OUTPUT(GMAT,1,INUM,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(GMAT,1,INUM,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     A new model Hessian is always calculated as a start
@@ -5172,7 +5243,7 @@ C
       END IF
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Model Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
 C
 C     Then we use the required subroutine to do the updating,
@@ -5200,7 +5271,7 @@ C
          END IF
          IF ((IPRINT .GE. IPRDBG) .AND. (K .LT. INUM)) THEN
             CALL HEADER('Updating the Hessian',-1)
-            CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+            CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
          END IF
          CALL DZERO(HESOLD,MXRCRD*MXRCRD)
          DO 65 J = 1, ICRD
@@ -5211,7 +5282,7 @@ C
  60   CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Updated Hessian',-1)
-         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -5302,7 +5373,6 @@ C
       NPROJ = NPRREP(0)
       IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A,I5)')
      &  ' Total number of Cartesian coordinates:', NCRTOT
-      NPROJ = NPRREP(0)
       RETURN
       END
 
@@ -5321,20 +5391,20 @@ C
      &                                         'CT',IREP,IPRINT)
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('T matrix in GTTMAT',-1)
-         CALL OUTPUT(TMAT,1,NCR,1,NPR,NCR,NPR,1,LUPRI)
+         CALL OUTPUT(TMAT,1,NCR,1,NPR,NCR,NPR,-1,LUPRI)
       END IF
 C
 C     No scaling is done yet...
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Scaled T matrix in GTTMAT',-1)
-         CALL OUTPUT(TMAT,1,NCR,1,NPR,NCR,NPR,1,LUPRI)
+         CALL OUTPUT(TMAT,1,NCR,1,NPR,NCR,NPR,-1,LUPRI)
       END IF
       NPR1 = NPR
       CALL ORTVEC(0,NPR1,NCR,THRLDP,TMAT,TMPMAT)
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Orthogonalized T matrix in GTTMAT',-1)
-         CALL OUTPUT(TMAT,1,NCR,1,NPR,NCR,NPR,1,LUPRI)
+         CALL OUTPUT(TMAT,1,NCR,1,NPR,NCR,NPR,-1,LUPRI)
       END IF
       IF (NPR1 .NE. NPR) THEN
          WRITE(LUPRI,'(//,2(A,I1),A,/A)')
@@ -5420,12 +5490,12 @@ C
       IF (IPRINT .GT. 5) THEN
          IF (IREP .EQ. 0) THEN
             CALL HEADER('Unprojected gradient in PROJGH',-1)
-            CALL OUTPUT(EGRAD,1,1,1,NCR,1,NCR,1,LUPRI)
+            CALL OUTPUT(EGRAD,1,1,1,NCR,1,NCR,-1,LUPRI)
          END IF
          CALL HEADER('Unprojected Hessian in PROJGH',-1)
-         CALL OUTPUT(ALLHES,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
+         CALL OUTPUT(ALLHES,1,NCR,1,NCR,NCR,NCR,-1,LUPRI)
          CALL HEADER('Projection operator in PROJGH',-1)
-         CALL OUTPUT(PROJOP,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
+         CALL OUTPUT(PROJOP,1,NCR,1,NCR,NCR,NCR,-1,LUPRI)
       END IF
 C
 C     Do projection.
@@ -5438,7 +5508,7 @@ C
          CALL DCOPY(NCR,TMPMAT,1,EGRAD,1)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER('Projected gradient in PROJGH',-1)
-            CALL OUTPUT(EGRAD,1,1,1,NCR,1,NCR,1,LUPRI)
+            CALL OUTPUT(EGRAD,1,1,1,NCR,1,NCR,-1,LUPRI)
          END IF
       END IF
       CALL DGEMM('N','N',NCR,NCR,NCR,1.D0,
@@ -5451,7 +5521,7 @@ C
      &           ALLHES,NCR)
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Projected Hessian in PROJGH',-1)
-         CALL OUTPUT(ALLHES,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
+         CALL OUTPUT(ALLHES,1,NCR,1,NCR,NCR,NCR,-1,LUPRI)
       END IF
       RETURN
       END
@@ -5549,7 +5619,7 @@ C
          IF (IPRINT .GE. IPRDBG) THEN
             CALL HEADER('Augmented Hessian',-1)
             CALL OUTPUT(TMPHES,1,NCRDHS,1,NCRDHS,MX2CRD,
-     &           MX2CRD,1,LUPRI)
+     &           MX2CRD,-1,LUPRI)
          END IF
          TMPHES(NCRDHS,NCRDHS) = D0
          CALL DZERO(EVCTMP,NCRDHS*NCRDHS)
@@ -5600,10 +5670,10 @@ C
          IF (IPRINT .GE. IPRDBG) THEN
             WRITE(LUPRI,*) 'Index of Hessian: ',INDTOT
             CALL HEADER('RF-eigenvalues',-1)
-            CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+            CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRCRD,-1,LUPRI)
             CALL HEADER('RF-eigenvectors',-1)
             CALL OUTPUT(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,
-     &           MX2CRD,1,LUPRI)
+     &           MX2CRD,-1,LUPRI)
          END IF
       END IF
       RETURN
@@ -5728,7 +5798,7 @@ C      STPSCL = .FALSE.
          WRITE(LUPRI,*)
      &        'Lowest eigenvalue (level-shift parameter): ',EVAL(1)
          CALL HEADER('Corresponding eigenvector',-1)
-         CALL OUTPUT(EVEC,1,1,1,NCHESS,1,MX2CRD,1,LUPRI)
+         CALL OUTPUT(EVEC,1,1,1,NCHESS,1,MX2CRD,-1,LUPRI)
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'Scaling factor: ',EVEC(NCHESS,1)
       END IF
@@ -5762,7 +5832,7 @@ C
          ELSE
             CALL HEADER('RF-step',-1)
          END IF
-         CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+         CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,-1,LUPRI)
       END IF
 C
 C     Alternatively we restrivt the step norm to be equal or less
@@ -5777,7 +5847,7 @@ C
             WRITE(LUPRI,'(/A,1P,D10.2/)')
      &           'Step too long, step scaled by factor:', FAC
             CALL HEADER('Scaled RF-Step',-1)
-            CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+            CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,-1,LUPRI)
          END IF
          STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
       END IF
@@ -5810,7 +5880,7 @@ C
             ELSE
                CALL HEADER('RF-step',-1)
             END IF
-            CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+            CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,-1,LUPRI)
          END IF
          DO 55 I = 1, ICRD
             STEP(I) = -GRAD(I)
@@ -5832,7 +5902,7 @@ C
          ELSE
             CALL HEADER('RF-step',-1)
          END IF
-         CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+         CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -5878,7 +5948,7 @@ C
      &           EVAL(NCHESS)
          END IF
          CALL HEADER('Corresponding eigenvector',-1)
-         CALL OUTPUT(EVEC,1,NCHESS,IMOD,IMOD,MX2CRD,MX2CRD,1,LUPRI)
+         CALL OUTPUT(EVEC,1,NCHESS,IMOD,IMOD,MX2CRD,MX2CRD,-1,LUPRI)
       END IF
       FAC = EVEC(NCHESS,IMOD)
       IF (ABS(FAC) .GT. 1.0D-10) THEN
@@ -5945,7 +6015,7 @@ C
          ELSE
             CALL HEADER('RF-step',-1)
          END IF
-         CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
+         CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,-1,LUPRI)
       END IF
 C
 C     Alternatively we restrivt the step norm to be equal or less
@@ -5960,7 +6030,7 @@ C
             WRITE(LUPRI,'(/A,1P,D10.2/)')
      &           'Step too long, step scaled by factor:', FAC
             CALL HEADER('Scaled RF-Step',-1)
-            CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
+            CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,-1,LUPRI)
          END IF
       END IF
       ICNT = 1
@@ -5984,7 +6054,7 @@ C
             ELSE
                CALL HEADER('RF-step',-1)
             END IF
-            CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
+            CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,-1,LUPRI)
          END IF
          DO 55 I = 1, NCRD
             STEP(I) = -GRAD(I)
@@ -6006,7 +6076,7 @@ C
          ELSE
             CALL HEADER('RF-step',-1)
          END IF
-         CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
+         CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,-1,LUPRI)
       END IF
       RETURN
       END
@@ -6102,7 +6172,7 @@ C
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Augmented Hessian',-1)
          CALL OUTPUT(EVCTMP,1,NCRDHS,1,NCRDHS,NCRDHS,
-     &        NCRDHS,1,LUPRI)
+     &        NCRDHS,-1,LUPRI)
       END IF
       CALL DZERO(TMPMT3,MX2CRD*MX2CRD)
       CALL DSITSP(NCRDHS,EVCTMP,TMPMT3)
@@ -6143,9 +6213,9 @@ C     CALL DSWAP(1,GRDDIA(I),1,GRDDIA(JMIN),1)
  440  CONTINUE
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('RF-eigenvalues',-1)
-         CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+         CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRCRD,-1,LUPRI)
          CALL HEADER('RF-eigenvectors',-1)
-         CALL OUTPUT(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
+         CALL OUTPUT(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,-1,LUPRI)
       END IF
       CALL PRFSTP(MX2CRD,NCRDHS,MXCOOR,EVEC,STPDIA,EGRAD,
      &     TMPMAT,EHESS,1)
@@ -6170,7 +6240,7 @@ C
       EVCTMP(4) = D0
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Augmented Hessian',-1)
-         CALL OUTPUT(EVCTMP,1,2,1,2,2,2,1,LUPRI)
+         CALL OUTPUT(EVCTMP,1,2,1,2,2,2,-1,LUPRI)
       END IF
       CALL DZERO(TMPMT3,MX2CRD*MX2CRD)
       CALL DSITSP(2,EVCTMP,TMPMT3)
@@ -6209,7 +6279,7 @@ C
       STPSYM(NCRDHS-1) = TMPVAL
       IF (IPRINT .GE. IPRDBG) THEN
          CALL HEADER('Diagonal RF-step',-1)
-         CALL OUTPUT(STPSYM,1,1,1,NCRDHS-1,1,MXRCRD,1,LUPRI)
+         CALL OUTPUT(STPSYM,1,1,1,NCRDHS-1,1,MXRCRD,-1,LUPRI)
       END IF
 C
 C     The symmetry step is constructed from the original eigenvectors
@@ -6276,7 +6346,7 @@ C
          IF (.NOT. RATFUN) THEN
             IF (IPRINT .GT. 5) THEN
                CALL HEADER('Diagonal interpolated gradient',1)
-               CALL OUTPUT(GRDDIA,1,1,1,NCART,1,MXRCRD,1,LUPRI)
+               CALL OUTPUT(GRDDIA,1,1,1,NCART,1,MXRCRD,-1,LUPRI)
             END IF
          END IF
       END IF
@@ -6328,7 +6398,7 @@ C     Newton step is calculated.
 C
          INDTOT_eff = 0
          IF (IFREEZ(0) .GT. 0 .AND. .NOT.NEWTON) THEN
-            THR_ZERO_EVAL = 3.D-3
+            THR_ZERO_EVAL = 3.0D-3
          ELSE
             THR_ZERO_EVAL = THRLDP
          END IF
@@ -6340,7 +6410,6 @@ C
                STPDIA(I) = -GRDDIA(I)/EVAL(I)
                EVAL_EFF = EVAL(I)
             END IF
- 30      CONTINUE
             STPDIA(I) = -GRDDIA(I)/EVAL_EFF
          END DO
          IF (INDTOT .ne. INDHES(0) .AND. .NOT.NOBRKS) THEN
@@ -6363,10 +6432,10 @@ C     the level-shifted step will also be employed, provided the
 C     Newton step is larger than 0.5D-3. For saddle points we
 C     employ the level-shift when the index is different from 1.
 C
-         IF (((STPNRM .GT. TRSTRA) .AND. (.NOT. NOTRST))
-     &      .OR. ((.NOT. SADDLE) .AND. (INDTOT_eff .GT. 0)
-     &            .AND. (STPNRM .GE. 0.5D-3))
-     &      .OR. (SADDLE .AND.  (INDTOT_eff .NE. 1))) THEN
+         IF (((STPNRM .GT. TRSTRA) .AND. (.NOT. NOTRST)) .OR.
+     &       ((.NOT. SADDLE) .AND. (INDTOT_eff .GT. 0) .AND.
+     &       (STPNRM .GE. 0.5D-3)) .OR. (SADDLE .AND.
+     &       (INDTOT_eff .NE. 1))) THEN
             IF (IPRINT .GT. 5) THEN
                WRITE(LUPRI,'(/A,F15.10)')' Norm of Newton step:', STPNRM
                WRITE(LUPRI,'(A,F15.10/)')' Trust radius       :', TRSTRA
@@ -6420,10 +6489,10 @@ C
      &           ' New pred. energy change',ERGPRD
          END IF
          CALL HEADER('Step in diagonal representation',1)
-         CALL OUTPUT(STPDIA,1,1,1,NVEC,1,MXRCRD,1,LUPRI)
+         CALL OUTPUT(STPDIA,1,1,1,NVEC,1,MXRCRD,-1,LUPRI)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER('Eigenvector basis',1)
-            CALL OUTPUT(EVCTMP,1,NCART,1,NVEC,NCART,NCART,1,LUPRI)
+            CALL OUTPUT(EVCTMP,1,NCART,1,NVEC,NCART,NCART,-1,LUPRI)
          END IF
          DO 150 I = 1, NVEC
             CALL DAXPY(NCART,STPDIA(I),EVEC(1,I),1,STPSYM,1)
@@ -6500,7 +6569,7 @@ C
       STPNRM = SQRT(DDOT(NCART,STPSYM,1,STPSYM,1))
       IF (IPRINT .GT. 2) THEN
          CALL HEADER('Cartesian symmetry step vector',-1)
-         CALL OUTPUT(STPSYM,1,1,1,NCART,1,NCART,1,LUPRI)
+         CALL OUTPUT(STPSYM,1,1,1,NCART,1,NCART,-1,LUPRI)
          WRITE(LUPRI,'(/A,F15.10/)') ' Norm of step:', STPNRM
       END IF
       CALL WLKCOR(STPSYM,CSTEP,NCART,MXCOOR,IPRINT)
@@ -6759,16 +6828,16 @@ C
      &           ') reached.'
             WRITE(LUPRI,'(A)') 'No acceptable step found.'
             WRITE(LUPRI,'(/A)')'***** NOTE! *****'
-            if (peqm) then 
+            IF (PEQM) THEN
                WRITE(LUPRI,'(A)')'As a last resort, ' //
      &           'the Hessian is reinitialized using iniths!'
-               iniths = .true.
-            else 
+               INITHS = .TRUE.
+            ELSE
                WRITE(LUPRI,'(A)')'As a last resort, ' //
      &           'the Hessian is initialized to unity!'
                EVLINI = 1.0D0
                TRSTRA = 0.5D0
-            end if
+            END IF
             GO TO 9999
 C
 C     Otherwise we give up...
@@ -6814,7 +6883,7 @@ C
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR), IQM(MXCENT)
       DIMENSION TMPMAT(NCRTOT*NCRTOT), Q(MXCENT)
       DIMENSION RADIUS_PCM(MXCENT), ALPHA_PCM(MXCENT)
-#include "ibtfun.h"
+
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
       ISYMBR = MAXREP
@@ -6874,11 +6943,11 @@ C
          CALL HEADER('Geometry before break of symmetry',1)
          CALL PRIGEO(CORD)
          CALL HEADER('Step in diagonal representation',1)
-         CALL OUTPUT(STPDIA,1,1,1,NVC,1,MXRCRD,1,LUPRI)
+         CALL OUTPUT(STPDIA,1,1,1,NVC,1,MXRCRD,-1,LUPRI)
       END IF
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Eigenvector basis',1)
-         CALL OUTPUT(TMPMAT,1,NCR,1,NVC,NCRTOT,NCRTOT,1,LUPRI)
+         CALL OUTPUT(TMPMAT,1,NCR,1,NVC,NCRTOT,NCRTOT,-1,LUPRI)
       END IF
 C
 C     We determine the cartesian symmetry-breaking step.
@@ -6897,7 +6966,7 @@ C
       CALL DZERO(CSTEP,MXCOOR)
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Cartesian symmetry step vector',1)
-         CALL OUTPUT(TMPMAT,1,1,1,NCR,1,NCR,1,LUPRI)
+         CALL OUTPUT(TMPMAT,1,1,1,NCR,1,NCR,-1,LUPRI)
          WRITE(LUPRI,'(/A,F15.10/)') ' Norm of step:', STPNRM
       END IF
       DO 40 IATOM = 1, NUCIND
@@ -7000,10 +7069,10 @@ C
          DO 70 I = 1, NONT(ITYP)
             MULCNT = ISTBNU(IATOM)
             DO 80 ISYMOP = 1, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-                  COOX=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-                  COOY=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-                  COOZ=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  COOX=PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  COOY=PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  COOZ=PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                   INSLIN = NCLINE(IATOM)
                   DO 90 J = NMLINE, INSLIN, -1
                      MLINE(J+1) = MLINE(J)
@@ -7204,7 +7273,7 @@ C
       CHARACTER TMPLIN*80
       CHARACTER*1 KASYM(3,3), ID3, CRT
       LOGICAL EXHER, EXSIR, EXABA, DOCART, DOOWN, AUTOSY, NOSYM, ADDSYM
-#include "ibtfun.h"
+
       TMPLIN = MLINE(2)
       IF (IPRE .LT. NUMPRE) THEN
          MLINE(2) = PREBTX(IPRE+1)
@@ -7291,7 +7360,7 @@ C
       IF (IPRINT .GE. IPRMED) THEN
          CALL TITLER('Output from MKSCVC','*',103)
          CALL HEADER('Scaling vector',-1)
-         CALL OUTPUT(SCLVEC,1,1,1,NCRTOT,1,MXCOOR,1,LUPRI)
+         CALL OUTPUT(SCLVEC,1,1,1,NCRTOT,1,MXCOOR,-1,LUPRI)
       END IF
       RETURN
       END
@@ -7306,13 +7375,19 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "taymol.h"
 #include "gnrinf.h"
 #include "optinf.h"
       DIMENSION SCLVEC(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPVC1(MXRCRD), TMPVC2(MXRCRD)
       LOGICAL CNVERG, CNVGRD, CNVSTP, INDXOK, CNVRGD(1:4)
       CHARACTER*4 LOGTXT
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CNVERG = .FALSE.
       CNVGRD = .FALSE.
       CNVSTP = .FALSE.
@@ -7506,6 +7581,7 @@ C
          WRITE(LUPRI,'(A,1P,A5)') ' End of optimization   ',LOGTXT
          IF (BRKSYM) WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
       END IF
+      deallocate ( GRDMOL, HESMOL )
       RETURN
       END
 
@@ -7855,21 +7931,28 @@ C
 #include "molinp.h"
 #include "optinf.h"
 #include "gnrinf.h"
-#include "taymol.h"
 #include "symmet.h"
       DIMENSION HESINT(MXRCRD,MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MXCOOR,MXCOOR)
       DIMENSION WORK(LWORK)
-C
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+C ===
+
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       LUHES = -1
       CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',IDUMY,
      &     .FALSE.)
       IF (REDINT .OR. DELINT) THEN
          CALL DZERO(TMPMT4,MXCOOR*MXCOOR)
          CALL HQ2HX(MXRCRD,MX2CRD,TMPMT1,TMPMT2,TMPMT3,HESINT,GRDINT,
-     &        TMPMT4,WILBMT,BMTRAN,WORK,LWORK)
+     &        TMPMT4,MX2CRD,WILBMT,BMTRAN,WORK,LWORK)
          WRITE(LUHES,'(I6)') 3*NUCDEP
          WRITE(LUHES,*)
          DO 100 J = 1, 3*NUCDEP
@@ -7881,7 +7964,7 @@ C
       ELSE
          IF (MAXREP .GT. 0) THEN
             CALL DZERO(TMPMT4,MXCOOR*MXCOOR)
-            CALL TRAHES(HESMOL,MXCOOR,TMPMT4,TMPMT1,TMPMT2,
+            CALL TRAHES(HESMOL,NCOOR,TMPMT4,TMPMT1,TMPMT2,
      &           MXCOOR,3*NUCDEP,1)
             WRITE(LUHES,*) 3*NUCDEP
             WRITE(LUHES,*)
@@ -7903,6 +7986,7 @@ C
          END IF
       END IF
       CALL GPCLOSE(LUHES,'KEEP')
+      deallocate ( GRDMOL, HESMOL )
       RETURN
       END
 
@@ -7926,7 +8010,6 @@ C
 #include "molinp.h"
 #include "optinf.h"
 #include "gnrinf.h"
-#include "taymol.h"
 #include "symmet.h"
       LOGICAL HESEXS
       DIMENSION HESINT(MXRCRD,MXRCRD), ATMARR(MXCENT,8)
@@ -7934,9 +8017,15 @@ C
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MXCOOR,MXCOOR)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR), WORK(LWORK)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 C
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      HESMOL(:,:) = 0.0D0
       LUHES = -1
-      CALL DZERO(HESMOL,MXCOOR*MXCOOR)
       INQUIRE(FILE='DALTON.HES',EXIST=HESEXS)
       IF (.NOT. HESEXS) THEN
          IERR = -1
@@ -7966,11 +8055,10 @@ C
      &        TMPMT3,ICRD,
      &        TMPMT4,MXCOOR,0.D0,
      &        TMPMT1,MXCOOR)
-         CALL DZERO(HESMOL,MXCOOR*MXCOOR)
          CALL DGEMM('N','N',ICRD,ICRD,ICRD,1.D0,
      &        TMPMT1,MXCOOR,
      &        TMPMT3,ICRD,0.D0,
-     &        HESMOL,MXCOOR)
+     &        HESMOL,NCOOR)
       ELSE
          DO 150 J = 1, ICRD
             DO 160 I = 1, ICRD
@@ -7982,11 +8070,13 @@ C
 
          CALL DZERO(HESINT,MXRCRD*MXRCRD)
          CALL HX2HQ(MXRCRD,MX2CRD,ATMARR,TMPMT1,TMPMT2,TMPMT3,
-     &        TMPMT4,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
+     &        TMPMT4,MXRCRD,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
      &        WORK,LWORK)
 
       END IF
       CALL GPCLOSE(LUHES,'KEEP')
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      deallocate ( GRDMOL, HESMOL )
       RETURN
       END
 
@@ -8077,7 +8167,6 @@ C
       DIMENSION WORK(LWORK), COOR(3,MXCENT)
 C
 #include "molinp.h"
-#include "taymol.h"
 #include "numder.h"
 #include "symmet.h"
 #include "infpar.h"
@@ -8123,7 +8212,7 @@ C
 C
 C     Call new numerical derivative routines.
 C
-      CALL NMDINI(IPRINT)
+      CALL NMDINI(IPRINT_NUMGRD)
       IF (LUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP','OLD',
      &   ' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUCMD,IOSTAT=IOS)
@@ -8131,11 +8220,11 @@ C
         CALL UPCASE(WORD)
       IF (WORD .NE. '**NMDDR') GOTO 1100
 C
-      CALL NMDINP(WORD,IPRINT)
+      CALL NMDINP(WORD,IPRINT_NUMGRD)
  1110 CALL GPCLOSE(LUCMD,'KEEP')
       FCLASS = GROUP
       IF (NMORDR .LT. 1) NMORDR = 1
-      CALL NUMDRV(WORK,LWORK,IPRINT,WRKDLM)
+      CALL NUMDRV(WORK,LWORK,IPRINT_NUMGRD,WRKDLM)
 C
       CALL QEXIT('NUMGRD')
       RETURN
@@ -8151,14 +8240,20 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
-
-#include "taymol.h"
 #include "nuclei.h"
 #include "optinf.h"
+      DIMENSION WORK(LWORK)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, ALLOCATABLE ::  GRDMOL(:), HESMOL(:,:)
+
+      ALLOCATE(GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR))
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 
       IF (IFREEZ(0) .GT. 0) THEN
          NCOORD = 3*NUCDEP
-         
+
          DO, I = 1, IFREEZ(0)
             IC_OFF = 3*(IFREEZ(I)-1)
             DO, IC = 1, 3
@@ -8171,16 +8266,19 @@ C
                HESMOL(IC_TOT,IC_TOT) = 10.0D0
             END DO
          END DO
-    
-         if (iprint .gt. 1) then 
-            write (lupri,*) 'Molecular gradient after freeze:'
-            do i = 1,ncoord
-                write(lupri,*) 'i,grdmol(i)',i,grdmol(i)
-            end do
-            write (lupri,*) 'Molecular Hessian after freeze:'
-            call output(hesmol,1,ncoord,1,ncoord,mxcoor,mxcoor,-1,lupri)
+
+         IF (IPRINT .GT. 1) THEN
+            WRITE (LUPRI,*) 'Molecular gradient after freeze:'
+            DO I = 1, NCOORD
+                WRITE(LUPRI,*) 'i,grdmol(i)',I,GRDMOL(I)
+            END DO
+            WRITE (LUPRI,*) 'Molecular Hessian after freeze:'
+            CALL OUTPUT(HESMOL,1,NCOORD,1,NCOORD,MXCOOR,MXCOOR,-1,LUPRI)
          end if
       END IF
+
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      DEALLOCATE(GRDMOL, HESMOL)
 
       END
 

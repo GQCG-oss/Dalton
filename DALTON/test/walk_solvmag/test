@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import os
 import sys
 
@@ -37,7 +38,7 @@ f.add(from_string = 'Molecular geometry (au)',
 #      abs_tolerance = 1.0e-4)
 f.add(from_re = 'magnetizability tensor \(au\)',
       num_lines = 9,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 2.1e-6)
 
 
 # g-tensors
@@ -46,20 +47,20 @@ f.add(from_re = 'magnetizability tensor \(au\)',
 #      abs_tolerance = 2.0e-6)
 f.add(from_re = 'Molecular rotational g\-factor',
       num_lines = 9,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 2.1e-6)
 
 # Chemical shielding
 f.add(from_re = 'Shielding tensors in symmetry coordinates \(ppm\)',
       num_lines = 30,
-      abs_tolerance = 2.0e-5)
+      rel_tolerance = 1.0e-4, ignore_below = 1.e-4)
 
 f.add(from_re = 'Chemical shielding for ',
       num_lines = 45,
-      abs_tolerance = 1.0e-3)
+      rel_tolerance = 1.0e-4, ignore_below = 1.e-4)
 
 f.add(from_re = 'Summary of chemical shieldings',
       num_lines = 14,
-      abs_tolerance = 1.0e-3)
+      rel_tolerance = 1.0e-4, ignore_below = 1.e-4)
 
 #f.add(from_string = 'ABACUS - CHEMICAL SHIELDINGS',
 #      to_string = 'Interatomic separations',

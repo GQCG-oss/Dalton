@@ -19,9 +19,17 @@ module lspdm_basic_module
                     &get_tileinfo_nelspmode_frombas,&
                     &get_tileinfo_nels_fromarr8,&
                     &get_tileinfo_nels_fromarr4,&
+                    &get_tileinfo_nels_fromarr8mode,&
+                    &get_tileinfo_nels_fromarr4mode,&
+                    &get_tileinfo_nelspermode_fromarr4mode,&
+                    &get_tileinfo_nelspermode_fromarr8mode,&
                     &get_tileinfo_nelspermode_fromarr4,&
                     &get_tileinfo_nelspermode_fromarr8
   end interface get_tile_dim
+
+  interface get_residence_of_tile
+     module procedure get_residence_of_tile4,get_residence_of_tile8
+  end interface get_residence_of_tile
 
   !interface get_tile_idx
   !  module procedure get_tile_idx_from_global_idx
@@ -31,6 +39,7 @@ module lspdm_basic_module
   !subroutine get_tile_idx_from_global_idx()
   !  implicit none
   !end subroutine get_tile_idx_from_global_idx
+
   
 
   subroutine get_tileinfo_nels_frombas(sze,tileidx,dims,tdim,mode,offset)
@@ -41,10 +50,7 @@ module lspdm_basic_module
     integer :: j,orig_addr(mode),offs,ntpm(mode)
     offs=1
     if(present(offset))offs=offset
-    do j=1,mode
-      ntpm(j)=dims(j)/tdim(j)
-      if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
-    enddo
+    call tensor_get_ntpm(dims,tdim,mode,ntpm)
     call get_midx(tileidx,orig_addr,ntpm,mode)
     sze=1
     do j=offs, mode
@@ -56,13 +62,52 @@ module lspdm_basic_module
     enddo
   end subroutine get_tileinfo_nels_frombas
 
+  !> \author Patrick Ettenhuber
+  subroutine get_tileinfo_nels_fromarr8mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global mode index of the tile
+    integer(kind=long), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr8mode
+  !> \author Patrick Ettenhuber
+  subroutine get_tileinfo_nels_fromarr4mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global mode index of the tile
+    integer(kind=4), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr4mode
+
   !> \brief this function returns the number of elements of a tile where the tile index is
   ! a global tile index
   !> \author Patrick Ettenhuber
   subroutine get_tileinfo_nels_fromarr8(nels,arr,tnumber)
     implicit none
     !> array for which nels shoulb be calculated
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
     integer(kind=long), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
@@ -82,7 +127,7 @@ module lspdm_basic_module
   subroutine get_tileinfo_nels_fromarr4(nels,arr,tnumber)
     implicit none
     !> array for which nels shoulb be calculated
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
     integer(kind=4), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
@@ -102,7 +147,7 @@ module lspdm_basic_module
   subroutine get_tileinfo_nelspermode_fromarr8(nels,arr,tnumber)
     implicit none
     !> array for which nels shoulb be calculated
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
     integer(kind=long), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
@@ -119,10 +164,46 @@ module lspdm_basic_module
     enddo
   end subroutine get_tileinfo_nelspermode_fromarr8
 
+  subroutine get_tileinfo_nelspermode_fromarr4mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=4), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr4mode
+  subroutine get_tileinfo_nelspermode_fromarr8mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=long), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr8mode
   subroutine get_tileinfo_nelspermode_fromarr4(nels,arr,tnumber)
     implicit none
     !> array for which nels shoulb be calculated
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
     integer(kind=4), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
@@ -144,10 +225,7 @@ module lspdm_basic_module
     integer,intent(in) :: tileidx,mode,dims(mode),tdim(mode)
     integer, dimension(mode),intent(out) :: sze
     integer :: j,orig_addr(mode),ntpm(mode)
-    do j=1,mode
-      ntpm(j)=dims(j)/tdim(j)
-      if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
-    enddo
+    call tensor_get_ntpm(dims,tdim,mode,ntpm)
     call get_midx(tileidx,orig_addr,ntpm,mode)
     do j=1, mode
       if(((dims(j)-(orig_addr(j)-1)*tdim(j))/tdim(j))>=1)then
@@ -158,9 +236,27 @@ module lspdm_basic_module
     enddo
   end subroutine get_tileinfo_nelspmode_frombas
 
+  !> \brief calculate the number of tiles per mode
+  !> \author Patrick Ettenhuber
+  !> \date march 2013
+  subroutine tensor_get_ntpm(dims,tdim,mode,ntpm,ntiles)
+     implicit none
+     integer, intent(in)  :: mode
+     integer, intent(out) :: ntpm(mode)
+     integer, intent(in)  :: dims(mode), tdim(mode)
+     integer, optional, intent(out) :: ntiles
+     integer :: j
+     if(present(ntiles)) ntiles = 1
+     do j=1,mode
+        ntpm(j)=dims(j)/tdim(j)
+        if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
+        if(present(ntiles)) ntiles = ntiles * ntpm(j)
+     enddo
+  end subroutine tensor_get_ntpm
+
   subroutine memory_deallocate_window(arr)
     implicit none
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     real(realk) :: vector_size
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer :: i,ierr
@@ -169,32 +265,38 @@ module lspdm_basic_module
 
     !call memory_deallocate_array(arr)
     if(associated(arr%wi)) then
-       do i=1,arr%ntiles
+
+
 #ifdef VAR_MPI
-         !call lsmpi_win_fence(arr%wi(i),.false.)
-         call lsmpi_win_free(arr%wi(i))
-#else
-         print *,"THIS MESSAGE SHOULD NEVER APPEAR,WHY ARE MPI_WINs ALLOCD?"
-#endif
+       do i=1,arr%nwins
+          call lsmpi_win_free(arr%wi(i))
        enddo
-       vector_size = dble(size(arr%wi(:)))
+#else
+       print *,"THIS MESSAGE SHOULD NEVER APPEAR,WHY ARE MPI_WINs ALLOCD?"
+#endif
+
+       vector_size = dble(arr%nwins*ls_mpik)
        call mem_dealloc(arr%wi)
-!$OMP CRITICAL
-       array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-       array_memory_in_use = array_memory_in_use - vector_size
-!$OMP END CRITICAL
+       !$OMP CRITICAL
+       tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+       tensor_memory_in_use = tensor_memory_in_use - vector_size
+       !$OMP END CRITICAL
+
+       arr%nwins = 0
 
     endif
 
     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
-  end subroutine memory_deallocate_window
+ end subroutine memory_deallocate_window
 
-  subroutine memory_allocate_window(arr)
+  subroutine memory_allocate_window(arr,nwins)
     implicit none
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
+    integer, intent(in), optional :: nwins
     real(realk) :: vector_size
     real(realk) :: tcpu1,twall1,tcpu2,twall2
+    integer :: n
 
     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
@@ -203,15 +305,21 @@ module lspdm_basic_module
       call lsquit("ERROR(memory_allocate_window):array already initialized, please free first",-1)
     endif
 
-    vector_size = dble(arr%ntiles)
+    if(present(nwins))then
+       arr%nwins = nwins
+    else
+       arr%nwins = arr%ntiles
+    endif
+
+    vector_size = dble( arr%nwins * ls_mpik ) 
    
-    call mem_alloc(arr%wi,arr%ntiles)
+    call mem_alloc( arr%wi, arr%nwins )
 
     !print *,infpar%lg_mynum,"mem update"
 !$OMP CRITICAL
-    array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-    array_memory_in_use = array_memory_in_use + vector_size
-    array_max_memory = max(array_max_memory,array_memory_in_use)
+    tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+    tensor_memory_in_use = tensor_memory_in_use + vector_size
+    tensor_max_memory = max(tensor_max_memory,tensor_memory_in_use)
 !$OMP END CRITICAL
 
     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
@@ -223,48 +331,42 @@ module lspdm_basic_module
   !> \author Patrick Ettenhuber 
   subroutine memory_allocate_tiles(arr)
     implicit none
-    type(array) :: arr
+    type(tensor) :: arr
     real(realk) :: vector_size
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: i,counter
     integer :: j,loc_idx
     integer, pointer :: idx(:)
     integer(kind=ls_mpik) :: ibuf(2)
-    logical :: doit=.true.,lg_master,parent
+    logical :: doit=.true.,lg_master
     integer(kind=ls_mpik) :: lg_me,lg_nnod,pc_me,pc_nnod
-    integer(kind=8)       :: ne
+    integer(kind=8)       :: ne,tooo
+    integer               :: res,from,tidx
     lg_master = .true.
     lg_nnod   = 1
     lg_me     = 0
+
+
 #ifdef VAR_MPI
-    parent    = (infpar%parent_comm == MPI_COMM_NULL)
-    if( parent ) then
-      lg_nnod   = infpar%lg_nodtot
-      lg_me     = infpar%lg_mynum
-      lg_master = (infpar%master==lg_me)
-    else
-      lg_nnod   = MAXINT32
-      lg_me     = MAXINT32
-      lg_master = .false.
-    endif
-    !get info to children
-    if( lspdm_use_comm_proc ) then
-      pc_me     = infpar%pc_mynum
-      pc_nnod   = infpar%pc_nodtot
-      ibuf(1) = lg_nnod
-      ibuf(2) = lg_me
-      call ls_mpibcast(ibuf,2,infpar%master,infpar%pc_comm)
-      lg_nnod = ibuf(1)
-      lg_me   = ibuf(2)
-    endif
+    lg_nnod   = infpar%lg_nodtot
+    lg_me     = infpar%lg_mynum
+    lg_master = (infpar%master==lg_me)
 #else
-    call lsquit("Do not use MPI-WINDOWS wihout MPI",lspdm_errout)
+    call lsquit("Do not use MPI-WINDOWS without MPI",lspdm_errout)
 #endif
 
     !get zero dummy matrix in size of largest tile --> size(dummy)=tsize
-    call memory_allocate_dummy(arr)
-    !prepare the integer window in the array --> ntiles windows should be created
-    call memory_allocate_window(arr)
+    if( alloc_in_dummy )then
+       call memory_allocate_dummy(arr, nel = arr%tsize*arr%nlti)
+#ifdef VAR_MPI
+       call memory_allocate_window(arr,nwins = 1)
+       call lsmpi_win_create(arr%dummy,arr%wi(1),arr%tsize*arr%nlti,infpar%lg_comm) 
+#endif
+    else
+       call memory_allocate_dummy( arr, nel = 1)
+       !prepare the integer window in the array --> ntiles windows should be created
+       call memory_allocate_window(arr)
+    endif
 
     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
     call mem_alloc(idx,arr%mode)
@@ -273,10 +375,10 @@ module lspdm_basic_module
     allocate(arr%ti(arr%nlti))
 
     vector_size = dble(size(arr%ti))
-!$OMP CRITICAL
-    array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-    array_memory_in_use  = array_memory_in_use  + vector_size
-!$OMP END CRITICAL
+    !$OMP CRITICAL
+    tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+    tensor_memory_in_use  = tensor_memory_in_use  + vector_size
+    !$OMP END CRITICAL
     counter = 1 
     !allocate tiles with zeros wherever there is mod --> this is experimental
     !and not recommended
@@ -287,57 +389,57 @@ module lspdm_basic_module
         if(.not.mod(i+arr%offset,infpar%lg_nodtot)==infpar%lg_mynum)doit=.false.
 #endif
         if(doit)then
-          if( lspdm_use_comm_proc )then
-            print *,"ERRROR alloc, should normaly not occur"
-            stop 0 
-          else
-            call mem_alloc(arr%ti(counter)%t,arr%tsize)
-            call mem_alloc(arr%ti(counter)%d,arr%mode)
-          endif
-          arr%ti(counter)%t=0.0d0
-          arr%ti(counter)%e=arr%tsize
-          vector_size = dble(arr%ti(counter)%e)*realk
-!$OMP CRITICAL
-          array_tiled_allocd_mem = array_tiled_allocd_mem + vector_size
-          array_memory_in_use    = array_memory_in_use    + vector_size
-          vector_size            = dble(size(arr%ti(counter)%d))
-          array_aux_allocd_mem   = array_aux_allocd_mem   + vector_size
-          array_memory_in_use    = array_memory_in_use    + vector_size
-          array_max_memory       = max(array_max_memory,array_memory_in_use)
-!$OMP END CRITICAL
-          do j=1,arr%mode
-            arr%ti(counter)%d(j)=arr%tdim(j)
-          enddo
-          counter = counter +1
+           call mem_alloc(arr%ti(counter)%t,arr%tsize)
+           call mem_alloc(arr%ti(counter)%d,arr%mode)
+           if( tensor_debug_mode )then
+              arr%ti(counter)%t=0.0E0_realk
+           endif
+           arr%ti(counter)%e=arr%tsize
+           vector_size = dble(arr%ti(counter)%e)*realk
+           !$OMP CRITICAL
+           tensor_tiled_allocd_mem = tensor_tiled_allocd_mem + vector_size
+           tensor_memory_in_use    = tensor_memory_in_use    + vector_size
+           vector_size             = dble(size(arr%ti(counter)%d))
+           tensor_aux_allocd_mem   = tensor_aux_allocd_mem   + vector_size
+           tensor_memory_in_use    = tensor_memory_in_use    + vector_size
+           tensor_max_memory       = max(tensor_max_memory,tensor_memory_in_use)
+           !$OMP END CRITICAL
+           do j=1,arr%mode
+              arr%ti(counter)%d(j)=arr%tdim(j)
+           enddo
+           counter = counter +1
         endif
-      enddo
-    !allocate tiles with the rim-tiles of mod dimensions
-    else
+     enddo
+     !allocate tiles with the rim-tiles of mod dimensions
+  else
 
       do i=1,arr%ntiles
 
+        tidx = i
+
         !Check if the current tile resides on the current node
         doit=.true.
+        call get_residence_of_tile(res,tidx,arr,idx_on_node = from)
 #ifdef VAR_MPI
-        if(arr%itype==TILED_DIST.and.mod(i-1+arr%offset,lg_nnod)/=lg_me)doit=.false.
+        if(arr%itype==TT_TILED_DIST.and.res/=lg_me) doit = .false.
 #endif
         !convert global tile index i to local tile index loc_idx
         loc_idx=((i-1)/lg_nnod) + 1
-        if (arr%itype==TILED) loc_idx=i 
+        if (arr%itype==TT_TILED) loc_idx=i 
          
         if(doit)then
           !only do these things if tile belongs to node
           !save global tile number
           arr%ti(loc_idx)%gt=i
-          !endif
+          
           call mem_alloc(arr%ti(loc_idx)%d,arr%mode)
-          vector_size = dble(size(arr%ti(loc_idx)%d))
-!$OMP CRITICAL
-          array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-          array_memory_in_use  = array_memory_in_use  + vector_size
-!$OMP END CRITICAL
-          !get the actual tile size of current tile, here the index is per
-          !mode
+          vector_size = dble(size(arr%ti(loc_idx)%d)*INTK)
+          !$OMP CRITICAL
+          tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+          tensor_memory_in_use  = tensor_memory_in_use  + vector_size
+          !$OMP END CRITICAL
+
+          !get the actual tile size of current tile, here the index is per mode
           call get_tile_dim(arr%ti(loc_idx)%d,arr,i)
           !calculate the number of elements from the tile dimensions
           arr%ti(loc_idx)%e=1
@@ -346,25 +448,25 @@ module lspdm_basic_module
           enddo
 
 #ifdef VAR_MPI
-          !if(act_ts/=arr%ti(loc_idx)%e)print*,"something wrong"
-          if( lspdm_use_comm_proc )then
-            ne = 0_long
-            if(pc_me==pc_nnod-1) ne = arr%nelms
-            call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,ne,arr%ti(loc_idx)%wi,&
-            &infpar%pc_comm,arr%ti(loc_idx)%e)
-          else
+         if( alloc_in_dummy )then
+            tooo = from + arr%ti(loc_idx)%e - 1
+            arr%ti(loc_idx)%t => arr%dummy(from:tooo)
+         else
             call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
-          endif
-          if( parent )&
-           &call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm)
-#endif
+            vector_size = dble(arr%ti(loc_idx)%e)*realk
+            !$OMP CRITICAL
+            tensor_tiled_allocd_mem = tensor_tiled_allocd_mem + vector_size
+            tensor_memory_in_use    = tensor_memory_in_use + vector_size
+            tensor_max_memory       = max(tensor_max_memory,tensor_memory_in_use)
+            !$OMP END CRITICAL
+            call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm) 
+         endif
 
-          vector_size = dble(arr%ti(loc_idx)%e)*realk
-!$OMP CRITICAL
-          array_tiled_allocd_mem = array_tiled_allocd_mem + vector_size
-          array_memory_in_use    = array_memory_in_use + vector_size
-          array_max_memory       = max(array_max_memory,array_memory_in_use)
-!$OMP END CRITICAL
+
+         if( tensor_debug_mode )then
+            arr%ti(loc_idx)%t=0.0E0_realk
+         endif
+#endif
 
           counter = counter +1
         else
@@ -372,12 +474,12 @@ module lspdm_basic_module
          !open a window of size zero on the nodes where the tile does not
          !reside
 #ifdef VAR_MPI
-          if( parent )call lsmpi_win_create(arr%dummy,arr%wi(i),0,infpar%lg_comm)
+          if( .not. alloc_in_dummy  )call lsmpi_win_create(arr%dummy,arr%wi(i),0,infpar%lg_comm)
 #endif
         endif
 #ifdef VAR_MPI
         ! fence the window in preparation for comm
-        if( parent )call lsmpi_win_fence(arr%wi(i),.true.)
+        if( .not. alloc_in_dummy )call lsmpi_win_fence(arr%wi(i),.true.)
 #endif
       enddo
     endif
@@ -393,7 +495,7 @@ module lspdm_basic_module
 
     subroutine memory_allocate_dummy(arr,nel)
       implicit none
-      type(array),intent(inout) :: arr
+      type(tensor),intent(inout) :: arr
       integer, intent(in),optional :: nel
       integer(kind=8) :: nelms
       real(realk)     :: vector_size
@@ -421,14 +523,17 @@ module lspdm_basic_module
       else
         call mem_alloc(arr%dummy,arr%dummyc,nelms)
       endif
+
+      if( tensor_debug_mode )then
+         arr%dummy = 0.0E0_realk
+      endif
 #endif
 
-!$OMP CRITICAL
-      array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-      array_memory_in_use = array_memory_in_use + vector_size
-      array_max_memory = max(array_max_memory,array_memory_in_use)
-!$OMP END CRITICAL
-      arr%dummy=0.0E0_realk
+      !$OMP CRITICAL
+      tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+      tensor_memory_in_use = tensor_memory_in_use + vector_size
+      tensor_max_memory = max(tensor_max_memory,tensor_memory_in_use)
+      !$OMP END CRITICAL
 
       call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
@@ -436,7 +541,7 @@ module lspdm_basic_module
 
     subroutine memory_deallocate_dummy(arr)
       implicit none
-      type(array) :: arr
+      type(tensor) :: arr
       real(realk) :: vector_size
       real(realk) :: dim1
       real(realk) :: tcpu1,twall1,tcpu2,twall2
@@ -447,17 +552,14 @@ module lspdm_basic_module
          dim1 = dble(size(arr%dummy(:)))
          vector_size = dim1*realk
 #ifdef VAR_MPI
-         if( lspdm_use_comm_proc )then
-           call mem_dealloc(arr%dummy,arr%dummyc,arr%dummyw)
-         else
-           call mem_dealloc(arr%dummy,arr%dummyc)
-         endif
+         call mem_dealloc(arr%dummy,arr%dummyc)
 #endif
          nullify(arr%dummy)
-!$OMP CRITICAL
-         array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-         array_memory_in_use = array_memory_in_use - vector_size
-!$OMP END CRITICAL
+
+         !$OMP CRITICAL
+         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+         tensor_memory_in_use = tensor_memory_in_use - vector_size
+         !$OMP END CRITICAL
       end if
 
       call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
@@ -466,14 +568,61 @@ module lspdm_basic_module
     end subroutine memory_deallocate_dummy
 
 
-    subroutine array_pdm_free_special_aux(arr)
+    subroutine tensor_pdm_free_special_aux(arr)
       implicit none
-      type(array), intent(inout) :: arr
+      type(tensor), intent(inout) :: arr
       call memory_deallocate_window(arr)
       call memory_deallocate_dummy(arr)
-    end subroutine array_pdm_free_special_aux
+    end subroutine tensor_pdm_free_special_aux
 
     
-    
-  
+    subroutine get_residence_of_tile4(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node,window_index)
+       implicit none
+       integer(kind=4), intent(out) :: rank_of_node
+       type(tensor), intent(in) :: arr
+       integer,intent(in) :: globaltilenumber
+       integer, intent(out), optional :: pos_on_node, idx_on_node, window_index
+       integer :: nnod, pos, idx,widx
+       integer(kind=8) :: rank8
+
+
+       call get_residence_of_tile8(rank8,globaltilenumber,arr,&
+          &pos_on_node=pos_on_node,idx_on_node=idx_on_node,window_index=window_index)
+
+       rank_of_node = int(rank8,kind=4)
+
+    end subroutine get_residence_of_tile4
+
+    subroutine get_residence_of_tile8(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node,window_index)
+       implicit none
+       integer(kind=8), intent(out) :: rank_of_node
+       type(tensor), intent(in) :: arr
+       integer,intent(in) :: globaltilenumber
+       integer, intent(out), optional :: pos_on_node, idx_on_node,window_index
+       integer :: nnod, pos, idx,widx
+
+       nnod=1
+#ifdef VAR_MPI
+       nnod=infpar%lg_nodtot
+#endif      
+
+       rank_of_node = mod(globaltilenumber-1+arr%offset,nnod)
+
+       if( alloc_in_dummy ) then
+          widx = 1
+          pos  = (globaltilenumber-1)/nnod + 1
+          idx  = 1 + ( pos - 1 ) * arr%tsize
+       else
+          widx = globaltilenumber
+          pos  = 1
+          idx  = 1 
+       endif
+
+       !Return the node local index of the tile
+       if(present(pos_on_node)) pos_on_node = pos
+       if(present(idx_on_node)) idx_on_node = idx
+       if(present(window_index)) window_index = widx
+    end subroutine get_residence_of_tile8
+
+
 end module lspdm_basic_module

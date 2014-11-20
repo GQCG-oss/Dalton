@@ -1,18 +1,18 @@
 \chapter{Polarizable embedding calculations}\label{ch:embedding}
 
-\index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{multiscale model}\index{multiscale}\index{embedding}\index{QM/MM}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
-This chapter introduces the polarizable embedding (PE) model as implemented in the PE library~\cite{pelib2012} included in the 
-\latestrelease\ release. Methods available are: PE-HF~\cite{pescf}, 
-PE-DFT~\cite{pescf}, PE-MP2/SOPPA~\cite{pesoppa} and 
-PE-CC\footnote{Currently, the PE-CC uses an older implementation 
-and not the PE 
-library. Note, that in the next release, the PE-CC
-implementation will use the new PE library (see Sec.~\ref{sec:pecc})}~\cite{pecc}. 
+\index{polarizable embedding}\index{electrostatic embedding}\index{PE}\index{environment model}\index{embedding model}\index{multiscale modeling}\index{embedding}\index{QM/MM}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
+This chapter introduces the polarizable embedding (PE) model\cite{pemodel1,pemodel2} as implemented
+in the PE library~\cite{pelib} included in the \latestrelease\ release.
+Methods available are: PE-HF~\cite{pescf}, PE-DFT~\cite{pescf},
+PE-MP2/SOPPA~\cite{pesoppa}, PE-MCSCF~\cite{pemcscf}
+and PE-CC\footnote{Currently, the PE-CC uses an older implementation
+and not the PE library. Note, that in a future release, the PE-CC
+implementation will use the new PE library (see Sec.~\ref{sec:pecc})}~\cite{pecc}.
 The implementation uses the Gen1Int library to calculate one-electron
 integrals~\cite{gen1int} which is also in the \latestrelease\ release. The
-first section gives some general considerations about the model and 
+first section gives some general considerations about the model and
 implementation. In the second section we introduce the input format using
-examples.
+basic examples.
 
 \begin{center}
 \fbox{
@@ -21,77 +21,87 @@ examples.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item PE library: J.~M.~H.~Olsen. PhD thesis, University of Southern Denmark, Odense, Denmark, 2012. DOI: 10.6084/m9.figshare.156851.
-\item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted.\newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
-\item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Comp.~Chem.}, {\bf 33},\hspace{0.25em}2012, (2012). 
-\item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen. \newblock {\em J.~ Chem.~Phys.}, {\bf 134},\hspace{0.25em}104108, (2011).
+\item PE library: J.~M.~H.~Olsen. The polarizable embedding (PE) library (version 1.2), 2014
+\item PE model: J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em Adv. Quantum Chem.}, {\bf 61}, 107 (2011) and J.~M.~H.~Olsen. PhD thesis, University of Southern Denmark, Odense, Denmark, 2012. DOI: 10.6084/m9.figshare.156852.
+\item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
+\item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Comp.~Chem.}, {\bf 33}, 2012, (2012).
+\item PE-MCSCF: E.~D.~Hedeg\aa{}rd, N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Chem.~Phys.}, {\bf 139}, 044101 (2013).
+\item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen. \newblock {\em J.~ Chem.~Phys.}, {\bf 134}, 104108, (2011).
+\item PE-CPP: M.~N.~Pedersen, E.~D.~Hedeg\aa{}rd, J.~M.~H.~Olsen, J.~Kauczor, P.~Norman and J.~Kongsted \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 1164 (2014).
+\item Magnetic properties with LAOs: C.~Steinmann, J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 981 (2014).
 \end{list}
 }}
 \end{center}
 
 \section{General considerations}
 In {\dalton} it is possible to include the effects from a structured
-environment on a core molecular system using the polarizable embedding (PE) 
+environment on a core molecular system using the polarizable embedding (PE)
 model. The current implementation is a layered QM/MM-type embedding model
-capable of using advanced potentials that include an electrostatic component as 
-well as an induction (polarization) component. The effects of the environment 
-are included through effective operators that contain an embedding potential, 
-which is a representation of the environment, thereby directly affecting the 
-molecular properties of the core system. The wave function of the core system 
-is optimized while taking into account the explicit electrostatic interactions 
-and induction effects from the environment in a fully self-consistent manner. 
-The electrostatic and induction components are modeled using Cartesian 
+capable of using advanced potentials that include an electrostatic component as
+well as an induction (polarization) component. The effects of the environment
+are included through effective operators that contain an embedding potential,
+which is a representation of the environment, thereby directly affecting the
+molecular properties of the core system. The wave function of the core system
+is optimized while taking into account the explicit electrostatic interactions
+and induction effects from the environment in a fully self-consistent manner.
+The electrostatic and induction components are modeled using Cartesian
 multipole moments and anisotropic dipole-dipole polarizabilities, respectively.
-The electrostatic part models the permanent charge distribution of the 
-environment and will polarize the core system, while the induction part also 
-allows polarization of the environment. The environment response is included in 
+The electrostatic part models the permanent charge distribution of the
+environment and will polarize the core system, while the induction part also
+allows polarization of the environment. The environment response is included in
 the effective operator as induced dipoles, which arise due to the electric
-fields from the electrons and nuclei in the core system as well as from the 
+fields from the electrons and nuclei in the core system as well as from the
 environment itself. It is therefore necessary to recalculate the induced dipoles
 according to the changes in the electron density of the core system as they
 occur in a wave function optimization. Furthermore, since the induced dipoles
 are coupled through the electric fields, it is necessary to solve a set of
-coupled linear equations. This can be done using either an iterative or a 
+coupled linear equations. This can be done using either an iterative or a
 direct solver. This also means that we include many-body effects of the total system.
 
-The multipoles and polarizabilities can be obtained in many different ways. It 
-is possible to use the molecular properties, however, usually 
-distributed/localized properties are used because of the better convergence of 
-the multipole expansion. These are typically centered on all atomic sites in 
-the environment (and sometimes also bond-midpoints), however, the 
-implementation is general in this sense so they can be placed anywhere in 
-space. Currently, multipole moments up to fifth order and anisotropic 
-dipole-dipole polarizabilities are supported. The multipole moments are 
-expected to be traceless, however, for moments up to and including octopoles 
-the trace will be removed if present. In case polarizabilities are included it 
-might be necessary to use an exclusion list to ensure that only relevant sites 
-can polarize each other. The format of the \potinp\ file is demonstrated below.
+The multipoles and polarizabilities can be obtained in many different ways. It
+is possible to use the molecular properties, however, usually
+distributed/localized properties are used because of the better convergence of
+the multipole expansion. These are typically centered on all atomic sites in
+the environment (and sometimes also bond-midpoints), however, the
+implementation is general in this sense so they can be placed anywhere in
+space. Currently, the PE library supports multipole moments up to fifth order and
+anisotropic dipole-dipole polarizabilities are supported. For multipoles up to and
+including third order (octopoles) the trace will be removed if present. Note, that
+the fourth and fifth order multipole moments are expected to be traceless. In case
+polarizabilities are included it might be necessary to use an exclusion list
+to ensure that only relevant sites can polarize each other. The format of
+the \potinp\ file is demonstrated below.
 
-The PE model is implemented for HF, DFT, MP2 and
+The PE model is implemented for HF, DFT, MP2, MCSCF and
 CC wave functions. Singlet linear response may be evaluated
 at PE-HF and PE-DFT levels of theory for closed- and open-shell systems,
-and at PE-SOPPA, PE-CC2 and PE-CCSD levels for closed-shell systems.
-In addition, triplet linear response and singlet quadratic response
-properties are available at the PE-HF and PE-DFT levels for closed-shell
-systems only. In the PE-MP2/SOPPA models the environment response is
-taken into account at the HF/RPA level (see Ref.~\cite{pesoppa} for details). 
-Note, that the current implementation 
-does not support point-group symmetry, London atomic orbitals or analytical 
-molecular gradients and Hessians. Furthermore, PE-CC uses 
-an older implementation with different input format which is briefly described 
-in Sec.~\ref{sec:pecc}. Note, that in the next release, PE-CC will use the
-more general and efficient PE library implementation.
+and at PE-SOPPA, PE-MCSCF, PE-CC2 and PE-CCSD levels for closed-shell systems.
+Furthermore, the PE library has been coupled with the complex polarization
+propagator (CPP) module to allow damped linear response properties at
+PE-HF and PE-DFT levels of theory for closed- and open-shell systems~\cite{pecpp}.
+Triplet linear response properties are
+available at the PE-HF and PE-DFT levels for closed-shell systems
+only. Magnetic linear response properties using London atomic
+orbitals (LAOs) are also available. Singlet quadratic response properties can be
+calculated at PE-HF and PE-DFT levels for closed-shell systems.
+In the PE-MP2/SOPPA models, the
+environment response is taken into account at the HF/RPA level
+(see Ref.~\cite{pesoppa} for details). Note, that the current implementation
+does not support point-group symmetry or analytical molecular gradients and Hessians.
+Furthermore, PE-CC uses an older implementation with different input format which
+is briefly described in Sec.~\ref{sec:pecc}. Note, that in a future release, PE-CC
+will use the more general and efficient PE library implementation.)
 
 
 \section{Input description}
-The following input description is relevant only for PE-HF, PE-DFT and 
-PE-MP2/SOPPA. The PE-CC input is described in subsection~\ref{sec:pecc}. To 
-include environment effects using the PE model it is 
-necessary to define the core and environment part of the system: the \molinp\ 
-file specifies the core molecular system and the \potinp\ file, which contains 
-the embedding potential, defines the environment. Moreover, additional 
-keywords are needed in the \dalinp\ input file to activate the PE model. To use 
-default options it is only necessary to include \Key{PEQM} in the \Sec{*DALTON} 
+The following input description is relevant only for PE-HF, PE-DFT,
+PE-MP2/SOPPA and PE-MCSCF. The PE-CC input is described in
+subsection~\ref{sec:pecc}. To include environment effects using the PE model it
+is necessary to define the core and environment part of the system: the \molinp\
+file specifies the core molecular system and the \potinp\ file, which contains
+the embedding potential, defines the environment. Moreover, additional
+keywords are needed in the \dalinp\ input file to activate the PE model. To use
+default options it is only necessary to include \Key{PEQM} in the \Sec{*DALTON}
 section. All other specifications of wave function, properties etc.\ are
 unchanged and thus follow the input described in other chapters. For example, to
 calculate the PE-HF wave function the following input can be used:
@@ -103,8 +113,8 @@ calculate the PE-HF wave function the following input can be used:
 .HF
 **END OF DALTON
 \end{verbatim}
-To use non-default options, a \Sec{PEQM} subsection is needed, which should also be placed in the 
-\Sec{*DALTON} section. For instance, to use the direct solver for induced 
+To use non-default options, a \Sec{PEQM} subsection is needed, which should also be placed in the
+\Sec{*DALTON} section. For instance, to use the direct solver for induced
 dipoles the following input example can be used:
 \begin{verbatim}
 **DALTON
@@ -117,16 +127,16 @@ dipoles the following input example can be used:
 **END OF DALTON
 \end{verbatim}
 where the \Key{DIRECT} keyword request the use of a direct solver. See further
-input options in Chapter~\ref{ch:general} under the \Sec{PEQM} 
-input section (subsection~\ref{subsec:peqm}). Furthermore, 
-Section~\ref{sec:daltoninp} in Chapter~\ref{ch:starting} provides an 
+input options in Chapter~\ref{ch:general} under the \Sec{PEQM}
+input section (subsection~\ref{subsec:peqm}). Furthermore,
+Section~\ref{sec:daltoninp} in Chapter~\ref{ch:starting} provides an
 introduction to the \dalton\ (and \molinp) input in general. The format of the
 \molinp\ file is described in detail in \ref{ch:molinp} and requires no
 additional changes to be used in a PE calculation.
 
 \subsection*{The potential input format}
-The \potinp\ file is split into three sections: \verb|@COORDINATES|, 
-\verb|@MULTIPOLES| and \verb|@POLARIZABILITIES|. The format is perhaps best 
+The \potinp\ file is split into three sections: \verb|@COORDINATES|,
+\verb|@MULTIPOLES| and \verb|@POLARIZABILITIES|. The format is perhaps best
 illustrated using an example:
 \begin{verbatim}
 ! two water molecules
@@ -202,22 +212,21 @@ EXCLISTS
 9  6  7  8 10
 10 6  7  8  9
 \end{verbatim}
-where the values have been truncated for readability. Note, that the
-input is actually not case-sensitive even though we have used
+Note, that the input is actually not case-sensitive even though we have used
 uppercase letters in the example. In the following we describe the
 contents of each section.\\
 
 \noindent\texttt{@COORDINATES}\newline
-The coordinates section follows the standard XYZ file format so that the 
-environment can be easily visualized using standard programs. The first line in 
-gives the total number of sites in the environment and the second line 
-specifies whether the coordinates are given in \angstrom{} (\verb|AA|) or 
-\bohr{} (\verb|AU|). The rest of the coordinates section is a list of the sites in 
-the environment where each line contains the element symbol and x-, y- and 
-z-coordinates of a site. If a site is not located on an atom, e.g.\ if it is a 
-bond-midpoint, then the element symbol should be specified as \verb|X|. The 
-listing also gives an implicit numbering of the sites, so that the first line 
-is site number one, the second line is site number two and so on. This 
+The coordinates section follows the standard XYZ file format so that the
+environment can be easily visualized using standard programs. The first line in
+gives the total number of sites in the environment and the second line
+specifies whether the coordinates are given in \angstrom{} (\verb|AA|) or
+\bohr{} (\verb|AU|). The rest of the coordinates section is a list of the sites in
+the environment where each line contains the element symbol and x-, y- and
+z-coordinates of a site. If a site is not located on an atom, e.g.\ if it is a
+bond-midpoint, then the element symbol should be specified as \verb|X|. The
+listing also gives an implicit numbering of the sites, so that the first line
+is site number one, the second line is site number two and so on. This
 numbering is important and used in the following sections.\\
 
 \noindent\texttt{@MULTIPOLES}\newline
@@ -240,23 +249,25 @@ the current implementation is limited to fifth order multipoles.\\
 
 \noindent\texttt{@POLARIZABILITIES}\newline
 The polarizabilities section is also subdivided into orders,
-i.e.\ \verb|ORDER 1 1| for dipole-dipole polarizabilities, which is the only 
-type supported in the current release. The format is the same as for 
-multipoles, i.e.\ first line contains number of polarizabilities which is 
-followed by a list of the polarizabilities using the same ordering as the 
-multipoles. The polarizabilities should also be given in a.u. In addition, 
-there is also the exclusion lists (\verb|EXCLISTS| 
-section). Here the first line gives the number of lists (i.e.\ the number of 
-lines) and the length of the exclusion lists (i.e.\ the number of entries per 
-line). The exclusion lists specify what the polarizable sites are not allowed 
-to be polarized by, e.g.\ \verb|1 2 3 4 5| means that site number 1 cannot be 
-polarized by sites 2, 3, 4 and 5.
+i.e.\ \verb|ORDER 1 1| for dipole-dipole polarizabilities, which is the only
+type supported in the current release. The format is the same as for
+multipoles, i.e.\ first line contains number of polarizabilities which is
+followed by a list of the polarizabilities using the same ordering as the
+multipoles. The polarizabilities should also be given in a.u. In addition,
+there is also the exclusion lists (\verb|EXCLISTS|
+section). Here the first line gives the number of lists (i.e.\ the number of
+lines) and the length of the exclusion lists (i.e.\ the number of entries per
+line). The exclusion lists specify the polarization rules. There is a list
+attached to each polarizable site that specifies which sites are not allowed
+to polarize it, e.g.\ \verb|1 2 3 4 5| means that site number 1 cannot be
+polarized by sites 2, 3, 4 and 5.\\
+
 
 \subsection*{PE-CC example}\label{sec:pecc}
-The PE-CC calculations in the current release uses an older implementation and 
-therefore requires different input. Note, that in the next release the current 
+The PE-CC calculations in the current release uses an older implementation and
+therefore requires different input. Note, that in a future release the current
 implementation will be replaced with newer code that takes advantage of the
-new PE library. To run a PE-CC calculation an input like the following can be
+PE library. To run a PE-CC calculation an input like the following can be
 used:
 \begin{verbatim}
 **DALTON
@@ -280,15 +291,15 @@ used:
 .DIPOLE
 **END OF
 \end{verbatim}
-For details regarding the general input for CC calculations we refer to 
-Chapters~\ref{ch:ccexamples} and ~\ref{ch:CC}. The required input here is the 
-\Sec{QMMM} section and \Key{QMMM} under the general \Sec{*DALTON} input 
-section. The default is to use the direct solver for the induced dipoles. Add 
-the \Key{MMITER} in the \Sec{QMMM} section to use the iterative solver. 
-Furthermore, it is also necessary to include the \Key{CCMM} keyword under the 
-\Sec{CCSLV} section. Also given in the example is the maximum number of 
+For details regarding the general input for CC calculations we refer to
+Chapters~\ref{ch:ccexamples} and ~\ref{ch:CC}. The required input here is the
+\Sec{QMMM} section and \Key{QMMM} under the general \Sec{*DALTON} input
+section. The default is to use the direct solver for the induced dipoles. Add
+the \Key{MMITER} in the \Sec{QMMM} section to use the iterative solver.
+Furthermore, it is also necessary to include the \Key{CCMM} keyword under the
+\Sec{CCSLV} section. Also given in the example is the maximum number of
 $t$/$\bar{t}$ iterations in the solution of the coupled $t$/$\bar{t}$
-equations (\Key{MXSLIT}) and the maximum number of steps in the $t$ and 
+equations (\Key{MXSLIT}) and the maximum number of steps in the $t$ and
 $\bar{t}$ solver (\Key{MXINIT}).
 
 The potential input format is also different in the old implementation.
@@ -312,15 +323,15 @@ AA
 Note that the lines have been wrapped to fit the document width and the numbers
 truncated. The first line specifies the unit of the coordinates (multipoles
 and polarizabilities are always in a.u.). The second line specifies the number
-of sites, the order of the multipoles, the polarizability type, exclusion list 
-length and whether nuclear charges are included, respectively. Thus, we have 
-six sites with multipoles up to quadrupoles (highest order supported in this 
-implementation). The polarizability type can be \verb|0| meaning no 
-polarizabilities, \verb|1| indicating isotropic polarizabilities or \verb|2| 
-specifying anisotropic polarizabilities. The following lines contain all 
-parameters for each site individually. The first integers are the exclusion 
-list (in this case three numbers) that are explained in the previous section. 
-If nuclear charges are included (indicated by the last number of the second 
-line, i.e.\ \verb|0| or missing means no charges and \verb|1| means include 
-nuclear charges) then the following integer is the nuclear charge. Following this is 
+of sites, the order of the multipoles, the polarizability type, exclusion list
+length and whether nuclear charges are included, respectively. Thus, we have
+six sites with multipoles up to quadrupoles (highest order supported in this
+implementation). The polarizability type can be \verb|0| meaning no
+polarizabilities, \verb|1| indicating isotropic polarizabilities or \verb|2|
+specifying anisotropic polarizabilities. The following lines contain all
+parameters for each site individually. The first integers are the exclusion
+list (in this case three numbers) that are explained in the previous section.
+If nuclear charges are included (indicated by the last number of the second
+line, i.e.\ \verb|0| or missing means no charges and \verb|1| means include
+nuclear charges) then the following integer is the nuclear charge. Following this is
 the coordinates, multipoles and polarizability, in that order.

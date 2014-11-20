@@ -1,7 +1,0 @@
-
-   dft_camb3lyp
-   --------------
-   Molecule:         hydrogen atom
-   Wave Function:    DFT CAM-B3LYP / aug-cc-pVTZ
-   Test Purpose:     DFT open-shell energy and dipole moment in field
-

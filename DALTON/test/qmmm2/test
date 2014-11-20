@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import os
 import sys
 
@@ -20,7 +21,7 @@ f.add(re = 'Maximum number of DIIS vectors',
 
 f.add(from_re = 'Dipole moment components',
       num_lines = 9,
-      mask = [4],
+      mask = [3],
       rel_tolerance = 1.0e-6)
 
 f.add(from_re = 'Singlet electronic excitation energies',
@@ -30,6 +31,7 @@ f.add(from_re = 'Singlet electronic excitation energies',
 
 f.add(from_re = 'Electric transition dipole moments \(au\)',
       num_lines = 9,
+      ignore_sign = True,
       abs_tolerance = 1.0e-3)
 
 f.add(from_re = 'Oscillator strengths',

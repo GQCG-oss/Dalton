@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C     Original: abamolden  alex a auer 5.2.99
 C
@@ -237,7 +236,7 @@ C     include character ASYMB(103)*2 with atomic symbols
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 
 !hjaaj Aug 2013: DONEIU obsolete, instead we use temporary LUMOLDEN_MOS as LU for 'ATOM'
 !hjaaj IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
@@ -283,12 +282,12 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                J = J + 1
                JATOM = 0
                DO 200 ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                      JATOM = JATOM + 1
                      NAME(J:J) = CHRNOS(JATOM)
-                     CRX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-                     CRY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-                     CRZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+                     CRX = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+                     CRY = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+                     CRZ = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                      IF (WORD .EQ. 'ATOM') THEN
                         IATOM = IATOM + 1
                         WRITE (LU,'(A,1X,I5,1X,I5,3(1X,F20.10))')
@@ -328,12 +327,12 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                   J = J + 1
                   JATOM = 0
                   DO, ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                      JATOM = JATOM + 1
                      NAME(J:J) = CHRNOS(JATOM)
-                     CRX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-                     CRY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-                     CRZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+                     CRX = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+                     CRY = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+                     CRZ = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                      IATOM = IATOM + 1
                      WRITE (LU,'(A,1X,I5,1X,I5)') NAME,IATOM,ICHARGE
                   END IF

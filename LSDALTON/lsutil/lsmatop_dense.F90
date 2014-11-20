@@ -60,8 +60,8 @@ CONTAINS
     implicit none
     TYPE(Lsmatrix),intent(in) :: a
     integer, intent(in)     :: i_row1, i_rown, j_col1, j_coln, lu
-    !to be found in pdpack/printpkg.F
-    call OUTPUT(a%elms, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, 1, lu)
+    !to be found in lsutil/common_utilities.F90
+    call LS_OUTPUT(a%elms, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, 1, lu)
   end subroutine lsmat_dense_print
 
 !> \brief Set a type(lsmatrix) A to zero

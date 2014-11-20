@@ -14,6 +14,7 @@ module f12_routines_module
   use matrix_module
   use matrix_operations
   use memory_handling
+  use IchorErimoduleHost
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
@@ -23,8 +24,9 @@ module f12_routines_module
   use ccintegrals  
  
   public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
-       & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D,&
-       & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO ! atomic_fragment_free_f12, atomic_fragment_init_f12
+       & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D, &
+       & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO, & ! atomic_fragment_free_f12, atomic_fragment_init_f12
+       & get_4Center_MO_integrals, get_4Center_F12_integrals, free_4Center_F12_integrals
 
   private
 
@@ -34,8 +36,10 @@ module f12_routines_module
      integer :: n1
      integer :: n2
   END TYPE ctype
+#endif
   
 contains
+#ifdef MOD_UNRELEASED
   function norm1D(A)
     implicit none
     real(realk), intent(in) :: A(:)
@@ -721,6 +725,10 @@ contains
     integer :: i,m,k,n,idx,j,l
     logical :: FullRHS,doscreen
     integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
+    type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
+    type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
+    integer :: iAO,nAObatches(4),AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
+    logical :: MoTrans, NoSymmetry,SameMol
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
@@ -745,6 +753,57 @@ contains
     call mat_transpose(n41,n42, 1.0E0_realk,C4, 0.0E0_realk,C4T)
     call mat_transpose(n31,n32, 1.0E0_realk,C3, 0.0E0_realk,C3T)
     call mat_transpose(n11,n12, 1.0E0_realk,C1, 0.0E0_realk,C1T)
+
+
+
+!!$    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
+!!$    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
+!!$
+!!$    get current allocated
+!!$    getMaximem =  decinfo%memory
+!!$    IF(n21*n41*nbasis*nbasis + n22*n41*nbasis*nbasis)THEN
+!!$       !NON BATCHING
+!!$       Optimalbatchdimgamma = nbasis
+!!$       Optimalbatchdimalpha = nbasis
+!!$    ELSE
+!!$       IF(n21*n41*nbasis*MinGammaBatchSize + n22*n41*nbasis*MinGammaBatchSize)THEN
+!!$          !BATCHING ON GAMMA ONLY
+!!$          Optimalbatchdimalpha = nbasis
+!!$          do Ngamma = Nbasis,MinGammaBatchSize,-1
+!!$             dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
+!!$             dim2 = i8*n41*dimAlpha*dimGamma*n22  ! dim of tmp2 
+!!$             step1mem = dim1 + dim2
+!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
+!!$                Optimalbatchdimgamma = Ngamma
+!!$                EXIT
+!!$             ENDIF
+!!$          enddo
+!!$       ELSE
+!!$          !BATCH ON BOTH
+!!$          do Nalpha = Nbasis,MinAlphaBatchSize,-1
+!!$             dim1 = i8*n21*n41*dimAlpha*MinGammaBatchSize   ! dimension for integral array tmp1
+!!$             dim2 = i8*n41*dimAlpha*MinGammaBatchSize*n22  ! dim of tmp2 
+!!$             step1mem = dim1 + dim2
+!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
+!!$                Optimalbatchdimalpha = Nalpha
+!!$                EXIT
+!!$             ENDIF
+!!$          enddo
+!!$          
+     
+!!$       do Ngamma = MinGammaBatchSize,Nbasis
+!!$          do Nalpha = MinAlphaBatchSize,Nbasis
+!!$             
+!!$             dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
+!!$             dim2 = i8*n41*dimAlpha*dimGamma*n22  ! dim of tmp2 
+!!$             step1mem = dim1 + dim2
+!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
+!!$                Optimalbatchdimgamma = Ngamma
+!!$             ENDIF
+!!$          enddo
+!!$       enddo
+!!$    ENDIF
+    
     ! ************************
     ! Determine AO batch sizes
     ! ************************
@@ -752,19 +811,7 @@ contains
     ! (as is done e.g. in get_optimal_batch_sizes_for_mp2_integrals).
     ! For simplicity we simply choose the gamma batch to contain all basis functions,
     ! while we make the alpha batch as small as possible
-
-    !> Minimum AO batch size
-    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize,'R')
-
-    !> Maximum AO batch size (all basis functions)
-    MaxAObatchSize = n31
-    !> Setting MinAO to AO batch size for debug purposes
-    MinAObatchSize = n11
-
-    !> Set alpha and gamma batch size as written above
-    GammaBatchSize = n31 ! Needs to be changed, For DEBUG purposes MaxAObatchSize
-    AlphaBatchSize = n11 ! Needs to be changes, For DEBUG purposes MinAObatchSize
-
+    
     ! ***********************************
     ! Determine batch Types ('R' or 'C')
     ! ***********************************
@@ -784,69 +831,144 @@ contains
        endif
     enddo
 
+    IF(DECinfo%useIchor)THEN
+       iprint = 0           !print level for Ichor Integral code
+       MoTrans = .FALSE.    !Do not transform to MO basis! 
+       NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+       SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+       !Determine the full number of AO batches - not to be confused with the batches of AOs
+       !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+       do i=1,4
+          call determine_Ichor_nAObatches(mysetting,i,BatchType(i),nAObatches(i),DECinfo%output)
+       enddo
+       !Determine the minimum allowed AObatch size MinAObatch
+       !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
+       !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
+       !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched
+       !'C'  !Specifies that it is the CABS AO basis that should be batched
+       iAO = 3 !the center that the batching should occur on.  
+       call determine_MinimumAllowedAObatchSize(mysetting,iAO,BatchType(3),GammaBatchSize)
+       iAO = 1 !the center that the batching should occur on.  
+       call determine_MinimumAllowedAObatchSize(mysetting,iAO,BatchType(1),AlphaBatchSize)
+    ELSE
+       !> Minimum AO batch size
+       call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,GammaBatchSize,BatchType(3))
+       call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,AlphaBatchSize,BatchType(1))
+    ENDIF
+ 
+    !> Maximum AO batch size (all basis functions)
+    !MaxAObatchSize = n31
+    !> Setting MinAO to AO batch size for debug purposes
+    !MinAObatchSize = n11
+
+    !> Set alpha and gamma batch size as written above
+    !GammaBatchSize = n31 ! Needs to be changed, For DEBUG purposes MaxAObatchSize
+    !AlphaBatchSize = n11 ! Needs to be changes, For DEBUG purposes MinAObatchSize
+
+
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
-    ! Orbital to batch information
-    ! ----------------------------
-    call mem_alloc(orb2batchGamma,n31)
-
-    call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,n31,MaxActualDimGamma,&
-         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,BatchType(3))
-
-    ! Batch to orbital information
-    ! ----------------------------
-    call mem_alloc(batch2orbGamma,nbatchesGamma)
-    do idx=1,nbatchesGamma
-       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
-       batch2orbGamma(idx)%orbindex = 0
-       batch2orbGamma(idx)%norbindex = 0
-    end do
-    do iorb=1, n31
-       idx = orb2batchGamma(iorb)
-       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-       K = batch2orbGamma(idx)%norbindex
-       batch2orbGamma(idx)%orbindex(K) = iorb
-    end do
+    IF(DECinfo%useIchor)THEN
+       iAO = 3 !Gamma is the 3. Center of the 4 center two electron coulomb integral
+       !Determine how many batches of AOS based on the GammaBatchSize, the requested
+       !size of the AO batches. iAO is the center that the batching should occur on. 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched 
+       call determine_Ichor_nbatchesofAOS(mysetting,iAO,BatchType(iAO),GammaBatchSize,&
+            & nbatchesGamma,DECinfo%output)
+       call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+       !Construct the batches of AOS based on the GammaBatchSize, the requested
+       !size of the AO batches - GammaBatchSize must be unchanged since the call 
+       !to determine_Ichor_nbatchesofAOS
+       !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+       !So MaxActualDimGamma must be less og equal to GammaBatchSize
+       call determine_Ichor_batchesofAOS(mysetting,iAO,BatchType(iAO),GammaBatchSize,&
+            & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+    ELSE
+       ! Orbital to batch information
+       ! ----------------------------
+       call mem_alloc(orb2batchGamma,n31)
+       
+       call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,n31,MaxActualDimGamma,&
+            & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,BatchType(3))
+       
+       ! Batch to orbital information
+       ! ----------------------------
+       call mem_alloc(batch2orbGamma,nbatchesGamma)
+       do idx=1,nbatchesGamma
+          call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
+          batch2orbGamma(idx)%orbindex = 0
+          batch2orbGamma(idx)%norbindex = 0
+       end do
+       do iorb=1, n31
+          idx = orb2batchGamma(iorb)
+          batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+          K = batch2orbGamma(idx)%norbindex
+          batch2orbGamma(idx)%orbindex(K) = iorb
+       end do
+    ENDIF
 
     ! ************************************************
     ! * Determine batch information for Alpha batch  *
     ! ************************************************
-    ! Orbital to batch information
-    ! ----------------------------
-    call mem_alloc(orb2batchAlpha,n11)
-    call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,n11,&
-         & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,BatchType(1))
+    IF(DECinfo%useIchor)THEN
+       iAO = 1 !Alpha is the 1. Center of the 4 center two electron coulomb integral
+       !Determine how many batches of AOS based on the AlphaBatchSize, the requested
+       !size of the AO batches. iAO is the center that the batching should occur on. 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched 
+       call determine_Ichor_nbatchesofAOS(mysetting,iAO,BatchType(iAO),AlphaBatchSize,&
+            & nbatchesAlpha,DECinfo%output)
+       call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+       !Construct the batches of AOS based on the AlphaBatchSize, the requested
+       !size of the AO batches - AlphaBatchSize must be unchanged since the call 
+       !to determine_Ichor_nbatchesofAOS
+       !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+       !So MaxActualDimAlpha must be less og equal to AlphaBatchSize
+       call determine_Ichor_batchesofAOS(mysetting,iAO,BatchType(iAO),AlphaBatchSize,&
+            & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+    ELSE
+       ! Orbital to batch information
+       ! ----------------------------
+       call mem_alloc(orb2batchAlpha,n11)
+       call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,n11,&
+            & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,BatchType(1))
 
-    ! Batch to orbital information
-    ! ----------------------------
-    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-    do idx=1,nbatchesAlpha
-       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-       batch2orbAlpha(idx)%orbindex = 0
-       batch2orbAlpha(idx)%norbindex = 0
-    end do
-    do iorb=1, n11
-       idx = orb2batchAlpha(iorb)
-       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-       K = batch2orbAlpha(idx)%norbindex
-       batch2orbAlpha(idx)%orbindex(K) = iorb
-    end do
+       ! Batch to orbital information
+       ! ----------------------------
+       call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+       do idx=1,nbatchesAlpha
+          call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+          batch2orbAlpha(idx)%orbindex = 0
+          batch2orbAlpha(idx)%norbindex = 0
+       end do
+       do iorb=1, n11
+          idx = orb2batchAlpha(iorb)
+          batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+          K = batch2orbAlpha(idx)%norbindex
+          batch2orbAlpha(idx)%orbindex(K) = iorb
+       end do
+    ENDIF
 
-    ! Setting to FALSE for DEBUG purposes
-    Mysetting%scheme%cs_screen = .FALSE.
-    Mysetting%scheme%ps_screen = .FALSE.
-
-    ! Integral screening stuff
-    doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
-    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatchesAlpha,nbatchesGamma,INTSPEC)
-    IF(doscreen)then
-       call II_getBatchOrbitalScreen(DecScreen,mysetting,&
-            & n31,nbatchesAlpha,nbatchesGamma,&
-            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-    endif
+    IF(DECinfo%useIchor)THEN
+       !Calculate Screening integrals 
+       call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mysetting,INTSPEC,SameMOL)
+    ELSE
+       ! Setting to FALSE for DEBUG purposes
+       Mysetting%scheme%cs_screen = .FALSE.
+       Mysetting%scheme%ps_screen = .FALSE.
+       
+       ! Integral screening stuff
+       doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
+       call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
+            & nbatchesAlpha,nbatchesGamma,INTSPEC)
+       IF(doscreen)then
+          call II_getBatchOrbitalScreen(DecScreen,mysetting,&
+               & n31,nbatchesAlpha,nbatchesGamma,&
+               & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+               & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+       endif
+    ENDIF
     FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
 #ifdef VAR_OMP
@@ -863,28 +985,48 @@ contains
     kjli = 0.0_realk
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-       dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
-       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-       GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
-
+       IF(DECinfo%useIchor)THEN
+          dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+          GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+          GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+          AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+          AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+       ELSE
+          dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
+          GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+          GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+       ENDIF
        BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
-          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
-          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-
+          IF(DECinfo%useIchor)THEN
+             dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+             AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+             AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+             AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+             AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+          ELSE
+             dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+             AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+             AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+          ENDIF
           ! Get tmp1(beta(n21),delta(n41)|INTSPEC|alphaB(n11),gammaB(n31)) 
           ! ************************************************************************************
           dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
           call mem_alloc(tmp1,dim1)
           tmp1 = 0.0_realk
 
-          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+          IF(DECinfo%useIchor)THEN
+             call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mysetting,n21,n41,dimAlpha,dimGamma,&
+                  & tmp1,INTSPEC,FULLRHS,1,nAObatches(2),1,nAObatches(4),AOAlphaStart,&
+                  & AOAlphaEnd,AOGammaStart,AOGammaEnd,MoTrans,n21,n41,dimAlpha,dimGamma,NoSymmetry)
+          ELSE
+             IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
+             IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
-          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-               & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
-               & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
-               & INTSPEC)
+             call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
+                  & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
+                  & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
+                  & INTSPEC)
+          ENDIF
           ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
 
           ! Transform beta(n21) to index "j" with C2(n21,j (n22))
@@ -977,12 +1119,18 @@ contains
 
     ! Free and nullify stuff
     ! **********************
-    nullify(mysetting%LST_GAB_LHS)
-    nullify(mysetting%LST_GAB_RHS)
-    call free_decscreen(DECSCREEN)
-
-    call free_batch(orb2batchGamma, batchdimGamma, batchsizeGamma, batchindexGamma, batch2orbGamma, &
-         & orb2batchAlpha, batchdimAlpha, batchsizeAlpha, batchindexAlpha, batch2orbAlpha, nbatchesGamma, nbatchesAlpha)
+    IF(DECinfo%useIchor)THEN
+       call FREE_SCREEN_ICHORERI()
+       call mem_dealloc(AOGammabatchinfo)
+       call mem_dealloc(AOAlphabatchinfo)
+    ELSE
+       nullify(mysetting%LST_GAB_LHS)
+       nullify(mysetting%LST_GAB_RHS)
+       call free_decscreen(DECSCREEN)
+       call free_batch(orb2batchGamma, batchdimGamma, batchsizeGamma, batchindexGamma, batch2orbGamma, &
+            & orb2batchAlpha, batchdimAlpha, batchsizeAlpha, batchindexAlpha, batch2orbAlpha, &
+            & nbatchesGamma, nbatchesAlpha)
+    ENDIF
 
     ! Free F12 related pointers
     call mem_dealloc(C4T)
@@ -1024,6 +1172,414 @@ contains
 
   end subroutine free_batch
 
+  subroutine get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
+       & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
+       & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
+
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> Lsitem structure
+    type(lsitem), intent(inout) :: mylsitem
+    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO
+    real(realk),pointer :: Ripjq(:,:,:,:)
+    real(realk),pointer :: Fijkl(:,:,:,:)
+    real(realk),pointer :: Tijkl(:,:,:,:)
+    real(realk),pointer :: Rimjc(:,:,:,:)
+    real(realk),pointer :: Dijkl(:,:,:,:)
+    real(realk),pointer :: Tirjk(:,:,:,:)
+    real(realk),pointer :: Tijkr(:,:,:,:)
+    real(realk),pointer :: Gipjq(:,:,:,:)
+    real(realk),pointer :: Gimjc(:,:,:,:)
+    real(realk),pointer :: Girjs(:,:,:,:)
+    real(realk),pointer :: Girjm(:,:,:,:)
+    real(realk),pointer :: Grimj(:,:,:,:)
+    real(realk),pointer :: Gipja(:,:,:,:)
+    real(realk),pointer :: Gpiaj(:,:,:,:)
+    real(realk),pointer :: Gicjm(:,:,:,:)
+    real(realk),pointer :: Gcimj(:,:,:,:)
+    real(realk),pointer :: Gcirj(:,:,:,:)
+    real(realk),pointer :: Gciaj(:,:,:,:)
+    real(realk),pointer :: Giajc(:,:,:,:)
+    !
+    real(realk),pointer :: gao(:,:,:,:)
+
+    call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
+
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Ripjq)
+
+    !Calculate the various Gaussian geminal integrals with four regular AO indeces
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Gipjq)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRF')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Fijkl)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRD')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                        MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Dijkl)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRR2')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Tijkl)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &  MyMolecule%Co, MyMolecule%Cv,'ipia',gAO,Gipja)
+
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &  MyMolecule%Co, MyMolecule%Cv,'piai',gAO,Gpiaj)
+
+
+    call mem_dealloc(gao)
+
+    !Calculate the various Gaussian geminal integrals with RRRC
+    call mem_alloc(gao,nbasis,nbasis,nbasis,ncabsAO)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRC2')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'iiir',gAO,Tijkr)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCC')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Rimjc)
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCG')
+
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Gimjc)
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'iaic',gAO,Giajc)
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRC2')
+
+    call mem_dealloc(gao)
+    !Calculate the various Gaussian geminal integrals with RCRR
+    call mem_alloc(gao,nbasis,ncabsAO,nbasis,nbasis)
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRR2')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'irii',gAO,Tirjk)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRRG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &  MyMolecule%Co, MyMolecule%Cv,'irim',gAO,Girjm)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRRG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &  MyMolecule%Co, MyMolecule%Cv,'icim',gAO,Gicjm)
+
+    call mem_dealloc(gao)
+    !Calculate the various Gaussian geminal integrals with RCRC
+    call mem_alloc(gao,nbasis,ncabsAO,nbasis,ncabsAO)
+
+    !Calculate the various Gaussian geminal integrals with four regular AO indeces
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRCG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co, MyMolecule%Cv,'irir',gAO,Girjs)
+
+    call mem_dealloc(gao)
+    !Calculate the various Gaussian geminal integrals with CRRR
+    call mem_alloc(gao,ncabsAO,nbasis,nbasis,nbasis)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &  MyMolecule%Co, MyMolecule%Cv,'rimi',gAO,Grimj)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &  MyMolecule%Co, MyMolecule%Cv,'cimi',gAO,Gcimj)
+
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &  MyMolecule%Co, MyMolecule%Cv,'ciai',gAO,Gciaj)
+
+    call mem_dealloc(gao)
+    !Calculate the various Gaussian geminal integrals with CRCR
+    call mem_alloc(gao,ncabsAO,nbasis,ncabsAO,nbasis)
+    gao = 0.0E0_realk
+    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRCRG')
+    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &  MyMolecule%Co, MyMolecule%Cv,'ciri',gAO,Gcirj)
+    call mem_dealloc(gao)
+
+  end subroutine get_4Center_F12_integrals
+
+  subroutine free_4Center_F12_integrals(&
+       & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
+       & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
+    implicit none
+    real(realk),pointer :: Ripjq(:,:,:,:)
+    real(realk),pointer :: Fijkl(:,:,:,:)
+    real(realk),pointer :: Tijkl(:,:,:,:)
+    real(realk),pointer :: Rimjc(:,:,:,:)
+    real(realk),pointer :: Dijkl(:,:,:,:)
+    real(realk),pointer :: Tirjk(:,:,:,:)
+    real(realk),pointer :: Tijkr(:,:,:,:)
+    real(realk),pointer :: Gipjq(:,:,:,:)
+    real(realk),pointer :: Gimjc(:,:,:,:)
+    real(realk),pointer :: Girjs(:,:,:,:)
+    real(realk),pointer :: Girjm(:,:,:,:)
+    real(realk),pointer :: Grimj(:,:,:,:)
+    real(realk),pointer :: Gipja(:,:,:,:)
+    real(realk),pointer :: Gpiaj(:,:,:,:)
+    real(realk),pointer :: Gicjm(:,:,:,:)
+    real(realk),pointer :: Gcimj(:,:,:,:)
+    real(realk),pointer :: Gcirj(:,:,:,:)
+    real(realk),pointer :: Gciaj(:,:,:,:)
+    real(realk),pointer :: Giajc(:,:,:,:)
+    call mem_dealloc(Ripjq)
+    call mem_dealloc(Fijkl)
+    call mem_dealloc(Tijkl)
+    call mem_dealloc(Rimjc)
+    call mem_dealloc(Dijkl)
+    call mem_dealloc(Tirjk)
+    call mem_dealloc(Tijkr)
+    call mem_dealloc(Gipjq)
+    call mem_dealloc(Gimjc)
+    call mem_dealloc(Girjs)
+    call mem_dealloc(Girjm)
+    call mem_dealloc(Grimj)
+    call mem_dealloc(Gipja)
+    call mem_dealloc(Gpiaj)
+    call mem_dealloc(Gicjm)
+    call mem_dealloc(Gcimj)
+    call mem_dealloc(Gcirj)
+    call mem_dealloc(Gciaj)
+    call mem_dealloc(Giajc)
+  end subroutine free_4Center_F12_integrals
+
+  subroutine get_4Center_MO_integrals(mylsitem,lupri,nbasis,nocc,noccfull,nvirt,&
+       & Cocc,Cvirt,inputstring,gAO,gMO)
+    implicit none
+    integer :: nocc,noccfull,nvirt,nCabsAO,nCabs,nbasis
+    !> Lsitem structure
+    type(lsitem), intent(inout) :: mylsitem
+    character(len=4) :: inputstring
+    integer :: ndim2(4),ndim1(4)
+    real(realk),pointer :: gAO(:,:,:,:)
+    real(realk),pointer :: gMO(:,:,:,:) ,elms(:)
+    type(matrix) :: CMO(4)
+    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    !> Virtual MO coefficients
+    real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
+    type(matrix) :: CMO_cabs,CMO_ri
+    real(realk),pointer :: tmp(:,:,:,:)
+    real(realk),pointer :: tmp2(:,:,:,:)
+    character :: string(4)
+    logical :: doCABS,doRI
+    integer :: i,lupri
+    string(1) = inputstring(1:1)
+    string(2) = inputstring(2:2)
+    string(3) = inputstring(3:3)
+    string(4) = inputstring(4:4)
+    doCABS = .FALSE.
+    do i=1,4
+       if(string(i).EQ.'c')then !occupied active
+          doCABS = .TRUE.
+       endif
+    enddo
+    doRI = .FALSE.
+    do i=1,4
+       if(string(i).EQ.'r')then !occupied active
+          doRI = .TRUE.
+       endif
+    enddo
+    call determine_CABS_nbast(nCabsAO,nCabs,mylsitem%SETTING,lupri)
+    IF(doCABS)THEN
+       call mat_init(CMO_cabs,nCabsAO,nCabs)
+       call build_CABS_MO(CMO_cabs,nCabsAO,mylsitem%SETTING,lupri)
+    ENDIF
+    IF(doRI)THEN
+       call mat_init(CMO_ri,nCabsAO,nCabsAO)
+       call build_RI_MO(CMO_ri,nCabsAO,mylsitem%SETTING,lupri)
+    ENDIF
+    do i=1,4
+       if(string(i).EQ.'i')then !occupied active
+          ndim1(i) = nbasis
+          ndim2(i) = nocc
+       elseif(string(i).EQ.'m')then !all occupied
+          ndim1(i) = nbasis
+          ndim2(i) = noccfull
+       elseif(string(i).EQ.'p')then !all occupied + virtual
+          ndim1(i) = nbasis
+          ndim2(i) = nbasis
+       elseif(string(i).EQ.'a')then !virtual
+          ndim1(i) = nbasis
+          ndim2(i) = nvirt
+       elseif(string(i).EQ.'c')then !cabs
+          ndim1(i) = ncabsAO
+          ndim2(i) = ncabs
+       elseif(string(i).EQ.'r')then !ri - MOs
+          ndim1(i) = ncabsAO
+          ndim2(i) = ncabsAO
+       endif
+       call mat_init(CMO(i),ndim1(i),ndim2(i))
+       if(string(i).EQ.'i')then !occupied active
+          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+       elseif(string(i).EQ.'m')then !all occupied
+          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+       elseif(string(i).EQ.'p')then !all occupied + virtual
+          call dcopy(noccfull*nbasis,Cocc,1,CMO(i)%elms,1)
+          call dcopy(nvirt*nbasis,Cvirt,1,CMO(i)%elms(noccfull*nbasis+1),1)
+       elseif(string(i).EQ.'a')then !virtual
+          call dcopy(ndim2(i)*ndim1(i),Cvirt,1,CMO(i)%elms,1)
+       elseif(string(i).EQ.'c')then !cabs
+          call dcopy(ndim2(i)*ndim1(i),CMO_cabs%elms,1,CMO(i)%elms,1)
+       elseif(string(i).EQ.'r')then !ri - MOs
+          call dcopy(ndim2(i)*ndim1(i),CMO_RI%elms,1,CMO(i)%elms,1)
+       endif
+    enddo
+    IF(doCABS)THEN
+       call mat_free(CMO_cabs)
+    ENDIF
+    IF(doRI)THEN
+       call mat_free(CMO_ri)
+    ENDIF
+    call mem_alloc(tmp,ndim2(1),ndim1(2),ndim1(3),ndim1(4))
+    call ls_dzero(tmp,ndim2(1)*ndim1(2)*ndim1(3)*ndim1(4))
+    call sub1(gao,tmp,CMO(1)%elms,ndim2,ndim1)
+
+    call mem_alloc(tmp2,ndim2(1),ndim2(2),ndim1(3),ndim1(4))
+    call ls_dzero(tmp2,ndim2(1)*ndim2(2)*ndim1(3)*ndim1(4))
+    call sub2(tmp,tmp2,CMO(2)%elms,ndim2,ndim1)
+    call mem_dealloc(tmp)
+
+    call mem_alloc(tmp,ndim2(1),ndim2(2),ndim2(3),ndim1(4))
+    call ls_dzero(tmp,ndim2(1)*ndim2(2)*ndim2(3)*ndim1(4))
+    call sub3(tmp2,tmp,CMO(3)%elms,ndim2,ndim1)
+    call mem_dealloc(tmp2)
+
+    call mem_alloc(gMO,ndim2(1),ndim2(2),ndim2(3),ndim2(4))
+    call ls_dzero(gMO,ndim2(1)*ndim2(2)*ndim2(3)*ndim2(4))
+    call sub4(tmp,gMO,CMO(4)%elms,ndim2,ndim1)
+    call mem_dealloc(tmp)
+    do i=1,4
+       call mat_free(CMO(i))
+    enddo
+
+  contains
+
+    subroutine sub1(gao,tmp,elms,ndim2,ndim1)
+      implicit none
+      integer :: ndim1(4),ndim2(4)
+      real(realk),intent(in) :: elms(ndim1(1),ndim2(1))
+      real(realk),intent(in) :: gao(ndim1(1),ndim1(2),ndim1(3),ndim1(4))
+      real(realk) :: tmp(ndim2(1),ndim1(2),ndim1(3),ndim1(4))
+      integer :: a,b,c,d,p
+
+      do d=1,ndim1(4)
+         do c=1,ndim1(3)
+            do b=1,ndim1(2)
+               do a=1,ndim2(1)
+
+                  do p=1,ndim1(1)
+                     tmp(a,b,c,d) = tmp(a,b,c,d) + gao(p,b,c,d)*elms(p,a)
+                  end do
+
+               end do
+            end do
+         end do
+      end do
+    end subroutine sub1
+
+    subroutine sub2(tmp,tmp2,elms,ndim2,ndim1)
+      implicit none
+      integer :: ndim1(4),ndim2(4)
+      real(realk),intent(in) :: elms(ndim1(2),ndim2(2))
+      real(realk),intent(in) :: tmp(ndim2(1),ndim1(2),ndim1(3),ndim1(4))
+      real(realk) :: tmp2(ndim2(1),ndim2(2),ndim1(3),ndim1(4))
+      integer :: a,b,c,d,p
+
+      do d=1,ndim1(4)
+         do c=1,ndim1(3)
+            do b=1,ndim2(2)
+               do a=1,ndim2(1)
+
+                  do p=1,ndim1(2)
+                     tmp2(a,b,c,d) = tmp2(a,b,c,d) + tmp(a,p,c,d)*elms(p,b)
+                  end do
+
+               end do
+            end do
+         end do
+      end do
+    end subroutine sub2
+
+    subroutine sub3(tmp2,tmp,elms,ndim2,ndim1)
+      implicit none
+      integer :: ndim1(4),ndim2(4)
+      real(realk),intent(in) :: elms(ndim1(3),ndim2(3))
+      real(realk),intent(in) :: tmp2(ndim2(1),ndim2(2),ndim1(3),ndim1(4))
+      real(realk) :: tmp(ndim2(1),ndim2(2),ndim2(3),ndim1(4))
+      integer :: a,b,c,d,p
+
+      do d=1,ndim1(4)
+         do c=1,ndim2(3)
+            do b=1,ndim2(2)
+               do a=1,ndim2(1)
+
+                  do p=1,ndim1(3)
+                     tmp(a,b,c,d) = tmp(a,b,c,d) + tmp2(a,b,p,d)*elms(p,c)
+                  end do
+
+               end do
+            end do
+         end do
+      end do
+    end subroutine sub3
+
+    subroutine sub4(tmp,gMO,elms,ndim2,ndim1)
+      implicit none
+      integer :: ndim1(4),ndim2(4)
+      real(realk),intent(in) :: elms(ndim1(4),ndim2(4))
+      real(realk),intent(in) :: tmp(ndim2(1),ndim2(2),ndim2(3),ndim1(4))
+      real(realk) :: gMO(ndim2(1),ndim2(2),ndim2(3),ndim2(4))
+      integer :: a,b,c,d,p
+
+      do d=1,ndim2(4)
+         do c=1,ndim2(3)
+            do b=1,ndim2(2)
+               do a=1,ndim2(1)
+
+                  do p=1,ndim1(4)
+                     gMO(a,b,c,d) = gMO(a,b,c,d) + tmp(a,b,c,p)*elms(p,d)
+                  end do
+
+               end do
+            end do
+         end do
+      end do
+    end subroutine sub4
+
+  end subroutine get_4Center_MO_integrals
+
+  subroutine get_max_batchsize()
+    implicit none
+
+  end subroutine get_max_batchsize
+  
 #else
 
    subroutine dummy_f12_routines()

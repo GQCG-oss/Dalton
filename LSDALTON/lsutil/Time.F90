@@ -169,7 +169,6 @@ Integer :: nhomolumo(3)
 Integer :: last_phase
 
 
-
 !Timing information
 real(realk) :: CPUTIME_TOTAL_mat(3),CPUTIME_mat_set_from_full(3),CPUTIME_mat_to_full(3)
 real(realk) :: CPUTIME_mat_trans(3),CPUTIME_mat_assign(3),CPUTIME_mat_copy(3),CPUTIME_mat_tr(3)
@@ -240,7 +239,6 @@ real(realk) :: WT_PHASE(nphases)
 real(realk) :: CT_PHASE(nphases)
 
 
-!$OMP THREADPRIVATE(cputime1,walltime1,cputime2,walltime2)
 contains
 
 
@@ -530,6 +528,27 @@ subroutine time_phase_operations1()
    last_phase = PHASE_INIT
 end subroutine time_phase_operations1
 
+subroutine time_phases_get_current(current_wt, current_ct)
+   implicit none
+   real(realk), intent(inout),optional :: current_wt(nphases),current_ct(nphases)
+   if(present(current_wt)) current_wt = WT_PHASE
+   if(present(current_ct)) current_ct = CT_PHASE
+end subroutine time_phases_get_current
+subroutine time_phases_get_diff(current_wt, current_ct)
+   implicit none
+   real(realk), intent(inout),optional :: current_wt(nphases),current_ct(nphases)
+   integer :: i
+   if(present(current_wt))then
+      do i = 1, nphases
+         current_wt(i) = WT_PHASE(i) - current_wt(i)
+      enddo
+   endif
+   if(present(current_ct))then
+      do i = 1, nphases
+         current_ct(i) = CT_PHASE(i) - current_ct(i)
+      enddo
+   endif
+end subroutine time_phases_get_diff
 
 !\brief this subroutine is intended to be used for getting the time a node
 !spends on work, communication or in an idle status (there is also a negligible
@@ -588,6 +607,7 @@ subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot,&
    character(len=100), pointer :: line
    real(realk) :: deltacpu,deltawall
 
+   !$OMP CRITICAL
    CALL LS_GETTIM(PHASEcputime2,PHASEwalltime2)
 
    DeltaCPU =  PHASEcputime2  - PHASEcputime1   
@@ -751,6 +771,7 @@ subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot,&
 
    last_phase = phase
 
+   !$OMP END CRITICAL
 end subroutine time_start_phase
 
 

@@ -172,12 +172,13 @@ module cc_debug_routines_module
      type(array4) :: Lmo
      real(realk) :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
      real(realk) :: iter_cpu,iter_wall, sosex
+     real(realk) :: t1fnorm2,m1fnorm2,t2fnorm2,m2fnorm2
      character(18) :: save_to,keep
-     character(ARR_MSG_LEN) :: msg
+     character(tensor_MSG_LEN) :: msg
      integer :: ii,aa, cc
      integer :: MaxSubSpace
      logical :: restart, u_pnos
-     type(array) :: govov
+     type(tensor) :: govov
      integer :: nspaces
      type(PNOSpaceInfo), pointer :: pno_cv(:), pno_S(:)
 
@@ -222,6 +223,10 @@ module cc_debug_routines_module
        if( .not.present(fraginfo).and. fragment_job )then
          call lsquit("ERROR(ccsolver_debug):PNO ccsd requires the fragment information if it is a fragment job",-1)
        endif
+
+       !if( .not. associated(VOVO%val)) then
+       !  call lsquit("ERROR(ccsolver_debug):PNO ccsd requires the VOVO integrals",-1)
+       !endif
      endif
 
 
@@ -256,7 +261,7 @@ module cc_debug_routines_module
 
      ! prevent if explicitly requested or if PNOs are requested
 
-     if(u_pnos.or.DECinfo%CCSDpreventcanonical)then
+     if(DECinfo%CCSDpreventcanonical)then
        !nocc diagonalization
        Co_d    = Co_f
        Cv_d    = Cv_f
@@ -421,11 +426,12 @@ module cc_debug_routines_module
 
      ! Get MO int. (govov) for RPA:
      if (ccmodel==MODEL_RPA) then
-       govov = array_minit([nocc,nvirt,nocc,nvirt],4,local=.true.,atype='TDAR')
-       call array_zero(govov)
-
-       call  wrapper_to_get_t1_free_gmo(nbasis,nocc,nvirt,Co%val,Cv2%val,&
-             & govov,ccmodel,mylsitem)
+       call tensor_minit(govov, [nocc,nvirt,nocc,nvirt],4,local=.true.,atype='TDAR')
+       call tensor_zero(govov)
+       ! FIXME: Johannes if this code is still suppose to work, you should
+       !        find govov in a different way, else please clean this file.
+       ! Date:  Nov. 2014
+       call lsquit("RPA in debug solver is missing govov",DECinfo%output)
      end if
 
 
@@ -447,7 +453,7 @@ module cc_debug_routines_module
 
          call mem_alloc( fraginfo%CLocPNO, nspaces )
          call get_pno_trafo_matrices(nocc,nvirt,nbasis,m2%val,&
-         &fraginfo%CLocPNO,fraginfo%nspaces,fragment_job,f=fraginfo)
+         &fraginfo%CLocPNO,fraginfo%nspaces,f=fraginfo)
          pno_cv => fraginfo%CLocPNO
 
        else
@@ -455,7 +461,7 @@ module cc_debug_routines_module
          nspaces = nocc * ( nocc + 1 ) / 2
          call mem_alloc( pno_cv, nspaces )
          call get_pno_trafo_matrices(nocc,nvirt,nbasis,m2%val,&
-         &pno_cv,nspaces,fragment_job,f=fraginfo)
+         &pno_cv,nspaces,f=fraginfo)
 
        endif
 
@@ -587,6 +593,7 @@ module cc_debug_routines_module
 
            pqfock = array2_similarity_transformation(xocc,ifock,yvirt,[nocc,nvirt])
            qpfock = array2_similarity_transformation(xvirt,ifock,yocc,[nvirt,nocc])
+
            iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
 
         end if T1Related
@@ -602,6 +609,10 @@ module cc_debug_routines_module
 
           call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                 & nocc,nvirt)
+
+        elseif(CCmodel==MODEL_RIMP2) then
+
+           call lsquit('MODEL_RIMP2 have no residual non iterative scheme',-1)
 
         elseif(CCmodel==MODEL_CC2) then
            u = get_u(t2(iter))
@@ -649,15 +660,14 @@ module cc_debug_routines_module
               !  endif
               !endif
      
-              !if(iter==1)t2(1)%val = m2%val
-
+              !if(iter == 1) t2(iter)%val = m2%val
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-                &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
                 &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter)
               else
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-                &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
                 &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
               endif
 
@@ -857,7 +867,7 @@ module cc_debug_routines_module
         ! If you implement a new model, please insert call to energy routine here,
         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
         if(.not. get_mult)then
-           EnergyForCCmodel: if(CCmodel==MODEL_MP2) then  
+           EnergyForCCmodel: if(CCmodel==MODEL_MP2.OR.CCmodel==MODEL_RIMP2) then  
               ! MP2
               ccenergy = get_mp2_energy(t2(iter),Lmo)
            elseif(CCmodel==MODEL_CC2 .or. CCmodel==MODEL_CCSD .or. CCmodel==MODEL_CCSDpT )then
@@ -882,7 +892,7 @@ module cc_debug_routines_module
         if(iter == DECinfo%ccMaxIter .or. two_norm_total < DECinfo%ccConvergenceThreshold) &
              break_iterations=.true.
 
-        if(DECinfo%use_singles .and. (.not. break_iterations) ) then
+        if(DECinfo%use_singles .and. (.not. break_iterations)) then
           call array4_free(iajb)
         end if
 
@@ -964,7 +974,7 @@ module cc_debug_routines_module
      ! *************************************
 
      ! free memory
-     if (ccmodel==MODEL_RPA) call array_free(govov)
+     if (ccmodel==MODEL_RPA) call tensor_free(govov)
 
      ! remove rest of the singles amplitudes and residuals
      do i=last_iter,max(last_iter-MaxSubSpace+1,1),-1
@@ -1014,11 +1024,22 @@ module cc_debug_routines_module
      !if(.not.DECinfo%use_singles)then
      !  t1_final = array2_init([nvirt,nocc])
      !endif
+     call print_norm(t2_final,t2fnorm2,.true.)
+     if(DECinfo%use_singles)then
+       call print_norm(t1_final,t1fnorm2,.true.)
+     endif
+     if(get_mult)then
+        call print_norm(m2,m2fnorm2,.true.)
+        if(DECinfo%use_singles)then
+           call print_norm(m1,m1fnorm2,.true.)
+        endif
+     endif
+
 
      ! Write finalization message
      !---------------------------
-     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,&
-     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
+     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,DECinfo%use_singles, &
+     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2, nm1 = m1fnorm2, nm2 = m2fnorm2)
 
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)
@@ -1079,22 +1100,32 @@ module cc_debug_routines_module
 
        if(.not.fragment_job)then
          do i = 1, nspaces
-           if( pno_cv(i)%allocd ) call free_PNOSpaceInfo(pno_cv(i))
+
+           if( pno_cv(i)%allocd )then
+              call free_PNOSpaceInfo(pno_cv(i))
+           endif
+
            do j = 1, i - 1
              cc = (j - i + 1) + i*(i-1)/2
              if( pno_S(cc)%allocd )  call free_PNOSpaceInfo( pno_S(cc) )
            enddo
          enddo
+
          call mem_dealloc( pno_cv )
 
        else
          do i = 1, nspaces
-           if( fraginfo%CLocPNO(i)%allocd ) call free_PNOSpaceInfo( fraginfo%CLocPNO(i) )
+
+           if( fraginfo%CLocPNO(i)%allocd )then
+              call free_PNOSpaceInfo( fraginfo%CLocPNO(i) )
+           endif
+
            do j = 1, i - 1
              cc = (j - i + 1) + i*(i-1)/2
              if( pno_S(cc)%allocd )  call free_PNOSpaceInfo( pno_S(cc) )
            enddo
          enddo
+
          call mem_dealloc( fraginfo%CLocPNO )
          pno_cv => null()
        endif
@@ -1297,7 +1328,7 @@ module cc_debug_routines_module
      type(array4) :: l1, l2, tmp
      type(array2) :: ppX,qqY,pptmp,qqtmp
      integer :: a,i,b,j,k,l,c,d
-     character(ARR_MSG_LEN) :: msg
+     character(tensor_MSG_LEN) :: msg
 
      aStart=0.0E0_realk; aEnd=0.0E0_realk
      bStart=0.0E0_realk; bEnd=0.0E0_realk
@@ -1500,7 +1531,7 @@ module cc_debug_routines_module
      real(realk), pointer      :: gvovv(:), gvooo(:), govvv(:), gooov(:), govov(:)
      real(realk), pointer      :: goovv(:)
      real(realk), pointer      :: oof(:),ovf(:),vof(:),vvf(:)
-     character(ARR_MSG_LEN)    :: msg
+     character(tensor_MSG_LEN)    :: msg
      integer                   :: v4,o4,o3v,ov3,o2v2,ov,b2,v2,o2
      type(matrix)              :: iFock, Dens
      integer                   :: i,a,j,b,ctr
@@ -2302,7 +2333,7 @@ module cc_debug_routines_module
      integer :: saved_iter11,saved_iter12,saved_iter21,saved_iter22,iter_start
      integer :: saved_nel11,saved_nel12,saved_nel21,saved_nel22
      character(11) :: fullname11, fullname12, fullname21, fullname22
-     character(ARR_MSG_LEN) :: msg
+     character(tensor_MSG_LEN) :: msg
      if(get_mult)then
        safefilet21 = 'm21'
        safefilet22 = 'm22'
@@ -2503,7 +2534,7 @@ module cc_debug_routines_module
     integer :: fu_t11,fu_t12
     logical :: file_status11,file_status12,file_status21,file_status22
     logical :: all_singles
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
 #ifdef SYS_AIX
     character(12) :: fullname11,  fullname12,  fullname21,  fullname22
     character(12) :: fullname11D, fullname12D, fullname21D, fullname22D
@@ -2623,33 +2654,6 @@ module cc_debug_routines_module
       &number)",DECinfo%output)
     endif
   end subroutine save_current_guess_simple
-
-
-  
-  !> Purpose: Wrapper for the RPA model: get MO integrals (non-T1 transformed)
-  !
-  !> Author:  Pablo Baudin
-  !> Date:    January 2014
-  subroutine wrapper_to_get_t1_free_gmo(nb,no,nv,Co,Cv,govov,ccmodel,mylsitem)
-
-    implicit none
-
-    integer, intent(in) :: nb, no, nv
-    real(realk), pointer, intent(in) :: Co(:,:), Cv(:,:)
-    type(array), intent(inout) :: govov
-    integer, intent(in) :: ccmodel
-    !> LS item with information needed for integrals
-    type(lsitem), intent(inout) :: MyLsItem
-     
-    ! dummy arguments:
-    type(array) :: pgmo_diag, pgmo_up
-    type(MObatchInfo) :: MOinfo
-    logical :: mo_ccsd  
-  
-    call get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,govov,pgmo_diag,pgmo_up, &
-                        & nb,no,nv,CCmodel,MOinfo)
- 
-  end subroutine wrapper_to_get_t1_free_gmo
 
 
 end module cc_debug_routines_module

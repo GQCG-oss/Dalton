@@ -361,9 +361,6 @@ Set default print level for the calculation.  Read one
 more line containing print level. Default print level is the
 value of \verb|IPRDEF| from the general input module.
 
-\item[\Key{QFIT}] Invoke the calculation of potential derived
-charges after the wave function has converged.
-
 \item[\Key{QUADRU}] Calculates the molecular quadrupole
 moment\index{quadrupole moments}\index{moments!total quadrupole}.
 This includes both the electronic and nuclear contributions to the
@@ -2202,39 +2199,6 @@ of \verb|IPRDEF| from the general input module.
 
 \item[\Key{SKIP}] Skip the analysis of the vibrational frequencies
 and normal modes of the molecule.
-\end{description}
-
-\subsection{Potential derived charges: \Sec{QFIT}}
-\label{subsec:qfit}
-
-Directives controlling the calculation of potential derived charges. Currently, the only supported grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from Van der Waal spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDVINC|.
-
-\begin{description}
-\item[\Key{CONSTR}]\verb| |\newline
-\verb|READ (LUCMD,*) CONSTR|
-
-Set the type of constraint on the derived charges. Options are \verb|NONE|, \verb|CHARGE| or \verb|DIPOLE| which sets no constraints, constrains the sum of potential derived charges to be equal to the molecular charge or constrains the sum and dipole moment of the potential derived charges to be equal to the molecular charge and permanent molecular dipole moment, respectively. Setting the constraint to \verb|NONE| will lead to additional charge being generated or removed and should be used carefully. The default value is \verb|CHARGE|.
-
-\item[\Key{VDWSCL}]\verb| |\newline
-\verb|READ (LUCMD,*) VDWSCL|
-
-Sets the scaling factor for the Van der Waal radii of the nuclei when generating the surface. The default value is 1.4.
-
-\item[\Key{VDWINC}]\verb| |\newline
-\verb|READ (LUCMD,*) VDWINC|
-
-Sets the increment of scaling for successive shells past the first. See option \verb|NSHELL|. The scaling factor for each Van der Waal sphere for shell $n$ can be calculated from $R = R_{vdw}\cdot (R_{scl}+(n-1)\cdot R_{inc})$ The default value is 0.2 per shell.
-
-\item[\Key{NSHELL}]\verb| |\newline
-\verb|READ (LUCMD,*) NSHELL|
-
-Generate \verb|NSHELL| shells of points around the molecule. The default value is 4.
-
-\item[\Key{PTDENS}]\verb| |\newline
-\verb|READ (LUCMD,*) PTDENS|
-
-The surface point density. Default value is 0.28 points au$^-2$.
-
 \end{description}
 
 %%% Local Variables:

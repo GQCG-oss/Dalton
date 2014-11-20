@@ -123,7 +123,7 @@ orbitals.
 
 \item[\Key{NMDDRV}] Calls for a generalized numerical geometry
 differentiation. These routines will take advantage of the full
-molecular point group in order to minimize the number of point to be
+molecular point group in order to minimize the number of points to be
 calculated. What order of derivatives and whether any analytical
 derivatives are to be used is determined in the \verb|*NMDDRV| input
 module.
@@ -202,6 +202,9 @@ calculations. Default is a print level of 0.
 
 \item[\Key{PROPERTIES}] Invoke the \aba\ module for the evaluation of static
 and dynamic properties, using a previously converged and saved wave function and saved integral files. See Chapter~\ref{ch:abacus}.
+
+\item[\Key{QFIT}] Invoke the calculation of potential derived
+charges after the wave function has converged.
 
 \item[\Key{RESPONSE}]
 
@@ -978,14 +981,18 @@ given if the print level is 4 or higher.
 \subsection{Polarizable embedding model: \Sec{PEQM}}
 \label{subsec:peqm} \index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{embedding}\index{QM/MM}\index{multiscale model}\index{multiscale}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
 
-This input section controls calculations using polarizable
-embedding (PE) model which can include effects from a structured
+This input section controls calculations using the polarizable
+embedding (PE) model\cite{pemodel1,pemodel2} which can include effects from a structured
 environment on a core molecular system described using quantum mechanics.
 The core system is defined by the \molinp\ file.
 The environment can be described by multipole moment expansions
 and anisotropic dipole-dipole polarizabilities provided in the \potinp\
 file. See Chapter~\ref{ch:embedding} for an introduction to
-calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA and Ref.~\cite{pecc} for PE-CC.
+calculations using the polarizable embedding model. See also Ref.~\cite{pescf} for
+details on the PE-HF/DFT model, Ref.~\cite{pesoppa} for PE-MP2/SOPPA,
+Ref.~\cite{pemcscf} for PE-MCSCF and Ref.~\cite{pecc} for PE-CC. Note, that the input
+options shown here cannot be used with PE-CC, because it is based on an older
+implementation (see Section~\ref{sec:pecc} for PE-CC input examples).
 
 
 \begin{description}
@@ -1204,6 +1211,38 @@ xyz coordinates of the center of cavity spheres, given in \angstrom{}.
 
 \end{description}
 
+\subsection{Potential derived charges: \Sec{QFIT}}
+\label{subsec:qfit}
+
+Directives controlling the calculation of potential derived charges. Currently, the only supported grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from Van der Waal spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDVINC|.
+
+\begin{description}
+\item[\Key{CONSTR}]\verb| |\newline
+\verb|READ (LUCMD,*) CONSTR|
+
+Set the type of constraint on the derived charges. Options are \verb|NONE|, \verb|CHARGE| or \verb|DIPOLE| which sets no constraints, constrains the sum of potential derived charges to be equal to the molecular charge or constrains the sum and dipole moment of the potential derived charges to be equal to the molecular charge and permanent molecular dipole moment, respectively. Setting the constraint to \verb|NONE| will lead to additional charge being generated or removed and should be used carefully. The default value is \verb|CHARGE|.
+
+\item[\Key{VDWSCL}]\verb| |\newline
+\verb|READ (LUCMD,*) VDWSCL|
+
+Sets the scaling factor for the Van der Waal radii of the nuclei when generating the surface. The default value is 1.4.
+
+\item[\Key{VDWINC}]\verb| |\newline
+\verb|READ (LUCMD,*) VDWINC|
+
+Sets the increment of scaling for successive shells past the first. See option \verb|NSHELL|. The scaling factor for each Van der Waal sphere for shell $n$ can be calculated from $R = R_{vdw}\cdot (R_{scl}+(n-1)\cdot R_{inc})$ The default value is 0.2 per shell.
+
+\item[\Key{NSHELL}]\verb| |\newline
+\verb|READ (LUCMD,*) NSHELL|
+
+Generate \verb|NSHELL| shells of points around the molecule. The default value is 4.
+
+\item[\Key{PTDENS}]\verb| |\newline
+\verb|READ (LUCMD,*) PTDENS|
+
+The surface point density. Default value is 0.28 points au$^-2$.
+
+\end{description}
 
 %Not documented yet. Examples can be found by grepping for "PCM" in the "DALTON/test" directory in the distribution.
 
@@ -1655,7 +1694,7 @@ derivatives from 2.order analytical derivatives.
 
 \item[\Key{DRYRUN}]\verb| |\newline
 \verb|READ (LUCMD,*) NMREDU|\newline
-\verb|READ (LUCMD,*)| (KDRYRN(II),II=1,NMREDU)
+\verb|READ (LUCMD,*) (KDRYRN(II),II=1,NMREDU)|
 
 The numerical derivatives will not be calculated, and the program will
 just set up the required displacement. An optional number of redundant

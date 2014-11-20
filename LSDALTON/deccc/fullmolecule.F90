@@ -23,10 +23,10 @@ module full_molecule
 
   ! CABS
   use CABS_operations
-
+#ifdef MOD_UNRELEASED
   ! F12 MO-matrices
   use f12_routines_module!,only: get_F12_mixed_MO_Matrices, MO_transform_AOMatrix
-
+#endif
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
@@ -45,13 +45,10 @@ contains
     implicit none
     type(fullmolecule), intent(inout) :: molecule
     type(lsitem), intent(inout) :: mylsitem
-    integer :: natoms,basis,i
-    integer :: r,iset,itype
-    logical :: status_info
-    real(realk) :: memory_use, tcpu, twall
-    
     !> Density Matrix 
     type(matrix), optional, intent(in) :: D  ! Needed for creating the hJir MO-matrix
+    real(realk) :: tcpu, twall
+    
     
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -76,10 +73,15 @@ contains
 
     call molecule_get_carmom(molecule,mylsitem)
 
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%nfrags,molecule%nfrags)
+    call GetDistances(molecule,mylsitem,DECinfo%output) 
+
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+#ifdef MOD_UNRELEASED
        !> Sanity check 
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be persent for F12 calc",-1)
@@ -91,6 +93,7 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
+#endif
     end if
     
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
@@ -119,30 +122,39 @@ contains
     type(matrix),intent(in) :: C
     !> Density Matrix 
     type(matrix),intent(in) :: D  ! Needed for creating the hJir MO-matrix
-
-    real(realk) :: memory_use, tcpu, twall
+    real(realk) :: tcpu, twall
+    integer :: nMO
     
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    ! Number of MOs (keep it general such that nMO can be different from nbasis for subsystems)
+    nMO = C%ncol
+
      ! Init basic info (molecular dimensions etc.)
-    call molecule_init_basics(molecule,mylsitem)
+    call molecule_init_basics(molecule,mylsitem,nMO=nMO)
 
     ! Copy Fock, density, MO, and overlap matrices to molecule structure
     call molecule_copy_FSC_matrices(molecule,F,S,C)
 
     ! Fock matrix in MO basis
     call molecule_mo_fock(molecule)
+
  
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule)
     end if
      
     call molecule_get_carmom(molecule,mylsitem)
-       
+
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%nfrags,molecule%nfrags)
+    call GetDistances(molecule,mylsitem,DECinfo%output) 
+
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+#ifdef MOD_UNRELEASED
        IF(DECinfo%full_molecular_cc)THEN
           call dec_get_CABS_orbitals(molecule,mylsitem)
           call dec_get_RI_orbitals(molecule,mylsitem)
@@ -150,6 +162,7 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
+#endif
     end if
     
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
@@ -163,28 +176,48 @@ contains
   !> \author Marcin Ziolkowski/Kasper Kristensen
   !> \param molecule Full molecule info
   !> \param mylsitem Integral program input
-  subroutine molecule_init_basics(molecule,mylsitem)
+  subroutine molecule_init_basics(molecule,mylsitem,nMO)
 
     implicit none
     type(fullmolecule), intent(inout) :: molecule
     type(lsitem), intent(inout) :: mylsitem
-    integer :: natoms,basis,i
-    integer :: r,iset,itype
-    logical :: status_info
+    !> Number of MOs (need to be input only if it is different from nbasis which 
+    !> can be the case for subsystems)
+    integer,intent(in),optional :: nMO
     real(realk) :: memory_use, tcpu, twall
+    integer :: nMOintern
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    molecule%Edisp = 0.0_realk
+    molecule%Ect = 0.0_realk
+    molecule%Esub = 0.0_realk
+    nMOintern = 0
+    if(present(nMO)) nMOintern = nMO
 
     molecule%natoms = get_num_atoms(mylsitem)
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
     molecule%nauxbasis = get_num_aux_basis_functions(mylsitem)
     molecule%nocc = molecule%nelectrons/2
-    molecule%nunocc = molecule%nbasis - molecule%nocc
+    if(present(nMO)) then
+       molecule%nunocc = nMO - molecule%nocc
+    else
+       molecule%nunocc = molecule%nbasis - molecule%nocc
+    end if
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
     molecule%nCabsAO = 0
     molecule%nCabsMO = 0
+
+    ! Number of possible fragments:
+    ! natoms for atom-based approach
+    ! nocc for orbital-based approach
+    if(DECinfo%DECCO) then
+       molecule%nfrags=molecule%nocc
+    else
+       molecule%nfrags=molecule%natoms
+    end if
 
     ! Which basis functions are on which atoms?
     call molecule_get_atomic_sizes(molecule,mylsitem)
@@ -197,27 +230,40 @@ contains
     call mem_alloc(molecule%SubSystemIndex,molecule%natoms)
     call GetSubSystemIndex(molecule%SubSystemIndex,molecule%natoms,mylsitem,DECinfo%output) 
 
-    !> Interatomic distances in atomic units
-    call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
-    call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
-
     !> Which model to use for different pair calculations?
     !> At this initialization step - use the input CC model for all pairs
-    call mem_alloc(molecule%ccmodel,molecule%natoms,molecule%natoms)
+    call mem_alloc(molecule%ccmodel,molecule%nfrags,molecule%nfrags)
     molecule%ccmodel = DECinfo%ccmodel
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    write(DECinfo%output,'(/,a)') '-- Full molecular info --'
-    write(DECinfo%output,'(/,a,i6)') 'FULL: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
-    write(DECinfo%output,'(/,a,i6)') 'FULL: Number of electrons        : ',molecule%nelectrons
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of atoms            : ',molecule%natoms
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of basis func.      : ',molecule%nbasis
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of aux. basis func. : ',molecule%nauxbasis
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of core orbitals    : ',molecule%ncore
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of valence orbitals : ',molecule%nval
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%nocc
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%nunocc
+    if(nMOintern /= molecule%nbasis) then ! subsystem
+
+       write(DECinfo%output,'(/,a)') '-- Subsystem info --'
+       write(DECinfo%output,'(/,a,i6)') 'SUB: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
+       write(DECinfo%output,'(/,a,i6)') 'SUB: Number of electrons        : ',molecule%nelectrons
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of atoms            : ',molecule%natoms
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of basis func.      : ',molecule%nbasis
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of aux. basis func. : ',molecule%nauxbasis
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of core orbitals    : ',molecule%ncore
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of valence orbitals : ',molecule%nval
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of occ. orbitals    : ',molecule%nocc
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of virt. orbitals   : ',molecule%nunocc
+
+    else      ! full molecule
+
+       write(DECinfo%output,'(/,a)') '-- Full molecular info --'
+       write(DECinfo%output,'(/,a,i6)') 'FULL: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
+       write(DECinfo%output,'(/,a,i6)') 'FULL: Number of electrons        : ',molecule%nelectrons
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of atoms            : ',molecule%natoms
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of basis func.      : ',molecule%nbasis
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of aux. basis func. : ',molecule%nauxbasis
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of core orbitals    : ',molecule%ncore
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of valence orbitals : ',molecule%nval
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%nocc
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%nunocc
+
+    end if
     write(DECinfo%output,*)
 
   end subroutine molecule_init_basics
@@ -237,21 +283,18 @@ contains
     type(matrix),intent(in) :: S
     !> MO coefficients
     type(matrix),intent(in) :: C
-    integer :: nbasis,i
     real(realk),pointer :: basis(:,:)
 
-    nbasis = molecule%nbasis
-
     ! Fock matrix
-    call mem_alloc(molecule%fock,nbasis,nbasis)
+    call mem_alloc(molecule%fock,F%nrow,F%ncol)
     call mat_to_full(F, 1.0_realk, molecule%fock)
 
     ! Overlap matrix
-    call mem_alloc(molecule%overlap,nbasis,nbasis)
+    call mem_alloc(molecule%overlap,S%nrow,S%ncol)
     call mat_to_full(S, 1.0_realk, molecule%overlap)
 
     ! MO coefficient matrix
-    call mem_alloc(basis,nbasis,nbasis)
+    call mem_alloc(basis,C%nrow,C%ncol)
     call mat_to_full(C, 1.0_realk, basis)
     call molecule_generate_basis(molecule,basis)
     call mem_dealloc(basis)
@@ -549,7 +592,7 @@ contains
     type(matrix) :: XYZmat(4),Cocc,Cvirt,Xocc,Xvirt
     integer :: nbasis,nocc,nvirt,natoms,nmat,nderiv,XYZ,I
     real(realk) :: CenterX,CenterY,CenterZ
-    
+
     ! Init stuff
     nbasis = molecule%nbasis
     nocc = molecule%nocc
@@ -564,7 +607,7 @@ contains
        ! Read overlap matrix from file
 !       write(DECinfo%output,*) 'Reading carmom matrices from file carmommatrix...'
 !       write(DECinfo%output,*)
-!       call dec_read_mat_array_from_file('carmommatrix',nbasis,nbasis,molecule%carmom,3)
+!       call dec_read_mat_tensor_from_file('carmommatrix',nbasis,nbasis,molecule%carmom,3)
 !    else
        ! Calculate carmom matrix from scratch
        write(DECinfo%output,*) 'Calculating carmom matrix for DEC calculation...'
@@ -608,7 +651,7 @@ contains
              molecule%carmomvirt(XYZ,I) = Xvirt%elms(I+(I-1)*nvirt)
           enddo
        enddo
-       
+
        call mat_free(Cocc)
        call mat_free(Cvirt)
        call mat_free(Xocc)
@@ -626,6 +669,7 @@ contains
        call GetOrbAtomDistances(molecule%DistanceTableOrbAtomVirt,nvirt,natoms,&
             & Molecule%carmomvirt,molecule%AtomCenters) 
 !endif
+
   end subroutine molecule_get_carmom
 
 
@@ -801,19 +845,19 @@ contains
     call mem_alloc(molecule%atom_size,natoms)
     molecule%atom_size=0
 
-    r = mylsitem%input%basis%regular%labelindex
+    r = mylsitem%input%basis%binfo(RegBasParam)%labelindex
 
     ! loop over atoms
     do i=1,natoms
 
        if(r == 0) then
           icharge = int(mylsitem%input%molecule%atom(i)%charge)
-          itype = mylsitem%input%basis%regular%chargeindex(icharge)
+          itype = mylsitem%input%basis%binfo(RegBasParam)%chargeindex(icharge)
        else
           itype = mylsitem%input%molecule%atom(i)%idtype(1)
        end if
 
-       molecule%atom_size(i) = mylsitem%input%basis%regular%&
+       molecule%atom_size(i) = mylsitem%input%basis%binfo(RegBasParam)%&
             atomtype(itype)%TotNOrb
 
     end do
@@ -839,17 +883,18 @@ contains
      call mem_alloc(molecule%atom_cabssize,natoms)
      molecule%atom_cabssize=0
 
-     r = mylsitem%input%basis%cabs%labelindex
+     r = mylsitem%input%basis%binfo(CABBasParam)%labelindex
        
      ! loop over atoms
      do i=1,natoms
       if(r == 0) then
          icharge = int(mylsitem%input%molecule%atom(i)%charge)
-         itype = mylsitem%input%basis%cabs%chargeindex(icharge)
+         itype = mylsitem%input%basis%binfo(CABBasParam)%chargeindex(icharge)
       else
          itype = mylsitem%input%molecule%atom(i)%idtype(r)
       end if
-      molecule%atom_cabssize(i) = mylsitem%input%basis%cabs%atomtype(itype)%TotNOrb
+      molecule%atom_cabssize(i) = &
+           & mylsitem%input%basis%binfo(CABBasParam)%atomtype(itype)%TotNOrb
      end do
 
      ! get first and last index of an atom in ao matrix
@@ -872,7 +917,7 @@ contains
     type(fullmolecule), intent(inout) :: molecule
     !> All MO coefficients (occupied and virtual)
     real(realk),dimension(molecule%nbasis,molecule%nbasis),intent(in) :: C
-    integer :: nbasis,nocc,nvirt
+    integer :: nbasis,nocc,nvirt,i,j,k
 
     nbasis = molecule%nbasis
     nocc = molecule%nocc
@@ -881,8 +926,21 @@ contains
     call mem_alloc(molecule%Cv,nbasis,nvirt)
 
     ! assign
-    molecule%Co = C(1:nbasis,1:nocc)
-    molecule%Cv = C(1:nbasis,nocc+1:nbasis)
+    !molecule%Co = C(1:nbasis,1:nocc)
+    !molecule%Cv = C(1:nbasis,nocc+1:nbasis)
+    do j = 1,nocc
+       do i = 1,nbasis
+          molecule%Co(i,j) = C(i,j)
+       enddo
+    enddo
+    k=nocc+1
+    do j=1,nvirt
+       do i=1,nbasis
+          molecule%Cv(i,j) = C(i,k)
+       enddo
+       k=k+1
+    enddo
+    !write(*,*) 'Johannes after before (:,:)='
 
   end subroutine molecule_generate_basis
 
@@ -894,6 +952,7 @@ contains
     type(fullmolecule), intent(inout) :: molecule
     type(array2) :: ppfock, qqfock, Co,Cv,Co2,Cv2,fock
     integer :: nocc, nvirt, oo(2), bo(2), bv(2), vv(2), bb(2),nbasis
+    integer :: i,j,k
 
     nocc = molecule%nocc
     nvirt = molecule%nunocc
@@ -919,7 +978,12 @@ contains
     call array2_free(Co)
     call array2_free(Co2)
     call mem_alloc(molecule%ppfock,nocc,nocc)
-    molecule%ppfock(1:nocc,1:nocc) = ppfock%val(1:nocc,1:nocc)
+    !molecule%ppfock(1:nocc,1:nocc) = ppfock%val(1:nocc,1:nocc)
+    do i =1,nocc
+    do j=1,nocc
+    molecule%ppfock(j,i) = ppfock%val(j,i)
+    enddo
+    enddo
     call array2_free(ppfock)
 
     ! Virt-virt block
@@ -930,7 +994,12 @@ contains
     call array2_free(Cv2)
     call array2_free(fock)
     call mem_alloc(molecule%qqfock,nvirt,nvirt)
-    molecule%qqfock(1:nvirt,1:nvirt) = qqfock%val(1:nvirt,1:nvirt)
+    !molecule%qqfock(1:nvirt,1:nvirt) = qqfock%val(1:nvirt,1:nvirt)
+    do i=1,nvirt
+    do j=1,nvirt
+    molecule%qqfock(j,i) = qqfock%val(j,i)
+    enddo
+    enddo
     call array2_free(qqfock)
 
   end subroutine molecule_mo_fock
@@ -940,6 +1009,7 @@ contains
     type(fullmolecule), intent(inout) :: MyMolecule
     type(lsitem), intent(inout) :: MyLsitem
     type(matrix), intent(in) :: D
+#ifdef MOD_UNRELEASED
     
     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull,ncabsMO
     
@@ -1004,6 +1074,7 @@ contains
       print *,'-------------------------------------------' 
     end if
 
+#endif
   end subroutine molecule_mo_f12
 
 
@@ -1058,10 +1129,9 @@ contains
     !> Density matrix (will be intialized here)
     type(matrix),intent(inout) :: D
     integer :: funit,dim1,dim2
-    integer(kind=8) :: longdim1,longdim2
-    integer(kind=4) :: dim1_32,dim2_32
+    integer(kind=long) :: longdim1,longdim2
     real(realk),pointer :: Dfull(:,:)
-
+    logical :: gcbasis
     ! Open density file
     funit=-1
     call lsopen(funit,'dens.restart','OLD','UNFORMATTED')
@@ -1069,19 +1139,9 @@ contains
     ! Allocate real vector to temporarily hold density values
     call mem_alloc(Dfull,nbasis,nbasis)
 
-
-    ! Safe handling of integers 
-    if(DECinfo%convert64to32) then   ! convert from 64 to 32 bit integers?
-       READ(funit) longdim1,longdim2
-       dim1 = int(longdim1)
-       dim2 = int(longdim2)
-    elseif(DECinfo%convert32to64) then   ! convert from 32 to 64 bit integers?
-       READ(funit) dim1_32,dim2_32
-       dim1 = dim1_32
-       dim2 = dim2_32
-    else
-       READ(funit) dim1,dim2
-    end if
+    READ(funit) longdim1,longdim2 !dens.restart always written using kind=8
+    dim1 = int(longdim1)
+    dim2 = int(longdim2)
 
     ! Sanity check
     if( (dim1/=nbasis) .or. (dim2/=nbasis) ) then
@@ -1092,7 +1152,31 @@ contains
 
     ! Read density elements
     read(funit) Dfull
-    call lsclose(funit,'KEEP')
+
+    read(funit) gcbasis
+
+    ! Basis set Sanity check
+    if (gcbasis .and. .not. DECinfo%GCBASIS) then
+        WRITE(DECinfo%output,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'
+        WRITE(DECinfo%output,*) 'while your LSDALTON.INP uses the standard input basis. '
+        WRITE(DECinfo%output,*) 'The GC basis is default unless you use a dunnings basis set,'
+        WRITE(DECinfo%output,*) 'or you specify .NOGCBASIS under *GENERAL'
+        call lsquit('Calculation in standard basis, dens.restart in GC basis!',DECinfo%output)
+     else if (DECinfo%GCBASIS .and. .not. gcbasis) then
+        WRITE(DECinfo%output,*) 'Your dens.restart was constructed using the standard input basis, while your'
+        WRITE(DECinfo%output,*) 'LSDALTON.INP uses the grand-canonical (GC) basis.'
+        WRITE(DECinfo%output,*) 'The GC basis is default unless you use a dunnings basis set,'
+        WRITE(DECinfo%output,*) 'or you specify .NOGCBASIS under *GENERAL'
+        call lsquit('Calculation in GC basis, dens.restart in standard input basis!',DECinfo%output)
+     else if (DECinfo%GCBASIS .and. gcbasis) then
+        WRITE(DECinfo%output,*) 'Basis check ok: Using GC basis consistently'
+     else if (.not. DECinfo%GCBASIS .and. .not. gcbasis) then
+        WRITE(DECinfo%output,*) 'Basis check ok: Using standard basis consistently'
+     else
+        call lsquit('Basis check is messed up!!',DECinfo%output)
+     endif
+
+     call lsclose(funit,'KEEP')
 
     ! Init density matrix
     call mat_init(D,nbasis,nbasis)

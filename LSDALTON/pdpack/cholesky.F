@@ -235,7 +235,7 @@ c
       end
 c
 c  S^1/2 - S^-1/2 DECOMPOSITION (from Jeppe)
-      SUBROUTINE SQRTMT(A,NDIM,ITASK,ASQRT,AMSQRT,SCR)
+      SUBROUTINE LS_SQRTMT(A,NDIM,ITASK,ASQRT,AMSQRT,SCR)
 *
 * Calculate square root of positive definite symmetric matrix A
 * if(ITASK .EQ. 2 ) Inverted square root matrix is also calculated
@@ -269,16 +269,16 @@ c  S^1/2 - S^-1/2 DECOMPOSITION (from Jeppe)
 *. Check for negative eigenvalues
       DO I = 1, NDIM
        IF(SCR(KLAVAL-1+I).LT.0.0D0) THEN
-         WRITE(6,*) ' SQRTMT : Negative eigenvalue ', SCR(KLAVAL-1+I)
-         WRITE(6,*) ' SQRTMT : I will STOP '
-         STOP       ' SQRTMT : Negative eigenvalue '
+         WRITE(6,*) ' LS_SQRTMT : Negative eigenvalue ', SCR(KLAVAL-1+I)
+         WRITE(6,*) ' LS_SQRTMT : I will STOP '
+         STOP       ' LS_SQRTMT : Negative eigenvalue '
        END IF
       END DO
 *
       DO 100 I = 1,NDIM
         SCR(KLAVAL-1+I) = SQRT(SCR(KLAVAL-1+I))
   100 CONTINUE
-      CALL XDIAXT(ASQRT,SCR(KLAVEC),SCR(KLAVAL),NDIM,SCR(KLFREE))
+      CALL LS_XDIAXT(ASQRT,SCR(KLAVEC),SCR(KLAVAL),NDIM,SCR(KLFREE))
 *
       IF(ITASK .EQ. 2 ) THEN
         DO 200 I = 1,NDIM
@@ -288,13 +288,13 @@ c  S^1/2 - S^-1/2 DECOMPOSITION (from Jeppe)
             SCR(KLAVAL-1+I) = SCR(KLAVAL-1+I)
           END IF
   200   CONTINUE
-        CALL XDIAXT(AMSQRT,SCR(KLAVEC),SCR(KLAVAL),NDIM,SCR(KLFREE))
+        CALL LS_XDIAXT(AMSQRT,SCR(KLAVEC),SCR(KLAVAL),NDIM,SCR(KLFREE))
       END IF
 *
       IF( NTEST .GE. 1 ) THEN
-        WRITE(6,*) ' Info from SQRTMT '
-        WRITE(6,*) ' ================='
-        WRITE(6,*) ' Input matrix to SQRTMT '
+        WRITE(6,*) ' Info from LS_SQRTMT '
+        WRITE(6,*) ' ===================='
+        WRITE(6,*) ' Input matrix to LS_SQRTMT '
         CALL LS_WRTMAT(A,NDIM,NDIM,NDIM,NDIM,1)
         WRITE(6,*) ' Square root of matrix '
         CALL LS_WRTMAT(ASQRT,NDIM,NDIM,NDIM,NDIM,1)
@@ -469,8 +469,8 @@ C
       AJUK=(A(LM)*A(LM)+X*X)
       AJUK=SQRT(AJUK)
       IF(ABS(AJUK).LT.TESTIT)WRITE(*,3000)TESTIT,AJUK,A(LM)
- 3000 FORMAT(1H0,'***DENOMINATOR LT ',D12.6,'. VALUE=',D14.8,
-     &'. NUMERATOR=',D14.8)
+ 3000 FORMAT(1H0,'***DENOMINATOR LT ',D14.6,'. VALUE=',D16.8,
+     &'. NUMERATOR=',D16.8)
       Y=0.D0
       IF(ABS(AJUK).LT.TESTIT)GO TO 67
       Y=-A(LM)/AJUK
@@ -480,7 +480,7 @@ C  68 Y=-A(LM)/ SQRT(A(LM)*A(LM)+X*X)
    70 Y=-Y
    75 AJUK=(1.D0-Y*Y)
       IF(AJUK.LT.0.D0)WRITE(*,3001) AJUK
- 3001 FORMAT(1H0,'***SQRT OF ',D14.8)
+ 3001 FORMAT(1H0,'***SQRT OF ',D16.8)
       IF(AJUK.LT.0.D0)AJUK=0.D0
       AJUK=SQRT(AJUK)
       AJUK=2.D0*(1.D0+AJUK)
@@ -610,6 +610,6 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
         WRITE(*,1010) I,(A(J),J=JSTART,JSTOP)
   100 CONTINUE
       RETURN
- 1010 FORMAT(1H0,2X,I3,5(1X,E13.7),/,(1H ,5X,5(1X,E13.7)))
+ 1010 FORMAT(1H0,2X,I3,5(1X,E14.7),/,(1H ,5X,5(1X,E14.7)))
       END
 

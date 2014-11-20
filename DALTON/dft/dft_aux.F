@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -214,7 +214,7 @@ c return total number of atoms.
 #include "symmet.h"
       DIMENSION X(8), Y(8), Z(8)
 c
-#include "ibtfun.h"
+
 csymmetry is not completely implemented here yet.
       ZCNT   = CHARGE(ICENT)
       MULCNT = ISTBNU(ICENT)
@@ -222,11 +222,11 @@ csymmetry is not completely implemented here yet.
       NAT = 0
       IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
          DO ISYMOP = 0, MAXOPR         
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                NAT = NAT + 1
-               X(NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-               Y(NAT) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-               Z(NAT) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               X(NAT) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+               Y(NAT) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+               Z(NAT) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
             ENDIF
          ENDDO
       ENDIF

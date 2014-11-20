@@ -82,11 +82,10 @@ If (config%dynamics%MaxSam) then
 Endif
 !
 Do
-! Integrate until termination criteria are fulfilled
+  Call LSTimer('START',CPUTime,WallTime,lupri)
+  ! Integrate until termination criteria are fulfilled
   Call Initialize_step(NAtoms,ls,traj,config%dynamics,lupri)
   ! Take step
-  Call LSTimer('*START',CPUTime,WallTime,lupri)
-  !
   If (config%dynamics%NHChain) then ! Canonical ensemble with Nose-Hoover
      Call NH_chain(F,D,S,H1,CMO,ls,config,luerr,lupri,NAtoms,traj,config%dynamics)
   else ! Microcanonical ensemble
@@ -142,7 +141,7 @@ Type(trajtype),intent(inout) :: Traj
 Real(realk) :: CM(3) ! Centre of mass
 Real(realk), parameter :: fs2au = 41.3413733365613E0_realk
 Integer :: nbast
-Real(realk), parameter :: kB = 3.166815E0_realk*10E-6 ! [Hartree/(K)]
+Real(realk), parameter :: kB = 3.166815E0_realk*10E-6_realk ! [Hartree/(K)]
 ! Allocating memory
 If (dyn%TimRev) then
    ! Density propagation
@@ -288,7 +287,7 @@ Type(dyntype)  :: dyn
 Real(realk) :: Temperature
 Real(realk), pointer :: Cartesian_Coordinates(:)
 Real(realk), pointer :: Cartesian_Velocities(:)
-Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6 ! [Hartree/(K)]
+Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6_realk ![Hartree/(K)]
 ! Allocate some memory if integration in mass-weighted
 If (dyn%Mass_Weight) then
    Call mem_alloc(Cartesian_Coordinates,3*NAtoms)
@@ -324,6 +323,7 @@ Endif
   If (dyn%PrintLevel >= 1) Then
     Call LSHeader(lupri, 'Current forces (au)')
     Call Print_Vector(lupri, NAtoms, traj%Labels, -traj%Gradient)
+    Call Print_Vector(6, NAtoms, traj%Labels, -traj%Gradient)
   End If
   If (dyn%PrintLevel >= 3) Then
      Call LSHeader(lupri, 'Current velocities (au)')
@@ -331,6 +331,12 @@ Endif
         Call Print_Vector(lupri, NAtoms, traj%Labels, traj%Velocities)
      Else   ! Mass-weighted
         Call Print_Vector(lupri, NAtoms, traj%Labels, Cartesian_Velocities)
+     Endif
+     Call LSHeader(6, 'Current velocities (au)')
+     If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
+        Call Print_Vector(6, NAtoms, traj%Labels, traj%Velocities)
+     Else   ! Mass-weighted
+        Call Print_Vector(6, NAtoms, traj%Labels, Cartesian_Velocities)
      Endif
   End If
 !
@@ -359,6 +365,9 @@ If (.NOT. dyn%NHchain) then
 Endif
 !
 Call LSHeader(lupri, 'Energy conservation (au)')
+Write(*,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
+                            '   Potential energy: ',traj%CurrPotential, &
+                            '   Kinetic energy: ', traj%CurrKinetic
 Write(lupri,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
                             '   Potential energy: ',traj%CurrPotential, &
                             '   Kinetic energy: ', traj%CurrKinetic
@@ -369,10 +378,8 @@ If (dyn%NHchain) then
 &conserved quantity and not T+V!'
 Endif
 ! Estimating temperature
-Temperature = 2*traj%CurrKinetic/(3*NAtoms*Boltzmann) 
-Print *, 'Temperature=',Temperature
-Write(lupri,'(31X,A,F14.8)') 'Temperature: ',&
-&Temperature
+Temperature = 2.0E0_realk*traj%CurrKinetic/(3.0E0_realk*NAtoms*Boltzmann) 
+Write(lupri,'(31X,A,F14.8)') 'Temperature: ',Temperature
 If (dyn%NHChain) traj%T_array(traj%StepNum+1) = Temperature
 !
 If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
@@ -489,7 +496,7 @@ Endif
 If (dyn%Mass_Weight) then ! Remove mass-weighting
     Call Mass_weight_vector(nAtoms,Traj%Coordinates,Traj%Mass,'REMOVE')
 Endif
-Call LSTimer('*START',CPUTime,WallTime,lupri)
+Call LSTimer('START',CPUTime,WallTime,lupri)
 !
 Call Pack_coordinates(ls%input%Molecule,Traj%Coordinates,NAtoms)
 Call Get_Energy(Etmp,Eerr,config,H1,F,D,S,ls,CMO,NAtoms,lupri,luerr)
@@ -498,7 +505,7 @@ Call LSTimer('Energy calc.',CPUTime,WallTime,lupri)
 !
 ! New gradient
 !
-Call LSTimer('*START',CPUTime,WallTime,lupri)
+Call LSTimer('START',CPUTime,WallTime,lupri)
 Call Calc_gradient(lupri,NAtoms,S,F(1),D(1),ls,config,CMO,traj)
 Call LSTimer('Forces calc.',CPUTime,WallTime,lupri)
 ! Mass-weight if needed and project if requested
@@ -681,7 +688,7 @@ Integer :: lupri,NAtoms,i
 Type(lsitem), intent(in) :: ls 
 Type(dyntype), intent(inout) :: dyn
 Type(trajtype), intent(inout) :: traj
-Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6 ! [Hartree/(K)]
+Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6_realk ! [Hartree/(K)]
 !
 Call DoublelinesInt(lupri, 'Final information for trajectory ', 1, 44)
 Write(lupri,'(A,F10.5)') ' Final time       : ', traj%TrajTime

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck herctl */
 #ifndef PRG_DIRAC
@@ -70,6 +69,7 @@ C
 C     Magnetic field derivative integrals of dipole length
 C     K.Ruud, Aug.-93
 C
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -98,6 +98,7 @@ C inftra : USE_INTSORT
 C
 #include "inftra.h"
 C
+
       LOGICAL SET, FEXIST
 C
       DIMENSION WORK(LWORK)
@@ -279,10 +280,10 @@ C     ***** End of Calculation *****
 C     ******************************
 C
       CALL GPCLOSE(LUONEL,'KEEP')
-      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
-      IF (LUQM3E .GT. 0) CALL GPCLOSE(LUQM3E,'KEEP')
-      IF (LUQM3P .GT. 0) CALL GPCLOSE(LUQM3P,'KEEP')
-      IF (LUSOL  .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP')
+      IF (LUPROP  .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      IF (LUQM3E  .GT. 0) CALL GPCLOSE(LUQM3E,'KEEP')
+      IF (LUQM3P  .GT. 0) CALL GPCLOSE(LUQM3P,'KEEP')
+      IF (LUSOL   .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP')
 C
       IF (LUINTA  .GT. 0) CALL GPCLOSE(LUINTA ,'KEEP')
       IF (LUSRINT .GT. 0) CALL GPCLOSE(LUSRINT,'KEEP')
@@ -1796,7 +1797,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.SOLVEN', '.NOT AL', '.CAVORG',
-     &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
+     &            '.FNMC  ', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR1INP')
@@ -1819,6 +1820,7 @@ C
       DORLM  = .FALSE.
       ALLRLM = .TRUE.
       CAVUSR = .FALSE.
+      FNMC   = .FALSE.
 C
       NEWDEF = WORD .EQ. '*ONEINT'
       ICHANG = 0
@@ -1864,6 +1866,7 @@ C
                   CAVUSR = .TRUE.
                GO TO 100
     6          CONTINUE
+                  FNMC = .TRUE.
                GO TO 100
     7          CONTINUE
                GO TO 100
@@ -1905,12 +1908,18 @@ C
             IF (CAVUSR) WRITE(LUPRI,'(A,3F15.10)')
      &         ' User supplied cavity center',(CAVORG(I),I=1,3)
          END IF
+         IF (FNMC) WRITE (LUPRI,'(/,2A)') ' Finite nuclear mass',
+     &      ' correction by modifying the kinetic energy integrals.'
       END IF
  199  CALL QEXIT('HR1INP')
       RETURN
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1930,7 +1939,7 @@ C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
-     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.XXXXXX', '.XXXXXX'/
+     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.EFS   ', '.XXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -2068,6 +2077,11 @@ C&&& KSPT2M
  38            CALL QUIT('Error reading CHIVAL for *TWOINT/.MU ')
    14          CONTINUE
 C&&&
+#ifdef ENABLE_EFS
+               use_efs = .true.
+#else
+               call quit('.EFS not available in this version')
+#endif
                GO TO 100
    15          CONTINUE
 C&&&
@@ -2434,7 +2448,7 @@ C
             CALL FLSHFO(LUPRI)
 C
             IF (ONLYOV) THEN
-              CALL QUITMM('Overlap integrals calculated')
+              CALL QUIT('Overlap integrals calculated')
             END IF
 C
 C           ***** Modified overlap integrals *****
@@ -3550,7 +3564,6 @@ C
 C     Integrals on LUINTA
 C
       IF (RUNTWO) THEN
-         IF (IPRDEF .GT. 1) CALL TITLER('Output from TWOINT','*',126)
          I2TYP = 0
 C
 C        ********************************************
@@ -3559,15 +3572,19 @@ C        ********************************************
 C
          IF (HAMILT) THEN
             IF (RUNERI) THEN
+               IF (IPRDEF .GT. 1) CALL TITLER('Output from ERI 2INT',
+     &            '*',126)
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
                CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,
      &                     LFREE)
                CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
                CALL MEMREL('HERINT.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
-               CALL TIMER('ERIDRV',TIMSTR,TIMEND)
+               CALL TIMER('ERI 2INT',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             ELSE
+               IF (IPRDEF .GT. 1) CALL TITLER('Output from TWOINT',
+     &            '*',126)
                NPAO = MXSHEL*MXAOVC
                CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
                CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)

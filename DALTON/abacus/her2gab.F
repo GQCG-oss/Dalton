@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,10 +21,9 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef REV_LOG
-===========================================================================
+========================================================================
 Revision 1.2  2001/01/31 17:51:20  vebjornb
 Parallel modifications from pdahle, MPI and PVM
 
@@ -37,7 +36,7 @@ Revision 1.3  2000/05/04 12:26:07  hjj
 Revision 1.2  2000/05/04 10:19:53  hjj
 (1) LUPROP .eq. 0 tests changed to LUPROP .le. 0
 (2) open LUPROP as unknown in GABGEN
-===========================================================================
+========================================================================
 #endif
 C/* Deck gabdrv */
       SUBROUTINE GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,
@@ -442,7 +441,7 @@ C               Electron 2
 #include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
-#include "ibtfun.h"
+
 C
       CALL QENTER('GABDR1')
 #include "memint.h"
@@ -635,11 +634,11 @@ C
      &          IORBSH(MXSHEL,MXAOVC),JSTRSH(MXSHEL,MXAOVC,2), 
      &          NPRIMS(MXSHEL,MXAOVC,2), NCONTS(MXSHEL,MXAOVC,2)
 C
-#include "ibtfun.h"
-      IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
-      XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
+
+      IBTAXO(I,J) = IAND(I,IEOR(I,J))
+      XAND(I)     = PT(IAND(ISYMAX(1,1),I))
+      YAND(I)     = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I)     = PT(IAND(ISYMAX(3,1),I))
 C
       CALL QENTER('GABDR2')
 #include "memint.h"
@@ -652,17 +651,17 @@ C     This is a GAB-run
 C
       IOFF = 0
       DO I = 0, MAXOPR
-      IF(IBTAND(I,MULA).EQ.0) THEN
+      IF(IAND(I,MULA).EQ.0) THEN
         IEFFA(I) = IOFF
         IOFF = IOFF + KHKTA
         ELSE
-          IEFFA(I) = IEFFA(IBTXOR(I,IBTAND(I,MULA)))
+          IEFFA(I) = IEFFA(IEOR(I,IAND(I,MULA)))
         END IF
       ENDDO
       CALL SETEFF(IEFFB,IEFFC,IEFFD)
 C
-      MULAB  = IBTAND(MULA,MULB)
-      MULCD  = IBTAND(MULC,MULD)
+      MULAB  = IAND(MULA,MULB)
+      MULCD  = IAND(MULC,MULD)
 C
       IF(DIRAC) THEN
         COMP(1) = 'L'
@@ -678,7 +677,7 @@ C
 c     HKABCD is a symmetry factor, which determines how many different integrals
 c     have the same value. This symmetry factor is not factorizable 
 c     between AB and CD, and must therefore not be included in GAB/YAB matrix. 
-c     HKABCD = FMULT(IBTAND(MULAB,MULCD)). /Feb 19 1998 - jth
+c     HKABCD = FMULT(IAND(MULAB,MULCD)). /Feb 19 1998 - jth
       HKABCD = D1
       IF (SPNORB) HKABCD = - HKABCD
       IF (UNDIFF .OR. LONDON .OR. SPNORB .OR. EXPGRA) THEN
@@ -727,7 +726,7 @@ C
       END IF
       NSYMR = 0
       DO 100 ISYMR = 0,MAXOPR
-      IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
+      IF (IAND(ISYMR,IOR(MULA,MULB)) .EQ. 0) THEN
          NSYMR  = NSYMR + 1
          IF(NCENTB.GT.0) ICENTB = NUCNUM(NCNTSH(ISHELB),
      &        IBTAXO(ISYMR,MULB)+1)
@@ -760,7 +759,7 @@ c the total contribution is zero).  /jan.98-hjaaj,jth
      &             12,THRESH,MAXDER,IPRINT)
          NSYMS = 0
          DO 200 ISYMS = 0, MAXOPR
-         IF (IBTAND(ISYMS,IBTOR(MULC,MULD)) .EQ. 0) THEN
+         IF (IAND(ISYMS,IOR(MULC,MULD)) .EQ. 0) THEN
            IF(IJOB.EQ.0) THEN
              IF(ISYMS.NE.ISYMR) THEN
                GOTO 200
@@ -795,11 +794,11 @@ C
               NCCINT = NORBAB*NORBCD*KHKTAB*KHKTCD
             END IF
             DO 300 ISYMT = 0, MAXOPR
-            IF (IBTAND(ISYMT,IBTOR(MULAB,MULCD)) .EQ. 0) THEN
+            IF (IAND(ISYMT,IOR(MULAB,MULCD)) .EQ. 0) THEN
               IF(IJOB.EQ.0) THEN
                 IF(ISYMT.NE.0) GOTO 300
               ENDIF
-              ISYMTS = IBTXOR(ISYMT,ISYMS)
+              ISYMTS = IEOR(ISYMT,ISYMS)
               IF(NCENTC.GT.0) ICENTC = NUCNUM(NCNTSH(ISHELC),
      &            IBTAXO(ISYMT,MULC)+1)
               IF(NCENTD.GT.0) ICENTD = NUCNUM(NCNTSH(ISHELD),
@@ -850,7 +849,7 @@ C
               ONECEN = ONECEN .AND. .NOT. DOGAB
               IF (ONECEN) THEN
                 IF (MAXDER .EQ. 0 .OR. EXPGRA) THEN
-                  IF (IBTAND(JMAX0,1).EQ.1)              GO TO 100
+                  IF (IAND(JMAX0,1).EQ.1)              GO TO 100
                 ELSE
                   IF (PERTUR .OR. EXPECT .OR. LONDON)    GO TO 100
                 END IF
@@ -1029,7 +1028,7 @@ C
 #include "twocom.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine GABPCK',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1055,7 +1054,7 @@ C
          IREPA  = IPNTRP(1,I)
          IREPB  = IPNTRP(2,I)
          IREPC  = IPNTRP(3,I)
-         IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+         IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          INT = 0
          DO 200 IAB = 1, NORBAB
            IA = KHKTA*(NINDAB(IAB,1) - 1)
@@ -1117,7 +1116,7 @@ C*****************************************************************************
 #include "symmet.h"
 #include "blocks.h"
 C
-#include "ibtfun.h"
+
 C
 Chj/980617: changed ISYMA test from MULA to MULAB, we must
 C           include all different operations where at least one of
@@ -1125,7 +1124,7 @@ C           A and B move (because we need the GAB integrals
 C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
       IF(SYMFAC.NE.D1) CALL DSCAL(NCCINT,SYMFAC,AOINT,1)
       IOFF = 0
-      MULAB = IBTAND(MULA,MULB)
+      MULAB = IAND(MULA,MULB)
       IF(SUSCEP) THEN
         DO ICOMPA = 1,KHKTA
                       KHKTBB = KHKTB
@@ -1148,8 +1147,8 @@ C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
                     IF(A.EQ.C.AND.B.EQ.D) THEN
                       AOBUF     = AOINT(IOFF+IORBCD)
                       DO ISYMA = 0, MAXOPR
-                      IF(IBTAND(ISYMA,MULAB).EQ.0) THEN
-                         ISYMB = IBTXOR(ISYMR,ISYMA)
+                      IF(IAND(ISYMA,MULAB).EQ.0) THEN
+                         ISYMB = IEOR(ISYMR,ISYMA)
                          IA = IORBSH(ISHELA,IORBA) 
      &                       + IEFFA(ISYMA) + ICOMPA
                          IB = IORBSH(ISHELB,IORBB) 
@@ -1193,8 +1192,8 @@ C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
                          AOBUF2    = AOBUF
                       END IF
                       DO ISYMA = 0, MAXOPR
-                      IF(IBTAND(ISYMA,MULAB).EQ.0) THEN
-                         ISYMB = IBTXOR(ISYMR,ISYMA)
+                      IF(IAND(ISYMA,MULAB).EQ.0) THEN
+                         ISYMB = IEOR(ISYMR,ISYMA)
                          IA = IORBSH(ISHELA,IORBA) 
      &                     + IEFFA(ISYMA) + ICOMPA
                          IB = IORBSH(ISHELB,IORBB) 
@@ -1399,13 +1398,13 @@ C
 #include "nuclei.h"
       DIMENSION INDRSO(NBASIS)
 C
-#include "ibtfun.h"
+
 C
       ISTRA = 1
       DO IREPA = 0, MAXREP
         NORBA = NAOS(IREPA+1)
         DO I = ISTRA,ISTRA + NORBA - 1
-          ISHELA   = IPTSHL(IBTAND(IBTSHR(IPIND(I),16),65535))
+          ISHELA   = IPTSHL(IAND(ISHFT(IPIND(I),-16),65535))
           INDRSO(I) = ISHELA
         ENDDO
         ISTRA = ISTRA + NORBA

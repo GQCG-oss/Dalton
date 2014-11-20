@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sirout */
       SUBROUTINE SIROUT(ICONV,WRK,LWRK)
@@ -56,6 +55,9 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -248,6 +250,7 @@ C
       LFREE = LWRK
       CALL MEMGET2('REAL','CMO',  KCMO  ,NCMOT, WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT, WRK,KFREE,LFREE)
+      CALL DZERO(WRK(KOCCNO),NORBT)
       CALL MEMGET2('REAL','CREF', KCREF ,NCONF, WRK,KFREE,LFREE)
       IF (FLAG(3)) THEN
          IF ( FLAG(2) .AND. ICONV.EQ.0 ) THEN
@@ -273,14 +276,24 @@ C           CALL SIRCAN(IPRCAN,CREF,CMO,OCC,WRK,KFREE,LFREE)
       END IF
 C
 C     Now read the final orbitals and occupation numbers from SIRIUS.RST
+C     (if label 'NATOCC  ' not found, then we assume any occupation numbers
+C      already in WRK(KOCCNO) are OK)
 C
       REWIND LUIT1
       CALL READMO(WRK(KCMO),9,WRK(KFREE),LFREE)
       REWIND LUIT1
       IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
          CALL READT(LUIT1,NORBT,WRK(KOCCNO))
-      ELSE
-         CALL DZERO(WRK(KOCCNO),NORBT)
+      ELSE IF (MCTYPE .EQ. 0) THEN
+         DO, ISYM = 1,NSYM
+            JOCC1  = KOCCNO -1 + IORB(ISYM)
+            NISHI  = NISH(ISYM)
+            WRK(JOCC1+1:JOCC1+NISHI) = 2.0D0
+            NASHI  = NASH(ISYM)
+         IF (NASHI.EQ.0) CYCLE
+            JOCC1  = JOCC1 + NISHI
+            WRK(JOCC1+1:JOCC1+NASHI) = 1.0D0
+         END DO
       END IF
 C
 C *** FINAL RESULTS
@@ -331,7 +344,12 @@ csonia 04/10/95
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
-
+#ifdef HAS_PCMSOLVER
+      ELSE IF (pcmmod_is_pcm_calculation) THEN
+         WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
+     *        'SOLVATION MODEL: polarizable continuum model (PCM),'
+         WRITE(LUPRI,'(5X,A24,F20.12)') 'Solvation energy:     ',ESOLT
+#endif
       ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
         WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
@@ -354,8 +372,7 @@ csonia 04/10/95
          WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
          WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       ELSE IF (QMNPMM) THEN
-         call quit('not implemented in this version')
-!        CALL SCF_QMNPMM_OUT()
+         CALL SCF_QMNPMM_OUT()
       ELSE IF (PEQM) THEN
          CONTINUE
       ELSE

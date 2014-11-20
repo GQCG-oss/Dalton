@@ -1,0 +1,53 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+#
+# Potential readin test
+#
+CRIT1=`$GREP "Number of classical sites: * 10" $log | wc -l`
+CRIT2=`$GREP "Multipole moments upto 3rd order." $log | wc -l`
+CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
+CRIT4=`$GREP "Iterative solver for induced moments" $log | wc -l`
+CRIT5=`$GREP "convergence threshold: 1.0E-08" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
+CTRL[1]=5
+ERROR[1]="INCORRECT POTENTIAL"
+#
+# Test of PE-HF shielding constants.
+#
+CRIT1=`$GREP "\@1 London orbitals \(GIAOs\) has been used." $log | wc -l`
+CRIT2=`$GREP "\@1 C * 84\.58.. * 333\.07.. * \-248\.49.. * \-0*\.478. * 229\.51.. * 144\.66.. * 1\.759." $log | wc -l`
+CRIT3=`$GREP "\@1 C * 122\.58.. * 354\.68.. * \-232\.09.. * \-0*\.184. * 212\.01.. * 149\.23.. * 1\.262." $log | wc -l`
+CRIT4=`$GREP "\@1 C * 116\.93.. * 354\.72.. * \-237\.78.. * \-0*\.163. * 222\.92.. * 158\.10.. * 1\.2[23][90]." $log | wc -l`
+CRIT5=`$GREP "\@1 O * \-274\.5[56].. * 509\.04.. * \-783\.60.. * 0*\.1959 *1440\.0... *1150\.5... * 0*\.754." $log | wc -l`
+CRIT6=`$GREP "\@1 H * 22\.107. * 34\.864. * \-12\.757. * \-0*\.201. * 5\.030. * 3\.519. * 1\.287." $log | wc -l`
+CRIT7=`$GREP "\@1 H * 25\.460. * 34\.422. * \-8\.961. * 0*\.468. * 6\.619. * 5\.739. * 0*\.4[56][90]." $log | wc -l`
+CRIT8=`$GREP "\@1 H * 26\.572. * 32\.618. * \-6\.04[56]. * 0*\.074. * 7\.619. * 5\.85[67]. * 0*\.90[23]." $log | wc -l`
+CRIT9=`$GREP "\@1 H * 26\.282. * 20\.386. * 5\.896. * 0*\.033. * 6\.604. * 5\.00[89]. * 0*\.955." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[2]=9
+ERROR[2]="PE-HF MAGNETIC PROPERTIES NOT CORRECT"
+
+PASSED=1
+for i in 1 2
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
