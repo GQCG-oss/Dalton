@@ -1368,592 +1368,592 @@ real(realk),intent(inout)::OutputStorage(OutputDim1,OutputDim2,OutputDim3,Output
 !> Logical unit number of output file.
 Integer,intent(in) :: lupri
 ! Local variables
-integer :: nPrimP,nContP,nPrimQ,nContQ
-integer :: nTABFJW1,nTABFJW2,i1,i2,i3,i4,AngmomQ,TotalAngmom
-integer :: i12,offset,K,I,iPrimQ,iPrimP,icont,AngmomP
-integer :: oldmaxangmomABCD
-integer :: ItypeA,ItypeB,itypeC,itypeD,AngmomA,AngmomB,AngmomC,AngmomD
-integer :: ItypeAnon,ItypeBnon,itypeCnon,itypeDnon,nLocalInt
-integer :: nPrimA,nPrimB,nContA,nAtomsA,nAtomsB,nAtomsC,nAtomsD,nOrbA
-integer :: nDimA,nOrbCompA,nContB,nOrbB,nDimB
-integer :: nPrimC,nContC,nPrimD,nContD,nOrbC,nOrbD,nOrbCompB,nOrbCompC,nDimC
-integer :: nDimD,nOrbCompD,INTPRINT,maxangmomABCD
-integer :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
-integer :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
-logical :: Psegmented,Qsegmented,PQorder,Spherical,SameLHSaos,SameRHSaos,SameODs
-logical :: TriangularLHSAtomLoop,TriangularRHSAtomLoop,PermuteRHS,CSScreen
-logical :: TriangularODAtomLoop
-logical :: NOTDoSSSS,Segmented,PermuteLHSTypes,PermuteRHSTypes,PermuteODTypes
-!Tmporary array used in the innermost routines 
-integer :: TMParray1maxsize,TMParray2maxsize
-!Batch info
-integer :: iBatchC,iBatchD,nBatchA,nBatchB,nBatchC,nBatchD
-integer :: iBatchIndexOfTypeA,iBatchIndexOfTypeB,iBatchIndexOfTypeC,iBatchIndexOfTypeD
-!Screening variables
-integer :: nBatchAGAB,nBatchBGAB,nBatchCGCD,nBatchDGCD
-real(realk) :: GABELM
-!Passes
-integer :: nPasses,iPass,MaxPasses!,nPassLoop,nPassesInPassLoop,iPassTMP !,ndimPass
-!integer :: iPassLoop
-integer :: MaxTotalAngmom,IAngmomTypes
-!ODscreening
-real(realk) :: sumExtent2AB,sumExtent2CD,Tstart,Tend
-logical :: ODscreen,QQRscreen,dolink
-character(len=16)  :: TYPESTRING
-!Link specific stuff
-real(realk) :: MaxGabLHS,MaxGabRHS !MaximumAllover
-real(realk) :: MaxAtomGabelmLHS,MaxAtomGabelmRHS !MaximumAllover
-logical :: doMoTrans
-!MOtrans specific stuff
-integer :: nCMO1,nCMO2,nCMO3,nCMO4
-
-doMOtrans = IchorJobSpec.EQ.IchorJobMOtrans
-IF(doMOtrans)Then
-   nCMO1 = InputM(InputMspec(1))%n2
-   nCMO2 = InputM(InputMspec(2))%n2
-   nCMO3 = InputM(InputMspec(3))%n2
-   nCMO4 = InputM(InputMspec(4))%n2
-   IF(nCMO1.NE.OutputDim1)call ichorQuit('MoTrans Dim Mismatch1',-1)
-   IF(nCMO2.NE.OutputDim2)call ichorQuit('MoTrans Dim Mismatch2',-1)
-   IF(nCMO3.NE.OutputDim3)call ichorQuit('MoTrans Dim Mismatch3',-1)
-   IF(nCMO4.NE.OutputDim4)call ichorQuit('MoTrans Dim Mismatch4',-1)
-   IF(OutputDim5.NE.1)call ichorQuit('MoTrans Dim Mismatch5',-1)
-ENDIF
-
-doLink = IchorJobSpec.EQ.IchorJobLink
-IF(doLink)Then
-   IF(OutputDim5.NE.IchorInputDim3)call ichorQuit('Link Dim Mismatch5',-1)
-ENDIF
-
-call set_ichor_memvar(MaxMemAllocated,MemAllocated,MaxMem)
-INTPRINT=IchorDebugSpec
-call mem_ichor_alloc_dryrun(nTypesA) !OrderdListA
-call mem_ichor_alloc_dryrun(nTypesB) !OrderdListB
-call mem_ichor_alloc_dryrun(nTypesC) !OrderdListC
-call mem_ichor_alloc_dryrun(nTypesD) !OrderdListD
-PQorder=.FALSE.
-call determineScreening(IchorScreenSpec,CSscreen,ODscreen,QQRscreen)
-IF(CSScreen)THEN
-   call mem_ichor_alloc_dryrun(nTypesA) !BatchIndexOfTypeA
-   call mem_ichor_alloc_dryrun(nTypesB) !BatchIndexOfTypeB
-   call mem_ichor_alloc_dryrun(nBatchA*nBatchB) !BATCHGAB
-   IF(nBatchA.NE.endBatchA-startBatchA+1)call ichorQuit('Screening Dim Mismatch1',-1)
-   IF(nBatchB.NE.endBatchB-startBatchB+1)call ichorQuit('Screening Dim Mismatch2',-1)
-   call RetrieveGabDimFromIchorSaveGabModule(nBatchAGAB,nBatchBGAB,IchorGabID1)
-   IF(nBatchAGAB.NE.nBatchA.OR.nBatchBGAB.NE.nBatchB)THEN
-      call mem_ichor_alloc_dryrun(nBatchAGAB*nBatchBGAB) !BATCHGAB2
-      call mem_ichor_dealloc_dryrun(nBatchAGAB*nBatchBGAB) !BATCHGAB2
-   ENDIF
-
-   call mem_ichor_alloc_dryrun(nTypesA*nTypesB) !MaxGabForTypeAB
-   call mem_ichor_alloc_dryrun(nTypesC) !BatchIndexOfTypeC    
-   call mem_ichor_alloc_dryrun(nTypesD) !BatchIndexOfTypeD
-   call mem_ichor_alloc_dryrun(nTypesC,nTypesD) !MaxGabForTypeCD
-   IF(IchorGabID1.EQ.IchorGabID2)THEN
-      nBatchC = nBatchA
-      nBatchD = nBatchB
-   ELSE
-      call mem_ichor_alloc_dryrun(nBatchC,nBatchD) !BATCHGCD
-      IF(nBatchC.NE.endBatchC-startBatchC+1)call ichorQuit('Screening Dim Mismatch3',-1)
-      IF(nBatchD.NE.endBatchD-startBatchD+1)call ichorQuit('Screening Dim Mismatch4',-1)
-      call RetrieveGabDimFromIchorSaveGabModule(nBatchCGCD,nBatchDGCD,IchorGabID2)
-      IF(nBatchCGCD.NE.nBatchC.OR.nBatchDGCD.NE.nBatchD)THEN
-         !WARNING BATCHCALC NOT FULL INTEGRAL IS CALCULATED
-         call mem_ichor_alloc_dryrun(nBatchCGCD*nBatchDGCD)   !BATCHGCD2
-         call mem_ichor_dealloc_dryrun(nBatchCGCD*nBatchDGCD) !BATCHGCD2
-      ENDIF
-   ENDIF
-ELSE
-   nBatchA = 1
-   nBatchB = 1
-   nBatchC = 1
-   nBatchD = 1
-   iBatchIndexOfTypeA = 0
-   iBatchIndexOfTypeB = 0
-   iBatchIndexOfTypeD = 0
-   iBatchIndexOfTypeC = 0
-   call mem_ichor_alloc_dryrun(nBatchA,nBatchB) !BATCHGAB
-ENDIF
-
-!CSScreen = .FALSE.
-!ODscreen = .FALSE.
-call determinePermuteSym(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
-IF(DoLink)THEN
-   IF((SameLHSaos.OR.SameRHSaos).OR.SameODs)call ichorQuit('Ichor Link Symmetry not enabled yet',-1)
-ENDIF
-IF(doMOtrans)THEN
-   !have to deactivate SameOD at least for now. 
-   SameODs = .FALSE.
-ENDIF
-Spherical = SphericalSpec.EQ.SphericalParam
-oldmaxangmomABCD = -25
-MaxTotalAngmom = MAXVAL(AngmomOfTypeA) + MAXVAL(AngmomOfTypeB) &
-     & + MAXVAL(AngmomOfTypeC) + MAXVAL(AngmomOfTypeD)
-!we loop over Total angmom in order to ensure that we first do all
-!SSSS integrals then PSSS,SPSS,SSPS,SSSP, ...
-!this mean we call GAMMATABULATION a limited number of times and
-!we reduce branch misprediction inside the code and reuse instruction cache. 
-DO IAngmomTypes = 0,MaxTotalAngmom
- DO ItypeD=1,nTypesD
-  ! TYPE D CALC ===========================
-  call ObtainTypeInfoNoExtent(nTypesD,nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,&
-       & nContOfTypeD,ItypeD,nAtomsD,AngmomD,nPrimD,nContD,nOrbCompD,&
-       & nOrbD,nDimD,nCartOrbCompD,spherical)
-  IF(nAtomsD.EQ.0)CYCLE
-  call mem_ichor_alloc_dryrun(nPrimD) !expD
-  call mem_ichor_alloc_dryrun(nPrimD,nContD) !ContractCoeffD
-  call mem_ichor_alloc_dryrun(3*nAtomsD) !Dcenter
-  call mem_ichor_alloc_dryrun(nAtomsD) !StartOrbitalD
-  IF(doMOtrans)Then
-     call mem_ichor_alloc_dryrun(nDimD*nCMO4) !CMO4D
-     call mem_ichor_alloc_dryrun(nDimD*nCMO3) !CMO3D
-  ENDIF
-  ! DONE TYPE D CALC ===========================
-  DO ItypeC=1,nTypesC
-   ! TYPE C CALC ================================
-   IF(SameRHSaos .AND. ItypeD.GT.ItypeC)CYCLE
-   TriangularRHSAtomLoop = SameRHSaos .AND. ItypeD.EQ.ItypeC
-   PermuteRHSTypes = SameRHSaos .AND. ItypeD.LT.ItypeC
-   call ObtainTypeInfoNoExtent(nTypesC,nAtomsOfTypeC,AngmomOfTypeC,nPrimOfTypeC,&
-        & nContOfTypeC,ItypeC,nAtomsC,AngmomC,nPrimC,nContC,nOrbCompC,&
-        & nOrbC,nDimC,nCartOrbCompC,spherical)   
-   IF(nAtomsC.EQ.0)CYCLE
-   call mem_ichor_alloc_dryrun(nPrimC) !expC
-   call mem_ichor_alloc_dryrun(nPrimC,nContC) !ContractCoeffC
-   call mem_ichor_alloc_dryrun(3*nAtomsC) !Ccenter
-   call mem_ichor_alloc_dryrun(nAtomsC) !StartOrbitalC
-   IF(doMOtrans)Then
-      call mem_ichor_alloc_dryrun(nDimC*nCMO3) !CMO3C
-      call mem_ichor_alloc_dryrun(nDimC*nCMO4) !CMO4C
-   ENDIF
-   ! DONE TYPE C CALC ===========================
-   ! TYPE Q CALC ================================
-   AngmomQ = AngmomC + AngmomD
-   nPrimQ = nPrimC*nPrimD
-   nContQ = nContC*nContD
-   nOrbCompQ = nOrbCompC*nOrbCompD
-   nCartOrbCompQ = nCartOrbCompC*nCartOrbCompD
-   nTUVQ = (AngmomQ+1)*(AngmomQ+2)*(AngmomQ+3)/6
-   call mem_ichor_alloc_dryrun(nPrimQ) !Qiprim1
-   call mem_ichor_alloc_dryrun(nPrimQ) !Qiprim2
-   IF (nContQ.EQ. 1)THEN
-      Qsegmented = .TRUE.
-   ELSE
-      Qsegmented = .FALSE.
-   ENDIF
-   call mem_ichor_alloc_dryrun(nPrimQ) !expQ
-
-   call mem_ichor_alloc_dryrun(nAtomsC*nAtomsD) !noScreenCD
-   call mem_ichor_alloc_dryrun(nAtomsC*nAtomsD) !noScreenCD2
-   !LinK: 
-   IF(DoLink)THEN !Make Atomic Screening matric AtomGCD
-      !maybe this should be used in general - smaller than BATCHGCD ad more straightforward 
-      call mem_ichor_alloc_dryrun(nAtomsC*nAtomsD) !AtomGCD
-      call mem_ichor_alloc_dryrun(nAtomsD)         !MaxGCDVec
-      call mem_ichor_alloc_dryrun(nAtomsD)         !nKetList
-      call mem_ichor_alloc_dryrun(nAtomsC*nAtomsD) !KetList
-   ENDIF   
-   ! DONE TYPE Q CALC ===========================
-   DO ItypeB=1,nTypesB
-    ! TYPE B CALC ================================
-    call ObtainTypeInfoNoExtent(nTypesB,nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,&
-         & nContOfTypeB,ItypeB,nAtomsB,AngmomB,nPrimB,nContB,nOrbCompB,&
-         & nOrbB,nDimB,nCartOrbCompB,spherical)
-    IF(nAtomsB.EQ.0)CYCLE
-    call mem_ichor_alloc_dryrun(nPrimB) !expB
-    call mem_ichor_alloc_dryrun(nPrimB*nContB) !ContractCoeffB
-    call mem_ichor_alloc_dryrun(3*nAtomsB) !Bcenter
-    call mem_ichor_alloc_dryrun(nAtomsB) !StartOrbitalB
-    IF(doMOtrans)Then
-       call mem_ichor_alloc_dryrun(nDimB*nCMO2) !CMO2B
-       call mem_ichor_alloc_dryrun(nDimB*nCMO1) !CMO1B
-    ENDIF
-    ! DONE TYPE B CALC ===========================
-    DO ItypeA=1,nTypesA 
-     ! TYPE A CALC ================================
-     IF(SameLHSaos .AND. ItypeB.GT.ItypeA)CYCLE
-     TriangularLHSAtomLoop = SameLHSaos .AND. ItypeB.EQ.ItypeA
-     PermuteLHSTypes = SameLHSaos .AND. ItypeB.LT.ItypeA
-     IF(SameODs .AND. ((ItypeC.GT.ItypeA).OR.((ItypeC.EQ.ItypeA).AND.(ItypeD.GT.ItypeB))))CYCLE
-     PermuteODTypes = SameODs
-!     IF(ItypeC.EQ.ItypeA.AND.ItypeD.EQ.ItypeB)PermuteODTypes=.FALSE.
-     TriangularODAtomLoop = SameODs .AND. ((ItypeC.EQ.ItypeA).AND.(ItypeD.EQ.ItypeB))
-     call ObtainTypeInfoNoExtent(nTypesA,nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,&
-          & nContOfTypeA,ItypeA,nAtomsA,AngmomA,nPrimA,nContA,nOrbCompA,&
-          & nOrbA,nDimA,nCartOrbCompA,spherical)
-     IF(nAtomsA.EQ.0)CYCLE
-     TotalAngmom = AngmomA + AngmomB + AngmomQ
-     IF(TotalAngmom.EQ.IAngmomTypes)THEN
-      !This if statement ensures that we call GAMMATABULATION a very limited number of times
-      !and it reduceses branch mispredictions inside the code,...
-      call mem_ichor_alloc_dryrun(nPrimA) !expA
-      call mem_ichor_alloc_dryrun(nPrimA*nContA) !ContractCoeffA
-      call mem_ichor_alloc_dryrun(3*nAtomsA) !Acenter
-      call mem_ichor_alloc_dryrun(nAtomsA) !StartOrbitalA
-      IF(doMOtrans)Then
-         call mem_ichor_alloc_dryrun(nDimA*nCMO1) !CMO1A
-         call mem_ichor_alloc_dryrun(nDimA*nCMO2) !CMO2A
-      ENDIF
-      ! DONE TYPE A CALC ===========================
-      ! TYPE P CALC ================================
-      AngmomP = AngmomA + AngmomB
-      nPrimP = nPrimA*nPrimB
-      nContP = nContA*nContB
-      nOrbCompP = nOrbCompA*nOrbCompB
-      nCartOrbCompP = nCartOrbCompA*nCartOrbCompB
-      nTUVP = (AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
-      nTUV = (TotalAngmom+1)*(TotalAngmom+2)*(TotalAngmom+3)/6
-      IF (nContP.EQ. 1)THEN
-         Psegmented = .TRUE.
-      ELSE
-         Psegmented = .FALSE.
-      ENDIF
-      call mem_ichor_alloc_dryrun(nPrimP) !expP
-      call mem_ichor_alloc_dryrun(nPrimP) !inversexpP
-      !LinK: 
-      IF(DoLink)THEN !Make Atomic Screening matric AtomGAB
-         !maybe this should be used in general - smaller than BATCHGCD ad more straightforward 
-         call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !AtomGAB
-         call mem_ichor_alloc_dryrun(nAtomsB) !MaxGABVec
-      ENDIF
-      ! DONE TYPE P CALC ===========================
-      
-      ! TYPE PQ CALC ================================
-      TotalAngmom = AngmomA + AngmomB + AngmomQ
-      maxangmomABCD = AngmomA + AngmomB + AngmomQ
-
-      UseGeneralCode = .FALSE. !Use Specialized code when appropriate. 
-      IF(GGemOperatorCalc)UseGeneralCode = .TRUE.
-      IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)UseGeneralCode = .TRUE.
-      IF(maxangmomABCD.NE.oldmaxangmomABCD)THEN
-       IF(oldmaxangmomABCD.NE.-25)THEN
-          call mem_ichor_dealloc_dryrun((nTABFJW1+1)*(nTABFJW2+1)) !TABFJW
-       ENDIF
-       nTABFJW1 = AngmomA + AngmomB + AngmomQ + 3 
-       !only need + 3 after Branos change in BUILD_RJ000 
-       nTABFJW2 = 1200
-       !TABFJW(0:nTABFJW1,0:nTABFJW2)
-       call mem_ichor_alloc_dryrun((nTABFJW1+1)*(nTABFJW2+1)) !TABFJW
-       oldmaxangmomABCD = maxangmomABCD
-      ENDIF
-      call mem_ichor_alloc_dryrun(nPrimP*nPrimQ) !reducedExponents
-      call mem_ichor_alloc_dryrun(nPrimP*nPrimQ) !integralPrefactor
-      ! DONE TYPE PQ CALC ===========================      
-      NOTDoSSSS = .NOT.(TotalAngmom.EQ.0.AND.(Psegmented.AND.Qsegmented))
-      IF(DoLink) NOTDoSSSS=.TRUE.
-      IF(DoMoTrans) NOTDoSSSS=.TRUE.
-      IF(NOTDoSSSS)THEN
-         !Determine Sizes of TmpArrays and MaxPasses
-         IF(UseCPU)THEN
-            call ICI_CPU_OBS_general_size(TMParray1maxsize,&
-                 & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-                 & nContA,nContB,nContC,nContD,&
-                 & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
-                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
-         ELSE !use GPU code
-            call ICI_GPU_OBS_general_size(TMParray1maxsize,&
-                 & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-                 & nContA,nContB,nContC,nContD,&
-                 & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
-                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
-         ENDIF
-         nLocalInt = nOrbA*nOrbB*nOrbC*nOrbD
-      ENDIF
-      IF(NOTDoSSSS)THEN !FIXME A MESS
-         IF(DoLink)THEN         
-            call mem_ichor_alloc_dryrun(nPrimQ) !QpreExpFac
-            call mem_ichor_alloc_dryrun(3*nPrimQ) !Qcent
-         ELSEIF(doMOtrans)THEN
-            call mem_ichor_alloc_dryrun(nPrimQ) !QpreExpFac
-            call mem_ichor_alloc_dryrun(3*nPrimQ) !Qcent
-         ELSEIF(UseCPU)THEN
-            call mem_ichor_alloc_dryrun(nPrimQ) !QpreExpFac
-            call mem_ichor_alloc_dryrun(3*nPrimQ) !Qcent
-         ELSE
-            !not needed 
-         ENDIF
-      ELSE
-         call mem_ichor_alloc_dryrun(nPrimQ) !QpreExpFac
-         call mem_ichor_alloc_dryrun(3*nPrimQ) !Qcent
-      ENDIF
-      !calc       
-      call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !noScreenAB
-      
-      !LinK: 
-      IF(DoLink)THEN !Form active Dmat: DmatBD,DmatAD,DmatBC,DmatAC
-         call mem_ichor_alloc_dryrun(nDimB*nDimD*IchorInputDim3) !DmatBD
-         call mem_ichor_alloc_dryrun(nDimA*nDimD*IchorInputDim3) !DmatAD
-         call mem_ichor_alloc_dryrun(nDimB*nDimC*IchorInputDim3) !DmatBC
-         call mem_ichor_alloc_dryrun(nDimA*nDimC*IchorInputDim3) !DmatAC
-         call mem_ichor_alloc_dryrun(nDimA,nDimC,IchorInputDim3) !KmatAC
-         call mem_ichor_alloc_dryrun(nDimB,nDimC,IchorInputDim3) !KmatBC
-         call mem_ichor_alloc_dryrun(nDimA,nDimD,IchorInputDim3) !KmatAD
-         call mem_ichor_alloc_dryrun(nDimB,nDimD,IchorInputDim3) !KmatBD
-         call mem_ichor_alloc_dryrun(nAtomsB,nAtomsD) !ReducedDmatBD
-         call mem_ichor_alloc_dryrun(nAtomsB,nAtomsC) !ReducedDmatBC
-         call mem_ichor_alloc_dryrun(nAtomsB) !nBraList
-         call mem_ichor_alloc_dryrun(nAtomsA,nAtomsB) !BraList
-         call mem_ichor_alloc_dryrun(nAtomsD) !nBraketList
-         call mem_ichor_alloc_dryrun(nAtomsB,nAtomsD) !BraketList
-      ENDIF
-      call mem_ichor_alloc_dryrun(nPrimP,nAtomsA*nAtomsB) !PpreExpFacPass
-      call mem_ichor_alloc_dryrun(3*nPrimP,nAtomsA*nAtomsB) !PcentPass
-      IF(NOTDoSSSS)THEN
-         call mem_ichor_alloc_dryrun(3,nAtomsA*nAtomsB) !Pdistance12Pass
-         call mem_ichor_alloc_dryrun(nPrimP) !PpreExpFac
-         IF(DoLink)THEN !call IchorTypeLinKLoop
-            !WARNING assumes MaxPasses = nAtomsA*nAtomsB
-            MaxPasses = nAtomsA*nAtomsB
-            call mem_ichor_alloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
-            call mem_ichor_alloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
-            call mem_ichor_alloc_dryrun(MaxPasses) !IatomAPass
-            call mem_ichor_alloc_dryrun(MaxPasses) !IatomBPass
-            call mem_ichor_alloc_dryrun(nLocalint*MaxPasses) !LocalIntPass1
-            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
-            call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !DoINT
-            IF(UseGeneralCode)THEN
-               call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,&
-                    & nPrimP,MaxPasses,AngmomA,AngmomB,AngmomC,AngmomD,&
-                    & AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
-               call mem_ichor_alloc_dryrun(nTmpArray3) !TmpArray3
-               call mem_ichor_alloc_dryrun(nTmpArray4) !TmpArray4
-               !     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
-            ENDIF
-            !call IchorTypeLinKLoop
-            IF(UseGeneralCode)THEN
-               call mem_ichor_dealloc_dryrun(nTmpArray3) !TmpArray3
-               call mem_ichor_dealloc_dryrun(nTmpArray4) !TmpArray4
-            ENDIF
-            call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !DoINT
-            call mem_ichor_dealloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
-            call mem_ichor_dealloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
-            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomAPass
-            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomBPass
-            call mem_ichor_dealloc_dryrun(nLocalInt*MaxPasses) !LocalIntPass1
-            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
-         ELSEIF(doMOtrans)THEN!call IchorTypeMOtransLoop
-            !WARNING assumes MaxPasses = nAtomsA*nAtomsB
-            MaxPasses = nAtomsA*nAtomsB
-            call mem_ichor_alloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
-            call mem_ichor_alloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
-            call mem_ichor_alloc_dryrun(MaxPasses) !IatomAPass
-            call mem_ichor_alloc_dryrun(MaxPasses) !IatomBPass
-            call mem_ichor_alloc_dryrun(nLocalint*MaxPasses) !LocalIntPass1
-            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
-            IF(UseGeneralCode)THEN
-               call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,&
-                    & nPrimP,MaxPasses,AngmomA,AngmomB,AngmomC,AngmomD,&
-                    & AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
-               call mem_ichor_alloc_dryrun(nTmpArray3) !TmpArray3
-               call mem_ichor_alloc_dryrun(nTmpArray4) !TmpArray4
-               !     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
-            ENDIF
-            call mem_ichor_alloc_dryrun(nCMO1,MAX(ndimA,ndimB),nOrbC*nOrbD) !OutputA
-            call mem_ichor_alloc_dryrun(nCMO1,nCMO2,ndimC*nDimD) !OutputCD
-            !call IchorTypeMOtransLoop
-            IF(UseGeneralCode)THEN
-               call mem_ichor_dealloc_dryrun(nTmpArray3) !TmpArray3
-               call mem_ichor_dealloc_dryrun(nTmpArray4) !TmpArray4
-            ENDIF
-            call mem_ichor_dealloc_dryrun(nCMO1,MAX(ndimA,ndimB),nOrbC*nOrbD) !OutputA
-            call mem_ichor_dealloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
-            call mem_ichor_dealloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
-            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomAPass
-            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomBPass
-            call mem_ichor_dealloc_dryrun(nLocalInt*MaxPasses) !LocalIntPass1
-            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2            
-            IF(PermuteRHSTypes)THEN
-               call mem_ichor_alloc_dryrun(nCMO1,nCMO2,nCMO3*MAX(nDimD,nDimC)) !OutputC
-               call mem_ichor_dealloc_dryrun(nCMO1,nCMO2,ndimC*nDimD) !OutputCD
-               call mem_ichor_dealloc_dryrun(nCMO1,nCMO2,nCMO3*MAX(nDimD,nDimC)) !OutputC
-            ELSE
-               call mem_ichor_alloc_dryrun(nCMO1,nCMO2,nCMO3*nDimD) !OutputC
-               call mem_ichor_dealloc_dryrun(nCMO1,nCMO2,ndimC*nDimD) !OutputCD
-               call mem_ichor_dealloc_dryrun(nCMO1,nCMO2,nCMO3*nDimD) !OutputC
-            ENDIF
-         ELSEIF(UseCPU)THEN !IchorTypeIntegralLoopCPU
-            !WARNING assumes MaxPasses = nAtomsA*nAtomsB
-            MaxPasses = nAtomsA*nAtomsB
-            call mem_ichor_alloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
-            call mem_ichor_alloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
-            call mem_ichor_alloc_dryrun(MaxPasses) !IatomAPass
-            call mem_ichor_alloc_dryrun(MaxPasses) !IatomBPass
-            call mem_ichor_alloc_dryrun(nLocalint*MaxPasses) !LocalIntPass1
-            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
-            IF(UseGeneralCode)THEN
-               call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,&
-                    & nPrimP,MaxPasses,AngmomA,AngmomB,AngmomC,AngmomD,&
-                    & AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
-               call mem_ichor_alloc_dryrun(nTmpArray3) !TmpArray3
-               call mem_ichor_alloc_dryrun(nTmpArray4) !TmpArray4
-               !     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
-            ENDIF
-            !IchorTypeIntegralLoopCPU
-            IF(UseGeneralCode)THEN
-               call mem_ichor_dealloc_dryrun(nTmpArray3) !TmpArray3
-               call mem_ichor_dealloc_dryrun(nTmpArray4) !TmpArray4
-            ENDIF
-            call mem_ichor_dealloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
-            call mem_ichor_dealloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
-            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomAPass
-            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomBPass
-            call mem_ichor_dealloc_dryrun(nLocalInt*MaxPasses) !LocalIntPass1
-            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
-         ELSE ! IchorTypeIntegralLoopGPU
-            !WARNING assumes MaxPasses = nAtomsA*nAtomsB
-            !WARNING assumes nAsyncHandles = maxnAsyncHandles
-            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
-            call mem_ichor_alloc_dryrun(3*nPrimQ*maxnAsyncHandles) !Qcent
-            call mem_ichor_alloc_dryrun(3*maxnAsyncHandles) !Qdistance12
-            call mem_ichor_alloc_dryrun(nPrimQ,maxnAsyncHandles) !QpreExpFac
-            call mem_ichor_alloc_dryrun(TMParray1maxsize*MaxPasses,maxnAsyncHandles) !TmpArray1
-            call mem_ichor_alloc_dryrun(TMParray2maxsize*MaxPasses,maxnAsyncHandles) !TmpArray2
-            call mem_ichor_alloc_dryrun(MaxPasses*maxnAsyncHandles) !IatomAPass
-            call mem_ichor_alloc_dryrun(MaxPasses*maxnAsyncHandles) !IatomBPass
-            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB*maxnAsyncHandles) !LocalIntPass1
-            !IchorTypeIntegralLoopGPU
-            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
-            call mem_ichor_dealloc_dryrun(3*nPrimQ*maxnAsyncHandles) !Qcent
-            call mem_ichor_dealloc_dryrun(3*maxnAsyncHandles) !Qdistance12
-            call mem_ichor_dealloc_dryrun(nPrimQ,maxnAsyncHandles) !QpreExpFac
-            call mem_ichor_dealloc_dryrun(TMParray1maxsize*MaxPasses,maxnAsyncHandles) !TmpArray1
-            call mem_ichor_dealloc_dryrun(TMParray2maxsize*MaxPasses,maxnAsyncHandles) !TmpArray2
-            call mem_ichor_dealloc_dryrun(MaxPasses*maxnAsyncHandles) !IatomAPass
-            call mem_ichor_dealloc_dryrun(MaxPasses*maxnAsyncHandles) !IatomBPass
-            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB*maxnAsyncHandles) !LocalIntPass1
-         ENDIF
-         call mem_ichor_dealloc_dryrun(nPrimP) !PpreExpFac
-         call mem_ichor_dealloc_dryrun(3,nAtomsA*nAtomsB) !Pdistance12Pass
-      ELSE
-         call mem_ichor_alloc_dryrun(nOrbA*nAtomsA*nOrbB*nAtomsB,nOrbC*nOrbD) !LocalIntPass
-         call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !IatomAPass
-         call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !IatomBPass
-!         call IchorsegsegSSSSIntegralLoop
-         call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !IatomAPass
-         call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !IatomBPass
-         call mem_ichor_dealloc_dryrun(nOrbA*nAtomsA*nOrbB*nAtomsB,nOrbC*nOrbD) !LocalIntPass
-      ENDIF
-      IF(NOTDoSSSS)THEN !FIXME A MESS
-         IF(DoLink)THEN         
-            call mem_ichor_dealloc_dryrun(3*nPrimQ) !Qcent
-            call mem_ichor_dealloc_dryrun(nPrimQ) !QpreExpFac
-         ELSEIF(doMOtrans)THEN
-            call mem_ichor_dealloc_dryrun(3*nPrimQ) !Qcent
-            call mem_ichor_dealloc_dryrun(nPrimQ) !QpreExpFac
-         ELSEIF(UseCPU)THEN
-            call mem_ichor_dealloc_dryrun(3*nPrimQ) !Qcent
-            call mem_ichor_dealloc_dryrun(nPrimQ) !QpreExpFac
-         ELSE
-            !not needed 
-         ENDIF
-      ELSE
-         call mem_ichor_dealloc_dryrun(3*nPrimQ) !Qcent
-         call mem_ichor_dealloc_dryrun(nPrimQ) !QpreExpFac
-      ENDIF
-      call mem_ichor_dealloc_dryrun(nPrimP,nAtomsA*nAtomsB) !PpreExpFacPass
-      call mem_ichor_dealloc_dryrun(3*nPrimP,nAtomsA*nAtomsB) !PcentPass
-      IF(DoLink)THEN         
-         call mem_ichor_dealloc_dryrun(nDimB*nDimD*IchorInputDim3) !DmatBD
-         call mem_ichor_dealloc_dryrun(nDimA*nDimD*IchorInputDim3) !DmatAD
-         call mem_ichor_dealloc_dryrun(nDimB*nDimC*IchorInputDim3) !DmatBC
-         call mem_ichor_dealloc_dryrun(nDimA*nDimC*IchorInputDim3) !DmatAC
-         call mem_ichor_dealloc_dryrun(nDimA,nDimC,IchorInputDim3) !KmatAC
-         call mem_ichor_dealloc_dryrun(nDimB,nDimC,IchorInputDim3) !KmatBC
-         call mem_ichor_dealloc_dryrun(nDimA,nDimD,IchorInputDim3) !KmatAD
-         call mem_ichor_dealloc_dryrun(nDimB,nDimD,IchorInputDim3) !KmatBD
-         call mem_ichor_dealloc_dryrun(nAtomsB,nAtomsD) !ReducedDmatBD
-         call mem_ichor_dealloc_dryrun(nAtomsB,nAtomsC) !ReducedDmatBC
-         call mem_ichor_dealloc_dryrun(nAtomsB) !nBraList
-         call mem_ichor_dealloc_dryrun(nAtomsA,nAtomsB) !BraList
-         call mem_ichor_dealloc_dryrun(nAtomsD) !nBraketList
-         call mem_ichor_dealloc_dryrun(nAtomsB,nAtomsD) !BraketList
-      ENDIF
-      call mem_ichor_dealloc_dryrun(nPrimP*nPrimQ) !reducedExponents
-      call mem_ichor_dealloc_dryrun(nPrimP*nPrimQ) !integralPrefactor
-      call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !noScreenAB
-
-      call mem_ichor_dealloc_dryrun(nPrimP) !expP
-      call mem_ichor_dealloc_dryrun(nPrimP) !inversexpP
-
-      call mem_ichor_dealloc_dryrun(nPrimA) !expA
-      call mem_ichor_dealloc_dryrun(nPrimA*nContA) !ContractCoeffA
-      call mem_ichor_dealloc_dryrun(3*nAtomsA) !Acenter
-      call mem_ichor_dealloc_dryrun(nAtomsA) !StartOrbitalA
-      IF(doMOtrans)Then
-         call mem_ichor_dealloc_dryrun(nDimA*nCMO1) !CMO1A
-         call mem_ichor_dealloc_dryrun(nDimA*nCMO2) !CMO2A
-      ENDIF
-      IF(DoLink)THEN
-         call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !AtomGAB
-         call mem_ichor_dealloc_dryrun(nAtomsB) !MaxGABVec
-      ENDIF
-     ENDIF !correct angmom type
-    ENDDO !typeA
-    call mem_ichor_dealloc_dryrun(nPrimB) !expB
-    call mem_ichor_dealloc_dryrun(nPrimB*nContB) !ContractCoeffB
-    call mem_ichor_dealloc_dryrun(3*nAtomsB) !Bcenter
-    call mem_ichor_dealloc_dryrun(nAtomsB) !StartOrbitalB
-    IF(doMOtrans)Then
-       call mem_ichor_dealloc_dryrun(nDimB*nCMO1) !CMO1B
-       call mem_ichor_dealloc_dryrun(nDimB*nCMO2) !CMO2B
-    ENDIF
-   ENDDO !typeB
-   IF(DoLink)THEN
-      call mem_ichor_dealloc_dryrun(nAtomsC*nAtomsD) !AtomGCD
-      call mem_ichor_dealloc_dryrun(nAtomsD)         !MaxGCDVec
-      call mem_ichor_dealloc_dryrun(nAtomsD)         !nKetList
-      call mem_ichor_dealloc_dryrun(nAtomsC*nAtomsD) !KetList
-   ENDIF   
-   call mem_ichor_dealloc_dryrun(nAtomsC*nAtomsD) !noScreenCD
-   call mem_ichor_dealloc_dryrun(nAtomsC*nAtomsD) !noScreenCD2
-   call mem_ichor_dealloc_dryrun(nPrimQ) !expQ
-   call mem_ichor_dealloc_dryrun(nPrimQ) !Qiprim1
-   call mem_ichor_dealloc_dryrun(nPrimQ) !Qiprim2
-
-   call mem_ichor_dealloc_dryrun(nPrimC) !expC
-   call mem_ichor_dealloc_dryrun(nPrimC,nContC) !ContractCoeffC
-   call mem_ichor_dealloc_dryrun(3*nAtomsC) !Ccenter
-   call mem_ichor_dealloc_dryrun(nAtomsC) !StartOrbitalC
-   IF(doMOtrans)Then
-      call mem_ichor_dealloc_dryrun(nDimC*nCMO3) !CMO3C
-      call mem_ichor_dealloc_dryrun(nDimC*nCMO4) !CMO4C
-   ENDIF
-  ENDDO !typeC
-  call mem_ichor_dealloc_dryrun(nPrimD) !expD
-  call mem_ichor_dealloc_dryrun(nPrimD,nContD) !ContractCoeffD
-  call mem_ichor_dealloc_dryrun(3*nAtomsD) !Dcenter
-  call mem_ichor_dealloc_dryrun(nAtomsD) !StartOrbitalD
-  IF(doMOtrans)Then
-     call mem_ichor_dealloc_dryrun(nDimD*nCMO4) !CMO4D
-     call mem_ichor_dealloc_dryrun(nDimD*nCMO3) !CMO3D
-  ENDIF
- ENDDO !typeD
-ENDDO 
-call mem_ichor_dealloc_dryrun((nTABFJW1+1)*(nTABFJW2+1)) !TABFJW
-call mem_ichor_dealloc_dryrun(nBatchA,nBatchB) !BATCHGAB
-
-IF(CSScreen)THEN
-   call mem_ichor_alloc_dryrun(nTypesA) !BatchIndexOfTypeA
-   call mem_ichor_alloc_dryrun(nTypesB) !BatchIndexOfTypeB
-   call mem_ichor_alloc_dryrun(nBatchA*nBatchB) !BATCHGAB
-   call mem_ichor_alloc_dryrun(nTypesA*nTypesB) !MaxGabForTypeAB
-   call mem_ichor_alloc_dryrun(nTypesC) !BatchIndexOfTypeC    
-   call mem_ichor_alloc_dryrun(nTypesD) !BatchIndexOfTypeD
-   call mem_ichor_alloc_dryrun(nTypesC,nTypesD) !MaxGabForTypeCD
-   IF(IchorGabID1.EQ.IchorGabID2)THEN
-   ELSE
-      call mem_ichor_alloc_dryrun(nBatchC,nBatchD) !BATCHGCD
-   ENDIF
-ENDIF
-call mem_ichor_dealloc_dryrun(nTypesA) !OrderdListA
-call mem_ichor_dealloc_dryrun(nTypesB) !OrderdListB
-call mem_ichor_dealloc_dryrun(nTypesC) !OrderdListC
-call mem_ichor_dealloc_dryrun(nTypesD) !OrderdListD
-
-call retrieve_ichor_memvar(MaxMemAllocated,MemAllocated)
-IF(MemAllocated.NE.0)THEN
-   call ichorquit('MemoryLeak in IchorEri',lupri)
-ENDIF
+!!$integer :: nPrimP,nContP,nPrimQ,nContQ
+!!$integer :: nTABFJW1,nTABFJW2,i1,i2,i3,i4,AngmomQ,TotalAngmom
+!!$integer :: i12,offset,K,I,iPrimQ,iPrimP,icont,AngmomP
+!!$integer :: oldmaxangmomABCD
+!!$integer :: ItypeA,ItypeB,itypeC,itypeD,AngmomA,AngmomB,AngmomC,AngmomD
+!!$integer :: ItypeAnon,ItypeBnon,itypeCnon,itypeDnon,nLocalInt
+!!$integer :: nPrimA,nPrimB,nContA,nAtomsA,nAtomsB,nAtomsC,nAtomsD,nOrbA
+!!$integer :: nDimA,nOrbCompA,nContB,nOrbB,nDimB
+!!$integer :: nPrimC,nContC,nPrimD,nContD,nOrbC,nOrbD,nOrbCompB,nOrbCompC,nDimC
+!!$integer :: nDimD,nOrbCompD,INTPRINT,maxangmomABCD
+!!$integer :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
+!!$integer :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
+!!$logical :: Psegmented,Qsegmented,PQorder,Spherical,SameLHSaos,SameRHSaos,SameODs
+!!$logical :: TriangularLHSAtomLoop,TriangularRHSAtomLoop,PermuteRHS,CSScreen
+!!$logical :: TriangularODAtomLoop
+!!$logical :: NOTDoSSSS,Segmented,PermuteLHSTypes,PermuteRHSTypes,PermuteODTypes
+!!$!Tmporary array used in the innermost routines 
+!!$integer :: TMParray1maxsize,TMParray2maxsize
+!!$!Batch info
+!!$integer :: iBatchC,iBatchD,nBatchA,nBatchB,nBatchC,nBatchD
+!!$integer :: iBatchIndexOfTypeA,iBatchIndexOfTypeB,iBatchIndexOfTypeC,iBatchIndexOfTypeD
+!!$!Screening variables
+!!$integer :: nBatchAGAB,nBatchBGAB,nBatchCGCD,nBatchDGCD
+!!$real(realk) :: GABELM
+!!$!Passes
+!!$integer :: nPasses,iPass,MaxPasses!,nPassLoop,nPassesInPassLoop,iPassTMP !,ndimPass
+!!$!integer :: iPassLoop
+!!$integer :: MaxTotalAngmom,IAngmomTypes
+!!$!ODscreening
+!!$real(realk) :: sumExtent2AB,sumExtent2CD,Tstart,Tend
+!!$logical :: ODscreen,QQRscreen,dolink
+!!$character(len=16)  :: TYPESTRING
+!!$!Link specific stuff
+!!$real(realk) :: MaxGabLHS,MaxGabRHS !MaximumAllover
+!!$real(realk) :: MaxAtomGabelmLHS,MaxAtomGabelmRHS !MaximumAllover
+!!$logical :: doMoTrans
+!!$!MOtrans specific stuff
+!!$integer :: nCMO1,nCMO2,nCMO3,nCMO4
+!!$
+!!$doMOtrans = IchorJobSpec.EQ.IchorJobMOtrans
+!!$IF(doMOtrans)Then
+!!$   nCMO1 = InputM(InputMspec(1))%n2
+!!$   nCMO2 = InputM(InputMspec(2))%n2
+!!$   nCMO3 = InputM(InputMspec(3))%n2
+!!$   nCMO4 = InputM(InputMspec(4))%n2
+!!$   IF(nCMO1.NE.OutputDim1)call ichorQuit('MoTrans Dim Mismatch1',-1)
+!!$   IF(nCMO2.NE.OutputDim2)call ichorQuit('MoTrans Dim Mismatch2',-1)
+!!$   IF(nCMO3.NE.OutputDim3)call ichorQuit('MoTrans Dim Mismatch3',-1)
+!!$   IF(nCMO4.NE.OutputDim4)call ichorQuit('MoTrans Dim Mismatch4',-1)
+!!$   IF(OutputDim5.NE.1)call ichorQuit('MoTrans Dim Mismatch5',-1)
+!!$ENDIF
+!!$
+!!$doLink = IchorJobSpec.EQ.IchorJobLink
+!!$IF(doLink)Then
+!!$   IF(OutputDim5.NE.IchorInputDim3)call ichorQuit('Link Dim Mismatch5',-1)
+!!$ENDIF
+!!$
+!!$call set_ichor_memvar(MaxMemAllocated,MemAllocated,MaxMem)
+!!$INTPRINT=IchorDebugSpec
+!!$call mem_ichor_alloc_dryrun(nTypesA) !OrderdListA
+!!$call mem_ichor_alloc_dryrun(nTypesB) !OrderdListB
+!!$call mem_ichor_alloc_dryrun(nTypesC) !OrderdListC
+!!$call mem_ichor_alloc_dryrun(nTypesD) !OrderdListD
+!!$PQorder=.FALSE.
+!!$call determineScreening(IchorScreenSpec,CSscreen,ODscreen,QQRscreen)
+!!$IF(CSScreen)THEN
+!!$   call mem_ichor_alloc_dryrun(nTypesA) !BatchIndexOfTypeA
+!!$   call mem_ichor_alloc_dryrun(nTypesB) !BatchIndexOfTypeB
+!!$   call mem_ichor_alloc_dryrun(nBatchA*nBatchB) !BATCHGAB
+!!$   IF(nBatchA.NE.endBatchA-startBatchA+1)call ichorQuit('Screening Dim Mismatch1',-1)
+!!$   IF(nBatchB.NE.endBatchB-startBatchB+1)call ichorQuit('Screening Dim Mismatch2',-1)
+!!$   call RetrieveGabDimFromIchorSaveGabModule(nBatchAGAB,nBatchBGAB,IchorGabID1)
+!!$   IF(nBatchAGAB.NE.nBatchA.OR.nBatchBGAB.NE.nBatchB)THEN
+!!$      call mem_ichor_alloc_dryrun(nBatchAGAB*nBatchBGAB) !BATCHGAB2
+!!$      call mem_ichor_dealloc_dryrun(nBatchAGAB*nBatchBGAB) !BATCHGAB2
+!!$   ENDIF
+!!$
+!!$   call mem_ichor_alloc_dryrun(nTypesA*nTypesB) !MaxGabForTypeAB
+!!$   call mem_ichor_alloc_dryrun(nTypesC) !BatchIndexOfTypeC    
+!!$   call mem_ichor_alloc_dryrun(nTypesD) !BatchIndexOfTypeD
+!!$   call mem_ichor_alloc_dryrun(nTypesC,nTypesD) !MaxGabForTypeCD
+!!$   IF(IchorGabID1.EQ.IchorGabID2)THEN
+!!$      nBatchC = nBatchA
+!!$      nBatchD = nBatchB
+!!$   ELSE
+!!$      call mem_ichor_alloc_dryrun(nBatchC,nBatchD) !BATCHGCD
+!!$      IF(nBatchC.NE.endBatchC-startBatchC+1)call ichorQuit('Screening Dim Mismatch3',-1)
+!!$      IF(nBatchD.NE.endBatchD-startBatchD+1)call ichorQuit('Screening Dim Mismatch4',-1)
+!!$      call RetrieveGabDimFromIchorSaveGabModule(nBatchCGCD,nBatchDGCD,IchorGabID2)
+!!$      IF(nBatchCGCD.NE.nBatchC.OR.nBatchDGCD.NE.nBatchD)THEN
+!!$         !WARNING BATCHCALC NOT FULL INTEGRAL IS CALCULATED
+!!$         call mem_ichor_alloc_dryrun(nBatchCGCD*nBatchDGCD)   !BATCHGCD2
+!!$         call mem_ichor_dealloc_dryrun(nBatchCGCD*nBatchDGCD) !BATCHGCD2
+!!$      ENDIF
+!!$   ENDIF
+!!$ELSE
+!!$   nBatchA = 1
+!!$   nBatchB = 1
+!!$   nBatchC = 1
+!!$   nBatchD = 1
+!!$   iBatchIndexOfTypeA = 0
+!!$   iBatchIndexOfTypeB = 0
+!!$   iBatchIndexOfTypeD = 0
+!!$   iBatchIndexOfTypeC = 0
+!!$   call mem_ichor_alloc_dryrun(nBatchA,nBatchB) !BATCHGAB
+!!$ENDIF
+!!$
+!!$!CSScreen = .FALSE.
+!!$!ODscreen = .FALSE.
+!!$call determinePermuteSym(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
+!!$IF(DoLink)THEN
+!!$   IF((SameLHSaos.OR.SameRHSaos).OR.SameODs)call ichorQuit('Ichor Link Symmetry not enabled yet',-1)
+!!$ENDIF
+!!$IF(doMOtrans)THEN
+!!$   !have to deactivate SameOD at least for now. 
+!!$   SameODs = .FALSE.
+!!$ENDIF
+!!$Spherical = SphericalSpec.EQ.SphericalParam
+!!$oldmaxangmomABCD = -25
+!!$MaxTotalAngmom = MAXVAL(AngmomOfTypeA) + MAXVAL(AngmomOfTypeB) &
+!!$     & + MAXVAL(AngmomOfTypeC) + MAXVAL(AngmomOfTypeD)
+!!$!we loop over Total angmom in order to ensure that we first do all
+!!$!SSSS integrals then PSSS,SPSS,SSPS,SSSP, ...
+!!$!this mean we call GAMMATABULATION a limited number of times and
+!!$!we reduce branch misprediction inside the code and reuse instruction cache. 
+!!$DO IAngmomTypes = 0,MaxTotalAngmom
+!!$ DO ItypeD=1,nTypesD
+!!$  ! TYPE D CALC ===========================
+!!$  call ObtainTypeInfoNoExtent(nTypesD,nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,&
+!!$       & nContOfTypeD,ItypeD,nAtomsD,AngmomD,nPrimD,nContD,nOrbCompD,&
+!!$       & nOrbD,nDimD,nCartOrbCompD,spherical)
+!!$  IF(nAtomsD.EQ.0)CYCLE
+!!$  call mem_ichor_alloc_dryrun(nPrimD) !expD
+!!$  call mem_ichor_alloc_dryrun(nPrimD,nContD) !ContractCoeffD
+!!$  call mem_ichor_alloc_dryrun(3*nAtomsD) !Dcenter
+!!$  call mem_ichor_alloc_dryrun(nAtomsD) !StartOrbitalD
+!!$  IF(doMOtrans)Then
+!!$     call mem_ichor_alloc_dryrun(nDimD*nCMO4) !CMO4D
+!!$     call mem_ichor_alloc_dryrun(nDimD*nCMO3) !CMO3D
+!!$  ENDIF
+!!$  ! DONE TYPE D CALC ===========================
+!!$  DO ItypeC=1,nTypesC
+!!$   ! TYPE C CALC ================================
+!!$   IF(SameRHSaos .AND. ItypeD.GT.ItypeC)CYCLE
+!!$   TriangularRHSAtomLoop = SameRHSaos .AND. ItypeD.EQ.ItypeC
+!!$   PermuteRHSTypes = SameRHSaos .AND. ItypeD.LT.ItypeC
+!!$   call ObtainTypeInfoNoExtent(nTypesC,nAtomsOfTypeC,AngmomOfTypeC,nPrimOfTypeC,&
+!!$        & nContOfTypeC,ItypeC,nAtomsC,AngmomC,nPrimC,nContC,nOrbCompC,&
+!!$        & nOrbC,nDimC,nCartOrbCompC,spherical)   
+!!$   IF(nAtomsC.EQ.0)CYCLE
+!!$   call mem_ichor_alloc_dryrun(nPrimC) !expC
+!!$   call mem_ichor_alloc_dryrun(nPrimC,nContC) !ContractCoeffC
+!!$   call mem_ichor_alloc_dryrun(3*nAtomsC) !Ccenter
+!!$   call mem_ichor_alloc_dryrun(nAtomsC) !StartOrbitalC
+!!$   IF(doMOtrans)Then
+!!$      call mem_ichor_alloc_dryrun(nDimC*nCMO3) !CMO3C
+!!$      call mem_ichor_alloc_dryrun(nDimC*nCMO4) !CMO4C
+!!$   ENDIF
+!!$   ! DONE TYPE C CALC ===========================
+!!$   ! TYPE Q CALC ================================
+!!$   AngmomQ = AngmomC + AngmomD
+!!$   nPrimQ = nPrimC*nPrimD
+!!$   nContQ = nContC*nContD
+!!$   nOrbCompQ = nOrbCompC*nOrbCompD
+!!$   nCartOrbCompQ = nCartOrbCompC*nCartOrbCompD
+!!$   nTUVQ = (AngmomQ+1)*(AngmomQ+2)*(AngmomQ+3)/6
+!!$   call mem_ichor_alloc_dryrun(nPrimQ) !Qiprim1
+!!$   call mem_ichor_alloc_dryrun(nPrimQ) !Qiprim2
+!!$   IF (nContQ.EQ. 1)THEN
+!!$      Qsegmented = .TRUE.
+!!$   ELSE
+!!$      Qsegmented = .FALSE.
+!!$   ENDIF
+!!$   call mem_ichor_alloc_dryrun(nPrimQ) !expQ
+!!$
+!!$   call mem_ichor_alloc_dryrun(nAtomsC*nAtomsD) !noScreenCD
+!!$   call mem_ichor_alloc_dryrun(nAtomsC*nAtomsD) !noScreenCD2
+!!$   !LinK: 
+!!$   IF(DoLink)THEN !Make Atomic Screening matric AtomGCD
+!!$      !maybe this should be used in general - smaller than BATCHGCD ad more straightforward 
+!!$      call mem_ichor_alloc_dryrun(nAtomsC*nAtomsD) !AtomGCD
+!!$      call mem_ichor_alloc_dryrun(nAtomsD)         !MaxGCDVec
+!!$      call mem_ichor_alloc_dryrun(nAtomsD)         !nKetList
+!!$      call mem_ichor_alloc_dryrun(nAtomsC*nAtomsD) !KetList
+!!$   ENDIF   
+!!$   ! DONE TYPE Q CALC ===========================
+!!$   DO ItypeB=1,nTypesB
+!!$    ! TYPE B CALC ================================
+!!$    call ObtainTypeInfoNoExtent(nTypesB,nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,&
+!!$         & nContOfTypeB,ItypeB,nAtomsB,AngmomB,nPrimB,nContB,nOrbCompB,&
+!!$         & nOrbB,nDimB,nCartOrbCompB,spherical)
+!!$    IF(nAtomsB.EQ.0)CYCLE
+!!$    call mem_ichor_alloc_dryrun(nPrimB) !expB
+!!$    call mem_ichor_alloc_dryrun(nPrimB*nContB) !ContractCoeffB
+!!$    call mem_ichor_alloc_dryrun(3*nAtomsB) !Bcenter
+!!$    call mem_ichor_alloc_dryrun(nAtomsB) !StartOrbitalB
+!!$    IF(doMOtrans)Then
+!!$       call mem_ichor_alloc_dryrun(nDimB*nCMO2) !CMO2B
+!!$       call mem_ichor_alloc_dryrun(nDimB*nCMO1) !CMO1B
+!!$    ENDIF
+!!$    ! DONE TYPE B CALC ===========================
+!!$    DO ItypeA=1,nTypesA 
+!!$     ! TYPE A CALC ================================
+!!$     IF(SameLHSaos .AND. ItypeB.GT.ItypeA)CYCLE
+!!$     TriangularLHSAtomLoop = SameLHSaos .AND. ItypeB.EQ.ItypeA
+!!$     PermuteLHSTypes = SameLHSaos .AND. ItypeB.LT.ItypeA
+!!$     IF(SameODs .AND. ((ItypeC.GT.ItypeA).OR.((ItypeC.EQ.ItypeA).AND.(ItypeD.GT.ItypeB))))CYCLE
+!!$     PermuteODTypes = SameODs
+!!$!     IF(ItypeC.EQ.ItypeA.AND.ItypeD.EQ.ItypeB)PermuteODTypes=.FALSE.
+!!$     TriangularODAtomLoop = SameODs .AND. ((ItypeC.EQ.ItypeA).AND.(ItypeD.EQ.ItypeB))
+!!$     call ObtainTypeInfoNoExtent(nTypesA,nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,&
+!!$          & nContOfTypeA,ItypeA,nAtomsA,AngmomA,nPrimA,nContA,nOrbCompA,&
+!!$          & nOrbA,nDimA,nCartOrbCompA,spherical)
+!!$     IF(nAtomsA.EQ.0)CYCLE
+!!$     TotalAngmom = AngmomA + AngmomB + AngmomQ
+!!$     IF(TotalAngmom.EQ.IAngmomTypes)THEN
+!!$      !This if statement ensures that we call GAMMATABULATION a very limited number of times
+!!$      !and it reduceses branch mispredictions inside the code,...
+!!$      call mem_ichor_alloc_dryrun(nPrimA) !expA
+!!$      call mem_ichor_alloc_dryrun(nPrimA*nContA) !ContractCoeffA
+!!$      call mem_ichor_alloc_dryrun(3*nAtomsA) !Acenter
+!!$      call mem_ichor_alloc_dryrun(nAtomsA) !StartOrbitalA
+!!$      IF(doMOtrans)Then
+!!$         call mem_ichor_alloc_dryrun(nDimA*nCMO1) !CMO1A
+!!$         call mem_ichor_alloc_dryrun(nDimA*nCMO2) !CMO2A
+!!$      ENDIF
+!!$      ! DONE TYPE A CALC ===========================
+!!$      ! TYPE P CALC ================================
+!!$      AngmomP = AngmomA + AngmomB
+!!$      nPrimP = nPrimA*nPrimB
+!!$      nContP = nContA*nContB
+!!$      nOrbCompP = nOrbCompA*nOrbCompB
+!!$      nCartOrbCompP = nCartOrbCompA*nCartOrbCompB
+!!$      nTUVP = (AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
+!!$      nTUV = (TotalAngmom+1)*(TotalAngmom+2)*(TotalAngmom+3)/6
+!!$      IF (nContP.EQ. 1)THEN
+!!$         Psegmented = .TRUE.
+!!$      ELSE
+!!$         Psegmented = .FALSE.
+!!$      ENDIF
+!!$      call mem_ichor_alloc_dryrun(nPrimP) !expP
+!!$      call mem_ichor_alloc_dryrun(nPrimP) !inversexpP
+!!$      !LinK: 
+!!$      IF(DoLink)THEN !Make Atomic Screening matric AtomGAB
+!!$         !maybe this should be used in general - smaller than BATCHGCD ad more straightforward 
+!!$         call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !AtomGAB
+!!$         call mem_ichor_alloc_dryrun(nAtomsB) !MaxGABVec
+!!$      ENDIF
+!!$      ! DONE TYPE P CALC ===========================
+!!$      
+!!$      ! TYPE PQ CALC ================================
+!!$      TotalAngmom = AngmomA + AngmomB + AngmomQ
+!!$      maxangmomABCD = AngmomA + AngmomB + AngmomQ
+!!$
+!!$      UseGeneralCode = .FALSE. !Use Specialized code when appropriate. 
+!!$      IF(GGemOperatorCalc)UseGeneralCode = .TRUE.
+!!$      IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)UseGeneralCode = .TRUE.
+!!$      IF(maxangmomABCD.NE.oldmaxangmomABCD)THEN
+!!$       IF(oldmaxangmomABCD.NE.-25)THEN
+!!$          call mem_ichor_dealloc_dryrun((nTABFJW1+1)*(nTABFJW2+1)) !TABFJW
+!!$       ENDIF
+!!$       nTABFJW1 = AngmomA + AngmomB + AngmomQ + 3 
+!!$       !only need + 3 after Branos change in BUILD_RJ000 
+!!$       nTABFJW2 = 1200
+!!$       !TABFJW(0:nTABFJW1,0:nTABFJW2)
+!!$       call mem_ichor_alloc_dryrun((nTABFJW1+1)*(nTABFJW2+1)) !TABFJW
+!!$       oldmaxangmomABCD = maxangmomABCD
+!!$      ENDIF
+!!$      call mem_ichor_alloc_dryrun(nPrimP*nPrimQ) !reducedExponents
+!!$      call mem_ichor_alloc_dryrun(nPrimP*nPrimQ) !integralPrefactor
+!!$      ! DONE TYPE PQ CALC ===========================      
+!!$      NOTDoSSSS = .NOT.(TotalAngmom.EQ.0.AND.(Psegmented.AND.Qsegmented))
+!!$      IF(DoLink) NOTDoSSSS=.TRUE.
+!!$      IF(DoMoTrans) NOTDoSSSS=.TRUE.
+!!$      IF(NOTDoSSSS)THEN
+!!$         !Determine Sizes of TmpArrays and MaxPasses
+!!$         IF(UseCPU)THEN
+!!$            call ICI_CPU_OBS_general_size(TMParray1maxsize,&
+!!$                 & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+!!$                 & nContA,nContB,nContC,nContD,&
+!!$                 & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
+!!$                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+!!$         ELSE !use GPU code
+!!$            call ICI_GPU_OBS_general_size(TMParray1maxsize,&
+!!$                 & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+!!$                 & nContA,nContB,nContC,nContD,&
+!!$                 & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
+!!$                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+!!$         ENDIF
+!!$         nLocalInt = nOrbA*nOrbB*nOrbC*nOrbD
+!!$      ENDIF
+!!$      IF(NOTDoSSSS)THEN !FIXME A MESS
+!!$         IF(DoLink)THEN         
+!!$            call mem_ichor_alloc_dryrun(nPrimQ) !QpreExpFac
+!!$            call mem_ichor_alloc_dryrun(3*nPrimQ) !Qcent
+!!$         ELSEIF(doMOtrans)THEN
+!!$            call mem_ichor_alloc_dryrun(nPrimQ) !QpreExpFac
+!!$            call mem_ichor_alloc_dryrun(3*nPrimQ) !Qcent
+!!$         ELSEIF(UseCPU)THEN
+!!$            call mem_ichor_alloc_dryrun(nPrimQ) !QpreExpFac
+!!$            call mem_ichor_alloc_dryrun(3*nPrimQ) !Qcent
+!!$         ELSE
+!!$            !not needed 
+!!$         ENDIF
+!!$      ELSE
+!!$         call mem_ichor_alloc_dryrun(nPrimQ) !QpreExpFac
+!!$         call mem_ichor_alloc_dryrun(3*nPrimQ) !Qcent
+!!$      ENDIF
+!!$      !calc       
+!!$      call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !noScreenAB
+!!$      
+!!$      !LinK: 
+!!$      IF(DoLink)THEN !Form active Dmat: DmatBD,DmatAD,DmatBC,DmatAC
+!!$         call mem_ichor_alloc_dryrun(nDimB*nDimD*IchorInputDim3) !DmatBD
+!!$         call mem_ichor_alloc_dryrun(nDimA*nDimD*IchorInputDim3) !DmatAD
+!!$         call mem_ichor_alloc_dryrun(nDimB*nDimC*IchorInputDim3) !DmatBC
+!!$         call mem_ichor_alloc_dryrun(nDimA*nDimC*IchorInputDim3) !DmatAC
+!!$         call mem_ichor_alloc_dryrun(nDimA,nDimC,IchorInputDim3) !KmatAC
+!!$         call mem_ichor_alloc_dryrun(nDimB,nDimC,IchorInputDim3) !KmatBC
+!!$         call mem_ichor_alloc_dryrun(nDimA,nDimD,IchorInputDim3) !KmatAD
+!!$         call mem_ichor_alloc_dryrun(nDimB,nDimD,IchorInputDim3) !KmatBD
+!!$         call mem_ichor_alloc_dryrun(nAtomsB,nAtomsD) !ReducedDmatBD
+!!$         call mem_ichor_alloc_dryrun(nAtomsB,nAtomsC) !ReducedDmatBC
+!!$         call mem_ichor_alloc_dryrun(nAtomsB) !nBraList
+!!$         call mem_ichor_alloc_dryrun(nAtomsA,nAtomsB) !BraList
+!!$         call mem_ichor_alloc_dryrun(nAtomsD) !nBraketList
+!!$         call mem_ichor_alloc_dryrun(nAtomsB,nAtomsD) !BraketList
+!!$      ENDIF
+!!$      call mem_ichor_alloc_dryrun(nPrimP,nAtomsA*nAtomsB) !PpreExpFacPass
+!!$      call mem_ichor_alloc_dryrun(3*nPrimP,nAtomsA*nAtomsB) !PcentPass
+!!$      IF(NOTDoSSSS)THEN
+!!$         call mem_ichor_alloc_dryrun(3,nAtomsA*nAtomsB) !Pdistance12Pass
+!!$         call mem_ichor_alloc_dryrun(nPrimP) !PpreExpFac
+!!$         IF(DoLink)THEN !call IchorTypeLinKLoop
+!!$            !WARNING assumes MaxPasses = nAtomsA*nAtomsB
+!!$            MaxPasses = nAtomsA*nAtomsB
+!!$            call mem_ichor_alloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
+!!$            call mem_ichor_alloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
+!!$            call mem_ichor_alloc_dryrun(MaxPasses) !IatomAPass
+!!$            call mem_ichor_alloc_dryrun(MaxPasses) !IatomBPass
+!!$            call mem_ichor_alloc_dryrun(nLocalint*MaxPasses) !LocalIntPass1
+!!$            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
+!!$            call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !DoINT
+!!$            IF(UseGeneralCode)THEN
+!!$               call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,&
+!!$                    & nPrimP,MaxPasses,AngmomA,AngmomB,AngmomC,AngmomD,&
+!!$                    & AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
+!!$               call mem_ichor_alloc_dryrun(nTmpArray3) !TmpArray3
+!!$               call mem_ichor_alloc_dryrun(nTmpArray4) !TmpArray4
+!!$               !     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
+!!$            ENDIF
+!!$            !call IchorTypeLinKLoop
+!!$            IF(UseGeneralCode)THEN
+!!$               call mem_ichor_dealloc_dryrun(nTmpArray3) !TmpArray3
+!!$               call mem_ichor_dealloc_dryrun(nTmpArray4) !TmpArray4
+!!$            ENDIF
+!!$            call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !DoINT
+!!$            call mem_ichor_dealloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
+!!$            call mem_ichor_dealloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
+!!$            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomAPass
+!!$            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomBPass
+!!$            call mem_ichor_dealloc_dryrun(nLocalInt*MaxPasses) !LocalIntPass1
+!!$            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
+!!$         ELSEIF(doMOtrans)THEN!call IchorTypeMOtransLoop
+!!$            !WARNING assumes MaxPasses = nAtomsA*nAtomsB
+!!$            MaxPasses = nAtomsA*nAtomsB
+!!$            call mem_ichor_alloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
+!!$            call mem_ichor_alloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
+!!$            call mem_ichor_alloc_dryrun(MaxPasses) !IatomAPass
+!!$            call mem_ichor_alloc_dryrun(MaxPasses) !IatomBPass
+!!$            call mem_ichor_alloc_dryrun(nLocalint*MaxPasses) !LocalIntPass1
+!!$            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
+!!$            IF(UseGeneralCode)THEN
+!!$               call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,&
+!!$                    & nPrimP,MaxPasses,AngmomA,AngmomB,AngmomC,AngmomD,&
+!!$                    & AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
+!!$               call mem_ichor_alloc_dryrun(nTmpArray3) !TmpArray3
+!!$               call mem_ichor_alloc_dryrun(nTmpArray4) !TmpArray4
+!!$               !     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
+!!$            ENDIF
+!!$            call mem_ichor_alloc_dryrun(nCMO1,MAX(ndimA,ndimB),nOrbC*nOrbD) !OutputA
+!!$            call mem_ichor_alloc_dryrun(nCMO1,nCMO2,ndimC*nDimD) !OutputCD
+!!$            !call IchorTypeMOtransLoop
+!!$            IF(UseGeneralCode)THEN
+!!$               call mem_ichor_dealloc_dryrun(nTmpArray3) !TmpArray3
+!!$               call mem_ichor_dealloc_dryrun(nTmpArray4) !TmpArray4
+!!$            ENDIF
+!!$            call mem_ichor_dealloc_dryrun(nCMO1,MAX(ndimA,ndimB),nOrbC*nOrbD) !OutputA
+!!$            call mem_ichor_dealloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
+!!$            call mem_ichor_dealloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
+!!$            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomAPass
+!!$            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomBPass
+!!$            call mem_ichor_dealloc_dryrun(nLocalInt*MaxPasses) !LocalIntPass1
+!!$            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2            
+!!$            IF(PermuteRHSTypes)THEN
+!!$               call mem_ichor_alloc_dryrun(nCMO1,nCMO2,nCMO3*MAX(nDimD,nDimC)) !OutputC
+!!$               call mem_ichor_dealloc_dryrun(nCMO1,nCMO2,ndimC*nDimD) !OutputCD
+!!$               call mem_ichor_dealloc_dryrun(nCMO1,nCMO2,nCMO3*MAX(nDimD,nDimC)) !OutputC
+!!$            ELSE
+!!$               call mem_ichor_alloc_dryrun(nCMO1,nCMO2,nCMO3*nDimD) !OutputC
+!!$               call mem_ichor_dealloc_dryrun(nCMO1,nCMO2,ndimC*nDimD) !OutputCD
+!!$               call mem_ichor_dealloc_dryrun(nCMO1,nCMO2,nCMO3*nDimD) !OutputC
+!!$            ENDIF
+!!$         ELSEIF(UseCPU)THEN !IchorTypeIntegralLoopCPU
+!!$            !WARNING assumes MaxPasses = nAtomsA*nAtomsB
+!!$            MaxPasses = nAtomsA*nAtomsB
+!!$            call mem_ichor_alloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
+!!$            call mem_ichor_alloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
+!!$            call mem_ichor_alloc_dryrun(MaxPasses) !IatomAPass
+!!$            call mem_ichor_alloc_dryrun(MaxPasses) !IatomBPass
+!!$            call mem_ichor_alloc_dryrun(nLocalint*MaxPasses) !LocalIntPass1
+!!$            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
+!!$            IF(UseGeneralCode)THEN
+!!$               call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,&
+!!$                    & nPrimP,MaxPasses,AngmomA,AngmomB,AngmomC,AngmomD,&
+!!$                    & AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
+!!$               call mem_ichor_alloc_dryrun(nTmpArray3) !TmpArray3
+!!$               call mem_ichor_alloc_dryrun(nTmpArray4) !TmpArray4
+!!$               !     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
+!!$            ENDIF
+!!$            !IchorTypeIntegralLoopCPU
+!!$            IF(UseGeneralCode)THEN
+!!$               call mem_ichor_dealloc_dryrun(nTmpArray3) !TmpArray3
+!!$               call mem_ichor_dealloc_dryrun(nTmpArray4) !TmpArray4
+!!$            ENDIF
+!!$            call mem_ichor_dealloc_dryrun(TMParray1maxsize*MaxPasses) !TmpArray1
+!!$            call mem_ichor_dealloc_dryrun(TMParray2maxsize*MaxPasses) !TmpArray2
+!!$            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomAPass
+!!$            call mem_ichor_dealloc_dryrun(MaxPasses) !IatomBPass
+!!$            call mem_ichor_dealloc_dryrun(nLocalInt*MaxPasses) !LocalIntPass1
+!!$            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
+!!$         ELSE ! IchorTypeIntegralLoopGPU
+!!$            !WARNING assumes MaxPasses = nAtomsA*nAtomsB
+!!$            !WARNING assumes nAsyncHandles = maxnAsyncHandles
+!!$            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
+!!$            call mem_ichor_alloc_dryrun(3*nPrimQ*maxnAsyncHandles) !Qcent
+!!$            call mem_ichor_alloc_dryrun(3*maxnAsyncHandles) !Qdistance12
+!!$            call mem_ichor_alloc_dryrun(nPrimQ,maxnAsyncHandles) !QpreExpFac
+!!$            call mem_ichor_alloc_dryrun(TMParray1maxsize*MaxPasses,maxnAsyncHandles) !TmpArray1
+!!$            call mem_ichor_alloc_dryrun(TMParray2maxsize*MaxPasses,maxnAsyncHandles) !TmpArray2
+!!$            call mem_ichor_alloc_dryrun(MaxPasses*maxnAsyncHandles) !IatomAPass
+!!$            call mem_ichor_alloc_dryrun(MaxPasses*maxnAsyncHandles) !IatomBPass
+!!$            call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB*maxnAsyncHandles) !LocalIntPass1
+!!$            !IchorTypeIntegralLoopGPU
+!!$            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
+!!$            call mem_ichor_dealloc_dryrun(3*nPrimQ*maxnAsyncHandles) !Qcent
+!!$            call mem_ichor_dealloc_dryrun(3*maxnAsyncHandles) !Qdistance12
+!!$            call mem_ichor_dealloc_dryrun(nPrimQ,maxnAsyncHandles) !QpreExpFac
+!!$            call mem_ichor_dealloc_dryrun(TMParray1maxsize*MaxPasses,maxnAsyncHandles) !TmpArray1
+!!$            call mem_ichor_dealloc_dryrun(TMParray2maxsize*MaxPasses,maxnAsyncHandles) !TmpArray2
+!!$            call mem_ichor_dealloc_dryrun(MaxPasses*maxnAsyncHandles) !IatomAPass
+!!$            call mem_ichor_dealloc_dryrun(MaxPasses*maxnAsyncHandles) !IatomBPass
+!!$            call mem_ichor_dealloc_dryrun(nLocalInt*nAtomsA*nAtomsB*maxnAsyncHandles) !LocalIntPass1
+!!$         ENDIF
+!!$         call mem_ichor_dealloc_dryrun(nPrimP) !PpreExpFac
+!!$         call mem_ichor_dealloc_dryrun(3,nAtomsA*nAtomsB) !Pdistance12Pass
+!!$      ELSE
+!!$         call mem_ichor_alloc_dryrun(nOrbA*nAtomsA*nOrbB*nAtomsB,nOrbC*nOrbD) !LocalIntPass
+!!$         call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !IatomAPass
+!!$         call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !IatomBPass
+!!$!         call IchorsegsegSSSSIntegralLoop
+!!$         call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !IatomAPass
+!!$         call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !IatomBPass
+!!$         call mem_ichor_dealloc_dryrun(nOrbA*nAtomsA*nOrbB*nAtomsB,nOrbC*nOrbD) !LocalIntPass
+!!$      ENDIF
+!!$      IF(NOTDoSSSS)THEN !FIXME A MESS
+!!$         IF(DoLink)THEN         
+!!$            call mem_ichor_dealloc_dryrun(3*nPrimQ) !Qcent
+!!$            call mem_ichor_dealloc_dryrun(nPrimQ) !QpreExpFac
+!!$         ELSEIF(doMOtrans)THEN
+!!$            call mem_ichor_dealloc_dryrun(3*nPrimQ) !Qcent
+!!$            call mem_ichor_dealloc_dryrun(nPrimQ) !QpreExpFac
+!!$         ELSEIF(UseCPU)THEN
+!!$            call mem_ichor_dealloc_dryrun(3*nPrimQ) !Qcent
+!!$            call mem_ichor_dealloc_dryrun(nPrimQ) !QpreExpFac
+!!$         ELSE
+!!$            !not needed 
+!!$         ENDIF
+!!$      ELSE
+!!$         call mem_ichor_dealloc_dryrun(3*nPrimQ) !Qcent
+!!$         call mem_ichor_dealloc_dryrun(nPrimQ) !QpreExpFac
+!!$      ENDIF
+!!$      call mem_ichor_dealloc_dryrun(nPrimP,nAtomsA*nAtomsB) !PpreExpFacPass
+!!$      call mem_ichor_dealloc_dryrun(3*nPrimP,nAtomsA*nAtomsB) !PcentPass
+!!$      IF(DoLink)THEN         
+!!$         call mem_ichor_dealloc_dryrun(nDimB*nDimD*IchorInputDim3) !DmatBD
+!!$         call mem_ichor_dealloc_dryrun(nDimA*nDimD*IchorInputDim3) !DmatAD
+!!$         call mem_ichor_dealloc_dryrun(nDimB*nDimC*IchorInputDim3) !DmatBC
+!!$         call mem_ichor_dealloc_dryrun(nDimA*nDimC*IchorInputDim3) !DmatAC
+!!$         call mem_ichor_dealloc_dryrun(nDimA,nDimC,IchorInputDim3) !KmatAC
+!!$         call mem_ichor_dealloc_dryrun(nDimB,nDimC,IchorInputDim3) !KmatBC
+!!$         call mem_ichor_dealloc_dryrun(nDimA,nDimD,IchorInputDim3) !KmatAD
+!!$         call mem_ichor_dealloc_dryrun(nDimB,nDimD,IchorInputDim3) !KmatBD
+!!$         call mem_ichor_dealloc_dryrun(nAtomsB,nAtomsD) !ReducedDmatBD
+!!$         call mem_ichor_dealloc_dryrun(nAtomsB,nAtomsC) !ReducedDmatBC
+!!$         call mem_ichor_dealloc_dryrun(nAtomsB) !nBraList
+!!$         call mem_ichor_dealloc_dryrun(nAtomsA,nAtomsB) !BraList
+!!$         call mem_ichor_dealloc_dryrun(nAtomsD) !nBraketList
+!!$         call mem_ichor_dealloc_dryrun(nAtomsB,nAtomsD) !BraketList
+!!$      ENDIF
+!!$      call mem_ichor_dealloc_dryrun(nPrimP*nPrimQ) !reducedExponents
+!!$      call mem_ichor_dealloc_dryrun(nPrimP*nPrimQ) !integralPrefactor
+!!$      call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !noScreenAB
+!!$
+!!$      call mem_ichor_dealloc_dryrun(nPrimP) !expP
+!!$      call mem_ichor_dealloc_dryrun(nPrimP) !inversexpP
+!!$
+!!$      call mem_ichor_dealloc_dryrun(nPrimA) !expA
+!!$      call mem_ichor_dealloc_dryrun(nPrimA*nContA) !ContractCoeffA
+!!$      call mem_ichor_dealloc_dryrun(3*nAtomsA) !Acenter
+!!$      call mem_ichor_dealloc_dryrun(nAtomsA) !StartOrbitalA
+!!$      IF(doMOtrans)Then
+!!$         call mem_ichor_dealloc_dryrun(nDimA*nCMO1) !CMO1A
+!!$         call mem_ichor_dealloc_dryrun(nDimA*nCMO2) !CMO2A
+!!$      ENDIF
+!!$      IF(DoLink)THEN
+!!$         call mem_ichor_dealloc_dryrun(nAtomsA*nAtomsB) !AtomGAB
+!!$         call mem_ichor_dealloc_dryrun(nAtomsB) !MaxGABVec
+!!$      ENDIF
+!!$     ENDIF !correct angmom type
+!!$    ENDDO !typeA
+!!$    call mem_ichor_dealloc_dryrun(nPrimB) !expB
+!!$    call mem_ichor_dealloc_dryrun(nPrimB*nContB) !ContractCoeffB
+!!$    call mem_ichor_dealloc_dryrun(3*nAtomsB) !Bcenter
+!!$    call mem_ichor_dealloc_dryrun(nAtomsB) !StartOrbitalB
+!!$    IF(doMOtrans)Then
+!!$       call mem_ichor_dealloc_dryrun(nDimB*nCMO1) !CMO1B
+!!$       call mem_ichor_dealloc_dryrun(nDimB*nCMO2) !CMO2B
+!!$    ENDIF
+!!$   ENDDO !typeB
+!!$   IF(DoLink)THEN
+!!$      call mem_ichor_dealloc_dryrun(nAtomsC*nAtomsD) !AtomGCD
+!!$      call mem_ichor_dealloc_dryrun(nAtomsD)         !MaxGCDVec
+!!$      call mem_ichor_dealloc_dryrun(nAtomsD)         !nKetList
+!!$      call mem_ichor_dealloc_dryrun(nAtomsC*nAtomsD) !KetList
+!!$   ENDIF   
+!!$   call mem_ichor_dealloc_dryrun(nAtomsC*nAtomsD) !noScreenCD
+!!$   call mem_ichor_dealloc_dryrun(nAtomsC*nAtomsD) !noScreenCD2
+!!$   call mem_ichor_dealloc_dryrun(nPrimQ) !expQ
+!!$   call mem_ichor_dealloc_dryrun(nPrimQ) !Qiprim1
+!!$   call mem_ichor_dealloc_dryrun(nPrimQ) !Qiprim2
+!!$
+!!$   call mem_ichor_dealloc_dryrun(nPrimC) !expC
+!!$   call mem_ichor_dealloc_dryrun(nPrimC,nContC) !ContractCoeffC
+!!$   call mem_ichor_dealloc_dryrun(3*nAtomsC) !Ccenter
+!!$   call mem_ichor_dealloc_dryrun(nAtomsC) !StartOrbitalC
+!!$   IF(doMOtrans)Then
+!!$      call mem_ichor_dealloc_dryrun(nDimC*nCMO3) !CMO3C
+!!$      call mem_ichor_dealloc_dryrun(nDimC*nCMO4) !CMO4C
+!!$   ENDIF
+!!$  ENDDO !typeC
+!!$  call mem_ichor_dealloc_dryrun(nPrimD) !expD
+!!$  call mem_ichor_dealloc_dryrun(nPrimD,nContD) !ContractCoeffD
+!!$  call mem_ichor_dealloc_dryrun(3*nAtomsD) !Dcenter
+!!$  call mem_ichor_dealloc_dryrun(nAtomsD) !StartOrbitalD
+!!$  IF(doMOtrans)Then
+!!$     call mem_ichor_dealloc_dryrun(nDimD*nCMO4) !CMO4D
+!!$     call mem_ichor_dealloc_dryrun(nDimD*nCMO3) !CMO3D
+!!$  ENDIF
+!!$ ENDDO !typeD
+!!$ENDDO 
+!!$call mem_ichor_dealloc_dryrun((nTABFJW1+1)*(nTABFJW2+1)) !TABFJW
+!!$call mem_ichor_dealloc_dryrun(nBatchA,nBatchB) !BATCHGAB
+!!$
+!!$IF(CSScreen)THEN
+!!$   call mem_ichor_alloc_dryrun(nTypesA) !BatchIndexOfTypeA
+!!$   call mem_ichor_alloc_dryrun(nTypesB) !BatchIndexOfTypeB
+!!$   call mem_ichor_alloc_dryrun(nBatchA*nBatchB) !BATCHGAB
+!!$   call mem_ichor_alloc_dryrun(nTypesA*nTypesB) !MaxGabForTypeAB
+!!$   call mem_ichor_alloc_dryrun(nTypesC) !BatchIndexOfTypeC    
+!!$   call mem_ichor_alloc_dryrun(nTypesD) !BatchIndexOfTypeD
+!!$   call mem_ichor_alloc_dryrun(nTypesC,nTypesD) !MaxGabForTypeCD
+!!$   IF(IchorGabID1.EQ.IchorGabID2)THEN
+!!$   ELSE
+!!$      call mem_ichor_alloc_dryrun(nBatchC,nBatchD) !BATCHGCD
+!!$   ENDIF
+!!$ENDIF
+!!$call mem_ichor_dealloc_dryrun(nTypesA) !OrderdListA
+!!$call mem_ichor_dealloc_dryrun(nTypesB) !OrderdListB
+!!$call mem_ichor_dealloc_dryrun(nTypesC) !OrderdListC
+!!$call mem_ichor_dealloc_dryrun(nTypesD) !OrderdListD
+!!$
+!!$call retrieve_ichor_memvar(MaxMemAllocated,MemAllocated)
+!!$IF(MemAllocated.NE.0)THEN
+!!$   call ichorquit('MemoryLeak in IchorEri',lupri)
+!!$ENDIF
 end subroutine IchorEriMem
 
 subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
