@@ -138,12 +138,10 @@ CTRL[6]=3
 ERROR[6]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Initial gradient
-CRIT1=`$GREP "N *   0*\.00000..... * \-0*\.00000..... *   0*\.00000....." $log | wc -l`
-CRIT2=`$GREP "H *   0*\.00000..... *   0*\.00000..... * \-0*\.00000....." $log | wc -l`
-CRIT3=`$GREP "H * \-0*\.00000..... *   0*\.00000..... * \-0*\.00000....." $log | wc -l`
-CRIT4=`$GREP "H * \-0*\.00000..... * \-0*\.00000..... * \-0*\.00000....." $log | wc -l`
-TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[7]=4
+# Norm of molecular gradient:     0.0000019026
+CRIT1=`$GREP "Norm of molecular gradient: * 0*\.00000[12]" $log | wc -l`
+TEST[7]=`expr	$CRIT1 `
+CTRL[7]=1
 ERROR[7]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial Hessian
