@@ -1,4 +1,5 @@
 PROGRAM IchorErimoduleTEST
+use IchorPrecisionMod
 #ifdef VAR_OPENACC
 #ifdef VAR_PGF90
 use openacc, only: acc_get_device_type,ACC_DEVICE_NONE,&
