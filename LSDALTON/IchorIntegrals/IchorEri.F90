@@ -40,7 +40,11 @@ MODULE IchorErimod
   public:: IchorEri,IchorEriMem
   private
 
-logical,parameter :: UseCPU = .TRUE.
+#ifdef VAR_OPENACC
+  logical,parameter :: UseCPU = .FALSE.
+#else
+  logical,parameter :: UseCPU = .TRUE.
+#endif
 
 CONTAINS
 subroutine IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
