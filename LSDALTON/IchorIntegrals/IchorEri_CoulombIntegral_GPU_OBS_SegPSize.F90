@@ -2,6 +2,7 @@ MODULE IchorEriCoulombintegralGPUOBSGeneralModSegPSize
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
 !Contains routines for Segmented contracted LHS and a General Contracted RHS Basisset 
 use IchorCommonMod
+use IchorEriCoulombintegralCPUMcMGeneralMod
   
 private   
 public :: ICI_GPU_OBS_general_sizeSegP  
@@ -643,7 +644,12 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,875*nContQ)
        TMParray1maxSize = MAX(TMParray1maxSize,900*nContQ)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in ICI_OBS_general_size',-1)
+     call ICI_CPU_McM_general_size(TMParray1maxsize,&
+         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+         & nContA,nContB,nContC,nContD,&
+         & nPrimA,nPrimB,nPrimC,nPrimD,&
+         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,&
+         & .TRUE.,.FALSE.)
     END SELECT
   end subroutine ICI_GPU_OBS_general_sizeSegP
 END MODULE IchorEriCoulombintegralGPUOBSGeneralModSegPSize

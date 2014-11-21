@@ -275,11 +275,15 @@ IF(UseACC)THEN
    !we use the GPU code unless deactivated
    IF(ForceCPU)THEN
       UseCPU = .TRUE.
+   ELSE
+      UseCPU = .FALSE.
    ENDIF
 ELSE
    !we use the OpenMP parallel CPU code unless deactivated
    IF(ForceGPU)THEN
       UseCPU = .FALSE.
+   ELSE
+      UseCPU = .TRUE.
    ENDIF   
 ENDIF
 
@@ -2106,7 +2110,7 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 !$OMP        integralPrefactor,AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,&
 !$OMP        Qdistance12,PQorder,LocalIntPass1,LocalIntPass2,nLocalIntPass,&
 !$OMP        Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,Bcenter,nOrbQ,&
-!$OMP        TMParray2maxsizePass,Acenter,nTmpArray3,nTmpArray4,&
+!$OMP        TMParray2maxsizePass,Acenter,&
 !$OMP        nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,PermuteLHSTypes,nOrbD,nOrbC,&
 !$OMP        startOrbitalA,OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputStorage,&
 !$OMP        nTUVQ,nCartOrbCompQ,nTUVP,nCartOrbCompP,TmpArray3,TmpArray4,nTUV,&
@@ -2357,6 +2361,17 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   nLocalIntPass = nLocalint*MaxPasses
   allocate(LocalIntPass1(nLocalIntPass,nAsyncHandles))
   CALL Mem_ichor_alloc(LocalIntPass1)
+
+  IF(UseGeneralCode)THEN
+     call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
+          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
+     allocate(TmpArray3(nTmpArray3))
+     call mem_ichor_alloc(TmpArray3)
+     allocate(TmpArray4(nTmpArray4))
+     call mem_ichor_alloc(TmpArray4)
+     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
+  ENDIF
+
 !$ACC DATA COPYIN(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
 !$ACC             nPrimQ,nPasses,MaxPasses,intprint,lupri,&
 !$ACC             nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
@@ -2533,6 +2548,13 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      ENDDO
   ENDDO
 !$ACC END DATA
+  IF(UseGeneralCode)THEN
+    call mem_ichor_dealloc(TmpArray3)
+    deallocate(TmpArray3)
+    call mem_ichor_dealloc(TmpArray4)
+    deallocate(TmpArray4)
+    call FreeIchorSPHMAT()
+  ENDIF
 
   print*,cHostWaitForGPU1+cHostWaitForGPU2,' microseconds spent waiting on GPU '
   print*,cHostWaitForGPU1,' microseconds spent waiting on GPU in step 1'
