@@ -638,13 +638,17 @@ subroutine PASSsub
                       !init AUX
                       IF(COLLAPSE)THEN
                          IF(nPrimLast)THEN
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
                             WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
                             WRITE(LUFILE,'(A)')   '    ENDDO'
                             WRITE(LUFILE,'(A)')   '   ENDDO'
                          ELSE
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
                             WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
                             WRITE(LUFILE,'(A)')   '    ENDDO'
@@ -661,13 +665,17 @@ subroutine PASSsub
                       WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimP*nPasses'
                       IF(COLLAPSE)THEN
                          IF(nPrimLast)THEN
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
                             WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
                             WRITE(LUFILE,'(A)')   '    ENDDO'
                             WRITE(LUFILE,'(A)')   '   ENDDO'
                          ELSE
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
                             WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
                             WRITE(LUFILE,'(A)')   '    ENDDO'
@@ -684,13 +692,17 @@ subroutine PASSsub
                       WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
                       IF(COLLAPSE)THEN
                          IF(nPrimLast)THEN
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
                             WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
                             WRITE(LUFILE,'(A)')   '    ENDDO'
                             WRITE(LUFILE,'(A)')   '   ENDDO'
                          ELSE
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                             WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
                             WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
                             WRITE(LUFILE,'(A)')   '    ENDDO'

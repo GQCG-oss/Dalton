@@ -41,7 +41,9 @@ MODULE AGC_GPU_OBS_TRMODAtoDSeg2
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
+!$ACC LOOP SEQ
    DO iTUVQ=1, 10
+!$ACC LOOP SEQ
     DO iTUVP=1, 35
      Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
@@ -326,7 +328,9 @@ MODULE AGC_GPU_OBS_TRMODAtoDSeg2
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
+!$ACC LOOP SEQ
    DO iTUVQ=1, 20
+!$ACC LOOP SEQ
     DO iTUVP=1, 35
      Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO

@@ -36,7 +36,9 @@ MODULE AGC_GPU_OBS_TRMODAtoDSegP1
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
    DO iTUVQ=1,  4
+!$ACC LOOP SEQ
     DO iTUVP=1,  4
      Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
@@ -141,7 +143,9 @@ MODULE AGC_GPU_OBS_TRMODAtoDSegP1
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
    DO iTUVQ=1,  4
+!$ACC LOOP SEQ
     DO iTUVP=1, 10
      Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
@@ -275,7 +279,9 @@ MODULE AGC_GPU_OBS_TRMODAtoDSegP1
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
    DO iTUVQ=1, 10
+!$ACC LOOP SEQ
     DO iTUVP=1, 10
      Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
@@ -576,7 +582,9 @@ MODULE AGC_GPU_OBS_TRMODAtoDSegP1
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
    DO iTUVQ=1,  4
+!$ACC LOOP SEQ
     DO iTUVP=1, 20
      Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
@@ -761,7 +769,9 @@ MODULE AGC_GPU_OBS_TRMODAtoDSegP1
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
    DO iTUVQ=1, 10
+!$ACC LOOP SEQ
     DO iTUVP=1, 20
      Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
@@ -1041,7 +1051,9 @@ MODULE AGC_GPU_OBS_TRMODAtoDSegP1
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
    DO iTUVQ=1,  4
+!$ACC LOOP SEQ
     DO iTUVP=1, 35
      Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
@@ -1168,7 +1180,9 @@ MODULE AGC_GPU_OBS_TRMODAtoDSegP1
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
    DO iTUVQ=1, 20
+!$ACC LOOP SEQ
     DO iTUVP=1, 20
      Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
