@@ -41,10 +41,11 @@ MODULE IchorErimod
   private
 
 #ifdef VAR_OPENACC
-  logical,parameter :: UseCPU = .FALSE.
+  logical,parameter :: UseACC = .TRUE.
 #else
-  logical,parameter :: UseCPU = .TRUE.
+  logical,parameter :: UseACC = .FALSE.
 #endif
+logical :: UseCPU
 
 CONTAINS
 subroutine IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
@@ -71,7 +72,7 @@ subroutine IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-     & OutputStorage,lupri)
+     & OutputStorage,ForceCPU,ForceGPU,lupri)
 implicit none
 !> nTypesA is the number of different types of shells, each type is defined by 
 !> an angular momentum, a number of primitives(nPrim), a number of contracted functions
@@ -189,6 +190,8 @@ Integer,intent(in) :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
 real(realk),intent(inout)::OutputStorage(OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5)
 !> Logical unit number of output file.
 Integer,intent(in) :: lupri
+!> Force the use of the CPU/GPU code 
+logical,intent(in) :: ForceCPU,ForceGPU
 ! Local variables
 integer :: nPrimP,nContP,nPrimQ,nContQ
 integer :: nTABFJW1,nTABFJW2,i1,i2,i3,i4,AngmomQ,TotalAngmom
@@ -267,6 +270,18 @@ real(realk),allocatable :: CMO1A(:,:),CMO2B(:,:)
 real(realk),allocatable :: CMO1B(:,:),CMO2A(:,:)
 real(realk),allocatable :: CMO3C(:,:),CMO4D(:,:)
 real(realk),allocatable :: CMO3D(:,:),CMO4C(:,:)
+
+IF(UseACC)THEN
+   !we use the GPU code unless deactivated
+   IF(ForceCPU)THEN
+      UseCPU = .TRUE.
+   ENDIF
+ELSE
+   !we use the OpenMP parallel CPU code unless deactivated
+   IF(ForceGPU)THEN
+      UseCPU = .FALSE.
+   ENDIF   
+ENDIF
 
 IF(.NOT.UseCPU)THEN
    Write(lupri,'(A,F10.3,A)')'Ichor: GPU Maximum Memory : ', IchorGPUMAXMEM, ' GB'
@@ -1249,7 +1264,7 @@ subroutine IchorEriMem(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-     & OutputStorage,lupri)
+     & OutputStorage,ForceCPU,ForceGPU,lupri)
 implicit none
 !> nTypesA is the number of different types of shells, each type is defined by 
 !> an angular momentum, a number of primitives(nPrim), a number of contracted functions
@@ -1367,6 +1382,8 @@ Integer,intent(in) :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
 real(realk),intent(inout)::OutputStorage(OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5)
 !> Logical unit number of output file.
 Integer,intent(in) :: lupri
+!> Force the use of the CPU/GPU code.
+logical,intent(in) :: ForceCPU,ForceGPU
 ! Local variables
 !!$integer :: nPrimP,nContP,nPrimQ,nContQ
 !!$integer :: nTABFJW1,nTABFJW2,i1,i2,i3,i4,AngmomQ,TotalAngmom
