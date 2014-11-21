@@ -50,12 +50,15 @@ use rpa_module
 
 
 public :: ccsolver, ccsolver_par, fragment_ccsolver, ccsolver_justenergy,&
-   & mp2_solver
+   & mp2_solver, SOLVE_AMPLITUDES,SOLVE_AMPLITUDES_PNO, SOLVE_MULTIPLIERS
 private
 
 interface mp2_solver
    module procedure mp2_solver_frag, mp2_solver_mol
 end interface mp2_solver
+
+!integer,parameter :: SOLVE_AMPLITUDES  = 1
+!integer,parameter :: SOLVE_MULTIPLIERS = 2
 
 contains
 
@@ -104,7 +107,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    integer :: nenergies, cc_sol, pT_4, pT_5, pT_full
    !> local variables 
    character(len=30) :: CorrEnergyString
-   integer :: iCorrLen, nsingle, npair, njobs
+   integer :: iCorrLen, nsingle, npair, njobs,solver_job
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
@@ -145,12 +148,15 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          if(DECinfo%use_pnos)then
             call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
+               & t1_final,mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES)
+            solver_job = SOLVE_AMPLITUDES_PNO
+         else
+            solver_job = SOLVE_AMPLITUDES
          endif
 
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos )
+            & t1_final,t2_final,VOVO,.false.,local,solver_job,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos )
 
          if(DECinfo%use_pnos) call tensor_free( mp2_amp )
 
@@ -159,12 +165,15 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          if(DECinfo%use_pnos)then
             call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
+               & t1_final,mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES)
+            solver_job = SOLVE_AMPLITUDES_PNO
+         else
+            solver_job = SOLVE_AMPLITUDES
          endif
 
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos, m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
+            & t1_final,t2_final,VOVO,.false.,local,solver_job, m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
 
          if(DECinfo%use_pnos) call tensor_free( mp2_amp )
 
@@ -362,22 +371,28 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          if(DECinfo%use_pnos)then
             call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
+               & t1_final,mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES)
+            solver_job = SOLVE_AMPLITUDES_PNO
+         else
+            solver_job = SOLVE_AMPLITUDES
          endif
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
+            & t1_final,t2_final,VOVO,.false.,local,solver_job,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
       else
          ncore = 0
          if(DECinfo%use_pnos)then
             call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
+               & t1_final,mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES)
+            solver_job = SOLVE_AMPLITUDES_PNO
+         else
+            solver_job = SOLVE_AMPLITUDES
          endif
    
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
+            & t1_final,t2_final,VOVO,.false.,local,solver_job,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
       end if
 
       if(DECinfo%PL>1)then
@@ -556,13 +571,13 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
       call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
          & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-         & t1_final,t2_final,VOVO,.false.,local,.false.)
+         & t1_final,t2_final,VOVO,.false.,local,SOLVE_AMPLITUDES)
    else
       ncore = 0
 
       call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
          mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-         & t1_final,t2_final,VOVO,.false.,local,.false.)
+         & t1_final,t2_final,VOVO,.false.,local,SOLVE_AMPLITUDES)
    end if
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
@@ -599,7 +614,7 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
 
    !INTERNAL PARAMETERS
    type(tensor) :: mp2_amp
-   integer :: dims(2)
+   integer :: dims(2), solver_job
    real(realk) :: ccenergy
    logical :: local
 
@@ -632,10 +647,13 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & myfragment%ppfock,myfragment%qqfock,ccenergy,&
-         & t1,mp2_amp,VOVO,MyFragment%t1_stored,local,.false.,frag=myfragment)
+         & t1,mp2_amp,VOVO,MyFragment%t1_stored,local,SOLVE_AMPLITUDES,frag=myfragment)
 
       !GET THE MP2 CORRELATION DENSITY FOR THE CENTRAL ATOM
       call calculate_MP2corrdens_frag(mp2_amp,MyFragment) 
+      solver_job = SOLVE_AMPLITUDES_PNO
+   else
+      solver_job = SOLVE_AMPLITUDES
    endif
 #endif
 
@@ -643,7 +661,7 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
       & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
       & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
       & myfragment%ppfock,myfragment%qqfock,ccenergy,&
-      & t1,t2,VOVO,MyFragment%t1_stored,local,DECinfo%use_pnos,frag=myfragment, &
+      & t1,t2,VOVO,MyFragment%t1_stored,local,solver_job,frag=myfragment, &
       & m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
 
 #ifdef MOD_UNRELEASED
@@ -712,7 +730,7 @@ subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
 
    call ccsolver_par(MODEL_MP2,frag%Co,frag%Cv,frag%fock,nb,&
       & no,nv, frag%mylsitem,DECinfo%PL,frag%ppfock,&
-      & frag%qqfock,e,t1_dummy,t2,RHS,.false.,local,.false.,frag=frag,&
+      & frag%qqfock,e,t1_dummy,t2,RHS,.false.,local,SOLVE_AMPLITUDES,frag=frag,&
       & vovo_supplied = rhs_input)
 
    if(present(mp2_energy)) mp2_energy = e
@@ -808,7 +826,7 @@ subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
    end if
 
    call ccsolver_par(MODEL_MP2,Co,mol%Cv,mol%fock,nb,no,nv,mls,DECinfo%PL,oof,&
-      & mol%qqfock,e,t1_dummy,t2,RHS,.false.,local,.false., vovo_supplied = rhs_input)
+      & mol%qqfock,e,t1_dummy,t2,RHS,.false.,local,SOLVE_AMPLITUDES, vovo_supplied = rhs_input)
 
    if(present(mp2_energy)) mp2_energy = e
 
@@ -1489,7 +1507,7 @@ end subroutine mp2_solver_mol
 !> \author Patrick Ettenhuber (heavily adapted version from Marcin)
 subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       & mylsitem,ccPrintLevel,ppfock_f,qqfock_f,ccenergy, &
-      & t1_final,t2_final,VOVO,longrange_singles,local,use_pnos, &
+      & t1_final,t2_final,VOVO,longrange_singles,local,JOB, &
       & m2,m1,frag,vovo_supplied)
 
    implicit none
@@ -1531,7 +1549,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !> (from previous calculations) must be stored in t1_final at input!
    logical,intent(in)                        :: longrange_singles
    logical,intent(inout)                     :: local
-   logical,intent(in)                        :: use_pnos
+   integer,intent(in)                        :: JOB
    type(tensor), intent(inout), optional     :: m2
    type(tensor), intent(inout), optional     :: m1
    type(decfrag), intent(inout), optional    :: frag
@@ -1562,7 +1580,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk)             :: test_norm,two_norm_total, one_norm_total,one_norm1, one_norm2, prev_norm
    real(realk), pointer    :: B(:,:),c(:)
    integer                 :: iter,last_iter,i,j,k,l
-   logical                 :: crop_ok,break_iterations,saferun, use_pseudo_diag_basis
+   logical                 :: crop_ok,break_iterations,saferun, use_pseudo_diag_basis, use_pnos, get_multipliers
    type(ri)                :: l_ao
    type(tensor)            :: ppfock_prec, qqfock_prec, qpfock_prec
    real(realk)             :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
@@ -1594,6 +1612,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    character(4)           :: atype
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
+
+
 
    time_work        = 0.0E0_realk
    time_comm        = 0.0E0_realk
@@ -1663,13 +1683,29 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             & but t1_final does not contain existing amplitudes!',DECinfo%output)
       end if
    end if
-
-   if(use_pnos)then
+   !set job related
+   select case(JOB)
+   case(SOLVE_AMPLITUDES)
+      use_pnos        = .false.
+      get_multipliers = .false.
+   case(SOLVE_AMPLITUDES_PNO)
+      use_pnos        = .true.
+      get_multipliers = .false.
       if(.not.present(m2)) then
          call lsquit('ccsolver: When using PNOs make sure MP2 amplitudes are &
             & in m2',DECinfo%output)
       end if
-   endif
+   case(SOLVE_MULTIPLIERS)
+      use_pnos        = .false.
+      get_multipliers = .true.
+      if(.not.present(m2)) then
+         call lsquit('ccsolver: When solving for the multipliers, make sure the&
+         & doubles amplitudes are given in m2',DECinfo%output)
+      end if
+   case default
+      call lsquit("ERROR(ccsolver_par):unknown jobid",-1)
+   end select
+
 
    vovo_avail = .false.
    trafo_vovo = .false.
@@ -1692,11 +1728,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    !see if m2 has to be transformed to the pseudo diag basis
    trafo_m2 = .false.
-   if(present(m2))then
+   if(use_pnos) trafo_m2 = present(m2)
 
-      trafo_m2 = use_pnos
-
-   endif
 
    !Settings for the models
    ModelSpecificSettings: select case(ccmodel)
