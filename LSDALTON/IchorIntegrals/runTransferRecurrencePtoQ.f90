@@ -548,38 +548,6 @@ subroutine PASSsub
                 deallocate(CREATED)
                ! print*,'DONE'
 
-                !init AUX
-                IF(COLLAPSE)THEN
-                   IF(SegP.OR.SegQ.OR.Seg)THEN
-                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
-!                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ) SHARED(nPrimQ,nPasses,nPrimP,Aux2)'
-                      IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)'
-                      !                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
-                      IF(SegP)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPasses'
-                      IF(SegQ)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimP*nPasses'
-                      IF(Seg)WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
-                      IF(nPrimLast)THEN
-                         WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
-                         WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
-                         WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
-                         WRITE(LUFILE,'(A)')   '    ENDDO'
-                         WRITE(LUFILE,'(A)')   '   ENDDO'
-                      ELSE
-                         WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
-                         WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
-                         WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
-                         WRITE(LUFILE,'(A)')   '    ENDDO'
-                         WRITE(LUFILE,'(A)')   '   ENDDO'
-                      ENDIF
-                      WRITE(LUFILE,'(A)')   '  ENDDO'
-                      nLines = nLines + 5
-                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
-!                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
-                   ELSE
-                      !no need to init
-                   ENDIF
-                ENDIF
-
                 !OPENMP
                 IF(DoOpenMP)THEN
 !                   WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none)&'
@@ -667,16 +635,71 @@ subroutine PASSsub
                       WRITE(LUFILE,'(A)') '   iPassP = (IP-1)/(nPrimQ*nPrimP) + 1'
                    ELSEIF(SegP)THEN
                       WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimQ*nPasses'
+                      !init AUX
+                      IF(COLLAPSE)THEN
+                         IF(nPrimLast)THEN
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ELSE
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ENDIF
+                         nLines = nLines + 5
+                      ELSE
+                         !no need to init
+                      ENDIF
                       WRITE(LUFILE,'(A)') '   DO iPrimP=1, nPrimP'
                       WRITE(LUFILE,'(A)') '    iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ'
                       WRITE(LUFILE,'(A)') '    iPassP = (iP-1)/nPrimQ + 1'
                    ELSEIF(SegQ)THEN
                       WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimP*nPasses'
+                      IF(COLLAPSE)THEN
+                         IF(nPrimLast)THEN
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ELSE
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ENDIF
+                         nLines = nLines + 5
+                      ELSE
+                         !no need to init
+                      ENDIF
                       WRITE(LUFILE,'(A)') '   DO iPrimQ=1, nPrimQ'
                       WRITE(LUFILE,'(A)') '    iPrimP = iP - ((iP-1)/nPrimP)*nPrimP'
                       WRITE(LUFILE,'(A)') '    iPassP = (iP-1)/nPrimP + 1'
                    ELSEIF(Seg)THEN
                       WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
+                      IF(COLLAPSE)THEN
+                         IF(nPrimLast)THEN
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ELSE
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ENDIF
+                         nLines = nLines + 5
+                      ELSE
+                         !no need to init
+                      ENDIF
                       WRITE(LUFILE,'(A)') '   DO iPrimQP=1,nPrimQ*nPrimP'
                       WRITE(LUFILE,'(A)') '    iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ'
                       WRITE(LUFILE,'(A)') '    iPrimP = (iPrimQP-1)/nPrimQ + 1'       
