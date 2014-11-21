@@ -156,9 +156,15 @@ contains
     type(mypointer),pointer :: CvirtTspecial(:,:)
     real(realk),pointer :: mini1(:),mini2(:),mini3(:),mini4(:)
     real(realk) :: time_mp2work, time_mp2comm, time_mp2idle,MemInGBCollected,MaxMemInGBCollected,MemoryNeeded
-    logical :: ts,fc,memfound
+    real(realk) :: TS2,TE2
+    logical :: ts,fc,memfound,ForcePrint
     Character            :: intSpec(5)
 
+#ifdef VAR_TIME
+    FORCEPRINT = .TRUE.
+#else
+    FORCEPRINT = .FALSE.
+#endif
     call time_start_phase( PHASE_WORK, swwork=time_mp2work , swcomm=time_mp2comm , swidle=time_mp2idle )
 
     myload = 0
@@ -175,6 +181,7 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpuTOT,twallTOT,DECinfo%output)
     call LSTIMER('START',tcpu_start,twall_start,DECinfo%output)
+    CALL LSTIMER('START ',TS2,TE2,DECinfo%output,ForcePrint)
 
 
     ! Set integral info
@@ -339,6 +346,7 @@ contains
        OOOV=0E0_realk
     end if
 
+    CALL LSTIMER('MP2workhorse Init: ',TS2,TE2,DECinfo%output,ForcePrint)
 
     ! *************************************
     ! Get arrays for transforming integrals
@@ -363,6 +371,7 @@ contains
        LoccTALL = array2_init([nocc,nbasis])
        call mat_transpose(nbasis,nocc,1.0E0_realk,MyFragment%Co,0.0E0_realk,LoccTALL%val)
     end if
+    CALL LSTIMER('MP2workhorse TransMatInit: ',TS2,TE2,DECinfo%output,ForcePrint)
 
 
     ! Extract occupied and virtual EOS indices from rows of Uocc and Uvirt
@@ -394,6 +403,7 @@ contains
     call mem_alloc(LvirtEOST,nvirtEOS,nbasis)
     call mem_alloc(LvirtT,nvirt,nbasis)
 
+    CALL LSTIMER('MP2workhorse extractEOSInit: ',TS2,TE2,DECinfo%output,ForcePrint)
 
     ! Determine optimal batchsizes with available memory
     ! **************************************************
@@ -426,6 +436,8 @@ contains
        call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
             & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
     ENDIF
+
+    CALL LSTIMER('MP2workhorse BatchesInit: ',TS2,TE2,DECinfo%output,ForcePrint)
 
     if(master) write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
@@ -568,6 +580,7 @@ contains
     call mat_transpose(nbasis,nvirtEOS,1.0E0_realk,LvirtEOS%val,0.0E0_realk,LvirtEOST)
     call mat_transpose(nbasis,nvirt,1.0E0_realk,MyFragment%Cv,0.0E0_realk,LvirtT)
 
+    CALL LSTIMER('MP2workhorse TransposeMatrices: ',TS2,TE2,DECinfo%output,ForcePrint)
 
     ! ***************************************************************
     ! Make special CvirtT array to avoid passing elements which are
@@ -601,6 +614,8 @@ contains
        end do
     end do
 
+    CALL LSTIMER('MP2workhorse CvirtTspecial: ',TS2,TE2,DECinfo%output,ForcePrint)
+
     IF(DECinfo%useIchor)THEN
        !Calculate Screening integrals 
        call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,MyFragment%mylsitem%setting,INTSPEC,SameMOL)
@@ -619,6 +634,8 @@ contains
        !(dimAlpha,dimGamma,nbasis,nbasis) so the full AO basis is used on the RHS
        !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
     ENDIF
+
+    CALL LSTIMER('MP2workhorse Screening: ',TS2,TE2,DECinfo%output,ForcePrint)
 
 #ifdef VAR_OMP
 nthreads=OMP_GET_MAX_THREADS()
@@ -675,6 +692,8 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       ! Memory requirement for big array
       call BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
 
+      CALL LSTIMER('MP2workhorse BigArraymaxdim: ',TS2,TE2,DECinfo%output,ForcePrint)
+
       ! Print for statistics
       if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size1 ', bat%size1
       if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size2 ', bat%size2
@@ -720,6 +739,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
 #endif
 
+      CALL LSTIMER('MP2workhorse Mem: ',TS2,TE2,DECinfo%output,ForcePrint)
 
 
 #ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
@@ -765,6 +785,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       end do
 #endif
 
+      CALL LSTIMER('MP2workhorse WorkAround: ',TS2,TE2,DECinfo%output,ForcePrint)
 
       if(master) call LSTIMER('INIT MP2-INT',tcpu,twall,DECinfo%output)
       call LSTIMER('START',tcmpi1,twmpi1,DECinfo%output)
@@ -1407,6 +1428,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        end do BatchAlpha
     end do BatchGamma
 
+ CALL LSTIMER('MP2workhorse GammaLoop: ',TS2,TE2,DECinfo%output,ForcePrint)
 
  if(master) call LSTIMER('MP2-INT LOOP',tcpu,twall,DECinfo%output)
  call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
@@ -1484,6 +1506,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
  call mem_dealloc(EVvirt)
  call mem_dealloc(V)
  
+ CALL LSTIMER('MP2workhorse Dealloc: ',TS2,TE2,DECinfo%output,ForcePrint)
 
  ! **********************************************************************************
  ! *                         STEP 3 IN MP2-INTEGRAL SCHEME                          *
@@ -1570,6 +1593,8 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
     ! Put amplitudes into output array in the correct order
     toccEOS=array4_init(dimocc)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nvirt,noccEOS,noccEOS,nvirt,[1,3,4,2],0.0E0_realk,toccEOS%val)
+
+    CALL LSTIMER('MP2workhorse toccEOS: ',TS2,TE2,DECinfo%output,ForcePrint)
     
 ! ENDIF
 ! IF(.NOT.DECinfo%OnlyOccPart)THEN
@@ -1615,6 +1640,8 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
     end if
     
 
+    CALL LSTIMER('MP2workhorse gvirt: ',TS2,TE2,DECinfo%output,ForcePrint)
+
     ! Reorder: tmp1(a,b,J,k) --> tmp2(J,a,b,k)
     dim2=dim1
     do counter=1,nocctot
@@ -1635,6 +1662,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
     gvirtEOS=array4_init(dimvirt)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nocc,nvirtEOS,nvirtEOS,nocctot,[3,1,2,4],0.0E0_realk,gvirtEOS%val)
     
+    CALL LSTIMER('MP2workhorse gvirtEOS: ',TS2,TE2,DECinfo%output,ForcePrint)
     
     ! Amplitudes
     ! ==========
@@ -1664,6 +1692,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
     call array_reorder_4d(1.0E0_realk,tmp1%p,nocc,nvirtEOS,nvirtEOS,nocc,[3,1,2,4],0.0E0_realk,tvirtEOS%val)
 ! ENDIF
 
+    CALL LSTIMER('MP2workhorse tvirtEOS: ',TS2,TE2,DECinfo%output,ForcePrint)
 
  ! Finalize integrals used for first order MP2 integrals
  ! *****************************************************
@@ -1728,6 +1757,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
  end if FirstOrder2
 
+ CALL LSTIMER('MP2workhorse FirstOrder: ',TS2,TE2,DECinfo%output,ForcePrint)
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
  MemInGBCollected = MemInGBCollected - size(tmp1%p,kind=long)*8.0E-9_realk - size(tmp2%p,kind=long)*8.0E-9_realk
@@ -1868,6 +1898,7 @@ if(master) then
    call LSTIMER('MP2-INT TOTAL',tcpuTOT,twallTOT,DECinfo%output)
    call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
 end if
+CALL LSTIMER('MP2workhorse Finalize: ',TS2,TE2,DECinfo%output,ForcePrint)
 
 end subroutine MP2_integrals_and_amplitudes_workhorse
 
@@ -1946,6 +1977,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ChangedDefault = .FALSE.
 #ifdef VAR_TIME
   ForcePrint = .TRUE.
+#else
+  ForcePrint = .FALSE.
 #endif
   !The 3 Options 
 !  call time_start_phase(PHASE_WORK)   
