@@ -9709,6 +9709,7 @@ C
   300 STOP 'Error when reading in CC_CTOMAG'
 C
   999 CONTINUE
+      CALL GPCLOSE(LUPROP,'KEEP')
 C
       RETURN
       END

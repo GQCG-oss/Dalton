@@ -2900,17 +2900,22 @@ C *** Option 12 >RAS3 E<   RAS3 electrons
 C
  2000 CONTINUE
       NASHT = 0
-      DO 2100 I = 1,NSYM
+      DO, I = 1,NSYM
          NASH(I) = NAS1(I) + NAS2(I) + NAS3(I)
          NASHT   = NASHT   + NASH(I)
- 2100 CONTINUE
+      END DO
       IF (NHL1MX .NE. -1 .OR. NHL1MN .NE. -1) THEN
          NAS1T = 0
-         DO 2200 I = 1,NSYM
+         DO, I = 1,NSYM
             NAS1T = NAS1T + NAS1(I)
- 2200    CONTINUE
+         END DO
          NELMN1 = 2*NAS1T - NHL1MX
          NELMX1 = 2*NAS1T - NHL1MN
+      END IF
+      IF (MCTYPE .GT. 0 .AND. NACTEL .EQ. -1) THEN
+         INPERR = INPERR + 1
+         WRITE(LUPRI,'(/A)')
+     &   ' *CONFIG ERROR: .ELECTRONS not specified'
       END IF
       RETURN
 C ----------------------------------------------
@@ -5671,10 +5676,15 @@ C ***** Optimization information *****
 C       FLAG(27) : use determinants
 C
       IF (MCTYPE .GT. 0 .OR. (FLAG(21) .AND. .NOT. AUTOCC)) THEN
+         IF (DOMC) THEN
+            NWOPT_print = NWOPT
+         ELSE ! no MCSCF, only CI
+            NWOPT_print = 0
+         END IF
          IF (FLAG(27)) THEN
-            WRITE (IWUNIT,5010) NCONF,NWOPT,NVAR
+            WRITE (IWUNIT,5010) NCONF,NWOPT_print,NVAR
          ELSE
-            WRITE (IWUNIT,5000) NCONF,NWOPT,NVAR
+            WRITE (IWUNIT,5000) NCONF,NWOPT_print,NVAR
          END IF
       END IF
  5000 FORMAT (/,5X,'Optimization information',
