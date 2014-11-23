@@ -5676,15 +5676,16 @@ C ***** Optimization information *****
 C       FLAG(27) : use determinants
 C
       IF (MCTYPE .GT. 0 .OR. (FLAG(21) .AND. .NOT. AUTOCC)) THEN
-         IF (DOMC) THEN
+         IF (DOMC .OR. MCTYPE .EQ. 0) THEN
             NWOPT_print = NWOPT
          ELSE ! no MCSCF, only CI
             NWOPT_print = 0
          END IF
+         NVAR_print = NCONF + NWOPT_print
          IF (FLAG(27)) THEN
-            WRITE (IWUNIT,5010) NCONF,NWOPT_print,NVAR
+            WRITE (IWUNIT,5010) NCONF,NWOPT_print,NVAR_print
          ELSE
-            WRITE (IWUNIT,5000) NCONF,NWOPT_print,NVAR
+            WRITE (IWUNIT,5000) NCONF,NWOPT_print,NVAR_print
          END IF
       END IF
  5000 FORMAT (/,5X,'Optimization information',
