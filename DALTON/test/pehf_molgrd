@@ -152,10 +152,10 @@ cat > pehf_molgrd.dal <<'%EOF%'
 *PEQM
 .LJ
 8
+1.9080  0.0860
+1.9080  0.0860
+1.9080  0.0860
 1.6612  0.2100
-1.9080  0.0860
-1.9080  0.0860
-1.9080  0.0860
 0.6000  0.0157
 0.6000  0.0157
 0.6000  0.0157
@@ -192,10 +192,10 @@ ERROR[1]='INCORRECT SETTINGS FOR ANALYTICAL PE GRADIENT'
 #
 # LJ Energy
 #
-CRIT1=`$GREP "Dispersion 6 * \-0*\.00574339...." $log | wc -l`
-CRIT2=`$GREP "Repulsion 12 * 0*\.00879103...." $log | wc -l`
-CRIT3=`$GREP "Total PE energy: * \-0*\.01613676..." $log | wc -l`
-CRIT4=`$GREP "Final HF energy: * \-188\.31434428...." $log | wc -l`
+CRIT1=`$GREP "Dispersion 6 * \-0*\.00579926...." $log | wc -l`
+CRIT2=`$GREP "Repulsion 12 * 0*\.00692234...." $log | wc -l`
+CRIT3=`$GREP "Total PE energy: * \-0*\.01806131..." $log | wc -l`
+CRIT4=`$GREP "Final HF energy: * \-188\.31626883...." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
 CTRL[2]=8
 ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
@@ -203,10 +203,10 @@ ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Molecular gradient
 #
-CRIT1=`$GREP "C *   0\.03626..... * \-0\.01346..... * \-0\.00001....." $log | wc -l`
+CRIT1=`$GREP "C *   0\.03580..... * \-0\.01317..... * \-0\.00001....." $log | wc -l`
 CRIT2=`$GREP "C * \-0\.03875..... *   0\.05142..... *   0\.00000....." $log | wc -l`
 CRIT3=`$GREP "C *   0\.00591..... * \-0\.03723..... * \-0\.00000....." $log | wc -l`
-CRIT4=`$GREP "O * \-0\.00184..... * \-0\.00009..... *   0\.00000....." $log | wc -l`
+CRIT4=`$GREP "O * \-0\.00117..... * \-0\.00089..... *   0\.00000....." $log | wc -l`
 CRIT5=`$GREP "H * \-0\.00677..... * \-0\.00121..... *   0\.00000....." $log | wc -l`
 CRIT6=`$GREP "H *   0\.00404..... *   0\.00521..... * \-0\.00000....." $log | wc -l`
 CRIT7=`$GREP "H * \-0\.00598..... * \-0\.00507..... *   0\.00000....." $log | wc -l`
