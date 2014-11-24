@@ -27,9 +27,11 @@ class decinfo_class:
       self.nfragjobs  = 0
       self.sfragjobs  = 0
       self.pfragjobs  = 0
+      self.nesti       = 0
       self.sfrags     = []
       self.pfrags     = []
-      self.frags      = []
+      self.esti       = []
+      self.jobs       = []
       self.ecorrocc   = []
       self.ecorrvirt  = []
       self.ecorrlag   = []
@@ -99,6 +101,7 @@ class decinfo_class:
       found_Ec = False
       found_os = False
       found_vs = False
+      esti     = False
 
       allfound = False
 
@@ -120,7 +123,7 @@ class decinfo_class:
             self.nfragjobs = int(line.split()[-1])
             found_nf = True
           if ("SUMMARY FOR PAIR ESTIMATE ANALYSIS" in line):
-            self.ecorrtype.append("Estimated")
+            esti = True
           #READ DEC CORRELATION ENEGIES
           # RPA
           if("RPA occupied   correlation energy :"  in line):
@@ -222,6 +225,14 @@ class decinfo_class:
         print "All basic DEC/CC information has been found\n"
 
 
+      if (esti):
+        self.nesti = self.sfragjobs*(self.sfragjobs-1)/2 # tot num of pairs
+        for i in range(self.nesti):
+          self.esti.append(fragment_class())
+          self.esti[i].ecorrocc.append(0.0)
+      for i in range(self.nfragjobs):
+        self.jobs.append(fragment_class())
+
       for i in range(self.pfragjobs):
         self.pfrags.append(fragment_class())
         for j in range(len(self.ecorrtype)):
@@ -259,6 +270,26 @@ class decinfo_class:
         exclude = False
         if("(fourth order)" in filelines[i] or "(fifth order)" in filelines[i]):
           exclude = True
+
+        # Get estimated pairs info:
+        if("Estimated occupied pair energies" in filelines[i] and not exclude):
+          for j in range(self.nesti):
+            self.esti[j].fragid    = int(filelines[i+skip+j].split()[elfragid])
+            self.esti[j].fragpid   = int(filelines[i+skip+j].split()[elfragpid])
+            self.esti[j].dist      = float(filelines[i+skip+j].split()[2])
+            self.esti[j].ecorrocc[0]  = float(filelines[i+skip+j].split()[elenpair])
+
+        # Get job size:
+        if("DEC FRAGMENT JOB LIST" in filelines[i]):
+           o = 5 # offset
+           eljobsize = 1
+           eljobid1  = 2
+           eljobid2  = 3
+           for j in range(self.nfragjobs):
+              self.jobs[j].dist    = int(filelines[i+o+j].split()[eljobsize])
+              self.jobs[j].fragid  = int(filelines[i+o+j].split()[eljobid1])
+              # not valid for single fragments!!!
+              self.jobs[j].fragpid = int(filelines[i+o+j].split()[eljobid2])
 
         for k in range(len(self.ecorrtype)):
           if(self.ecorrtype[k]+" Lagrangian single energies" in filelines[i]):

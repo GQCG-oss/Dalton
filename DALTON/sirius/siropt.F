@@ -2637,9 +2637,9 @@ C
          IORBI  = IORB(ISYM)
 C
          JFCDIA = KFCDIA - 1 + IORBI
-         DO 170 I = 1,NORBI
+         DO I = 1,NORBI
             WRK(JFCDIA+I) = FC( IIORB(ISYM) + IROW(I+1) )
-  170    CONTINUE
+         END DO
 C
          JFOCK  = KFOCK + I2ORB(ISYM)
          NOCCI  = NOCC(ISYM)

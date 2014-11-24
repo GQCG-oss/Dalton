@@ -22,7 +22,8 @@
 !
 !
 C
-!#define SIRFCK_DEBUG
+! -- FILE: DALTON/sirius/sirfck.F --
+#define noSIRFCK_DEBUG
 C  /* Deck sirfck */
       SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRECT,
      &                  WRK,LWORK)
@@ -2795,4 +2796,4 @@ C     -------------
 
       RETURN
       END
-
+! -- end of sirius/sirfck.F --

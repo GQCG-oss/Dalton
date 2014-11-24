@@ -24,15 +24,6 @@ MODULE AGC_CPU_OBS_TRMODDtoASegP
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)
-  DO iP = 1,nPrimQ*nPasses
-   DO iTUVQ=1, 10
-    DO iTUVP=1,  4
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
-!$OMP END DO
 !$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
@@ -41,6 +32,11 @@ MODULE AGC_CPU_OBS_TRMODDtoASegP
 !$OMP         Tmp0,&
 !$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) 
   DO iP = 1,nPrimQ*nPasses
+   DO iTUVQ=1, 10
+    DO iTUVP=1,  4
+     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
     iPassP = (iP-1)/nPrimQ + 1
@@ -153,15 +149,6 @@ MODULE AGC_CPU_OBS_TRMODDtoASegP
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)
-  DO iP = 1,nPrimQ*nPasses
-   DO iTUVQ=1, 20
-    DO iTUVP=1,  4
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
-!$OMP END DO
 !$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
@@ -170,6 +157,11 @@ MODULE AGC_CPU_OBS_TRMODDtoASegP
 !$OMP         Tmp0,&
 !$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) 
   DO iP = 1,nPrimQ*nPasses
+   DO iTUVQ=1, 20
+    DO iTUVP=1,  4
+     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
     iPassP = (iP-1)/nPrimQ + 1
@@ -332,15 +324,6 @@ MODULE AGC_CPU_OBS_TRMODDtoASegP
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)
-  DO iP = 1,nPrimQ*nPasses
-   DO iTUVQ=1, 20
-    DO iTUVP=1, 10
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
-!$OMP END DO
 !$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
@@ -350,6 +333,11 @@ MODULE AGC_CPU_OBS_TRMODDtoASegP
 !$OMP         Tmp1,&
 !$OMP         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) 
   DO iP = 1,nPrimQ*nPasses
+   DO iTUVQ=1, 20
+    DO iTUVP=1, 10
+     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
     iPassP = (iP-1)/nPrimQ + 1

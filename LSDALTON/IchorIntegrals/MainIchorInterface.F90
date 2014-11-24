@@ -23,7 +23,7 @@ Subroutine IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-     & OutputStorage,lupri)
+     & OutputStorage,ForceCPU,ForceGPU,lupri)
   use IchorErimod
   use IchorPrecisionMod
 implicit none
@@ -143,6 +143,8 @@ Integer,intent(in) :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
 real(realk),intent(inout)::OutputStorage(OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5)
 !> Logical unit number of output file.
 Integer,intent(in) :: lupri
+!> Should the CPU/GPU code be enforced
+logical,intent(in) :: ForceCPU,ForceGPU
 
 call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
@@ -168,7 +170,7 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-     & OutputStorage,lupri)
+     & OutputStorage,ForceCPU,ForceGPU,lupri)
 
 end Subroutine IchorEriInterface
 
@@ -196,7 +198,7 @@ Subroutine IchorEriMemInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-     & OutputStorage,lupri)
+     & OutputStorage,ForceCPU,ForceGPU,lupri)
   use IchorErimod
   use IchorPrecisionMod
 implicit none
@@ -316,6 +318,8 @@ Integer,intent(in) :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
 real(realk),intent(inout)::OutputStorage(OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5)
 !> Logical unit number of output file.
 Integer,intent(in) :: lupri
+!> Should the CPU/GPU code be enforced
+logical,intent(in) :: ForceCPU,ForceGPU
 
 call IchorEriMem(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
@@ -341,7 +345,7 @@ call IchorEriMem(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-     & OutputStorage,lupri)
+     & OutputStorage,ForceCPU,ForceGPU,lupri)
 
 end Subroutine IchorEriMemInterface
 

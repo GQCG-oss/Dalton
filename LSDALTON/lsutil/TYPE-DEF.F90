@@ -40,6 +40,8 @@ LOGICAL  :: CONTANG  !Specifies that the AO-shell ordering is contracted first t
 LOGICAL  :: NOGCINTEGRALTRANSFORM
 LOGICAL  :: FORCEGCBASIS
 LOGICAL  :: noOMP
+LOGICAL  :: IchorForceCPU
+LOGICAL  :: IchorForceGPU
 LOGICAL  :: UNRES
 LOGICAL  :: CFG_LSDALTON !.RUN LINSCA SPECIFIED 
 LOGICAL  :: TRILEVEL
@@ -223,6 +225,8 @@ LOGICAL  :: NOBQBQ ! switches off the point charge--point charge repulsion contr
 LOGICAL  :: doMPI
 LOGICAL  :: MasterWakeSlaves
 LOGICAL  :: noOMP
+LOGICAL  :: IchorForceCPU
+LOGICAL  :: IchorForceGPU
 LOGICAL  :: CFG_LSDALTON
 LOGICAL  :: DOPASS
 LOGICAL  :: DENSFIT

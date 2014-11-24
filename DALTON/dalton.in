@@ -58,7 +58,6 @@ optf=0
 optn=0
 opti=0
 opto=0
-potfil=
 frl=rel
 optx=0
 opt_nobackup=0
@@ -226,87 +225,68 @@ if [ -z $dalfil ] && [ -z "$1" ]; then
     exit 1
 fi
 
-if [ ! -z $dalfil ]; then
+if [ -n "$dalfil" ]; then
     # dal given as -dal <filename>
     # remove dal-ending
     dalfil=`echo $dalfil | sed "s/\.$DALEXT//"`
-    if [ -z $molfil ]; then
-	if [ -r ${dalfil}.$MOLEXT ]; then
-	    # molfil named the same as dalfil
-	    molfil=$dalfil
-	else
-	    # molecule defined inside dalfil
-	    molfil=''
-	fi
-    else
+    if [ -n "$molfil" ]; then
         molfil=`echo $molfil | sed "s/\.$MOLEXT//"`
+	    # otherwise molecule assumed defined inside dalfil
     fi
-    if [ -z $potfil ]; then
-	if [ -r ${dalfil}.$POTEXT ]; then
-	    potfil=$dalfil
-	fi
-    else
+    if [ -n "$potfil" ]; then
         potfil=`echo $potfil | sed "s/\.$POTEXT//"`
     fi
-    if [ -z $pcmfil ]; then
-	if [ -r ${dalfil}.$PCMEXT ]; then
-	    pcmfil=$dalfil
-	fi
-    else
+    if [ -n "$pcmfil" ]; then
         pcmfil=`echo $pcmfil | sed "s/\.$PCMEXT//"`
     fi
 elif [ -n "$1" ]; then
     # input files given as arguments in the end of the dalton command
     dalfil=`echo $1 | sed "s/\.$DALEXT//"`
     if [ -z "$2" ]; then
-	# only one argument given
-	if [ -r ${dalfil}.$MOLEXT ]; then
-	    # molfil named the same as dalfil
-	    molfil=$dalfil
-	else
-	    # molecule defined inside dalfil
-	    molfil=''
-	fi
+	    # only one argument given
+	    if [ -r ${dalfil}.$MOLEXT ]; then
+	        # molfil named the same as dalfil
+	        molfil=$dalfil
+	        # otherwise molecule assumed defined inside dalfil
+    	fi
+        if [ -r ${dalfil}.$POTEXT ]; then
+            potfil=$dalfil
+        fi
+        if [ -r ${dalfil}.$PCMEXT ]; then
+            pcmfil=$dalfil
+        fi
     else
         molfil=`echo $2 | sed "s/\.$MOLEXT//"`
-	if [ -z "$3" ]; then
-	# three arguments NOT given. Check for pot and pcm files
-	    if [ -r ${dalfil}.$POTEXT ]; then
-		potfil=$dalfil
-	    elif [ -r ${dalfil}.$PCMEXT ]; then
-		pcmfil=$dalfil
-	    fi
-	else
-	# three arguments given. Check if it is pot or pcm
+    	if [ -n "$3" ]; then
             tmpfil=`echo $3 | sed "s/\.$POTEXT//" | sed "s/\.$PCMEXT//"`
-	    if [ -r ${tmpfil}.$POTEXT ]; then
-		potfil=$tmpfil
-	    elif [ -r ${tmpfil}.$PCMEXT ]; then
-		pcmfil=$tmpfil
-	    fi
-	fi
+            if [ -r ${tmpfil}.$POTEXT ]; then
+                potfil=$tmpfil
+            elif [ -r ${tmpfil}.$PCMEXT ]; then
+                pcmfil=$tmpfil
+            fi
+        fi
     fi
 fi
 
-if [ -z $potfil ] && [ -z $pcmfil ]; then
+if [ -z "$potfil" ] && [ -z "$pcmfil" ]; then
     if [ "$dalfil" = "$molfil" ] || [ -z "$molfil" ]; then
-	outnam=$dalfil
+	    outnam=$dalfil
     else
-	outnam=${dalfil}_${molfil}
+	    outnam=${dalfil}_${molfil}
     fi
     input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
-elif [ -n $potfil ]; then
+elif [ -n "$potfil" ]; then
     if [ "$dalfil" = "$molfil" ] && [ "$dalfil" = "$potfil" ] ; then
-	outnam=$dalfil
+	    outnam=$dalfil
     else
-	outnam=${dalfil}_${molfil}_${potfil}
+	    outnam=${dalfil}_${molfil}_${potfil}
     fi
     input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
-elif [ -n $pcmfil ]; then
+elif [ -n "$pcmfil" ]; then
     if [ "$dalfil" = "$molfil" ] && [ "$dalfil" = "$pcmfil" ] ; then
-	outnam=$dalfil
+	    outnam=$dalfil
     else
-	outnam=${dalfil}_${molfil}_${pcmfil}
+	    outnam=${dalfil}_${molfil}_${pcmfil}
     fi
     input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $pcmfil.$PCMEXT"
 fi
@@ -420,21 +400,6 @@ ierr=0
         echo "$WRKDIR/$pcmfil.$PCMEXT for PCM does not exist or is not readable"
         ierr=1
      fi
-   fi
-
-   if [ -s $WRKDIR/mep.inp ] ; then
-     cp $WRKDIR/mep.inp MEP.INP
-   fi
-
-# temporary (I swear!) solution for fragment density embedding stuff
-   if [ -s $WRKDIR/core.dat ] ; then
-     cp $WRKDIR/core.dat .
-   fi
-   if [ -s $WRKDIR/pe_density.bin ] ; then
-     cp $WRKDIR/pe_density.bin .
-   fi
-    if [ -s $WRKDIR/pe_fock_1.bin ] ; then
-     cp $WRKDIR/pe_fock_*.bin .
    fi
 
    # put files listed under -put to scratch directory

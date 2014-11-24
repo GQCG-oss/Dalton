@@ -1307,6 +1307,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.DO NOT SAVE GAB');  
            INTEGRAL%saveGABtoMem = .FALSE. 
         CASE ('.NO OMP');  INTEGRAL%noOMP = .TRUE. 
+        CASE ('.ICHORGPU');  INTEGRAL%IchorForceGPU = .TRUE. 
+        CASE ('.ICHORCPU');  INTEGRAL%IchorForceCPU = .TRUE. 
         CASE ('.NO PASS');  INTEGRAL%DOPASS = .FALSE. 
         CASE ('.NO CS');  INTEGRAL%CS_SCREEN = .FALSE. 
         CASE ('.NO PS');  INTEGRAL%PS_SCREEN = .FALSE. 

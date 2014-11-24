@@ -1007,7 +1007,7 @@ contains
        ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
        !=====================================================================================
        ! Warning the inverse is not unique so in order to make sure all slaves have the same
-       ! inverse matrix we calculate it on the master a BCAST to slaves
+       ! inverse matrix we calculate it on the master and BCAST to slaves
 
        !Create the inverse AlphaBeta = (alpha|beta)^-1
        call mem_alloc(work1,naux)
