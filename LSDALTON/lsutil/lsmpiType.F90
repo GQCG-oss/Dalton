@@ -5030,14 +5030,16 @@ contains
   !> \brief simple mpi_win_fence call for dma/rma
   !> \author Patrick Ettenhuber
   !> \date September 2012
-  subroutine lsmpi_win_fence_simple(win)
+  subroutine lsmpi_win_fence_simple(win,assert)
     implicit none
     integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(in),optional :: assert
 #ifdef VAR_MPI
-    integer(kind=ls_mpik) :: ierr,nr
+    integer(kind=ls_mpik) :: ierr,as
     IERR=0
-    nr=0
-    call MPI_WIN_FENCE(nr,win,ierr)
+    as=0
+    if(present(assert)) as = assert
+    call MPI_WIN_FENCE(as,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_win_fence)",ierr)
     endif
@@ -5206,7 +5208,7 @@ contains
   !=========================================================!
   subroutine lsmpi_put_realk(buf,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5225,7 +5227,7 @@ contains
   end subroutine lsmpi_put_realk
   subroutine lsmpi_put_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5255,7 +5257,7 @@ contains
   end subroutine lsmpi_put_realkV_wrapper8
   subroutine lsmpi_put_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5275,7 +5277,7 @@ contains
   end subroutine lsmpi_put_realkV
   subroutine lsmpi_put_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5326,7 +5328,7 @@ contains
   end subroutine lsmpi_put_realkV_parts_wrapper8
   subroutine lsmpi_put_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5366,12 +5368,12 @@ contains
 
   subroutine lsmpi_rput_realkV4(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik),intent(in) :: req
+    integer(kind=ls_mpik),intent(inout) :: req
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: n,ierr
     integer(kind=MPI_ADDRESS_KIND) :: offset
@@ -5389,18 +5391,17 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rput_realkV4)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rput_realkV4
 
   subroutine lsmpi_rput_realkV8(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik),intent(in) :: req
+    integer(kind=ls_mpik),intent(inout) :: req
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: n,ierr
     integer(kind=MPI_ADDRESS_KIND) :: offset
@@ -5423,7 +5424,6 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rput_realkV4)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rput_realkV8
 
@@ -5433,7 +5433,7 @@ contains
   !=========================================================!
   subroutine lsmpi_get_int8(buf,pos,dest,win)
     implicit none
-    integer(kind=8),intent(in) :: buf
+    integer(kind=8),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5452,7 +5452,7 @@ contains
   end subroutine lsmpi_get_int8
   subroutine lsmpi_get_int4(buf,pos,dest,win)
     implicit none
-    integer(kind=4),intent(in) :: buf
+    integer(kind=4),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5471,7 +5471,7 @@ contains
   end subroutine lsmpi_get_int4
   subroutine lsmpi_get_realk(buf,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5490,7 +5490,7 @@ contains
   end subroutine lsmpi_get_realk
   subroutine lsmpi_get_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5520,7 +5520,7 @@ contains
   end subroutine lsmpi_get_realkV_wrapper8
   subroutine lsmpi_get_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5540,7 +5540,7 @@ contains
   end subroutine lsmpi_get_realkV
   subroutine lsmpi_get_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5584,7 +5584,7 @@ contains
   end subroutine lsmpi_get_realkV_parts_wrapper8
   subroutine lsmpi_get_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5622,7 +5622,7 @@ contains
   !=========================================================!
   subroutine lsmpi_rget_int8(buf,pos,dest,win,req)
     implicit none
-    integer(kind=8),intent(in) :: buf
+    integer(kind=8),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5644,12 +5644,11 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_int8)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rget_int8
   subroutine lsmpi_rget_int4(buf,pos,dest,win,req)
     implicit none
-    integer(kind=4),intent(in) :: buf
+    integer(kind=4),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5674,7 +5673,7 @@ contains
   end subroutine lsmpi_rget_int4
   subroutine lsmpi_rget_realk(buf,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5695,12 +5694,11 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_realk)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rget_realk
   subroutine lsmpi_rget_realkV_wrapper8(buf,nelms,pos,dest,win,req,nreqs)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5763,11 +5761,13 @@ contains
       endif
 
     endif
+#else
+    nreqs=0
 #endif
   end subroutine lsmpi_rget_realkV_wrapper8
   subroutine lsmpi_rget_realkV_wrapper4(buf,nelms,pos,dest,win,req,nreqs)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5830,12 +5830,14 @@ contains
       endif
 
     endif
+#else
+    nreqs=0
 #endif
   end subroutine lsmpi_rget_realkV_wrapper4
 
   subroutine lsmpi_rget_realkV4(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5862,7 +5864,7 @@ contains
   end subroutine lsmpi_rget_realkV4
   subroutine lsmpi_rget_realkV8(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5947,7 +5949,7 @@ contains
   !=========================================================!
   subroutine lsmpi_acc_int8(buf,pos,dest,win)
     implicit none
-    integer(kind=8),intent(in) :: buf
+    integer(kind=8),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5965,7 +5967,7 @@ contains
   end subroutine lsmpi_acc_int8
   subroutine lsmpi_acc_int4(buf,pos,dest,win)
     implicit none
-    integer(kind=4),intent(in) :: buf
+    integer(kind=4),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5983,7 +5985,7 @@ contains
   end subroutine lsmpi_acc_int4
   subroutine lsmpi_acc_realk(buf,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -6001,7 +6003,7 @@ contains
   end subroutine lsmpi_acc_realk
   subroutine lsmpi_acc_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6030,7 +6032,7 @@ contains
   end subroutine lsmpi_acc_realkV_wrapper8
   subroutine lsmpi_acc_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6050,7 +6052,7 @@ contains
   end subroutine lsmpi_acc_realkV
   subroutine lsmpi_acc_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6088,7 +6090,7 @@ contains
   end subroutine lsmpi_acc_realkV_parts_wrapper8
   subroutine lsmpi_acc_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6128,7 +6130,7 @@ contains
 
   subroutine lsmpi_racc_realkV4(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6156,7 +6158,7 @@ contains
   end subroutine lsmpi_racc_realkV4
   subroutine lsmpi_racc_realkV8(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6333,6 +6335,72 @@ contains
 #endif
   end subroutine lsmpi_wait
 
+  subroutine lsmpi_win_post(group,win,assert)
+     implicit none
+     integer(kind=ls_mpik), intent(in) :: group
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik), intent(in), optional :: assert
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_0
+     as = 0
+     if(present(assert))as=assert
+     call MPI_WIN_POST(group,as,win,ierr)
+#endif
+  end subroutine lsmpi_win_post
+
+  subroutine lsmpi_win_start(group,win,assert)
+     implicit none
+     integer(kind=ls_mpik), intent(in) :: group
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik), intent(in), optional :: assert
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_MPI
+     as = 0
+     if(present(assert))as=assert
+     call MPI_WIN_START(group,as,win,ierr)
+#endif
+  end subroutine lsmpi_win_start
+
+  subroutine lsmpi_win_complete(win)
+     implicit none
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_0
+     call MPI_WIN_COMPLETE(win,ierr)
+#endif
+  end subroutine lsmpi_win_complete
+  subroutine lsmpi_win_wait(win)
+     implicit none
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_0
+     call MPI_WIN_WAIT(win,ierr)
+#endif
+  end subroutine lsmpi_win_wait
+
+  subroutine lsmpi_comm_group(comm,group)
+     implicit none
+     integer(kind=ls_mpik), intent(in) :: comm
+     integer(kind=ls_mpik), intent(inout) :: group
+     integer(kind=ls_mpik) :: ierr
+     ierr = 0_ls_mpik
+#ifdef VAR_MPI
+     call MPI_COMM_GROUP(comm, group, ierr) 
+#endif
+  end subroutine lsmpi_comm_group
+  subroutine lsmpi_group_free(group)
+     implicit none
+     integer(kind=ls_mpik), intent(inout) :: group
+     integer(kind=ls_mpik) :: ierr
+     ierr = 0_ls_mpik
+#ifdef VAR_MPI
+     call MPI_GROUP_FREE(group, ierr) 
+#endif
+  end subroutine lsmpi_group_free
 end module lsmpi_type
 
 

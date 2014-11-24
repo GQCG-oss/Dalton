@@ -4,7 +4,8 @@ MODULE IntegralInterfaceIchorMod
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
        & BASISSETLIBRARYITEM
   use basis_type, only: free_basissetinfo
-  use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam
+  use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam,&
+       & nullifymainbasis
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
   use LSparameters
@@ -525,9 +526,12 @@ CONTAINS
             filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
             ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
             !          print*,'filename(1:ifilename-1)',filename(1:ifilename-1)
+            call nullifyMainBasis(UNITTESTBASIS(A))
             CALL Build_basis(LUPRI,IPRINT,&
                  &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
                  &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
+            UNITTESTBASIS(A)%WBASIS(RegBasParam) = .TRUE.
+
             SETTING%BASIS(A)%p => UNITTESTBASIS(A)
             call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
          enddo

@@ -1078,13 +1078,11 @@ subroutine print_dec_info()
           else
 
              if(jobs%esti(jobdone)) then
-                call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                     & EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
-                     & nfrags,PairFragment,grad)
+                call pair_driver(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
+                     & PairFragment,grad)
              else
-                call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                     & AtomicFragments(atomA), AtomicFragments(atomB),&
-                     & nfrags,PairFragment,grad)
+                call pair_driver(AtomicFragments(atomA), AtomicFragments(atomB),&
+                     & PairFragment,grad)
              end if
 
           end if

@@ -1074,7 +1074,7 @@ c--------------------------------------------------------------------
 #else
       double precision vs(*),vabkl(*)
 #endif
-      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+C      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
 
       call qenter('sortv')
 

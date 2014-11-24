@@ -553,14 +553,14 @@ C  /* Deck noddim */
 #include "aobtch.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-      XPAR(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YPAR(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZPAR(I) = PT(IBTAND(ISYMAX(3,1),I))
+
+      XPAR(I) = PT(IAND(ISYMAX(1,1),I))
+      YPAR(I) = PT(IAND(ISYMAX(2,1),I))
+      ZPAR(I) = PT(IAND(ISYMAX(3,1),I))
 C
       ISTBLA = ISTBBT(A)
       ISTBLB = ISTBBT(B)
-      ISTBLR = IBTOR(ISTBLA,ISTBLB)
+      ISTBLR = IOR(ISTBLA,ISTBLB)
       MLTPR  = MULT(ISTBLR)
 C
       NCTFAB = NCTFBT(A)*NCTFBT(B)
@@ -591,7 +591,7 @@ C
             R1 = 0
             FACMAX = D0
             DO R = 0, MAXOPR
-            IF (IBTAND(R,ISTBLR) .EQ. 0) THEN
+            IF (IAND(R,ISTBLR) .EQ. 0) THEN
                R1 = R1 + 1
                DST2 = (CORXBT(A) - XPAR(R)*CORXBT(B))**2
      &              + (CORYBT(A) - YPAR(R)*CORYBT(B))**2

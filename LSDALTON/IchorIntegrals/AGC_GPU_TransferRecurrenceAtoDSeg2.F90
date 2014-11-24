@@ -26,14 +26,6 @@ MODULE AGC_GPU_OBS_TRMODAtoDSeg2
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)
-  DO iP = 1,nPasses
-   DO iTUVQ=1, 10
-    DO iTUVP=1, 35
-     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$ACC         iP,iPrimQ,iPrimP,iPrimQP,iPassP,&
@@ -49,6 +41,13 @@ MODULE AGC_GPU_OBS_TRMODAtoDSeg2
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
+!$ACC LOOP SEQ
+   DO iTUVQ=1, 10
+!$ACC LOOP SEQ
+    DO iTUVP=1, 35
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimQP=1,nPrimQ*nPrimP
     iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ
     iPrimP = (iPrimQP-1)/nPrimQ + 1
@@ -313,14 +312,6 @@ MODULE AGC_GPU_OBS_TRMODAtoDSeg2
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)
-  DO iP = 1,nPasses
-   DO iTUVQ=1, 20
-    DO iTUVP=1, 35
-     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$ACC         iP,iPrimQ,iPrimP,iPrimQP,iPassP,&
@@ -337,6 +328,13 @@ MODULE AGC_GPU_OBS_TRMODAtoDSeg2
 !$ACC       Bexp,Cexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
+!$ACC LOOP SEQ
+   DO iTUVQ=1, 20
+!$ACC LOOP SEQ
+    DO iTUVP=1, 35
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimQP=1,nPrimQ*nPrimP
     iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ
     iPrimP = (iPrimQP-1)/nPrimQ + 1

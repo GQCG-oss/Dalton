@@ -977,22 +977,32 @@ subroutine DEC_meaningful_input(config)
      ! both occupied and virtual localization.
      OrbLocCheck: if( (.not. config%decomp%cfg_mlo) .or. (.not. config%decomp%cfg_lcv) &
           &  .or. (.not. config%decomp%cfg_lcm) ) then
+        !Either .LCM or .PSM/.PFM/... keyword was not used 
+        IF(.NOT.DECinfo%use_canonical)THEN
+           ! Turn on LCM scheme
+           IF(.NOT.config%decomp%cfg_lcv)THEN
+              WRITE(config%lupri,*)'Warning **DEC and **CC enforces the use of the .LCM keyword'
+              config%decomp%cfg_lcv = .true.
+              config%decomp%cfg_lcm=.true.
+           ENDIF
+           IF(.NOT.config%decomp%cfg_mlo)THEN
+              ! Turn on orbital localization
+              config%decomp%cfg_mlo = .true.
+           
+              ! use orbspread localization function and line search
+              config%davidOrbLoc%orbspread=.true.
+              config%davidOrbLoc%linesearch=.true.
 
-        ! Turn on LCM scheme
-        config%decomp%cfg_lcv = .true.
-        config%decomp%cfg_lcm=.true.
-
-        ! Turn on orbital localization
-        config%decomp%cfg_mlo = .true.
-
-        ! use orbspread localization function and line search
-        config%davidOrbLoc%orbspread=.true.
-        config%davidOrbLoc%linesearch=.true.
-
-        ! Exponent 2 for both occ and virt orbitals
-        config%decomp%cfg_mlo_m(1) = 2
-        config%decomp%cfg_mlo_m(2) = 2
-
+              ! Exponent 2 for both occ and virt orbitals
+              config%decomp%cfg_mlo_m(1) = 2
+              config%decomp%cfg_mlo_m(2) = 2   
+           ELSE
+              !orbital localization already turned on by keywords.
+              !Use user specified input!
+           ENDIF
+        else
+           !No reason to Localize when Using canonical Orbitals
+        endif
         ! For the release we only include DEC-MP2
 #ifndef MOD_UNRELEASED
         if(DECinfo%ccmodel/=MODEL_MP2 .and. (.not. DECinfo%full_molecular_cc) ) then
@@ -1001,7 +1011,6 @@ subroutine DEC_meaningful_input(config)
            call lsquit('DEC is currently only available for the MP2 model!',-1)
         end if
 #endif
-
      end if OrbLocCheck
 
   end if DECcalculation
@@ -1104,8 +1113,10 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
-        CASE('.SCALAPACKNODES');
-           READ(LUCMD,*) infpar%ScalapackNodes
+        CASE('.SCALAPACKGROUPSIZE');
+           READ(LUCMD,*) infpar%ScalapackGroupSize
+        CASE('.SCALAPACKAUTOGROUPSIZE');
+           infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
@@ -1296,6 +1307,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.DO NOT SAVE GAB');  
            INTEGRAL%saveGABtoMem = .FALSE. 
         CASE ('.NO OMP');  INTEGRAL%noOMP = .TRUE. 
+        CASE ('.ICHORGPU');  INTEGRAL%IchorForceGPU = .TRUE. 
+        CASE ('.ICHORCPU');  INTEGRAL%IchorForceCPU = .TRUE. 
         CASE ('.NO PASS');  INTEGRAL%DOPASS = .FALSE. 
         CASE ('.NO CS');  INTEGRAL%CS_SCREEN = .FALSE. 
         CASE ('.NO PS');  INTEGRAL%PS_SCREEN = .FALSE. 

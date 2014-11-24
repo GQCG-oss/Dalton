@@ -14,11 +14,8 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-6)
 
-f.add(from_string = 'CCSD(T) information',
-      to_string   = 'Num. unocc. orb.')
-
-f.add(from_string = 'Print frag.energies',
-      to_string   = 'Tile size for ABC')
+f.add(from_string = 'Print frag. energies',
+      to_string   = 'Input ABC tile size')
 
 f.add(from_string = 'CCSD correlation energy',
       to_string   = 'CC Memory summary',

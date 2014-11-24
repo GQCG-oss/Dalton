@@ -52,7 +52,7 @@ subroutine lsmpi_init(OnMaster)
    call get_rank_for_comm( MPI_COMM_LSDALTON, infpar%mynum  )
    call get_size_for_comm( MPI_COMM_LSDALTON, infpar%nodtot )
    !default number of nodes to be used with scalapack - can be changed
-   infpar%ScalapackNodes = infpar%nodtot
+   infpar%ScalapackGroupSize = infpar%nodtot
 #ifdef VAR_SCALAPACK  
    scalapack_mpi_set = .FALSE.
 #endif   

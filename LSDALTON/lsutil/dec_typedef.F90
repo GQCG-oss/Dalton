@@ -256,7 +256,7 @@ module dec_typedef_module
      !> force a specific tile size for use with abc scheme
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
-     integer :: CCSDPT_nbuffs_ijk
+     integer :: ijk_nbuffs
 
      !> F12 settings
      !> ************
@@ -296,6 +296,8 @@ module dec_typedef_module
      logical :: manual_batchsizes
      !> Sizes of alpha and gamma batches defined manually
      integer :: ccsdAbatch,ccsdGbatch
+     !> test integral scheme, fully distributed, get_mo_integrals
+     logical :: test_fully_distributed_integrals
 
 
      !> General debug and simple tests
@@ -464,7 +466,8 @@ module dec_typedef_module
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
 
-
+     !> Use Ichor Integral Code
+     logical :: UseIchor
   end type DECSETTINGS
 
 
@@ -1161,17 +1164,17 @@ module dec_typedef_module
      logical,pointer :: dofragopt(:)
      ! Does job use estimated fragments?
      logical,pointer :: esti(:)
-
-     ! MPI statistics
-
-     !> Number of nodes in MPI slot (local master + local slaves)
-     integer,pointer:: nslaves(:)
      !> Number of occupied orbitals for given fragment (AOS)
      integer,pointer :: nocc(:)
      !> Number of unoccupied orbitals for given fragment (AOS)
      integer,pointer :: nunocc(:)
      !> Number of basis functions for given fragment
      integer,pointer :: nbasis(:)
+
+     ! MPI statistics
+
+     !> Number of nodes in MPI slot (local master + local slaves)
+     integer,pointer:: nslaves(:)
      !> Number of MPI tasks used for integral/transformation (nalpha*ngamma)
      integer,pointer :: ntasks(:)
      !> FLOP count for all local nodes (local master + local slaves)

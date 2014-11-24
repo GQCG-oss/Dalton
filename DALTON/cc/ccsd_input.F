@@ -1000,7 +1000,7 @@ C
       CHARACTER*6 FLDTYP
       CHARACTER*1 FLDDIR
 C
-#include "ibtfun.h"
+
 C
 C----------------------------------------------
 C     Calculate total electric field.
@@ -1061,7 +1061,7 @@ C
          ELSE
 C
             DO 320 ISYOPR = 0,MAXOPR
-               IF (IBTAND(ISYOPR,MULCNT) .EQ. 0) THEN
+               IF (IAND(ISYOPR,MULCNT) .EQ. 0) THEN
 C
                   JATOM = JATOM + 1
 C
@@ -1069,7 +1069,7 @@ C
 C
                   DO 330 I = 1,3
 C
-                     PTAT          = PT(IBTAND(ISYMAX(I,1),ISYOPR))
+                     PTAT          = PT(IAND(ISYMAX(I,1),ISYOPR))
                      GEOM(I,JATOM) = PTAT*CORD(I,ICENT)
 C
   330             CONTINUE
@@ -9709,6 +9709,7 @@ C
   300 STOP 'Error when reading in CC_CTOMAG'
 C
   999 CONTINUE
+      CALL GPCLOSE(LUPROP,'KEEP')
 C
       RETURN
       END

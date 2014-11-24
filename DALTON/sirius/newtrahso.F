@@ -221,7 +221,7 @@ C
       CHARACTER*8 KEY
       LOGICAL DOCOOR
 C
-#include "ibtfun.h"
+
 C
       IBASP = IBAS(ISP)
       IBASQ = IBAS(ISQ)

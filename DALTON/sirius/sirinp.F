@@ -966,7 +966,7 @@ C
          CALL ICOPY(8,NFRRHF,1,NFRO,1)
          CALL ICOPY(8,NRHF,1,NISH,1)
          CALL IZERO(NASH,8)
-         IF (IOPRHF .NE. 0) THEN
+         IF (IOPRHF .GT. 0) THEN
             LSYM   = IOPRHF
             ISPIN  = 2
             MS2    = 1
@@ -1506,7 +1506,7 @@ C If (MP2) force canonical Hartree-Fock orbitals
 C hjaaj Aug 04: Also if (CC)
 C
       IF (DOMP2 .OR. DOCCSD) THEN
-        IF (DOCCSD. and. DOSCF .AND. (IOPRHF .NE. 0 .OR. HSROHF)) THEN
+        IF (DOCCSD. and. DOSCF .AND. (IOPRHF .GT. 0 .OR. HSROHF)) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell MP2/CC'//
      &      ' not compatible with open shell RHF'
@@ -2900,17 +2900,22 @@ C *** Option 12 >RAS3 E<   RAS3 electrons
 C
  2000 CONTINUE
       NASHT = 0
-      DO 2100 I = 1,NSYM
+      DO, I = 1,NSYM
          NASH(I) = NAS1(I) + NAS2(I) + NAS3(I)
          NASHT   = NASHT   + NASH(I)
- 2100 CONTINUE
+      END DO
       IF (NHL1MX .NE. -1 .OR. NHL1MN .NE. -1) THEN
          NAS1T = 0
-         DO 2200 I = 1,NSYM
+         DO, I = 1,NSYM
             NAS1T = NAS1T + NAS1(I)
- 2200    CONTINUE
+         END DO
          NELMN1 = 2*NAS1T - NHL1MX
          NELMX1 = 2*NAS1T - NHL1MN
+      END IF
+      IF (MCTYPE .GT. 0 .AND. NACTEL .EQ. -1) THEN
+         INPERR = INPERR + 1
+         WRITE(LUPRI,'(/A)')
+     &   ' *CONFIG ERROR: .ELECTRONS not specified'
       END IF
       RETURN
 C ----------------------------------------------
@@ -3024,7 +3029,7 @@ C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .ELECTR must not be specified together with .DOUBLY and .OPEN S'
+     &' .DOUBLY must not be specified together with .ELECTRONS'
       END IF
       NRHFEL = 0
       INIOCC = 1
@@ -3066,7 +3071,17 @@ C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .ELECTR must not be specified together with .DOUBLY and .OPEN S'
+     &' .OPEN SHELL must not be specified together with .ELECTRONS'
+      END IF
+      IF (HSROHF) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,*)
+     &' .OPEN SHELL must not be specified together with .SINGLY'
+      END IF
+      IF (IOPRHF .LT. 1 .OR. IOPRHF .GT. NSYM) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,*)
+     &' Illegal symmetry of .OPEN SHELL :',IOPRHF
       END IF
       NRHFEL = 0
       INIOCC = 1
@@ -3134,8 +3149,8 @@ C *** Option 21 >ELECTR< No. of electrons, for automagic det. of occ. orb.s
   121 READ(LUCMD,*) NRHFEL
       IF (INIOCC .EQ. 1) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,*)
-     &' .ELECTR must not be specified together with .DOUBLY and .OPEN S'
+         WRITE (LUPRI,*) ' .ELECTR must not be specified'//
+     &   ' together with any of .DOUBLY, .OPEN S and .SINGLY'
       END IF
       AUTOCC = .TRUE.
       ELECTR = .TRUE.
@@ -3170,24 +3185,17 @@ C *** Option 24 >SINGLY< High spin orbitals input
  124  HSROHF = .TRUE.
       READ(LUCMD,*) (NROHF(I),I=1,NSYM)
 C
-Clf in case there is only one open shell electron we go for the old code
-C
-      INUM = 0
-      DO IHS = 1, NSYM
-         IF (NROHF(IHS) .EQ. 1 ) IOPRHF = IHS
-         INUM = INUM + NROHF(IHS)
-      END DO
-      IF (INUM .EQ. 1) THEN
-         HSROHF = .FALSE.
-      ELSE
-         IOPRHF = 0
-      END IF
       IF (INIOCC .LT. 0) AUTOCC = .FALSE.
 C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR .OR. AUTOCC) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
      &' .SINGLY must not be specified together with .ELECTR or .AUTOCC'
+      END IF
+      IF (IOPRHF .GT. 0) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,*)
+     &' .SINGLY must not be specified together with .OPEN SHELL'
       END IF
       NRHFEL = 0
       INIOCC = 1
@@ -5671,10 +5679,16 @@ C ***** Optimization information *****
 C       FLAG(27) : use determinants
 C
       IF (MCTYPE .GT. 0 .OR. (FLAG(21) .AND. .NOT. AUTOCC)) THEN
+         IF (DOMC .OR. MCTYPE .EQ. 0) THEN
+            NWOPT_print = NWOPT
+         ELSE ! no MCSCF, only CI
+            NWOPT_print = 0
+         END IF
+         NVAR_print = NCONF + NWOPT_print
          IF (FLAG(27)) THEN
-            WRITE (IWUNIT,5010) NCONF,NWOPT,NVAR
+            WRITE (IWUNIT,5010) NCONF,NWOPT_print,NVAR_print
          ELSE
-            WRITE (IWUNIT,5000) NCONF,NWOPT,NVAR
+            WRITE (IWUNIT,5000) NCONF,NWOPT_print,NVAR_print
          END IF
       END IF
  5000 FORMAT (/,5X,'Optimization information',

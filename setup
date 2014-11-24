@@ -193,10 +193,6 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable interest external library [default: %(default)s]')
-    group.add_argument('--ichor',
-            action='store_true',
-            default=False,
-            help='enable ichor integrals library [default: %(default)s]')
     group.add_argument('--qmatrix',
             action='store_true',
             default=False,
@@ -281,7 +277,6 @@ def gen_cmake_command(args):
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_XCFUN=%s'          % translate_cmake(args.xcfun)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
-    command += ' -DENABLE_ICHOR=%s'          % translate_cmake(args.ichor)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
     command += ' -DENABLE_QMATRIX=%s'        % translate_cmake(args.qmatrix)
     command += ' -DENABLE_TDRSP=%s'          % translate_cmake(args.tdrsp)

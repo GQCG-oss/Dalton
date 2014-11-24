@@ -2138,7 +2138,7 @@ C
 #include "infinp.h"
 #include "nuclei.h"
 #include "cbisol.h"
-#include "ibtfun.h"
+
 C
       CHARACTER*(len_MLINE) TMP_MLINE
 C
@@ -2167,12 +2167,12 @@ C     total charge. Thus move center-of nuclear charge to the origin
 C
             DO IATOM = 1, NUCIND
                DO IREP = 0, MAXREP
-                  IF (IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
-                     CCAVX = CCAVX + PT(IBTAND(ISYMAX(1,1),IREP))
+                  IF (IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+                     CCAVX = CCAVX + PT(IAND(ISYMAX(1,1),IREP))
      &                              *COONEW(1,IATOM)*CHARGE(IATOM)
-                     CCAVY = CCAVY + PT(IBTAND(ISYMAX(2,1),IREP))
+                     CCAVY = CCAVY + PT(IAND(ISYMAX(2,1),IREP))
      &                              *COONEW(2,IATOM)*CHARGE(IATOM)
-                     CCAVZ = CCAVZ + PT(IBTAND(ISYMAX(3,1),IREP))
+                     CCAVZ = CCAVZ + PT(IAND(ISYMAX(3,1),IREP))
      &                              *COONEW(3,IATOM)*CHARGE(IATOM)
                      TOTCHR = TOTCHR + CHARGE(IATOM)
                   END IF
@@ -2561,7 +2561,7 @@ C  /* Deck wlkir1 */
 #include "trkoor.h"
       REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 
-#include "ibtfun.h"
+
 C
       NCOOR = 3*NUCDEP
       CALL DZERO(COOR, NCOOR)
@@ -2574,12 +2574,12 @@ C
          DMSS = DISOTP(IZATOM(ICENT),ISOTOP(ICENT),'MASS')
          MULCNT = ISTBNU(ICENT)
          DO 200 IOP = 0, MAXOPR
-            IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(IOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                DMASS(IATOM) = DMSS
                DO 300 I = 1, 3
                  ICOOR = ICOOR + 1
-                 COOR(ICOOR) = PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+                 COOR(ICOOR) = PT(IAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
   300          CONTINUE
             END IF
   200    CONTINUE
@@ -3195,7 +3195,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('PMCAR in WLKTRA',-1)
@@ -3213,7 +3213,7 @@ C
          NISOTP = ISOTOP(ICENT)
          AMASS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
          DO 200 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                IFRAG = IPART(IATOM)
                IF (IFRAG .EQ. 1 .OR. IFRAG .EQ. 2) THEN
@@ -3221,7 +3221,7 @@ C
                   DO 300 ICOOR = 1, 3
                      ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,0,1)
                      IF (ISCOOR .NE. 0) THEN
-                        SGNXYZ = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                        SGNXYZ = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
                         QCM(ICOOR,IFRAG) = QCM(ICOOR,IFRAG)
      &                                  + SGNXYZ*AMASS*CORD(ICOOR,ICENT)
                         PCM(ICOOR,IFRAG) = PCM(ICOOR,IFRAG)
@@ -4906,7 +4906,7 @@ C
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND)
 C
-#include "ibtfun.h"
+
 C
 C     Transforms coordinates to non-symmetry basis
 C
@@ -6572,7 +6572,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('PMCARX in WLKDAN',-1)
@@ -6654,7 +6654,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 c     NEXT1(I) = MOD(I,3) + 1
 c     NEXT2(I) = NEXT1(NEXT1(I))
 C
@@ -6671,13 +6671,13 @@ C
          NISOTP = ISOTOP(ICENT)
          ATMAS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                TMASS(IATOM) = ATMAS
                DO 120 ICOOR = 1, 3
                   ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,0,1)
                   IF (ISCOOR .NE. 0) THEN
-                     SGN = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                     SGN = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
                      TCOR(IATOM,ICOOR) = SGN*CORD(ICOOR,ICENT)
                      TVEL(IATOM,ICOOR) = SGN*FAC*PMCARX(ISCOOR)/ATMAS
                   END IF

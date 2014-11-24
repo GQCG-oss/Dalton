@@ -30,7 +30,7 @@ MODULE precision
   ! Quick and dirty conversion of 32 bit integgers to 64 bit integers:
   ! Multiply 32 bit integer by i8
   integer(kind=8),parameter :: i8 = 1
-#if defined (VAR_INT64)
+#ifdef VAR_INT64
   INTEGER, PARAMETER :: INTK = SELECTED_INT_KIND(17)!, REALK = KIND(1D0)
 #else
   INTEGER, PARAMETER :: INTK = SELECTED_INT_KIND(9)!, REALK = KIND(1D0)

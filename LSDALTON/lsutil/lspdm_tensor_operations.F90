@@ -63,7 +63,7 @@ module lspdm_tensor_operations_module
     subroutine put_acc_el(buf,pos,dest,win)
       use precision
       implicit none
-      real(realk),intent(in) :: buf
+      real(realk),intent(inout) :: buf
       integer, intent(in) :: pos
       integer(kind=ls_mpik),intent(in) :: dest
       integer(kind=ls_mpik),intent(in) :: win
@@ -71,7 +71,7 @@ module lspdm_tensor_operations_module
     subroutine put_acc_vec(buf,nelms,pos,dest,win)
       use precision
       implicit none
-      real(realk),intent(in) :: buf(*)
+      real(realk),intent(inout) :: buf(*)
       integer, intent(in) :: pos
       integer(kind=8) :: nelms
       integer(kind=ls_mpik),intent(in) :: dest
@@ -1339,6 +1339,7 @@ module lspdm_tensor_operations_module
 
   end subroutine lspdm_get_combined_SingleDouble_amplitudes
 
+
   subroutine get_info_for_mpi_get_and_reorder_t1(arr,table_iajb,table_ibja, &
            & dims,ord,t1,t1tile)
     implicit none
@@ -2473,28 +2474,6 @@ module lspdm_tensor_operations_module
 
   end subroutine tensor_default_batches
   
-  !> \brief calculate the number of tiles per mode
-  !> \author Patrick Ettenhuber
-  !> \date march 2013
-  subroutine tensor_get_ntpm(dims,tdim,mode,ntpm,ntiles)
-    implicit none
-    !> number of modes and number of tiles
-    integer :: mode,ntiles
-    !> full dimensions, tile dimensinos, number of tiles per mode
-    integer :: dims(mode),tdim(mode),ntpm(mode)
-    integer :: i
-
-    ntiles = 1
-
-    do i=1,mode
-      ntpm(i)= dims(i)/tdim(i)
-      if(mod(dims(i),tdim(i))>0)then
-        ntpm(i)=ntpm(i)+1
-      endif
-      ntiles = ntiles * ntpm(i)
-    enddo
-
-  end subroutine tensor_get_ntpm
 
   !> \author Patrick Ettenhuber
   !> \date September 2012
@@ -2606,13 +2585,9 @@ module lspdm_tensor_operations_module
     !begin with counting the number of tiles needed in each mode
     dflt=0
     p_arr%a(addr)%nelms=1
+    call tensor_get_ntpm(p_arr%a(addr)%dims,p_arr%a(addr)%tdim,p_arr%a(addr)%mode,dflt)
     do i=1,p_arr%a(addr)%mode
-      p_arr%a(addr)%nelms = p_arr%a(addr)%nelms * &
-      &p_arr%a(addr)%dims(i)
-      dflt(i)=p_arr%a(addr)%dims(i)/p_arr%a(addr)%tdim(i)
-      if(mod(p_arr%a(addr)%dims(i),p_arr%a(addr)%tdim(i))>0)then
-        dflt(i)=dflt(i)+1
-      endif
+      p_arr%a(addr)%nelms = p_arr%a(addr)%nelms * p_arr%a(addr)%dims(i)
     enddo
     call tensor_set_ntpm(p_arr%a(addr),dflt,p_arr%a(addr)%mode)
     !print *,infpar%mynum,"ntpm:",arr%ntpm,arr%nelms
@@ -2689,7 +2664,7 @@ module lspdm_tensor_operations_module
      integer, intent(inout)     :: order(C%mode)
      real(realk), intent(in),    optional :: mem !in GB
      real(realk), intent(inout), target, optional :: wrk(:)
-     integer, intent(in),        optional :: iwrk
+     integer(kind=long), intent(in),     optional :: iwrk
      logical, intent(in),        optional :: force_sync
      !internal variables
      logical :: test_all_master_access,test_all_all_access,master, use_wrk_space,contraction_mode,sync
@@ -2700,11 +2675,13 @@ module lspdm_tensor_operations_module
      integer :: cmidA, cmidB
      integer :: ntpmB(B%mode),fBtdim(B%mode), tdim_ord(B%mode)
      integer :: tdimC(C%mode),tdim_product(C%mode)
-     integer :: nelmsTA, nelmsTB
-     integer :: i,j,k,l, cci, max_mode_ci(nmodes2c),cm,current_mode(nmodes2c)
+     integer :: nelmsTA, nelmsTB, M1SA, M1SB
+     integer :: i,j,k,l, sq, cci, max_mode_ci(nmodes2c),cm,current_mode(nmodes2c)
      integer :: m_gemm, n_gemm, k_gemm
-     logical :: B_dense,locA,locB
+     logical :: B_dense,locA,locB, found
      integer(kind=ls_mpik),pointer :: reqA(:),reqB(:)
+     integer, pointer :: buf_posA(:), buf_posB(:)
+     logical, pointer :: buf_logA(:), buf_logB(:), nfA(:), nfB(:)
 
      call time_start_phase( PHASE_WORK )
 
@@ -2765,9 +2742,8 @@ module lspdm_tensor_operations_module
         enddo
 
         tsizeB = 1
+        call tensor_get_ntpm(B%dims,fBtdim,B%mode,ntpmB)
         do i=1,B%mode
-           ntpmB(i) = B%dims(i)/fBtdim(i)
-           if(mod(B%dims(i),fBtdim(i))>0)ntpmB(i) = ntpmB(i) + 1
            tsizeB = tsizeB * fBtdim(i)
         enddo
 
@@ -2830,8 +2806,9 @@ module lspdm_tensor_operations_module
      call time_start_phase( PHASE_WORK )
 
 
+     !TODO: Optimize number of buffers for A and B
 
-     if(test_all_master_access)then
+     if(test_all_all_access)then
         if(present(mem))then
            !use provided memory information to allcate space
 
@@ -2859,6 +2836,7 @@ module lspdm_tensor_operations_module
            else
               nbuffsB = ((iwrk-(A%tsize + tsizeB + C%tsize))/ntens_to_get_from)/tsizeB
            endif
+
            if(nbuffsA==0.or.(nbuffsB==0.and..not.B_dense))then
               print *,"WARNING(tensor_contract_par): the specified work space is too small, switching to allocations"
               use_wrk_space = .false.
@@ -2898,16 +2876,17 @@ module lspdm_tensor_operations_module
         nbuffsB = nbuffs
      endif
 
+     
      if(use_wrk_space)then
         call ass_D1to2(wrk,buffA,[A%tsize,nbuffsA])
         if(B_dense)then
            buffB => null()
         else
-           call ass_D1to2(wrk(nbuffsA*A%tsize:nbuffsA*A%tsize+nbuffsB*tsizeB-1),buffB,[tsizeB,nbuffsB])
+           call ass_D1to2(wrk(nbuffsA*A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB),buffB,[tsizeB,nbuffsB])
         endif
-        wA => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize-1)
-        wB => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB-1)
-        wC => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize-1)
+        wA => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize)
+        wB => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB)
+        wC => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize)
      else
         call mem_alloc(buffA,A%tsize,nbuffs)
         if(.not.B_dense)then
@@ -2930,6 +2909,28 @@ module lspdm_tensor_operations_module
            if(.not.locB)call tensor_lock_wins(B,'s',all_nodes=.true.)
         endif
 
+     endif
+
+     !initialize buffer book keeping
+     call mem_alloc(buf_posA,nbuffsA)
+     call mem_alloc(buf_logA,nbuffsA)
+     call mem_alloc(nfA,     nbuffsA)
+
+     if(.not.B_dense)then
+        call mem_alloc(buf_posB,nbuffsB)
+        call mem_alloc(buf_logB,nbuffsB)
+        call mem_alloc(nfB,     nbuffsA)
+     endif
+
+     buf_posA = -1
+     buf_logA = .false.
+     call fill_buffer_for_tensor_contract_simple(0,nbuffsA,buf_logA,buf_posA,nfA,A,buffA,&
+        &A,B,m2cA,m2cB,nmodes2c,C,order,.true.,M1SA)
+     if(.not.B_dense)then
+        buf_posB = -1
+        buf_logB = .false.
+        call fill_buffer_for_tensor_contract_simple(0,nbuffsB,buf_logB,buf_posB,nfB,B,buffB,&
+           &A,B,m2cA,m2cB,nmodes2c,C,order,.true.,M1SB)
      endif
 
      !loop over local tiles of C and contract corresponding 
@@ -2997,136 +2998,10 @@ module lspdm_tensor_operations_module
 #endif
         wC = 0.0E0_realk
 
-        !TODO:fill buffers also after changing the C tile
-        do cm=1, min(nbuffs-1,cci)
-           !build full mode index for A and B
-           call get_midx(cm,current_mode,max_mode_ci,nmodes2c)
-           do i=1,nmodes2c
-              mA(m2cA(i)) = current_mode(i)
-              mB(m2cB(i)) = current_mode(i)
-           enddo
-
-
-           cmidA = get_cidx(mA,A%ntpm,A%mode)
-           cmidB = get_cidx(mB,ntpmB ,B%mode)
-
-           !get the tiles into the local buffer
-           !get number of elements in tiles for A and B
-           call get_tile_dim(nelmsTA,A,mA)
-           ibufA = mod(cm-1,nbuffsA)+1
-
-           call time_start_phase( PHASE_COMM )
-           if( alloc_in_dummy )then
-
-              if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                 call tensor_flush_win(A, local = .true.)
-                 if(.not.B_dense) call tensor_flush_win(B, local = .true.)
-                 nel_one_sided = 0
-              endif
-
-              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
-              nel_one_sided = nel_one_sided + nelmsTA
-
-           else
-              call tensor_lock_win(A,cmidA,'s')
-              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
-           endif
-           call time_start_phase( PHASE_WORK )
-
-           if(.not.B_dense)then
-              call get_tile_dim(nelmsTB,B,mB)
-              ibufB = mod(cm-1,nbuffsB)+1
-
-              call time_start_phase( PHASE_COMM )
-              if( alloc_in_dummy )then
-
-                 if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                    call tensor_flush_win(A, local = .true.)
-                    if(.not.B_dense) call tensor_flush_win(B, local = .true.)
-                    nel_one_sided = 0
-                 endif
-
-                 call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
-
-                 nel_one_sided = nel_one_sided + nelmsTB
-              else
-                 call tensor_lock_win(B,cmidB,'s')
-                 call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
-              endif
-              call time_start_phase( PHASE_WORK )
-           endif
-
-        enddo
-
         !loop over all tiles in the contraction modes via a combined contraction index
         do cm = 1, cci
 
-           !fill last buffer space
-           !TODO:fill buffers also after changing the C tile
-           buffer_cm = cm + nbuffs - 1
-           if(buffer_cm <= cci)then
-              !build full mode index for A and B
-              call get_midx( buffer_cm ,current_mode,max_mode_ci,nmodes2c)
-              do i=1,nmodes2c
-                 mA(m2cA(i)) = current_mode(i)
-                 mB(m2cB(i)) = current_mode(i)
-              enddo
-
-
-              cmidA = get_cidx(mA,A%ntpm,A%mode)
-              cmidB = get_cidx(mB,ntpmB, B%mode)
-
-              !get the tiles into the local buffer
-              !get number of elements in tiles for A and B
-              !get buffer positions for A and B bufs
-              !get tiles
-              call get_tile_dim(nelmsTA,A,mA)
-              ibufA = mod(buffer_cm-1,nbuffsA)+1
-
-              call time_start_phase( PHASE_COMM )
-              if( alloc_in_dummy )then
-
-                 if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                    call tensor_flush_win(A, local = .true.)
-                    if(.not.B_dense) call tensor_flush_win(B, local = .true.)
-                    nel_one_sided = 0
-                 endif
-
-                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,req=reqA(ibufA))
-
-                 nel_one_sided = nel_one_sided + nelmsTA
-              else
-                 call tensor_lock_win(A,cmidA,'s')
-                 call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
-              endif
-              call time_start_phase( PHASE_WORK )
-              
-              !same for B if necessary
-              if(.not.B_dense)then
-
-                 call get_tile_dim(nelmsTB,B,mB)
-                 ibufB = mod(buffer_cm-1,nbuffsB)+1
-                 call time_start_phase( PHASE_COMM )
-
-                 if( alloc_in_dummy )then
-
-                    if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                       call tensor_flush_win(A, local = .true.)
-                       if(.not.B_dense) call tensor_flush_win(B, local = .true.)
-                       nel_one_sided = 0
-                    endif
-
-                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,req=reqB(ibufB))
-
-                    nel_one_sided = nel_one_sided + nelmsTB
-                 else
-                    call tensor_lock_win(B,cmidB,'s')
-                    call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
-                 endif
-                 call time_start_phase( PHASE_WORK )
-              endif
-
-           endif
+           sq = cm + (locC - 1) * cci
 
            !build full mode index for A and B
            call get_midx(cm,current_mode,max_mode_ci,nmodes2c)
@@ -3156,27 +3031,12 @@ module lspdm_tensor_operations_module
 
 
            !get buffer positions for A and B bufs
-           ibufA = mod(cm-1,nbuffsA)+1
-           call time_start_phase( PHASE_COMM )
-           if( alloc_in_dummy )then
-              call lsmpi_wait(reqA(ibufA))
-              nel_one_sided = nel_one_sided - nelmsTA
-           else
-              call tensor_unlock_win(A,cmidA)
-           endif
-           call time_start_phase( PHASE_WORK )
+           call find_tile_pos_in_buf(cmidA,buf_posA,nbuffsA,ibufA,found)
+           if( .not. found) call lsquit("ERROR(lspdm_tensor_contract_simple): A tile must be present",-1)  
 
-           if(.not.B_dense)then
-              ibufB = mod(cm-1,nbuffsB)+1
-              call time_start_phase( PHASE_COMM )
-              if( alloc_in_dummy )then
-                 call lsmpi_wait(reqB(ibufB))
-                 nel_one_sided = nel_one_sided - nelmsTB
-              else
-                 call tensor_unlock_win(B,cmidB)
-              endif
-              call time_start_phase( PHASE_WORK )
-           endif
+           call time_start_phase( PHASE_COMM )
+           call make_sure_tile_is_here(A,cmidA,nfA,buf_posA,ibufA,nbuffs,M1SA)
+           call time_start_phase( PHASE_WORK )
 
            ! sort for the contraction such that in gemm the arguments are always 'n' and 'n', 
            ! always sort such, that the contraction modes are in the order of m2CA, something smarter could be done here!!
@@ -3198,9 +3058,22 @@ module lspdm_tensor_operations_module
                call lsquit("ERROR(lspdm_tensor_contract_simple): sorting A not implemented",-1)
            end select
 
+           buf_logA(ibufA) = .false.
+           call fill_buffer_for_tensor_contract_simple(sq,nbuffsA,buf_logA,buf_posA,nfA,A,buffA,&
+              &A,B,m2cA,m2cB,nmodes2c,C,order,.true.,M1SA)
+
            if(B_dense)then
               call tile_from_fort(1.0E0_realk,B%elm1,B%dims,B%mode,0.0E0_realk,wB,cmidB,tdim_ord,ordB)
            else
+
+              call find_tile_pos_in_buf(cmidB,buf_posB,nbuffsB,ibufB,found)
+
+              if( .not. found) call lsquit("ERROR(lspdm_tensor_contract_simple): B tile must be present",-1)  
+
+              call time_start_phase( PHASE_COMM )
+              call make_sure_tile_is_here(B,cmidB,nfB,buf_posB,ibufB,nbuffs,M1SB)
+              call time_start_phase( PHASE_WORK )
+
               select case(B%mode)
               case(2)
                  call array_reorder_2d(1.0E0_realk,buffB(:,ibufB),tdimB(1),tdimB(2),ordB,0.0E0_realk,wB)
@@ -3211,6 +3084,11 @@ module lspdm_tensor_operations_module
               case default
                  call lsquit("ERROR(lspdm_tensor_contract_simple): sorting B not implemented",-1)
               end select
+
+              buf_logB(ibufB) = .false.
+              call fill_buffer_for_tensor_contract_simple(sq,nbuffsB,buf_logB,buf_posB,nfB,B,buffB,&
+                 &A,B,m2cA,m2cB,nmodes2c,C,order,.true.,M1SB)
+
            endif
 
            !carry out the contraction
@@ -3239,6 +3117,17 @@ module lspdm_tensor_operations_module
 
      enddo LocalTiles
 
+     if(count(buf_logA) > 0 ) call lsquit("ERROR(lspdm_tensor_contract_simple): there should be no tiles left A",-1)
+     call mem_dealloc(buf_posA)
+     call mem_dealloc(buf_logA)
+     call mem_dealloc(nfA     )
+
+     if(.not.B_dense)then
+        if(count(buf_logB) > 0 ) call lsquit("ERROR(lspdm_tensor_contract_simple): there should be no tiles left B",-1)
+        call mem_dealloc(buf_posB)
+        call mem_dealloc(buf_logB)
+        call mem_dealloc(nfB)
+     endif
 
      if(use_wrk_space)then
         buffA => null()
@@ -3273,10 +3162,229 @@ module lspdm_tensor_operations_module
      call time_start_phase( PHASE_IDLE )
      if(sync)call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
+     !stop 0
 #else
      call lsquit("ERROR(lspdm_tensor_contract_simple): cannot be called without MPI",-1)
 #endif
   end subroutine lspdm_tensor_contract_simple
+
+  subroutine make_sure_tile_is_here(T,cmidT,nfT,intT,ibufT,nbuffs,M1ST)
+     implicit none
+     type(tensor), intent(in) :: T
+     integer, intent(in)      :: cmidT,nbuffs,ibufT,intT(nbuffs)
+     logical, intent(inout)   :: nfT(nbuffs)
+     integer, intent(inout)   :: M1ST
+     integer :: i, flushed_node, another_node, ne2
+
+#ifdef VAR_MPI
+     if( alloc_in_dummy )then
+
+        !call lsmpi_wait(reqA(ibufA))
+        if( nfT(ibufT) )then
+
+           call tensor_flush_win(T, gtidx=cmidT, only_owner=.true., local = .true.)
+
+           call get_residence_of_tile(flushed_node,intT(ibufT),T)
+
+           do i = 1, nbuffs
+
+              if( nfT(i) )then
+
+                 call get_residence_of_tile(another_node,intT(i),T)
+
+                 if(another_node == flushed_node)then
+
+                    call get_tile_dim(ne2,T,intT(i))
+
+                    if( ne2 > MAX_SIZE_ONE_SIDED )then
+                       M1ST = M1ST - mod(ne2,MAX_SIZE_ONE_SIDED)
+                    else
+                       M1ST = M1ST - ne2
+                    endif
+
+                    nfT(i) = .false.
+
+                 endif
+
+              endif
+           enddo
+
+        endif
+
+     else
+
+        if(T%lock_set(cmidT))call tensor_unlock_win(T,cmidT)
+
+     endif
+#endif
+
+  end subroutine make_sure_tile_is_here
+
+  subroutine fill_buffer_for_tensor_contract_simple(current,nbuffs,loglist,intlist,&
+        &nf,T,buf,A,B,m2cA,m2cB,nm2c,C,order,load_it,maxnel)
+     implicit none
+     type(tensor), intent(in) :: T
+     type(tensor), intent(in) :: A,B,C
+     integer, intent(in)         :: current,nbuffs,order(C%mode),nm2c
+     real(realk), intent(inout)  :: buf(:,:)
+     integer, intent(in)         :: m2cA(nm2c),m2cB(nm2c)
+     logical, intent(inout)      :: loglist(nbuffs), nf(nbuffs)
+     integer, intent(inout)      :: intlist(nbuffs), maxnel
+     logical, intent(in)         :: load_it
+     integer, parameter :: one = 1
+     integer, parameter :: two = 2
+     integer :: next, nn, cc, gc, cci, tt(two), mm(two), ro(C%mode), gm(C%mode)
+     integer :: maxCI(nm2c), cm(nm2c)
+     integer :: mA(A%mode)
+     integer :: mB(B%mode)
+     integer :: mT(max(A%mode,B%mode))
+     integer :: i,j,k, cmidA, cmidB, cmidT, ibufT, nelmsT
+     logical :: contM, TisA, TisB, get_new, found, break_condition, BDense
+     integer :: me, maxcntr
+
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+
+     ! find the identity of T
+     TisA   = ( A%addr_p_arr(me+1) == T%addr_p_arr(me+1) )
+     TisB   = ( B%addr_p_arr(me+1) == T%addr_p_arr(me+1) )
+     BDense = (B%itype == TT_DENSE) .or. (B%itype == TT_REPLICATED)
+
+     if( TisA .eqv. TisB )then
+        call lsquit("ERROR(fill_buffer_for_tensor_contract_simple): both cannot be T, one has to be T",-1)
+     endif
+
+     if( TisB .and. BDense )then
+        call lsquit("ERROR(fill_buffer_for_tensor_contract_simple): T must not be B if B is dense",-1)
+     endif
+
+     do i = 1, C%mode
+        ro(order(i)) = i
+     enddo
+
+     cci = 1
+     do i=1,nm2c
+        cci      = cci * A%ntpm(m2cA(i))
+        maxCI(i) = A%ntpm(m2cA(i))
+     enddo
+
+     maxcntr         = cci + (C%nlti-1)*cci
+     break_condition = ( count(loglist) < nbuffs ) .and. (current < maxcntr)
+     next            = current + 1
+     mm              = [cci,C%nlti]
+
+     do while (break_condition)
+
+        call get_midx(next,tt,mm,two)
+        cc = tt(one)
+        nn = tt(two)
+
+        gc = C%ti(nn)%gt
+
+        call get_midx(gc,gm,C%ntpm,C%mode)
+
+        mA = -1
+        mB = -1
+
+        !get the uncontracted mode indices of the A and B arrays
+        k = 1
+        do i = 1, A%mode
+           contM=.false.
+           do j=1,nm2c
+              contM = contM.or.(m2cA(j) == i)
+           enddo
+           if(.not.contM)then
+              mA(i) = gm(ro(k))
+              k=k+1
+           endif
+        enddo
+
+        if(k-1/=A%mode-nm2c)then
+           call lsquit("ERROR(fill_buffer_for_tensor_contract_simple): something wrong in ordering",-1)
+        endif
+
+        do i = 1, B%mode
+           contM=.false.
+           do j=1,nm2c
+              contM = contM.or.(m2cB(j) == i)
+           enddo
+           if(.not.contM)then
+              mB(i) = gm(ro(k))
+              k=k+1
+           endif
+        enddo
+
+        call get_midx(cc,cm,maxCI,nm2c)
+
+        do i=1,nm2c
+           mA(m2cA(i)) = cm(i)
+           mB(m2cB(i)) = cm(i)
+        enddo
+
+
+        cmidA = get_cidx(mA,A%ntpm,A%mode)
+
+        if(.not. BDense) then
+           cmidB = get_cidx(mB,B%ntpm,B%mode)
+        endif
+
+
+        if( TisA ) cmidT = cmidA
+        if( TisB ) cmidT = cmidB
+
+
+        call check_if_new_instance_needed(cmidT,intlist,nbuffs,get_new,pos=ibufT,set_needed=loglist)
+
+        if( get_new .and. load_it )then
+
+           call find_free_pos_in_buf(loglist,nbuffs,ibufT,found)
+
+           if( found )then
+
+              call get_tile_dim(nelmsT,T,cmidT)
+
+              call time_start_phase( PHASE_COMM )
+
+              if( alloc_in_dummy )then
+
+                 if( maxnel >= MAX_SIZE_ONE_SIDED)then
+                    call tensor_flush_win(T, local = .true.)
+                    maxnel = 0
+                    nf     = .false.
+                 endif
+
+                 !call tensor_get_tile(T,cmidT,buf(:,ibufT),nelmsTA,lock_set=.true.,req=reqA(ibufA))
+                 call tensor_get_tile(T,cmidT,buf(:,ibufT),nelmsT,lock_set=.true.,flush_it=(nelmsT>MAX_SIZE_ONE_SIDED))
+
+                 if( nelmsT > MAX_SIZE_ONE_SIDED )then
+                    maxnel = maxnel + mod(nelmsT,MAX_SIZE_ONE_SIDED)
+                 else
+                    maxnel = maxnel + nelmsT
+                 endif
+
+
+              else
+                 call tensor_lock_win(T,cmidT,'s')
+                 call tensor_get_tile(T,cmidT,buf(:,ibufT),nelmsT,lock_set=.true.,flush_it=(nelmsT>MAX_SIZE_ONE_SIDED))
+              endif
+
+              call time_start_phase( PHASE_WORK )
+
+              intlist(ibufT) = cmidT
+              loglist(ibufT) = .true.
+              nf(ibufT)      = .true.
+
+           endif
+
+        endif
+
+        next = next + 1
+        break_condition = ( (count(loglist) < nbuffs) .and. ( next <= maxcntr ) )
+
+     enddo
+#endif
+  
+  end subroutine fill_buffer_for_tensor_contract_simple
 
   !> \brief add tiled distributed data to a basic fortran type array
   !> \author Patrick Ettenhuber
@@ -5198,7 +5306,7 @@ module lspdm_tensor_operations_module
   subroutine cp_data2tiled_lowmem(arr,A,dims,mode)
     implicit none
     type(tensor),intent(inout) :: arr
-    real(realk),intent(in) :: A(*)
+    real(realk),intent(inout) :: A(*)
     integer,intent(in) :: mode, dims(mode)
     integer :: fib,lt,ce,j,step,mod_step,iter,nccblocks,st
     integer(kind=ls_mpik) :: nnod, me, dest, assert,ierr, act_step
@@ -6250,7 +6358,7 @@ module lspdm_tensor_operations_module
   subroutine dist_int_contributions(g,o2v2,win,lock_outside)
     implicit none
     integer(kind=long),intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
+    real(realk),intent(inout) :: g(o2v2)
     logical :: lock_outside
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
@@ -6291,7 +6399,7 @@ module lspdm_tensor_operations_module
   subroutine collect_int_contributions(g,o2v2,win)
     implicit none
     integer(kind=long),intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
+    real(realk),intent(inout) :: g(o2v2)
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
     integer :: fe,ne,msg_len_mpi
@@ -6329,7 +6437,7 @@ module lspdm_tensor_operations_module
   subroutine collect_int_contributions_f(g,o2v2,win)
     implicit none
     integer(kind=long),intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
+    real(realk),intent(inout) :: g(o2v2)
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
     integer :: fe,ne,msg_len_mpi
@@ -6411,7 +6519,7 @@ module lspdm_tensor_operations_module
 
   subroutine lsmpi_put_realkV_w8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6423,7 +6531,7 @@ module lspdm_tensor_operations_module
   end subroutine lsmpi_put_realkV_w8
   subroutine lsmpi_get_realkV_w8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6435,7 +6543,7 @@ module lspdm_tensor_operations_module
   end subroutine lsmpi_get_realkV_w8
   subroutine lsmpi_acc_realkV_w8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6537,6 +6645,118 @@ module lspdm_tensor_operations_module
 !ENDIF VAR_MPI
 #endif
   end subroutine tensor_flush_win
+  subroutine assoc_ptr_to_buf(tilenr,arr,nbuffs,buf_pos,buf_log,ptr,bg_buf,pos,req)
+     implicit none
+     integer, intent(in):: tilenr,nbuffs
+     type(tensor), intent(inout) :: arr
+     integer, intent(inout):: buf_pos(nbuffs)
+     logical, intent(inout):: buf_log(nbuffs)
+     real(realk), intent(out),   pointer :: ptr(:)
+     real(realk), intent(inout), pointer :: bg_buf(:,:)
+     integer, intent(out) :: pos
+     integer(kind=ls_mpik), intent(inout) :: req(nbuffs)
+     integer :: i_search_buf,ts
+     logical :: found
+     integer(kind=ls_mpik) :: mode
+     pos = 0
+#ifdef VAR_MPI
+     mode = MPI_MODE_NOCHECK
+
+
+     call find_tile_pos_in_buf(tilenr,buf_pos,nbuffs,pos,found)
+
+     if(found)then
+
+        ptr => bg_buf(:,pos)
+
+     else
+
+        call find_free_pos_in_buf(buf_log,nbuffs,pos,found)
+
+        if( .not. found)then
+
+           call lsquit("ERROR(assoc_ptr_to_buf):tile not found in buf and no&
+              & free position available to load",-1)
+
+        endif
+
+        if( .not. alloc_in_dummy ) call tensor_lock_win(arr,tilenr,'s',assert=mode)
+
+        call get_tile_dim(ts,arr,tilenr)
+
+        if( alloc_in_dummy )then
+           call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,req=req(pos))
+        else
+           call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
+        endif
+
+        buf_pos(pos) = tilenr
+        buf_log(pos) = .true.
+        ptr          => bg_buf(:,pos)
+
+     endif
+#endif
+  end subroutine assoc_ptr_to_buf
+
+  subroutine find_tile_pos_in_buf(tilenr,buf,nbuffs,pos,found)
+     implicit none
+     integer, intent(in)  :: tilenr,nbuffs
+     integer, intent(in)  :: buf(nbuffs)
+     logical, intent(out) :: found
+     integer, intent(out) :: pos
+     integer :: i
+
+     found = .false.
+     do i=1,nbuffs
+        if(buf(i)==tilenr)then
+           pos   = i
+           found = .true.
+           exit
+        endif
+     enddo
+
+  end subroutine find_tile_pos_in_buf
+
+  subroutine find_free_pos_in_buf(buf,nbuffs,pos,found)
+     implicit none
+     integer, intent(in)  :: nbuffs
+     logical, intent(in)  :: buf(nbuffs)
+     logical, intent(out) :: found
+     integer, intent(out) :: pos
+     integer :: i
+
+     found = .false.
+     do i=1,nbuffs
+        if(.not.buf(i))then
+           pos   = i
+           found = .true.
+           exit
+        endif
+     enddo
+
+  end subroutine find_free_pos_in_buf
+
+  subroutine check_if_new_instance_needed(tilenr,buf,nbuffs,NewN,pos,set_needed)
+     implicit none
+     integer, intent(in)  :: tilenr,nbuffs
+     integer, intent(in)  :: buf(nbuffs)
+     logical, intent(out) :: NewN
+     integer, intent(out), optional :: pos
+     logical, intent(inout), optional :: set_needed(nbuffs)
+     logical :: found
+     integer :: pos_int
+
+     call find_tile_pos_in_buf(tilenr,buf,nbuffs,pos_int,found) 
+
+     NewN = ( .not. found )
+
+     if(present(pos)) pos = pos_int
+
+     if(present(set_needed))then
+        if( found ) set_needed(pos_int) = .true.
+     endif
+
+  end subroutine check_if_new_instance_needed
 
 end module lspdm_tensor_operations_module
 

@@ -13,8 +13,7 @@ subroutine HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContPQ,nPasses,nlmP,&
   real(realk),intent(inout) :: ThetaP(nlmP,1,    2:    4,nContPQ*nPasses)
   !Local variables
   integer :: iP,ilmP,iTUVD
-!$OMP DO&
-!$OMP PRIVATE(iP,iTUVD,ilmP) 
+!$OMP DO PRIVATE(iP,iTUVD,ilmP) 
   DO iP = 1,nContPQ*nPasses
     DO iTUVD=  2,  4
      DO ilmP = 1,nlmP
@@ -35,8 +34,7 @@ subroutine HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContPQ,nPasses,nlmP,&
   real(realk),intent(inout) :: ThetaP(nlmP,1,    5:   10,nContPQ*nPasses)
   !Local variables
   integer :: iP,ilmP,iTUVD
-!$OMP DO&
-!$OMP PRIVATE(iP,iTUVD,ilmP) 
+!$OMP DO PRIVATE(iP,iTUVD,ilmP) 
   DO iP = 1,nContPQ*nPasses
     DO iTUVD=  5, 10
      DO ilmP = 1,nlmP
@@ -58,8 +56,7 @@ subroutine HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContPQ,nPasses,nlmP,&
   !Local variables
   integer :: iP,iC,iPassQ,ilmP,iTUVD
   real(realk) :: Xcd,Ycd,Zcd
-!$OMP DO&
-!$OMP PRIVATE(iP,&
+!$OMP DO PRIVATE(iP,&
 !$OMP         iTUVD,ilmP,Xcd,Ycd,Zcd) 
   DO iP = 1,nContPQ*nPasses
    Xcd = -Qdistance12(1)

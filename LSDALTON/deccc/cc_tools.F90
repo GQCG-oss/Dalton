@@ -2,11 +2,17 @@
 module cc_tools_module
 
    use precision
+   use typedeftype
+   use integralinterfaceDEC, only: II_GET_ERI_INTEGRALBLOCK_INQUIRE
    use tensor_interface_module
+   
+   interface get_tpl_and_tmi
+      module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
+   end interface get_tpl_and_tmi
    
    
    contains
-   
+
    subroutine mo_work_dist(m,fai,tl,have_part,nod)
       implicit none
       integer,intent(in) :: m
@@ -53,19 +59,381 @@ module cc_tools_module
       endif
 
    end subroutine mo_work_dist
+   !> \brief Reorder t to use symmetry in both occupied and virtual indices,
+   !> thereby restricting the first virtual to be less equal to the second and
+   !> make symmetric and antisymmetric combinations of these 
+   !> \author Patrick Ettenhuber
+   !> \date October 2012
+   subroutine get_tpl_and_tmi_tensors(t2,tpl,tmi)
+      implicit none
+      !>input the full doubles ampitudes in the order nv nv no no
+      type(tensor),intent(inout) :: t2
+      !> output amplitudes with indices restricted c<d,i<j
+      type(tensor), intent(inout) :: tpl
+      !> output amplitudes with indices restricted c>d,i<j
+      type(tensor), intent(inout) :: tmi
+      integer ::crvd,no,nv
+      nv   = t2%dims(1)
+      no   = t2%dims(3)
+
+      if ( (t2%itype  == TT_DENSE .or. t2%itype  == TT_REPLICATED) .and. &
+          &(tpl%itype == TT_DENSE .or. tpl%itype == TT_REPLICATED) .and. &
+          &(tmi%itype == TT_DENSE .or. tmi%itype == TT_REPLICATED) ) then
+
+         call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%elm1,tmi%elm1)
+
+         !maybe a sync replicated is needed here
+ 
+      elseif( t2%itype == TT_TILED_DIST .and. tpl%itype == TT_TILED_DIST .and. tmi%itype == TT_TILED_DIST)then
+
+         call lspdm_get_tpl_and_tmi(t2,tpl,tmi)
+
+      else
+         call lsquit("ERROR(get_tpl_and_tmi_tensors): combination of itypes not implemented",-1)
+      endif
+
+   end subroutine get_tpl_and_tmi_tensors
+
+   subroutine lspdm_get_tpl_and_tmi(t2,tpl,tmi)
+      implicit none
+      type(tensor),intent(inout) :: t2, tpl, tmi
+
+      integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
+      integer :: otmi(2),otpl(2),ot2(4)
+      real(realk), pointer :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
+      real(realk), pointer :: buf1(:),buf2(:)
+      integer :: dcged,dilej,ccged,cilej,gcged,gilej
+      real(realk) :: sol
+      integer :: nor,no,nvr,nv,k,c,d
+      integer :: maxtile(4), mintile(4),tdim(4)
+      integer :: tctr1,tctr2,tctr3,tctr4
+      integer :: nelms,nvrs,nors
+      integer :: gc,gd,gi,gj
+      integer :: mingilej,maxgilej,mingcged,maxgcged
+      integer :: check, nfound, founds(t2%ntiles), mtile(t2%mode), ctile
+      logical :: Already_in,contributed
+
+#ifdef VAR_MPI
+      if( t2%access_type /= AT_ALL_ACCESS .or. tpl%access_type /= AT_ALL_ACCESS .or. tmi%access_type /= AT_ALL_ACCESS  )then
+         call lsquit("ERROR(lspdm_get_tpl_and_tmi): access types of the arrays not (yet) possible",-1)
+      endif
+
+      nv = t2%dims(1)
+      no = t2%dims(3)
+
+      nvr = nv * (nv + 1) / 2
+      nor = no * (no + 1) / 2
+
+      nvrs = tpl%tdim(2)
+      nors = tpl%tdim(1)
+
+      call mem_alloc(buf1,t2%tsize)
+      call mem_alloc(buf2,t2%tsize)
+
+      if(infpar%lg_mynum /=0 )call lsmpi_barrier(infpar%lg_comm)
+
+      do lt = 1, tpl%nlti
+
+         gtnr = tpl%ti(lt)%gt
+
+         call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
+
+         !Facilitate access
+         call ass_D1to2( tpl%ti(lt)%t, tpm, tpl%ti(lt)%d )
+
+         !build list of tiles to get for the current tpl tile
+         !get offset for tile counting
+         do j=1,tpl%mode
+            otpl(j)=(otpl(j)-1)*tpl%tdim(j)
+         enddo
+
+         dcged = tpl%ti(lt)%d(2)
+         dilej = tpl%ti(lt)%d(1)
+
+         nfound = 0
+         do cilej=1,dilej
+
+            gilej = otpl(1) + cilej
+
+            call calc_i_leq_j(gilej,no,i,j)
+
+            do ccged=1,dcged
+
+               gcged = otpl(2) + ccged
+
+               call calc_i_geq_j(gcged,nv,c,d)
+
+               mtile = [ (c-1)/t2%tdim(1)+1 , (d-1)/t2%tdim(2)+1, (j-1)/t2%tdim(3)+1, (i-1)/t2%tdim(4)+1 ]
+
+               ctile = get_cidx(mtile,t2%ntpm,t2%mode)
+
+               Already_in = .false.
+
+               do check = 1, nfound
+                  if( founds(check) == ctile ) then
+                     Already_in = .true.
+                     exit
+                  endif
+               enddo
+
+               if(.not.Already_in)then
+                  founds(nfound+1) = ctile
+                  nfound = nfound + 1
+               endif
+
+            enddo
+         enddo
+
+         mingilej = otpl(1) + 1
+         maxgilej = otpl(1) + dilej
+         mingcged = otpl(2) + 1
+         maxgcged = otpl(2) + dcged
+
+         do check = 1,nfound
+
+            ctile = founds(check)
+
+            call get_midx(ctile,mtile,t2%ntpm,t2%mode)
+
+            call get_tile_dim(tdim,t2,mtile)
+
+            nelms = 1
+            do i=1,t2%mode
+               nelms = nelms * tdim(i)
+            enddo
+
+            call tensor_get_tile(t2,mtile,buf1,nelms)
+
+            if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
+
+            call ass_D1to4( buf1, tt1, tdim )
+            if(mtile(2)==mtile(1))then
+               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            else
+               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            endif
+
+            !get offset for tile counting
+            ot2(1)=(mtile(1)-1)*t2%tdim(1)
+            ot2(2)=(mtile(2)-1)*t2%tdim(2)
+            ot2(3)=(mtile(3)-1)*t2%tdim(3)
+            ot2(4)=(mtile(4)-1)*t2%tdim(4)
+
+            da = tdim(1)
+            db = tdim(2)
+            di = tdim(3)
+            dj = tdim(4)
+
+            contributed  = .false.
+
+            do j=1,dj
+               gj = ot2(4)+j
+               do i=1,di
+                  gi = ot2(3)+i
+
+                  if( gi <= gj )then
+                     gilej = gi + ((gj-1)*gj)/2
+
+                     if( mingilej <= gilej .and. gilej<= maxgilej )then
+
+                        do b=1,db
+                           gd = ot2(2)+b
+                           do a=1,da
+                              gc = ot2(1)+a
+
+                              gcged = gc + (gd - 1) * nv - ((gd-1)*gd)/2
+
+                              if( gc > gd .and. mingcged <= gcged .and. gcged<= maxgcged )then
+                                 !print *,infpar%lg_mynum,"ONE"
+
+                                 ccged = mod(gcged-1,nvrs)+1
+                                 cilej = mod(gilej-1,nors)+1
+
+                                 tpm(cilej,ccged) = tt1(a,b,i,j)+tt2(b,a,i,j)
+
+                                 contributed  = .true.
+
+                              else if( gc == gd .and. mingcged <= gcged .and. gcged<= maxgcged)then
+                                 !print *,infpar%lg_mynum,"TWO"
+
+                                 ccged = mod(gcged-1,nvrs)+1
+                                 cilej = mod(gilej-1,nors)+1
+
+
+                                 tpm(cilej,ccged) = 0.5E0_realk*(tt1(a,b,i,j)+tt2(b,a,i,j))
+
+                                 contributed  = .true.
+
+                              endif
+                           end do
+                        end do
+
+                     endif
+
+                  endif
+
+               end do
+            end do
+
+         enddo
+
+      enddo
+
+
+
+      do lt = 1, tmi%nlti
+
+         gtnr = tmi%ti(lt)%gt
+
+         call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
+
+         !Facilitate access
+         call ass_D1to2( tmi%ti(lt)%t, tpm, tmi%ti(lt)%d )
+
+         !build list of tiles to get for the current tmi tile
+         !get offset for tile counting
+         do j=1,tmi%mode
+            otmi(j)=(otmi(j)-1)*tmi%tdim(j)
+         enddo
+
+         dcged = tmi%ti(lt)%d(2)
+         dilej = tmi%ti(lt)%d(1)
+
+         nfound = 0
+         do cilej=1,dilej
+
+            gilej = otmi(1) + cilej
+
+            call calc_i_leq_j(gilej,no,i,j)
+
+            do ccged=1,dcged
+
+               gcged = otmi(2) + ccged
+
+               call calc_i_geq_j(gcged,nv,c,d)
+
+               mtile = [ (c-1)/t2%tdim(1)+1 , (d-1)/t2%tdim(2)+1, (j-1)/t2%tdim(3)+1, (i-1)/t2%tdim(4)+1 ]
+
+               ctile = get_cidx(mtile,t2%ntpm,t2%mode)
+
+               Already_in = .false.
+
+               do check = 1, nfound
+                  if( founds(check) == ctile ) then
+                     Already_in = .true.
+                     exit
+                  endif
+               enddo
+
+               if(.not.Already_in)then
+                  founds(nfound+1) = ctile
+                  nfound = nfound + 1
+               endif
+
+            enddo
+         enddo
+
+         mingilej = otmi(1) + 1
+         maxgilej = otmi(1) + dilej
+         mingcged = otmi(2) + 1
+         maxgcged = otmi(2) + dcged
+
+         do check = 1,nfound
+
+            ctile = founds(check)
+
+            call get_midx(ctile,mtile,t2%ntpm,t2%mode)
+
+            call get_tile_dim(tdim,t2,mtile)
+
+            nelms = 1
+            do i=1,t2%mode
+               nelms = nelms * tdim(i)
+            enddo
+
+            call tensor_get_tile(t2,mtile,buf1,nelms)
+
+            if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
+
+            call ass_D1to4( buf1, tt1, tdim )
+            if(mtile(2)==mtile(1))then
+               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            else
+               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            endif
+
+            !get offset for tile counting
+            ot2(1)=(mtile(1)-1)*t2%tdim(1)
+            ot2(2)=(mtile(2)-1)*t2%tdim(2)
+            ot2(3)=(mtile(3)-1)*t2%tdim(3)
+            ot2(4)=(mtile(4)-1)*t2%tdim(4)
+
+            da = tdim(1)
+            db = tdim(2)
+            di = tdim(3)
+            dj = tdim(4)
+
+            do j=1,dj
+               gj = ot2(4)+j
+               do i=1,di
+                  gi = ot2(3)+i
+
+                  if( gi <= gj )then
+                     gilej = gi + ((gj-1)*gj)/2
+
+                     if( mingilej <= gilej .and. gilej<= maxgilej )then
+
+                        do b=1,db
+                           gd = ot2(2)+b
+                           do a=1,da
+                              gc = ot2(1)+a
+
+                              gcged = gc + (gd - 1) * nv - ((gd-1)*gd)/2
+
+                              if( gc >= gd .and. mingcged <= gcged .and. gcged<= maxgcged )then
+
+                                 ccged = mod(gcged-1,nvrs)+1
+                                 cilej = mod(gilej-1,nors)+1
+
+                                 tpm(cilej,ccged) = tt1(a,b,i,j) - tt2(b,a,i,j)
+
+                              endif
+                           end do
+                        end do
+
+                     endif
+
+                  endif
+
+               end do
+            end do
+
+         enddo
+
+      enddo
+
+      call mem_dealloc(buf1)
+      call mem_dealloc(buf2)
+
+      !stop 0
+      if(infpar%lg_mynum ==0 )call lsmpi_barrier(infpar%lg_comm)
+      call lsmpi_barrier(infpar%lg_comm)
+      !stop 0
+#endif
+   end subroutine lspdm_get_tpl_and_tmi
 
    !> \brief Reorder t to use symmetry in both occupied and virtual indices,
    !> thereby restricting the first virtual to be less equal to the second and
    !> make symmetric and antisymmetric combinations of these 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine get_tpl_and_tmi(t2,nv,no,tpl,tmi)
+   subroutine get_tpl_and_tmi_fort(t2,nv,no,tpl,tmi)
       implicit none
       !> number of virtual and occupied orbitals
       integer, intent(in) :: nv, no
       !>input the full doubles ampitudes in the order nv nv no no
       real(realk),intent(in) :: t2(nv,nv,no,no)
-      !> output amplitudes with indices restricted c<d,i<j
+      !> output amplitudes with indices restricted c>d,i<j
       real(realk), intent(inout) :: tpl(:)
       !> output amplitudes with indices restricted c>d,i<j
       real(realk), intent(inout) :: tmi(:)
@@ -104,7 +472,7 @@ module cc_tools_module
       enddo
       !OMP END DO
       !OMP END PARALLEL
-   end subroutine get_tpl_and_tmi
+   end subroutine get_tpl_and_tmi_fort
 
    !> \brief calculate a and b terms in a kobayashi fashion
    !> \author Patrick Ettenhuber
@@ -1376,6 +1744,209 @@ module cc_tools_module
 
 
    end subroutine squareup_block_triangular_squarematrix
+
+
+   !> \brief: determine i and j from ij
+   !> \author: Janus Juul Eriksen
+   !> \date: july 2013
+   subroutine calc_i_leq_j(ij,full,i,j)
+
+      implicit none
+
+      !> composite ij index
+      integer, intent(in) :: ij,full
+      !> i and j
+      integer, intent(inout) :: i,j
+      !> integers
+      integer :: gauss_sum,gauss_sum_old,series
+
+      ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements.
+      ! in column 1, there are N rows, in column 2, there are (N-1) rows, ...,  in
+      ! column (N-1), there are 2 rows, and in column N, there are 1 row.
+      ! this is a gauss sum of 1 + 2 + 3 + ... + N-2 + N-1 + N
+      ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum).
+      ! if gauss_sum for a given i (series) is smaller than ij, we loop.
+      ! when gauss_sum is greater than ij, we use the value of i for the present loop cycle
+      ! and calculate the value of j from the present ij and previous gauss_sum values.
+      ! when gauss_sum is equal to ij, we are on the diagonal and i == j (== series).
+
+      do series = 1,full
+
+         gauss_sum = int((series**2 + series)/2)
+
+         if (gauss_sum .lt. ij) then
+
+            gauss_sum_old = gauss_sum
+
+            cycle
+
+         else if (gauss_sum .eq. ij) then
+
+            j = series
+            i = series
+
+            exit
+
+         else
+
+            j = ij - gauss_sum_old
+            i = series
+
+            exit
+
+         end if
+
+      end do
+
+   end subroutine calc_i_leq_j
+
+   subroutine calc_i_geq_j(ij,full,i,j)
+
+      implicit none
+
+      !> composite ij index
+      integer, intent(in) :: ij,full
+      !> i and j
+      integer, intent(inout) :: i,j
+      !> integers
+      integer :: igeqj,series,gauss_sum,gauss_sum_old
+
+      do series = 1,full
+
+         gauss_sum = series + (series-1) * full - ((series-1)*series)/2
+
+         if (gauss_sum .lt. ij) then
+
+            gauss_sum_old = gauss_sum
+
+            cycle
+
+         else if (gauss_sum .eq. ij) then
+
+            j = series
+            i = series
+
+            exit
+
+         else
+
+            j = series - 1
+            i = j + ij - gauss_sum_old
+
+            exit
+
+         end if
+
+      end do
+
+   end subroutine calc_i_geq_j
+
+   function get_nbuffs_scheme_0() result (nbuffs)
+      implicit none
+      integer :: nbuffs
+      nbuffs = 5
+   end function get_nbuffs_scheme_0
+
+   function get_split_scheme_0(full) result (split)
+      implicit none
+      integer,intent(in) :: full
+      integer :: split
+      integer :: nnod
+
+      nnod = 0
+#ifdef VAR_MPI
+      nnod = infpar%lg_nodtot
+#endif
+
+      split = full/int(sqrt(float(nnod))+2)
+
+   end function get_split_scheme_0
+
+   subroutine simulate_intloop_and_get_worksize(maxint,nb,nbg,nba,bs,intspec,setting)
+      implicit none
+      integer(kind=long), intent(out) :: maxint
+      integer,intent(in) :: nb,nbg,nba,bs
+      type(lssetting),intent(inout) :: setting
+      Character,intent(in) :: intspec(5)
+      integer :: gb,ab,fg,lg,fa,la
+      integer :: ntiles
+      integer :: starts(4), tdim(4), dims(4), ntpm(4)
+      integer :: ndimA,  ndimB,  ndimC,  ndimD
+      integer :: ndimAs, ndimBs, ndimCs, ndimDs
+      integer :: startA, startB, startC, startD
+      integer :: nbtchsg, nbtchsa
+      integer :: i,nba1,nbg1,as,gs
+
+      nbtchsa = nb / nba
+      if( mod( nb, nba ) > 0 ) nbtchsa = nbtchsa + 1
+      nbtchsg = nb / nbg
+      if( mod( nb, nbg ) > 0 ) nbtchsg = nbtchsg + 1
+
+      nba1 = nba
+      nbg1 = nbg
+
+      maxint = 0
+      !simulate loop
+      do gb=1,nbtchsg
+
+         !short hand notation
+         fg = 1 + (gb-1)*nbg
+         lg = nb - fg + 1
+         if( lg >= nbg )then
+            lg = nbg
+         endif
+
+         if( lg > bs )then
+            gs = bs
+         else
+            gs = lg
+         endif
+
+
+         do ab=1,nbtchsa
+            !short hand notation
+            fa = 1 + (ab-1)*nba
+            la = nb - fa + 1
+            if( la >= nba )then
+               la = nba
+            endif
+
+            if( la > bs )then
+               as = bs
+            else
+               as = la
+            endif
+
+            dims = [nb,nb,la,lg]
+            tdim = [bs,bs,as,gs]
+
+            call tensor_get_ntpm(dims,tdim,4,ntpm,ntiles = ntiles)
+
+            do i = 1, ntiles
+
+               call get_midx(i,starts,ntpm,4)
+
+               ndimA  = dims(1)
+               ndimB  = dims(2)
+               ndimC  = dims(3)
+               ndimD  = dims(4)
+
+               startA = 1  + (starts(1)-1)*tdim(1)
+               startB = 1  + (starts(2)-1)*tdim(2)
+               startC = fa + (starts(3)-1)*tdim(3)
+               startD = fg + (starts(4)-1)*tdim(4)
+
+               call II_GET_ERI_INTEGRALBLOCK_INQUIRE(DECinfo%output,DECinfo%output,setting,&
+                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
+                  & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC)
+
+               maxint = max(maxint,(i8*ndimAs*ndimBs)*ndimCs*ndimDs)
+
+            enddo
+         enddo
+      enddo
+   end subroutine simulate_intloop_and_get_worksize
+
 
 
 end module cc_tools_module

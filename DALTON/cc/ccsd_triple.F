@@ -433,7 +433,7 @@ C
       DIMENSION OMEGA1(NT1AMX),XIAJB(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       DO 100 I = 1,NRHFT
          DO 110 A = 1,NVIRT
@@ -474,7 +474,7 @@ C
       DIMENSION OMEGA2(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),FOCK(NORBT,NORBT)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       DO 100 I = 1,NRHFT
          DO 110 A = 1,NVIRT
@@ -673,7 +673,7 @@ C
 C
       PARAMETER (HALF = 0.5D0)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       DO 50 I = 1,NRHFT
          DO 60 A = 1,NVIRT

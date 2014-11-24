@@ -71,6 +71,7 @@ contains
 
 
     ! -- Debug modes
+    DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%CRASHCALC            = .false.
     DECinfo%cc_driver_debug      = .false.
     DECinfo%CCDEBUG              = .false.
@@ -198,8 +199,8 @@ contains
 
     ! ccsd(t) settings
     DECinfo%abc               = .false.
-    DECinfo%abc_tile_size     = 1
-    DECinfo%CCSDPT_nbuffs_ijk = 6
+    DECinfo%abc_tile_size     = 1000000
+    DECinfo%ijk_nbuffs        = 1000000
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -223,6 +224,9 @@ contains
 
     !> MPI (undefined by default)
     DECinfo%MPIgroupsize=0
+
+    !> Use Ichor Integral Code
+    DECinfo%UseIchor = .false.
 
     ! Test stuff
 
@@ -420,7 +424,7 @@ contains
           ! ==============
        case('.PT_ABC'); DECinfo%abc= .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
-
+       case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
 
 
           ! DEC CALCULATION 
@@ -506,6 +510,8 @@ contains
 
        !KEYWORDS FOR DEC PARALLELISM
        !****************************
+       case('.TEST_FULLY_DISTRIBUTED_INTEGRALS') 
+          DECinfo%test_fully_distributed_integrals=.true.
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
@@ -582,11 +588,6 @@ contains
        case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
 
 
-       ! (T) SPECIFIC KEYWORDS
-       !**********************
-       case('.(T)#BUFFS_IJK'); read(input,*) DECinfo%CCSDPT_nbuffs_ijk 
-
-
        !OTHER STUFF FIXME: SORT IT INTO BLOCKS
        !***********
 
@@ -602,7 +603,7 @@ contains
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
-
+       case('.ICHOR'); DECinfo%UseIchor = .true.
        case('.F12')
           DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     

@@ -123,6 +123,8 @@ DALTON%NOGCINTEGRALTRANSFORM=.FALSE. !we do trans if segmentet basis
 DALTON%FORCEGCBASIS=.FALSE. !we do trans if segmentet basis
 DALTON%NOBQBQ = .FALSE.
 DALTON%noomp = .FALSE.
+DALTON%IchorForceCPU = .FALSE.
+DALTON%IchorForceGPU = .FALSE.
 DALTON%unres = .FALSE.
 DALTON%cfg_lsdalton = .FALSE.
 DALTON%TRILEVEL = .TRUE.
@@ -2691,6 +2693,8 @@ TYPE(LSINTSCHEME),INTENT(INOUT) :: scheme
 scheme%doMPI                 = .TRUE.
 scheme%MasterWakeSlaves      = .TRUE.
 scheme%noOMP                 = dalton_inp%noOMP
+scheme%IchorForceCPU         = dalton_inp%IchorForceCPU
+scheme%IchorForceGPU         = dalton_inp%IchorForceGPU
 scheme%CFG_LSDALTON          = dalton_inp%CFG_LSDALTON
 scheme%DOPASS                = dalton_inp%DOPASS
 scheme%DENSFIT               = dalton_inp%DENSFIT
@@ -2822,6 +2826,8 @@ WRITE(IUNIT,'(3X,A22,L7)') 'noBQBQ                ', scheme%noBQBQ
 WRITE(IUNIT,'(3X,A22,L7)') 'doMPI                 ', scheme%doMPI
 WRITE(IUNIT,'(3X,A22,L7)') 'MasterWakeSlaves      ', scheme%MasterWakeSlaves
 WRITE(IUNIT,'(3X,A22,L7)') 'noOMP                 ', scheme%noOMP
+WRITE(IUNIT,'(3X,A22,L7)') 'IchorForceCPU         ', scheme%IchorForceCPU
+WRITE(IUNIT,'(3X,A22,L7)') 'IchorForceGPU         ', scheme%IchorForceGPU
 WRITE(IUNIT,'(3X,A22,L7)') 'CFG_LSDALTON          ', scheme%CFG_LSDALTON
 WRITE(IUNIT,'(3X,A22,L7)') 'DOPASS                ', scheme%DOPASS
 WRITE(IUNIT,'(3X,A22,L7)') 'DENSFIT               ', scheme%DENSFIT

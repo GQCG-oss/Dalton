@@ -550,9 +550,8 @@ contains
 
                 if(jobs%esti(job)) then
                    ! Estimated pair fragment
-                   call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                      & EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
-                      & nfrags,PairFragment,grad)
+                   call pair_driver(EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
+                      & PairFragment,grad)
 
                    write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
@@ -560,9 +559,8 @@ contains
                       &' #b',PairFragment%nbasis,' pair   estimate: ', atomA,atomB
                 else
                    ! Pair fragment according to FOT precision
-                   call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                      & AtomicFragments(atomA), AtomicFragments(atomB), &
-                      & nfrags,PairFragment,grad)
+                   call pair_driver(AtomicFragments(atomA), AtomicFragments(atomB), &
+                      & PairFragment,grad)
 
                    write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&

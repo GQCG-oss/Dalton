@@ -6,7 +6,7 @@
 MODULE IchorPrecisionMod
 #ifdef VAR_OPENACC
   !OpenACC libary routines 
-  use openacc, only: acc_handle_kind
+  use openacc, only: acc_handle_kind,acc_device_kind
 #endif
 ! Long integer is equivalent to 64 bit integers (8 bytes) and ranges 
 ! from -9223372036854775808 to 9223372036854775807 (i.e., -2**63 to 2**63-1)
@@ -24,11 +24,14 @@ MODULE IchorPrecisionMod
 #ifdef VAR_OPENACC
   !OpenACC libary kind specification
   INTEGER,parameter :: acckind = acc_handle_kind
+  INTEGER,parameter :: accdevkind = acc_device_kind
 #else
 #ifdef VAR_INT64
   INTEGER,parameter :: acckind = 8
+  INTEGER,parameter :: accdevkind = 8
 #else
   INTEGER,parameter :: acckind = 4 
+  INTEGER,parameter :: accdevkind = 4
 #endif
 #endif
 contains

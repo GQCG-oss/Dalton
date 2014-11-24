@@ -78,9 +78,9 @@ cat >>walk_gradex.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
-   GREP="egrep -a"
+   GREP="egrep -a -l"
 else
-   GREP="egrep"
+   GREP="egrep -l"
 fi
 
 # WALK module
@@ -134,16 +134,14 @@ CRIT1=`$GREP "Walk type\: Gradient\-extremal walk" $log | wc -l`
 CRIT2=`$GREP "Index of critical point searched\: 1" $log | wc -l`
 CRIT3=`$GREP "Hessian mode selection \: * 1" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[6]=6
+CTRL[6]=3
 ERROR[6]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Initial gradient
-CRIT1=`$GREP "N * 0*\.000000.... * \-0*\.000000.... * 0*\.000003...." $log | wc -l`
-#CRIT2=`$GREP "H * 0*\.000000.... * 0*\.000000.... * \-0*\.000000...." $log | wc -l`
-CRIT3=`$GREP "H * \-0*\.000000.... * 0*\.000000.... * \-0*\.000001...." $log | wc -l`
-CRIT4=`$GREP "H * \-0*\.000000.... * \-0*\.000000.... * \-0*\.000001...." $log | wc -l`
-TEST[7]=`expr	$CRIT1 \+ $CRIT3 \+ $CRIT4`
-CTRL[7]=3
+# Norm of molecular gradient:     0.0000019026
+CRIT1=`$GREP "Norm of molecular gradient: * 0*\.00000[12]" $log | wc -l`
+TEST[7]=`expr	$CRIT1 `
+CTRL[7]=1
 ERROR[7]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial Hessian
@@ -255,14 +253,14 @@ CRIT2=`$GREP "H *    1\.61959..... * (\-0|\-|0| )\.000000.... * 0*\.38005....." 
 CRIT3=`$GREP "H *  \-1\.17305..... *   1\.614526.... * 0*\.52567....." $log | wc -l`
 CRIT4=`$GREP "H *  \-1\.17305..... * \-1\.614527.... * 0*\.52567....." $log | wc -l`
 TEST[17]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[17]=16
+CTRL[17]=4
 ERROR[17]="FINAL GEOMETRY NOT CORRECT"
 
 # Final analysis
 CRIT1=`$GREP "Vibrational analysis" $log | wc -l`
 CRIT2=`$GREP "Cioslowski population analysis and static polarizabilities only\." $log | wc -l`
 TEST[18]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[18]=3
+CTRL[18]=2
 ERROR[18]="FINAL ANALYSIS NOT SET UP CORRECTLY"
 
 # Dipole moment gradient
@@ -287,7 +285,7 @@ ERROR[19]="DIPOLE MOMENT GRADIENT NOT CORRECT"
 CRIT1=`$GREP "N * (\-0|\-)\.71633[0-9]" $log | wc -l`
 CRIT2=`$GREP "H * (0| )\.23878[0-9]" $log | wc -l`
 TEST[20]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[20]=4
+CTRL[20]=2
 ERROR[20]="CIOSLOWSKI CHARGES NOT CORRECT"
 
 # Static polarizabilities
