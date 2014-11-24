@@ -126,7 +126,7 @@ C
          CALL AROUND('Test output of GD vectors from ANRCTL')
          DO 950 J = 1,NGD
             WRITE(LUPRI,'(/I3,A,I3)') J,'. GD gradient vector of',NGD
-            WRITE(LUPRI,'(2X,10F7.4)') (GD(I,J),I=1,NVARPT)
+            WRITE(LUPRI,'(10F10.4)') (GD(I,J),I=1,NVARPT)
   950    CONTINUE
       END IF
 C
@@ -176,13 +176,13 @@ C
             IOFF = 0
             DO 960 J = 1,NCSIM
                WRITE(LUPRI,'(/I3,A,I3)') J,'. start CI vector of',NCSIM
-               WRITE(LUPRI,'(2X,10F7.4)') (WRK(IOFF+I),I=1,NCONST)
+               WRITE(LUPRI,'(10F10.4)') (WRK(IOFF+I),I=1,NCONST)
                IOFF = IOFF + NCONST
   960       CONTINUE
             DO 965 J = 1,NOSIM
                WRITE(LUPRI,'(/I3,A,I3)') 
      *             J,'. start orbital vector of',NOSIM
-               WRITE(LUPRI,'(2X,10F7.4)') (WRK(IOFF+I),I=1,NWOPPT)
+               WRITE(LUPRI,'(10F10.4)') (WRK(IOFF+I),I=1,NWOPPT)
                IOFF = IOFF + NWOPPT
   965       CONTINUE
          END IF

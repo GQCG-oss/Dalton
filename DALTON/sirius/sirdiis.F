@@ -100,7 +100,7 @@ Cholesky
 #include "choscf.h"
 C
 C QM/NP/MM code
-#include "qmnpmm.h" 
+#include "qmnpmm.h"
 C
       PARAMETER (NBLOC = 1)
       INTEGER LUBLOC(NBLOC)
@@ -114,9 +114,9 @@ C
       ICONV = 0
       IF (MXDGSS .GT. 1) THEN
          NINFO = NINFO + 1
-         WRITE (LUPRI,'(/A/A)')
-     &   ' SRDIIS INFO: no DIIS iterations because degenerate',
-     &   ' SRDIIS INFO: supersymmetries not implemented for DIIS'
+         WRITE (LUPRI,'(//A/)')
+     &   ' INFO: no DIIS iterations because degenerate'//
+     &   'supersymmetries is not implemented for DIIS'
          GO TO 9999
       END IF
 C
@@ -125,19 +125,19 @@ C
 
       ! QM/NP/MM embedding
       IF (QMNPMM) THEN
-         CALL GETDIM_RELMAT(IDIM,.TRUE.) 
+         CALL GETDIM_RELMAT(IDIM,.TRUE.)
          CALL MEMGET('REAL',KRELMAT,IDIM,WRK,KFREE,LFREE)
          CALL COMP_RELMAT(WRK(KRELMAT),WRK(KFREE),LFREE)
-         CALL WRITE_RELMAT(WRK(KRELMAT)) 
-         IF (DOMMSUB.AND.DOMMPOL) THEN 
+         CALL WRITE_RELMAT(WRK(KRELMAT))
+         IF (DOMMSUB.AND.DOMMPOL) THEN
             CALL GETDIM_MMMAT(IDIM, .TRUE.)
             CALL MEMGET('REAL',KMMRELMAT,IDIM,WRK,KFREE,LFREE)
             CALL COMP_MMRELMAT(WRK(KMMRELMAT),WRK(KFREE),LFREE)
-         ELSE 
+         ELSE
             KMMRELMAT = 1
-         END IF 
-      ELSE 
-         KRELMAT = 1 
+         END IF
+      ELSE
+         KRELMAT = 1
       END IF
 C
 CHJMAERKE: define IPR_DIIS separately?
@@ -161,16 +161,16 @@ C         we should still avoid the problem mentioned above.)
 C
       LUWOUT = LUPRI
   10  WRITE (LUWOUT,'(//A/A/A)')
-     &      ' *********************************************',
-     &      ' ***** DIIS optimization of Hartree-Fock *****',
-     &      ' *********************************************'
+     &      ' ***********************************************',
+     &      ' ***** DIIS acceleration of SCF iterations *****',
+     &      ' ***********************************************'
 Cholesky
       IF (CHOINT) THEN
          WRITE(LUWOUT,'(A)')
-     &      '     (using Cholesky decomposed integrals)'
+     &      '   -- using Cholesky decomposed integrals'
          IF (.NOT. CCMODSK) THEN
             WRITE(LUWOUT,'(A,1P,D9.2,A)')
-     &      '     (decomposing density, thr = ',THRDC,')'
+     &      '   -- using Cholesky decomposed density, thr = ',THRDC
          END IF
       END IF
 Cholesky
@@ -278,8 +278,7 @@ C
      &            WRK(KFSAV),WRK(KEVSAV),WRK(KEGSAV),MXERRV,C2DIIS,
      &            WRK(KSMOAO),WRK(KDCAO),WRK(KFCAO),WRK(KDSAV),WRK(KDV),
      &            WRK(KCVEC),WRK(KTNLM),WRK(KRELMAT),WRK(KMMRELMAT),
-     &            WRK,KFREE,
-     &            LFREE,IPR_DIIS,ICONV)
+     &            WRK,KFREE,LFREE, IPR_DIIS,ICONV)
 C
  9990 CALL MEMREL('SRDIIS',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
  9999 CALL FLSHFO(LUW4)
@@ -369,7 +368,7 @@ C
       PARAMETER (THREVC = 0.01D0, THRINC = 1.0D-10, CNVFAC = 0.8D0)
 C
       LOGICAL   ONLYFC, C2DIIS, DIFDEN, DODIFDEN, NEWTHR, RHFWOP, OLDWOP
-      LOGICAL   LCONV, LNEWOCC, DODFT_SAVE
+      LOGICAL   LCONV, LNEWOCC, HSFOCK_SAVE, HSROHF_SAVE
       DIMENSION NISH_SAVE(8), NCAN(8)
       CHARACTER*8 CMOLBL
 
@@ -388,8 +387,18 @@ C
       IFTHSV = IFTHRS
 C
 C     save current IOPRHF for check below
-      IOPRH1 = IOPRHF
+      IOPRHF_old = IOPRHF
       IF (NSYM .EQ. 1) AUTOCC = .FALSE.
+
+!        Sep 2013 hjaaj: now HSFOCK also for NASHT.eq.1 because we
+!        have some evidence that the open shell Fock matrix from HSFOCK
+!        gives better convergence than the one from "single open shell"
+
+      HSFOCK_SAVE = ((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
+      HSFOCK = HSFOCK_SAVE .OR. (NASHT .EQ. 1 .AND. .NOT. AUTOCC)
+      HSROHF_SAVE = HSROHF
+      IF (HSFOCK) HSROHF = .TRUE.
+
 C
 C     Get one-electron Hamiltonian
 C
@@ -458,7 +467,7 @@ C
       IF (ONLYFC) THEN
 C        DV(1) = D0
          NDMAT = 1
-      ELSE IF (NASHT .EQ. 1 .OR. HSROHF) THEN
+      ELSE IF (NASHT .GT. 0) THEN
          CALL DZERO(DV,NNASHX)
          DO I = 1, NASHT
             II = I*(I+1)/2
@@ -549,8 +558,6 @@ Chj      ... if (GEOWLK) then
          DEPGEO = DEPRED
       END IF
 
-      HFXFAC_SAVE = HFXFAC
-      DODFT_SAVE  = DODFT
 C
       ITDIIS = 0
       JTDIIS = 0
@@ -625,9 +632,9 @@ C  ***** Construct folded inactive and active parts of the one-electron
 C        density matrix in AO-basis (DCAO and DVAO). DV is the active
 C        part of the one-electron density matrix in MO-basis.
 C
-         HSFOCK = ((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
          CALL FCKDEN((NISHT.GT.0.OR.HSFOCK),(.NOT.ONLYFC),
      &                DCAO,DCAO(1+N2BASX),CMO,DV,WRK(KFREE),LFREE)
+C        CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
 
 #ifdef EXPERIMENTAL_DMAT_RESTART
 ! radovan: experimental and untested feature, use at own risk
@@ -668,8 +675,6 @@ C
          end if
 #endif /* EXPERIMENTAL_DMAT_RESTART */
 
-
-C        CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
 C
 C     For a restricted open shell DFT calculation, or high spin
 C     Let the matrices be Fc=Fi+Fa and Fc-Fo=Fa-Q=-Fa(exch)
@@ -768,13 +773,6 @@ C
             END IF
          END IF
 
-         IF (HSFOCK) THEN
-C
-C           Reset densities for call to dft
-C
-            CALL DSCAL(N2BASX,-D1,DCAO(1+N2BASX),1)
-            CALL DAXPY(N2BASX,-D1,DCAO(1+N2BASX),1,DCAO,1)
-         END IF
 C
 C        FAOSAV(1,INDEVC,1) = FD2AO = FC2AO + FV2AO
 C        FAOSAV(1,INDEVC,2) = FV2AO
@@ -816,27 +814,36 @@ C
          IF (ONLYFC) THEN
             EACTIV = D0
          ELSE
-C           EACTIV = DV(u,u)FC(u,u) = FC(u,u)
-C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
             IF (HSFOCK) THEN
-               EACTIV = D0
-               DO ISYM = 1, NSYM
-                  EACT1 = +DDOT(NNBAS(ISYM),
-     &                       DAOSAV(1+IIBAS(ISYM),2),1,
-     &                       FAOSAV(1+IIBAS(ISYM),INDEVC,2),1) * DP5
-                  EACTIV = EACTIV + EACT1
-               END DO
-            ELSE
-            EACTIV = DDOT(NNBAS(IOPRHF),DAOSAV(1+IIBAS(IOPRHF),2),1,
+C              FAOSAV(:,INDEVC,1) = FDAO = FCAO + FVAO
+C              FAOSAV(:,INDEVC,2) = -FVAO_exchange_only
+               EACTIV = DP5 *
+     &            DDOT(NNBAST,DAOSAV(1,2),1,FAOSAV(1,INDEVC,2),1)
+            ELSE ! NASHT.eq.1, i.e. PV(1) = 0, i.e. no H2AC contribution.
+C              FAOSAV(:,INDEVC,1) = FCAO
+C              FAOSAV(:,INDEVC,2) = FVAO
+C              EACTIV = DV(u,u)FC(u,u) = FC(u,u)
+C                     = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
+               EACTIV = DDOT(NNBAS(IOPRHF),DAOSAV(1+IIBAS(IOPRHF),2),1,
      &                           FAOSAV(1+IIBAS(IOPRHF),INDEVC,1),1)
-     &             + DDOT(NNBAS(IOPRHF),DAOSAV(1+IIBAS(IOPRHF),2),1,
+     &                + DDOT(NNBAS(IOPRHF),DAOSAV(1+IIBAS(IOPRHF),2),1,
      &                           H1AO(1+IIBAS(IOPRHF)),1)
-            CALL DAXPY(NNBAST,D1,FAOSAV(1,INDEVC,2),1,
-     &                 FAOSAV(1,INDEVC,1),1)
+
+C              make FAOSAV(:,INDEVC,1) = FDAO = FCAO + FVAO
+               CALL DAXPY(NNBAST,D1,FAOSAV(1,INDEVC,2),1,
+     &                              FAOSAV(1,INDEVC,1),1)
             END IF
          END IF
 
          IF (DODFT) then
+            IF (HSFOCK) THEN
+C
+C              Reset densities from Dtot, -DV to DC, DV for dft
+C
+               CALL DSCAL(N2BASX,-D1,DCAO(1+N2BASX),1)
+               CALL DAXPY(N2BASX,-D1,DCAO(1+N2BASX),1,DCAO,1)
+            END IF
+
 #ifdef USE_XCINT
              allocate(dmat_ao(nbast*nbast))
              allocate(fmat_ao(nbast*nbast))
@@ -867,7 +874,7 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
              deallocate(fmat_ao)
              deallocate(fmat_ao_tri)
 #else
-             CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+            CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
 #endif /* USE_XCINT */
@@ -917,7 +924,7 @@ c        density
            IF (QMNPMM) THEN
              CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
              CALL DZERO(WRK(KFCSOL),NNBAST)
-             CALL QMNPMM_FOCK(DAOSAV(1,1),DAOSAV(1,2),RCPMAT,RMMMAT,  
+             CALL QMNPMM_FOCK(DAOSAV(1,1),DAOSAV(1,2),RCPMAT,RMMMAT,
      &                        WRK(KFCSOL),ESOLT,WRK(KFREE),LFREE)
              CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
              CALL MEMREL('DIIS_CTL.QMNPMM',WRK,1,KFCSOL,KFREE,
@@ -1534,7 +1541,7 @@ C           Moved from SIRCTL to here since we do not necessarily use
 C           quadratic HF after the DIIS anymore....
 C
       RHFWOP = .TRUE.
-      IF (IOPRHF .NE. IOPRH1) RHFWOP = .FALSE.
+      IF (IOPRHF .NE. IOPRHF_old) RHFWOP = .FALSE.
       DO ISYM = 1, NSYM
          IF (NRHF(ISYM) .NE. NISH(ISYM)) THEN
             NRHF(ISYM) = NISH(ISYM)
@@ -1677,15 +1684,40 @@ Chj      ... set orbital gradient to zero (i.e. completely converged!)
          LFQ = NASHT*NORBT
          CALL MEMGET2('REAL','FQ',KFQ,LFQ,WRK,KFREE,LFREE)
          IF (NASHT.GT.0) THEN
-C           put FV in DCAO
-            CALL UTHUB(FAOSAV(1,INDEVC,2),DCAO,CMO,WRK(KFREE),
-     &                 NSYM,NBAS,NORB)
-C           form FC = FD - FV in FCAO
-            CALL DAXPY(NNORBT,DM1,DCAO,1,FCAO,1)
-            IF (NASHT .GE. 1) THEN
-               CALL DZERO(WRK(KFQ),NASHT*NORBT)
-C              FQ matrix is zero matrix for open shell RHF
+C           1. put FV in DCAO:
+            IF (HSFOCK .AND. .NOT.HSFOCK_SAVE) THEN
+            !  calculate correct FV for interface SIRIFC
+            !  (full FV has not been calculated  before when HSFOCK,
+            !  FAOSAV(:,INDEVC,2) contains minus the exchange part of FVAO)
+            !  Standard FV is necessary for NASHT.eq.1 because many places
+            !  in ABACUS and RESPONS the test is on NASHT.EQ.1 instead of IOPRHF.gt.0 /141123-hjaaj
+
+               ! retrieve final DVAO in DCAO
+               IF (NSYM.GT.1) THEN
+                  CALL PKSYM1(DCAO(1+N2BASX),DAOSAV(1,2),
+     &                        NBAS,NSYM,-1)
+                  CALL DUNFLD(NBAST,DCAO(1+N2BASX),DCAO)
+               ELSE
+                  CALL DUNFLD(NBAST,DAOSAV(1,2),DCAO)
+               ENDIF
+               DCAO(1:N2BASX) = -DCAO(1:N2BASX)
+               CALL FCK2AO(.TRUE.,FCAO(1+N2BASX),DCAO,WRK,KFREE,LFREE) ! calculate FVAO in FCAO(1+N2BASX)
+               ! ( first parameter .TRUE. tells FCK2AO only one density matrix )
+               CALL UTHUB(FCAO(1+N2BASX),DCAO,CMO,WRK(KFREE),          ! and now FV in DCAO
+     &                    NSYM,NBAS,NORB)
+
+               HSFOCK = HSFOCK_SAVE
+               HSROHF = HSROHF_SAVE
+            ELSE
+               CALL UTHUB(FAOSAV(1,INDEVC,2),DCAO,CMO,WRK(KFREE),
+     &                    NSYM,NBAS,NORB)
             END IF
+
+C           2. form FC' = FD - FV' in FCAO, both for standard FV'=FV and for HSROHF FV'=-FV_exch
+            CALL DAXPY(NNORBT,DM1,DCAO,1,FCAO,1)
+
+C           3. FQ matrix is zero matrix for open shell RHF
+            CALL DZERO(WRK(KFQ),NASHT*NORBT)
          END IF
 C
 C *** LOCALIZATION
@@ -1728,8 +1760,10 @@ C
 C ***********************************************************
 C
  1100 CONTINUE
-C     hjaaj-aug99: restore original IFTHRS value
+C     restore original values
       IFTHRS = IFTHSV
+      HSFOCK = HSFOCK_SAVE
+      HSROHF = HSROHF_SAVE
       CALL QEXIT('DIIS_CTL')
       RETURN
       END
