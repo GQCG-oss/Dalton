@@ -2276,75 +2276,136 @@ contains
 
   end subroutine mpicopy_dec_settings
 
-  subroutine rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
+!  subroutine rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
+!    implicit none
+!    !real(realk),intent(inout),pointer :: gmo(:)
+!    !type(array4), intent(inout) :: omega2
+!    type(tensor), intent(inout) :: gmo
+!    type(tensor), intent(inout) :: omega2
+!    !type(array4),intent(inout)         :: t2
+!    type(tensor),intent(inout)         :: t2
+!    !real(realk),intent(inout)         :: t2(:,:,:,:)
+!    integer,intent(inout)             :: nvirt,nocc
+!    logical :: master
+!    integer :: addr1(infpar%lg_nodtot)
+!    integer :: addr2(infpar%lg_nodtot)
+!    integer :: addr3(infpar%lg_nodtot)
+!
+!
+!    master = (infpar%lg_mynum == infpar%master)
+!
+!    if(master) then
+!   !   write(*,*)'Johannes addr in comm', omega2%addr_p_arr
+!      call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
+!      addr1 = omega2%addr_p_arr
+!      addr2 = gmo%addr_p_arr
+!      addr3 = t2%addr_p_arr
+!    endif
+!
+!    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+!    call ls_mpi_buffer(nvirt,infpar%master)
+!    call ls_mpi_buffer(nocc,infpar%master)
+!    call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+!    call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+!    call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+!
+!
+!    if(.not.master)then
+!     ! call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+!      omega2 = get_tensor_from_parr(addr1(infpar%lg_mynum+1))
+!      gmo     = get_tensor_from_parr(addr2(infpar%lg_mynum+1))
+!      t2     = get_tensor_from_parr(addr3(infpar%lg_mynum+1))
+!      !t2=array4_init([nvirt,nocc,nvirt,nocc])
+!      !omega2=array4_init([nvirt,nocc,nvirt,nocc])
+!      !omega2=tensor_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+!      !call tensor_ainit(gmo,[nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
+!      !call tensor_ainit(t2, [nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
+!    endif
+!    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+!    !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+!    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+!
+!    !print*,' inside rpa_res_comm',infpar%lg_mynum
+!
+!    
+!    !print*,' after gmo',infpar%lg_mynum
+!
+!    !print*,' after omega2',infpar%lg_mynum
+!
+!
+!    !call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+!    !print*,' after t2',infpar%lg_mynum
+!    !call ls_mpibcast(gmo%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+!
+!
+!    !call ls_mpibcast(omega2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+!
+!    !print*,' after finalize',infpar%lg_mynum
+!    !call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+!
+!
+!  end subroutine rpa_res_communicate_data
+
+  subroutine rpa_residual_communicate_data(t2,omega2,iajb,oof,vvf,no,nv)
     implicit none
-    !real(realk),intent(inout),pointer :: gmo(:)
-    !type(array4), intent(inout) :: omega2
-    type(tensor), intent(inout) :: gmo
-    type(tensor), intent(inout) :: omega2
-    !type(array4),intent(inout)         :: t2
-    type(tensor),intent(inout)         :: t2
-    !real(realk),intent(inout)         :: t2(:,:,:,:)
-    integer,intent(inout)             :: nvirt,nocc
+    type(tensor),intent(inout) :: omega2,iajb,t2,oof,vvf
     logical :: master
     integer :: addr1(infpar%lg_nodtot)
     integer :: addr2(infpar%lg_nodtot)
     integer :: addr3(infpar%lg_nodtot)
+    integer :: addr4(infpar%lg_nodtot)
+    integer :: addr5(infpar%lg_nodtot)
+    !integer :: iter
+    !type(array4), intent(inout) :: omega2
+    !type(tensor), intent(inout) :: omega2
+    !type(tensor),intent(inout)         :: t2
+    !type(tensor), intent(inout) :: pfock,qfock
+    integer,intent(inout)             :: nv,no
+    !integer :: addr1(infpar%lg_nodtot)
+    !integer :: addr2(infpar%lg_nodtot)
+    !integer :: addr3(infpar%lg_nodtot)
+    !integer :: addr4(infpar%lg_nodtot)
+    !!real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
+    !logical :: master
 
 
     master = (infpar%lg_mynum == infpar%master)
 
+
     if(master) then
-   !   write(*,*)'Johannes addr in comm', omega2%addr_p_arr
-      call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
+      call ls_mpibcast(RPAGETFOCK,infpar%master,infpar%lg_comm)
       addr1 = omega2%addr_p_arr
-      addr2 = gmo%addr_p_arr
+      addr2 = iajb%addr_p_arr
       addr3 = t2%addr_p_arr
+      addr4 = oof%addr_p_arr
+      addr5 = vvf%addr_p_arr
     endif
 
+
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(nvirt,infpar%master)
-    call ls_mpi_buffer(nocc,infpar%master)
+    call ls_mpi_buffer(nv,infpar%master)
+    call ls_mpi_buffer(no,infpar%master)
     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
     call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
     call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
-
-
-    if(.not.master)then
-     ! call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
-      omega2 = get_tensor_from_parr(addr1(infpar%lg_mynum+1))
-      gmo     = get_tensor_from_parr(addr2(infpar%lg_mynum+1))
-      t2     = get_tensor_from_parr(addr3(infpar%lg_mynum+1))
-      !t2=array4_init([nvirt,nocc,nvirt,nocc])
-      !omega2=array4_init([nvirt,nocc,nvirt,nocc])
-      !omega2=tensor_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
-      !call tensor_ainit(gmo,[nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
-      !call tensor_ainit(t2, [nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
-    endif
-    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
-    !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    !print*,' inside rpa_res_comm',infpar%lg_mynum
-
-    
-    !print*,' after gmo',infpar%lg_mynum
-
-    !print*,' after omega2',infpar%lg_mynum
-
-
-    !call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    !print*,' after t2',infpar%lg_mynum
-    !call ls_mpibcast(gmo%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+    if(.not.master)then
+      omega2 = get_tensor_from_parr(addr1(infpar%lg_mynum+1))
+      iajb   = get_tensor_from_parr(addr2(infpar%lg_mynum+1))
+      t2     = get_tensor_from_parr(addr3(infpar%lg_mynum+1))
+      oof    = get_tensor_from_parr(addr4(infpar%lg_mynum+1))
+      vvf    = get_tensor_from_parr(addr5(infpar%lg_mynum+1))
+    endif
+    !call ls_mpibcast(t2%elm1,nv*nv*no*no,infpar%master,infpar%lg_comm)
 
 
-    !call ls_mpibcast(omega2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-
-    !print*,' after finalize',infpar%lg_mynum
-    !call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+  end subroutine rpa_residual_communicate_data
 
 
-  end subroutine rpa_res_communicate_data
+
 
   subroutine rpa_fock_communicate_data(t2,omega2,iajb,oof,vvf,no,nv)
     implicit none

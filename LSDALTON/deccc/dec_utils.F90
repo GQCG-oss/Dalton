@@ -4135,7 +4135,7 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')    'E: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
           if(.not. DECinfo%SOS) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total RPA energy    :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy    :', Ehf+Ecorr
           else
              write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy  :', Ehf+Ecorr
           endif
