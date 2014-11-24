@@ -1163,6 +1163,14 @@ C
      *     '@ Fock iterations abandoned.'
          GO TO 9999
       END IF
+      IF (NASHT .GT. 0) THEN
+         NWARN = NWARN + 1
+         WRITE (LUPRI,'(//A/A/)')
+     *     '@ WARNING from FCMO: HSROHF and ROHF are not implemented'//
+     *     ' for Fock iterations,',
+     *     '@ Fock iterations abandoned.'
+         GO TO 9999
+      END IF
 C
       LSAVE4 = P4FLAG(12)
       LSAVE6 = P6FLAG(6)

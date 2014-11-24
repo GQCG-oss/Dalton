@@ -360,7 +360,11 @@ C
 C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
-         IF (FLAG(21) .AND. ICONV .LE. 0) THEN
+         IF (HSFOCK .AND. ICONV .LE. 0) THEN
+            NINFO = NINFO + 1
+            WRITE(LUPRI,'(//A/)') 'INFO: Second order QC-SCF skipped'//
+     &      ' because it is not implemented for open-shell SCF'
+         ELSE IF (FLAG(21) .AND. ICONV .LE. 0) THEN
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)
             FLAG(15) = RHFCAN
