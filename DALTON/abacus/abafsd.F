@@ -1682,7 +1682,6 @@ C  /* Deck onedrl */
       SUBROUTINE ONEDRL(KEY,OMATX,OMATY,OMATZ,IATOM,DERX,DERY,DERZ,WORK,
      &                  LWORK,IPRINT,INTPRI)
 C
-        use pe_work
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1846,12 +1845,10 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
          IF (PEQM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
 #if defined (BUILD_PELIB)
             KTMAT = KWRK
-            MWRK  = KTMAT + 3 * N2BASX
+            MWRK = KTMAT + 3 * N2BASX
             IF (MWRK > LWRK) CALL STOPIT('ONEDRL', 'PEQM', MWRK, LWRK)
-            call dalwrk2pewrk(work(mwrk:lwork))
             CALL PE_IFC_LONDON(WORK(KTMAT))
-            call nullify_pewrk()
-            CALL DAXPY(N2BASX*3, D1, WORK(KTMAT), 1, WORK(KMATS), 1)
+            CALL DAXPY(3*N2BASX, D1, WORK(KTMAT), 1, WORK(KMATS), 1)
 #endif
          END IF
 

@@ -208,15 +208,25 @@
         implicit none
 #include "inforb.h"
         real*8, dimension(3*n2basx), intent(out) :: fckmats
+        integer :: i, j, k, l, m
+        real*8, dimension(:), allocatable :: fckmats_packed
         call qenter('pe_ifc_london')
+        allocate(fckmats_packed(3*nnbasx))
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(4)
 #endif
         call pe_master('magnetic_gradient',
      &                 triang=.true.,
      &                 ndim=nbast,
-     &                 nmats=1,
-     &                 fckmats=fckmats)
+     &                 fckmats=fckmats_packed)
+        do i = 1, 3
+            j = (i - 1) * nnbasx + 1
+            k = i * nnbasx
+            l = (i - 1) * n2basx + 1
+            m = i * n2basx
+            call daptge(nbas, fckmats_packed(j:k), fckmats(l:m))
+        end do
+        deallocate(fckmats_packed)
         call qexit('pe_ifc_london')
       end subroutine pe_ifc_london
 
@@ -2383,179 +2393,4 @@ C     as to what works best for singly bonded C,N,O
 
 !------------------------------------------------------------------------------
 
-      subroutine Tk_lao_integrals(Tk_ints, nints, ncomps, coord)
-
-      use pe_work
-#include "implicit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "qm3.h"
-#include "orgcom.h"
-
-      logical :: trimat
-      character(len=8), dimension(9*mxcent) :: labint
-      integer, dimension(9*mxcent) :: intrep, intadr
-
-      integer, intent(in) :: nints, ncomps
-      real(8), dimension(3), intent(in) :: coord
-      real(8), dimension(3*ncomps*nints), intent(out) :: Tk_ints
-
-      integer :: i, j, k, l, m, n
-      real(8) :: dd
-      real(8), dimension(3) :: backup
-      character(len=7) :: inttype
-      integer :: nwrk
-      real(8), dimension(:), allocatable :: temp
-
-      call qenter('Tk_lao_integrals')
-
-      dd = 0.001d0
-      k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps)) - 1.0d0)) - 1
-
-      backup = diporg
-      diporg = coord
-      runqm3 = .true.
-
-      ! magnetic properties are assymetric
-      trimat = .false.
-
-      if (k == 0) then
-          inttype = 'PCMBSOL'
-      else if (k == 1) then
-          inttype = 'EFIELB1'
-      else if (k == 2) then
-        !inttype = 'EFIELB1'
-        continue
-      else if (k >= 3) then
-          stop 'ERROR: electric field hessian and higher order integrals
-     & not implemented for london orbitals.'
-!        if (nwrk < 24 * nints) then
-!            print *, 'Not enough work space for T^(3) integrals!'
-!        end if
-!        inttype = 'ELFGRDC'
-!    else
-!        stop 'wrong order specified or not implemented'
-      end if
-
-      if (.not. associated(pewrk)) then
-        call quit('ERROR: pewrk not allocated')
-      endif
-
-      nwrk = size(pewrk)
-
-      Tk_ints = 0.0d0
-
-      if (k == 0) then
-          n = ncomps * 3
-          call get1in(Tk_ints(1), inttype, n, pewrk(1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-          Tk_ints = - Tk_ints
-      else if (k == 1) then
-!          n = 3
-!          m = nints*n
-!      ! numerical approach
-!      ! x first
-!          do j=1,3
-!          diporg(j) = coord(j) + dd
-!          call get1in(temp(1:m), 'PCMBSOL', n, pewrk(1), nwrk, labint,
-!     &                intrep, intadr, 0, .false., 0, trimat, dummy,
-!     &                .false., dummy, 1)
-!          diporg(j) = coord(j) - dd
-!          call get1in(temp(m+1:2*m), 'PCMBSOL', n, pewrk(1),
-!     &    nwrk, labint,
-!     &                intrep, intadr, 0, .false., 0, trimat, dummy,
-!     &                .false., dummy, 1)
-!         TK_ints((j-1)*m+1:j*m) = (temp(1:m) - temp(m+1:m*2))/(2.0d0*dd)
-!          diporg = coord
-!          enddo
-
-      ! analytical approach
-          n = 9
-          call get1in(Tk_ints(1), inttype, n, pewrk(1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-      else if (k == 2) then
-          allocate(temp(2*9*nints))
-          n = 9
-          m = nints * n
-          ! xx, xy, xz
-          diporg = coord
-          diporg(1) = coord(1) + dd
-          call get1in(temp(1:m), 'EFIELB1', n, pewrk(1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-          diporg(1) = coord(1) - dd
-          call get1in(temp(1+m:2*m), 'EFIELB1', n, pewrk(1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-          Tk_ints(1:m) = temp(1:m) - temp(m+1:2*m)
-
-          ! yy, yz
-          diporg = coord
-          diporg(2) = coord(2) + dd
-          call get1in(temp(1:m), 'EFIELB1', n, pewrk(1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-          diporg(2) = coord(2) - dd
-          call get1in(temp(1+m:2*m), 'EFIELB1', n, pewrk(1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-          i = 3 * nints
-          Tk_ints(m+1:m+2*i+1) = temp(i+1:m) - temp(m+i+1:2*m)
-
-          ! zz
-          diporg = coord
-          diporg(3) = coord(3) + dd
-          call get1in(temp(1:m), 'EFIELB1', n, pewrk(1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-          diporg(3) = coord(3) - dd
-          call get1in(temp(1+m:2*m), 'EFIELB1', n, pewrk(1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-
-          i = 6 * nints
-          Tk_ints(m+i+1:2*m) = temp(i+1:m) - temp(m+i+1:2*m)
-          ! suspecting sign from magnus
-          Tk_ints = - Tk_ints / (2.0d0 * dd)
-          deallocate(temp)
-!      else if (k == 3) then
-!          n = 6
-!          m = nints
-!          i = n * nints
-!          l = 0
-!          do j = 1, 3
-!              diporg(j) = diporg(j) + 0.01d0
-!              call get1in(temp(l*i+1), inttype, n, pewrk(1), nwrk,
-!     &                    labint, intrep, intadr, 0, .false., 0, trimat,
-!     &                    dummy, .false., dummy, 1)
-!              diporg(j) = diporg(j) - 2.0d0 * 0.01d0
-!              call get1in(temp(j*i+1), inttype, n, pewrk(1),
-!     &                    nwrk, labint, intrep, intadr, 0, .false., 0,
-!     &                    trimat, dummy, .false., dummy, 1)
-!              diporg(j) = coord(j)
-!              temp(l*i+1:j*i) = (temp(l*i+1:j*i) - temp(j*i+1:(j+1)*i))
-!     &                                           / (2.0d0 * 0.01d0)
-!              l = l + 1
-!          end do
-!          Tk_ints(1:m) = temp(1:m)
-!          Tk_ints(m+1:2*m) = temp(i+1:i+1+m)
-!          Tk_ints(2*m+1:3*m) = temp(2*i+1:2*i+1+m)
-!          Tk_ints(3*m+1:4*m) = temp(i+1+m:i+1+2*m)
-!          Tk_ints(4*m+1:5*m) = temp(2*i+1+m:2*i+1+2*m)
-!          Tk_ints(5*m+1:6*m) = temp(2*i+1+2*m:2*i+1+3*m)
-!          Tk_ints(6*m+1:7*m) = temp(i+1+3*m:i+1+4*m)
-!          Tk_ints(7*m+1:8*m) = temp(2*i+1+3*m:2*i+1+4*m)
-!          Tk_ints(8*m+1:9*m) = temp(2*i+1+4*m:2*i+1+5*m)
-!          Tk_ints(9*m+1:10*m) = temp(2*i+1+5*m:2*i+1+6*m)
-!          Tk_ints = -1.0d0 * Tk_ints
-      end if
-
-      runqm3 = .false.
-      diporg = backup
-
-      call qexit('Tk_lao_integrals')
-
-      end subroutine Tk_lao_integrals
 #endif
