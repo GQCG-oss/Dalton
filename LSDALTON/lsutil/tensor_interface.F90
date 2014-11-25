@@ -1403,7 +1403,6 @@ contains
   end subroutine tensor_init
 
 
-
   !> \author Patrick Ettenhuber adpted from Marcin Ziolkowski
   !> \date September 2012
   !> \brief get mode index from composite index

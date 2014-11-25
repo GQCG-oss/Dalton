@@ -88,9 +88,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    !> How much to print? ( ccPrintLevel>0 --> print info stuff)
    integer, intent(in) :: ccPrintLevel
    !> Occupied MO coefficients  for fragment/full molecule (only used for Frozen core)
-   real(realk), dimension(nbasis,nocc), intent(in),optional :: Co_fc
+   real(realk), dimension(nbasis,nocc), intent(in),optional,target :: Co_fc
    !> Occ-occ block of Fock matrix in MO basis (only used for frozen core)
-   real(realk), dimension(nocc,nocc), intent(in),optional :: ppfock_fc
+   real(realk), dimension(nocc,nocc), intent(in),optional,target :: ppfock_fc
    !type(array2) :: t1_final_arr2
    !type(array4) :: t2_final_arr4, VOVO_arr4
    type(tensor) :: t2_final,ccsdpt_t2,VOVO, mp2_amp
@@ -105,6 +105,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk), pointer :: FragEnergies(:,:,:), FragEnergies_tmp(:,:), ccenergies(:)
    real(realk) :: ccenergy
    integer :: nenergies, cc_sol, pT_4, pT_5, pT_full
+   real(realk), pointer :: Co(:,:), Cv(:,:), oof(:,:),  vvf(:,:), fock(:,:)
    !> local variables 
    character(len=30) :: CorrEnergyString
    integer :: iCorrLen, nsingle, npair, njobs,solver_job
@@ -120,6 +121,32 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
+   Cv   => MyMolecule%Cv
+   fock => MyMolecule%fock
+   vvf  => MyMolecule%qqfock
+
+   ! is this a frozen core calculation or not?
+   if (DECinfo%frozencore) then
+
+      ncore = MyMolecule%ncore
+
+      if(.not. present(Co_fc)) then
+         call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
+      end if
+
+      if(.not. present(ppfock_fc)) then
+         call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
+      end if
+
+      Co  => Co_fc
+      oof => ppfock_fc
+
+
+   else
+      ncore = 0
+      Co => MyMolecule%Co
+      oof => MyMolecule%ppfock
+   end if
 
 #ifdef MOD_UNRELEASED
    ! nenergies is set to 4: a CC solver model plus pT corrections, 
@@ -134,61 +161,28 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
    if (DECinfo%print_frags) then ! should we print fragment energies?
 
-      ! is this a frozen core calculation or not?
-      if (DECinfo%frozencore) then
+      if(DECinfo%use_pnos)then
+         call ccsolver_par(MODEL_MP2,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
+            & mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=t1_final)
+         solver_job = SOLVE_AMPLITUDES_PNO
+      else
+         solver_job = SOLVE_AMPLITUDES
+      endif
 
-         ncore = MyMolecule%ncore
-
-         if(.not. present(Co_fc)) then
-            call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
-         end if
-
-         if(.not. present(ppfock_fc)) then
-            call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
-         end if
-
-         if(DECinfo%use_pnos)then
-            call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES)
-            solver_job = SOLVE_AMPLITUDES_PNO
-         else
-            solver_job = SOLVE_AMPLITUDES
-         endif
-
-         call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,solver_job,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos )
-
-         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
+      if(DECinfo%ccdebug)then
+         call ccsolver_debug(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,&
+            & mylsitem,ccPrintLevel,.false.,oof,vvf,ccenergies(cc_sol),&
+            & t1,t2,integral,.false.,solver_job )
+         stop 0
 
       else
-         ncore = 0
-         if(DECinfo%use_pnos)then
-            call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES)
-            solver_job = SOLVE_AMPLITUDES_PNO
-         else
-            solver_job = SOLVE_AMPLITUDES
-         endif
 
-         if(DECinfo%ccdebug)then
-            call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,.false.,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1,t2,integral,.false.,solver_job )
-            stop 0
+         call ccsolver_par(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
+            & t2_final,VOVO,.false.,local,solver_job, p2 = t1_final,  m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
+      endif
 
-         else
+      if(DECinfo%use_pnos) call tensor_free( mp2_amp )
 
-            call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,t2_final,VOVO,.false.,local,solver_job, m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
-         endif
-
-         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
-
-      end if
    
    
       if(DECinfo%PL>1)then
@@ -366,45 +360,18 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
    else ! we do not print fragment energies
 
-      ! is this a frozen core calculation or not?
-      if (DECinfo%frozencore) then
-   
-         ncore = MyMolecule%ncore
-   
-         if(.not. present(Co_fc)) then
-            call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
-         end if
-   
-         if(.not. present(ppfock_fc)) then
-            call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
-         end if
-   
-         if(DECinfo%use_pnos)then
-            call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES)
-            solver_job = SOLVE_AMPLITUDES_PNO
-         else
-            solver_job = SOLVE_AMPLITUDES
-         endif
-         call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,solver_job,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
+      if(DECinfo%use_pnos)then
+         call ccsolver_par(MODEL_MP2,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
+            & mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=t1_final)
+         solver_job = SOLVE_AMPLITUDES_PNO
       else
-         ncore = 0
-         if(DECinfo%use_pnos)then
-            call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,SOLVE_AMPLITUDES)
-            solver_job = SOLVE_AMPLITUDES_PNO
-         else
-            solver_job = SOLVE_AMPLITUDES
-         endif
-   
-         call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,solver_job,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
-      end if
+         solver_job = SOLVE_AMPLITUDES
+      endif
+
+      call ccsolver_par(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
+         & t2_final,VOVO,.false.,local,solver_job, p2 = t1_final,  m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
+
+      if(DECinfo%use_pnos) call tensor_free( mp2_amp )
 
       if(DECinfo%PL>1)then
          call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
@@ -567,29 +534,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
 !else mod unreleased
 #else
-   ! is this a frozen core calculation or not?
-   if (DECinfo%frozencore) then
 
-      ncore = MyMolecule%ncore
-
-      if(.not. present(Co_fc)) then
-         call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
-      end if
-
-      if(.not. present(ppfock_fc)) then
-         call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
-      end if
-
-      call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-         & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-         & t1_final,t2_final,VOVO,.false.,local,SOLVE_AMPLITUDES)
-   else
-      ncore = 0
-
-      call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-         mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-         & t1_final,t2_final,VOVO,.false.,local,SOLVE_AMPLITUDES)
-   end if
+   call ccsolver_par(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergy,&
+      & t2_final,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=t1_final)
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
       call tensor_free(t1_final)
@@ -658,7 +605,7 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & myfragment%ppfock,myfragment%qqfock,ccenergy,&
-         & t1,mp2_amp,VOVO,MyFragment%t1_stored,local,SOLVE_AMPLITUDES,frag=myfragment)
+         & mp2_amp,VOVO,MyFragment%t1_stored,local,SOLVE_AMPLITUDES,frag=myfragment)
 
       !GET THE MP2 CORRELATION DENSITY FOR THE CENTRAL ATOM
       call calculate_MP2corrdens_frag(mp2_amp,MyFragment) 
@@ -672,8 +619,8 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
       & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
       & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
       & myfragment%ppfock,myfragment%qqfock,ccenergy,&
-      & t1,t2,VOVO,MyFragment%t1_stored,local,solver_job,frag=myfragment, &
-      & m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
+      & t2,VOVO,MyFragment%t1_stored,local,solver_job,frag=myfragment, &
+      & p2=t1,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
 
 #ifdef MOD_UNRELEASED
    if(DECinfo%use_pnos)call tensor_free(mp2_amp)
@@ -716,7 +663,6 @@ subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
    !> output mp2 energy
    real(realk), intent(out), optional   :: mp2_energy
    real(realk)  :: tcpu1,twall1,tcpu2,twall2
-   type(tensor) :: t1_dummy
    real(realk) :: e
    integer :: Ncore, no, nv, nb
    logical :: local
@@ -741,16 +687,12 @@ subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
 
    call ccsolver_par(MODEL_MP2,frag%Co,frag%Cv,frag%fock,nb,&
       & no,nv, frag%mylsitem,DECinfo%PL,frag%ppfock,&
-      & frag%qqfock,e,t1_dummy,t2,RHS,.false.,local,SOLVE_AMPLITUDES,frag=frag,&
+      & frag%qqfock,e,t2,RHS,.false.,local,SOLVE_AMPLITUDES,frag=frag,&
       & vovo_supplied = rhs_input)
 
    if(present(mp2_energy)) mp2_energy = e
 
    call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-
-   if(t1_dummy%initialized)then
-      call lsquit("ERROR(mp2_solver_frag) something wrong with singles handling in ccsolver_par",-1)
-   endif
 
 end subroutine mp2_solver_frag
 
@@ -781,7 +723,6 @@ subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
 
    !internal variables
    real(realk)  :: tcpu1,twall1,tcpu2,twall2
-   type(tensor) :: t1_dummy
    real(realk)  :: e
    real(realk), pointer :: Co(:,:),oof(:,:)
    integer :: Ncore, no, nv, nb, i, j
@@ -837,13 +778,9 @@ subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
    end if
 
    call ccsolver_par(MODEL_MP2,Co,mol%Cv,mol%fock,nb,no,nv,mls,DECinfo%PL,oof,&
-      & mol%qqfock,e,t1_dummy,t2,RHS,.false.,local,SOLVE_AMPLITUDES, vovo_supplied = rhs_input)
+      & mol%qqfock,e,t2,RHS,.false.,local,SOLVE_AMPLITUDES, vovo_supplied = rhs_input)
 
    if(present(mp2_energy)) mp2_energy = e
-
-   if(t1_dummy%initialized)then
-      call lsquit("ERROR(mp2_solver_mol) something wrong with singles handling in ccsolver_par",-1)
-   endif
 
    call mem_dealloc(Co)
    call mem_dealloc(oof)
@@ -1512,14 +1449,13 @@ end subroutine mp2_solver_mol
 !
 ! OUTPUT:
 ! ccenergy    : output correlation energy
-! params      : parametersets, on output the output parameter sets will be ordered according to their order
-! nparams     : number of parameter sets
+! p1,p2 ...   : parameter sets p1 and p2
 ! VOVO        : mo-integral WITHOUT T1 trafo on output
 !> \author Patrick Ettenhuber (heavily adapted version from Marcin)
 subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       & mylsitem,ccPrintLevel,ppfock_f,qqfock_f,ccenergy, &
-      & params,nparams,VOVO,longrange_singles,local,JOB, &
-      & m2,m1,frag,vovo_supplied)
+      & p1,VOVO,longrange_singles,local,JOB, &
+      & m2,m1,frag,vovo_supplied,p2)
 
    implicit none
 
@@ -1549,8 +1485,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !> Coupled cluster energy for fragment/full molecule
    real(realk),intent(inout)                 :: ccenergy
    !> Final parameters
-   integer, intent(in)                       :: nparams
-   type(tensor),intent(inout)                :: params(nparams)
+   type(tensor),intent(inout)                :: p1
    !> Two electron integrals (a i | b j) stored as (a,i,b,j)
    type(tensor),intent(inout)                :: VOVO
    !> Include long-range singles effects using singles amplitudes
@@ -1560,8 +1495,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    logical,intent(in)                        :: longrange_singles
    logical,intent(inout)                     :: local
    integer,intent(in)                        :: JOB
-   type(tensor), intent(inout), optional     :: m2
-   type(tensor), intent(inout), optional     :: m1
+   !additional information and parameter set
+   type(tensor), intent(inout), optional     :: m2,m1,p2
    type(decfrag), intent(inout), optional    :: frag
    logical, intent(in), optional             :: vovo_supplied
    !
@@ -1679,14 +1614,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call get_symm_tensor_segmenting_simple(no,nv,os,vs)
 
-   do i=1,nparams
-      do j = 1, i - 1
-         if(params(j)%mode == params(i)%mode)then
-            call lsquit("ERROR(ccsolver_par): parameterset with the same mode detected, input error",-1)
-         endif
-      enddo
-   enddo
-
    ! Sanity check 1: Number of orbitals
    if( (nv < 1) .or. (no < 1) ) then
       write(DECinfo%output,*) 'Number of occupied orbitals = ', no
@@ -1696,7 +1623,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! Sanity check 2: Singles amplitudes initiated appropriately
    if(longrange_singles) then
-      if(.not. t1_final%initialized) then
+      if(.not.present(p2))then
+         call lsquit('ccsolver: Long range singles corrections requested, &
+            & but p2 not present!',DECinfo%output)
+      endif
+      if(.not. p2%initialized) then
          call lsquit('ccsolver: Long range singles corrections requested, &
             & but t1_final does not contain existing amplitudes!',DECinfo%output)
       end if
@@ -1750,6 +1681,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 
    !Settings for the models
+   !MODIFY FOR NEW MODEL
    ModelSpecificSettings: select case(ccmodel)
    case( MODEL_MP2 )
 
@@ -1758,6 +1690,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
 
+      if(.not.present(p2))then
+         call lsquit("ERROR(ccsolver_par): singles parameters need to be present in p2",-1)
+      endif
       use_singles = .true.
       atype = 'LDAR'
 
@@ -1884,7 +1819,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! Get Fock matrix using singles amplitudes from previous
          ! fragment calculation, thereby effectively including long-range
          ! correlated polarization effects
-         call Get_AOt1Fock(mylsitem,t1_final,ifock,no,nv,nb,Co,Co,Cv)
+         call Get_AOt1Fock(mylsitem,p2,ifock,no,nv,nb,Co,Co,Cv)
       else
          ! Fock matrix for fragment from density made from input MOs
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
@@ -2047,7 +1982,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       prev_norm        = huge(prev_norm)
 
       CCIteration : do iter=1,DECinfo%ccMaxIter
-         if (iter == 2) stop 0
+         !if (iter == 2) stop 0
 
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_iter ) 
 
@@ -2369,25 +2304,15 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
-         do j=1,nparams
-            if( params(j)%mode == t2(iter_idx)%mode )then
-               call tensor_minit( params(j), [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR")
-               !call tensor_add(   t2_final, 1.0E0_realk, t2(iter_idx), a = 0.0E0_realk, order = [1,3,2,4] )
-               call tensor_cp_data(params(j), t2(iter_idx), order = [1,3,2,4] )
-               exit
-            endif
-         enddo
+         call tensor_minit( p1, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR")
+         !call tensor_add(   t2_final, 1.0E0_realk, t2(iter_idx), a = 0.0E0_realk, order = [1,3,2,4] )
+         call tensor_cp_data(p1, t2(iter_idx), order = [1,3,2,4] )
 
          if(use_singles) then
             if(.not.longrange_singles) then ! intitialize and copy, else just copy
-               do j=1,nparams
-                  if( params(j)%mode == t1(iter_idx)%mode )then
-                     call tensor_minit(params(j),[nv,no],2)
-                     exit
-                  endif
-               enddo
+               call tensor_minit(p2,[nv,no],2)
             end if
-            call tensor_cp_data(params(j), t1(iter_idx) )
+            call tensor_cp_data(p2, t1(iter_idx) )
          endif
 
          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
@@ -2420,15 +2345,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
 
-   do j=1,nparams
-      if( params(j)%mode == 4 )then
-         call print_norm(params(j),t2fnorm2,.true.)
-         t2idx = j
-      else if(params(j)%mode == 2 )then
-         call print_norm(params(j),t1fnorm2,.true.)
-         t1idx = j
-      endif
-   enddo
+   call print_norm(p1,t2fnorm2,.true.)
+   if(use_singles)then
+      call print_norm(p2,t1fnorm2,.true.)
+   endif
 
    call print_ccjob_summary(break_iterations,.false.,fragment_job,&
       &last_iter+old_iter,use_singles,ccenergy,ttotend_wall,&
@@ -2490,13 +2410,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
    call tensor_transform_basis([Uo,Uv],2,&
-      & [ params(t2idx), VOVO    ],  &
+      & [ p1, VOVO ],  &
       & [[2,1,2,1],[2,1,2,1]], &
       & [[2,2,2,2],[2,2,2,2]],  4, 2)
 
    if(use_singles)then
       !this should be replaced if/whenever t1 is not local
-      call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=params(t1idx)%elm1)
+      call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=p2%elm1)
    endif
 
    if(trafo_m2)   call tensor_transform_basis([Uo,Uv],2,&
@@ -2625,9 +2545,6 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
       call lsquit("ERROR(ccsolver_calculate_crop_matrix): ccmodel not known",-1)
    end select SelectCoupledClusterModel
 
-   if(DECinfo%PL>3)then
-      print *,"B matrix",B
-   endif
 end subroutine ccsolver_calculate_crop_matrix
 
 subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv,&

@@ -2697,8 +2697,8 @@ end subroutine RIMP2_CalcEnergyContribution
        call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,&
-            & ppfock,MyMolecule%qqfock,energy, Tai, Taibj,&
-            & VOVO,.false.,local,SOLVE_AMPLITUDES)
+            & ppfock,MyMolecule%qqfock,energy, Taibj,&
+            & VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai)
        call mem_dealloc(ppfock)
 
     else
@@ -2706,7 +2706,7 @@ end subroutine RIMP2_CalcEnergyContribution
        call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
             & MyMolecule%ppfock,MyMolecule%qqfock,&
-            & energy, Tai, Taibj, VOVO,.false.,local,SOLVE_AMPLITUDES)
+            & energy, Taibj, VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai)
 
     end if
 
