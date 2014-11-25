@@ -108,7 +108,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk), pointer :: Co(:,:), Cv(:,:), oof(:,:),  vvf(:,:), fock(:,:)
    !> local variables 
    character(len=30) :: CorrEnergyString
-   integer :: iCorrLen, nsingle, npair, njobs,solver_job
+   integer :: iCorrLen, nsingle, npair, njobs,solver_job, solver_ccmodel
    type(array4) :: t2,integral
    type(array2) :: t1
 
@@ -148,7 +148,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       oof => MyMolecule%ppfock
    end if
 
+   solver_ccmodel = ccmodel
 #ifdef MOD_UNRELEASED
+   if(ccmodel == MODEL_CCSDpT) solver_ccmodel = MODEL_CCSD
+
    ! nenergies is set to 4: a CC solver model plus pT corrections, 
    ! (4th order, 5th order and both):
    nenergies = 4
@@ -170,14 +173,14 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       endif
 
       if(DECinfo%ccdebug)then
-         call ccsolver_debug(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,&
+         call ccsolver_debug(solver_ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,.false.,oof,vvf,ccenergies(cc_sol),&
             & t1,t2,integral,.false.,solver_job )
          stop 0
 
       else
 
-         call ccsolver_par(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
+         call ccsolver_par(solver_ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
             & t2_final,VOVO,.false.,local,solver_job, p2 = t1_final,  m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
       endif
 
@@ -368,7 +371,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          solver_job = SOLVE_AMPLITUDES
       endif
 
-      call ccsolver_par(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
+      call ccsolver_par(solver_ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
          & t2_final,VOVO,.false.,local,solver_job, p2 = t1_final,  m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
 
       if(DECinfo%use_pnos) call tensor_free( mp2_amp )
@@ -535,7 +538,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 !else mod unreleased
 #else
 
-   call ccsolver_par(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergy,&
+   call ccsolver_par(solver_ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergy,&
       & t2_final,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=t1_final)
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
@@ -1688,7 +1691,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       use_singles = .false.
       atype = 'REAR'
 
-   case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
+   case( MODEL_CC2, MODEL_CCSD )
 
       if(.not.present(p2))then
          call lsquit("ERROR(ccsolver_par): singles parameters need to be present in p2",-1)
@@ -1986,8 +1989,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_iter ) 
 
-         iter_idx = mod(iter-1, DECinfo%ccMaxDIIS)+1
-         next     = mod(iter,   DECinfo%ccMaxDIIS)+1
+         iter_idx = get_iter_idx(iter    )
+         next     = get_iter_idx(iter + 1)
          nSS      = min(iter,DECinfo%ccMaxDIIS)
 
          ! Initialize residual vectors
@@ -2024,9 +2027,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             &labelttot= 'CCIT: T1 TRAFO        :', output = DECinfo%output, twall = time_residual ) 
 
 
-         call ccsolver_get_residual(ccmodel,delta_fock,omega2(iter_idx),t2(iter_idx),&
+         call ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
          & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,ppfock_prec,qqfock_prec,xo,xv,yo,yv,nb,&
-         & MyLsItem,omega1(iter_idx),t1(iter_idx),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
+         & MyLsItem,omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
          & pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag)
 
 
@@ -2138,7 +2141,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
             ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
 
-         case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
+         case( MODEL_CC2, MODEL_CCSD )
 
             ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
             ccenergy = get_cc_energy(t1(iter_idx),t2(iter_idx),iajb,no,nv)
@@ -2300,13 +2303,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! remove rest of the singles amplitudes and residuals
    do i=last_iter,max(last_iter-DECinfo%ccMaxDIIS+1,1),-1
 
-      iter_idx = mod(i - 1, DECinfo%ccMaxDIIS) + 1
+      iter_idx = get_iter_idx(i)
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
          call tensor_minit( p1, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR")
-         !call tensor_add(   t2_final, 1.0E0_realk, t2(iter_idx), a = 0.0E0_realk, order = [1,3,2,4] )
-         call tensor_cp_data(p1, t2(iter_idx), order = [1,3,2,4] )
+         call tensor_add(   p1, 1.0E0_realk, t2(iter_idx), a = 0.0E0_realk, order = [1,3,2,4] )
+         !call tensor_cp_data(p1, t2(iter_idx), order = [1,3,2,4] )
 
          if(use_singles) then
             if(.not.longrange_singles) then ! intitialize and copy, else just copy
@@ -2435,49 +2438,74 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 end subroutine ccsolver_par
 
-subroutine ccsolver_get_residual(ccmodel,delta_fock,omega2,t2,&
+function get_iter_idx(iter) result(iter_idx)
+   implicit none
+   integer, intent(in) :: iter
+   integer :: iter_idx
+   iter_idx = mod(iter-1, DECinfo%ccMaxDIIS)+1
+end function get_iter_idx
+
+subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
       & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,ppfock_prec,qqfock_prec,xo,xv,yo,yv,nb,&
       & MyLsItem,omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
       & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag)
    implicit none
-   integer,intent(in) :: ccmodel, nb,no,nv, nspaces, iter
+   integer,intent(in) :: ccmodel, JOB, nb,no,nv, nspaces, iter
    type(lsitem),intent(inout) :: MyLsItem
-   type(tensor) :: delta_fock,omega2,t2,fock,iajb,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv
-   type(tensor) :: omega1,t1,pgmo_diag,pgmo_up,ppfock_prec,qqfock_prec
+   type(tensor) :: delta_fock,omega2(:),t2(:),fock,iajb,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv
+   type(tensor) :: omega1(:),t1(:),pgmo_diag,pgmo_up,ppfock_prec,qqfock_prec
    type(MObatchInfo),intent(inout) :: MOinfo
    logical, intent(in) :: mo_ccsd, use_pnos, local
    logical, intent(inout) :: restart
    type(PNOSpaceInfo), intent(in), pointer :: pno_cv(:), pno_S(:)
    type(decfrag), intent(inout), optional    :: frag
+   integer :: use_i
    ! readme : get residuals, so far this solver supports only singles and doubles
    !          amplitudes (extension to higher iterative model is trivial); differences
    !          are mainly based on the set of residual vectors to be evaluated
+
+   use_i = get_iter_idx(iter)
 
    ! MODIFY FOR NEW MODEL
    ! If you implement a new model, please insert call to your own residual routine here!
    SelectCoupledClusterModel : select case( CCmodel )
    case( MODEL_MP2 )
 
-      call get_simple_parallel_mp2_residual(omega2,&
-         &iajb,t2,ppfock_prec,qqfock_prec,iter,local)
+      select case(JOB)
+      case( SOLVE_AMPLITUDES )
+         call get_simple_parallel_mp2_residual(omega2(use_i),&
+            &iajb,t2(use_i),ppfock_prec,qqfock_prec,iter,local)
+      case default
+         call lsquit("ERROR(ccsolver_get_residual): job not implemented for MP2",-1)
+      end select
 
    case( MODEL_RIMP2 )
 
       call lsquit('ERROR(get_residual): RI-MP2 has no residual - non iterative',-1)
 
-   case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
+   case( MODEL_CC2, MODEL_CCSD ) !CC2 or  CCSD
 
-      call ccsd_residual_wrapper(ccmodel,delta_fock,omega2,t2,&
-         & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
-         & MyLsItem,omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
-         & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
+      select case(JOB)
+      case( SOLVE_AMPLITUDES, SOLVE_AMPLITUDES_PNO )
+         call ccsd_residual_wrapper(ccmodel,delta_fock,omega2(use_i),t2(use_i),&
+            & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
+            & MyLsItem,omega1(use_i),t1(use_i),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
+            & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
+      case( SOLVE_MULTIPLIERS )
+         if (JOB == MODEL_CC2)then
+            call lsquit("ERROR(ccsolver_get_residual): CC2 multipliers not implemented",-1)
+         endif
+         !call multipliers
+      case default
+         call lsquit("ERROR(ccsolver_get_residual): job not implemented for CC2, CCSD or CCSD(T)",-1)
+      end select
 
    case( MODEL_RPA )
 
 #ifdef VAR_MPI
-      call RPA_residual_par(Omega2,t2,iajb,ppfock_prec,qqfock_prec,no,nv,local)
+      call RPA_residual_par(omega2(use_i),t2(use_i),iajb,ppfock_prec,qqfock_prec,no,nv,local)
 #else
-      call RPA_residual(Omega2,t2,iajb,ppfock_prec,qqfock_prec,no,nv)
+      call RPA_residual(omega2(use_i),t2(use_i),iajb,ppfock_prec,qqfock_prec,no,nv)
 #endif
 
    case default
@@ -2521,7 +2549,7 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
          end do
       end do
 
-   case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) 
+   case( MODEL_CC2, MODEL_CCSD ) 
 
       do i=1,nSS
          do j=1,i
@@ -2768,8 +2796,6 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
    case(MODEL_CC2)
       use_singles = .true.
    case(MODEL_CCSD)
-      use_singles = .true.
-   case(MODEL_CCSDpT)
       use_singles = .true.
    case(MODEL_RPA)
       use_singles = .false.

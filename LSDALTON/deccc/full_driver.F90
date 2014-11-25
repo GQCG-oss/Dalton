@@ -2661,6 +2661,7 @@ end subroutine RIMP2_CalcEnergyContribution
     real(realk) :: energy
     type(tensor) :: VOVO,Tai,Taibj
     real(realk),pointer :: ppfock(:,:)
+    integer :: solver_ccmodel
     logical :: local
     local = .true.
 #ifdef VAR_MPI
@@ -2681,6 +2682,8 @@ end subroutine RIMP2_CalcEnergyContribution
 
     fragment_job = .false.
     print_level = 0 ! this is not used
+    solver_ccmodel = DECinfo%ccmodel
+    if(DECinfo%ccmodel == MODEL_CCSDpT) solver_ccmodel = MODEL_CCSD
 
 
     if(DECinfo%frozencore) then
@@ -2694,7 +2697,7 @@ end subroutine RIMP2_CalcEnergyContribution
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%nocc
-       call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
+       call ccsolver_par(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,&
             & ppfock,MyMolecule%qqfock,energy, Taibj,&
@@ -2703,7 +2706,7 @@ end subroutine RIMP2_CalcEnergyContribution
 
     else
 
-       call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
+       call ccsolver_par(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
             & MyMolecule%ppfock,MyMolecule%qqfock,&
             & energy, Taibj, VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai)
