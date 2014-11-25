@@ -26,8 +26,9 @@ module cc_debug_routines_module
    use ccsdpt_module
    use orbital_operations
    use rpa_module
-   integer,parameter :: SOLVE_AMPLITUDES  = 1
-   integer,parameter :: SOLVE_MULTIPLIERS = 2
+   integer,parameter :: SOLVE_AMPLITUDES      = 1
+   integer,parameter :: SOLVE_AMPLITUDES_PNO  = 2
+   integer,parameter :: SOLVE_MULTIPLIERS     = 3
    
 
    contains

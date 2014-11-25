@@ -5795,25 +5795,43 @@ module lspdm_tensor_operations_module
     !  lg_nnod = buf(2)
     !endif
  
-    if(arr%access_type==AT_NO_PDM_ACCESS.or.arr%itype==TT_TILED)then
+    if(arr%access_type==AT_NO_PDM_ACCESS)then
+
        arr%offset       = 0
        p_arr%new_offset = 0
        arr%nlti         = arr%ntiles
+
     else
 
-       if(present(force_offset))then
-          arr%offset       = force_offset
-       else
-          arr%offset       = p_arr%new_offset
-          p_arr%new_offset = mod(p_arr%new_offset+arr%ntiles,lg_nnod)
-       endif
+       select case(arr%itype)
+       case(TT_TILED, TT_TILED_REPL)
 
-       arr%nlti         = arr%ntiles/lg_nnod
-       if(mod(arr%ntiles,lg_nnod)>mod(lg_me+lg_nnod-arr%offset,lg_nnod))arr%nlti=arr%nlti+1
+          arr%offset       = 0
+          p_arr%new_offset = 0
+          arr%nlti         = arr%ntiles
+
+       case(TT_TILED_DIST)
+
+          if(present(force_offset))then
+             arr%offset       = force_offset
+          else
+             arr%offset       = p_arr%new_offset
+             p_arr%new_offset = mod(p_arr%new_offset+arr%ntiles,lg_nnod)
+          endif
+
+          arr%nlti         = arr%ntiles/lg_nnod
+
+          if(mod(arr%ntiles,lg_nnod)>mod(lg_me+lg_nnod-arr%offset,lg_nnod))then
+             arr%nlti=arr%nlti+1
+          endif
+
+       case default
+          call lsquit("ERROR(get_distribution_info): unknown array%itype",-1)
+       end select
 
     endif
 #endif
-    call time_start_phase( PHASE_WORK )
+       call time_start_phase( PHASE_WORK )
   end subroutine get_distribution_info
 
   !> \brief routine to get a free address in the persisten array
@@ -5912,10 +5930,12 @@ module lspdm_tensor_operations_module
       call time_start_phase( PHASE_WORK )
     endif
     nrm=0.0E0_realk
+
     do i=1,arr%nlti
-      do j=1,arr%ti(i)%e
-        nrm = nrm +(arr%ti(i)%t(j) * arr%ti(i)%t(j))
-      enddo
+       do j=1,arr%ti(i)%e
+          nrm = nrm +(arr%ti(i)%t(j) * arr%ti(i)%t(j))
+          !nrm = arr%ti(i)%t(j) 
+       enddo
     enddo
 
     call time_start_phase( PHASE_COMM )

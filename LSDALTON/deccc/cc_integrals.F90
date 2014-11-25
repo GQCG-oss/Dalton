@@ -1950,7 +1950,7 @@ contains
           call time_start_phase(PHASE_COMM)
           call tensor_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
        else
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
@@ -1979,7 +1979,7 @@ contains
           call time_start_phase(PHASE_COMM)
           call tensor_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
        else
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
@@ -2031,7 +2031,7 @@ contains
           call time_start_phase(PHASE_COMM)
           call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
        else
           call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
@@ -2069,7 +2069,7 @@ contains
           call time_start_phase(PHASE_COMM)
           call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
        else
           call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
@@ -2679,6 +2679,8 @@ contains
 
           jobidx = jobidx + 1
 
+          if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchLoop
+
           call get_midx(jobidx,modeBidx,modeBdim,2)
 
           gammaB = modeBidx(2)
@@ -2705,6 +2707,9 @@ contains
              call lsmpi_win_unlock(infpar%master,jobdistw)
 #endif
 #endif
+
+             if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchLoop
+
              call get_midx(jobidx,modeBidx,modeBdim,2)
              gammaB = modeBidx(2)
              alphaB = modeBidx(1)
@@ -2715,7 +2720,6 @@ contains
 
        endif
 
-       if( jobidx > nbatchesGamma * nbatchesAlpha ) exit BatchLoop
 
        if(alphaB > nbatchesAlpha .or. gammaB > nbatchesGamma)then
           write (*, '("Rank",I3," has invalid job (",I3,"/",I3,",",I3,"/",I3,")")') &
