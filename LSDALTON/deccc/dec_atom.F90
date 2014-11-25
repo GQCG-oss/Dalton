@@ -1055,12 +1055,15 @@ contains
       nred_vir = max( ceiling(5.0E0_realk*MyFragment%nunoccAOS/100), 1)
 
       ! By default dE_red_xxx is set to X*FOT where X is <= FOT 
-      if(.not.DECinfo%OnlyVirtPart) then
+      if (DECinfo%OnlyOccPart) then
          dE_red_occ = DECinfo%frag_red_occ_thr*DECinfo%FOT
          dE_red_vir = DECinfo%frag_red_virt_thr*DECinfo%FOT
-      else
+      else if (DECinfo%OnlyVirtPart) then
          dE_red_occ = DECinfo%frag_red_virt_thr*DECinfo%FOT
          dE_red_vir = DECinfo%frag_red_occ_thr*DECinfo%FOT
+      else
+         dE_red_occ = DECinfo%FOT
+         dE_red_vir = DECinfo%FOT
       end if
 
       ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:
@@ -1109,8 +1112,8 @@ contains
          call lsquit('ERROR FOP: Occupied Reduction scheme not defined',DECinfo%output)
       end if
 
-      ! 2) DEFINE REDUCTION OF OCCUPIED SPACE:
-      ! ======================================
+      ! 2) DEFINE REDUCTION OF VIRTUAL SPACE:
+      ! =====================================
       ! SCHEME 1:
       if (DECinfo%Frag_RedVir_Scheme == 1) then
          ! Get contribution from local virtual orbitals:
