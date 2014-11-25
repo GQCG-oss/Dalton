@@ -22,7 +22,7 @@ C              RES1D.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
-C RP_ERES - Data dictionary:
+C >>> RP_ERES - Data dictionary: <<<
 C NOLDTR: Number of Old trial vectors
 C NNEWTR: Numver of new trial vectors
 C FOCKD: The Fock Matrix
@@ -1197,7 +1197,8 @@ C /* deck getbytespan */
       subroutine getbytespan(firstvar, lastvar, bytespan)
 C Frederik Beyer, March 2014.
 C
-C This subroutine calculates the size of a common block in bytes.
+C This subroutine calculates the memory span in bytes between two variables.
+C
 C This is used for easy updating of common block in parallel calculations.
 C The former approaches relied on counting the number of occurrences
 C of variables of a particular type and then transferring a common in
@@ -1276,12 +1277,11 @@ C /* deck presortaodist*/
       subroutine presortaodist(Nindex, indxbt, outlist)
 C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
 C Pre-calculate IDEL2 indexes before starting a parallel calculation.
+C In other words, this subroutine calculates how many distributions are associated with the calculation.
 C
-C This routine assembles a matrix that counts the number of distributions
-C associated with an ILLL AO integral index. This array is used by getallocsize
-C and partitionAOindices to pre-sort the integrals that need to be done to 
-C assemble the AO Fock matrix so the load per process can be spread as evenly
-C as possible.
+C This routine assembles a matrix that counts the number of AOs
+C associated with an ILLL distribution index. This array is used by getallocsize
+C and partitionAOindices to pre-sort the integrals that need to be done 
 C
 C The first row in outlist is the number of distributions
 C The second row in outlist is the associated ILLL index
@@ -1362,14 +1362,14 @@ C
 C F.Beyer Mar. 2014.
 C Selection routine for dynamic load balancing for the par_rp_eres subroutine.
 C Before doing two-electron integrals, the amount of work associated with every 
-C AO index (ILLL) is estimated and a list of work and corresponding indexes is created 
+C distribution index (ILLL) is estimated and a list of work and corresponding indexes is created 
 C by the subroutine presortaodist.
 C
 C Fetch the smallest available job from the supplied list.
 C Once the job is found, set the matrix entry that describes the amount of work to 0, 
 C update the nextindex variable to the corresponding ILLL index and return.
 C
-C First row in the list is the number of distributions associated with the integral.
+C First row in the list is the number of AOs associated with the distribution.
 C Second row in the list is the ILLL index that corresponds to the amount of work.
 
 #include "implicit.h"
@@ -1497,6 +1497,7 @@ C        FIND LARGEST CHUNK OF AVAILABLE WORK AND ITS INDEX
          availloc = tempavail(1)
          numdists = presortedarray(1, availloc) ! amount of available work
          aoindex  = presortedarray(2, availloc) ! the index to be passed to process
+
          presortedarray(1, availloc) = 0
          presortedarray(2, availloc) = 0
 
