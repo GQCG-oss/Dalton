@@ -2194,21 +2194,29 @@ contains
 
 #endif
 
+    total_num_tiles = vovv%ntiles
+
     a_count = 0
     b_count = 0
     c_count = 0
 
-    a_tile_num = 0
+!    a_tile_num = 0
+    a_tile_num = total_num_tiles + 1
     b_tile_num = 0
     c_tile_num = 0
 
-    total_num_tiles = vovv%ntiles
+    tile_size_tmp_a = 0
+    tile_size_tmp_b = 0
+    tile_size_tmp_c = 0
 
-    counter = infpar%lg_mynum + 1
+!    counter = infpar%lg_mynum + 1
+    counter = total_num_tiles - infpar%lg_mynum
 
-    do a_tile = 1,nvirt,tile_size
+!    do a_tile = 1,nvirt,tile_size
+    do a_tile = tile_size * (total_num_tiles - 1) + 1,1,-tile_size
 
-       a_tile_num = a_tile_num + 1
+!       a_tile_num = a_tile_num + 1
+       a_tile_num = a_tile_num - 1
 
        if (a_tile_num .ne. counter) then
 
@@ -2216,7 +2224,8 @@ contains
 
        else
 
-          counter = counter + nodtotal
+!          counter = counter + nodtotal
+          counter = counter - nodtotal
 
        endif
 
@@ -2612,7 +2621,7 @@ contains
 
 !$acc wait
 
-    do a=2,nvirt
+    do a = 2,nvirt
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,a)) async(async_id(1))
 
@@ -9081,14 +9090,14 @@ contains
     mode   = MPI_MODE_NOCHECK
 
     call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
-    call tensor_zero_tiled_dist(vvvo)
 
 #else
 
     call tensor_init(vvvo, dims,4)
-    call tensor_zero(vvvo)
 
 #endif
+
+    call tensor_zero(vvvo)
 
     ! For efficiency when calling dgemm, save transposed matrices
     call mem_alloc(CoccT,nocc,nbasis)
@@ -9618,14 +9627,14 @@ contains
     mode   = MPI_MODE_NOCHECK
 
     call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
-    call tensor_zero_tiled_dist(vovv)
 
 #else
 
     call tensor_init(vovv, dims,4)
-    call tensor_zero(vovv)
 
 #endif
+
+    call tensor_zero(vovv)
 
     ! For efficiency when calling dgemm, save transposed matrices
     call mem_alloc(CoccT,nocc,nbasis)
@@ -10303,6 +10312,7 @@ contains
        size1 = i8*alphadim*gammadim*nbasis*nbasis
        tmpI = i8*alphadim*gammadim*nocc*nvirt
        size1 = max(size1,tmpI)
+! this one is big
        tmpI = i8*alphadim*nocc*nvirt**2
        size1 = max(size1,tmpI)
 
@@ -10353,6 +10363,7 @@ contains
     else
 
        size3 = i8*alphadim*gammadim*nvirt**2
+! this one is big
        tmpI = i8*alphadim*nvirt**3
        size3 = max(size3,tmpI)
 
