@@ -301,7 +301,7 @@ DO I=1,task_list%nuniqueLHS
     task_list%taskNode(1,itask) = node_lhs(I)
     task_list%taskNode(2,itask) = node_rhs(J)
     task_list%LHS(itask)%p => lhs_list(I)%p 
-    task_list%RHS(itask)%p => rhs_list(I)%p 
+    task_list%RHS(itask)%p => rhs_list(J)%p 
 !   task_list%taskEstimate(itask) = lhs_list(I)%p%task_part*rhs_list(I)%p%task_part
   ENDDO
 ENDDO

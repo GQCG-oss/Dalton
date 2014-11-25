@@ -3,7 +3,8 @@ MODULE ProfileIchorMod
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
        & BASISSETLIBRARYITEM
   use basis_type, only: free_basissetinfo
-  use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam
+  use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam,&
+       & nullifymainbasis
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
   use LSparameters
@@ -78,9 +79,11 @@ IF(config%prof%IchorProfInputBasis)THEN
    do A = 1,4       
       BASISSETNAME(1:20) = config%prof%IchorProfInputBasisString(A)
       WRITE(lupri,*)'Using Input Basis:',BASISSETNAME(1:20)
+      call nullifyMainBasis(UNITTESTBASIS(A))
       CALL Build_basis(LUPRI,IPRINT,&
            &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
            &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
+      UNITTESTBASIS(A)%WBASIS(RegBasParam) = .TRUE.
       SETTING%BASIS(A)%p => UNITTESTBASIS(A)
       call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
    enddo

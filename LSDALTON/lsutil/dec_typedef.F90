@@ -466,7 +466,8 @@ module dec_typedef_module
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
 
-
+     !> Use Ichor Integral Code
+     logical :: UseIchor
   end type DECSETTINGS
 
 
