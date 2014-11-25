@@ -70,11 +70,6 @@ module tensor_interface_module
 
 contains
 
-  subroutine tensor_enable_debug_mode()
-     implicit none
-     tensor_debug_mode = .true.
-  end subroutine tensor_enable_debug_mode
-
   subroutine copy_array(tensor_in,tensor_out)
     implicit none
     type(tensor), intent(in) :: tensor_in
@@ -476,6 +471,10 @@ contains
         call lsquit("ERROR(tensor_contract_simple): A%itype not implemented",-1)
      end select
 
+     if( tensor_contract_dil_backend )then
+        print *,"DIL BACKEND NOT YET IMPLEMENTED IN THIS BRANCH"
+        stop 0
+     endif
 
      call time_start_phase( PHASE_WORK )
   end subroutine tensor_contract

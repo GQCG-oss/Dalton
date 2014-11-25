@@ -251,6 +251,10 @@ subroutine lsmpi_slave(comm)
          call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
       case(SET_MAX_SIZE_ONE_SIDED);
          call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
+      case(SET_TENSOR_BACKEND_TRUE);
+         tensor_contract_dil_backend = .true.
+      case(SET_TENSOR_DEBUG_TRUE);
+         tensor_debug_mode = .true.
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########
