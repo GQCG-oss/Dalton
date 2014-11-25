@@ -1134,7 +1134,7 @@ contains
         CreatedPDMArrays = CreatedPDMArrays+1
       case('RTAR')
         !INITIALIZE a Replicated Tiled ARray (all nodes have all tiles)
-        it               = TT_TILED
+        it               = TT_TILED_REPL
         call tensor_init_tiled(arr,dims,nmodes,at,it,pdm=AT_MASTER_ACCESS,tdims=tdims,force_offset = fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
@@ -1251,7 +1251,7 @@ contains
         arr%itype        = TT_DENSE
         arr%atype        = 'REPD'
       case default 
-        call lsquit("ERROR(tensor_minit): atype not known",-1)
+        call lsquit("ERROR(tensor_ainit): atype not known",-1)
       end select
     endif
 #else
@@ -1995,29 +1995,29 @@ contains
   end subroutine tensor_cp_data
 
   subroutine tensor_zero(zeroed)
-    implicit none
-    type(tensor) :: zeroed
-    integer :: i
-    
-    select case(zeroed%itype)
-      case(TT_DENSE)
+     implicit none
+     type(tensor) :: zeroed
+     integer :: i
+
+     select case(zeroed%itype)
+     case(TT_DENSE)
         zeroed%elm1=0.0E0_realk
-      case(TT_REPLICATED)
+     case(TT_REPLICATED)
         zeroed%elm1=0.0E0_realk
         call tensor_sync_replicated(zeroed)
-      case(TT_TILED)
+     case(TT_TILED)
         if (zeroed%atype=='RTAR') then
-          call tensor_zero_tiled_dist(zeroed)
+           call tensor_zero_tiled_dist(zeroed)
         else
-          do i=1,zeroed%ntiles
-            zeroed%ti(i)%t=0.0E0_realk
-          enddo
+           do i=1,zeroed%ntiles
+              zeroed%ti(i)%t=0.0E0_realk
+           enddo
         end if
-      case(TT_TILED_DIST)
+     case(TT_TILED_DIST,TT_TILED_REPL)
         call tensor_zero_tiled_dist(zeroed)
-      case default
+     case default
         call lsquit("ERROR(tensor_zero):not yet implemented",-1)
-    end select
+     end select
 
   end subroutine tensor_zero
 
@@ -2131,7 +2131,7 @@ contains
              norm=norm + arr%ti(i)%t(j) * arr%ti(i)%t(j)
           enddo
        enddo
-    case(TT_TILED_DIST)
+    case(TT_TILED_DIST,TT_TILED_REPL)
        norm=tensor_tiled_pdm_get_nrm2(arr)
     end select
 

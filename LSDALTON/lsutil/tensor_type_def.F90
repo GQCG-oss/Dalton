@@ -85,6 +85,7 @@ module tensor_type_def_module
   integer, parameter :: TT_REPLICATED   = 2
   integer, parameter :: TT_TILED        = 3
   integer, parameter :: TT_TILED_DIST   = 4
+  integer, parameter :: TT_TILED_REPL   = 5
 
   !parameters for ACCESS TYPE:
   integer,parameter :: AT_NO_PDM_ACCESS = 0

@@ -6392,11 +6392,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           idb = MOinfo%tileInd(PQ_batch,1)
           call time_start_phase(PHASE_COMM)
           call lsmpi_reduction(pgmo_diag%ti(idb)%t,pgmo_diag%ti(idb)%e,tile_master,infpar%lg_comm)
+          !call lsmpi_allreduce(pgmo_diag%ti(idb)%t,pgmo_diag%ti(idb)%e,infpar%lg_comm)
           call time_start_phase(PHASE_WORK)
         else
           iub = MOinfo%tileInd(PQ_batch,1)
           call time_start_phase(PHASE_COMM)
           call lsmpi_reduction(pgmo_up%ti(iub)%t,pgmo_up%ti(iub)%e,tile_master,infpar%lg_comm)
+          !call lsmpi_allreduce(pgmo_up%ti(iub)%t,pgmo_up%ti(iub)%e,infpar%lg_comm)
           call time_start_phase(PHASE_WORK)
         end if
       end do

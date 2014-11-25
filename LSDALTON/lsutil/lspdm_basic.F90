@@ -425,7 +425,7 @@ module lspdm_basic_module
 #endif
         !convert global tile index i to local tile index loc_idx
         loc_idx=((i-1)/lg_nnod) + 1
-        if (arr%itype==TT_TILED) loc_idx=i 
+        if (arr%itype==TT_TILED_REPL.or.arr%itype==TT_TILED) loc_idx=i 
          
         if(doit)then
           !only do these things if tile belongs to node
