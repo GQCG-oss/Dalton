@@ -4728,8 +4728,6 @@ contains
       !> Reduction priority list
       integer, pointer :: red_list_occ(:)
       integer, pointer :: red_list_vir(:)
-      !> energy error acceptance in reduction steps:
-      real(realk) :: dE_red_occ, dE_red_vir
       !> minimum gap in number of orbital allowed between the 
       !  last two steps of the binary search.
       integer :: nred_occ, nred_vir
@@ -4866,12 +4864,12 @@ contains
 
       ! Get information on how the reduction should be performed:
       call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
-         & red_list_occ,red_list_vir,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
+         & red_list_occ,red_list_vir,nred_occ,nred_vir)
 
       ! Perform reduction:
       call fragment_reduction_procedure(AtomicFragment,no,nv,red_list_occ, &
             & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
+            & VirOrbitals,mylsitem,nred_occ,nred_vir)
 
       !==================================================================================!
       !                              Finalize subroutine                                 !
@@ -5008,11 +5006,11 @@ contains
    !          the difference in number of orbitals between two steps is lower than
    !          no_gap/nv_gap. By default the occupied spaced is reduced 1st.
    !
-   ! Author:  Pablo Baudin (based on previous work by Kasper Kristensen & Thomas Kjaergaard)
+   ! Author:  Pablo Baudin
    ! Date:    July 2014
    subroutine fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,dE_occ,dE_vir,no_gap,nv_gap)
+            & VirOrbitals,mylsitem,no_gap,nv_gap)
 
       implicit none
 
@@ -5037,12 +5035,12 @@ contains
       type(decorbital), dimension(nv), intent(in) :: VirOrbitals
       !> Integral information
       type(lsitem), intent(inout)       :: mylsitem
-      !> energy error acceptance in reduction steps:
-      real(realk), intent(in) :: dE_occ, dE_vir
       !> minimum gap in number of orbital allowed between the 
       !  last two steps of the binary search.
       integer :: no_gap, nv_gap
 
+      !> energy error acceptance in reduction steps:
+      real(realk) :: dE_occ, dE_vir
       integer :: no_exp, nv_exp, no_min, nv_min, no_max, nv_max
       integer :: no_old, nv_old, no_new, nv_new, iter
       logical :: redocc, redvir, step_accepted, reduction_converged, occ_red_conv, vir_red_conv
@@ -5080,19 +5078,52 @@ contains
       VirEnergy_old = VirEnergy_exp
 
 
-      if (DECinfo%onlyOccPart) then
-         ! Start reducing virtual space:
+      ! Define specific reduction parameters:
+      ! -------------------------------------
+      select case(DECinfo%Frag_red_start)
+      case(0) ! User didn't chose so we do:
+         if (DECinfo%onlyOccPart) then
+            ! Start reducing virtual space:
+            redvir = .true.
+            redocc = .false.
+            dE_occ = DECinfo%frag_red_occ_thr*DECinfo%FOT
+            dE_vir = DECinfo%frag_red_virt_thr*DECinfo%FOT
+         else if (DECinfo%onlyVirtPart) then
+            ! Start reducing occupied space:
+            redocc = .true.
+            redvir = .false.
+            dE_occ = DECinfo%frag_red_virt_thr*DECinfo%FOT
+            dE_vir = DECinfo%frag_red_occ_thr*DECinfo%FOT
+         else
+            ! Reduce both spaces at the same time:
+            redocc = .true.
+            redvir = .true.
+            dE_occ = DECinfo%FOT
+            dE_vir = DECinfo%FOT
+         end if
+      case(1) ! Start reducing virtual space
+         write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce virtual space first'
          redvir = .true.
          redocc = .false.
-      else if (DECinfo%onlyVirtPart) then
-         ! Start reducing occupied space:
+         dE_occ = DECinfo%frag_red_occ_thr*DECinfo%FOT
+         dE_vir = DECinfo%frag_red_virt_thr*DECinfo%FOT
+      case(2) ! Start reducing occupied space
+         write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce occupied space first'
          redocc = .true.
          redvir = .false.
-      else
-         ! Reduce both spaces at the same tims:
+         dE_occ = DECinfo%frag_red_virt_thr*DECinfo%FOT
+         dE_vir = DECinfo%frag_red_occ_thr*DECinfo%FOT
+      case(3) ! Reduce both spaces at the same time
+         write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce both spaces at the same time'
          redocc = .true.
          redvir = .true.
-      end if
+         dE_occ = DECinfo%FOT
+         dE_vir = DECinfo%FOT
+      case default
+         call lsquit("ERROR(fragment_reduction_procedure): User chosen space&
+            & for reduction is not defined",DECinfo%output)
+      end select
+
 
       step_accepted = .false.
       occ_red_conv  = .false.
@@ -5281,7 +5312,7 @@ contains
 
       ! PRINT INFO FOR FINAL (REDUCED) FRAGMENT:
       ! ****************************************
-      write(DECinfo%output,*)'FOP'
+      write(DECinfo%output,'(1X,a,/)') 'FOP'
       write(DECinfo%output,'(1X,a)') 'FOP========================================================='
       write(DECinfo%output,'(1X,a,i4)') 'FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE',MyAtom
       write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
