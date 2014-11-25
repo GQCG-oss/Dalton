@@ -101,7 +101,7 @@ subroutine lsmpi_slave(comm)
    use lsmpi_test
    use integralinterfaceMod
    use dec_driver_slave_module
-   use lspdm_tensor_operations_module
+   use tensor_interface_module
 #ifdef VAR_SCALAPACK  
    use matrix_operations_scalapack
 #endif
@@ -252,9 +252,10 @@ subroutine lsmpi_slave(comm)
       case(SET_MAX_SIZE_ONE_SIDED);
          call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
       case(SET_TENSOR_BACKEND_TRUE);
-         tensor_contract_dil_backend = .true.
+         call tensor_set_dil_backend_true
+
       case(SET_TENSOR_DEBUG_TRUE);
-         tensor_debug_mode = .true.
+         call tensor_set_debug_mode_true
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########

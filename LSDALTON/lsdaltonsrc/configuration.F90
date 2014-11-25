@@ -9,7 +9,7 @@ use precision
 use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
-use tensor_type_def_module
+use tensor_interface_module, only: tensor_set_dil_backend_true, tensor_set_debug_mode_true
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -1166,12 +1166,12 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            end if
            select case(word)
            case('.DIL_BACKEND')
-              tensor_contract_dil_backend = .true.
+              call tensor_set_dil_backend_true
 #ifdef VAR_MPI
               call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,infpar%master,MPI_COMM_LSDALTON)
 #endif
            case('.DEBUG')
-              tensor_debug_mode = .true.
+              call tensor_set_debug_mode_true
 #ifdef VAR_MPI
               call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,infpar%master,MPI_COMM_LSDALTON)
 #endif

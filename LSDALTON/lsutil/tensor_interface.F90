@@ -70,6 +70,16 @@ module tensor_interface_module
 
 contains
 
+subroutine tensor_set_debug_mode_true()
+   implicit none
+   tensor_debug_mode = .true.
+end subroutine tensor_set_debug_mode_true
+subroutine tensor_set_dil_backend_true()
+   implicit none
+   tensor_contract_dil_backend = .true.
+end subroutine tensor_set_dil_backend_true
+
+
   subroutine copy_array(tensor_in,tensor_out)
     implicit none
     type(tensor), intent(in) :: tensor_in
