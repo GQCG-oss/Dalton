@@ -929,7 +929,11 @@ contains
    oof%access_type    = AT_ALL_ACCESS
    vvf%access_type    = AT_ALL_ACCESS
    if(.not.local) call tensor_lock_local_wins(omega2,'e',mode)
-    write(*,*) 'Total nodes in fock_para',nnod,'from',me
+    !write(*,*) 'Total nodes in fock_para',nnod,'from',me
+   os     = iajb%tdim(1)
+   vs     = iajb%tdim(2)
+   sdim1 = [vs,os,os,vs]
+   sdim2 = [vs,os,vs,os]
 #endif
 
    vs = t2%tdim(1)
