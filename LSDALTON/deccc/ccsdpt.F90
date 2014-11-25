@@ -9090,14 +9090,14 @@ contains
     mode   = MPI_MODE_NOCHECK
 
     call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
-    call tensor_zero_tiled_dist(vvvo)
 
 #else
 
     call tensor_init(vvvo, dims,4)
-    call tensor_zero(vvvo)
 
 #endif
+
+    call tensor_zero(vvvo)
 
     ! For efficiency when calling dgemm, save transposed matrices
     call mem_alloc(CoccT,nocc,nbasis)
@@ -9627,14 +9627,14 @@ contains
     mode   = MPI_MODE_NOCHECK
 
     call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
-    call tensor_zero_tiled_dist(vovv)
 
 #else
 
     call tensor_init(vovv, dims,4)
-    call tensor_zero(vovv)
 
 #endif
+
+    call tensor_zero(vovv)
 
     ! For efficiency when calling dgemm, save transposed matrices
     call mem_alloc(CoccT,nocc,nbasis)

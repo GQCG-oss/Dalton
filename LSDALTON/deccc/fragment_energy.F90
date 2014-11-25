@@ -422,7 +422,7 @@ contains
 #ifdef MOD_UNRELEASED
        ! CCSD-F12 Code
        if(DECinfo%F12) then
-          call tensor_extract_eos_indices_occ(t2_occEOS,t2,MyFragment%noccEOS,MyFragment%idxo)
+          call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2_occEOS)
           call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
           
           !> Free cabs after each calculation

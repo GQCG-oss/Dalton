@@ -1121,7 +1121,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if(.not.local)then
         t2%access_type     = AT_ALL_ACCESS
         call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
-        call memory_allocate_tensor_dense( t2 )
+        call tensor_allocate_dense( t2 )
         buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
         call mem_alloc(buf1,buf_size)
         call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
@@ -1240,7 +1240,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !if the residual is handeled as dense, allocate and zero it, adjust the
      !access parameters to the data
      if(omega2%itype/=TT_DENSE.and.(scheme==3.or.scheme==4))then
-        call memory_allocate_tensor_dense_pc(omega2)
+        call tensor_allocate_dense(omega2)
         omega2%itype=TT_DENSE
      endif
      call tensor_zero(omega2)
@@ -1392,7 +1392,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !get u2 in pdm or local
      if(scheme==2)then
 #ifdef VAR_MPI
-        call memory_deallocate_tensor_dense(t2)
+        call tensor_deallocate_dense(t2)
 
         call time_start_phase(PHASE_COMM, at = time_init_work )
 
@@ -2060,7 +2060,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call tensor_lock_wins( govov, 's', mode, all_nodes = alloc_in_dummy )
         endif
 
-        call memory_allocate_tensor_dense( govov )
+        call tensor_allocate_dense( govov )
 
         call time_start_phase(PHASE_COMM, twall = time_Bcnd )
         call tensor_gather(1.0E0_realk,govov,0.0E0_realk,govov%elm1,o2v2,wrk=buf1,iwrk=buf_size)
@@ -2364,7 +2364,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(Gbi)
         if(scheme==4.or.scheme==3)call tensor_free(u2)
         if(scheme==4)then
-           call memory_deallocate_tensor_dense(govov)
+           call tensor_deallocate_dense(govov)
         endif
 
         return
@@ -6406,7 +6406,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
    t2%access_type     = AT_ALL_ACCESS
    omega2%access_type = AT_ALL_ACCESS
    if (.not.local) then
-     call memory_allocate_tensor_dense_pc(omega2)
+     call tensor_allocate_dense(omega2)
      omega2%itype = TT_DENSE
      govov%itype  = TT_DENSE
    end if
@@ -6617,7 +6617,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       govov%access_type  = AT_MASTER_ACCESS
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
-      call memory_deallocate_tensor_dense_pc(govov)
+      call tensor_deallocate_dense(govov)
       govov%itype      = TT_TILED_DIST
       call tensor_mv_dense2tiled(omega2,.true.)
       call tensor_mv_dense2tiled(t2,.true.)
@@ -7744,9 +7744,8 @@ subroutine ccsd_data_preparation()
   use daltoninfo, only:ls_free
   use memory_handling, only: mem_alloc, mem_dealloc
   use tensor_interface_module, only: tensor_ainit,tensor_free,&
-      &memory_allocate_tensor_dense,memory_deallocate_tensor_dense,&
-      &memory_deallocate_window,&
-      &lspdm_use_comm_proc,get_tensor_from_parr,TT_DENSE,AT_ALL_ACCESS,AT_MASTER_ACCESS
+      &tensor_allocate_dense,tensor_deallocate_dense,&
+      &get_tensor_from_parr,TT_DENSE,AT_ALL_ACCESS,AT_MASTER_ACCESS
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use decmpi_module, only: mpi_communicate_ccsd_calcdata
@@ -7854,8 +7853,8 @@ subroutine ccsd_data_preparation()
      call tensor_free(govov)
   else
      !FIXME : IS THIS DEALLOC CORRECT AND IF YES DO IT SOMEWHERE ELSE
-     call memory_deallocate_tensor_dense(om2)
-     call memory_deallocate_tensor_dense(t2)
+     call tensor_deallocate_dense(om2)
+     call tensor_deallocate_dense(t2)
   endif
 
   call mem_dealloc(      f )
@@ -8000,8 +7999,8 @@ subroutine moccsd_data_slave()
     call tensor_ainit(omega2, [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
     call tensor_ainit(govov , [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR' )
   else
-    call memory_allocate_tensor_dense(t2)
-    call memory_allocate_tensor_dense(govov)
+    call tensor_allocate_dense(t2)
+    call tensor_allocate_dense(govov)
   end if
 
   !split messages in 2GB parts, compare to counterpart in
@@ -8032,9 +8031,9 @@ subroutine moccsd_data_slave()
     call tensor_free(omega2)
     call tensor_free(govov)
   else
-    call memory_deallocate_tensor_dense(omega2)
-    call memory_deallocate_tensor_dense(t2)
-    call memory_deallocate_tensor_dense(govov)
+    call tensor_deallocate_dense(omega2)
+    call tensor_deallocate_dense(t2)
+    call tensor_deallocate_dense(govov)
   end if
 end subroutine moccsd_data_slave
 #endif

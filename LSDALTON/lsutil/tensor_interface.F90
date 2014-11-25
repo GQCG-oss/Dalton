@@ -15,6 +15,63 @@ module tensor_interface_module
   use matrix_module
   use dec_workarounds_module
 
+
+  !This defines the public interface to the tensors
+  !The tensor type itself
+  public tensor
+  !The different types of tensors in order to steer user level subroutines accordingly
+  public TT_DENSE, TT_REPLICATED, TT_TILED, TT_TILED_DIST
+  !The different access types in order to swith between master mediated and all at the same time accesses
+  public AT_NO_PDM_ACCESS, AT_MASTER_ACCESS, AT_ALL_ACCESS
+  !Other parameters that may be useful for a user
+  public alloc_in_dummy, TENSOR_MSG_LEN
+  !Tensor timing
+  public tensor_time_init
+  ! User-level subroutines for the initialization
+  public tensor_init, tensor_minit, tensor_ainit, tensor_free
+
+  ! User-level subroutines for tensor operations
+  public tensor_convert, print_norm, tensor_add, tensor_contract
+  public tensor_transform_basis, tensor_ddot
+  public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale
+  public tensor_allocate_dense, tensor_deallocate_dense
+
+  ! PDM interface to the tensor structure
+  public pdm_tensor_sync, init_persistent_array, free_persistent_array, new_group_reset_persistent_array
+  public tensor_get_tile, tensor_put_tile, tensor_accumulate_tile
+  public tensor_scatter, tensor_gather
+  public tensor_lock_win, tensor_lock_wins, tensor_lock_local_wins
+  public tensor_unlock_win, tensor_unlock_wins, tensor_unlock_local_wins
+  public get_tensor_from_parr
+  !subroutines changing the tensor distribution
+  public tensor_sync_replicated
+  public tensor_mv_dense2tiled, tensor_change_atype_to_d
+  public tensor_cp_tiled2dense, tensor_change_atype_to_rep
+
+  !THESE ROUTINES SHOULD NOT BE USED:
+  public tensor_two_dim_1batch, tensor_two_dim_2batch
+
+  ! Special operations with tensors
+  public tensor_extract_eos_indices
+  public get_fragment_cc_energy_parallel, get_cc_energy_parallel
+  public lspdm_get_combined_SingleDouble_amplitudes, get_info_for_mpi_get_and_reorder_t1 
+  public get_rpa_energy_parallel, get_sosex_cont_parallel, lspdm_get_mp2_starting_guess
+  public precondition_doubles_parallel
+
+  ! Only for testing and debugging
+  public test_tensor_struct, tensor_print_mem_info
+  public lspdm_start_up_comm_procs, lspdm_shut_down_comm_procs
+
+  ! Auxiliary functions on the user level
+  public get_symm_tensor_segmenting_simple
+  public tensor_get_ntpm, get_tile_dim
+  public tensor_set_debug_mode_true, tensor_set_dil_backend_true
+  public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
+  public assoc_ptr_to_buf
+
+  private
+
+
   !> Number of created arrays
   integer(kind=long) :: ArraysCreated      = 0
   !> Number of destroyed arrays
@@ -70,14 +127,20 @@ module tensor_interface_module
 
 contains
 
-subroutine tensor_set_debug_mode_true()
-   implicit none
-   tensor_debug_mode = .true.
-end subroutine tensor_set_debug_mode_true
-subroutine tensor_set_dil_backend_true()
-   implicit none
-   tensor_contract_dil_backend = .true.
-end subroutine tensor_set_dil_backend_true
+  subroutine tensor_set_debug_mode_true()
+     implicit none
+     tensor_debug_mode = .true.
+  end subroutine tensor_set_debug_mode_true
+  subroutine tensor_set_dil_backend_true()
+     implicit none
+     tensor_contract_dil_backend = .true.
+  end subroutine tensor_set_dil_backend_true
+
+  subroutine tensor_allocate_dense(T)
+     implicit none
+     type(tensor), intent(inout) :: T
+     call memory_allocate_tensor_dense(T)
+  end subroutine tensor_allocate_dense
 
 
   subroutine copy_array(tensor_in,tensor_out)
