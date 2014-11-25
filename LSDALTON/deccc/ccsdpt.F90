@@ -24,6 +24,9 @@ module ccsdpt_module
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use ptr_assoc_module 
+  !FIXME: tensor_basic_module should not be used, this is only done in order
+  !to be able to do a dirty workaround further down
+  use tensor_basic_module
 #ifdef VAR_OPENACC
   use openacc
 #endif
