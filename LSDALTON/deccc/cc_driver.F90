@@ -575,7 +575,7 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
 
    !INTERNAL PARAMETERS
    type(tensor) :: mp2_amp
-   integer :: dims(2), solver_job
+   integer :: dims(2), solver_job, solver_ccmodel
    real(realk) :: ccenergy
    logical :: local
 
@@ -589,6 +589,9 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1) local = .false.
 #endif
+
+   solver_ccmodel = MyFragment%ccmodel
+   if(MyFragment%ccmodel == MODEL_CCSDpT ) solver_ccmodel = MODEL_CCSD
 
 
    ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
@@ -618,7 +621,7 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
    endif
 #endif
 
-   call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
+   call ccsolver_par(solver_ccmodel,myfragment%Co,myfragment%Cv,&
       & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
       & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
       & myfragment%ppfock,myfragment%qqfock,ccenergy,&
@@ -2030,7 +2033,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          & pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag)
 
 
-
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
             &labelttot= 'CCIT: RESIDUAL        :', output = DECinfo%output, twall = time_crop_mat ) 
 
@@ -2306,18 +2308,17 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
          call tensor_minit( p1, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR")
-         call tensor_add(   p1, 1.0E0_realk, t2(iter_idx), a = 0.0E0_realk, order = [1,3,2,4] )
-         !call tensor_cp_data(p1, t2(iter_idx), order = [1,3,2,4] )
+         call tensor_cp_data(t2(iter_idx), p1, order = [1,3,2,4] )
 
          if(use_singles) then
             if(.not.longrange_singles) then ! intitialize and copy, else just copy
                call tensor_minit(p2,[nv,no],2)
             end if
-            call tensor_cp_data(p2, t1(iter_idx) )
+            call tensor_cp_data(t1(iter_idx), p2 )
          endif
 
          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
-         if(saferun.and..not.restart_from_converged)then
+         if(saferun.and..not.restart_from_converged.and..not.DECinfo%CRASHCALC)then
             if(use_singles)then
                call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,&
                   &t2(iter_idx),safefilet2f,safefilet2f,t1(iter_idx),safefilet1f,safefilet1f)
@@ -2327,7 +2328,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             endif
          endif
 
-         !call tensor_change_itype_to_td(t2(last_iter),local)
       end if
 
       ! Free doubles residuals
@@ -3063,12 +3063,13 @@ subroutine save_current_guess(local,iter,nb,res_norm,energy,Uo,Uv,t2,safefilet21
    fu_t21=121
    fu_t22=122
 
+   call print_norm(t2,"transformed t2",print_on_rank=0)
+
    if(DECinfo%use_singles.and.all_singles)then
 
       call can_local_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
 
-      !msg="singles norm save"
-      !call print_norm(t1,msg)
+      call print_norm(t1,"transformed t1")
 #ifdef SYS_AIX
       fullname11=safefilet11//'.writing\0'
       fullname12=safefilet12//'.writing\0'
