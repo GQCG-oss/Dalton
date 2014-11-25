@@ -1855,8 +1855,10 @@ module lspdm_tensor_operations_module
     endif
 
     do i=1,x%mode
-       if(x%tdim(i) /= y%tdim(order(i)))call lsquit("ERROR(tensor_add_par): tdims of arrays not &
+       if(x%tdim(i) /= y%tdim(order(i))) then
+         call lsquit("ERROR(tensor_add_par): tdims of arrays not &
           &compatible (with the given order)",-1)
+      endif
     enddo
 
     ! now set to two and that ought to be enough, but should work with any

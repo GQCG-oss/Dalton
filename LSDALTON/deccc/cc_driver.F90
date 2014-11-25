@@ -1977,9 +1977,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv,pgmo_diag,pgmo_up,&
          &MOinfo,nspaces,pno_cv,pno_S,m2=m2,frag=frag)
 
-      call print_norm(pgmo_diag,'FOO',print_on_rank=0)
-      call print_norm(pgmo_up,'FOO',print_on_rank=0)
-
       break_iterations = .false.
       crop_ok          = .false.
       prev_norm        = huge(prev_norm)
@@ -2031,6 +2028,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,ppfock_prec,qqfock_prec,xo,xv,yo,yv,nb,&
          & MyLsItem,omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
          & pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag)
+
 
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
@@ -2502,11 +2500,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
 
    case( MODEL_RPA )
 
-#ifdef VAR_MPI
       call RPA_residual_par(omega2(use_i),t2(use_i),iajb,ppfock_prec,qqfock_prec,no,nv,local)
-#else
-      call RPA_residual(omega2(use_i),t2(use_i),iajb,ppfock_prec,qqfock_prec,no,nv)
-#endif
 
    case default
 
@@ -2608,6 +2602,7 @@ subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv
             & 5 and 6 require the MO based algorithm. (Remove NO_MO_CCSD keyword)', DECinfo%output)
       end if
    end if
+
 
 #ifdef MOD_UNRELEASED
    !============================================================================!
