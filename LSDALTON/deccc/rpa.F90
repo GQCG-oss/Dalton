@@ -917,7 +917,7 @@ contains
    me   = 0
    nnod = 1
 
-   !GET SLAVES
+   !Waking up slaves
 #ifdef VAR_MPI
    me   = infpar%lg_mynum
    nnod = infpar%lg_nodtot
@@ -942,13 +942,18 @@ contains
 
    call tensor_cp_data(vvf,E1)
    call tensor_cp_data(oof,E2)
+   !copies to E1 and E2
+   !oof is the occupied-occupied part of the fock matrix
+   !vvf is the virtual-virtual part of the fock matrix
 
    ord = [1,4,2,3]
    !call tensor_contract( 1.0E0_realk,t2,vvf,[2],[2],1,0.0E0_realk,omega2,ord,force_sync=.true.)
+   !sum_c t^ac_ij*f_cb
    call tensor_contract( 1.0E0_realk,t2,E1,[2],[2],1,0.0E0_realk,omega2,ord,force_sync=.true.)
 
    ord = [1,2,3,4]
    !call tensor_contract(-1.0E0_realk,t2,oof,[4],[1],1,1.0E0_realk,omega2,ord,force_sync=.true.)
+   !sum_k t^ab_(ik)*f_kj
    call tensor_contract(-1.0E0_realk,t2,E2,[4],[1],1,1.0E0_realk,omega2,ord,force_sync=.true.)
 
 
@@ -993,6 +998,7 @@ contains
 #endif
 
 
+   !contraction t2*g_iajb
    ord = [1,2,3,4]
    call tensor_contract( 2.0E0_realk,t2,iajb,[2,4],[2,1],2,0.0E0_realk,tg,ord,force_sync=.true.)
 
@@ -1000,6 +1006,7 @@ contains
    if(.not.local) call tensor_unlock_local_wins(tg)
 #endif
 
+   !add contraction t2*g_iajb to residual
    ord = [1,4,2,3]
    call tensor_add(omega2,1.0E0_realk,tg, order = ord )
 
@@ -1011,7 +1018,7 @@ contains
 
    call tensor_free(tg)
 
-   !ADD 2iajb*t
+   !ADD contraction g_iajb t2 to residual
    ord = [2,3,1,4]
    call tensor_contract( 2.0E0_realk,iajb,t2,[3,4],[3,1],2,1.0E0_realk,omega2,ord,force_sync=.true.)
 
