@@ -1006,8 +1006,6 @@ contains
    !          of occ/virt orbitals. The tuning of the binary search is defined by
    !          nred_occ/nred_vir which correspond to the minimum gap in number of orbital
    !          that is allowed between the last two steps of the binary search.
-   !          A step is accepted if the energy difference between the expanded and 
-   !          the reduced fragment is smaller than dE_red_occ/dE_red_vir.
    !
    !          Scheme 2: Same as scheme 1 but instead of taking orbitals based on their 
    !          contribution to the fragment energy, we choose them based on their 
@@ -1021,8 +1019,7 @@ contains
    ! Author:  Pablo Baudin
    ! Date:    July 2014
    subroutine define_frag_reduction(no_full,nv_full,natoms,MyAtom,MyMolecule,MyFragment, &
-            & track_occ_priority_list,track_vir_priority_list,dE_red_occ,dE_red_vir, &
-            & nred_occ,nred_vir)
+            & track_occ_priority_list,track_vir_priority_list,nred_occ,nred_vir)
 
       implicit none
    
@@ -1041,8 +1038,6 @@ contains
       !> Return priority list of occ/vir orbitals
       integer, intent(out) :: track_occ_priority_list(no_full)
       integer, intent(out) :: track_vir_priority_list(nv_full)
-      !> energy error acceptance in reduction steps:
-      real(realk), intent(out) :: dE_red_occ, dE_red_vir
       !> minimum gap in number of orbital allowed between the 
       !  last two steps of the binary search.
       integer, intent(out) :: nred_occ, nred_vir
@@ -1054,14 +1049,6 @@ contains
       nred_occ = max( ceiling(5.0E0_realk*MyFragment%noccAOS/100), 1)
       nred_vir = max( ceiling(5.0E0_realk*MyFragment%nunoccAOS/100), 1)
 
-      ! By default dE_red_xxx is set to X*FOT where X is <= FOT 
-      if(.not.DECinfo%OnlyVirtPart) then
-         dE_red_occ = DECinfo%frag_red_occ_thr*DECinfo%FOT
-         dE_red_vir = DECinfo%frag_red_virt_thr*DECinfo%FOT
-      else
-         dE_red_occ = DECinfo%frag_red_virt_thr*DECinfo%FOT
-         dE_red_vir = DECinfo%frag_red_occ_thr*DECinfo%FOT
-      end if
 
       ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:
       ! ======================================
@@ -1109,8 +1096,8 @@ contains
          call lsquit('ERROR FOP: Occupied Reduction scheme not defined',DECinfo%output)
       end if
 
-      ! 2) DEFINE REDUCTION OF OCCUPIED SPACE:
-      ! ======================================
+      ! 2) DEFINE REDUCTION OF VIRTUAL SPACE:
+      ! =====================================
       ! SCHEME 1:
       if (DECinfo%Frag_RedVir_Scheme == 1) then
          ! Get contribution from local virtual orbitals:
@@ -1152,12 +1139,6 @@ contains
          call lsquit('ERROR FOP: Virtual Reduction scheme not defined',DECinfo%output)
       end if
 
-
-      ! Sanity check: check that dE_red is never > FOT:
-      if ((dE_red_occ>DECinfo%FOT).or.(dE_red_vir>DECinfo%FOT)) then
-         call lsquit('ERROR FOP Reduction: dE_red_*** need to be set smaller &
-            & than 1',DECinfo%output)
-      end if
 
    end subroutine define_frag_reduction
 
