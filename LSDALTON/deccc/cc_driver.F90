@@ -2001,7 +2001,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(ppfock_prec, [no,no], 2, local=local, atype='REPD' )
    call tensor_minit(qqfock_prec, [nv,nv], 2, local=local, atype='REPD' )
    call tensor_minit(qpfock_prec, [nv,no], 2, local=local, atype='REPD' )
-   call tensor_minit(pqfock_prec, [no,nv], 2, local=local, atype='REPD' )
+   if( JOB == SOLVE_MULTIPLIERS )then
+      call tensor_minit(pqfock_prec, [no,nv], 2, local=local, atype='REPD' )
+   endif
 
    call tensor_change_atype_to_rep( ppfock_prec, local )
    call tensor_change_atype_to_rep( qqfock_prec, local )
