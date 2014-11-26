@@ -1102,7 +1102,7 @@ contains
           CALL LS_GETTIM(CPU2,WALL2)
           CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
           WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-          call MPI_Request_free(request,ierr)
+!          call MPI_Request_free(request,ierr)
        ENDIF
        IF(MynauxMPI.GT.0)THEN 
           !consider 
@@ -1302,8 +1302,22 @@ contains
     ENDIF
     CALL LSTIMER('RIMP2: Calpha ',TS2,TE2,LUPRI,FORCEPRINT)
 
-    call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
-    call mem_dealloc(AlphaCD) !no longer need this
+    IF(wakeslaves)THEN !START BY SENDING MY OWN PACKAGE alphaCD
+#ifdef VAR_MPI
+       IF(MynauxMPI.GT.0)THEN
+          CALL LS_GETTIM(CPU1,WALL1)
+          call MPI_WAIT(request,lsmpi_status,ierr)
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+          WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+          call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
+          call mem_dealloc(AlphaCD) !no longer need this
+       ENDIF
+#endif
+    ELSE
+       call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
+       call mem_dealloc(AlphaCD) !no longer need this
+    ENDIF
 
     call mem_alloc(EpsOcc,nocc)
     call mem_leaktool_alloc(EpsOcc,LT_Eps)

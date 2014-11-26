@@ -1941,6 +1941,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   logical :: useAlphaCD5,useAlphaCD6,ChangedDefault
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases)
+  integer(kind=long) :: nSize
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
@@ -2210,10 +2211,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
      !where alpha runs over the Aux basis functions allocated for this rank
      !and beta run over the full set of nbasisAux
-     call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux)
-     call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux,&
-          & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,numnodes,natoms)
-     call mem_dealloc(AlphaBeta_minus_sqrt)
+     IF(MynbasisAuxMPI.GT.0)THEN
+        call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux)
+        call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux,&
+             & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,numnodes,natoms)
+        call mem_dealloc(AlphaBeta_minus_sqrt)
+     ENDIF
   ENDIF
   CALL LSTIMER('DECRIMP2: MPI AlphaBetaTmp ',TS2,TE2,LUPRI,FORCEPRINT)
 
@@ -2434,8 +2437,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         !Verify that it has been recieved before deallocating
         call MPI_WAIT(request,lsmpi_status,ierr)
         call time_start_phase(PHASE_WORK)   
+        call mem_dealloc(alphaCD3)
      ENDIF
-     call mem_dealloc(alphaCD3)
 
      IF(nAwaitDealloc.NE.0)THEN
         do iAwaitDealloc=1,nAwaitDealloc
@@ -2501,7 +2504,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_dealloc(tocc3)     
   ELSE
      call tensor_ainit(toccEOS,dimocc,4)
-     call ls_dzero(toccEOS%elm1,size(toccEOS%elm1))
+     nsize = nvirt*noccEOS*nvirt*noccEOS
+     call ls_dzero8(toccEOS%elm1,nsize)
   ENDIF
   CALL LSTIMER('DECRIMP2: tocc          ',TS2,TE2,LUPRI,FORCEPRINT)
 
@@ -2510,7 +2514,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call time_start_phase( PHASE_IDLE )
      call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_COMM )       
-     call lsmpi_reduction(toccEOS%elm1,nvirt*noccEOS*nvirt*noccEOS,infpar%master,infpar%lg_comm)
+     nSize = nvirt*noccEOS*nvirt*noccEOS
+     call lsmpi_reduction(toccEOS%elm1,nsize,infpar%master,infpar%lg_comm)
      call time_start_phase(PHASE_WORK)   
      IF(.NOT.Master )call tensor_free(toccEOS)
   ENDIF
@@ -2560,15 +2565,18 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call tensor_ainit(tvirtEOS,dimvirt,4)
      call mem_dealloc(EVocc)
      call mem_dealloc(EVvirt)
-     call ls_dzero(tvirtEOS%elm1,size(toccEOS%elm1))
+     nSize = nvirtEOS*nocc*nvirtEOS*nocc
+     call ls_dzero8(tvirtEOS%elm1,nSize)
   ENDIF
   CALL LSTIMER('DECRIMP2: tvirt          ',TS2,TE2,LUPRI,FORCEPRINT)
+
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
      call time_start_phase( PHASE_IDLE )
      call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_COMM )
-     call lsmpi_reduction(tvirtEOS%elm1,nvirtEOS*nocc*nvirtEOS*nocc,infpar%master,infpar%lg_comm)
+     nSize = nvirtEOS*nocc*nvirtEOS*nocc
+     call lsmpi_reduction(tvirtEOS%elm1,nSize,infpar%master,infpar%lg_comm)
      call time_start_phase(PHASE_WORK)   
      IF(.NOT.Master )call tensor_free(tvirtEOS)
   ENDIF
@@ -2608,7 +2616,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_dealloc(UoccEOST)
      call mem_dealloc(UvirtT)
      call tensor_ainit(goccEOS,dimocc,4)
-     call ls_dzero(goccEOS%elm1,size(toccEOS%elm1))
+     nSize = nvirt*noccEOS*nvirt*noccEOS
+     call ls_dzero8(goccEOS%elm1,nsize)
   ENDIF
   CALL LSTIMER('DECRIMP2: gocc           ',TS2,TE2,LUPRI,FORCEPRINT)
 #ifdef VAR_MPI
@@ -2616,7 +2625,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call time_start_phase( PHASE_IDLE )
      call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_COMM )
-     call lsmpi_reduction(goccEOS%elm1,nvirt*noccEOS*nvirt*noccEOS,infpar%master,infpar%lg_comm)
+     nSize = nvirt*noccEOS*nvirt*noccEOS
+     call lsmpi_reduction(goccEOS%elm1,nSize,infpar%master,infpar%lg_comm)
      call time_start_phase(PHASE_WORK)   
      IF(.NOT.Master )call tensor_free(goccEOS)
   ENDIF
@@ -2657,7 +2667,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_dealloc(UvirtEOST)
      call mem_dealloc(UoccT)
      call tensor_ainit(gvirtEOS,dimvirt,4)
-     call ls_dzero(gvirtEOS%elm1,size(toccEOS%elm1))
+     nSize = nvirtEOS*nocc*nvirtEOS*nocc
+     call ls_dzero8(gvirtEOS%elm1,nsize)
   ENDIF
   CALL LSTIMER('DECRIMP2: gvirt          ',TS2,TE2,LUPRI,FORCEPRINT)
 #ifdef VAR_MPI
@@ -2665,7 +2676,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call time_start_phase( PHASE_IDLE )
      call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_COMM )
-     call lsmpi_reduction(gvirtEOS%elm1,nvirtEOS*nocc*nvirtEOS*nocc,infpar%master,infpar%lg_comm)
+     nSize = nvirtEOS*nocc*nvirtEOS*nocc
+     call lsmpi_reduction(gvirtEOS%elm1,nsize,infpar%master,infpar%lg_comm)
      call time_start_phase( PHASE_WORK )   
      IF(.NOT.Master )call tensor_free(gvirtEOS)
   ENDIF
@@ -2711,7 +2723,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call stats_globalmem(DECinfo%output)
      FLUSH(DECinfo%output)
   endif
-  
+
   CALL LSTIMER('DECRIMP2: Finalize',TS2,TE2,LUPRI,FORCEPRINT)
   call LSTIMER('DEC-RIMP2 ',TS,TE,DECinfo%output,ForcePrint)
   IF(ChangedDefault)THEN
