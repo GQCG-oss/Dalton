@@ -82,7 +82,7 @@ START REFOUT
             Poul Joergensen,     Aarhus University,         Denmark
             Jeppe Olsen,         Aarhus University,         Denmark
             Kenneth Ruud,        San Diego Superc. Center,  USA    
-            Hans Aagren,         KTH Stockholm,             Sweden 
+            Hans Agren,         KTH Stockholm,             Sweden 
 
                           Contributors:
 
@@ -126,7 +126,7 @@ START REFOUT
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Agren,
      K.L. Bak, V. Bakken, O. Christiansen,P. Dahle, E.K. Dalskov, T. Enevoldsen,
      B. Fernandez,H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
      H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,

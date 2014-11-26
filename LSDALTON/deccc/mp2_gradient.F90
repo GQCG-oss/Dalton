@@ -644,9 +644,9 @@ contains
 
      implicit none
      !> Fragment 1 in the pair fragment
-     type(decfrag),intent(inout) :: Fragment1
+     type(decfrag),intent(in) :: Fragment1
      !> Fragment 2 in the pair fragment
-     type(decfrag),intent(inout) :: Fragment2
+     type(decfrag),intent(in) :: Fragment2
      !> Pair fragment
      type(decfrag),intent(inout) :: pairfragment
      !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
@@ -766,9 +766,9 @@ contains
     implicit none
 
     !> Fragment 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
     type(decfrag),intent(inout) :: pairfragment
     !> Theta array, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
@@ -2416,9 +2416,9 @@ contains
 
     implicit none
     !> Fragment 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
     type(decfrag),intent(inout) :: pairfragment
     !> t2 amplitudes, only for EOS orbitals using occupied partitioning, order:  (A,I,B,J)

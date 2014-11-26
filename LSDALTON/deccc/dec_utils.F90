@@ -3060,11 +3060,11 @@ end function max_batch_dimension
 
     implicit none
     ! Fragment 1 in pair
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     ! Fragment 2 in pair
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
-    type(decfrag),intent(inout) :: PairFragment
+    type(decfrag),intent(in) :: PairFragment
     !> Do pair or not - dimension: (noccEOS,noccEOS) for PAIR
     logical,dimension(PairFragment%noccEOS,PairFragment%noccEOS),&
          & intent(inout) :: dopair
@@ -3165,11 +3165,11 @@ end function max_batch_dimension
 
     implicit none
     ! Fragment 1 in pair
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     ! Fragment 2 in pair
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
-    type(decfrag),intent(inout) :: PairFragment
+    type(decfrag),intent(in) :: PairFragment
     !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
     logical,dimension(PairFragment%nunoccEOS,PairFragment%nunoccEOS),&
          & intent(inout) :: dopair
@@ -4135,7 +4135,7 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')    'E: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
           if(.not. DECinfo%SOS) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total RPA energy    :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy    :', Ehf+Ecorr
           else
              write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy  :', Ehf+Ecorr
           endif
@@ -5320,15 +5320,19 @@ end function max_batch_dimension
         endif
      case( TT_TILED_DIST )
 
-        if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
-           call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
-        endif
 
         call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
            &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset )
 
         if(DECinfo%use_singles)then
-           call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
+
+          !This was put outside of this test, it did not make sense
+          !as t1 may not have been initialized.
+          if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
+            call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
+          endif
+
+          call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
         else
            !this is just copying t2 to u
            call tensor_add( u, 1.0E0_realk, t2, a = 0.0E0_realk)

@@ -82,8 +82,8 @@ contains
     real(realk) :: V1energy
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -127,8 +127,8 @@ contains
     real(realk) :: V2energy
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -200,8 +200,8 @@ contains
     real(realk) :: V4energy
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -278,8 +278,8 @@ contains
     real(realk) :: V5energy
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -378,8 +378,8 @@ contains
 
     real(realk), target, intent(in) :: Fkj(:,:)
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -450,8 +450,8 @@ contains
 
     real(realk), target, intent(in) :: Fkj(:,:)
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -553,8 +553,8 @@ contains
 
     real(realk), target, intent(in) :: Fkj(:,:)
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -653,8 +653,8 @@ contains
 
     real(realk), target, intent(in) :: Fkj(:,:)
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -751,8 +751,8 @@ contains
     real(realk) :: B1energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -800,8 +800,8 @@ contains
     real(realk) :: B2energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -868,8 +868,8 @@ contains
     real(realk) :: B3energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -936,8 +936,8 @@ contains
     real(realk) :: B4energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1011,8 +1011,8 @@ contains
     real(realk) :: B5energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1091,8 +1091,8 @@ contains
     real(realk), target, intent(in) :: Fmn(:,:)
     real(realk), target, intent(in) :: Fab(:,:)
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1186,8 +1186,8 @@ contains
     real(realk), target, intent(in) :: Fmn(:,:)
     real(realk), target, intent(in) :: Fab(:,:)
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1265,8 +1265,8 @@ contains
     real(realk), target, intent(in) :: Fmn(:,:)
     real(realk), target, intent(in) :: Fab(:,:)
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1349,8 +1349,8 @@ contains
     real(realk) :: B9energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1430,8 +1430,8 @@ contains
     real(realk) :: V1energy, tmp1, tmp2
   
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1510,8 +1510,8 @@ contains
     real(realk) :: V2energy, tmp1, tmp2
   
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1611,8 +1611,8 @@ contains
     real(realk) :: V3energy, V4energy, tmp1, tmp2
   
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1739,8 +1739,8 @@ contains
     real(realk) :: V1energy, tmp1, tmp2
   
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1816,8 +1816,8 @@ contains
     real(realk) :: V2energy, tmp1, tmp2
   
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -1916,8 +1916,8 @@ contains
     real(realk) :: V3energy, V4energy, tmp1, tmp2
   
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -2066,8 +2066,8 @@ contains
     real(realk) :: V1energy, tmp1, tmp2
   
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -2143,8 +2143,8 @@ contains
     real(realk) :: V2energy, tmp1, tmp2
   
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -2252,8 +2252,8 @@ contains
     real(realk) :: V3energy, V4energy, tmp1, tmp2
   
     type(decfrag),intent(inout) :: MyFragment
-    type(decfrag),intent(inout) :: Fragment1
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
     real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
@@ -2455,7 +2455,7 @@ contains
   !> Brief: Gives the single and pair fragment energy for MP2F12
   !> Author: Yang M. Wang
   !> Date: April 2013
-  subroutine get_f12_fragment_energy(MyFragment, Taibj, Tai, case, Fragment1, Fragment2, natoms)
+  subroutine get_f12_fragment_energy(MyFragment, Taibj, Tai, case, Fragment1, Fragment2)
     implicit none
 
     !> Atomic fragment to be determined (Single or Pair fragment)
@@ -2467,11 +2467,9 @@ contains
     !> Case MODEL
     integer, intent(in) :: case
     !> Fragment 1 in the pair fragment
-    type(decfrag),intent(inout), optional :: Fragment1
+    type(decfrag),intent(in), optional :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(decfrag),intent(inout), optional :: Fragment2
-    !> Number of atoms for full molecule
-    integer, intent(in), optional :: natoms
+    type(decfrag),intent(in), optional :: Fragment2
     !> Logical variable to check if this is a pair fragment
     logical :: dopair
 
@@ -2560,10 +2558,6 @@ contains
     dopair = .FALSE.
     if(present(Fragment1) .AND. present(Fragment2)) then
        dopair = .TRUE.
-    endif
-
-    if(.NOT. present(natoms) .AND. dopair) then
-       call lsquit("get_f12_fragment_energy: Missing optional argument natoms")
     endif
 
     nbasis   = MyFragment%nbasis
@@ -3233,9 +3227,9 @@ contains
   subroutine get_mp2f12_pf_E21(ijkl, Fragment1, Fragment2, PairFragment, nocc, energy, scalar)
     implicit none
     !> Fragment 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
     type(decfrag), intent(inout) :: PairFragment
     !> The pair fragment energy
@@ -3278,9 +3272,9 @@ contains
   subroutine get_mp2f12_pf_E22(Xijkl, n1, Fragment1, Fragment2, PairFragment, energy, scalar)
     implicit none
     !> Fragment 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
     type(decfrag), intent(inout) :: PairFragment
 
@@ -3320,9 +3314,9 @@ contains
   subroutine get_mp2f12_pf_E23(ijkl, Fragment1, Fragment2, PairFragment, nocc, energy, scalar)
     implicit none
     !> Fragment 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     !> Fragment 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
     type(decfrag), intent(inout) :: PairFragment
     

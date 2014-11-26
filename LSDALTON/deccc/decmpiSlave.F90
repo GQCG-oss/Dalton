@@ -73,8 +73,8 @@ subroutine dec_lsmpi_slave(comm)
          call get_mo_integral_par_slave
       case(CCSDSLV4E2);
          call calculate_E2_and_permute_slave
-      case(RPAGETRESIDUAL);
-         call rpa_res_slave
+!      case(RPAGETRESIDUAL);
+!         call rpa_res_slave
       case(RPAGETFOCK);
          call rpa_fock_slave
 #ifdef MOD_UNRELEASED 

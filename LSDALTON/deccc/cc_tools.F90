@@ -2,8 +2,15 @@
 module cc_tools_module
 
    use precision
+   use ptr_assoc_module
+#ifdef VAR_MPI
+   use lsmpi_type
+#endif
+   use lstiming
    use typedeftype
    use integralinterfaceDEC, only: II_GET_ERI_INTEGRALBLOCK_INQUIRE
+   use dec_typedef_module
+   use reorder_frontend_module
    use tensor_interface_module
    
    interface get_tpl_and_tmi

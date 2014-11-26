@@ -9,6 +9,7 @@ use precision
 use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
+use tensor_interface_module, only: tensor_set_dil_backend_true, tensor_set_debug_mode_true
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -162,7 +163,6 @@ implicit none
   config%doF12=.false.
   config%doRIMP2=.false.
   config%doTestMPIcopy = .false.
-  config%type_tensor_debug = .false.
   config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
@@ -455,23 +455,23 @@ DO
                                  config%opt%CFG_density_method = config%opt%CFG_F2D_ARH
             CASE('.ARH DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
-				 config%davidSCF%precond=.true.
+                                 config%davidSCF%precond=.true.
                                  config%opt%cfg_saveF0andD0 = .true.
-				 config%davidSCF%stepsize=0.5
-				 config%davidSCF%arh_inp_linesearch=.false.
+                                 config%davidSCF%stepsize=0.5
+                                 config%davidSCF%arh_inp_linesearch=.false.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
             CASE('.ARH(LS) DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
-				 config%davidSCF%precond=.true.
+                                 config%davidSCF%precond=.true.
                                  config%opt%cfg_saveF0andD0 = .true.
-				 config%davidSCF%stepsize=0.5
-				 config%davidSCF%arh_inp_linesearch=.true.
+                                 config%davidSCF%stepsize=0.5
+                                 config%davidSCF%arh_inp_linesearch=.true.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
             CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
-	    CASE('.DAVIDSON DEBUG'); config%davidSCF%debug_info =.true.
-	    CASE('.DAVIDSON EXTRAVEC'); config%davidSCF%arh_extravec =.true.
+            CASE('.DAVIDSON DEBUG'); config%davidSCF%debug_info =.true.
+            CASE('.DAVIDSON EXTRAVEC'); config%davidSCF%arh_extravec =.true.
                                       config%davidSCF%arh_inp_extravec =.true.
-	    CASE('.DAVIDSON LSDEBUG'); config%davidSCF%arh_debug_linesearch =.true.
+            CASE('.DAVIDSON LSDEBUG'); config%davidSCF%arh_debug_linesearch =.true.
             CASE('.NOECONTINCREM');
                IF(.NOT.config%opt%cfg_saveF0andD0)THEN
                 call lsquit('.NOECONTINCREM must be placed some pointer after .ARH DAVID',-1)
@@ -1125,7 +1125,6 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
-        CASE('.TYPE_TENSOR_DEBUG');     config%type_tensor_debug    = .true.
            ! Max memory available on gpu measured in GB. By default set to 2 GB
         CASE('.GPUMAXMEM');             
            READ(LUCMD,*) config%GPUMAXMEM
@@ -1155,6 +1154,35 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            CALL lsQUIT('Illegal keyword in **GENERAL.',lupri)
         END SELECT
      ENDIF
+
+     if (WORD(1:7) == '*TENSOR') then
+        READWORD=.TRUE.
+        do
+           read(LUCMD,'(A40)') word
+           if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+           if(word(1:1) == '*') then ! New property or *END OF INPUT
+              backspace(LUCMD)
+              exit
+           end if
+           select case(word)
+           case('.DIL_BACKEND')
+              call tensor_set_dil_backend_true
+#ifdef VAR_MPI
+              call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,infpar%master,MPI_COMM_LSDALTON)
+#endif
+           case('.DEBUG')
+              call tensor_set_debug_mode_true
+#ifdef VAR_MPI
+              call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,infpar%master,MPI_COMM_LSDALTON)
+#endif
+           case default
+              print *,"UNRECOGNIZED KEYWORD: ",word
+              call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
+
+           end select
+        enddo
+     endif
+
      IF (WORD(1:2) == '**') THEN
         READWORD=.FALSE.
         EXIT
@@ -1307,6 +1335,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.DO NOT SAVE GAB');  
            INTEGRAL%saveGABtoMem = .FALSE. 
         CASE ('.NO OMP');  INTEGRAL%noOMP = .TRUE. 
+        CASE ('.ICHORGPU');  INTEGRAL%IchorForceGPU = .TRUE. 
+        CASE ('.ICHORCPU');  INTEGRAL%IchorForceCPU = .TRUE. 
         CASE ('.NO PASS');  INTEGRAL%DOPASS = .FALSE. 
         CASE ('.NO CS');  INTEGRAL%CS_SCREEN = .FALSE. 
         CASE ('.NO PS');  INTEGRAL%PS_SCREEN = .FALSE. 
@@ -1373,7 +1403,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.PRINT_EK3'); ! EXPERIMENTAL
         ! calculate and print full Exchange when doing ADMM exchange approx.
         ! > Debugging purpose only
-	   INTEGRAL%PRINT_EK3       = .TRUE.
+           INTEGRAL%PRINT_EK3       = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
@@ -2043,10 +2073,10 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*NUMHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the analytical gradient'
                     config%response%tasks%doNumHess = .True.
-	CASE('*NUMGRAD')
+        CASE('*NUMGRAD')
                     WRITE(config%LUPRI,*) 'Numerical Gradient calculations are carried out'
                     config%response%tasks%doNumGrad = .True.
-	CASE('*NUMGRADHESS')
+        CASE('*NUMGRADHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the numerical gradient'
                     config%response%tasks%doNumGradHess = .True.
 #endif

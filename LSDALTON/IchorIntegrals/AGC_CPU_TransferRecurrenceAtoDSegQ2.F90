@@ -25,15 +25,6 @@ MODULE AGC_CPU_OBS_TRMODAtoDSegQ2
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)
-  DO iP = 1,nPrimP*nPasses
-   DO iTUVQ=1, 10
-    DO iTUVP=1, 35
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
-!$OMP END DO
 !$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
@@ -43,6 +34,11 @@ MODULE AGC_CPU_OBS_TRMODAtoDSegQ2
 !$OMP         Tmp1,&
 !$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPrimP*nPasses
+   DO iTUVQ=1, 10
+    DO iTUVP=1, 35
+     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimQ=1, nPrimQ
     iPrimP = iP - ((iP-1)/nPrimP)*nPrimP
     iPassP = (iP-1)/nPrimP + 1
@@ -261,15 +257,6 @@ MODULE AGC_CPU_OBS_TRMODAtoDSegQ2
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)
-  DO iP = 1,nPrimP*nPasses
-   DO iTUVQ=1, 20
-    DO iTUVP=1, 35
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
-!$OMP END DO
 !$OMP DO &
 !$OMP PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$OMP         iP,iPrimQ,iPrimP,iPassP,&
@@ -280,6 +267,11 @@ MODULE AGC_CPU_OBS_TRMODAtoDSegQ2
 !$OMP         Tmp2,&
 !$OMP         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1)
   DO iP = 1,nPrimP*nPasses
+   DO iTUVQ=1, 20
+    DO iTUVP=1, 35
+     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimQ=1, nPrimQ
     iPrimP = iP - ((iP-1)/nPrimP)*nPrimP
     iPassP = (iP-1)/nPrimP + 1

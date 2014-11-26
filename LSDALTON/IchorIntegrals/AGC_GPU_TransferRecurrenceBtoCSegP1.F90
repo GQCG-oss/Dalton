@@ -24,14 +24,6 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)
-  DO iP = 1,nPrimQ*nPasses
-   DO iTUVQ=1,  4
-    DO iTUVP=1,  4
-     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$ACC         iP,iPrimQ,iPrimP,iPassP,&
@@ -44,6 +36,13 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
 !$ACC       Aexp,Dexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
+   DO iTUVQ=1,  4
+!$ACC LOOP SEQ
+    DO iTUVP=1,  4
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
     iPassP = (iP-1)/nPrimQ + 1
@@ -132,14 +131,6 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)
-  DO iP = 1,nPrimQ*nPasses
-   DO iTUVQ=1,  4
-    DO iTUVP=1, 10
-     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$ACC         iP,iPrimQ,iPrimP,iPassP,&
@@ -152,6 +143,13 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
 !$ACC       Aexp,Dexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
+   DO iTUVQ=1,  4
+!$ACC LOOP SEQ
+    DO iTUVP=1, 10
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
     iPassP = (iP-1)/nPrimQ + 1
@@ -268,14 +266,6 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)
-  DO iP = 1,nPrimQ*nPasses
-   DO iTUVQ=1, 10
-    DO iTUVP=1, 10
-     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$ACC         iP,iPrimQ,iPrimP,iPassP,&
@@ -289,6 +279,13 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
 !$ACC       Aexp,Dexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
+   DO iTUVQ=1, 10
+!$ACC LOOP SEQ
+    DO iTUVP=1, 10
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
     iPassP = (iP-1)/nPrimQ + 1
@@ -573,14 +570,6 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)
-  DO iP = 1,nPrimQ*nPasses
-   DO iTUVQ=1,  4
-    DO iTUVP=1, 20
-     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$ACC         iP,iPrimQ,iPrimP,iPassP,&
@@ -593,6 +582,13 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
 !$ACC       Aexp,Dexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
+   DO iTUVQ=1,  4
+!$ACC LOOP SEQ
+    DO iTUVP=1, 20
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
     iPassP = (iP-1)/nPrimQ + 1
@@ -758,14 +754,6 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)
-  DO iP = 1,nPrimQ*nPasses
-   DO iTUVQ=1, 10
-    DO iTUVP=1, 20
-     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$ACC         iP,iPrimQ,iPrimP,iPassP,&
@@ -781,6 +769,13 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
 !$ACC       Aexp,Dexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
+   DO iTUVQ=1, 10
+!$ACC LOOP SEQ
+    DO iTUVP=1, 20
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
     iPassP = (iP-1)/nPrimQ + 1
@@ -1044,14 +1039,6 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expAX,expAY,expAZ
   real(realk) :: invexpQ,inv2expQ,facX,facY,facZ,pinvq
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)
-  DO iP = 1,nPrimQ*nPasses
-   DO iTUVQ=1, 20
-    DO iTUVP=1, 20
-     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
-    ENDDO
-   ENDDO
-  ENDDO
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iAtomA,iAtomB,Xab,Yab,Zab,Xcd,Ycd,Zcd,expP,&
 !$ACC         iP,iPrimQ,iPrimP,iPassP,&
@@ -1068,6 +1055,13 @@ MODULE AGC_GPU_OBS_TRMODBtoCSegP1
 !$ACC       Aexp,Dexp,&
 !$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPrimQ*nPasses
+!$ACC LOOP SEQ
+   DO iTUVQ=1, 20
+!$ACC LOOP SEQ
+    DO iTUVP=1, 20
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
+    ENDDO
+   ENDDO
    DO iPrimP=1, nPrimP
     iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ
     iPassP = (iP-1)/nPrimQ + 1

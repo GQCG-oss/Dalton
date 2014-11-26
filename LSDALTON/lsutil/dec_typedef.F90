@@ -384,6 +384,12 @@ module dec_typedef_module
      integer :: Frag_Exp_Size
      real(realk) :: Frag_red_occ_thr
      real(realk) :: Frag_red_virt_thr
+     !> space to reduce: 
+     !  0: user don't chose use default
+     !  1: start reducing virtual space
+     !  2: start reducing occupied space
+     !  3: reduce both space at the same time
+     integer :: Frag_red_start
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
@@ -466,7 +472,8 @@ module dec_typedef_module
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
 
-
+     !> Use Ichor Integral Code
+     logical :: UseIchor
   end type DECSETTINGS
 
 

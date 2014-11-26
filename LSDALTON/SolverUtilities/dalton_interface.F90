@@ -35,7 +35,7 @@ MODULE dal_interface
    use ks_settings, only: incremental_scheme, SaveF0andD0
    use lsdalton_fock_module, only: lsint_fock_data
    use screen_mod, only: DECscreenITEM, free_decscreen,screen_init, screen_free
-   use IntegralInterfaceMOD
+   use IntegralInterfaceMOD 
    use II_XC_interfaceModule
    use IIDFTINT, only: II_DFTsetFunc
    use gridgenerationmodule
@@ -103,7 +103,7 @@ CONTAINS
       IF(ls%input%dalton%DEBUGDECPACKED)then
 #ifdef MOD_UNRELEASED
 !         call di_decbatchpacked(lupri,luerr,ls,nbast,D)
-!         call di_decpacked(lupri,luerr,ls,nbast,D)
+         call di_decpacked(lupri,luerr,ls,nbast,D)
 #endif
       ENDIF
       IF(ls%setting%scheme%interest)then
@@ -3469,9 +3469,10 @@ CONTAINS
       !
       TYPE(Matrix)  :: J,Jdec,tempm3
       real(realk),pointer   :: integrals(:,:,:,:),integralsFULL(:,:,:,:)
-      real(realk) :: CoulombFactor,Jcont,t1,t2
-      real(realk),pointer :: Dfull(:,:),JdecFull(:,:)
-      integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesAB
+      real(realk) :: CoulombFactor,Jcont,t1,t2,Threshold_CS
+      real(realk),pointer :: Dfull(:,:),JdecFull(:,:),GAB(:,:)
+      integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err
+      integer :: thread_idx,nthreads,idx,nbatchesAB
       integer :: A,B,C,D,dimA,dimB,dimC,dimD,batch_iA,batch_iB
       integer :: batch_iC,batch_iD,iC,iD
       integer :: i,k,MinAObatch,MaxAllowedDim,MaxActualDim,iA,iB
@@ -3506,6 +3507,12 @@ CONTAINS
       call mem_alloc(orb2batch,nbast)
       call build_minimalbatchesofAOS(lupri,ls%setting,&
            & nbast,batchsize,batchdim,batchindex,nbatchesAB,orb2Batch,'R')
+
+      call mem_alloc(GAB,nbatchesAB,nbatchesAB)
+      call II_get_2int_BatchScreenMat(LUPRI,LUERR,ls%SETTING,nbatchesAB,GAB,nbast)
+      WRITE(lupri,*)'GAB'
+      call ls_output(GAB,1,nbatchesAB,1,nbatchesAB,nbatchesAB,nbatchesAB,1,lupri)
+
       call mem_alloc(batch2orb,nbatchesAB)
       do idx=1,nbatchesAB
          call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
@@ -3518,27 +3525,19 @@ CONTAINS
          k = batch2orb(idx)%norbindex
          batch2orb(idx)%orbindex(k) = iorb
       end do
-      
+!#########################################################################################
       call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesAB,nbatchesAB,INTSPEC)      
       IF(doscreen)then
          call II_getBatchOrbitalScreen(DecScreen,ls%setting,&
               & nbast,nbatchesAB,nbatchesAB,batchsize,batchsize,batchindex,&
               & batchindex,batchdim,batchdim,INTSPEC,lupri,luerr)
       endif
+!#########################################################################################
 
-      call mem_alloc(Dfull,Dmat%nrow,Dmat%ncol)
-      call mat_to_full(Dmat,1E0_realk,DFULL)
-      CoulombFactor = 2.0E0_realk
-      call mat_init(J,nbast,nbast)
-      call mat_zero(J)
-      CALL II_get_Coulomb_mat(lupri,luerr,ls%setting,Dmat,J,1)
+      Threshold_CS = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
 
-      call mem_alloc(JdecFULL,nbast,nbast)
-      JdecFULL = 0.0E0_realk
-
-
-!      call mem_alloc(integralsFULL,nbast,nbast,nbast,nbast)
-!      call II_get_4center_eri(LUPRI,LUERR,ls%setting,integralsFULL,nbast,nbast,nbast,nbast,intspec)
+      call mem_alloc(integralsFULL,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LUERR,ls%setting,integralsFULL,nbast,nbast,nbast,nbast,intspec)
 !      write(lupri,*) 'integralsFULL'
 !      call ls_output(integralsFULL,1,nbast*nbast,1,nbast*nbast,nbast*nbast,nbast*nbast,1,lupri)
 
@@ -3548,72 +3547,94 @@ CONTAINS
          dimD = batchdim(D)
 
          BatchC: do C = 1,nbatchesAB
-            dimC = batchdim(C)
+            dimC = batchdim(C)           
 
             BatchB: do B = 1,nbatchesAB
                dimB = batchdim(B)
                
                BatchA: do A = 1,nbatchesAB
                   dimA = batchdim(A)
-                  
-                  nullify(integrals)
-                  allocate(integrals(dimA,dimB,dimC,dimD))
-                  integrals = 0.0E0_realk
-                  IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%batchGab(A,B)%p
-                  IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(C,D)%p
-                  call II_GET_DECBATCHPACKED(LUPRI,LUERR,ls%SETTING,&
-                       & integrals,A,B,C,D,1,1,1,1,&
-                       & dimA,dimB,dimC,dimD,intSpec)
+                  IF(GAB(A,B)*GAB(C,D).GT.Threshold_CS)THEN
+                     nullify(integrals)
+                     allocate(integrals(dimA,dimB,dimC,dimD))
+                     integrals = 0.0E0_realk
 
-!                  write(lupri,*) 'integrals A,B,C,D',A,B,C,D
-!                  write(lupri,*) 'BLOCK ',batch2orb(A)%orbindex(1),':',batch2orb(A)%orbindex(dimA)
-!                  write(lupri,*) 'BLOCK ',batch2orb(B)%orbindex(1),':',batch2orb(B)%orbindex(dimB)
-!                  write(lupri,*) 'BLOCK ',batch2orb(C)%orbindex(1),':',batch2orb(C)%orbindex(dimC)
-!                  write(lupri,*) 'BLOCK ',batch2orb(D)%orbindex(1),':',batch2orb(D)%orbindex(dimD)
-!                  call ls_output(integrals,1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
-!                  write(lupri,*) 'corresponding to '
-!                  call ls_output(integralsFULL(batch2orb(A)%orbindex(1):batch2orb(A)%orbindex(dimA),&
-!                       & batch2orb(B)%orbindex(1):batch2orb(B)%orbindex(dimB),&
-!                       & batch2orb(C)%orbindex(1):batch2orb(C)%orbindex(dimC),&
-!                       & batch2orb(D)%orbindex(1):batch2orb(D)%orbindex(dimD)),&
-!                       & 1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
+                     IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%batchGab(A,B)%p
+                     IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(C,D)%p
 
-                  
-                  do batch_iB = 1,dimB
-                     iB = batch2orb(B)%orbindex(batch_iB)
-                     do batch_iA = 1,dimA
-                        iA = batch2orb(A)%orbindex(batch_iA)
-                        Jcont = 0E0_realk
-                        do batch_iD = 1,dimD
-                           iD = batch2orb(D)%orbindex(batch_iD)
-                           do batch_iC = 1,dimC
-                              iC = batch2orb(C)%orbindex(batch_iC)
-!                              IF(ABS(integrals(batch_iA,batch_iB,batch_iC,batch_iD)-integralsFULL(iA,iB,iC,iD)).GT.1.0E-10)THEN
-!                                 print*,'integrals(batch_iA,batch_iB,batch_iC,batch_iD)',integrals(batch_iA,batch_iB,batch_iC,batch_iD)
-!                                 print*,'integralsFULL(iA,iB,iC,iD)',integralsFULL(iA,iB,iC,iD)
-!                                 print*,'batch_iA,batch_iB,batch_iC,batch_iD',batch_iA,batch_iB,batch_iC,batch_iD
-!                                 print*,'iA,iB,iC,iD',iA,iB,iC,iD
-!                                 call lsquit('elements wrong',-1)
-!                              ENDIF
-
-                              Jcont = Jcont + integrals(batch_iA,batch_iB,batch_iC,batch_iD)*Dfull(iC,iD)
+                     call II_GET_DECBATCHPACKED(LUPRI,LUERR,ls%SETTING,&
+                          & integrals,A,B,C,D,1,1,1,1,&
+                          & dimA,dimB,dimC,dimD,intSpec)
+                     
+                     !                  write(lupri,*) 'integrals A,B,C,D',A,B,C,D
+                     !                  write(lupri,*) 'BLOCK ',batch2orb(A)%orbindex(1),':',batch2orb(A)%orbindex(dimA)
+                     !                  write(lupri,*) 'BLOCK ',batch2orb(B)%orbindex(1),':',batch2orb(B)%orbindex(dimB)
+                     !                  write(lupri,*) 'BLOCK ',batch2orb(C)%orbindex(1),':',batch2orb(C)%orbindex(dimC)
+                     !                  write(lupri,*) 'BLOCK ',batch2orb(D)%orbindex(1),':',batch2orb(D)%orbindex(dimD)
+                     !                  call ls_output(integrals,1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
+                     !                  write(lupri,*) 'corresponding to '
+                     !                  call ls_output(integralsFULL(batch2orb(A)%orbindex(1):batch2orb(A)%orbindex(dimA),&
+                     !                       & batch2orb(B)%orbindex(1):batch2orb(B)%orbindex(dimB),&
+                     !                       & batch2orb(C)%orbindex(1):batch2orb(C)%orbindex(dimC),&
+                     !                       & batch2orb(D)%orbindex(1):batch2orb(D)%orbindex(dimD)),&
+                     !                       & 1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
+                                          
+                     do batch_iB = 1,dimB
+                        iB = batch2orb(B)%orbindex(batch_iB)
+                        do batch_iA = 1,dimA
+                           iA = batch2orb(A)%orbindex(batch_iA)
+                           Jcont = 0E0_realk
+                           do batch_iD = 1,dimD
+                              iD = batch2orb(D)%orbindex(batch_iD)
+                              do batch_iC = 1,dimC
+                                 iC = batch2orb(C)%orbindex(batch_iC)
+                                 IF(ABS(integrals(batch_iA,batch_iB,batch_iC,batch_iD)-integralsFULL(iA,iB,iC,iD)).GT.1.0E-10)THEN
+                                    print*,'integrals(batch_iA,batch_iB,batch_iC,batch_iD)',&
+     &                                      integrals(batch_iA,batch_iB,batch_iC,batch_iD)
+                                    print*,'integralsFULL(iA,iB,iC,iD)',integralsFULL(iA,iB,iC,iD)
+                                    print*,'batch_iA,batch_iB,batch_iC,batch_iD',batch_iA,batch_iB,batch_iC,batch_iD
+                                    print*,'iA,iB,iC,iD',iA,iB,iC,iD
+                                    call lsquit('elements wrong',-1)
+                                 ENDIF  !                               
+                              ENDDO
                            ENDDO
-                        ENDDO
-                        JdecFULL(iA,iB)=JdecFULL(iA,iB) + Jcont
+                        enddo
                      enddo
-                  enddo
-                  deallocate(integrals)
-                  nullify(integrals)
-                  
+                     deallocate(integrals)
+                     nullify(integrals)
+                  ELSE
+                     nullify(integrals)
+                     allocate(integrals(dimA,dimB,dimC,dimD))
+                     integrals = 0.0E0_realk
+
+                     IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%batchGab(A,B)%p
+                     IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(C,D)%p
+
+                     call II_GET_DECBATCHPACKED(LUPRI,LUERR,ls%SETTING,&
+                          & integrals,A,B,C,D,1,1,1,1,&
+                          & dimA,dimB,dimC,dimD,intSpec)                     
+                     do batch_iB = 1,dimB
+                        iB = batch2orb(B)%orbindex(batch_iB)
+                        do batch_iA = 1,dimA
+                           iA = batch2orb(A)%orbindex(batch_iA)
+                           Jcont = 0E0_realk
+                           do batch_iD = 1,dimD
+                              iD = batch2orb(D)%orbindex(batch_iD)
+                              do batch_iC = 1,dimC
+                                 iC = batch2orb(C)%orbindex(batch_iC)
+                                 IF(ABS(integrals(batch_iA,batch_iB,batch_iC,batch_iD)).GT.Threshold_CS)THEN
+                                    call lsquit('screening wrong',-1)
+                                 ENDIF
+                              enddo
+                           enddo
+                        enddo
+                     enddo
+                  ENDIF
                ENDDO BatchA
             ENDDO BatchB
          ENDDO BatchC
       ENDDO BatchD
       call LSTIMER('DECJOLD',t1,t2,LUPRI,ForcePrint)
-      call mat_init(Jdec,nbast,nbast)
-      call mat_set_from_full(JdecFULL,CoulombFactor,Jdec)
-      call mem_dealloc(JdecFULL)
-
       nullify(ls%setting%LST_GAB_LHS)
       nullify(ls%setting%LST_GAB_RHS)
       call free_decscreen(DECSCREEN)
@@ -3627,25 +3648,6 @@ CONTAINS
       end do
       call mem_dealloc(batch2orb)
       
-      call mat_init(tempm3,nbast,nbast)
-      call mat_add(1E0_realk,Jdec,-1E0_realk,J,tempm3)
-      write(lupri,*) 'QQQ DI_DECBATCHPACKED J STD    ',mat_trab(J,J)
-      write(lupri,*) 'QQQ DI_DECBATCHPACKED J DECPACK',mat_trab(Jdec,Jdec)
-      write(lupri,*) 'QQQ DIFF',ABS(mat_trab(tempm3,tempm3))
-      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL DI_DECBATCHPACKED TEST'
-      ELSE
-         WRITE(lupri,*)'the Jref'
-         call mat_print(J,1,nbast,1,nbast,lupri)
-         WRITE(lupri,*)'the Jdec'
-         call mat_print(Jdec,1,nbast,1,nbast,lupri)
-         WRITE(lupri,*)'the Diff'
-         call mat_print(tempm3,1,nbast,1,nbast,lupri)
-         CALL lsQUIT('DI_DECBATCHPACKED TEST FAILED',lupri)
-      ENDIF
-      call mat_free(J)
-      call mat_free(Jdec)
-      call mat_free(tempm3)
       ls%setting%SCHEME%NOFAMILY = NOFAMILY
       call screen_free()
       call screen_init()

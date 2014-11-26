@@ -26,75 +26,14 @@ module cc_debug_routines_module
    use ccsdpt_module
    use orbital_operations
    use rpa_module
-   integer,parameter :: SOLVE_AMPLITUDES  = 1
-   integer,parameter :: SOLVE_MULTIPLIERS = 2
+
+   integer,parameter :: SOLVE_AMPLITUDES      = 1
+   integer,parameter :: SOLVE_AMPLITUDES_PNO  = 2
+   integer,parameter :: SOLVE_MULTIPLIERS     = 3
    
 
    contains
-   subroutine ccsolver_energy_multipliers(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-        &mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy)
-
-     implicit none
-
-     !> CC model
-     integer,intent(in) :: ccmodel
-     !> Number of occupied orbitals in full molecule/fragment AOS
-     integer, intent(in) :: nocc
-     !> Number of virtual orbitals in full molecule/fragment AOS
-     integer, intent(in) :: nvirt
-     !> Number of basis functions in full molecule/atomic extent
-     integer, intent(in) :: nbasis
-     !> Fock matrix in AO basis for fragment or full molecule
-     real(realk), dimension(nbasis,nbasis), intent(in) :: fock_f
-     !> Occupied MO coefficients  for fragment/full molecule
-     real(realk), dimension(nbasis,nocc), intent(inout) :: Co_f
-     !> Virtual MO coefficients  for fragment/full molecule
-     real(realk), dimension(nbasis,nvirt), intent(inout) :: Cv_f
-     !> Occ-occ block of Fock matrix in MO basis
-     real(realk), dimension(nocc,nocc), intent(inout) :: ppfock_f
-     !> Virt-virt block of Fock matrix in MO basis
-     real(realk), dimension(nvirt,nvirt), intent(inout) :: qqfock_f
-     !> Is this a fragment job (true) or a full molecular calculation (false)
-     logical, intent(in) :: fragment_job
-     !> LS item information
-     type(lsitem), intent(inout) :: mylsitem
-     !> How much to print? ( ccPrintLevel>0 --> print info stuff)
-     integer, intent(in) :: ccPrintLevel
-     !> Coupled cluster energy for fragment/full molecule
-     real(realk),intent(inout) :: ccenergy!,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
-     type(array4) :: t2_final,VOVO!,ccsdpt_t2
-     type(array2) :: t1_final!,ccsdpt_t1
-     !> stuff needed for pair analysis
-     type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
-     integer :: natoms,ncore,nocc_tot,p,pdx,i
-     type(decorbital), pointer :: occ_orbitals(:)
-     type(decorbital), pointer :: unocc_orbitals(:)
-     logical, pointer :: orbitals_assigned(:)
-     type(array4) :: mult2
-     type(array2) :: mult1
-
-
-     call ccsolver_debug(ccmodel,Co_f, Cv_f, fock_f, nbasis, nocc, nvirt, &
-        & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
-        & t1_final, t2_final, VOVO, .false.,SOLVE_AMPLITUDES)
-
-     call array4_free(VOVO)
-
-     call ccsolver_debug(ccmodel,Co_f, Cv_f, fock_f, nbasis, nocc, nvirt, &
-        & mylsitem, ccPrintLevel, fragment_job, ppfock_f, qqfock_f, ccenergy, &
-        & t1_final, t2_final, VOVO, .false., SOLVE_MULTIPLIERS, m2 = mult2, m1 = mult1)
-
-     !call print_norm(mult2%val,int(i8*nvirt*nvirt*nocc*nocc,kind=8))
-     !call print_norm(mult1%val,int(i8*nvirt*nocc,kind=8))
-
-     ! Free arrays
-     call array2_free(t1_final)
-     call array2_free(mult1)
-     call array4_free(t2_final)
-     call array4_free(mult2)
-     call array4_free(VOVO)
-
-   end subroutine ccsolver_energy_multipliers
+#ifdef MOD_UNRELEASED
 
    !> \author Marcin Ziolkowski (modified by Kasper Kristensen and Patrick
    !  Ettenhuber)
@@ -636,8 +575,8 @@ module cc_debug_routines_module
               endif
 
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
-              &,t2_final%val,t1(iter)%val,t2(iter)%val,gao,xocc%val,yocc%val,xvirt%val,yvirt%val&
-              &,nocc,nvirt,nbasis,MyLsItem)
+              &,t2_final%val,t1(iter)%val,t2(iter)%val,xocc%val,yocc%val,xvirt%val,yvirt%val&
+              &,nocc,nvirt,nbasis,MyLsItem,gao_ex=gao)
            
            else if(u_pnos.and..not.DECinfo%hack2)then
               if(get_mult)then
@@ -1517,15 +1456,15 @@ module cc_debug_routines_module
    !of occupied orbitals no, the number of virtual orbitals nv and the number of
    !basis functions nb, MyLsItem is required to calculate the Fock matrix in
    !here
-   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,gao,xo,yo,xv,yv,no,nv,nb,MyLsItem)
+   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,xo,yo,xv,yv,no,nv,nb,MyLsItem,gao_ex)
      implicit none
 
      type(lsitem), intent(inout) :: MyLsItem
      real(realk),intent(inout) :: rho1(:,:),rho2(:,:,:,:)
-     type(array4),intent(inout):: gao
      real(realk),intent(inout) :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:)
      real(realk),intent(in)    :: xo(:,:),yo(:,:),xv(:,:),yv(:,:)
      integer, intent(in)       :: no,nv,nb
+     type(array4),intent(inout),optional:: gao_ex
      real(realk), pointer      :: w1(:), w2(:), w3(:), w4(:)
      real(realk), pointer      :: Lovov(:),Lvoov(:), Lovoo(:)
      real(realk), pointer      :: gvovv(:), gvooo(:), govvv(:), gooov(:), govov(:)
@@ -1536,6 +1475,13 @@ module cc_debug_routines_module
      type(matrix)              :: iFock, Dens
      integer                   :: i,a,j,b,ctr
      real(realk)               :: norm,nrmt2,nrmm2
+     type(array4)              :: gao
+
+     if(present(gao_ex))then
+        gao = gao_ex
+     else
+        call get_full_eri(mylsitem,nb,gao)
+     endif
 
      b2   = nb*nb
      v2   = nv*nv
@@ -2271,6 +2217,10 @@ module cc_debug_routines_module
      call mem_dealloc(w2)
      call mem_dealloc(w3)
 
+     if(.not.present(gao_ex))then
+        call array4_free(gao)
+     endif
+
     end subroutine get_ccsd_multipliers_simple
 
     !This function calculates the norm according to how it should be compared to
@@ -2654,6 +2604,10 @@ module cc_debug_routines_module
       &number)",DECinfo%output)
     endif
   end subroutine save_current_guess_simple
-
+#else
+  subroutine cc_debug_void()
+     implicit none
+  end subroutine cc_debug_void
+#endif
 
 end module cc_debug_routines_module

@@ -145,6 +145,7 @@ contains
     DECinfo%Frag_Exp_Size          = 10
     DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
     DECinfo%frag_red_virt_thr      = 0.9  ! times FOT
+    DECinfo%frag_red_start         = 0    ! not user defined
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
@@ -224,6 +225,9 @@ contains
 
     !> MPI (undefined by default)
     DECinfo%MPIgroupsize=0
+
+    !> Use Ichor Integral Code
+    DECinfo%UseIchor = .false.
 
     ! Test stuff
 
@@ -600,7 +604,7 @@ contains
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
-
+       case('.ICHOR'); DECinfo%UseIchor = .true.
        case('.F12')
           DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     
@@ -653,6 +657,7 @@ contains
           DECinfo%array4OnFile_specified=.true.
        case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
        case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
+       case('.FRAG_RED_START'); read(input,*) DECinfo%frag_red_start
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
@@ -1066,6 +1071,7 @@ contains
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
     write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr
     write(lupri,*) 'Frag_Red_virt_thr ', DECinfo%frag_red_virt_thr
+    write(lupri,*) 'Frag_Red_start ', DECinfo%frag_red_start
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt

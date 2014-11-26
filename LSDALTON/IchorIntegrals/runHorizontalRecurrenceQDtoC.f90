@@ -188,9 +188,9 @@ DO GPUrun = 1,2
           ENDDO
           IF(DoOpenMP)THEN
 !             WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
-             WRITE(LUFILE,'(A)')'!$OMP DO&'
+!             WRITE(LUFILE,'(A)')'!$OMP DO &'
              IF(JA.NE.0)THEN
-                WRITE(LUFILE,'(A)')'!$OMP PRIVATE(iP,&'
+                WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iP,&'
                 DO JTMP=1,JA-1
                    if(JTMP.LT.10)THEN
                       WRITE(LUFILE,'(A,I1,A)')'!$OMP         Tmp',JTMP,',&'
@@ -201,7 +201,7 @@ DO GPUrun = 1,2
                 WRITE(LUFILE,'(A)')'!$OMP         iTUVD,ilmP,Xcd,Ycd,Zcd) '
 !                WRITE(LUFILE,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)'
              ELSE
-                WRITE(LUFILE,'(A)')'!$OMP PRIVATE(iP,iTUVD,ilmP) '
+                WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iP,iTUVD,ilmP) '
 !                WRITE(LUFILE,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)'
              ENDIF
           ENDIF

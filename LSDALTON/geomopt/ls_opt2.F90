@@ -5,7 +5,7 @@
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program, Release 1.2
 !...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-!...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+!...   J. Olsen, K. Ruud, H. Agren, A.A. Auer, K.L. Bak, V. Bakken,
 !...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
 !...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
 !...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
