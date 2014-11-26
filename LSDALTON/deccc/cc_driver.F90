@@ -122,35 +122,6 @@ contains
      call tensor_free(m2f)
      call tensor_free(aibj)
 
-     !!if(DECinfo%ccdebug)then
-
-     !   call ccsolver_debug(solver_ccmodel,Co, Cv, fock, nb, no, nv, &
-     !      & mylsitem, ccPrintLevel, fragment_job, oof, vvf, ccenergy, &
-     !      & t1inal, t2inal, VOVO, .false.,SOLVE_AMPLITUDES)
-
-     !   call array4ree(VOVO)
-
-     !   call ccsolver_debug(solver_ccmodel,Co, Cv, fock, nb, no, nv, &
-     !      & mylsitem, ccPrintLevel, fragment_job, oof, vvf, ccenergy, &
-     !      & t1inal, t2inal, VOVO, .false., SOLVE_MULTIPLIERS, m2 = mult2, m1 = mult1)
-
-     !   !call print_norm(mult2%val,int(i8*nv*nv*no*no,kind=8))
-     !   !call print_norm(mult1%val,int(i8*nv*no,kind=8))
-
-     !   ! Free arrays
-     !   call array2ree(t1inal)
-     !   call array2ree(mult1)
-     !   call array4ree(t2inal)
-     !   call array4ree(mult2)
-     !   call array4ree(VOVO)
-
-     !!else
-
-     !!   call ccsolver_debug(solver_ccmodel,Co, Cv, fock, nb, no, nv, &
-     !!      & mylsitem, ccPrintLevel, oof, vvf, ccenergy, &
-     !!      & aibj, .false.,SOLVE_AMPLITUDES,p2=t1f,p4=t2f,m4=mp2_amp)
-
-     !!endif
 
    end subroutine ccsolver_energy_multipliers
 #endif
@@ -306,7 +277,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk), pointer :: Co(:,:), Cv(:,:), oof(:,:),  vvf(:,:), fock(:,:)
    !> local variables 
    character(len=30) :: CorrEnergyString
-   integer :: iCorrLen, nsingle, npair, njobs,solver_job, solver_ccmodel
+   integer :: iCorrLen, nsingle, npair, njobs
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
@@ -344,9 +315,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       oof => MyMolecule%ppfock
    end if
 
-   solver_ccmodel = ccmodel
 #ifdef MOD_UNRELEASED
-   if(ccmodel == MODEL_CCSDpT) solver_ccmodel = MODEL_CCSD
 
    ! nenergies is set to 4: a CC solver model plus pT corrections, 
    ! (4th order, 5th order and both):
@@ -740,7 +709,7 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
 
    !INTERNAL PARAMETERS
    type(tensor) :: mp2_amp
-   integer :: dims(2), solver_job, solver_ccmodel
+   integer :: dims(2)
    real(realk) :: ccenergy
    logical :: local
 
@@ -754,9 +723,6 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1) local = .false.
 #endif
-
-   solver_ccmodel = MyFragment%ccmodel
-   if(MyFragment%ccmodel == MODEL_CCSDpT ) solver_ccmodel = MODEL_CCSD
 
 
    ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
@@ -1701,7 +1667,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
    logical                :: restart, restart_from_converged,collective,use_singles,vovo_avail
-   logical                :: trafo_vovo, trafo_m4
+   logical                :: trafo_vovo, trafo_m4, trafo_m2
    logical                :: diag_oo_block, diag_vv_block
    character(4)           :: atype
 
@@ -1781,25 +1747,50 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             & but t1_final does not contain existing amplitudes!',DECinfo%output)
       end if
    end if
+
    !set job related
    select case(JOB)
    case(SOLVE_AMPLITUDES)
+
       use_pnos        = .false.
       get_multipliers = .false.
+      trafo_m4        = .false.
+      trafo_m2        = .false.
+
    case(SOLVE_AMPLITUDES_PNO)
+
       use_pnos        = .true.
       get_multipliers = .false.
+
       if(.not.present(m4)) then
          call lsquit('ccsolver: When using PNOs make sure MP2 amplitudes are &
             & in m4',DECinfo%output)
       end if
+
+      trafo_m4 = .true.
+      trafo_m2 = .false.
+
    case(SOLVE_MULTIPLIERS)
+
       use_pnos        = .false.
       get_multipliers = .true.
+
       if(.not.present(m4)) then
          call lsquit('ccsolver: When solving for the multipliers, make sure the&
          & doubles amplitudes are given in m4',DECinfo%output)
       end if
+      trafo_m4 = .true.
+
+      if(use_singles)then
+         if(.not.present(m2)) then
+            call lsquit('ccsolver: When solving for the multipliers, make sure the&
+               & singles amplitudes are given in m2',DECinfo%output)
+         end if
+         trafo_m2 = .true.
+      else
+         trafo_m2 = .false.
+      endif
+
    case default
       call lsquit("ERROR(ccsolver_par):unknown jobid",-1)
    end select
@@ -1825,8 +1816,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    endif
 
    !see if m2 has to be transformed to the pseudo diag basis
-   trafo_m4 = .false.
-   if(use_pnos) trafo_m4 = present(m4)
 
 
    !Settings for the models
@@ -1915,15 +1904,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
    !transform input to the diagonal basis!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-   if(trafo_m4)   call tensor_transform_basis([Uo,Uv],2,&
-      & [ m4   ], [[2,1,2,1]], [[1,1,1,1]],  4, 1)
-   if(trafo_vovo) call tensor_transform_basis([Uo,Uv],2,&
-      & [ VOVO ], [[2,1,2,1]], [[1,1,1,1]],  4, 1)
+   if(trafo_m2)   call local_can_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=m2%elm1)
+   if(trafo_m4)   call tensor_transform_basis([Uo,Uv],2,[ m4   ], [[2,1,2,1]], [[1,1,1,1]], 4, 1)
+   if(trafo_vovo) call tensor_transform_basis([Uo,Uv],2,[ VOVO ], [[2,1,2,1]], [[1,1,1,1]], 4, 1)
 
    if(fragment_job.and.use_pnos)then
       call local_can_trans(no,nv,nb,Uo%elm2,Uv%elm2,vv=frag%VirtMat,oo=frag%OccMat)
    endif
+
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -2109,6 +2097,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    if(DECinfo%PL>1)call time_start_phase( PHASE_WORK, at = time_work, ttot = time_start_guess,&
       &labelttot = 'CCSOL: STARTING GUESS :', output = DECinfo%output, twall = time_main  )
 
+   !FIXME: this needs to be replaced with the RHS and moved into get_guess_vectors
+   if(.not.restart.and.JOB==SOLVE_MULTIPLIERS)then
+      call tensor_zero(t2(1))
+      if(use_singles) call tensor_zero(t1(1))
+   endif
 
    ! Print Job Header
    ! ****************
@@ -2553,18 +2546,16 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !transform back to original basis!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   call tensor_transform_basis([Uo,Uv],2,&
-      & [ p4, VOVO ],  &
-      & [[2,1,2,1],[2,1,2,1]], &
-      & [[2,2,2,2],[2,2,2,2]],  4, 2)
+   call tensor_transform_basis( [Uo,Uv], 2, [p4,VOVO], [[2,1,2,1],[2,1,2,1]], [[2,2,2,2],[2,2,2,2]], 4, 2)
 
    if(use_singles)then
-      !this should be replaced if/whenever t1 is not local
+      !FIXME: all can local trans and local can trans should be replaced by
+      !tensor_transform_basis
       call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=p2%elm1)
    endif
 
-   if(trafo_m4)   call tensor_transform_basis([Uo,Uv],2,&
-      & [ m4   ], [[2,1,2,1]], [[2,2,2,2]],  4, 1)
+   if(trafo_m2) call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=m2%elm1 )
+   if(trafo_m4) call tensor_transform_basis([Uo,Uv],2, [m4], [[2,1,2,1]], [[2,2,2,2]], 4, 1)
 
    if(fragment_job.and.use_pnos)then
       call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,oo=frag%OccMat,vv=frag%VirtMat)
