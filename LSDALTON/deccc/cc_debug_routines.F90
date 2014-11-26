@@ -492,6 +492,7 @@ module cc_debug_routines_module
            omega2(iter) = array4_init(ampl4_dims)
         endif
 
+
         ! GET SINGLES:
         T1Related : if(DECinfo%use_singles) then
 
@@ -1553,7 +1554,6 @@ module cc_debug_routines_module
      call array4_read(gao)
      call successive_4ao_mo_trafo(nb,gao%val,xo,no,yv,nv,xo,no,yv,nv,w2)
      call dcopy(o2v2,gao%val,1,govov,1)
-
 
      call array_reorder_4d(2.0E0_realk,gao%val,no,nv,no,nv,[1,2,3,4],0.0E0_realk,Lovov)
      call array_reorder_4d(-1.0E0_realk,gao%val,no,nv,no,nv,[1,4,3,2],1.0E0_realk,Lovov)

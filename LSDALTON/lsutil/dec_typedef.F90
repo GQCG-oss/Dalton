@@ -224,6 +224,8 @@ module dec_typedef_module
      logical :: cc_driver_debug
      !> Integer specifying which scheme to use in CCSD calculations (debug)
      integer :: en_mem
+     !overwrite standard preconditioning settings in solver
+     logical :: ccsolver_overwrite_prec
      !> Use full molecular Fock matrix to precondition
      logical :: precondition_with_full
      !> Use devel version of doubles

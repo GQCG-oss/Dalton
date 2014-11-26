@@ -290,7 +290,9 @@ subroutine pdm_tensor_slave(comm)
 
       call tensor_free(AUX)
    CASE(JOB_GET_MP2_ST_GUESS)
-      call lspdm_get_mp2_starting_guess(A,B,C,D)
+      call ls_mpibcast(INT1,infpar%master,infpar%lg_comm)
+      call ls_mpibcast(LOG1,infpar%master,infpar%lg_comm)
+      call lspdm_get_starting_guess(A,B,C,D,INT1,LOG1)
 
    CASE DEFAULT
         call lsquit("ERROR(pdm_tensor_slave): Unknown job",-1)

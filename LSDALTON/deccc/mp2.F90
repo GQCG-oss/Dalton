@@ -4272,44 +4272,6 @@ end subroutine get_mpi_tasks_for_MP2_int_and_amp
 #endif
 
 
-subroutine get_mp2_starting_guess(iajb,t2, oof, vvf, local)
-   implicit none
-   type(tensor), intent(inout) :: iajb, t2, oof, vvf
-   logical, intent(in) :: local
-   real(realk), pointer :: o2v2(:)
-   real(realk), pointer :: wrk(:)
-   integer(kind=long) :: iwrk
-   integer :: no,nv,i,j,a,b
-   real(realk), pointer :: elm4(:,:,:,:)
-
-   no = t2%dims(4)
-   nv = t2%dims(1)
-
-   if( local )then
-
-      call array_reorder_4d(1.0E0_realk,iajb%elm1,iajb%dims(1),iajb%dims(2),&
-         &iajb%dims(3),iajb%dims(4),[2,4,1,3],0.0E0_realk,t2%elm1)
-      
-      !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(no,nv,t2,oof,vvf)
-      do j = 1, no
-         do i = 1, no
-            do b = 1, nv
-               do a = 1, nv
-                  t2%elm4(a,b,i,j) = t2%elm4(a,b,i,j) / &
-                     &(oof%elm2(i,i) - vvf%elm2(a,a) + oof%elm2(j,j) - vvf%elm2(b,b) )
-               enddo
-            enddo
-         enddo
-      enddo
-      !$OMP END PARALLEL DO
-
-   else
-
-      call lspdm_get_mp2_starting_guess(iajb,t2,oof,vvf)
-
-   endif
-end subroutine get_mp2_starting_guess
-
 subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    implicit none
    type(tensor), intent(inout) :: omega2, iajb,t2,oof,vvf
