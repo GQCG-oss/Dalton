@@ -140,14 +140,14 @@ subroutine pbc_timings_stop(timings, job, printlevel_i, lupri)
 	if ( printlevel > 0 ) then
 		write (dw_s,'(2F9.4)') deltawall
 		write (dc_s,'(2F9.4)') deltacpu
-		write (6, *), '>>>> Time consumption: ', \
- 				timings(job)%jobname, ',  Walltime:', dw_s, ',  CPUtime:', dc_s, '.'
+		write (6, *) '>>>> Time consumption: ', &
+ 				& timings(job)%jobname, ',  Walltime:', dw_s, ',  CPUtime:', dc_s, '.'
 	endif
 	if ( printlevel == 2 ) then 
 		write (dw_s,'(2F9.4)') deltawall
 		write (dc_s,'(2F9.4)') deltacpu
-		write (lupri, *), '>>>> Time consumption: ', \
- 				timings(job)%jobname, ',  Walltime:', dw_s, ',  CPUtime:', dc_s, '.'
+		write (lupri, *) '>>>> Time consumption: ', &
+ 				& timings(job)%jobname, ',  Walltime:', dw_s, ',  CPUtime:', dc_s, '.'
 	endif
 
 end subroutine pbc_timings_stop
@@ -168,13 +168,13 @@ subroutine pbc_timings_print(timings, lupri)
 	write (lupri, *) '=================================================================='
 	write (lupri, *) '======================= PBC - SCF TIMINGS ========================'
 	write (lupri, *) '=================================================================='
-	write (lupri,'(A31,A18,A18)') '   Task                      ', \
-		'Walltime    ', 'Cputime     '
+	write (lupri,'(A31,A18,A18)') '   Task                      ', &
+		& 'Walltime    ', 'Cputime     '
 	write (lupri, *) '------------------------------------------------------------------'
 	num_jobs = timings(1)%num_jobs
 	do i = 1, num_jobs
-		write (lupri,'(A5,A20,2F18.4,2F18.4)') ' >>> ', timings(i)%jobname, \
-			timings(i)%walltime, timings(i)%cputime
+		write (lupri,'(A5,A20,2F18.4,2F18.4)') ' >>> ', timings(i)%jobname, &
+			& timings(i)%walltime, timings(i)%cputime
 	enddo
 	write (lupri, *) '=================================================================='
 	write (lupri, *) '=================================================================='
