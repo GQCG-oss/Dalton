@@ -207,6 +207,7 @@ set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc-data.F90
     LSDALTON/pbc2/pbc-ffdata.F90
     LSDALTON/pbc2/pbcmain.F90
+    LSDALTON/pbc2/pbc-timings.F90
     )
 set(FMM_SOURCES
     LSDALTON/mm/mm_T_contractors.F90
