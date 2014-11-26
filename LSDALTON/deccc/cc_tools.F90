@@ -2,6 +2,7 @@
 module cc_tools_module
 
    use precision
+   use ptr_assoc_module
 #ifdef VAR_MPI
    use lsmpi_type
 #endif
