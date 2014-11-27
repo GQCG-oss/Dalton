@@ -2484,14 +2484,23 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
                  enddo
               ENDIF
 
-              !output private LocalIntPass(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
-              !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
-              !this can be done on the accelerator
-              call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
-                   & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
-                   & MaxPasses,nPasses(iCAH),TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1(:,iCAH),&
-                   & LocalIntPass2,IatomAPass(:,iCAH),iatomBPass(:,iCAH),nContQ,nContP)
-              
+              IF(UseGeneralCode)THEN
+                 !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
+                 !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+                 !this can be done on the accelerator
+                 call MainTriDistributetoLocalIntPass2CPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+                      & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+                      & MaxPasses,nPasses(iCAH),TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1(:,iCAH),&
+                      & LocalIntPass2,IatomAPass(:,iCAH),iatomBPass(:,iCAH),nContQ,nContP)
+              ELSE
+                 !output private LocalIntPass(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+                 !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+                 !this can be done on the accelerator
+                 call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+                      & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+                      & MaxPasses,nPasses(iCAH),TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1(:,iCAH),&
+                      & LocalIntPass2,IatomAPass(:,iCAH),iatomBPass(:,iCAH),nContQ,nContP)
+              ENDIF
               startD = startOrbitalD(iAtomDcurr)
               startC = startOrbitalC(iAtomCcurr)
 
@@ -2529,14 +2538,17 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
            enddo
         ENDIF
            
-        !output private LocalIntPass(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
-        !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
-        !this can be done on the accelerator
-        call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
-             & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
-             & MaxPasses,nPasses(iCAH),TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1(:,iCAH),&
-             & LocalIntPass2,IatomAPass(:,iCAH),iatomBPass(:,iCAH),nContQ,nContP)
-           
+        IF(UseGeneralCode)THEN
+           CALL ICHORQUIT('call MainTriDistributetoLocalIntPass2CPU in GPU should not happen',-1)
+        ELSE
+           !output private LocalIntPass(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+           !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+           !this can be done on the accelerator
+           call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+                & MaxPasses,nPasses(iCAH),TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1(:,iCAH),&
+                & LocalIntPass2,IatomAPass(:,iCAH),iatomBPass(:,iCAH),nContQ,nContP)
+        ENDIF
         startD = startOrbitalD(iAtomDcurr)
         startC = startOrbitalC(iAtomCcurr)
            
@@ -2556,9 +2568,9 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
     call FreeIchorSPHMAT()
   ENDIF
 
-  print*,cHostWaitForGPU1+cHostWaitForGPU2,' microseconds spent waiting on GPU '
-  print*,cHostWaitForGPU1,' microseconds spent waiting on GPU in step 1'
-  print*,cHostWaitForGPU2,' microseconds spent waiting on GPU in step 2'
+!  print*,cHostWaitForGPU1+cHostWaitForGPU2,' microseconds spent waiting on GPU '
+!  print*,cHostWaitForGPU1,' microseconds spent waiting on GPU in step 1'
+!  print*,cHostWaitForGPU2,' microseconds spent waiting on GPU in step 2'
 
   call mem_ichor_dealloc(Qcent)
   deallocate(Qcent)
