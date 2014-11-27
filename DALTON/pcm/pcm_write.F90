@@ -80,7 +80,7 @@ module pcm_write
    subroutine pcm_write_file(nr_points, potentials, charges)
 
 ! Passed variables
-      integer, intent(in) :: nr_points
+      integer(4), intent(in) :: nr_points
       real(8), intent(in) :: potentials(nr_points)
       real(8), intent(in) :: charges(nr_points)
  
@@ -121,7 +121,7 @@ module pcm_write
    subroutine pcm_write_file_separate(nr_points, nuc_pot, nuc_chg, ele_pot, ele_chg)
 
 ! Passed variables
-      integer, intent(in) :: nr_points
+      integer(4), intent(in) :: nr_points
       real(8), intent(in) :: nuc_pot(nr_points), ele_pot(nr_points)
       real(8), intent(in) :: nuc_chg(nr_points), ele_chg(nr_points)
  
