@@ -147,7 +147,7 @@ write(lupri,*) 'Exponents ',(input%Basis%binfo(regbasparam)%atomtype(1)%shell(1)
 
   write(*,*) 'lattice%nneighbour', lattice%nneighbour
   write(*,*) 'lattice%nf', lattice%nf
-  write(*,*) 'Number of k points', Bz%nk
+  write(*,*) 'Number of k points', Bz%nk !TODO Should be nk_nosym ????
   write(lupri,*) 'Number of k points', Bz%nk
 
     k=0
@@ -623,6 +623,9 @@ else
   write(*,*) 'Program ended successfully !'
 
 END SUBROUTINE set_pbc_molecules
+
+
+!TODO move this s.r. to pbc-msc ?? 
 
 !> @brief Calculate basis vectors of the reciprocal space.
 !> @param realspace Primitive vectors of the lattice.

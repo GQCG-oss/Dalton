@@ -820,7 +820,7 @@ DO
         CASE('.NDENSMATCUTOFF')
           READ (LUCMD, '(I2)') config%latt_config%ndmat  
         CASE('.RECLAT')
-          READ (LUCMD, '(3I2)')config%latt_config%nk1,config%latt_config%nk2,&
+          READ (LUCMD, *) config%latt_config%nk1,config%latt_config%nk2,&
                                & config%latt_config%nk3
           if(config%latt_config%nk2 .gt. 1 ) then
             if(.not.config%latt_config%ldef%is_active(2)) then
