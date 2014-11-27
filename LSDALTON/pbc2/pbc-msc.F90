@@ -168,9 +168,6 @@ SUBROUTINE pbc_init_BZgrid(rlvec,nk1,nk2,nk3,symtxt,BZ,ndim1,ndim2,lupri)
 	BZ%Nk_dim3 = nk3
 	BZ%Nk_nosym = nk1 * nk2 * nk3
 
-	write (*, *) nk1, nk2, nk3 
-	call lsquit(-1)
-
 	! set k-points
 	kindex = 0
 	k_cnt = 0
