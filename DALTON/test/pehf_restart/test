@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+import copy
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+a = Filter()
+
+a.add(from_string = 'Polarizable embedding energy contributions:',
+      num_lines = 15,
+      abs_tolerance = 1.0e-5)
+
+a.add(from_string = 'Polarizable embedding information',
+      num_lines = 16,
+      abs_tolerance = 1.0e-6)
+
+a.add(string = 'Multipole moments upto 3rd order.')
+
+a.add(string = 'Dipole-dipole polarizabilities.')
+
+b = copy.deepcopy(a)
+
+b.add(string = 'Iterative solver for induced moments will be used')
+
+c = copy.deepcopy(b)
+
+c.add(string = 'DIIS converged in',
+      abs_tolerance = 1.0e-5)
+
+c.add(string = 'Existing files will be used to restart if possible.')
+
+d = copy.deepcopy(a)
+
+d.add(string = 'Direct solver for induced moments will be used')
+
+e = copy.deepcopy(d)
+
+e.add(string = 'DIIS converged in',
+      abs_tolerance = 1.0e-5)
+
+e.add(string = 'Existing files will be used to restart if possible.')
+
+mol = 'pehf_restart'
+postfixes = ['.RST','.bin']
+
+dal = 'pehf_restart__1'
+
+test.run([dal+'.dal'], [mol+'.mol'], {'out': b}, args='-put POTENTIAL.INP -get "SIRIUS.RST *.bin"')
+
+prefix = "{0}_{1}.".format(dal,mol)
+
+for filename in os.listdir("."):
+    if prefix in filename:
+        for i in postfixes:
+            if filename.endswith(i):
+                os.rename(filename,filename.replace(prefix,""))
+
+dal = 'pehf_restart__2'
+
+test.run([dal+'.dal'], [mol+'.mol'], {'out': c}, args='-put "POTENTIAL.INP SIRIUS.RST *.bin"')
+
+dal = 'pehf_restart__3'
+
+test.run([dal+'.dal'], [mol+'.mol'], {'out': d}, args='-put POTENTIAL.INP -get "SIRIUS.RST *.bin"')
+
+prefix = 'pehf_restart__3_pehf_restart.'
+for filename in os.listdir("."):
+    if prefix in filename:
+        for i in postfixes:
+            if filename.endswith(i):
+                os.rename(filename,filename.replace(prefix,""))
+
+dal = 'pehf_restart__4'
+
+test.run([dal+'.dal'], [mol+'.mol'], {'out': e}, args='-put "POTENTIAL.INP SIRIUS.RST *.bin"')
+
+# remove files
+for filename in os.listdir("."):
+    for i in postfixes:
+        if filename.endswith(i):
+            os.remove(filename)
+
+
+sys.exit(test.return_code)
