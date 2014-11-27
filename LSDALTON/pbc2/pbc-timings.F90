@@ -17,6 +17,8 @@
 !> ...
 !> pbc_timings_print(timings)
 !> pbc_timings_destruct(timings)
+!> 
+!> @author Karl R. Leikanger 2014
 
 module pbc_timings
 use precision
@@ -31,9 +33,10 @@ end type
 
 contains
 	
-!> @brief Initialize and allocate timing_info.
+!> @brief Initialize and allocate mem for timing_info.
 !> @param timings Timing_info pointer.
 !> @param num_jobs_inp Number of different jobs to time.
+!> @author Karl R. Leikanger 2014
 subroutine pbc_timings_init(timings, num_jobs_inp)
    implicit none
 	! input
@@ -55,6 +58,7 @@ end subroutine pbc_timings_init
 
 !> @brief Deallocate mem.
 !> @param timings Timing_info pointer.
+!> @author Karl R. Leikanger 2014
 subroutine pbc_timings_destruct(timings)
 		implicit none
 		! input
@@ -68,6 +72,7 @@ end subroutine pbc_timings_destruct
 !> @param timings Timing_info pointer.
 !> @param jname Jobname.
 !> @param job The number of the job to name.
+!> @author Karl R. Leikanger 2014
 subroutine pbc_timings_name_timer(timings, jname, job)
 		implicit none
 		! input
@@ -82,6 +87,7 @@ end subroutine pbc_timings_name_timer
 !> @brief Add time to one of the job. Start timing.
 !> @param timings Timing_info pointer.
 !> @param job Number of the job.
+!> @author Karl R. Leikanger 2014
 subroutine pbc_timings_start(timings, job)
    implicit none
 	! input 
@@ -90,11 +96,9 @@ subroutine pbc_timings_start(timings, job)
 	! local
 	real(realk) :: cputime, walltime
 
-   !$OMP CRITICAL (timematop)
    call ls_gettim(cputime,walltime)
 	timings(job)%walltime_begin = walltime
 	timings(job)%cputime_begin = cputime
-   !$OMP END CRITICAL (timematop)
 
 end subroutine pbc_timings_start
 
@@ -103,6 +107,7 @@ end subroutine pbc_timings_start
 !> @param job Number of the job.
 !> @param printlevel_i 0 do not print, 1 print to lupri, 2 print to screen and lupri.
 !> @param lupri Logical print unit.
+!> @author Karl R. Leikanger 2014
 subroutine pbc_timings_stop(timings, job, printlevel_i, lupri)
    implicit none
 	! input
@@ -156,6 +161,7 @@ end subroutine pbc_timings_stop
 !> @brief Print all the collected information.
 !> @param timings Timing_info pointer.
 !> @param lupri Print unit.
+!> @author Karl R. Leikanger 2014
 subroutine pbc_timings_print(timings, lupri)
 	implicit none
 	! input
