@@ -456,6 +456,27 @@
      endif
    end subroutine ls_dzero
 
+  !> \brief Sets a real array of length *LENGTH* to zero.
+  !> \author H. J. Aa. Jensen. F90'fied by S. Host
+  !> \date May 5, 1984
+  subroutine ls_dzero8(dx, length)
+  use precision
+  implicit none
+       !Length of array
+       integer(kind=long), intent(in) :: length
+       !Array to be nullified
+       real(realk), intent(inout) :: dx(length)
+       integer(kind=long)             :: i
+
+     if (length < 0) then
+        !do nothing
+     else
+        do i = 1, length
+           dx(i) = 0.0E0_realk
+        enddo
+     endif
+   end subroutine ls_dzero8
+
   !> \brief Sets a short integer array of length *LENGTH* to shortzero.
   !> \author T. Kjaergaard
   !> \date May 5, 2011

@@ -1237,151 +1237,174 @@
   !> \brief Subroutine to put a specific tile in a general matrix
   !> \date January 2013
   subroutine tile_in_fort(pre1,tilein,tnr,tdims,pre2,fort,full_arr_dim,mode,o)
-    implicit none
-    !> scaling factors
-    real(realk) :: pre1,pre2
-    !> input array with data in arbtirary order
-    real(realk), intent(inout) :: fort(*)
-    !> mode infortmation about how to interpret data
-    integer, intent(in) :: mode
-    !> the tile number in column major ordering of the tiles
-    integer, intent(in) :: tnr
-    !> dimension information for the mew array
-    integer, intent(in) :: full_arr_dim(mode)
-    !> batch information for the tiles
-    integer, intent(in) :: tdims(mode)
-    !> specify how to reorder the tile to the new full array
-    integer,intent(in) :: o(mode)
-    !> tile output
-    real(realk), intent(in) :: tilein(*)
-    integer :: i,nelms,k
-    integer :: tmodeidx(mode)
-    integer :: idxintile(mode),ro(mode),full_dim_tiled_arr(mode)
-    integer :: ccels,ntimes,acttdim(mode),fels(mode)
-    integer :: pos1,ntpm(mode),glbmodeidx(mode)
-    integer :: order_type,bs
+     implicit none
+     !> scaling factors
+     real(realk) :: pre1,pre2
+     !> input array with data in arbtirary order
+     real(realk), intent(inout) :: fort(*)
+     !> mode infortmation about how to interpret data
+     integer, intent(in) :: mode
+     !> the tile number in column major ordering of the tiles
+     integer, intent(in) :: tnr
+     !> dimension information for the mew array
+     integer, intent(in) :: full_arr_dim(mode)
+     !> batch information for the tiles
+     integer, intent(in) :: tdims(mode)
+     !> specify how to reorder the tile to the new full array
+     integer,intent(in) :: o(mode)
+     !> tile output
+     real(realk), intent(in) :: tilein(*)
+     integer :: i,nelms,k
+     integer :: tmodeidx(mode)
+     integer :: idxintile(mode),ro(mode),full_dim_tiled_arr(mode)
+     integer :: ccels,ntimes,acttdim(mode),fels(mode)
+     integer :: pos1,ntpm(mode),glbmodeidx(mode)
+     integer :: order_type,bs
 
-    bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-    !bs=5
-    order_type=0
-    do i=1,mode
-      if(o(i)/=i)order_type=-1
-      ro(o(i))=i
-    enddo
-
-    
-    do i=1,mode
-      full_dim_tiled_arr(i) = full_arr_dim(ro(i))
-      ntpm(i) = full_dim_tiled_arr(i)/tdims(i)
-      if(mod(full_dim_tiled_arr(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
-    enddo
+     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
+     !bs=5
+     order_type=0
+     do i=1,mode
+        if(o(i)/=i)order_type=-1
+        ro(o(i))=i
+     enddo
 
 
-    if(mode==4)then
-      if(o(1)==1.and.o(2)==2.and.o(3)==3.and.o(4)==4)order_type = 0
-      if(o(1)==3.and.o(2)==4.and.o(3)==1.and.o(4)==2)order_type = 1
-      if(o(1)==4.and.o(2)==1.and.o(3)==2.and.o(4)==3)order_type = 2
-      if(o(1)==2.and.o(2)==3.and.o(3)==4.and.o(4)==1)order_type = 3
-      if(o(1)==1.and.o(2)==2.and.o(3)==4.and.o(4)==3)order_type = 4
-      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)order_type = 5
-      if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)order_type = 6
-      if(o(1)==3.and.o(2)==1.and.o(3)==2.and.o(4)==4)order_type = 7
-      if(o(1)==2.and.o(2)==3.and.o(3)==1.and.o(4)==4)order_type = 8
-      if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)order_type = 9
-      if(o(1)==4.and.o(2)==3.and.o(3)==1.and.o(4)==2)order_type = 10
-      if(o(1)==4.and.o(2)==2.and.o(3)==3.and.o(4)==1)order_type = 11
-      if(o(1)==3.and.o(2)==4.and.o(3)==2.and.o(4)==1)order_type = 12
-      if(o(1)==2.and.o(2)==4.and.o(3)==1.and.o(4)==3)order_type = 13
-      if(o(1)==3.and.o(2)==2.and.o(3)==1.and.o(4)==4)order_type = 14
-      if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)order_type = 15
-      if(o(1)==4.and.o(2)==1.and.o(3)==3.and.o(4)==2)order_type = 16
-      if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)order_type = 17
-      if(o(1)==4.and.o(2)==3.and.o(3)==2.and.o(4)==1)order_type = 18
-      if(o(1)==2.and.o(2)==4.and.o(3)==3.and.o(4)==1)order_type = 19
-      if(o(1)==1.and.o(2)==4.and.o(3)==3.and.o(4)==2)order_type = 20
-      if(o(1)==3.and.o(2)==1.and.o(3)==4.and.o(4)==2)order_type = 21
-      if(o(1)==3.and.o(2)==2.and.o(3)==4.and.o(4)==1)order_type = 22
-      if(o(1)==4.and.o(2)==2.and.o(3)==1.and.o(4)==3)order_type = 23
-    endif
+     do i=1,mode
+        full_dim_tiled_arr(i) = full_arr_dim(ro(i))
+        ntpm(i) = full_dim_tiled_arr(i)/tdims(i)
+        if(mod(full_dim_tiled_arr(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
+     enddo
 
-    call get_midx(tnr,tmodeidx,ntpm,mode)
 
-    ntimes=1
-    do i=1,mode
-      fels(i) = (tmodeidx(i)-1) * tdims(i) + 1
-      if(tmodeidx(i)*tdims(i)>full_dim_tiled_arr(i))then
-        acttdim(i)=mod(full_dim_tiled_arr(i),tdims(i))
-      else
-        acttdim(i)=tdims(i)
-      endif
-      if(i>1)ntimes=ntimes*acttdim(i)
-    enddo
-    
+     select case(mode)
+     case(4)
+        if(o(1)==1.and.o(2)==2.and.o(3)==3.and.o(4)==4)order_type = 0
+        if(o(1)==3.and.o(2)==4.and.o(3)==1.and.o(4)==2)order_type = 1
+        if(o(1)==4.and.o(2)==1.and.o(3)==2.and.o(4)==3)order_type = 2
+        if(o(1)==2.and.o(2)==3.and.o(3)==4.and.o(4)==1)order_type = 3
+        if(o(1)==1.and.o(2)==2.and.o(3)==4.and.o(4)==3)order_type = 4
+        if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)order_type = 5
+        if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)order_type = 6
+        if(o(1)==3.and.o(2)==1.and.o(3)==2.and.o(4)==4)order_type = 7
+        if(o(1)==2.and.o(2)==3.and.o(3)==1.and.o(4)==4)order_type = 8
+        if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)order_type = 9
+        if(o(1)==4.and.o(2)==3.and.o(3)==1.and.o(4)==2)order_type = 10
+        if(o(1)==4.and.o(2)==2.and.o(3)==3.and.o(4)==1)order_type = 11
+        if(o(1)==3.and.o(2)==4.and.o(3)==2.and.o(4)==1)order_type = 12
+        if(o(1)==2.and.o(2)==4.and.o(3)==1.and.o(4)==3)order_type = 13
+        if(o(1)==3.and.o(2)==2.and.o(3)==1.and.o(4)==4)order_type = 14
+        if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)order_type = 15
+        if(o(1)==4.and.o(2)==1.and.o(3)==3.and.o(4)==2)order_type = 16
+        if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)order_type = 17
+        if(o(1)==4.and.o(2)==3.and.o(3)==2.and.o(4)==1)order_type = 18
+        if(o(1)==2.and.o(2)==4.and.o(3)==3.and.o(4)==1)order_type = 19
+        if(o(1)==1.and.o(2)==4.and.o(3)==3.and.o(4)==2)order_type = 20
+        if(o(1)==3.and.o(2)==1.and.o(3)==4.and.o(4)==2)order_type = 21
+        if(o(1)==3.and.o(2)==2.and.o(3)==4.and.o(4)==1)order_type = 22
+        if(o(1)==4.and.o(2)==2.and.o(3)==1.and.o(4)==3)order_type = 23
+     case(3)
+        if(o(1)==1.and.o(2)==2.and.o(3)==3)            order_type = 0
+        if(o(1)==3.and.o(2)==1.and.o(3)==2)            order_type = 24
+        if(o(1)==2.and.o(2)==3.and.o(3)==1)            order_type = 25
+        if(o(1)==1.and.o(2)==3.and.o(3)==2)            order_type = 26
+        if(o(1)==2.and.o(2)==1.and.o(3)==3)            order_type = 27
+        if(o(1)==3.and.o(2)==2.and.o(3)==1)            order_type = 28
+     case(2)
+        if(o(1)==1.and.o(2)==2)                        order_type = 0
+        if(o(1)==2.and.o(2)==1)                        order_type = 29
+     end select
 
-    select case(order_type)
-      case(0)
+     call get_midx(tnr,tmodeidx,ntpm,mode)
+
+     ntimes=1
+     do i=1,mode
+        fels(i) = (tmodeidx(i)-1) * tdims(i) + 1
+        if(tmodeidx(i)*tdims(i)>full_dim_tiled_arr(i))then
+           acttdim(i)=mod(full_dim_tiled_arr(i),tdims(i))
+        else
+           acttdim(i)=tdims(i)
+        endif
+        if(i>1)ntimes=ntimes*acttdim(i)
+     enddo
+
+
+     select case(order_type)
+     case(0)
         ccels=acttdim(1)
         do i=1,ntimes
-          call get_midx(i,idxintile(2:mode),acttdim(2:mode),mode-1)
-          idxintile(1)=1
-          do k=1,mode
-            glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
-          enddo
-          pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
-          if(pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
-            call dcopy(ccels,tilein(1+(i-1)*ccels),1,fort(pos1),1)
-          else
-            call dscal(ccels,pre2,fort(pos1),1)
-            call daxpy(ccels,pre1,tilein(1+(i-1)*ccels),1,fort(pos1),1)
-          endif
+           call get_midx(i,idxintile(2:mode),acttdim(2:mode),mode-1)
+           idxintile(1)=1
+           do k=1,mode
+              glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
+           enddo
+           pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
+           if(pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
+              call dcopy(ccels,tilein(1+(i-1)*ccels),1,fort(pos1),1)
+           else
+              call dscal(ccels,pre2,fort(pos1),1)
+              call daxpy(ccels,pre1,tilein(1+(i-1)*ccels),1,fort(pos1),1)
+           endif
         enddo
-      case(1)
+     case(1)
         call manual_3412_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(2)
+     case(2)
         call manual_4123_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(3)
+     case(3)
         call manual_2341_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(4)
+     case(4)
         call manual_1243_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(5)
+     case(5)
         call manual_1423_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(6)
+     case(6)
         call manual_1342_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(7)
+     case(7)
         call manual_3124_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(8)
+     case(8)
         call manual_2314_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(9)
+     case(9)
         call manual_2134_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(10)
+     case(10)
         call manual_4312_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(11)
+     case(11)
         call manual_4231_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(12)
+     case(12)
         call manual_3421_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(13)
+     case(13)
         call manual_2413_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(14)
+     case(14)
         call manual_3214_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(15)
+     case(15)
         call manual_1324_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(16)
+     case(16)
         call manual_4132_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(17)
+     case(17)
         call manual_2143_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(18)
+     case(18)
         call manual_4321_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(19)
+     case(19)
         call manual_2431_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(20)
+     case(20)
         call manual_1432_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(21)
+     case(21)
         call manual_3142_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(22)
+     case(22)
         call manual_3241_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case(23)
+     case(23)
         call manual_4213_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
-      case default
+      case(24)
+        call manual_312_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(25)
+        call manual_231_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(26)
+        call manual_132_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(27)
+        call manual_213_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(28)
+        call manual_321_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(29)
+        call manual_21_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+     case default
         print *,"expensive default tile_in_fort",o
         !print *,"order  :",o
         !print *,"rorder :",ro
@@ -1392,21 +1415,21 @@
         !identify their original position and put them in tile
         nelms=1
         do i=1,mode
-          nelms = nelms * acttdim(i)
+           nelms = nelms * acttdim(i)
         enddo
-       
+
         do i = 1,nelms
-          !get mode index of element in tile
-          call get_midx(i,idxintile,acttdim,mode)
-          !get full index in new array from indices referencing the tile
-          do k=1,mode
-            glbmodeidx(ro(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
-          enddo
-          !get index in new array
-          pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
-          fort(pos1)=pre2*fort(pos1) + pre1 * tilein(i)
+           !get mode index of element in tile
+           call get_midx(i,idxintile,acttdim,mode)
+           !get full index in new array from indices referencing the tile
+           do k=1,mode
+              glbmodeidx(ro(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
+           enddo
+           !get index in new array
+           pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
+           fort(pos1)=pre2*fort(pos1) + pre1 * tilein(i)
         enddo
-    end select
+     end select
   end subroutine tile_in_fort
 
 

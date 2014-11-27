@@ -1030,10 +1030,10 @@ def write_testing_framework(f,minr,maxr):
   for i in range(minr,maxr+1):
     header += "    test"+str(i)+"d_normal=.true.\n"
   for i in range(minr,maxr+1):
-    if i== 4:
-      header += "    test"+str(i)+"d_tiled=.true.\n"
-    else:
-      header += "    test"+str(i)+"d_tiled=.false.\n"
+    #if i== 4:
+    header += "    test"+str(i)+"d_tiled=.true.\n"
+    #else:
+    #  header += "    test"+str(i)+"d_tiled=.false.\n"
 
   header += "    rigorous=.true.\n"
  
@@ -1146,8 +1146,8 @@ def write_testing_framework(f,minr,maxr):
     f.write("    endif\n")
 
 
-  #SPECIAL TESTS FOR TILED REORDERINGS, right now only 4d
-  for mode in range(4,4+1):
+  #SPECIAL TESTS FOR TILED REORDERINGS
+  for mode in range(minr,maxr+1):
     #WRITING THE TESTING FRAMEWORK HERE
 
     words ="\

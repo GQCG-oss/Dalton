@@ -2180,6 +2180,7 @@ contains
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
     call ls_mpi_buffer(DECitem%cc_solver_tile_mem,Master)
     call ls_mpi_buffer(DECitem%en_mem,Master)
+    call ls_mpi_buffer(DECitem%ccsolver_overwrite_prec,Master)
     call ls_mpi_buffer(DECitem%precondition_with_full,Master)
     call ls_mpi_buffer(DECitem%ccsd_expl,Master)
     call ls_mpi_buffer(DECitem%ccMaxIter,Master)

@@ -557,8 +557,9 @@ contains
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.CC_TILE_SIZE_GB');read(input,*) DECinfo%cc_solver_tile_mem 
        case('.SOSEX');   DECinfo%SOS = .true.
-       case('.NOTPREC'); DECinfo%use_preconditioner=.false.
-       case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
+       case('.NOTPREC');      DECinfo%use_preconditioner=.false.; DECinfo%ccsolver_overwrite_prec = .true.
+       case('.NOTBPREC');     DECinfo%use_preconditioner_in_b=.false.; DECinfo%ccsolver_overwrite_prec = .true.
+       case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.; DECinfo%ccsolver_overwrite_prec = .true.
        case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
        case('.MAXITER'); read(input,*) DECinfo%MaxIter
        case('.TENSOR_SEGMENTING_SCHEME'); read(input,*) DECinfo%tensor_segmenting_scheme
@@ -640,7 +641,6 @@ contains
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
-       case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.
        case('.SIMPLEMULLIKENTHRESH'); DECinfo%simple_mulliken_threshold=.true.
        case('.NORMTHRESH'); read(input,*) DECinfo%approximated_norm_threshold
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.

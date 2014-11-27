@@ -1539,16 +1539,22 @@ module lspdm_tensor_operations_module
 #endif
   end function get_sosex_cont_parallel
 
-  subroutine lspdm_get_mp2_starting_guess(iajb,t2,oof,vvf) 
+  subroutine lspdm_get_starting_guess(iajb,t2,oof,vvf,spec,prec) 
      implicit none
      type(tensor), intent(inout) :: iajb,t2,oof,vvf
-     real(realk), pointer :: buf(:),t(:,:,:,:),g(:,:,:,:)
-     integer :: gtidx,lt,o(t2%mode),da,db,di,dj,a,b,i,j,nelms
-     integer :: order(4)
+     real(realk), pointer :: buf_c(:),buf_e(:),t(:,:,:,:),c(:,:,:,:), e(:,:,:,:)
+     integer, intent(in) :: spec
+     logical, intent(in) :: prec
+     integer :: gtidx,lt,o(t2%mode),da,db,di,dj,a,b,i,j,nelms,bcast_spec
+     logical :: bcast_prec
+     integer :: order_c(4), order_e(4), gmo_ctidx(4), gmo_etidx(4), gmo_ccidx, gmo_ecidx
+     integer, parameter :: MP2AMP       = 1
+     integer, parameter :: CCSD_LAG_RHS = 2
      call time_start_phase(PHASE_WORK)
 #ifdef VAR_MPI
 
-     order = [3,1,4,2]
+     order_c = [3,1,4,2]
+     order_e = [3,2,4,1]
      
      !sanity checks
      if(t2%access_type /= iajb%access_type)then
@@ -1559,10 +1565,10 @@ module lspdm_tensor_operations_module
      endif
 
      do i=1,t2%mode
-        if( iajb%dims(i) /= t2%dims(order(i)))then
+        if( iajb%dims(i) /= t2%dims(order_c(i)))then
            call lsquit("ERROR(lspdm_get_mp2_starting_guess): dimensions of iajb and t2 not in the assumed order",-1)
         endif
-        if( iajb%tdim(i) /= t2%tdim(order(i)))then
+        if( iajb%tdim(i) /= t2%tdim(order_c(i)))then
            call lsquit("ERROR(lspdm_get_mp2_starting_guess): tiling of iajb and t2 not as expected",-1)
         endif
      enddo
@@ -1571,62 +1577,128 @@ module lspdm_tensor_operations_module
         call time_start_phase(PHASE_COMM)
         call pdm_tensor_sync(infpar%lg_comm,JOB_GET_MP2_ST_GUESS,iajb,t2,oof,vvf)
         call time_start_phase(PHASE_WORK)
+        bcast_spec = spec
+        bcast_prec = prec
+        call ls_mpibcast(bcast_spec,infpar%master,infpar%lg_comm)
+        call ls_mpibcast(bcast_prec,infpar%master,infpar%lg_comm)
      endif
 
      if( oof%itype == TT_DENSE .or. oof%itype == TT_REPLICATED )then
 
         !TODO: introduce prefetching of tiles and adapt to alloc_in_dummy
-        call mem_alloc(buf,iajb%tsize)
+        call mem_alloc(buf_c,iajb%tsize)
+        if( spec == CCSD_LAG_RHS )then
+           call mem_alloc(buf_e,iajb%tsize)
+        endif
 
         do lt=1,t2%nlti
 
            gtidx = t2%ti(lt)%gt
            nelms = t2%ti(lt)%e
 
-           !get offset for global indices
-           call get_midx(gtidx,o,t2%ntpm,t2%mode)
-
-           call time_start_phase(PHASE_COMM)
-           call tensor_get_tile(iajb,[o(3),o(1),o(4),o(2)],buf,nelms,flush_it=(t2%ti(lt)%e>MAX_SIZE_ONE_SIDED))
-           call time_start_phase(PHASE_WORK)
-
-           call ass_D1to4( t2%ti(lt)%t, t, t2%ti(lt)%d                                                   )
-           call ass_D1to4( buf,         g, [t2%ti(lt)%d(3),t2%ti(lt)%d(1),t2%ti(lt)%d(4),t2%ti(lt)%d(2)] )
-
-
-           do j=1,t2%mode
-              o(j)=(o(j)-1)*t2%tdim(j)
-           enddo
-
-
            da = t2%ti(lt)%d(1)
            db = t2%ti(lt)%d(2)
            di = t2%ti(lt)%d(3)
            dj = t2%ti(lt)%d(4)
 
+           !get offset for global indices
+           call get_midx(gtidx,o,t2%ntpm,t2%mode)
+
+           !get tile numbers for e and c tiles
+           do j=1,t2%mode
+              gmo_ctidx(j) = o(order_c(j))
+              gmo_etidx(j) = o(order_e(j))
+           enddo
+           gmo_ccidx = get_cidx(gmo_ctidx,iajb%ntpm,iajb%mode)
+           gmo_ecidx = get_cidx(gmo_etidx,iajb%ntpm,iajb%mode)
+
+           call time_start_phase(PHASE_COMM)
+           call tensor_get_tile(iajb,gmo_ccidx,buf_c,nelms,flush_it=(t2%ti(lt)%e>MAX_SIZE_ONE_SIDED))
+           if( spec == CCSD_LAG_RHS .and. gmo_ccidx/=gmo_ecidx)then
+              call tensor_get_tile(iajb,gmo_ecidx,buf_e,nelms,flush_it=(t2%ti(lt)%e>MAX_SIZE_ONE_SIDED))
+           endif
+           call time_start_phase(PHASE_WORK)
+
+           call ass_D1to4( t2%ti(lt)%t, t, t2%ti(lt)%d )
+           call ass_D1to4( buf_c, c, [di,da,dj,db] )
+           if( spec == CCSD_LAG_RHS )then
+              if(gmo_ccidx/=gmo_ecidx)then
+                 call ass_D1to4( buf_e, e, [di,db,dj,da] )
+              else
+                 call ass_D1to4( buf_c, e, [di,db,dj,da] )
+              endif
+           endif
+
+           do j=1,t2%mode
+              o(j)=(o(j)-1)*t2%tdim(j)
+           enddo
+
            !count over local indices
-           !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(g,o,t,oof,vvf,&
-           !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
-           do j=1,dj
-              do i=1,di
-                 do b=1,db
-                    do a=1,da
+           select case(spec)
+           case(MP2AMP)
+              !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(c,o,t,oof,vvf,&
+              !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
+              do j=1,dj
+                 do i=1,di
+                    do b=1,db
+                       do a=1,da
 
-                       t(a,b,i,j) = g(i,a,j,b) / &
-                        & (oof%elm2(o(3)+i,o(3)+i) - vvf%elm2(o(1)+a,o(1)+a) + oof%elm2(o(4)+j,o(4)+j) - vvf%elm2(o(2)+b,o(2)+b))
+                          t(a,b,i,j) = c(i,a,j,b) 
 
-                    enddo 
+                       enddo 
+                    enddo
                  enddo
               enddo
-           enddo
-           !$OMP END PARALLEL DO
+              !$OMP END PARALLEL DO
+           case(CCSD_LAG_RHS)
+              !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(c,e,o,t,oof,vvf,&
+              !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
+              do j=1,dj
+                 do i=1,di
+                    do b=1,db
+                       do a=1,da
+
+                          t(a,b,i,j) = -4.0E0_realk * c(i,a,j,b) + 2.0E0_realk * e(i,b,j,a) 
+
+                       enddo 
+                    enddo
+                 enddo
+              enddo
+              !$OMP END PARALLEL DO
+           case default
+              call lsquit("ERROR(lspdm_get_starting_guess): wrong coice of spec",-1)
+           end select
+
+           if(prec)then
+              !count over local indices
+              !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t,oof,vvf,&
+              !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
+              do j=1,dj
+                 do i=1,di
+                    do b=1,db
+                       do a=1,da
+
+                          t(a,b,i,j) = t(a,b,i,j) / &
+                             & (oof%elm2(o(3)+i,o(3)+i) - vvf%elm2(o(1)+a,o(1)+a) &
+                             &+ oof%elm2(o(4)+j,o(4)+j) - vvf%elm2(o(2)+b,o(2)+b))
+
+                       enddo 
+                    enddo
+                 enddo
+              enddo
+              !$OMP END PARALLEL DO
+           endif
 
            t => null()
-           g => null()
+           c => null()
+           e => null()
 
         enddo
 
-        call mem_dealloc(buf)
+        call mem_dealloc(buf_c)
+        if( spec == CCSD_LAG_RHS )then
+           call mem_dealloc(buf_e)
+        endif
 
      else
         call lsquit("ERROR(lspdm_get_mp2_starting_guess): the routine does not accept this type of fock matrix",-1)
@@ -1636,7 +1708,7 @@ module lspdm_tensor_operations_module
      call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase(PHASE_WORK)
 #endif
-  end subroutine lspdm_get_mp2_starting_guess
+  end subroutine lspdm_get_starting_guess
 
 
 

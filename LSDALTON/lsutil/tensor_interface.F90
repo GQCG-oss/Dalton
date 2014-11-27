@@ -55,7 +55,7 @@ module tensor_interface_module
   public tensor_extract_eos_indices
   public get_fragment_cc_energy_parallel, get_cc_energy_parallel
   public lspdm_get_combined_SingleDouble_amplitudes, get_info_for_mpi_get_and_reorder_t1 
-  public get_rpa_energy_parallel, get_sosex_cont_parallel, lspdm_get_mp2_starting_guess
+  public get_rpa_energy_parallel, get_sosex_cont_parallel, get_starting_guess
   public precondition_doubles_parallel
 
   ! Only for testing and debugging
@@ -1065,6 +1065,71 @@ contains
 
   end subroutine tensor_extract_eos_indices_occ
 
+
+  subroutine get_starting_guess(iajb,t2, oof, vvf, local, spec, prec)
+     implicit none
+     type(tensor), intent(inout) :: iajb, t2, oof, vvf
+     logical, intent(in) :: local, prec
+     character(*), intent(in) :: spec
+     real(realk), pointer :: o2v2(:)
+     real(realk), pointer :: wrk(:)
+     integer(kind=long) :: iwrk
+     integer :: no,nv,i,j,a,b, specint
+     real(realk), pointer :: elm4(:,:,:,:)
+
+     no = t2%dims(4)
+     nv = t2%dims(1)
+
+     if( local )then
+
+
+        select case(spec)
+        case("MP2AMP")
+
+           call array_reorder_4d(1.0E0_realk,iajb%elm1,iajb%dims(1),iajb%dims(2),&
+              &iajb%dims(3),iajb%dims(4),[2,4,1,3],0.0E0_realk,t2%elm1)
+
+        case ("CCSD_LAG_RHS")
+
+           call array_reorder_4d(-4.0E0_realk,iajb%elm1,iajb%dims(1),iajb%dims(2),&
+              &iajb%dims(3),iajb%dims(4),[2,4,1,3],0.0E0_realk,t2%elm1)
+           call array_reorder_4d(2.0E0_realk,iajb%elm1,iajb%dims(1),iajb%dims(2),&
+              &iajb%dims(3),iajb%dims(4),[2,4,3,1],1.0E0_realk,t2%elm1)
+
+        case default
+           call lsquit("ERROR(get_starting_guess): unknown spec",-1)
+        end select
+
+        if( prec )then
+           !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(no,nv,t2,oof,vvf)
+           do j = 1, no
+              do i = 1, no
+                 do b = 1, nv
+                    do a = 1, nv
+                       t2%elm4(a,b,i,j) = t2%elm4(a,b,i,j) / &
+                          &(oof%elm2(i,i) - vvf%elm2(a,a) + oof%elm2(j,j) - vvf%elm2(b,b) )
+                    enddo
+                 enddo
+              enddo
+           enddo
+           !$OMP END PARALLEL DO
+        endif
+
+
+     else
+
+        select case(spec)
+        case("MP2AMP")
+           specint = 1
+        case ("CCSD_LAG_RHS")
+           specint = 2
+        case default
+           call lsquit("ERROR(get_starting_guess): unknown spec par",-1)
+        end select
+        call lspdm_get_starting_guess(iajb,t2,oof,vvf,specint,prec)
+
+     endif
+  end subroutine get_starting_guess
 
   !> \brief Reorder indices with additional memory allocation
   !> \author Patrick Ettenhuber

@@ -39,8 +39,8 @@ use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & get_ccsd_residual_integral_driven_oldtensor_wrapper
 use pno_ccsd_module
 use snoop_tools_module
-use cc_debug_routines_module
 #ifdef MOD_UNRELEASED
+use cc_debug_routines_module
 use ccsdpt_module
 !endif mod_unreleased
 #endif
@@ -1628,7 +1628,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims, ord2
    integer, dimension(4) :: ampl4_dims
    type(tensor)  :: fock,Co,Cv,Uo,Uv
-   type(tensor)  :: ppfock,qqfock,pqfock,qpfock
+   type(tensor)  :: ppfock,qqfock,pqfock,qpfock, fockt1
    type(tensor)  :: ifock,delta_fock
    type(tensor)  :: iajb
    type(tensor), pointer :: t2(:),omega2(:)
@@ -1642,7 +1642,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer                 :: iter,last_iter,i,j,k,l,iter_idx,next,nSS
    logical                 :: crop_ok,break_iterations,saferun, use_pseudo_diag_basis, use_pnos, get_multipliers
    type(ri)                :: l_ao
-   type(tensor)            :: ppfock_prec, qqfock_prec, qpfock_prec
+   type(tensor)            :: ppfock_prec, qqfock_prec, qpfock_prec, pqfock_prec
    real(realk)             :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
    real(realk)             :: iter_cpu,iter_wall
    integer                 :: nnodes, t2idx, t1idx
@@ -1668,12 +1668,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
    logical                :: restart, restart_from_converged,collective,use_singles,vovo_avail
    logical                :: trafo_vovo, trafo_m4, trafo_m2
-   logical                :: diag_oo_block, diag_vv_block
+   logical                :: diag_oo_block, diag_vv_block, prec, prec_not1, prec_in_b
    character(4)           :: atype
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
-
-
 
    time_work        = 0.0E0_realk
    time_comm        = 0.0E0_realk
@@ -1696,18 +1694,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    time_write       = 0.0E0_realk
    time_finalize    = 0.0E0_realk
 
-
    collective       = .true.
    fragment_job     = present(frag)
    
    o2v2             = (i8*nv**2)*no**2
    mem_o2v2         = (8.0E0_realk*o2v2)/(1.024E3_realk**3)
 
+
    call get_currently_available_memory(MemFree)
 
    !Set defaults
    restart          = .false.
    saferun          = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
+   prec             = .true.
+   prec_not1        = .false.
 
    if( saferun .and. (2.0E0_realk*mem_o2v2 > 0.5E0_realk*MemFree) )then
       print *,"WARNING(ccsolver_par): detected high memory requirements, I will"
@@ -1754,6 +1754,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       use_pnos        = .false.
       get_multipliers = .false.
+      prec_in_b       = .true.
       trafo_m4        = .false.
       trafo_m2        = .false.
 
@@ -1761,6 +1762,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       use_pnos        = .true.
       get_multipliers = .false.
+      prec_in_b       = .true.
 
       if(.not.present(m4)) then
          call lsquit('ccsolver: When using PNOs make sure MP2 amplitudes are &
@@ -1774,6 +1776,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       use_pnos        = .false.
       get_multipliers = .true.
+      prec_in_b       = .false.
 
       if(.not.present(m4)) then
          call lsquit('ccsolver: When solving for the multipliers, make sure the&
@@ -1794,7 +1797,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    case default
       call lsquit("ERROR(ccsolver_par):unknown jobid",-1)
    end select
-
+ 
+   if( DECinfo%ccsolver_overwrite_prec )then
+      prec      = DECinfo%use_preconditioner
+      prec_not1 = DECinfo%precondition_with_full
+      prec_in_b = DECinfo%use_preconditioner_in_b
+   endif
 
    vovo_avail = .false.
    trafo_vovo = .false.
@@ -1993,11 +2001,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(ppfock_prec, [no,no], 2, local=local, atype='REPD' )
    call tensor_minit(qqfock_prec, [nv,nv], 2, local=local, atype='REPD' )
    call tensor_minit(qpfock_prec, [nv,no], 2, local=local, atype='REPD' )
+   if( JOB == SOLVE_MULTIPLIERS )then
+      call tensor_minit(pqfock_prec, [no,nv], 2, local=local, atype='REPD' )
+   endif
 
    call tensor_change_atype_to_rep( ppfock_prec, local )
    call tensor_change_atype_to_rep( qqfock_prec, local )
 
-   if(DECinfo%precondition_with_full) then
+   if( prec_not1 ) then
       call tensor_convert( ppfock_d, ppfock_prec )
       call tensor_convert( qqfock_d, qqfock_prec )
       call tensor_zero(qpfock_prec)
@@ -2017,6 +2028,19 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_contract(1.0E0_realk,fock,Co,[2],[1],1,0.0E0_realk,tmp,ord2)
       call tensor_contract(1.0E0_realk,Cv,tmp,[1],[1],1,0.0E0_realk,qpfock_prec,ord2)
       call tensor_free(tmp)
+
+      if(JOB == SOLVE_MULTIPLIERS )then
+         call tensor_minit(fockt1, [nb,nb], 2, local=local, atype='LDAR' )
+         call Get_AOt1Fock(mylsitem,m2,fockt1,no,nv,nb,Co,Co,Cv)
+
+         call tensor_minit(tmp, [nb,nv], 2, local=local, atype='LDAR'  )
+         call tensor_contract(1.0E0_realk,fockt1,Cv,[2],[1],1,0.0E0_realk,tmp,ord2)
+         call tensor_contract(-2.0E0_realk,Co,tmp,[1],[1],1,0.0E0_realk,pqfock_prec,ord2)
+         call tensor_free(tmp)
+
+         call tensor_free(fockt1)
+      endif
+
    end if
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA )then
@@ -2079,34 +2103,31 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
       call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
 
-      call get_guess_vectors(ccmodel,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
-         & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
+      call get_guess_vectors(ccmodel,JOB,prec,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
+         & ppfock_prec,qqfock_prec,qpfock_prec, pqfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
          & t1(1),safefilet11,safefilet12, safefilet1f  )
    else
 
       call tensor_minit(t2(1),  ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
 
-      call get_guess_vectors(ccmodel,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
-         & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
+      call get_guess_vectors(ccmodel,JOB,prec,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
+         & ppfock_prec,qqfock_prec,qpfock_prec,pqfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
 
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
 
    call tensor_free(qpfock_prec)
+   if( JOB == SOLVE_MULTIPLIERS )then
+      call tensor_free(pqfock_prec)
+   endif
 
    if(DECinfo%PL>1)call time_start_phase( PHASE_WORK, at = time_work, ttot = time_start_guess,&
       &labelttot = 'CCSOL: STARTING GUESS :', output = DECinfo%output, twall = time_main  )
 
-   !FIXME: this needs to be replaced with the RHS and moved into get_guess_vectors
-   if(.not.restart.and.JOB==SOLVE_MULTIPLIERS)then
-      call tensor_zero(t2(1))
-      if(use_singles) call tensor_zero(t1(1))
-   endif
-
    ! Print Job Header
    ! ****************
    Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,&
-      &.false.,nb,no,nv,DECinfo%ccMaxDIIS,restart,restart_from_converged,old_iter)
+      &(JOB==SOLVE_MULTIPLIERS),nb,no,nv,DECinfo%ccMaxDIIS,restart,restart_from_converged,old_iter)
 
 
    If_not_converged: if(.not.restart_from_converged)then
@@ -2150,12 +2171,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call tensor_cp_data(Cv,yv)
             call tensor_cp_data(Cv,xv)
             ord2 = [1,2]
-            call tensor_contract(-1.0E0_realk,Co,t1(iter_idx),[2],[2],1,1.0E0_realk,xv,ord2)
+            if(JOB==SOLVE_MULTIPLIERS)then
+               call tensor_contract(-1.0E0_realk,Co,m2,[2],[2],1,1.0E0_realk,xv,ord2)
+            else
+               call tensor_contract(-1.0E0_realk,Co,t1(iter_idx),[2],[2],1,1.0E0_realk,xv,ord2)
+            endif
             
 
             call tensor_cp_data(Co,yo)
             call tensor_cp_data(Co,xo)
-            call tensor_contract(1.0E0_realk,Cv,t1(iter_idx),[2],[1],1,1.0E0_realk,yo,ord2)
+            if(JOB==SOLVE_MULTIPLIERS)then
+               call tensor_contract(1.0E0_realk,Cv,m2,[2],[1],1,1.0E0_realk,yo,ord2)
+            else
+               call tensor_contract(1.0E0_realk,Cv,t1(iter_idx),[2],[1],1,1.0E0_realk,yo,ord2)
+            endif
 
          end if T1Related
 
@@ -2173,7 +2202,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             &labelttot= 'CCIT: RESIDUAL        :', output = DECinfo%output, twall = time_crop_mat ) 
 
          !calculate crop matrix
-         call ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock_prec,ccmodel,local)
+         call ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock_prec,ccmodel,local,prec_in_b)
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_crop_mat, &
             &labelttot= 'CCIT: CROP MATRIX     :', output = DECinfo%output, twall = time_solve_crop ) 
@@ -2268,36 +2297,41 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             &labelttot= 'CCIT: GET NORMS       :', output = DECinfo%output, twall = time_energy ) 
 
 
-         ! calculate the correlation energy and fragment energy
-         ! MODIFY FOR NEW MODEL
-         ! If you implement a new model, please insert call to energy routine here,
-         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
-         EnergyForCCmodel: select case(CCmodel)
-         case( MODEL_MP2 )
+         if( JOB == SOLVE_AMPLITUDES.or.JOB == SOLVE_AMPLITUDES_PNO )then
 
-            ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
+            ! calculate the correlation energy and fragment energy
+            ! MODIFY FOR NEW MODEL
+            ! If you implement a new model, please insert call to energy routine here,
+            ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
 
-         case( MODEL_CC2, MODEL_CCSD )
+            EnergyForCCmodel: select case(CCmodel)
+            case( MODEL_MP2 )
 
-            ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
-            ccenergy = get_cc_energy(t1(iter_idx),t2(iter_idx),iajb,no,nv)
+               ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
 
-         case(MODEL_RPA)
+            case( MODEL_CC2, MODEL_CCSD )
 
-            ccenergy = get_RPA_energy_arrnew(t2(iter_idx),iajb,no,nv)
+               ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
+               ccenergy = get_cc_energy(t1(iter_idx),t2(iter_idx),iajb,no,nv)
 
-            if(DECinfo%SOS) then
-               ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter_idx),iajb,no,nv)
-            endif
+            case(MODEL_RPA)
+
+               ccenergy = get_RPA_energy_arrnew(t2(iter_idx),iajb,no,nv)
+
+               if(DECinfo%SOS) then
+                  ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter_idx),iajb,no,nv)
+               endif
 
 
-         case default
-            ! MODEL RIMP2 defaults here since it shoule not use this solver
+            case default
+               ! MODEL RIMP2 defaults here since it shoule not use this solver
 
-            call lsquit("ERROR(ccsolver_par):energy expression for your model&
-               & not yet implemented",-1)
+               call lsquit("ERROR(ccsolver_par):energy expression for your model&
+                  & not yet implemented",-1)
 
-         end select EnergyForCCmodel
+            end select EnergyForCCmodel
+
+         endif
 
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_energy, &
@@ -2305,7 +2339,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          ! generate next trial vector if this is not the last iteration
          if(.not.break_iterations) then
-            if(DECinfo%use_preconditioner) then
+            if( prec ) then
                if(use_singles) then
                   omega1_prec = precondition_singles(omega1_opt,ppfock_prec,qqfock_prec)
                   if(iter+1<=DECinfo%ccMaxDIIS)then
@@ -2378,7 +2412,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call flush(DECinfo%output)
 #endif
 
-         call print_ccjob_iterinfo(iter+old_iter,two_norm_total,ccenergy,.false.,fragment_job)
+         call print_ccjob_iterinfo(iter+old_iter,two_norm_total,ccenergy,(JOB==SOLVE_MULTIPLIERS),fragment_job)
 
          last_iter = iter
          if(break_iterations) exit
@@ -2391,21 +2425,23 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
 
-      EnergyForCCmodelRestart: select case(CCmodel)
-      case( MODEL_MP2 )
-         ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
-      case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
-         ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
-         ccenergy_check = get_cc_energy(t1(1),t2(1),iajb,no,nv)
-      case(MODEL_RPA)
-         ccenergy_check = get_RPA_energy_arrnew(t2(1),iajb,no,nv)
-         if(DECinfo%SOS) then
-            ccenergy_check =ccenergy+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
-         endif
-      case default
-         call lsquit("ERROR(ccsolver_par):energy expression for your model&
-            & not yet implemented",-1)
-      end select EnergyForCCmodelRestart
+      if( JOB == SOLVE_AMPLITUDES.or.JOB == SOLVE_AMPLITUDES_PNO )then
+         EnergyForCCmodelRestart: select case(CCmodel)
+         case( MODEL_MP2 )
+            ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
+         case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
+            ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
+            ccenergy_check = get_cc_energy(t1(1),t2(1),iajb,no,nv)
+         case(MODEL_RPA)
+            ccenergy_check = get_RPA_energy_arrnew(t2(1),iajb,no,nv)
+            if(DECinfo%SOS) then
+               ccenergy_check =ccenergy+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
+            endif
+         case default
+            call lsquit("ERROR(ccsolver_par):energy expression for your model&
+               & not yet implemented",-1)
+         end select EnergyForCCmodelRestart
+      endif
 
       if( abs(ccenergy_check-ccenergy) > DECinfo%ccConvergenceThreshold )then
          print *,"WARNING(ccsolver_par): Energy saved in restart and energy calculated" 
@@ -2421,7 +2457,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 #endif
 
-      call print_ccjob_iterinfo(old_iter,two_norm_total,ccenergy,.false.,fragment_job)
+      call print_ccjob_iterinfo(old_iter,two_norm_total,ccenergy,(JOB==SOLVE_MULTIPLIERS),fragment_job)
 
       break_iterations = .true.
       last_iter        = 1
@@ -2487,9 +2523,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call print_norm(p2,t1fnorm2,.true.)
    endif
 
-   call print_ccjob_summary(break_iterations,.false.,fragment_job,&
+   call print_ccjob_summary(break_iterations,(JOB==SOLVE_MULTIPLIERS),fragment_job,&
       &last_iter+old_iter,use_singles,ccenergy,ttotend_wall,&
-      &ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2)
+      &ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2,nm1=t1fnorm2,nm2=t2fnorm2)
    
 
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used
@@ -2635,31 +2671,26 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
             call lsquit("ERROR(ccsolver_get_residual): CC2 multipliers not implemented",-1)
          endif
 
-         !FIXME: remove this dirty workaround due to the noddy implementation
-
-         if(.not.local)then
-            call tensor_minit(o2,[nv,no,nv,no],4)
-            call tensor_zero(o2)
-            call tensor_minit(tl2,[nv,no,nv,no],4)
-            call tensor_convert(t2(use_i),tl2%elm4,order=[1,3,2,4])
-            call tensor_minit(ml4,[nv,no,nv,no],4)
-            call tensor_convert(m4,ml4%elm4,order=[1,3,2,4])
-         else
-            o2  = omega2(use_i)
-            tl2 = t2(use_i)
-            ml4 = m4
+         if(.not. local)then
+            print *,"WARNING(ccsolver_get_residual): the CCSD multiplier residual is not yet parallelized"
          endif
+
+         !FIXME: remove this dirty workaround due to the noddy implementation
+         call tensor_minit(o2,[nv,no,nv,no],4)
+         call tensor_zero(o2)
+         call tensor_minit(tl2,[nv,no,nv,no],4)
+         call tensor_cp_data(t2(use_i),tl2,order=[1,3,2,4])
+         call tensor_minit(ml4,[nv,no,nv,no],4)
+         call tensor_cp_data(m4,ml4)
 
          call get_ccsd_multipliers_simple(omega1(use_i)%elm2,o2%elm4,m2%elm2&
             &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
             &,no,nv,nb,MyLsItem)
 
-         if(.not.local)then
-            call tensor_cp_data(o2,omega2(use_i),order=[1,3,2,4])
-            call tensor_free(o2)
-            call tensor_free(tl2)
-            call tensor_free(ml4)
-         endif
+         call tensor_cp_data(o2,omega2(use_i),order=[1,3,2,4])
+         call tensor_free(o2)
+         call tensor_free(tl2)
+         call tensor_free(ml4)
 
       case default
          call lsquit("ERROR(ccsolver_get_residual): job not implemented for CC2, CCSD or CCSD(T)",-1)
@@ -2676,14 +2707,14 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
    end select SelectCoupledClusterModel
 end subroutine ccsolver_get_residual
 
-subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock_prec,ccmodel,local)
+subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock_prec,ccmodel,local,prec)
    implicit none
    real(realk), intent(out) :: B(nSS,nSS)
    integer, intent(in)      :: nSS
    type(tensor), intent(inout) :: omega2(:),omega1(:)
    type(tensor), intent(inout) :: ppfock_prec,qqfock_prec
    integer, intent(in)         :: ccmodel
-   logical, intent(in)         :: local
+   logical, intent(in)         :: local, prec
    !internal
    type(tensor) :: omega2_prec,omega1_prec
    integer :: i,j
@@ -2699,7 +2730,7 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
       do i=1,nSS
          do j=1,i
             ! just doubles
-            if(DECinfo%use_preconditioner_in_b) then
+            if( prec ) then
                omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec,local)
                B(i,j) = tensor_ddot( omega2(i), omega2_prec )
                call tensor_free( omega2_prec )
@@ -2714,7 +2745,7 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
 
       do i=1,nSS
          do j=1,i
-            if(DECinfo%use_preconditioner_in_b) then
+            if( prec ) then
                omega1_prec = precondition_singles( omega1(j), ppfock_prec, qqfock_prec        )
                omega2_prec = precondition_doubles( omega2(j), ppfock_prec, qqfock_prec, local )
                B(i,j) =          tensor_ddot( omega1(i), omega1_prec ) 
@@ -2917,15 +2948,15 @@ end subroutine ccsolver_free_special
 !is returned
 !> \author Patrick Ettenhuber
 !> \date December 2012
-subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,Uv,oof,vvf,vof,mylsitem,local,&
+subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,Uv,oof,vvf,vof,ovf,mylsitem,local,&
    & safefilet21,safefilet22,safefilet2f, t1,safefilet11,safefilet12,safefilet1f)
    implicit none
-   integer, intent(in) :: nb,ccmodel
+   integer, intent(in) :: nb,ccmodel,JOB
    logical,intent(out) :: restart
    real(realk), intent(inout) :: norm,energy,Uo(:,:),Uv(:,:)
    !> contains the guess doubles amplitudes on output
-   type(tensor), intent(inout) :: t2,iajb,Co,Cv,oof,vvf,vof
-   logical, intent(in) :: local
+   type(tensor), intent(inout) :: t2,iajb,Co,Cv,oof,vvf,vof,ovf
+   logical, intent(in) :: local,prec
    !> integral info
    type(lsitem), intent(inout) :: mylsitem
    !> the filenames to check for valid doubles amplitudes
@@ -2946,9 +2977,10 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
    character(tensor_MSG_LEN) :: msg
    integer :: a,i
-   logical :: use_singles
+   logical :: use_singles, get_multipliers
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12).and.present(safefilet1f)
+   get_multipliers = (JOB == SOLVE_MULTIPLIERS)
 
    !MODIFY FOR NEW MODEL THAT IS USING THE CC DRIVER
    ! set model specifics here
@@ -3146,18 +3178,32 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
          !This was an attempt to start with something else than 0 for CCSD, but
          !it does not seem worth it, even if the start is the amplitudes of the
          !second iteration
-         select case(ccmodel)
-         case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
-            do a=1,nv
-               do i=1,no
+         if(get_multipliers)then
+            select case(ccmodel)
+            case(MODEL_CCSD)
+               call array_reorder_2d(-2.0E0_realk,ovf%elm2,no,nv,[2,1],0.0E0_realk,t1%elm2)
+            case default
+               call tensor_zero(t1)
+            end select
+         else
+            select case(ccmodel)
+            case(MODEL_CC2,MODEL_CCSD)
+               call tensor_cp_data(vof,t1)
+            case default
+               call tensor_zero(t1)
+            end select
 
-                  t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
+            if(prec)then
+               do a=1,nv
+                  do i=1,no
 
+                     t1%elm2(a,i) = t1%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
+
+                  end do
                end do
-            end do
-         case default
-            call tensor_zero(t1)
-         end select
+            endif
+
+         endif
       endif
    endif
 
@@ -3173,12 +3219,21 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
       if (.not.local) call tensor_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
-      select case(ccmodel)
-      case(MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
-         call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
-      case default
-         call tensor_zero(t2)
-      end select
+      if(get_multipliers)then
+         select case(ccmodel)
+         case(MODEL_CCSD)
+            call get_starting_guess( iajb, t2, oof, vvf, local, "CCSD_LAG_RHS", prec )
+         case default
+            call tensor_zero(t2)
+         end select
+      else
+         select case(ccmodel)
+         case(MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
+            call get_starting_guess( iajb, t2, oof, vvf, local, "MP2AMP", prec )
+         case default
+            call tensor_zero(t2)
+         end select
+      endif
    endif
 end subroutine get_guess_vectors
 
@@ -3230,13 +3285,10 @@ subroutine save_current_guess(local,iter,nb,res_norm,energy,Uo,Uv,t2,safefilet21
    fu_t21=121
    fu_t22=122
 
-   call print_norm(t2,"transformed t2",print_on_rank=0)
-
    if(DECinfo%use_singles.and.all_singles)then
 
       call can_local_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
 
-      call print_norm(t1,"transformed t1")
 #ifdef SYS_AIX
       fullname11=safefilet11//'.writing\0'
       fullname12=safefilet12//'.writing\0'
