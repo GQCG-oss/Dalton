@@ -25,6 +25,11 @@ module crop_tools_module
       module procedure get_mp2_energy_arrold
       module procedure get_mp2_energy_arrnew
    end interface
+
+   integer,parameter :: SOLVE_AMPLITUDES      = 1
+   integer,parameter :: SOLVE_AMPLITUDES_PNO  = 2
+   integer,parameter :: SOLVE_MULTIPLIERS     = 3
+   
    
    contains
    

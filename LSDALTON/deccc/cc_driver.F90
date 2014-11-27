@@ -39,8 +39,8 @@ use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & get_ccsd_residual_integral_driven_oldtensor_wrapper
 use pno_ccsd_module
 use snoop_tools_module
-use cc_debug_routines_module
 #ifdef MOD_UNRELEASED
+use cc_debug_routines_module
 use ccsdpt_module
 !endif mod_unreleased
 #endif
