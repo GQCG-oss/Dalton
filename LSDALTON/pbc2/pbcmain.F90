@@ -91,6 +91,7 @@ write(lupri,*) 'Exponents ',(input%Basis%binfo(regbasparam)%atomtype(1)%shell(1)
 
   write(lupri,*) 'setting%p%atom%center', lattice%lvec(2)%molecule%atom(1)%center(1)
 
+  call reset_integral_computed(lattice,num_latvectors,'all')
 
   write(lupri,*) 'cutoff' 
   call find_cutoff_onep(lupri,luerr,setting,nbast,refcell,lattice)

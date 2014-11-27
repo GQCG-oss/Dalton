@@ -207,8 +207,9 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
 	TYPE(lssetting),INTENT(INOUT) :: setting 
 	TYPE(matrix),TARGET :: ovl(numvecs)
 	! local variables
+        REAL(realk) :: max_elm,max_elm_layer
 	INTEGER :: i,j,il1,il2,il3
-	INTEGER :: idx,refindex
+	INTEGER :: idx,refindex,layer,layer_old
 	INTEGER :: maxl1,maxl2,maxl3
 	INTEGER(short) :: gab1
 	INTEGER,SAVE :: iter=0
@@ -221,7 +222,10 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
 	call find_latt_index(refindex,0,0,0,lattice,lattice%max_layer)
 	maxl1=0
 	maxl2=0
-	maxl3=0
+        maxl3=0
+
+        layer_old = 0
+        max_elm_layer = 0.0_realk
 	DO idx=1,numvecs
 		lattice%lvec(idx)%ovl_computed=.false.
 
@@ -231,16 +235,24 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
 		setting%samemol(3,1)=.false.
 
 		call find_latt_vectors(idx,il1,il2,il3,lattice)
-		!So that we do not consider negligible integrals
-		!if(abs(il1) .gt. lattice%nneighbour) CYCLE
-		!if(abs(il2) .gt. lattice%nneighbour) CYCLE
-		!if(abs(il3) .gt. lattice%nneighbour) CYCLE
+                layer = max(abs(il1),abs(il2))
+                layer = max(layer,abs(il3))
+
+                if ( layer .ne. layer_old) then
+                  !Checks if there is need 
+                  !in calculating integrals for
+                  !this layer
+                  if(max_elm_layer .le. 1.0d-8) exit
+                  layer_old = layer
+                  max_elm_layer = 0.0_realk
+                endif
 		gab1=lattice%lvec(idx)%maxgab
 		if(gab1 .ge. lattice%realthr) then
 			maxl1=max(abs(il1),maxl1)
 			maxl2=max(abs(il2),maxl2)
 			maxl3=max(abs(il3),maxl3)
 			lattice%lvec(idx)%ovl_computed=.true.
+                        write(*,*) 'idx in overlap',idx,il1,il2,il3
 
 			if(.not. lattice%store_mats) then
 				call mat_init(ovl(idx),nbast,nbast)
@@ -249,6 +261,10 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
 			call mat_zero(lattice%lvec(idx)%oper(1))
 			! get the overlap matrix for cell between reference and cell l
 			call II_get_overlap(lupri,luerr,setting,lattice%lvec(idx)%oper(1))
+
+                        call mat_abs_max_elm(lattice%lvec(idx)%oper(1),max_elm)
+                        max_elm_layer=max(max_elm_layer,max_elm)
+
                         !write(*,*) 'Overlap computed for',il1,il2,il3
 			if(lattice%store_mats) then !todo necc? are the matrices ever stored??
 				call pbc_get_file_and_write(lattice,nbast,nbast,idx,1,1, &
@@ -259,6 +275,7 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
 
 			call mat_free(lattice%lvec(idx)%oper(1))
 		endif
+                write(*,*) 'overlap',idx,lattice%lvec(idx)%ovl_computed
 	end do
 	lattice%oneop1=maxl1
 	lattice%oneop2=maxl2
@@ -295,8 +312,9 @@ SUBROUTINE pbc_kinetic_k(lupri,luerr,setting,natoms,nbast,lattice, &
 	TYPE(matrix),INTENT(INOUT),TARGET :: f_1(numvecs)
 	REAL(realk),INTENT(OUT),OPTIONAL :: e_kin
 	! local variables
+        REAL(realk) :: max_elm,max_elm_layer
 	LOGICAL :: calc_e_kin
-	INTEGER :: il1,il2,il3
+	INTEGER :: il1,il2,il3,layer,layer_old
 	INTEGER :: idx,refindex,indred
 	INTEGER(short) :: gab1
 	INTEGER,SAVE :: iter=0
@@ -314,6 +332,8 @@ SUBROUTINE pbc_kinetic_k(lupri,luerr,setting,natoms,nbast,lattice, &
 		calc_e_kin=.true.
 	endif
 
+        layer_old = 0
+        max_elm_layer = 0.0_realk
 	do idx=1,numvecs
 
 		lattice%lvec(idx)%f1_computed=.false.
@@ -326,6 +346,18 @@ SUBROUTINE pbc_kinetic_k(lupri,luerr,setting,natoms,nbast,lattice, &
 			setting%samemol(3,1)=.false.
 			gab1=lattice%lvec(idx)%maxgab
 
+                        layer = max(abs(il1),abs(il2))
+                        layer = max(layer,abs(il3))
+
+                        if ( layer .ne. layer_old) then
+                          !Checks if there is need 
+                          !in calculating integrals for
+                          !this layer
+                          if(max_elm_layer .le. 1.0d-8) exit
+                          layer_old = layer
+                          max_elm_layer = 0.0_realk
+                        endif
+
 			if(gab1 .ge. lattice%realthr) then
 				lattice%lvec(idx)%f1_computed=.true.
 				lattice%lvec(indred)%f1_computed=.true.
@@ -334,6 +366,10 @@ SUBROUTINE pbc_kinetic_k(lupri,luerr,setting,natoms,nbast,lattice, &
 				call mat_init(f_1(idx),nbast,nbast)
 				call mat_zero(f_1(idx))
 				call II_get_kinetic(lupri,luerr,setting,lattice%lvec(idx)%oper(1))
+
+                                call mat_abs_max_elm(lattice%lvec(idx)%oper(1),max_elm)
+                                max_elm_layer=max(max_elm_layer,max_elm)
+
 				call mat_copy(1._realk,lattice%lvec(idx)%oper(1),f_1(idx))
 				call pbc_get_file_and_write(lattice,nbast,nbast,idx,2,1 &
 					& ,'            ')!2 refers to kin
@@ -353,6 +389,8 @@ SUBROUTINE pbc_kinetic_k(lupri,luerr,setting,natoms,nbast,lattice, &
 				write(lupri,*) 'Kinetic mat finished for', il1,il2,il3
 				call mat_free(lattice%lvec(idx)%oper(1))
 			endif ! maxgab
+
+
 		endif !is_redundant
 	end do
 
@@ -388,9 +426,10 @@ SUBROUTINE pbc_nucattrc_k(lupri,luerr,setting,natoms,nbast,lattice, &
 	TYPE(matrix) :: H,H1
 	REAL(realk),INTENT(OUT),OPTIONAL :: E_en
 	! local variables
+        REAL(realk) :: max_elm,max_elm_layer
 	INTEGER :: j,k,il11,il12,il13,il21,il22,il23
 	INTEGER :: index1,index2,refindex
-	INTEGER :: iunit,indred
+	INTEGER :: iunit,indred,layer,layer_old
 	INTEGER(short) :: gab1
 	INTEGER,SAVE :: iter=0
 	CHARACTER(LEN=10) :: numstr1,numstr2,numstr3
@@ -416,21 +455,34 @@ SUBROUTINE pbc_nucattrc_k(lupri,luerr,setting,natoms,nbast,lattice, &
 		calc_e_en=.true.
 	end if
 
-	do index1=1,numvecs
+        layer_old = 0
+        max_elm_layer = 0.0_realk
+        do index1=1,numvecs
 
 		call find_latt_vectors(index1,il11,il12,il13,lattice)
 		!if(abs(il11) .gt. lattice%nneighbour) CYCLE
 		!if(abs(il12) .gt. lattice%nneighbour) CYCLE
 		!if(abs(il13) .gt. lattice%nneighbour) CYCLE
+                layer = max(abs(il11),abs(il12))
+                layer = max(layer,abs(il13))
 
-		lattice%lvec(index1)%Vz_computed=.false.
-		if(.not. lattice%lvec(index1)%is_redundant) then
+                if ( layer .ne. layer_old) then
+                  !Checks if there is need 
+                  !in calculating integrals for
+                  !this layer
+                  if(max_elm_layer .le. 1.0d-8) exit
+                  layer_old = layer
+                  max_elm_layer = 0.0_realk
+                endif
+
+                lattice%lvec(index1)%Vz_computed=.false.
+                if(.not. lattice%lvec(index1)%is_redundant) then
 			call find_latt_index(indred,-il11,-il12,-il13,lattice, &
 				& lattice%max_layer)
 			if(il11**2+il12**2+il13**2 .gt. 0) then
 				lattice%lvec(indred)%is_redundant =.true.
 			end if
-			gab1=lattice%lvec(index1)%maxgab
+                        gab1=lattice%lvec(index1)%maxgab
 
 			if(gab1 .ge. lattice%realthr) then	
 				lattice%lvec(index1)%Vz_computed=.true.
@@ -439,30 +491,33 @@ SUBROUTINE pbc_nucattrc_k(lupri,luerr,setting,natoms,nbast,lattice, &
 				call mat_zero(lattice%lvec(index1)%oper(1))
 				do index2=1,numvecs
 					call find_latt_vectors(index2,il21,il22,il23,lattice)
-					if(abs(il21) .gt. lattice%nf) CYCLE 
-					if(abs(il22) .gt. lattice%nf) CYCLE
-					if(abs(il23) .gt. lattice%nf) CYCLE
+                                        if(abs(il21) .gt. lattice%nf) CYCLE 
+                                        if(abs(il22) .gt. lattice%nf) CYCLE
+                                        if(abs(il23) .gt. lattice%nf) CYCLE
 
-					call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(index1)%molecule, &
-						& 2,lattice%lvec(index2)%molecule,3)
+                                        call TYPEDEF_setmolecules(setting,refcell,1,lattice%lvec(index1)%molecule, &
+                                          & 2,lattice%lvec(index2)%molecule,3)
 
-					!setting%samemol(1,3)=.false.
-					!setting%samemol(3,1)=.false.
-					!setting%samemol(1,2)=.false.
-					!setting%samemol(2,1)=.false.
-					!setting%samemol(3,2)=.false.
-					!setting%samemol(2,3)=.false.
-					!These two screenings should be turned on at some point
+                                        !setting%samemol(1,3)=.false.
+                                        !setting%samemol(3,1)=.false.
+                                        !setting%samemol(1,2)=.false.
+                                        !setting%samemol(2,1)=.false.
+                                        !setting%samemol(3,2)=.false.
+                                        !setting%samemol(2,3)=.false.
+                                        !These two screenings should be turned on at some point
 
-					call II_get_nucel_mat(lupri,luerr,setting,H1)
-					call mat_daxpy(1._realk,H1,lattice%lvec(index1)%oper(1))
+                                        call II_get_nucel_mat(lupri,luerr,setting,H1)
+                                        call mat_daxpy(1._realk,H1,lattice%lvec(index1)%oper(1))
 
 				enddo
 
-				call mat_daxpy(1._realk,lattice%lvec(index1)%oper(1),f_1(index1))
+                                call mat_daxpy(1._realk,lattice%lvec(index1)%oper(1),f_1(index1))
 
-				if (calc_e_en) then
-					if(nfdensity(index1)%init_magic_tag.eq.mat_init_magic_value)then
+                                call mat_abs_max_elm(lattice%lvec(index1)%oper(1),max_elm)
+                                max_elm_layer=max(max_elm_layer,max_elm)
+                                                
+                                if (calc_e_en) then
+                                  if(nfdensity(index1)%init_magic_tag.eq.mat_init_magic_value)then
 						if(il11**2+il12**2+il13**2 .gt. 0) then
 							E_en=E_en+2.*mat_dotproduct(lattice%lvec(index1)%oper(1), &
 								& nfdensity(index1))
@@ -517,10 +572,11 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
 	REAL(realk),INTENT(INOUT),OPTIONAL :: E_J
 	! local variables
 	REAL(realk) :: valmax
+        REAL(realk) :: max_elm,max_elm_layer
 	INTEGER :: i,j,il21,il22,il23,iunit
 	INTEGER :: il31,il32,il33, newcell,il1,il2,il3
 	INTEGER :: index1,index2,index3,maxl1,maxl2,maxl3
-	INTEGER :: l1,l2,l3,indred
+	INTEGER :: l1,l2,l3,indred,layer,layer_old
 	INTEGER(short) :: gab1,gab2,gabmaxsum
 	INTEGER,SAVE :: iter=0
 	INTEGER(short) :: valm1
@@ -544,6 +600,8 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
 		calc_e_j=.true.
 	end if
 
+        layer_old = 0
+        max_elm_layer = 0.0_realk
 	do index1=1,numvecs
 
 		!if(.not. lattice%lvec(index1)%is_redundant) then
@@ -554,6 +612,19 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
 		lattice%lvec(index1)%g2_computed=.false.
 		lattice%lvec(index1)%J_computed=.false.
 		gab1=lattice%lvec(index1)%maxgab
+
+                layer = max(abs(il1),abs(il2))
+                layer = max(layer,abs(il3))
+
+                if ( layer .ne. layer_old) then
+                  !Checks if there is need 
+                  !in calculating integrals for
+                  !this layer
+                  if(max_elm_layer .le. 1.0d-8) exit
+                  layer_old = layer
+                  max_elm_layer = 0.0_realk
+                endif
+
 
 		if(gab1  .lt. -18) CYCLE
 		if(lattice%lvec(index1)%is_redundant) then
@@ -654,27 +725,31 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
 			enddo
 
 			if(lattice%lvec(index1)%J_computed) then
-				if(.not. lattice%store_mats) then
-					call mat_init(g_2(index1),nbast,nbast)
-					call mat_copy(1._realk,lattice%lvec(index1)%oper(2),g_2(index1))
-				endif
 
-				if (calc_e_j) then
-					if((abs(il1).le.lattice%ndmat .and. abs(il2).le.lattice%ndmat) &
-						& .and. abs(il3).le.lattice%ndmat) then
-						if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) THEN
-							if(il1**2+il2**2+il3**2 .gt. 0) then
-								E_j=E_j+ &
-									& 1.0_realk*mat_dotproduct(lattice%lvec(index1)%oper(2), &
-									& nfdensity(index1))
-							else
-								E_j=E_j+ &
-									& 0.5_realk*mat_dotproduct(lattice%lvec(index1)%oper(2), &
-									& nfdensity(index1))
-							endif
-						endif
-					endif
-				endif
+                                call mat_abs_max_elm(lattice%lvec(index1)%oper(2),max_elm)
+                                max_elm_layer=max(max_elm_layer,max_elm)
+
+                                if(.not. lattice%store_mats) then
+                                  call mat_init(g_2(index1),nbast,nbast)
+                                  call mat_copy(1._realk,lattice%lvec(index1)%oper(2),g_2(index1))
+                                endif
+
+                                if (calc_e_j) then
+                                  if((abs(il1).le.lattice%ndmat .and. abs(il2).le.lattice%ndmat) &
+                                    & .and. abs(il3).le.lattice%ndmat) then
+                                  if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) THEN
+                                    if(il1**2+il2**2+il3**2 .gt. 0) then
+                                      E_j=E_j+ &
+                                        & 1.0_realk*mat_dotproduct(lattice%lvec(index1)%oper(2), &
+                                        & nfdensity(index1))
+                                    else
+                                      E_j=E_j+ &
+                                        & 0.5_realk*mat_dotproduct(lattice%lvec(index1)%oper(2), &
+                                        & nfdensity(index1))
+                                    endif
+                                  endif
+                                endif
+                              endif
 			end if
 		endif !is_redundant
 		lattice%lvec(index1)%is_redundant=.false.
@@ -722,12 +797,13 @@ SUBROUTINE pbc_exact_xc_k(lupri,luerr,setting,natoms,nbast, &
 	TYPE(MATRIX) :: Kx
 	INTEGER :: il21,il22,il23,gabl1,gabl2,gabl3
 	INTEGER :: il31,il32,il33,newcell,il1,il2,il3
-	INTEGER :: index1,index2,index3,gabind
+	INTEGER :: index1,index2,index3,gabind,layer,layer_old
 	INTEGER :: l1,l2,l3,maxl1,maxl2,maxl3,indred
 	INTEGER(short) :: gab1,gab2,maxgabsum
 	INTEGER, SAVE :: iter=0
 	INTEGER(short) :: valm1
 	REAL(realk) :: valmax
+        REAL(realk) :: max_elm,max_elm_layer
 	LOGICAL :: calc_e_k
 
 	iter=iter+1
@@ -750,6 +826,8 @@ SUBROUTINE pbc_exact_xc_k(lupri,luerr,setting,natoms,nbast, &
 	maxl2=0
 	maxl3=0
 
+        layer_old = 0
+        max_elm_layer = 0.0_realk
 	do index1=1,numvecs
 
 		!call find_latt_vectors(index1,il1,il2,il3,lattice)
@@ -760,6 +838,18 @@ SUBROUTINE pbc_exact_xc_k(lupri,luerr,setting,natoms,nbast, &
 		!if(abs(il2) .gt. lattice%kx2) CYCLE
 		!if(abs(il3) .gt. lattice%kx3) CYCLE
 		lattice%lvec(index1)%Kx_computed=.false.
+
+                layer = max(abs(il1),abs(il2))
+                layer = max(layer,abs(il3))
+
+                if ( layer .ne. layer_old) then
+                  !Checks if there is need 
+                  !in calculating integrals for
+                  !this layer
+                  if(max_elm_layer .le. 1.0d-8) exit
+                  layer_old = layer
+                  max_elm_layer = 0.0_realk
+                endif
 
 		if(lattice%lvec(index1)%is_redundant) then
 			call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
@@ -856,40 +946,47 @@ SUBROUTINE pbc_exact_xc_k(lupri,luerr,setting,natoms,nbast, &
 				enddo
 			enddo
 
-			if((il1**2 + il2**2 +il3**2 .gt. 0) &
-				& .and. lattice%lvec(index1)%Kx_computed) then
-				call mat_trans(lattice%lvec(index1)%oper(1), &
-					& lattice%lvec(indred)%oper(1))
-				lattice%lvec(indred)%is_redundant=.true.
+                        if((il1**2 + il2**2 +il3**2 .gt. 0) &
+                          & .and. lattice%lvec(index1)%Kx_computed) then
+                                call mat_trans(lattice%lvec(index1)%oper(1), &
+                                  & lattice%lvec(indred)%oper(1))
+                                lattice%lvec(indred)%is_redundant=.true.
 			endif
-			if(lattice%lvec(index1)%Kx_computed) then
-				write(lupri,*) 'Kx computed for', il1,il2,il3
-			endif
+
+                        if(lattice%lvec(index1)%Kx_computed) then
+                          write(lupri,*) 'Kx computed for', il1,il2,il3
+
+                        write(*,*) 'layer',index1,layer
+                        !finds max element layer for layer
+                        call mat_abs_max_elm(lattice%lvec(index1)%oper(1),max_elm)
+                        max_elm_layer=max(max_elm_layer,max_elm)
+                        endif
+
 		endif !is_redundant
 
 		if(lattice%lvec(index1)%Kx_computed) then
 
-			if(lattice%store_mats) then
-				call pbc_get_file_and_write(lattice,nbast,nbast,index1,5,1, &
-					& '            ')!5 refers to
-			else
-				if(g_2(index1)%init_magic_tag.ne.mat_init_magic_value) then
-					call mat_init(g_2(index1),nbast,nbast)
-					call mat_zero(g_2(index1))
-				endif
-				call mat_daxpy(1._realk,lattice%lvec(index1)%oper(1),g_2(index1))
-			endif
+                  if(lattice%store_mats) then
+                    call pbc_get_file_and_write(lattice,nbast,nbast,index1,5,1, &
+                      & '            ')!5 refers to
+                  else
+                    if(g_2(index1)%init_magic_tag.ne.mat_init_magic_value) then
+                      call mat_init(g_2(index1),nbast,nbast)
+                      call mat_zero(g_2(index1))
+                    endif
+                    call mat_daxpy(1._realk,lattice%lvec(index1)%oper(1),g_2(index1))
+                  endif
 
-			if (calc_e_k) then 
-				if((abs(il1) .le. lattice%ndmat) &
-					& .and. (abs(il2) .le. lattice%ndmat) &
-					& .and. (abs(il3) .le. lattice%ndmat)) then
-				if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) then
-					E_K=E_K+0.5_realk*mat_dotproduct(lattice%lvec(index1)%oper(1), &
-						& nfdensity(index1))
-				endif
-			endif
-		endif
+                  if (calc_e_k) then 
+                    if((abs(il1) .le. lattice%ndmat) &
+                      & .and. (abs(il2) .le. lattice%ndmat) &
+                      & .and. (abs(il3) .le. lattice%ndmat)) then
+                    if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) then
+                      E_K=E_K+0.5_realk*mat_dotproduct(lattice%lvec(index1)%oper(1), &
+                        & nfdensity(index1))
+                    endif
+                  endif
+                endif
 	endif
 
 	if(lattice%lvec(index1)%oper(1)%init_magic_tag.eq.mat_init_magic_value) then
