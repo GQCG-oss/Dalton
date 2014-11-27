@@ -5080,49 +5080,27 @@ contains
 
       ! Define specific reduction parameters:
       ! -------------------------------------
-      select case(DECinfo%Frag_red_start)
-      case(0) ! User didn't chose so we do:
-         if (DECinfo%onlyOccPart) then
-            ! Start reducing virtual space:
-            redvir = .true.
-            redocc = .false.
-            dE_occ = DECinfo%frag_red_occ_thr*DECinfo%FOT
-            dE_vir = DECinfo%frag_red_virt_thr*DECinfo%FOT
-         else if (DECinfo%onlyVirtPart) then
-            ! Start reducing occupied space:
-            redocc = .true.
-            redvir = .false.
-            dE_occ = DECinfo%frag_red_virt_thr*DECinfo%FOT
-            dE_vir = DECinfo%frag_red_occ_thr*DECinfo%FOT
-         else
-            ! Reduce both spaces at the same time:
-            redocc = .true.
-            redvir = .true.
-            dE_occ = DECinfo%FOT
-            dE_vir = DECinfo%FOT
-         end if
-      case(1) ! Start reducing virtual space
-         write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce virtual space first'
-         redvir = .true.
-         redocc = .false.
-         dE_occ = DECinfo%frag_red_occ_thr*DECinfo%FOT
-         dE_vir = DECinfo%frag_red_virt_thr*DECinfo%FOT
-      case(2) ! Start reducing occupied space
+      if (DECinfo%Frag_red_occ.and.(.not.DECinfo%Frag_red_virt)) then
+         ! Start reducing occupied space:
          write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce occupied space first'
          redocc = .true.
          redvir = .false.
-         dE_occ = DECinfo%frag_red_virt_thr*DECinfo%FOT
-         dE_vir = DECinfo%frag_red_occ_thr*DECinfo%FOT
-      case(3) ! Reduce both spaces at the same time
-         write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce both spaces at the same time'
+         dE_occ = DECinfo%frag_red1_thr*DECinfo%FOT
+         dE_vir = DECinfo%frag_red2_thr*DECinfo%FOT
+      else if (DECinfo%Frag_red_virt.and.(.not.DECinfo%Frag_red_occ)) then
+         ! Start reducing virtual space:
+         write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce virtual space first'
+         redvir = .true.
+         redocc = .false.
+         dE_vir = DECinfo%frag_red1_thr*DECinfo%FOT
+         dE_occ = DECinfo%frag_red2_thr*DECinfo%FOT
+      else
+         ! Default, reduce both spaces from the begining:
          redocc = .true.
          redvir = .true.
          dE_occ = DECinfo%FOT
          dE_vir = DECinfo%FOT
-      case default
-         call lsquit("ERROR(fragment_reduction_procedure): User chosen space&
-            & for reduction is not defined",DECinfo%output)
-      end select
+      end if
 
 
       step_accepted = .false.

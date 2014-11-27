@@ -384,14 +384,12 @@ module dec_typedef_module
      integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion
      integer :: Frag_Exp_Size
-     real(realk) :: Frag_red_occ_thr
-     real(realk) :: Frag_red_virt_thr
-     !> space to reduce: 
-     !  0: user don't chose use default
-     !  1: start reducing virtual space
-     !  2: start reducing occupied space
-     !  3: reduce both space at the same time
-     integer :: Frag_red_start
+     !> Threshold in reduction in case of unbalanced red:
+     real(realk) :: Frag_red1_thr
+     real(realk) :: Frag_red2_thr
+     !> space to reduce first in FOP:
+     logical :: Frag_red_occ
+     logical :: Frag_red_virt
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction

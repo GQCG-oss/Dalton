@@ -142,10 +142,11 @@ contains
     DECinfo%Frag_RedOcc_Scheme        = 1
     DECinfo%Frag_RedVir_Scheme        = 1
     DECinfo%Frag_Init_Size         = 4
-    DECinfo%Frag_Exp_Size          = 10
-    DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
-    DECinfo%frag_red_virt_thr      = 0.9  ! times FOT
-    DECinfo%frag_red_start         = 0    ! not user defined
+    DECinfo%Frag_Exp_Size          = 5
+    DECinfo%frag_red1_thr          = 0.9  ! times FOT
+    DECinfo%frag_red2_thr          = 1.0  ! times FOT
+    DECinfo%frag_red_occ           = .false.
+    DECinfo%frag_red_virt          = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
@@ -655,9 +656,10 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
-       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
-       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
-       case('.FRAG_RED_START'); read(input,*) DECinfo%frag_red_start
+       case('.FRAG_RED1_THR'); read(input,*) DECinfo%frag_red1_thr
+       case('.FRAG_RED2_THR'); read(input,*) DECinfo%frag_red2_thr
+       case('.FRAG_RED_OCC');  DECinfo%frag_red_occ  = .true.
+       case('.FRAG_RED_VIRT'); DECinfo%frag_red_virt = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
@@ -1069,9 +1071,10 @@ contains
     write(lupri,*) 'Frag_RedVir_Scheme ', DECitem%Frag_RedVir_Scheme
     write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
-    write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr
-    write(lupri,*) 'Frag_Red_virt_thr ', DECinfo%frag_red_virt_thr
-    write(lupri,*) 'Frag_Red_start ', DECinfo%frag_red_start
+    write(lupri,*) 'Frag_Red1_thr ', DECinfo%frag_red1_thr
+    write(lupri,*) 'Frag_Red2_thr ', DECinfo%frag_red2_thr
+    write(lupri,*) 'Frag_Red_Occ ', DECinfo%frag_red_occ
+    write(lupri,*) 'Frag_Red_Virt ', DECinfo%frag_red_virt
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
