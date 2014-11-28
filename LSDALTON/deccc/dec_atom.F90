@@ -7109,7 +7109,7 @@ contains
     ! 2. Add up the smallest contributions until they add up to the FOT. Skip those pairs.
     ! 3. For n=DECinfo%nFRAGSred,1,-1:
     !    Add up the next contributions in the list until they add up to 
-    !    REFn = FOT   (KK? maybe this should be changed)
+    !    REFn = FOT   (KKFIXME maybe this should be changed)
     !    Calculate these pairs with fragments corresponding to reduced FOT spaces of level n,
     !    which is stored in fragment%REDfrags(n)
     ! 4. Thus, at the end we get this where the (absolute)
@@ -7177,7 +7177,7 @@ contains
        ReducedFOT: do n=DECinfo%nFRAGSred,1,-1
 
           ! Reference energy  
-          ! (now set equal to FOT - up for testing if this is the best choice...)
+          ! (now set equal to FOT - KKFIXME up for testing if this is the best choice...)
           Eref = DECinfo%FOT
 
           ! Loop starts where we ended in previous step.
