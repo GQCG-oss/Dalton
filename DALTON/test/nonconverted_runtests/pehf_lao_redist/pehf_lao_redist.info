@@ -1,8 +1,0 @@
-   pehf_lao_redist
-   -----------
-   Molecule:         Acrolein and two classical water molecules
-   Wave Function:    PE-HF / STO-3G
-   Test Purpose:     Test of nuclear magnetic shieldings through
-                     ABACUS using LAOs and the PE library with
-                     redistribution of charges and removal of
-                     dipole polarizabilites

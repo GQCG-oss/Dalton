@@ -13,20 +13,10 @@ test = TestRun(__file__, sys.argv)
 a = Filter()
 
 a.add(from_string = 'Polarizable embedding energy contributions:',
-      num_lines = 15,
+      num_lines = 32,
       abs_tolerance = 1.0e-5)
 
-a.add(from_string = 'Polarizable embedding information',
-      num_lines = 16,
-      abs_tolerance = 1.0e-6)
-
-a.add(string = 'Multipole moments upto 3rd order.')
-
-a.add(string = 'Dipole-dipole polarizabilities.')
-
 b = copy.deepcopy(a)
-
-b.add(string = 'Iterative solver for induced moments will be used')
 
 c = copy.deepcopy(b)
 
@@ -36,8 +26,6 @@ c.add(string = 'DIIS converged in',
 c.add(string = 'Existing files will be used to restart if possible.')
 
 d = copy.deepcopy(a)
-
-d.add(string = 'Direct solver for induced moments will be used')
 
 e = copy.deepcopy(d)
 
