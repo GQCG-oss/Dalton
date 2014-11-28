@@ -984,10 +984,10 @@ module xcfun_host
     integer :: ierr
 #ifdef VAR_XCFUN
 !    ierr = xc_eval_setup(XCFUNfunctional,XC_A_B_AX_AY_AZ_BX_BY_BZ_TAUA_TAUB,XC_PARTIAL_DERIVATIVES,order)
-    IF(ierr.NE.0) then
-       print*,'ierr from xcfun',ierr
-       call lsquit('Unexpected error from xcfun',-1)
-    endif
+!    IF(ierr.NE.0) then
+!       print*,'ierr from xcfun',ierr
+!       call lsquit('Unexpected error from xcfun',-1)
+!    endif
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
@@ -1069,10 +1069,10 @@ module xcfun_host
     integer :: ierr
 #ifdef VAR_XCFUN
 !    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ_TAUN,XC_PARTIAL_DERIVATIVES,order)
-    IF(ierr.NE.0) then
-       print*,'ierr from xcfun',ierr
-       call lsquit('Unexpected error from xcfun',-1)
-    endif
+!    IF(ierr.NE.0) then
+!       print*,'ierr from xcfun',ierr
+!       call lsquit('Unexpected error from xcfun',-1)
+!    endif
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
