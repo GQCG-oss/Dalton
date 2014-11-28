@@ -577,6 +577,7 @@ contains
        call mem_alloc(MyMolecule%SubSystemIndex,MyMolecule%nAtoms)
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags)
+       call mem_alloc(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags)
     end if
 
 
@@ -623,6 +624,8 @@ contains
     call ls_mpibcast(MyMolecule%SubSystemIndex,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags,&
+         & master,MPI_COMM_LSDALTON)
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -2290,7 +2293,6 @@ contains
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
     call ls_mpi_buffer(DECitem%checkpairs,Master)
     call ls_mpi_buffer(DECitem%pairFOthr,Master)
-    call ls_mpi_buffer(DECitem%PairMP2,Master)
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
     call ls_mpi_buffer(DECitem%EstimateInitRadius,Master)
     call ls_mpi_buffer(DECitem%EstimateInitAtom,Master)

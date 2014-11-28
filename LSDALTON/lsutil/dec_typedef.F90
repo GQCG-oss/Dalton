@@ -425,8 +425,6 @@ module dec_typedef_module
      !> Fragment-adapted threshold for throwing away orbitals in atomic fragments
      !> that constitute pair fragment (currently on a testing basis)
      real(realk) :: pairFOthr
-     !> Do some pairs at MP2 level
-     logical :: PairMP2
      !> Estimate pair interaction energies using simple estimates?
      logical :: PairEstimate
      !> Carry out pair estimate, but anyway run all pairs.
@@ -678,6 +676,10 @@ module dec_typedef_module
      !> model=MODEL_MP2 :  Do MP2
      !> etc., see MODEL_* definitions below
      integer,pointer :: ccmodel(:,:) => null()
+     !> FOT level to use for each pair calculation
+     !>  0: Use input FOT
+     !>  n>0: Use AOS information from fragment%REDfrags(n)
+     integer,pointer :: PairFOTlevel(:,:) => null()
 
      !> Partitioning of energy into dispersion, charge transfer,
      !> and internal subsystem excitations 

@@ -162,7 +162,7 @@ contains
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
     DECinfo%CorrDensScheme         = 1
     ! Number of reduced fragments to consider
-    DECinfo%nFRAGSred = 2
+    DECinfo%nFRAGSred = 0
     ! Factor to scale FOT by for reduced fragments
     DECinfo%FOTscaling = 10.0_realk
 
@@ -170,7 +170,6 @@ contains
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
     DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr               =  0.0_realk
-    DECinfo%PairMP2                 = .false.
     DECinfo%PairEstimate            = .true.
     DECinfo%PairEstimateIgnore      = .false.
     DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
@@ -639,7 +638,6 @@ contains
           DECinfo%checkpairs=.true.
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
        case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
-       case('.PAIRMP2'); DECinfo%PairMP2=.true.
        case('.NOTPAIRESTIMATE'); DECinfo%PairEstimate=.false.
        case('.IGNOREPAIRESTIMATE'); DECinfo%PairEstimateIgnore=.true.
        case('.ESTIMATEINITRADIUS')
@@ -1094,7 +1092,6 @@ contains
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
-    write(lupri,*) 'PairMP2 ', DECitem%PairMP2
     write(lupri,*) 'PairEstimate ', DECitem%PairEstimate
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'density ', DECitem%density
