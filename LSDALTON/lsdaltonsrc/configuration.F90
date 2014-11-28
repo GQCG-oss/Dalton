@@ -779,6 +779,7 @@ DO
      READWORD=.TRUE.
      !should be in MOLECULE.INP not LSDALTON.INP
      !READ(WORD(6:),*) config%latt_config%max_layer,config%latt_config%nneighbour
+     config%latt_config%max_layer = 10
      config%latt_config%comp_pbc= .true.
      config%latt_config%wannier_direct= 'indirectly'
      config%latt_config%testcase= .false.
