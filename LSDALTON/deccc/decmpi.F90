@@ -985,6 +985,7 @@ contains
 
     CALL ls_mpi_buffer(MyFragmentAOS%noccAOS,master)
     CALL ls_mpi_buffer(MyFragmentAOS%nunoccAOS,master)
+    CALL ls_mpi_buffer(MyFragmentAOS%FOT,master)
 
     ! Nullify and allocate stuff for receiver (global addtobuffer is false)
     if(.not. AddToBuffer) then

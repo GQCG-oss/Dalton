@@ -1304,11 +1304,14 @@ module dec_typedef_module
   end type pno_query_info
 
   ! Information for fragment AOS (intended to be used for fragments of reduced FOT)
+  ! Remember to modify mpicopy_fragmentAOStype if you add/remove someting here!
   type fragmentAOS
      !> Number of occupied and unoccupied orbitals in fragment AOS
      integer          :: noccAOS, nunoccAOS
      !> Occupied and unoccupied AOS indices
      integer, pointer :: occAOSidx(:), unoccAOSidx(:)
+     !> FOT corresponding to orbital spaces
+     real(realk) :: FOT
   end type fragmentAOS
 
 end module dec_typedef_module

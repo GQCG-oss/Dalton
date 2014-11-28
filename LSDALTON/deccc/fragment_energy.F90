@@ -4867,7 +4867,7 @@ contains
          & red_list_occ,red_list_vir,nred_occ,nred_vir)
 
       ! Perform reduction:
-      call fragment_reduction_procedure(AtomicFragment,no,nv,red_list_occ, &
+      call fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,red_list_occ, &
             & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
             & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT)
 
@@ -4998,6 +4998,107 @@ contains
       end if
 
    end subroutine fragment_expansion_procedure
+
+
+   !> \brief   Wrapper for reducing fragment by removing orbitals until error
+   !>          is of size FOT. This is also done for reduced fragment, i.e. larger FOTs.
+   !> \author Kasper Kristensen
+   !> \date November 2014
+   subroutine fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,occ_priority_list, &
+        & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+        & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+
+     implicit none
+
+     !> Atomic fragment to be optimized
+     type(decfrag),intent(inout)        :: AtomicFragment
+     !> Number of occupied orbitals in molecule
+     integer, intent(in) :: no
+     !> Number of virtual orbitals in molecule
+     integer, intent(in) :: nv
+     !> Priority list of orbitals:
+     integer, intent(in) :: occ_priority_list(no)
+     integer, intent(in) :: vir_priority_list(nv)
+     !> Logical vector telling which orbital is include in the fragment
+     logical, intent(inout) :: Occ_AOS(no), Vir_AOS(nv)
+     !> Central Atom of the current fragment
+     integer, intent(in) :: MyAtom
+     !> Full molecule information
+     type(fullmolecule), intent(in) :: MyMolecule
+     !> All occupied orbitals
+     type(decorbital), dimension(no), intent(in) :: OccOrbitals
+     !> All unoccupied orbitals
+     type(decorbital), dimension(nv), intent(in) :: VirOrbitals
+     !> Integral information
+     type(lsitem), intent(inout)       :: mylsitem
+     !> minimum gap in number of orbital allowed between the 
+     !  last two steps of the binary search.
+     integer,intent(in) :: no_gap, nv_gap
+     !> Fragment optimization threshold to use in reduction
+     real(realk),intent(in) :: FOT
+     real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
+     type(decfrag) :: ReducedFragment
+     integer :: i
+
+     ! At this point AtomicFragment correspondings to the expanded fragment
+     ! We store the atomic fragment energies of the expanded fragment
+     LagEnergy_exp = AtomicFragment%LagFOP
+     OccEnergy_exp = AtomicFragment%EoccFOP
+     VirEnergy_exp = AtomicFragment%EvirtFOP
+
+     ! Determine AtomicFragment according to main FOT
+     call fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
+          & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+          & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+     write(DECinfo%output,'(1X,a,g14.3,4i8)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
+          & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,AtomicFragment%nbasis
+     
+     ! Loop over different increased FOTs to determine reduced spaces
+     ! *************************************************************
+     FOTincreased=FOT
+     do i=1,DECinfo%nFRAGSred
+
+        ! Initialize ReducedFragment identical to AtomicFragment
+        call atomic_fragment_init_integer_list(MyAtom,nv, no, AtomicFragment%nunoccAOS,&
+             & AtomicFragment%noccAOS,AtomicFragment%unoccAOSidx,AtomicFragment%occAOSidx,&
+             & OccOrbitals,VirOrbitals,MyMolecule,mylsitem,ReducedFragment,.true.,.false.)
+
+        ! Set initial energies for ReducedFragment equal to the ones for the expanded fragment
+        ReducedFragment%LagFOP   = LagEnergy_exp
+        ReducedFragment%EoccFOP  = OccEnergy_exp
+        ReducedFragment%EvirtFOP = VirEnergy_exp
+
+        ! Increase FOT by scaling factor
+        FOTincreased = FOTincreased*DECinfo%FOTscaling
+
+        ! Determine ReducedFragment according to the scaled FOT
+        call fragment_reduction_procedure(ReducedFragment,no,nv,occ_priority_list, &
+             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+             & VirOrbitals,mylsitem,no_gap,nv_gap,FOTincreased)
+        
+        ! Save information about ReducedFragment AOS in AtomicFragment structure
+        AtomicFragment%REDfrags(i)%noccAOS   = ReducedFragment%noccAOS
+        AtomicFragment%REDfrags(i)%nunoccAOS = ReducedFragment%nunoccAOS
+        call mem_alloc(AtomicFragment%REDfrags(i)%occAOSidx,AtomicFragment%REDfrags(i)%noccAOS)
+        AtomicFragment%REDfrags(i)%occAOSidx = ReducedFragment%occAOSidx
+        call mem_alloc(AtomicFragment%REDfrags(i)%unoccAOSidx,AtomicFragment%REDfrags(i)%nunoccAOS)
+        AtomicFragment%REDfrags(i)%unoccAOSidx = ReducedFragment%unoccAOSidx
+        AtomicFragment%REDfrags(i)%FOT = FOTincreased
+
+        ! Print summary (delete this at some point but nice to have for analysis now)
+        write(DECinfo%output,'(1X,a,g14.3,4i8)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,&
+             & FOTincreased, ReducedFragment%noccAOS,ReducedFragment%nunoccAOS,&
+             & ReducedFragment%nbasis
+
+        ! Done with reduced fragment
+         call atomic_fragment_free(ReducedFragment)
+
+     end do
+
+
+   end subroutine fragment_reduction_procedure_wrapper
+
+
 
 
    ! Purpose: Perform reduction procedure based on occ/vir priority list. We perform

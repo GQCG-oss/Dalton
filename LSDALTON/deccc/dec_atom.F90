@@ -369,6 +369,9 @@ contains
     !  and this stage so the fragment%fragmentsAOS%occAOSidx and fragment%fragmentsAOS%unoccAOSidx
     !  should be set later).
     call mem_alloc(fragment%REDfrags,DECinfo%nFRAGSred)
+    do i=1,DECinfo%nfragsred
+       call zero_fragmentAOS_type(fragment%REDfrags(i))
+    end do
 
 
     ! Fragment-adapted orbital info
@@ -447,6 +450,76 @@ contains
     call LSTIMER('FRAGMENT INIT',tcpu,twall,DECinfo%output)
 
   end subroutine atomic_fragment_init_orbital_specific
+
+
+  !> \brief Initialize atomic fragment based on a integer list of specific AOS orbitals,
+  !> rather than a logical list.
+  !> (wrapper for atomic_fragment_init_orbital_specific).
+  !> \author Kasper Kristensen
+  subroutine atomic_fragment_init_integer_list(MyAtom,nunocc, nocc, nunoccAOS,noccAOS,&
+       & unocc_integer_list,occ_integer_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
+       & fragment,DoBasis,pairfrag)
+
+    implicit none
+    !> Number of atom to build a fragment on
+    integer, intent(in) :: MyAtom
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Number of occupied/unoccupied orbitals in fragment AOS
+    integer,intent(in) :: noccAOS,nunoccAOS
+    !> Integer vector telling which unoccupied AOS orbitals are included in fragment
+    integer, dimension(nunoccAOS), intent(in) :: Unocc_integer_list
+    !> Logical vector telling which occupied AOS orbitals are included in fragment
+    integer, dimension(noccAOS), intent(in) :: Occ_integer_list
+    !> Information about DEC occupied orbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Fragment to construct
+    type(decfrag), intent(inout) :: fragment
+    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
+    logical, intent(in) :: DoBasis
+    !> Is it a pair fragment?
+    logical,intent(in) :: pairfrag
+    logical :: occ_logical_list(nocc),unocc_logical_list(nunocc)
+    integer :: i
+
+    ! Sanity check: Meaningful indices
+    do i=1,noccAOS
+       if(occ_integer_list(i) > nocc .or. occ_integer_list(i) < 1) then
+          print *, 'occ_integer_list', occ_integer_list
+          call lsquit('atomic_fragment_init_integer_list: Bad index in occ list ',-1)
+       end if
+    end do
+    do i=1,nunoccAOS
+       if(unocc_integer_list(i) > nunocc .or. unocc_integer_list(i) < 1) then
+          print *, 'unocc_integer_list', unocc_integer_list
+          call lsquit('atomic_fragment_init_integer_list: Bad index in unocc list ',-1)
+       end if
+    end do
+
+    ! Make logical lists with dimensions of total number of occ/unocc orbitals corresponding
+    ! to input integer lists
+    occ_logical_list=.false.
+    unocc_logical_list=.false.
+    do i=1,noccAOS
+       occ_logical_list(occ_integer_list(i)) = .true.
+    end do
+    do i=1,nunoccAOS
+       unocc_logical_list(unocc_integer_list(i)) = .true.
+    end do
+
+    ! Initialize fragment
+    call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_logical_list, &
+         & occ_logical_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,pairfrag)
+
+  end subroutine atomic_fragment_init_integer_list
 
   
   !> \brief Initialize atomic fragment based on a list of specific AOS orbitals for F12-related matrices
@@ -7279,5 +7352,21 @@ contains
     end do
 
   end subroutine fix_inconsistencies_for_pair_model
+
+
+  !> Zero elements in fragmentAOS type.
+  !> Pointers are nullified and not allocated.
+  subroutine zero_fragmentAOS_type(MyFragmentAOS)
+    implicit none
+    !> FragmentAOS information
+    type(fragmentAOS),intent(inout) :: MyFragmentAOS
+
+    MyFragmentAOS%noccAOS=0
+    MyFragmentAOS%nunoccAOS=0
+    MyFragmentAOS%FOT=0.0_realk
+    nullify(MyFragmentAOS%occAOSidx)
+    nullify(MyFragmentAOS%unoccAOSidx)
+
+  end subroutine zero_fragmentAOS_type
 
 end module atomic_fragment_operations
