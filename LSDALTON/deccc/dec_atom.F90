@@ -364,6 +364,13 @@ contains
     call target_indices(fragment)
 
 
+    ! Reduced fragments 
+    ! (just allocate fragmentAOS type here but we of course do not know the reduced fragments
+    !  and this stage so the fragment%fragmentsAOS%occAOSidx and fragment%fragmentsAOS%unoccAOSidx
+    !  should be set later).
+    call mem_alloc(fragment%REDfrags,DECinfo%nFRAGSred)
+
+
     ! Fragment-adapted orbital info
     !******************************
     fragment%RejectThr=0.0_realk

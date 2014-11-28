@@ -10,11 +10,11 @@ module dec_typedef_module
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
   !Could someone please rename ri to something less generic. TK!!
-!  private
-!  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
-!       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
-!       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
-!       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
+  !  private
+  !  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
+  !       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
+  !       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
+  !       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
 
 
 
@@ -129,6 +129,7 @@ module dec_typedef_module
      logical :: gcbasis
      !> DEC-CC orbital-based (DECCO)
      logical :: DECCO
+
 
 
 
@@ -436,6 +437,12 @@ module dec_typedef_module
      integer :: EstimateInitAtom
      !> Which model to use for pair estimates
      integer :: PairEstimateModel
+     !> Number of reduced fragments (increased FOT) to used for pair calculations 
+     !> (NOT including fragment for main FOT)
+     integer :: nFRAGSred
+     !> Factor to scale FOT by for reduced fragments
+     integer :: FOTscaling
+
 
      ! --
 
@@ -601,7 +608,7 @@ module dec_typedef_module
      integer :: nCabsMO
      !> Number of possible fragments
      integer :: nfrags
-     
+
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
@@ -716,12 +723,13 @@ module dec_typedef_module
      !> Core orbitals indices (only used for frozen core approx, 
      !> otherwise there are included in the occAOSidx list).
      integer,pointer :: coreidx(:) => null()
-
-
      !> Indices of occupied EOS in AOS basis
      integer, pointer :: idxo(:) => null()
      !> Indices of unoccupied EOS in AOS basis
      integer, pointer :: idxu(:) => null()
+
+     ! Reduced fragments (dimension DECinfo%nFOTred)
+     type(fragmentAOS),pointer :: REDfrags(:)
 
      !> DEC fragment energies are stored in the energies array
      !> according to the global integers "FRAGMODEL_*" defined below.
@@ -1294,4 +1302,13 @@ module dec_typedef_module
      integer(kind=8)          :: n_arrays
      integer(kind=8), pointer :: size_array(:)
   end type pno_query_info
+
+  ! Information for fragment AOS (intended to be used for fragments of reduced FOT)
+  type fragmentAOS
+     !> Number of occupied and unoccupied orbitals in fragment AOS
+     integer          :: noccAOS, nunoccAOS
+     !> Occupied and unoccupied AOS indices
+     integer, pointer :: occAOSidx(:), unoccAOSidx(:)
+  end type fragmentAOS
+
 end module dec_typedef_module

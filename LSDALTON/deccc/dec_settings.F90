@@ -161,6 +161,10 @@ contains
     DECinfo%RepeatAF               = .true.
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
     DECinfo%CorrDensScheme         = 1
+    ! Number of reduced fragments to consider
+    DECinfo%nFRAGSred = 2
+    ! Factor to scale FOT by for reduced fragments
+    DECinfo%FOTscaling = 10.0_realk
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
@@ -452,6 +456,14 @@ contains
           !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
        case('.CORRDENS')  
           read(input,*) DECinfo%CorrDensScheme
+
+          !> Number of reduced fragments to consider
+       case('.NFRAGSRED')
+          read(input,*) DECinfo%nFRAGSred
+
+          !> Factor to scale FOT by for reduced fragments
+       case('.FOTSCALING')
+          read(input,*) DECinfo%FOTscaling
 
           ! Use frozen core approximation
        case('.FROZENCORE') 

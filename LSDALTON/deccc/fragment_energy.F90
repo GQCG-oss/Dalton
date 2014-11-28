@@ -4869,7 +4869,7 @@ contains
       ! Perform reduction:
       call fragment_reduction_procedure(AtomicFragment,no,nv,red_list_occ, &
             & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,nred_occ,nred_vir)
+            & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT)
 
       !==================================================================================!
       !                              Finalize subroutine                                 !
@@ -5010,7 +5010,7 @@ contains
    ! Date:    July 2014
    subroutine fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,no_gap,nv_gap)
+            & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
 
       implicit none
 
@@ -5037,7 +5037,9 @@ contains
       type(lsitem), intent(inout)       :: mylsitem
       !> minimum gap in number of orbital allowed between the 
       !  last two steps of the binary search.
-      integer :: no_gap, nv_gap
+      integer,intent(in) :: no_gap, nv_gap
+      !> Fragment optimization threshold to use in reduction
+      real(realk),intent(in) :: FOT
 
       !> energy error acceptance in reduction steps:
       real(realk) :: dE_occ, dE_vir
@@ -5085,21 +5087,21 @@ contains
          write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce occupied space first'
          redocc = .true.
          redvir = .false.
-         dE_occ = DECinfo%frag_red1_thr*DECinfo%FOT
-         dE_vir = DECinfo%frag_red2_thr*DECinfo%FOT
+         dE_occ = DECinfo%frag_red1_thr*FOT
+         dE_vir = DECinfo%frag_red2_thr*FOT
       else if (DECinfo%Frag_red_virt.and.(.not.DECinfo%Frag_red_occ)) then
          ! Start reducing virtual space:
          write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce virtual space first'
          redvir = .true.
          redocc = .false.
-         dE_vir = DECinfo%frag_red1_thr*DECinfo%FOT
-         dE_occ = DECinfo%frag_red2_thr*DECinfo%FOT
+         dE_vir = DECinfo%frag_red1_thr*FOT
+         dE_occ = DECinfo%frag_red2_thr*FOT
       else
          ! Default, reduce both spaces from the begining:
          redocc = .true.
          redvir = .true.
-         dE_occ = DECinfo%FOT
-         dE_vir = DECinfo%FOT
+         dE_occ = FOT
+         dE_vir = FOT
       end if
 
 
@@ -5183,7 +5185,7 @@ contains
                & dE_vir,step_accepted)
          else if (redocc.and.redvir) then
             call fragopt_check_convergence(LagEnergy_dif,OccEnergy_dif,VirEnergy_dif, &
-               & DECinfo%FOT,step_accepted)
+               & FOT,step_accepted)
          end if
 
          ! If the step is accepted we need to save the frag info:
