@@ -5050,7 +5050,7 @@ contains
      call fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
           & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
           & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
-     write(DECinfo%output,'(1X,a,g14.3,4i8)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
+     write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
           & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,AtomicFragment%nbasis
      
      ! Loop over different increased FOTs to determine reduced spaces
@@ -5086,7 +5086,7 @@ contains
         AtomicFragment%REDfrags(i)%FOT = FOTincreased
 
         ! Print summary (delete this at some point but nice to have for analysis now)
-        write(DECinfo%output,'(1X,a,g14.3,4i8)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,&
+        write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,&
              & FOTincreased, ReducedFragment%noccAOS,ReducedFragment%nunoccAOS,&
              & ReducedFragment%nbasis
 
