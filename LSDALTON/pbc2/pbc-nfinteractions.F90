@@ -242,7 +242,7 @@ SUBROUTINE pbc_overlap_k(lupri,luerr,setting,natoms,nbast,lattice, &
                   !Checks if there is need 
                   !in calculating integrals for
                   !this layer
-                  if(max_elm_layer .le. 1.0d-8) exit
+                  if(max_elm_layer .le. lattice%intthr) exit
                   layer_old = layer
                   max_elm_layer = 0.0_realk
                 endif
@@ -353,7 +353,7 @@ SUBROUTINE pbc_kinetic_k(lupri,luerr,setting,natoms,nbast,lattice, &
                           !Checks if there is need 
                           !in calculating integrals for
                           !this layer
-                          if(max_elm_layer .le. 1.0d-8) exit
+                          if(max_elm_layer .le. lattice%intthr) exit
                           layer_old = layer
                           max_elm_layer = 0.0_realk
                         endif
@@ -470,7 +470,7 @@ SUBROUTINE pbc_nucattrc_k(lupri,luerr,setting,natoms,nbast,lattice, &
                   !Checks if there is need 
                   !in calculating integrals for
                   !this layer
-                  if(max_elm_layer .le. 1.0d-8) exit
+                  if(max_elm_layer .le. lattice%intthr) exit
                   layer_old = layer
                   max_elm_layer = 0.0_realk
                 endif
@@ -604,166 +604,163 @@ SUBROUTINE pbc_electron_rep_k(lupri,luerr,setting,natoms,nbast, &
         max_elm_layer = 0.0_realk
 	do index1=1,numvecs
 
-		!if(.not. lattice%lvec(index1)%is_redundant) then
-		il1=int(lattice%lvec(index1)%lat_coord(1))
-		il2=int(lattice%lvec(index1)%lat_coord(2))
-		il3=int(lattice%lvec(index1)%lat_coord(3))
+          !if(.not. lattice%lvec(index1)%is_redundant) then
+          il1=int(lattice%lvec(index1)%lat_coord(1))
+          il2=int(lattice%lvec(index1)%lat_coord(2))
+          il3=int(lattice%lvec(index1)%lat_coord(3))
 
-		lattice%lvec(index1)%g2_computed=.false.
-		lattice%lvec(index1)%J_computed=.false.
-		gab1=lattice%lvec(index1)%maxgab
+          lattice%lvec(index1)%g2_computed=.false.
+          lattice%lvec(index1)%J_computed=.false.
+          gab1=lattice%lvec(index1)%maxgab
 
-                layer = max(abs(il1),abs(il2))
-                layer = max(layer,abs(il3))
+          layer = max(abs(il1),abs(il2))
+          layer = max(layer,abs(il3))
 
-                if ( layer .ne. layer_old) then
-                  !Checks if there is need 
-                  !in calculating integrals for
-                  !this layer
-                  if(max_elm_layer .le. 1.0d-8) exit
-                  layer_old = layer
-                  max_elm_layer = 0.0_realk
+          if ( layer .ne. layer_old) then
+            !Checks if there is need 
+            !in calculating integrals for
+            !this layer
+            if(max_elm_layer .le. lattice%intthr) exit
+            layer_old = layer
+            max_elm_layer = 0.0_realk
+          endif
+
+
+          if(gab1  .lt. -18) CYCLE
+          if(lattice%lvec(index1)%is_redundant) then
+            call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
+            if(lattice%lvec(indred)%g2_computed) then
+              lattice%lvec(index1)%g2_computed=.true.
+              lattice%lvec(index1)%J_computed=.true.
+            endif
+          endif
+
+          if(.not. lattice%lvec(index1)%is_redundant) then
+            call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
+            if(il1**2+il2**2+il3**2 .gt. 0) lattice%lvec(indred)%is_redundant =.true.
+            write(*,*) 'J computed for',il1,il2,il3
+
+            do index2=1,numvecs
+
+              il21=int(lattice%lvec(index2)%lat_coord(1))
+              il22=int(lattice%lvec(index2)%lat_coord(2))
+              il23=int(lattice%lvec(index2)%lat_coord(3))
+              gab2=lattice%lvec(index2)%maxgab
+
+              if(gab2  .lt. -18) CYCLE
+
+              !if(abs(il21) .gt. lattice%ndmat) CYCLE !then 
+              !if( abs(il22) .gt.lattice%ndmat) CYCLE
+              !if(abs(il23) .gt. lattice%ndmat) CYCLE !then 
+              if(.not. lattice%lvec(index2)%dm_computed) CYCLE! then
+              !Not sure with this one I will not use densities for 
+              !lattice cells where J was too small
+              if(index2 .gt. 1 .and. .not. lattice%lvec(index2)%J_computed)&
+                &CYCLE
+
+              do index3=1,numvecs
+
+                il31=int(lattice%lvec(index3)%lat_coord(1))
+                il32=int(lattice%lvec(index3)%lat_coord(2))
+                il33=int(lattice%lvec(index3)%lat_coord(3))
+
+                if( (abs(il31) .le. lattice%nf) &
+                  & .and. (abs(il32) .le. lattice%nf) &
+                        & .and. (abs(il33) .le. lattice%nf) ) then
+
+                  !if(abs(il31) .gt. lattice%ndmat) CYCLE !then 
+                  !if( abs(il32) .gt.lattice%ndmat) CYCLE
+                  !if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
+                  !if(nfdensity(index3)%init_magic_tag.NE.mat_init_magic_value) CYCLE
+                  !     ToDo Remove: base on CS screening at some point
+
+                  l1=il21+il31
+                  if( abs(l1) .gt.lattice%max_layer) CYCLE
+                  l2=il22+il32
+                  if( abs(l2) .gt.lattice%max_layer) CYCLE
+                  l3=il23+il33
+                  if( abs(l3) .gt.lattice%max_layer) CYCLE
+
+                  call find_latt_index(newcell,l1,l2,l3,lattice, &
+                    & lattice%max_layer)
+
+                  ! ToDo Should be turned on at some point
+
+                  gabmaxsum=gab1+gab2
+                  call mat_abs_max_elm(nfdensity(index2),valmax)
+                  if(valmax .gt. 0._realk) valm1=int(log10(valmax),kind=short)
+
+                  if(valm1+gabmaxsum  .ge. lattice%realthr) then
+                    !if(gabmaxsum  .ge. -12) then
+                    lattice%lvec(index1)%g2_computed=.true.
+                    lattice%lvec(index1)%J_computed=.true.
+                    if(lattice%lvec(index1)%oper(2)%init_magic_tag &
+                      & .ne. mat_init_magic_value) then
+                      call mat_init(lattice%lvec(index1)%oper(2),nbast,nbast)
+                      call mat_zero(lattice%lvec(index1)%oper(2))
+                    endif
+
+                    maxl1=max(il1,maxl1)
+                    maxl2=max(il2,maxl2)
+                    maxl3=max(il3,maxl3)
+
+                    call TYPEDEF_setmolecules(setting,refcell,1, &
+                      & lattice%lvec(index1)%molecule, 2,&
+                      &lattice%lvec(index3)%molecule,3,& 
+                      & lattice%lvec(newcell)%molecule,4)
+                    call mat_zero(F_tmp(1))
+                    call II_get_coulomb_mat(lupri,luerr,setting, &
+                      & nfdensity(index2:index2),F_tmp,1)
+
+                    call mat_daxpy(0.5_realk,F_tmp(1), &
+                      & lattice%lvec(index1)%oper(2))
+                  endif
                 endif
+              enddo
+            enddo
 
+            if(lattice%lvec(index1)%J_computed) then
 
-		if(gab1  .lt. -18) CYCLE
-		if(lattice%lvec(index1)%is_redundant) then
-			call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
-			if(lattice%lvec(indred)%g2_computed) then
-				lattice%lvec(index1)%g2_computed=.true.
-				lattice%lvec(index1)%J_computed=.true.
-			endif
-		endif
+              call mat_abs_max_elm(lattice%lvec(index1)%oper(2),max_elm)
+              max_elm_layer=max(max_elm_layer,max_elm)
 
-		if(.not. lattice%lvec(index1)%is_redundant) then
-			call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
-			if(il1**2+il2**2+il3**2 .gt. 0) lattice%lvec(indred)%is_redundant =.true.
-                        write(*,*) 'J computed for',il1,il2,il3
+              if(.not. lattice%store_mats) then
+                call mat_init(g_2(index1),nbast,nbast)
+                call mat_copy(1._realk,lattice%lvec(index1)%oper(2),g_2(index1))
+              endif
 
-			do index2=1,numvecs
+              if (calc_e_j) then
+                if((abs(il1).le.lattice%ndmat .and. abs(il2).le.lattice%ndmat) &
+                  & .and. abs(il3).le.lattice%ndmat) then
+                if(nfdensity(index1)%init_magic_tag&
+                  &.EQ.mat_init_magic_value) THEN
 
-				il21=int(lattice%lvec(index2)%lat_coord(1))
-				il22=int(lattice%lvec(index2)%lat_coord(2))
-				il23=int(lattice%lvec(index2)%lat_coord(3))
-				gab2=lattice%lvec(index2)%maxgab
+                  if(il1**2+il2**2+il3**2 .gt. 0) then
+                    E_j=E_j+ &
+                      & 1.0_realk*mat_dotproduct(lattice%lvec(index1)%oper(2), &
+                      & nfdensity(index1))
+                  else
+                    E_j=E_j+ &
+                      & 0.5_realk*mat_dotproduct(lattice%lvec(index1)%oper(2), &
+                      & nfdensity(index1))
+                  endif
+                endif
+              endif
+            endif
+          end if
+        endif !is_redundant
+        lattice%lvec(index1)%is_redundant=.false.
+      enddo
+      lattice%col1=maxl1
+      lattice%col2=maxl2
+      lattice%col3=maxl3
 
-				if(gab2  .lt. -18) CYCLE
+      call mat_free(F_tmp(1))
+      call mem_dealloc(F_tmp)
 
-				!if(abs(il21) .gt. lattice%ndmat) CYCLE !then 
-				!if( abs(il22) .gt.lattice%ndmat) CYCLE
-				!if(abs(il23) .gt. lattice%ndmat) CYCLE !then 
-				if(.not. lattice%lvec(index2)%dm_computed) CYCLE! then
-
-				do index3=1,numvecs
-
-					il31=int(lattice%lvec(index3)%lat_coord(1))
-					il32=int(lattice%lvec(index3)%lat_coord(2))
-					il33=int(lattice%lvec(index3)%lat_coord(3))
-
-					if( (abs(il31) .le. lattice%nf) &
-						& .and. (abs(il32) .le. lattice%nf) &
-						& .and. (abs(il33) .le. lattice%nf) ) then
-
-						!if(abs(il31) .gt. lattice%ndmat) CYCLE !then 
-						!if( abs(il32) .gt.lattice%ndmat) CYCLE
-						!if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
-						!if(nfdensity(index3)%init_magic_tag.NE.mat_init_magic_value) CYCLE
-						!     ToDo Remove: base on CS screening at some point
-
-						l1=il21+il31
-						if( abs(l1) .gt.lattice%max_layer) CYCLE
-						l2=il22+il32
-						if( abs(l2) .gt.lattice%max_layer) CYCLE
-						l3=il23+il33
-						if( abs(l3) .gt.lattice%max_layer) CYCLE
-
-						call find_latt_index(newcell,l1,l2,l3,lattice, &
-							& lattice%max_layer)
-
-						! ToDo Should be turned on at some point
-						!nf1=lattice%nf
-						!nf2=lattice%nf
-						!nf3=lattice%nf
-						!if(il1 .lt. 0)nf1=-lattice%nf
-						!if(il2 .lt. 0)nf2=-lattice%nf
-						!if(il3 .lt. 0)nf3=-lattice%nf
-						!if(il21+il1 .gt. lattice%nf .and. il1 .gt. 0 ) cycle
-						!if(il21 .lt. nf1 .and. il1 .lt. 0) CYCLE
-						!if(il21 .lt. nf1
-
-						gabmaxsum=gab1+gab2
-						call mat_abs_max_elm(nfdensity(index2),valmax)
-						if(valmax .gt. 0._realk) valm1=int(log10(valmax),kind=short)
-
-						if(valm1+gabmaxsum  .ge. lattice%realthr) then
-							!if(gabmaxsum  .ge. -12) then
-							lattice%lvec(index1)%g2_computed=.true.
-							lattice%lvec(index1)%J_computed=.true.
-							if(lattice%lvec(index1)%oper(2)%init_magic_tag &
-								& .ne. mat_init_magic_value) then
-								call mat_init(lattice%lvec(index1)%oper(2),nbast,nbast)
-								call mat_zero(lattice%lvec(index1)%oper(2))
-							endif
-
-							maxl1=max(il1,maxl1)
-							maxl2=max(il2,maxl2)
-							maxl3=max(il3,maxl3)
-
-							call TYPEDEF_setmolecules(setting,refcell,1, &
-								& lattice%lvec(index1)%molecule, 2,&
-                                                                &lattice%lvec(index3)%molecule,3,& 
-								& lattice%lvec(newcell)%molecule,4)
-							call mat_zero(F_tmp(1))
-							call II_get_coulomb_mat(lupri,luerr,setting, &
-								& nfdensity(index2:index2),F_tmp,1)
-
-							call mat_daxpy(0.5_realk,F_tmp(1), &
-								& lattice%lvec(index1)%oper(2))
-						endif
-					endif
-				enddo
-			enddo
-
-			if(lattice%lvec(index1)%J_computed) then
-
-                                call mat_abs_max_elm(lattice%lvec(index1)%oper(2),max_elm)
-                                max_elm_layer=max(max_elm_layer,max_elm)
-
-                                if(.not. lattice%store_mats) then
-                                  call mat_init(g_2(index1),nbast,nbast)
-                                  call mat_copy(1._realk,lattice%lvec(index1)%oper(2),g_2(index1))
-                                endif
-
-                                if (calc_e_j) then
-                                  if((abs(il1).le.lattice%ndmat .and. abs(il2).le.lattice%ndmat) &
-                                    & .and. abs(il3).le.lattice%ndmat) then
-                                  if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) THEN
-                                    if(il1**2+il2**2+il3**2 .gt. 0) then
-                                      E_j=E_j+ &
-                                        & 1.0_realk*mat_dotproduct(lattice%lvec(index1)%oper(2), &
-                                        & nfdensity(index1))
-                                    else
-                                      E_j=E_j+ &
-                                        & 0.5_realk*mat_dotproduct(lattice%lvec(index1)%oper(2), &
-                                        & nfdensity(index1))
-                                    endif
-                                  endif
-                                endif
-                              endif
-			end if
-		endif !is_redundant
-		lattice%lvec(index1)%is_redundant=.false.
-	enddo
-	lattice%col1=maxl1
-	lattice%col2=maxl2
-	lattice%col3=maxl3
-
-	call mat_free(F_tmp(1))
-	call mem_dealloc(F_tmp)
-
-	write(lupri,*) 'Check, nr. lattice vectors',numvecs
-	call set_lstime_print(.true.)
-	write(lupri,*) 'finished with pbc_elrep_k'
+      write(lupri,*) 'Check, nr. lattice vectors',numvecs
+      call set_lstime_print(.true.)
+      write(lupri,*) 'finished with pbc_elrep_k'
 
 END SUBROUTINE pbc_electron_rep_k
 
@@ -830,181 +827,184 @@ SUBROUTINE pbc_exact_xc_k(lupri,luerr,setting,natoms,nbast, &
         max_elm_layer = 0.0_realk
 	do index1=1,numvecs
 
-		!call find_latt_vectors(index1,il1,il2,il3,lattice)
-		il1=int(lattice%lvec(index1)%lat_coord(1))
-		il2=int(lattice%lvec(index1)%lat_coord(2))
-		il3=int(lattice%lvec(index1)%lat_coord(3))
-		!if(abs(il1) .gt. lattice%kx1) CYCLE
-		!if(abs(il2) .gt. lattice%kx2) CYCLE
-		!if(abs(il3) .gt. lattice%kx3) CYCLE
-		lattice%lvec(index1)%Kx_computed=.false.
+          !call find_latt_vectors(index1,il1,il2,il3,lattice)
+          il1=int(lattice%lvec(index1)%lat_coord(1))
+          il2=int(lattice%lvec(index1)%lat_coord(2))
+          il3=int(lattice%lvec(index1)%lat_coord(3))
+          !if(abs(il1) .gt. lattice%kx1) CYCLE
+          !if(abs(il2) .gt. lattice%kx2) CYCLE
+          !if(abs(il3) .gt. lattice%kx3) CYCLE
+          lattice%lvec(index1)%Kx_computed=.false.
 
-                layer = max(abs(il1),abs(il2))
-                layer = max(layer,abs(il3))
+          layer = max(abs(il1),abs(il2))
+          layer = max(layer,abs(il3))
 
-                if ( layer .ne. layer_old) then
-                  !Checks if there is need 
-                  !in calculating integrals for
-                  !this layer
-                  if(max_elm_layer .le. 1.0d-8) exit
-                  layer_old = layer
-                  max_elm_layer = 0.0_realk
-                endif
+          if ( layer .ne. layer_old) then
+            !Checks if there is need 
+            !in calculating integrals for
+            !this layer
+            if(max_elm_layer .le. lattice%intthr) exit
+            layer_old = layer
+            max_elm_layer = 0.0_realk
+          endif
 
-		if(lattice%lvec(index1)%is_redundant) then
-			call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
-			if(lattice%lvec(indred)%Kx_computed) then
-				lattice%lvec(index1)%g2_computed=.true.
-				lattice%lvec(index1)%Kx_computed=.true.
-			endif
-		endif
+          if(lattice%lvec(index1)%is_redundant) then
+            call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
+            if(lattice%lvec(indred)%Kx_computed) then
+              lattice%lvec(index1)%g2_computed=.true.
+              lattice%lvec(index1)%Kx_computed=.true.
+            endif
+          endif
 
-		if(.not. lattice%lvec(index1)%is_redundant) then
-			call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
+          if(.not. lattice%lvec(index1)%is_redundant) then
+            call find_latt_index(indred,-il1,-il2,-il3,lattice,lattice%max_layer)
 
-			do index2=1,numvecs
+            do index2=1,numvecs
 
-				!call find_latt_vectors(index2,il21,il22,il23,lattice)
-				il21=int(lattice%lvec(index2)%lat_coord(1))
-				il22=int(lattice%lvec(index2)%lat_coord(2))
-				il23=int(lattice%lvec(index2)%lat_coord(3))
-				gab1=lattice%lvec(index2)%maxgab
-				if(gab1 .lt. -18) CYCLE
+              !call find_latt_vectors(index2,il21,il22,il23,lattice)
+              il21=int(lattice%lvec(index2)%lat_coord(1))
+              il22=int(lattice%lvec(index2)%lat_coord(2))
+              il23=int(lattice%lvec(index2)%lat_coord(3))
+              gab1=lattice%lvec(index2)%maxgab
+              if(gab1 .lt. -18) CYCLE
 
-				do index3=1,numvecs
+              do index3=1,numvecs
 
-					!call find_latt_vectors(index3,il31,il32,il33,lattice)
-					il31=int(lattice%lvec(index3)%lat_coord(1))
-					il32=int(lattice%lvec(index3)%lat_coord(2))
-					il33=int(lattice%lvec(index3)%lat_coord(3))
+                !call find_latt_vectors(index3,il31,il32,il33,lattice)
+                il31=int(lattice%lvec(index3)%lat_coord(1))
+                il32=int(lattice%lvec(index3)%lat_coord(2))
+                il33=int(lattice%lvec(index3)%lat_coord(3))
 
-					!if(abs(il31) .gt. lattice%ndmat) CYCLE! then
-					!if(abs(il32) .gt. lattice%ndmat) CYCLE !then 
-					!if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
-					if(.not. lattice%lvec(index3)%dm_computed) CYCLE! then
+                !if(abs(il31) .gt. lattice%ndmat) CYCLE! then
+                !if(abs(il32) .gt. lattice%ndmat) CYCLE !then 
+                !if(abs(il33) .gt. lattice%ndmat) CYCLE !then 
+                if(.not. lattice%lvec(index3)%dm_computed) CYCLE! then
+                !Not sure with this one I will not use densities for 
+                !lattice cells where Kx was too small
+                if(index3 .gt. 1 .and. .not. lattice%lvec(index3)%Kx_computed)&
+                  &CYCLE
 
-					!ToDo Remove: base on CS screening at some point
-					l1=il21+il31
-					if( abs(l1) .gt.lattice%max_layer) CYCLE
-					!todo l1 blir større enn max slik at newcell blir negativ
-					!sjekk dette, er ikke sikker på om l1 skal være slik.
-					!Likedan man l2 og l3
-					l2=il22+il32
-					if( abs(l2) .gt.lattice%max_layer) CYCLE
-					l3=il23+il33
-					if( abs(l3) .gt.lattice%max_layer) CYCLE
-					gabl1=l1-il1
-					gabl2=l2-il2
-					gabl3=l3-il3
-					if( abs(gabl1) .gt.lattice%max_layer) CYCLE
-					if( abs(gabl2) .gt.lattice%max_layer) CYCLE
-					if( abs(gabl3) .gt.lattice%max_layer) CYCLE
+                !ToDo Remove: base on CS screening at some point
+                l1=il21+il31
+                if( abs(l1) .gt.lattice%max_layer) CYCLE
+                !todo l1 blir større enn max slik at newcell blir negativ
+                !sjekk dette, er ikke sikker på om l1 skal være slik.
+                !Likedan man l2 og l3
+                l2=il22+il32
+                if( abs(l2) .gt.lattice%max_layer) CYCLE
+                l3=il23+il33
+                if( abs(l3) .gt.lattice%max_layer) CYCLE
+                gabl1=l1-il1
+                gabl2=l2-il2
+                gabl3=l3-il3
+                if( abs(gabl1) .gt.lattice%max_layer) CYCLE
+                if( abs(gabl2) .gt.lattice%max_layer) CYCLE
+                if( abs(gabl3) .gt.lattice%max_layer) CYCLE
 
-					call find_latt_index(newcell,l1,l2,l3,lattice, &
-						& lattice%max_layer)
-					call find_latt_index(gabind,gabl1,gabl2,gabl3,lattice, &
-						& lattice%max_layer)
+                call find_latt_index(newcell,l1,l2,l3,lattice, &
+                  & lattice%max_layer)
+                call find_latt_index(gabind,gabl1,gabl2,gabl3,lattice, &
+                  & lattice%max_layer)
 
-					gab2=lattice%lvec(gabind)%maxGab
-					if(gab2 .lt. -18) CYCLE
-					maxgabsum=gab1+gab2
-					call mat_abs_max_elm(nfdensity(index3),valmax)
-					if(valmax.gt.0._realk) valm1=int(log10(valmax),kind=short)
+                gab2=lattice%lvec(gabind)%maxGab
+                if(gab2 .lt. -18) CYCLE
+                maxgabsum=gab1+gab2
+                call mat_abs_max_elm(nfdensity(index3),valmax)
+                if(valmax.gt.0._realk) valm1=int(log10(valmax),kind=short)
 
-					if(maxgabsum+valm1 .ge. lattice%realthr) then
-						if(lattice%lvec(index1)%oper(1)%init_magic_tag &
-							& .ne.mat_init_magic_value) then
-							call mat_init(lattice%lvec(index1)%oper(1),nbast,nbast)
-							call mat_zero(lattice%lvec(index1)%oper(1))
-						endif
-						lattice%lvec(index1)%g2_computed=.true.
-						lattice%lvec(index1)%Kx_computed=.true.
-						maxl1=max(abs(il1),maxl1)
-						maxl2=max(abs(il2),maxl2)
-						maxl3=max(abs(il3),maxl3)
-						lattice%kx1=maxl1
-						lattice%kx2=maxl2
-						lattice%kx3=maxl3
-
-						call typedef_setmolecules(setting,refcell,1, &
-							& lattice%lvec(index1)%molecule,3,&
-                                                        &lattice%lvec(index2)%molecule,2, &
-							& lattice%lvec(newcell)%molecule,4)
-						call mat_zero(K_tmp(1))
-						call II_get_exchange_mat(lupri,luerr,setting, &
-							& nfdensity(index3:index3),1,.false.,K_tmp)
-						call mat_daxpy(1._realk,K_tmp(1),Kx)
-						call mat_daxpy(0.5_realk,K_tmp(1), &
-							& lattice%lvec(index1)%oper(1))
-
-						if(lattice%lvec(indred)%oper(1)%init_magic_tag &
-							& .ne.mat_init_magic_value) then
-							call mat_init(lattice%lvec(indred)%oper(1),nbast,nbast)
-							call mat_zero(lattice%lvec(indred)%oper(1))
-						endif
-					endif
-				enddo
-			enddo
-
-                        if((il1**2 + il2**2 +il3**2 .gt. 0) &
-                          & .and. lattice%lvec(index1)%Kx_computed) then
-                                call mat_trans(lattice%lvec(index1)%oper(1), &
-                                  & lattice%lvec(indred)%oper(1))
-                                lattice%lvec(indred)%is_redundant=.true.
-			endif
-
-                        if(lattice%lvec(index1)%Kx_computed) then
-                          write(lupri,*) 'Kx computed for', il1,il2,il3
-
-                        write(*,*) 'layer',index1,layer
-                        !finds max element layer for layer
-                        call mat_abs_max_elm(lattice%lvec(index1)%oper(1),max_elm)
-                        max_elm_layer=max(max_elm_layer,max_elm)
-                        endif
-
-		endif !is_redundant
-
-		if(lattice%lvec(index1)%Kx_computed) then
-
-                  if(lattice%store_mats) then
-                    call pbc_get_file_and_write(lattice,nbast,nbast,index1,5,1, &
-                      & '            ')!5 refers to
-                  else
-                    if(g_2(index1)%init_magic_tag.ne.mat_init_magic_value) then
-                      call mat_init(g_2(index1),nbast,nbast)
-                      call mat_zero(g_2(index1))
-                    endif
-                    call mat_daxpy(1._realk,lattice%lvec(index1)%oper(1),g_2(index1))
+                if(maxgabsum+valm1 .ge. lattice%realthr) then
+                  if(lattice%lvec(index1)%oper(1)%init_magic_tag &
+                    & .ne.mat_init_magic_value) then
+                    call mat_init(lattice%lvec(index1)%oper(1),nbast,nbast)
+                    call mat_zero(lattice%lvec(index1)%oper(1))
                   endif
+                  lattice%lvec(index1)%g2_computed=.true.
+                  lattice%lvec(index1)%Kx_computed=.true.
+                  maxl1=max(abs(il1),maxl1)
+                  maxl2=max(abs(il2),maxl2)
+                  maxl3=max(abs(il3),maxl3)
+                  lattice%kx1=maxl1
+                  lattice%kx2=maxl2
+                  lattice%kx3=maxl3
 
-                  if (calc_e_k) then 
-                    if((abs(il1) .le. lattice%ndmat) &
-                      & .and. (abs(il2) .le. lattice%ndmat) &
-                      & .and. (abs(il3) .le. lattice%ndmat)) then
-                    if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) then
-                      E_K=E_K+0.5_realk*mat_dotproduct(lattice%lvec(index1)%oper(1), &
-                        & nfdensity(index1))
-                    endif
+                  call typedef_setmolecules(setting,refcell,1, &
+                    & lattice%lvec(index1)%molecule,3,&
+                    &lattice%lvec(index2)%molecule,2, &
+                    & lattice%lvec(newcell)%molecule,4)
+                  call mat_zero(K_tmp(1))
+                  call II_get_exchange_mat(lupri,luerr,setting, &
+                    & nfdensity(index3:index3),1,.false.,K_tmp)
+                  call mat_daxpy(1._realk,K_tmp(1),Kx)
+                  call mat_daxpy(0.5_realk,K_tmp(1), &
+                    & lattice%lvec(index1)%oper(1))
+
+                  if(lattice%lvec(indred)%oper(1)%init_magic_tag &
+                    & .ne.mat_init_magic_value) then
+                    call mat_init(lattice%lvec(indred)%oper(1),nbast,nbast)
+                    call mat_zero(lattice%lvec(indred)%oper(1))
                   endif
                 endif
-	endif
+              enddo
+            enddo
 
-	if(lattice%lvec(index1)%oper(1)%init_magic_tag.eq.mat_init_magic_value) then
-		call mat_free(lattice%lvec(index1)%oper(1))
-	endif
-	call mat_zero(Kx)
-enddo
-lattice%Kx1=maxl1
-lattice%Kx2=maxl2
-lattice%Kx3=maxl3
+            if((il1**2 + il2**2 +il3**2 .gt. 0) &
+              & .and. lattice%lvec(index1)%Kx_computed) then
+              call mat_trans(lattice%lvec(index1)%oper(1), &
+                & lattice%lvec(indred)%oper(1))
+              lattice%lvec(indred)%is_redundant=.true.
+            endif
 
-call mat_free(Kx)
-call mat_free(K_tmp(1))
-call mem_dealloc(K_tmp)
+            if(lattice%lvec(index1)%Kx_computed) then
+              write(lupri,*) 'Kx computed for', il1,il2,il3
 
-write(lupri,*) 'Check, nr. lattice vectors',numvecs
-call set_lstime_print(.true.)
-write(lupri,*) 'finished with pbc_exact_xc_k'
+              !finds max element layer for layer
+              call mat_abs_max_elm(lattice%lvec(index1)%oper(1),max_elm)
+              max_elm_layer=max(max_elm_layer,max_elm)
+            endif
+
+          endif !is_redundant
+
+          if(lattice%lvec(index1)%Kx_computed) then
+
+            if(lattice%store_mats) then
+              call pbc_get_file_and_write(lattice,nbast,nbast,index1,5,1, &
+                & '            ')!5 refers to
+            else
+              if(g_2(index1)%init_magic_tag.ne.mat_init_magic_value) then
+                call mat_init(g_2(index1),nbast,nbast)
+                call mat_zero(g_2(index1))
+              endif
+              call mat_daxpy(1._realk,lattice%lvec(index1)%oper(1),g_2(index1))
+            endif
+
+            if (calc_e_k) then 
+              if((abs(il1) .le. lattice%ndmat) &
+                & .and. (abs(il2) .le. lattice%ndmat) &
+                & .and. (abs(il3) .le. lattice%ndmat)) then
+              if(nfdensity(index1)%init_magic_tag.EQ.mat_init_magic_value) then
+                E_K=E_K+0.5_realk*mat_dotproduct(lattice%lvec(index1)%oper(1), &
+                  & nfdensity(index1))
+              endif
+            endif
+          endif
+        endif
+
+        if(lattice%lvec(index1)%oper(1)%init_magic_tag.eq.mat_init_magic_value) then
+          call mat_free(lattice%lvec(index1)%oper(1))
+        endif
+        call mat_zero(Kx)
+      enddo
+      lattice%Kx1=maxl1
+      lattice%Kx2=maxl2
+      lattice%Kx3=maxl3
+
+      call mat_free(Kx)
+      call mat_free(K_tmp(1))
+      call mem_dealloc(K_tmp)
+
+      write(lupri,*) 'Check, nr. lattice vectors',numvecs
+      call set_lstime_print(.true.)
+      write(lupri,*) 'finished with pbc_exact_xc_k'
 
 END SUBROUTINE pbc_exact_xc_k
 
