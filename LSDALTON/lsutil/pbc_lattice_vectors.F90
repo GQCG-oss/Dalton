@@ -462,97 +462,100 @@ INTEGER :: nx,ny,nz,layer,layn,tmp,tmp1,tmp2
   layer=max(layer,abs(l3))
   layn=layer-1
 
-  !! dimensional case
+  ! one dimensional case
   if(latt%fdim(1)+latt%fdim(2)+latt%fdim(3) .eq. 1) then
-        tmp= (2*layn+1)
+    tmp= (2*layn+1)
 
-        if(layer .eq. 0) then
-          ll = 1
-        else
-          ll = tmp +1+(1+l1/layer)/2*latt%fdim(1)+(1+l2/layer)/2*latt%fdim(2)&
-            & +(1+l3/layer)/2*latt%fdim(3)
-        endif
-
-      elseif(latt%fdim(1)+latt%fdim(2)+latt%fdim(3) .eq. 2) then
-        layn=layer-1
-        tmp= (2*layn+1)**2
-
-        if(latt%fdim(3) .eq. 0) then
-          if(l2 .eq. -layer) then
-            ll=tmp + layer+l1+1
-          endif
-          if(l2 .eq. layer) then
-            tmp1=(2*layer+1)
-            tmp2=(2*layer)*(tmp1)
-            ll=tmp2+layer+l1+1
-          endif
-          if(abs(l2) .ne. layer) then
-            ll=(2*layer+1)*(l2+layer)+1+(1+l1/layer)/2
-          endif
-        endif
-        if(latt%fdim(2) .eq. 0)then
-          if(l3 .eq. -layer) then
-            ll=tmp + layer+l1+1
-          endif
-          if(l3 .eq. layer) then
-            tmp1=(2*layer+1)
-            tmp2=(2*layer)*(tmp1)
-            ll=tmp2+layer+l1+1
-          endif
-          if(abs(l3) .ne. layer) then
-            ll=(2*layer+1)*(l3+layer)+1+(1+l1/layer)/2
-          endif
-        endif
-        if(latt%fdim(1) .eq. 0)then
-          if(l3 .eq. -layer) then
-            ll=tmp + layer+l2+1
-          endif
-          if(l3 .eq. layer) then
-            tmp1=(2*layer+1)
-            tmp2=(2*layer)*(tmp1)
-            ll=tmp2+layer+l2+1
-          endif
-          if(abs(l3) .ne. layer) then
-            ll=(2*layer+1)*(l3+layer)+1+(1+l2/layer)/2
-          endif
-        endif
+    if(layer .eq. 0) then
+      ll = 1
+    else
+      ll = tmp +1+(1+l1/layer)/2*latt%fdim(1)+(1+l2/layer)/2*latt%fdim(2)&
+        & +(1+l3/layer)/2*latt%fdim(3)
+    endif
 
 
-      elseif(latt%fdim(1)+latt%fdim(2)+latt%fdim(3) .eq. 3) then
-        tmp= (2*layn+1)**3
-        if(l3 .eq. -layer)then
-          ll=tmp + layer+l1+1+2*layer*(layer+l2)+layer+l2
-        endif
+  !Two dimensional case
+  elseif(latt%fdim(1)+latt%fdim(2)+latt%fdim(3) .eq. 2) then
+    layn=layer-1
+    tmp= (2*layn+1)**2
 
-        if(l3 .eq. layer) then
-          tmp1=(2*layer+1)**2
-          tmp2=(2*layer)*(tmp1)
-          ll=tmp2+layer+l1+1+2*layer*(layer+l2)+layer+l2
-        endif
-
-        if(abs(l3) .ne. layer .and. abs(l2)==layer) then
-          ll=tmp+(2*layer+1)**2+1+layer+l1;
-          ll=ll+(layer+l3-1)*((2*layer+1)+2*(2*layer-1)+(2*layer+1))
-
-          if(l2 .eq. layer)then
-            ll=ll+2*layer+1+2*(2*layer-1)
-          endif
-        endif
-        
-        if(abs(l3) .ne. layer .and. abs(l2) .ne. layer) then
-        
-          tmp1=tmp+(2*layer+1)**2+1+2*layer+1
-          ll=tmp1+(layer+l1)/(2*layer)+(layn+l2)*2
-          ll=ll+(layer+l3-1)*((2*layer+1)+2*(2*layer-1)+(2*layer+1))
-        endif
-
+    if(latt%fdim(3) .eq. 0) then
+      if(l2 .eq. -layer) then
+        ll=tmp + layer+l1+1
       endif
-
-      if(int(latt%lvec(ll)%lat_coord(1)) .ne. l1 &
-        & .or. int(latt%lvec(ll)%lat_coord(2)) .ne. l2 &
-        & .or. int(latt%lvec(ll)%lat_coord(3)) .ne. l3) then
-        call LSQUIT('Wrong in algorithm',6)
+      if(l2 .eq. layer) then
+        tmp1=(2*layer+1)
+        tmp2=(2*layer)*(tmp1)
+        ll=tmp2+layer+l1+1
       endif
+      if(abs(l2) .ne. layer) then
+        ll=(2*layer+1)+(l2+layer-1)*2+1+(1+l1/layer)/2+tmp
+      endif
+    endif
+    if(latt%fdim(2) .eq. 0)then
+      if(l3 .eq. -layer) then
+        ll=tmp + layer+l1+1
+      endif
+      if(l3 .eq. layer) then
+        tmp1=(2*layer+1)
+        tmp2=(2*layer)*(tmp1)
+        ll=tmp2+layer+l1+1
+      endif
+      if(abs(l3) .ne. layer) then
+        ll=(2*layer+1)+(l3+layer-1)*2+1+(1+l1/layer)/2+tmp
+      endif
+    endif
+    if(latt%fdim(1) .eq. 0)then
+      if(l3 .eq. -layer) then
+        ll=tmp + layer+l2+1
+      endif
+      if(l3 .eq. layer) then
+        tmp1=(2*layer+1)
+        tmp2=(2*layer)*(tmp1)
+        ll=tmp2+layer+l2+1
+      endif
+      if(abs(l3) .ne. layer) then
+        ll=(2*layer+1)+(l3+layer-1)*2+1+(1+l2/layer)/2+tmp
+      endif
+    endif
+
+
+  !Three dimesional case
+  elseif(latt%fdim(1)+latt%fdim(2)+latt%fdim(3) .eq. 3) then
+    tmp= (2*layn+1)**3
+    if(l3 .eq. -layer)then
+      ll=tmp + layer+l1+1+2*layer*(layer+l2)+layer+l2
+    endif
+
+    if(l3 .eq. layer) then
+      tmp1=(2*layer+1)**2
+      tmp2=(2*layer)*(tmp1)
+      ll=tmp2+layer+l1+1+2*layer*(layer+l2)+layer+l2
+    endif
+
+    if(abs(l3) .ne. layer .and. abs(l2)==layer) then
+      ll=tmp+(2*layer+1)**2+1+layer+l1;
+      ll=ll+(layer+l3-1)*((2*layer+1)+2*(2*layer-1)+(2*layer+1))
+
+      if(l2 .eq. layer)then
+        ll=ll+2*layer+1+2*(2*layer-1)
+      endif
+    endif
+
+    if(abs(l3) .ne. layer .and. abs(l2) .ne. layer) then
+
+      tmp1=tmp+(2*layer+1)**2+1+2*layer+1
+      ll=tmp1+(layer+l1)/(2*layer)+(layn+l2)*2
+      ll=ll+(layer+l3-1)*((2*layer+1)+2*(2*layer-1)+(2*layer+1))
+    endif
+
+  endif
+
+  if(int(latt%lvec(ll)%lat_coord(1)) .ne. l1 &
+    & .or. int(latt%lvec(ll)%lat_coord(2)) .ne. l2 &
+    & .or. int(latt%lvec(ll)%lat_coord(3)) .ne. l3) then
+    call LSQUIT('Wrong in algorithm',6)
+  endif
 
 
 
