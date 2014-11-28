@@ -1097,7 +1097,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECAOBATCHINFO
       WRITE(LUPRI,'("  Allocated memory (MYPOINTER):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MYPOINTER
-      WRITE(LUPRI,'("  Allocated memory (fragmentAOS):         ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (fragmentAOS):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_fragmentAOS
       WRITE(LUPRI,'("  Allocated memory (ARRAY2):            ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY2

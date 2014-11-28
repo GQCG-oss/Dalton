@@ -726,6 +726,16 @@ contains
     nodtot = infpar%nodtot
 #endif
 
+    ! Reduced pairs - certain limitations
+    if(DECinfo%nFRAGSred>0) then
+       if(DECinfo%fragadapt) then
+          call lsquit('Reduced pairs not implemented for fragment-adapted DEC!',-1)
+       end if
+       if(DECinfo%use_pnos) then
+          call lsquit('Reduced pairs not implemented for PNOs!',-1)
+       end if
+    end if
+
     
     ! SNOOP - currently limited in several ways
     if(DECinfo%SNOOP) then

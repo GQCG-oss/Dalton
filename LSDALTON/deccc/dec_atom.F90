@@ -2264,7 +2264,7 @@ contains
     logical, dimension(nocc) :: Occ_list
     logical :: pairfrag,estimated_frags
     logical,pointer :: EOSatoms(:)
-    integer :: i,j,idx
+    integer :: i,j,idx,n,atom1,atom2
     real(realk) :: pairdist
 
     ! Note: When we do this, the atomic fragment has to use MO coeff and dimensions for LOCAL orbitals
@@ -2336,6 +2336,10 @@ contains
        end if
     end do
 
+    ! Atoms in pair
+    atom1 = fragment1%EOSatoms(1)
+    atom2 = fragment2%EOSatoms(1)
+
 
     ! Occupied AOS and unoccupied AOS for pair: Union of input fragments
     ! ******************************************************************
@@ -2343,21 +2347,49 @@ contains
     occ_list=.false.
     unocc_list=.false.
 
-    ! Occupied
-    do i=1,fragment1%noccAOS
-       occ_list(fragment1%occAOSidx(i))=.true.
-    end do
-    do i=1,fragment2%noccAOS
-       occ_list(fragment2%occAOSidx(i))=.true.
-    end do
+    ReducedPairs: if(MyMolecule%PairFOTlevel(atom1,atom2)>0) then  
+       ! generate pair from union of fragments with increased FOT
 
-    ! Unoccupied
-    do i=1,fragment1%nunoccAOS
-       unocc_list(fragment1%unoccAOSidx(i))=.true.
-    end do
-    do i=1,fragment2%nunoccAOS
-       unocc_list(fragment2%unoccAOSidx(i))=.true.
-    end do
+       ! PairFOT level
+       n = MyMolecule%PairFOTlevel(atom1,atom2)
+
+       ! Occupied AOS union from reduced fragments at level n
+       do i=1,fragment1%REDfrags(n)%noccAOS
+          occ_list(fragment1%REDfrags(n)%occAOSidx(i))=.true.
+       end do
+       do i=1,fragment2%REDfrags(n)%noccAOS
+          occ_list(fragment2%REDfrags(n)%occAOSidx(i))=.true.
+       end do
+
+       ! Unoccupied union from reduced fragments at level n
+       do i=1,fragment1%REDfrags(n)%nunoccAOS
+          unocc_list(fragment1%REDfrags(n)%unoccAOSidx(i))=.true.
+       end do
+       do i=1,fragment2%REDfrags(n)%nunoccAOS
+          unocc_list(fragment2%REDfrags(n)%unoccAOSidx(i))=.true.
+       end do
+
+    else
+       ! Pairs using union of FOT-adapted fragments
+
+
+       ! Occupied
+       do i=1,fragment1%noccAOS
+          occ_list(fragment1%occAOSidx(i))=.true.
+       end do
+       do i=1,fragment2%noccAOS
+          occ_list(fragment2%occAOSidx(i))=.true.
+       end do
+
+       ! Unoccupied
+       do i=1,fragment1%nunoccAOS
+          unocc_list(fragment1%unoccAOSidx(i))=.true.
+       end do
+       do i=1,fragment2%nunoccAOS
+          unocc_list(fragment2%unoccAOSidx(i))=.true.
+       end do
+
+    end if ReducedPairs
 
 
     ! Construct pair fragment as union of input fragments
@@ -2370,7 +2402,6 @@ contains
 
     ! Set remaining information special for pair
     ! ******************************************
-    PairFragment%EOSatoms(1) = fragment1%EOSatoms(1) ! atom 1 in pair
     ! Distance between original fragments
     PairFragment%pairdist =  pairdist
     call mem_dealloc(EOSatoms)
@@ -7048,9 +7079,9 @@ contains
     real(realk),intent(inout) :: Epair_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
     real(realk),intent(inout) :: Eskip_est
-    integer :: P,Q,Qidx,Qstart,Qquit,Pmax,Qmax,n,nskip,npairsFOT,npairscalc,npairstot
+    integer :: P,Q,Qidx,Qstart,Qquit,Pmax,Qmax,n,npairsskip,npairsFOT,npairscalc,npairstot
     real(realk),dimension(natoms) :: EPQ
-    real(realk) :: Eacc,Epairmax,FOT
+    real(realk) :: Eacc,Epairmax,Eref
     integer,dimension(natoms) :: atomindices
     integer,dimension(natoms,2) :: lastpair
     integer,pointer :: npairsRED(:)
@@ -7078,15 +7109,15 @@ contains
     ! 2. Add up the smallest contributions until they add up to the FOT. Skip those pairs.
     ! 3. For n=DECinfo%nFRAGSred,1,-1:
     !    Add up the next contributions in the list until they add up to 
-    !    FOTn = (DECinfo%FOTscaling)^n * FOT    
-    !    Calculate these pairs with fragments corresponding to FOTn spaces, which
-    !    is stored in fragment%REDfrags(n)
+    !    REFn = FOT   (KK? maybe this should be changed)
+    !    Calculate these pairs with fragments corresponding to reduced FOT spaces of level n,
+    !    which is stored in fragment%REDfrags(n)
     ! 4. Thus, at the end we get this where the (absolute)
     !    pair energies are arranged in decreasing order:
     !
     !
     !    (1/2) dE_PQ: (*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*)
-    !                 |          FOT          |   FOT1    |  FOT2 |  .... |     SKIP PAIRS    |
+    !                 |          FOT          |   REF1    |  REF2 |  .... |     SKIP PAIRS    |
     !
     !
 
@@ -7094,16 +7125,9 @@ contains
     MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model for all pairs
     MyMolecule%PairFOTlevel = 0   ! initialize to use main FOT for all pairs - modify below
     lastpair = 1
-    if(DECinfo%nFRAGSred>0) then
-       call mem_alloc(npairsRED,DECinfo%nFRAGSred)
-       npairsRED=0
-    end if
-    nskip=0
 
     ! Loop over all atoms P
     Ploop: do P=1,natoms
-
-       FOT = DECinfo%FOT
 
        lastpair(P,1) = P
        ! If no orbitals assigned to P, no pairs for this atom
@@ -7123,6 +7147,7 @@ contains
 
        ! Step 2 above: Find which pairs to skip
        ! **************************************
+       Eref = DECinfo%FOT  ! reference energy = FOT
        Eacc = 0.0_realk
        Qquit = natoms
        Qloop2: do Q=natoms,1,-1
@@ -7133,10 +7158,9 @@ contains
 
           ! Accumulated estimated energy from smallest pair interaction energies
           Eacc = Eacc + EPQ(Q)
-          if(Eacc < FOT) then
-             ! Accumulated value smaller than FOT --> (P,Qidx) can be skipped!
+          if(Eacc < Eref) then
+             ! Accumulated value smaller than ref energy --> (P,Qidx) can be skipped!
              MyMolecule%ccmodel(P,Qidx)=MODEL_NONE
-             nskip = nskip + 1
           else
              ! Not possible to skip (P,Q). Save current counter value.
              Qquit = Q
@@ -7148,25 +7172,26 @@ contains
        ! Print last included pair for atomic center P:
        lastpair(P,2) = Qquit
 
-
        ! Step 3 above: Pairs using reduced fragments
        ! *******************************************
        ReducedFOT: do n=DECinfo%nFRAGSred,1,-1
 
-          FOT = DECinfo%FOT*(DECinfo%FOTscaling**n)
+          ! Reference energy  
+          ! (now set equal to FOT - up for testing if this is the best choice...)
+          Eref = DECinfo%FOT
 
           ! Loop starts where we ended in previous step.
           Eacc = 0.0_realk
           Qstart=Qquit
+          Qquit=0
           Qloop3: do Q=Qstart,1,-1
              Qidx = atomindices(Q)
              if(.not. dofrag(Qidx) .or. Qidx==P) cycle Qloop3
 
              Eacc = Eacc + EPQ(Q)
-             if(Eacc < FOT) then
+             if(Eacc < Eref) then
                 ! Set pair FOT level according to increased FOT
                 MyMolecule%PairFOTlevel(P,Qidx)=n
-                npairsRED(n) = npairsRED(n) + 1
              else
                 Qquit = Q
                 exit Qloop3
@@ -7174,18 +7199,10 @@ contains
 
           end do Qloop3
 
-          if(Qquit==1) exit ReducedFOT
+          ! If Qquit=0, then all pairs have been assigned to a FOT level
+          if(Qquit==0) exit ReducedFOT
 
        end do ReducedFOT
-
-       ! Remaining pairs at input FOT level - this is just for book keeping
-       Qstart=Qquit
-       Qloop4: do Q=Qstart,1,-1
-          Qidx = atomindices(Q)
-          if(.not. dofrag(Qidx) .or. Qidx==P) cycle Qloop4
-          npairsFOT = npairsFOT+1
-       end do Qloop4
-
 
     end do Ploop
 
@@ -7193,19 +7210,46 @@ contains
     ! identical to MyMolecule%ccmodel(Q,P) from the above procedure
     call fix_inconsistencies_for_pair_model(MyMolecule)
 
-    ! Find max pair energy and associated indices (for sanity check below)
+    ! Find number of pairs treated at the different levels.
+    ! Also find max pair energy and associated indices (for sanity check below).
     Epairmax=0.0_realk
     Pmax=0
     Qmax=0
+    npairsskip=0
+    npairsFOT=0
+    if(DECinfo%nFRAGSred>0) then
+       call mem_alloc(npairsRED,DECinfo%nFRAGSred)
+       npairsRED=0
+    end if
     do P=1,natoms
        if(.not. dofrag(P)) cycle
        do Q=1,P-1
           if(.not. dofrag(Q)) cycle
+
+          ! Count pairs
+          Dopair: if(MyMolecule%ccmodel(P,Q)==MODEL_NONE) then
+             ! Skip pairs
+             npairsskip = npairsskip+1
+
+          else ! Do pair at some level
+
+             if(MyMolecule%PairFOTlevel(P,Q)==0) then
+                ! Do pair using union of fragments at main FOT level
+                npairsFOT = npairsFOT +1
+             else
+                ! Do pair using union of fragments at reduced FOT level
+                npairsRED(MyMolecule%PairFOTlevel(P,Q)) = npairsRED(MyMolecule%PairFOTlevel(P,Q)) +1
+             end if
+
+          end if Dopair
+
+          ! Find max
           if(Epairmax < abs(FragEnergies(P,Q))) then
              Epairmax = abs(FragEnergies(P,Q))
              Pmax=P
              Qmax=Q
           end if
+ 
        end do
     end do
 
@@ -7223,7 +7267,9 @@ contains
        MyMolecule%ccmodel(Pmax,Qmax) = DECinfo%ccmodel
        MyMolecule%ccmodel(Qmax,Pmax) = DECinfo%ccmodel
        npairsFOT = 1
-       nskip = nskip-1
+       npairsskip = npairsskip-1
+       npairscalc=1
+       write(DECinfo%output,*) 'WARNING: Including one pair to avoid empty job list!'
     end if
 
     ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
@@ -7241,17 +7287,17 @@ contains
     write(DECinfo%output,'(1X,a)') '*            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *'
     write(DECinfo%output,'(1X,a)') '******************************************************************'
     write(DECinfo%output,*)
-    write(DECinfo%output,*)
     write(DECinfo%output,'(1X,a,i10)') 'Total number of pairs:                ', npairstot
+    write(DECinfo%output,'(1X,a,i10)') 'Number of pairs to calculate:         ', npairscalc
+    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be skipped from calculation  ', npairsskip
+    write(DECinfo%output,*)
     write(DECinfo%output,'(1X,a,i10)') 'Pairs to be treated using input FOT   ', npairsFOT
     do n=1,DECinfo%nFRAGSred
-       write(DECinfo%output,'(1X,a,i10,a,i10)') 'FOT level: ', n, ' --- #pairs   ', npairsFOT
+       write(DECinfo%output,'(1X,a,i10,a,i10)') 'FOT level: ', n, '    --- #pairs   ', npairsRED(n)
     end do
-    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be skipped from calculation  ', nskip
     write(DECinfo%output,*)
     write(DECinfo%output,'(1X,a,g20.10)') 'Estimated pair correlation energy:         ', Epair_est
     write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution from skipped pairs: ', Eskip_est
-    write(DECinfo%output,*)
     write(DECinfo%output,*)
 
     ! Also print estimated pair fragment energies. Maybe this should be removed at some point
