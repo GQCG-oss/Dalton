@@ -5038,7 +5038,15 @@ contains
      real(realk),intent(in) :: FOT
      real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
      type(decfrag) :: ReducedFragment
-     integer :: i
+     integer :: i,noccAOSprev, nunoccAOSprev
+     integer,pointer :: occAOSidxprev(:),unoccAOSidxprev(:)
+
+     ! Sanity check
+     if(DECinfo%FOTscaling<1.0_realk) then
+        print *, 'Scaling factor ',DECinfo%FOTscaling
+        call lsquit('fragment_reduction_procedure_wrapper: Requires scaling factor larger than one! ',-1)
+     end if
+
 
      ! At this point AtomicFragment correspondings to the expanded fragment
      ! We store the atomic fragment energies of the expanded fragment
@@ -5052,15 +5060,25 @@ contains
           & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
      write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
           & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,AtomicFragment%nbasis
+
+     ! Store AOS space for converged AtomicFragment 
+     noccAOSprev=AtomicFragment%noccAOS
+     nunoccAOSprev=AtomicFragment%nunoccAOS
+     call mem_alloc(occAOSidxprev,noccAOSprev)
+     call mem_alloc(unoccAOSidxprev,nunoccAOSprev)
+     occAOSidxprev = AtomicFragment%occAOSidx
+     unoccAOSidxprev = AtomicFragment%unoccAOSidx
+
      
      ! Loop over different increased FOTs to determine reduced spaces
      ! *************************************************************
      FOTincreased=FOT
      do i=1,DECinfo%nFRAGSred
 
-        ! Initialize ReducedFragment identical to AtomicFragment
-        call atomic_fragment_init_integer_list(MyAtom,nv, no, AtomicFragment%nunoccAOS,&
-             & AtomicFragment%noccAOS,AtomicFragment%unoccAOSidx,AtomicFragment%occAOSidx,&
+        ! Initialize ReducedFragment identical fragment for previous FOT
+        ! (converged fragment for i=1).
+        call atomic_fragment_init_integer_list(MyAtom,nv, no, nunoccAOSprev,&
+             & noccAOSprev,unoccAOSidxprev,occAOSidxprev,&
              & OccOrbitals,VirOrbitals,MyMolecule,mylsitem,ReducedFragment,.true.,.false.)
 
         ! Set initial energies for ReducedFragment equal to the ones for the expanded fragment
@@ -5090,10 +5108,23 @@ contains
              & FOTincreased, ReducedFragment%noccAOS,ReducedFragment%nunoccAOS,&
              & ReducedFragment%nbasis
 
+        ! Store AOS information to use as starting point in fragment for next FOT
+        call mem_dealloc(occAOSidxprev)
+        call mem_dealloc(unoccAOSidxprev)
+        noccAOSprev=ReducedFragment%noccAOS
+        nunoccAOSprev=ReducedFragment%nunoccAOS
+        call mem_alloc(occAOSidxprev,noccAOSprev)
+        call mem_alloc(unoccAOSidxprev,nunoccAOSprev)
+        occAOSidxprev = ReducedFragment%occAOSidx
+        unoccAOSidxprev = ReducedFragment%unoccAOSidx
+
         ! Done with reduced fragment
-         call atomic_fragment_free(ReducedFragment)
+        call atomic_fragment_free(ReducedFragment)
 
      end do
+
+     call mem_dealloc(occAOSidxprev)
+     call mem_dealloc(unoccAOSidxprev)
 
 
    end subroutine fragment_reduction_procedure_wrapper
