@@ -577,6 +577,7 @@ contains
        call mem_alloc(MyMolecule%SubSystemIndex,MyMolecule%nAtoms)
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags)
+       call mem_alloc(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags)
     end if
 
 
@@ -623,6 +624,8 @@ contains
     call ls_mpibcast(MyMolecule%SubSystemIndex,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags,&
+         & master,MPI_COMM_LSDALTON)
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -837,6 +840,15 @@ contains
     end if
 
 
+    ! Reduced fragment types
+    ! ----------------------
+    if(.not. AddToBuffer) then
+       call mem_alloc(MyFragment%REDfrags,DECinfo%nFRAGSred)
+    end if
+    do i=1,DECinfo%nFRAGSred
+       call mpicopy_fragmentAOStype(MyFragment%REDfrags(i),comm)
+    end do
+
 
     ! CCORBITAL types
     ! ---------------
@@ -958,6 +970,36 @@ contains
     end if
 
   End subroutine mpicopy_fragment
+
+
+  !> \brief MPI copy fragment AOS type
+  !> \author Kasper Kristensen
+  !> \date November 2014
+  subroutine mpicopy_fragmentAOStype(MyFragmentAOS,comm)
+
+    implicit none
+
+    !> FragmentAOS information
+    type(fragmentAOS),intent(inout) :: MyFragmentAOS
+    !> Communicator
+    integer(kind=ls_mpik),intent(in) :: comm
+    integer(kind=ls_mpik) :: master
+    master = 0
+
+    CALL ls_mpi_buffer(MyFragmentAOS%noccAOS,master)
+    CALL ls_mpi_buffer(MyFragmentAOS%nunoccAOS,master)
+    CALL ls_mpi_buffer(MyFragmentAOS%FOT,master)
+
+    ! Nullify and allocate stuff for receiver (global addtobuffer is false)
+    if(.not. AddToBuffer) then
+       call mem_alloc(MyFragmentAOS%occAOSidx,MyFragmentAOS%noccAOS)
+       call mem_alloc(MyFragmentAOS%unoccAOSidx,MyFragmentAOS%nunoccAOS)
+    end if
+    call ls_mpi_buffer(MyFragmentAOS%occAOSidx,MyFragmentAOS%noccAOS,master)
+    call ls_mpi_buffer(MyFragmentAOS%unoccAOSidx,MyFragmentAOS%nunoccAOS,master)
+
+  end subroutine mpicopy_fragmentAOStype
+
 
   subroutine buffercopy_PNOSpaceInfo_struct(inf,master)
     implicit none
@@ -2251,11 +2293,12 @@ contains
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
     call ls_mpi_buffer(DECitem%checkpairs,Master)
     call ls_mpi_buffer(DECitem%pairFOthr,Master)
-    call ls_mpi_buffer(DECitem%PairMP2,Master)
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
     call ls_mpi_buffer(DECitem%EstimateInitRadius,Master)
     call ls_mpi_buffer(DECitem%EstimateInitAtom,Master)
     call ls_mpi_buffer(DECitem%PairEstimateModel,Master)
+    call ls_mpi_buffer(DECitem%nFRAGSred,Master)
+    call ls_mpi_buffer(DECitem%FOTscaling,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)

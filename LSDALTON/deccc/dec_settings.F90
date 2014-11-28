@@ -161,12 +161,15 @@ contains
     DECinfo%RepeatAF               = .true.
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
     DECinfo%CorrDensScheme         = 1
+    ! Number of reduced fragments to consider
+    DECinfo%nFRAGSred = 0
+    ! Factor to scale FOT by for reduced fragments
+    DECinfo%FOTscaling = 10.0_realk
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
     DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr               =  0.0_realk
-    DECinfo%PairMP2                 = .false.
     DECinfo%PairEstimate            = .true.
     DECinfo%PairEstimateIgnore      = .false.
     DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
@@ -453,6 +456,14 @@ contains
        case('.CORRDENS')  
           read(input,*) DECinfo%CorrDensScheme
 
+          !> Number of reduced fragments to consider
+       case('.NFRAGSRED')
+          read(input,*) DECinfo%nFRAGSred
+
+          !> Factor to scale FOT by for reduced fragments
+       case('.FOTSCALING')
+          read(input,*) DECinfo%FOTscaling
+
           ! Use frozen core approximation
        case('.FROZENCORE') 
           DECinfo%frozencore=.true.
@@ -627,7 +638,6 @@ contains
           DECinfo%checkpairs=.true.
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
        case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
-       case('.PAIRMP2'); DECinfo%PairMP2=.true.
        case('.NOTPAIRESTIMATE'); DECinfo%PairEstimate=.false.
        case('.IGNOREPAIRESTIMATE'); DECinfo%PairEstimateIgnore=.true.
        case('.ESTIMATEINITRADIUS')
@@ -715,6 +725,16 @@ contains
 #ifdef VAR_MPI
     nodtot = infpar%nodtot
 #endif
+
+    ! Reduced pairs - certain limitations
+    if(DECinfo%nFRAGSred>0) then
+       if(DECinfo%fragadapt) then
+          call lsquit('Reduced pairs not implemented for fragment-adapted DEC!',-1)
+       end if
+       if(DECinfo%use_pnos) then
+          call lsquit('Reduced pairs not implemented for PNOs!',-1)
+       end if
+    end if
 
     
     ! SNOOP - currently limited in several ways
@@ -1082,7 +1102,6 @@ contains
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
-    write(lupri,*) 'PairMP2 ', DECitem%PairMP2
     write(lupri,*) 'PairEstimate ', DECitem%PairEstimate
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'density ', DECitem%density

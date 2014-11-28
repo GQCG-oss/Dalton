@@ -234,6 +234,12 @@ contains
     !> At this initialization step - use the input CC model for all pairs
     call mem_alloc(molecule%ccmodel,molecule%nfrags,molecule%nfrags)
     molecule%ccmodel = DECinfo%ccmodel
+    
+     !> FOT level to use for each pair calculation
+     !>  0: Use input FOT
+     !>  n>0: Use AOS information from fragment%REDfrags(n)
+    call mem_alloc(molecule%PairFOTlevel,molecule%nfrags,molecule%nfrags)
+    molecule%PairFOTlevel=0
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
@@ -826,6 +832,10 @@ contains
 
     if(associated(molecule%ccmodel)) then
        call mem_dealloc(molecule%ccmodel)
+    end if
+
+    if(associated(molecule%PairFOTlevel)) then
+       call mem_dealloc(molecule%PairFOTlevel)
     end if
 
   end subroutine molecule_finalize
