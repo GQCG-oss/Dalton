@@ -1600,9 +1600,9 @@ contains
 
   end subroutine get_max_batchsize
 
-  subroutine get_maxstepmem(MAXstepmem,alpha,gamma,n11,n12,n21,n22,n31,n32,n41,n42)
+  subroutine get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
     integer, intent(in) :: n11, n12, n21, n22, n31, n32, n41, n42
-    integer, intent(in) :: alpha, gamma
+    integer, intent(in) :: dimAlpha, dimGamma
     real(realk), intent(inout) :: MAXstepmem
 
     dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dim of tmp1
