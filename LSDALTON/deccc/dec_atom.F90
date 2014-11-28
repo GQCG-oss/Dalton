@@ -7094,8 +7094,10 @@ contains
     MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model for all pairs
     MyMolecule%PairFOTlevel = 0   ! initialize to use main FOT for all pairs - modify below
     lastpair = 1
-    if(DECinfo%nFRAGSred>0) call mem_alloc(npairsRED,DECinfo%nFRAGSred)
-    npairsRED=0
+    if(DECinfo%nFRAGSred>0) then
+       call mem_alloc(npairsRED,DECinfo%nFRAGSred)
+       npairsRED=0
+    end if
     nskip=0
 
     ! Loop over all atoms P
