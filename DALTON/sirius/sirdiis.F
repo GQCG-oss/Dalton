@@ -1771,7 +1771,6 @@ C
         end if
         call pe_save_density(daosav(:,1), fcao(1:norbt*(norbt+1)/2),
      &                       cmo(1:nbast*norbt), nbast, nisht, norbt,
-     &                       cord(:,1:natoms), charge(1:natoms),
      &                       wrk(kfree:lfree))
       end if
 #endif

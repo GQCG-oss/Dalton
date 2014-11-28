@@ -94,7 +94,6 @@
 
       subroutine pe_ifc_grad(denmats)
         use polarizable_embedding, only: pe_master
-        use pe_variables, only: qmnucs
         implicit none
 #include "inforb.h"
 #include "mxcent.h"
