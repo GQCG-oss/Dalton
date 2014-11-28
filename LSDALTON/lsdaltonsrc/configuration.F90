@@ -785,12 +785,13 @@ DO
      config%latt_config%compare_elmnts= .false.
      config%latt_config%lmax=15
      config%latt_config%Tlmax=15
-     config%latt_config%num_its=21
+     config%latt_config%num_its=100
      config%latt_config%num_store=7
-     config%latt_config%error=1.0E-8
+     config%latt_config%error=1.0d-8
      config%latt_config%num_its_densmat=3
      config%latt_config%nf=6
      config%latt_config%ndmat=6
+     config%latt_config%intthr=1.0d-8
      config%latt_config%realthr = -12
      config%latt_config%read_file=.false.
      config%latt_config%store_mats=.false.
@@ -813,8 +814,7 @@ DO
         CASE('.STARTDENS')
           READ (LUCMD, '(I2)') config%latt_config%num_its_densmat
         CASE('.LATTICE')
-           READ (LUCMD, '(I2,I3)')config%latt_config%max_layer,&
-                & config%latt_config%nneighbour
+           READ (LUCMD, '(I2)')config%latt_config%max_layer
         CASE('.NFIELD')
           READ (LUCMD, '(I2)') config%latt_config%nf
         CASE('.NDENSMATCUTOFF')
@@ -822,6 +822,7 @@ DO
         CASE('.RECLAT')
           READ (LUCMD, *) config%latt_config%nk1,config%latt_config%nk2,&
                                & config%latt_config%nk3
+
           if(config%latt_config%nk2 .gt. 1 ) then
             if(.not.config%latt_config%ldef%is_active(2)) then
               WRITE(*,*) 'Reciprocal vector 2 should be set to 1'
@@ -838,8 +839,7 @@ DO
 
         CASE('.MLMAX')
           READ (LUCMD, '(I2)')config%latt_config%lmax
-        CASE('.TLMAX')
-          READ (LUCMD, '(I2)')config%latt_config%Tlmax
+          config%latt_config%Tlmax = config%latt_config%lmax
 
         CASE('.TESTCASE')
           config%latt_config%testcase= .true.
@@ -851,9 +851,17 @@ DO
         CASE ('.WRITE TO FILE') 
           config%latt_config%store_mats= .true.
           
-        CASE('.DIIS')
-          READ(LUCMD,*) config%latt_config%num_its,config%latt_config%num_store&
-               &,config%latt_config%error
+        CASE('.CONVTHR')
+          READ(LUCMD,*) config%latt_config%error
+
+        CASE('.INTTHR')
+          READ(LUCMD,*) config%latt_config%intthr
+
+        CASE('.SCFCYCLES')
+          READ(LUCMD,*) config%latt_config%num_its
+
+        CASE('.PREVCYCLES')
+          READ(LUCMD,*) config%latt_config%num_store
 
         CASE('.REALTHR')
           READ(LUCMD,*) config%latt_config%realthr
