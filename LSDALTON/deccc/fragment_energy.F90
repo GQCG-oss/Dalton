@@ -4728,8 +4728,6 @@ contains
       !> Reduction priority list
       integer, pointer :: red_list_occ(:)
       integer, pointer :: red_list_vir(:)
-      !> energy error acceptance in reduction steps:
-      real(realk) :: dE_red_occ, dE_red_vir
       !> minimum gap in number of orbital allowed between the 
       !  last two steps of the binary search.
       integer :: nred_occ, nred_vir
@@ -4866,12 +4864,12 @@ contains
 
       ! Get information on how the reduction should be performed:
       call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
-         & red_list_occ,red_list_vir,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
+         & red_list_occ,red_list_vir,nred_occ,nred_vir)
 
       ! Perform reduction:
-      call fragment_reduction_procedure(AtomicFragment,no,nv,red_list_occ, &
+      call fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,red_list_occ, &
             & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
+            & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT)
 
       !==================================================================================!
       !                              Finalize subroutine                                 !
@@ -5002,17 +5000,149 @@ contains
    end subroutine fragment_expansion_procedure
 
 
+   !> \brief   Wrapper for reducing fragment by removing orbitals until error
+   !>          is of size FOT. This is also done for reduced fragment, i.e. larger FOTs.
+   !> \author Kasper Kristensen
+   !> \date November 2014
+   subroutine fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,occ_priority_list, &
+        & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+        & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+
+     implicit none
+
+     !> Atomic fragment to be optimized
+     type(decfrag),intent(inout)        :: AtomicFragment
+     !> Number of occupied orbitals in molecule
+     integer, intent(in) :: no
+     !> Number of virtual orbitals in molecule
+     integer, intent(in) :: nv
+     !> Priority list of orbitals:
+     integer, intent(in) :: occ_priority_list(no)
+     integer, intent(in) :: vir_priority_list(nv)
+     !> Logical vector telling which orbital is include in the fragment
+     logical, intent(inout) :: Occ_AOS(no), Vir_AOS(nv)
+     !> Central Atom of the current fragment
+     integer, intent(in) :: MyAtom
+     !> Full molecule information
+     type(fullmolecule), intent(in) :: MyMolecule
+     !> All occupied orbitals
+     type(decorbital), dimension(no), intent(in) :: OccOrbitals
+     !> All unoccupied orbitals
+     type(decorbital), dimension(nv), intent(in) :: VirOrbitals
+     !> Integral information
+     type(lsitem), intent(inout)       :: mylsitem
+     !> minimum gap in number of orbital allowed between the 
+     !  last two steps of the binary search.
+     integer,intent(in) :: no_gap, nv_gap
+     !> Fragment optimization threshold to use in reduction
+     real(realk),intent(in) :: FOT
+     real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
+     type(decfrag) :: ReducedFragment
+     integer :: i,noccAOSprev, nunoccAOSprev
+     integer,pointer :: occAOSidxprev(:),unoccAOSidxprev(:)
+
+     ! Sanity check
+     if(DECinfo%FOTscaling<1.0_realk) then
+        print *, 'Scaling factor ',DECinfo%FOTscaling
+        call lsquit('fragment_reduction_procedure_wrapper: Requires scaling factor larger than one! ',-1)
+     end if
+
+
+     ! At this point AtomicFragment correspondings to the expanded fragment
+     ! We store the atomic fragment energies of the expanded fragment
+     LagEnergy_exp = AtomicFragment%LagFOP
+     OccEnergy_exp = AtomicFragment%EoccFOP
+     VirEnergy_exp = AtomicFragment%EvirtFOP
+
+     ! Determine AtomicFragment according to main FOT
+     call fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
+          & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+          & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+     write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
+          & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,AtomicFragment%nbasis
+
+     ! Store AOS space for converged AtomicFragment 
+     noccAOSprev=AtomicFragment%noccAOS
+     nunoccAOSprev=AtomicFragment%nunoccAOS
+     call mem_alloc(occAOSidxprev,noccAOSprev)
+     call mem_alloc(unoccAOSidxprev,nunoccAOSprev)
+     occAOSidxprev = AtomicFragment%occAOSidx
+     unoccAOSidxprev = AtomicFragment%unoccAOSidx
+
+     
+     ! Loop over different increased FOTs to determine reduced spaces
+     ! *************************************************************
+     FOTincreased=FOT
+     do i=1,DECinfo%nFRAGSred
+
+        ! Initialize ReducedFragment identical fragment for previous FOT
+        ! (converged fragment for i=1).
+        call atomic_fragment_init_integer_list(MyAtom,nv, no, nunoccAOSprev,&
+             & noccAOSprev,unoccAOSidxprev,occAOSidxprev,&
+             & OccOrbitals,VirOrbitals,MyMolecule,mylsitem,ReducedFragment,.true.,.false.)
+
+        ! Set initial energies for ReducedFragment equal to the ones for the expanded fragment
+        ReducedFragment%LagFOP   = LagEnergy_exp
+        ReducedFragment%EoccFOP  = OccEnergy_exp
+        ReducedFragment%EvirtFOP = VirEnergy_exp
+
+        ! Increase FOT by scaling factor
+        FOTincreased = FOTincreased*DECinfo%FOTscaling
+
+        ! Determine ReducedFragment according to the scaled FOT
+        call fragment_reduction_procedure(ReducedFragment,no,nv,occ_priority_list, &
+             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+             & VirOrbitals,mylsitem,no_gap,nv_gap,FOTincreased)
+        
+        ! Save information about ReducedFragment AOS in AtomicFragment structure
+        AtomicFragment%REDfrags(i)%noccAOS   = ReducedFragment%noccAOS
+        AtomicFragment%REDfrags(i)%nunoccAOS = ReducedFragment%nunoccAOS
+        call mem_alloc(AtomicFragment%REDfrags(i)%occAOSidx,AtomicFragment%REDfrags(i)%noccAOS)
+        AtomicFragment%REDfrags(i)%occAOSidx = ReducedFragment%occAOSidx
+        call mem_alloc(AtomicFragment%REDfrags(i)%unoccAOSidx,AtomicFragment%REDfrags(i)%nunoccAOS)
+        AtomicFragment%REDfrags(i)%unoccAOSidx = ReducedFragment%unoccAOSidx
+        AtomicFragment%REDfrags(i)%FOT = FOTincreased
+
+        ! Print summary (delete this at some point but nice to have for analysis now)
+        write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,&
+             & FOTincreased, ReducedFragment%noccAOS,ReducedFragment%nunoccAOS,&
+             & ReducedFragment%nbasis
+
+        ! Store AOS information to use as starting point in fragment for next FOT
+        call mem_dealloc(occAOSidxprev)
+        call mem_dealloc(unoccAOSidxprev)
+        noccAOSprev=ReducedFragment%noccAOS
+        nunoccAOSprev=ReducedFragment%nunoccAOS
+        call mem_alloc(occAOSidxprev,noccAOSprev)
+        call mem_alloc(unoccAOSidxprev,nunoccAOSprev)
+        occAOSidxprev = ReducedFragment%occAOSidx
+        unoccAOSidxprev = ReducedFragment%unoccAOSidx
+
+        ! Done with reduced fragment
+        call atomic_fragment_free(ReducedFragment)
+
+     end do
+
+     call mem_dealloc(occAOSidxprev)
+     call mem_dealloc(unoccAOSidxprev)
+
+
+   end subroutine fragment_reduction_procedure_wrapper
+
+
+
+
    ! Purpose: Perform reduction procedure based on occ/vir priority list. We perform
    !          a binary search on the priority list and accept a step based on energy
    !          criterions (dE_occ, dE_vir). The binary search stops for one space when
    !          the difference in number of orbitals between two steps is lower than
    !          no_gap/nv_gap. By default the occupied spaced is reduced 1st.
    !
-   ! Author:  Pablo Baudin (based on previous work by Kasper Kristensen & Thomas Kjaergaard)
+   ! Author:  Pablo Baudin
    ! Date:    July 2014
    subroutine fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,dE_occ,dE_vir,no_gap,nv_gap)
+            & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
 
       implicit none
 
@@ -5037,15 +5167,17 @@ contains
       type(decorbital), dimension(nv), intent(in) :: VirOrbitals
       !> Integral information
       type(lsitem), intent(inout)       :: mylsitem
-      !> energy error acceptance in reduction steps:
-      real(realk), intent(in) :: dE_occ, dE_vir
       !> minimum gap in number of orbital allowed between the 
       !  last two steps of the binary search.
-      integer :: no_gap, nv_gap
+      integer,intent(in) :: no_gap, nv_gap
+      !> Fragment optimization threshold to use in reduction
+      real(realk),intent(in) :: FOT
 
+      !> energy error acceptance in reduction steps:
+      real(realk) :: dE_occ, dE_vir
       integer :: no_exp, nv_exp, no_min, nv_min, no_max, nv_max
       integer :: no_old, nv_old, no_new, nv_new, iter
-      logical :: reduce_occ, step_accepted, reduction_converged, occ_red_conv, vir_red_conv
+      logical :: redocc, redvir, step_accepted, reduction_converged, occ_red_conv, vir_red_conv
       logical, pointer :: OccAOS_old(:), VirAOS_old(:)
       real(realk) :: LagEnergy_exp, OccEnergy_exp, VirEnergy_exp
       real(realk) :: LagEnergy_old, OccEnergy_old, VirEnergy_old
@@ -5079,9 +5211,31 @@ contains
       OccEnergy_old = OccEnergy_exp
       VirEnergy_old = VirEnergy_exp
 
-      ! The default is to start reducing the virtual space:
-      reduce_occ = .false.
-      if (DECinfo%onlyVirtPart) reduce_occ = .true.
+
+      ! Define specific reduction parameters:
+      ! -------------------------------------
+      if (DECinfo%Frag_red_occ.and.(.not.DECinfo%Frag_red_virt)) then
+         ! Start reducing occupied space:
+         write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce occupied space first'
+         redocc = .true.
+         redvir = .false.
+         dE_occ = DECinfo%frag_red1_thr*FOT
+         dE_vir = DECinfo%frag_red2_thr*FOT
+      else if (DECinfo%Frag_red_virt.and.(.not.DECinfo%Frag_red_occ)) then
+         ! Start reducing virtual space:
+         write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce virtual space first'
+         redvir = .true.
+         redocc = .false.
+         dE_vir = DECinfo%frag_red1_thr*FOT
+         dE_occ = DECinfo%frag_red2_thr*FOT
+      else
+         ! Default, reduce both spaces from the begining:
+         redocc = .true.
+         redvir = .true.
+         dE_occ = FOT
+         dE_vir = FOT
+      end if
+
 
       step_accepted = .false.
       occ_red_conv  = .false.
@@ -5091,11 +5245,11 @@ contains
       ! Check That fragment can be reduced:
       if (nv_min==nv_max) then ! virtual space cannot be reduced:
          vir_red_conv = .true.
-         reduce_occ   = .true.
+         redvir       = .false.
       end if
       if (no_min==no_max) then ! occupied space cannot be reduced
          occ_red_conv = .true.
-         reduce_occ   = .false.
+         redocc       = .false.
       end if
       if (vir_red_conv.and.occ_red_conv) reduction_converged = .true.
 
@@ -5108,18 +5262,26 @@ contains
 
          ! REDUCE FRAGMENT:
          ! ****************
-         if (reduce_occ) then
+         if (redocc.and.(.not.redvir)) then
             ! keep old virtual space and change occupied one
             nv_new = nv_old
             ! The new condition is set by removing half of the occ 
             ! orbital between max and min:
             no_new = no_max - (no_max - no_min)/2
-         else
+         else if (redvir.and.(.not.redocc)) then
             ! keep old occupied space and change virtual one
             no_new = no_old
             ! The new condition is set by removing half of the vir
             ! orbital between max and min:
             nv_new = nv_max - (nv_max - nv_min)/2
+         else if (redocc.and.redvir) then
+            ! The new condition is set by removing half of the occ
+            ! and vir orbital between max and min:
+            no_new = no_max - (no_max - no_min)/2
+            nv_new = nv_max - (nv_max - nv_min)/2
+         else
+            call lsquit("ERROR(fragment_reduction_procedure): space to reduce not defined", &
+               & DECinfo%output)
          end if
 
          call reduce_fragment(AtomicFragment,MyMolecule,no,no_new,Occ_AOS, &
@@ -5147,12 +5309,15 @@ contains
          ! CHECK CONVERGENCES:
          ! *******************
          ! Check if reduction step is accepted (Energy criterion):
-         if (reduce_occ) then
+         if (redocc.and.(.not.redvir)) then
             call fragopt_check_convergence(LagEnergy_dif,OccEnergy_dif,VirEnergy_dif, &
-            & dE_occ,step_accepted)
-         else
+               & dE_occ,step_accepted)
+         else if (redvir.and.(.not.redocc)) then
             call fragopt_check_convergence(LagEnergy_dif,OccEnergy_dif,VirEnergy_dif, &
-            & dE_vir,step_accepted)
+               & dE_vir,step_accepted)
+         else if (redocc.and.redvir) then
+            call fragopt_check_convergence(LagEnergy_dif,OccEnergy_dif,VirEnergy_dif, &
+               & FOT,step_accepted)
          end if
 
          ! If the step is accepted we need to save the frag info:
@@ -5165,12 +5330,17 @@ contains
          end if
 
          ! Check convergence of spaces:
-         SpaceConvergence: if (reduce_occ) then
+         SpaceConvergence: if (redocc.and.(.not.redvir)) then
             call check_red_space_convergence(no_old,no_new,no_min,no_max,no_gap,occ_red_conv,vir_red_conv, &
-               & reduction_converged,reduce_occ,step_accepted)
-         else
+               & reduction_converged,redocc,step_accepted)
+         else if (redvir.and.(.not.redocc)) then
             call check_red_space_convergence(nv_old,nv_new,nv_min,nv_max,nv_gap,vir_red_conv,occ_red_conv, &
-               & reduction_converged,reduce_occ,step_accepted)
+               & reduction_converged,redocc,step_accepted)
+         else if (redvir.and.redocc) then
+            call check_red_space_convergence(no_old,no_new,no_min,no_max,no_gap,occ_red_conv,vir_red_conv, &
+               & reduction_converged,redocc,step_accepted)
+            call check_red_space_convergence(nv_old,nv_new,nv_min,nv_max,nv_gap,vir_red_conv,occ_red_conv, &
+               & reduction_converged,.not.redocc,step_accepted)
          end if SpaceConvergence
 
          ! If everything has converged then we keep the last valid
@@ -5202,27 +5372,35 @@ contains
             if (DECinfo%PL > 1) write(DECinfo%output,*) 'BIN SEARCH: Step accepted'
             ! The current number of occ and virt is good or too high:
             ! Setting new maximum:
-            if (reduce_occ) then
+            if (redocc.and.(.not.redvir)) then
                no_max = no_new
-            else
+            else if (redvir.and.(.not.redocc)) then
+               nv_max = nv_new
+            else if (redvir.and.redocc) then
+               no_max = no_new
                nv_max = nv_new
             end if
          else
             if (DECinfo%PL > 1) write(DECinfo%output,*) 'BIN SEARCH: Step NOT accepted'
             ! The current number of occ and virt is NOT good enough:
             ! Setting new minimum:
-            if (reduce_occ) then
+            if (redocc.and.(.not.redvir)) then
                no_min = no_new
-            else
+            else if (redvir.and.(.not.redocc)) then
+               nv_min = nv_new
+            else if (redvir.and.redocc) then
+               no_min = no_new
                nv_min = nv_new
             end if
          end if
 
          ! swicht spaces to be reduce only when the initial one is fully converged
          if (vir_red_conv) then
-            reduce_occ = .true.
+            redocc = .true.
+            redvir = .false.
          else if (occ_red_conv) then
-            reduce_occ = .false.
+            redocc = .false.
+            redvir = .true.
          end if
 
          ! Sanity checks:
@@ -5246,7 +5424,7 @@ contains
 
       ! PRINT INFO FOR FINAL (REDUCED) FRAGMENT:
       ! ****************************************
-      write(DECinfo%output,*)'FOP'
+      write(DECinfo%output,'(1X,a,/)') 'FOP'
       write(DECinfo%output,'(1X,a)') 'FOP========================================================='
       write(DECinfo%output,'(1X,a,i4)') 'FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE',MyAtom
       write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'

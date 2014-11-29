@@ -1915,6 +1915,12 @@ end function max_batch_dimension
        call mem_dealloc(fragment%unoccAOSorb)
     end if
 
+    ! Reduced fragment info
+    do i=1,DECinfo%nFRAGSred
+       call fragmentAOS_type_free(fragment%REDfrags(i))
+    end do
+    call mem_dealloc(fragment%REDfrags)
+
   end subroutine atomic_fragment_free_simple
 
   
@@ -1990,6 +1996,24 @@ end function max_batch_dimension
     end if
     
   end subroutine atomic_fragment_free_basis_info
+
+
+  !> Free pointers in fragmentAOS type
+  subroutine fragmentAOS_type_free(MyFragmentAOS)
+    implicit none
+    !> FragmentAOS information
+    type(fragmentAOS),intent(inout) :: MyFragmentAOS
+
+    if(associated(MyFragmentAOS%occAOSidx)) then
+       call mem_dealloc(MyFragmentAOS%occAOSidx)
+    end if
+    if(associated(MyFragmentAOS%unoccAOSidx)) then
+       call mem_dealloc(MyFragmentAOS%unoccAOSidx)
+    end if
+
+  end subroutine fragmentAOS_type_free
+
+
 
   !> \brief Free the f12 fragment free matrices
   !> \author Yang Min Wang

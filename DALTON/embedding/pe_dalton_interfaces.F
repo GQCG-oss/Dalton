@@ -22,13 +22,11 @@
 !
 #if defined (BUILD_PELIB)
       subroutine pe_ifc_input_reader(word)
-        use pe_variables, only: peqm
         use polarizable_embedding, only: pe_input_reader
         implicit none
 #include "priunit.h"
         character(len=7), intent(inout) :: word
         call qenter('pe_ifc_input_reader')
-        peqm = .true.
         call pe_input_reader(word, lucmd)
         call qexit('pe_ifc_input_reader')
       end subroutine pe_ifc_input_reader

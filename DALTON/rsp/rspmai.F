@@ -986,7 +986,7 @@ C              .PROP2Average
      &            ' This is a SOPPA embedding calculation w/ dynamic'
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
-     &            ' solvent response at RPA level only,'
+     &            ' environment response at RPA level only,'
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
      &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'

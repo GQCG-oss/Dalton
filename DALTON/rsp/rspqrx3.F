@@ -398,12 +398,12 @@ C
       END IF
 
       IF (PEQM) THEN
-#ifdef BUILD_PELIB
+#if defined (BUILD_PELIB)
          IF (.NOT. TDHF .AND. .NOT. TRPLET) THEN 
 !           write(lupri,*) '*** WARNING PE-MCSCF QR ***  '
 !           write(lupri,*) 'Highly experimental version'
 !           write(lupri,*) 'Results *WILL* be wrong'
-            call quit('ERROR: PE-MCSCF quadratic response not'//
+            call QUIT('ERROR: PE-MCSCF quadratic response not'//
      &                ' implemented using the PE library.')
 !            CALL PE_RSPMCQR(VECB, VECC, ETRS, XINDX, 
 !     &                      WRK(KZYMB), WRK(KZYMC), WRK(KDEN1), UDV, 
@@ -411,10 +411,10 @@ C
 !     &                      ISYMA, ISYMB, ISYMC, CMO, MJWOP)
          ELSE IF (NASHT > 0) THEN
             CALL QUIT('ERROR: quadratic response not implemented for'//
-     &                ' open shell systems with the PE library.')
+     &                ' open-shell systems using the PE library.')
          ELSE IF (TRPLET) THEN
             CALL QUIT('ERROR: triplets not implemented for quadratic'//
-     &                ' response with the PE library.')
+     &                ' response using the PE library.')
          ENDIF
          CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
      &                  UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,

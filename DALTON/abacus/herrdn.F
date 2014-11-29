@@ -469,7 +469,8 @@ C
 #include "aosotr.h"
 #include "infpar.h"
 #include "huckel.h"
-#include "optinf.h" ! ITRNMR and IPRE
+! ITRNMR and IPRE
+#include "optinf.h"
 C
       CHARACTER*(len_MLINE) TMP_MLINE
 C

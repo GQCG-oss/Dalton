@@ -739,6 +739,10 @@ contains
 
     integer :: MinAObatchSize, MaxAObatchSize, GammaBatchSize, AlphaBatchSize
 
+    integer :: MinAlphaBatchSize, MinGammaBatchSize
+
+    integer :: MaxdimAlpha, MaxdimGamma
+
     ! ****************************************************************
     ! Allocate mem space for a temporary array that will be reordered
     ! ****************************************************************
@@ -754,56 +758,10 @@ contains
     call mat_transpose(n31,n32, 1.0E0_realk,C3, 0.0E0_realk,C3T)
     call mat_transpose(n11,n12, 1.0E0_realk,C1, 0.0E0_realk,C1T)
 
+!!$    !For debugging purposes    
+    !call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
+    !call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
 
-
-!!$    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
-!!$    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
-!!$
-!!$    get current allocated
-!!$    getMaximem =  decinfo%memory
-!!$    IF(n21*n41*nbasis*nbasis + n22*n41*nbasis*nbasis)THEN
-!!$       !NON BATCHING
-!!$       Optimalbatchdimgamma = nbasis
-!!$       Optimalbatchdimalpha = nbasis
-!!$    ELSE
-!!$       IF(n21*n41*nbasis*MinGammaBatchSize + n22*n41*nbasis*MinGammaBatchSize)THEN
-!!$          !BATCHING ON GAMMA ONLY
-!!$          Optimalbatchdimalpha = nbasis
-!!$          do Ngamma = Nbasis,MinGammaBatchSize,-1
-!!$             dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
-!!$             dim2 = i8*n41*dimAlpha*dimGamma*n22  ! dim of tmp2 
-!!$             step1mem = dim1 + dim2
-!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
-!!$                Optimalbatchdimgamma = Ngamma
-!!$                EXIT
-!!$             ENDIF
-!!$          enddo
-!!$       ELSE
-!!$          !BATCH ON BOTH
-!!$          do Nalpha = Nbasis,MinAlphaBatchSize,-1
-!!$             dim1 = i8*n21*n41*dimAlpha*MinGammaBatchSize   ! dimension for integral array tmp1
-!!$             dim2 = i8*n41*dimAlpha*MinGammaBatchSize*n22  ! dim of tmp2 
-!!$             step1mem = dim1 + dim2
-!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
-!!$                Optimalbatchdimalpha = Nalpha
-!!$                EXIT
-!!$             ENDIF
-!!$          enddo
-!!$          
-     
-!!$       do Ngamma = MinGammaBatchSize,Nbasis
-!!$          do Nalpha = MinAlphaBatchSize,Nbasis
-!!$             
-!!$             dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
-!!$             dim2 = i8*n41*dimAlpha*dimGamma*n22  ! dim of tmp2 
-!!$             step1mem = dim1 + dim2
-!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
-!!$                Optimalbatchdimgamma = Ngamma
-!!$             ENDIF
-!!$          enddo
-!!$       enddo
-!!$    ENDIF
-    
     ! ************************
     ! Determine AO batch sizes
     ! ************************
@@ -866,6 +824,13 @@ contains
     !GammaBatchSize = n31 ! Needs to be changed, For DEBUG purposes MaxAObatchSize
     !AlphaBatchSize = n11 ! Needs to be changes, For DEBUG purposes MinAObatchSize
 
+    !MinAlphaBatchSize = AlphaBatchSize
+    !MinGammaBatchSize = GammaBatchSize
+    
+    call get_max_batchsize(MaxdimAlpha,MaxdimGamma,MinAlphaBatchSize,MinGammaBatchSize,n11,n12,n21,n22,n31,n32,n41,n42)
+
+    GammaBatchSize = MaxdimGamma
+    AlphaBatchSize = MaxdimAlpha
 
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
@@ -1057,13 +1022,7 @@ contains
           call mem_alloc(tmp1,dim1)
           call dec_simple_dgemm(m,k,n,C4T,tmp2,tmp1, 'n', 'n')
           call mem_dealloc(tmp2) 
-          
-          do i=1, dim1
-             if (abs(tmp1(i)) > 10.0E-10_realk) then
-               ! write(DECinfo%output,'(1X,a,1i4,f20.10)') 'tmp3:', i, tmp1(i)
-             endif
-          enddo
-          
+                   
           ! Transpose to make alphaB(n11) and gammaB(n31) indices available
           ! ***************************************************************
           dim2 = dim1
@@ -1575,11 +1534,90 @@ contains
 
   end subroutine get_4Center_MO_integrals
 
-  subroutine get_max_batchsize()
+  subroutine get_max_batchsize(dimAlpha,dimGamma,minAlpha,minGamma,n11,n12,n21,n22,n31,n32,n41,n42)
     implicit none
+    
+    !> Optimal Gamma and Alpha Batches
+    integer,intent(inout) :: dimAlpha, dimGamma
+    integer, intent(in) :: n11, n12, n21, n22, n31, n32, n41, n42
+    integer, intent(in) :: minAlpha, minGamma
+  
+    !> Batching routine initializations
+    real(realk) :: MemAvailable, step1, step2, step3, step4, MAXstepmem   
+    real(realk) :: dim1,dim2,dim3,dim4,dim5,Ngamma,Nalpha,frac
+
+    integer :: i,j,k
+
+    !   dimAlpha = n11 !Full nbasis
+    !   dimGamma = n31 !Full nbasis
+
+    frac = 0.9E0_realk   
+    Maxstepmem = 0.0E0_realk
+
+!!$    print *, "--------------- MEMORY STATS ---------------"
+!!$    print *, "step1: ", step1
+!!$    print *, "step2: ", step2
+!!$    print *, "step3: ", step3
+!!$    print *, "step4: ", step4
+!!$    print *, "Maxst: ", Maxstepmem
+!!$    print *, "MemAv: ", MemAvailable
+!!$    print *, "MemIn: ", mem_allocated_global   
+
+    dimAlpha = n11
+    dimGamma = n31
+      
+    MemAvailable = 0.0E0_realk   
+    call get_currently_available_memory(MemAvailable)
+    MemAvailable = MemAvailable*1.0E9_realk !In bytes
+
+    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
+
+    if(MAXstepmem .LT. frac*MemAvailable) THEN
+       dimAlpha = n11
+       dimGamma = n31
+    else 
+
+       gamma: do k = n31,minGamma,-1
+          call get_maxstepmem(MAXstepmem,dimAlpha,k,n11,n12,n21,n22,n31,n32,n41,n42)
+
+          if(Maxstepmem < frac*MemAvailable) then
+             dimGamma = k
+             exit gamma   
+          endif
+       enddo gamma
+
+       alpha: do k = minAlpha, n11
+          
+          call get_maxstepmem(MAXstepmem,k,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
+        
+          if(Maxstepmem < frac*MemAvailable) then
+             dimAlpha = k
+             exit alpha   
+          endif
+          
+       enddo alpha      
+    endif
 
   end subroutine get_max_batchsize
-  
+
+  subroutine get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
+    integer, intent(in) :: n11, n12, n21, n22, n31, n32, n41, n42
+    integer, intent(in) :: dimAlpha, dimGamma
+    real(realk), intent(inout) :: MAXstepmem
+
+    dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dim of tmp1
+    dim2 = i8*n41*dimAlpha*dimGamma*n22   ! dim of tmp2 
+    dim3 = i8*n42*dimAlpha*dimGamma*n22   ! dim of tmp1     
+    dim4 = i8*n42*dimAlpha*n32*n22        ! dim of tmp1 
+
+    step1 = dim1 + dim2 
+    step2 = dim2 + dim3
+    step3 = step2
+    step4 = dim3 + dim4
+    MAXstepmem = MAX(step1,step2,step3,step4) 
+    
+  end subroutine get_maxstepmem
+
 #else
 
    subroutine dummy_f12_routines()
@@ -1590,3 +1628,5 @@ contains
 #endif 
 
 end module f12_routines_module
+
+

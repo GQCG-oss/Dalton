@@ -1032,7 +1032,7 @@ C            Now the PCM part ...
          END IF
 C
          IF (PEQM) THEN
-#ifdef BUILD_PELIB
+#if defined (BUILD_PELIB)
            IF (PCM .OR. FLAG(16) .OR. QMMM .OR. QMNPMM .OR. QM3) THEN
              CALL QUIT(
      &             'PEQM is not compatible with other embedding models')
@@ -1743,7 +1743,7 @@ C
 C
       END IF
       IF (PEQM) THEN
-#if defined BUILD_PELIB
+#if defined (BUILD_PELIB)
         IF (NASHT == 0 .OR. HSFOCK) THEN
             CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
         ELSE
@@ -1752,7 +1752,7 @@ C
 #endif
       END IF
       IF (PEMEP) THEN
-#if defined BUILD_PELIB
+#if defined (BUILD_PELIB)
         IF (PE_IFC_MEP() == 0) THEN
             CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
         END IF

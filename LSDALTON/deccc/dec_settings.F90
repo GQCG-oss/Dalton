@@ -142,9 +142,11 @@ contains
     DECinfo%Frag_RedOcc_Scheme        = 1
     DECinfo%Frag_RedVir_Scheme        = 1
     DECinfo%Frag_Init_Size         = 4
-    DECinfo%Frag_Exp_Size          = 10
-    DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
-    DECinfo%frag_red_virt_thr      = 0.9  ! times FOT
+    DECinfo%Frag_Exp_Size          = 5
+    DECinfo%frag_red1_thr          = 0.9  ! times FOT
+    DECinfo%frag_red2_thr          = 1.0  ! times FOT
+    DECinfo%frag_red_occ           = .false.
+    DECinfo%frag_red_virt          = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
@@ -159,12 +161,15 @@ contains
     DECinfo%RepeatAF               = .true.
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
     DECinfo%CorrDensScheme         = 1
+    ! Number of reduced fragments to consider
+    DECinfo%nFRAGSred = 0
+    ! Factor to scale FOT by for reduced fragments
+    DECinfo%FOTscaling = 10.0_realk
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
     DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr               =  0.0_realk
-    DECinfo%PairMP2                 = .false.
     DECinfo%PairEstimate            = .true.
     DECinfo%PairEstimateIgnore      = .false.
     DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
@@ -451,6 +456,14 @@ contains
        case('.CORRDENS')  
           read(input,*) DECinfo%CorrDensScheme
 
+          !> Number of reduced fragments to consider
+       case('.NFRAGSRED')
+          read(input,*) DECinfo%nFRAGSred
+
+          !> Factor to scale FOT by for reduced fragments
+       case('.FOTSCALING')
+          read(input,*) DECinfo%FOTscaling
+
           ! Use frozen core approximation
        case('.FROZENCORE') 
           DECinfo%frozencore=.true.
@@ -556,8 +569,9 @@ contains
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.CC_TILE_SIZE_GB');read(input,*) DECinfo%cc_solver_tile_mem 
        case('.SOSEX');   DECinfo%SOS = .true.
-       case('.NOTPREC'); DECinfo%use_preconditioner=.false.
-       case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
+       case('.NOTPREC');      DECinfo%use_preconditioner=.false.; DECinfo%ccsolver_overwrite_prec = .true.
+       case('.NOTBPREC');     DECinfo%use_preconditioner_in_b=.false.; DECinfo%ccsolver_overwrite_prec = .true.
+       case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.; DECinfo%ccsolver_overwrite_prec = .true.
        case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
        case('.MAXITER'); read(input,*) DECinfo%MaxIter
        case('.TENSOR_SEGMENTING_SCHEME'); read(input,*) DECinfo%tensor_segmenting_scheme
@@ -624,7 +638,6 @@ contains
           DECinfo%checkpairs=.true.
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
        case('.PAIRFOTHR'); read(input,*) DECinfo%pairFOthr
-       case('.PAIRMP2'); DECinfo%PairMP2=.true.
        case('.NOTPAIRESTIMATE'); DECinfo%PairEstimate=.false.
        case('.IGNOREPAIRESTIMATE'); DECinfo%PairEstimateIgnore=.true.
        case('.ESTIMATEINITRADIUS')
@@ -639,7 +652,6 @@ contains
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
-       case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.
        case('.SIMPLEMULLIKENTHRESH'); DECinfo%simple_mulliken_threshold=.true.
        case('.NORMTHRESH'); read(input,*) DECinfo%approximated_norm_threshold
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
@@ -654,8 +666,10 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
-       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
-       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
+       case('.FRAG_RED1_THR'); read(input,*) DECinfo%frag_red1_thr
+       case('.FRAG_RED2_THR'); read(input,*) DECinfo%frag_red2_thr
+       case('.FRAG_RED_OCC');  DECinfo%frag_red_occ  = .true.
+       case('.FRAG_RED_VIRT'); DECinfo%frag_red_virt = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
@@ -711,6 +725,16 @@ contains
 #ifdef VAR_MPI
     nodtot = infpar%nodtot
 #endif
+
+    ! Reduced pairs - certain limitations
+    if(DECinfo%nFRAGSred>0) then
+       if(DECinfo%fragadapt) then
+          call lsquit('Reduced pairs not implemented for fragment-adapted DEC!',-1)
+       end if
+       if(DECinfo%use_pnos) then
+          call lsquit('Reduced pairs not implemented for PNOs!',-1)
+       end if
+    end if
 
     
     ! SNOOP - currently limited in several ways
@@ -1067,8 +1091,10 @@ contains
     write(lupri,*) 'Frag_RedVir_Scheme ', DECitem%Frag_RedVir_Scheme
     write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
-    write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr
-    write(lupri,*) 'Frag_Red_virt_thr ', DECinfo%frag_red_virt_thr
+    write(lupri,*) 'Frag_Red1_thr ', DECinfo%frag_red1_thr
+    write(lupri,*) 'Frag_Red2_thr ', DECinfo%frag_red2_thr
+    write(lupri,*) 'Frag_Red_Occ ', DECinfo%frag_red_occ
+    write(lupri,*) 'Frag_Red_Virt ', DECinfo%frag_red_virt
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
@@ -1076,7 +1102,6 @@ contains
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
-    write(lupri,*) 'PairMP2 ', DECitem%PairMP2
     write(lupri,*) 'PairEstimate ', DECitem%PairEstimate
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'density ', DECitem%density

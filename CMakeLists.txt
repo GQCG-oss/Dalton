@@ -67,9 +67,7 @@ option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            
 option(ENABLE_QMATRIX        "Enable QMatrix library"                           OFF)
 option(ENABLE_OPENRSP        "Enable OPENRSP library (need QMatrix library)"    OFF)
 option(ENABLE_TDRSP          "Enable TDRSP library (need QMatrix library)"      OFF)
-
 option(ENABLE_EFS            "Enable Echidna Fock Solver"                       OFF)
-
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
@@ -82,7 +80,6 @@ option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             
 #endif()
 
 set(EXTERNAL_LIBS)
-
 
 include(ConfigVersion)
 include(SourcesDALTON)
@@ -227,4 +224,3 @@ include(ConfigMakeRelease)
 # give information about system, compiler flags, and size of static allocations
 set(STATIC_MEM_INFO_BINARIES dalton lsdalton)
 include(ConfigInfo)
-

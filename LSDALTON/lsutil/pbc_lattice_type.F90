@@ -62,9 +62,9 @@ type, public :: lvec_list_t
   integer            :: Kx1,Kx2,Kx3!how many layers included in K-matrix
   integer            :: lmax,Tlmax
   integer            :: num_its,num_store
-  Real(realk)        :: error
+  Real(realk)        :: error,intthr
   integer            :: nneighbour,nf,ndmat
-  INTEGEr(short)     :: realthr
+  INTEGER(short)     :: realthr
   integer      :: nk1,nk2,nk3
   integer      :: num_its_densmat
   character(len=10)  :: wannier_direct
