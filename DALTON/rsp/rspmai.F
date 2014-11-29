@@ -983,10 +983,10 @@ C              .PROP2Average
                  SOPPA  = .TRUE.
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
-     &            ' This is a solvent-SOPPA calculation w/ dynamic'
+     &            ' This is a SOPPA embedding calculation w/ dynamic'
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
-     &            ' solvent response at RPA level only,'
+     &            ' environment response at RPA level only,'
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
      &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
@@ -4340,7 +4340,7 @@ C
          write(lupri,*) 'MCSCF detected (NCONRF > 1) in QMMM calc.'
          write(lupri,*) 'NCONRF...........................', NCONRF
          write(lupri,*) '=> Subtracting QMMM Fock matrix (PCM-like)'
-         CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI) 
+         CALL MOLLAB('QMMMTMAT',LUSIFC,LUPRI)
          CALL READT (LUSIFC,NNORBT,WRK)
          DO I = 1,NNORBT
              FC(I) = FC(I) - WRK(I)
@@ -4348,10 +4348,10 @@ C
       END IF
 C
       IF (PEQM .AND. .NOT. TDHF) THEN
-        CALL MOLLAB('PETMAT  ', LUSIFC, LUPRI)
-        CALL READT (LUSIFC, NNORBT, WRK)
-        FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
-       ENDIF
+         CALL MOLLAB('PEFMAT  ', LUSIFC, LUPRI)
+         CALL READT (LUSIFC, NNORBX, WRK)
+         FC(1:NNORBX) = FC(1:NNORBX) - WRK(1:NNORBX)
+      ENDIF
 C
       IF (SOPPA) THEN
 C
