@@ -22,18 +22,20 @@
 !
 #if defined (BUILD_PELIB)
       subroutine pe_ifc_input_reader(word)
-        use pe_variables, only: peqm
         use polarizable_embedding, only: pe_input_reader
+        implicit none
 #include "priunit.h"
         character(len=7), intent(inout) :: word
         call qenter('pe_ifc_input_reader')
-        peqm = .true.
         call pe_input_reader(word, lucmd)
         call qexit('pe_ifc_input_reader')
       end subroutine pe_ifc_input_reader
 
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_init()
         use polarizable_embedding, only: pe_init
+        implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -42,45 +44,78 @@
         call qexit('pe_ifc_init')
       end subroutine pe_ifc_init
 
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_finalize()
         use polarizable_embedding, only: pe_finalize
+        implicit none
         call qenter('pe_ifc_finalize')
         call pe_finalize()
         call qexit('pe_ifc_finalize')
       end subroutine pe_ifc_finalize
 
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_fock(denmats, fckmats, nmats, energies)
         use polarizable_embedding, only: pe_master
+        implicit none
 #include "inforb.h"
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
         real*8, dimension(nmats), intent(out) :: energies
         call qenter('pe_ifc_fock')
-        call pe_master(runtype='fock', denmats=denmats, fckmats=fckmats,
-     &                 nmats=nmats, energies=energies)
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(1)
+#endif
+        call pe_master(runtype='full_fock',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=nmats,
+     &                 denmats=denmats,
+     &                 fckmats=fckmats,
+     &                 expvals=energies)
         call qexit('pe_ifc_fock')
       end subroutine pe_ifc_fock
 
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_energy(denmats, nmats)
         use polarizable_embedding, only: pe_master
+        implicit none
 #include "inforb.h"
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
         call qenter('pe_ifc_energy')
-        call pe_master(runtype='energy', denmats=denmats, nmats=nmats)
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(2)
+#endif
+        call pe_master(runtype='print_energy',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=nmats,
+     &                 denmats=denmats)
         call qexit('pe_ifc_energy')
       end subroutine pe_ifc_energy
 
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_london(fckmats)
         use polarizable_embedding, only: pe_master
+        implicit none
 #include "inforb.h"
         real*8, dimension(3*n2basx), intent(out) :: fckmats
         integer :: i, j, k, l, m
         real*8, dimension(:), allocatable :: fckmats_packed
         call qenter('pe_ifc_london')
         allocate(fckmats_packed(3*nnbasx))
-        call pe_master('london', fckmats=fckmats_packed, nmats=1)
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(4)
+#endif
+        call pe_master('magnetic_gradient',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 fckmats=fckmats_packed)
         do i = 1, 3
             j = (i - 1) * nnbasx + 1
             k = i * nnbasx
@@ -92,19 +127,50 @@
         call qexit('pe_ifc_london')
       end subroutine pe_ifc_london
 
+!-----------------------------------------------------------------------------
+
 #if defined(VAR_MPI)
-      subroutine pe_ifc_mpi(runtype)
+      subroutine pe_ifc_slave(runtype)
         use polarizable_embedding, only: pe_slave
+        implicit none
         integer, intent(in) :: runtype
-        call qenter('pe_ifc_mpi')
-        call pe_slave(runtype)
-        call qexit('pe_ifc_mpi')
-      end subroutine pe_ifc_mpi
+        call qenter('pe_ifc_slave')
+        if (runtype == 1) then
+            call pe_slave('full_fock')
+        else if (runtype == 2) then
+            call pe_slave('print_energy')
+        else if (runtype == 3) then
+            call pe_slave('dynamic_response')
+        else if (runtype == 4) then
+            call pe_slave('magnetic_gradient')
+        end if
+        call qexit('pe_ifc_slave')
+      end subroutine pe_ifc_slave
+
+!-----------------------------------------------------------------------------
+
+      subroutine pe_ifc_start_slaves(runtyp)
+        implicit none
+        integer :: runtyp
+#include "iprtyp.h"
+#include "maxorb.h"
+#include "infpar.h"
+        integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
+        call qenter('pe_ifc_start_slaves')
+        if (master /= 0) call quit('ERROR: PElib assumes master id 0')
+        if (nodtot >= 1) then
+            call mpixbcast(iprtyp, 1, 'INTEGER', master)
+            call mpixbcast(runtyp, 1, 'INTEGER', master)
+        end if
+        call qexit('pe_ifc_start_slaves')
+      end subroutine pe_ifc_start_slaves
 #endif
+
+!-----------------------------------------------------------------------------
 
       subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !
-!     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
+!     Written by Erik Donovan Hedegård (edh) and Jogvan Magnus H. Olsen
 !                based on PCMGRAD
 !
 !     Purpose:  calculate (MCSCF) energy and gradient contribution
@@ -145,7 +211,7 @@
         call qenter('pe_grad')
 
         allocate(fckmo(nnorbx))
-        call pe_fckmo(cmo, fckmo, etmp, dv, wrk, nwrk)
+        call pe_fckmo(cmo, dv, fckmo, etmp, wrk, nwrk)
         energy = etmp(1)
 
         allocate(fckac(nnashx))
@@ -197,9 +263,9 @@
 
 !------------------------------------------------------------------------------
 
-      subroutine pe_fckmo(cmo, fckmo, energy, dv, wrk, nwrk)
+      subroutine pe_fckmo(cmo, dv, fckmo, energy, wrk, nwrk)
 !
-!     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
+!     Written by Erik Donovan Hedegård (edh) and Jogvan Magnus H. Olsen
 !
 !     Purpose:  Compute PE operator in MO basis using PE library
 !
@@ -228,7 +294,6 @@
         real*8, dimension(*) :: cmo, dv
         real*8, dimension(nwrk) :: wrk
 
-        integer :: i
         real*8, dimension(:), allocatable :: dcao, dvao, fdtao, fckao
 
         call qenter('pe_fckmo')
@@ -236,7 +301,7 @@
         allocate(dcao(n2basx), dvao(n2basx))
         call fckden((nisht > 0), (nasht > 0), dcao, dvao, cmo, dv,
      &              wrk, nwrk)
-        if (nisht==0) dcao = 0.0d0
+        if (nisht == 0) dcao = 0.0d0
         if (nasht > 0) dcao = dcao + dvao
         deallocate(dvao)
 
@@ -245,8 +310,16 @@
         deallocate(dcao)
 
         allocate(fckao(nnbasx))
-        call pe_master(runtype='fock', denmats=fdtao, fckmats=fckao,
-     &                 nmats=1, energies=energy)
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(1)
+#endif
+        call pe_master(runtype='full_fock',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=1,
+     &                 denmats=fdtao,
+     &                 fckmats=fckao,
+     &                 expvals=energy)
         deallocate(fdtao)
 
         call uthu(fckao, fckmo, cmo, wrk, nbast, norbt)
@@ -261,7 +334,7 @@
       subroutine pe_lin(ncsim, nosim, bcvecs, bovecs, cref, cmo, cindx,
      &                  dv, dtv, scvecs, sovecs, orblin, wrk, nwrk)
 !
-! Written by Erik Donovan Hedegård and Jógvan Magnus H. Olsen
+! Written by Erik Donovan Hedegård and Jogvan Magnus H. Olsen
 !            after original code by  Hans Joergen Aa. Jensen
 !
 ! Common driver for pe_lnc and pe_lno
@@ -310,7 +383,7 @@
       subroutine pe_lnc(ncsim, bcvecs, cref, cmo, cindx, dv, dtv,
      &                  scvecs, wrk, nwrk)
 !
-!  Written by Erik Donovan Hedegaard and Jógvan Magnus H. Olsen
+!  Written by Erik Donovan Hedegaard and Jogvan Magnus H. Olsen
 !             after original routine by Hans Jørgen Aa. Jensen
 !
 !  Purpose:  Calculate Hessian contribution from a polarizable
@@ -367,8 +440,15 @@
 
             ! Fxc = -R<0|Fe|B>Fe in fxcaos
             allocate(fxcaos(ncsim*nnbasx))
-            call pe_master(runtype='response', denmats=fdtvaos,
-     &                     fckmats=fxcaos, nmats=ncsim)
+#if defined(VAR_MPI)
+            call pe_ifc_start_slaves(3)
+#endif
+            call pe_master(runtype='dynamic_response',
+     &                     triang=.true.,
+     &                     ndim=nbast,
+     &                     nmats=ncsim,
+     &                     denmats=fdtvaos,
+     &                     fckmats=fxcaos)
             deallocate(fdtvaos)
 
             do i = 1, ncsim
@@ -382,7 +462,7 @@
 
         ! Fg = Vmul -R<0|Fe|0>Fe in fyc
         allocate(fyc(nnorbx), fycac(nnashx))
-        call pe_fckmo(cmo, fyc, energy, dv, wrk, nwrk)
+        call pe_fckmo(cmo, dv, fyc, energy, wrk, nwrk)
         if (nasht > 0) call getac2(fyc, fycac)
         tfyc = solelm(dv, fycac, fyc, tfycac)
 
@@ -414,7 +494,7 @@
       subroutine pe_lno(nosim, bovecs, cref, cmo, cindx, dv,
      &                  sovecs, nso, wrk, nwrk)
 !
-!  Written by Erik Donovan Hedegaard and Jógvan Magnus H. Olsen
+!  Written by Erik Donovan Hedegaard and Jogvan Magnus H. Olsen
 !             after original code by Hans Jorgen Aa. Jensen
 !
 !  Purpose:  Calculate Hessian contribution from a
@@ -483,8 +563,15 @@
             deallocate(ubodcao, ubodvao)
 
             allocate(fxoaos(nosim*nnbasx))
-            call pe_master(runtype='response', denmats=bodtaos,
-     &                     fckmats=fxoaos, nmats=nosim)
+#if defined(VAR_MPI)
+            call pe_ifc_start_slaves(3)
+#endif
+            call pe_master(runtype='dynamic_response',
+     &                     triang=.true.,
+     &                     ndim=nbast,
+     &                     nmats=nosim,
+     &                     denmats=bodtaos,
+     &                     fckmats=fxoaos)
             deallocate(bodtaos)
 
 
@@ -499,7 +586,7 @@
         ! 2. Calculation of Fyo = V(k) + R<0|F|0>Fe(k)
         !    Store in fyos
         allocate(fckmo(nnorbx))
-        call pe_fckmo(cmo, fckmo, energy, dv, wrk, nwrk)
+        call pe_fckmo(cmo, dv, fckmo, energy, wrk, nwrk)
 
         allocate(fyo(n2orbx))
         call dsptsi(norbt, fckmo, fyo)
@@ -616,7 +703,7 @@
 
         real*8, dimension(*) :: bcvecs, cref, cmo, cindx, udv, dv
         real*8, dimension(*) :: udvtr, dvtr
-        real*8, dimension(n2ashx,*) ::  dtv
+        real*8, dimension(n2ashx,*) :: dtv
         real*8, dimension(n2ashx,*) :: dtvtr
         real*8, dimension(kzyvar,*) :: scvecs
         real*8, dimension(nwrk) :: wrk
@@ -679,8 +766,15 @@
 
             allocate(fxcaos(ncsim*nnbasx))
             fxcaos = 0.0d0
-            call pe_master(runtype='response', denmats=fdtvaos,
-     &                     fckmats=fxcaos, nmats=ncsim)
+#if defined(VAR_MPI)
+            call pe_ifc_start_slaves(3)
+#endif
+            call pe_master(runtype='dynamic_response',
+     &                     triang=.true.,
+     &                     ndim=nbast,
+     &                     nmats=ncsim,
+     &                     denmats=fdtvaos,
+     &                     fckmats=fxcaos)
             deallocate(fdtvaos)
 
             do i = 1, ncsim
@@ -702,7 +796,7 @@
                 lopen = .true.
             end if
             rewind(lusifc)
-            call mollab('PETMAT  ', lusifc, lupri)
+            call mollab('PEFMAT  ', lusifc, lupri)
             call readt(lusifc, nnorbx, fpe)
             if (lopen) call gpclose(lusifc, 'KEEP')
             allocate(fupe(n2orbx), fpeac(nnashx))
@@ -775,7 +869,7 @@
 
       end subroutine pe_rsplnc
 
-!-----------------------------------------------------------------------------.-
+!-------------------------------------------------------------------------------
 
       subroutine pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx,
      &                     udv, dv, udvtr, dvtr, sovecs, wrk, nwrk)
@@ -842,7 +936,7 @@
                 lopen = .true.
             end if
             rewind(lusifc)
-            call mollab('PETMAT  ', lusifc, lupri)
+            call mollab('PEFMAT  ', lusifc, lupri)
             call readt(lusifc, nnorbx, fpemo)
             if (lopen) call gpclose(lusifc, 'KEEP')
             allocate(fupemo(n2orbx))
@@ -869,8 +963,15 @@
         deallocate(dcao, dvao)
 
         allocate(fckaos(nosim*nnbasx))
-        call pe_master(runtype='response', denmats=daos,
-     &                 fckmats=fckaos, nmats=nosim)
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(3)
+#endif
+        call pe_master(runtype='dynamic_response',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=nosim,
+     &                 denmats=daos,
+     &                 fckmats=fckaos)
         deallocate(daos)
 
         allocate(evec(nnorbx))
@@ -983,9 +1084,15 @@
         deallocate(udcao)
 
         allocate(fcaos(4*nnbasx))
-        fcaos = 0.0d0
-        call pe_master(runtype='response', denmats=dcaos,
-     &                 fckmats=fcaos, nmats=4)
+#if defined(VAR_MPI)
+         call pe_ifc_start_slaves(3)
+#endif
+         call pe_master(runtype='dynamic_response',
+     &                  triang=.true.,
+     &                  ndim=nbast,
+     &                  nmats=4,
+     &                  denmats=dcaos,
+     &                  fckmats=fcaos)
         deallocate(dcaos)
 
         allocate(fcmo(nnorbx))
@@ -1140,9 +1247,15 @@
         deallocate(udcao)
 
         allocate(fcaos(15*nnbasx))
-        fcaos = 0.0d0
-        call pe_master(runtype='response', denmats=dcaos,
-     &                 fckmats=fcaos, nmats=15)
+#if defined(VAR_MPI)
+         call pe_ifc_start_slaves(3)
+#endif
+         call pe_master(runtype='dynamic_response',
+     &                  triang=.true.,
+     &                  ndim=nbast,
+     &                  nmats=15,
+     &                  denmats=dcaos,
+     &                  fckmats=fcaos)
         deallocate(dcaos)
 
         allocate(fcmo(nnorbx))
@@ -1280,7 +1393,6 @@
         call qexit('pe_rspcro')
 
       end subroutine pe_rspcro
-
 #endif
 
 #endif
