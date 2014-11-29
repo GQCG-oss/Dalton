@@ -9,20 +9,10 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-#f.add(string = 'Number of classical sites:')
-f.add(string = 'Multipole moments upto 2nd order.')
-f.add(string = 'Dipole-dipole polarizabilities.')
-f.add(string = 'Iterative solver for induced moments will be used')
-#f.add(string = 'with convergence threshold:',
-#      rel_tolerance = 1.0e-8)
 
 f.add(from_string = 'Polarizable embedding energy contributions:',
-      num_lines = 15,
+      num_lines = 32,
       abs_tolerance = 1.0e-5)
-
-f.add(from_string = 'Polarizable embedding information',
-      num_lines = 16,
-      abs_tolerance = 1.0e-6)
 
 f.add(from_string = 'Dipole moment components',
       num_lines = 9,
