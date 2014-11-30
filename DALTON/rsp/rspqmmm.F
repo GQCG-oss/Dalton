@@ -25,7 +25,7 @@ C**************************************************************************
 C  /* Deck peltr */
       SUBROUTINE QMMMLTR(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &                  UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,SOVECS,
-     &                  WRK,LWRK)     
+     &                  WRK,LWRK)
 C
 C Erik Donovan Hedegaard 2. may 2012: Based on PELIN
 C
@@ -44,6 +44,8 @@ C
 #include "infrsp.h"
 #include "inftap.h"
 #include "wrkrsp.h"
+#include "mxcent.h"
+#include "qmmm.h"
 C
       CALL QENTER('QMMMLTR')
 C
@@ -123,6 +125,7 @@ C
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, THRZER = 1.0D-14)
 
+      LOCDEB = .FALSE.
       LPOL = .FALSE.
       LOPEN = .FALSE.
 
@@ -138,7 +141,7 @@ C
 C     Core allocation
 C
       KUCMO    = 1
-      KFPEMO   = KUCMO    + NORBT*NBAST     
+      KFPEMO   = KUCMO    + NORBT*NBAST
       KFPEAC   = KFPEMO   + NNORBT
 C     ---------------------------------
       KINVMAT  = KFPEAC   + NNASHX
@@ -155,17 +158,17 @@ C     -------------------------------------------
       LWRK1    = LFREE    - KWRK1
 
 C
-C     1. KUCMO   : MO coefficients 
+C     1. KUCMO   : MO coefficients
 C     2. KFPEMO  : Fg(PE) operator mo basis
 C     3. KFPEAC  : active part of Fg(PE)
 C     ------------------------------------
 C     4. KINVMAT : [alpha]^(-1)
-C     5. KEFIELD : Electric field on MM (polarizable) 
-C        sites due to F^(1) field 
+C     5. KEFIELD : Electric field on MM (polarizable)
+C        sites due to F^(1) field
 C        F(tilde) = < 0 | Fel(1) | B > (for B each state)
 C     6. KINDMOM : induced moments (from NNZAL
 C        polarizable sites)
-C     ------------------------------------------ 
+C     ------------------------------------------
 
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
       CALL DZERO(WRK(KFPEMO),NNORBT)
@@ -183,7 +186,7 @@ C     ------------------------------------------
 
       CALL UPKCMO(CMO,WRK(KUCMO))
 
-C    2. Construct Txc operator (Rxc) ******* 
+C    2. Construct Txc operator (Rxc) *******
 
 C    2.a  Construct B(r) response (relay) matrix from file or solve iteratively
 
@@ -230,7 +233,7 @@ C      ------------------------------------
       DO I = 1,MMCENT
 
         KPATOM = 0
-        NCOM  = 3       ! called NOSIM occationally but denoted NCOM here 
+        NCOM  = 3       ! called NOSIM occationally but denoted NCOM here
         TOFILE = .FALSE.
         TRIMAT = .TRUE.
         EXP1VL = .FALSE.
@@ -245,7 +248,7 @@ C      ------------------------------------
 
 C       2.c  Fel^(1) operator in AO basis
 C
-C       ...Get Fel^(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.  
+C       ...Get Fel^(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.
 
          RUNQM3 = .TRUE.
 
@@ -282,7 +285,7 @@ C        2.e Active part of Fel(1) operator in MO basis
      &                   WRK(KMATAC + 2*NNASHX))
          ENDIF
 
-C        2.f ) Make F(tilde)_R = B * < 0(L)| Fel^(1) |0 > +  < 0 | Fel^(1) |0(R) > 
+C        2.f ) Make F(tilde)_R = B * < 0(L)| Fel^(1) |0 > +  < 0 | Fel^(1) |0(R) >
 
          LCI = 0
 
@@ -298,12 +301,12 @@ C        2.f ) Make F(tilde)_R = B * < 0(L)| Fel^(1) |0 > +  < 0 | Fel^(1) |0(R)
      &                      WRK(KMATMO + 2*NNORBT),TXPEAC3)
 
 C         ...To store the F(tilde) in dynamical memory, get
-C         KEFIELD x, y, z first time loop is run. Next time  
-C         Set LRI + 3 to get next MM center.         
+C         KEFIELD x, y, z first time loop is run. Next time
+C         Set LRI + 3 to get next MM center.
 
 C         x-value                                   ! This is for storage of the vector
           WRK(KEFIELD + LRI + 0 + LCI) = TXPEAC1    ! containing the expectation value of F(tilde)
-C         y-value                                   ! LCI is a counter for each state in 
+C         y-value                                   ! LCI is a counter for each state in
           WRK(KEFIELD + LRI + 1 + LCI) = TXPEAC2    ! < 0 | F(el) | B > = sum(u) < 0 | F(el) | u >
 C         z-value
           WRK(KEFIELD + LRI + 2 + LCI) = TXPEAC3
@@ -329,10 +332,10 @@ C         start from x MM center of next root
      &                   WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
      &                   WRK(KWRK2),LWRK2,IOPT,IPQMMM)
          ENDIF
-        
+
           WRITE(LUPRI,*)'Induced moments'
           CALL OUTPUT(WRK(KINDMOM),1,NDIM,1,1,1,1,1,LUPRI)
-   
+
       END DO ! ICSIM
 
 C     2.f  Make F(el) and daxpy first x, then y and then z
@@ -365,7 +368,7 @@ C       2.h Fel(1) operator in MO basis
 
         CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
      &             WRK(KWRK2),NBAST,NORBT)
-         
+
 
         CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
@@ -401,10 +404,10 @@ C       2.h Fel(1) operator in MO basis
         END DO
         LRI = LRI + 3
       END DO
-                   
+
       DO ICSIM = 1,NCSIM
          WRITE(LUPRI,*)'FXC Operator'
-         CALL OUTPAK(WRK(KFXC),NORBT,1,LUPRI) 
+         CALL OUTPAK(WRK(KFXC),NORBT,1,LUPRI)
          IF (NASHT .GT. 0) THEN
              WRITE(LUPRI,*)'FXC Operator (active part)'
              CALL OUTPAK(WRK(KFXCAC),NASHX,1,LUPRI)
@@ -412,7 +415,7 @@ C       2.h Fel(1) operator in MO basis
       END DO
 
       DO ICSIM = 1,NCSIM
-         IF (TRPLET) THEN 
+         IF (TRPLET) THEN
             TFXC = SOLELM(DVTR,WRK(KFXCAC + (ICSIM-1)*NNASHX),
      &                    WRK(KFXC + (ICSIM-1)*NNORBT),TFXCAC)
             TFXC = TFXCAC
@@ -425,7 +428,7 @@ C       2.h Fel(1) operator in MO basis
 
 C    ***************************************
 
-C    3. Construct Fg operator (Ryc) 
+C    3. Construct Fg operator (Ryc)
 
   755 CONTINUE ! IF LPOL
 
@@ -437,7 +440,7 @@ C    *** Read the solvent contributions from PEFCMO from file ***
         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
         LOPEN = .TRUE.
-      ENDIF 
+      ENDIF
 
       REWIND(LUSIFC)
 
@@ -483,14 +486,14 @@ C     ... orbital part of sigma vector(s)
 C
       IF (KZWOPT .GT. 0) THEN
          JRXC   = KFXC
-         CALL DSPTSI(NORBT,WRK(KFPEMO),WRK(KUFPE))       
+         CALL DSPTSI(NORBT,WRK(KFPEMO),WRK(KUFPE))
          DO ICSIM = 1,NCSIM
-            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KUFXC))    
+            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KUFXC))
             IF (TRPLET) THEN
                CALL SLVSOR(.TRUE.,.FALSE.,1,UDVTR,
      *                     SVEC(1,ICSIM),WRK(KUFXC))
             ELSE
-               CALL SLVSOR(.TRUE.,.TRUE.,1,UDV,        ! Construct < j | Fg | 0^(R) >  + < j | Fxc | 0 > 
+               CALL SLVSOR(.TRUE.,.TRUE.,1,UDV,        ! Construct < j | Fg | 0^(R) >  + < j | Fxc | 0 >
      *                     SVEC(1,ICSIM),WRK(KUFXC))   !           < 0^(L) | Fg | j >  + < 0 | Fxc | j >
             END IF
             IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN
@@ -504,10 +507,10 @@ C
                CALL SLVSOR(.FALSE.,.FALSE.,1,DTVTR(1,ICSIM),
      *                      SVEC(1,ICSIM),WRK(KUFPE))
             ELSE
-               CALL SLVSOR(.FALSE.,.FALSE.,1,DTV(1,ICSIM), ! edh: Construct < 0 | Fg | 0 > Sj 
+               CALL SLVSOR(.FALSE.,.FALSE.,1,DTV(1,ICSIM), ! edh: Construct < 0 | Fg | 0 > Sj
      *                     SVEC(1,ICSIM),WRK(KUFPE))       !            S*j < 0 | Fg | 0 >
             END IF
-            IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN 
+            IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN
                WRITE(LUPRI,*)
      *         ' orbital part of LINEAR TRANSFORMED CONF VEC No',ICSIM
                WRITE(LUPRI,*)' TG CONTRIBUTION'
@@ -517,7 +520,7 @@ C
             JRXC   = JRXC   + NNORBX
          END DO
 
-            IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN 
+            IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN
                WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
                WRITE(LUPRI,*)' **** AFTER SLVSOR  in SLVLNC **** '
                CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
@@ -546,7 +549,7 @@ C
 C  Purpose:  Calculate MCSCF or SCF/DFT E^2 contribution from a surrounding
 C            polarizable MM medium to an orbital trial vector. New QMMM
 C            code.
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -583,7 +586,7 @@ C
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
-      LOGICAL FNDLAB, LOPEN, LPOL 
+      LOGICAL FNDLAB, LOPEN, LPOL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
@@ -595,7 +598,7 @@ C
 
       CALL QENTER('QMMMLNO')
 
-      IF (MMTIME) THEN 
+      IF (MMTIME) THEN
         DTIME = SECOND()
         BTIME = SECOND()
       ENDIF
@@ -629,7 +632,7 @@ c     Exit if not MCSCF (with- or without pol.) or HF/DFT without polarization
         RETURN
       ENDIF
 
-C     Memory allocation   
+C     Memory allocation
       KUCMO   = 1
       KUBO    = KUCMO   + NORBT*NBAST
 C     ---------F(yo) construction--------
@@ -637,7 +640,7 @@ C     ---------F(yo) construction--------
       KFPEAC  = KFPEMO  + NNORBX
       KUFPE   = KFPEAC  + NNASHX
       KUFPEX  = KUFPE   + N2ORBX
-C     ---------F(xo) construction--------   
+C     ---------F(xo) construction--------
       KRXYO   = KUFPEX  + N2ORBX
       IF (TRPLET) THEN
         KRXYOT  = KRXYO   + NOSIM*N2ORBX
@@ -648,7 +651,7 @@ C     ---------F(xo) construction--------
       KINDMOM = KEFIELD + 3*NNZAL
       IF (MMMAT) THEN
         KINVMAT  = KINDMOM + 3*NNZAL
-        KWRK1    = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2   
+        KWRK1    = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2
       ELSE IF (MMITER) THEN
         KWRK1   = KINDMOM + 3*NNZAL
       ENDIF
@@ -675,7 +678,7 @@ C     ---------F(xo) construction--------
       CALL DZERO(WRK(KFPEMO),NNORBX)
       CALL DZERO(WRK(KFPEAC),NNASHX)
       CALL DZERO(WRK(KUFPE),N2ORBX)
-      CALL DZERO(WRK(KUFPEX),N2ORBX)     
+      CALL DZERO(WRK(KUFPEX),N2ORBX)
       CALL DZERO(WRK(KRXYO),NOSIM*N2ORBX)
       IF (TRPLET) CALL DZERO(WRK(KRXYOT),NOSIM*N2ORBX)
       CALL DZERO(WRK(KEFIELD),3*NNZAL)
@@ -689,7 +692,7 @@ C     ---------F(xo) construction--------
 
 C     Read the relay matrix from file
 
-      N = 3*NNZAL 
+      N = 3*NNZAL
 
       IF (LPOL .AND. MMMAT) THEN
         LUQMMM = -1
@@ -737,7 +740,7 @@ C     *** Read the solvent contributions from PEFCMO from file ***
       IF (LOPEN) THEN
         CALL GPCLOSE(LUSIFC,'KEEP')
       END IF
-      
+
       CALL UPKCMO(CMO,WRK(KUCMO))
 
       CALL DSPTSI(NORBT,WRK(KFPEMO),WRK(KUFPE))
@@ -747,12 +750,12 @@ C     *** Read the solvent contributions from PEFCMO from file ***
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
       END IF
 
-      IF (MMTIME) THEN 
+      IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMLNO0 = TMMLNO0 + DTIME
       ENDIF
 C     For SCF the zero-order contribution, i.e.
-C     - sum_a mu_ind_a t_a_pq has been included since we in 
+C     - sum_a mu_ind_a t_a_pq has been included since we in
 C     sirius do not subtract this from the fock/ks-operator.
 C     Add this explicitly only for MCSCF.
 C
@@ -761,7 +764,7 @@ C
          IF (MMTIME) DTIME = SECOND()
 
          ! edh: Arrange Fyo (KRXYO in memory)
-         ! edh: Arrange Fyo triplet (KRXYOT in memory) 
+         ! edh: Arrange Fyo triplet (KRXYOT in memory)
          ! edh: Unpack orbital response trial vectors k(t) = sum(u)k(t)q + k*(t)q(dagger)
          JRXYO = KRXYO + (IOSIM-1)*N2ORBX
          IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
@@ -769,21 +772,21 @@ C
 C
 C        Calculate one-index transformed integrals
 C
-      IF (KZCONF .GT. 0) THEN    ! edh: KZCONF *not* optimal for triplet    
+      IF (KZCONF .GT. 0) THEN    ! edh: KZCONF *not* optimal for triplet
 
-        CALL DZERO(WRK(KUFPEX),N2ORBX)                        
+        CALL DZERO(WRK(KUFPEX),N2ORBX)
         CALL ONEXH1(WRK(JUBO),WRK(KUFPE),WRK(KUFPEX))
 
           IF (TRPLET) THEN
             CALL DAXPY(N2ORBX,ONE,WRK(KUFPEX),1,WRK(JRXYOT),1)
           ELSE
-            CALL DAXPY(N2ORBX,ONE,WRK(KUFPEX),1,WRK(JRXYO),1) 
+            CALL DAXPY(N2ORBX,ONE,WRK(KUFPEX),1,WRK(JRXYO),1)
           ENDIF
       ENDIF
 
 C-------------------------------------------------------
-C 1. Construct vector containing expectation value of electric 
-C    field due to first order change in the density. Length of vector 
+C 1. Construct vector containing expectation value of electric
+C    field due to first order change in the density. Length of vector
 C    is NNZAL = no. of pol. sites.
 C-------------------------------------------------------
 
@@ -808,7 +811,7 @@ C-------------------------------------------------------
      *                        WRK(KWRK2),LWRK2,IPRRSP)
              LRI = LRI + 3
              GOTO 201
-  201      CONTINUE        
+  201      CONTINUE
 #if defined(VAR_MPI)
          ENDIF
 #endif
@@ -837,25 +840,25 @@ C        Calculate the induced dipoles corresponding to this field
          ENDIF
 
          IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
-           WRITE(LUPRI,*) 'Transformed induced dipole moments' 
+           WRITE(LUPRI,*) 'Transformed induced dipole moments'
            CALL OUTPUT(WRK(KINDMOM),1,N,1,1,N,1,1,LUPRI)
            WRITE(LUPRI,*)
          ENDIF
 
-C        Now we need the integrals again transformed to the MO basis. 
+C        Now we need the integrals again transformed to the MO basis.
          IF (MMTIME) THEN
            DTIME = SECOND() - DTIME
            TMMLNO2 = TMMLNO2 + DTIME
          ENDIF
 
          IF (MMTIME) DTIME = SECOND()
-         
+
          IF (TRPLET) THEN
             LRXYO = JRXYOT
          ELSE
             LRXYO = JRXYO
          ENDIF
-        ! Make Fxo (add to Fyo and store in KRXYO) 
+        ! Make Fxo (add to Fyo and store in KRXYO)
 #if defined(VAR_MPI)
          IF ((NODTOT .GE. 1) .AND. TDHF) THEN
             CALL QMMMLNO_M2(WRK(LRXYO),WRK(KUCMO),WRK(KINDMOM),
@@ -870,7 +873,7 @@ C        Now we need the integrals again transformed to the MO basis.
      *                        WRK(KUCMO),WRK(LRXYO),
      *                        WRK(KWRK2),LWRK2,IPRRSP)
                LRI = LRI + 3
- 202        CONTINUE 
+ 202        CONTINUE
 #if defined(VAR_MPI)
          ENDIF
 #endif
@@ -887,15 +890,15 @@ C        Now we need the integrals again transformed to the MO basis.
 
 C--------------------------------------------
 C 3.  Add effective operators to response
-C     Calculate Fxo (Rxo) and Fyo (Ryo) 
+C     Calculate Fxo (Rxo) and Fyo (Ryo)
 C     contributions to SVEC(NSVEC,NOSIM)
 C--------------------------------------------
 
       IF (MMTIME) DTIME = SECOND()
 
-      DO IOSIM = 1,NOSIM         
+      DO IOSIM = 1,NOSIM
          JRXYO  = KRXYO  + (IOSIM-1)*N2ORBX
-         JRXYOA = KRXYOA + (IOSIM-1)*N2ASHX 
+         JRXYOA = KRXYOA + (IOSIM-1)*N2ASHX
          IF (TRPLET) THEN
             JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
             JRXYAT = KRXYAT + (IOSIM-1)*N2ASHX
@@ -903,13 +906,13 @@ C--------------------------------------------
          IF (IREFSY .EQ. KSYMST) THEN
             WRK(KOVLP-1+IOSIM) = DDOT(KZCONF,CREF,1,SVEC(1,IOSIM),1)
          ELSE
-            WRK(KOVLP-1+IOSIM) = D0
+            WRK(KOVLP-1+IOSIM) = ZERO
          END IF
-  
+
             CALL GETACQ(WRK(JRXYO),WRK(JRXYOA))
-            TXYO   = SLVQLM(UDV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)  
+            TXYO   = SLVQLM(UDV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)
             WRK(KTXYOA-1+IOSIM) = TXYOAC
- 
+
             WRITE (LUPRI,*)'TXYOAC', TXYOAC
 
          IF (TRPLET) THEN
@@ -942,7 +945,7 @@ C--------------------------------------------
             CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
          END IF
 
-  300 CONTINUE ! IF TDHF 
+  300 CONTINUE ! IF TDHF
 
       IF (TRPLET) THEN
           ! SLVSOR: < 0 | [ q_j, A ] | 0 >
@@ -973,7 +976,7 @@ C--------------------------------------------
 
       CALL QEXIT('QMMMLNO')
       RETURN
-      END 
+      END
 C-----------------------------------------------------------------------
 C
 C  /* Deck qmmmqro */
@@ -985,7 +988,7 @@ C
 C  JK, Dec. 08
 C
 C  Purpose:  Calculate SCF/DFT E^3 contribution from a surrounding
-C            polarizable MM medium to an orbital trial vector. New 
+C            polarizable MM medium to an orbital trial vector. New
 C            QMMM code
 C
 #include "implicit.h"
@@ -1086,7 +1089,7 @@ C
 
       NSIM = 1
 
-C     We assume no symmetry in the DFT/MM calculations although we have kept 
+C     We assume no symmetry in the DFT/MM calculations although we have kept
 C     some symmetry options below ...
 
       ISYMT = 1
@@ -1139,7 +1142,7 @@ C     Unpack symmetry blocked CMO
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMQRO',-KLAST,LWRK2)
 
-      IF (MMTIME) THEN 
+      IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMQRO0 = TMMQRO0 + DTIME
       ENDIF
@@ -1153,7 +1156,7 @@ C     Unpack symmetry blocked CMO
       ELSE
 #endif
         LRI = 1                ! group-index in vector
-        DO 100 J = 1,MMCENT 
+        DO 100 J = 1,MMCENT
           IF (ZEROAL(J) .EQ. -1) GOTO 100
           CALL MMQRO_ITER1(J,WRK(KEF1+LRI-1),WRK(KEF2+LRI-1),UDV,
      *                     WRK(KUCMO),ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,
@@ -1163,11 +1166,11 @@ C     Unpack symmetry blocked CMO
 #if defined(VAR_MPI)
       ENDIF
 #endif
-      IF (MMTIME) THEN 
+      IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMQRO1 = TMMQRO1 + DTIME
       ENDIF
-C     Calculate the induced dipoles corresponding to the 
+C     Calculate the induced dipoles corresponding to the
 C     (transformed) fields 1 and 2
       IF (MMTIME) DTIME = SECOND()
 
@@ -1202,7 +1205,7 @@ C     (transformed) fields 1 and 2
       ENDIF
 
       IF (MMMAT) THEN
-        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF2), 1, ZERO, 
+        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF2), 1, ZERO,
      &             WRK(KIND2), 1)
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
@@ -1220,8 +1223,8 @@ C     (transformed) fields 1 and 2
         DTIME = SECOND() - DTIME
         TMMQRO2 = TMMQRO2 + DTIME
       ENDIF
-C     Now we need the integrals again transformed to the MO basis 
-C     and also one-index transformed integrals. 
+C     Now we need the integrals again transformed to the MO basis
+C     and also one-index transformed integrals.
 C     These could have been stored
 C     before, but we choose to do all of this integral-direct.
       IF (MMTIME) DTIME = SECOND()
@@ -1234,7 +1237,7 @@ C     before, but we choose to do all of this integral-direct.
       ELSE
 #endif
         LRI = 1                ! group-index in vector
-        DO 101 J = 1,MMCENT 
+        DO 101 J = 1,MMCENT
            IF (ZEROAL(J) .EQ. -1) GOTO 101
            CALL MMQRO_ITER2(J,WRK(KIND1+LRI-1),WRK(KIND2+LRI-1),
      *                   WRK(KTRES),WRK(KUCMO),ISYMT,ISYMV2,ZYM2,
@@ -1298,7 +1301,7 @@ C
 C  JMO, Apr. 09
 C
 C  Purpose:  Calculate SCF/DFT E^4 contribution from a surrounding
-C            polarizable MM medium to an orbital trial vector. New 
+C            polarizable MM medium to an orbital trial vector. New
 C            QMMM code
 C
 #include "implicit.h"
@@ -1394,7 +1397,7 @@ C Change here KTLMC
 
       NSIM = 1
 
-C     We assume no symmetry in the DFT/MM calculations although we have kept 
+C     We assume no symmetry in the DFT/MM calculations although we have kept
 C     some symmetry options below ...
 
       ISYMT = 1
@@ -1440,7 +1443,7 @@ C     Unpack symmetry blocked CMO
           END DO
         ENDIF
 
-      ENDIF 
+      ENDIF
 
       KMAT = KWRK
       KLAST = KMAT + 3*NNBASX
@@ -1463,7 +1466,7 @@ C     Unpack symmetry blocked CMO
       ELSE
 #endif
         LRI = 1                ! group-index in vector
-        DO 100 J = 1,MMCENT 
+        DO 100 J = 1,MMCENT
            IF (ZEROAL(J) .EQ. -1) GOTO 100
            CALL MMCRO_ITER1(J,WRK(KEF1+LRI-1),WRK(KEF2+LRI-1),
      *                   WRK(KEF3+LRI-1),UDV,WRK(KUCMO),
@@ -1480,8 +1483,8 @@ C     Unpack symmetry blocked CMO
       ENDIF
 
       IF (MMTIME) DTIME = SECOND()
-C     Calculate the induced dipoles corresponding to the 
-C     (transformed) fields 1, 2 and 3 either by matrix inversion or 
+C     Calculate the induced dipoles corresponding to the
+C     (transformed) fields 1, 2 and 3 either by matrix inversion or
 C     iteratively.
 
       NDIM = 3*NNZAL
@@ -1506,7 +1509,7 @@ C     iteratively.
       ENDIF
 
       IF (MMMAT) THEN
-        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF1), 1, ZERO, 
+        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF1), 1, ZERO,
      &             WRK(KIND1), 1)
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
@@ -1521,7 +1524,7 @@ C     iteratively.
       ENDIF
 
       IF (MMMAT) THEN
-        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF2), 1, ZERO, 
+        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF2), 1, ZERO,
      &             WRK(KIND2), 1)
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
@@ -1536,7 +1539,7 @@ C     iteratively.
       ENDIF
 
       IF (MMMAT) THEN
-        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF3), 1, ZERO, 
+        CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEF3), 1, ZERO,
      &             WRK(KIND3), 1)
       ELSE IF (MMITER) THEN
         IOPT = 2 ! Do not read from file any previuos induced moments
@@ -1550,12 +1553,12 @@ C     iteratively.
         WRITE(LUPRI,*)
       ENDIF
 
-C     Now we need the integrals again transformed to the MO basis 
-C     and also one-index transformed integrals. 
+C     Now we need the integrals again transformed to the MO basis
+C     and also one-index transformed integrals.
 C     These could have been stored
 C     before, but we choose to do all of this integral-direct.
 
-      IF (MMTIME) THEN 
+      IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMCRO2 = TMMCRO2 + DTIME
       ENDIF
@@ -1570,7 +1573,7 @@ C     before, but we choose to do all of this integral-direct.
       ELSE
 #endif
          LRI = 1                ! group-index in vector
-         DO 101 J = 1,MMCENT 
+         DO 101 J = 1,MMCENT
             IF (ZEROAL(J) .EQ. -1) GOTO 101
             CALL MMCRO_ITER2(J,WRK(KIND1+LRI-1),WRK(KIND2+LRI-1),
      *                       WRK(KIND3+LRI-1),WRK(KTRES),WRK(KUCMO),
@@ -1660,7 +1663,7 @@ C  /* Deck mmlno_iter1 */
 
       DIMENSION UDV(NASHDI,NASHDI),UDVTR(N2ASHX)
       DIMENSION UCMO(NORBT*NBAST),UBO(N2ORBX),WRK(LWRK)
- 
+
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, EXP1VL, TRIMAT
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -1702,7 +1705,7 @@ C     program.
       IF (LWRK2 .LT. 0) CALL ERRWRK('MMLNO_ITER1',-KLAST,LWRK2)
 
       CALL DZERO(WRK(KMAT),3*NNBASX)
-      
+
       KPATOM = 0
       NOCOMP = 3
       TOFILE = .FALSE.
@@ -1852,7 +1855,7 @@ C  /* Deck mmlno_iter2 */
 #include "infdim.h"
 
       DIMENSION RXYO(*),UCMO(*),WRK(LWRK)
- 
+
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, EXP1VL, TRIMAT
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -1940,8 +1943,8 @@ C     Backup the dipole origin
          ENDIF
          CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
       ENDIF
-      
-C     x-component of electric field 
+
+C     x-component of electric field
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
 
@@ -2089,7 +2092,7 @@ C     Backup the dipole origin
      &           (DIPORG(3)-QMCOM(3))**2
          ENDIF
          DIST = SQRT(DIST)
-         
+
          IF (IDAMP .EQ. 3) THEN
             IF (IPOLTP .EQ. 2) THEN
                TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
@@ -2122,7 +2125,7 @@ C
          EF1(1) = F1
       ELSE
          EF1(1) = ZERO
-      ENDIF 
+      ENDIF
 
       IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
          CALL DZERO(WRK(KTLMA),N2ORBX)
@@ -2140,7 +2143,7 @@ C     y-component
       F2=ZERO
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
-      
+
       CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),UCMO,
      &              WRK(KLAST),NBAST,NORBT)
       CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
@@ -2311,7 +2314,7 @@ C     Backup the dipole origin
      &               (DIPORG(3)-QMCOM(3))**2
          ENDIF
          DIST = SQRT(DIST)
-            
+
          IF (IDAMP .EQ. 3) THEN
             IF (IPOLTP .EQ. 2) THEN
                TEMPI =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
@@ -2370,7 +2373,7 @@ C     z-component
       F1 = -EIND1(3)
       CALL DZERO(WRK(KTLMA),N2ORBX)
       CALL OITH1(ISYMV2,ZYM2,WRK(KUTR),WRK(KTLMA),ISYMT)
-      CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,TRES,1)   
+      CALL DAXPY(N2ORBX,F1,WRK(KTLMA),1,TRES,1)
 
       F2 = -0.50D0*EIND2(3)
       CALL DAXPY(N2ORBX,F2,WRK(KUTR),1,TRES,1)
@@ -2518,7 +2521,7 @@ C     x-component
       F3=ZERO
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
-C 
+C
       CALL UTHU(WRK(KMAT),WRK(KTRMO),UCMO,WRK(KLAST),
      &          NBAST,NORBT)
 
@@ -2572,7 +2575,7 @@ C     y-component
       F3=ZERO
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
-      
+
 C     AO to MO transformation
 
       CALL UTHU(WRK(KMAT+NNBASX),WRK(KTRMO),UCMO,WRK(KLAST),
@@ -2646,7 +2649,7 @@ C     z-component
       ELSE
          EF2(3) = ZERO
       END IF
-      
+
       IF (ISYMT.EQ.MULD2H(ISYMV1,MULD2H(ISYMV2,ISYMV3))) THEN
          CALL DZERO(WRK(KTLMA),N2ORBX)
          CALL DZERO(WRK(KTLMB),N2ORBX)
@@ -2794,16 +2797,16 @@ C     Backup the dipole origin
          ENDIF
          CALL DSCAL(3*NNBASX,DFACT,WRK(KMAT),1)
       ENDIF
-      
+
 C     x-component
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
-      
+
       CALL UTHU(WRK(KMAT),WRK(KTRMO),UCMO,WRK(KLAST),
      &          NBAST,NORBT)
       CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
 
-      IF (ISYMT.EQ.ISYMV1) THEN 
+      IF (ISYMT.EQ.ISYMV1) THEN
          F1 = -(1.0D0/2.0D0)*EIND1(1)
          CALL DZERO(WRK(KTLMA),N2ORBX)
          CALL DZERO(WRK(KTLMB),N2ORBX)
@@ -2858,11 +2861,11 @@ C     y-component
 C     z-component
       CALL DZERO(WRK(KTRMO),NNORBX)
       CALL DZERO(WRK(KUTR),N2ORBX)
-      
+
       CALL UTHU(WRK(KMAT+2*NNBASX),WRK(KTRMO),UCMO,WRK(KLAST),
      &          NBAST,NORBT)
       CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-      
+
       IF (ISYMT.EQ.ISYMV1) THEN
          F1 = -(1.0D0/2.0D0)*EIND1(3)
          CALL DZERO(WRK(KTLMA),N2ORBX)
@@ -2904,7 +2907,7 @@ C  /* Deck qmmmlno_m1 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -2932,7 +2935,7 @@ C
 #endif
 #include "cbiher.h"
 #include "infdim.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 
       DIMENSION WRK(LWRK), UBO(*), UCMO(*)
@@ -3010,7 +3013,7 @@ C  /* Deck qmmmlno_s1 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3059,7 +3062,7 @@ C     Damping
 
       CALL MPIXBCAST(NASHDI,1,'INTEGER',MASTER)
       CALL MPIXBCAST(ISX,NORB,'INTEGER',MASTER)
-C    
+C
       IF (TRPLET) THEN
          NFACTOR = N2ASHX
       ELSE
@@ -3069,13 +3072,13 @@ C
       KUCMO   = 1
       JUBO    = KUCMO   + NORBT*NBAST
       KEFIELD = JUBO    + N2ORBX
-      KUDV    = KEFIELD + 3*NNZAL 
+      KUDV    = KEFIELD + 3*NNZAL
       KLAST   = KUDV    + NFACTOR
       LWRK2   = LWRK - KLAST + 1
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO_S1',-KLAST,LWRK2)
 
-      CALL MPIXBCAST(WRK(KUDV),NFACTOR,'DOUBLE',MASTER)      
+      CALL MPIXBCAST(WRK(KUDV),NFACTOR,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(JUBO),N2ORBX,'DOUBLE',MASTER)
 
@@ -3099,7 +3102,7 @@ C     No more integrals to calculate
 
       CALL MPI_REDUCE(WRK(KEFIELD),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      
+
       CALL QEXIT('QMMMLNO_S1')
       RETURN
       END
@@ -3109,7 +3112,7 @@ C  /* Deck qmmmlno_m2 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3136,7 +3139,7 @@ C
 #endif
 #include "cbiher.h"
 #include "infdim.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
@@ -3192,7 +3195,7 @@ C  /* Deck qmmmlno_s2 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3226,7 +3229,7 @@ C
       CALL QENTER('QMMMLNO_S2')
 
       QMMM = .TRUE.
-      
+
       KINDMOM = 1
       KUCMO   = KINDMOM + 3*NNZAL
       JRXYO   = KUCMO   + NORBT*NBAST
@@ -3257,7 +3260,7 @@ C
 C     No more integrals to calculate
       CALL MPI_REDUCE(WRK(JRXYO),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      
+
       CALL QEXIT('QMMMLNO_S2')
       RETURN
       END
@@ -3268,7 +3271,7 @@ C  /* Deck qmmmqro_m1 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3295,7 +3298,7 @@ C
 #endif
 #include "cbiher.h"
 #include "infdim.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
@@ -3377,7 +3380,7 @@ C  /* Deck qmmmqro_s1 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3467,7 +3470,7 @@ C     No more integrals to calculate
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       CALL MPI_REDUCE(WRK(KEF2),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      
+
       CALL QEXIT('QMMMQRO_S1')
       RETURN
       END
@@ -3478,7 +3481,7 @@ C  /* Deck qmmmqro_m2 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3504,7 +3507,7 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
@@ -3568,7 +3571,7 @@ C  /* Deck qmmmqro_s2 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3641,7 +3644,7 @@ C     QRO
 C     No more integrals to calculate
       CALL MPI_REDUCE(WRK(KTRES),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      
+
       CALL QEXIT('QMMMQRO_S2')
       RETURN
       END
@@ -3654,7 +3657,7 @@ C  /* Deck qmmmcro_m1 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3681,7 +3684,7 @@ C
 #endif
 #include "cbiher.h"
 #include "infdim.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
@@ -3771,7 +3774,7 @@ C  /* Deck qmmmcro_s1 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3883,7 +3886,7 @@ C  /* Deck qmmmcro_m2 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -3909,7 +3912,7 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
-C defined parallel calculation types  
+C defined parallel calculation types
 #include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
@@ -3991,7 +3994,7 @@ C  /* Deck qmmmcro_s2 */
 C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
-C  
+C
 #include "implicit.h"
 #include "maxorb.h"
 #include "inflin.h"
@@ -4037,7 +4040,7 @@ C     Damping
          CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
          CALL MPIXBCAST(POLIMM,MMCENT,'DOUBLE',MASTER)
       ENDIF
-C    
+C
       KUCMO   = 1
       KTRES   = KUCMO   + NORBT*NBAST
       KZYM2   = KTRES   + N2ORBX
@@ -4083,7 +4086,7 @@ C     CRO
 C     No more integrals to calculate
       CALL MPI_REDUCE(WRK(KTRES),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      
+
       CALL QEXIT('QMMMCRO_S2')
       RETURN
       END
