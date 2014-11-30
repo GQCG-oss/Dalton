@@ -1537,6 +1537,7 @@ C Used from common blocks:
 C gnrinf.h : THR_REDFAC
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "gnrinf.h"
 #include "abainf.h"
