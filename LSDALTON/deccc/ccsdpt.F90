@@ -25,6 +25,7 @@ module ccsdpt_module
 #endif
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
+  use lspdm_tensor_operations_module
   use ptr_assoc_module 
 #ifdef VAR_OPENACC
   use openacc
@@ -8696,9 +8697,9 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> pair fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
