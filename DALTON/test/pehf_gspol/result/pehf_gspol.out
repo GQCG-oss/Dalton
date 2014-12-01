@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON (Release Dalton2013 patch 0)
+    This is output from DALTON 2014.0
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -24,32 +24,33 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
-       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
-       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
-       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
-       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
-       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
-       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
-       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
-       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
-       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
-       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
-       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
-       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
-       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
-       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
-       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
-       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
-       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Agren,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
        "The Dalton quantum chemistry program system",
        WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.0 (2013), see http://daltonprogram.org
+       Release DALTON2014.0 (2014), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -58,15 +59,17 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
-  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -75,6 +78,7 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
@@ -85,14 +89,16 @@
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
   Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
   Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
   Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
   Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
   Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
   Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
   Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
@@ -101,24 +107,26 @@
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
   Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
-  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
   Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
   Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
-  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
@@ -128,37 +136,41 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue Sep 17 22:39:13 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun Nov 30 01:17:34 2014
+     Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-17T22_38-testjob-pid-10519
-   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/convert
+   2) /home/magnus/Projects/dalton_devel/dalton/build_release/basis
 
 
 Compilation information
 -----------------------
 
  Who compiled             | magnus
- Host                     | TheSocialist
- System                   | Linux-3.10.11-200.fc19.x86_64
+ Host                     | foeroyar
+ System                   | Linux-3.17.3-200.fc20.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
- C compiler               | /usr/lib64/ccache/gcc
- C compiler version       | gcc (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
- C++ compiler             | /usr/lib64/ccache/g++
- C++ compiler version     | g++ (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
- BLAS                     | /lib64/libblas.so
- LAPACK                   | /lib64/liblapack.so
+ MPI                      | ON
+ Fortran compiler         | /usr/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
+ C compiler               | /usr/local/bin/mpicc
+ C compiler version       | gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
+ C++ compiler             | /usr/local/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /lib64/atlas-sse3/libf77blas.so;/lib64/atlas-sse3/
+                          | libcblas.so;/lib64/atlas-sse3/libatlas.so
+ LAPACK                   | /lib64/atlas-sse3/libatlas.so;/lib64/atlas-sse3/li
+                          | blapack.so
  Static linking           | OFF
- Last Git revision        | 125c293ec00a6e285dc76690c5a7c9e35d3b061c
- Configuration time       | 2013-09-17 22:19:49.616906
+ Last Git revision        | 0486430de0acaf0efef03b87eacd4e16392312bf
+ Configuration time       | 2014-11-30 01:05:02.996481
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -237,7 +249,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -245,7 +257,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -253,13 +265,13 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
 
 
                          SYMGRP: Point group information
                          -------------------------------
 
-Point group: C1 
+@    Point group: C1 
 
 
                                  Isotopic Masses
@@ -385,7 +397,7 @@ Point group: C1
  Rotational constants
  --------------------
 
- The molecule is planar.
+@    The molecule is planar.
 
                A                   B                   C
 
@@ -395,7 +407,7 @@ Point group: C1
 
 @  Nuclear repulsion energy :  102.664846860515 Hartree
 
-  Reading potential input file
+  Reading potential input file for polarizable embedding calculation
 
   Polarizable embedding information
   ---------------------------------
@@ -418,10 +430,23 @@ Point group: C1
 
 
 
-    *************************************************************************
-    ****************** Output from HERMIT input processing ******************
-    *************************************************************************
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
 
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.973773359129     -1.393789716280      0.000424788898
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
      ************************************************************************
@@ -430,12 +455,12 @@ Point group: C1
 
 
  Threshold for neglecting two-electron integrals:  1.00D-12
- Number of two-electron integrals written:       43383 ( 96.1% )
- Megabytes written:                              0.502
+ HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
+ HERMIT - Megabytes written:                              0.502
 
- >>>  Time used in TWOINT     is   0.29 seconds
- >>>> Total CPU  time used in HERMIT:   0.35 seconds
- >>>> Total wall time used in HERMIT:   0.35 seconds
+ >>>  Time used in TWOINT     is   0.22 seconds
+ >>>> Total CPU  time used in HERMIT:   0.26 seconds
+ >>>> Total wall time used in HERMIT:   0.26 seconds
 
 
                         .----------------------------------.
@@ -471,8 +496,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:13 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun Nov 30 01:17:34 2014
+     Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
      Acrolein                                                                
@@ -496,78 +521,88 @@ Point group: C1
      Wave function environment is modeled using the
      polarizable embedding model (PE library).
 
-@    For the wave function of type :      >>> PE-HF <<<
+@    Wave function type        >>> PE-HF <<<
 @    Number of closed shell electrons          30
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
 
 @    Spin multiplicity and 2 M_S                1         0
-     Total number of symmetries                 1
-@    Reference state symmetry                   1
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1
+                                           |  A  
                                        --- |  ---
 @    Occupied SCF orbitals              15 |   15
      Secondary orbitals                  9 |    9
      Total number of orbitals           24 |   24
      Number of basis functions          24 |   24
 
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations            135
+     ------------------------------------------
+@    Total number of variables              136
+
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations      0
+     Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-05
 
 
- >>>>> DIIS optimization of Hartree-Fock <<<<<
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    8
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -187.948496597     -4.868374075775E-02    2.01259D+00   -1.88D+02
+@  1  -187.948496600     -4.868374348978E-02    2.01259D+00   -1.88D+02
       Virial theorem: -V/T =      2.003056
 @      MULPOP C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
  -----------------------------------------------------------------------------
-@  2  -188.184828401      2.328858280187E-03    1.36837D+00   -2.36D-01
-      Virial theorem: -V/T =      2.009434
-@      MULPOP C      -0.39; C      -0.18; C      -0.25; O       0.36; H       0.07; H       0.15; H       0.12; H       0.13; 
+@  2  -188.184841194      2.344779659307E-03    1.36791D+00   -2.36D-01
+      Virial theorem: -V/T =      2.009438
+@      MULPOP C      -0.39; C      -0.18; C      -0.25; O       0.36; H       0.07; H       0.15; H       0.12; H       0.12; 
  -----------------------------------------------------------------------------
-@  3  -188.315313381     -1.996394830503E-02    1.22567D-01   -1.30D-01
-      Virial theorem: -V/T =      2.007782
+@  3  -188.315331361     -1.994605857626E-02    1.22120D-01   -1.30D-01
+      Virial theorem: -V/T =      2.007786
 @      MULPOP C       0.19; C      -0.10; C      -0.11; O      -0.30; H       0.05; H       0.09; H       0.08; H       0.08; 
  -----------------------------------------------------------------------------
-@  4  -188.317220993     -1.921006112597E-02    2.83241D-02   -1.91D-03
+@  4  -188.317223363     -1.920849914129E-02    2.80029D-02   -1.89D-03
       Virial theorem: -V/T =      2.007876
-@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.09; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  5  -188.317376106     -1.916721817517E-02    9.88456D-03   -1.55D-04
+@  5  -188.317376539     -1.916797097239E-02    9.68984D-03   -1.53D-04
       Virial theorem: -V/T =      2.007837
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  6  -188.317390771     -1.918421676689E-02    2.83578D-03   -1.47D-05
+@  6  -188.317390806     -1.918432906121E-02    2.78666D-03   -1.43D-05
       Virial theorem: -V/T =      2.007836
 @      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  7  -188.317391849     -1.918173524831E-02    6.97749D-04   -1.08D-06
+@  7  -188.317391847     -1.918174369107E-02    7.23105D-04   -1.04D-06
       Virial theorem: -V/T =      2.007836
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  8  -188.317391912     -1.918426879386E-02    1.41778D-04   -6.34D-08
+@  8  -188.317391913     -1.918427369673E-02    1.50542D-04   -6.63D-08
       Virial theorem: -V/T =      2.007835
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  9  -188.317391915     -1.918426274982E-02    3.30110D-05   -2.75D-09
+@  9  -188.317391916     -1.918426510508E-02    3.46603D-05   -3.15D-09
       Virial theorem: -V/T =      2.007835
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@ 10  -188.317391915     -1.918442015518E-02    7.82819D-06   -1.90D-10
+@ 10  -188.317391916     -1.918439589978E-02    9.30417D-06   -2.13D-10
 
 @ *** DIIS converged in  10 iterations !
-@     Converged SCF energy, gradient:   -188.317391915058    7.83D-06
+@     Converged SCF energy, gradient:   -188.317391916158    9.30D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -581,35 +616,35 @@ Point group: C1
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.28723504   -11.13975677   -11.05534319   -11.04610049    -1.34280969
-        -1.02347222    -0.82817328    -0.73627023    -0.61639434    -0.60505831
-        -0.52315121    -0.50359067    -0.47863644    -0.36294736    -0.32551278
-         0.20429350     0.38331420     0.59620646     0.62636530     0.65971995
+1 A     -20.28723547   -11.13975660   -11.05534296   -11.04610027    -1.34280986
+         -1.02347208    -0.82817321    -0.73627017    -0.61639430    -0.60505833
+         -0.52315126    -0.50359063    -0.47863644    -0.36294749    -0.32551271
+          0.20429359     0.38331426     0.59620654     0.62636541     0.65972004
 
-    E(LUMO) :     0.20429350 au (symmetry 1)
-  - E(HOMO) :    -0.32551278 au (symmetry 1)
+    E(LUMO) :     0.20429359 au (symmetry 1)
+  - E(HOMO) :    -0.32551271 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.52980628 au
+    gap     :     0.52980630 au
 
       Polarizable embedding energy contributions:
      ---------------------------------------------
 
        Electrostatic contributions:
-         Monopoles                 -0.015401667557
-         Dipoles                    0.004183505887
-         Quadrupoles               -0.004908357303
-         Octopoles                 -0.002292520270
+         Monopoles                 -0.015401648863
+         Dipoles                    0.004183501103
+         Quadrupoles               -0.004908350661
+         Octopoles                 -0.002292518851
 
        Polarization contributions:
-         Electronic                -0.043153694098
-         Nuclear                    0.042259273848
-         Multipole                  0.000129039337
+         Electronic                -0.043153620832
+         Nuclear                    0.042259203058
+         Multipole                  0.000129039146
 
-       Total PE energy:            -0.019184420155
+       Total PE energy:            -0.019184395900
 
- >>> Writing SIRIFC interface file <<<
+ >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.516       0.519
+ >>>> CPU and wall time for SCF :       0.467       0.467
 
 
                        .-----------------------------------.
@@ -618,24 +653,24 @@ Point group: C1
 
 
 @    Spin multiplicity:           1
-@    Spatial symmetry:            1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -188.317391915058                 
+@    Final HF energy:            -188.317391916158                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -290.963054355418
-@    Embedding energy:             -0.019184420155
+@    Electronic energy:          -290.963054380773
+@    Embedding energy:             -0.019184395900
 
-@    Final gradient norm:           0.000007828188
+@    Final gradient norm:           0.000009304175
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:14 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun Nov 30 01:17:35 2014
+     Host name              : foeroyar                                
 
  (Only coefficients >0.0100 are printed.)
 
- Molecular orbitals for symmetry species  1
- ------------------------------------------
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
    1 C   :1s    -0.0005  -0.9926   0.0004   0.0013   0.1233  -0.0657   0.1392
@@ -668,8 +703,8 @@ Point group: C1
    6 C   :1s     0.1078  -0.0315  -0.0341   0.0048  -0.0185   0.0000  -0.0358
    7 C   :1s    -0.3319   0.1038   0.0971  -0.0028   0.0806  -0.0000   0.1571
    8 C   :2px   -0.1321   0.3075  -0.0790  -0.0568   0.2253   0.0001  -0.3136
-   9 C   :2py   -0.1452  -0.0726  -0.2764   0.3253   0.2498  -0.0000   0.0574
-  10 C   :2pz    0.0001  -0.0002   0.0001  -0.0000  -0.0001   0.2906   0.0001
+   9 C   :2py   -0.1452  -0.0726  -0.2764   0.3253   0.2498   0.0000   0.0574
+  10 C   :2pz    0.0001  -0.0002   0.0001  -0.0000  -0.0001   0.2906   0.0002
   11 C   :1s    -0.0570   0.0160   0.0142   0.0232   0.0106  -0.0000   0.0069
   12 C   :1s     0.1780  -0.0656  -0.0632  -0.0645  -0.0297   0.0000  -0.0215
   13 C   :2px   -0.0487   0.1921  -0.3275   0.1933  -0.3522   0.0001   0.0735
@@ -693,12 +728,12 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.52 seconds
- >>>> Total wall time used in SIRIUS :      0.53 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.47 seconds
+ >>>> Total wall time used in SIRIUS :      0.47 seconds
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:14 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun Nov 30 01:17:35 2014
+     Host name              : foeroyar                                
 
 
                      .---------------------------------------.
@@ -727,10 +762,10 @@ Point group: C1
  Changes of defaults for .EXCITA:
  --------------------------------
 
- Number of excitation energies:    4    0    0    0    0    0    0    0
+ Number of excitation energies:    4
  Print level          :    0
  Integral print level :    0
- Threshold            : 1.00E-04
+ Convergence threshold: 1.00E-04
  Maximum iterations   :   60
  Dipole strength
 
@@ -745,11 +780,17 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:14 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun Nov 30 01:17:35 2014
+     Host name              : foeroyar                                
 
- Integral transformation: Total CPU and WALL times (sec)       0.051       0.051
- >>>  Time used in EXCITA     is   0.24 seconds
+
+                  **********************************************
+                  *** ABACUS - Excitation energies (.EXCITA) ***
+                  **********************************************
+
+
+ Integral transformation: Total CPU and WALL times (sec)       0.039       0.040
+ >>>  Time used in EXCITA     is   0.18 seconds
 
 
    ***************************************************************************
@@ -758,8 +799,8 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:14 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun Nov 30 01:17:35 2014
+     Host name              : foeroyar                                
 
 
                              Molecular geometry (au)
@@ -783,19 +824,19 @@ Point group: C1
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-     Total energy       -188.3173919151 au (Hartrees)
-                         -5124.37690482 eV
-                           -494427.2362 kJ/mol
+     Total energy       -188.3173919162 au (Hartrees)
+                         -5124.37690485 eV
+                           -494427.2363 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.2461747873 au
-     Mass-velocity correction:                  -0.3142926794 au
+     Darwin correction:                          0.2461747871 au
+     Mass-velocity correction:                  -0.3142926790 au
 
-     Total relativistic correction:             -0.0681178920 au (0.0362%)
-     Non-relativistic + relativistic energy:  -188.3855098071 au
+     Total relativistic correction:             -0.0681178918 au (0.0362%)
+     Non-relativistic + relativistic energy:  -188.3855098080 au
 
 
 
@@ -804,7 +845,7 @@ Point group: C1
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              1.067745           2.713938           9.052722
+              1.067744           2.713934           9.052708
 
 
                              Dipole moment components
@@ -812,9 +853,9 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.52015328         1.32209768         4.41004318
-      y     -0.93248097        -2.37013006        -7.90590289
-      z     -0.00004020        -0.00010217        -0.00034081
+      x      0.52015252         1.32209576         4.41003675
+      y     -0.93247944        -2.37012617        -7.90588992
+      z     -0.00004054        -0.00010304        -0.00034369
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -823,45 +864,45 @@ Point group: C1
 
 
 
-                Singlet electronic excitation energies
+@               Singlet electronic excitation energies
                 --------------------------------------
 
                ========================================
                  Sym.   Mode   Frequency    Frequency
                 ex. st.  No.      (au)         (eV)
                ----------------------------------------
-                   1      1     0.156267     4.252248
-                   1      2     0.309710     8.427636
-                   1      3     0.322023     8.762703
-                   1      4     0.380702    10.359426
+                   1      1     0.156267     4.252249
+                   1      2     0.309710     8.427635
+                   1      3     0.322023     8.762704
+                   1      4     0.380702    10.359428
                ========================================
 
 
-                Electric transition dipole moments (in a.u.)
-                --------------------------------------------
+@               Electric transition dipole moments (au)
+                ---------------------------------------
 
-  Sym.   Mode    Frequency       Velocity/Frequency              Length
- ex. st.  No.      (au)          x       y       z         x       y       z
- ==============================================================================
-   1        1     0.156267    -0.0000  0.0000 -0.0066   -0.0000  0.0000 -0.0060
-   1        2     0.309710    -0.5249  0.8937  0.0002   -0.9147  1.5789  0.0003
-   1        3     0.322023    -0.0004  0.0002 -0.3597   -0.0004  0.0004 -0.1514
-   1        4     0.380702    -0.0000  0.0000 -0.0016   -0.0000  0.0001  0.0041
- ------------------------------------------------------------------------------
+@        Mode    Frequency       Velocity/Frequency              Length
+@         No.      (au)          x       y       z         x       y       z
+@==============================================================================
+@           1     0.156267    -0.0000  0.0000 -0.0066   -0.0000  0.0000 -0.0060
+@           2     0.309710     0.5249 -0.8937 -0.0002    0.9147 -1.5789 -0.0003
+@           3     0.322023     0.0004 -0.0002  0.3597    0.0004 -0.0004  0.1514
+@           4     0.380702    -0.0000  0.0000 -0.0016   -0.0000  0.0001  0.0041
+@------------------------------------------------------------------------------
 
 
-                               Oscillator strengths
+@                              Oscillator strengths
                                --------------------
 
-  Oscillator strengths are dimensionless.
+@  Oscillator strengths are dimensionless.
 
-  Sym.   Mode        Frequency     Oscillator-strength 
- ex. st.  No.           (eV)        velocity   length   
- -------------------------------------------------------
-   1        1         4.252248        0.0000   0.0000
-   1        2         8.427636        0.2218   0.6875
-   1        3         8.762703        0.0278   0.0049
-   1        4        10.359426        0.0000   0.0000
+@  Sym.   Mode        Frequency     Oscillator-strength
+@ ex. st.  No.           (eV)        velocity   length
+@ -------------------------------------------------------
+@  1        1         4.252249        0.0000   0.0000
+@  1        2         8.427635        0.2218   0.6875
+@  1        3         8.762704        0.0278   0.0049
+@  1        4        10.359428        0.0000   0.0000
 
 
    Interatomic separations (in Angstrom):
@@ -930,17 +971,17 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.28 seconds
- >>>> Total wall time used in ABACUS:   0.28 seconds
+ >>>> Total CPU  time used in ABACUS:   0.22 seconds
+ >>>> Total wall time used in ABACUS:   0.22 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.16 seconds
- >>>> Total wall time used in DALTON:   1.17 seconds
+ >>>> Total CPU  time used in DALTON:   0.96 seconds
+ >>>> Total wall time used in DALTON:   0.96 seconds
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:14 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun Nov 30 01:17:35 2014
+     Host name              : foeroyar                                
