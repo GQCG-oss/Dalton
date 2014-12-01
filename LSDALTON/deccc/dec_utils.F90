@@ -2,7 +2,7 @@
 !> Utils for DEC subroutines
 !> \author Marcin Ziolkowski (modified by Kasper Kristensen)
 module dec_fragment_utils
-
+  use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use fundamental
   use precision
   use lstiming
@@ -12,9 +12,9 @@ module dec_fragment_utils
   use files!,only:lsopen,lsclose
   use DALTONINFO!, only: ls_free
   use dec_typedef_module
+  use dec_workarounds_module
   use memory_handling!, only: mem_alloc, mem_dealloc, mem_allocated_global,&
   !       & stats_mem, get_avaiLable_memory
-  use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use matrix_module!, only:matrix
   use matrix_operations
   use tensor_interface_module
