@@ -20,13 +20,12 @@ module ccsdpt_module
   use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
 !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
   use IntegralInterfaceMOD
-  use IchorErimoduleHost
+#ifdef VAR_ICHOR
+   use IchorErimoduleHost
+#endif
   use Fundamental, only: bohr_to_angstrom
-  use ptr_assoc_module 
-  !FIXME: tensor_basic_module should not be used, this is only done in order to
-  !be able to do a dirty workaround further down
-  use tensor_basic_module
   use tensor_interface_module
+  use ptr_assoc_module 
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -93,21 +92,21 @@ module ccsdpt_module
 #endif
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!  interface
-!  
-!    subroutine get_dev_mem( total , free ) bind(C, name="get_dev_mem")
-!  
-!       use iso_c_binding
-!  
-!       integer (C_SIZE_T) :: total,free
-!  
-!    end subroutine get_dev_mem
-!  
-!  end interface
-!
-!#endif
+#ifdef VAR_OPENACC
+
+  interface
+  
+    subroutine get_dev_mem( total , free ) bind(C, name="get_dev_mem")
+  
+       use iso_c_binding
+  
+       integer (C_SIZE_T) :: total,free
+  
+    end subroutine get_dev_mem
+  
+  end interface
+
+#endif
 
 contains
 
@@ -700,15 +699,15 @@ contains
 
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! probe for device type
-    acc_device_type = acc_get_device_type()
-
-    ! initialize the device
-    call acc_init(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! probe for device type
+!    acc_device_type = acc_get_device_type()
+!
+!    ! initialize the device
+!    call acc_init(acc_device_type)
+!
+!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -721,16 +720,15 @@ contains
 
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalvirt) if(.not. full_no_frags)
+!$acc& copyin(eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
 !
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
+!$acc& copyin(eivalvirt,ccsdpt_singles) if(.not. full_no_frags)
 
 !$acc wait
 
  ijrun_par: do ij_count = 1,b_size + 1
-
 
                ! get value of ij from job disttribution list
                ij = jobs(ij_count)
@@ -756,7 +754,6 @@ contains
 
                end if
 
-
                !FIND i in buffer
                call assoc_ptr_to_buf(i,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_i,vvvo_pdm_buff,ibuf,req)
 
@@ -766,17 +763,13 @@ contains
                ! select ij combination
                TypeOf_ij_combi: select case(ij_type)
 
-               case(1)
-
-                  ! i .gt. j
+               case(1) ! i .gt. j
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(1)) async(async_id(4))
-
 #ifdef VAR_OPENACC
                   call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(4))
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
 #else
                   call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
@@ -800,12 +793,11 @@ contains
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
 !$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
 
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
-!$acc& ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
-!
 !$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3)) if(.not. full_no_frags)
 
                   ! store j index
                   j_old = j
@@ -814,99 +806,14 @@ contains
 
                   if (i .eq. j) then
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
-
-!$acc wait(async_id(1)) async(async_id(4))
-
-#ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
-#else
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-#endif
-
-                     call time_start_phase(PHASE_COMM)
-
-                     if( alloc_in_dummy )then
-
-                        call lsmpi_wait(req(ibuf))
-
-                     else
-
-                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
-
-                     endif
-
-
-                     call time_start_phase(PHASE_WORK)
-
-!$acc enter data copyin(vvvo_pdm_i,&
-!$acc& ovoo(:,:,i,j)) async(async_id(2))
-
-!$acc enter data copyin(vvoo(:,:,i,j),&
-!$acc& ccsdpt_singles(:,i),&
-!$acc& ccsdpt_doubles(:,:,i,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
-
-                  else ! i .gt. j
-
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
-
-!$acc wait(async_id(1)) async(async_id(4))
-
-#ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
-#else
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-#endif
-
-                     ! get the i'th v^3 tile only
-
-                     call time_start_phase(PHASE_COMM)
-
-                     if( alloc_in_dummy )then
-
-                        call lsmpi_wait(req(ibuf))
-
-                     else
-
-                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
-
-                     endif
-
-                     call time_start_phase(PHASE_WORK)
-
-!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
-
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
-!$acc& ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
-
-                  end if
-
-                  ! store i index
-                  i_old = i
-
-               case(3)
-
-                  if (i .eq. j) then
+! if we can use ccsd_doubles(:,:,:,j), ccsd_doubles_portions_j, vvvo_pdm_j, and ccsdpt_doubles_2(:,:,:,j),
+! then there is no need for this (although we need ccsd_doubles(:,:,:,j)
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-!$acc wait(async_id(1)) async(async_id(4))
-
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
@@ -931,24 +838,104 @@ contains
 !$acc enter data copyin(vvvo_pdm_i,&
 !$acc& ovoo(:,:,i,j)) async(async_id(2))
 
-!$acc enter data copyin(vvoo(:,:,i,j),&
-!$acc& ccsdpt_singles(:,i),&
-!$acc& ccsdpt_doubles(:,:,i,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
-!
 !$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,i),&
+!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
 
                   else ! i .gt. j
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(1)) async(async_id(4))
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#endif
+
+                     ! get the i'th v^3 tile only
+                     call time_start_phase(PHASE_COMM)
+
+                     if( alloc_in_dummy )then
+
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+
+                     endif
+
+                     call time_start_phase(PHASE_WORK)
+
+!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
+
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3)) if(.not. full_no_frags)
+
+                  end if
+
+                  ! store i index
+                  i_old = i
+
+               case(3)
+
+                  if (i .eq. j) then
+
+! if we can use ccsd_doubles(:,:,:,j), ccsd_doubles_portions_j, vvvo_pdm_j, and ccsdpt_doubles_2(:,:,:,j),
+! then these should be used here instead of the ones for 'i'
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(4))
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#endif
+
+                     ! get the i'th v^3 tile
+                     call time_start_phase(PHASE_COMM)
+
+                     if( alloc_in_dummy )then
+
+                        call lsmpi_wait(req(ibuf))
+
+                     else
+
+                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+
+                     endif
+
+
+                     call time_start_phase(PHASE_WORK)
+
+!$acc enter data copyin(vvvo_pdm_i,&
+!$acc& ovoo(:,:,i,j)) async(async_id(2))
+
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,i),&
+!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
+
+                  else ! i .gt. j
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
+
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(4))
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
 #else
                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
@@ -985,12 +972,11 @@ contains
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
 !$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
 
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
-!$acc& ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
-!
 !$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3)) if(.not. full_no_frags)
 
                   end if
 
@@ -1023,14 +1009,11 @@ contains
                         ! i == j > k
                         tuple_type = 1
 
-! move ccsd_doubles block to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
-
-!$acc wait(async_id(1)) async(async_id(4))
 
 #ifdef VAR_OPENACC
                         call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(4))
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
 #else
                         call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
@@ -1054,12 +1037,11 @@ contains
 !$acc enter data copyin(vvvo_pdm_k,&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
 
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
-!$acc& ccsdpt_singles(:,k),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
-!
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
+!$acc& ccsdpt_doubles_2(:,:,:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(3)) if(.not. full_no_frags)
 
                      else if ((i .gt. j) .and. (j .eq. k)) then
 
@@ -1068,10 +1050,10 @@ contains
 
 !$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2))
 
+!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
+!
 !$acc enter data copyin(vvoo(:,:,j,k),&
 !$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
 
                      else
 
@@ -1080,11 +1062,9 @@ contains
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-!$acc wait(async_id(1)) async(async_id(4))
-
 #ifdef VAR_OPENACC
                         call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(4))
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
 #else
                         call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
@@ -1108,15 +1088,14 @@ contains
 !$acc enter data copyin(vvvo_pdm_k,&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
 
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
-!$acc& ccsdpt_singles(:,k),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
-!
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(3)) if(.not. full_no_frags)
 
                      end if
-
 
                      needed(kbuf) = .true.
 
@@ -1127,7 +1106,7 @@ contains
 
                      case(1)
 
-!$acc wait(async_id(1),async_id(2)) async(async_id(4))
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
                         call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,k),&
                                                 & ccsd_doubles_portions_i,ccsd_doubles_portions_k,&
@@ -1140,16 +1119,21 @@ contains
 
                         if (full_no_frags) then
 
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_k,&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
+
+!$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
                           call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
                                                & e4,async_id,num_ids,cublas_handle)
 
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3))
+ 
                         else
-
-                           ! generate triples amplitudes from trip arrays
 
 #ifdef VAR_OPENACC
                            call trip_denom_ijk_acc(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
@@ -1157,10 +1141,8 @@ contains
                            call trip_denom_ijk_cpu(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
 #endif   
 
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
-
-                           ! now do the contractions
-
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
+ 
                            call ccsdpt_driver_ijk_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
                                                 & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                 & vvvo_pdm_i,vvvo_pdm_k,&
@@ -1170,23 +1152,20 @@ contains
                                                 & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
                                                 & async_id,num_ids,cublas_handle)
 
-                        endif
-
-!$acc wait(async_id(4)) async(async_id(2))
+!$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
 
-!$acc wait(async_id(4)) async(async_id(3))
+!$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
-!$acc& copyout(ccsdpt_singles(:,k),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(3))
+
+                        endif
 
                      case(2)
 
-!$acc wait(async_id(1),async_id(2)) async(async_id(4))
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
                         call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
                                                 & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
@@ -1196,16 +1175,20 @@ contains
 
                         if (full_no_frags) then
 
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ovoo(:,:,j,k)) async(async_id(2))
+
+!$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
                           call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
                                                & e4,async_id,num_ids,cublas_handle)
 
-                        else
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(3))
 
-                           ! generate triples amplitudes from trip arrays
+                        else
    
 #ifdef VAR_OPENACC
                            call trip_denom_ijk_acc(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
@@ -1213,9 +1196,7 @@ contains
                            call trip_denom_ijk_cpu(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
 #endif
 
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
-
-                           ! now do the contractions
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
                            call ccsdpt_driver_ijk_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
                                                 & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
@@ -1226,20 +1207,18 @@ contains
                                                 & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,&
                                                 & async_id,num_ids,cublas_handle)
 
-                        endif
-
-!$acc wait(async_id(4)) async(async_id(2))
+!$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(ovoo(:,:,j,k)) async(async_id(2))
 
-!$acc wait(async_id(4)) async(async_id(3))
+!$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,j,k))&
-!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
+!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(3))
+
+                        endif
 
                      case(3)
 
-!$acc wait(async_id(1),async_id(2)) async(async_id(4))
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
                         call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
                                                 & ccsd_doubles(:,:,:,k),ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
@@ -1254,7 +1233,11 @@ contains
 
                         if (full_no_frags) then
 
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_k,&
+!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
+
+!$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
                           call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
@@ -1262,9 +1245,10 @@ contains
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
                                                & e4,async_id,num_ids,cublas_handle)
 
-                        else
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3))
 
-                           ! generate triples amplitudes from trip arrays
+                        else
 
 #ifdef VAR_OPENACC 
                            call trip_denom_ijk_acc(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
@@ -1272,9 +1256,7 @@ contains
                            call trip_denom_ijk_cpu(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
 #endif
 
-!$acc wait(async_id(2),async_id(3)) async(async_id(4))
-
-                           ! now do the contractions
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
                            call ccsdpt_driver_ijk_case3(i,j,k,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,i,k),&
                                                 & vvoo(:,:,j,i),vvoo(:,:,j,k),vvoo(:,:,k,i),&
@@ -1289,19 +1271,17 @@ contains
                                                 & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
                                                 & async_id,num_ids,cublas_handle)
 
-                        endif
-
-!$acc wait(async_id(4)) async(async_id(2))
+!$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
 
-!$acc wait(async_id(4)) async(async_id(3))
+!$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
-!$acc& copyout(ccsdpt_singles(:,k),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(3))
+
+                        endif
 
                      end select TypeOfTuple_par_ijk
 
@@ -1317,34 +1297,54 @@ contains
 !$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
+                  if (full_no_frags) then
+
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i,&
 !$acc& ovoo(:,:,i,j)) async(async_id(2))
 
-!$acc wait(async_id(4)) async(async_id(3))
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(3))
+
+                  else
+
+!$acc wait(async_id(5)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_i,&
+!$acc& ovoo(:,:,i,j)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,j))&
-!$acc& copyout(ccsdpt_singles(:,i),&
-!$acc& ccsdpt_doubles(:,:,i,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,i),&
+!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3))
+
+                  endif
 
                else ! i .gt. j
 
 !$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
+                  if (full_no_frags) then
+
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i,vvvo_pdm_j,&
 !$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
 
-!$acc wait(async_id(4)) async(async_id(3))
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3))
+
+                  else
+
+!$acc wait(async_id(5)) async(async_id(2))
+!$acc exit data delete(vvvo_pdm_i,vvvo_pdm_j,&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
-!$acc& copyout(ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3))
+
+                  endif
 
                end if
 
@@ -1354,13 +1354,18 @@ contains
 
 !$acc wait
 
-!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalvirt) if(.not. full_no_frags)
+!$acc exit data delete(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalvirt)&
+!$acc& copyout(ccsdpt_singles,e4) if(full_no_frags)
 !
-!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalvirt) copyout(ccsdpt_singles,e4) if(full_no_frags)
+!$acc exit data delete(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalvirt) copyout(ccsdpt_singles) if(.not. full_no_frags)
 
-    if(alloc_in_dummy)call tensor_unlock_wins(vvvo,all_nodes=.true.)
+!$acc wait
+
+    if (alloc_in_dummy) call tensor_unlock_wins(vvvo,all_nodes=.true.)
 
 #ifdef VAR_CUBLAS
 
@@ -1369,12 +1374,12 @@ contains
 
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! shut down the device
-    call acc_shutdown(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! shut down the device
+!    call acc_shutdown(acc_device_type)
+!
+!#endif
 
     ! release async handles array
     call mem_dealloc(async_id)
@@ -1383,11 +1388,11 @@ contains
     call mem_dealloc(ccsd_doubles_portions_i)
     call mem_dealloc(ccsd_doubles_portions_j)
     call mem_dealloc(ccsd_doubles_portions_k)
-    call mem_dealloc( req )
 
     ! release pdm work arrays and job list
     call mem_dealloc(vvvo_pdm_buff)
     call mem_dealloc(needed)
+    call mem_dealloc(req)
     call mem_dealloc(tiles_in_buf)
     call mem_dealloc(jobs)
 
@@ -1629,15 +1634,15 @@ contains
 
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! probe for device type
-    acc_device_type = acc_get_device_type()
-
-    ! initialize the device
-    call acc_init(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! probe for device type
+!    acc_device_type = acc_get_device_type()
+!
+!    ! initialize the device
+!    call acc_init(acc_device_type)
+!
+!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -1670,43 +1675,41 @@ contains
                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-!$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(4))
+!$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2))
 
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9)) if(.not. full_no_frags)
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
 
     jrun_ser: do j=1,i
 
                  if (j .eq. i) then 
 
-!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(7))
+!$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(2))
 
-!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(12)) if(full_no_frags)
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(vvoo(:,:,i,j),&
-!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(12)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
 
                  else ! i .gt. j
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,j)) async(async_id(2))
+!$acc enter data copyin(ccsd_doubles(:,:,:,j)) async(async_id(1))
 
 #ifdef VAR_OPENACC
                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(2))
+                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
 #else
                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
-!$acc enter data copyin(vvvo(:,:,:,j)) async(async_id(2))
+!$acc enter data copyin(vvvo(:,:,:,j),&
+!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
 
-!$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(7))
-
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,j)) async(async_id(10)) if(.not. full_no_frags)
-
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(12)) if(full_no_frags)
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
-!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(12)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3)) if(.not. full_no_frags)
 
                  end if
 
@@ -1726,60 +1729,53 @@ contains
                        ! i == j > k
                        tuple_type = 1
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(3))
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
 !$acc enter data copyin(vvvo(:,:,:,k),&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
 
-!$acc enter data copyin(ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(8))
-
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(11)) if(.not. full_no_frags)
-
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(13)) if(full_no_frags)
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(13)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(3)) if(.not. full_no_frags)
 
                     else if ((i .gt. j) .and. (j .eq. k)) then
 
                        ! i > j == k
                        tuple_type = 2
 
-!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(8))
+!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2))
 
-!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(13)) if(full_no_frags)
+!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(vvoo(:,:,j,k),&
-!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(13)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
 
                     else
 
                        ! i > j > k 
                        tuple_type = 3
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(3))
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
 !$acc enter data copyin(vvvo(:,:,:,k),&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
 
-!$acc enter data copyin(ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(8))
-
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(11)) if(.not. full_no_frags)
-
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(13)) if(full_no_frags)
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
+!$acc& ccsdpt_doubles_2(:,:,:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(13)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(3)) if(.not. full_no_frags)
 
                     end if
 
-                    ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
                     if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
 
 #ifdef VAR_OPENACC
                        call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(3))
+                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
 #else
                        call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
@@ -1844,8 +1840,8 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
-!$acc& copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(3))
 
                        endif
 
@@ -1962,8 +1958,9 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
-!$acc& copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,k),&
+!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
+!$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(3))
 
                        endif
 
@@ -2014,8 +2011,8 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
-!$acc& copyout(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3))
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,j),&
+!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3))
 
                     endif
 
@@ -2063,12 +2060,12 @@ contains
 
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! shut down the device
-    call acc_shutdown(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! shut down the device
+!    call acc_shutdown(acc_device_type)
+!
+!#endif
 
     ! release async handles array
     call mem_dealloc(async_id)
@@ -2180,15 +2177,15 @@ contains
 
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! probe for device type
-    acc_device_type = acc_get_device_type()
-
-    ! initialize the device
-    call acc_init(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! probe for device type
+!    acc_device_type = acc_get_device_type()
+!
+!    ! initialize the device
+!    call acc_init(acc_device_type)
+!
+!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -2214,6 +2211,18 @@ contains
 
 !    counter = infpar%lg_mynum + 1
     counter = total_num_tiles - infpar%lg_mynum
+
+!$acc wait
+
+!$acc enter data create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
+!$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
+!
+!$acc enter data create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
+!$acc& copyin(eivalocc,ccsdpt_singles) if(.not. full_no_frags)
+
+!$acc wait
 
 !    do a_tile = 1,nvirt,tile_size
     do a_tile = tile_size * (total_num_tiles - 1) + 1,1,-tile_size
@@ -2241,6 +2250,8 @@ contains
    
        call ass_D1to4(vovv_pdm_a,ptr_pdm_a,[nvirt,nocc,nvirt,tile_size_tmp_a])
 
+!$acc enter data copyin(ptr_pdm_a) async(async_id(2))
+
        do b_tile = 1,a_tile,tile_size
 
           b_tile_num = b_tile_num + 1
@@ -2253,6 +2264,8 @@ contains
           call time_start_phase(PHASE_WORK)
 
           call ass_D1to4(vovv_pdm_b,ptr_pdm_b,[nvirt,nocc,nvirt,tile_size_tmp_b])
+
+!$acc enter data copyin(ptr_pdm_b) async(async_id(2))
 
           do c_tile = 1,b_tile,tile_size
 
@@ -2267,13 +2280,28 @@ contains
    
              call ass_D1to4(vovv_pdm_c,ptr_pdm_c,[nvirt,nocc,nvirt,tile_size_tmp_c])
 
+!$acc enter data copyin(ptr_pdm_c) async(async_id(2))
+
+! ##########################
+
              do a = a_tile,a_tile + tile_size_tmp_a - 1
 
                 a_count = a_count + 1
 
+!$acc enter data copyin(ccsd_doubles(:,:,:,a)) async(async_id(1))
+
+#ifdef VAR_OPENACC
+                call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,a),nocc,nocc,&
+                        & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_a,async_id(1))
+#else
                 call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,a),nocc,nocc,&
                         & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_a)
-         
+#endif
+
+!$acc enter data copyin(ooov(:,:,:,a)) async(async_id(2))
+
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,a)) async(async_id(3)) if(.not. full_no_frags)
+
                 do b = b_tile,b_tile + tile_size_tmp_b - 1
          
                    b_count = b_count + 1
@@ -2285,9 +2313,35 @@ contains
 
                    endif
 
+                   if (b .eq. a) then
+
+!$acc enter data copyin(oovv(:,:,a,b)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,a,b),&
+!$acc& ccsdpt_doubles(:,:,a,b)) async(async_id(3)) if(.not. full_no_frags)
+
+                   else ! a .gt. b
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,b)) async(async_id(1))
+
+#ifdef VAR_OPENACC
+                   call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
+                           & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b,async_id(1))
+#else
                    call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
                            & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
-         
+#endif
+
+!$acc enter data copyin(ooov(:,:,:,b)) async(async_id(2))
+
+!$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a),&
+!$acc& ccsdpt_doubles_2(:,:,:,b),&
+!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3)) if(.not. full_no_frags)
+
+                   endif
+
                    do c = c_tile,c_tile + tile_size_tmp_c - 1
 
                       c_count = c_count + 1
@@ -2314,25 +2368,54 @@ contains
          
                          ! a == b > c
                          tuple_type = 1
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
+
+!$acc enter data copyin(ooov(:,:,:,c)) async(async_id(2))
+
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),&
+!$acc& ccsdpt_doubles_2(:,:,:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a)) async(async_id(3)) if(.not. full_no_frags)
          
                       else if ((a .gt. b) .and. (b .eq. c)) then
          
                          ! a > b == c
                          tuple_type = 2
+
+!$acc enter data copyin(oovv(:,:,b,c)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,b,c),&
+!$acc& ccsdpt_doubles(:,:,b,c)) async(async_id(3)) if(.not. full_no_frags)
          
                       else
          
                          ! a > b > c 
                          tuple_type = 3
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
+
+!$acc enter data copyin(ooov(:,:,:,c)) async(async_id(2))
+
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b),&
+!$acc& ccsdpt_doubles_2(:,:,:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
+!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3)) if(.not. full_no_frags)
          
                       end if
          
-                      ! store portion of ccsd_doubles (the c'th index) to avoid unnecessary reorderings
                       if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
-         
-                         ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
+
+#ifdef VAR_OPENACC
+                         call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,c),nocc,nocc,&
+                                 & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c,async_id(1))
+#else
                          call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,c),nocc,nocc,&
                                  & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c)
+#endif
          
                       end if
 
@@ -2340,6 +2423,8 @@ contains
                       TypeOfTuple_par_abc: select case(tuple_type)
 
                       case(1)
+
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
          
                          call trip_generator_abc_case1(a,c,nocc,nvirt,ccsd_doubles(:,:,:,a),ccsd_doubles(:,:,:,c),&
                                                  & ccsd_doubles_portions_a,ccsd_doubles_portions_c,&
@@ -2347,11 +2432,22 @@ contains
                                                  & ptr_pdm_a(:,:,a,a_count),ptr_pdm_c(:,:,a,c_count),ptr_pdm_a(:,:,c,a_count),&
                                                  & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
+!$acc wait(async_id(4)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,c)) async(async_id(1))
+
                          if (full_no_frags) then
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,c)) async(async_id(2))
+
+!$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
                             call ccsdpt_energy_full_abc_case1(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                   & oovv(:,:,a,a),oovv(:,:,a,c),oovv(:,:,c,a),&
                                                   & ccsdpt_singles(:,a),ccsdpt_singles(:,c),e4,async_id,num_ids,cublas_handle)
+
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a)) async(async_id(3))
          
                          else
 
@@ -2360,8 +2456,8 @@ contains
 #else
                             call trip_denom_abc_cpu(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
 #endif
-       
-                            ! now do the contractions
+
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
             
                             call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv(:,:,a,a),oovv(:,:,a,c),oovv(:,:,c,a),&
                                                  & ptr_pdm_a(:,:,a,a_count),ptr_pdm_c(:,:,a,c_count),ptr_pdm_a(:,:,c,a_count),&
@@ -2371,9 +2467,19 @@ contains
                                                  & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles_2(:,:,:,a),&
                                                  & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
+!$acc wait(async_id(5)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,c)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a))&
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a)) async(async_id(3))
+
                          endif
 
                       case(2)
+
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
          
                          call trip_generator_abc_case2(a,b,nocc,nvirt,ccsd_doubles(:,:,:,a),ccsd_doubles(:,:,:,b),&
                                                  & ccsd_doubles_portions_a,ccsd_doubles_portions_b,&
@@ -2383,21 +2489,27 @@ contains
 
                          if (full_no_frags) then
 
+! this is different...
+!$acc wait(async_id(4)) async(async_id(2))
+
+!$acc wait(async_id(3),async_id(4)) async(async_id(5))
+
                             call ccsdpt_energy_full_abc_case2(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                   & oovv(:,:,a,b),oovv(:,:,b,a),oovv(:,:,b,b),&
                                                   & ccsdpt_singles(:,a),ccsdpt_singles(:,b),e4,async_id,num_ids,cublas_handle)
 
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,b,c)) async(async_id(3))
+
                          else
  
-                            ! generate triples amplitudes from trip arrays
-
 #ifdef VAR_OPENACC            
                             call trip_denom_abc_acc(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
 #else
                             call trip_denom_abc_cpu(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
 #endif
             
-                            ! now do the contractions
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
             
                             call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,oovv(:,:,a,b),oovv(:,:,b,a),oovv(:,:,b,b),&
                                                  & ptr_pdm_b(:,:,a,b_count),ptr_pdm_a(:,:,b,a_count),ptr_pdm_b(:,:,b,b_count),&
@@ -2406,10 +2518,19 @@ contains
                                                  & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
                                                  & ccsdpt_doubles(:,:,b,b),ccsdpt_doubles_2(:,:,:,a),&
                                                  & ccsdpt_doubles_2(:,:,:,b),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+
+! this is different...
+!$acc wait(async_id(5)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,b,c))&
+!$acc& copyout(ccsdpt_doubles(:,:,b,c)) async(async_id(3))
          
                          endif
 
                       case(3)
+
+!$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
          
                          call trip_generator_abc_case3(a,b,c,nocc,nvirt,ccsd_doubles(:,:,:,a),ccsd_doubles(:,:,:,b),&
                                                  & ccsd_doubles(:,:,:,c),ccsd_doubles_portions_a,ccsd_doubles_portions_b,&
@@ -2419,7 +2540,15 @@ contains
                                                  & ptr_pdm_c(:,:,b,c_count),ptr_pdm_a(:,:,c,a_count),ptr_pdm_b(:,:,c,b_count),&
                                                  & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
+!$acc wait(async_id(4)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,c)) async(async_id(1))
+
                          if (full_no_frags) then
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,c)) async(async_id(2))
+
+!$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
                             call ccsdpt_energy_full_abc_case3(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                   & oovv(:,:,a,b),oovv(:,:,a,c),oovv(:,:,b,a),&
@@ -2427,17 +2556,18 @@ contains
                                                   & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
                                                   & e4,async_id,num_ids,cublas_handle)
 
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3))
+
                          else
  
-                            ! generate triples amplitudes from trip arrays
-
 #ifdef VAR_OPENACC            
                             call trip_denom_abc_acc(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
 #else
                             call trip_denom_abc_cpu(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
 #endif
-            
-                            ! now do the contractions
+
+!$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))            
             
                             call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,oovv(:,:,a,b),oovv(:,:,a,c),oovv(:,:,b,a),&
                                                  & oovv(:,:,b,c),oovv(:,:,c,a),oovv(:,:,c,b),&
@@ -2450,6 +2580,15 @@ contains
                                                  & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles(:,:,c,b),&
                                                  & ccsdpt_doubles_2(:,:,:,a),ccsdpt_doubles_2(:,:,:,b),&
                                                  & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+
+!$acc wait(async_id(5)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,c)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b))&
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
+!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3))
          
                          endif
 
@@ -2457,25 +2596,112 @@ contains
 
                       if (c_count .eq. tile_size_tmp_c) c_count = 0
  
-                   end do
+                   end do ! end c loop 
 
                    if (b_count .eq. tile_size_tmp_b) b_count = 0
 
-                end do
+                   if (b .eq. a) then
+         
+                      if (full_no_frags) then
+
+! this is different
+!$acc wait(async_id(4)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,b)) async(async_id(3))
+
+                      else
+
+! this is different
+!$acc wait(async_id(5)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,b))&
+!$acc& copyout(ccsdpt_doubles(:,:,a,b)) async(async_id(3))
+
+                      endif
+         
+                   else ! a .gt. b
+
+!$acc wait(async_id(4)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,b)) async(async_id(1))
+
+                      if (full_no_frags) then
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,b)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3))
+
+                      else
+
+!$acc wait(async_id(5)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,b)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a))&
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,b),&
+!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3))
+
+                      endif
+         
+                   endif
+
+                end do ! end b loop
           
                 if (a_count .eq. tile_size_tmp_a) a_count = 0
 
-             end do
+!$acc wait(async_id(4)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,a)) async(async_id(1))
+
+                if (full_no_frags) then
+
+!$acc wait(async_id(4)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,a)) async(async_id(2))
+
+                else
+
+!$acc wait(async_id(5)) async(async_id(2))
+!$acc exit data delete(ooov(:,:,:,a)) async(async_id(2))
+
+!$acc wait(async_id(5)) async(async_id(3))
+!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,a)) async(async_id(3))
+
+                endif
+
+             end do ! end a loop
+
+! ##########################
 
              if (c_tile .eq. b_tile) c_tile_num = 0
 
-          end do
+!$acc exit data delete(ptr_pdm_c) async(async_id(2))
+
+          end do ! end c_tile loop
 
           if (b_tile .eq. a_tile) b_tile_num = 0
 
-       end do
+!$acc exit data delete(ptr_pdm_b) async(async_id(2))
 
-    end do
+       end do ! end b_tile loop
+
+!$acc exit data delete(ptr_pdm_a) async(async_id(2))
+
+    end do ! end a_tile loop
+
+!$acc wait
+
+!$acc exit data delete(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c,&
+!$acc& eivalocc)&
+!$acc& copyout(ccsdpt_singles,e4) if(full_no_frags)
+!
+!$acc exit data delete(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c,&
+!$acc& eivalocc) copyout(ccsdpt_singles) if(.not. full_no_frags)
+
+!$acc wait
 
 #ifdef VAR_CUBLAS
 
@@ -2484,12 +2710,12 @@ contains
 
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! shut down the device
-    call acc_shutdown(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! shut down the device
+!    call acc_shutdown(acc_device_type)
+!
+!#endif
 
     ! release async handles array
     call mem_dealloc(async_id)
@@ -2595,15 +2821,15 @@ contains
 
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! probe for device type
-    acc_device_type = acc_get_device_type()
-
-    ! initialize the device
-    call acc_init(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! probe for device type
+!    acc_device_type = acc_get_device_type()
+!
+!    ! initialize the device
+!    call acc_init(acc_device_type)
+!
+!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -2624,7 +2850,7 @@ contains
 
 !$acc wait
 
-    do a = 2,nvirt
+    do a = 2,nvirt ! a == b == c == 1 gives zero contribution
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,a)) async(async_id(1))
 
@@ -2669,8 +2895,8 @@ contains
 !$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a),&
-!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
-!$acc& ccsdpt_doubles_2(:,:,:,b)) async(async_id(3)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,b),&
+!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3)) if(.not. full_no_frags)
 
           endif
 
@@ -2698,8 +2924,8 @@ contains
 !$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),&
-!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
-!$acc& ccsdpt_doubles_2(:,:,:,c)) async(async_id(3)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles_2(:,:,:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a)) async(async_id(3)) if(.not. full_no_frags)
 
              else if ((a .gt. b) .and. (b .eq. c)) then
 
@@ -2708,10 +2934,10 @@ contains
 
 !$acc enter data copyin(vovv(:,:,b,c)) async(async_id(2))
 
+!$acc enter data copyin(oovv(:,:,b,c)) async(async_id(3)) if(full_no_frags)
+!
 !$acc enter data copyin(oovv(:,:,b,c),&
 !$acc& ccsdpt_doubles(:,:,b,c)) async(async_id(3)) if(.not. full_no_frags)
-!
-!$acc enter data copyin(oovv(:,:,b,c)) async(async_id(3)) if(full_no_frags)
 
              else
 
@@ -2726,21 +2952,20 @@ contains
 !$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b),&
+!$acc& ccsdpt_doubles_2(:,:,:,c),&
 !$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
-!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b),&
-!$acc& ccsdpt_doubles_2(:,:,:,c)) async(async_id(3)) if(.not. full_no_frags)
+!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3)) if(.not. full_no_frags)
 
              end if
 
-             ! store portion of ccsd_doubles (the c'th index) to avoid unnecessary reorderings
              if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
 
 #ifdef VAR_OPENACC
-                       call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,c),nocc,nocc,&
-                               & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c,async_id(1))
+                call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,c),nocc,nocc,&
+                        & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c,async_id(1))
 #else
-                       call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,c),nocc,nocc,&
-                               & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c)
+                call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,c),nocc,nocc,&
+                        & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c)
 #endif
 
              end if
@@ -2795,13 +3020,13 @@ contains
                                         & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
 !$acc wait(async_id(5)) async(async_id(2))
-!$acc exit data delete(vovv(:,:,:,c),&
+!$acc exit data delete(ooov(:,:,:,c),&
 !$acc& vovv(:,:,a,c),vovv(:,:,c,a)) async(async_id(2))
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a))&
-!$acc& copyout(ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
-!$acc& ccsdpt_doubles_2(:,:,:,c)) async(async_id(3))
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a)) async(async_id(3))
 
                 endif
 
@@ -2914,8 +3139,9 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b))&
-!$acc& copyout(ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b),&
-!$acc& ccsdpt_doubles_2(:,:,:,c)) async(async_id(3))
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
+!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3))
 
                 endif
 
@@ -2966,8 +3192,8 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a))&
-!$acc& copyout(ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
-!$acc& ccsdpt_doubles_2(:,:,:,b)) async(async_id(3))
+!$acc& copyout(ccsdpt_doubles_2(:,:,:,b),&
+!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3))
 
              endif
 
@@ -3015,12 +3241,12 @@ contains
 
 #endif
 
-#ifdef VAR_OPENACC
-
-    ! shut down the device
-    call acc_shutdown(acc_device_type)
-
-#endif
+!#ifdef VAR_OPENACC
+!
+!    ! shut down the device
+!    call acc_shutdown(acc_device_type)
+!
+!#endif
 
     ! release async handles array
     call mem_dealloc(async_id)
@@ -4589,6 +4815,7 @@ contains
                             & ooov_tile_1,trip_tmp,handle,cublas_handle)
     call trip_amplitudes_abc_virt(vindex1,vindex1,vindex3,no,nv,ccsd_doubles_portions_1,&
                             & vovv_tile_31,trip_tmp,handle,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [2,3,1],1.0E0_realk,trip_ampl,handle)
@@ -4606,6 +4833,7 @@ contains
                             & ooov_tile_1,trip_tmp,handle,cublas_handle)
     call trip_amplitudes_abc_virt(vindex3,vindex1,vindex1,no,nv,ccsd_doubles_portions_3,&
                             & vovv_tile_11,trip_tmp,handle,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [1,3,2],1.0E0_realk,trip_ampl,handle)
@@ -4783,6 +5011,7 @@ contains
                             & ooov_tile_2,trip_tmp,handle,cublas_handle)
     call trip_amplitudes_abc_virt(vindex1,vindex2,vindex2,no,nv,ccsd_doubles_portions_1,&
                             & vovv_tile_22,trip_tmp,handle,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [2,1,3],1.0E0_realk,trip_ampl,handle)
@@ -4800,6 +5029,7 @@ contains
                             & ooov_tile_1,trip_tmp,handle,cublas_handle)
     call trip_amplitudes_abc_virt(vindex2,vindex1,vindex2,no,nv,ccsd_doubles_portions_2,&
                             & vovv_tile_21,trip_tmp,handle,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [3,1,2],1.0E0_realk,trip_ampl,handle)
@@ -4983,6 +5213,7 @@ contains
                             & ooov_tile_2,trip_tmp,handle,cublas_handle)
     call trip_amplitudes_abc_virt(vindex1,vindex2,vindex3,no,nv,ccsd_doubles_portions_1,&
                             & vovv_tile_32,trip_tmp,handle,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [2,3,1],1.0E0_realk,trip_ampl,handle)
@@ -4996,6 +5227,7 @@ contains
                             & ooov_tile_1,trip_tmp,handle,cublas_handle)
     call trip_amplitudes_abc_virt(vindex3,vindex1,vindex2,no,nv,ccsd_doubles_portions_3,&
                             & vovv_tile_21,trip_tmp,handle,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [3,1,2],1.0E0_realk,trip_ampl,handle)
@@ -5009,6 +5241,7 @@ contains
                             & ooov_tile_2,trip_tmp,handle,cublas_handle)
     call trip_amplitudes_abc_virt(vindex3,vindex2,vindex1,no,nv,ccsd_doubles_portions_3,&
                             & vovv_tile_12,trip_tmp,handle,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [1,3,2],1.0E0_realk,trip_ampl,handle)
@@ -5022,6 +5255,7 @@ contains
                             & ooov_tile_3,trip_tmp,handle,cublas_handle)
     call trip_amplitudes_abc_virt(vindex1,vindex3,vindex2,no,nv,ccsd_doubles_portions_1,&
                             & vovv_tile_23,trip_tmp,handle,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [2,1,3],1.0E0_realk,trip_ampl,handle)
@@ -5035,6 +5269,7 @@ contains
                             & ooov_tile_1,trip_tmp,handle,cublas_handle)
     call trip_amplitudes_abc_virt(vindex2,vindex1,vindex3,no,nv,ccsd_doubles_portions_2,&
                             & vovv_tile_31,trip_tmp,handle,cublas_handle)
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
                         & [3,2,1],1.0E0_realk,trip_ampl,handle)
@@ -5133,6 +5368,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
                            & nv,[1,3,2],0.0E0_realk,wrk_3d,handle)
@@ -5161,6 +5397,7 @@ contains
 
           ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
           ! and wrk_3d is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,nv,&
                            & nv,[2,3,1],0.0E0_realk,trip,handle)
@@ -5283,6 +5520,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,no,no,&
                            & no,[1,3,2],0.0E0_realk,wrk_3d,handle)
@@ -5311,6 +5549,7 @@ contains
 
           ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
           ! and wrk_3d is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,wrk_3d,no,no,&
                            & no,[2,3,1],0.0E0_realk,trip,handle)
@@ -5433,6 +5672,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
                            & nv,[3,1,2],0.0E0_realk,wrk_3d,handle)
@@ -5461,6 +5701,7 @@ contains
 
           ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
           ! and wrk_3d is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,nv,&
                            & nv,[3,1,2],0.0E0_realk,trip,handle)
@@ -5586,6 +5827,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,no,no,&
                            & no,[3,1,2],0.0E0_realk,wrk_3d,handle)
@@ -5614,6 +5856,7 @@ contains
 
           ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
           ! and wrk_3d is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,wrk_3d,no,no,&
                            & no,[3,1,2],0.0E0_realk,trip,handle)
@@ -5749,6 +5992,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
                            & nv,[2,1,3],0.0E0_realk,wrk_3d,handle)
@@ -5786,6 +6030,7 @@ contains
 
           ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
           ! and wrk_3d is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,nv,&
                            & nv,[1,3,2],0.0E0_realk,trip,handle)
@@ -5823,6 +6068,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
                            & nv,[3,2,1],0.0E0_realk,wrk_3d,handle)
@@ -5860,6 +6106,7 @@ contains
 
           ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
           ! and wrk_3d is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,nv,&
                            & nv,[2,1,3],0.0E0_realk,trip,handle)
@@ -5897,6 +6144,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,nv,nv,&
                            & nv,[1,3,2],0.0E0_realk,wrk_3d,handle)
@@ -6034,6 +6282,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,no,no,&
                            & no,[2,1,3],0.0E0_realk,wrk_3d,handle)
@@ -6071,6 +6320,7 @@ contains
 
           ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
           ! and wrk_3d is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,wrk_3d,no,no,&
                            & no,[1,3,2],0.0E0_realk,trip,handle)
@@ -6108,6 +6358,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,no,no,&
                            & no,[3,2,1],0.0E0_realk,wrk_3d,handle)
@@ -6145,6 +6396,7 @@ contains
 
           ! initially, reorder wrk_3d - after reordering, trip holds the triples ampls
           ! and wrk_3d is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,wrk_3d,no,no,&
                            & no,[2,1,3],0.0E0_realk,trip,handle)
@@ -6182,6 +6434,7 @@ contains
 
           ! initially, reorder trip - after reordering, wrk_3d holds the triples ampls
           ! and trip is a 3d work array
+
 #ifdef VAR_OPENACC
           call array_reorder_3d_acc(1.0E0_realk,trip,no,no,&
                            & no,[1,3,2],0.0E0_realk,wrk_3d,handle)
@@ -6763,7 +7016,7 @@ contains
 
     e_orb_virt = eigenvirt(vindex1) + eigenvirt(vindex2) + eigenvirt(vindex3)
 
-!$acc parallel present(trip,eigenocc,eigenvirt) firstprivate(no,e_orb_virt)&
+!$acc parallel present(trip,eigenocc) firstprivate(no,e_orb_virt)&
 !$acc& private(i,j,k) async(async_idx)
 !$acc loop gang
     do i=1,no
@@ -7154,7 +7407,7 @@ contains
 
 !$acc host_data use_device(trip_ampl,int_normal_21,T_star_v3)
        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
-                             & -11.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no**2,kind=4),&
+                             & -1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no**2,kind=4),&
                              & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
 !$acc end host_data
 
@@ -8443,9 +8696,9 @@ contains
     implicit none
 
     !> fragment # 1 in the pair fragment
-    type(decfrag),intent(in) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment1
     !> fragment # 2 in the pair fragment
-    type(decfrag),intent(in) :: Fragment2
+    type(decfrag),intent(inout) :: Fragment2
     !> pair fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
@@ -9021,15 +9274,18 @@ contains
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
     integer :: MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxActualDimGamma,nbatchesGamma
+#ifdef VAR_ICHOR
     type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
     type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
     integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
     logical :: MoTrans, NoSymmetry,SameMol
+#else
     integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
     TYPE(DECscreenITEM)   :: DecScreen
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
+#endif
     integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
     ! distribution stuff needed for mpi parallelization
     integer, pointer :: distribution(:)
@@ -9064,19 +9320,19 @@ contains
     INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
     INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)='C' !C = Coulomb operator
-    IF(DECinfo%useIchor)THEN
-       iprint = 0           !print level for Ichor Integral code
-       MoTrans = .FALSE.    !Do not transform to MO basis! 
-       NoSymmetry = .FALSE. !Use Permutational Symmetry! 
-       SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
-       !Determine the full number of AO batches - not to be confused with the batches of AOs
-       !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
-       iAO = 1
-       call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
-    ELSE
-       ! Integral screening?
-       doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
-    ENDIF
+#ifdef VAR_ICHOR
+    iprint = 0           !print level for Ichor Integral code
+    MoTrans = .FALSE.    !Do not transform to MO basis! 
+    NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+    SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+    !Determine the full number of AO batches - not to be confused with the batches of AOs
+    !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+    iAO = 1
+    call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+#else
+    ! Integral screening?
+    doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
+#endif
     ! allocate arrays to update during integral loop 
     ! **********************************************
     
@@ -9093,14 +9349,14 @@ contains
     mode   = MPI_MODE_NOCHECK
 
     call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
+    call tensor_zero_tiled_dist(vvvo)
 
 #else
 
     call tensor_init(vvvo, dims,4)
+    call tensor_zero(vvvo)
 
 #endif
-
-    call tensor_zero(vvvo)
 
     ! For efficiency when calling dgemm, save transposed matrices
     call mem_alloc(CoccT,nocc,nbasis)
@@ -9116,125 +9372,125 @@ contains
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
-    IF(DECinfo%useIchor)THEN
-       iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
-       !Determine how many batches of AOS based on the gammadim, the requested
-       !size of the AO batches. iAO is the center that the batching should occur on. 
-       !'R'  !Specifies that it is the Regular AO basis that should be batched 
-       call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
-            & nbatchesGamma,DECinfo%output)
-       call mem_alloc(AOGammabatchinfo,nbatchesGamma)
-       !Construct the batches of AOS based on the gammadim, the requested
-       !size of the AO batches - gammadim must be unchanged since the call 
-       !to determine_Ichor_nbatchesofAOS
-       !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
-       !So MaxActualDimGamma must be less og equal to gammadim
-       call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
-            & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
-    ELSE
-       ! Orbital to batch information
-       ! ----------------------------
-       call mem_alloc(orb2batchGamma,nbasis)
-       call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
-            & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-            & nbatchesGamma,orb2BatchGamma,'R')
-    ENDIF
+#ifdef VAR_ICHOR
+    iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the gammadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,DECinfo%output)
+    call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+    !Construct the batches of AOS based on the gammadim, the requested
+    !size of the AO batches - gammadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimGamma must be less og equal to gammadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+#else
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchGamma,nbasis)
+    call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
+         & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
+         & nbatchesGamma,orb2BatchGamma,'R')
+#endif
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
-    IF(.NOT.DECinfo%useIchor)THEN
-       ! Translate batchindex to orbital index
-       ! -------------------------------------
-       call mem_alloc(batch2orbGamma,nbatchesGamma)
-       
-       do idx=1,nbatchesGamma
-          
-          call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
-          batch2orbGamma(idx)%orbindex = 0
-          batch2orbGamma(idx)%norbindex = 0
-          
-       end do
-       
-       do iorb=1,nbasis
-          
-          idx = orb2batchGamma(iorb)
-          batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-          K = batch2orbGamma(idx)%norbindex
-          batch2orbGamma(idx)%orbindex(K) = iorb
-          
-       end do
-    ENDIF
+#ifndef VAR_ICHOR
+    ! Translate batchindex to orbital index
+    ! -------------------------------------
+    call mem_alloc(batch2orbGamma,nbatchesGamma)
+
+    do idx=1,nbatchesGamma
+
+       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
+       batch2orbGamma(idx)%orbindex = 0
+       batch2orbGamma(idx)%norbindex = 0
+
+    end do
+
+    do iorb=1,nbasis
+
+       idx = orb2batchGamma(iorb)
+       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+       K = batch2orbGamma(idx)%norbindex
+       batch2orbGamma(idx)%orbindex(K) = iorb
+
+    end do
+#endif
 
     ! ************************************************
     ! * Determine batch information for Alpha batch  *
     ! ************************************************
 
-    IF(DECinfo%useIchor)THEN
-       iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
-       !Determine how many batches of AOS based on the alphadim, the requested
-       !size of the AO batches. iAO is the center that the batching should occur on. 
-       !'R'  !Specifies that it is the Regular AO basis that should be batched 
-       call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
-            & nbatchesAlpha,DECinfo%output)
-       call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
-       !Construct the batches of AOS based on the alphadim, the requested
-       !size of the AO batches - alphadim must be unchanged since the call 
-       !to determine_Ichor_nbatchesofAOS
-       !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
-       !So MaxActualDimAlpha must be less og equal to alphadim
-       call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
-            & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
-    ELSE
-       ! Orbital to batch information
-       ! ----------------------------
-       call mem_alloc(orb2batchAlpha,nbasis)
-       call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
-            & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
-            & nbatchesAlpha,orb2BatchAlpha,'R')
-    ENDIF
+#ifdef VAR_ICHOR
+    iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the alphadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,DECinfo%output)
+    call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+    !Construct the batches of AOS based on the alphadim, the requested
+    !size of the AO batches - alphadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimAlpha must be less og equal to alphadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+#else
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchAlpha,nbasis)
+    call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
+         & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
+         & nbatchesAlpha,orb2BatchAlpha,'R')
+#endif
 
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
-    IF(.NOT.DECinfo%useIchor)THEN
-       ! Translate batchindex to orbital index
-       ! -------------------------------------
-       call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-       
-       do idx=1,nbatchesAlpha
-          
-          call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-          batch2orbAlpha(idx)%orbindex = 0
-          batch2orbAlpha(idx)%norbindex = 0
-          
-       end do
-       
-       do iorb=1,nbasis
-          
-          idx = orb2batchAlpha(iorb)
-          batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-          K = batch2orbAlpha(idx)%norbindex
-          batch2orbAlpha(idx)%orbindex(K) = iorb
-          
-       end do
-    ENDIF
+#ifndef VAR_ICHOR
+    ! Translate batchindex to orbital index
+    ! -------------------------------------
+    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+
+    do idx=1,nbatchesAlpha
+
+       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+       batch2orbAlpha(idx)%orbindex = 0
+       batch2orbAlpha(idx)%norbindex = 0
+
+    end do
+
+    do iorb=1,nbasis
+
+       idx = orb2batchAlpha(iorb)
+       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+       K = batch2orbAlpha(idx)%norbindex
+       batch2orbAlpha(idx)%orbindex(K) = iorb
+
+    end do
+#endif
 
 
-    IF(DECinfo%useIchor)THEN
-       !Calculate Screening integrals 
-       SameMOL = .TRUE. !Specifies same molecule on all centers 
-       call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
-    ELSE
-       call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
+#ifdef VAR_ICHOR
+    !Calculate Screening integrals 
+    SameMOL = .TRUE. !Specifies same molecule on all centers 
+    call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+#else
+    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
             & nbatchesAlpha,nbatchesGamma,INTSPEC)
-       
-       if (doscreen) then
-          
-          call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
-               & nbasis,nbatchesAlpha,nbatchesGamma,&
-               & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-               & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
 
-       end if
-    ENDIF
+    if (doscreen) then
+
+       call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+            & nbasis,nbatchesAlpha,nbatchesGamma,&
+            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+
+    end if
+#endif
 
     FullRHS = (nbatchesGamma .eq. 1) .and. (nbatchesAlpha .eq. 1)
 
@@ -9254,52 +9510,53 @@ contains
     ! init distribution
     distribution = 0
     myload = 0
-    IF(DECinfo%useIchor)THEN
-       call mem_alloc(batchdimAlpha,nbatchesAlpha)
-       do idx=1,nbatchesAlpha
-          batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
-       enddo
-       call mem_alloc(batchdimGamma,nbatchesGamma)
-       do idx=1,nbatchesGamma
-          batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
-       enddo
-    ENDIF
+#ifdef VAR_ICHOR
+    call mem_alloc(batchdimAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+    enddo
+    call mem_alloc(batchdimGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+    enddo
+#endif
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
-         &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
-    IF(DECinfo%useIchor)THEN
-       call mem_dealloc(batchdimAlpha)
-       call mem_dealloc(batchdimGamma)
-    ENDIF
+    &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+#ifdef VAR_ICHOR
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchdimGamma)
+#endif
+
 #endif
 
     ! Start looping over gamma and alpha batches and calculate integrals
     ! ******************************************************************
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-       IF(DECinfo%useIchor)THEN
-          dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
-          GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
-          GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
-          AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
-          AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
-       ELSE
-          dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
-          GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-          GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
-       ENDIF
+#ifdef VAR_ICHOR
+       dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+       GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+       GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+       AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+       AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+#else
+       dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
+       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+       GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+#endif
 
        BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
-          IF(DECinfo%useIchor)THEN
-             dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
-             AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
-             AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
-             AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
-             AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
-          ELSE
-             dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
-             AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-             AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-          ENDIF
+#ifdef VAR_ICHOR
+          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+#else
+          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+#endif
 
 #ifdef VAR_MPI
 
@@ -9318,18 +9575,20 @@ contains
           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
           ! ************************************************************************************
 
-          IF(DECinfo%useIchor)THEN
-             call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
-                  & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                  & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
-          ELSE
-             if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-             if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-             call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-                  & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-                  & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
-                  & FullRHS,INTSPEC)
-          ENDIF
+#ifdef VAR_ICHOR
+          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
+               & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+               & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
+#else
+          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+
+
+          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
+               & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
+               & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
+               & FullRHS,INTSPEC)
+#endif
 
           ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
           m = nbasis*dimGamma*dimAlpha
@@ -9488,32 +9747,32 @@ contains
     call mem_dealloc(tmp3)
     call mem_dealloc(CoccT)
     call mem_dealloc(CvirtT)
-    IF(DECinfo%useIchor)THEN
-       call FREE_SCREEN_ICHORERI()
-       call mem_dealloc(AOGammabatchinfo)
-       call mem_dealloc(AOAlphabatchinfo)
-    ELSE
-       call free_decscreen(DECSCREEN)
-       call mem_dealloc(orb2batchGamma)
-       call mem_dealloc(batchdimGamma)
-       call mem_dealloc(batchsizeGamma)
-       call mem_dealloc(batchindexGamma)
-       do idx=1,nbatchesGamma
-          call mem_dealloc(batch2orbGamma(idx)%orbindex)
-       end do
-       call mem_dealloc(batch2orbGamma)
-       call mem_dealloc(orb2batchAlpha)
-       call mem_dealloc(batchdimAlpha)
-       call mem_dealloc(batchsizeAlpha)
-       call mem_dealloc(batchindexAlpha)
-       do idx=1,nbatchesAlpha
-          call mem_dealloc(batch2orbAlpha(idx)%orbindex)
-          batch2orbAlpha(idx)%orbindex => null()
-       end do
-       call mem_dealloc(batch2orbAlpha)
-       nullify(mylsitem%setting%LST_GAB_LHS)
-       nullify(mylsitem%setting%LST_GAB_RHS)
-    ENDIF
+#ifdef VAR_ICHOR
+    call FREE_SCREEN_ICHORERI()
+    call mem_dealloc(AOGammabatchinfo)
+    call mem_dealloc(AOAlphabatchinfo)
+#else
+    call free_decscreen(DECSCREEN)
+    call mem_dealloc(orb2batchGamma)
+    call mem_dealloc(batchdimGamma)
+    call mem_dealloc(batchsizeGamma)
+    call mem_dealloc(batchindexGamma)
+    do idx=1,nbatchesGamma
+       call mem_dealloc(batch2orbGamma(idx)%orbindex)
+    end do
+    call mem_dealloc(batch2orbGamma)
+    call mem_dealloc(orb2batchAlpha)
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchsizeAlpha)
+    call mem_dealloc(batchindexAlpha)
+    do idx=1,nbatchesAlpha
+       call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+       batch2orbAlpha(idx)%orbindex => null()
+    end do
+    call mem_dealloc(batch2orbAlpha)
+    nullify(mylsitem%setting%LST_GAB_LHS)
+    nullify(mylsitem%setting%LST_GAB_RHS)
+#endif
     if (master) call LSTIMER('CCSD(T) INT (IJK)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine get_CCSDpT_integrals_ijk
@@ -9553,15 +9812,18 @@ contains
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
     integer :: MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxActualDimGamma,nbatchesGamma
+#ifdef VAR_ICHOR
     type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
     type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
     integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
     logical :: MoTrans, NoSymmetry,SameMol
+#else
     integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
     TYPE(DECscreenITEM)   :: DecScreen
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
+#endif
     integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
 
     ! distribution stuff needed for mpi parallelization
@@ -9598,19 +9860,19 @@ contains
     INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
     INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)='C' !C = Coulomb operator
-    IF(DECinfo%useIchor)THEN
-       iprint = 0           !print level for Ichor Integral code
-       MoTrans = .FALSE.    !Do not transform to MO basis! 
-       NoSymmetry = .FALSE. !Use Permutational Symmetry! 
-       SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
-       !Determine the full number of AO batches - not to be confused with the batches of AOs
-       !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched
-       iAO = 1
-       call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
-    ELSE
-       ! Integral screening?
-       doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
-    ENDIF
+#ifdef VAR_ICHOR
+    iprint = 0           !print level for Ichor Integral code
+    MoTrans = .FALSE.    !Do not transform to MO basis! 
+    NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+    SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+    !Determine the full number of AO batches - not to be confused with the batches of AOs
+    !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched
+    iAO = 1
+    call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+#else
+    ! Integral screening?
+    doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
+#endif
 
     ! allocate arrays to update during integral loop 
     ! **********************************************
@@ -9630,14 +9892,14 @@ contains
     mode   = MPI_MODE_NOCHECK
 
     call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
+    call tensor_zero_tiled_dist(vovv)
 
 #else
 
     call tensor_init(vovv, dims,4)
+    call tensor_zero(vovv)
 
 #endif
-
-    call tensor_zero(vovv)
 
     ! For efficiency when calling dgemm, save transposed matrices
     call mem_alloc(CoccT,nocc,nbasis)
@@ -9653,121 +9915,124 @@ contains
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
-    IF(DECinfo%useIchor)THEN
-       iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
-       !Determine how many batches of AOS based on the gammadim, the requested
-       !size of the AO batches. iAO is the center that the batching should occur on. 
-       !'R'  !Specifies that it is the Regular AO basis that should be batched 
-       call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
-            & nbatchesGamma,DECinfo%output)
-       call mem_alloc(AOGammabatchinfo,nbatchesGamma)
-       !Construct the batches of AOS based on the gammadim, the requested
-       !size of the AO batches - gammadim must be unchanged since the call 
-       !to determine_Ichor_nbatchesofAOS
-       !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
-       !So MaxActualDimGamma must be less og equal to gammadim
-       call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
-            & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
-    ELSE
-       ! Orbital to batch information
-       ! ----------------------------
-       call mem_alloc(orb2batchGamma,nbasis)
-       call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
-            & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-            & nbatchesGamma,orb2BatchGamma,'R')
-    ENDIF
+#ifdef VAR_ICHOR
+    iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the gammadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,DECinfo%output)
+    call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+    !Construct the batches of AOS based on the gammadim, the requested
+    !size of the AO batches - gammadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimGamma must be less og equal to gammadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+#else
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchGamma,nbasis)
+    call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
+         & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
+         & nbatchesGamma,orb2BatchGamma,'R')
+#endif
 
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
-    IF(.NOT.DECinfo%useIchor)THEN
-       ! Translate batchindex to orbital index
-       ! -------------------------------------
-       call mem_alloc(batch2orbGamma,nbatchesGamma)
-       
-       do idx=1,nbatchesGamma
-          
-          call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
-          batch2orbGamma(idx)%orbindex = 0
-          batch2orbGamma(idx)%norbindex = 0
-          
-       end do
-       
-       do iorb=1,nbasis
-          
-          idx = orb2batchGamma(iorb)
-          batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-          K = batch2orbGamma(idx)%norbindex
-          batch2orbGamma(idx)%orbindex(K) = iorb
-          
-       end do
-    ENDIF
+#ifndef VAR_ICHOR
+    ! Translate batchindex to orbital index
+    ! -------------------------------------
+    call mem_alloc(batch2orbGamma,nbatchesGamma)
+
+    do idx=1,nbatchesGamma
+
+       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
+       batch2orbGamma(idx)%orbindex = 0
+       batch2orbGamma(idx)%norbindex = 0
+
+    end do
+
+    do iorb=1,nbasis
+
+       idx = orb2batchGamma(iorb)
+       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+       K = batch2orbGamma(idx)%norbindex
+       batch2orbGamma(idx)%orbindex(K) = iorb
+
+    end do
+#endif
 
     ! ************************************************
     ! * Determine batch information for Alpha batch  *
     ! ************************************************
-    IF(DECinfo%useIchor)THEN
-       iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
-       !Determine how many batches of AOS based on the alphadim, the requested
-       !size of the AO batches. iAO is the center that the batching should occur on. 
-       !'R'  !Specifies that it is the Regular AO basis that should be batched 
-       call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
-            & nbatchesAlpha,DECinfo%output)
-       call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
-       !Construct the batches of AOS based on the alphadim, the requested
-       !size of the AO batches - alphadim must be unchanged since the call 
-       !to determine_Ichor_nbatchesofAOS
-       !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
-       !So MaxActualDimAlpha must be less og equal to alphadim
-       call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
-            & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
-    ELSE
-       ! Orbital to batch information
-       ! ----------------------------
-       call mem_alloc(orb2batchAlpha,nbasis)
-       call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
-            & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
-            & nbatchesAlpha,orb2BatchAlpha,'R')
-    ENDIF
+#ifdef VAR_ICHOR
+    iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the alphadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,DECinfo%output)
+    call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+    !Construct the batches of AOS based on the alphadim, the requested
+    !size of the AO batches - alphadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimAlpha must be less og equal to alphadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+#else
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchAlpha,nbasis)
+    call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
+         & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
+         & nbatchesAlpha,orb2BatchAlpha,'R')
+#endif
 
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
-    IF(.NOT.DECinfo%useIchor)THEN
-       ! Translate batchindex to orbital index
-       ! -------------------------------------
-       call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-       
-       do idx=1,nbatchesAlpha
-          
-          call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-          batch2orbAlpha(idx)%orbindex = 0
-          batch2orbAlpha(idx)%norbindex = 0
-          
-       end do
-       
-       do iorb=1,nbasis
-          
-          idx = orb2batchAlpha(iorb)
-          batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-          K = batch2orbAlpha(idx)%norbindex
-          batch2orbAlpha(idx)%orbindex(K) = iorb
-          
-       end do
-    ENDIF
+#ifndef VAR_ICHOR
+    ! Translate batchindex to orbital index
+    ! -------------------------------------
+    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
 
-    IF(DECinfo%useIchor)THEN
-       !Calculate Screening integrals 
-       SameMOL = .TRUE. !Specifies same molecule on all centers 
-       call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
-    ELSE
-       call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
+    do idx=1,nbatchesAlpha
+
+       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+       batch2orbAlpha(idx)%orbindex = 0
+       batch2orbAlpha(idx)%norbindex = 0
+
+    end do
+
+    do iorb=1,nbasis
+
+       idx = orb2batchAlpha(iorb)
+       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+       K = batch2orbAlpha(idx)%norbindex
+       batch2orbAlpha(idx)%orbindex(K) = iorb
+
+    end do
+#endif
+
+#ifdef VAR_ICHOR
+     !Calculate Screening integrals 
+     SameMOL = .TRUE. !Specifies same molecule on all centers 
+     call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+#else
+    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
             & nbatchesAlpha,nbatchesGamma,INTSPEC)
-       if (doscreen) then
-          call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
-               & nbasis,nbatchesAlpha,nbatchesGamma,&
-               & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-               & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-       end if
-    ENDIF
+
+    if (doscreen) then
+
+       call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+            & nbasis,nbatchesAlpha,nbatchesGamma,&
+            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+
+    end if
+#endif
 
     FullRHS = (nbatchesGamma .eq. 1) .and. (nbatchesAlpha .eq. 1)
 
@@ -9787,22 +10052,22 @@ contains
     ! init distribution
     distribution = 0
     myload = 0
-    IF(DECinfo%useIchor)THEN
-       call mem_alloc(batchdimAlpha,nbatchesAlpha)
-       do idx=1,nbatchesAlpha
-          batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
-       enddo
-       call mem_alloc(batchdimGamma,nbatchesGamma)
-       do idx=1,nbatchesGamma
-          batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
-       enddo
-    ENDIF
+#ifdef VAR_ICHOR
+    call mem_alloc(batchdimAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+    enddo
+    call mem_alloc(batchdimGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+    enddo
+#endif
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
-    IF(DECinfo%useIchor)THEN
-       call mem_dealloc(batchdimAlpha)
-       call mem_dealloc(batchdimGamma)
-    ENDIF
+#ifdef VAR_ICHOR
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchdimGamma)
+#endif
 
 #endif
 
@@ -9810,30 +10075,30 @@ contains
     ! ******************************************************************
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-       IF(DECinfo%useIchor)THEN
-          dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
-          GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
-          GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
-          AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
-          AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
-       ELSE
-          dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
-          GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-          GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
-       ENDIF
+#ifdef VAR_ICHOR
+       dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+       GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+       GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+       AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+       AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+#else
+       dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
+       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+       GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+#endif
 
        BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
-          IF(DECinfo%useIchor)THEN
-             dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
-             AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
-             AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
-             AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
-             AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
-          ELSE
-             dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
-             AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-             AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-          ENDIF
+#ifdef VAR_ICHOR
+          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+#else
+          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+#endif
 #ifdef VAR_MPI
 
           ! distribute tasks
@@ -9848,21 +10113,22 @@ contains
 
 #endif
 
-          IF(DECinfo%useIchor)THEN
-             call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
-                  & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                  & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
-          ELSE
-             if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-             if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+#ifdef VAR_ICHOR
+          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
+               & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+               & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
+#else
+          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
-             ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
-             ! ************************************************************************************
-             call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-                  & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-                  & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
-                  & FullRHS,INTSPEC)
-          ENDIF
+
+          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
+          ! ************************************************************************************
+          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
+               & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
+               & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
+               & FullRHS,INTSPEC)
+#endif
           ! tmp2(delta,alphaB,gammaB;I) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cocc(beta,I)
           m = nbasis*dimGamma*dimAlpha
           k = nbasis
@@ -10012,32 +10278,32 @@ contains
     call mem_dealloc(tmp2)
     call mem_dealloc(tmp3)
 
-    IF(DECinfo%useIchor)THEN
-       call FREE_SCREEN_ICHORERI()
-       call mem_dealloc(AOGammabatchinfo)
-       call mem_dealloc(AOAlphabatchinfo)
-    ELSE
-       call free_decscreen(DECSCREEN)
-       call mem_dealloc(orb2batchGamma)
-       call mem_dealloc(batchdimGamma)
-       call mem_dealloc(batchsizeGamma)
-       call mem_dealloc(batchindexGamma)
-       do idx=1,nbatchesGamma
-          call mem_dealloc(batch2orbGamma(idx)%orbindex)
-       end do
-       call mem_dealloc(batch2orbGamma)
-       call mem_dealloc(orb2batchAlpha)
-       call mem_dealloc(batchdimAlpha)
-       call mem_dealloc(batchsizeAlpha)
-       call mem_dealloc(batchindexAlpha)
-       do idx=1,nbatchesAlpha
-          call mem_dealloc(batch2orbAlpha(idx)%orbindex)
-          batch2orbAlpha(idx)%orbindex => null()
-       end do
-       call mem_dealloc(batch2orbAlpha)
-       nullify(mylsitem%setting%LST_GAB_LHS)
-       nullify(mylsitem%setting%LST_GAB_RHS)
-    ENDIF
+#ifdef VAR_ICHOR
+    call FREE_SCREEN_ICHORERI()
+    call mem_dealloc(AOGammabatchinfo)
+    call mem_dealloc(AOAlphabatchinfo)
+#else
+    call free_decscreen(DECSCREEN)
+    call mem_dealloc(orb2batchGamma)
+    call mem_dealloc(batchdimGamma)
+    call mem_dealloc(batchsizeGamma)
+    call mem_dealloc(batchindexGamma)
+    do idx=1,nbatchesGamma
+       call mem_dealloc(batch2orbGamma(idx)%orbindex)
+    end do
+    call mem_dealloc(batch2orbGamma)
+    call mem_dealloc(orb2batchAlpha)
+    call mem_dealloc(batchdimAlpha)
+    call mem_dealloc(batchsizeAlpha)
+    call mem_dealloc(batchindexAlpha)
+    do idx=1,nbatchesAlpha
+       call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+       batch2orbAlpha(idx)%orbindex => null()
+    end do
+    call mem_dealloc(batch2orbAlpha)
+    nullify(mylsitem%setting%LST_GAB_LHS)
+    nullify(mylsitem%setting%LST_GAB_RHS)
+#endif
     call mem_dealloc(CoccT)
     call mem_dealloc(CvirtT)
 
@@ -10116,17 +10382,17 @@ contains
         ! The smallest possible AO batch depends on the basis set
         ! (More precisely, if all batches are made as small as possible, then the
         !  call below determines the largest of these small batches).
-        IF(DECinfo%useIchor)THEN
-           !Determine the minimum allowed AObatch size MinAObatch
-           !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
-           !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
-           !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
-           !'R'  !Specifies that it is the Regular AO basis that should be batched
-           iAO = 1 !the center that the batching should occur on.  
-           call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
-        ELSE
-           call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
-        ENDIF
+#ifdef VAR_ICHOR
+        !Determine the minimum allowed AObatch size MinAObatch
+        !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
+        !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
+        !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
+        !'R'  !Specifies that it is the Regular AO basis that should be batched
+        iAO = 1 !the center that the batching should occur on.  
+        call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
+#else
+        call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
+#endif
 
         ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
         AlphaDim=MinAObatch
@@ -10413,11 +10679,11 @@ contains
 
       acc_device_type = acc_get_device_type() 
       num_gpu = acc_get_num_devices(acc_device_type)
-!      call get_dev_mem(total_gpu,free_gpu)
+      call get_dev_mem(total_gpu,free_gpu)
 
 #endif
 
-      if (num_gpu .lt. 0) gpu = .true.
+      if (num_gpu .gt. 0) gpu = .true.
 
       if (abc) then
          ijk = .false.

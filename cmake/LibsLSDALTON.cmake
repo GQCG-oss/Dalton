@@ -406,6 +406,35 @@ if(ENABLE_PCMSOLVER)
     add_dependencies(lspcm lsutillib lsintlib)
 endif()
 
+if(ENABLE_CUDA)
+    find_package(CUDA)
+endif()
+if(CUDA_FOUND)
+    # this below is a bit convoluted but here we make
+    # sure that the CUDA sources are compiled with GNU always
+    # this makes life easier if LSDalton is compiled with Intel
+    add_definitions(-DENABLE_CUDA)
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_C_COMPILER=gcc
+        -DCMAKE_CXX_COMPILER=g++
+        )
+    ExternalProject_Add(cuda_interface
+        SOURCE_DIR  ${PROJECT_SOURCE_DIR}/LSDALTON/cuda
+        BINARY_DIR  ${PROJECT_BINARY_DIR}/cuda/build
+        STAMP_DIR   ${PROJECT_BINARY_DIR}/cuda/stamp
+        TMP_DIR     ${PROJECT_BINARY_DIR}/cuda/tmp
+        DOWNLOAD_COMMAND ""
+        INSTALL_COMMAND ""
+        )
+    include_directories(${PROJECT_SOURCE_DIR}/src/cuda)
+    set(LSDALTON_EXTERNAL_LIBS
+        ${PROJECT_BINARY_DIR}/cuda/build/libcuda_interface.a
+        ${CUDA_LIBRARIES}
+        ${LSDALTON_EXTERNAL_LIBS}
+        )
+    add_dependencies(lsdaltonmain cuda_interface)
+endif()
+
 if(NOT ENABLE_CHEMSHELL)
     add_executable(
         lsdalton.x
