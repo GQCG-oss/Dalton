@@ -9,16 +9,22 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
+f.add(re = 'using reduced threshold to determine induced dipole moments',
+      abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'Polarizable embedding energy contributions:',
       num_lines = 32,
       abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'Dipole moment components',
-      num_lines = 9,
-      mask = [3],
-      abs_tolerance = 1.0e-5)
+      num_lines = 10,
+      abs_tolerance = 1.0e-4)
 
-test.run(['pehsrohf_wft.dal'], ['pehsrohf_wft.mol'], {'out': f}, args='-put POTENTIAL.INP')
+f.add(from_string = 'Electric transition dipole moments (au)',
+      ignore_sign = True,
+      num_lines = 12,
+      abs_tolerance = 1.0e-4)
+
+test.run(['pehf_iter.dal'], ['pehf_iter.mol'], {'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)

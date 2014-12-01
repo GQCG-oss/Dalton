@@ -244,8 +244,9 @@ contains
           end do
           call mem_dealloc(EstAtomicFragments)
 
-          ! Receive CC models to use for each pair based on estimates
+          ! Receive CC models and pair FOT levels to use for each pair based on estimates
           call ls_mpibcast(MyMolecule%ccmodel,nfrags,nfrags,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%pairfotlevel,nfrags,nfrags,master,MPI_COMM_LSDALTON)
 
        end if CleanupAndUpdateCCmodel
 
