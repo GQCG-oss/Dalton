@@ -43,7 +43,7 @@
        K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
        E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
-       and H. Aagren,
+       and H. Agren,
        "The Dalton quantum chemistry program system",
        WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
@@ -136,43 +136,39 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Nov 21 20:24:57 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 23:03:47 2014
+     Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/dalton/DALTON/test/nonconverted_runtests/pehf_restart
-   2) /home/arnfinn/dalton/build-release/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build_release/test/pehf_restart
+   2) /home/magnus/Projects/dalton_devel/dalton/build_release/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | arnfinn
- Host                     | c23-1.local
- System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-3.17.3-200.fc20.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
- Fortran compiler version | ifort (IFORT) 13.0.1 20121010
- C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
- C compiler version       | icc (ICC) 13.0.1 20121010
- C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
+ Fortran compiler         | /usr/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
+ C compiler               | /usr/local/bin/mpicc
+ C compiler version       | gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
+ C++ compiler             | /usr/local/bin/mpicxx
  C++ compiler version     | unknown
- BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
-                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
-                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
-                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
-                          | read.so;/usr/lib64/libm.so
- LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
-                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
-                          | ntel64/libmkl_intel_lp64.so
+ BLAS                     | /lib64/atlas-sse3/libf77blas.so;/lib64/atlas-sse3/
+                          | libcblas.so;/lib64/atlas-sse3/libatlas.so
+ LAPACK                   | /lib64/atlas-sse3/libatlas.so;/lib64/atlas-sse3/li
+                          | blapack.so
  Static linking           | OFF
- Last Git revision        | d2d7688c97378c1130064d3ff3aa51dd9d3133eb
- Configuration time       | 2014-11-19 12:12:26.797893
+ Last Git revision        | 33e513e6ec145230f67a26e0d0b2095c11a06f8e
+ Configuration time       | 2014-12-01 16:28:52.079620
 
  * Sequential calculation.
 
@@ -250,7 +246,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/arnfinn/dalton/build-release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -258,7 +254,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/arnfinn/dalton/build-release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -266,7 +262,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/dalton/build-release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -408,8 +404,8 @@ H              2.675323   -2.516779   -0.000673
 
 @  Nuclear repulsion energy :  102.664846860515 Hartree
 
-  Reading potential input file
- 
+  Reading potential input file for polarizable embedding calculation
+
   Polarizable embedding information
   ---------------------------------
 
@@ -459,8 +455,9 @@ H              2.675323   -2.516779   -0.000673
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
- >>>> Total CPU  time used in HERMIT:   0.09 seconds
- >>>> Total wall time used in HERMIT:   0.10 seconds
+ >>>  Time used in TWOINT     is   0.24 seconds
+ >>>> Total CPU  time used in HERMIT:   0.28 seconds
+ >>>> Total wall time used in HERMIT:   0.28 seconds
 
 
                         .----------------------------------.
@@ -479,8 +476,8 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Nov 21 20:24:57 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 23:03:48 2014
+     Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
      Acrolein                                                                
@@ -538,9 +535,9 @@ H              2.675323   -2.516779   -0.000673
      This is a restarted calculation.
 
 
- *********************************************
- ***** DIIS optimization of Hartree-Fock *****
- *********************************************
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -548,8 +545,18 @@ H              2.675323   -2.516779   -0.000673
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-      Induced dipole moments converged in  4 iterations.
-@  1  -188.317391916     -1.918439589978E-02    9.30417D-06   -1.88D+02
+      Induced dipole moments converged in  1 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01989481     0.02419892     0.00003676
+
+@  1  -188.317391916     -1.918439589978E-02    9.30418D-06   -1.88D+02
 
 @ *** DIIS converged in   1 iterations !
 @     Converged SCF energy, gradient:   -188.317391916158    9.30D-06
@@ -614,9 +621,8 @@ H              2.675323   -2.516779   -0.000673
 
 
  >>> Writing SIRIFC interface file
-      Induced dipole moments converged in  1 iterations.
 
- >>>> CPU and wall time for SCF :       0.198       0.240
+ >>>> CPU and wall time for SCF :       0.119       0.119
 
 
                        .-----------------------------------.
@@ -630,14 +636,14 @@ H              2.675323   -2.516779   -0.000673
 
 @    Final HF energy:            -188.317391916158                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -290.963054380774
+@    Electronic energy:          -290.963054380773
 @    Embedding energy:             -0.019184395900
 
 @    Final gradient norm:           0.000009304175
 
  
-     Date and time (Linux)  : Fri Nov 21 20:24:57 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 23:03:48 2014
+     Host name              : foeroyar                                
 
  (Only coefficients >0.0100 are printed.)
 
@@ -700,21 +706,21 @@ H              2.675323   -2.516779   -0.000673
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.22 seconds
- >>>> Total wall time used in SIRIUS :      0.32 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.12 seconds
+ >>>> Total wall time used in SIRIUS :      0.12 seconds
 
  
-     Date and time (Linux)  : Fri Nov 21 20:24:57 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 23:03:48 2014
+     Host name              : foeroyar                                
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.38 seconds
- >>>> Total wall time used in DALTON:   0.53 seconds
+ >>>> Total CPU  time used in DALTON:   0.40 seconds
+ >>>> Total wall time used in DALTON:   0.40 seconds
 
  
-     Date and time (Linux)  : Fri Nov 21 20:24:57 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 23:03:48 2014
+     Host name              : foeroyar                                

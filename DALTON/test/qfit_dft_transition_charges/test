@@ -16,6 +16,6 @@ f.add(from_re = 'Charges have been fitted to the molecular electrostatic',
       rel_tolerance = 1.0e-3,
       ignore_sign = True)
 
-test.run(['qfit.dal'], ['h2o.mol'], {'out': f}, args='')
+test.run(['qfit.dal'], ['h2o.mol'], f={'out': f}, args='')
 
 sys.exit(test.return_code)

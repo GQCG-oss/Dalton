@@ -57,6 +57,6 @@ f.add(from_re = 'Indirect spin-spin coupling between ',
       num_lines = 16,
       abs_tolerance = 1.0e-3)
 
-test.run(['dft_properties_nosym.dal'], ['H2O_cc-pVDZ.mol'], {'out': f})
+test.run(['dft_properties_nosym.dal'], ['H2O_cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

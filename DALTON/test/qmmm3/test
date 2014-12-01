@@ -37,6 +37,6 @@ f.add(from_re = 'Indirect spin-spin coupling between ',
       num_lines = 30,
       abs_tolerance = 1.0e-3)
 
-test.run(['qmmm3.dal'], ['ch2o_cc-pvdz.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['qmmm3.dal'], ['ch2o_cc-pvdz.mol'], f={'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)

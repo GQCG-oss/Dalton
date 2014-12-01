@@ -37,6 +37,6 @@ f.add(string = '@ Excitation energy :',
 f.add(string = '@ Oscillator strength (LENGTH)',
       rel_tolerance = 1.0e-3)
 
-test.run(['pcm_excit.dal'], ['CH2Op2_STO-3G_sym.mol'], {'out': f})
+test.run(['pcm_excit.dal'], ['CH2Op2_STO-3G_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

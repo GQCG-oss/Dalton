@@ -21,6 +21,6 @@ f.add(from_string = 'Static polarizabilities (au)',
       num_lines = 9,
       rel_tolerance = 1.0e-5)
 
-test.run(['dft_polar.dal'], ['C2FH3_STO-2G-mod.mol'], {'out': f})
+test.run(['dft_polar.dal'], ['C2FH3_STO-2G-mod.mol'], f={'out': f})
 
 sys.exit(test.return_code)

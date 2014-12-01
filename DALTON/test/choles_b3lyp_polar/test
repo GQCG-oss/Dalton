@@ -26,7 +26,7 @@ f.add(from_string = 'Static polarizabilities (au)',
        num_lines = 9,
        abs_tolerance = 1.0e-5)
 
-test.run(['choles_b3lyp_polar.dal'], ['HCN_aug-cc-pVDZ.mol'], {'out': f},
+test.run(['choles_b3lyp_polar.dal'], ['HCN_aug-cc-pVDZ.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

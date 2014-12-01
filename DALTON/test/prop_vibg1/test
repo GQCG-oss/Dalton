@@ -54,7 +54,7 @@ f.add(from_re = 'Vibrational g\-factor\n',
        num_lines = 22,
        abs_tolerance = 1.0e-6)
 
-test.run(['prop_vibg1.dal'], ['H2_6-31Gpp_sym.mol'], {'out': f},
+test.run(['prop_vibg1.dal'], ['H2_6-31Gpp_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

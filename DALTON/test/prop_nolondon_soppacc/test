@@ -96,7 +96,7 @@ f.add(from_re = 'Summary of chemical shieldings',
       num_lines = 14,
       abs_tolerance = 1.0e-3)
 
-test.run(['prop_nolondon_soppacc.dal'], ['H2O_intgrl_sym.mol'], {'out': f},
+test.run(['prop_nolondon_soppacc.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)
