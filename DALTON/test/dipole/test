@@ -33,6 +33,6 @@ f.add(from_string = 'Dipole moment',
       mask = [1],
       rel_tolerance = 1.0e-5)
 
-test.run(['dipole.dal'], ['NH3_6-31Gs.mol'], {'out': f})
+test.run(['dipole.dal'], ['NH3_6-31Gs.mol'], f={'out': f})
 
 sys.exit(test.return_code)

@@ -49,7 +49,7 @@ f.add(from_string = 'Quadratic Response calculation',
 f.add(re = 'beta\([XYZ];[XYZ],[XYZ]\)',
       rel_tolerance = 1.0e-5)
 
-test.run(['rsp_2ndharm.dal'], ['LiH_4-31G.mol'], {'out': f},
+test.run(['rsp_2ndharm.dal'], ['LiH_4-31G.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

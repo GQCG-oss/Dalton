@@ -17,7 +17,7 @@ f.add(from_string = "Indirect spin-spin coupling between",
       num_lines = 17,
       abs_tolerance = 1.0e-3)
 
-test.run(['soppa_vibavg_twobas.dal'], ['soppa_vibavg_twobas.mol'], {'out': f},
+test.run(['soppa_vibavg_twobas.dal'], ['soppa_vibavg_twobas.mol'], f={'out': f},
          accepted_errors = ["not implemented for parallel calculations"])
 
 

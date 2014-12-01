@@ -13,6 +13,6 @@ f = Filter()
 f.add(string = 'Final DFT energy',
       rel_tolerance = 1.0e-8)
 
-test.run(['dft_hsrohf.dal'], ['CH2-_STO-3G.mol'], {'out': f})
+test.run(['dft_hsrohf.dal'], ['CH2-_STO-3G.mol'], f={'out': f})
 
 sys.exit(test.return_code)

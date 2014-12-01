@@ -27,6 +27,6 @@ f.add(from_string = 'Dipole moment components',
       mask = [1],
       abs_tolerance = 1.0e-6)
 
-test.run(['dft_open_b3lyp.dal'], ['BeH_Ahlrichs-VTZ.mol'], {'out': f})
+test.run(['dft_open_b3lyp.dal'], ['BeH_Ahlrichs-VTZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

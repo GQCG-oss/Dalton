@@ -26,6 +26,6 @@ f.add(string = "ZDIPLEN  total ",
 f.add(re = '[XYZ]DIPLEN   [XYZ]DIPLEN',
       rel_tolerance = 2.0e-5)
 
-test.run(['rsp_absorp.dal'], ['LiH_Sadlej-pVTZ.mol'], {'out': f})
+test.run(['rsp_absorp.dal'], ['LiH_Sadlej-pVTZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

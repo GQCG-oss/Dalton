@@ -22,6 +22,6 @@ f.add(re = ' Atom\(C \)',
 f.add(re = ' Atom\(H1\)',
       abs_tolerance = 1.0e-3)
 
-test.run(['rsp_cpp_nscd.dal'], ['CH4_nosym.mol'], {'out': f})
+test.run(['rsp_cpp_nscd.dal'], ['CH4_nosym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

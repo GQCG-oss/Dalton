@@ -75,7 +75,7 @@ f.add(from_string = 'Indirect spin-spin coupling between ',
       num_lines = 17,
       abs_tolerance = 1.0e-3)
 
-#test.run(['spin_local.dal'], ['H2O_6-31G.mol'], {'out': f})
-test.run(['spin_local.dal'], ['CH2O_6-31G.mol'], {'out': f})
+#test.run(['spin_local.dal'], ['H2O_6-31G.mol'], f={'out': f})
+test.run(['spin_local.dal'], ['CH2O_6-31G.mol'], f={'out': f})
 
 sys.exit(test.return_code)

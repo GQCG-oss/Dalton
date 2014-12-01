@@ -39,6 +39,6 @@ f.add(string = 'Total number of tesserae',
 f.add(string = 'Point group',
       rel_tolerance = 1.0e-5)
 
-test.run(['lf_dipole.dal'], ['CH2O_STO-3G.mol'], {'out': f})
+test.run(['lf_dipole.dal'], ['CH2O_STO-3G.mol'], f={'out': f})
 
 sys.exit(test.return_code)

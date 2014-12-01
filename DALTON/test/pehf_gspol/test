@@ -12,7 +12,7 @@ f = Filter()
 
 f.add(from_string = 'Polarizable embedding energy contributions:',
       num_lines = 15,
-      abs_tolerance = 1.0e-5)
+      abs_tolerance = 1.0e-6)
 
 f.add(from_string = 'Dipole moment components',
       num_lines = 10,
@@ -23,6 +23,6 @@ f.add(from_string = 'Electric transition dipole moments (au)',
       num_lines = 12,
       abs_tolerance = 1.0e-4)
 
-test.run(['pehf_gspol.dal'], ['pehf_gspol.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['pehf_gspol.dal'], ['pehf_gspol.mol'], ['pehf_gspol.pot'], f={'out': f})
 
 sys.exit(test.return_code)

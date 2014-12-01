@@ -20,6 +20,6 @@ f.add(string = 'Final DFT energy',
 f.add(string = '@ gamma',
       abs_tolerance = 1.0e-3)
 
-test.run(['dft_cr_sym.dal'], ['H2O_STO-3G.mol'], {'out': f})
+test.run(['dft_cr_sym.dal'], ['H2O_STO-3G.mol'], f={'out': f})
 
 sys.exit(test.return_code)

@@ -43,7 +43,7 @@
        K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
        E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
-       and H. Aagren,
+       and H. Agren,
        "The Dalton quantum chemistry program system",
        WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
@@ -136,43 +136,39 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Nov 21 20:25:15 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 22:47:09 2014
+     Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/dalton/DALTON/test/nonconverted_runtests/pehf_restart
-   2) /home/arnfinn/dalton/build-release/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build_release/test/pehf_restart
+   2) /home/magnus/Projects/dalton_devel/dalton/build_release/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | arnfinn
- Host                     | c23-1.local
- System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-3.17.3-200.fc20.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
- Fortran compiler version | ifort (IFORT) 13.0.1 20121010
- C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
- C compiler version       | icc (ICC) 13.0.1 20121010
- C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
+ Fortran compiler         | /usr/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
+ C compiler               | /usr/local/bin/mpicc
+ C compiler version       | gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
+ C++ compiler             | /usr/local/bin/mpicxx
  C++ compiler version     | unknown
- BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
-                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
-                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
-                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
-                          | read.so;/usr/lib64/libm.so
- LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
-                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
-                          | ntel64/libmkl_intel_lp64.so
+ BLAS                     | /lib64/atlas-sse3/libf77blas.so;/lib64/atlas-sse3/
+                          | libcblas.so;/lib64/atlas-sse3/libatlas.so
+ LAPACK                   | /lib64/atlas-sse3/libatlas.so;/lib64/atlas-sse3/li
+                          | blapack.so
  Static linking           | OFF
- Last Git revision        | d2d7688c97378c1130064d3ff3aa51dd9d3133eb
- Configuration time       | 2014-11-19 12:12:26.797893
+ Last Git revision        | 33e513e6ec145230f67a26e0d0b2095c11a06f8e
+ Configuration time       | 2014-12-01 16:28:52.079620
 
  * Sequential calculation.
 
@@ -185,7 +181,8 @@ Compilation information
 .PEQM                                             
 *PEQM                                             
 .VERBOSE                                          
-.DIRECT                                           
+.ITERATIVE                                        
+1.0d-10                                           
 **WAVE FUNCTIONS                                  
 .HF                                               
 **END OF                                          
@@ -247,7 +244,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/arnfinn/dalton/build-release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -255,7 +252,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/arnfinn/dalton/build-release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -263,7 +260,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/dalton/build-release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -405,8 +402,8 @@ H              2.675323   -2.516779   -0.000673
 
 @  Nuclear repulsion energy :  102.664846860515 Hartree
 
-  Reading potential input file
- 
+  Reading potential input file for polarizable embedding calculation
+
   Polarizable embedding information
   ---------------------------------
 
@@ -416,7 +413,8 @@ H              2.675323   -2.516779   -0.000673
 
     Dipole-dipole polarizabilities.
 
-    Direct solver for induced moments will be used.
+    Iterative solver for induced moments will be used
+    with convergence threshold: 1.0E-10
 
 
                      .---------------------------------------.
@@ -453,8 +451,9 @@ H              2.675323   -2.516779   -0.000673
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
- >>>> Total CPU  time used in HERMIT:   0.08 seconds
- >>>> Total wall time used in HERMIT:   0.10 seconds
+ >>>  Time used in TWOINT     is   0.22 seconds
+ >>>> Total CPU  time used in HERMIT:   0.26 seconds
+ >>>> Total wall time used in HERMIT:   0.26 seconds
 
 
                         .----------------------------------.
@@ -490,8 +489,8 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Nov 21 20:25:16 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 22:47:09 2014
+     Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
      Acrolein                                                                
@@ -547,9 +546,9 @@ H              2.675323   -2.516779   -0.000673
      Threshold for SCF convergence     1.00D-05
 
 
- *********************************************
- ***** DIIS optimization of Hartree-Fock *****
- *********************************************
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -557,42 +556,152 @@ H              2.675323   -2.516779   -0.000673
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
+      Induced dipole moments converged in  4 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.03677511     0.04735015     0.00010765
+
 @  1  -187.948496600     -4.868374348978E-02    2.01259D+00   -1.88D+02
       Virial theorem: -V/T =      2.003056
 @      MULPOP C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  5 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.00474408    -0.00556659    -0.00001214
+
 @  2  -188.184841194      2.344779659309E-03    1.36791D+00   -2.36D-01
       Virial theorem: -V/T =      2.009438
 @      MULPOP C      -0.39; C      -0.18; C      -0.25; O       0.36; H       0.07; H       0.15; H       0.12; H       0.12; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  5 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.02178772     0.02525304     0.00004071
+
 @  3  -188.315331361     -1.994605857626E-02    1.22120D-01   -1.30D-01
       Virial theorem: -V/T =      2.007786
 @      MULPOP C       0.19; C      -0.10; C      -0.11; O      -0.30; H       0.05; H       0.09; H       0.08; H       0.08; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01985696     0.02372190     0.00003965
+
 @  4  -188.317223363     -1.920849914129E-02    2.80029D-02   -1.89D-03
       Virial theorem: -V/T =      2.007876
 @      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.09; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01991470     0.02430599     0.00003869
+
 @  5  -188.317376539     -1.916797097241E-02    9.68984D-03   -1.53D-04
       Virial theorem: -V/T =      2.007837
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01989768     0.02414325     0.00003776
+
 @  6  -188.317390806     -1.918432906121E-02    2.78666D-03   -1.43D-05
       Virial theorem: -V/T =      2.007836
 @      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01988749     0.02420029     0.00003719
+
 @  7  -188.317391847     -1.918174369107E-02    7.23105D-04   -1.04D-06
       Virial theorem: -V/T =      2.007836
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01989377     0.02419759     0.00003689
+
 @  8  -188.317391913     -1.918427369673E-02    1.50542D-04   -6.63D-08
       Virial theorem: -V/T =      2.007835
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  3 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01989455     0.02419857     0.00003679
+
 @  9  -188.317391916     -1.918426510508E-02    3.46603D-05   -3.15D-09
       Virial theorem: -V/T =      2.007835
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
+      Induced dipole moments converged in  3 iterations.
+
+      Polarizable embedding information
+     -----------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01989481     0.02419892     0.00003676
+
 @ 10  -188.317391916     -1.918439589978E-02    9.30418D-06   -2.13D-10
 
 @ *** DIIS converged in  10 iterations !
@@ -659,7 +768,7 @@ H              2.675323   -2.516779   -0.000673
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.447       0.630
+ >>>> CPU and wall time for SCF :       0.467       0.467
 
 
                        .-----------------------------------.
@@ -673,14 +782,14 @@ H              2.675323   -2.516779   -0.000673
 
 @    Final HF energy:            -188.317391916158                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -290.963054380774
+@    Electronic energy:          -290.963054380773
 @    Embedding energy:             -0.019184395900
 
 @    Final gradient norm:           0.000009304175
 
  
-     Date and time (Linux)  : Fri Nov 21 20:25:16 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 22:47:10 2014
+     Host name              : foeroyar                                
 
  (Only coefficients >0.0100 are printed.)
 
@@ -743,21 +852,21 @@ H              2.675323   -2.516779   -0.000673
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.46 seconds
- >>>> Total wall time used in SIRIUS :      0.67 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.47 seconds
+ >>>> Total wall time used in SIRIUS :      0.47 seconds
 
  
-     Date and time (Linux)  : Fri Nov 21 20:25:16 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 22:47:10 2014
+     Host name              : foeroyar                                
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.57 seconds
- >>>> Total wall time used in DALTON:   0.81 seconds
+ >>>> Total CPU  time used in DALTON:   0.74 seconds
+ >>>> Total wall time used in DALTON:   0.74 seconds
 
  
-     Date and time (Linux)  : Fri Nov 21 20:25:16 2014
-     Host name              : stallo-1.local                          
+     Date and time (Linux)  : Mon Dec  1 22:47:10 2014
+     Host name              : foeroyar                                

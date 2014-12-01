@@ -55,7 +55,7 @@ f.add(from_string = 'Total Coupling Tensor in Hz',
 
 
 
-test.run(['prop_newtramcscf.dal'], ['H2O_intgrl_sym.mol'], {'out': f},
+test.run(['prop_newtramcscf.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

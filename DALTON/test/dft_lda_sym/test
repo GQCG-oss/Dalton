@@ -17,6 +17,6 @@ f = Filter()
 f.add(string = 'Final DFT energy',
       rel_tolerance = 1.0e-8)
 
-test.run(['dft_lda_sym.dal'], ['HCN_aug-cc-pVDZ.mol'], {'out': f})
+test.run(['dft_lda_sym.dal'], ['HCN_aug-cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)
