@@ -1206,7 +1206,7 @@
          integer :: lfree
          integer :: ilsym, irsym, ncl, ncr, kzvarl, kzvarr
          integer :: isymdn, isymst
-         integer :: kcref, lorb, lcon, nzyvec, nzcvec
+         integer :: kcref, nzyvec, nzcvec
          integer :: iprone, nzconf, nzvar
          integer :: n2ash
 
@@ -1248,7 +1248,7 @@
          real*8, dimension(:,:), allocatable :: fxc1s2s
          real*8, dimension(:,:), allocatable :: fxc1s2k, fxc1k2s
 
-         logical :: lexist, lopen
+         logical :: lexist, lopen, lcon, lorb
          logical :: fndlab
 
          lopen = .false.
