@@ -7,7 +7,7 @@ enable_language(CXX)
 find_package(CUDA)
 
 if(CUDA_FOUND)
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35; -ccbin gcc)
 
     cuda_compile(
         cuda_objects
