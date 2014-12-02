@@ -542,6 +542,8 @@ contains
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_end,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%bas_start,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%bas_end,MyMolecule%natoms)
        IF(DECINFO%F12)THEN
           call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
           call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
@@ -586,6 +588,8 @@ contains
     call ls_mpibcast(MyMolecule%atom_size,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_start,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_end,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%bas_start,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%bas_end,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     IF(DECINFO%F12)THEN
        call ls_mpibcast(MyMolecule%atom_cabssize,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
        call ls_mpibcast(MyMolecule%atom_cabsstart,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
@@ -2262,10 +2266,6 @@ contains
     call ls_mpi_buffer(DECitem%simple_orbital_threshold,Master)
     call ls_mpi_buffer(DECitem%purifyMOs,Master)
     call ls_mpi_buffer(DECitem%fragadapt,Master)
-    call ls_mpi_buffer(DECitem%BoughtonPulay,Master)
-    call ls_mpi_buffer(DECitem%mulliken_threshold,Master)
-    call ls_mpi_buffer(DECitem%simple_mulliken_threshold,Master)
-    call ls_mpi_buffer(DECitem%approximated_norm_threshold,Master)
     call ls_mpi_buffer(DECitem%mulliken,Master)
     call ls_mpi_buffer(DECitem%distance,Master)
     call ls_mpi_buffer(DECitem%FOT,Master)

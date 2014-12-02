@@ -442,6 +442,7 @@ contains
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Occ AOS     : ',Fragment%noccAOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc AOS   : ',Fragment%nunoccAOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Basis       : ',Fragment%nbasis
+
        write(DECinfo%output,'(a,2f10.3)')   ' FRAGINIT: Dist AOS/AE : ',&
        &Fragment%DmaxAOS*bohr_to_angstrom,Fragment%DmaxAE*bohr_to_angstrom
        write(DECinfo%output,*)
@@ -2001,12 +2002,11 @@ contains
     ! as this will destroy the overall MPI framework.
     if(infpar%mynum/=infpar%master) then
        call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
-            fragment%natoms,DECinfo%output,0)
+            & fragment%natoms,fragment%basis_idx,fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
     endif
 #else
     call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
-         fragment%natoms,DECinfo%output,0)
-
+         & fragment%natoms,fragment%basis_idx,fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
 #endif
 
     !Build F12 Cabs and Ri for a fragment
@@ -3010,8 +3010,9 @@ contains
     type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Fragment info
     type(decfrag), intent(inout) :: fragment
-    integer :: i,j,idx,cntr,MyAtom
-    logical,pointer :: which_atoms(:)
+    integer :: i,j,idx,cntr,MyAtom,nu,atom
+    integer,pointer :: AOtoAtom(:)
+    logical,pointer :: which_aos(:),which_atoms(:)
 
     if(.not.fragment%pairfrag) MyAtom = fragment%EOSatoms(1)
 
@@ -3031,26 +3032,48 @@ contains
     end do
     ! --
 
+    call mem_alloc(AOtoAtom,MyMolecule%nbasis)
+    AOtoAtom = 0
+    do atom=1,MyMolecule%natoms
+       do nu=MyMolecule%atom_start(atom),MyMolecule%atom_end(atom)
+          AOtoAtom(nu) = atom
+       enddo
+    enddo
 
     ! Which atoms are included in atomic fragment extent?
     call mem_alloc(which_atoms,MyMolecule%natoms)
     which_atoms=.false.
+    call mem_alloc(which_aos,MyMolecule%nbasis)
+    which_aos=.false.
 
     do i=1,fragment%nunoccAOS  ! loop over unocc orbitals
        ! Loop over atoms used to span MO "i"
-       do j=1,fragment%unoccAOSorb(i)%numberofatoms
-          idx = fragment%unoccAOSorb(i)%atoms(j) ! full space index for atom j in orbital extent
-          which_atoms(idx)=.true. ! atom "idx" included in orbital extent for orbital "i"
+       do j=1,fragment%unoccAOSorb(i)%numberofaos
+          idx = fragment%unoccAOSorb(i)%aos(j) ! full space index for atom j in orbital extent
+          which_aos(idx)=.true. ! basis "idx" included in orbital extent for orbital "i"
+          which_atoms(AOtoAtom(idx))=.true. ! atom included in orbital extent for orbital "i"
        end do
     end do
 
     ! Same for occ orbitals
     do i=1,fragment%noccAOS
-       do j=1,fragment%occAOSorb(i)%numberofatoms
-          idx = fragment%occAOSorb(i)%atoms(j)
-          which_atoms(idx)=.true.
+       do j=1,fragment%occAOSorb(i)%numberofaos
+          idx = fragment%occAOSorb(i)%aos(j)
+          which_aos(idx)=.true.
+          which_atoms(AOtoAtom(idx))=.true. 
        end do
     end do
+    call mem_dealloc(AOtoAtom)
+
+    fragment%nbasis = COUNT(which_aos)
+    call mem_alloc(fragment%basis_idx,fragment%nbasis)
+    idx  = 0
+    do i=1,MyMolecule%nbasis
+       if(which_aos(i)) then
+          idx=idx+1
+          fragment%basis_idx(idx)=i
+       endif
+    enddo
 
     ! assign atomic extent
     fragment%RmaxAE = 0.0E0_realk
@@ -3103,31 +3126,7 @@ contains
       if( cntr > 1 ) fragment%DsdvAE = ( fragment%DsdvAE / float( cntr - 1 ) )**(0.5E0_realk)
     endif
     call mem_dealloc(which_atoms)
-
-    ! count number of basis functions on selected atoms
-    fragment%nbasis = 0
-    do i=1,fragment%natoms
-       fragment%nbasis = fragment%nbasis &
-            & + MyMolecule%atom_size(fragment%atoms_idx(i))
-    end do
-
-    ! Set basis function indices
-    call mem_alloc(fragment%basis_idx,fragment%nbasis)
-    idx=0
-    do i=1,fragment%natoms
-       do j=1,MyMolecule%atom_size(fragment%atoms_idx(i))
-          idx=idx+1
-          ! Basis function index
-          fragment%basis_idx(idx) = MyMolecule%atom_start(fragment%atoms_idx(i)) + j-1
-       end do
-    end do
-
-    ! Sanity check
-    if(idx/=fragment%nbasis) then
-       print *, 'Counter,nbasis: ', idx,fragment%nbasis
-       call lsquit('init_atomic_fragment_extent: Counter does not equal number &
-            & of basis functions!',-1)
-    end if
+    call mem_dealloc(which_aos)
 
     IF(decinfo%F12)THEN
        ! count number of basis functions on selected atoms
@@ -3164,7 +3163,7 @@ contains
     type(array2) :: S,tmp1,tmp2
     real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:)
     integer :: i,j,idx,atom_k,nocc,nunocc,nbasis,natoms,k,bas_offset,offset, &
-         full_orb_idx
+         full_orb_idx,bas_k
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
 
@@ -3188,9 +3187,8 @@ contains
 
     ! Overlap matrix for fragment
     call mem_alloc(fragment%S,fragment%nbasis,fragment%nbasis)
-    call adjust_square_matrix(MyMolecule%overlap,fragment%S,fragment%atoms_idx, &
-         & MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end, &
-         & nbasis,natoms,fragment%nbasis,Fragment%natoms)
+    call adjust_square_matrix2(MyMolecule%overlap,fragment%S,fragment%basis_idx, &
+         & nbasis,fragment%nbasis)
 
     FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
 
@@ -3217,11 +3215,9 @@ contains
           ! for each orbital truncate half transformed overlap orbital
           correct_vector_moS = 0.0E0_realk
           bas_offset = 1
-          do k=1,Fragment%natoms
-             atom_k = fragment%atoms_idx(k)
-             correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
-                  S%val(full_orb_idx,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
-             bas_offset = bas_offset + MyMolecule%atom_size(atom_k)
+          do k=1,Fragment%nbasis
+             bas_k = fragment%basis_idx(k)
+             correct_vector_moS(k) = S%val(full_orb_idx,bas_k)
           end do
 
           ! fit orbital
@@ -3241,11 +3237,9 @@ contains
           ! for each orbital truncate half transformed overlap orbital
           correct_vector_moS = 0.0E0_realk
           bas_offset = 1
-          do k=1,Fragment%natoms
-             atom_k = fragment%atoms_idx(k)
-             correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
-                  S%val(full_orb_idx,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
-             bas_offset = bas_offset + MyMolecule%atom_size(atom_k)
+          do k=1,Fragment%nbasis
+             bas_k = fragment%basis_idx(k)
+             correct_vector_moS(k) = S%val(full_orb_idx,bas_k)
           end do
 
           ! fit orbital
@@ -3276,11 +3270,9 @@ contains
 
              correct_vector_moS = 0.0E0_realk
              bas_offset = 1
-             do k=1,Fragment%natoms
-                atom_k = fragment%atoms_idx(k)
-                correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
-                     S%val(full_orb_idx,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
-                bas_offset = bas_offset + MyMolecule%atom_size(atom_k)
+             do k=1,Fragment%nbasis
+                bas_k = fragment%basis_idx(k)
+                correct_vector_moS(k) = S%val(full_orb_idx,bas_k)
              end do
 
              ! fit orbital
@@ -3306,14 +3298,12 @@ contains
        end if
 
        ! Fragment Co
-       call adjust_basis_matrix(MyMolecule%Co,fragment%CoLOC,fragment%occAOSidx, &
-            fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nocc,natoms, &
-            fragment%nbasis,fragment%noccLOC,Fragment%natoms)
+       call adjust_basis_matrix2(MyMolecule%Co,fragment%CoLOC,fragment%occAOSidx, &
+            nbasis,nocc,fragment%nbasis,fragment%noccLOC,Fragment%basis_idx)
 
        ! Fragment Cv
-       call adjust_basis_matrix(MyMolecule%Cv,fragment%CvLOC,fragment%unoccAOSidx, &
-            fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nunocc,natoms, &
-            fragment%nbasis,fragment%nunoccLOC,Fragment%natoms)
+       call adjust_basis_matrix2(MyMolecule%Cv,fragment%CvLOC,fragment%unoccAOSidx, &
+            nbasis,nunocc,fragment%nbasis,fragment%nunoccLOC,Fragment%basis_idx)
 
     end if FitOrbitalsForFragment
 
@@ -3331,9 +3321,8 @@ contains
     ! adjust fock matrix in ao basis
     call mem_alloc(fragment%fock,fragment%nbasis,fragment%nbasis)
     fragment%fock=0.0E0_realk
-    call adjust_square_matrix(MyMolecule%fock,fragment%fock,fragment%atoms_idx,MyMolecule%atom_size, &
-         MyMolecule%atom_start,MyMolecule%atom_end,MyMolecule%nbasis,MyMolecule%natoms, &
-         fragment%nbasis,Fragment%natoms)
+    call adjust_square_matrix2(MyMolecule%fock,fragment%fock,fragment%basis_idx,&
+         & MyMolecule%nbasis,fragment%nbasis)
 
 
     ! adjust fock matrices in mo basis
@@ -5999,54 +5988,45 @@ contains
     type(fullmolecule), intent(in) :: MyMolecule
     !> Number of basis functions in fragment
     integer,intent(inout) :: nbasisFragment
-    logical,pointer :: FragmentAtoms(:)
+    logical,pointer :: FragmentBasis(:)
     integer :: i,j
 
 
-    ! FragmentAtoms: Defines which atoms are included in atomic fragment extent describing
-    !                molecular orbitals for fragment.
-    call mem_alloc(FragmentAtoms,MyMolecule%natoms)
-    FragmentAtoms=.false.
+    ! FragmentBasis: Defines which basis functions (AOs) are included 
+    !                in atomic fragment extent describing molecular orbitals for fragment.
 
+    call mem_alloc(FragmentBasis,MyMolecule%nbasis)
+    FragmentBasis=.false.
 
     ! Occupied orbitals
     do i=1,nocc
-
        if(occAOS(i)) then ! occupied orbital "i" is in fragment AOS
-
-          do j=1,OccOrbitals(i)%numberofatoms
-             ! Atom "j" in list is included in atomic fragment extent
-             FragmentAtoms(OccOrbitals(i)%atoms(j)) = .true.
+          ! Occupied orbitals
+          do j=1,OccOrbitals(i)%numberofaos
+             ! AO "j" in list is included in atomic fragment extent
+             FragmentBasis(OccOrbitals(i)%aos(j)) = .true.
           end do
-
-       end if
-    end do
-
+       endif
+    enddo
 
     ! Unoccupied orbitals
     do i=1,nunocc
-
        if(unoccAOS(i)) then ! unoccupied orbital "i" is in fragment AOS
-
-          do j=1,UnoccOrbitals(i)%numberofatoms
-             ! Atom "j" in list is included in atomic fragment extent
-             FragmentAtoms(UnoccOrbitals(i)%atoms(j)) = .true.
+          do j=1,UnoccOrbitals(i)%numberofaos
+             ! AO "j" in list is included in atomic fragment extent
+             FragmentBasis(UnoccOrbitals(i)%aos(j)) = .true.
           end do
-
        end if
     end do
 
-
-    ! Count number of basis function based on which atoms are included
     nbasisFragment=0
-    do i=1,MyMolecule%natoms
-       if(FragmentAtoms(i)) then
-          nbasisFragment = nbasisFragment + MyMolecule%atom_size(i)
+    do i=1,MyMolecule%nbasis
+       if(FragmentBasis(i)) then
+          nbasisFragment = nbasisFragment + 1
        end if
     end do
 
-    call mem_dealloc(FragmentAtoms)
-
+    call mem_dealloc(FragmentBasis)
 
   end subroutine get_nbasis_for_fragment
 
@@ -6211,26 +6191,11 @@ contains
     type(decfrag),intent(inout) :: fragment
     !> Which atomic orbitals in full AO list are included in atomic fragment extent?
     integer,intent(inout) :: which_orbitals(fragment%nbasis)
-    integer :: i,j,idx,atom
+    integer :: i
 
-    idx=0
-    do i=1,fragment%natoms  ! loop over atoms in fragment
-       atom = fragment%atoms_idx(i)  ! atom index in full atom list
-
-       do j=1,MyMolecule%atom_size(atom)  ! loop over basis functions for atom
-          idx =idx+1
-          which_orbitals(idx) = MyMolecule%atom_start(atom) + j -1
-       end do
-
+    do i=1,fragment%nbasis  ! loop over atoms in fragment
+       which_orbitals(i) = fragment%basis_idx(i)  
     end do
-
-    ! Sanity check
-    if(idx/=fragment%nbasis) then
-       call lsquit('which_orbitals_in_atomic_extents: &
-            & counter does not match number of basis functions in atomic &
-            & fragment extent!',-1)
-    end if
-
 
   end subroutine which_orbitals_in_atomic_extents
 

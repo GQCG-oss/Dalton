@@ -786,6 +786,14 @@ contains
        call mem_dealloc(molecule%atom_end)
     end if
 
+    if(associated(molecule%bas_start)) then
+       call mem_dealloc(molecule%bas_start)
+    end if
+
+    if(associated(molecule%bas_end)) then
+       call mem_dealloc(molecule%bas_end)
+    end if
+
     if(associated(molecule%atom_cabssize)) then
        call mem_dealloc(molecule%atom_cabssize)
     end if
@@ -848,10 +856,12 @@ contains
     implicit none
     type(fullmolecule), intent(inout) :: molecule
     type(lsitem), intent(inout) :: mylsitem
-    integer :: natoms,r,i,iset,itype,basis,icharge
+    integer :: natoms,r,i,iset,itype,basis,icharge,nbasis,iOrbitalIndex
+    integer :: kmult,nAngmom,ang,norb,j,k
     logical :: status_info
 
     natoms = molecule%natoms
+    nbasis = molecule%nbasis
     call mem_alloc(molecule%atom_size,natoms)
     molecule%atom_size=0
 
@@ -888,6 +898,36 @@ contains
             + molecule%atom_size(i+1)-1
     end do
 
+    ! get first and last index of an basis shell in ao matrix
+    call mem_alloc(molecule%bas_start,nbasis)
+    molecule%bas_start = 0
+    call mem_alloc(molecule%bas_end,nbasis)
+    molecule%bas_end = 0
+
+    ! loop over atoms
+    iOrbitalIndex = 0
+    do i=1,natoms
+       if(r == 0) then
+          icharge = int(mylsitem%input%molecule%atom(i)%charge)
+          itype = mylsitem%input%basis%binfo(RegBasParam)%chargeindex(icharge)
+       else
+          itype = mylsitem%input%molecule%atom(i)%idtype(1)
+       end if
+
+       nAngmom = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%nAngmom
+       kmult = 1
+       do ang = 0,nAngmom-1
+          norb = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%SHELL(ang+1)%norb
+          do j = 1, norb
+             do k=1,kmult
+                molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndex+1
+                molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndex+kmult
+             enddo
+             iOrbitalIndex = iOrbitalIndex + kmult
+          enddo
+          kmult = kmult + 2
+       enddo
+    enddo
 
     IF(decinfo%F12)THEN
      call mem_alloc(molecule%atom_cabssize,natoms)

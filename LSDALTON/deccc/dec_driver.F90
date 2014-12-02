@@ -663,24 +663,11 @@ subroutine print_dec_info()
         & LogicString(Log2It(DECinfo%FitOrbitals))
    !Oribtal Assignment 
    write(LU,'(A)') ' '
-   if(DECinfo%BoughtonPulay) then
-      write(LU,'(A)') 'DEC orbitals will be generated using Boughton-Pulay criteria'
-      if(DECinfo%Distance) then
-       write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based Distance criteria'
-      else 
-         IF(DECinfo%Mulliken)then
-          write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Mulliken population analysis'
-         ELSE
-          write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis'
-         ENDIF
-      endif
+   write(LU,'(A)') 'DEC orbitals will be generated using  simple Lowdin charge analysis'
+   if(DECinfo%Distance) then
+      write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based Distance criteria'
    else 
-      write(LU,'(A)') 'DEC orbitals will be generated using  simple Lowdin charge analysis'
-      if(DECinfo%Distance) then
-       write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based Distance criteria'
-      else 
-       write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis'
-      endif
+      write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis'
    endif
 
    !Fragment Optimization 

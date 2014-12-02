@@ -62,38 +62,12 @@ contains
              &OccOrbitals,UnoccOrbitals)
        else ! Generate DEC orbitals
 
-          if(DECinfo%BoughtonPulay) then
-             write(DECinfo%output,*) 'Generating occupied DEC orbitals using Boughton-Pulay criteria'
-             call GenerateOrbitals_BP(OccOrbitals,nOcc,0,MyMolecule,&
-                & DECinfo%mulliken_threshold, DECinfo%simple_mulliken_threshold,&
-                & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output)
-             if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nOcc,DECinfo%output)
-
-             write(DECinfo%output,*) 'Generating unoccupied DEC orbitals using Boughton-Pulay criteria'
-             call GenerateOrbitals_BP(UnoccOrbitals,nUnocc,nOcc,MyMolecule,&
-                & DECinfo%mulliken_threshold, DECinfo%simple_mulliken_threshold,&
-                & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output)
-             if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
-
-             ! For Boughton-Pulay, reassign orbitals originally assigned to hydrogen
-             if(DECinfo%AbsorbHatoms) then
-                call reassign_orbitals(nocc,OccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
-                call reassign_orbitals(nunocc,UnOccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
-             end if
-             write(DECinfo%output,*)
-             write(DECinfo%output,*)
-             write(DECinfo%output,*) 'Generating DEC orbitals using simple Lowdin charge analysis'
-
-          else ! Simple Lowdin charge procedure to determine atomic extent
-
-             write(DECinfo%output,*) 'Generating DEC orbitals using simple Lowdin charge analysis'
-
-             call GenerateOrbitals_simple(nocc,nunocc,natoms, &
-                & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
-             if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
-             if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
-
-          end if
+          write(DECinfo%output,*) 'Generating DEC orbitals using simple Lowdin charge analysis'
+          
+          call GenerateOrbitals_simple(nocc,nunocc,natoms, &
+               & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
+          if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
+          if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
 
        end if OrbitalGeneration
 
@@ -113,13 +87,8 @@ contains
     ! Print orbital info
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    if(DECinfo%BoughtonPulay) then
-       write(DECinfo%output,*) 'Boughton-Pulay based orbital assignment: Summary'
-       write(DECinfo%output,*) '------------------------------------------------'
-    else
-       write(DECinfo%output,*) 'Simple Lowdin-based orbital assignment: Summary'
-       write(DECinfo%output,*) '-----------------------------------------------'
-    end if
+    write(DECinfo%output,*) 'Simple Lowdin-based orbital assignment: Summary'
+    write(DECinfo%output,*) '-----------------------------------------------'
     call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals,ncore=MyMolecule%ncore)
 
 
@@ -260,28 +229,28 @@ contains
 
 
   !> \brief Initialize orbital, assign center and list of significant atoms.
-  function orbital_init(orb_number,central_atom,num_atoms,list_atoms) result(myorbital)
+  function orbital_init(orb_number,central_atom,num_aos,list_aos) result(myorbital)
 
     implicit none
     type(decorbital) :: myorbital
     integer, intent(in) :: orb_number
     integer, intent(in) :: central_atom
-    integer, intent(in) :: num_atoms
-    integer, dimension(num_atoms), intent(in) :: list_atoms
+    integer, intent(in) :: num_aos
+    integer, dimension(num_aos), intent(in) :: list_aos
     integer :: i
 
     myorbital%orbitalnumber = orb_number
     myorbital%centralatom = central_atom
-    myorbital%numberofatoms = num_atoms
+    myorbital%numberofaos = num_aos
 
     ! Set secondary atom equal to central atom in initialization (may be changed later)
     myorbital%secondaryatom = central_atom
 
-    call mem_alloc(myorbital%atoms,num_atoms)
-    myorbital%atoms = 0
+    call mem_alloc(myorbital%aos,num_aos)
+    myorbital%aos = 0
 
-    do i=1,num_atoms
-       myorbital%atoms(i) = list_atoms(i)
+    do i=1,num_aos
+       myorbital%aos(i) = list_aos(i)
     end do
 
   end function orbital_init
@@ -345,298 +314,13 @@ contains
 
     OrbitalCopy%orbitalnumber = OriginalOrbital%orbitalnumber
     OrbitalCopy%centralatom = OriginalOrbital%centralatom
-    OrbitalCopy%numberofatoms = OriginalOrbital%numberofatoms
+    OrbitalCopy%numberofaos = OriginalOrbital%numberofaos
     OrbitalCopy%secondaryatom = OriginalOrbital%secondaryatom
 
-    call mem_alloc(OrbitalCopy%atoms,OrbitalCopy%numberofatoms)
-    OrbitalCopy%atoms = OriginalOrbital%atoms
+    call mem_alloc(OrbitalCopy%aos,OrbitalCopy%numberofaos)
+    OrbitalCopy%aos = OriginalOrbital%aos
 
   end subroutine copy_orbital
-
-
-
-  !> \brief Generate orbitals for a given set (occ or virt) using Boughton-Pulay criteria
-  subroutine GenerateOrbitals_BP(orbital_set,size_of_set,offset,MyMolecule,&
-       & mulliken_threshold2,simple_mulliken_threshold2,&
-       & approximated_norm_threshold,modbasis,lu_output)
-
-    implicit none
-    integer, intent(in) :: size_of_set,lu_output
-    logical,intent(in) :: modbasis !modify basis
-    type(decorbital), intent(inout), dimension(size_of_set) :: orbital_set
-    ! Note: MyMolecule is only changed if modbasis=.true.!
-    type(fullmolecule), intent(in) :: MyMolecule
-    integer, intent(in) :: offset  ! 0 - for occupied, nocc - for virtual set
-    real(realk), intent(in) :: mulliken_threshold2
-    logical, intent(in) :: simple_mulliken_threshold2
-    real(realk),intent(in) :: approximated_norm_threshold
-
-    real(realk), pointer :: CtS(:,:), smallS(:,:)
-    real(realk), pointer :: gross_charge(:)
-    integer, pointer :: atomic_idx(:)
-    integer :: num_atoms_to_consider,i,j,nbasis,natoms,atom,central_atom,k,n, &
-         selected_nbasis,bas_offset,atom_k
-    integer, pointer :: list_of_atoms_to_consider(:)
-    real(realk) :: approx_vector_norm, full_vector_norm, approximated_norm, error, half_norm
-    real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:), tmp1(:)
-    real(realk), pointer :: ShalfC(:,:)
-    integer :: tki,atom_start_i,atom_end_i,gamma,catom(1),central_atom2
-    integer, pointer :: atom_start(:) => null()
-    integer, pointer :: atom_end(:) => null()
-    real(realk) :: twall,tcpu
-    real(realk),pointer :: basis(:,:)
-
-
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
-    nbasis = MyMolecule%nbasis
-    natoms = MyMolecule%natoms
-    call mem_alloc(basis,nbasis,nbasis)
-    basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
-    basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
-    call mem_alloc(gross_charge,natoms)
-
-    ! half transformed overlap
-    call mem_alloc(CtS,nbasis,nbasis)
-    CtS = 0.0E0_realk
-
-    if(.not. DECinfo%Mulliken) then ! Construct matrix used for Lowdin population analysis
-       call mem_alloc(ShalfC,nbasis,nbasis)
-       call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
-    end if
-
-    ! Get matrix C^T S
-    call dgemm('t','n',nbasis,nbasis,nbasis,1.0E0_realk,basis,nbasis, &
-         & MyMolecule%overlap,nbasis,0.0E0_realk,CtS,nbasis)
-
-    do i=1,size_of_set
-
-
-       if(DECinfo%Distance) then
-          ! Use Distance for orbital "i" to determine central atom 
-          call GetDistanceCentralAtom(offset+i,nbasis,natoms,MyMolecule,central_atom2)
-       endif
-       
-       if(DECinfo%Mulliken) then
-          ! Use Mulliken population analysis for orbital "i": gross_charge -> Mulliken
-          call GetMullikenVector(offset+i,nbasis,natoms,MyMolecule,gross_charge,CtS)
-       else
-          ! Use Lowdin population analysis for orbital "i": gross_charge -> Lowdin
-          call GetLowdinVector(offset+i,nbasis,natoms,MyMolecule,ShalfC,gross_charge)
-       end if
-
-       if(simple_mulliken_threshold2) then
-
-          ! -- Count number of atoms with Mulliken charge above the threshold
-          num_atoms_to_consider = 0
-          do j=1,natoms
-             if(abs(gross_charge(j)) > mulliken_threshold2) &
-                  num_atoms_to_consider = num_atoms_to_consider + 1
-          end do
-
-          if(DECinfo%Distance) then
-             if( abs(gross_charge(central_atom2)) > mulliken_threshold2)THEN
-                !the new central atom according to distance criteria
-                !is already included in the list
-             else
-                !add the central atom 
-                num_atoms_to_consider = num_atoms_to_consider + 1                
-             endif
-          endif
-
-          call mem_alloc(list_of_atoms_to_consider,num_atoms_to_consider)
-          list_of_atoms_to_consider = 0
-          atom=1
-          do j=1,natoms
-             if(abs(gross_charge(j)) > mulliken_threshold2) then
-                list_of_atoms_to_consider(atom) = j
-                atom = atom + 1
-             end if
-          end do
-          ! --
-          if(DECinfo%Distance) then
-             if( abs(gross_charge(central_atom2)) > mulliken_threshold2)THEN
-                !the new central atom according to distance criteria
-                !is already included in the list
-             else
-                !add the central atom
-                list_of_atoms_to_consider(atom) = central_atom2 
-             endif
-             central_atom = central_atom2 
-          else
-             ! -- number of atom with max value of the Mulliken charge             
-             catom = maxloc(abs(gross_charge),dim=1,MASK=.NOT.MyMolecule%PhantomAtom)
-             central_atom = catom(1)
-          endif
-       else
-
-
-          ! sort mulliken charge/atomic density keeping track on the original index
-          call mem_alloc(atomic_idx,natoms)
-          do k=1,natoms
-             atomic_idx(k) = k
-          end do
-
-          gross_charge = abs(gross_charge)
-          !obtain the central atom - as the atom (which is not Phantom) with biggest 
-          !mulliken charge
-          catom = maxloc(gross_charge,dim=1,MASK=.NOT.MyMolecule%PhantomAtom)
-          call real_inv_sort_with_tracking(gross_charge,atomic_idx,natoms)
-
-          if(DECinfo%PL>0) then
-             do n=1,natoms
-                write(lu_output,'(2i4,f16.10)') n,atomic_idx(n),gross_charge(n)
-             end do
-          end if
-
-          ! get an optimal set of atoms by taking them one by one until the
-          ! convergence i.e. until orbital is correctly approximated
-          do n=1,natoms
-
-             ! take 'n' first atoms
-             num_atoms_to_consider = n
-             call mem_alloc(list_of_atoms_to_consider,n)
-             do k=1,n
-                list_of_atoms_to_consider(k) = atomic_idx(k)
-             end do
-
-             ! sort list of atoms
-             call int_sort(list_of_atoms_to_consider,n,n)
-
-             ! number of basis function on selected atoms
-             selected_nbasis = 0
-             do k=1,n
-                selected_nbasis = selected_nbasis + &
-                     MyMolecule%atom_size(list_of_atoms_to_consider(k))
-             end do
-
-             ! ao overlap on selected atoms
-             call mem_alloc(smallS,selected_nbasis,selected_nbasis)
-             call adjust_square_matrix(MyMolecule%overlap,smallS,&
-                  list_of_atoms_to_consider,MyMolecule%atom_size, &
-                  MyMolecule%atom_start,MyMolecule%atom_end, &
-                  nbasis,natoms,selected_nbasis,n)
-
-             ! mo overlap vector for given orbital
-             call mem_alloc(correct_vector_moS,selected_nbasis)
-             correct_vector_moS = 0.0E0_realk
-             bas_offset = 1
-             do k=1,n
-                atom_k = list_of_atoms_to_consider(k)
-                correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
-                     CtS(offset+i,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
-                bas_offset = bas_offset + MyMolecule%atom_size(atom_k)
-             end do
-
-             ! approximated orbital
-             call mem_alloc(approximated_orbital,selected_nbasis)
-             approximated_orbital = 0.0E0_realk
-             call solve_linear_equations(smallS,approximated_orbital, &
-                  correct_vector_moS,selected_nbasis)
-
-             ! transform ao overlap using approximated orbital to check its norm
-             call mem_alloc(tmp1,selected_nbasis)
-             call dgemm('n','n',selected_nbasis,1,selected_nbasis,1.0E0_realk,smallS,selected_nbasis,&
-                  & approximated_orbital,selected_nbasis,0.0E0_realk,tmp1,nbasis)
-             approximated_norm = dot_product(approximated_orbital,tmp1)
-             call mem_dealloc(tmp1)
-
-             ! Boughton-Pulay: Error = 1 - norm of approximated orbital
-             error = abs(1.0E0_realk - approximated_norm)
-
-
-             ! debug info
-             DebugInfo : if(DECinfo%PL>0) then
-                call mem_alloc(tmp1,selected_nbasis)
-                tmp1 = matmul(smallS,approximated_orbital)
-                write(lu_output,'(a,f16.6)') 'New orbital norm :', approximated_norm
-                write(lu_output,'(a,f16.6)') 'Error in norm    :', error
-                write(lu_output,'(a,f16.6)') 'Old orbital norm :', &
-                     dot_product(basis(:,offset+i), &
-                     matmul(MyMolecule%overlap,basis(:,offset+i)))
-                write(lu_output,'(a)') '-------'
-                write(lu_output,'(a)') 'mu  FullMoS(mu) ApproxMoS(mu)'
-                do k=1,selected_nbasis
-                   write(lu_output,'(i4,3f16.6)') &
-                        k,correct_vector_moS(k),tmp1(k),correct_vector_moS(k)-tmp1(k)
-                end do
-                write(lu_output,'(a)') '-------'
-                call mem_dealloc(tmp1)
-             end if DebugInfo
-
-             ! delete stuff
-             call mem_dealloc(correct_vector_moS)
-             call mem_dealloc(smallS)
-
-             ! break procedure keeping list of atoms
-             if( error < approximated_norm_threshold .or. n == natoms) then
-                if(modbasis)then
-                   tki = 1
-                   do k=1,n
-                      atom_k = list_of_atoms_to_consider(k)
-                      atom_start_i = MyMolecule%atom_start(atom_k)
-                      atom_end_i = MyMolecule%atom_end(atom_k)
-                      do gamma=atom_start_i,atom_end_i
-                         basis(gamma,i) = approximated_orbital(tki)
-                         tki = tki+1
-                      enddo
-                   enddo
-                endif
-                call mem_dealloc(approximated_orbital)
-                exit
-             else
-                call mem_dealloc(approximated_orbital)
-                call mem_dealloc(list_of_atoms_to_consider)
-             endif
-          end do
-
-          ! -- number of atom with max value of the Mulliken charge
-          central_atom = atomic_idx(1)
-          iF(MyMolecule%PhantomAtom(atomic_idx(1)))THEN
-             central_atom = catom(1)
-          ENDIF
-          call mem_dealloc(atomic_idx)
-       endif
-
-       ! -- print extended orbital info
-       if(DECinfo%PL>0) then
-          write(DECinfo%output,'(/,a,i4)') 'Orbital                 : ',i
-          write(DECinfo%output,'(a,i4)')   'Orbital # in full basis : ',offset+i
-          write(DECinfo%output,'(a,i4,/)') 'Central atom            : ',central_atom
-          write(DECinfo%output,'(a,i4,/)') 'Central atom2           : ',central_atom2
-          write(DECinfo%output,'(a,i4,/)') 'Number of atoms         : ',num_atoms_to_consider
-          do j=1,num_atoms_to_consider
-             write(DECinfo%output,*) list_of_atoms_to_consider(j)
-          end do
-
-          write(DECinfo%output,'(2/,a)') 'i     Mul.Ch.'
-          do j=1,natoms
-             write(DECinfo%output,'(i4,3f16.10)') &
-                  j,gross_charge(j)
-          end do
-
-       end if
-       ! --
-
-       ! -- Create orbital
-       orbital_set(i) = orbital_init(i,central_atom, &
-            num_atoms_to_consider,list_of_atoms_to_consider)
-
-       call mem_dealloc(list_of_atoms_to_consider)
-
-    end do
-
-    call mem_dealloc(basis)
-    call mem_dealloc(gross_charge)
-    call mem_dealloc(CtS)
-    if(.not. DECinfo%Mulliken) then
-       call mem_dealloc(ShalfC)
-    end if
-
-    call LSTIMER('GenerateOrb',tcpu,twall,DECinfo%output)
-
-  end subroutine GenerateOrbitals_BP
-
-
 
   !> \brief Generate DEC orbitals for both occ and virt orbitals. For each orbital:
   !> 1. List atoms according to Lowdin charge for that orbital.
@@ -666,19 +350,19 @@ contains
     type(decorbital), intent(inout), dimension(nocc) :: OccOrbitals
     !> Unoccupied orbitals to create
     type(decorbital), intent(inout), dimension(nunocc) :: UnoccOrbitals
-    integer :: i,j,atom,central_atom,n,norbital_extent,nbasis,heavyatom,ni
-    integer, pointer :: list_of_atoms_to_consider(:)
+    integer :: i,j,central_atom,n,norbital_extent,nbasis,heavyatom,ni,bas,atom
+    integer, pointer :: list_of_aos_to_consider(:)
     real(realk) :: error,charge,mindist,twall,tcpu,maxlowdin
     logical :: keepon,ReAssignVirtHydrogenOrbs
     real(realk), pointer :: ShalfC(:,:)
     real(realk), pointer :: lowdin_charge(:,:)
-    integer, pointer :: atomic_idx(:,:), countOcc(:), countUnocc(:),central_atom2(:)
+    integer, pointer :: basis_idx(:,:), atomic_idx(:,:), countOcc(:), countUnocc(:),central_atom2(:)
     integer :: maxidx,offset,changedatom,nreass
     logical,pointer ::which_hydrogens(:), dofrag(:)
-    real(realk),pointer :: tmplowdin_charge(:)
+    real(realk),pointer :: tmplowdin_charge(:),atomic_gross_charge(:)
     integer,pointer :: tmpatomic_idx(:)
-    integer :: nunoccperatom
-
+    integer :: nunoccperatom,II,IDX,nu,k,kk
+    logical,pointer :: WhichAOs(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -688,8 +372,9 @@ contains
     ! For orbital assignment bookkeeping, only consider valence orbitals
     offset = MyMolecule%ncore  
 
-    call mem_alloc(lowdin_charge,natoms,nbasis)
+    call mem_alloc(lowdin_charge,nbasis,nbasis)
     call mem_alloc(ShalfC,nbasis,nbasis)
+    call mem_alloc(basis_idx,nbasis,nbasis)
     call mem_alloc(atomic_idx,natoms,nbasis)
     if(DECinfo%Distance) then
        call mem_alloc(central_atom2,nbasis)
@@ -710,19 +395,28 @@ contains
        endif
 
        ! Get vector with Lowdin charges for all atoms for orbital "i"
-       call GetLowdinVector(i,nbasis,natoms,MyMolecule,ShalfC,lowdin_charge(:,i) )
+       call GetLowdinVector(i,nbasis,ShalfC,lowdin_charge(:,i) )
+
+       call mem_alloc(atomic_gross_charge,natoms)
+       atomic_gross_charge = 0.0E0_realk
+       do atom=1,natoms
+          do nu=MyMolecule%atom_start(atom),MyMolecule%atom_end(atom) ! nu \in atom
+             atomic_gross_charge(atom)=atomic_gross_charge(atom)+abs(lowdin_charge(nu,i))
+          end do
+       enddo
 
        ! Sort Lowdin charges
-       call real_inv_sort_with_tracking(lowdin_charge(:,i),atomic_idx(:,i),natoms)
+       call real_inv_sort_with_tracking(lowdin_charge(:,i),basis_idx(:,i),nbasis)
+       call real_inv_sort_with_tracking(atomic_gross_charge(:),atomic_idx(:,i),natoms)
 
        IF(MyMolecule%PhantomAtom(atomic_idx(1,i)))THEN
-          !the first atom in the lowdin_charge(:,i) list is a Phantom atom
-          !we reorder the lowdin_charge(:,i) list to put a non Phantom atom on top
+          !the first atom in the atomic_gross_charge(:,i) list is a Phantom atom
+          !we reorder the atomic_gross_charge(:,i) list to put a non Phantom atom on top
           call mem_alloc(tmplowdin_charge,nAtoms)
           call mem_alloc(tmpatomic_idx,nAtoms)
           ni=0
           do n=1,natoms
-             tmplowdin_charge(n) = lowdin_charge(n,i)
+             tmplowdin_charge(n) = atomic_gross_charge(n)
              tmpatomic_idx(n) = atomic_idx(n,i)
              IF(.NOT.MyMolecule%PhantomAtom(atomic_idx(n,i)))THEN
                 IF(ni.EQ.0)THEN
@@ -732,22 +426,23 @@ contains
              ENDIF
           enddo
           !place the first non Phantom atom first
-          lowdin_charge(1,i) = tmplowdin_charge(ni) 
+          atomic_gross_charge(1) = tmplowdin_charge(ni) 
           atomic_idx(1,i) = tmpatomic_idx(ni)
           !place the other atoms in list
           do n=1,ni-1                               
-             lowdin_charge(1+n,i) = tmplowdin_charge(n)
+             atomic_gross_charge(1+n) = tmplowdin_charge(n)
              atomic_idx(1+n,i) = tmpatomic_idx(n)                
           enddo
           !number ni should not be placed because it is now number 1
           !place the rest of the atoms in the list
           do n=ni+1,nAtoms
-             lowdin_charge(n,i) = tmplowdin_charge(n)
+             atomic_gross_charge(n) = tmplowdin_charge(n)
              atomic_idx(n,i) = tmpatomic_idx(n)                
           enddo
           call mem_dealloc(tmplowdin_charge)
           call mem_dealloc(tmpatomic_idx)
        ENDIF
+       call mem_dealloc(atomic_gross_charge)
     end do GetLowdinCharges
     call mem_dealloc(ShalfC)
 
@@ -756,9 +451,8 @@ contains
     ! *********************************************
     ! Initial orbital assignment and orbital extent
     ! *********************************************
+    call mem_alloc(WhichAOs,nbasis)
     OrbitalLoop: do i=1,nbasis
-
-       charge = 0E0_realk
 
        ! Central atom is the one with largest Lowdin charge (although this may be modified below)
        if(DECinfo%Distance) then
@@ -767,65 +461,155 @@ contains
           IF(atomic_idx(1,i).EQ.central_atom)THEN
              !do nothing the closest atom is also the one with the largest Lowdin charge
           ELSE
-             !we reorder the lowdin_charge(:,i) list to put the central atom on top
-             call mem_alloc(tmplowdin_charge,nAtoms)
-             call mem_alloc(tmpatomic_idx,nAtoms)
-             do n=1,natoms
-                tmplowdin_charge(n) = lowdin_charge(n,i)
-                tmpatomic_idx(n) = atomic_idx(n,i)
-                IF(atomic_idx(n,i).EQ.central_atom)THEN
-                   !found the central_atom in lowdin list
-                   ni = n
-                ENDIF
-             enddo
-             !place the central atom first
-             lowdin_charge(1,i) = tmplowdin_charge(ni) 
-             atomic_idx(1,i) = tmpatomic_idx(ni)
-             !place the non central atoms in list
-             do n=1,ni-1                               
-                lowdin_charge(1+n,i) = tmplowdin_charge(n)
-                atomic_idx(1+n,i) = tmpatomic_idx(n)                
-             enddo
-             !number ni should not be placed because it is now number 1
-             !place the rest of the atoms in the list
-             do n=ni+1,nAtoms
-                lowdin_charge(n,i) = tmplowdin_charge(n)
-                atomic_idx(n,i) = tmpatomic_idx(n)                
-             enddo
-             call mem_dealloc(tmplowdin_charge)
-             call mem_dealloc(tmpatomic_idx)
+             !we could reorder the lowdin_charge(:,i) list to put the central atom on top
+             !but we do not care
           ENDIF
        ELSE
           central_atom = atomic_idx(1,i)
        ENDIF
-       ! Add atoms until sum of Lowdin charges is close enough to 1
-       LowdinAddLoop: do n=1,natoms
-          charge = charge + lowdin_charge(n,i)
+
+       IF(.FALSE.)THEN
+          !Do not require that all basis functions on the central atom are included
+          charge = 0E0_realk
+          LowdinAddLoop: do n=1,nbasis
+             charge = charge + lowdin_charge(n,i)
+             error = 1E0_realk - charge
+             if(error < approximated_norm_threshold .or. n==nbasis ) then 
+                ! atom list converged for orbital i
+                
+                ! Set list of aos to consider for orbital and exit loop
+                norbital_extent = n
+                call mem_alloc(list_of_aos_to_consider,norbital_extent)
+                do k=1,norbital_extent
+                   list_of_aos_to_consider(k) = basis_idx(k,i)
+                enddo
+                exit LowdinAddLoop                
+             end if
+          end do LowdinAddLoop
+       ELSE
+          !include all basis functions attached to new central atom
+          charge = 0E0_realk
+          WhichAOs = .FALSE.
+          write(DECinfo%output,*)'lowdin_charge(:,i)',lowdin_charge(:,i)
+          bas = 0
+          do nu=MyMolecule%atom_start(central_atom),MyMolecule%atom_end(central_atom)
+             WhichAOs(nu) = .TRUE.          
+             bas = bas + 1
+             kloop22: do k=1,nbasis
+                IF(basis_idx(k,i).EQ.nu)THEN 
+                   write(decinfo%output,*)'ADD CENTRAL ATOM NU=',NU,'lowdin_charge(k,i)',lowdin_charge(k,i)
+                   charge = charge + lowdin_charge(k,i)                
+                   write(decinfo%output,*)'CHARGE = ',CHARGE
+                   exit kloop22
+                ENDIF
+             enddo kloop22
+          enddo
           error = 1E0_realk - charge
-
-          if(error < approximated_norm_threshold .or. n==natoms ) then 
-             ! atom list converged for orbital i
-
-             ! Set list of atoms to consider for orbital and exit loop
-             norbital_extent = n
-             call mem_alloc(list_of_atoms_to_consider,norbital_extent)
-             do atom=1,norbital_extent
-                list_of_atoms_to_consider(atom) = atomic_idx(atom,i)
-             end do
-             exit LowdinAddLoop
-
-          end if
-
-       end do LowdinAddLoop
-
+          write(decinfo%output,*)'ERROR = ',ERROR
+          norbital_extent = 0
+          
+          if(error < approximated_norm_threshold .or. bas==nbasis ) then 
+             ! ao list converged for orbital i
+             ! Set list of aos to consider for orbital and exit loop
+             norbital_extent = bas
+             call mem_alloc(list_of_aos_to_consider,norbital_extent)
+             !include all basis functions attached to central atom
+             bas = 0
+             do nu=MyMolecule%atom_start(central_atom),MyMolecule%atom_end(central_atom)
+                bas = bas + 1
+                list_of_aos_to_consider(bas) = nu
+             enddo
+          else
+             ! Add basis functions until sum of Lowdin charges is close enough to 1
+             k=0
+             LowdinAddLoop3: do n=1,nbasis
+                IF(.NOT.WhichAOs(basis_idx(n,i)))THEN
+                   WhichAOs(basis_idx(n,i)) = .TRUE.
+                   charge = charge + lowdin_charge(n,i)
+                   !also include all components of this shell
+                   IDX = basis_idx(n,i)
+                   DO J=MyMolecule%bas_Start(IDX),MyMolecule%bas_End(IDX)
+                      IF(.NOT.WhichAOs(J))THEN !if not already included 
+                         WhichAOs(J) = .TRUE.
+                         kloop23: do k=1,nbasis
+                            IF(basis_idx(k,i).EQ.J)THEN 
+                               charge = charge + lowdin_charge(k,i)
+                               exit kloop23
+                            ENDIF
+                         enddo kloop23
+                      ENDIF
+                   ENDDO
+                   
+                   error = 1E0_realk - charge
+                   write(DECinfo%output,*)'ADD ',basis_idx(n,i),'charge',lowdin_charge(n,i)
+                   write(DECinfo%output,*)'n=',n,'charge',charge,'error',error,'approximated_norm_threshold',approximated_norm_threshold
+                   if(error < approximated_norm_threshold .or. n==nbasis ) then 
+                      ! atom list converged for orbital i
+                      
+                      ! Set list of aos to consider for orbital and exit loop
+                      norbital_extent = COUNT(WhichAOs)
+                      write(DECinfo%output,*)'norbital_extent',norbital_extent,'WhichAOs',WhichAOs
+                      call mem_alloc(list_of_aos_to_consider,norbital_extent)
+                      !include all basis functions attached to central atom
+                      bas = 0
+                      do k=1,nbasis
+                         IF(WhichAOs(k))THEN
+                            bas = bas + 1
+                            list_of_aos_to_consider(bas) = k
+                         ENDIF
+                      enddo
+                      exit LowdinAddLoop3
+                   end if
+                endif
+             end do LowdinAddLoop3
+          endif
+       ENDIF
+       !SANITY CHECK Include full Shell (all 3 P x,y,z components) if one part of shell have been included
+       WhichAOs = .FALSE.
+       DO II=1,norbital_extent
+          IDX = list_of_aos_to_consider(II)
+          WhichAOs(IDX) = .TRUE.
+          DO J=MyMolecule%bas_Start(IDX),MyMolecule%bas_End(IDX)
+             WhichAOs(J) = .TRUE.
+          ENDDO
+       ENDDO
+       IF(norbital_extent.NE.COUNT(WhichAOs))THEN
+          if(DECinfo%PL>1) then
+             charge=0.0E0_realk
+          endif
+          !add functions
+          call mem_dealloc(list_of_aos_to_consider)
+          norbital_extent = COUNT(WhichAOs)
+          call mem_alloc(list_of_aos_to_consider,norbital_extent)
+          II = 1
+          do IDX=1,nbasis
+             IF(WhichAOs(IDX))THEN
+                list_of_aos_to_consider(II) = IDX
+                II = II + 1
+                if(DECinfo%PL>1) then
+                   kloop21: do k=1,nbasis
+                      IF(basis_idx(k,i).EQ.IDX)THEN 
+                         charge = charge + lowdin_charge(k,i)
+                         exit kloop21
+                      ENDIF
+                   enddo kloop21
+                endif
+             ENDIF
+          enddo
+          IF(II-1.NE.norbital_extent)call lsquit('DEC error in AO shell sanitycheck',-1)
+       ENDIF
 
        ! Print orbital info for high print levels
        if(DECinfo%PL>1) then
           write(DECinfo%output,'(1X,a,i10)') 'ORBITAL: ', i
           write(DECinfo%output,*) '-------------------------------------'
-          write(DECinfo%output,'(1X,a,100i5)')    'ATOMS  : ', list_of_atoms_to_consider
-          write(DECinfo%output,'(1X,a,100f10.3)') 'LOWDIN : ', lowdin_charge(1:norbital_extent,i)
-          write(DECinfo%output,'(1X,a,i6)') 'Central Atom : ', central_atom
+          write(DECinfo%output,'(1X,a,1i5)')        '#AOS   : ', norbital_extent
+          write(DECinfo%output,'(1X,a,100i5)')      'AOS    : ', list_of_aos_to_consider
+          
+
+!          write(DECinfo%output,'(1X,a,100f10.3)')   'LOWDIN : ', lowdin_charge(1:norbital_extent,i) !not true anymore
+          write(DECinfo%output,'(1X,a,f12.5)')      'TOTAL LOWDIN : ', charge 
+          write(DECinfo%output,'(1X,a,i6)')         'Central Atom : ', central_atom
           if(DECinfo%Distance) then
              write(DECinfo%output,'(1X,a,i6)') 'Central Atom : ', central_atom2(i)
           endif
@@ -835,15 +619,16 @@ contains
        ! -- Create orbital
        if(i<=nocc) then   ! Occupied orbital
           OccOrbitals(i) = orbital_init(i,central_atom, &
-               norbital_extent,list_of_atoms_to_consider)
+               norbital_extent,list_of_aos_to_consider)
        else  ! unoccupied orbital
           UnoccOrbitals(i-nocc) = orbital_init(i,central_atom, &
-               norbital_extent,list_of_atoms_to_consider)
+               norbital_extent,list_of_aos_to_consider)
        end if
 
-       call mem_dealloc(list_of_atoms_to_consider)
+       call mem_dealloc(list_of_aos_to_consider)
 
     end do OrbitalLoop
+    call mem_dealloc(WhichAOs)
 
 
     ! Which atoms are hydrogens?
@@ -1054,6 +839,7 @@ contains
 
     call mem_dealloc(which_hydrogens)
     call mem_dealloc(lowdin_charge)
+    call mem_dealloc(basis_idx)
     call mem_dealloc(atomic_idx)
     if(DECinfo%Distance) then
        call mem_dealloc(central_atom2)
@@ -1091,16 +877,16 @@ contains
     type(decorbital), intent(inout), dimension(nocc) :: OccOrbitals
     !> Unoccupied orbitals to create
     type(decorbital), intent(inout), dimension(nunocc) :: UnoccOrbitals
-    integer :: i,central_orbital,n,norbital_extent,nbasis,atom,j
-    integer, pointer :: list_of_atoms_to_consider(:)
+    integer :: i,central_orbital,n,norbital_extent,nbasis,atom,j,bas
+    integer, pointer :: list_of_aos_to_consider(:)
     real(realk) :: error,charge,twall,tcpu
     real(realk), pointer :: ShalfC(:,:)
     real(realk), pointer :: lowdin_charge(:,:)
-    integer, pointer :: atomic_idx(:,:)
-    integer :: offset
+    integer, pointer :: basis_idx(:,:)
+    integer :: offset,II,IDX,k,nu
     real(realk),pointer :: DistoccUnocc(:,:),DistOccOcc(:,:),sorted_dists(:)
     integer :: sorted_orbitals(nocc)
-
+    logical,pointer :: WhichAOs(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -1109,9 +895,9 @@ contains
 
     offset = MyMolecule%ncore  
 
-    call mem_alloc(lowdin_charge,natoms,nbasis)
+    call mem_alloc(lowdin_charge,nbasis,nbasis)
     call mem_alloc(ShalfC,nbasis,nbasis)
-    call mem_alloc(atomic_idx,natoms,nbasis)
+    call mem_alloc(basis_idx,natoms,nbasis)
 
     ! Get Lowdin matrix S^{1/2} C
     call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
@@ -1123,10 +909,10 @@ contains
     GetLowdinCharges: do i=1,nbasis
 
        ! Get vector with Lowdin charges for all atoms for orbital "i"
-       call GetLowdinVector(i,nbasis,natoms,MyMolecule,ShalfC,lowdin_charge(:,i) )
+       call GetLowdinVector(i,nbasis,ShalfC,lowdin_charge(:,i) )
 
        ! Sort Lowdin charges
-       call real_inv_sort_with_tracking(lowdin_charge(:,i),atomic_idx(:,i),natoms)
+       call real_inv_sort_with_tracking(lowdin_charge(:,i),basis_idx(:,i),nbasis)
 
     end do GetLowdinCharges
     call mem_dealloc(ShalfC)
@@ -1147,35 +933,56 @@ contains
 
        charge = 0E0_realk
 
-       ! Add atoms until sum of Lowdin charges is close enough to 1
-       ! **********************************************************
-       LowdinAddLoop: do n=1,natoms
+       ! Add basis functions until sum of Lowdin charges is close enough to 1
+       LowdinAddLoop: do n=1,nbasis
           charge = charge + lowdin_charge(n,i)
           error = 1E0_realk - charge
-
-          if(error < approximated_norm_threshold .or. n==natoms ) then 
-             ! atom list converged for orbital i
-
-             ! Set list of atoms to consider for orbital and exit loop
+             
+          if(error < approximated_norm_threshold .or. n==nbasis ) then 
+             ! atom list converged for orbital i             
+             ! Set list of aos to consider for orbital and exit loop
              norbital_extent = n
-             call mem_alloc(list_of_atoms_to_consider,norbital_extent)
-             do atom=1,norbital_extent
-                list_of_atoms_to_consider(atom) = atomic_idx(atom,i)
+             call mem_alloc(list_of_aos_to_consider,norbital_extent)
+             !include all basis functions attached to central atom
+             do k=1,norbital_extent
+                list_of_aos_to_consider(k) = basis_idx(k,i)
              end do
-             exit LowdinAddLoop
-
           end if
-
        end do LowdinAddLoop
 
+       !SANITY CHECK Include full Shell (all 3 P x,y,z components) if one part of shell have been included
+       call mem_alloc(WhichAOs,nbasis)
+       WhichAOs = .FALSE.
+       DO II=1,norbital_extent
+          IDX = list_of_aos_to_consider(II)
+          WhichAOs(IDX) = .TRUE.
+          DO J=MyMolecule%bas_Start(IDX),MyMolecule%bas_End(IDX)
+             WhichAOs(J) = .TRUE.
+          ENDDO
+       ENDDO
+       IF(norbital_extent.NE.COUNT(WhichAOs))THEN
+          !add functions
+          call mem_dealloc(list_of_aos_to_consider)
+          norbital_extent = COUNT(WhichAOs)
+          call mem_alloc(list_of_aos_to_consider,norbital_extent)
+          II = 1
+          do IDX=1,nbasis
+             IF(WhichAOs(IDX))THEN
+                list_of_aos_to_consider(II) = IDX
+                II = II + 1
+             ENDIF
+          enddo
+          IF(II-1.NE.norbital_extent)call lsquit('DEC error in AO shell sanitycheck',-1)
+       ENDIF
+       call mem_dealloc(WhichAOs)
 
        ! Print orbital info for high print levels
        ! ****************************************
        if(DECinfo%PL>1) then
           write(DECinfo%output,'(1X,a,i10)') 'ORBITAL: ', i
           write(DECinfo%output,*) '-------------------------------------'
-          write(DECinfo%output,'(1X,a,100i5)')    'ATOMS  : ', list_of_atoms_to_consider
-          write(DECinfo%output,'(1X,a,100f10.3)') 'LOWDIN : ', lowdin_charge(1:norbital_extent,i)
+          write(DECinfo%output,'(1X,a,100i5)')    'BASISFUNCTIONS  : ', list_of_aos_to_consider
+          write(DECinfo%output,'(1X,a,100f10.3)') 'LOWDIN          : ', lowdin_charge(1:norbital_extent,i)
           write(DECinfo%output,*)
        end if
 
@@ -1189,7 +996,7 @@ contains
           ! ----------------------------------------------
           central_orbital = i
           OccOrbitals(i) = orbital_init(i,central_orbital, &
-               norbital_extent,list_of_atoms_to_consider)
+               norbital_extent,list_of_aos_to_consider)
 
        else  ! unoccupied orbital or core orbital
 
@@ -1220,15 +1027,15 @@ contains
 
           if(i.le.offset) then  ! core orbital
              OccOrbitals(i) = orbital_init(i,central_orbital, &
-                  norbital_extent,list_of_atoms_to_consider)
+                  norbital_extent,list_of_aos_to_consider)
           else ! Unocc orbital
              UnoccOrbitals(i-nocc) = orbital_init(i,central_orbital, &
-                  norbital_extent,list_of_atoms_to_consider)
+                  norbital_extent,list_of_aos_to_consider)
           end if
 
        end if
 
-       call mem_dealloc(list_of_atoms_to_consider)
+       call mem_dealloc(list_of_aos_to_consider)
 
     end do OrbitalLoop
 
@@ -1243,7 +1050,7 @@ contains
     call mem_dealloc(DistOccUnocc)
     call mem_dealloc(DistOccOcc)
     call mem_dealloc(lowdin_charge)
-    call mem_dealloc(atomic_idx)
+    call mem_dealloc(basis_idx)
 
 
     call LSTIMER('GenerateOrb',tcpu,twall,DECinfo%output)
@@ -1366,72 +1173,72 @@ contains
 
   end subroutine DECCO_assignment_sanity_check
 
-
-
-  !> \brief Get norm of approximate orbital.
-  !> \author Kasper Kristensen
-  !> \date September 2011
-  subroutine GetApproximateOrbitalNorm(MyMolecule,which_atoms,orb_idx,OrbitalNorm)
-
-    implicit none
-    !> Information for molecule
-    type(fullmolecule), intent(in) :: MyMolecule
-    !> which_atoms(A) is true if atom A is used to approximate orbital, false otherwise
-    logical, dimension(MyMolecule%natoms), intent(in) :: which_atoms
-    !> Orbital index
-    integer, intent(in) :: Orb_idx
-    !> Norm of approximat orbital
-    real(realk), intent(inout) :: OrbitalNorm
-    real(realk), pointer :: C(:,:)
-    real(realk), pointer :: S(:,:) => null()
-    integer, pointer :: atom_start(:) => null()
-    integer, pointer :: atom_end(:) => null()
-    integer :: atom1,atom2,mu,nu,natoms,nbasis,nocc,nvirt
-
-    ! Init stuff
-    nbasis=MyMolecule%nbasis
-    nocc=MyMolecule%nocc
-    nvirt=MyMolecule%nunocc
-    call mem_alloc(C,nbasis,nbasis)
-    C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
-    C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
-    S => MyMolecule%overlap ! AO overlap
-    atom_start => MyMolecule%atom_start
-    atom_end => MyMolecule%atom_end
-    OrbitalNorm = 0E0_realk
-    natoms = MyMolecule%natoms
-
-
-    ! Approximate orbital norm for molecular orbital "i":
-    !
-    ! < phi | phi > = \sum_{mu in SET} sum_{nu in SET}  C_{mu i} S_{mu nu} C_{nu i}
-    !
-    ! where SET is the set of atoms defined by which_atoms.
-    do atom1=1,natoms
-       do atom2=1,natoms
-
-          ! Only add contribution if both mu AND nu are in set
-          if( which_atoms(atom1) .and. which_atoms(atom2) ) then
-             do mu=atom_start(atom1),atom_end(atom1) ! mu \in atom
-                do nu=atom_start(atom2),atom_end(atom2) ! nu \in atom
-                   OrbitalNorm = OrbitalNorm + C(mu,orb_idx) * S(mu,nu) * C(nu,orb_idx)
-                end do
-             end do
-          end if
-
-       end do
-    end do
-
-
-    call mem_dealloc(C)
-    S => null()
-    atom_start => null()
-    atom_end => null()
-
-  end subroutine GetApproximateOrbitalNorm
-
-
-
+!!$
+!!$
+!!$  !> \brief Get norm of approximate orbital.
+!!$  !> \author Kasper Kristensen
+!!$  !> \date September 2011
+!!$  subroutine GetApproximateOrbitalNorm(MyMolecule,which_atoms,orb_idx,OrbitalNorm)
+!!$
+!!$    implicit none
+!!$    !> Information for molecule
+!!$    type(fullmolecule), intent(in) :: MyMolecule
+!!$    !> which_atoms(A) is true if atom A is used to approximate orbital, false otherwise
+!!$    logical, dimension(MyMolecule%natoms), intent(in) :: which_atoms
+!!$    !> Orbital index
+!!$    integer, intent(in) :: Orb_idx
+!!$    !> Norm of approximat orbital
+!!$    real(realk), intent(inout) :: OrbitalNorm
+!!$    real(realk), pointer :: C(:,:)
+!!$    real(realk), pointer :: S(:,:) => null()
+!!$    integer, pointer :: atom_start(:) => null()
+!!$    integer, pointer :: atom_end(:) => null()
+!!$    integer :: atom1,atom2,mu,nu,natoms,nbasis,nocc,nvirt
+!!$
+!!$    ! Init stuff
+!!$    nbasis=MyMolecule%nbasis
+!!$    nocc=MyMolecule%nocc
+!!$    nvirt=MyMolecule%nunocc
+!!$    call mem_alloc(C,nbasis,nbasis)
+!!$    C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
+!!$    C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
+!!$    S => MyMolecule%overlap ! AO overlap
+!!$    atom_start => MyMolecule%atom_start
+!!$    atom_end => MyMolecule%atom_end
+!!$    OrbitalNorm = 0E0_realk
+!!$    natoms = MyMolecule%natoms
+!!$
+!!$
+!!$    ! Approximate orbital norm for molecular orbital "i":
+!!$    !
+!!$    ! < phi | phi > = \sum_{mu in SET} sum_{nu in SET}  C_{mu i} S_{mu nu} C_{nu i}
+!!$    !
+!!$    ! where SET is the set of atoms defined by which_atoms.
+!!$    do atom1=1,natoms
+!!$       do atom2=1,natoms
+!!$
+!!$          ! Only add contribution if both mu AND nu are in set
+!!$          if( which_atoms(atom1) .and. which_atoms(atom2) ) then
+!!$             do mu=atom_start(atom1),atom_end(atom1) ! mu \in atom
+!!$                do nu=atom_start(atom2),atom_end(atom2) ! nu \in atom
+!!$                   OrbitalNorm = OrbitalNorm + C(mu,orb_idx) * S(mu,nu) * C(nu,orb_idx)
+!!$                end do
+!!$             end do
+!!$          end if
+!!$
+!!$       end do
+!!$    end do
+!!$
+!!$
+!!$    call mem_dealloc(C)
+!!$    S => null()
+!!$    atom_start => null()
+!!$    atom_end => null()
+!!$
+!!$  end subroutine GetApproximateOrbitalNorm
+!!$
+!!$
+!!$
 
   !> \brief Get matrix [S^{1/2} C] used for Lowdin population analysis
   !> \author Kasper Kristensen
@@ -1451,16 +1258,16 @@ contains
     !basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
     !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
     do j=1,MyMolecule%nocc
-    do i =1,nbasis
-    basis(i,j) =MyMolecule%Co(i,j)
-    enddo
+       do i =1,nbasis
+          basis(i,j) =MyMolecule%Co(i,j)
+       enddo
     enddo
     k = MyMolecule%nocc+1
     do j = 1,MyMolecule%nunocc
-    do i =1,nbasis
-    basis(i,k) = MyMolecule%Cv(i,j)
-    enddo
-    k=k+1
+       do i =1,nbasis
+          basis(i,k) = MyMolecule%Cv(i,j)
+       enddo
+       k=k+1
     enddo
 
     ! Get S^{1/2} matrix
@@ -1480,20 +1287,17 @@ contains
 
 
 
-  !> \brief Get Mulliken gross charges for a given orbital on all atoms
-  subroutine GetMullikenVector(orbI,nbasis,natoms,MyMolecule,charges,CtS)
+  !> \brief Get Mulliken gross charges for a given orbital on all basisfunctions
+  subroutine GetMullikenVector(orbI,nbasis,MyMolecule,charges,CtS)
 
     implicit none
     integer, intent(in) :: orbI ! orbital number
-    integer, intent(in) :: natoms ! number of atoms
     integer, intent(in) :: nbasis ! Number of basis functions
     type(fullmolecule), intent(in) :: MyMolecule
-    real(realk), dimension(natoms), intent(inout) :: charges
+    real(realk), dimension(nbasis), intent(inout) :: charges
     real(realk), dimension(nbasis,nbasis), intent(in) :: CtS
     real(realk), pointer :: C(:,:)
-    integer, pointer :: atom_start(:) => null()
-    integer, pointer :: atom_end(:) => null()
-    integer :: atom,nu
+    integer :: nu
     integer :: nocc,nvirt
 
     ! Init stuff
@@ -1502,36 +1306,24 @@ contains
     call mem_alloc(C,nbasis,nbasis)
     C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
     C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
-    charges=0.0E0_realk
-    atom_start => MyMolecule%atom_start
-    atom_end => MyMolecule%atom_end
+!    charges=0.0E0_realk
 
-    ! Loop over atoms
-    do atom=1,natoms
-
-       ! Mulliken charge for orbital I, on the atom "atom":
+    do nu=1,nbasis
+       ! Mulliken charge for orbital I, on the AO "nu":
        !
-       ! chargeI(atom) = sum_{nu \in atom} [C^T S]_{I,nu} C_{nu,I}
+       ! chargeI(nu) =  [C^T S]_{I,nu} C_{nu,I}
        !
        ! where C are MO coefficients and S is AO overlap matrix,
        ! nu is an AO index and I is a MO index for the orbital in question.
        !
        ! It is seen that:
-       ! sum_{all atoms} chargeI(atom) = sum_{all nu} [C^T S]_{I,nu} C_{nu,I}
+       ! sum_{all basisfunctions} chargeI(nu) = sum_{all nu} [C^T S]_{I,nu} C_{nu,I}
        !                               = [C^T S C]_{I,I}
        !                               = 1
        ! as it must be.
-
-       do nu=atom_start(atom),atom_end(atom) ! nu \in atom
-          charges(atom)=charges(atom)+CtS(orbI,nu)*C(nu,orbI)
-       end do
-
+       charges(nu)=CtS(orbI,nu)*C(nu,orbI)
     end do
-
-
     call mem_dealloc(C)
-    atom_start => null()
-    atom_end => null()
 
   end subroutine GetMullikenVector
 
@@ -1587,33 +1379,32 @@ contains
   !> \brief Lowdin population analysis: Get Lowdin charges on all atoms for a given orbital
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine GetLowdinVector(orb_idx,nbasis,natoms,MyMolecule,ShalfC,charges)
+  subroutine GetLowdinVector(orb_idx,nbasis,ShalfC,charges)
 
     implicit none
     !> Orbital number
     integer, intent(in) :: orb_idx
-    !> Number of atoms
-    integer, intent(in) :: natoms
+!    !> Number of atoms
+!    integer, intent(in) :: natoms
     !> Number of basis functions
     integer, intent(in) :: nbasis
-    !> Full molecule info
-    type(fullmolecule), intent(in) :: MyMolecule
+!    !> Full molecule info
+!    type(fullmolecule), intent(in) :: MyMolecule
     !> Overlap matrix to power 1/2 multiplied by MO coefficients: S^{1/2} C
     real(realk), dimension(nbasis,nbasis), intent(in) :: ShalfC
     !> Lowdin charges
-    real(realk), dimension(natoms), intent(inout) :: charges
-    integer, pointer :: atom_start(:) => null()
-    integer, pointer :: atom_end(:) => null()
+    real(realk), dimension(nbasis), intent(inout) :: charges
+!    integer, pointer :: atom_start(:) => null()
+!    integer, pointer :: atom_end(:) => null()
     integer :: atom,mu
 
 
     ! Init stuff
-    charges=0.0E0_realk
-    atom_start => MyMolecule%atom_start
-    atom_end => MyMolecule%atom_end
+!    charges=0.0E0_realk
+!    atom_start => MyMolecule%atom_start
+!    atom_end => MyMolecule%atom_end
 
-    ! Loop over atoms
-    do atom=1,natoms
+    do mu=1,nbasis
 
        ! Lowdin charge for orbital I, on the atom "atom":
        !
@@ -1625,14 +1416,11 @@ contains
        ! It is seen that:
        ! sum_{all atoms} chargeI(atom) = 1
 
-       do mu=atom_start(atom),atom_end(atom) ! nu \in atom
-          charges(atom)=charges(atom) + ShalfC(mu,orb_idx)**2
-       end do
-
+       charges(mu)= ShalfC(mu,orb_idx)**2
     end do
 
-    atom_start => null()
-    atom_end => null()
+!    atom_start => null()
+!    atom_end => null()
 
   end subroutine GetLowdinVector
 
@@ -1641,71 +1429,71 @@ contains
   !> \brief Lowdin population analysis: Get Lowdin charges on all orbitals for a given orbital
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine GetLowdinVector_orbitals(orb_idx,nbasis,ShalfC,charges)
-
-    implicit none
-    !> Orbital number
-    integer, intent(in) :: orb_idx
-    !> Number of basis functions
-    integer, intent(in) :: nbasis
-    !> Overlap matrix to power 1/2 multiplied by MO coefficients: S^{1/2} C
-    real(realk), dimension(nbasis,nbasis), intent(in) :: ShalfC
-    !> Lowdin charges
-    real(realk), dimension(nbasis), intent(inout) :: charges
-    integer :: mu
-
-
-    ! Loop over orbitals
-    do mu=1,nbasis
-
-       ! Lowdin charge for AO orbital mu: { [S^{1/2} C]_{mu,I} }^2
-       !
-       ! where C are MO coefficients, S^{1/2} is AO overlap matrix to the power 1/2,
-       ! mu is an AO index and I is a MO index for the orbital in question.
-       charges(mu) = ShalfC(mu,orb_idx)**2
-
-    end do
-
-
-  end subroutine GetLowdinVector_orbitals
+!!$  subroutine GetLowdinVector_orbitals(orb_idx,nbasis,ShalfC,charges)
+!!$
+!!$    implicit none
+!!$    !> Orbital number
+!!$    integer, intent(in) :: orb_idx
+!!$    !> Number of basis functions
+!!$    integer, intent(in) :: nbasis
+!!$    !> Overlap matrix to power 1/2 multiplied by MO coefficients: S^{1/2} C
+!!$    real(realk), dimension(nbasis,nbasis), intent(in) :: ShalfC
+!!$    !> Lowdin charges
+!!$    real(realk), dimension(nbasis), intent(inout) :: charges
+!!$    integer :: mu
+!!$
+!!$
+!!$    ! Loop over orbitals
+!!$    do mu=1,nbasis
+!!$
+!!$       ! Lowdin charge for AO orbital mu: { [S^{1/2} C]_{mu,I} }^2
+!!$       !
+!!$       ! where C are MO coefficients, S^{1/2} is AO overlap matrix to the power 1/2,
+!!$       ! mu is an AO index and I is a MO index for the orbital in question.
+!!$       charges(mu) = ShalfC(mu,orb_idx)**2
+!!$
+!!$    end do
+!!$
+!!$
+!!$  end subroutine GetLowdinVector_orbitals
 
 
 
   !> \brief Atomic norms for expansion coefficients
-  subroutine GetOrbitalAtomicNorm(num,MyMolecule,natoms,atomic_norms)
-
-    implicit none
-    integer, intent(in) :: num
-    type(fullmolecule), intent(in) :: MyMolecule
-    integer, intent(in) :: natoms
-    real(realk), dimension(natoms), intent(inout) :: atomic_norms
-
-    integer, pointer :: atom_start(:) => null()
-    integer, pointer :: atom_end(:) => null()
-    real(realk), pointer :: C(:,:)
-    integer :: i,nbasis,nocc,nvirt
-
-    ! Init stuff
-    nbasis=MyMolecule%nbasis
-    nocc=MyMolecule%nocc
-    nvirt=MyMolecule%nunocc
-    call mem_alloc(C,nbasis,nbasis)
-    C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
-    C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
-    atom_start => MyMolecule%atom_start
-    atom_end => MyMolecule%atom_end
-
-    atomic_norms=0.0E0_realk
-    do i=1,natoms
-       atomic_norms(i)=dot_product(C(atom_start(i):atom_end(i),num), &
-            C(atom_start(i):atom_end(i),num))
-    end do
-
-    atom_start => null()
-    atom_end => null()
-    call mem_dealloc(C)
-
-  end subroutine GetOrbitalAtomicNorm
+!!$  subroutine GetOrbitalAtomicNorm(num,MyMolecule,natoms,atomic_norms)
+!!$
+!!$    implicit none
+!!$    integer, intent(in) :: num
+!!$    type(fullmolecule), intent(in) :: MyMolecule
+!!$    integer, intent(in) :: natoms
+!!$    real(realk), dimension(natoms), intent(inout) :: atomic_norms
+!!$
+!!$    integer, pointer :: atom_start(:) => null()
+!!$    integer, pointer :: atom_end(:) => null()
+!!$    real(realk), pointer :: C(:,:)
+!!$    integer :: i,nbasis,nocc,nvirt
+!!$
+!!$    ! Init stuff
+!!$    nbasis=MyMolecule%nbasis
+!!$    nocc=MyMolecule%nocc
+!!$    nvirt=MyMolecule%nunocc
+!!$    call mem_alloc(C,nbasis,nbasis)
+!!$    C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
+!!$    C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
+!!$    atom_start => MyMolecule%atom_start
+!!$    atom_end => MyMolecule%atom_end
+!!$
+!!$    atomic_norms=0.0E0_realk
+!!$    do i=1,natoms
+!!$       atomic_norms(i)=dot_product(C(atom_start(i):atom_end(i),num), &
+!!$            C(atom_start(i):atom_end(i),num))
+!!$    end do
+!!$
+!!$    atom_start => null()
+!!$    atom_end => null()
+!!$    call mem_dealloc(C)
+!!$
+!!$  end subroutine GetOrbitalAtomicNorm
 
   !> \brief Print some info about orbitals
   subroutine PrintOrbitalsInfo(orbitals,num_orbitals,lu_output)
@@ -1715,12 +1503,12 @@ contains
     type(decorbital), dimension(num_orbitals), intent(in) :: orbitals
     integer :: i,j
 
-    write(lu_output,'(/,a)') 'Orbital Atom #Atoms List of atoms'
+    write(lu_output,'(/,a)') 'Orbital Atom #AOs List of AOs'
     do i=1,num_orbitals
        write(lu_output,*) orbitals(i)%orbitalnumber, &
-            orbitals(i)%centralatom, orbitals(i)%numberofatoms, ' -> '
-       do j=1,orbitals(i)%numberofatoms
-          write(lu_output,*) orbitals(i)%atoms(j)
+            orbitals(i)%centralatom, orbitals(i)%numberofaos, ' -> '
+       do j=1,orbitals(i)%numberofaos
+          write(lu_output,*) orbitals(i)%aos(j)
        end do
        write(lu_output,'(a)') ''
     end do
@@ -1734,17 +1522,17 @@ contains
     implicit none
     type(decorbital), intent(in) :: orb
     integer, intent(in) :: iunit
-    integer(kind=long) :: orbitalnumber64,centralatom64,numberofatoms64,atoms64(orb%numberofatoms)
+    integer(kind=long) :: orbitalnumber64,centralatom64,numberofaos64,aos64(orb%numberofaos)
 
     orbitalnumber64 = orb%orbitalnumber
     centralatom64   = orb%centralatom
-    numberofatoms64 = orb%numberofatoms
-    atoms64         = orb%atoms
+    numberofaos64   = orb%numberofaos
+    aos64           = orb%aos
 
     write(iunit) orbitalnumber64
     write(iunit) centralatom64
-    write(iunit) numberofatoms64
-    write(iunit) atoms64
+    write(iunit) numberofaos64
+    write(iunit) aos64
 
   end subroutine orbital_write
 
@@ -1754,27 +1542,27 @@ contains
     type(decorbital) :: orb
     integer, intent(in) :: iunit
     integer :: i
-    integer(kind=long) :: orbitalnumber64,centralatom64,numberofatoms64
-    integer(kind=4) :: orbitalnumber32,centralatom32,numberofatoms32
-    integer(kind=long),pointer :: atoms64(:)
-    integer(kind=4),pointer :: atoms32(:)
+    integer(kind=long) :: orbitalnumber64,centralatom64,numberofaos64
+    integer(kind=4) :: orbitalnumber32,centralatom32,numberofaos32
+    integer(kind=long),pointer :: aos64(:)
+    integer(kind=4),pointer :: aos32(:)
 
     !ConvertFrom64Bit: if(DECinfo%convert64to32) then
     !files always written in 64 bit integers
        read(iunit) orbitalnumber64
        read(iunit) centralatom64
-       read(iunit) numberofatoms64
-       call mem_alloc(atoms64,numberofatoms64)
-       read(iunit) atoms64
+       read(iunit) numberofaos64
+       call mem_alloc(aos64,numberofaos64)
+       read(iunit) aos64
 
        orb%orbitalnumber = int(orbitalnumber64)
        orb%centralatom   = int(centralatom64)
-       orb%numberofatoms = int(numberofatoms64)
-       call mem_alloc(orb%atoms,orb%numberofatoms)
-       do i=1,orb%numberofatoms
-          orb%atoms(i) = int(atoms64(i))
+       orb%numberofaos = int(numberofaos64)
+       call mem_alloc(orb%aos,orb%numberofaos)
+       do i=1,orb%numberofaos
+          orb%aos(i) = int(aos64(i))
        end do
-       call mem_dealloc(atoms64)
+       call mem_dealloc(aos64)
 
     !elseif(DECinfo%convert32to64)then
 
@@ -2491,32 +2279,7 @@ contains
           ! Neighbour: Second element in Trackmatrix
           neighbor = TrackMatrix(2,centralatom)
 
-          ! CHECK 1: Is neighbor is included in orbital extent?
-          ! (This is not crucial, but nice to know for statistics).
-          ! Therefore, even if neighbor is not in orbital extent, we reassign anyway.
-          included=.false.
-          do j=1,Orbitals(i)%numberofatoms
-             if(Orbitals(i)%atoms(j) == neighbor) then
-                included=.true.
-                exit
-             end if
-          end do
-          if(.not. included) then
-             if(DECinfo%PL>0) then
-                write(DECinfo%output,*)
-                write(DECinfo%output,*) 'WARNING in reassign_orbitals: &
-                     &Atom neighbouring hydrogen is not included in the orbital extent'
-                write(DECinfo%output,*) 'Orbital is reassigned anyway...'
-                write(DECinfo%output,*) 'Orbital number =', i
-                write(DECinfo%output,*) 'Central atom =', centralatom
-                write(DECinfo%output,*) 'Neighbor =', neighbor
-                write(DECinfo%output,*) 'Orbital extent:', Orbitals(i)%atoms(:)
-                write(DECinfo%output,'(1X,a,F12.3)') 'Distance to neighbor (Angstrom)    =', &
-                     & SortedDistTable(2,centralatom)*bohr
-             end if
-          end if
-
-          ! CHECK 2: Neighbor is not hydrogen
+          ! Neighbor is not hydrogen
           neighbor_atomnumber = myLsitem%input%molecule%Atom(neighbor)%atomic_number
           CheckNeighbor: if(neighbor_atomnumber == 1) then ! No reassignment
              if(DECinfo%PL>0) then
@@ -2688,12 +2451,12 @@ contains
     !> Number of atomic sites with orbitals assigned in the simulation (default: 1)
     !> Thus, the first n atoms will get all orbitals evenly assigned.
     integer,intent(in) :: n
-    integer :: i,j,orb,nocc_per_atom,nunocc_per_atom,atom
+    integer :: i,j,orb,nocc_per_atom,nunocc_per_atom,atom,nbasis
 
     ! Number of occupied/virtual orbitals per atom evenly distributed over n atoms
     nocc_per_atom = floor(real(nocc)/real(n))
     nunocc_per_atom = floor(real(nunocc)/real(n))
-
+    nbasis = nocc + nunocc
 
     ! Sanity check: This routine only makes sense to call
     ! if the full molecule if included for the fragments.
@@ -2720,12 +2483,12 @@ contains
 
           ! Free existing orbital info
           call orbital_free(OccOrbitals(orb))
-          call mem_alloc(OccOrbitals(orb)%atoms,natoms)
+          call mem_alloc(OccOrbitals(orb)%aos,nbasis)
 
           ! Orbital extent is the full molecule
-          OccOrbitals(orb)%numberofatoms=natoms
-          do j=1,natoms
-             OccOrbitals(orb)%atoms(j) = j
+          OccOrbitals(orb)%numberofaos=nbasis
+          do j=1,nbasis
+             OccOrbitals(orb)%aos(j) = j
           end do
 
           ! Central atom for this occupied orbital
@@ -2738,10 +2501,10 @@ contains
     ! Assign remaining occupied orbitals (if any) to the last atom n
     do orb=i,nocc
        call orbital_free(OccOrbitals(orb))
-       call mem_alloc(OccOrbitals(orb)%atoms,natoms)
-       OccOrbitals(orb)%numberofatoms=natoms
-       do j=1,natoms
-          OccOrbitals(orb)%atoms(j) = j
+       call mem_alloc(OccOrbitals(orb)%aos,nbasis)
+       OccOrbitals(orb)%numberofaos=nbasis
+       do j=1,nbasis
+          OccOrbitals(orb)%aos(j) = j
        end do
        OccOrbitals(orb)%centralatom = n
     end do
@@ -2759,12 +2522,12 @@ contains
 
           ! Free existing orbital info
           call orbital_free(UnoccOrbitals(orb))
-          call mem_alloc(UnoccOrbitals(orb)%atoms,natoms)
+          call mem_alloc(UnoccOrbitals(orb)%aos,nbasis)
 
           ! Orbital extent is the full molecule
-          UnoccOrbitals(orb)%numberofatoms=natoms
-          do j=1,natoms
-             UnoccOrbitals(orb)%atoms(j) = j
+          UnoccOrbitals(orb)%numberofaos=nbasis
+          do j=1,nbasis
+             UnoccOrbitals(orb)%aos(j) = j
           end do
 
           ! Central atom for this unoccupied orbital
@@ -2777,10 +2540,10 @@ contains
     ! Assign remaining unoccupied orbitals (if any) to the last atom n
     do orb=i,nunocc
        call orbital_free(UnoccOrbitals(orb))
-       call mem_alloc(UnoccOrbitals(orb)%atoms,natoms)
-       UnoccOrbitals(orb)%numberofatoms=natoms
-       do j=1,natoms
-          UnoccOrbitals(orb)%atoms(j) = j
+       call mem_alloc(UnoccOrbitals(orb)%aos,nbasis)
+       UnoccOrbitals(orb)%numberofaos=nbasis
+       do j=1,nbasis
+          UnoccOrbitals(orb)%aos(j) = j
        end do
        UnoccOrbitals(orb)%centralatom = n
     end do
@@ -2957,12 +2720,12 @@ contains
     write(DECinfo%output,*) 'ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)'
     write(DECinfo%output,*) '**********************************************************************'
     write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum occ orbital extent   = ', occ_max_orbital_extent, &
+    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum occ orbital extent (#AOs) = ', occ_max_orbital_extent, &
          & '   -- Orbital index', occ_idx
-    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum unocc orbital extent = ', unocc_max_orbital_extent, &
+    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum unocc orbital extent (#AOs) = ', unocc_max_orbital_extent, &
          & '   -- Orbital index', unocc_idx
-    write(DECinfo%output,'(1X,a,f12.4)') 'Average occ orbital extent   = ', occ_av_orbital_extent
-    write(DECinfo%output,'(1X,a,f12.4)') 'Average unocc orbital extent = ', unocc_av_orbital_extent
+    write(DECinfo%output,'(1X,a,f12.4)') 'Average occ orbital extent (#AOs)  = ', occ_av_orbital_extent
+    write(DECinfo%output,'(1X,a,f12.4)') 'Average unocc orbital extent (#AOs) = ', unocc_av_orbital_extent
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
@@ -2971,10 +2734,10 @@ contains
           write(DECinfo%output,*) 'Occupied orbital: ', i
           write(DECinfo%output,*) '************************************************'
           write(DECinfo%output,*) 'Central atom: ', OccOrbitals(i)%centralatom
-          write(DECinfo%output,*) '# atoms in orbital extent: ', OccOrbitals(i)%numberofatoms
-          write(DECinfo%output,*) 'Atoms in orbital extent: '
-          do j=1,OccOrbitals(i)%numberofatoms
-             write(DECinfo%output,*) OccOrbitals(i)%atoms(j)
+          write(DECinfo%output,*) '# AOs in orbital extent: ', OccOrbitals(i)%numberofaos
+          write(DECinfo%output,*) 'AOs in orbital extent  : '
+          do j=1,OccOrbitals(i)%numberofaos
+             write(DECinfo%output,*) OccOrbitals(i)%aos(j)
           end do
           write(DECinfo%output,*)
        end do
@@ -2985,10 +2748,10 @@ contains
           write(DECinfo%output,*) 'Virtual orbital: ', i
           write(DECinfo%output,*) '************************************************'
           write(DECinfo%output,*) 'Central atom: ', UnOccOrbitals(i)%centralatom
-          write(DECinfo%output,*) '# atoms in orbital extent: ', UnOccOrbitals(i)%numberofatoms
-          write(DECinfo%output,*) 'Atoms in orbital extent: ' 
-          do j=1,UnOccOrbitals(i)%numberofatoms
-             write(DECinfo%output,*) UnOccOrbitals(i)%atoms(j)
+          write(DECinfo%output,*) '# AOs in orbital extent: ', UnOccOrbitals(i)%numberofaos
+          write(DECinfo%output,*) 'AOs in orbital extent  : ' 
+          do j=1,UnOccOrbitals(i)%numberofaos
+             write(DECinfo%output,*) UnOccOrbitals(i)%aos(j)
           end do
           write(DECinfo%output,*)
        end do
@@ -3070,12 +2833,12 @@ contains
     write(DECinfo%output,*) 'ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)'
     write(DECinfo%output,*) '**********************************************************************'
     write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum occ orbital extent   = ', occ_max_orbital_extent, &
+    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum occ orbital extent (#AOs) = ', occ_max_orbital_extent, &
          & '   -- Orbital index', occ_idx
-    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum unocc orbital extent = ', unocc_max_orbital_extent, &
+    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum unocc orbital extent (#AOs) = ', unocc_max_orbital_extent, &
          & '   -- Orbital index', unocc_idx
-    write(DECinfo%output,'(1X,a,f12.4)') 'Average occ orbital extent   = ', occ_av_orbital_extent
-    write(DECinfo%output,'(1X,a,f12.4)') 'Average unocc orbital extent = ', unocc_av_orbital_extent
+    write(DECinfo%output,'(1X,a,f12.4)') 'Average occ orbital extent (#AOs) = ', occ_av_orbital_extent
+    write(DECinfo%output,'(1X,a,f12.4)') 'Average unocc orbital extent (#AOs) = ', unocc_av_orbital_extent
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
@@ -3085,10 +2848,10 @@ contains
        do i=1,nocc
           write(DECinfo%output,*) 'Occupied orbital: ', i
           write(DECinfo%output,*) '************************************************'
-          write(DECinfo%output,*) '# atoms in orbital extent: ', OccOrbitals(i)%numberofatoms
-          write(DECinfo%output,*) 'Atoms in orbital extent: '
-          do j=1,OccOrbitals(i)%numberofatoms
-             write(DECinfo%output,*) OccOrbitals(i)%atoms(j)
+          write(DECinfo%output,*) '# AOs in orbital extent: ', OccOrbitals(i)%numberofaos
+          write(DECinfo%output,*) 'AOs in orbital extent  : '
+          do j=1,OccOrbitals(i)%numberofaos
+             write(DECinfo%output,*) OccOrbitals(i)%aos(j)
           end do
           write(DECinfo%output,*)
        end do
@@ -3098,10 +2861,10 @@ contains
        do i=1,nunocc
           write(DECinfo%output,*) 'Virtual orbital: ', i
           write(DECinfo%output,*) '************************************************'
-          write(DECinfo%output,*) '# atoms in orbital extent: ', UnOccOrbitals(i)%numberofatoms
-          write(DECinfo%output,*) 'Atoms in orbital extent: ' 
-          do j=1,UnOccOrbitals(i)%numberofatoms
-             write(DECinfo%output,*) UnOccOrbitals(i)%atoms(j)
+          write(DECinfo%output,*) '# AOs in orbital extent: ', UnOccOrbitals(i)%numberofaos
+          write(DECinfo%output,*) 'AOs in orbital extent  : ' 
+          do j=1,UnOccOrbitals(i)%numberofaos
+             write(DECinfo%output,*) UnOccOrbitals(i)%aos(j)
           end do
           write(DECinfo%output,*)
        end do
@@ -3141,7 +2904,7 @@ contains
   !> and we quit here, rather than encountering uninitialized pointers later on...
   !> We also check whether it is necessary to repeat the atomic fragment calcs
   !> after the fragment optimization and set DECinfo%RepeatAF accordingly.
-  !> \author Kasper Kristensen
+  !> \author Kasper Kristensen 
   !> \date December 2011
   subroutine dec_orbital_sanity_check(natoms,nocc,nunocc,OccOrbitals,&
        & UnoccOrbitals,MyMolecule)
@@ -3276,13 +3039,13 @@ contains
     do i=1,norb
 
        ! Max
-       if(Orbitals(i)%numberofatoms > max_orbital_extent) then
-          max_orbital_extent = Orbitals(i)%numberofatoms
+       if(Orbitals(i)%numberofaos > max_orbital_extent) then
+          max_orbital_extent = Orbitals(i)%numberofaos
           orb_index = i
        end if
 
        ! Average
-       av_orbital_extent = av_orbital_extent + real(Orbitals(i)%numberofatoms)
+       av_orbital_extent = av_orbital_extent + real(Orbitals(i)%numberofaos)
 
     end do
 
