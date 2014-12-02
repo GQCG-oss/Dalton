@@ -260,6 +260,8 @@ module dec_typedef_module
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
      integer :: ijk_nbuffs
+     !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
+     integer :: abc_nbuffs
 
      !> F12 settings
      !> ************
