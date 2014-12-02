@@ -9,6 +9,7 @@ export OMP_NUM_THREADS=2
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=3
 export CTEST_PROJECT_NAME=LSDALTON
+export LSDALTON_LAUNCHER="mpirun -np 3 -mca btl ^openib"
 #module load mpi/openmpi-$(uname -i)
 #the module load do not seem to work when called from a crontab script, so instead we do
 export PATH=/usr/lib64/openmpi/bin:$PATH

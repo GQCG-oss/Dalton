@@ -7107,10 +7107,11 @@ contains
     !
     ! 1. For each atomic site P, sort estimated pair energies (1/2)dE_PQ according to size.
     ! 2. Add up the smallest contributions until they add up to the FOT. Skip those pairs.
-    ! 3. For n=DECinfo%nFRAGSred,1,-1:
+    ! 3. REF = FOT
+    !    For n=DECinfo%nFRAGSred,1,-1:
     !    Add the next contributions in the list (to the ones we already added) until they add up to 
     !
-    !    REFn = FOT * f^n
+    !    REF = REF * f
     !
     !    where f=DECinfo%FOTscaling
     !
@@ -7181,7 +7182,7 @@ contains
        ReducedFOT: do n=DECinfo%nFRAGSred,1,-1
 
           ! Reference energy 
-          Eref = DECinfo%FOT*(DECinfo%FOTscaling**n)
+          Eref = Eref*DECinfo%FOTscaling
 
           ! Loop starts where we ended in previous step.
           Qstart=Qquit
