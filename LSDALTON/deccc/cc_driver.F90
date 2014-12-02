@@ -1748,6 +1748,33 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
    end if
 
+   !Settings for the models
+   !MODIFY FOR NEW MODEL
+   ModelSpecificSettings: select case(ccmodel)
+   case( MODEL_MP2 )
+
+      use_singles = .false.
+      atype = 'REAR'
+
+   case( MODEL_CC2, MODEL_CCSD )
+
+      if(.not.present(p2))then
+         call lsquit("ERROR(ccsolver_par): singles parameters need to be present in p2",-1)
+      endif
+      use_singles = .true.
+      atype = 'LDAR'
+
+   case(MODEL_RPA)
+
+      use_singles = .false.
+      atype = 'LDAR'
+
+   case default
+
+      call lsquit("ERROR(ccsolver_par): requested model not yet implemented",-1)
+
+   end select ModelSpecificSettings
+
    !set job related
    select case(JOB)
    case(SOLVE_AMPLITUDES)
@@ -1825,33 +1852,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    !see if m2 has to be transformed to the pseudo diag basis
 
-
-   !Settings for the models
-   !MODIFY FOR NEW MODEL
-   ModelSpecificSettings: select case(ccmodel)
-   case( MODEL_MP2 )
-
-      use_singles = .false.
-      atype = 'REAR'
-
-   case( MODEL_CC2, MODEL_CCSD )
-
-      if(.not.present(p2))then
-         call lsquit("ERROR(ccsolver_par): singles parameters need to be present in p2",-1)
-      endif
-      use_singles = .true.
-      atype = 'LDAR'
-
-   case(MODEL_RPA)
-
-      use_singles = .false.
-      atype = 'LDAR'
-
-   case default
-
-      call lsquit("ERROR(ccsolver_par): requested model not yet implemented",-1)
-
-   end select ModelSpecificSettings
 
    ! go to a (pseudo) canonical basis
    call mem_alloc( focc,     no     )
