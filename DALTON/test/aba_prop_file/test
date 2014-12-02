@@ -21,6 +21,6 @@ f.add(from_string = 'SCF/DFT    properties :',
       to_string = 'THE_END',
       rel_tolerance = 1.0e-7)
 
-test.run(['aba_prop_file.dal'], ['CH2O_STO-3G.mol'], {'out': f})
+test.run(['aba_prop_file.dal'], ['CH2O_STO-3G.mol'], f={'out': f})
 
 sys.exit(test.return_code)

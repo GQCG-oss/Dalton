@@ -616,7 +616,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
                           & BZ%NK_nosym,ndim,kpt,diis_exit,lupri)
 
 		enddo !kpt
-		CALL LSTIMER('k point energy',TST,TET,LUPRI)
+		!CALL LSTIMER('k point energy',TST,TET,LUPRI)
 		call pbc_timings_stop(timings, timer_kptenergy, 2, lupri)
 
                 if(diis_exit) then

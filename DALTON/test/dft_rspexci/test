@@ -24,7 +24,7 @@ f.add(string = '@ Excitation energy :',
 f.add(string = '@ Overlap diagnostic LAMBDA =',
       abs_tolerance = 1.0e-4)
 
-test.run(['dft_rspexci_sym.dal'], ['H2O_cc-pVDZ_sym.mol'], {'out': f})
-test.run(['dft_rspexci_nosym.dal'], ['H2O_cc-pVDZ_nosym.mol'], {'out': f})
+test.run(['dft_rspexci_sym.dal'], ['H2O_cc-pVDZ_sym.mol'], f={'out': f})
+test.run(['dft_rspexci_nosym.dal'], ['H2O_cc-pVDZ_nosym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

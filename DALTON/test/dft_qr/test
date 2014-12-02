@@ -20,7 +20,7 @@ f.add(string = 'Final DFT energy',
 f.add(re = 'beta\([XYZ];[XYZ],[XYZ]\)',
       rel_tolerance = 1.0e-5)
 
-test.run(['dft_qr_nosym.dal'], ['H2O_3-21G_nosym.mol'], {'out': f})
-test.run(['dft_qr_sym.dal'], ['H2O_3-21G_sym.mol'], {'out': f})
+test.run(['dft_qr_nosym.dal'], ['H2O_3-21G_nosym.mol'], f={'out': f})
+test.run(['dft_qr_sym.dal'], ['H2O_3-21G_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

@@ -50,7 +50,7 @@ f.add(from_string = 'Isotropic coupling',
       num_lines = 10,
       abs_tolerance = 1.0e-4)
 
-test.run(['prop_newtrasoppa.dal'], ['CH4_cc-pVDZ_sym.mol'], {'out': f},
+test.run(['prop_newtrasoppa.dal'], ['CH4_cc-pVDZ_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

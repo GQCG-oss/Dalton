@@ -17,6 +17,6 @@ f = Filter()
 f.add(string = 'Final DFT energy',
       rel_tolerance = 1.0e-8)
 
-test.run(['dft_b3lyp_nosym.dal'], ['H2O_intgrl.mol'], {'out': f})
+test.run(['dft_b3lyp_nosym.dal'], ['H2O_intgrl.mol'], f={'out': f})
 
 sys.exit(test.return_code)

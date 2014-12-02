@@ -57,7 +57,7 @@ f.add(from_string = 'Total shielding tensor',
 f.add(string = 'Diamagnetic contribution:',
       abs_tolerance = 1.0e-3)
 
-test.run(['prop_soppactocd.dal'], ['H2O_intglr_sym.mol'], {'out': f},
+test.run(['prop_soppactocd.dal'], ['H2O_intglr_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

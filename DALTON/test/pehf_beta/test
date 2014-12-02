@@ -9,9 +9,10 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
+
 f.add(string = 'B-freq =',
       abs_tolerance = 1.0e-3)
 
-test.run(['pehf_beta.dal'], ['pehf_beta.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['pehf_beta.dal'], ['pehf_beta.mol'], ['pehf_beta.pot'], f={'out': f})
 
 sys.exit(test.return_code)

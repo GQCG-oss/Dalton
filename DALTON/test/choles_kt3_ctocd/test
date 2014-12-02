@@ -26,7 +26,7 @@ f.add(from_string = 'Summary of chemical shieldings',
       num_lines = 14,
       rel_tolerance = 1.0e-4)
 
-test.run(['choles_kt3_ctocd.dal'], ['HCP_Turbomole-TZP.mol'], {'out': f},
+test.run(['choles_kt3_ctocd.dal'], ['HCP_Turbomole-TZP.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

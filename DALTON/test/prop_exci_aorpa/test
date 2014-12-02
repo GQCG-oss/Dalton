@@ -77,7 +77,7 @@ f.add(from_string = 'Change in <R**2> from ground to excited state (au)',
       abs_tolerance = 1.0e-3)
 
 
-test.run(['prop_exci_aorpa.dal'], ['H2O_intgrl_sym.mol'], {'out': f},
+test.run(['prop_exci_aorpa.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.','ERI does not work with Cartesian basis.'])
 
 sys.exit(test.return_code)
