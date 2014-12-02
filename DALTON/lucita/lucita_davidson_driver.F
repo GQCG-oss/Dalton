@@ -339,7 +339,10 @@ C
           ninvec = min(NFINDM,4*nrootsl+6)
 !!!! DEBUG
 !         NFINDM = 12; ninvec = 12 
+!         print *, 'ninvec, nfindm, nrootsl, ndim, maxvec ...', 
+!    &              ninvec, nfindm, nrootsl, ndim, maxvec
 !!!! DEBUG
+          if(ninvec > maxvec) ninvec = maxvec
 
           IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
@@ -429,6 +432,7 @@ C
 !    &        ' degenerate initial vector for CI:'//
 !    &        ' vector ',irootsi,' out of ',ninvec,' start vectors'
 !             WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
+!             print *, 'plus_combi... ',plus_combi
               if(.not.plus_combi) NDEG = 1
             END IF
 
