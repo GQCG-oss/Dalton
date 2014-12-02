@@ -848,7 +848,7 @@ C  /* Deck aindex */
       DIMENSION INDEXA(*), IORBSH(MXSHEL,MXAOVC)
 #include "blocks.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       IORB = 0
       MULA   = ISTBSH(ISHELA)
@@ -858,7 +858,7 @@ C
             IADR  = IORBSB(IORBSH(ISHELA,1))
      &            + KHKTSH(ISHELA)*(IORBA - 1) + ICOMPA
             DO 300 IREPA = 0, MAXREP
-               IF (IBTAND(MULA,IBTXOR(IREPA,ITYNA)) .EQ. 0) THEN
+               IF (IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
                   IORB = IORB + 1
                   IF (DOINDX) INDEXA(IORB) = IPTSYM(IADR,IREPA)
                END IF

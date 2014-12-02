@@ -108,7 +108,7 @@ C
 #include "dftcom.h"
 #include "nuclei.h"
 #include "inftap.h"
-#include "ibtfun.h"
+
       DOFV = (NISHT .GT. 0) .AND. (NASHT .GT. 0) .AND. (.NOT.NOORBI)
       DERX = DERIV(1)
       DERY = DERIV(2)
@@ -614,7 +614,7 @@ C
      *          DC(NNBASX),   DV(NNBASX)
       SAVE FIRST, ITRI, ACTIVE, IOFF
       DATA FIRST /.TRUE./
-#include "ibtfun.h"
+
 C
       IF (FIRST) THEN
          DO 100 I = 1, NBAST
@@ -931,7 +931,7 @@ C
 #include "nuclei.h"
 #include "inftap.h"
 #include "inforb.h"
-#include "ibtfun.h"
+
 C
       LBUF = 600
       IF (NBASIS .LE. 255) THEN
@@ -1151,7 +1151,7 @@ C
 #include "symmet.h"
 #include "aosotr.h"
       DIMENSION ORBTRA(IDIM,IDIM)
-#include "ibtfun.h"
+
 C
       IF (IATOM .GT. 0) THEN
          FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
@@ -1920,7 +1920,7 @@ C
 #include "infinp.h"
 #include "chrnos.h"
       DIMENSION WORK(N2BASX), ONEMAT(N2BASX), TRONEM(NNBASX)
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GE. 10) CALL TITLER('Output from ONEDER','*',103)
       CALL DZERO(TRONEM,NNBASX)
@@ -1931,7 +1931,7 @@ C
          IF (ISCOOR .GT. 0) THEN
             IF (KEY .EQ. 'OMAT' .OR. KEY .EQ. 'HMAT') THEN
                DO 200 IREPA = 0, MAXREP
-                  IREPB = IBTXOR(IREPO,IREPA)
+                  IREPB = IEOR(IREPO,IREPA)
                   IF (IREPA .GE. IREPB) THEN
                      NDIMA = NBAS(IREPA + 1)
                      NDIMB = NBAS(IREPB + 1)

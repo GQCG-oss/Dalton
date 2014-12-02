@@ -5,6 +5,8 @@
 .DFT
  LDA
 *SCF INPUT
+.SHIFT
+ -0.15
 #.DFTTHR
 #1e-15 1e-15 1e-15
 #.RADINT

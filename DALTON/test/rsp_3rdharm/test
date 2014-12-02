@@ -49,7 +49,7 @@ f.add(from_string = 'Variable settings for Cubic Response calculation',
 f.add(re = 'gamma\([XYZ];[XYZ],[XYZ],[XYZ]\)',
       rel_tolerance = 1.0e-6)
 
-test.run(['rsp_3rdharm.dal'], ['LiH_4-31G.mol'], {'out': f},
+test.run(['rsp_3rdharm.dal'], ['LiH_4-31G.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

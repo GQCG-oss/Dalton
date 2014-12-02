@@ -4,10 +4,10 @@ include ../Makefile.config
 
 INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears
 
-F90_OBJS = ls_pcm_config.o \
-           ls_pcm_utils.o \
-	   ls_pcm_write.o
-	   ls_pcm_integrals.o \
+F90_OBJS = ls_pcm_config.o\
+           ls_pcm_utils.o\
+	   ls_pcm_write.o\
+	   ls_pcm_integrals.o\
 	   ls_pcm_scf.o
 
 #C_OBJS = memory.o

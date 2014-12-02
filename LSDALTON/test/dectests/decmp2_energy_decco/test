@@ -12,8 +12,12 @@ f = Filter()
 f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
+f.add(from_string = 'Print single and pair fragment energies',
+      to_string   = 'MP2 occupied   correlation energy',
+      abs_tolerance = 1.0e-4)
+
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.0e-4)
+      rel_tolerance = 1.0e-3)  # with accumulation
 
 f.add(string = 'Allocated memory (TOTAL)')
 

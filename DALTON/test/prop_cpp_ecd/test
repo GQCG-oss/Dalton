@@ -29,6 +29,6 @@ f.add(from_string = 'G tensor for frequency',
       num_lines = 17,
       rel_tolerance = 1.0e-4)
 
-test.run(['prop_cpp_ecd.dal'], ['CHBrClF_3-21G.mol'], {'out': f})
+test.run(['prop_cpp_ecd.dal'], ['CHBrClF_3-21G.mol'], f={'out': f})
 
 sys.exit(test.return_code)

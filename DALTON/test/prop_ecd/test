@@ -42,10 +42,12 @@ f.add(from_string = 'Singlet electronic excitation energies',
 
 f.add(from_string = 'Electric transition dipole moments',
       num_lines = 25,
+      ignore_sign = True,
       abs_tolerance = 1.0e-3)
 
 f.add(from_string = 'Magnetic transition dipole moments',
       num_lines = 26,
+      ignore_sign = True,
       abs_tolerance = 1.0e-3)
 
 f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
@@ -53,6 +55,6 @@ f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
       rel_tolerance = 1.0e-3)
 
 
-test.run(['prop_ecd.dal'], ['C2H4_intgrl_sym.mol'], {'out': f})
+test.run(['prop_ecd.dal'], ['C2H4_intgrl_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

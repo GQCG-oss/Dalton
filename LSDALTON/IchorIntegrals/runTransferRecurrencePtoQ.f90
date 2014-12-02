@@ -2,6 +2,7 @@ MODULE TESTMODULE
   use stringsMODULE
   logical,save :: nPrimLast
   integer,save :: nLines,nFiles
+  logical,save :: CPU
 CONTAINS
 subroutine PASSsub
   IMPLICIT NONE
@@ -31,8 +32,32 @@ subroutine PASSsub
   character(len=3) :: ARCSTRING
   integer :: iseg,ifile,iseglabel
   logical :: Gen,SegQ,Segp,Seg,Seg1Prim,LOOPUNROLL,DoOpenMP,DoOpenACC
-  logical :: Collapse,CPU
+  logical :: Collapse,WRITETHING
+  integer :: LUFILEMOD
   integer,pointer :: IfacX(:,:),TUVindexX(:,:)
+  logical,pointer :: UniqeTUVindexX(:,:),UniqeIfacX(:,:)
+
+  !Make Module file containing 
+  !       TUVindexX1,TUVindexX2,TUVindexX3,IfacX1,IfacX2,IfacX3
+  DO I =1,LEN(FileName)
+     FileName(I:I) = ' '
+  ENDDO
+  print*,'WRITE FileName1:'
+  WRITE(FileName,'(A)')'AGC_CPU_TransferRecurrenceParam.F90'
+  print*,'FileName:',FileName
+  LUFILEMOD = 31
+  open(unit = LUFILEMOD, file=TRIM(FileName),status="unknown")
+  WRITE(LUFILEMOD,'(A)')'MODULE AGC_CPU_OBS_TRParamMod'
+  WRITE(LUFILEMOD,'(A)')'  '
+
+  MaxAngmomQP = 8
+  nTUVTMPP=(MaxAngmomQP+1)*(MaxAngmomQP+2)*(MaxAngmomQP+3)/6
+  nTUVTMPP2=(MaxAngmomQP+1)*(MaxAngmomQP+2)*(MaxAngmomQP+3)/6
+  allocate(UniqeTUVindexX(nTUVTMPP,3))
+  allocate(UniqeIfacX(nTUVTMPP2,3))
+  UniqeTUVindexX = .TRUE.
+  UniqeIfacX = .TRUE.
+
   DO GPUrun = 1,2
     CPU = .TRUE.
     IF(GPUrun.EQ.2)CPU = .FALSE.
@@ -89,12 +114,12 @@ subroutine PASSsub
           LUFILE = 1
           nLines = 0 
           open(unit = LUFILE, file=TRIM(FileName),status="unknown")
-
           WRITE(LUFILE,'(7A,I1)')'MODULE AGC_',ARCSTRING,'_OBS_TRMOD',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel),nFiles
           WRITE(LUFILE,'(A)')' use IchorPrecisionMod'
           WRITE(LUFILE,'(A)')'  '
           WRITE(LUFILE,'(A)')' CONTAINS'
           nLines = nLines + 4
+
           MaxAngmomQP = 8
           IF((ifile.EQ.2))MaxAngmomQP = 6 !BtoC (PDDP)
           IF((ifile.EQ.4))MaxAngmomQP = 6 !BtoD (PDPD)
@@ -145,7 +170,7 @@ subroutine PASSsub
                       ENDDO
                    ENDDO
                 ENDDO
-                print*,'nLines',nLines,'nLines.GT.1000',nLines.GT.1000
+!                print*,'nLines',nLines,'nLines.GT.1000',nLines.GT.1000
                 IF(nLines.GT.1000)THEN
                    WRITE(LUFILE,'(7A,I1)')'END MODULE AGC_',ARCSTRING,'_OBS_TRMOD',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel),nFiles
                    DO I =1,LEN(FileName)
@@ -154,9 +179,9 @@ subroutine PASSsub
                    close(unit = LUFILE)
 
                    nFiles = nFiles + 1 
-                   print*,'WRITE FileName2:'
+!                   print*,'WRITE FileName2:'
                    WRITE(FileName,'(7A,I1,A)')'AGC_',ARCSTRING,'_TransferRecurrence',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel),nFiles,'.F90'
-                   print*,'FileName:',FileName
+!                   print*,'FileName:',FileName
                    LUFILE = 1
                    nLines = 0 
                    open(unit = LUFILE, file=TRIM(FileName),status="unknown")
@@ -197,6 +222,9 @@ subroutine PASSsub
                 ENDIF
                 call writeString(LUFILE)
                 nLines = nLines + 1
+                IF(.NOT.LOOPUNROLL)THEN
+                   WRITE(LUFILE,'(A,A,A)')'  use AGC_',ARCSTRING,'_OBS_TRParamMod'
+                ENDIF
                 WRITE(LUFILE,'(A)')'  implicit none'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses'
                 IF(.NOT.Seg1Prim)THEN
@@ -361,19 +389,29 @@ subroutine PASSsub
                          CALL DETERMINE_CARTDIR(CARTDIR,iTUVQ,iTUVQminus1,iTUVQminus2,Tqminus1,Tq,Uq,Vq,CREATED,JMAX,TUVINDEX)
                          nTUVTMPP=(JPQ-JTMQ+1)*(JPQ-JTMQ+2)*(JPQ-JTMQ+3)/6
                          IF(.NOT.DoneCartDir(CARTDIR))THEN
+                            WRITETHING=.FALSE.
+                         !   print*,'A LOOPUNROLL',LOOPUNROLL
                             IF(.NOT.LOOPUNROLL)THEN
-                               call initString(2)          
-                               call AddToString('!CARTDIR = ')
-                               call AddToString(CARTDIR)
-                               call writeString(LUFILE); nLines = nLines + 1
-                               call initString(2)          
-                               call AddToString('integer,parameter, dimension(')
-                               call AddToString(nTUVTMPP)
-                               call AddToString(') :: TUVindex')
-                               !                      call AddToString(JTMQ)
-                               call AddToString('X')
-                               call AddToString(CARTDIR)
-                               call AddToString(' = (/ ')
+                               WRITETHING = .FALSE.
+                          !     print*,'A UniqeTUVindexX(nTUVTMPP,CARTDIR)',UniqeTUVindexX(nTUVTMPP,CARTDIR),nTUVTMPP,CARTDIR
+                               IF(UniqeTUVindexX(nTUVTMPP,CARTDIR))THEN
+                           !       print*,'A GPU  Uni TUVindex'
+                                  call initString(2)          
+                                  call AddToString('integer,parameter, dimension(')
+                                  call AddToString(nTUVTMPP)
+                                  call AddToString(') :: TUVindex')
+                                  !                      call AddToString(JTMQ)
+                                  call AddToString('X')
+                                  call AddToString(CARTDIR)
+                                  call AddToString('_')
+                                  call AddToString(nTUVTMPP)
+                                  UniqeTUVindexX(nTUVTMPP,CARTDIR) = .FALSE.
+                                  call AddToString(' = (/ ')
+                                  WRITETHING = .TRUE.
+                            !   ELSE
+                            !      print*,'A GPU  NOT Uni TUVindex'
+                               ENDIF
+                            !   print*,'A WRITETHING',WRITETHING
                             ENDIF
                             nLength = 10
                             do iTUVP = 1,nTUVTMPP!nTUVP
@@ -389,23 +427,32 @@ subroutine PASSsub
                                   iTUVPplus1 = TUVINDEX(Tp,Up,Vp+1)
                                ENDIF
                                IF(.NOT.LOOPUNROLL)THEN
-                                  call AddToString(ituvpplus1)
+                                  !print*,'A2 Add to string',ituvpplus1
+                                  IF(WRITETHING)call AddToString(ituvpplus1)
                                ENDIF
                                TUVindexX(iTUVP,CARTDIR) = ituvpplus1
                                IF(.NOT.LOOPUNROLL)THEN
-                                  IF(iTUVP.NE.nTUVTMPP) call AddToString(',')
+                                  IF(iTUVP.NE.nTUVTMPP)THEN
+                                     IF(WRITETHING)call AddToString(',')
+                                  ENDIF
                                   IF(nLength.EQ.17)THEN
                                      nLength = 0
-                                     call AddToString('&')
-                                     call writeString(LUFILE); nLines = nLines + 1
-                                     call initString(5)          
-                                     call AddToString('     & ')
+                                     IF(WRITETHING)THEN
+                                        call AddToString('&')
+                                        !print*,'A1 WRITE TO LUMOD'
+                                        call writeString(LUFILEMOD); !nLines = nLines + 1
+                                        call initString(5)          
+                                        call AddToString('     & ')
+                                     ENDIF
                                   ENDIF
                                ENDIF
                             enddo
                             IF(.NOT.LOOPUNROLL)THEN
-                               call AddToString(' /)')
-                               call writeString(LUFILE); nLines = nLines + 1                   
+                               IF(WRITETHING)THEN
+                                  call AddToString(' /)')
+                                  !print*,'A2 WRITE TO LUMOD'
+                                  call writeString(LUFILEMOD);! nLines = nLines + 1                   
+                               ENDIF
                             ENDIF
                             DoneCartDir(CARTDIR) = .TRUE.
                          ENDIF
@@ -428,19 +475,28 @@ subroutine PASSsub
                          CALL DETERMINE_CARTDIR(CARTDIR,iTUVQ,iTUVQminus1,iTUVQminus2,Tqminus1,Tq,Uq,Vq,CREATED,JMAX,TUVINDEX)
                          nTUVTMPP2=(JPQ-JTMQ)*(JPQ-JTMQ+1)*(JPQ-JTMQ+2)/6
                          IF(.NOT.DoneCartDir(CARTDIR))THEN
+                            WRITETHING=.FALSE.
+                          !  print*,'B LOOPUNROLL',LOOPUNROLL
                             IF(.NOT.LOOPUNROLL)THEN
-                               call initString(2)          
-                               call AddToString('!CARTDIR = ')
-                               call AddToString(CARTDIR)
-                               call writeString(LUFILE); nLines = nLines + 1
-                               call initString(2)          
-                               call AddToString('integer,parameter, dimension(')
-                               call AddToString(nTUVTMPP2)
-                               call AddToString(') :: Ifac')
-                               call AddToString('X')
-                               call AddToString(CARTDIR)
-                               call AddToString(' = (/ ')
-                            ENDIF
+                               WRITETHING=.FALSE.
+                           !    print*,'A UniqeIfacX(nTUVTMPP,CARTDIR)',UniqeIfacX(nTUVTMPP2,CARTDIR),nTUVTMPP2,CARTDIR
+                               IF(UniqeIfacX(nTUVTMPP2,CARTDIR))THEN
+                                  call initString(2)          
+                                  call AddToString('integer,parameter, dimension(')
+                                  call AddToString(nTUVTMPP2)
+                                  call AddToString(') :: Ifac')
+                                  call AddToString('X')
+                                  call AddToString(CARTDIR)
+                                  call AddToString('_')
+                                  call AddToString(nTUVTMPP2)
+                                  UniqeIfacX(nTUVTMPP2,CARTDIR) = .FALSE.
+                                  call AddToString(' = (/ ')
+                                  WRITETHING = .TRUE.
+                               ELSE
+                                  WRITETHING = .FALSE.
+                               ENDIF
+                            ENDIF                            
+                            !print*,'B WRITETHING',WRITETHING
                             nLength = 10
                             nTUVTMPP2=(JPQ-JTMQ)*(JPQ-JTMQ+1)*(JPQ-JTMQ+2)/6
                             do iTUVPminus1 = 1,nTUVTMPP2
@@ -456,63 +512,41 @@ subroutine PASSsub
                                   I = Vp+1
                                ENDIF
                                IF(.NOT.LOOPUNROLL)THEN
-                                  call AddToString(I)
+                                  !print*,'I',I
+                                  IF(WRITETHING)call AddToString(I)
                                ENDIF
                                IfacX(iTUVPminus1,CARTDIR) = I
                                IF(.NOT.LOOPUNROLL)THEN
-                                  IF(iTUVPminus1.NE.nTUVTMPP2) call AddToString(',')
+                                  IF(iTUVPminus1.NE.nTUVTMPP2)THEN
+                                     IF(WRITETHING)call AddToString(',')
+                                  ENDIF
                                   IF(nLength.EQ.17)THEN
                                      nLength = 0
-                                     call AddToString('&')
-                                     call writeString(LUFILE); nLines = nLines + 1
-                                     call initString(5)          
-                                     call AddToString('     & ')
+                                     IF(WRITETHING)THEN
+                                        call AddToString('&')
+                                        !print*,'B1 WRITE LUMOD1'
+                                        call writeString(LUFILEMOD)!; nLines = nLines + 1
+                                        call initString(5)          
+                                        call AddToString('     & ')
+                                     ENDIF
                                   ENDIF
                                ENDIF
                             enddo
                             IF(.NOT.LOOPUNROLL)THEN
-                               call AddToString(' /)')
-                               call writeString(LUFILE); nLines = nLines + 1                   
+                               IF(WRITETHING)THEN
+                                  call AddToString(' /)')
+                                  !print*,'B2 WRITE LUMOD2'
+                                  call writeString(LUFILEMOD)!; nLines = nLines + 1                   
+                               ENDIF
                             ENDIF
                             DoneCartDir(CARTDIR) = .TRUE.
+                            CREATED(Tq,Uq,Vq) = .TRUE.
                          ENDIF
-                         CREATED(Tq,Uq,Vq) = .TRUE.
                       ENDDO
                    ENDDO
                 ENDDO
                 deallocate(CREATED)
-
-                !init AUX
-                IF(COLLAPSE)THEN
-                   IF(SegP.OR.SegQ.OR.Seg)THEN
-                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
-!                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ) SHARED(nPrimQ,nPasses,nPrimP,Aux2)'
-                      IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)'
-!                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
-                      IF(SegP)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPasses'
-                      IF(SegQ)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimP*nPasses'
-                      IF(Seg)WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
-                      IF(nPrimLast)THEN
-                         WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
-                         WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
-                         WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
-                         WRITE(LUFILE,'(A)')   '    ENDDO'
-                         WRITE(LUFILE,'(A)')   '   ENDDO'
-                      ELSE
-                         WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
-                         WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
-                         WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
-                         WRITE(LUFILE,'(A)')   '    ENDDO'
-                         WRITE(LUFILE,'(A)')   '   ENDDO'
-                      ENDIF
-                      WRITE(LUFILE,'(A)')   '  ENDDO'
-                      nLines = nLines + 5
-                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
-!                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
-                   ELSE
-                      !no need to init
-                   ENDIF
-                ENDIF
+               ! print*,'DONE'
 
                 !OPENMP
                 IF(DoOpenMP)THEN
@@ -566,8 +600,28 @@ subroutine PASSsub
                    ENDDO                   
                    WRITE(LUFILE,'(A)')'!$ACC         invexpQ,inv2expQ,facX,facY,facZ,pinvq,iTUVQ,iTUVP,iTUVplus1) &'
                    WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&'
+                   IF(.NOT.LOOPUNROLL)THEN
+                      call initString(0)          
+                      call AddToString('!$ACC        TUVindexX1_')
+                      call AddToString(nTUVTMPP)
+                      call AddToString(',TUVindexX2_')
+                      call AddToString(nTUVTMPP)
+                      call AddToString(',TUVindexX3_')
+                      call AddToString(nTUVTMPP)
+                      call AddToString(', &')
+                      call writeString(LUFILE)
+                      call initString(0)          
+                      call AddToString('!$ACC        IfacX1_')
+                      call AddToString(nTUVTMPP2)
+                      call AddToString(',IfacX2_')
+                      call AddToString(nTUVTMPP2)
+                      call AddToString(',IfacX3_')
+                      call AddToString(nTUVTMPP2)
+                      call AddToString(', &')
+                      call writeString(LUFILE)
+                   ENDIF
                    WRITE(LUFILE,'(A)')'!$ACC        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&'
-           WRITE(LUFILE,'(A,A,A,A,A)')'!$ACC       ',FromExpLabel,'exp,',ToExpLabel,'exp,&'
+                   WRITE(LUFILE,'(A,A,A,A,A)')'!$ACC       ',FromExpLabel,'exp,',ToExpLabel,'exp,&'
                    WRITE(LUFILE,'(A)')'!$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)'
                    nLines = nLines + 6
                 ENDIF
@@ -581,16 +635,83 @@ subroutine PASSsub
                       WRITE(LUFILE,'(A)') '   iPassP = (IP-1)/(nPrimQ*nPrimP) + 1'
                    ELSEIF(SegP)THEN
                       WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimQ*nPasses'
+                      !init AUX
+                      IF(COLLAPSE)THEN
+                         IF(nPrimLast)THEN
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ELSE
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ENDIF
+                         nLines = nLines + 5
+                      ELSE
+                         !no need to init
+                      ENDIF
                       WRITE(LUFILE,'(A)') '   DO iPrimP=1, nPrimP'
                       WRITE(LUFILE,'(A)') '    iPrimQ = iP - ((iP-1)/nPrimQ)*nPrimQ'
                       WRITE(LUFILE,'(A)') '    iPassP = (iP-1)/nPrimQ + 1'
                    ELSEIF(SegQ)THEN
                       WRITE(LUFILE,'(A)') '  DO iP = 1,nPrimP*nPasses'
+                      IF(COLLAPSE)THEN
+                         IF(nPrimLast)THEN
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ELSE
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ENDIF
+                         nLines = nLines + 5
+                      ELSE
+                         !no need to init
+                      ENDIF
                       WRITE(LUFILE,'(A)') '   DO iPrimQ=1, nPrimQ'
                       WRITE(LUFILE,'(A)') '    iPrimP = iP - ((iP-1)/nPrimP)*nPrimP'
                       WRITE(LUFILE,'(A)') '    iPassP = (iP-1)/nPrimP + 1'
                    ELSEIF(Seg)THEN
                       WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
+                      IF(COLLAPSE)THEN
+                         IF(nPrimLast)THEN
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ELSE
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
+                            IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
+                            WRITE(LUFILE,'(A,I3)')'    DO iTUVP=1,',nTUVP
+                            WRITE(LUFILE,'(A)')   '     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk'
+                            WRITE(LUFILE,'(A)')   '    ENDDO'
+                            WRITE(LUFILE,'(A)')   '   ENDDO'
+                         ENDIF
+                         nLines = nLines + 5
+                      ELSE
+                         !no need to init
+                      ENDIF
                       WRITE(LUFILE,'(A)') '   DO iPrimQP=1,nPrimQ*nPrimP'
                       WRITE(LUFILE,'(A)') '    iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ'
                       WRITE(LUFILE,'(A)') '    iPrimP = (iPrimQP-1)/nPrimQ + 1'       
@@ -768,7 +889,7 @@ subroutine PASSsub
                 nLines = nLines + 1
                 CALL SUBROUTINE_MAIN(LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS,TUVINDEX,&
                      & TINDEX,UINDEX,VINDEX,JINDEX,nTUVprev3,nTUVprev2,nTUVprev,IfacX,TUVindexX,LOOPUNROLL,&
-                     & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                     & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPP,nTUVTMPP2)               
 
                 IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC LOOP SEQ'
                 WRITE(LUFILE,'(A,I3)')'     DO iTUVQ=1,',nTUVQ
@@ -893,13 +1014,15 @@ subroutine PASSsub
        ENDDO
     ENDDO
  ENDDO
+ WRITE(LUFILEMOD,'(7A)')'END MODULE AGC_CPU_OBS_TRParamMod'
+ close(unit = LUFILEMOD)
 END subroutine PASSsub
 
   subroutine SUBROUTINE_MAIN(LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS,TUVINDEX,&
                & TINDEX,UINDEX,VINDEX,JINDEX,nTUVprev3,nTUVprev2,nTUVprev,IfacX,&
-               & TUVindexX,LOOPUNROLL,Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+               & TUVindexX,LOOPUNROLL,Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
     implicit none
-    INTEGER,intent(in) :: LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS
+    INTEGER,intent(in) :: LUFILE,JMAX,JP,JQ,nTUVP,nTUVQ,JPQ,nTUV,nTUVPLUS,nTUVTMPPX,nTUVTMPP2X
     integer :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
     integer :: TINDEX(nTUVPLUS),IfacX(:,:),TUVindexX(:,:)
     integer :: UINDEX(nTUVPLUS)
@@ -976,7 +1099,7 @@ END subroutine PASSsub
                 WRITE(LUFILE,'(A,I3)')'     do iTUVP = 1,',nTUVP;nLines = nLines + 1
                 !Theta(i,0,k,0) = -(b*X_{ab}+dX_{cd})/q Theta(i,0,k-1,0) + (k-1)/(2q)*Theta(i,0,k-2,0)
                 CALL LOOPRECURRENCE1(iTUVQ,Tqminus1,iTUVQminus2,iTUVQminus1,CARTDIR,LUFILE,&
-                     & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE)
+                     & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,nTUVTMPPX,nTUVTMPP2X)
                 WRITE(LUFILE,'(A,I3)')'     enddo';nLines = nLines + 1
                 
                 !                   CREATED(Tq,Uq,Vq) = .TRUE.
@@ -994,7 +1117,7 @@ END subroutine PASSsub
                    nLines = nLines + 1
                    !Theta(i,0,k,0) = -(b*X_{ab}+dX_{cd})/q Theta(i,0,k-1,0) + (k-1)/(2q)*Theta(i,0,k-2,0)
                    CALL LOOPRECURRENCE2(iTUVQ,Tqminus1,iTUVQminus2,iTUVQminus1,CARTDIR,JTMQ,LUFILE,&
-                        & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE)
+                        & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,nTUVTMPPX,nTUVTMPP2X)
                    WRITE(LUFILE,'(A,I3,A,I3)')'     enddo';nLines = nLines + 1
                 ENDIF
                 
@@ -1011,9 +1134,11 @@ END subroutine PASSsub
                 nTUVP2 = (JP+0)*(JP+1)*(JP+2)/6   
                 iTUVPminus1 = 1
                 ituvpminus1LEnTUVP = .TRUE. 
+              !  print*,'WRITERECURRENCE51'
                 CALL WRITERECURRENCE5(CARTDIR,Tq,Uq,Vq,1,nTUVP2,&
                      & nTUVP2,TUVINDEX,JTMQ,JMAX,LUFILE,iTUVPminus1,.TRUE.,ituvpminus1LEnTUVP,IfacX,TUVindexX,LOOPUNROLL,&
-                     & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                     & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+              !  print*,'DONE WRITERECURRENCE51'
                 
                 !                   do iTUVP = 1,nTUVP
                 !                      Tp = Tindex(iTUVp) 
@@ -1035,24 +1160,33 @@ END subroutine PASSsub
                    IF(iTUVQminus1.EQ.1)THEN
                       iTUVPminus1 = 1
                       ituvpminus1LEnTUVP = .TRUE. !dummy
+                !print*,'WRITERECURRENCE52'
                       CALL WRITERECURRENCE5(CARTDIR,Tq,Uq,Vq,nTUVP2+1,nTUVTMPP2,&
                            & nTUVP2,TUVINDEX,JTMQ,JMAX,LUFILE,iTUVPminus1,.FALSE.,ituvpminus1LEnTUVP,IfacX,TUVindexX,LOOPUNROLL,&
-                           & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                           & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE52'
                    ELSE
                       IF(nTUVTMPP2.LE.nTUVP)THEN
                          ituvpminus1LEnTUVP = .TRUE.
+                !print*,'WRITERECURRENCE53'
                          CALL WRITERECURRENCE5(CARTDIR,Tq,Uq,Vq,nTUVP2+1,nTUVTMPP2,&
                               & nTUVP2,TUVINDEX,JTMQ,JMAX,LUFILE,iTUVPminus1,.FALSE.,ituvpminus1LEnTUVP,IfacX,TUVindexX,LOOPUNROLL,&
-                              Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                              Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE53'
                       ELSE
+                !print*,'WRITERECURRENCE54'
                          ituvpminus1LEnTUVP = .TRUE.
                          CALL WRITERECURRENCE5(CARTDIR,Tq,Uq,Vq,nTUVP2+1,nTUVP,&
                               & nTUVP2,TUVINDEX,JTMQ,JMAX,LUFILE,iTUVPminus1,.FALSE.,ituvpminus1LEnTUVP,IfacX,TUVindexX,LOOPUNROLL,&
-                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE54'
+
                          ituvpminus1LEnTUVP = .FALSE.
+                !print*,'WRITERECURRENCE55'
                          CALL WRITERECURRENCE5(CARTDIR,Tq,Uq,Vq,nTUVP+1,nTUVTMPP2,&
                               & nTUVP2,TUVINDEX,JTMQ,JMAX,LUFILE,iTUVPminus1,.FALSE.,ituvpminus1LEnTUVP,IfacX,TUVindexX,LOOPUNROLL,&
-                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE55'
                       ENDIF
                    ENDIF
                    !                      do iTUVP = nTUVP+1,nTUVTMPP
@@ -1079,8 +1213,10 @@ END subroutine PASSsub
                 
                 IF(iTUVQminus1.EQ.1)THEN
                    ituvpplus1LEnTUVP = .TRUE. !dummy argument 
+                !print*,'WRITERECURRENCE4'
                    CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,1,ituvpplus1LEnTUVP,nTUVP,nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                        & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                        & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE4'
                 ELSE
                    allocate(ituvpplus1LEnTUVParray(nTUVP))
                    DO iTUVP = 1, nTUVP
@@ -1095,27 +1231,35 @@ END subroutine PASSsub
                    IF(ALL(ituvpplus1LEnTUVParray))THEN
                       !all true
                       ituvpplus1LEnTUVP = .TRUE.
+                !print*,'WRITERECURRENCE4'
                       CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,1,ituvpplus1LEnTUVP,nTUVP,&
                            & nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                           & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                           & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE4'
                    ELSEIF(COUNT(ituvpplus1LEnTUVParray).EQ.0)THEN
                       !all false
                       ituvpplus1LEnTUVP = .FALSE.
+                !print*,'WRITERECURRENCE4'
                       CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,1,ituvpplus1LEnTUVP,nTUVP,&
                            & nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                           & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                           & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE4'
                    ELSE                      
                       IF(ALL(ituvpplus1LEnTUVParray(1:COUNT(ituvpplus1LEnTUVParray))))THEN
                          !all T are sequential in the beginning
                          ituvpplus1LEnTUVP = .TRUE.
+                !print*,'WRITERECURRENCE4'
                          CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,1,ituvpplus1LEnTUVP,COUNT(ituvpplus1LEnTUVParray),&
                               & nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE4'
                          !all F are sequential at the end
                          ituvpplus1LEnTUVP = .FALSE.
+                !print*,'WRITERECURRENCE4'
                          CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,COUNT(ituvpplus1LEnTUVParray)+1,ituvpplus1LEnTUVP,nTUVP,&
                               & nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE4'
                       ELSE
                          print*,'ituvpplus1LEnTUVParray',ituvpplus1LEnTUVParray
                          stop 'ERROR'
@@ -1135,8 +1279,10 @@ END subroutine PASSsub
                 IF(nTUVTMPP.GE.nTUVP+1)THEN
                    IF(iTUVQminus1.EQ.1)THEN
                       ituvpplus1LEnTUVP = .TRUE. !dummy argument 
+                !print*,'WRITERECURRENCE4'
                       CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,nTUVP+1,ituvpplus1LEnTUVP,nTUVTMPP,nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                           & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                           & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE4'
                    ELSE
                       !Theta(i,0,k,0) += - p/q*Theta(i+1,0,k-1,0) 
                       allocate(ituvpplus1LEnTUVParray(nTUVP+1:nTUVTMPP))
@@ -1152,27 +1298,35 @@ END subroutine PASSsub
                       IF(ALL(ituvpplus1LEnTUVParray))THEN
                          !all true
                          ituvpplus1LEnTUVP = .TRUE.
+                !print*,'DONE WRITERECURRENCE4'
                          CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,nTUVP+1,ituvpplus1LEnTUVP,nTUVTMPP,&
                               & nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'WRITERECURRENCE4'
                       ELSEIF(COUNT(ituvpplus1LEnTUVParray).EQ.0)THEN
                          !all false
                          ituvpplus1LEnTUVP = .FALSE.
+                !print*,'WRITERECURRENCE4'
                          CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,nTUVP+1,ituvpplus1LEnTUVP,nTUVTMPP,&
                               & nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                              & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE4'
                       ELSE
                          IF(ALL(ituvpplus1LEnTUVParray(nTUVP+1:nTUVP+COUNT(ituvpplus1LEnTUVParray))))THEN
                             !all T are sequential in the beginning
                             ituvpplus1LEnTUVP = .TRUE.
+                !print*,'WRITERECURRENCE4'
                             CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,nTUVP+1,ituvpplus1LEnTUVP,nTUVP+COUNT(ituvpplus1LEnTUVParray),&
                                  & nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                                 & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                                 & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE4'
                             !all F are sequential at the end
                             ituvpplus1LEnTUVP = .FALSE.
+                !print*,'WRITERECURRENCE4'
                             CALL WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,nTUVP+COUNT(ituvpplus1LEnTUVParray)+1,ituvpplus1LEnTUVP,nTUVTMPP,&
                                  & nTUVP,TUVINDEX,JTMQ,JMAX,LUFILE,TUVindexX,LOOPUNROLL,&
-                                 & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+                                 & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPPX,nTUVTMPP2X)
+                !print*,'DONE WRITERECURRENCE4'
                          ELSE
                             print*,'ituvpplus1LEnTUVParray',ituvpplus1LEnTUVParray
                             stop 'ERROR2'
@@ -1268,9 +1422,9 @@ END subroutine PASSsub
   END subroutine DETERMINE_CARTDIR
 
   SUBROUTINE LOOPRECURRENCE1(iTUVQ,Tqminus1,iTUVQminus2,iTUVQminus1,CARTDIR,LUPRI,&
-       & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE)
+       & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,nTUVTMPP,nTUVTMPP2)
     implicit none
-    integer :: iTUVQ,Tqminus1,iTUVQminus2,iTUVQminus1,CARTDIR,lupri
+    integer :: iTUVQ,Tqminus1,iTUVQminus2,iTUVQminus1,CARTDIR,lupri,nTUVTMPP,nTUVTMPP2
     character(len=132) :: STRING 
     integer :: iString
     character(len=4) :: DIRECTIONSTRING
@@ -1400,9 +1554,9 @@ END subroutine PASSsub
   END SUBROUTINE LOOPRECURRENCE1
   
   SUBROUTINE LOOPRECURRENCE2(iTUVQ,Tqminus1,iTUVQminus2,iTUVQminus1,CARTDIR,JTMQ,LUPRI,&
-       & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE)
+       & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,nTUVTMPP,nTUVTMPP2)
     implicit none
-    integer :: iTUVQ,Tqminus1,iTUVQminus2,iTUVQminus1,CARTDIR,JTMQ,LUPRI
+    integer :: iTUVQ,Tqminus1,iTUVQminus2,iTUVQminus1,CARTDIR,JTMQ,LUPRI,nTUVTMPP,nTUVTMPP2
     character(len=132) :: STRING 
     integer :: iString
     character(len=4) :: DIRECTIONSTRING
@@ -1689,13 +1843,13 @@ END subroutine PASSsub
   subroutine WRITERECURRENCE5(CARTDIR,Tq,Uq,Vq,iTUVstart,nTUVP_tmp,&
        & nTUVP,TUVINDEX,JTMQ,JMAX,LUPRI,iTUVPminus1,iTUVPLEnTUVP,&
        & ituvpminus1LEnTUVP,IfacX,TUVindexX,LOOPUNROLL,&
-       & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+       & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPP,nTUVTMPP2)
     implicit none
     !A to C
     !Theta(i,0,k,0) = i/(2q)*Theta(i-1,0,k-1,0) - p/q*Theta(i+1,0,k-1,0) 
     integer,intent(in) :: CARTDIR,Tq,Uq,Vq,nTUVP,JTMQ,JMAX,iTUVPminus1,nTUVP_tmp
     integer,intent(in) :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),LUPRI,iTUVstart
-    integer,intent(in) :: IfacX(:,:),TUVindexX(:,:)
+    integer,intent(in) :: IfacX(:,:),TUVindexX(:,:),nTUVTMPP,nTUVTMPP2
     logical,intent(in) :: iTUVPLEnTUVP,ituvpminus1LEnTUVP,LOOPUNROLL
     logical,intent(in) :: Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC
     !
@@ -1732,6 +1886,8 @@ END subroutine PASSsub
              call AddToString('iTUVP = TUVindex')
              call AddToString('X')
              call AddToString(CARTDIR)
+             call AddToString('_')
+             call AddToString(nTUVTMPP)
              call AddToString('(ituvpminus1)')
              call writeString(LUPRI);nLines = nLines + 1
              call initString(6)          
@@ -1778,9 +1934,11 @@ END subroutine PASSsub
                 call AddToString('*inv2expQ*')
              ENDIF
           ELSE
-             call AddToString('+ IfacX')
-             call AddToString(CARTDIR)
-             call AddToString('(ituvpminus1)*inv2expQ*')             
+                call AddToString('+ IfacX')
+                call AddToString(CARTDIR)
+                call AddToString('_')
+                call AddToString(nTUVTMPP2)
+                call AddToString('(ituvpminus1)*inv2expQ*')             
           ENDIF
           IF(iTUVQminus1.EQ.1)THEN
              call AddToString('Aux(')
@@ -1962,12 +2120,13 @@ END subroutine WRITERECURRENCE2
 
 subroutine WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,iTUVstart,ituvpplus1LEnTUVP,nTUVP_tmp,&
      & nTUVP,TUVINDEX,JTMQ,JMAX,LUPRI,TUVindexX,LOOPUNROLL,&
-     & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC)
+     & Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE,DoOpenACC,nTUVTMPP,nTUVTMPP2)
   implicit none
   !A to C
   !Theta(i,0,k,0) = i/(2q)*Theta(i-1,0,k-1,0) - p/q*Theta(i+1,0,k-1,0) 
   integer,intent(in) :: CARTDIR,Tq,Uq,Vq,nTUVP,JTMQ,JMAX,iTUVstart,nTUVP_tmp
   integer,intent(in) :: TUVINDEX(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1),LUPRI,TUVindexX(:,:)
+  integer,intent(in) :: nTUVTMPP,nTUVTMPP2
   logical,intent(in) :: ituvpplus1LEnTUVP,LOOPUNROLL,DoOpenACC
   logical,intent(in) :: Gen,SegQ,SegP,Seg,Seg1Prim,COLLAPSE
   !
@@ -2003,6 +2162,8 @@ subroutine WRITERECURRENCE4(CARTDIR,Tq,Uq,Vq,iTUVstart,ituvpplus1LEnTUVP,nTUVP_t
            call initString(6)          
            call AddToString('iTUVplus1 = TUVindexX')
            call AddToString(CARTDIR)
+           call AddToString('_')
+           call AddToString(nTUVTMPP)
            call AddToString('(iTUVP)')
            call writeString(LUPRI);nLines = nLines + 1
            call initString(6)          

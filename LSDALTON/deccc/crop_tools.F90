@@ -25,6 +25,11 @@ module crop_tools_module
       module procedure get_mp2_energy_arrold
       module procedure get_mp2_energy_arrnew
    end interface
+
+   integer,parameter :: SOLVE_AMPLITUDES      = 1
+   integer,parameter :: SOLVE_AMPLITUDES_PNO  = 2
+   integer,parameter :: SOLVE_MULTIPLIERS     = 3
+   
    
    contains
    
@@ -67,13 +72,15 @@ module crop_tools_module
       integer, intent(in) :: maxDIIS,maxIter,iter
       integer :: i,j,k,l
       real(realk), dimension(maxIter,maxIter), intent(in) :: Bmat
-      real(realk), dimension(maxIter), intent(inout) :: c
+      real(realk), dimension(maxIter), intent(out) :: c
       logical, intent(in) :: verbose
 
       ! Maximal size of the subspace equations should be 4x4 (3 from vectors and 1
       ! from Lagrange coefficient). 
       real(realk), dimension(min(maxDIIS+1,iter+1),min(maxDIIS+1,iter+1)) :: bb
       real(realk), dimension(min(maxDIIS+1,iter+1)) :: cc
+
+      c=0.0E0_realk
 
       bb=1.0E0_realk
 
@@ -103,8 +110,45 @@ module crop_tools_module
          k=k+1
       end do
 
-      return
+      if(verbose) print *,"Coeffs: ",c(max(iter-maxDIIS+1,1):iter)
    end subroutine CalculateDIIScoefficients
+   subroutine CalculateDIIScoefficientsII(nSS,Bmat,c,verbose)
+
+      implicit none
+      integer, intent(in) :: nSS
+      integer :: i,j,k,l
+      real(realk), dimension(nSS,nSS), intent(in) :: Bmat
+      real(realk), dimension(nSS), intent(out) :: c
+      logical, intent(in) :: verbose
+
+      ! Maximal size of the subspace equations should be 4x4 (3 from vectors and 1
+      ! from Lagrange coefficient). 
+      real(realk), dimension(nSS+1,nSS+1) :: bb
+      real(realk), dimension(nSS+1) :: cc
+
+      c=0.0E0_realk
+
+      cc=0E0_realk
+      cc(nSS+1)=1E0_realk
+
+      !build Bcrop in blocks
+      bb(1:nSS,nSS+1) = 1.0E0_realk
+      bb(nSS+1,1:nSS) = 1.0E0_realk
+      bb(1:nSS,1:nSS) = Bmat
+      bb(nSS+1,nSS+1) = 0E0_realk
+
+      if(verbose) call PrintMatrix(bb,nSS+1,'B matrix  ')
+
+      ! --- solve system of the linear equations ---   
+      call SolveLinearEquations(bb,cc,nSS+1)
+      ! ---
+
+      k=1
+      c = cc(1:nSS)
+
+      if(verbose) print *,"Coeffs: ",c(1:nSS)
+
+   end subroutine CalculateDIIScoefficientsII
 
    !> \brief Print simple fortran matrix in nice form, just for debuging purpose 
    !> \author Marcin Ziolkowski

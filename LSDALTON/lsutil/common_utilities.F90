@@ -151,7 +151,7 @@
 #endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
-        stop "programming error in my_DSYGV input. workarray inquiry"
+        call lsquit("programming error in my_DSYGV input. workarray inquiry",-1)
      endif
 !#ifdef VAR_LSDEBUG
 !     ! sometimes the optimal batch sizes do not always work, especially when
@@ -172,7 +172,18 @@
 #endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
-        stop "programming error in my_DSYGV input."
+        IF(ierr.LT.0) print *, "illegal value of argument number ",ABS(ierr)
+        IF(ierr.LE.N)then
+           print *, 'SYEV failed to converge;'
+           print *,  ierr, ' off-diagonal elements of an intermediate'
+           print *, 'tridiagonal form did not converge to zero;'
+        ENDIF
+        IF(ierr.GE.N.AND.ierr.LE.2*N)then
+           print *, 'the leading minor of order ',ierr-N,' of B is not positive definite.'
+           print *, 'The factorization of B could not be completed and'
+           print *, 'no eigenvalues or eigenvectors were computed '
+        endif
+        call lsquit("programming error in my_DSYGV input.",-1)
      endif
      deallocate(wrk)
    END SUBROUTINE my_DSYGV
@@ -444,6 +455,27 @@
         enddo
      endif
    end subroutine ls_dzero
+
+  !> \brief Sets a real array of length *LENGTH* to zero.
+  !> \author H. J. Aa. Jensen. F90'fied by S. Host
+  !> \date May 5, 1984
+  subroutine ls_dzero8(dx, length)
+  use precision
+  implicit none
+       !Length of array
+       integer(kind=long), intent(in) :: length
+       !Array to be nullified
+       real(realk), intent(inout) :: dx(length)
+       integer(kind=long)             :: i
+
+     if (length < 0) then
+        !do nothing
+     else
+        do i = 1, length
+           dx(i) = 0.0E0_realk
+        enddo
+     endif
+   end subroutine ls_dzero8
 
   !> \brief Sets a short integer array of length *LENGTH* to shortzero.
   !> \author T. Kjaergaard

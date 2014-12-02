@@ -746,7 +746,7 @@ LOGICAL :: SINGLESEGMENT
 LOGICAL            :: dospherical
 !
 LOGICAL             :: SEARCHING,NewElements
-INTEGER             :: nprim, nOrbitals,K,nAngmom
+INTEGER             :: nprim, nOrbitals,K,nAngmom,JJ
 INTEGER             :: ELEMENT,Totalnprim,TotalnOrbitals,AA,I,TESTICHARGE
 Integer,pointer :: icharge(:)
 TYPE(Lsmatrix)        :: ContractionMatrix
@@ -889,7 +889,9 @@ DO I=1,L !number of unique charges in basisset
      BASINFO%ATOMTYPE(atomtype+I)%SHELL(nAngmom)%nprim=0
      BASINFO%ATOMTYPE(atomtype+I)%SHELL(nAngmom)%nsegments=0
   ENDIF
-  STRING(1:12) = '            '
+  DO JJ=1,200
+     STRING(JJ:JJ) = ' '
+  ENDDO
   ENDDO
 
   BASINFO%ATOMTYPE(atomtype+I)%Totnprim=Totalnprim
@@ -1603,7 +1605,7 @@ ELSE
          SEGMENTCOLID(j,Nsegments) = .TRUE.
          do k=j+1,nOrbital
             IF(.NOT.merged(k))THEN
-               PerfomMerge = TrueSubset(Prim(:,j),Prim(:,k),nrow)
+               PerfomMerge = TrueSubset(MergedPrim(:,Nsegments),Prim(:,k),nrow)
                IF(PerfomMerge)THEN
                   !merge k into j 
                   merged(k) = .TRUE.

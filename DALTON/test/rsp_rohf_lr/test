@@ -13,8 +13,8 @@ f = Filter()
 f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-7)
 f.add(string = '@ Excitation energy',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-4)
 
-test.run(['o2rhf.dal'], ['expt.mol'], {'out': f})
+test.run(['o2rhf.dal'], ['expt.mol'], f={'out': f})
 
 sys.exit(test.return_code)

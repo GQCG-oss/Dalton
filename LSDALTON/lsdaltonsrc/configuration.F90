@@ -9,6 +9,7 @@ use precision
 use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
+use tensor_interface_module, only: tensor_set_dil_backend_true, tensor_set_debug_mode_true
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -160,8 +161,8 @@ implicit none
   config%doplt=.false.
   !F12 calc?
   config%doF12=.false.
+  config%doRIMP2=.false.
   config%doTestMPIcopy = .false.
-  config%type_tensor_debug = .false.
   config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
@@ -454,23 +455,23 @@ DO
                                  config%opt%CFG_density_method = config%opt%CFG_F2D_ARH
             CASE('.ARH DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
-				 config%davidSCF%precond=.true.
+                                 config%davidSCF%precond=.true.
                                  config%opt%cfg_saveF0andD0 = .true.
-				 config%davidSCF%stepsize=0.5
-				 config%davidSCF%arh_inp_linesearch=.false.
+                                 config%davidSCF%stepsize=0.5
+                                 config%davidSCF%arh_inp_linesearch=.false.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
             CASE('.ARH(LS) DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
-				 config%davidSCF%precond=.true.
+                                 config%davidSCF%precond=.true.
                                  config%opt%cfg_saveF0andD0 = .true.
-				 config%davidSCF%stepsize=0.5
-				 config%davidSCF%arh_inp_linesearch=.true.
+                                 config%davidSCF%stepsize=0.5
+                                 config%davidSCF%arh_inp_linesearch=.true.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
             CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
-	    CASE('.DAVIDSON DEBUG'); config%davidSCF%debug_info =.true.
-	    CASE('.DAVIDSON EXTRAVEC'); config%davidSCF%arh_extravec =.true.
+            CASE('.DAVIDSON DEBUG'); config%davidSCF%debug_info =.true.
+            CASE('.DAVIDSON EXTRAVEC'); config%davidSCF%arh_extravec =.true.
                                       config%davidSCF%arh_inp_extravec =.true.
-	    CASE('.DAVIDSON LSDEBUG'); config%davidSCF%arh_debug_linesearch =.true.
+            CASE('.DAVIDSON LSDEBUG'); config%davidSCF%arh_debug_linesearch =.true.
             CASE('.NOECONTINCREM');
                IF(.NOT.config%opt%cfg_saveF0andD0)THEN
                 call lsquit('.NOECONTINCREM must be placed some pointer after .ARH DAVID',-1)
@@ -637,6 +638,9 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
+            CASE('.MWPURIFYATOMSTART');               
+               !Perform McWeeny purification on the non idempotent Atoms Density
+               config%opt%MWPURIFYATOMSTART=.TRUE.
 #ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
@@ -700,7 +704,7 @@ DO
    DECInput: IF (WORD(1:5) == '**DEC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12)
+      call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12,config%doRIMP2)
    END IF DECInput
 
    ! Input for full molecular CC calculation
@@ -708,7 +712,7 @@ DO
    CCinput: IF (WORD(1:4) == '**CC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12)
+      call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12,config%doRIMP2)
    END IF CCinput
 
 
@@ -775,18 +779,20 @@ DO
      READWORD=.TRUE.
      !should be in MOLECULE.INP not LSDALTON.INP
      !READ(WORD(6:),*) config%latt_config%max_layer,config%latt_config%nneighbour
+     config%latt_config%max_layer = 10
      config%latt_config%comp_pbc= .true.
      config%latt_config%wannier_direct= 'indirectly'
      config%latt_config%testcase= .false.
      config%latt_config%compare_elmnts= .false.
      config%latt_config%lmax=15
      config%latt_config%Tlmax=15
-     config%latt_config%num_its=21
+     config%latt_config%num_its=100
      config%latt_config%num_store=7
-     config%latt_config%error=1.0E-8
+     config%latt_config%error=1.0d-8
      config%latt_config%num_its_densmat=3
      config%latt_config%nf=6
      config%latt_config%ndmat=6
+     config%latt_config%intthr=1.0d-8
      config%latt_config%realthr = -12
      config%latt_config%read_file=.false.
      config%latt_config%store_mats=.false.
@@ -809,15 +815,15 @@ DO
         CASE('.STARTDENS')
           READ (LUCMD, '(I2)') config%latt_config%num_its_densmat
         CASE('.LATTICE')
-           READ (LUCMD, '(I2,I3)')config%latt_config%max_layer,&
-                & config%latt_config%nneighbour
+           READ (LUCMD, '(I2)')config%latt_config%max_layer
         CASE('.NFIELD')
           READ (LUCMD, '(I2)') config%latt_config%nf
         CASE('.NDENSMATCUTOFF')
           READ (LUCMD, '(I2)') config%latt_config%ndmat  
         CASE('.RECLAT')
-          READ (LUCMD, '(3I2)')config%latt_config%nk1,config%latt_config%nk2,&
+          READ (LUCMD, *) config%latt_config%nk1,config%latt_config%nk2,&
                                & config%latt_config%nk3
+
           if(config%latt_config%nk2 .gt. 1 ) then
             if(.not.config%latt_config%ldef%is_active(2)) then
               WRITE(*,*) 'Reciprocal vector 2 should be set to 1'
@@ -834,8 +840,7 @@ DO
 
         CASE('.MLMAX')
           READ (LUCMD, '(I2)')config%latt_config%lmax
-        CASE('.TLMAX')
-          READ (LUCMD, '(I2)')config%latt_config%Tlmax
+          config%latt_config%Tlmax = config%latt_config%lmax
 
         CASE('.TESTCASE')
           config%latt_config%testcase= .true.
@@ -847,9 +852,17 @@ DO
         CASE ('.WRITE TO FILE') 
           config%latt_config%store_mats= .true.
           
-        CASE('.DIIS')
-          READ(LUCMD,*) config%latt_config%num_its,config%latt_config%num_store&
-               &,config%latt_config%error
+        CASE('.CONVTHR')
+          READ(LUCMD,*) config%latt_config%error
+
+        CASE('.INTTHR')
+          READ(LUCMD,*) config%latt_config%intthr
+
+        CASE('.SCFCYCLES')
+          READ(LUCMD,*) config%latt_config%num_its
+
+        CASE('.PREVCYCLES')
+          READ(LUCMD,*) config%latt_config%num_store
 
         CASE('.REALTHR')
           READ(LUCMD,*) config%latt_config%realthr
@@ -973,22 +986,32 @@ subroutine DEC_meaningful_input(config)
      ! both occupied and virtual localization.
      OrbLocCheck: if( (.not. config%decomp%cfg_mlo) .or. (.not. config%decomp%cfg_lcv) &
           &  .or. (.not. config%decomp%cfg_lcm) ) then
+        !Either .LCM or .PSM/.PFM/... keyword was not used 
+        IF(.NOT.DECinfo%use_canonical)THEN
+           ! Turn on LCM scheme
+           IF(.NOT.config%decomp%cfg_lcv)THEN
+              WRITE(config%lupri,*)'Warning **DEC and **CC enforces the use of the .LCM keyword'
+              config%decomp%cfg_lcv = .true.
+              config%decomp%cfg_lcm=.true.
+           ENDIF
+           IF(.NOT.config%decomp%cfg_mlo)THEN
+              ! Turn on orbital localization
+              config%decomp%cfg_mlo = .true.
+           
+              ! use orbspread localization function and line search
+              config%davidOrbLoc%orbspread=.true.
+              config%davidOrbLoc%linesearch=.true.
 
-        ! Turn on LCM scheme
-        config%decomp%cfg_lcv = .true.
-        config%decomp%cfg_lcm=.true.
-
-        ! Turn on orbital localization
-        config%decomp%cfg_mlo = .true.
-
-        ! use orbspread localization function and line search
-        config%davidOrbLoc%orbspread=.true.
-        config%davidOrbLoc%linesearch=.true.
-
-        ! Exponent 2 for both occ and virt orbitals
-        config%decomp%cfg_mlo_m(1) = 2
-        config%decomp%cfg_mlo_m(2) = 2
-
+              ! Exponent 2 for both occ and virt orbitals
+              config%decomp%cfg_mlo_m(1) = 2
+              config%decomp%cfg_mlo_m(2) = 2   
+           ELSE
+              !orbital localization already turned on by keywords.
+              !Use user specified input!
+           ENDIF
+        else
+           !No reason to Localize when Using canonical Orbitals
+        endif
         ! For the release we only include DEC-MP2
 #ifndef MOD_UNRELEASED
         if(DECinfo%ccmodel/=MODEL_MP2 .and. (.not. DECinfo%full_molecular_cc) ) then
@@ -997,7 +1020,6 @@ subroutine DEC_meaningful_input(config)
            call lsquit('DEC is currently only available for the MP2 model!',-1)
         end if
 #endif
-
      end if OrbLocCheck
 
   end if DECcalculation
@@ -1100,6 +1122,10 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
+        CASE('.SCALAPACKGROUPSIZE');
+           READ(LUCMD,*) infpar%ScalapackGroupSize
+        CASE('.SCALAPACKAUTOGROUPSIZE');
+           infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
@@ -1108,7 +1134,6 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
-        CASE('.TYPE_TENSOR_DEBUG');     config%type_tensor_debug    = .true.
            ! Max memory available on gpu measured in GB. By default set to 2 GB
         CASE('.GPUMAXMEM');             
            READ(LUCMD,*) config%GPUMAXMEM
@@ -1138,6 +1163,35 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            CALL lsQUIT('Illegal keyword in **GENERAL.',lupri)
         END SELECT
      ENDIF
+
+     if (WORD(1:7) == '*TENSOR') then
+        READWORD=.TRUE.
+        do
+           read(LUCMD,'(A40)') word
+           if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+           if(word(1:1) == '*') then ! New property or *END OF INPUT
+              backspace(LUCMD)
+              exit
+           end if
+           select case(word)
+           case('.DIL_BACKEND')
+              call tensor_set_dil_backend_true
+#ifdef VAR_MPI
+              call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,infpar%master,MPI_COMM_LSDALTON)
+#endif
+           case('.DEBUG')
+              call tensor_set_debug_mode_true
+#ifdef VAR_MPI
+              call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,infpar%master,MPI_COMM_LSDALTON)
+#endif
+           case default
+              print *,"UNRECOGNIZED KEYWORD: ",word
+              call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
+
+           end select
+        enddo
+     endif
+
      IF (WORD(1:2) == '**') THEN
         READWORD=.FALSE.
         EXIT
@@ -1290,6 +1344,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.DO NOT SAVE GAB');  
            INTEGRAL%saveGABtoMem = .FALSE. 
         CASE ('.NO OMP');  INTEGRAL%noOMP = .TRUE. 
+        CASE ('.ICHORGPU');  INTEGRAL%IchorForceGPU = .TRUE. 
+        CASE ('.ICHORCPU');  INTEGRAL%IchorForceCPU = .TRUE. 
         CASE ('.NO PASS');  INTEGRAL%DOPASS = .FALSE. 
         CASE ('.NO CS');  INTEGRAL%CS_SCREEN = .FALSE. 
         CASE ('.NO PS');  INTEGRAL%PS_SCREEN = .FALSE. 
@@ -1356,7 +1412,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.PRINT_EK3'); ! EXPERIMENTAL
         ! calculate and print full Exchange when doing ADMM exchange approx.
         ! > Debugging purpose only
-	   INTEGRAL%PRINT_EK3       = .TRUE.
+           INTEGRAL%PRINT_EK3       = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
@@ -2026,10 +2082,10 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*NUMHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the analytical gradient'
                     config%response%tasks%doNumHess = .True.
-	CASE('*NUMGRAD')
+        CASE('*NUMGRAD')
                     WRITE(config%LUPRI,*) 'Numerical Gradient calculations are carried out'
                     config%response%tasks%doNumGrad = .True.
-	CASE('*NUMGRADHESS')
+        CASE('*NUMGRADHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the numerical gradient'
                     config%response%tasks%doNumGradHess = .True.
 #endif
@@ -3461,6 +3517,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    if(config%integral%densfit .AND. (.NOT. config%integral%basis(AuxBasParam)))then
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified .DENSFIT in the dalton input but not supplied a fitting basis set'
+      CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
+   endif
+   if(config%doRIMP2 .AND. (.NOT. config%integral%basis(AuxBasParam)))then
+      WRITE(config%LUPRI,'(/A)') &
+           &     'Warning: You have specified .RIMP2 in the dalton input but not supplied a fitting basis set'
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
    if(config%doF12 .AND. (.NOT. config%integral%basis(CABBasParam)))then

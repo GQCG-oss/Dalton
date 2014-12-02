@@ -14,10 +14,7 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-6)
 
-f.add(from_string = 'CCSD(T) information',
-      to_string   = 'Num. unocc. orb.')
-
-f.add(from_string = 'Print frag.energies',
+f.add(from_string = 'Print frag. energies',
       to_string   = 'ABC partitioning')
 
 f.add(from_string = 'Print single and pair fragment energies',

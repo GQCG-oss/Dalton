@@ -32,7 +32,18 @@ NB: Requires the use of SubSystem labels in the MOLECULE.INP file
 \item[\Key{SUBSYSTEMDENSITY}] Constructs a density matrix for the subsystems of the Counter Poise Corrected Interaction energy calculation using the full system density matrix.  
 \item[\Key{SCALAPACK}] Use SCALAPACK matrices. \newline
 NB: Requires linking to the scalapack lib (provided by MKL) and the use of the --scalapack keyword during installation.
-\item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
+This keyword will distribute the memory of matrices among the MPI processes. This keyword will also use the SCALAPACK library 
+to parallize the matrix operations like matrix multiplication. 
+\item[\Key{SCALAPACKBLOCKSIZE}] 
+\verb| | \newline
+\verb|<ScalapackBlockSize>|\newline
+The blocksize used in SCALAPACK matrices
+\item[\Key{SCALAPACKNODES}] 
+\verb| | \newline
+\verb|<ScalapackNodes>|\newline
+The number of MPI processes you wish to use for the SCALAPACK format. This must be a subset of the total MPI processes used. 
+It may be benficial to chose a subset of the total MPI processes because the matrix operations scale differently with MPI nodes than the 
+Integral evaluation. 
 \item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library and the use of the --csr keyword during installation!
 \item[\Key{TIME}] Activate the printout of timings.
 \item[\Key{NOGCBASIS}] Deactivate the use of the Grand Canonical basis \cite{trilevel1, trilevel2}
@@ -1680,7 +1691,7 @@ The frequencies for which to calculate the damped MCD spectra (in atomic units).
 The frequencies for which to calculate the damped MCD spectra (in atomic units), here specified as an interval.
 \item[\Key{NO LONDON}] \verb| | \newline
 Deactivates the use of LAOs (i.e., only standard, non-LAO, basis is used)
-\item[\Key{NO NOLONDON}] \verb| | \newline
+\item[\Key{NO NONLONDON}] \verb| | \newline
 Deactivates the use of non-LAOs (i.e., only LAO are used)
 \item[\Key{NO SIMULATE}] \verb| | \newline
 Deactivates the simulation of the MCD spectrum from the individual MCD terms

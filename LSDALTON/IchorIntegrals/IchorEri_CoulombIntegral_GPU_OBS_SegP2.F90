@@ -1,6 +1,7 @@
 MODULE IchorEriCoulombintegralGPUOBSGeneralModSegP2
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
 !Contains routines for Segmented contracted LHS and a General Contracted RHS Basisset 
+use IchorEriCoulombintegralCPUMcMGeneralMod
 use IchorprecisionMod
 use IchorCommonMod
 use IchorMemory
@@ -17,7 +18,6 @@ use AGC_GPU_OBS_VERTICALRECURRENCEMODCGen
 use AGC_GPU_OBS_VERTICALRECURRENCEMODDGen
 use AGC_GPU_OBS_TRMODAtoCSegP1
 use AGC_GPU_OBS_TRMODAtoCSegP2
-use AGC_GPU_OBS_TRMODAtoCSegP3
 use AGC_GPU_OBS_TRMODAtoDSegP1
 use AGC_GPU_OBS_TRMODAtoDSegP2
 use AGC_GPU_OBS_TRMODBtoCSegP1
@@ -1400,7 +1400,22 @@ CONTAINS
         call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(25,nContQ*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in ICI_GPU_OBS_SegP',-1)
+#ifdef VAR_OPENACC
+        CALL ICHORQUIT('ICI_CPU_McM_general called with OpenACC',-1)
+#endif
+        call ICI_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
+           & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+           & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+           & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+           & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+           & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+           & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+           & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+           & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+           & IatomAPass,iatomBPass)
     END SELECT
   end subroutine ICI_GPU_OBS_SegP2
   

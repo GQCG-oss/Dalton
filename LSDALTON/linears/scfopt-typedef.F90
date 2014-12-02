@@ -110,6 +110,8 @@ type OptItem
       logical     :: opt_quit
       !if Atoms start density should be disregarded for trilevel
       logical     :: add_atoms_start
+      !Perform McWeeny purification on the non idempotent Atoms Density
+      logical     :: MWPURIFYATOMSTART
 end type OptItem
 
 contains
@@ -171,6 +173,7 @@ implicit none
    opt%debug_diag_hessian        = .false.
    opt%opt_quit                  = .true.
    opt%add_atoms_start           = .true.
+   opt%MWPURIFYATOMSTART         = .false.
 end subroutine opt_set_default_config
 
 end module opttype

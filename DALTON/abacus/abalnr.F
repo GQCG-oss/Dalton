@@ -2228,7 +2228,7 @@ C     DIMENSION FOVIBG(3*NATOMS,3*NATOMS,NSYM,MXFR)
       DIMENSION FOVIBG(3*NATOMS+3,3*NATOMS+3,NSYM,MXFR)
 CKeinSPASmehr
       DIMENSION WORK(LWORK)
-#include "ibtfun.h"
+
 C
       IF (ALFA .AND. IPRINT .GE. 0) THEN
          CALL TITLER('Frequency dependent polarizabilities','+',118)
@@ -2399,7 +2399,7 @@ cmbh end
          JATOM = 0
          DO IATOM = 1, NUCIND
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   JATOM = JATOM + 1
                   NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN

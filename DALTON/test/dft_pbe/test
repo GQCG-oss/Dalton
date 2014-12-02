@@ -20,6 +20,6 @@ f.add(string = 'Final DFT energy',
 f.add(string = '@ Excitation energy :',
       abs_tolerance = 1.0e-6)
 
-test.run(['dft_pbe.dal'], ['He_cc-pVTZ.mol'], {'out': f})
+test.run(['dft_pbe.dal'], ['He_cc-pVTZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

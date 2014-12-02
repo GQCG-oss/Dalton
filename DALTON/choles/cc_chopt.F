@@ -7129,7 +7129,7 @@ C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 C 
       TLAST = SECOND()

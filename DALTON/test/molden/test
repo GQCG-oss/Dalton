@@ -14,6 +14,6 @@ f.add(rel_tolerance = 1.0e-3,
       ignore_sign = True) # all lines
 
 test.run(['molden.inp'], ['CH2O_3-21G.mol'],
-         {'molden.inp': f}, args='-get molden.inp')
+         f={'molden.inp': f}, args='-get molden.inp')
 
 sys.exit(test.return_code)

@@ -1236,8 +1236,7 @@ end function max_batch_dimension
     real(realk),pointer :: tmp(:,:)
     logical :: file_exist
     integer :: funit, i,j
-    integer(kind=8) :: i64,j64
-    integer(kind=4) :: i32,j32
+    integer(kind=long) :: i64,j64
 
 
     file_exist=.false.
@@ -1249,19 +1248,10 @@ end function max_batch_dimension
        call lsopen(funit,filename,'OLD','UNFORMATTED')
 
        ! Read dimensions stored on file
-       if(DECinfo%convert64to32) then
-          ! file uses 64 bit integers but current run uses 32 bit integers
-          read (funit) i64,j64
-          i=int(i64,4)
-          j=int(j64,4)
-       elseif(DECinfo%convert32to64) then
-          ! file uses 64 bit integers but current run uses 32 bit integers
-          read (funit) i32,j32
-          i=i32
-          j=j32
-       else
-          read (funit) i,j
-       end if
+       ! files always written using 64 bit integers
+       read (funit) i64,j64
+       i=int(i64,4)
+       j=int(j64,4)
 
        ! Sanity check
        if( (i /= dim1) .or. (j/=dim2) ) then
@@ -1925,6 +1915,12 @@ end function max_batch_dimension
        call mem_dealloc(fragment%unoccAOSorb)
     end if
 
+    ! Reduced fragment info
+    do i=1,DECinfo%nFRAGSred
+       call fragmentAOS_type_free(fragment%REDfrags(i))
+    end do
+    call mem_dealloc(fragment%REDfrags)
+
   end subroutine atomic_fragment_free_simple
 
   
@@ -2000,6 +1996,24 @@ end function max_batch_dimension
     end if
     
   end subroutine atomic_fragment_free_basis_info
+
+
+  !> Free pointers in fragmentAOS type
+  subroutine fragmentAOS_type_free(MyFragmentAOS)
+    implicit none
+    !> FragmentAOS information
+    type(fragmentAOS),intent(inout) :: MyFragmentAOS
+
+    if(associated(MyFragmentAOS%occAOSidx)) then
+       call mem_dealloc(MyFragmentAOS%occAOSidx)
+    end if
+    if(associated(MyFragmentAOS%unoccAOSidx)) then
+       call mem_dealloc(MyFragmentAOS%unoccAOSidx)
+    end if
+
+  end subroutine fragmentAOS_type_free
+
+
 
   !> \brief Free the f12 fragment free matrices
   !> \author Yang Min Wang
@@ -3070,11 +3084,11 @@ end function max_batch_dimension
 
     implicit none
     ! Fragment 1 in pair
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     ! Fragment 2 in pair
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
-    type(decfrag),intent(inout) :: PairFragment
+    type(decfrag),intent(in) :: PairFragment
     !> Do pair or not - dimension: (noccEOS,noccEOS) for PAIR
     logical,dimension(PairFragment%noccEOS,PairFragment%noccEOS),&
          & intent(inout) :: dopair
@@ -3175,11 +3189,11 @@ end function max_batch_dimension
 
     implicit none
     ! Fragment 1 in pair
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     ! Fragment 2 in pair
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
-    type(decfrag),intent(inout) :: PairFragment
+    type(decfrag),intent(in) :: PairFragment
     !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
     logical,dimension(PairFragment%nunoccEOS,PairFragment%nunoccEOS),&
          & intent(inout) :: dopair
@@ -4145,7 +4159,7 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')    'E: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
           if(.not. DECinfo%SOS) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total RPA energy    :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy    :', Ehf+Ecorr
           else
              write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy  :', Ehf+Ecorr
           endif
@@ -4554,6 +4568,166 @@ end function max_batch_dimension
     write(DECinfo%output,*) '============================================================================='
 
   end subroutine print_all_fragment_energies
+
+
+  !> \brief: print out CCSD fragment and pair interaction energies for full molecule calculation
+  !          Only for occupied partitioning scheme.
+  !          This routine should print the information in the same way as kasper's routine,
+  !          print_all_fragment_energies in dec_utils.F90
+  !
+  !> \author: Janus Juul Eriksen, modified by Pablo Baudin to print (T) contributions.
+  !> \date: February 2013
+  subroutine print_fragment_energies_full(nfrags,FragEnergies,ccenergies,dofrag,distancetable)
+
+    implicit none
+
+    !> number of atoms in molecule
+    integer, intent(in) :: nfrags
+    !> matrices containing Frag. energies and interatomic distances
+    real(realk), intent(in) :: FragEnergies(nfrags,nfrags,4), distancetable(nfrags,nfrags)
+    !> Total cc energies:
+    real(realk), intent(in) :: ccenergies(4)
+    !> vector handling how the orbitals are assigned?
+    logical, intent(inout) :: dofrag(nfrags)
+
+    !> local variables 
+    character(len=30) :: CorrEnergyString
+    integer :: iCorrLen, cc_sol, pT_full, pT_4, pT_5
+    logical :: print_pair, print_4pT_5pT
+
+    print_pair = count(dofrag)>1
+    print_4pT_5pT = DECinfo%PL>0
+    CorrEnergyString = 'correlation energy            '
+    iCorrLen = 18
+    cc_sol  = 1
+    pT_full = 2
+    pT_4    = 3
+    pT_5    = 4
+
+    ! Print Header:
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) '             ==============================================='
+    write(DECinfo%output,*) '             |   Print single and pair fragment energies   |'
+    write(DECinfo%output,*) '             ==============================================='
+    write(DECinfo%output,*)
+
+    if(.not.DECinfo%CCDhack)then
+       if( DECinfo%ccmodel == MODEL_RPA)then
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
+             & 'RPA occupied single energies','AF_RPA_OCC')
+          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
+             & dofrag,Distancetable, 'RPA occupied pair energies','PF_RPA_OCC')
+
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'RPA ', &
+             & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
+          write(DECinfo%output,*)
+
+       else if( DECinfo%ccmodel == MODEL_MP2)then
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
+             & 'MP2 occupied single energies','AF_MP2_OCC')
+          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
+             & dofrag,Distancetable, 'MP2 occupied pair energies','PF_MP2_OCC')
+
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'MP2 ', &
+             & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
+          write(DECinfo%output,*)
+
+       else if( DECinfo%ccmodel == MODEL_CC2 )then
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
+             & 'CC2 occupied single energies','AF_CC2_OCC')
+          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
+             & dofrag,Distancetable, 'CC2 occupied pair energies','PF_CC2_OCC')
+
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'CC2 ', &
+             & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
+          write(DECinfo%output,*)
+
+       else if( DECinfo%ccmodel == MODEL_CCSD )then 
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
+             & 'CCSD occupied single energies','AF_CCSD_OCC')
+          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
+             & dofrag,Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'CCSD ', &
+             & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
+          write(DECinfo%output,*)
+
+       else if( DECinfo%ccmodel == MODEL_CCSDpT )then
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
+             & 'CCSD occupied single energies','AF_CCSD_OCC')
+          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
+             & dofrag,Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_full),dofrag,&
+             & '(T) occupied single energies','AF_ParT_OCC_BOTH')
+          if (print_4pT_5pT) then
+             call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_4),dofrag,&
+                & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
+             call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_5),dofrag,&
+                & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
+          end if
+          
+          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_full),&
+             & dofrag,Distancetable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
+          if (print_4pT_5pT.and.print_pair) then
+             call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_4),&
+                & dofrag,Distancetable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
+             call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_5),&
+                & dofrag,Distancetable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
+          end if
+
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD ', &
+             & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) correlation energy  : ', &
+             & ccenergies(pT_full)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) 4th order energy    : ', &
+             & ccenergies(pT_4)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) 5th order energy    : ', &
+             & ccenergies(pT_5)
+          write(DECinfo%output,*)
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'Total CCSD(T) ', &
+             & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)+ccenergies(pT_full)
+          write(DECinfo%output,*)
+
+       else
+          call lsquit("ERROR(print_fragment_energies_full) model not implemented",-1)
+       endif
+    else
+       call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
+          & 'CCD occupied single energies','AF_CCD_OCC')
+       if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
+          & dofrag,Distancetable, 'CCD occupied pair energies','PF_CCD_OCC')
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,A,A,A,g20.10)') 'CCD ', &
+          & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
+       write(DECinfo%output,*)
+
+    endif
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)'============================================================================='
+
+  end subroutine print_fragment_energies_full
 
 
   !> \brief Print atomic fragment energies
@@ -5170,15 +5344,19 @@ end function max_batch_dimension
         endif
      case( TT_TILED_DIST )
 
-        if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
-           call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
-        endif
 
         call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
            &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset )
 
         if(DECinfo%use_singles)then
-           call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
+
+          !This was put outside of this test, it did not make sense
+          !as t1 may not have been initialized.
+          if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
+            call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
+          endif
+
+          call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
         else
            !this is just copying t2 to u
            call tensor_add( u, 1.0E0_realk, t2, a = 0.0E0_realk)

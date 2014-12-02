@@ -3,6 +3,9 @@ subroutine lsmpi_init(OnMaster)
    use lsmpi_type
    use infpar_module
    use ls_env
+#ifdef VAR_SCALAPACK  
+   use matrix_operations_scalapack
+#endif
    implicit none
    logical, intent(inout) :: OnMaster
    integer(kind=ls_mpik)  :: ierr
@@ -48,7 +51,11 @@ subroutine lsmpi_init(OnMaster)
    call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
    call get_rank_for_comm( MPI_COMM_LSDALTON, infpar%mynum  )
    call get_size_for_comm( MPI_COMM_LSDALTON, infpar%nodtot )
-
+   !default number of nodes to be used with scalapack - can be changed
+   infpar%ScalapackGroupSize = infpar%nodtot
+#ifdef VAR_SCALAPACK  
+   scalapack_mpi_set = .FALSE.
+#endif   
    infpar%master = int(0,kind=ls_mpik);
 
    !CHECK IF WE ARE ON THE MAIN MAIN MAIN MASTER PROCESS (NOT IN LOCAL GROUP,
@@ -94,7 +101,10 @@ subroutine lsmpi_slave(comm)
    use lsmpi_test
    use integralinterfaceMod
    use dec_driver_slave_module
-   use lspdm_tensor_operations_module
+   use tensor_interface_module
+#ifdef VAR_SCALAPACK  
+   use matrix_operations_scalapack
+#endif
    implicit none
    !> Communicator from which task is to be received
    integer(kind=ls_mpik) :: comm 
@@ -165,8 +175,8 @@ subroutine lsmpi_slave(comm)
          call get_mo_integral_par_slave
       case(CCSDSLV4E2);
          call calculate_E2_and_permute_slave
-      case(RPAGETRESIDUAL);
-         call rpa_res_slave
+!      case(RPAGETRESIDUAL);
+!         call rpa_res_slave
       case(RPAGETFOCK);
          call rpa_fock_slave
 #ifdef MOD_UNRELEASED
@@ -190,11 +200,21 @@ subroutine lsmpi_slave(comm)
          call lsmpi_default_mpi_group
 #ifdef VAR_SCALAPACK
       case(GRIDINIT);
-         call PDM_GRIDINIT_SLAVE
+         IF(scalapack_member)THEN
+            call PDM_GRIDINIT_SLAVE
+         ENDIF
       case(GRIDEXIT);
-         call PDM_GRIDEXIT_SLAVE
+         IF(scalapack_member)THEN
+            call PDM_GRIDEXIT_SLAVE
+         ENDIF
       case(PDMSLAVE);
-         call PDM_SLAVE
+         IF(scalapack_member)THEN
+            !inside the PDM_SLAVE the 
+            !scalapack_comm communicator is used
+            !only call PDM_SLAVE if this rank is 
+            !a member of this communicator
+            call PDM_SLAVE()
+         ENDIF
 #endif
       case(PDMA4SLV);
          call PDM_tensor_SLAVE(comm)
@@ -231,6 +251,11 @@ subroutine lsmpi_slave(comm)
          call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
       case(SET_MAX_SIZE_ONE_SIDED);
          call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
+      case(SET_TENSOR_BACKEND_TRUE);
+         call tensor_set_dil_backend_true
+
+      case(SET_TENSOR_DEBUG_TRUE);
+         call tensor_set_debug_mode_true
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########

@@ -486,17 +486,17 @@ C     WRITE(LUPRI,'(Z8,2Z16)') I,VALUE,XLABEL
 C
       IF (NIBUF .EQ. 1) THEN
          ILABEL = IINT(IIND1 + I)
-         NP =IBTAND(IBTSHR(ILABEL,24),IBT08)
-         NQ =IBTAND(IBTSHR(ILABEL,16),IBT08)
-         NR =IBTAND(IBTSHR(ILABEL, 8),IBT08)
-         NS =IBTAND(       ILABEL,    IBT08) 
+         NP =IAND(ISHFT(ILABEL,-24),IBT08)
+         NQ =IAND(ISHFT(ILABEL,-16),IBT08)
+         NR =IAND(ISHFT(ILABEL, -8),IBT08)
+         NS =IAND(       ILABEL,    IBT08) 
       ELSE
          ILABEL = IINT(IIND1 + 2*I - 1)
-         NP =IBTAND(IBTSHR(ILABEL,16),IBT16)
-         NQ =IBTAND(       ILABEL,    IBT16) 
+         NP =IAND(ISHFT(ILABEL,-16),IBT16)
+         NQ =IAND(       ILABEL,    IBT16) 
          ILABEL = IINT(IIND1 + 2*I)
-         NR =IBTAND(IBTSHR(ILABEL,16),IBT16)
-         NS =IBTAND(       ILABEL,    IBT16) 
+         NR =IAND(ISHFT(ILABEL,-16),IBT16)
+         NS =IAND(       ILABEL,    IBT16) 
       END IF
 #if defined VAR_AOCANORDER
 C     --- indices are assumed to be in canonical order

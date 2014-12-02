@@ -324,12 +324,12 @@ C
       PARAMETER (D0 = 0.0D0, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
-#include "ibtfun.h"
+
 C
       IF (IREPO .NE. 1) THEN
          IBLK = 1
          DO 500 IREPB = 0, NBLK - 1
-            IREPA = IBTXOR(IREPO - 1,IREPB)
+            IREPA = IEOR(IREPO - 1,IREPB)
             IF (IREPA .GT. IREPB) THEN
                NDIMA = NDIM(IREPA + 1)
                NDIMB = NDIM(IREPB + 1)

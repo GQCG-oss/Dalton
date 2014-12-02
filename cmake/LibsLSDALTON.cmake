@@ -43,6 +43,7 @@ if(ENABLE_VAMPIRTRACE)
     SET(CMAKE_CXX_COMPILER "vtc++")
 endif()
 
+
 add_library(
     lsutillib_precision
     ${LSUTIL_PRECISION_SOURCES}
@@ -218,6 +219,7 @@ if(ENABLE_XCFUN)
         -DPARENT_DEFINITIONS="-DVAR_LSDALTON"
         )
     add_external(xcfun)
+    include_directories(${PROJECT_BINARY_DIR}/external/xcfun-build)
     add_dependencies(xcfun_interface xcfun)
     add_definitions(-DVAR_XCFUN)
     set(LSDALTON_EXTERNAL_LIBS
@@ -431,6 +433,8 @@ if(NOT ENABLE_CHEMSHELL)
     endif()
 endif()
 
+
+
 if(ENABLE_INTEREST)
     MERGE_STATIC_LIBS(
         lsint
@@ -491,9 +495,9 @@ MERGE_STATIC_LIBS(
 
 target_link_libraries(
     lsdalton
-    lsdaltonmain
     ${EXTERNAL_LIBS}
     ${LSDALTON_EXTERNAL_LIBS}
+    stdc++
     )
 
 if(NOT ENABLE_CHEMSHELL)
@@ -509,3 +513,17 @@ if(NOT ENABLE_CHEMSHELL)
 	${PCMSOLVER_LIBS}
         )
 endif()
+
+# check the LSDALTON source with a python script
+add_custom_command(
+   OUTPUT ${PROJECT_BINARY_DIR}/check-source # this is just a dummy
+   COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/CheckLSDALTON.cmake
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
+add_custom_target(
+   CheckLSDALTON
+   ALL DEPENDS ${PROJECT_BINARY_DIR}/check-source
+)
+
+add_dependencies(lsdalton CheckLSDALTON)

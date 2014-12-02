@@ -377,8 +377,8 @@ csonia 04/10/95
          WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       ELSE IF (QMNPMM) THEN
          CALL SCF_QMNPMM_OUT()
-      else if (peqm) then
-         continue
+      ELSE IF (PEQM) THEN
+         CONTINUE
       ELSE
         ESOLT = D0
       END IF

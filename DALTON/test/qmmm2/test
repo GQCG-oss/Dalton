@@ -31,12 +31,13 @@ f.add(from_re = 'Singlet electronic excitation energies',
 
 f.add(from_re = 'Electric transition dipole moments \(au\)',
       num_lines = 9,
+      ignore_sign = True,
       abs_tolerance = 1.0e-3)
 
 f.add(from_re = 'Oscillator strengths',
       num_lines = 10,
       abs_tolerance = 1.0e-3)
 
-test.run(['qmmm2.dal'], ['ch2o_cc-pvdz.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['qmmm2.dal'], ['ch2o_cc-pvdz.mol'], f={'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)

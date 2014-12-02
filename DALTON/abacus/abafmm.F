@@ -586,7 +586,7 @@ C
 #include "symmet.h"
 #include "inforb.h"
 C
-#include "ibtfun.h"
+
 C
       IORBA = 0
       DO ISHELA = 1,KMAX
@@ -642,7 +642,7 @@ C
 C
       KINT  = 1
       KIINT = KINT + LBUF
-      KIIN4 = KINT + LENINT
+      KIIN4 = KINT + LENINT4
       KLAST = KIIN4 + 4*LBUF
       IF (KLAST .GT. LWORK) CALL STOPIT('GETERG','LUINTA',KLAST,LWORK)
 C
@@ -672,7 +672,7 @@ C
       INTEGER P, Q, R, S
 #include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST), BUF(LENGTH), IBUF(4,LENGTH)
-#include "ibtfun.h"
+
 C
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)

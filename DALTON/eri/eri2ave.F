@@ -78,8 +78,8 @@ C  /* Deck eriav1 */
 #include "nuclei.h"
 #include "energy.h"
 C
-#include "ibtfun.h"
-      IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
+
+      IBTEST(I,J,K,L) = IAND(I,IEOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIAV1',-1)
 C
@@ -109,8 +109,8 @@ C
       DO B = 0, MAXREP
       IF (DOREP(B,2)) THEN
       DO C = 0, MAXREP
-      IF (DOREP(C,3) .AND. DOREP(IBTXOR(IBTXOR(A,B),C),4)) THEN
-         D = IBTXOR(IBTXOR(A,B),C)
+      IF (DOREP(C,3) .AND. DOREP(IEOR(IEOR(A,B),C),4)) THEN
+         D = IEOR(IEOR(A,B),C)
          IF (DIAGAB .AND. B.GT.A) GO TO 100
          IF (DIAGCD .AND. D.GT.C) GO TO 100
 C
@@ -119,7 +119,7 @@ C
 C
          R = IPNRST(B,1)
          S = IPNRST(D,2)
-         T = IPNRST(IBTXOR(C,D),3)
+         T = IPNRST(IEOR(C,D),3)
 C
          CALL ERIPNT(IPOINT,A,B,C,D,IPNTCR,INDXBT,0)
 C

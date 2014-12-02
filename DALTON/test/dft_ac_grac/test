@@ -25,7 +25,7 @@ f.add(from_string = 'Singlet electronic excitation energies',
       num_lines = 36,
       mask = [4])
 
-test.run(['dft_ac_grac.dal'], ['N2_aug-cc-pVDZ.mol'], {'out': f},
+test.run(['dft_ac_grac.dal'], ['N2_aug-cc-pVDZ.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

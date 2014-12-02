@@ -14,9 +14,7 @@ module f12_routines_module
   use matrix_module
   use matrix_operations
   use memory_handling
-#ifdef VAR_ICHOR
-   use IchorErimoduleHost
-#endif
+  use IchorErimoduleHost
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
@@ -727,22 +725,23 @@ contains
     integer :: i,m,k,n,idx,j,l
     logical :: FullRHS,doscreen
     integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
-#ifdef VAR_ICHOR
     type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
     type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
     integer :: iAO,nAObatches(4),AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
     logical :: MoTrans, NoSymmetry,SameMol
-#else
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
-#endif
 #ifdef VAR_OMP
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
     TYPE(DECscreenITEM)   :: DecScreen
 
     integer :: MinAObatchSize, MaxAObatchSize, GammaBatchSize, AlphaBatchSize
+
+    integer :: MinAlphaBatchSize, MinGammaBatchSize
+
+    integer :: MaxdimAlpha, MaxdimGamma
 
     ! ****************************************************************
     ! Allocate mem space for a temporary array that will be reordered
@@ -759,56 +758,10 @@ contains
     call mat_transpose(n31,n32, 1.0E0_realk,C3, 0.0E0_realk,C3T)
     call mat_transpose(n11,n12, 1.0E0_realk,C1, 0.0E0_realk,C1T)
 
+!!$    !For debugging purposes    
+    !call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
+    !call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
 
-
-!!$    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
-!!$    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
-!!$
-!!$    get current allocated
-!!$    getMaximem =  decinfo%memory
-!!$    IF(n21*n41*nbasis*nbasis + n22*n41*nbasis*nbasis)THEN
-!!$       !NON BATCHING
-!!$       Optimalbatchdimgamma = nbasis
-!!$       Optimalbatchdimalpha = nbasis
-!!$    ELSE
-!!$       IF(n21*n41*nbasis*MinGammaBatchSize + n22*n41*nbasis*MinGammaBatchSize)THEN
-!!$          !BATCHING ON GAMMA ONLY
-!!$          Optimalbatchdimalpha = nbasis
-!!$          do Ngamma = Nbasis,MinGammaBatchSize,-1
-!!$             dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
-!!$             dim2 = i8*n41*dimAlpha*dimGamma*n22  ! dim of tmp2 
-!!$             step1mem = dim1 + dim2
-!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
-!!$                Optimalbatchdimgamma = Ngamma
-!!$                EXIT
-!!$             ENDIF
-!!$          enddo
-!!$       ELSE
-!!$          !BATCH ON BOTH
-!!$          do Nalpha = Nbasis,MinAlphaBatchSize,-1
-!!$             dim1 = i8*n21*n41*dimAlpha*MinGammaBatchSize   ! dimension for integral array tmp1
-!!$             dim2 = i8*n41*dimAlpha*MinGammaBatchSize*n22  ! dim of tmp2 
-!!$             step1mem = dim1 + dim2
-!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
-!!$                Optimalbatchdimalpha = Nalpha
-!!$                EXIT
-!!$             ENDIF
-!!$          enddo
-!!$          
-     
-!!$       do Ngamma = MinGammaBatchSize,Nbasis
-!!$          do Nalpha = MinAlphaBatchSize,Nbasis
-!!$             
-!!$             dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
-!!$             dim2 = i8*n41*dimAlpha*dimGamma*n22  ! dim of tmp2 
-!!$             step1mem = dim1 + dim2
-!!$             IF(step1mem+allocatedmem .LT. getMaximem)THEN
-!!$                Optimalbatchdimgamma = Ngamma
-!!$             ENDIF
-!!$          enddo
-!!$       enddo
-!!$    ENDIF
-    
     ! ************************
     ! Determine AO batch sizes
     ! ************************
@@ -836,31 +789,31 @@ contains
        endif
     enddo
 
-#ifdef VAR_ICHOR
-    iprint = 0           !print level for Ichor Integral code
-    MoTrans = .FALSE.    !Do not transform to MO basis! 
-    NoSymmetry = .FALSE. !Use Permutational Symmetry! 
-    SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
-    !Determine the full number of AO batches - not to be confused with the batches of AOs
-    !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
-    do i=1,4
-       call determine_Ichor_nAObatches(mysetting,i,BatchType(i),nAObatches(i),DECinfo%output)
-    enddo
-    !Determine the minimum allowed AObatch size MinAObatch
-    !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
-    !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
-    !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
-    !'R'  !Specifies that it is the Regular AO basis that should be batched
-    !'C'  !Specifies that it is the CABS AO basis that should be batched
-    iAO = 3 !the center that the batching should occur on.  
-    call determine_MinimumAllowedAObatchSize(mysetting,iAO,BatchType(3),GammaBatchSize)
-    iAO = 1 !the center that the batching should occur on.  
-    call determine_MinimumAllowedAObatchSize(mysetting,iAO,BatchType(1),AlphaBatchSize)
-#else
-    !> Minimum AO batch size
-    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,GammaBatchSize,BatchType(3))
-    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,AlphaBatchSize,BatchType(1))
-#endif
+    IF(DECinfo%useIchor)THEN
+       iprint = 0           !print level for Ichor Integral code
+       MoTrans = .FALSE.    !Do not transform to MO basis! 
+       NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+       SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+       !Determine the full number of AO batches - not to be confused with the batches of AOs
+       !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+       do i=1,4
+          call determine_Ichor_nAObatches(mysetting,i,BatchType(i),nAObatches(i),DECinfo%output)
+       enddo
+       !Determine the minimum allowed AObatch size MinAObatch
+       !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
+       !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
+       !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched
+       !'C'  !Specifies that it is the CABS AO basis that should be batched
+       iAO = 3 !the center that the batching should occur on.  
+       call determine_MinimumAllowedAObatchSize(mysetting,iAO,BatchType(3),GammaBatchSize)
+       iAO = 1 !the center that the batching should occur on.  
+       call determine_MinimumAllowedAObatchSize(mysetting,iAO,BatchType(1),AlphaBatchSize)
+    ELSE
+       !> Minimum AO batch size
+       call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,GammaBatchSize,BatchType(3))
+       call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,AlphaBatchSize,BatchType(1))
+    ENDIF
  
     !> Maximum AO batch size (all basis functions)
     !MaxAObatchSize = n31
@@ -871,109 +824,116 @@ contains
     !GammaBatchSize = n31 ! Needs to be changed, For DEBUG purposes MaxAObatchSize
     !AlphaBatchSize = n11 ! Needs to be changes, For DEBUG purposes MinAObatchSize
 
+    !MinAlphaBatchSize = AlphaBatchSize
+    !MinGammaBatchSize = GammaBatchSize
+    
+    call get_max_batchsize(MaxdimAlpha,MaxdimGamma,MinAlphaBatchSize,MinGammaBatchSize,n11,n12,n21,n22,n31,n32,n41,n42)
+
+    GammaBatchSize = MaxdimGamma
+    AlphaBatchSize = MaxdimAlpha
 
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
-#ifdef VAR_ICHOR
-    iAO = 3 !Gamma is the 3. Center of the 4 center two electron coulomb integral
-    !Determine how many batches of AOS based on the GammaBatchSize, the requested
-    !size of the AO batches. iAO is the center that the batching should occur on. 
-    !'R'  !Specifies that it is the Regular AO basis that should be batched 
-    call determine_Ichor_nbatchesofAOS(mysetting,iAO,BatchType(iAO),GammaBatchSize,&
-         & nbatchesGamma,DECinfo%output)
-    call mem_alloc(AOGammabatchinfo,nbatchesGamma)
-    !Construct the batches of AOS based on the GammaBatchSize, the requested
-    !size of the AO batches - GammaBatchSize must be unchanged since the call 
-    !to determine_Ichor_nbatchesofAOS
-    !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
-    !So MaxActualDimGamma must be less og equal to GammaBatchSize
-    call determine_Ichor_batchesofAOS(mysetting,iAO,BatchType(iAO),GammaBatchSize,&
-         & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
-#else
-    ! Orbital to batch information
-    ! ----------------------------
-    call mem_alloc(orb2batchGamma,n31)
-
-    call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,n31,MaxActualDimGamma,&
-         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,BatchType(3))
-
-    ! Batch to orbital information
-    ! ----------------------------
-    call mem_alloc(batch2orbGamma,nbatchesGamma)
-    do idx=1,nbatchesGamma
-       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
-       batch2orbGamma(idx)%orbindex = 0
-       batch2orbGamma(idx)%norbindex = 0
-    end do
-    do iorb=1, n31
-       idx = orb2batchGamma(iorb)
-       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-       K = batch2orbGamma(idx)%norbindex
-       batch2orbGamma(idx)%orbindex(K) = iorb
-    end do
-#endif
+    IF(DECinfo%useIchor)THEN
+       iAO = 3 !Gamma is the 3. Center of the 4 center two electron coulomb integral
+       !Determine how many batches of AOS based on the GammaBatchSize, the requested
+       !size of the AO batches. iAO is the center that the batching should occur on. 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched 
+       call determine_Ichor_nbatchesofAOS(mysetting,iAO,BatchType(iAO),GammaBatchSize,&
+            & nbatchesGamma,DECinfo%output)
+       call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+       !Construct the batches of AOS based on the GammaBatchSize, the requested
+       !size of the AO batches - GammaBatchSize must be unchanged since the call 
+       !to determine_Ichor_nbatchesofAOS
+       !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+       !So MaxActualDimGamma must be less og equal to GammaBatchSize
+       call determine_Ichor_batchesofAOS(mysetting,iAO,BatchType(iAO),GammaBatchSize,&
+            & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+    ELSE
+       ! Orbital to batch information
+       ! ----------------------------
+       call mem_alloc(orb2batchGamma,n31)
+       
+       call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,n31,MaxActualDimGamma,&
+            & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,BatchType(3))
+       
+       ! Batch to orbital information
+       ! ----------------------------
+       call mem_alloc(batch2orbGamma,nbatchesGamma)
+       do idx=1,nbatchesGamma
+          call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
+          batch2orbGamma(idx)%orbindex = 0
+          batch2orbGamma(idx)%norbindex = 0
+       end do
+       do iorb=1, n31
+          idx = orb2batchGamma(iorb)
+          batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+          K = batch2orbGamma(idx)%norbindex
+          batch2orbGamma(idx)%orbindex(K) = iorb
+       end do
+    ENDIF
 
     ! ************************************************
     ! * Determine batch information for Alpha batch  *
     ! ************************************************
-#ifdef VAR_ICHOR
-    iAO = 1 !Alpha is the 1. Center of the 4 center two electron coulomb integral
-    !Determine how many batches of AOS based on the AlphaBatchSize, the requested
-    !size of the AO batches. iAO is the center that the batching should occur on. 
-    !'R'  !Specifies that it is the Regular AO basis that should be batched 
-    call determine_Ichor_nbatchesofAOS(mysetting,iAO,BatchType(iAO),AlphaBatchSize,&
-         & nbatchesAlpha,DECinfo%output)
-    call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
-    !Construct the batches of AOS based on the AlphaBatchSize, the requested
-    !size of the AO batches - AlphaBatchSize must be unchanged since the call 
-    !to determine_Ichor_nbatchesofAOS
-    !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
-    !So MaxActualDimAlpha must be less og equal to AlphaBatchSize
-    call determine_Ichor_batchesofAOS(mysetting,iAO,BatchType(iAO),AlphaBatchSize,&
-         & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
-#else
-    ! Orbital to batch information
-    ! ----------------------------
-    call mem_alloc(orb2batchAlpha,n11)
-    call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,n11,&
-         & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,BatchType(1))
+    IF(DECinfo%useIchor)THEN
+       iAO = 1 !Alpha is the 1. Center of the 4 center two electron coulomb integral
+       !Determine how many batches of AOS based on the AlphaBatchSize, the requested
+       !size of the AO batches. iAO is the center that the batching should occur on. 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched 
+       call determine_Ichor_nbatchesofAOS(mysetting,iAO,BatchType(iAO),AlphaBatchSize,&
+            & nbatchesAlpha,DECinfo%output)
+       call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+       !Construct the batches of AOS based on the AlphaBatchSize, the requested
+       !size of the AO batches - AlphaBatchSize must be unchanged since the call 
+       !to determine_Ichor_nbatchesofAOS
+       !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+       !So MaxActualDimAlpha must be less og equal to AlphaBatchSize
+       call determine_Ichor_batchesofAOS(mysetting,iAO,BatchType(iAO),AlphaBatchSize,&
+            & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+    ELSE
+       ! Orbital to batch information
+       ! ----------------------------
+       call mem_alloc(orb2batchAlpha,n11)
+       call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,n11,&
+            & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,BatchType(1))
 
-    ! Batch to orbital information
-    ! ----------------------------
-    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-    do idx=1,nbatchesAlpha
-       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-       batch2orbAlpha(idx)%orbindex = 0
-       batch2orbAlpha(idx)%norbindex = 0
-    end do
-    do iorb=1, n11
-       idx = orb2batchAlpha(iorb)
-       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-       K = batch2orbAlpha(idx)%norbindex
-       batch2orbAlpha(idx)%orbindex(K) = iorb
-    end do
-#endif
+       ! Batch to orbital information
+       ! ----------------------------
+       call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+       do idx=1,nbatchesAlpha
+          call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+          batch2orbAlpha(idx)%orbindex = 0
+          batch2orbAlpha(idx)%norbindex = 0
+       end do
+       do iorb=1, n11
+          idx = orb2batchAlpha(iorb)
+          batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+          K = batch2orbAlpha(idx)%norbindex
+          batch2orbAlpha(idx)%orbindex(K) = iorb
+       end do
+    ENDIF
 
-#ifdef VAR_ICHOR
-     !Calculate Screening integrals 
-    call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mysetting,INTSPEC,SameMOL)
-#else
-    ! Setting to FALSE for DEBUG purposes
-    Mysetting%scheme%cs_screen = .FALSE.
-    Mysetting%scheme%ps_screen = .FALSE.
-
-    ! Integral screening stuff
-    doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
-    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-         & nbatchesAlpha,nbatchesGamma,INTSPEC)
-    IF(doscreen)then
-       call II_getBatchOrbitalScreen(DecScreen,mysetting,&
-            & n31,nbatchesAlpha,nbatchesGamma,&
-            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-    endif
-#endif
+    IF(DECinfo%useIchor)THEN
+       !Calculate Screening integrals 
+       call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mysetting,INTSPEC,SameMOL)
+    ELSE
+       ! Setting to FALSE for DEBUG purposes
+       Mysetting%scheme%cs_screen = .FALSE.
+       Mysetting%scheme%ps_screen = .FALSE.
+       
+       ! Integral screening stuff
+       doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
+       call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
+            & nbatchesAlpha,nbatchesGamma,INTSPEC)
+       IF(doscreen)then
+          call II_getBatchOrbitalScreen(DecScreen,mysetting,&
+               & n31,nbatchesAlpha,nbatchesGamma,&
+               & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+               & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+       endif
+    ENDIF
     FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
 #ifdef VAR_OMP
@@ -990,48 +950,48 @@ contains
     kjli = 0.0_realk
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-#ifdef VAR_ICHOR
-       dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
-       GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
-       GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
-       AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
-       AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
-#else
-       dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
-       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-       GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
-#endif
+       IF(DECinfo%useIchor)THEN
+          dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+          GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+          GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+          AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+          AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+       ELSE
+          dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
+          GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+          GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+       ENDIF
        BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
-#ifdef VAR_ICHOR
-          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
-          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
-          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
-          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
-          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
-#else
-          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
-          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-#endif
+          IF(DECinfo%useIchor)THEN
+             dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+             AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+             AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+             AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+             AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+          ELSE
+             dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+             AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+             AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+          ENDIF
           ! Get tmp1(beta(n21),delta(n41)|INTSPEC|alphaB(n11),gammaB(n31)) 
           ! ************************************************************************************
           dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dimension for integral array tmp1
           call mem_alloc(tmp1,dim1)
           tmp1 = 0.0_realk
 
-#ifdef VAR_ICHOR
-          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mysetting,n21,n41,dimAlpha,dimGamma,&
-               & tmp1,INTSPEC,FULLRHS,1,nAObatches(2),1,nAObatches(4),AOAlphaStart,&
-               & AOAlphaEnd,AOGammaStart,AOGammaEnd,MoTrans,n21,n41,dimAlpha,dimGamma,NoSymmetry)
-#else
-          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+          IF(DECinfo%useIchor)THEN
+             call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mysetting,n21,n41,dimAlpha,dimGamma,&
+                  & tmp1,INTSPEC,FULLRHS,1,nAObatches(2),1,nAObatches(4),AOAlphaStart,&
+                  & AOAlphaEnd,AOGammaStart,AOGammaEnd,MoTrans,n21,n41,dimAlpha,dimGamma,NoSymmetry)
+          ELSE
+             IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
+             IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
-          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-               & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
-               & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
-               & INTSPEC)
-#endif
+             call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
+                  & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
+                  & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
+                  & INTSPEC)
+          ENDIF
           ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
 
           ! Transform beta(n21) to index "j" with C2(n21,j (n22))
@@ -1062,13 +1022,7 @@ contains
           call mem_alloc(tmp1,dim1)
           call dec_simple_dgemm(m,k,n,C4T,tmp2,tmp1, 'n', 'n')
           call mem_dealloc(tmp2) 
-          
-          do i=1, dim1
-             if (abs(tmp1(i)) > 10.0E-10_realk) then
-               ! write(DECinfo%output,'(1X,a,1i4,f20.10)') 'tmp3:', i, tmp1(i)
-             endif
-          enddo
-          
+                   
           ! Transpose to make alphaB(n11) and gammaB(n31) indices available
           ! ***************************************************************
           dim2 = dim1
@@ -1124,18 +1078,18 @@ contains
 
     ! Free and nullify stuff
     ! **********************
-#ifdef VAR_ICHOR
-    call FREE_SCREEN_ICHORERI()
-    call mem_dealloc(AOGammabatchinfo)
-    call mem_dealloc(AOAlphabatchinfo)
-#else
-    nullify(mysetting%LST_GAB_LHS)
-    nullify(mysetting%LST_GAB_RHS)
-    call free_decscreen(DECSCREEN)
-    call free_batch(orb2batchGamma, batchdimGamma, batchsizeGamma, batchindexGamma, batch2orbGamma, &
-         & orb2batchAlpha, batchdimAlpha, batchsizeAlpha, batchindexAlpha, batch2orbAlpha, &
-         & nbatchesGamma, nbatchesAlpha)
-#endif
+    IF(DECinfo%useIchor)THEN
+       call FREE_SCREEN_ICHORERI()
+       call mem_dealloc(AOGammabatchinfo)
+       call mem_dealloc(AOAlphabatchinfo)
+    ELSE
+       nullify(mysetting%LST_GAB_LHS)
+       nullify(mysetting%LST_GAB_RHS)
+       call free_decscreen(DECSCREEN)
+       call free_batch(orb2batchGamma, batchdimGamma, batchsizeGamma, batchindexGamma, batch2orbGamma, &
+            & orb2batchAlpha, batchdimAlpha, batchsizeAlpha, batchindexAlpha, batch2orbAlpha, &
+            & nbatchesGamma, nbatchesAlpha)
+    ENDIF
 
     ! Free F12 related pointers
     call mem_dealloc(C4T)
@@ -1580,11 +1534,90 @@ contains
 
   end subroutine get_4Center_MO_integrals
 
-  subroutine get_max_batchsize()
+  subroutine get_max_batchsize(dimAlpha,dimGamma,minAlpha,minGamma,n11,n12,n21,n22,n31,n32,n41,n42)
     implicit none
+    
+    !> Optimal Gamma and Alpha Batches
+    integer,intent(inout) :: dimAlpha, dimGamma
+    integer, intent(in) :: n11, n12, n21, n22, n31, n32, n41, n42
+    integer, intent(in) :: minAlpha, minGamma
+  
+    !> Batching routine initializations
+    real(realk) :: MemAvailable, step1, step2, step3, step4, MAXstepmem   
+    real(realk) :: dim1,dim2,dim3,dim4,dim5,Ngamma,Nalpha,frac
+
+    integer :: i,j,k
+
+    !   dimAlpha = n11 !Full nbasis
+    !   dimGamma = n31 !Full nbasis
+
+    frac = 0.9E0_realk   
+    Maxstepmem = 0.0E0_realk
+
+!!$    print *, "--------------- MEMORY STATS ---------------"
+!!$    print *, "step1: ", step1
+!!$    print *, "step2: ", step2
+!!$    print *, "step3: ", step3
+!!$    print *, "step4: ", step4
+!!$    print *, "Maxst: ", Maxstepmem
+!!$    print *, "MemAv: ", MemAvailable
+!!$    print *, "MemIn: ", mem_allocated_global   
+
+    dimAlpha = n11
+    dimGamma = n31
+      
+    MemAvailable = 0.0E0_realk   
+    call get_currently_available_memory(MemAvailable)
+    MemAvailable = MemAvailable*1.0E9_realk !In bytes
+
+    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
+
+    if(MAXstepmem .LT. frac*MemAvailable) THEN
+       dimAlpha = n11
+       dimGamma = n31
+    else 
+
+       gamma: do k = n31,minGamma,-1
+          call get_maxstepmem(MAXstepmem,dimAlpha,k,n11,n12,n21,n22,n31,n32,n41,n42)
+
+          if(Maxstepmem < frac*MemAvailable) then
+             dimGamma = k
+             exit gamma   
+          endif
+       enddo gamma
+
+       alpha: do k = minAlpha, n11
+          
+          call get_maxstepmem(MAXstepmem,k,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
+        
+          if(Maxstepmem < frac*MemAvailable) then
+             dimAlpha = k
+             exit alpha   
+          endif
+          
+       enddo alpha      
+    endif
 
   end subroutine get_max_batchsize
-  
+
+  subroutine get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
+    integer, intent(in) :: n11, n12, n21, n22, n31, n32, n41, n42
+    integer, intent(in) :: dimAlpha, dimGamma
+    real(realk), intent(inout) :: MAXstepmem
+
+    dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dim of tmp1
+    dim2 = i8*n41*dimAlpha*dimGamma*n22   ! dim of tmp2 
+    dim3 = i8*n42*dimAlpha*dimGamma*n22   ! dim of tmp1     
+    dim4 = i8*n42*dimAlpha*n32*n22        ! dim of tmp1 
+
+    step1 = dim1 + dim2 
+    step2 = dim2 + dim3
+    step3 = step2
+    step4 = dim3 + dim4
+    MAXstepmem = MAX(step1,step2,step3,step4) 
+    
+  end subroutine get_maxstepmem
+
 #else
 
    subroutine dummy_f12_routines()
@@ -1595,3 +1628,5 @@ contains
 #endif 
 
 end module f12_routines_module
+
+

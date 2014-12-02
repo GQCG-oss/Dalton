@@ -82,11 +82,10 @@ If (config%dynamics%MaxSam) then
 Endif
 !
 Do
-! Integrate until termination criteria are fulfilled
+  Call LSTimer('START',CPUTime,WallTime,lupri)
+  ! Integrate until termination criteria are fulfilled
   Call Initialize_step(NAtoms,ls,traj,config%dynamics,lupri)
   ! Take step
-  Call LSTimer('*START',CPUTime,WallTime,lupri)
-  !
   If (config%dynamics%NHChain) then ! Canonical ensemble with Nose-Hoover
      Call NH_chain(F,D,S,H1,CMO,ls,config,luerr,lupri,NAtoms,traj,config%dynamics)
   else ! Microcanonical ensemble
@@ -497,7 +496,7 @@ Endif
 If (dyn%Mass_Weight) then ! Remove mass-weighting
     Call Mass_weight_vector(nAtoms,Traj%Coordinates,Traj%Mass,'REMOVE')
 Endif
-Call LSTimer('*START',CPUTime,WallTime,lupri)
+Call LSTimer('START',CPUTime,WallTime,lupri)
 !
 Call Pack_coordinates(ls%input%Molecule,Traj%Coordinates,NAtoms)
 Call Get_Energy(Etmp,Eerr,config,H1,F,D,S,ls,CMO,NAtoms,lupri,luerr)
@@ -506,7 +505,7 @@ Call LSTimer('Energy calc.',CPUTime,WallTime,lupri)
 !
 ! New gradient
 !
-Call LSTimer('*START',CPUTime,WallTime,lupri)
+Call LSTimer('START',CPUTime,WallTime,lupri)
 Call Calc_gradient(lupri,NAtoms,S,F(1),D(1),ls,config,CMO,traj)
 Call LSTimer('Forces calc.',CPUTime,WallTime,lupri)
 ! Mass-weight if needed and project if requested

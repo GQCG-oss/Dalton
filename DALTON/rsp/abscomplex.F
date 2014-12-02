@@ -359,7 +359,8 @@ C     Process user input
 C
 #ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
 !     sanity check for incomplete/untested xc functional implementations
-      IF (ABSLRS_BETA .AND. DODFT) THEN
+      IF ((ABSLRS_BETA .OR. ABSLRS_GAMMA .OR. ABSLRS_MCD .OR. 
+     &     ABSLRS_MCHD .OR. ABSLRS_NSCD) .AND. DODFT) THEN
          IF (.NOT. fun_is_ready_for_qr()) THEN
             WRITE(LUPRI, *) 'ERROR: functional not fully implemented'
             WRITE(LUPRI, *) '       or tested for QR'
@@ -554,16 +555,19 @@ c           ELSE
 c         END IF
 C
          WRITE(LUPRI,'(A,F9.6,F8.1)')
-     &      ' Damping parameter (a.u. and cm-1)        : ABS_DAMP     ='
+     &      ' Damping parameter (a.u. and cm-1)        : DAMPING      ='
      &      ,ABS_DAMP,ABS_DAMP*XTKAYS
          WRITE(LUPRI,'(A,1P,D8.1)')
      &      ' Threshold of convergence in LR solver    : THCLR        ='
      &      ,ABS_THCLR
-           WRITE(LUPRI,'(A,I4)')
-     &      ' Maximum iterations in complex LR solver  : MAXIT     ='
+         WRITE(LUPRI,'(A,I4)')
+     &      ' Maximum iterations in complex LR solver  : MAXIT        ='
      &       ,ABS_MAXITER
          WRITE(LUPRI,'(A,I4)')
-     &      ' Print level in absorption modules        : IPRABSLRS    ='
+     &      ' Maximum size of reduced space            : MAXRM        ='
+     &       ,ABS_MAXRM
+         WRITE(LUPRI,'(A,I4)')
+     &      ' Print level in absorption modules        : PRINT        ='
      &       ,IPRABSLRS
       END IF
       ENDIF
@@ -657,9 +661,9 @@ C
          ABS_NFREQ_INTERVAL = ABS_NFREQ_ALPHA
       END IF
 C
-      CALL MEMGET('REAL',KRES,2*ABS_NFREQ_INTERVAL*3*3*2,WRK,
+      CALL MEMGET('REAL',KRES,2*ABS_NFREQ_INTERVAL*3*3*3,WRK,
      &                   KFREE,LFREE)
-      CALL DZERO(WRK(KRES),2*ABS_NFREQ_INTERVAL*3*3*2)
+      CALL DZERO(WRK(KRES),2*ABS_NFREQ_INTERVAL*3*3*3)
 C
 C     Determine linear response vectors
 C
@@ -700,7 +704,7 @@ c
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
 c      DIMENSION XINDX(*),MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*),MJWOP(*)
-      DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2),WRK(LWRK)
+      DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,3),WRK(LWRK)
 C     local
       REAL*8  DUMMY
       INTEGER IDUMMY
@@ -791,7 +795,7 @@ C
                  WRITE(LUPRI,*) 'Vectors equal to zero'
                ELSE
                  CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                        ABS_FREQ_ALPHA,
+     &                        ABS_FREQ_ALPHA,ABS_NFREQ_INTERVAL,
      &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
      &                        WRK(KFREE),LFREE)
                ENDIF
@@ -1280,6 +1284,10 @@ c
       CALL MEMGET('REAL',KZYMB,KNMAX*NORBT*NORBT,WRK,KFREE,LFREE)
       DO K=1,KTOT
          IF (K.GT.KINT) KNTOT=KMOD
+         IF (IPRABSLRS.GE.1) THEN
+           WRITE(LUABSPRI,'(A,I4,A,I4)')
+     &     'Number of linear transformations',KNTOT,' in batch ',K
+         END IF
          CALL ABS_LINE2(KZVAR,XTMP(1,(K-1)*KNMAX+1),WRK(KZYMB),ISYMDM,
      &                 ISYMB,KNTOT,CMO,FC,FCAC,FV,
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)

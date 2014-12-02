@@ -4105,6 +4105,22 @@ contains
     integer(kind=ls_mpik),intent(in) :: groupsize
     !> File unit number for LSDALTON.OUT
     integer,intent(in) :: lupri
+    call init_mpi_groups_general(infpar%lg_nodtot,infpar%lg_mynum,infpar%lg_comm,groupsize,lupri)
+  end subroutine init_mpi_groups
+
+  !> \brief Initialize MPI groups by setting information in the global
+  !> type infpar. In particular, 
+  !> infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm are set (see par_mod.f90).
+  !> \author Kasper Kristensen
+  !> \date March 2012
+  subroutine init_mpi_groups_general(lg_nodtot,lg_mynum,lg_comm,groupsize,lupri)
+    implicit none
+    !> Size of each group
+    integer(kind=ls_mpik),intent(in) :: groupsize
+    !> File unit number for LSDALTON.OUT
+    integer,intent(in) :: lupri
+    integer(kind=ls_mpik),intent(inout) :: lg_nodtot,lg_mynum,lg_comm
+
     integer :: i
     integer(kind=ls_mpik) :: ierr,ngroups,worldgroup,localgroup
     integer(kind=ls_mpik) :: mygroup,hstatus
@@ -4127,20 +4143,20 @@ contains
     ! Example 1:  7 nodes in total (ranks 0,1,2,3,4,5,6); groupsize=2
     ! ---------------------------------------------------------------
     ! 
-    ! There is one master (rank 0) and 3 local groups of size 2 (infpar%lg_nodtot=2) with ranks:
-    ! First  local group: (1,2)    - rank numbers inside local group (infpar%lg_mynum): (0,1)
-    ! Second local group: (3,4)    - rank numbers inside local group (infpar%lg_mynum): (0,1)
-    ! Third  local group: (5,6)    - rank numbers inside local group (infpar%lg_mynum): (0,1)
-    ! The local groups talk together via infpar%lg_comm.
+    ! There is one master (rank 0) and 3 local groups of size 2 (lg_nodtot=2) with ranks:
+    ! First  local group: (1,2)    - rank numbers inside local group (lg_mynum): (0,1)
+    ! Second local group: (3,4)    - rank numbers inside local group (lg_mynum): (0,1)
+    ! Third  local group: (5,6)    - rank numbers inside local group (lg_mynum): (0,1)
+    ! The local groups talk together via lg_comm.
     ! 
     ! Example 2:  8 nodes in total (ranks 0,1,2,3,4,5,6,7); groupsize=2
     ! -----------------------------------------------------------------
     !
     ! Same principle as above, except that now there will be three local groups 
     ! of size 2,2, and 3:
-    ! First  local group: (1,2)    - rank numbers inside local group (infpar%lg_mynum): (0,1)
-    ! Second local group: (3,4)    - rank numbers inside local group (infpar%lg_mynum): (0,1)
-    ! Third  local group: (5,6,7)  - rank numbers inside local group (infpar%lg_mynum): (0,1,2)
+    ! First  local group: (1,2)    - rank numbers inside local group (lg_mynum): (0,1)
+    ! Second local group: (3,4)    - rank numbers inside local group (lg_mynum): (0,1)
+    ! Third  local group: (5,6,7)  - rank numbers inside local group (lg_mynum): (0,1,2)
 
     ! Sanity check 1: Size of group is smaller than total number of nodes
     ! (Maximum allowed group size is infpar%nodtot-1 because 1 node is reserved for master)
@@ -4200,7 +4216,7 @@ contains
     call mem_dealloc(gmranks)
 
     ! Create local MPI communicator
-    call MPI_COMM_CREATE(MPI_COMM_LSDALTON, localgroup, infpar%lg_comm, ierr)
+    call MPI_COMM_CREATE(MPI_COMM_LSDALTON, localgroup, lg_comm, ierr)
 
     ! Done with group information for local group (information is now contained in communicator)
     call MPI_GROUP_FREE(localgroup,ierr)
@@ -4211,19 +4227,19 @@ contains
        ! -------------------------------------
 
        ! number of nodes in group
-       infpar%lg_nodtot = lg(mygroup)%groupsize   
+       lg_nodtot = lg(mygroup)%groupsize   
 
        ! Rank within group
-       call get_rank_for_comm(infpar%lg_comm,infpar%lg_mynum)
+       call get_rank_for_comm(lg_comm,lg_mynum)
 
        ! Print out
        CALL MPI_GET_PROCESSOR_NAME(HNAME,HSTATUS,IERR)
        print '(a,4i6,1X,a)', 'World rank, local rank, group, groupsize, host:', infpar%mynum, &
-            & infpar%lg_mynum, mygroup, lg(mygroup)%groupsize, hname
+            & lg_mynum, mygroup, lg(mygroup)%groupsize, hname
 
     else  ! Global master
-       infpar%lg_nodtot = gmsize
-       call get_rank_for_comm (infpar%lg_comm,infpar%lg_mynum)
+       lg_nodtot = gmsize
+       call get_rank_for_comm (lg_comm,lg_mynum)
     end if
 
     call MPI_GROUP_FREE(worldgroup,ierr)
@@ -4233,7 +4249,98 @@ contains
     end do
     deallocate(lg)
 
-  end subroutine init_mpi_groups
+  end subroutine init_mpi_groups_general
+
+  !> \brief Initialize a MPI group, which is a subset of the global communicator
+  !> This routine should be call by all nodes - this routine will not wake up the slaves
+  !> \author Thomas Kjaergaard
+  !> \date March 2014
+  subroutine init_mpi_subgroup(lg_nodtot,lg_mynum,lg_comm,lg_member,groupsize,lupri)
+    implicit none
+    !> Size of each group
+    integer(kind=ls_mpik),intent(in) :: groupsize
+    !> File unit number for LSDALTON.OUT
+    integer,intent(in) :: lupri
+    logical,intent(inout) :: lg_member
+    integer(kind=ls_mpik),intent(inout) :: lg_nodtot,lg_mynum,lg_comm
+
+    integer :: i
+    integer(kind=ls_mpik) :: ierr,ngroups,worldgroup,localgroup
+    integer(kind=ls_mpik) :: mygroup,hstatus
+    type(mpigroup),allocatable :: lg(:)
+    CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  hname
+    integer(kind=ls_mpik) :: gmsize
+    integer(kind=ls_mpik),pointer :: gmranks(:)
+    IERR=0
+    !sanity check 
+    if( (groupsize .GE. infpar%nodtot) .or. (groupsize.LT.1) ) then
+       print *, 'Rank =                ', infpar%mynum
+       print *, 'Requested groupsize = ', groupsize
+       print *, 'Number of nodes =     ', infpar%nodtot
+       call lsquit('init_mpi_subgroup: Requested group size is unacceptable!',-1)
+    end if
+
+    ! Extract group handle for LSDALTON group (world group)
+    call MPI_COMM_GROUP(MPI_COMM_LSDALTON, worldgroup, ierr)
+
+
+    ! **************************************************
+    ! *                   Local groups                 *
+    ! **************************************************
+
+    ! Number of local groups = 2 (members and non members)
+    ngroups = 2
+    ! Local group structure
+    allocate(lg(ngroups))
+
+    lg(1)%groupsize = groupsize
+    nullify(lg(1)%ranks)
+    allocate(lg(1)%ranks(lg(1)%groupsize))
+    do i = 1,lg(1)%groupsize
+       lg(1)%ranks(i) = i-1
+    enddo
+
+    ! Assign all the remaining nodes to the non member  local group
+    lg(2)%groupsize = infpar%nodtot - groupsize
+    nullify(lg(2)%ranks)
+    allocate(lg(2)%ranks(lg(2)%groupsize))
+    do i = 1,lg(2)%groupsize
+       lg(2)%ranks(i) = groupsize+i-1
+    enddo
+    IF(infpar%mynum.LT.groupsize)THEN
+       mygroup = 1
+       lg_member = .TRUE.
+    ELSE
+       mygroup = 2
+       lg_member = .FALSE.
+    ENDIF
+    call MPI_GROUP_INCL(worldgroup, lg(mygroup)%groupsize, lg(mygroup)%ranks, localgroup, ierr)
+
+    ! Create local MPI communicator
+    call MPI_COMM_CREATE(MPI_COMM_LSDALTON, localgroup, lg_comm, ierr)
+    ! Done with group information for local group (information is now contained in communicator)
+    call MPI_GROUP_FREE(localgroup,ierr)
+
+    ! Set global parameters for local group
+    ! -------------------------------------
+    ! number of nodes in group
+    lg_nodtot = lg(mygroup)%groupsize   
+    ! Rank within group
+    call get_rank_for_comm(lg_comm,lg_mynum)
+
+    ! Print out
+    CALL MPI_GET_PROCESSOR_NAME(HNAME,HSTATUS,IERR)
+    print '(a,4i6,1X,a)', 'World rank, local subrank, group, groupsize, host:', infpar%mynum, &
+         & lg_mynum, mygroup, lg(mygroup)%groupsize, hname
+
+    call MPI_GROUP_FREE(worldgroup,ierr)
+    do i=1,2
+       deallocate(lg(i)%ranks)
+       nullify(lg(i)%ranks)
+    end do
+    deallocate(lg)
+
+  end subroutine init_mpi_subgroup
 
 
   !> \brief Create simple mpigroup structure for local groups (see init_mpi_groups for details).
@@ -4762,6 +4869,16 @@ contains
     call MPI_BARRIER(comm,ierr)
 #endif 
   end subroutine lsmpi_barrier
+
+    subroutine lsmpi_comm_free(comm)
+#ifdef VAR_MPI
+    implicit none
+    integer(kind=ls_mpik) :: comm
+    integer(kind=ls_mpik) :: ierr
+    IERR=0
+    call MPI_COMM_FREE(comm, IERR)
+#endif 
+  end subroutine lsmpi_comm_free
  
 
   !> \biref Slave routine for initializing MPI groups.
@@ -4913,14 +5030,16 @@ contains
   !> \brief simple mpi_win_fence call for dma/rma
   !> \author Patrick Ettenhuber
   !> \date September 2012
-  subroutine lsmpi_win_fence_simple(win)
+  subroutine lsmpi_win_fence_simple(win,assert)
     implicit none
     integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik),intent(in),optional :: assert
 #ifdef VAR_MPI
-    integer(kind=ls_mpik) :: ierr,nr
+    integer(kind=ls_mpik) :: ierr,as
     IERR=0
-    nr=0
-    call MPI_WIN_FENCE(nr,win,ierr)
+    as=0
+    if(present(assert)) as = assert
+    call MPI_WIN_FENCE(as,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_win_fence)",ierr)
     endif
@@ -5089,7 +5208,7 @@ contains
   !=========================================================!
   subroutine lsmpi_put_realk(buf,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5108,7 +5227,7 @@ contains
   end subroutine lsmpi_put_realk
   subroutine lsmpi_put_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5138,7 +5257,7 @@ contains
   end subroutine lsmpi_put_realkV_wrapper8
   subroutine lsmpi_put_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5158,7 +5277,7 @@ contains
   end subroutine lsmpi_put_realkV
   subroutine lsmpi_put_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5209,7 +5328,7 @@ contains
   end subroutine lsmpi_put_realkV_parts_wrapper8
   subroutine lsmpi_put_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5249,12 +5368,12 @@ contains
 
   subroutine lsmpi_rput_realkV4(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik),intent(in) :: req
+    integer(kind=ls_mpik),intent(inout) :: req
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: n,ierr
     integer(kind=MPI_ADDRESS_KIND) :: offset
@@ -5272,18 +5391,17 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rput_realkV4)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rput_realkV4
 
   subroutine lsmpi_rput_realkV8(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik),intent(in) :: req
+    integer(kind=ls_mpik),intent(inout) :: req
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: n,ierr
     integer(kind=MPI_ADDRESS_KIND) :: offset
@@ -5306,7 +5424,6 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rput_realkV4)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rput_realkV8
 
@@ -5316,7 +5433,7 @@ contains
   !=========================================================!
   subroutine lsmpi_get_int8(buf,pos,dest,win)
     implicit none
-    integer(kind=8),intent(in) :: buf
+    integer(kind=8),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5335,7 +5452,7 @@ contains
   end subroutine lsmpi_get_int8
   subroutine lsmpi_get_int4(buf,pos,dest,win)
     implicit none
-    integer(kind=4),intent(in) :: buf
+    integer(kind=4),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5354,7 +5471,7 @@ contains
   end subroutine lsmpi_get_int4
   subroutine lsmpi_get_realk(buf,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5373,7 +5490,7 @@ contains
   end subroutine lsmpi_get_realk
   subroutine lsmpi_get_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5403,7 +5520,7 @@ contains
   end subroutine lsmpi_get_realkV_wrapper8
   subroutine lsmpi_get_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5423,7 +5540,7 @@ contains
   end subroutine lsmpi_get_realkV
   subroutine lsmpi_get_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5467,7 +5584,7 @@ contains
   end subroutine lsmpi_get_realkV_parts_wrapper8
   subroutine lsmpi_get_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5505,7 +5622,7 @@ contains
   !=========================================================!
   subroutine lsmpi_rget_int8(buf,pos,dest,win,req)
     implicit none
-    integer(kind=8),intent(in) :: buf
+    integer(kind=8),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5527,12 +5644,11 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_int8)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rget_int8
   subroutine lsmpi_rget_int4(buf,pos,dest,win,req)
     implicit none
-    integer(kind=4),intent(in) :: buf
+    integer(kind=4),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5557,7 +5673,7 @@ contains
   end subroutine lsmpi_rget_int4
   subroutine lsmpi_rget_realk(buf,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5578,12 +5694,11 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_rget_realk)",ierr)
     endif
-
 #endif
   end subroutine lsmpi_rget_realk
   subroutine lsmpi_rget_realkV_wrapper8(buf,nelms,pos,dest,win,req,nreqs)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5646,11 +5761,13 @@ contains
       endif
 
     endif
+#else
+    nreqs=0
 #endif
   end subroutine lsmpi_rget_realkV_wrapper8
   subroutine lsmpi_rget_realkV_wrapper4(buf,nelms,pos,dest,win,req,nreqs)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5713,12 +5830,14 @@ contains
       endif
 
     endif
+#else
+    nreqs=0
 #endif
   end subroutine lsmpi_rget_realkV_wrapper4
 
   subroutine lsmpi_rget_realkV4(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5745,7 +5864,7 @@ contains
   end subroutine lsmpi_rget_realkV4
   subroutine lsmpi_rget_realkV8(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5830,7 +5949,7 @@ contains
   !=========================================================!
   subroutine lsmpi_acc_int8(buf,pos,dest,win)
     implicit none
-    integer(kind=8),intent(in) :: buf
+    integer(kind=8),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5848,7 +5967,7 @@ contains
   end subroutine lsmpi_acc_int8
   subroutine lsmpi_acc_int4(buf,pos,dest,win)
     implicit none
-    integer(kind=4),intent(in) :: buf
+    integer(kind=4),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5866,7 +5985,7 @@ contains
   end subroutine lsmpi_acc_int4
   subroutine lsmpi_acc_realk(buf,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf
+    real(realk),intent(inout) :: buf
     integer, intent(in) :: pos
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
@@ -5884,7 +6003,7 @@ contains
   end subroutine lsmpi_acc_realk
   subroutine lsmpi_acc_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5913,7 +6032,7 @@ contains
   end subroutine lsmpi_acc_realkV_wrapper8
   subroutine lsmpi_acc_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5933,7 +6052,7 @@ contains
   end subroutine lsmpi_acc_realkV
   subroutine lsmpi_acc_realkV_parts_wrapper8(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5971,7 +6090,7 @@ contains
   end subroutine lsmpi_acc_realkV_parts_wrapper8
   subroutine lsmpi_acc_realkV_parts(buf,nelms,pos,dest,win,batchsze,flush_it)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6011,7 +6130,7 @@ contains
 
   subroutine lsmpi_racc_realkV4(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6039,7 +6158,7 @@ contains
   end subroutine lsmpi_racc_realkV4
   subroutine lsmpi_racc_realkV8(buf,nelms,pos,dest,win,req)
     implicit none
-    real(realk),intent(in) :: buf(*)
+    real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -6216,6 +6335,72 @@ contains
 #endif
   end subroutine lsmpi_wait
 
+  subroutine lsmpi_win_post(group,win,assert)
+     implicit none
+     integer(kind=ls_mpik), intent(in) :: group
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik), intent(in), optional :: assert
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_0
+     as = 0
+     if(present(assert))as=assert
+     call MPI_WIN_POST(group,as,win,ierr)
+#endif
+  end subroutine lsmpi_win_post
+
+  subroutine lsmpi_win_start(group,win,assert)
+     implicit none
+     integer(kind=ls_mpik), intent(in) :: group
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik), intent(in), optional :: assert
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_MPI
+     as = 0
+     if(present(assert))as=assert
+     call MPI_WIN_START(group,as,win,ierr)
+#endif
+  end subroutine lsmpi_win_start
+
+  subroutine lsmpi_win_complete(win)
+     implicit none
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_0
+     call MPI_WIN_COMPLETE(win,ierr)
+#endif
+  end subroutine lsmpi_win_complete
+  subroutine lsmpi_win_wait(win)
+     implicit none
+     integer(kind=ls_mpik), intent(inout) :: win
+     integer(kind=ls_mpik) :: ierr,as
+     ierr = 0_ls_mpik
+#ifdef VAR_0
+     call MPI_WIN_WAIT(win,ierr)
+#endif
+  end subroutine lsmpi_win_wait
+
+  subroutine lsmpi_comm_group(comm,group)
+     implicit none
+     integer(kind=ls_mpik), intent(in) :: comm
+     integer(kind=ls_mpik), intent(inout) :: group
+     integer(kind=ls_mpik) :: ierr
+     ierr = 0_ls_mpik
+#ifdef VAR_MPI
+     call MPI_COMM_GROUP(comm, group, ierr) 
+#endif
+  end subroutine lsmpi_comm_group
+  subroutine lsmpi_group_free(group)
+     implicit none
+     integer(kind=ls_mpik), intent(inout) :: group
+     integer(kind=ls_mpik) :: ierr
+     ierr = 0_ls_mpik
+#ifdef VAR_MPI
+     call MPI_GROUP_FREE(group, ierr) 
+#endif
+  end subroutine lsmpi_group_free
 end module lsmpi_type
 
 

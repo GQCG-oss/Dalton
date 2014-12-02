@@ -1122,7 +1122,7 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL MEP_SLAVE(WORK(1),MWORK)
 #if defined (BUILD_PELIB)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
-            CALL PE_IFC_MPI(IPRINT)
+            CALL PE_IFC_SLAVE(IPRINT)
 #endif
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
@@ -1628,7 +1628,7 @@ C
      &          CCFBT(*), INDXBT(*),
      &          CLSCPU(MXCLS2), IWHICH(MXCLS2), IJS(NTASK),
      &          NCOUNT(*), CSQ(NCSQ1,NCSQ2), WORK(LWORK)
-#include "ibtfun.h"
+
 C
       CALL QENTER('ERI_NODDRV')
 C
@@ -1880,9 +1880,9 @@ C
             SPHRAB = SPHRA .OR. SPHRB
             SPHRCD = SPHRC .OR. SPHRD
 C
-            ISTBLR = IBTOR(ISTBLA,ISTBLB)
-            ISTBLS = IBTOR(ISTBLC,ISTBLD)
-            ISTBLT = IBTOR(IBTAND(ISTBLA,ISTBLB),IBTAND(ISTBLC,ISTBLD))
+            ISTBLR = IOR(ISTBLA,ISTBLB)
+            ISTBLS = IOR(ISTBLC,ISTBLD)
+            ISTBLT = IOR(IAND(ISTBLA,ISTBLB),IAND(ISTBLC,ISTBLD))
 C
             MLTPA = MULT(ISTBLA)
             MLTPB = MULT(ISTBLB)

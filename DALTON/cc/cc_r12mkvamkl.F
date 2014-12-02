@@ -1598,7 +1598,7 @@ c---------------------------------------------------------------------
       double precision work(*),lambp(*),omega1(*),er12,ddot
 #endif
 
-      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+C      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
 
       call qenter('ccrhs_gp')
       
@@ -1713,7 +1713,7 @@ c---------------------------------------------------------------------
       double precision work(*),lambp(*),eim(*),ddot, vnrm, vcprod
 #endif
 
-      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+C      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
 
       call qenter('ccrhs_eintp')
                

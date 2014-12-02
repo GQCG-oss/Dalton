@@ -47,6 +47,6 @@ f.add(from_string = 'Rotational constants',
       rel_tolerance = 1.0e-5)
 
 
-test.run(['dft_b3lyp_molhes_nosym.dal'], ['LiOH_6-31Gss.mol'], {'out': f})
+test.run(['dft_b3lyp_molhes_nosym.dal'], ['LiOH_6-31Gss.mol'], f={'out': f})
 
 sys.exit(test.return_code)

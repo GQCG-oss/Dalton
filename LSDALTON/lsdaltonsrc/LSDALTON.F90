@@ -78,6 +78,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! GEO OPTIMIZER
   use ls_optimizer_mod, only: LS_RUNOPT
   use InteractionEnergyMod, only: InteractionEnergy
+  use ADMMbasisOptMod, only: ADMMbasisOptSub
   use lsmpi_type, only: lsmpi_finalize
   use lsmpi_op, only: TestMPIcopySetting,TestMPIcopyScreen
   use lstensorMem, only: lstmem_init, lstmem_free
@@ -170,6 +171,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
+     CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)
   ENDIF
 
 #ifdef MOD_UNRELEASED
@@ -219,9 +221,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         !with something like  
         !Reason: Error in Molecule_free - memory previously released
         call TestMPIcopySetting(ls%SETTING)
+        CALL LSTIMER('TestMPIcopySetting',TIMSTR,TIMEND,lupri)
      ENDIF
 #endif     
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+     CALL LSTIMER('II_precalc_ScreenMat',TIMSTR,TIMEND,lupri)
 
 #ifndef VAR_MPI
      IF(config%doTestMPIcopy)THEN
@@ -432,9 +436,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 !        call mat_print(S,1,S%nrow,1,S%ncol,lupri)
 !        call lsquit('test done',-1)
 
-        !lcm basis
-        if (config%decomp%cfg_lcm .or. config%decomp%cfg_mlo) then
-           CALL Print_Memory_info(lupri,'before LCM')
+        IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
            ! get orbitals
            call mat_init(Cmo,nbast,nbast)
            allocate(eival(nbast))
@@ -446,26 +448,30 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            CALL LSOPEN(lun,'cmo_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
            call LSclose(LUN,'KEEP')
+        endif
 
-           ! localize orbitals
-           if (config%decomp%cfg_lcm)THEN
-              call leastchange_lcm(config%decomp,Cmo,config%decomp%nocc,ls)
-              CALL Print_Memory_info(lupri,'before LCM')
-           endif
+        !lcm basis: localize orbitals
+        if (config%decomp%cfg_lcm)THEN
+           call leastchange_lcm(config%decomp,Cmo,config%decomp%nocc,ls)
+           CALL Print_Memory_info(lupri,'before LCM')
+        endif
 
-           if (config%decomp%cfg_mlo ) then
-              CALL Print_Memory_info(lupri,'before ORBITAL LOCALIZATION')
-              write(ls%lupri,'(a)')'  %LOC%   '
-              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
-              write(ls%lupri,'(a)')'  %LOC%   *       LEVEL 3 ORBITAL LOCALIZATION       *'
-              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
-              write(ls%lupri,'(a)')'  %LOC%   '
-              call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
-              if (config%davidOrbLoc%make_orb_plot) then
-                 call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
-              end if
-              CALL Print_Memory_info(lupri,'after ORBITAL LOCALIZATION')
-           endif
+        !localize orbitals
+        if (config%decomp%cfg_mlo ) then
+           CALL Print_Memory_info(lupri,'before ORBITAL LOCALIZATION')
+           write(ls%lupri,'(a)')'  %LOC%   '
+           write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+           write(ls%lupri,'(a)')'  %LOC%   *       LEVEL 3 ORBITAL LOCALIZATION       *'
+           write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+           write(ls%lupri,'(a)')'  %LOC%   '
+           call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
+           if (config%davidOrbLoc%make_orb_plot) then
+              call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
+           end if
+           CALL Print_Memory_info(lupri,'after ORBITAL LOCALIZATION')
+        endif
+
+        if (config%decomp%cfg_lcm .or. config%decomp%cfg_mlo) then
            !write lcm to file
            lun = -1
            CALL LSOPEN(lun,'lcm_orbitals.u','unknown','UNFORMATTED')
@@ -475,7 +481,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            write(ls%lupri,'(a)') '  %LOC%'
            call LSclose(LUN,'KEEP')
 
-
            if (.not. config%decomp%cfg_mlo) then
               call leastchangeOrbspreadStandalone(mx,ls,Cmo,config%decomp%lupri,config%decomp%luerr)
               write(*,*) 'Orbspread standalone LCM: ', mx
@@ -484,18 +489,19 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            ! set basis to CMO
            call mat_assign(config%decomp%U_inv,Cmo)
            call mat_mul(config%decomp%U_inv,S,'t','n',1E0_realk,0E0_realk,config%decomp%U)
-           ! Vladimir Rybkin: We free CMO unless we do a dec geometry optimization
-           ! or run dynamics
-           If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
+        endif
 
-              ! Single point DEC calculation using current HF files
-              DECcalculation: IF(DECinfo%doDEC) then
-                 call dec_main_prog_input(ls,F(1),D(1),S,CMO,E(1))
-              endif DECcalculation
-              ! free Cmo
+        ! Vladimir Rybkin: We free CMO unless we do a dec geometry optimization
+        ! or run dynamics
+        If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
+           ! Single point DEC calculation using current HF files
+           DECcalculation: IF(DECinfo%doDEC) then
+              call dec_main_prog_input(ls,F(1),D(1),S,CMO,E(1))
+           endif DECcalculation
+           ! free Cmo
+           IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
               call mat_free(Cmo)
-           Endif
-           ! 
+           ENDIF
         endif
         !
         !  Debug integrals 
@@ -550,6 +556,10 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         if (config%InteractionEnergy) then
            CALL InteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
         endif
+        if(ls%input%dalton%ADMMBASISFILE)then
+           call ADMMbasisOptSub(E,config,H1,F,D,S,CMO,ls)
+        endif
+
         !PROPERTIES SECTION
 
         if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. & 
@@ -826,6 +836,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
 #ifdef VAR_ICHOR
   use IchorSaveGabMod
 #endif
+#ifdef VAR_SCALAPACK
+use matrix_operations_scalapack
+#endif
 implicit none
   logical,intent(in)         :: OnMaster
   integer,intent(inout)      :: lupri,luerr
@@ -862,6 +875,13 @@ implicit none
     if(meminfo)call lsmpi_print_mem_info(lupri,.false.)
 
   endif
+
+#ifdef VAR_SCALAPACK
+  IF(scalapack_mpi_set)THEN
+     !free communicator 
+     call LSMPI_COMM_FREE(scalapack_comm)
+  ENDIF
+#endif
 
   call lsmpi_finalize(lupri,.false.)
 #else

@@ -28,11 +28,11 @@ f.add(string = 'Center-of-mass',
 
 f.add(string = 'omega B',
       ignore_sign = True,
-      abs_tolerance = 1.0e-4)
+      rel_tolerance = 1.0e-4)
 
 f.add(string = 'B term',
       rel_tolerance = 1.0e-3)
 
-test.run(['Bterm_sym.dal'], ['H2O_aug-cc-pVDZ.mol'], {'out': f})
+test.run(['Bterm_sym.dal'], ['H2O_aug-cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

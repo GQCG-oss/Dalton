@@ -22,7 +22,7 @@ f.add(string = 'Final HF energy',
 f.add(string = '@ Excitation energy :',
       rel_tolerance = 1.0e-5)
 
-test.run(['pcmsoppa_excit.dal'], ['acrolein_3-21G.mol'], {'out': f},
+test.run(['pcmsoppa_excit.dal'], ['acrolein_3-21G.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

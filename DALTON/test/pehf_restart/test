@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+import copy
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(from_string = 'Polarizable embedding energy contributions:',
+      num_lines = 32,
+      abs_tolerance = 1.0e-6)
+
+f.add(string = 'DIIS converged in',
+      abs_tolerance = 1.0e-5)
+
+test.run(['pehf_restart.dal'], ['pehf_restart.mol'], ['pehf_restart.pot'], f={'out': f}, noarch=False)
+
+f.add(string = 'Existing files will be used to restart if possible.')
+
+test.run(['pehf_restart_iter.dal', 'pehf_restart_direct.dal'], ['pehf_restart.mol'], ['pehf_restart.pot'], f={'out': f}, args='-f pehf_restart')
+
+sys.exit(test.return_code)

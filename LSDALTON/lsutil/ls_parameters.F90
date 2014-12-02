@@ -121,8 +121,10 @@ MODULE lsparameters
   integer,parameter :: SET_MAX_SIZE_ONE_SIDED       = 54
   integer,parameter :: RIMP2FULL                    = 55
   integer,parameter :: SET_GPUMAXMEM                = 56
+  integer,parameter :: SET_TENSOR_BACKEND_TRUE      = 57
+  integer,parameter :: SET_TENSOR_DEBUG_TRUE        = 58
 
-! postprocess specifiers
+! s
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2
   integer,parameter :: AntiSymmetricPostprocess=3
@@ -144,6 +146,13 @@ SUBROUTINE set_default_AOs(newAORegular,newAOdfAux)
   AORdefault = newAORegular
   AODFdefault = newAOdfAux
 END SUBROUTINE set_default_AOs
+
+SUBROUTINE get_default_AOs(oldAORegular,oldAOdfAux)
+  implicit none
+  integer :: oldAORegular,oldAOdfAux
+  oldAORegular = AORdefault 
+  oldAOdfAux = AODFdefault  
+END SUBROUTINE get_default_AOs
 
 subroutine param_oper_paramfromString(Oper,Operparam)
   implicit none

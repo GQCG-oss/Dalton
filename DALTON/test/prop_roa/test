@@ -86,6 +86,6 @@ f.add(from_re = 'Circular Intensity difference',
       num_lines = 20,
       abs_tolerance = 1.0e-2)
 
-test.run(['prop_roa.dal'], ['C3H4_DZ-Dunning.mol'], {'out': f})
+test.run(['prop_roa.dal'], ['C3H4_DZ-Dunning.mol'], f={'out': f})
 
 sys.exit(test.return_code)

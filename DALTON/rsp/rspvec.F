@@ -3741,7 +3741,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "sigmaso.h"
-#include "ibtfun.h"
+
 C
       FC1SUM = DNORM2(3*MXCOOR,SIGFC1,1)
       FC2SUM = DNORM2(3*MXCOOR,SIGFC2,1)
@@ -3838,7 +3838,7 @@ C
       FAC= ALPHA2*1.D6/3.0D0
       DO I = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+            IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                IATOM = IATOM + 1
                SIGMA1 = (SMAT1(1,1,IATOM) + SMAT1(2,2,IATOM)
      &                + SMAT1(3,3,IATOM))*FAC
@@ -3862,7 +3862,7 @@ C
       IATOM = 0
       DO I = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+            IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                IATOM = IATOM + 1
                SIGMA1 = (SMAT1(1,1,IATOM) + SMAT1(2,2,IATOM)
      &                + SMAT1(3,3,IATOM))*FAC
@@ -3902,7 +3902,7 @@ C
       CHARACTER DIRSO*1, NUMNUC*2, NUCDIR*3, DIR2*1
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       ONESO = .FALSE.
       TWOSO = .FALSE.
@@ -3983,7 +3983,7 @@ C
          DO IREP = 0, MAXREP
             DO IATOM = 1, NUCIND
                IF (IPTNUC(IATOM,IREP) .EQ. INUCNM) THEN
-                  IREPF = IBTXOR(IREPSO - 1,IREP)
+                  IREPF = IEOR(IREPSO - 1,IREP)
                   ISCOOR = IPTCNT(3*(IATOM - 1) + IDIRSO,IREPF,2)
                END IF
             END DO
@@ -4064,7 +4064,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "sigmaso.h"
-#include "ibtfun.h"
+
 C
       FC1SUM = DNORM2(MXCOOR**2,SPNFC1,1)
       FC2SUM = DNORM2(MXCOOR**2,SPNFC2,1)

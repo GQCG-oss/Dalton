@@ -2842,7 +2842,7 @@ module pno_ccsd_module
                        call array_reorder_4d(p10,t,pnv,rpd,pnv,rpd,[1,3,2,4],nul,my_w2)
                        h1 => w2(1:pnv**2*rpd**2)
                     endif
-                    call get_tpl_and_tmi(h1,pnv,rpd,tpl(:,tid+1),tmi(:,tid+1))
+                    call get_tpl_and_tmi_fort(h1,pnv,rpd,tpl(:,tid+1),tmi(:,tid+1))
 
                     call time_start_phase(PHASE_WORK, at = times_in_loops(2,3) )
 

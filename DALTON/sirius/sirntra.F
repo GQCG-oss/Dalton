@@ -1168,7 +1168,7 @@ C* Comdeck notes and ideas*
 !890824-hjaaj
 !   New routine N_TRALIM; called from N_TR2CTL
 !890823-hjaaj-t13
-!   Replaced IEOR with IBTXOR statement function
+!   Replaced IEOR with IEOR statement function
 !890705-hjaaj-t13
 !   Skip memory tests for exchange integrals if NOEXCH
 !================
@@ -1243,7 +1243,7 @@ C
 #include "inftra.h"
 #include "inftap.h"
 C
-#include "ibtfun.h"
+
 C
       CALL QENTER('N_TR2CTL')
 C
@@ -1329,7 +1329,7 @@ C
         NOQ   = MORB(NSQ)
         NOCQ  = MASH(NSQ)
         ISQ   = NSQ
-        NSPQ  = IBTXOR(NSP-1,NSQ-1)+1
+        NSPQ  = IEOR(NSP-1,NSQ-1)+1
         ITR   = 0
         LMOR1 = 1
         JMOR1 = 0
@@ -1346,7 +1346,7 @@ C
          KEEPR = KEEP(10+NSR)
          NOR   = MORB(NSR)
          NOCR  = MASH(NSR)
-         NSPQR = IBTXOR(NSPQ-1,NSR-1)+1
+         NSPQR = IEOR(NSPQ-1,NSR-1)+1
          ISR   = NSR
          ITS   = 0
          LMOS1 = 1
@@ -1357,7 +1357,7 @@ C
             LMOS1 = LMOS1+MBAS(NSS-1)*MORB(NSS-1)
             JMOS1 = JMOS1+MORB(NSS-1)
           END IF
-          NSPQRS= IBTXOR(NSPQR-1,NSS-1) + 1
+          NSPQRS= IEOR(NSPQR-1,NSS-1) + 1
          IF(NSPQRS .NE. INTSYM) GO TO 101
           NBS   = MBAS(NSS)
           LMOS  = LMOS1+NBS*MFRO(NSS)
@@ -3140,7 +3140,7 @@ C
 C
       INTEGER NBAS_x(8)
 C
-#include "ibtfun.h"
+
 C
       IBASP = IBAS(ISP)
       IBASQ = IBAS(ISQ)

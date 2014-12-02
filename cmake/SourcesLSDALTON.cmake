@@ -60,6 +60,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/IchorTesting.F90
     LSDALTON/lsdaltonsrc/IchorProfile.F90
     LSDALTON/lsdaltonsrc/InteractionEnergy.F90
+    LSDALTON/lsdaltonsrc/ADMMbasisOpt.F90
     )
 set(DDYNAM_SOURCES
     LSDALTON/ddynam/LSinput.F90
@@ -206,6 +207,7 @@ set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc-data.F90
     LSDALTON/pbc2/pbc-ffdata.F90
     LSDALTON/pbc2/pbcmain.F90
+    LSDALTON/pbc2/pbc-timings.F90
     )
 set(FMM_SOURCES
     LSDALTON/mm/mm_T_contractors.F90
@@ -251,13 +253,6 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorGaussianGeminal.F90
     LSDALTON/IchorIntegrals/IchorBatchTools.F90
     LSDALTON/IchorIntegrals/IchorSaveGab.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_WTUV_general.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specR.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL2.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_general.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_general.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_general.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_Gen.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_SegQ.F90
@@ -290,6 +285,13 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_SegPSize.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_SegSize.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_Seg1PrimSize.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_WTUV_general.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specR.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_general.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_general.F90
     LSDALTON/IchorIntegrals/IchorEriTools.F90
     LSDALTON/IchorIntegrals/IchorEriDist.F90
     LSDALTON/IchorIntegrals/IchorEriLink.F90
@@ -343,6 +345,7 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_GPU_VerticalRecurrenceQPBSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_VerticalRecurrenceQPCSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_VerticalRecurrenceQPDSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceParam.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCGen1.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCGen2.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoDGen1.F90
@@ -355,7 +358,6 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceCtoBGen.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCSegQ1.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCSegQ2.F90
-    LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCSegQ3.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoDSegQ1.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoDSegQ2.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceDtoASegQ.F90
@@ -366,7 +368,6 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceCtoBSegQ.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCSegP1.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCSegP2.F90
-    LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCSegP3.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoDSegP1.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoDSegP2.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceDtoASegP.F90
@@ -377,7 +378,6 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceCtoBSegP.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCSeg1.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCSeg2.F90
-    LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoCSeg3.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoDSeg1.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceAtoDSeg2.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceDtoASeg.F90
@@ -395,7 +395,8 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceBtoCSeg1Prim1.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceBtoDSeg1Prim1.F90
     LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceDtoBSeg1Prim.F90
-    LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceCtoBSeg1Prim.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_TransferRecurrenceCtoBSeg1Prim.F90    
+    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceParam.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCGen1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCGen2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDGen1.F90
@@ -408,7 +409,6 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBGen.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegQ1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegQ2.F90
-    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegQ3.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegQ1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegQ2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoASegQ.F90
@@ -419,7 +419,6 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBSegQ.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegP1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegP2.F90
-    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSegP3.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegP1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSegP2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoASegP.F90
@@ -430,7 +429,6 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBSegP.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg2.F90
-    LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoCSeg3.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSeg1.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceAtoDSeg2.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoASeg.F90

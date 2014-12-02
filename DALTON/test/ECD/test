@@ -44,6 +44,7 @@ f.add(from_string = 'Singlet electronic excitation energies',
 
 f.add(from_string = 'Electric transition dipole moments',
       num_lines = 10,
+      ignore_sign = True,
       abs_tolerance = 1.0e-4)
 
 f.add(from_string = 'Magnetic transition dipole moments',
@@ -55,6 +56,6 @@ f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
       num_lines = 14,
       abs_tolerance = 1.0e-2)
 
-test.run(['ECD.dal'], ['CH3CHFOH_cc-pVDZ.mol'], {'out': f})
+test.run(['ECD.dal'], ['CH3CHFOH_cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

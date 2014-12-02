@@ -60,7 +60,7 @@ f.add(from_string = 'Gradient in Dalton symmetry coordinates',
 
 f.add(from_string = 'Next geometry (au)',
       num_lines = 16,
-      abs_tolerance = 1.0e-7)
+      abs_tolerance = 1.0e-6)
 
 f.add(re = 'Energy at this geometry is',
       rel_tolerance = 1.0e-7)
@@ -73,7 +73,7 @@ f.add(re = 'Norm of step * \: *',
 
 f.add(from_string = 'Final geometry (au)',
       num_lines = 16,
-      abs_tolerance = 1.0e-7)
+      abs_tolerance = 1.0e-6)
 
 f.add(string = '@ Geometry converged in',
       rel_tolerance = 1.0e-2)
@@ -87,6 +87,6 @@ f.add(from_string = 'Bond distances (Angstrom):',
       abs_tolerance = 1.0e-6)
       
 
-test.run(['geoopt_mp2froz.dal'], ['c6h6_sto-3g_sym.mol'], {'out': f})
+test.run(['geoopt_mp2froz.dal'], ['c6h6_sto-3g_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

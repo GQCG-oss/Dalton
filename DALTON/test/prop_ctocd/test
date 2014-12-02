@@ -83,6 +83,6 @@ f.add(string = 'Diamagnetic contribution:',
 
 
 
-test.run(['prop_ctocd.dal'], ['H2O_intgrl_sym.mol'], {'out': f})
+test.run(['prop_ctocd.dal'], ['H2O_intgrl_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

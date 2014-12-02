@@ -171,6 +171,7 @@ C
 C     Initialize /LRSRES/
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "gnrinf.h"
 #include "abainf.h"

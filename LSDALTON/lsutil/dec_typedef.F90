@@ -10,11 +10,11 @@ module dec_typedef_module
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
   !Could someone please rename ri to something less generic. TK!!
-!  private
-!  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
-!       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
-!       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
-!       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
+  !  private
+  !  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
+  !       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
+  !       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
+  !       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
 
 
 
@@ -132,6 +132,7 @@ module dec_typedef_module
 
 
 
+
      !> Restart options
      !> ***************
      !> Use HF info generated in previous run (does not necessarily require DECrestart to be true)
@@ -224,6 +225,8 @@ module dec_typedef_module
      logical :: cc_driver_debug
      !> Integer specifying which scheme to use in CCSD calculations (debug)
      integer :: en_mem
+     !overwrite standard preconditioning settings in solver
+     logical :: ccsolver_overwrite_prec
      !> Use full molecular Fock matrix to precondition
      logical :: precondition_with_full
      !> Use devel version of doubles
@@ -256,7 +259,7 @@ module dec_typedef_module
      !> force a specific tile size for use with abc scheme
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
-     integer :: CCSDPT_nbuffs_ijk
+     integer :: ijk_nbuffs
 
      !> F12 settings
      !> ************
@@ -296,6 +299,8 @@ module dec_typedef_module
      logical :: manual_batchsizes
      !> Sizes of alpha and gamma batches defined manually
      integer :: ccsdAbatch,ccsdGbatch
+     !> test integral scheme, fully distributed, get_mo_integrals
+     logical :: test_fully_distributed_integrals
 
 
      !> General debug and simple tests
@@ -380,8 +385,12 @@ module dec_typedef_module
      integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion
      integer :: Frag_Exp_Size
-     real(realk) :: Frag_red_occ_thr
-     real(realk) :: Frag_red_virt_thr
+     !> Threshold in reduction in case of unbalanced red:
+     real(realk) :: Frag_red1_thr
+     real(realk) :: Frag_red2_thr
+     !> space to reduce first in FOP:
+     logical :: Frag_red_occ
+     logical :: Frag_red_virt
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
@@ -416,8 +425,6 @@ module dec_typedef_module
      !> Fragment-adapted threshold for throwing away orbitals in atomic fragments
      !> that constitute pair fragment (currently on a testing basis)
      real(realk) :: pairFOthr
-     !> Do some pairs at MP2 level
-     logical :: PairMP2
      !> Estimate pair interaction energies using simple estimates?
      logical :: PairEstimate
      !> Carry out pair estimate, but anyway run all pairs.
@@ -426,6 +433,15 @@ module dec_typedef_module
      real(realk) :: EstimateINITradius
      !> number of average atoms that will be included in the estimated fragments
      integer :: EstimateInitAtom
+     !> Which model to use for pair estimates
+     integer :: PairEstimateModel
+     !> Number of reduced fragments (increased FOT) to used for pair calculations 
+     !> (NOT including fragment for main FOT)
+     integer :: nFRAGSred
+     !> Factor to scale FOT by for reduced fragments
+     integer :: FOTscaling
+
+
      ! --
 
 
@@ -461,7 +477,8 @@ module dec_typedef_module
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
 
-
+     !> Use Ichor Integral Code
+     logical :: UseIchor
   end type DECSETTINGS
 
 
@@ -589,7 +606,7 @@ module dec_typedef_module
      integer :: nCabsMO
      !> Number of possible fragments
      integer :: nfrags
-     
+
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
@@ -659,6 +676,10 @@ module dec_typedef_module
      !> model=MODEL_MP2 :  Do MP2
      !> etc., see MODEL_* definitions below
      integer,pointer :: ccmodel(:,:) => null()
+     !> FOT level to use for each pair calculation
+     !>  0: Use input FOT
+     !>  n>0: Use AOS information from fragment%REDfrags(n)
+     integer,pointer :: PairFOTlevel(:,:) => null()
 
      !> Partitioning of energy into dispersion, charge transfer,
      !> and internal subsystem excitations 
@@ -704,12 +725,13 @@ module dec_typedef_module
      !> Core orbitals indices (only used for frozen core approx, 
      !> otherwise there are included in the occAOSidx list).
      integer,pointer :: coreidx(:) => null()
-
-
      !> Indices of occupied EOS in AOS basis
      integer, pointer :: idxo(:) => null()
      !> Indices of unoccupied EOS in AOS basis
      integer, pointer :: idxu(:) => null()
+
+     ! Reduced fragments (dimension DECinfo%nFOTred)
+     type(fragmentAOS),pointer :: REDfrags(:)
 
      !> DEC fragment energies are stored in the energies array
      !> according to the global integers "FRAGMODEL_*" defined below.
@@ -1158,17 +1180,17 @@ module dec_typedef_module
      logical,pointer :: dofragopt(:)
      ! Does job use estimated fragments?
      logical,pointer :: esti(:)
-
-     ! MPI statistics
-
-     !> Number of nodes in MPI slot (local master + local slaves)
-     integer,pointer:: nslaves(:)
      !> Number of occupied orbitals for given fragment (AOS)
      integer,pointer :: nocc(:)
      !> Number of unoccupied orbitals for given fragment (AOS)
      integer,pointer :: nunocc(:)
      !> Number of basis functions for given fragment
      integer,pointer :: nbasis(:)
+
+     ! MPI statistics
+
+     !> Number of nodes in MPI slot (local master + local slaves)
+     integer,pointer:: nslaves(:)
      !> Number of MPI tasks used for integral/transformation (nalpha*ngamma)
      integer,pointer :: ntasks(:)
      !> FLOP count for all local nodes (local master + local slaves)
@@ -1282,4 +1304,16 @@ module dec_typedef_module
      integer(kind=8)          :: n_arrays
      integer(kind=8), pointer :: size_array(:)
   end type pno_query_info
+
+  ! Information for fragment AOS (intended to be used for fragments of reduced FOT)
+  ! Remember to modify mpicopy_fragmentAOStype if you add/remove someting here!
+  type fragmentAOS
+     !> Number of occupied and unoccupied orbitals in fragment AOS
+     integer          :: noccAOS, nunoccAOS
+     !> Occupied and unoccupied AOS indices
+     integer, pointer :: occAOSidx(:), unoccAOSidx(:)
+     !> FOT corresponding to orbital spaces
+     real(realk) :: FOT
+  end type fragmentAOS
+
 end module dec_typedef_module

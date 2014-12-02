@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2013.3
+    This is output from DALTON 2014.0
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -24,32 +24,33 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
-       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
-       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
-       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
-       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
-       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
-       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
-       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
-       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
-       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
-       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
-       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
-       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
-       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
-       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
-       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
-       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
-       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
        "The Dalton quantum chemistry program system",
        WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.3 (2013), see http://daltonprogram.org
+       Release DALTON2014.0 (2014), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -64,6 +65,7 @@
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
@@ -87,6 +89,7 @@
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
   Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
   Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
   Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
@@ -114,7 +117,7 @@
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
   Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
@@ -133,44 +136,39 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Jun 26 11:28:50 2014
-     Host name              : c24-2.local                             
+     Date and time (Linux)  : Fri Nov  7 14:20:11 2014
+     Host name              : nat-100219.local                        
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/dalton/DALTON/test/dft_hsrohf
-   2) /home/arnfinn/dalton/build-master/basis
+   1) /Users/hjj/prog/gitDalton_repo_2013/build_dal14_mpi49/test/dft_hsrohf
+   2) /Users/hjj/prog/gitDalton_repo_2013/build_dal14_mpi49/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | arnfinn
- Host                     | c24-2.local
- System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ Who compiled             | hjj
+ Host                     | nat-100219.local
+ System                   | Darwin-13.4.0
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
- C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
- C compiler version       | icc (ICC) 13.0.1 20121010
- C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
+ Fortran compiler         | /opt/local/bin/mpif90
+ C compiler               | /opt/local/bin/mpicc
+ C compiler version       | gcc-mp-4.9 (MacPorts gcc49 4.9.1_1) 4.9.1
+ C++ compiler             | /opt/local/bin/mpicxx
  C++ compiler version     | unknown
- BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
-                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
-                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
-                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
-                          | read.so;/usr/lib64/libm.so
- LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
-                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
-                          | ntel64/libmkl_intel_lp64.so
+ BLAS                     | /opt/local/lib/libf77blas.a;/usr/lib/libcblas.dyli
+                          | b;/opt/local/lib/libatlas.a
+ LAPACK                   | /opt/local/lib/libatlas.a;/usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 2030b357d88b4c64aa9822a87e619d493ea4bdf0
- Configuration time       | 2014-06-26 09:18:22.902036
+ Last Git revision        | 37bb0c4f8391f7f0b855b133c7117149c8dfeea8
+ Configuration time       | 2014-11-07 14:13:18.731344
 
- * MPI run using 20 processes.
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -183,6 +181,8 @@ Compilation information
 .DFT                                              
  LDA                                              
 *SCF INPUT                                        
+.SHIFT                                            
+ -0.15                                            
 #.DFTTHR                                          
 #1e-15 1e-15 1e-15                                
 #.RADINT                                          
@@ -220,7 +220,6 @@ H        0.0000000        -0.741767         0.930527
    Overall default print level:    0
    Print level for DALTON.STAT:    1
 
-    Parallel calculation using MPI
     AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -254,7 +253,7 @@ H        0.0000000        -0.741767         0.930527
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/arnfinn/dalton/build-master/basis/STO-3G"
+     "/Users/hjj/prog/gitDalton_repo_2013/build_dal14_mpi49/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -262,7 +261,7 @@ H        0.0000000        -0.741767         0.930527
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/dalton/build-master/basis/STO-3G"
+     "/Users/hjj/prog/gitDalton_repo_2013/build_dal14_mpi49/basis/STO-3G"
 
 
                       SYMADD: Requested addition of symmetry
@@ -517,8 +516,8 @@ H        0.0000000        -0.741767         0.930527
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -552,8 +551,8 @@ H        0.0000000        -0.741767         0.930527
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Jun 26 11:28:50 2014
-     Host name              : c24-2.local                             
+     Date and time (Linux)  : Fri Nov  7 14:20:11 2014
+     Host name              : nat-100219.local                        
 
  Title lines from ".mol" input file:
      H atom. DFT test.                                                       
@@ -563,7 +562,7 @@ H        0.0000000        -0.741767         0.930527
  Print level on unit LUW4  =   2 is   5
 
 @    Restricted, high spin open shell Kohn-Sham DFT calculation.
- Fock matrices are calculated directly and in parallel without use of integrals on disk.
+ Fock matrices are calculated directly without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option
@@ -615,36 +614,42 @@ H        0.0000000        -0.741767         0.930527
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    F  2.10D-02  2.20D-02
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    F  1.41D-03  2.00D-03
 @  1    -36.4851473572        1.48324D+00   -3.65D+01    1
       Virial theorem: -V/T =      1.941532
 @      MULPOP C       0.65; H   _1  0.18; H   _2  0.18; 
+   1  Level shift: doubly occupied orbital energies shifted by -1.05D-01
+               and singly occupied orbital energies shifted by -5.25D-02
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  6.00D-03  7.00D-03
-@  2    -36.6114835152        8.01490D-02   -1.26D-01    2
-      Virial theorem: -V/T =      1.947378
-@      MULPOP C       0.00; H   _1  0.50; H   _2  0.50; 
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  1.32D-03  2.00D-03
+@  2    -36.6119303784        6.12929D-02   -1.27D-01    2
+      Virial theorem: -V/T =      1.947505
+@      MULPOP C       0.03; H   _1  0.48; H   _2  0.48; 
+   2  Level shift: doubly occupied orbital energies shifted by -7.35D-02
+               and singly occupied orbital energies shifted by -3.67D-02
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  5.00D-03  7.00D-03
-@  3    -36.6123541888        1.02155D-02   -8.71D-04    3
-      Virial theorem: -V/T =      1.947058
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  1.20D-03  1.00D-03
+@  3    -36.6123590822        9.40227D-03   -4.29D-04    3
+      Virial theorem: -V/T =      1.947067
 @      MULPOP C      -0.01; H   _1  0.50; H   _2  0.50; 
+   3  Level shift: doubly occupied orbital energies shifted by -5.14D-02
+               and singly occupied orbital energies shifted by -2.57D-02
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  4.00D-03  6.00D-03
-@  4    -36.6123658603        5.10321D-04   -1.17D-05    4
-      Virial theorem: -V/T =      1.947172
-@      MULPOP C      -0.00; H   _1  0.50; H   _2  0.50; 
- -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  4.00D-03  7.00D-03
-@  5    -36.6123658902        1.79989D-05   -2.98D-08    5
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  1.19D-03  1.00D-03
+@  4    -36.6123658819        2.58501D-04   -6.80D-06    4
       Virial theorem: -V/T =      1.947167
 @      MULPOP C      -0.00; H   _1  0.50; H   _2  0.50; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  4.00D-03  4.00D-03
-@  6    -36.6123658902        2.20143D-06   -5.52D-11    6
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  1.19D-03  1.00D-03
+@  5    -36.6123658902        1.26729D-05   -8.30D-09    5
+      Virial theorem: -V/T =      1.947167
+@      MULPOP C      -0.00; H   _1  0.50; H   _2  0.50; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  2.27D-03  2.00D-03
+@  6    -36.6123658902        1.59427D-06   -2.98D-11    6
 
 @ *** DIIS converged in   6 iterations !
-@     Converged SCF energy, gradient:    -36.612365890220    2.20D-06
+@     Converged SCF energy, gradient:    -36.612365890220    1.59D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -662,21 +667,21 @@ H        0.0000000        -0.741767         0.930527
 
  Sym       Kohn-Sham orbital energies
 
-1 A1    -10.48306715    -1.39985607    -0.69960505     0.78883120
+1 A1    -10.48306698    -1.39985606    -0.69960496     0.78883121
 
-2 B1     -0.68353396
+2 B1     -0.68353390
 
-3 B2     -0.93827764     0.38467643
+3 B2     -0.93827758     0.38467644
 
-    E(LUMO) :     0.38467643 au (symmetry 3)
-  - E(HOMO) :    -1.39985607 au (symmetry 1)
+    E(LUMO) :     0.38467644 au (symmetry 3)
+  - E(HOMO) :    -1.39985606 au (symmetry 1)
   ------------------------------------------
-    gap     :     1.78453251 au
+    gap     :     1.78453250 au
 
 and energy and symmetry of HSROHF open shell orbitals:
-    -0.69960505         1
-    -0.68353396         2
-    -0.93827764         3
+    -0.69960496         1
+    -0.68353390         2
+    -0.93827758         3
 
  NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
 
@@ -684,7 +689,7 @@ and energy and symmetry of HSROHF open shell orbitals:
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       5.323       6.070
+ >>>> CPU and wall time for SCF :       0.510       0.520
 
 
                        .-----------------------------------.
@@ -698,13 +703,13 @@ and energy and symmetry of HSROHF open shell orbitals:
 
 @    Final DFT energy:            -36.612365890220                 
 @    Nuclear repulsion:            10.758104072289
-@    Electronic energy:           -47.370469962508
+@    Electronic energy:           -47.370469962509
 
-@    Final gradient norm:           0.000002201432
+@    Final gradient norm:           0.000001594270
 
  
-     Date and time (Linux)  : Thu Jun 26 11:28:56 2014
-     Host name              : c24-2.local                             
+     Date and time (Linux)  : Fri Nov  7 14:20:11 2014
+     Host name              : nat-100219.local                        
 
  (Only coefficients >0.0100 are printed.)
 
@@ -732,12 +737,12 @@ and energy and symmetry of HSROHF open shell orbitals:
 
 
 
- >>>> Total CPU  time used in SIRIUS :      5.33 seconds
- >>>> Total wall time used in SIRIUS :      6.09 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.51 seconds
+ >>>> Total wall time used in SIRIUS :      0.52 seconds
 
  
-     Date and time (Linux)  : Thu Jun 26 11:28:56 2014
-     Host name              : c24-2.local                             
+     Date and time (Linux)  : Fri Nov  7 14:20:11 2014
+     Host name              : nat-100219.local                        
 
  NOTE:    2 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -747,9 +752,9 @@ and energy and symmetry of HSROHF open shell orbitals:
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   5.37 seconds
- >>>> Total wall time used in DALTON:   6.16 seconds
+ >>>> Total CPU  time used in DALTON:   0.54 seconds
+ >>>> Total wall time used in DALTON:   0.55 seconds
 
  
-     Date and time (Linux)  : Thu Jun 26 11:28:56 2014
-     Host name              : c24-2.local                             
+     Date and time (Linux)  : Fri Nov  7 14:20:11 2014
+     Host name              : nat-100219.local                        

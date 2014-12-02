@@ -100,6 +100,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mcmodel=medium")
     endif()
 
+# Simen: added to include c++ libraries needed for the final linking 
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -pgcpplibs")
+
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
@@ -178,6 +181,24 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -s integer64"
             )
+    endif()
+# WARNING OpenMP (OMP) is activated as default with cray 
+    if(ENABLE_OMP) 
+      #do nothing OpenMP activated as default with cray 
+    else()
+      #can be deactivated using -x omp or -h noomp
+      set(CMAKE_Fortran_FLAGS
+        "${CMAKE_Fortran_FLAGS} -h noomp"
+        )
+    endif()
+# WARNING OpenACC is activated as default on cray 
+    if(ENABLE_OPENACC) 
+      #do nothing OpenACC activated as default with cray 
+    else()
+      #can be deactivated using -x acc or -h noacc
+      set(CMAKE_Fortran_FLAGS
+        "${CMAKE_Fortran_FLAGS} -h noacc"
+        )	  
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS

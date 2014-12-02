@@ -234,6 +234,12 @@ contains
     !> At this initialization step - use the input CC model for all pairs
     call mem_alloc(molecule%ccmodel,molecule%nfrags,molecule%nfrags)
     molecule%ccmodel = DECinfo%ccmodel
+    
+     !> FOT level to use for each pair calculation
+     !>  0: Use input FOT
+     !>  n>0: Use AOS information from fragment%REDfrags(n)
+    call mem_alloc(molecule%PairFOTlevel,molecule%nfrags,molecule%nfrags)
+    molecule%PairFOTlevel=0
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
@@ -828,6 +834,10 @@ contains
        call mem_dealloc(molecule%ccmodel)
     end if
 
+    if(associated(molecule%PairFOTlevel)) then
+       call mem_dealloc(molecule%PairFOTlevel)
+    end if
+
   end subroutine molecule_finalize
 
   !> \brief Get number of atomic orbitals on atoms, first and last index in AO basis for full molecular matrices
@@ -1129,8 +1139,7 @@ contains
     !> Density matrix (will be intialized here)
     type(matrix),intent(inout) :: D
     integer :: funit,dim1,dim2
-    integer(kind=8) :: longdim1,longdim2
-    integer(kind=4) :: dim1_32,dim2_32
+    integer(kind=long) :: longdim1,longdim2
     real(realk),pointer :: Dfull(:,:)
     logical :: gcbasis
     ! Open density file
@@ -1140,19 +1149,9 @@ contains
     ! Allocate real vector to temporarily hold density values
     call mem_alloc(Dfull,nbasis,nbasis)
 
-
-    ! Safe handling of integers 
-    if(DECinfo%convert64to32) then   ! convert from 64 to 32 bit integers?
-       READ(funit) longdim1,longdim2
-       dim1 = int(longdim1)
-       dim2 = int(longdim2)
-    elseif(DECinfo%convert32to64) then   ! convert from 32 to 64 bit integers?
-       READ(funit) dim1_32,dim2_32
-       dim1 = dim1_32
-       dim2 = dim2_32
-    else
-       READ(funit) dim1,dim2
-    end if
+    READ(funit) longdim1,longdim2 !dens.restart always written using kind=8
+    dim1 = int(longdim1)
+    dim2 = int(longdim2)
 
     ! Sanity check
     if( (dim1/=nbasis) .or. (dim2/=nbasis) ) then

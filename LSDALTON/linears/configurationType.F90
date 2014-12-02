@@ -135,14 +135,14 @@ type ConfigItem
    type(pltinfo) :: PLT
    !> Should we do an F12 calc which requires a CABS basis
    logical              :: doF12
+   !> Should we do an RIMP2 calc which requires a AUX basis
+   logical              :: doRIMP2
 #if defined(ENABLE_QMATRIX)
    logical :: do_qmatrix = .false.
    type(LSQMat) ls_qmat
 #endif
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
-   !> set debugging mode for the PDM type arrays
-   logical              :: type_tensor_debug
    !> skip SCF calculations
    logical              :: skipscfloop
 end type ConfigItem

@@ -85,6 +85,7 @@ module tensor_type_def_module
   integer, parameter :: TT_REPLICATED   = 2
   integer, parameter :: TT_TILED        = 3
   integer, parameter :: TT_TILED_DIST   = 4
+  integer, parameter :: TT_TILED_REPL   = 5
 
   !parameters for ACCESS TYPE:
   integer,parameter :: AT_NO_PDM_ACCESS = 0
@@ -107,7 +108,8 @@ module tensor_type_def_module
 
   !> execution time variables
   logical :: lspdm_use_comm_proc
-  logical :: tensor_debug_mode = .false.
+  logical :: tensor_debug_mode           = .false.
+  logical :: tensor_contract_dil_backend = .false.
 
 
 

@@ -18,7 +18,6 @@ use AGC_CPU_OBS_VERTICALRECURRENCEMODCGen
 use AGC_CPU_OBS_VERTICALRECURRENCEMODDGen
 use AGC_CPU_OBS_TRMODAtoCSegQ1
 use AGC_CPU_OBS_TRMODAtoCSegQ2
-use AGC_CPU_OBS_TRMODAtoCSegQ3
 use AGC_CPU_OBS_TRMODAtoDSegQ1
 use AGC_CPU_OBS_TRMODAtoDSegQ2
 use AGC_CPU_OBS_TRMODBtoCSegQ1
@@ -1400,6 +1399,9 @@ CONTAINS
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(25,nContP*nPasses,TMParray1,&
             & LOCALINTS)
     CASE DEFAULT
+#ifdef VAR_OPENACC
+        CALL ICHORQUIT('ICI_CPU_McM_general called with OpenACC',-1)
+#endif
         call ICI_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
            & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
            & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&

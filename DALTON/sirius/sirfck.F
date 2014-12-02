@@ -21,12 +21,11 @@
 !...      http://daltonprogram.org
 !
 !
-
-!define SIRFCK_DEBUG
-#undef SIRFCK_DEBUG
-!define SIRFCK_MANU_SRHFX 
-#undef SIRFCK_MANU_SRHFX 
-
+! -- FILE: DALTON/sirius/sirfck.F --
+C
+#define noSIRFCK_DEBUG
+#define noSIRFCK_MANU_SRHFX 
+C
 C  /* Deck sirfck */
       SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRECT,
      &                  WRK,LWORK)
@@ -104,7 +103,7 @@ Cholesky
 #include "choscf.h"
 Cholesky
 C
-#include "ibtfun.h"
+
 C
       LOGICAL SFIRST, PREHF, IOPTVP, DO_CHOINT
       SAVE SFIRST
@@ -324,7 +323,7 @@ C        ... full exchange for long range part and for PREHF
             DO I = 1,NDCandDV
             IF (IFCTYP_local(I) .GT. 0) THEN ! skip "FTC" with IFCTYP=0
                J = MOD(IFCTYP_local(I),10)
-               IF (IBTAND(J,2) .eq. 0)
+               IF (IAND(J,2) .eq. 0)
      &            IFCTYP_local(I) = IFCTYP_local(I) + 2
 C              ... make sure the "do exchange" bit is set in IFCTYP
             END IF
@@ -552,7 +551,7 @@ C        ... full exchange for long range part and for PREHF
             DO I = 1,NDCandDV
             IF (IFCTYP(I) .GT. 0) THEN ! skip "FTC"
                J = MOD(IFCTYP(I),10)
-               IF (IBTAND(J,2) .eq. 0) IFCTYP(I) = IFCTYP(I) + 2
+               IF (IAND(J,2) .eq. 0) IFCTYP(I) = IFCTYP(I) + 2
 C              ... make sure the "do exchange" bit is set in IFCTYP
             END IF
             END DO
@@ -604,7 +603,7 @@ C               (only SR Hartree term for SRDFT hybrids)
 C              remove any "do exchange" bits
                DO I = 1,NSR_DMAT
                   J = MOD(IFCTYP(I),10)
-                  IF (IBTAND(J,2) .ne. 0) IFCTYP(I) = IFCTYP(I) - 2
+                  IF (IAND(J,2) .ne. 0) IFCTYP(I) = IFCTYP(I) - 2
                END DO
             END IF
 #ifdef SIRFCK_DEBUG
@@ -1073,7 +1072,7 @@ C
 C
 C for HFXFAC:
 #include "dftcom.h"
-#include "ibtfun.h"
+
 
       CALL QENTER('SIRFCK2')
 
@@ -1094,7 +1093,7 @@ C     IFCTYP 02   : factor -0.5 from exchange integral
          IF (HFXFAC .EQ. D0) THEN
 C           remove any "do exchange" bits
             J = MOD(IFCTYP(I),10)
-            IF (IBTAND(J,2) .ne. 0) IFCTYP(I) = IFCTYP(I) - 2
+            IF (IAND(J,2) .ne. 0) IFCTYP(I) = IFCTYP(I) - 2
          END IF
          IF (IFCTYP(I) .EQ. 11 .OR. IFCTYP(I) .EQ. 13) THEN
             CALL DSCAL(N2BASX,D4,DMAT(1,I),1)
@@ -1401,7 +1400,7 @@ C
 #include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include "ibtfun.h"
+
 C
       EFAC = HFXFAC / 2
       DO 100 INT = 1, LENGTH
@@ -1452,7 +1451,7 @@ C
 #include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include "ibtfun.h"
+
 C
       DO 100 INT = 1, LENGTH
 C        factor "-0.5" is multiplied on DMAT in SIRFCK
@@ -2837,4 +2836,4 @@ C     -------------
 
       RETURN
       END
-
+! -- end of sirius/sirfck.F --

@@ -785,14 +785,18 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/gp/memory_parallel.F90
     DALTON/abacus/rma_windows.F90
     DALTON/cc/dyn_index.F90
-    #    DALTON/pcm/electrostatic_potential.F90
+    )
+if(ENABLE_PCMSOLVER)
+   set(DAL_PCM_SOURCES
     DALTON/pcm/pcm_scf.F90
     DALTON/pcm/pcm_integrals.F90
     DALTON/pcm/pcm_linear_response.F90
     DALTON/pcm/pcmmod_cfg.F90
     DALTON/pcm/pcm_write.F90
     DALTON/pcm/pcm_utils.F90
-    )
+   )
+   set(DALTON_FREE_FORTRAN_SOURCES "${DALTON_FREE_FORTRAN_SOURCES} ${DAL_PCM_SOURCES}")
+endif()
 # interface of QMatrix library
 if(ENABLE_QMATRIX)
     set(DAL_QMATRIX_SOURCES

@@ -46,7 +46,7 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       DIMENSION KOLORS(103)
       CHARACTER*2 ATMSYM(103),SKINDS(MXCENT)
@@ -123,12 +123,12 @@ C
       IAT = 0
       DO 310 INUC=1,NUCIND
          DO 311 IA = 0, MAXOPR
-            IF (IBTAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
+            IF (IAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
                IAT = IAT + 1
                NUCZ = NINT(CHARGE(INUC))
-               X = XTANG * PT(IBTAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
-               Y = XTANG * PT(IBTAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
-               Z = XTANG * PT(IBTAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
+               X = XTANG * PT(IAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
+               Y = XTANG * PT(IAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
+               Z = XTANG * PT(IAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
                WRITE(LUIP,8030) ATMSYM(NUCZ),X,Y,Z
             END IF
  311     CONTINUE 
@@ -177,7 +177,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "primit.h"
-#include "ibtfun.h"
+
 C
       DATA (ATMSYM(I),I = 1,103)
      1/'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne',
@@ -218,12 +218,12 @@ C
       IAT = 0
       DO 310 INUC=1,NUCIND
          DO 311 IA = 0, MAXOPR
-            IF (IBTAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
+            IF (IAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
                IAT = IAT + 1
                NUCZ = NINT(CHARGE(INUC))
-               X = XTANG * PT(IBTAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
-               Y = XTANG * PT(IBTAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
-               Z = XTANG * PT(IBTAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
+               X = XTANG * PT(IAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
+               Y = XTANG * PT(IAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
+               Z = XTANG * PT(IAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
                WRITE(LUIP,8020) ATMSYM(NUCZ),X,Y,Z
             END IF
  311     CONTINUE 

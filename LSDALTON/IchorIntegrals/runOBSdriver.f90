@@ -134,11 +134,11 @@ DO GPUrun=1,2
 !  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg2'
 !  WRITE(LUMOD2,'(A)')'use SPIchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim2'
 
-  IF(CPU)THEN
+!  IF(CPU)THEN
      DO ILUMOD=8,12
-        WRITE(ILUMOD,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'McMGeneralMod'
+        WRITE(ILUMOD,'(A)')'use IchorEriCoulombintegralCPUMcMGeneralMod'
      ENDDO
-  ENDIF
+!  ENDIF
 
   DO ILUMOD=2,12
      WRITE(ILUMOD,'(A)')'use IchorprecisionMod'
@@ -217,7 +217,7 @@ DO GPUrun=1,2
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBGen'
   WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegQ1'
   WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegQ2'
-  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegQ3'
+!  WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegQ3'
   WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegQ1'
   WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegQ2'
   WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSegQ1'
@@ -228,7 +228,7 @@ DO GPUrun=1,2
   WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSegQ'
   WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegP1'
   WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegP2'
-  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegP3'
+!  WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegP3'
   WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegP1'
   WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegP2'
   WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSegP1'
@@ -239,7 +239,7 @@ DO GPUrun=1,2
   WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSegP'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg1'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg2'
-  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg3'
+!  WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg3'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSeg1'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSeg2'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSeg1'
@@ -270,7 +270,7 @@ DO GPUrun=1,2
   WRITE(LUMOD8,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBGen'
   WRITE(LUMOD9,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegQ1'
   WRITE(LUMOD9,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegQ2'
-  WRITE(LUMOD9,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegQ3'
+!  WRITE(LUMOD9,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegQ3'
   WRITE(LUMOD9,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegQ1'
   WRITE(LUMOD9,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegQ2'
   WRITE(LUMOD9,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSegQ1'
@@ -281,7 +281,7 @@ DO GPUrun=1,2
   WRITE(LUMOD9,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSegQ'
   WRITE(LUMOD10,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegP1'
   WRITE(LUMOD10,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegP2'
-  WRITE(LUMOD10,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegP3'
+!  WRITE(LUMOD10,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSegP3'
   WRITE(LUMOD10,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegP1'
   WRITE(LUMOD10,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSegP2'
   WRITE(LUMOD10,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSegP1'
@@ -292,7 +292,7 @@ DO GPUrun=1,2
   WRITE(LUMOD10,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSegP'
   WRITE(LUMOD11,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg1'
   WRITE(LUMOD11,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg2'
-  WRITE(LUMOD11,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg3'
+!  WRITE(LUMOD11,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoCSeg3'
   WRITE(LUMOD11,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSeg1'
   WRITE(LUMOD11,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODAtoDSeg2'
   WRITE(LUMOD11,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODBtoCSeg1'
@@ -1230,9 +1230,12 @@ DO GPUrun=1,2
            ENDDO
         ENDDO
      ENDDO
-        WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
-     IF(CPU.AND.IFILES.EQ.2)THEN
-        WRITE(ILUMOD,'(A)')'        call ICI_'//ARCSTRING//'_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
+     WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
+     IF(IFILES.EQ.2)THEN
+        WRITE(ILUMOD,'(A)')'#ifdef VAR_OPENACC'
+        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''ICI_CPU_McM_general called with OpenACC'',-1)'
+        WRITE(ILUMOD,'(A)')'#endif'
+        WRITE(ILUMOD,'(A)')'        call ICI_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
         WRITE(ILUMOD,'(A)')'           & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
         WRITE(ILUMOD,'(A)')'           & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
         WRITE(ILUMOD,'(A)')'           & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -1244,11 +1247,7 @@ DO GPUrun=1,2
         WRITE(ILUMOD,'(A)')'           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
         WRITE(ILUMOD,'(A)')'           & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
         WRITE(ILUMOD,'(A)')'           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
-        IF(CPU)THEN
-           WRITE(ILUMOD,'(A)')'           & IatomAPass,iatomBPass)' 
-        ELSE
-           WRITE(ILUMOD,'(A)')'           & IatomAPass,iatomBPass,iASync)' 
-        ENDIF
+        WRITE(ILUMOD,'(A)')'           & IatomAPass,iatomBPass)' 
      ELSE
         IF(Gen)THEN
            WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in ICI_'//ARCSTRING//'_OBS_Gen'',-1)'
@@ -1396,7 +1395,7 @@ DO GPUrun=1,2
   DO ILUMOD=3,7
 !     WRITE(ILUMOD,'(A)')'use IchorprecisionMod'
      WRITE(ILUMOD,'(A)')'use IchorCommonMod'
-     IF(CPU)WRITE(ILUMOD,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'McMGeneralMod'
+     WRITE(ILUMOD,'(A)')'use IchorEriCoulombintegralCPUMcMGeneralMod'
      WRITE(ILUMOD,'(A)')'  '
      WRITE(ILUMOD,'(A)')'private   '
   ENDDO
@@ -1498,23 +1497,19 @@ DO GPUrun=1,2
         ENDDO
      ENDDO
      WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
-     IF(CPU)THEN
-        WRITE(ILUMOD,'(A)')'     call ICI_'//ARCSTRING//'_McM_general_size(TMParray1maxsize,&'
-        WRITE(ILUMOD,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
-        WRITE(ILUMOD,'(A)')'         & nContA,nContB,nContC,nContD,&'
-        WRITE(ILUMOD,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
-        WRITE(ILUMOD,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,&'
-        IF(Gen)THEN
-           WRITE(ILUMOD,'(A)')'         & .FALSE.,.FALSE.)'
-        ELSEIF(SegQ)THEN
-           WRITE(ILUMOD,'(A)')'         & .FALSE.,.TRUE.)'
-        ELSEIF(SegP)THEN
-           WRITE(ILUMOD,'(A)')'         & .TRUE.,.FALSE.)'
-        ELSE !Seg or Seg1Prim
-           WRITE(ILUMOD,'(A)')'         & .TRUE.,.TRUE.)'
-        ENDIF
-     ELSE
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in ICI_OBS_general_size'',-1)'
+     WRITE(ILUMOD,'(A)')'     call ICI_CPU_McM_general_size(TMParray1maxsize,&'
+     WRITE(ILUMOD,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
+     WRITE(ILUMOD,'(A)')'         & nContA,nContB,nContC,nContD,&'
+     WRITE(ILUMOD,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
+     WRITE(ILUMOD,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,&'
+     IF(Gen)THEN
+        WRITE(ILUMOD,'(A)')'         & .FALSE.,.FALSE.)'
+     ELSEIF(SegQ)THEN
+        WRITE(ILUMOD,'(A)')'         & .FALSE.,.TRUE.)'
+     ELSEIF(SegP)THEN
+        WRITE(ILUMOD,'(A)')'         & .TRUE.,.FALSE.)'
+     ELSE !Seg or Seg1Prim
+        WRITE(ILUMOD,'(A)')'         & .TRUE.,.TRUE.)'
      ENDIF
      WRITE(ILUMOD,'(A)')'    END SELECT'
 

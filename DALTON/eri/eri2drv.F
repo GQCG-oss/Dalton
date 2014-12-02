@@ -688,7 +688,7 @@ C  /* Deck odcdr1 */
      &          BUF(*), IBUF(*),
      &          CCFBT(*), INDXBT(*), NCOUNT(*),
      &          CSQ(NCSQ1,NCSQ2), WORK(LWORK)
-#include "ibtfun.h"
+
 C
 C     Information in arrays:
 C
@@ -1019,9 +1019,9 @@ C
             GCONAB = GCONA .OR. GCONB
             GCONCD = GCONC .OR. GCOND
 C
-            ISTBLR = IBTOR(ISTBLA,ISTBLB)
-            ISTBLS = IBTOR(ISTBLC,ISTBLD)
-            ISTBLT = IBTOR(IBTAND(ISTBLA,ISTBLB),IBTAND(ISTBLC,ISTBLD))
+            ISTBLR = IOR(ISTBLA,ISTBLB)
+            ISTBLS = IOR(ISTBLC,ISTBLD)
+            ISTBLT = IOR(IAND(ISTBLA,ISTBLB),IAND(ISTBLC,ISTBLD))
 C
             MLTPA = MULT(ISTBLA)
             MLTPB = MULT(ISTBLB)
@@ -2384,7 +2384,7 @@ C  /* Deck pntuv */
 #include "ericom.h"
 #include "sphtrm.h"
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
       ICMPAB = 0
       MAXB = KCKTB
@@ -2719,7 +2719,7 @@ C  /* Deck lmnprp */
 #include "eriao.h"
 #include "ccom.h"
 #include "sphtrm.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from LMNPRP','*',103)
 C
@@ -2739,7 +2739,7 @@ C
             IBITS =   MOD(LMNPWR(J,I,1),2)
      &            + 2*MOD(LMNPWR(J,I,2),2)
      &            + 4*MOD(LMNPWR(J,I,3),2)
-            LMNSYM(J,I,1,ISYM) = IBTAND(ISYM,IBITS)
+            LMNSYM(J,I,1,ISYM) = IAND(ISYM,IBITS)
          END DO
          END DO
 C

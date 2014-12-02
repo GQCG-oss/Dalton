@@ -282,10 +282,11 @@ contains
     call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
 
-    ! Send CC models to use for all pairs based on estimates
+    ! Send CC models and pair FOTs to use for all pairs based on estimates
     if(esti) then
 #ifdef VAR_MPI
        call ls_mpibcast(MyMolecule%ccmodel,nfrags,nfrags,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%pairfotlevel,nfrags,nfrags,master,MPI_COMM_LSDALTON)
 #endif
     end if
 
@@ -646,6 +647,9 @@ subroutine print_dec_info()
            write(LU,'(a,e15.3)') 'Use Pair Estimate initialisation radius (Angstrom)  = ',&
              & DECinfo%estimateINITradius*bohr_to_angstrom
         end if
+        ! Pair estimates
+        write(LU,'(a,a)')     'Pair estimate model                                 =     ', &
+             & DECinfo%cc_models(DECinfo%PairEstimateModel)
    endif
 
    write(LU,'(a,g15.3)') 'Simple orbital thr.                                 = ',&
@@ -699,6 +703,8 @@ subroutine print_dec_info()
       ENDIF
    ENDIF
   ENDIF
+  write(LU,*)
+
   ! print cc parameters
   write(LU,'(/,a)') '--------------------------'
   write(LU,'(a)')   '  Coupled-cluster input   '
@@ -1073,13 +1079,11 @@ subroutine print_dec_info()
           else
 
              if(jobs%esti(jobdone)) then
-                call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                     & EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
-                     & nfrags,PairFragment,grad)
+                call pair_driver(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
+                     & PairFragment,grad)
              else
-                call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
-                     & AtomicFragments(atomA), AtomicFragments(atomB),&
-                     & nfrags,PairFragment,grad)
+                call pair_driver(AtomicFragments(atomA), AtomicFragments(atomB),&
+                     & PairFragment,grad)
              end if
 
           end if
@@ -1267,12 +1271,12 @@ subroutine print_dec_info()
        ! fragment opt. AND estimate pair fragments
        ! *****************************************
 
-       ! All estimates are done using MP2, set model for all fragments to MP2
-       ! (MyMolecule%ccmodel is then redefined below based on these estimates)
+       ! Which model to use for pair estimate calculations?
+       ! (MyMolecule%ccmodel is later redefined based on these estimates)
        do i=1,nfrags
           do j=i+1,nfrags
-             MyMolecule%ccmodel(i,j) = MODEL_MP2
-             MyMolecule%ccmodel(j,i) = MODEL_MP2
+             MyMolecule%ccmodel(i,j) = DECinfo%PairEstimateModel
+             MyMolecule%ccmodel(j,i) = DECinfo%PairEstimateModel
           end do
        end do
 
@@ -1330,9 +1334,9 @@ subroutine print_dec_info()
        ! Get estimated pair fragment energies for occupied partitioning scheme
        call mem_alloc(FragEnergiesPart,nfrags,nfrags)
        IF(DECinfo%onlyVirtPart)THEN
-          call get_virtfragenergies(nfrags,MODEL_MP2,FragEnergies,FragEnergiesPart)
+          call get_virtfragenergies(nfrags,DECinfo%PairEstimateModel,FragEnergies,FragEnergiesPart)
        ELSE
-          call get_occfragenergies(nfrags,MODEL_MP2,FragEnergies,FragEnergiesPart)
+          call get_occfragenergies(nfrags,DECinfo%PairEstimateModel,FragEnergies,FragEnergiesPart)
        ENDIF
        ! We do not want to consider atomic fragment energies now so zero them
        ! (they might be zero already but in this way we avoid wrong print out below).

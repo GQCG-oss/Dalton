@@ -19,6 +19,6 @@ f.add(from_string = 'QM/MM "QMMM" calculation converged :',
 f.add(string = '@ B-freq = 0.040000  C-freq = 0.040000',
       rel_tolerance = 1.0e-9)
 
-test.run(['qmmm6.dal'], ['ch2o_cc-pvdz.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['qmmm6.dal'], ['ch2o_cc-pvdz.mol'], f={'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)

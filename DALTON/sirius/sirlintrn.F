@@ -473,8 +473,8 @@ C
          CALL PE_LIN(NCSIM, NOSIM, BCVECS, BOVECS, CREF, CMO, INDXCI,
      &               DV, WRK(KDTV), WRK(KSCVEC), WRK(KSOVEC), ORBLIN,
      &               WRK(K3A), L3A)
-#endif
          CALL GETTIM(T5,W5)
+#endif
       ELSE
          T5 = T4
          W5 = W4

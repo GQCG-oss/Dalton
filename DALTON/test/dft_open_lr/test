@@ -20,6 +20,6 @@ f.add(string = 'Final DFT energy',
 f.add(re = '[XYZ]DIPLEN  \; [XYZ]DIPLEN',
       rel_tolerance = 1.0e-9)
 
-test.run(['dft_open_lr.dal'], ['H2Op_aug-cc-pVDZ.mol'], {'out': f})
+test.run(['dft_open_lr.dal'], ['H2Op_aug-cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

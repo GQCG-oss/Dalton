@@ -1111,7 +1111,7 @@ C CBN+JK 03.01.06
         KFDTAO = KDVAO + N2BASX
         KWRKG = KFDTAO + NNBASX
         LWRKG = LFREE - (KWRKG - 1)
-        CALL PE_FCKMO(WRK(KCMO), WRK(KFCSOL), WRK(KENR), WRK(KDV),
+        CALL PE_FCKMO(WRK(KCMO), WRK(KDV), WRK(KFCSOL), WRK(KENR),
      &                WRK(KWRKG), LWRKG)
         CALL DAXPY(NNORBX, 1.0D0, WRK(KFC), 1, WRK(KFCSOL), 1)
         CALL FCKDEN((NISHT>0), (NASHT>0), WRK(KDCAO), WRK(KDVAO),
@@ -2591,12 +2591,12 @@ C
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
-      CHARACTER*8 LAB123(3), TABLE(11), LABEOD, LABCC, LABABA
+      CHARACTER*8 LAB123(3), TABLE(12), LABEOD, LABCC, LABABA
       CHARACTER*8 LABAUX, LABUNI
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
-     *            'PCMINFO ','PCMJXMAT','PETMAT  '/
+     *            'PCMINFO ','PCMJXMAT','QMMMTMAT','PEFMAT  '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
@@ -2645,9 +2645,9 @@ C
          IORBI  = IORB(ISYM)
 C
          JFCDIA = KFCDIA - 1 + IORBI
-         DO 170 I = 1,NORBI
+         DO I = 1,NORBI
             WRK(JFCDIA+I) = FC( IIORB(ISYM) + IROW(I+1) )
-  170    CONTINUE
+         END DO
 C
          JFOCK  = KFOCK + I2ORB(ISYM)
          NOCCI  = NOCC(ISYM)
@@ -2943,15 +2943,21 @@ C Write qm/mm solvent part of the Fock matrix to interface file
 
       IF (PEQM) THEN
 #if defined (BUILD_PELIB)
-         KPEFCK  = KWRK1
-         KEPE  = KPEFCK + NNORBX
-         KWRK2 = KEPE + 1
-         LWRK2  = LFREE - KWRK2 + 1
-         IF (LWRK2 .LT. 0) CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
-         CALL PE_FCKMO(CMO, WRK(KPEFCK), WRK(KEPE), DV,
-     &                 WRK(KWRK2), LWRK2)
-         WRITE (LUSIFC) LAB123, TABLE(11)
-         CALL WRITT(LUSIFC, NNORBX, WRK(KPEFCK))
+         ! Calculate ground-state PE contribution which is subtracted from
+         ! the full Fock matrix in response for MCSCF wavefunction
+         IF (NCONF > 1) THEN
+            KPEFCK = KWRK1
+            KEPE   = KPEFCK + NNORBX
+            KWRK2  = KEPE + 1
+            LWRK2  = LFREE - KWRK2 + 1
+            IF (LWRK2 < 0) THEN
+               CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
+            END IF
+            CALL PE_FCKMO(CMO, DV, WRK(KPEFCK), WRK(KEPE),
+     &                    WRK(KWRK2), LWRK2)
+            WRITE (LUSIFC) LAB123, TABLE(12)
+            CALL WRITT(LUSIFC, NNORBX, WRK(KPEFCK))
+         END IF
 #endif
       END IF
 C

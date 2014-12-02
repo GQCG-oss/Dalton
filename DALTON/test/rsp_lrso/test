@@ -38,6 +38,6 @@ output_filter.add(re="Z2SPNORB.*cm-1", abs_tolerance=1e-4)
 
 #
 output_test.run(
-    ['rsp_lrso.dal'], ['rsp_lrso.mol'], {'out': output_filter},
+    ['rsp_lrso.dal'], ['rsp_lrso.mol'], f={'out': output_filter},
     accepted_errors=['not implemented for parallel calculations'],
     )
