@@ -2502,18 +2502,36 @@ TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
    RETURN
 END SUBROUTINE II_DFTDISP
 
-SUBROUTINE II_DFTsetFunc(Func,hfweight)
+SUBROUTINE II_DFTsetFunc(Func,hfweight,lupri)
+use xcfun_host,only: USEXCFUN
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
 use lsmpi_type
 #endif
 implicit none
-Character(len=80),intent(IN) :: Func
+Character(*),intent(IN)      :: Func
 Real(realk),intent(INOUT)    :: hfweight
+integer                      :: lupri
 integer                      :: ierror
-CALL DFTsetFunc(Func,hfweight,ierror)
-IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
+
+!For dft calculations, check whether xcfun is to be used or not and 
+!send the functional string accordingly either to the PS  
+!or to the XCfun interface
+IF(.NOT.USEXCFUN)THEN
+   if (len_trim(Func).gt.80) &
+      & call lsquit('Functional string length exceed 80',-1)
+   CALL DFTsetFunc(Func,hfweight,ierror)
+   IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
+ELSE
+#ifdef VAR_XCFUN
+   call xcfun_host_init(Func,hfweight,lupri)
+#else
+   call lsquit('Error: II_DFTaddFunc with usexcfun_save set to true, but program compiled without XCFUN',-1)
+#endif
+ENDIF
+
+
 #ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
@@ -2526,6 +2544,7 @@ ENDIF
 END SUBROUTINE II_DFTsetFunc
 
 SUBROUTINE II_DFTaddFunc(Func,GGAfactor)
+use xcfun_host,only: USEXCFUN
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
@@ -2535,7 +2554,16 @@ implicit none
 Character(len=80),intent(IN) :: Func
 Real(realk),intent(IN)       :: GGAfactor
 !
-CALL DFTaddFunc(Func,GGAfactor)
+IF(.NOT.USEXCFUN)THEN
+  CALL DFTaddFunc(Func,GGAfactor)
+ELSE
+#ifdef VAR_XCFUN
+  call lsquit('Error: II_DFTaddFunc not yet implemented for XCFUN',-1)
+!  call xcfun_host_augment_func(Func,GGAfactor,lupri)
+#else
+  call lsquit('Error: II_DFTaddFunc with usexcfun_save set to true, but program compiled without XCFUN',-1)
+#endif
+ENDIF
 #ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN

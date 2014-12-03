@@ -821,19 +821,8 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
-!For dft calculations, check whether xcfun is to be used or not and 
-!send the functional string accordingly either to the PS  
-!or to the XCfun interface
 if (config%solver%do_dft) then
-   IF(.NOT.USEXCFUN)THEN
-      if (len_trim(config%integral%dft%dftfunc).gt.80) then 
-         call lsquit('Functional string length exceed 80',-1)
-      else 
-         CALL II_DFTsetFunc(config%integral%dft%dftfunc,hfweight)
-      endif
-   ELSE
-      call xcfun_host_init(config%integral%dft%dftfunc,hfweight,lupri)
-   ENDIF
+   CALL II_DFTsetFunc(config%integral%dft%dftfunc,hfweight,lupri)
    !it is assumed that hfweight is set to zero and only  
    !changed if the functional require a HF weight  
    !different from zero. 
