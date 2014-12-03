@@ -21,6 +21,6 @@ f.add(string = 'Nuclear repulsion energy :',
 f.add(string = 'Final HF energy:',
       rel_tolerance = 1.0e-12)
 
-test.run(['energy_zmat.dal'], ['energy_zmat.mol'], {'out': f})
+test.run(['energy_zmat.dal'], ['energy_zmat.mol'], f={'out': f})
 
 sys.exit(test.return_code)

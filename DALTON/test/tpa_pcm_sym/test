@@ -54,6 +54,6 @@ f.add(from_string = 'Two-photon absorption summary',
       ignore_below = 1.0e-3)
 
 
-test.run(['tpa_pcm_sym.dal'], ['CH2O_STO-3G.mol'], {'out': f})
+test.run(['tpa_pcm_sym.dal'], ['CH2O_STO-3G.mol'], f={'out': f})
 
 sys.exit(test.return_code)

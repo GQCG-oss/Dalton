@@ -2667,6 +2667,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
             & MyLsItem,omega1(use_i),t1(use_i),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
             & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
 
+#ifdef MOD_UNRELEASED
       case( SOLVE_MULTIPLIERS )
 
          if (JOB == MODEL_CC2)then
@@ -2693,6 +2694,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
          call tensor_free(o2)
          call tensor_free(tl2)
          call tensor_free(ml4)
+#endif
 
       case default
          call lsquit("ERROR(ccsolver_get_residual): job not implemented for CC2, CCSD or CCSD(T)",-1)

@@ -94,6 +94,6 @@ f.add(from_string = 'Molecular Partition Functions',
        num_lines = 27,
        rel_tolerance = 1.0e-5)
 
-test.run(['prop_vibvcd.dal'], ['C2H4O_intglr_sym.mol'], {'out': f})
+test.run(['prop_vibvcd.dal'], ['C2H4O_intglr_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

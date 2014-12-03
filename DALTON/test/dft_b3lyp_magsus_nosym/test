@@ -32,6 +32,6 @@ f.add(from_string = 'Molecular rotational g-tensor in principal axis system (a.u
       num_lines = 32,
       abs_tolerance = 1.0e-5)
 
-test.run(['dft_b3lyp_magsus_nosym.dal'], ['HOF_6-31Gss.mol'], {'out': f})
+test.run(['dft_b3lyp_magsus_nosym.dal'], ['HOF_6-31Gss.mol'], f={'out': f})
 
 sys.exit(test.return_code)

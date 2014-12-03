@@ -9,9 +9,10 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
+
 f.add(re= '.DIPLEN   .DIPLEN',
       abs_tolerance = 1.0e-5)
 
-test.run(['pehf_cpp.dal'], ['pehf_cpp.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['pehf_cpp.dal'], ['pehf_cpp.mol'], ['pehf_cpp.pot'], f={'out': f})
 
 sys.exit(test.return_code)

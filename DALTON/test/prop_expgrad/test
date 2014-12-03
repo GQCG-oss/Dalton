@@ -22,6 +22,6 @@ f.add(from_string = 'Orbital-exponent gradient for all atoms',
       num_lines = 21,
       abs_tolerance = 1.0e-6)
 
-test.run(['prop_expgrad.dal'], ['N2_intgrl.mol'], {'out': f})
+test.run(['prop_expgrad.dal'], ['N2_intgrl.mol'], f={'out': f})
 
 sys.exit(test.return_code)
