@@ -621,7 +621,28 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-    real(realk) :: tcpu,twall
+    real(realk) :: tcpu,twall,time_pt_ijk,time_pt_ijk_min,time_pt_ijk_max
+    real(realk) :: time_trip,time_efull,time_driv,time_preload
+    real(realk) :: time_trip_min,time_efull_min,time_driv_min,time_preload_min
+    real(realk) :: time_trip_max,time_efull_max,time_driv_max,time_preload_max
+    real(realk) :: time_trip_tot,time_efull_tot,time_driv_tot,time_preload_tot
+    real(realk) :: phase_cntrs(nphases)
+    real(realk) :: flushing_time, flushing_time_min, flushing_time_max
+    real(realk) :: unlock_time,   unlock_time_min,   unlock_time_max
+    real(realk) :: waiting_time,  waiting_time_min,  waiting_time_max
+    real(realk) :: time_w_min, time_w_max
+    real(realk) :: time_c_min, time_c_max
+    real(realk) :: time_i_min, time_i_max
+
+    ! timings
+    unlock_time   = time_lsmpi_win_unlock
+    waiting_time  = time_lsmpi_wait
+    flushing_time = time_lsmpi_win_flush
+
+    time_trip_tot = 0.0E0_realk; time_preload_tot = 0.0E0_realk; time_efull_tot = 0.0E0_realk; time_driv_tot = 0.0E0_realk
+
+    call time_start_phase( PHASE_WORK, twall = time_pt_ijk )
+    call time_phases_get_current(current_wt=phase_cntrs)
 
     if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -635,9 +656,7 @@ contains
     call mem_alloc( needed,       nbuffs )
     call mem_alloc( tiles_in_buf, nbuffs )
     call mem_alloc( req,          nbuffs )
-#ifdef VAR_MPI
     if(alloc_in_dummy)call tensor_lock_wins(vvvo,'s',all_nodes=.true.)
-#endif
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
@@ -1107,7 +1126,10 @@ contains
 
                      needed(kbuf) = .true.
 
+                     call time_start_phase(PHASE_WORK, twall = time_preload )
                      call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,i,j,k,ij_count,nbuffs,needed,tiles_in_buf,vvvo_pdm_buff,req)
+                     call time_start_phase(PHASE_WORK, ttot = time_preload )
+                     time_preload_tot = time_preload_tot + time_preload
 
                      ! generate tuple(s)
                      TypeOfTuple_par_ijk: select case(tuple_type)
@@ -1116,11 +1138,14 @@ contains
 
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
+                        call time_start_phase(PHASE_WORK, twall = time_trip )
                         call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,k),&
                                                 & ccsd_doubles_portions_i,ccsd_doubles_portions_k,&
                                                 & vvvo_pdm_i,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                 & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+                        call time_start_phase(PHASE_WORK, ttot = time_trip )
+                        time_trip_tot = time_trip_tot + time_trip
 
 !$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
@@ -1133,16 +1158,20 @@ contains
 
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
-                          call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
-                                               & vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
-                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
-                                               & e4,async_id,num_ids,cublas_handle)
+                           call time_start_phase(PHASE_WORK, twall = time_efull )
+                           call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                                & vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
+                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
+                                                & e4,async_id,num_ids,cublas_handle)
+                           call time_start_phase(PHASE_WORK, ttot = time_efull )
+                           time_efull_tot = time_efull_tot + time_efull
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3))
  
                         else
 
+                           call time_start_phase(PHASE_WORK, twall = time_driv )
 #ifdef VAR_OPENACC
                            call trip_denom_ijk_acc(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
 #else
@@ -1159,6 +1188,8 @@ contains
                                                 & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
                                                 & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
                                                 & async_id,num_ids,cublas_handle)
+                           call time_start_phase(PHASE_WORK, ttot = time_driv )
+                           time_driv_tot = time_driv_tot + time_driv
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
@@ -1175,11 +1206,14 @@ contains
 
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
+                        call time_start_phase(PHASE_WORK, twall = time_trip )
                         call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
                                                 & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                                 & vvvo_pdm_i,vvvo_pdm_j,&
                                                 & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                                 & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+                        call time_start_phase(PHASE_WORK, ttot = time_trip )
+                        time_trip_tot = time_trip_tot + time_trip
 
                         if (full_no_frags) then
 
@@ -1188,16 +1222,20 @@ contains
 
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
-                          call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
-                                               & vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
-                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-                                               & e4,async_id,num_ids,cublas_handle)
+                           call time_start_phase(PHASE_WORK, twall = time_efull )
+                           call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                                & vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
+                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+                                                & e4,async_id,num_ids,cublas_handle)
+                           call time_start_phase(PHASE_WORK, ttot = time_efull )
+                           time_efull_tot = time_efull_tot + time_efull
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,j,k)) async(async_id(3))
 
                         else
-   
+
+                           call time_start_phase(PHASE_WORK, twall = time_driv )   
 #ifdef VAR_OPENACC
                            call trip_denom_ijk_acc(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
 #else
@@ -1214,6 +1252,8 @@ contains
                                                 & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
                                                 & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,&
                                                 & async_id,num_ids,cublas_handle)
+                           call time_start_phase(PHASE_WORK, ttot = time_driv )
+                           time_driv_tot = time_driv_tot + time_driv
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(ovoo(:,:,j,k)) async(async_id(2))
@@ -1228,6 +1268,7 @@ contains
 
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
+                        call time_start_phase(PHASE_WORK, twall = time_trip )
                         call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
                                                 & ccsd_doubles(:,:,:,k),ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                                 & ccsd_doubles_portions_k,vvvo_pdm_i,&
@@ -1235,6 +1276,8 @@ contains
                                                 & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
                                                 & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                                 & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+                        call time_start_phase(PHASE_WORK, ttot = time_trip )
+                        time_trip_tot = time_trip_tot + time_trip
 
 !$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
@@ -1247,17 +1290,21 @@ contains
 
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
-                          call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
-                                               & vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
-                                               & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),&
-                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
-                                               & e4,async_id,num_ids,cublas_handle)
+                           call time_start_phase(PHASE_WORK, twall = time_efull )
+                           call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                                & vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
+                                                & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),&
+                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
+                                                & e4,async_id,num_ids,cublas_handle)
+                           call time_start_phase(PHASE_WORK, ttot = time_efull )
+                           time_efull_tot = time_efull_tot + time_efull
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3))
 
                         else
 
+                           call time_start_phase(PHASE_WORK, twall = time_driv )
 #ifdef VAR_OPENACC 
                            call trip_denom_ijk_acc(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
 #else
@@ -1278,6 +1325,8 @@ contains
                                                 & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
                                                 & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
                                                 & async_id,num_ids,cublas_handle)
+                           call time_start_phase(PHASE_WORK, ttot = time_driv )
+                           time_driv_tot = time_driv_tot + time_driv
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
@@ -1407,6 +1456,122 @@ contains
     ! release triples ampl structures
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
+
+    call time_phases_get_diff(current_wt=phase_cntrs)
+    call time_start_phase( PHASE_WORK, ttot = time_pt_ijk )
+
+    ! timings
+    if (DECinfo%PL .gt. 2) then
+
+       ! minima
+       time_pt_ijk_min    = time_pt_ijk
+       time_preload_min   = time_preload_tot
+       time_trip_min      = time_trip_tot
+       time_efull_min     = time_efull_tot
+       time_driv_min      = time_driv_tot
+
+       call lsmpi_reduce_realk_min( time_pt_ijk_min   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_trip_min   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_efull_min   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_driv_min   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_preload_min   , infpar%master, infpar%lg_comm )
+
+       ! maxima
+       time_pt_ijk_max    = time_pt_ijk
+       time_preload_max   = time_preload_tot
+       time_trip_max      = time_trip_tot
+       time_efull_max     = time_efull_tot
+       time_driv_max      = time_driv_tot
+
+       call lsmpi_reduce_realk_max( time_pt_ijk_max   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_trip_max   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_efull_max   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_driv_max   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_preload_max   , infpar%master, infpar%lg_comm )
+
+       ! reductions
+       call lsmpi_local_reduction( time_pt_ijk   , infpar%master )
+       call lsmpi_local_reduction( time_trip_tot   , infpar%master )
+       call lsmpi_local_reduction( time_efull_tot   , infpar%master )
+       call lsmpi_local_reduction( time_driv_tot   , infpar%master )
+       call lsmpi_local_reduction( time_preload_tot   , infpar%master )
+
+       ! unlock, waiting, and flushing
+       unlock_time   = time_lsmpi_win_unlock - unlock_time
+       waiting_time  = time_lsmpi_wait       - waiting_time
+       flushing_time = time_lsmpi_win_flush  - flushing_time
+   
+       ! minima
+       unlock_time_min    = unlock_time
+       waiting_time_min   = waiting_time
+       flushing_time_min  = flushing_time
+
+       call lsmpi_reduce_realk_min( unlock_time_min   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( waiting_time_min  , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( flushing_time_min , infpar%master, infpar%lg_comm )
+
+       ! maxima
+       unlock_time_max    = unlock_time
+       waiting_time_max   = waiting_time
+       flushing_time_max  = flushing_time
+   
+       call lsmpi_reduce_realk_max( unlock_time_max   , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( waiting_time_max  , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( flushing_time_max , infpar%master, infpar%lg_comm )
+
+       ! reductions 
+       call lsmpi_local_reduction( unlock_time   , infpar%master )
+       call lsmpi_local_reduction( waiting_time  , infpar%master )
+       call lsmpi_local_reduction( flushing_time , infpar%master )
+
+       ! work, communication, and idle times
+       ! minima
+       time_w_min = phase_cntrs( PHASE_WORK_IDX )
+       time_c_min = phase_cntrs( PHASE_COMM_IDX )
+       time_i_min = phase_cntrs( PHASE_IDLE_IDX )
+
+       call lsmpi_reduce_realk_min( time_w_min , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_c_min , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_min( time_i_min , infpar%master, infpar%lg_comm )
+
+       ! maxima
+       time_w_max = phase_cntrs( PHASE_WORK_IDX )
+       time_c_max = phase_cntrs( PHASE_COMM_IDX )
+       time_i_max = phase_cntrs( PHASE_IDLE_IDX )
+   
+       call lsmpi_reduce_realk_max( time_w_max , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_c_max , infpar%master, infpar%lg_comm )
+       call lsmpi_reduce_realk_max( time_i_max , infpar%master, infpar%lg_comm )
+
+       ! reductions 
+       call lsmpi_local_reduction(phase_cntrs,nphases,infpar%master)
+
+       if (infpar%lg_mynum .eq. infpar%master) then
+
+          write(*,'("CCSD(T)-ijk time_trip                ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_trip_max  ,  time_trip_tot   /dble(nodtotal),time_trip_min  ,  time_trip_tot   / time_pt_ijk
+          write(*,'("CCSD(T)-ijk time_preload             ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_preload_max  ,  time_preload_tot   /dble(nodtotal),time_preload_min  ,  time_preload_tot   / time_pt_ijk
+          write(*,'("CCSD(T)-ijk time_efull               ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_efull_max  ,  time_efull_tot   /dble(nodtotal),time_efull_min  ,  time_efull_tot   / time_pt_ijk
+          write(*,'("CCSD(T)-ijk time_driv                ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_driv_max  ,  time_driv_tot   /dble(nodtotal),time_driv_min  ,  time_driv_tot   / time_pt_ijk
+          write(*,'("CCSD(T)-ijk time in lsmpi_win_unlock ",g10.3,g10.3,g10.3,g10.3)')&
+             & unlock_time_max, unlock_time/dble(nodtotal),unlock_time_min,          unlock_time   / time_pt_ijk
+          write(*,'("CCSD(T)-ijk time in lsmpi_wait       ",g10.3,g10.3,g10.3,g10.3)')&
+             & waiting_time_max,   waiting_time  /dble(nodtotal),waiting_time_min,   waiting_time  / time_pt_ijk
+          write(*,'("CCSD(T)-ijk time in lsmpi_win_flush  ",g10.3,g10.3,g10.3,g10.3)')&
+             & flushing_time_max,  flushing_time /dble(nodtotal),flushing_time_min,  flushing_time / time_pt_ijk
+          write(*,'("CCSD(T)-ijk time WORK                ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_w_max,phase_cntrs(PHASE_WORK_IDX)/dble(nodtotal),time_w_min,phase_cntrs(PHASE_WORK_IDX)/time_pt_ijk
+          write(*,'("CCSD(T)-ijk time COMM                ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_c_max,phase_cntrs(PHASE_COMM_IDX)/dble(nodtotal),time_c_min,phase_cntrs(PHASE_COMM_IDX)/time_pt_ijk
+          write(*,'("CCSD(T)-ijk time IDLE                ",g10.3,g10.3,g10.3,g10.3)')&
+             & time_i_max,phase_cntrs(PHASE_IDLE_IDX)/dble(nodtotal),time_i_min,phase_cntrs(PHASE_IDLE_IDX)/time_pt_ijk
+
+       endif
+
+    endif
 
     if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('IJK_LOOP_PAR',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
