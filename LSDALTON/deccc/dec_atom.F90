@@ -4877,11 +4877,12 @@ contains
     !> Job list of fragments listed according to size
     type(joblist),intent(inout) :: jobs
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags, minocc,minunocc,minbasis
-    integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
+    integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs,nred,m,k
     real(realk) :: avocc,avunocc,tcpu,twall,avbasis
     real(realk) :: avRmaxAOS, avRmaxAE, maxRmaxAOS, maxRmaxAE, minRmaxAOS, minRmaxAE
     real(realk) :: avDmaxAOS, avDmaxAE, maxDmaxAOS, maxDmaxAE, minDmaxAOS, minDmaxAE
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),fragbasis(:,:)
+    logical,pointer :: occAOSred(:,:,:),unoccAOSred(:,:,:),fragbasisred(:,:,:)
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -4889,6 +4890,7 @@ contains
     write(DECinfo%output,*) 'Preparing job list...'
     write(DECinfo%output,*)
     nbasis = MyMolecule%nbasis
+    nred = DECinfo%nfragsred
 
 
     ! Fragment dimension statistics
@@ -4930,6 +4932,14 @@ contains
     occsize   = 0
     unoccsize = 0
     basissize = 0
+    if(nred>0) then
+       call mem_alloc(occAOSred,nocc,natoms,nred)
+       call mem_alloc(unoccAOSred,nunocc,natoms,nred)
+       call mem_alloc(Fragbasisred,nbasis,natoms,nred)
+       occAOSred=.false.
+       unoccAOSred=.false.
+       FragBasisred=.false.
+    end if
 
 
     GetStandardFrag: do atom=1,natoms
@@ -4943,6 +4953,13 @@ contains
           idx=AtomicFragments(atom)%occAOSidx(j)  ! index for local occupied AOS orbital
           occAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
        end do
+       ! Reduced fragments
+       do m=1,nred
+          do j=1,AtomicFragments(atom)%REDfrags(m)%noccAOS
+             idx=AtomicFragments(atom)%REDfrags(m)%occAOSidx(j)
+             occAOSred(idx,atom,m) = .true.  
+          end do
+       end do
 
 
        ! Set unoccupied AOS logical vector
@@ -4951,6 +4968,13 @@ contains
           idx=AtomicFragments(atom)%unoccAOSidx(j)  ! index for unoccupied AOS orbital
           unoccAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
        end do
+       ! Reduced fragments
+       do m=1,nred
+          do j=1,AtomicFragments(atom)%REDfrags(m)%nunoccAOS
+             idx=AtomicFragments(atom)%REDfrags(m)%unoccAOSidx(j)
+             unoccAOSred(idx,atom,m) = .true.  
+          end do
+       end do
 
 
        ! Set AO basis logical vector
@@ -4958,6 +4982,29 @@ contains
        do j=1,AtomicFragments(atom)%nbasis
           idx=AtomicFragments(atom)%basis_idx(j)  ! index for AO basis function
           fragbasis(idx,atom) = .true.  ! idx is included in "atom" fragment
+       end do
+       ! Reduced spaces
+       ! --------------
+       ! Atomic orbitals coming from occ orbitals
+       do m=1,nred ! loop over number of reduced spaces
+          do j=1,nocc  ! loop over all occupied orbitals in molecule
+             if(occAOSred(j,atom,m)) then  ! is occupied orbital "j" in reduced fragment
+                do k=1,OccOrbitals(j)%numberofaos ! loop over number of atomic orbitals in occ orb. j
+                   ! Include atomic orbital "aos(k)" in atomic fragment extent for reduced fragment
+                   fragbasisred(OccOrbitals(j)%aos(k),atom,m) = .true.
+                end do
+             end if
+          end do
+       end do
+       ! Atomic orbitals coming from unocc orbitals (same as for occupied orbitals)
+       do m=1,nred 
+          do j=1,nunocc  
+             if(unoccAOSred(j,atom,m)) then 
+                do k=1,UnoccOrbitals(j)%numberofaos 
+                   fragbasisred(UnoccOrbitals(j)%aos(k),atom,m) = .true.
+                end do
+             end if
+          end do
        end do
 
 
@@ -5037,7 +5084,7 @@ contains
          &****************'
 
     if(DECinfo%PL <= 1) then
-      write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
+       write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
     endif
 
     do i=1,natoms
@@ -5046,8 +5093,8 @@ contains
        PrintFragInfo: if(which_fragments(myatom)) then
 
           if(DECinfo%PL>1)then
-            write(DECinfo%output,*)
-            write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
+             write(DECinfo%output,*)
+             write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
           endif
           write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,10X,"FRAG_SIZE")') &
                & myatom, &
@@ -5059,18 +5106,19 @@ contains
                & AtomicFragments(myatom)%DmaxAOS*bohr_to_angstrom, &
                & AtomicFragments(myatom)%DmaxAE*bohr_to_angstrom
           if(DECinfo%PL>1)then
-            write(DECinfo%output,*) '   Rave(AOS/AE)      Rsdv(AOS/AE)      Dave(AOS/AE)      Dsdv(AOS/AE)'
-            write(DECinfo%output,'(4X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3," FRAG_SIZE_EXT")') &
-               & AtomicFragments(myatom)%RaveAOS*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%RaveAE*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%RsdvAOS*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%RsdvAE*bohr_to_angstrom , &
-               & AtomicFragments(myatom)%DaveAOS*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%DaveAE*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%DsdvAOS*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%DsdvAE*bohr_to_angstrom
-            write(DECinfo%output,*)
-            write(DECinfo%output,'(4X,"------------------------------------------------------------------")')
+             write(DECinfo%output,*) '   Rave(AOS/AE)      Rsdv(AOS/AE)      Dave(AOS/AE)      Dsdv(AOS/AE)'
+             write(DECinfo%output,&
+                  & '(4X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3," FRAG_SIZE_EXT")') &
+                  & AtomicFragments(myatom)%RaveAOS*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%RaveAE*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%RsdvAOS*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%RsdvAE*bohr_to_angstrom , &
+                  & AtomicFragments(myatom)%DaveAOS*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%DaveAE*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%DsdvAOS*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%DsdvAE*bohr_to_angstrom
+             write(DECinfo%output,*)
+             write(DECinfo%output,'(4X,"------------------------------------------------------------------")')
           endif
 
        end if PrintFragInfo
@@ -5079,23 +5127,23 @@ contains
     write(DECinfo%output,*)
 
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-    &'FRAGANALYSIS: Max/Ave/Min occ         : ', maxocc,avocc,minocc
+         &'FRAGANALYSIS: Max/Ave/Min occ         : ', maxocc,avocc,minocc
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-    &'FRAGANALYSIS: Max/Ave/Min unocc       : ', maxunocc,avunocc,minunocc
+         &'FRAGANALYSIS: Max/Ave/Min unocc       : ', maxunocc,avunocc,minunocc
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-    &'FRAGANALYSIS: Max/Ave/Min basis       : ', maxbasis,avbasis,minbasis
+         &'FRAGANALYSIS: Max/Ave/Min basis       : ', maxbasis,avbasis,minbasis
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min Radius AOS  : ',&
-    &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
+         &'FRAGANALYSIS: Max/Ave/Min Radius AOS  : ',&
+         &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min Radius AE   : ', &
-    &maxRmaxAE*bohr_to_angstrom,avRmaxAE*bohr_to_angstrom,minRmaxAE*bohr_to_angstrom
+         &'FRAGANALYSIS: Max/Ave/Min Radius AE   : ', &
+         &maxRmaxAE*bohr_to_angstrom,avRmaxAE*bohr_to_angstrom,minRmaxAE*bohr_to_angstrom
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min Diameter AOS: ',&
-    &maxDmaxAOS*bohr_to_angstrom,avDmaxAOS*bohr_to_angstrom,minDmaxAOS*bohr_to_angstrom
+         &'FRAGANALYSIS: Max/Ave/Min Diameter AOS: ',&
+         &maxDmaxAOS*bohr_to_angstrom,avDmaxAOS*bohr_to_angstrom,minDmaxAOS*bohr_to_angstrom
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min Diameter AE : ', &
-    &maxDmaxAE*bohr_to_angstrom,avDmaxAE*bohr_to_angstrom,minDmaxAE*bohr_to_angstrom
+         &'FRAGANALYSIS: Max/Ave/Min Diameter AE : ', &
+         &maxDmaxAE*bohr_to_angstrom,avDmaxAE*bohr_to_angstrom,minDmaxAE*bohr_to_angstrom
     write(DECinfo%output,*)
 
 
@@ -5126,8 +5174,16 @@ contains
 
     call init_joblist(njobs,jobs)
 
-    call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-         & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs)
+    if(nred>0) then  
+       ! use reduced orbital spaces for some of the pair fragments
+       call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+            & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred, &
+            & occAOSred=occAOSred,unoccAOSred=unoccAOS,Fragbasisred=Fragbasisred)
+    else
+       ! No reduced pair fragments
+       call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+            & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred)
+    end if
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -5150,10 +5206,10 @@ contains
     do i=1,njobs
        if(jobs%atom1(i)==jobs%atom2(i)) then ! single
           write(DECinfo%output,'(1X,i8,4X,i15,7X,i8,11X,i6,3X,i6,3X,i6)') &
-             &i,jobs%jobsize(i),jobs%atom1(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+               &i,jobs%jobsize(i),jobs%atom1(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
        else ! pair
           write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8,3X,i6,3X,i6,3X,i6)') &
-             &i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+               &i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
        end if
     end do
     write(DECinfo%output,*)
@@ -5175,6 +5231,11 @@ contains
     call mem_dealloc( unoccsize )
     call mem_dealloc( basissize )
 
+    if(nred>0) then
+       call mem_dealloc(occAOSred)
+       call mem_dealloc(unoccAOSred)
+       call mem_dealloc(Fragbasisred)
+    end if
 
   end subroutine create_dec_joblist_driver
 
@@ -5310,7 +5371,7 @@ contains
   !> \author Kasper Kristensen
   !> \date April 2013
   subroutine set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-       & FragBasis,which_fragments, DistanceTable, esti,jobs)
+       & FragBasis,which_fragments, DistanceTable, esti,jobs,nred,occAOSred,unoccAOSred,Fragbasisred)
 
     implicit none
     !> Full molecule info
@@ -5330,7 +5391,7 @@ contains
     !> Logical vector describing unoccupied AOS (see create_dec_joblist_driver)
     logical,dimension(nunocc,natoms),intent(in) :: unoccAOS
     !> Logical vector describing which atomic basis functions to include for each fragment
-    logical,dimension(nbasis,natoms) :: FragBasis
+    logical,dimension(nbasis,natoms),intent(in) :: FragBasis
     !> Logical vector describing which atoms have orbitals assigned
     logical,dimension(natoms),intent(in) :: which_fragments
     !> Distance table with interatomic distances
@@ -5339,10 +5400,34 @@ contains
     logical,intent(in) :: esti
     !> Job list for fragments
     type(joblist),intent(inout) :: jobs
+    !> Number of reduced AOS orbital spaces for each fragment
+    !> If this argument is nonzero then occAOSred, unoccAOSred, and FragBasisred must be present
+    integer,intent(in) :: nred
+    !> Logical vector describing reduced occupied AOS (see create_dec_joblist_driver)
+    logical,dimension(nocc,natoms,nred),intent(in),optional :: occAOSred
+    !> Logical vector describing reduced unoccupied AOS (see create_dec_joblist_driver)
+    logical,dimension(nunocc,natoms,nred),intent(in),optional :: unoccAOSred
+    !> Logical vector describing reduced atomic fragment extent
+    logical,dimension(nbasis,natoms,nred),intent(in),optional :: FragBasisred
     logical,pointer :: occpairAOS(:), unoccpairAOS(:),basispair(:)
-    integer :: i,j,k,njobs,nsingle
+    integer :: i,j,k,njobs,nsingle,fotlevel
     real(realk) :: dist
     integer,pointer :: atom1(:),atom2(:),order(:),tmpnocc(:),tmpnunocc(:),tmpnbasis(:)
+    logical,pointer :: MyOccAOS1(:), MyUnoccAOS1(:), MyFragBasis1(:)
+    logical,pointer :: MyOccAOS2(:), MyUnoccAOS2(:), MyFragBasis2(:)
+
+    ! Sanity check for reduced fragments
+    if(nred/=0) then
+       if(.not. present(occAOSred)) then
+          call lsquit('set_dec_joblist: occAOSred argument not present!',-1)
+       end if
+       if(.not. present(unoccAOSred)) then
+          call lsquit('set_dec_joblist: unoccAOSred argument not present!',-1)
+       end if
+       if(.not. present(FragBasisRed)) then
+          call lsquit('set_dec_joblist: FragBasisRed argument not present!',-1)
+       end if
+    end if
 
     ! Init stuff
     k=0
@@ -5364,7 +5449,12 @@ contains
     call mem_alloc(occpairAOS,nocc)
     call mem_alloc(unoccpairAOS,nunocc)
     call mem_alloc(basispair,nbasis)
-
+    call mem_alloc(MyOccAOS1,nocc)
+    call mem_alloc(MyUnoccAOS1,nunocc)
+    call mem_alloc(MyFragBasis1,nbasis)
+    call mem_alloc(MyOccAOS2,nocc)
+    call mem_alloc(MyUnoccAOS2,nunocc)
+    call mem_alloc(MyFragBasis2,nbasis)
 
 
     ! **************************
@@ -5375,6 +5465,11 @@ contains
 
        if(.not. which_fragments(i)) cycle  ! No fragment for atom i
 
+       ! Set logical vectors for first fragment
+       MyOccAOS1 = occAOS(1:nocc,i)
+       MyUnoccAOS1 = unoccAOS(1:nunocc,i)
+       MyFragBasis1 = fragbasis(1:nbasis,i)
+
        ! Repeat atomic fragments if requested
        if(calcAF) then
 
@@ -5384,11 +5479,11 @@ contains
           atom2(k) = i   ! Same index for both atoms to distinguish single from pair jobs
 
           ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
-          jobs%jobsize(k) = count(occAOS(1:nocc,i))*count(unoccAOS(1:nunocc,i))&
-               &*count(fragbasis(1:nbasis,i))
-          tmpnocc(k)    = count(occAOS(1:nocc,i))
-          tmpnunocc(k)  = count(unoccAOS(1:nunocc,i))
-          tmpnbasis(k)  = count(fragbasis(1:nbasis,i))
+          jobs%jobsize(k) = count(MyOccAOS1)*count(MyUnoccAOS1)&
+               &*count(MyFragBasis1)
+          tmpnocc(k)    = count(MyOccAOS1)
+          tmpnunocc(k)  = count(MyUnoccAOS1)
+          tmpnbasis(k)  = count(MyFragBasis1)
 
        end if
 
@@ -5403,13 +5498,44 @@ contains
                & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold ) then
              k=k+1
 
+             ! **************
+             ! Reduced pairs?
+             ! **************
+             if(MyMolecule%PairFOTlevel(i,j)==0) then
+
+                ! Pair generated from standard atomic fragment corresponding to input FOT
+                ! -----------------------------------------------------------------------
+                ! Fragment 1 already set correctly - set logical vectors for second fragment
+                MyOccAOS2 = occAOS(1:nocc,j)
+                MyUnoccAOS2 = unoccAOS(1:nunocc,j)
+                MyFragBasis2 = fragbasis(1:nbasis,j)
+
+             else
+
+                ! Pair generated from fragments of reduced size (larger FOT)
+                ! ----------------------------------------------------------
+                fotlevel = MyMolecule%PairFOTlevel(i,j)
+
+                ! Fragment 1 orbital spaces for fotlevel
+                MyOccAOS1 = occAOSred(1:nocc,i,fotlevel)
+                MyUnoccAOS1 = unoccAOSred(1:nunocc,i,fotlevel)
+                MyFragBasis1 = FragBasisred(1:nbasis,i,fotlevel)
+
+                ! Fragment 2 orbital spaces for fotlevel
+                MyOccAOS2 = occAOSred(1:nocc,j,fotlevel)
+                MyUnoccAOS2 = unoccAOSred(1:nunocc,j,fotlevel)
+                MyFragBasis2 = FragBasisred(1:nbasis,j,fotlevel)
+
+             end if
+
+
              ! Merge AOS for fragment 1 and 2 for standard pair
-             call get_logical_pair_vector(nocc,occAOS(1:nocc,i),occAOS(1:nocc,j),occpairAOS)
-             call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,i),&
-                  &unoccAOS(1:nunocc,j),unoccpairAOS)
+             call get_logical_pair_vector(nocc,MyOccAOS1,MyOccAOS2,occpairAOS)
+             call get_logical_pair_vector(nunocc,MyUnoccAOS1,&
+                  &MyUnoccAOS2,unoccpairAOS)
 
              ! Logical vector for basis functions
-             call get_logical_pair_vector(nbasis,FragBasis(1:nbasis,i),FragBasis(1:nbasis,j),&
+             call get_logical_pair_vector(nbasis,MyFragBasis1,MyFragBasis2,&
                   & basispair)
 
              ! Atomic indices and jobsize for pair
@@ -5475,6 +5601,13 @@ contains
     call mem_dealloc(occpairAOS)
     call mem_dealloc(unoccpairAOS)
     call mem_dealloc(basispair)
+    call mem_dealloc(MyOccAOS1)
+    call mem_dealloc(MyUnoccAOS1)
+    call mem_dealloc(MyFragBasis1)
+    call mem_dealloc(MyOccAOS2)
+    call mem_dealloc(MyUnoccAOS2)
+    call mem_dealloc(MyFragBasis2)
+
 
   end subroutine set_dec_joblist
 
