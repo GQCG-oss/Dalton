@@ -4037,7 +4037,7 @@ end function max_batch_dimension
   end subroutine orthogonalize_MOs
 
   !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
-  subroutine print_total_energy_summary(EHF,Ecorr,Eerr)
+  subroutine print_total_energy_summary(EHF,Ecorr,Eerr,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF
@@ -4045,13 +4045,22 @@ end function max_batch_dimension
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
     real(realk),intent(in) :: Eerr
+    logical,intent(in),optional :: doSOS
     integer :: lupri
 
     lupri=6
-    call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    if(present(doSOS))then
+      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+    else
+      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    endif
 
     lupri=DECinfo%output
-    call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    if(present(doSOS))then
+      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+    else
+      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    endif
 
 
   end subroutine print_total_energy_summary
@@ -4060,7 +4069,7 @@ end function max_batch_dimension
   !> (Necessary to place here because it is used both for DEC and for full calculation).
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+  subroutine print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF
@@ -4070,6 +4079,12 @@ end function max_batch_dimension
     real(realk),intent(in) :: Eerr
     !> Logical unit number to print to
     integer,intent(in) :: lupri
+    !> SOS cont
+    logical,intent(in),optional :: doSOS
+    logical :: SOS
+
+    SOS = .false.
+    if(present(doSOS)) SOS = doSOS
 
     ! MODIFY FOR NEW MODEL
 
@@ -4115,12 +4130,12 @@ end function max_batch_dimension
              write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy    :', Ehf+Ecorr
           endif
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)')  'G: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
-         if(.not. DECinfo%SOS) then
-           write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy:', Ehf+Ecorr
+         if(.not. SOS) then
+           write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy   :', Ehf+Ecorr
          else
-           write(lupri,'(15X,a,f20.10)') 'G: Total SOSEX energy:', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)') 'G: Total SOSEX energy  :', Ehf+Ecorr
          endif
        else
           write(lupri,'(15X,A,I4,A,I4)') 'G: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel
@@ -4132,7 +4147,12 @@ end function max_batch_dimension
        IF(DECinfo%DFTreference)THEN
           write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Ehf
        ENDIF
-       write(lupri,'(15X,a,f20.10)')       'E: Correlation energy  :', Ecorr
+       if(SOS) then
+         write(lupri,'(15X,a,f20.10)')       'E: SOSEX energy        :', Ecorr
+       else
+         write(lupri,'(15X,a,f20.10)')       'E: Correlation energy  :', Ecorr
+       endif
+
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
           write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC error :', Eerr
@@ -4158,8 +4178,8 @@ end function max_batch_dimension
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)')    'E: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
-          if(.not. DECinfo%SOS) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy    :', Ehf+Ecorr
+          if(.not. SOS) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy   :', Ehf+Ecorr
           else
              write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy  :', Ehf+Ecorr
           endif
@@ -4281,28 +4301,56 @@ end function max_batch_dimension
 
        if(.not.DECinfo%onlyvirtpart) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
-               & 'RPA occupied single energies','AF_RPA_OCC')
+               & 'dRPA occupied single energies','AF_RPA_OCC')
        endif
        if(.not.DECinfo%onlyoccpart) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
-               & 'RPA virtual single energies','AF_RPA_VIR')
+               & 'dRPA virtual single energies','AF_RPA_VIR')
        endif
 
        if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
-               & DistanceTable, 'RPA occupied pair energies','PF_RPA_OCC')
+               & DistanceTable, 'dRPA occupied pair energies','PF_RPA_OCC')
        endif
        if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
-               & DistanceTable, 'RPA virtual pair energies','PF_RPA_VIR')          
+               & DistanceTable, 'dRPA virtual pair energies','PF_RPA_VIR')          
        endif
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'RPA occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'dRPA occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
             & energies(FRAGMODEL_OCCRPA)
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'RPA virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'dRPA virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTRPA)
+       end if
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCSOS),dofrag,&
+               & 'SOSEX occupied single energies','AF_SOS_OCC')
+       endif
+       if(.not.DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTSOS),dofrag,&
+               & 'SOSEX virtual single energies','AF_SOS_VIR')
+       endif
+
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCSOS),dofrag,&
+               & DistanceTable, 'SOSEX occupied pair energies','PF_SOS_OCC')
+       endif
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTSOS),dofrag,&
+               & DistanceTable, 'SOSEX virtual pair energies','PF_SOS_VIR') 
+       endif
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'SOSEX occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
+            & energies(FRAGMODEL_OCCSOS)
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'SOSEX virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
+               & energies(FRAGMODEL_VIRTSOS)
        end if
        write(DECinfo%output,*)
 
@@ -5025,7 +5073,7 @@ end function max_batch_dimension
   !> \brief Estimate (absolute) energy error in DEC calculation.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine get_estimated_energy_error(natoms,energies,Eerr)
+  subroutine get_estimated_energy_error(natoms,energies,Eerr,doSOS)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
@@ -5033,8 +5081,12 @@ end function max_batch_dimension
     real(realk),intent(in) :: energies(ndecenergies)
     !> Estimated (absolute) energy error
     real(realk),intent(inout) :: Eerr
+    logical,intent(in),optional :: doSOS
     real(realk) :: Eocc,Evirt
+    logical :: SOS
 
+    SOS = .false.
+    if(present(doSOS)) SOS=doSOS
     ! MODIFY FOR NEW MODEL
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
@@ -5048,7 +5100,11 @@ end function max_batch_dimension
 
     case(MODEL_RPA)
        ! Energy error = difference between occ and virt energies
-       Eerr = abs(energies(FRAGMODEL_OCCRPA) - energies(FRAGMODEL_VIRTRPA))
+       if(SOS) then
+         Eerr = abs(energies(FRAGMODEL_OCCSOS) - energies(FRAGMODEL_VIRTSOS))
+       else
+         Eerr = abs(energies(FRAGMODEL_OCCRPA) - energies(FRAGMODEL_VIRTRPA))
+       endif
 
     case(MODEL_CCSD)
        Eerr = abs(energies(FRAGMODEL_OCCCCSD) - energies(FRAGMODEL_VIRTCCSD))
