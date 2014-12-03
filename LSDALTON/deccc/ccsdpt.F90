@@ -93,7 +93,7 @@ module ccsdpt_module
 #endif
 #endif
 
-#ifdef VAR_OPENACC
+#ifdef VAR_CUDA
 
   interface
   
@@ -257,8 +257,6 @@ contains
 
     end if
 
-    if (master) call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal)
-
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
 
@@ -272,7 +270,11 @@ contains
        call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_doubles%elm4,mylsitem,print_frags,abc)
 
     end if waking_the_slaves
+#endif
 
+    call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal)
+
+#ifdef VAR_MPI
     ! Communicate important information:
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(eivalocc,nocc,infpar%master)
@@ -10704,7 +10706,7 @@ contains
      ! Memory currently available
      ! **************************
      call get_currently_available_memory(MemoryAvailable)
-     ! Note: We multiply by 85 % to be on the safe side!
+     ! Note: We multiply by 95 % to be on the safe side!
      MemoryAvailable = 0.95*MemoryAvailable
 
      nnod = 1
@@ -10920,7 +10922,7 @@ contains
     integer, intent(in) :: tile_size 
     real(realk) :: GB
     integer(kind=long) :: tmpI
-    GB = 1.000E-9_realk ! 1 GB
+    GB = 1073741824.0E0_realk ! 1 GB
     ! Array sizes needed in get_CCSDpT_integrals are checked and the largest one is found
  
     ! Tmp array 1
@@ -10987,7 +10989,7 @@ contains
     endif
 
     ! Size = size1+size2+size3,  convert to GB
-    mem = realk*GB*(size1+size2+size3)
+    mem = realk*(size1+size2+size3)/GB
 
 
   end subroutine get_max_arraysizes_for_ccsdpt_integrals
@@ -11002,13 +11004,14 @@ contains
       integer, intent(in) :: nodtotal
       logical :: ijk,manual_ijk,manual_abc_1,manual_abc_2,gpu
       integer, intent(inout) :: ijk_nbuffs,abc_nbuffs,abc_tile_size
-      integer :: num_gpu
+      integer :: num_gpu,me
+      logical :: master
 #ifdef VAR_OPENACC
       integer(kind=acc_device_kind) :: acc_device_type
 #endif
       real(realk) :: free_cpu ! in gb
       integer(c_size_t) :: total_gpu,free_gpu ! in bytes
-      real(realk), parameter :: gb =  1.0E-9_realk ! 1 GB
+      real(realk), parameter :: gb =  1073741824.0E0_realk ! 1 GB
       integer, parameter :: ijk_default = 1000000, abc_default = 1000000
 
       ijk_nbuffs = 0
@@ -11025,126 +11028,251 @@ contains
 
       call get_currently_available_memory(free_cpu)
 
+      me   = 0
+#ifdef VAR_MPI
+      me   = infpar%lg_mynum
+      call lsmpi_reduce_realk_min(free_cpu,infpar%master,infpar%lg_comm)
+#endif
+
+      master = (me .eq. 0)
+
+      if (master) then
+
 #ifdef VAR_OPENACC
 
-      acc_device_type = acc_get_device_type() 
-      num_gpu = acc_get_num_devices(acc_device_type)
-      call get_dev_mem(total_gpu,free_gpu)
+         acc_device_type = acc_get_device_type() 
+         num_gpu = acc_get_num_devices(acc_device_type)
+
+#ifdef VAR_CUDA
+         call get_dev_mem(total_gpu,free_gpu)
+#endif
 
 #endif
 
-      if (num_gpu .gt. 0) gpu = .true.
-
-      if (abc) then
-         ijk = .false.
-      else
-         ijk = .true.
-      endif
-
-      if (ijk) then
-
-         if (DECinfo%ijk_nbuffs .lt. ijk_default) then
- 
-             manual_ijk = .true.
-             ijk_nbuffs = DECinfo%ijk_nbuffs
-
-         endif
-
-         if (manual_ijk) then
-
-            if (ijk_nbuffs .lt. 3) call lsquit('manually set ijk_nbuffs (NBUFFS_IJK) .lt. 3 - aborting...',DECinfo%output)
-
+         if (num_gpu .gt. 0) gpu = .true.
+   
+         if (abc) then
+            ijk = .false.
          else
-
-!            ! here; determine ijk_nbuffs based on available cpu/gpu memory
-!            if (ijk_nbuffs .eq. ijk_default) call new_ijk_routine()
-            ijk_nbuffs = 6
-
+            ijk = .true.
          endif
-
-      else ! abc == .true.
-
-         if (DECinfo%abc_nbuffs .lt. abc_default) then
-
-             manual_abc_1 = .true.
-             abc_nbuffs = DECinfo%abc_nbuffs
-
+   
+         if (ijk) then
+   
+            if (DECinfo%ijk_nbuffs .lt. ijk_default) then
+    
+                manual_ijk = .true.
+                ijk_nbuffs = DECinfo%ijk_nbuffs
+   
+            endif
+   
+            if (manual_ijk) then
+   
+               if (ijk_nbuffs .lt. 3) call lsquit('manually set ijk_nbuffs (NBUFFS_IJK) .lt. 3 - aborting...',DECinfo%output)
+   
+            else
+   
+!               ! here; determine ijk_nbuffs based on available cpu/gpu memory
+!               if (ijk_nbuffs .eq. ijk_default) call new_ijk_nbuffs_routine()
+               ijk_nbuffs = 6
+   
+            endif
+   
+         else ! abc == .true.
+   
+            if (DECinfo%abc_nbuffs .lt. abc_default) then
+   
+                manual_abc_1 = .true.
+                abc_nbuffs = DECinfo%abc_nbuffs
+   
+            endif
+   
+            if (manual_abc_1) then
+   
+               if (abc_nbuffs .lt. 3) call lsquit('manually set abc_nbuffs (NBUFFS_ABC) .lt. 3 - aborting...',DECinfo%output)
+   
+            else
+   
+!               ! here; determine ijk_nbuffs based on available cpu/gpu memory
+!               if (abc_nbuffs .eq. abc_default) call new_abc_nbuffs_routine()
+               abc_nbuffs = 6
+   
+            endif
+   
+            if (DECinfo%abc_tile_size .lt. abc_default) then
+   
+               manual_abc_2 = .true.
+               abc_tile_size = DECinfo%abc_tile_size
+   
+            endif
+   
+            if (manual_abc_2) then
+   
+               if (abc_tile_size .lt. 1) call lsquit('manually set tile size (.ABC_TILE) .lt. 1 - aborting...',DECinfo%output)
+   
+            else
+   
+               call abc_tile_size_routine(nocc,nvirt,print_frags,free_cpu,nodtotal,abc_nbuffs,abc_tile_size)
+   
+            endif
+   
+            if (abc_tile_size .gt. nvirt) call lsquit('manually set tile size (.ABC_TILE) .gt. nvirt - aborting...',DECinfo%output)
+   
          endif
-
-         if (manual_abc_1) then
-
-            if (abc_nbuffs .lt. 3) call lsquit('manually set abc_nbuffs (NBUFFS_ABC) .lt. 3 - aborting...',DECinfo%output)
-
-         else
-
-!            ! here; determine ijk_nbuffs based on available cpu/gpu memory
-!            if (ijk_nbuffs .eq. ijk_default) call new_ijk_routine()
-            abc_nbuffs = 6
-
-         endif
-
-         if (DECinfo%abc_tile_size .lt. abc_default) then
-
-            manual_abc_2 = .true.
-            abc_tile_size = DECinfo%abc_tile_size
-
-         endif
-
-         if (manual_abc_2) then
-
-            if (abc_tile_size .lt. 1) call lsquit('manually set tile size (.ABC_TILE) .lt. 1 - aborting...',DECinfo%output)
-
-         else
-
-!            ! here; determine abc_tile_size based on available cpu/gpu memory
-!            if (abc_tile_size .eq. abc_default) call new_abc_routine()
-            abc_tile_size = 1
-
-         endif
-
-         if (abc_tile_size .gt. nvirt) call lsquit('manually set tile size (.ABC_TILE) .gt. nvirt - aborting...',DECinfo%output)
-
-      endif
-
-      write(DECinfo%output,'(/,a)') '-----------------------------'
-      write(DECinfo%output,'(a)')   '      CCSD(T) information    '
-      write(DECinfo%output,'(a,/)') '-----------------------------'
+   
+         write(DECinfo%output,'(/,a)') '-----------------------------'
+         write(DECinfo%output,'(a)')   '      CCSD(T) information    '
+         write(DECinfo%output,'(a,/)') '-----------------------------'
 #ifdef VAR_MPI
-      write(DECinfo%output,'(a,i4)')     'Number of nodes in lg  = ',nodtotal
+         write(DECinfo%output,'(a,i4)')     'Number of nodes in lg  = ',nodtotal
 #endif
-      write(DECinfo%output,'(a,l4)')     'Print frag. energies   = ',print_frags
-      write(DECinfo%output,'(a,l4)')     'IJK partitioning       = ',ijk
-      if (ijk) then
-         if (manual_ijk) then
-            write(DECinfo%output,'(a,i4)')     'Input # IJK buffers    = ',ijk_nbuffs
-         else
-            write(DECinfo%output,'(a,i4)')     '# IJK buffers          = ',ijk_nbuffs
+         write(DECinfo%output,'(a,l4)')     'Print frag. energies   = ',print_frags
+         write(DECinfo%output,'(a,l4)')     'IJK partitioning       = ',ijk
+         if (ijk) then
+            if (manual_ijk) then
+               write(DECinfo%output,'(a,i4)')     'Input # IJK buffers    = ',ijk_nbuffs
+            else
+               write(DECinfo%output,'(a,i4)')     '# IJK buffers          = ',ijk_nbuffs
+            endif
          endif
-      endif
-      write(DECinfo%output,'(a,l4)')     'ABC partitioning       = ',abc
-      if (abc) then
-         if (manual_abc_1) then
-            write(DECinfo%output,'(a,i4)')     'Input # ABC buffers    = ',abc_nbuffs
-         else
-            write(DECinfo%output,'(a,i4)')     '# ABC buffers          = ',abc_nbuffs
+         write(DECinfo%output,'(a,l4)')     'ABC partitioning       = ',abc
+         if (abc) then
+            if (manual_abc_1) then
+               write(DECinfo%output,'(a,i4)')     'Input # ABC buffers    = ',abc_nbuffs
+            else
+               write(DECinfo%output,'(a,i4)')     '# ABC buffers          = ',abc_nbuffs
+            endif
+            if (manual_abc_2) then
+               write(DECinfo%output,'(a,i4)')     'Input ABC tile size    = ',abc_tile_size
+            else
+               write(DECinfo%output,'(a,i4)')     'ABC tile size          = ',abc_tile_size
+            endif
          endif
-         if (manual_abc_2) then
-            write(DECinfo%output,'(a,i4)')     'Input ABC tile size    = ',abc_tile_size
-         else
-            write(DECinfo%output,'(a,i4)')     'ABC tile size          = ',abc_tile_size
+         write(DECinfo%output,'(a,g11.4)')     'Free CPU memory (GB)   = ',free_cpu
+         write(DECinfo%output,'(a,l4)')     'Are we using GPUs?     = ',gpu
+         if (gpu) then
+            write(DECinfo%output,'(a,i4)')     'Number of GPUs         = ',num_gpu
+            write(DECinfo%output,'(a,g11.4)')     'Total GPU memory (GB)  = ',total_gpu * gb
+            write(DECinfo%output,'(a,g11.4)')     'Free GPU memory (GB)   = ',free_gpu * gb
          endif
+         write(DECinfo%output,*)
+         write(DECinfo%output,*)
+
       endif
-      write(DECinfo%output,'(a,g11.4)')     'Free CPU memory (GB)   = ',free_cpu
-      write(DECinfo%output,'(a,l4)')     'Are we using GPUs?     = ',gpu
-      if (gpu) then
-         write(DECinfo%output,'(a,i4)')     'Number of GPUs         = ',num_gpu
-         write(DECinfo%output,'(a,g11.4)')     'Total GPU memory (GB)  = ',total_gpu * gb
-         write(DECinfo%output,'(a,g11.4)')     'Free GPU memory (GB)   = ',free_gpu * gb
-      endif
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
 
   end subroutine ccsdpt_info
+
+  subroutine abc_tile_size_routine(nocc,nvirt,print_frags,free_cpu,nodtotal,abc_nbuffs,abc_tile_size)
+
+      implicit none
+
+      integer, intent(in) :: nocc,nvirt,nodtotal,abc_nbuffs
+      real(realk), intent(in) :: free_cpu
+      logical, intent(in) :: print_frags
+      integer, intent(inout) :: abc_tile_size
+      real(realk) :: mem_avail_start,mem_accum_tmp,mem_est_avail_tmp,mem_est_avail,mem_vovv_pdm,mem_vovv_local
+      integer(kind=long) :: ccsd_doubles,ccsd_doubles_portions,ooov,oovv,vovv_total
+      integer(kind=long) :: eivalocc,eivalvirt,trip_ampls,ccsdpt_singles,ccsdpt_doubles
+      integer(kind=long) :: vovv_pdm,vovv_local
+      integer(kind=long) :: mem_int_tmp
+      integer(kind=long) :: max_abc_tile_size,ts
+      integer :: remainder_1,remainder_2,num_tiles_tot,num_tiles_node
+      real(realk), parameter :: GB = 1073741824.0E0_realk ! 1 GB = 1024.**3
+
+      ! available memory - note that we multiply by 95 % to be on the safe side!
+      mem_avail_start = 0.95 * free_cpu
+
+      ! ccsd quantities
+      ccsd_doubles = i8*nocc**2*nvirt**2
+      ccsd_doubles_portions = i8*3*nocc*nvirt**2
+
+      ! local integrals
+      ooov = i8*nocc**3*nvirt
+      oovv = i8*nocc**2*nvirt**2
+
+      ! total distributed integrals
+      vovv_total = i8*nocc*nvirt**3
+
+      ! orbital energies
+      eivalocc = i8*nocc
+      eivalvirt = i8*nvirt
+
+      ! triples amplitudes and temp array
+      trip_ampls = i8*2*nocc**3
+
+      ! ccsdpt intermediates
+      ccsdpt_singles = i8*nocc*nvirt
+      ccsdpt_doubles = i8*2*nocc**2*nvirt**2
+
+      ! temp sum of integer elements
+      mem_int_tmp = ccsd_doubles + &
+                  & ccsd_doubles_portions + &
+                  & ooov + &
+                  & oovv + &
+                  & eivalocc + &
+                  & eivalvirt + &
+                  & trip_ampls
+
+      if (print_frags) mem_int_tmp = mem_int_tmp + ccsdpt_singles + ccsdpt_doubles 
+
+      ! estimate the memory needed for allocations
+      mem_accum_tmp = realk*mem_int_tmp / GB
+
+      ! estimate available memory AFTER allocations, but BEFORE vovv allocation
+      mem_est_avail_tmp = mem_avail_start - mem_accum_tmp
+      if (mem_est_avail_tmp .lt. 0.0E0_realk) call lsquit('mem_est_avail_tmp .lt. 0 GB - aborting...',DECinfo%output) 
+
+      ! max tile_size
+      max_abc_tile_size = int(nvirt / nodtotal)
+
+      do ts = max_abc_tile_size,1,-1
+
+         ! how many tiles are there in total?
+         num_tiles_tot = int(nvirt / ts)
+
+         ! modulo_1
+         remainder_1 = mod(nvirt,ts)
+
+         ! update total number of tiles
+         if (remainder_1 .gt. 0) num_tiles_tot = num_tiles_tot + 1
+
+         ! how many tiles per node in PDM?
+         num_tiles_node = int(num_tiles_tot / nodtotal)
+
+         ! modulo_2
+         remainder_2 = mod(num_tiles_tot,nodtotal)
+
+         ! update number of tiles per node
+         if (remainder_2 .gt. 0) num_tiles_node = num_tiles_node + 1
+   
+         ! calculate the PDM memory requirements for the given tile_size
+         vovv_pdm = i8*num_tiles_node*(nocc*nvirt**2*ts)
+         mem_vovv_pdm = realk*vovv_pdm / GB
+
+         ! calculate the local memory requirements for the given tile_size and the given number of tiles
+         vovv_local = i8*abc_nbuffs*(nocc*nvirt**2*ts)
+         mem_vovv_local = realk*vovv_local / GB
+
+         ! estimate available memory AFTER vovv allocation
+         mem_est_avail = mem_est_avail_tmp - (mem_vovv_pdm + mem_vovv_local)
+
+         if ((mem_est_avail .lt. 0.0E0_realk)) then
+
+            if (ts .eq. 1) call lsquit('mem_est_avail .lt. 0 GB for smallest possible abc_tile_size - aborting...',DECinfo%output)
+
+            cycle
+
+         else
+
+            abc_tile_size = ts
+
+            return
+
+         endif
+
+      enddo
+
+  end subroutine abc_tile_size_routine
 
 !endif mod_unreleased
 #endif
