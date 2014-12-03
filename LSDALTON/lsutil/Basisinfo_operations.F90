@@ -721,10 +721,10 @@ subroutine copybrakebasinfo(OLDBASINFO,NEWBASINFO)
   NEWBASINFO%OriginalType = OLDBASINFO%OriginalType
   NEWBASINFO%OriginalnAngmom = OLDBASINFO%OriginalnAngmom
   NEWBASINFO%nAngmom = OLDBASINFO%nAngmom
-  call mem_alloc(NEWBASINFO%OriginalnOrb,NEWBASINFO%nAngmom)
-  call mem_alloc(NEWBASINFO%nOrb,NEWBASINFO%nAngmom)
-  call mem_alloc(NEWBASINFO%Orb,SIZE(OLDBASINFO%Orb,1),NEWBASINFO%nAngmom)
-  call mem_alloc(NEWBASINFO%Angmom,NEWBASINFO%nAngmom)
+  call mem_alloc(NEWBASINFO%OriginalnOrb,SIZE(OLDBASINFO%OriginalnOrb))
+  call mem_alloc(NEWBASINFO%nOrb,SIZE(OLDBASINFO%nOrb))
+  call mem_alloc(NEWBASINFO%Orb,SIZE(OLDBASINFO%Orb,1),SIZE(OLDBASINFO%Orb,2))
+  call mem_alloc(NEWBASINFO%Angmom,SIZE(OLDBASINFO%Angmom))
   NEWBASINFO%OriginalnOrb = OLDBASINFO%OriginalnOrb
   NEWBASINFO%nOrb = OLDBASINFO%nOrb
   NEWBASINFO%Orb = OLDBASINFO%Orb
