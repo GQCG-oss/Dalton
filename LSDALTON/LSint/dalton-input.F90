@@ -723,8 +723,6 @@ DO I=1,NATOMS
    WhichAtoms(ATOMS(I)) = .TRUE.
 ENDDO
 
-print*,'WhichAos',WhichAos
-
 nBASINFOARRAY = 0
 iB=RegBasParam
 r = lsfull%input%basis%binfo(IB)%labelindex

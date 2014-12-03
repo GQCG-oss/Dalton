@@ -443,16 +443,16 @@ contains
        call ls_mpi_buffer(OccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(OccOrbitals(i)%centralatom,master)
        call ls_mpi_buffer(OccOrbitals(i)%secondaryatom,master)
-       call ls_mpi_buffer(OccOrbitals(i)%numberofatoms,master)
+       call ls_mpi_buffer(OccOrbitals(i)%numberofaos,master)
 
-       ! Pointer for atoms for orbital "i"
+       ! Pointer for Atomic Orbitals (AOs) for orbital "i"
        if(.not. gm) then ! allocate for local masters (not global master)
-          Nullify(OccOrbitals(i)%atoms)
-          call mem_alloc(OccOrbitals(i)%atoms,OccOrbitals(i)%numberofatoms)
+          Nullify(OccOrbitals(i)%aos)
+          call mem_alloc(OccOrbitals(i)%aos,OccOrbitals(i)%numberofaos)
        end if
        ! Buffer handling for both master and slave
-       call ls_mpi_buffer(OccOrbitals(i)%atoms, &
-            & OccOrbitals(i)%numberofatoms,master)
+       call ls_mpi_buffer(OccOrbitals(i)%aos, &
+            & OccOrbitals(i)%numberofaos,master)
     end do
 
 
@@ -464,16 +464,16 @@ contains
        call ls_mpi_buffer(UnoccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(UnoccOrbitals(i)%centralatom,master)
        call ls_mpi_buffer(UnoccOrbitals(i)%secondaryatom,master)
-       call ls_mpi_buffer(UnoccOrbitals(i)%numberofatoms,master)
+       call ls_mpi_buffer(UnoccOrbitals(i)%numberofaos,master)
 
-       ! Pointer for atoms for orbital "i"
+       ! Pointer for Atomic Orbitals (AOs) for orbital "i"
        if(.not. gm) then ! allocate for local masters (not global master)
-          Nullify(UnoccOrbitals(i)%atoms)
-          call mem_alloc(UnoccOrbitals(i)%atoms,UnoccOrbitals(i)%numberofatoms)
+          Nullify(UnoccOrbitals(i)%aos)
+          call mem_alloc(UnoccOrbitals(i)%aos,UnoccOrbitals(i)%numberofaos)
        end if
        ! Buffer handling for both master and slave
-       call ls_mpi_buffer(UnoccOrbitals(i)%atoms, &
-            & UnoccOrbitals(i)%numberofatoms,master)
+       call ls_mpi_buffer(UnoccOrbitals(i)%aos, &
+            & UnoccOrbitals(i)%numberofaos,master)
     end do
 
 
@@ -869,31 +869,31 @@ contains
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%secondaryatom,master)
-       call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofatoms,master)
+       call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofaos,master)
 
        ! Pointers inside decorbital sub-type (which again is inside decfrag type)
        if(.not. AddToBuffer) then
-          Nullify(MyFragment%occAOSorb(i)%atoms)
-          call mem_alloc(MyFragment%occAOSorb(i)%atoms,&
-               & MyFragment%occAOSorb(i)%numberofatoms)
+          Nullify(MyFragment%occAOSorb(i)%aos)
+          call mem_alloc(MyFragment%occAOSorb(i)%aos,&
+               & MyFragment%occAOSorb(i)%numberofaos)
        end if
        ! Buffer handling
-       call ls_mpi_buffer(MyFragment%occAOSorb(i)%atoms, &
-            & MyFragment%occAOSorb(i)%numberofatoms,master)
+       call ls_mpi_buffer(MyFragment%occAOSorb(i)%aos, &
+            & MyFragment%occAOSorb(i)%numberofaos,master)
     end do
 
     do i=1,MyFragment%nunoccLOC ! unocc orbitals
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%secondaryatom,master)
-       call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%numberofatoms,master)
+       call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%numberofaos,master)
        if(.not. AddToBuffer) then ! allocate for slave
-          Nullify(MyFragment%unoccAOSorb(i)%atoms)
-          call mem_alloc(MyFragment%unoccAOSorb(i)%atoms,&
-               & MyFragment%unoccAOSorb(i)%numberofatoms)
+          Nullify(MyFragment%unoccAOSorb(i)%aos)
+          call mem_alloc(MyFragment%unoccAOSorb(i)%aos,&
+               & MyFragment%unoccAOSorb(i)%numberofaos)
        end if
-       call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%atoms, &
-            & MyFragment%unoccAOSorb(i)%numberofatoms,master)
+       call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%aos, &
+            & MyFragment%unoccAOSorb(i)%numberofaos,master)
     end do
 
 
