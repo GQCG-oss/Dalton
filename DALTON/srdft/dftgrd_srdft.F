@@ -53,7 +53,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include <chrnos.h>
       CHARACTER*16 QUADNAME
-#include <ibtfun.h>
 
       CALL TIMER('START ',TIMSTR,TIMEND)
 
@@ -75,12 +74,12 @@ C       as well
          ZCNT   = CHARGE(ICENT)
          IF(NAMN(ICENT)(1:2).NE.'Gh' .AND. .NOT. NOORBT(ICENT)) THEN
            DO ISYMOP = 0, MAXOPR         
-           IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+           IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
              NAT = NAT + 1
              ZAN(NAT) = ZCNT
-             C(1,NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-             C(2,NAT) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-             C(3,NAT) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+             C(1,NAT) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+             C(2,NAT) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+             C(3,NAT) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
            ENDIF
            ENDDO
          ENDIF
@@ -260,8 +259,6 @@ CTROND     &  1.80D0,1.80D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
 C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
      &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/ 
 
-#include <ibtfun.h>
-
 C
 C     USE INPUTTED INFORMATION IN COMMON BLOCK DFTWRK TO DEFINE THE TYPE
 C     OF QUADRATURE
@@ -322,7 +319,7 @@ CTROND: define scaling factor for Bragg: set to one !!!!
          IF(NOORBT(IATOM)) GOTO 15
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 15
       DO 10 ISYMOP = 0, MXOPR         
-      IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
+      IF (IAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
          NDEG  = MULT(ISTBNU(IATOM))
          WRITE(LUPRI,'(A,A4)') '** Atom ',NAMN(IATOM)
          MULA  = ISTBNU(IATOM)
@@ -961,8 +958,7 @@ C
       PARAMETER (A0 = 1.0D-8)
       LOGICAL LBTAX
 #include <symmet.h>
-#include <ibtfun.h>
-      LBTAX(I,J) = IBTAND(2**(I-1),ISYMAX(J,1)) .GT. 0
+      LBTAX(I,J) = IAND(2**(I-1),ISYMAX(J,1)) .GT. 0
 C
       IF (MAXREP.EQ.0) NSYMOP = 0 
       IF (MAXREP.EQ.1) NSYMOP = 1 

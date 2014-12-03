@@ -156,8 +156,6 @@ C
 #include <symmet.h>
 #include <shells.h>
 C
-#include <ibtfun.h>
-C
       V2 = D2*VXC
       DO IX = 1, 3
          IF (IX.EQ.1) THEN
@@ -176,7 +174,7 @@ C
          DO IREPA = 0, MAXREP
             ISTR = IBAS(IREPA+1) + 1
             IEND = IBAS(IREPA+1) + NBAS(IREPA+1)
-            IRPAX = IBTXOR(IREPA,ISYMAX(IX,1))
+            IRPAX = IEOR(IREPA,ISYMAX(IX,1))
             IORBA = 0
             DO ISHELA = 1, KMAX
                ISCOOR = IPTCNT(3*(NCENT(ISHELA) - 1) + IX,0,1)
