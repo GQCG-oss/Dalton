@@ -608,35 +608,38 @@ C     Intent of Dummy arguments
       dimension work(lwork)  !intent(inout)
 
 C     Variables for updating the slaves' /common/ blocks.
-      integer*8:: firstmem, lastmem 
       integer  :: bytesize, allocstatus, deallocstatus
       integer  :: isymtr
-C     Variables for the spinning barrier
-      logical :: reset, release, flag, exitspinningbarrier 
-
-C     MPI related and load balancing variables
-      integer :: numprocs, sharedwork, rest, firstindex, lastindex
-      integer :: request 
-      integer, dimension(MPI_STATUS_SIZE) :: mpistatus
 
 C     Pre-sorting load balancing variables
-      logical       :: presorting, assignnow, workreceived
-      logical, save :: printsortinginfo=.true.
-      integer       :: TargetID, getnumjobs, getindices
+      logical, save :: forceloadbalance        =.true.
+      logical, save :: forcedynamicloadbalance =.false.
+      logical, save :: slavesupdatetasks       =.false.
+      integer, save :: maxnumjobs
+      logical       :: assignnow, workreceived
+      integer       :: getnumjobs, getindices
+      integer, allocatable, dimension(:), save :: AssignedIndices
+
+C     Timing variables used for load monitoring
+      integer :: comm_timers, color
+      integer :: counti, countf, count_rate
+      real    :: timespent
+      real, dimension(:), allocatable, save :: timings
+
+C     MPI related and load balancing variables
+      integer :: numprocs, request, allocsize
+      integer, dimension(ntot)            :: temparray
+      integer, dimension(MPI_STATUS_SIZE) :: mpistatus
 
       integer, allocatable, dimension(:,:) :: presortarray !only used by master
       integer, allocatable, dimension(:,:) :: finalsorted !only used by master
-      integer, allocatable, dimension(:)   :: AssignedIndices
       real*8,  allocatable, dimension(:)   :: tempfock
       
 C     Miscellaneous
       DIMENSION INDEXA(MXCORB)
-      logical :: debugging = .false., printspininfo = .true.
-      real    :: starttime, stoptime
 
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       call mpi_bcast(forceupdate,1,mpi_logical,0,mpi_comm_world, ierr)
-      presorting = .true.
 
 C**********************************************************
 C     Update all necessary common blocks
@@ -798,236 +801,105 @@ C     This data needs to be updated every time PAR_RP_ERES is called
 C**************************************************    
 C     Start load balancing
 C**************************************************    
-      sharedwork = ntot/numprocs 
-      rest = mod(ntot, numprocs)
 
-C **********************************************************
-C     UNSORTED STATIC LOAD BALANCING
-C     The number of indexes to be handled is distributed evenly over 
-C     available processes. The tasks that are leftover once all processes
-C     have received their share of jobs is distributed among the slaves
-C     only.
-C
-C     If the number of processes is larger than the 
-C     number of tasks, the surplus processes will 
-C     sleep to release CPU time for threaded MKL applications.
-C     
-C     The number of distributions per ILLL index is unevenly distributed
-C     so this load balancing scheme might be slower for smaller systems.
-C     For large systems the amount of work is assumed to even out as the
-C     number of ILLL indexes grows. TODO this has not been benchmarked yet.
-C **********************************************************
-      NormalStaticLoadBalance: if (.not.presorting) then
-      write(*, *) 'Entering static balance'
-      if (sharedwork.eq.1) goto 200 !load balancing for low task/process ratio
-      if (sharedwork.lt.1) goto 210 !load balancing when there are excess processes 
+C   In case there are too many processes compared
+C   to the number of ILLL indices, the surplus processes are
+C   redirected. They will return from the polling barrier when
+C   the master sends a non-blocking logical equal to .true.
+      if (myid.ge.ntot) color = 1
+      if (myid.lt.ntot) color = 0 !these are the ones performing timings, other processes stall in the polling barrier.
+      call mpi_comm_split(mpi_comm_world, color, myid, comm_timers,ierr)
+      if (myid.ge.ntot) then
+         call pollingbarrier(1)
+         goto  800 !skip to assembly of matrices. 
+      endif
 
 
-C     Normal static load balancing
-      staticbalance: if (myid.eq.0) then
-         firstindex = 1
-         lastindex = sharedwork
-      elseif ((myid.le.rest).and.(myid.ne.0)) then 
-         firstindex = myid*sharedwork + myid
-         lastindex = firstindex + sharedwork  
-      elseif ((myid.gt.rest).and.(myid.lt.ntot)) then
-         firstindex = myid*sharedwork + 1 + rest
-         lastindex = firstindex + sharedwork - 1
-      endif staticbalance
-      goto 666 !end of normal balance
+C     Start the dynamic load balancing
+      if(forcedynamicloadbalance) then
 
+          forcedynamicloadbalance = .false. ! This is the last time work is redistributed in an AOSOPPA computation.
+          slavesupdatetasks       = .true.  ! Tels the slaves they have to receive work from the master.
+          if (myid.eq.0) then
+             call dynloadbal_parsoppa(timings, allocsize, temparray)
+             AssignedIndices = temparray(1:allocsize)
+          endif
+      endif
 
-200   continue 
-      lowbalance: if (myid.eq.0) then
-         firstindex = 1
-         lastindex = firstindex 
-      elseif (myid.le.rest) then
-         firstindex = myid*sharedwork + myid
-         lastindex = firstindex + 1 
-      elseif (myid.gt.rest) then
-         firstindex = myid*sharedwork + rest + 1
-         lastindex =  firstindex
-      endif lowbalance
-      goto 666 !end of low-task  balance
+C     Start the presorting load balancing.
+      if (forceloadbalance) then
 
+         forceloadbalance        = .false. ! Don't use the pre-sorting load balancing more than once, next time use dynamic instead.
+         forcedynamicloadbalance = .true.  ! Monitor the tasks and re-balance once the actual walltimes are known.
+         slavesupdatetasks       = .true.
 
-
-C **********************************************************
-C   SPINNING BARRIER 
-C   Spinning barrier in case there are too many processes compared
-C   to the number of AO indices. The surplus processes will sleep, 
-C   enabling the remaining processes to use them for threaded MKL 
-C   applications
-C 
-C   F.Beyer.
-C   TODO As of Apr. 2014 the sleepqq function is only available 
-C   through Intel. It's possible that slaves stalled with an 
-C   mpi_bcast are available for scheduling with the MKL library. 
-C   If INTEL is not availabe, blocking the surplus slaves with an
-C   mpi_bcast solution might be applicable.
-C **********************************************************
-210   continue 
-
-      if (myid.lt.rest) then      
-         if ((myid.eq.0).and.(iprint.gt.3).and.(printspininfo) ) then
-            printspininfo = .false.
-            write(lupri,*)"Spinning load balance used in PAR_RP_ERES. ",
-     &                    "The number of employed processes might be ",
-     &                    "in excess of what is appropriate for this ", 
-     &                    "basis set."
-         endif
-         firstindex = myid + 1 
-         lastindex = myid + 1
-      endif 
-
-
-
-      exitspinningbarrier = .false. 
-      spinningbarrier: if (myid.ge.ntot) then
-         ! The release signal is sent from the master towards the end of the subroutine
-         call mpi_irecv(exitspinningbarrier, 1, MPI_LOGICAL, 0, myid,
-     &   mpi_comm_world, request, ierr) 
-
-130      continue 
-#ifdef VAR_IFORT
-         call sleepqq(100)  
-#endif
-         call mpi_test(request, flag, mpistatus, ierr)
-         if (.not.exitspinningbarrier) then
-            goto 130 ! Cycle to the top of the barrier.
-         else
-             goto 800 ! Skip to the assembly of the Fock matrix 
-         endif
-      endif spinningbarrier
-C     End of spinning barrier
-
-666   continue  !redirection point for the non-presorted load balancing schemes
-
-      endif NormalStaticLoadBalance
-
-C**************************************************
-C     PRE-SORTED LOAD BALANCING
-C 
-C     The Presorting scheme calculates the amount of 
-C     work associated with every ILLL index before 
-C     any actual computation takes place.
-C     The it distributes the indexes in such a way
-C     that every process calculates the same total 
-C     number of distributions, even if that means
-C     calculating  a different number of ILLL indexes.
-C**************************************************
-      PresortedStaticBalance: if (presorting) then
-      if (myid.ge.ntot) goto 210 !send excess processes to the spinning barrier to release CPU time for MKL
-
-
-      mastersorting: if (myid.eq.0) then
-C        FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
-         allocate( presortarray(2, ntot), stat=allocstatus )
-         if(.not.(allocstatus.eq.0) ) then
-            call quit('Allocation error in PAR_RP_ERES')
-         endif
-         call presortaodist(ntot, work(kindxb), presortarray)
-         call getallocsize(ntot, presortarray, maxnumjobs) 
-
-C        The master tells the slaves how much space to allocate ...
-         numrecipients = min(numprocs, ntot)
-         do targetID=1, (numrecipients-1)
-            call mpi_isend(maxnumjobs, 1, mpi_integer, targetID, 
-     &                     targetID, mpi_comm_world, getnumjobs, ierr) 
-         enddo
-
-         allocate( AssignedIndices(maxnumjobs), stat=allocstatus )
-         if(.not.(allocstatus.eq.0) ) then
-            call quit('Allocation error in PAR_RP_ERES')
-         endif
-
-
-C        CREATE THE FINAL MATRIX OF PRE-SORTED AO INDICES
-         allocate(finalsorted(maxnumjobs, numprocs)
-     &                  ,stat=allocstatus )
-         if(.not.(allocstatus.eq.0) ) then
-            call quit('Allocation error in PAR_RP_ERES')
-         endif
-         call partitionAOindices(ntot, maxnumjobs, numprocs, 
-     &                           presortarray, finalsorted)
-
-
-C        TRANSFER ILLL INDICES TO SLAVES AND KEEP OWN WORK IN A VECTOR
-         numrecipients = min(numprocs, ntot)
-         DO i=2, numrecipients
-            TargetID = i-1 
-            call mpi_isend(finalsorted(1, i), maxnumjobs, mpi_integer, 
-     &      TargetID, TargetID, mpi_comm_world, getindices, ierr) 
-         ENDDO
-         AssignedIndices = finalsorted(:,1) 
-     
-      endif mastersorting
-
-
-C************************************************** 
-C     Slaves receive the indices to integrate over
-C**************************************************
-      IF (myid.ne.0) then
-
-
-C Get the number of tasks and allocate memory for the indices
-         call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
-     &                  mpi_comm_world, getnumjobs, ierr)
-001      continue 
-         call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
-         if (assignnow)  then
-            allocate( AssignedIndices(maxnumjobs), stat=allocstatus )
-            if(.not.(allocstatus.eq.0) ) then
-               call quit('Allocation error in PAR_SO_ERES ')
+         !performs balancing and sends tasks to slaves.
+         if (myid.eq.0) then 
+            call presortloadbal_parsoppa(work,lwork,allocsize,temparray)
+            maxnumjobs = allocsize
+            if (.not. allocated(AssignedIndices) ) then
+               allocate(AssignedIndices(maxnumjobs), stat=allocstatus)
             endif
-         else 
-            goto 001
+            AssignedIndices = temparray(1:allocsize)
+         endif 
+
+         if (.not. allocated(timings) ) then
+            allocate(timings(ntot) )
+            timings = 0.0
          endif
 
+      endif !forceloadbalance.
 
 
-C Get the actual AO indices to integrate over.
-         call mpi_irecv(AssignedIndices, maxnumjobs, mpi_integer, 0, 
+C************************************************** 
+C   Slaves receive the indices they have to work with
+C**************************************************
+         if (slavesupdatetasks) then
+         slavesupdatetasks = .false.
+         IF (myid.ne.0) then
+
+C           Get the number of tasks and allocate memory for the indices
+            call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
+     &                  mpi_comm_world, getnumjobs, ierr)
+001         continue
+            call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
+            if (assignnow)  then
+               if (.not. allocated(AssignedIndices) ) then
+                  allocate(AssignedIndices(maxnumjobs),stat=allocstatus)
+                  if(.not.(allocstatus.eq.0) ) then
+                     call quit('Allocation error; AssignedIndices ')
+                  endif
+               endif
+            else 
+               goto 001
+            endif
+
+C           Get the pre-sorted ILLL indices.
+            call mpi_irecv(AssignedIndices, maxnumjobs, mpi_integer, 0, 
      &                  myid, mpi_comm_world, getindices, ierr)
-002      continue  
-         call mpi_test(getindices, workreceived, mpistatus, ierr)
-         if (workreceived)  then
-            continue 
-         else 
-            goto 002
+002         continue 
+            call mpi_test(getindices, workreceived, mpistatus, ierr)
+            if (workreceived)  then
+               continue 
+            else 
+               goto 002
+            endif
+
+         ENDIF 
          endif
-      ENDIF 
-
-C ************************************************** 
-C     Pre-sorted parallel calculation  is
-C     controlled from this loop
-C ************************************************** 
-      DO i=1, maxnumjobs 
-         if ( .not.(AssignedIndices(i).eq.0) ) then
-            firstindex = AssignedIndices(i)
-            lastindex  = AssignedIndices(i)
-
-            goto 999  ! Perform integral, then return to label 998
-         endif
-998      continue
-      ENDDO
-
-
-      goto 888 !exit the dynamic load leveler now that all integrals are done
-      endif PresortedStaticBalance
-C************************************************** 
-C     End of pre-sorted balancing and calculation.
-C************************************************** 
-
-
-
 
 
 C *******************************************
 C            Primary parallel loop. 
 C *******************************************
-999         continue !direction point from the pre-sorted load balancer
-            doilll: DO 300 ILLL = firstindex, lastindex
+      doilll: DO 300 workindex=1, maxnumjobs
+         ILLL = AssignedIndices(workindex) 
+         if (ILLL.eq.0) exit
+
+         if (forcedynamicloadbalance) then
+            call system_clock(counti, count_rate)
+         endif
+
                   if (.not.direct) then
                      call quit('RPA in parallel must use .DIRECT. ',
      &                         'integral transformations')
@@ -1041,7 +913,6 @@ C *******************************************
                   ELSE
 
 
-               write(*,*) myid, 'got to 111'
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
      &                           WORK(KODCL1),WORK(KODCL2),
      &                           WORK(KODBC1),WORK(KODBC2),
@@ -1103,38 +974,51 @@ C----------------------------------------------
 C                 Calculate the AO-Fock matrix.
 C----------------------------------------------
                   IF (TRIPLET) THEN
-               write(*,*) myid, 'got to 222'
                      CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
      &                               WORK(KFOCK),WORK(KEND4),
      &                               LWORK4,IDEL,ISYMD,ISYMTR)
                   ELSE
-               write(*,*) myid, 'got to 333'
                      CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
      &                              WORK(KFOCK),WORK(KEND4),
      &                              LWORK4,IDEL,ISYMD,.FALSE.,
      &                              'Dummy',ISYMTR)
 
                   END IF
-  310          enddo idel2loop
+  310    enddo idel2loop
+
+         if (forcedynamicloadbalance) then
+            call system_clock(countf)
+            timespent =   ( countf-counti )/REAL(count_rate)
+            timings(ILLL) = timespent
+         endif
 
 
-  300       enddo doilll
-      if (presorting) goto 998
-888   continue ! target goto when all pre-sorted processes finishes their integrals
+  300 enddo doilll
+
+
+      if (forcedynamicloadbalance ) then
+              !assemble the array with timings 
+              if (myid.eq.0) then
+                 call mpi_reduce(mpi_in_place, timings, ntot, MPI_REAL,
+     &                           MPI_SUM, 0, COMM_TIMERS, ierr)
+              else
+                 call mpi_reduce(timings, temparray, ntot, MPI_REAL,
+     &                           MPI_SUM, 0, COMM_TIMERS, ierr)
+              endif
+      endif
+
 
 C**************************************************
 C    End of parallel calculation
 C**************************************************
 
 
-
 C     The master sends a release signal to all 
 C     processes participating in the spinning barrier.
       if (numprocs.gt.ntot) then
          if (myid.eq.0) then
-            exitspinningbarrier = .true.
             do i=ntot, (numprocs-1)
-               call mpi_isend(exitspinningbarrier, 1, MPI_LOGICAL, i,
+               call mpi_isend(.true., 1, MPI_LOGICAL, i,
      &         i, mpi_comm_world, request, ierr)
             enddo
          endif
@@ -1155,15 +1039,17 @@ C     Assemble the Fock Matrix in the master's work array
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       endif
 
+      call mpi_barrier(mpi_comm_world, ierr)
+
+
       deallocate(tempfock)
 
-
-      if (allocated(AssignedIndices)) then
-      deallocate( AssignedIndices, stat=deallocstatus)
-      if(.not.(allocstatus.eq.0) ) then
-         call quit('Deallocation error in PAR_RP_ERES')
-      endif
-      endif
+      !if (allocated(AssignedIndices)) then
+      !deallocate( AssignedIndices, stat=deallocstatus)
+      !if(.not.(allocstatus.eq.0) ) then
+         !call quit('Deallocation error in PAR_RP_ERES')
+      !endif
+      !endif
 
 
 
@@ -1182,7 +1068,6 @@ C     Assemble the Fock Matrix in the master's work array
       endif
       endif
          
-
       RETURN
       END SUBROUTINE
 
