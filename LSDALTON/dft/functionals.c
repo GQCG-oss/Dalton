@@ -946,6 +946,7 @@ dft_d3bj_s6_(void)
     if (strcasecmp(selected_func->name, "DFTB3")==0)       res = 1.0;
 
     if (res == 0) {
+printf("Unknown functional '%s' in DFT-D3-BJ. Aborting.\n", selected_func->name);
       dalton_quit("DFT-D3-BJ s_6 not defined for the chosen functional");
     }
     return res;

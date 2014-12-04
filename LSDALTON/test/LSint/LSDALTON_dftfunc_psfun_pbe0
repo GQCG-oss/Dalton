@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > LSDALTON_dftfunc_pbe0.info <<'%EOF%'
-   LSDALTON_dftfunc_pbe0
+cat > LSDALTON_dftfunc_psfun_pbe0.info <<'%EOF%'
+   LSDALTON_dftfunc_psfun_pbe0
    -------------
    Molecule:         water/6-31G**
    Wave Function:    PBE0
@@ -28,7 +28,7 @@ cat > LSDALTON_dftfunc_pbe0.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > LSDALTON_dftfunc_pbe0.mol <<'%EOF%'
+cat > LSDALTON_dftfunc_psfun_pbe0.mol <<'%EOF%'
 BASIS
 6-31G**
 LSint test, H2O
@@ -44,7 +44,9 @@ H    -1.452350000   0.899623000   0.00000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > LSDALTON_dftfunc_pbe0.dal <<'%EOF%'
+cat > LSDALTON_dftfunc_psfun_pbe0.dal <<'%EOF%'
+**GENERAL
+.PSFUN
 **WAVE FUNCTIONS
 .DFT
  PBE0
@@ -61,8 +63,8 @@ cat > LSDALTON_dftfunc_pbe0.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >LSDALTON_dftfunc_pbe0.check
-cat >> LSDALTON_dftfunc_pbe0.check <<'%EOF%'
+echo $CHECK_SHELL >LSDALTON_dftfunc_psfun_pbe0.check
+cat >> LSDALTON_dftfunc_psfun_pbe0.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
