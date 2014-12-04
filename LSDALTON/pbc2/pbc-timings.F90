@@ -18,7 +18,8 @@
 !> pbc_timings_print(timings)
 !> pbc_timings_destruct(timings)
 !> 
-!> @author Karl R. Leikanger 2014
+!> @author Karl R. Leikanger 
+!> date 2014
 
 module pbc_timings
 use precision
@@ -36,7 +37,8 @@ contains
 !> @brief Initialize and allocate mem for timing_info.
 !> @param timings Timing_info pointer.
 !> @param num_jobs_inp Number of different jobs to time.
-!> @author Karl R. Leikanger 2014
+!> @author Karl R. Leikanger
+!> date 2014
 subroutine pbc_timings_init(timings, num_jobs_inp)
    implicit none
 	! input
@@ -58,7 +60,8 @@ end subroutine pbc_timings_init
 
 !> @brief Deallocate mem.
 !> @param timings Timing_info pointer.
-!> @author Karl R. Leikanger 2014
+!> @author Karl R. Leikanger
+!> date 2014
 subroutine pbc_timings_destruct(timings)
 		implicit none
 		! input
@@ -72,7 +75,8 @@ end subroutine pbc_timings_destruct
 !> @param timings Timing_info pointer.
 !> @param jname Jobname.
 !> @param job The number of the job to name.
-!> @author Karl R. Leikanger 2014
+!> @author Karl R. Leikanger
+!> date 2014
 subroutine pbc_timings_name_timer(timings, jname, job)
 		implicit none
 		! input
@@ -87,7 +91,8 @@ end subroutine pbc_timings_name_timer
 !> @brief Add time to one of the job. Start timing.
 !> @param timings Timing_info pointer.
 !> @param job Number of the job.
-!> @author Karl R. Leikanger 2014
+!> @author Karl R. Leikanger
+!> date 2014
 subroutine pbc_timings_start(timings, job)
    implicit none
 	! input 
@@ -107,7 +112,8 @@ end subroutine pbc_timings_start
 !> @param job Number of the job.
 !> @param printlevel_i 0 do not print, 1 print to lupri, 2 print to screen and lupri.
 !> @param lupri Logical print unit.
-!> @author Karl R. Leikanger 2014
+!> @author Karl R. Leikanger
+!> date 2014
 subroutine pbc_timings_stop(timings, job, printlevel_i, lupri)
    implicit none
 	! input
@@ -143,14 +149,14 @@ subroutine pbc_timings_stop(timings, job, printlevel_i, lupri)
 	timings(job)%walltime = timings(job)%walltime + deltawall
 
 	if ( printlevel > 0 ) then
-		write (dw_s,'(2F9.4)') deltawall
-		write (dc_s,'(2F9.4)') deltacpu
+		write (dw_s,'(2F9.2)') deltawall
+		write (dc_s,'(2F9.2)') deltacpu
 		write (6, *) '>>>> Time consumption: ', &
  				& timings(job)%jobname, ',  Walltime:', dw_s, ',  CPUtime:', dc_s, '.'
 	endif
 	if ( printlevel == 2 ) then 
-		write (dw_s,'(2F9.4)') deltawall
-		write (dc_s,'(2F9.4)') deltacpu
+		write (dw_s,'(2F9.2)') deltawall
+		write (dc_s,'(2F9.2)') deltacpu
 		write (lupri, *) '>>>> Time consumption: ', &
  				& timings(job)%jobname, ',  Walltime:', dw_s, ',  CPUtime:', dc_s, '.'
 	endif
@@ -161,7 +167,8 @@ end subroutine pbc_timings_stop
 !> @brief Print all the collected information.
 !> @param timings Timing_info pointer.
 !> @param lupri Print unit.
-!> @author Karl R. Leikanger 2014
+!> @author Karl R. Leikanger
+!> date 2014
 subroutine pbc_timings_print(timings, lupri)
 	implicit none
 	! input
@@ -179,7 +186,7 @@ subroutine pbc_timings_print(timings, lupri)
 	write (lupri, *) '------------------------------------------------------------------'
 	num_jobs = timings(1)%num_jobs
 	do i = 1, num_jobs
-		write (lupri,'(A5,A20,2F18.4,2F18.4)') ' >>> ', timings(i)%jobname, &
+		write (lupri,'(A5,A20,2F18.2,2F18.2)') ' >>> ', timings(i)%jobname, &
 			& timings(i)%walltime, timings(i)%cputime
 	enddo
 	write (lupri, *) '=================================================================='

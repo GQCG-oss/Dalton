@@ -17,6 +17,6 @@ f = Filter()
 f.add(string = 'Final DFT energy',
       rel_tolerance = 1.0e-8)
 
-test.run(['dft_lb94.dal'], ['Ar_aug-cc-pVTZ.mol'], {'out': f})
+test.run(['dft_lb94.dal'], ['Ar_aug-cc-pVTZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

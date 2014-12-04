@@ -22,6 +22,6 @@ f.add(from_string = 'Dipole moment',
       num_lines = 5,
       mask = [1])
 
-test.run(['dft_camb3lyp.dal'], ['H_aug-cc-pVTZ.mol'], {'out': f})
+test.run(['dft_camb3lyp.dal'], ['H_aug-cc-pVTZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

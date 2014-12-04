@@ -41,7 +41,7 @@ f.add(string = 'Point group',
 f.add(string = 'Center-of-mass',
       rel_tolerance = 1.0e-5)
 
-test.run(['pcm_mcscf.dal'], ['H2O_6-311Gs_sym.mol'], {'out': f},
+test.run(['pcm_mcscf.dal'], ['H2O_6-311Gs_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

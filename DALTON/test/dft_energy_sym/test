@@ -17,6 +17,6 @@ f = Filter()
 f.add(string = 'Final DFT energy',
       rel_tolerance = 1.0e-8)
 
-test.run(['dft_energy_sym.dal'], ['H2O2_6-31Gss.mol'], {'out': f})
+test.run(['dft_energy_sym.dal'], ['H2O2_6-31Gss.mol'], f={'out': f})
 
 sys.exit(test.return_code)

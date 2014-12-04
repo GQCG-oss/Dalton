@@ -33,6 +33,6 @@ f.add(from_string = 'Spin-orbit contribution to HFC (in G)',
       num_lines = 12,
       abs_tolerance = 1.0e-3)
 
-test.run(['rsp_fullhfc.dal'], ['H2O_3-21G_sym.mol'], {'out': f})
+test.run(['rsp_fullhfc.dal'], ['H2O_3-21G_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

@@ -29,6 +29,6 @@ f.add(from_string = 'Two-photon absorption summary',
       num_lines = 8,
       rel_tolerance = 1.0e-2)
 
-test.run(['dftmm_6.dal'], ['CH2O_STO-3G_2H2O_MM.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['dftmm_6.dal'], ['CH2O_STO-3G_2H2O_MM.mol'], f={'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)

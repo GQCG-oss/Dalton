@@ -19,6 +19,6 @@ f.add(from_string = 'Dipole moment components',
       mask = [3],
       abs_tolerance = 1.0e-5)
 
-test.run(['pehsrohf_wft.dal'], ['pehsrohf_wft.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['pehsrohf_wft.dal'], ['pehsrohf_wft.mol'], ['pehsrohf_wft.pot'], f={'out': f})
 
 sys.exit(test.return_code)

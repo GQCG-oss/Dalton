@@ -25,6 +25,6 @@ f.add(string = '@ Oscillator strength (LENGTH)',
       ignore_sign = True,
       abs_tolerance = 1.0e-4)
 
-test.run(['tddft_tda.dal'], ['H2O_cc-pVDZ.mol'], {'out': f})
+test.run(['tddft_tda.dal'], ['H2O_cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

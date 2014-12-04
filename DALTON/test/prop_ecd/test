@@ -55,6 +55,6 @@ f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
       rel_tolerance = 1.0e-3)
 
 
-test.run(['prop_ecd.dal'], ['C2H4_intgrl_sym.mol'], {'out': f})
+test.run(['prop_ecd.dal'], ['C2H4_intgrl_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

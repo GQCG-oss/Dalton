@@ -55,7 +55,7 @@ f.add(string = 'SOPPA  p-h  weight',
 f.add(string = 'SOPPA 2p-2h weight',
       rel_tolerance = 1.0e-3)
 
-test.run(['rsp_soppa1excinosymm.dal'], ['H2O_cc-pVDZ_nosym.mol'], {'out': f},
+test.run(['rsp_soppa1excinosymm.dal'], ['H2O_cc-pVDZ_nosym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

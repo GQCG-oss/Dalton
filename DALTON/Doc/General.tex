@@ -1034,9 +1034,25 @@ is determined by the \verb|NREDIST| variable which can be between 1
 and 3. The default is to redistribute charges within 2.2 \bohr{} to its
 nearest site and removing all other parameters.
 
-\item[\Key{DAMP}]\verb| |\newline
-\verb|READ (LUCMD, *) damp| (optional)\verb| |\newline
-Damp the interactions between inducible dipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The default damping coefficient is the standard 2.1304.
+\item[\Key{DAMP}] (deprecated)\verb| |\newline
+\verb|READ (LUCMD, *) DAMP| (optional)\verb| |\newline
+\textbf{This option has been deprecated and will be removed in a future release (see below for other options).} Damp the interactions between inducible dipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The default damping coefficient is the standard 2.1304~\cite{thole_damp_2}.
+
+\item[\Key{DAMP INDUCED}]\verb| |\newline
+\verb|READ (LUCMD, *) IND_DAMP| (optional)\verb| |\newline
+Damp the electric fields from induced dipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The default damping coefficient is the standard 2.1304~\cite{thole_damp_2}.
+
+\item[\Key{DAMP MULTIPOLE}]\verb| |\newline
+\verb|READ (LUCMD, *) MUL_DAMP| (optional)\verb| |\newline
+Damp the electric fields from permanent multipole moments using Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. This option requires polarizabilities on all sites with permanent multipole moments. The default damping coefficient is the standard 2.1304~\cite{thole_damp_2}.
+
+\item[\Key{DAMP CORE}]\verb| |\newline
+\verb|READ (LUCMD, *) CORE_DAMP| (optional)\verb| |\newline
+\verb|READ (LUCMD, *) NALPHAS|\verb| |\newline
+\verb|DO I = 1, NALPHAS|\verb| |\newline
+\verb|    READ (LUCMD, *) ISO_ALPHA(I)|\verb| |\newline
+\verb|END DO|\verb| |\newline
+Damp the electric fields from the electrons and nuclei in the core region based on Thole's exponential damping scheme~\cite{thole_damp_1,thole_damp_2}. The damping coefficient is optional unless isotropic polarizabilities are present. The default damping coefficient is the standard 2.1304~\cite{thole_damp_2}. Standard polarizabilities from ref~\citenum{thole_damp_2} have been implemented and will be used if none are given as input. However, only H, C, N, O, F, S, Cl, Br and I are available.
 
 \item[\Key{GSPOL}]\verb| |\newline
 Activate the ground-state polarization approximation, i.e.\ freeze the embedding potential according to the ground-state density. This means that the polarizable environment is self-consistently relaxed during the optimization of the ground-state density/wave function of the core molecular system and then kept frozen in any following response calculations.
@@ -1048,26 +1064,37 @@ Remove many-body effects in the environment. This is done by deactivating intera
 Use any existing files to restart calculation.
 
 \item[\Key{CUBE}]\verb| |\newline
-\verb|DO|\verb| |\newline
-\verb|    READ (LUCMD, *) OPTION|\verb| |\newline
-\verb|    IF (OPTION == 'GRID') THEN|\verb| |\newline
-\verb|       READ (LUCMD, *) XSIZE, XGRID, YSIZE, YGRID, ZSIZE, ZGRID|\verb| |\newline
-\verb|    END IF| \verb| |\newline
-\verb|    IF (OPTION == '.' .OR. OPTION == '*') EXIT| \newline
-\verb|END DO|\verb| |\newline
+1) \verb|READ (LUCMD, *) STD_GRID|\verb| |\newline
+2) \verb|READ (LUCMD, *) OPTION|\verb| |\newline
+2) \verb|  IF (OPTION == 'GRID') THEN|\verb| |\newline
+2) \verb|     READ (LUCMD, *) XSIZE, XGRID, YSIZE, YGRID, ZSIZE, ZGRID|\verb| |\newline
+2) \verb|  END IF| \verb| |\newline
+\verb|  IF (OPTION == 'FIELD') THEN|\verb| |\newline
+\verb|      FIELD = .TRUE.| \verb| |\newline
+\verb|  END IF| \verb| |\newline
 Create cube file for the core molecular system containing the
 electrostatic potential due to the final converged polarizable
-embedding potential. The grid density can be either \verb|COARSE| (3
-points/\bohr{}), \verb|MEDIUM| (6 points/\bohr{}) or \verb|FINE| (12
-points/\bohr{}). The default grid density is \verb|MEDIUM| and default
-cube size is the extent of the molecule plus 8.0 \bohr{} in plus and
-minus each Cartesian coordinate. If the \verb|FIELD| option is given
-then also cube files containing the electric field from the embedding
-potential will be created. The \verb|GRID| option gives full control
-of the cube size and density, and requires an additional input line
-specifying the size (in \bohr{}) and density (in points/\bohr{}) in each
-Cartesian direction. Here the size again specifies the amount to add
-to the extent of the core molecular system.
+embedding potential. The grid density can be specified either
+using 1) standard grids (\verb|COARSE| (3 points/\bohr{}), \verb|MEDIUM| (6 points/\bohr{})
+or \verb|FINE| (12 points/\bohr{}) and in all cases 8.0 \bohr{} are added in each direction) or 2) the \verb|GRID|
+option which gives full control of the cube size and density, and
+requires an additional input line specifying the extent added (in \bohr{}) in each direction and
+density (in points/\bohr{}). The default grid density is \verb|MEDIUM| and default cube size
+is the extent of the molecule plus 8.0 \bohr{} in plus and minus each
+Cartesian coordinate.
+If the \verb|FIELD| option is given then also three cube files
+containing the Cartesian components of the electric field from the
+embedding potential will be created.
+
+\item[\Key{ISOPOL}]\verb| |\newline
+Converts all anisotropic polarizabilities into isotropic polarizabilities.
+
+\item[\Key{ZEROPOL}]\verb| |\newline
+Remove all polarizabilities.
+
+\item[\Key{ZEROMUL}]\verb| |\newline
+\verb|READ (LUCMD, *) ZEROMUL_ORDER| (optional) \verb| |\newline
+Remove all multipoles of order \verb|ZEROMUL_ORDER| and up. The default is to remove all dipoles and higher-order multipoles (i.e. \verb|ZEROMUL_ORDER| = 1).
 
 \item[\Key{VERBOSE}]\verb| |\newline
 Verbose output. Currently this will print the final converged induced dipole moments.

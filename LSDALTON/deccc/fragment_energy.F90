@@ -488,9 +488,24 @@ contains
           ! Pair fragment
           call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
                & Fragment1, Fragment2, MyFragment)
+             
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+            call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
+              & Fragment1, Fragment2, MyFragment,.true.)
+          endif
        else
           ! Atomic fragment
           call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+            call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
+              & t2virt,MyFragment,.true.)
+          endif
        end if
        call tensor_free(VOVOvirtTMP)
 
@@ -500,9 +515,23 @@ contains
           ! Pair fragment
           call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
                & Fragment1, Fragment2, MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+          call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
+               & Fragment1, Fragment2, MyFragment,.true.)
+          endif
        else
           ! Atomic fragment
           call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+            call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
+              & t2occ,t2virt,MyFragment,.true.)
+          endif
        end if
 
     end if
@@ -574,7 +603,7 @@ contains
   !> \brief Contract amplitudes, multipliers, and integrals to calculate atomic fragment Lagrangian energy.
   !> \author Kasper Kristensen
   !> \date August 2011
-  subroutine get_atomic_fragment_energy(gocc,gvirt,t2occ,t2virt,MyFragment)
+  subroutine get_atomic_fragment_energy(gocc,gvirt,t2occ,t2virt,MyFragment,doSOS)
 
     implicit none
     !> Two-electron integrals (a i | b j), only occ orbitals on central atom, virt AOS orbitals
@@ -589,11 +618,13 @@ contains
     type(tensor), intent(in) :: t2virt
     !> Atomic fragment 
     type(decfrag), intent(inout) :: myfragment
+    !>SOSEX cont
+    logical,intent(in),optional :: doSOS
     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
     integer :: i,j,k,a,b,c
     real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
     real(realk) :: e1, e2, e3, e4,tmp,multaibj
-    logical ::  something_wrong! ,doOccPart, doVirtPart
+    logical ::  something_wrong,SOS! ,doOccPart, doVirtPart
     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
     real(realk) :: prefac_coul,prefac_k
@@ -641,10 +672,13 @@ contains
     ! Just in case, zero individual orbital contributions for fragment
     MyFragment%OccContribs=0E0_realk
     MyFragment%VirtContribs=0E0_realk
+    SOS = .false.
+    if(present(doSOS)) SOS = doSOS
+
     if(MyFragment%ccmodel==MODEL_RPA) then
       prefac_coul=1._realk
       prefac_k=0.0_realk
-      if(Decinfo%SOS) prefac_k=0.5_realk
+      if(SOS) prefac_k=0.5_realk
     else
        prefac_coul=2._realk
        prefac_k=1._realk
@@ -867,7 +901,11 @@ contains
        MyFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
     end if
     ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
-    call put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
+    if(SOS) then
+      call put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment,SOS)
+    else
+      call put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
+    endif
 
     ! Set energies used by fragment optimization
     call get_occ_virt_lag_energies_fragopt(MyFragment)
@@ -996,7 +1034,7 @@ contains
   !> \author Kasper Kristensen
   !> \date August 2011
   subroutine get_pair_fragment_energy(gocc,gvirt,t2occ,t2virt,&
-        & Fragment1, Fragment2, PairFragment)
+      & Fragment1, Fragment2, PairFragment,doSOS)
 
 
      implicit none
@@ -1014,6 +1052,7 @@ contains
      type(decfrag),intent(in) :: Fragment2
      !> Pair fragment formed from fragment 1 and 2
      type(decfrag), intent(inout) :: PairFragment
+     logical,intent(in),optional :: doSOS
      integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
      integer :: i,j,k,a,b,c
      real(realk) :: tcpu, twall,pairdist
@@ -1021,7 +1060,7 @@ contains
      real(realk) :: tcpu1,tcpu2,twall1,twall2
      logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
      real(realk) :: Eocc, lag_occ,Evirt,lag_virt
-     logical :: something_wrong, do_non_pdm
+     logical :: something_wrong, do_non_pdm,SOS
      real(realk) :: prefac_coul,prefac_k
 
 
@@ -1062,11 +1101,14 @@ contains
      lag_occ=0E0_realk
      Evirt=0E0_realk
      lag_virt=0E0_realk
+     SOS = .false.
+     if(present(doSOS)) SOS = doSOS
      ! Distance between fragments in Angstrom
      pairdist = bohr_to_angstrom*PairFragment%pairdist
      if(PairFragment%ccmodel==MODEL_RPA) then
         prefac_coul = 1._realk
-        prefac_k=0.5_realk
+        prefac_k=0.0_realk
+        if(SOS) prefac_k=0.5_realk
      else
         prefac_coul =2._realk
         prefac_k = 1._realk
@@ -1271,7 +1313,11 @@ contains
         PairFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
      end if
      ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
-     call put_fragment_energy_contribs_main(Eocc,Evirt,PairFragment)
+     if(SOS) then
+       call put_fragment_energy_contribs_main(Eocc,Evirt,PairFragment,SOS)
+     else
+       call put_fragment_energy_contribs_main(Eocc,Evirt,PairFragment)
+     endif
 
      call mem_dealloc(dopair_occ)
      call mem_dealloc(dopair_virt)
@@ -4599,17 +4645,23 @@ contains
   !> (see FRAGMODEL_* in dec_typedef.F90).
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
+  subroutine put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment,doSOS)
     implicit none
     !> Occupied and virtual partitioning scheme energies
     real(realk),intent(in) :: Eocc, Evirt
     !> Atomic or pair fragment
     type(decfrag),intent(inout) :: MyFragment
+    !> SOS cont
+    logical,intent(in),optional :: doSOS
 
 
     ! Put energies into their proper place in the MyFragment%energies array
     ! according to the CC model used for the fragment
-    call put_fragment_energy_contribs(MyFragment%ccmodel,Eocc,Evirt,MyFragment%energies)
+    if(present(doSOS)) then
+      call put_fragment_energy_contribs(MyFragment%ccmodel,Eocc,Evirt,MyFragment%energies,doSOS)
+    else
+      call put_fragment_energy_contribs(MyFragment%ccmodel,Eocc,Evirt,MyFragment%energies)
+    endif
 
 
     ! Special case: When some pairs are treated at the MP2 level, while the
@@ -4629,7 +4681,7 @@ contains
   !> (see FRAGMODEL_* in dec_typedef.F90).
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine put_fragment_energy_contribs(ccmodel,Eocc,Evirt,energies)
+  subroutine put_fragment_energy_contribs(ccmodel,Eocc,Evirt,energies,doSOS)
     implicit none
     !> Which CC model
     integer,intent(in) :: ccmodel
@@ -4637,7 +4689,13 @@ contains
     real(realk),intent(in) :: Eocc, Evirt
     !> Energies array
     real(realk),intent(inout) :: energies(ndecenergies)
+    !> SOS cont
+    logical,intent(in),optional :: doSOS
+    logical :: SOS
 
+    !initalize SOS
+    SOS = .false.
+    if(present(doSOS)) SOS = doSOS
 
     ! Put energies into their proper place in the energies array
     select case(ccmodel)
@@ -4651,8 +4709,13 @@ contains
        energies(FRAGMODEL_VIRTCC2) = Evirt   ! virtual
     case(MODEL_RPA)
        ! RPA
-       energies(FRAGMODEL_OCCRPA) = Eocc   ! occupied
-       energies(FRAGMODEL_VIRTRPA) = Evirt   ! virtual
+       if(SOS) then
+         energies(FRAGMODEL_OCCSOS) = Eocc   ! occupied
+         energies(FRAGMODEL_VIRTSOS) = Evirt   ! virtual
+       else
+         energies(FRAGMODEL_OCCRPA) = Eocc   ! occupied
+         energies(FRAGMODEL_VIRTRPA) = Evirt   ! virtual
+       endif
     case(MODEL_CCSD)
        ! CCSD
        energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied

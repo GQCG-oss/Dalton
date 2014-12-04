@@ -1967,6 +1967,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call Get_AOt1Fock(mylsitem,p2,ifock,no,nv,nb,Co,Co,Cv)
       else
          ! Fock matrix for fragment from density made from input MOs
+         write(*,*) 'Johannes ao basis',nb
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
       end if
 
@@ -1978,6 +1979,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_add(delta_fock,-1.0E0_realk,ifock)
 
    else 
+      write(*,*) 'Johannes ao basis full molecule',nb
       ! Full molecule: deltaF = F(Dcore) for frozen core (0 otherwise)
       if(DECinfo%frozencore) then
          ! Fock matrix from input MOs
@@ -2665,6 +2667,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
             & MyLsItem,omega1(use_i),t1(use_i),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
             & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
 
+#ifdef MOD_UNRELEASED
       case( SOLVE_MULTIPLIERS )
 
          if (JOB == MODEL_CC2)then
@@ -2691,6 +2694,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
          call tensor_free(o2)
          call tensor_free(tl2)
          call tensor_free(ml4)
+#endif
 
       case default
          call lsquit("ERROR(ccsolver_get_residual): job not implemented for CC2, CCSD or CCSD(T)",-1)
