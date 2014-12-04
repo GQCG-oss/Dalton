@@ -8,6 +8,13 @@ C
 C     Keld Bak, July 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
+C     F. Beyer May 2014:
+C     DATA DICIONARY:
+C     DENSAI: intent(inout). Array is updated during the calculation
+C
+C
+C
+C
 C     PURPOSE: Start calculating the second-order SOPPA one-electron
 C              density matricx Dai by adding up integrals multiplied
 C              with T2 amplitudes. 

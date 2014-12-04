@@ -286,7 +286,7 @@ C
       CALL QUIT(TEXT)
       RETURN
       END
-C  /* Deck parqarn */
+C  /* Deck parwarn */
       SUBROUTINE PARWARN(TEXT)
 C Purpose:
 C   Warning message if code is not optimized (parallelized) for parallel calculations.
@@ -857,7 +857,7 @@ C
          LUNIT = IUN
       ELSE
 C
-C     The user has requested a specific unit number. We don't 
+C     The user has requested a specific unit number. We dont 
 C     quite trust the user, so we check that
 C     1) It is not unit 5 or 6
 C     2) The file either has been closed with status='KEEP' or is

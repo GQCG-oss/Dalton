@@ -187,6 +187,7 @@ C
       CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
       CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
 C
+
       IF ( IPRSOP. GE. 7 ) THEN !Only printing related.
 C------------------------------------------
 C        Write new trial vectors to output.
@@ -313,8 +314,8 @@ C
 C
 #ifdef VAR_MPI
 C***********************************************************
-C     If more than 1 process is available, assemble the Fock
-C     matrix and density matrix in parallel with par_so_eres.
+C     If more than 1 process is available, calculate 
+C     in parallel with par_so_eres.
 C
 C     Note, there is a strong coherence between the order of 
 C     these bcasts and the initialization of the slaves in 
@@ -325,7 +326,7 @@ C***********************************************************
       parallelsoppa: if (numprocs.gt.1) then
          ! make every slave join the parallel calculation 
          call mpixbcast(87, 1, 'INTEGE', 0)
-         call mpixbcast( 0, 1, 'INTEGE', 0)
+         call mpixbcast( 0, 1, 'INTEGE', 0) !give the slave print level 0
 
          ! Ready slaves for massive amount of updates.
          call mpi_bcast(forceupdate,1,mpi_logical,0,mpi_comm_world,ierr)
@@ -820,19 +821,20 @@ C   /*deck par_so_eres */
       subroutine PAR_SO_ERES(WORK, LWORK, MYID)
 C
 C PAR_SO_ERES is a Parallel subroutine for SO_ERES
-C It calculates the AO-FOCK matrix in parallel by distributing the 
+C It calculates the linear transformed trial vectors in parallel by distributing the 
 C two-electron integrals over several processes and assembling the 
-C partial Fock matrices from every process before returning.
+C partial matrices from every process before returning.
 C
 C WORK is the array where master and every slave assembles the fock matrix 
 C incrementally. This is the 'output' of this subroutine.
 C
-C The load balancing is done by examining the number of distributions associated 
-C with every AO index in the two-electron integrals, before the integrals are 
+C The load balancing is done by examining the number of AOs associated 
+C with every distribution index in the two-electron integrals, before the integrals are 
 C performed. The total load is calculated and the work is spread as evenly as 
 C possible among the master and all slaves. The AO indices with the biggest 
 C associated load of distributions is assigned first; then the smaller indices 
-C are assigned.
+C are assigned. During the first iteration the actual walltimes are recorded and
+C the calculation is rebalanced for the final time.
 C
 C A large number of common blocks need to be transferred from the master to 
 C the slaves by using the subroutine getbytespan and mpi_bcast. The frequency
@@ -908,12 +910,12 @@ C     MPI related and load balancing variables
       integer, dimension(MPI_STATUS_SIZE) :: mpistatus
 
 C     Pre-sorting load balancing variables
-      logical       :: assignnow, workreceived
-      logical, save :: forceloadbalance=.true.
-      logical, save :: forcedynamicloadbalance=.false.
-      logical, save :: slavesupdatetasks=.false.
-      integer       :: getnumjobs, getindices
+      logical, save :: forceloadbalance        =.true.
+      logical, save :: forcedynamicloadbalance =.false.
+      logical, save :: slavesupdatetasks       =.false.
       integer, save :: maxnumjobs
+      logical       :: assignnow, workreceived
+      integer       :: getnumjobs, getindices
       integer, allocatable, dimension(:), save :: AssignedIndices
 
 C     Timing variables used for load monitoring
@@ -941,11 +943,10 @@ C     be changed to the correct type.
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 
 
-
 C**************************************************
 C     Initialization variables.
 C**************************************************
-      densai_was_reduced = .false. !TODO move this variable to reduce the span and lifetime....
+      densai_was_reduced = .false. 
 
 
       ! This bcast determines how many variables and common blocks
@@ -1017,6 +1018,7 @@ C     The <name> of the common block can be read from the <name>LAST
 C     variable in the getbytespan call.
 C**********************************************************
       commonblocktransfers: if (forceupdate) then
+
       aijreduce = .true.
 
       call getbytespan(lbuf, eribufLAST, bytesize)
@@ -1156,8 +1158,6 @@ C**********************************************************
       forceupdate = .false. ! This avoids redundant updating of common blocks. SO_ERES sets this to true when necessary and this routine sets it to false when necessary.
       endif commonblocktransfers
 
-
-
 C**************************************************
 C     This data needs to be updated every time PAR_SO_ERES is called 
 C**************************************************
@@ -1193,61 +1193,53 @@ C**************************************************
 
 C**************************************************    
 C   Start load balancing
-C
+C**************************************************
+
 C   In case there are too many processes compared
 C   to the number of ILLL indices, the surplus processes are
 C   redirected. They will return from the polling barrier when
 C   the master sends a non-blocking logical equal to .true.
-C **********************************************************
       if (myid.ge.ntot) color = 1
       if (myid.lt.ntot) color = 0 !these are the ones performing timings, other processes stall in the polling barrier.
       call mpi_comm_split(mpi_comm_world, color, myid, comm_timers,ierr)
-
       if (myid.ge.ntot) then
          call pollingbarrier(1)
          goto  800 !skip to assembly of matrices. 
       endif
 
 
+C     Start the dynamic load balancing
       if(forcedynamicloadbalance) then
-          forcedynamicloadbalance = .false.
-          slavesupdatetasks = .true.
-
+          forcedynamicloadbalance = .false. ! This is the last time work is redistributed in an AOSOPPA computation.
+          slavesupdatetasks       = .true.  ! Tels the slaves they have to receive work from the master.
           if (myid.eq.0) then
              call dynloadbal_parsoppa(timings, allocsize, temparray)
              AssignedIndices = temparray(1:allocsize)
-            !write(*,*) myid, 'master dynamic indices:', AssignedIndices
           endif
       endif
 
-
+C     Start the presorting load balancing.
       if (forceloadbalance) then
-         forceloadbalance = .false. !Don't use the pre-sorting load balancing more than once...
-         slavesupdatetasks = .true.
-         forcedynamicloadbalance = .true. ! Next iteration, monitor the tasks and re-balance once the actual walltimes are known.
+         forceloadbalance        = .false. ! Don't use the pre-sorting load balancing more than once, next time use dynamic instead.
+         forcedynamicloadbalance = .true.  ! Monitor the tasks and re-balance once the actual walltimes are known.
+         slavesupdatetasks       = .true.
 
-
-         if (myid.eq.0) then !performs balancing and sends tasks to slaves.
+         !performs balancing and sends tasks to slaves.
+         if (myid.eq.0) then 
             call presortloadbal_parsoppa(work,lwork,allocsize,temparray)
             maxnumjobs = allocsize
-
             if (.not. allocated(AssignedIndices) ) then
                allocate(AssignedIndices(maxnumjobs), stat=allocstatus)
             endif
             AssignedIndices = temparray(1:allocsize)
-            !write(*,*) myid, 'master presort indices:', AssignedIndices
          endif 
-
 
          if (.not. allocated(timings) ) then
             allocate(timings(ntot) )
             timings = 0.0
          endif
 
-
       endif !forceloadbalance.
-
-
 
 
 C************************************************** 
@@ -1284,7 +1276,6 @@ C           Get the pre-sorted ILLL indices.
                goto 002
             endif
 
-!            write(*,*) myid, 'slave updated indices:', AssignedIndices
          ENDIF 
          endif
 
@@ -1294,16 +1285,12 @@ C *******************************************
       
       doilll: DO 300 workindex=1, maxnumjobs
          ILLL = AssignedIndices(workindex)
-         call system_clock(counti, count_rate)
          if (ILLL.eq.0) exit
 
-C Create an array that will be saved between calls to par_so_eres so the master only has to load balance once.
-C create the array the keeps track of ALL times for all indices and the array that keeps track of the assigned indices
+         if (forcedynamicloadbalance) then
+            call system_clock(counti, count_rate)
+         endif
 
-C zero the array that keeps track of how much time is spent calculating one ILLL index
-C Start the timer
-C end the timer and write the time spent performing one loop iteration for index ILLL in the ILLL'th location in the timearray
-C assemble all times so the master can dynamically load balance the calculation
 
          if (.not.direct) then
             call quit('AOSOPPA in parallel must use .DIRECT. ',
@@ -1503,10 +1490,15 @@ C
      &                          WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
      &                          ISYRES,ISYMTR,WORK(KEND5),LWORK5)
 
-310             enddo idel2loop
-         call system_clock(countf)
-         timespent =   ( countf-counti )/REAL(count_rate)
-         timings(ILLL) = timespent
+310      enddo idel2loop
+
+
+         if (forcedynamicloadbalance) then
+            call system_clock(countf)
+            timespent =   ( countf-counti )/REAL(count_rate)
+            timings(ILLL) = timespent
+         endif
+
 300   enddo doilll
 
       if (forcedynamicloadbalance ) then
@@ -1524,7 +1516,6 @@ C**************************************************
 C  END OF PARALLEL PORTION 
 C**************************************************  
 
-
 C     Relase all surplus processes from the spinning barrier.
 C     The slaves are redirected to label 800
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
@@ -1537,9 +1528,6 @@ C     The slaves are redirected to label 800
          endif
       endif
 800   continue 
-
-
-
 
 C ************************************************** 
 C Now assemble the Fock matrix, the result vectors and the sigma vectors
@@ -1601,7 +1589,7 @@ C     Assemble KAIJ and KAAB (from routine so_res_a) in the master's work array
 
 
 C**************************************************C
-C     Make use of auxiliary slave to rebalance and
+C     Make use of auxiliary slave to
 C     send info back to master.
 C**************************************************C
 
@@ -1617,8 +1605,6 @@ C     has successfully exited PAR_SO_ERES and returned to SO_ERES.
          if( (myid.eq.0) .or. (myid.eq.1) ) densai_was_reduced = .true.
       endif
 
-
-
       ! This array is given to SO_ERES as an input parameter. It needs
       ! to be transferred back from PAR_SO_ERES before process 1 returns.
       ! The master posts a recv call immediately after returning from PAR_SO ERES
@@ -1627,11 +1613,6 @@ C     has successfully exited PAR_SO_ERES and returned to SO_ERES.
      &                 mpi_comm_world, ierr)
          densai_was_reduced = .false. 
       endif
-
-C TODO assemble timings from all processes, use the auciliary slave later to rebalance the calculation...
-C    Be aware of surplus processes from the spinning barrier.
-
-
 
 
 C************************************************** 
@@ -1689,7 +1670,7 @@ C F.Beyer Oct. 2014.
       ! Bookkeeping
       integer, dimension(:,:), allocatable :: sortedindices
       integer, dimension(:), allocatable   :: numassignjobs
-      integer, dimension(:), allocatable   :: sumofwork
+      real, dimension(:), allocatable   :: sumofwork
       integer :: maxrows, maxcols, numprocs, numrecipients
       integer :: getnumjobs, targetID, myid
 
@@ -1701,6 +1682,8 @@ C F.Beyer Oct. 2014.
       ! the number of MPI processes...
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       maxcols = min(numprocs, ntot)
+
+      ! Explicitly set the maximum number of jobs a single MPI process can be allocated.
       maxrows = ntot-maxcols+1
 
       allocate(sortedindices(maxrows, maxcols) )
@@ -1718,10 +1701,8 @@ C F.Beyer Oct. 2014.
               ! Find the laziest slave
               colindex = minloc(sumofwork, dim=1)
 
-              ! Write the ILLL index to the matrix and 
-              !remove the work from the timings array
+              ! Write the ILLL index to the correct row in the sortedmatrix
               numassignjobs(colindex) = numassignjobs(colindex) + 1
-
               rowindex = numassignjobs(colindex)
               sortedindices(rowindex, colindex) = assignILLL
               
@@ -1729,7 +1710,8 @@ C F.Beyer Oct. 2014.
               ! remove the work from the timings array
               sumofwork(colindex) = sumofwork(colindex) 
      &                             +timings(assignILLL)
-              timings(assignILLL) = 0
+              timings(assignILLL) = 0.0
+
        ENDDO
 
 
@@ -1864,7 +1846,7 @@ C     Keep own work in a vector and don't leak memory...
 C     This subroutine is implemented in case there is ever a need to 
 C     remove certain processes from a calculation.
 C
-C     The processes will repeatedly poll and exit as soon as they receive a non-blocking 
+C     The processes will repeatedly poll until they receive a non-blocking 
 C     send from the master with a logical value equal to .true.
 C
 C     F.Beyer Oct. 2014

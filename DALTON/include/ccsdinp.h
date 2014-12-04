@@ -73,6 +73,7 @@ C
       INTEGER ETMPLAST
       DOUBLE PRECISION  ETMP
       COMMON/ETMP/ ETMP
+C
       COMMON /ETMP/ ETMPLAST 
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 

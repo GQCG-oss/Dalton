@@ -970,7 +970,7 @@ C Once the slaves have received the IPRTYP.ne.0 broadcast, they need a
 C broadcast with the print level.
 C IPRTYP is set in iprtyp.h. This file associates every parallel 
 C computation in Dalton with an specific integer and a character string.
-C This file has to be imported in every subroutine that wants to 
+C This iprtyp.h file has to be imported in every subroutine that wants to 
 C communicate with this nodedriver.
 C 
 C If you add a parallel routine to Dalton it needs to be added to 
@@ -995,7 +995,7 @@ C IMPORTANT: The communication is always via the communicator
 C MPI_COMM_WORLD, so if another communicator is made, only those nodes 
 C included in the new communicator will receive the broadcast IPRTYP. 
 C This is because the nodedriver uses the MPIXBCAST subroutine to 
-C communicate and this is hardcoded to MPI_COMM_WORLD.
+C communicate and as of Nov 2014 this is hardcoded to MPI_COMM_WORLD.
 C 
       use polarizable_embedding, only: pe_mpi
 #ifdef VAR_IFORT
@@ -1032,7 +1032,7 @@ C     Get calculation type (IPRTYP)
 !     - this saves a lot of cpu time on other cores in a sequential section
 !     - may make it possible to go into turbo mode
 !     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
-c      CALL SLEEP(1)
+C      CALL SLEEP(1)
 c
 !     - only intel ifort has a sleepqq counting in milliseconds (that I know of),
 !       the more common sleep(n) sleeps in at least one second, which is too long.
@@ -1171,8 +1171,8 @@ C added by Bin Gao, May 12, 2012
 #endif
          ELSE IF (IPRTYP.EQ.PARA_RP_ERES) THEN
             CALL PAR_RP_ERES(work, mwork, mytid )
-         ELSE IF (IPRTYP.EQ.SLAVESLEEP) THEN
-            CALL SLEEPSLAVES2()
+         ELSE IF (IPRTYP.EQ.PARA_SO_ERES) THEN
+            CALL PAR_SO_ERES(work, mwork, mytid )
 #ifdef MOD_CGTO_DIFF_ERI
          ! added by Bin Gao, Oct. 27, 2012
          ! cgto-diff-eri code to calculate arbitray order geometric derivatives

@@ -50,5 +50,6 @@
 #define XCINT_MPI_WAKEUP_SIGNAL 84
 #define PARA_RP_ERES 85
 #define SLAVESLEEP 86
+#define PARA_SO_ERES 87
 
 

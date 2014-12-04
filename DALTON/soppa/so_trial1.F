@@ -43,11 +43,6 @@ C--------------------------------------------
 C
       LTR1 = NT1AM(ISYMTR)
       LTR2 = NT2AM(ISYMTR)
-
-C todo beyer
-      write(lupri, '(a, i3, a, i3)') 'Length of TR1:' , LTR1, 
-     &                               ' length of TR2:', LTR2
-C todo... beyer
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1)
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1)
