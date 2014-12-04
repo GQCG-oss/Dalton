@@ -468,7 +468,7 @@ contains
           central_atom = atomic_idx(1,i)
        ENDIF
 
-       IF(.FALSE.)THEN
+       IF(.TRUE.)THEN
           !Do not require that all basis functions on the central atom are included
           charge = 0E0_realk
           LowdinAddLoop: do n=1,nbasis

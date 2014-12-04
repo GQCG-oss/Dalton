@@ -918,14 +918,25 @@ contains
        kmult = 1
        do ang = 0,nAngmom-1
           norb = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%SHELL(ang+1)%norb
-          do j = 1, norb
-             do k=1,kmult
-                molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndex+1
-                molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndex+kmult
+          IF(kmult.EQ.1)THEN
+             !Include all S orbitals if one S orbital is included  
+             do j = 1, norb
+                molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndex+1
+                molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndex+norb
              enddo
-             iOrbitalIndex = iOrbitalIndex + kmult
-          enddo
-          kmult = kmult + 2
+             iOrbitalIndex = iOrbitalIndex + norb
+             kmult = kmult + 2
+          ELSE
+             do j = 1, norb
+                !Include all Orbital Components of a given function (For P include Px,Py,Pz)
+                do k=1,kmult
+                   molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndex+1
+                   molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndex+kmult
+                enddo
+                iOrbitalIndex = iOrbitalIndex + kmult
+             enddo
+             kmult = kmult + 2
+          ENDIF
        enddo
     enddo
 
