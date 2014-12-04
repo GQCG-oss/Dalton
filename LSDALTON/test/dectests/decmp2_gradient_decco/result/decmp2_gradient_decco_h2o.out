@@ -114,12 +114,12 @@
                           | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
                           | o
  Static linking           | OFF
- Last Git revision        | 352076cf159fc746070cfb69c9dca5af8afedd0f
+ Last Git revision        | c8455ea8a80211a2a48591ba1f01e4cfeb0186a6
  Git branch               | AtomicOrbitalExtent
- Configuration time       | 2014-12-02 21:22:57.447637
+ Configuration time       | 2014-12-04 09:51:56.045639
 
 Start simulation
-     Date and time (Linux)  : Tue Dec  2 21:23:37 2014
+     Date and time (Linux)  : Thu Dec  4 10:20:59 2014
      Host name              : localhost.localdomain                   
                       
  -----------------------------------------
@@ -154,6 +154,8 @@ Start simulation
   2                                                                                                   
   .DECCO                                                                                              
   .FROZENCORE                                                                                         
+  .SIMPLEORBITALTHRESH                                                                                
+  0.0001d0                                                                                            
   .FOT                                                                                                
   1.0e-5                                                                                              
   .GRADIENT                                                                                           
@@ -559,7 +561,7 @@ Error went down by   86.07%
   Error of red space iteration  7:        0.0000000085 (mu =       0.00, xmax =   0.385539E-05, xnorm =   0.166800E-04, THR =   0.178138E-07)
 Newton equations converged in  7 iterations!
 No. of matmuls in get_density:    90
- >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.04 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   7
  The Coulomb energy contribution    46.8298306970075     
@@ -571,7 +573,7 @@ No. of matmuls in get_density:    90
  Absolute max step allowed is  0.600000000000000       , resetting trust radius!
   7    -75.5853918738   -0.00000000029    0.00      0.00000    0.00    3.76E-06  ###
 SCF converged in      7 iterations
- >>>  CPU Time used in **ITER is   0.31 seconds
+ >>>  CPU Time used in **ITER is   0.30 seconds
  >>> wall Time used in **ITER is   0.31 seconds
  
 Total no. of matmuls in SCF optimization:        556
@@ -757,8 +759,8 @@ Linesearch done, we choose previous point
   %LOC%   Min. sigma_2 and orb.number:    1.40    7
   %LOC%   Min. sigma_4 and orb.number:    1.74    7
  
- >>>  CPU Time used in Orbital Localization is   0.44 seconds
- >>> wall Time used in Orbital Localization is   0.44 seconds
+ >>>  CPU Time used in Orbital Localization is   0.43 seconds
+ >>> wall Time used in Orbital Localization is   0.43 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -807,7 +809,7 @@ Use Pair Estimates to screen pairs                  =            TRUE
 Pair distance cutoff threshold (Angstrom)           =       0.100E+04
 Use Pair Estimate initialisation number of atom     =     1
 Pair estimate model                                 =     MP2     
-Simple orbital thr.                                 =       0.100E-01
+Simple orbital thr.                                 =       0.100E-03
 Expansion step size                                 =               5
 Print level                                         =               0
 Fragment-adapted orbitals                           =           FALSE
@@ -855,10 +857,10 @@ Use F12 correction           =           FALSE
  ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
  **********************************************************************
  
- Maximum occ orbital extent (#AOs) =      6   -- Orbital index     3
- Maximum unocc orbital extent (#AOs) =     10   -- Orbital index     3
- Average occ orbital extent (#AOs) =       4.6000
- Average unocc orbital extent (#AOs) =       8.0000
+ Maximum occ orbital extent (#AOs) =     13   -- Orbital index     2
+ Maximum unocc orbital extent (#AOs) =     13   -- Orbital index     1
+ Average occ orbital extent (#AOs) =      11.8000
+ Average unocc orbital extent (#AOs) =      13.0000
  
  
  >>>  CPU Time used in DEC INIT is   0.00 seconds
@@ -889,14 +891,14 @@ Use F12 correction           =           FALSE
          Occ Orbital fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      2      2      4     12     0.00    / 0.700       0.00    / 0.700              FRAG_SIZE
-      4      2      4     12    0.522    / 0.700       0.00    / 0.700              FRAG_SIZE
-      3      2      4     11    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
-      5      2      4     11    0.700    / 0.841       0.00    / 0.700              FRAG_SIZE
+      2      2      4     13     0.00    / 0.700       0.00    / 0.700              FRAG_SIZE
+      3      2      4     13    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
+      4      2      4     13    0.522    / 0.700       0.00    / 0.700              FRAG_SIZE
+      5      2      4     13    0.700    / 0.841       0.00    / 0.700              FRAG_SIZE
  
  FRAGANALYSIS: Max/Ave/Min occ         :        2       /     2.0000    /       2
  FRAGANALYSIS: Max/Ave/Min unocc       :        4       /     4.0000    /       4
- FRAGANALYSIS: Max/Ave/Min basis       :       12       /     11.500    /      11
+ FRAGANALYSIS: Max/Ave/Min basis       :       13       /     13.000    /      13
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :     0.70022    /    0.48053    /     0.0000    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :     0.84144    /    0.73553    /    0.70022    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:     0.70022    /    0.17506    /     0.0000    
@@ -910,12 +912,12 @@ Use F12 correction           =           FALSE
  Number of jobs =            6
  
  JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis
-        1                216              2       3        3        6       12
-        2                216              2       5        3        6       12
-        3                216              3       4        3        6       12
-        4                216              3       5        3        6       12
-        5                216              4       5        3        6       12
-        6                 96              2       4        2        4       12
+        1                234              2       3        3        6       13
+        2                234              2       5        3        6       13
+        3                234              3       4        3        6       13
+        4                234              3       5        3        6       13
+        5                234              4       5        3        6       13
+        6                104              2       4        2        4       13
  
  
  DEC JOB SUMMARY: Number of single jobs =          4
@@ -928,7 +930,7 @@ Use F12 correction           =           FALSE
  FOP  Site fragment generator for fragment,   2
  FOP ===============================================
  FOP
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -943,7 +945,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -953,10 +955,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -974,120 +976,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
- 
- >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
- BATCH: Number of Gamma batches   =            3
- BATCH: Number of Alpha batches   =            3
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
- >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
- >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
- >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
- >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
- >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
- >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
- >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
- >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       2
- **********************************************************************
- Single occupied energy =    -0.8875297974E-02
- Single virtual  energy =    -0.1610593155E-01
- Single Lagrangian occ term  =     0.6415851795E-02
- Single Lagrangian virt term =     0.4160693359E-02
- 
- 
- FOP Expansion Include Full Molecule !!!
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   0
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   2
- FOP Loop: Number of orbitals in virt total :   8
- FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0088752980
- FOP Loop: Virtual Fragment energy          :   -0.0161059315
- FOP Loop: Lagrangian Fragment energy       :   -0.0144046844
- FOP=========================================================
- FOP
- FOP
- FOP =============================================
- FOP  Expansion has converged. We start reduction 
- FOP =============================================
- FOP
-#SINGLEDIMS# basis,occ,virt       12       3       5
- >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
- >>> wall Time used in MP2workhorse Init: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      12
- Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       5       2
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       5
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.562E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.432E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.648E-05
- Memory required for tmp array 1 (GB)    = 0.180E-05
- Memory required for tmp array 2 (GB)    = 0.720E-06
- Memory required for tmp array 3 (GB)    = 0.180E-05
- Memory required for tmp array 4 (GB)    = 0.216E-05
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.576E-06
- Memory required for tmp array 1 (GB)    = 0.288E-06
- Memory required for tmp array 2 (GB)    = 0.288E-06
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.562E-04
- Big Array Memory required       (GB)    = 0.725E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -1127,33 +1017,32 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       2
  **********************************************************************
- Single occupied energy =    -0.8223221046E-02
- Single virtual  energy =    -0.1188473745E-01
- Single Lagrangian occ term  =     0.6176696139E-02
- Single Lagrangian virt term =     0.2694752186E-02
+ Single occupied energy =    -0.8840046545E-02
+ Single virtual  energy =    -0.1604510958E-01
+ Single Lagrangian occ term  =     0.6542012012E-02
+ Single Lagrangian virt term =     0.4127385569E-02
  
  
+ FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   1
+ FOP              Fragment information, loop   0
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   2
- FOP Loop: Number of orbitals in virt total :   5
- FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0082232210
- FOP Loop: Virtual Fragment energy          :   -0.0118847375
- FOP Loop: Lagrangian Fragment energy       :   -0.0112365102
- FOP Loop: Occupied energy diff             :    0.0006520769
- FOP Loop: Virtual energy diff              :    0.0042211941
- FOP Loop: Lagrangian energy diff           :    0.0031681742
+ FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in occ total  :   4
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0088400465
+ FOP Loop: Virtual Fragment energy          :   -0.0160451096
+ FOP Loop: Lagrangian Fragment energy       :   -0.0142157585
  FOP=========================================================
  FOP
- FOP: Lagrangian energy NOT converged
- FOP: Occupied energy NOT converged
- FOP: Virtual energy NOT converged
- BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
-#SINGLEDIMS# basis,occ,virt       12       4       7
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+#SINGLEDIMS# basis,occ,virt       13       3       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -1168,7 +1057,120 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
+ Number of occupied orbitals AOS/EOS     =       3       1
+ Number of virtual  orbitals AOS/EOS     =       5       2
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+ 
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.642E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
+ Memory required for tmp array 2 (GB)    = 0.432E-05
+ Memory required for tmp array 3 (GB)    = 0.112E-04
+ 
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.648E-05
+ Memory required for tmp array 1 (GB)    = 0.180E-05
+ Memory required for tmp array 2 (GB)    = 0.720E-06
+ Memory required for tmp array 3 (GB)    = 0.180E-05
+ Memory required for tmp array 4 (GB)    = 0.216E-05
+ 
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.576E-06
+ Memory required for tmp array 1 (GB)    = 0.288E-06
+ Memory required for tmp array 2 (GB)    = 0.288E-06
+ 
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.642E-04
+ Big Array Memory required       (GB)    = 0.806E-04
+ 
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.8234310398E-02
+ Single virtual  energy =    -0.1184411883E-01
+ Single Lagrangian occ term  =     0.6207612453E-02
+ Single Lagrangian virt term =     0.2674136671E-02
+ 
+ 
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :   5
+ FOP Loop: Number of orbitals in occ total  :   3
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0082343104
+ FOP Loop: Virtual Fragment energy          :   -0.0118441188
+ FOP Loop: Lagrangian Fragment energy       :   -0.0111966801
+ FOP Loop: Occupied energy diff             :    0.0006057361
+ FOP Loop: Virtual energy diff              :    0.0042009908
+ FOP Loop: Lagrangian energy diff           :    0.0030190784
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy NOT converged
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy NOT converged
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+#SINGLEDIMS# basis,occ,virt       13       4       7
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ 
+ 
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+ 
+ 85% of available memory (GB)            =  1.63    
+ 
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
@@ -1178,10 +1180,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.634E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.717E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.806E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -1199,8 +1201,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.634E-04
- Big Array Memory required       (GB)    = 0.797E-04
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -1219,8 +1221,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1240,10 +1242,10 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       2
  **********************************************************************
- Single occupied energy =    -0.8799921131E-02
- Single virtual  energy =    -0.1604353684E-01
- Single Lagrangian occ term  =     0.6468004841E-02
- Single Lagrangian virt term =     0.4123008626E-02
+ Single occupied energy =    -0.8808899256E-02
+ Single virtual  energy =    -0.1601874200E-01
+ Single Lagrangian occ term  =     0.6527840194E-02
+ Single Lagrangian virt term =     0.4108608353E-02
  
  
  FOP
@@ -1253,19 +1255,19 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   2
  FOP Loop: Number of orbitals in virt total :   7
  FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0087999211
- FOP Loop: Virtual Fragment energy          :   -0.0160435368
- FOP Loop: Lagrangian Fragment energy       :   -0.0142524445
- FOP Loop: Occupied energy diff             :    0.0000753768
- FOP Loop: Virtual energy diff              :    0.0000623947
- FOP Loop: Lagrangian energy diff           :    0.0001522399
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0088088993
+ FOP Loop: Virtual Fragment energy          :   -0.0160187420
+ FOP Loop: Lagrangian Fragment energy       :   -0.0141911927
+ FOP Loop: Occupied energy diff             :    0.0000311473
+ FOP Loop: Virtual energy diff              :    0.0000263676
+ FOP Loop: Lagrangian energy diff           :    0.0000245658
  FOP=========================================================
  FOP
  FOP: Lagrangian energy NOT converged
  FOP: Occupied energy NOT converged
  FOP: Virtual energy NOT converged
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -1280,7 +1282,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -1290,10 +1292,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -1311,8 +1313,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -1331,7 +1333,7 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
@@ -1352,10 +1354,10 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       2
  **********************************************************************
- Single occupied energy =    -0.8875297974E-02
- Single virtual  energy =    -0.1610593155E-01
- Single Lagrangian occ term  =     0.6415851795E-02
- Single Lagrangian virt term =     0.4160693359E-02
+ Single occupied energy =    -0.8840046545E-02
+ Single virtual  energy =    -0.1604510958E-01
+ Single Lagrangian occ term  =     0.6542012012E-02
+ Single Lagrangian virt term =     0.4127385569E-02
  
  
  FOP
@@ -1365,10 +1367,10 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   2
  FOP Loop: Number of orbitals in virt total :   8
  FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0088752980
- FOP Loop: Virtual Fragment energy          :   -0.0161059315
- FOP Loop: Lagrangian Fragment energy       :   -0.0144046844
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0088400465
+ FOP Loop: Virtual Fragment energy          :   -0.0160451096
+ FOP Loop: Lagrangian Fragment energy       :   -0.0142157585
  FOP Loop: Occupied energy diff             :    0.0000000000
  FOP Loop: Virtual energy diff              :    0.0000000000
  FOP Loop: Lagrangian energy diff           :    0.0000000000
@@ -1386,22 +1388,22 @@ Use F12 correction           =           FALSE
  FOP Done: Fragment number                  :   2
  FOP Done: Number of orbitals in virt total :   8
  FOP Done: Number of orbitals in occ total  :   4
- FOP Done: Number of basis functions        :  12
- FOP Done: Occupied Fragment energy         :   -0.0088752980
- FOP Done: Virtual Fragment energy          :   -0.0161059315
- FOP Done: Lagrangian Fragment energy       :   -0.0144046844
+ FOP Done: Number of basis functions        :  13
+ FOP Done: Occupied Fragment energy         :   -0.0088400465
+ FOP Done: Virtual Fragment energy          :   -0.0160451096
+ FOP Done: Lagrangian Fragment energy       :   -0.0142157585
  FOP Done: Occupied reduction removed      0 of      4 orbitals (  0.00 %)
  FOP Done: Virtual  reduction removed      0 of      8 orbitals (  0.00 %)
  FOP=========================================================
  FOP
 
- FOP reduction: Atom,FOT,O,V,B      2     0.100E-04      4      8     12
+ FOP reduction: Atom,FOT,O,V,B      2     0.100E-04      4      8     13
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   3
  FOP ===============================================
  FOP
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -1416,7 +1418,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -1426,10 +1428,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -1447,120 +1449,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
- 
- >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
- BATCH: Number of Gamma batches   =            3
- BATCH: Number of Alpha batches   =            3
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
- >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
- >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
- >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
- >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
- >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
- >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
- >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
- >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       3
- **********************************************************************
- Single occupied energy =    -0.1687488172E-01
- Single virtual  energy =    -0.1425555567E-01
- Single Lagrangian occ term  =     0.8015063909E-02
- Single Lagrangian virt term =     0.7683537479E-02
- 
- 
- FOP Expansion Include Full Molecule !!!
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   0
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   3
- FOP Loop: Number of orbitals in virt total :   8
- FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0168748817
- FOP Loop: Virtual Fragment energy          :   -0.0142555557
- FOP Loop: Lagrangian Fragment energy       :   -0.0154318360
- FOP=========================================================
- FOP
- FOP
- FOP =============================================
- FOP  Expansion has converged. We start reduction 
- FOP =============================================
- FOP
-#SINGLEDIMS# basis,occ,virt       12       3       5
- >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
- >>> wall Time used in MP2workhorse Init: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      12
- Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       5       2
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       5
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.562E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.432E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.648E-05
- Memory required for tmp array 1 (GB)    = 0.180E-05
- Memory required for tmp array 2 (GB)    = 0.720E-06
- Memory required for tmp array 3 (GB)    = 0.180E-05
- Memory required for tmp array 4 (GB)    = 0.216E-05
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.576E-06
- Memory required for tmp array 1 (GB)    = 0.288E-06
- Memory required for tmp array 2 (GB)    = 0.288E-06
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.562E-04
- Big Array Memory required       (GB)    = 0.725E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -1600,33 +1490,32 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       3
  **********************************************************************
- Single occupied energy =    -0.1542650688E-01
- Single virtual  energy =    -0.1347778758E-01
- Single Lagrangian occ term  =     0.7135401517E-02
- Single Lagrangian virt term =     0.7392013649E-02
+ Single occupied energy =    -0.1651647519E-01
+ Single virtual  energy =    -0.1378089359E-01
+ Single Lagrangian occ term  =     0.8590884810E-02
+ Single Lagrangian virt term =     0.6667948875E-02
  
  
+ FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   1
+ FOP              Fragment information, loop   0
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   3
- FOP Loop: Number of orbitals in virt total :   5
- FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0154265069
- FOP Loop: Virtual Fragment energy          :   -0.0134777876
- FOP Loop: Lagrangian Fragment energy       :   -0.0143768793
- FOP Loop: Occupied energy diff             :    0.0014483748
- FOP Loop: Virtual energy diff              :    0.0007777681
- FOP Loop: Lagrangian energy diff           :    0.0010549567
+ FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in occ total  :   4
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0165164752
+ FOP Loop: Virtual Fragment energy          :   -0.0137808936
+ FOP Loop: Lagrangian Fragment energy       :   -0.0150385351
  FOP=========================================================
  FOP
- FOP: Lagrangian energy NOT converged
- FOP: Occupied energy NOT converged
- FOP: Virtual energy NOT converged
- BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
-#SINGLEDIMS# basis,occ,virt       12       4       7
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+#SINGLEDIMS# basis,occ,virt       13       3       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -1641,7 +1530,120 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
+ Number of occupied orbitals AOS/EOS     =       3       1
+ Number of virtual  orbitals AOS/EOS     =       5       2
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+ 
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.642E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
+ Memory required for tmp array 2 (GB)    = 0.432E-05
+ Memory required for tmp array 3 (GB)    = 0.112E-04
+ 
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.648E-05
+ Memory required for tmp array 1 (GB)    = 0.180E-05
+ Memory required for tmp array 2 (GB)    = 0.720E-06
+ Memory required for tmp array 3 (GB)    = 0.180E-05
+ Memory required for tmp array 4 (GB)    = 0.216E-05
+ 
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.576E-06
+ Memory required for tmp array 1 (GB)    = 0.288E-06
+ Memory required for tmp array 2 (GB)    = 0.288E-06
+ 
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.642E-04
+ Big Array Memory required       (GB)    = 0.806E-04
+ 
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       3
+ **********************************************************************
+ Single occupied energy =    -0.1517008882E-01
+ Single virtual  energy =    -0.1314023334E-01
+ Single Lagrangian occ term  =     0.7588499461E-02
+ Single Lagrangian virt term =     0.6545130735E-02
+ 
+ 
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :   5
+ FOP Loop: Number of orbitals in occ total  :   3
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0151700888
+ FOP Loop: Virtual Fragment energy          :   -0.0131402333
+ FOP Loop: Lagrangian Fragment energy       :   -0.0141766920
+ FOP Loop: Occupied energy diff             :    0.0013463864
+ FOP Loop: Virtual energy diff              :    0.0006406603
+ FOP Loop: Lagrangian energy diff           :    0.0008618431
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy NOT converged
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy NOT converged
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+#SINGLEDIMS# basis,occ,virt       13       4       7
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ 
+ 
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+ 
+ 85% of available memory (GB)            =  1.63    
+ 
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
@@ -1651,10 +1653,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.634E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.717E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.806E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -1672,8 +1674,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.634E-04
- Big Array Memory required       (GB)    = 0.797E-04
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -1692,8 +1694,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1713,10 +1715,10 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       3
  **********************************************************************
- Single occupied energy =    -0.1667403167E-01
- Single virtual  energy =    -0.1426574595E-01
- Single Lagrangian occ term  =     0.7965908090E-02
- Single Lagrangian virt term =     0.7687472285E-02
+ Single occupied energy =    -0.1648981262E-01
+ Single virtual  energy =    -0.1378121296E-01
+ Single Lagrangian occ term  =     0.8590230669E-02
+ Single Lagrangian virt term =     0.6668144074E-02
  
  
  FOP
@@ -1726,19 +1728,19 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   3
  FOP Loop: Number of orbitals in virt total :   7
  FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0166740317
- FOP Loop: Virtual Fragment energy          :   -0.0142657460
- FOP Loop: Lagrangian Fragment energy       :   -0.0152863972
- FOP Loop: Occupied energy diff             :    0.0002008501
- FOP Loop: Virtual energy diff              :    0.0000101903
- FOP Loop: Lagrangian energy diff           :    0.0001454388
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0164898126
+ FOP Loop: Virtual Fragment energy          :   -0.0137812130
+ FOP Loop: Lagrangian Fragment energy       :   -0.0150126508
+ FOP Loop: Occupied energy diff             :    0.0000266626
+ FOP Loop: Virtual energy diff              :    0.0000003194
+ FOP Loop: Lagrangian energy diff           :    0.0000258843
  FOP=========================================================
  FOP
  FOP: Lagrangian energy NOT converged
  FOP: Occupied energy NOT converged
- FOP: Virtual energy NOT converged
-#SINGLEDIMS# basis,occ,virt       12       4       8
+ FOP: Virtual energy converged, energydiff    =   0.000000319
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -1753,7 +1755,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -1763,10 +1765,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -1784,8 +1786,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -1804,8 +1806,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1825,10 +1827,10 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       3
  **********************************************************************
- Single occupied energy =    -0.1687488172E-01
- Single virtual  energy =    -0.1425555567E-01
- Single Lagrangian occ term  =     0.8015063909E-02
- Single Lagrangian virt term =     0.7683537479E-02
+ Single occupied energy =    -0.1651647519E-01
+ Single virtual  energy =    -0.1378089359E-01
+ Single Lagrangian occ term  =     0.8590884810E-02
+ Single Lagrangian virt term =     0.6667948875E-02
  
  
  FOP
@@ -1838,10 +1840,10 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   3
  FOP Loop: Number of orbitals in virt total :   8
  FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0168748817
- FOP Loop: Virtual Fragment energy          :   -0.0142555557
- FOP Loop: Lagrangian Fragment energy       :   -0.0154318360
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0165164752
+ FOP Loop: Virtual Fragment energy          :   -0.0137808936
+ FOP Loop: Lagrangian Fragment energy       :   -0.0150385351
  FOP Loop: Occupied energy diff             :    0.0000000000
  FOP Loop: Virtual energy diff              :    0.0000000000
  FOP Loop: Lagrangian energy diff           :    0.0000000000
@@ -1859,22 +1861,22 @@ Use F12 correction           =           FALSE
  FOP Done: Fragment number                  :   3
  FOP Done: Number of orbitals in virt total :   8
  FOP Done: Number of orbitals in occ total  :   4
- FOP Done: Number of basis functions        :  12
- FOP Done: Occupied Fragment energy         :   -0.0168748817
- FOP Done: Virtual Fragment energy          :   -0.0142555557
- FOP Done: Lagrangian Fragment energy       :   -0.0154318360
+ FOP Done: Number of basis functions        :  13
+ FOP Done: Occupied Fragment energy         :   -0.0165164752
+ FOP Done: Virtual Fragment energy          :   -0.0137808936
+ FOP Done: Lagrangian Fragment energy       :   -0.0150385351
  FOP Done: Occupied reduction removed      0 of      4 orbitals (  0.00 %)
  FOP Done: Virtual  reduction removed      0 of      8 orbitals (  0.00 %)
  FOP=========================================================
  FOP
 
- FOP reduction: Atom,FOT,O,V,B      3     0.100E-04      4      8     12
+ FOP reduction: Atom,FOT,O,V,B      3     0.100E-04      4      8     13
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   4
  FOP ===============================================
  FOP
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -1889,7 +1891,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -1899,10 +1901,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -1920,120 +1922,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
- 
- >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
- BATCH: Number of Gamma batches   =            3
- BATCH: Number of Alpha batches   =            3
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
- >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
- >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
- >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
- >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
- >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
- >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
- >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
- >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       4
- **********************************************************************
- Single occupied energy =    -0.8875296806E-02
- Single virtual  energy =    -0.1610593891E-01
- Single Lagrangian occ term  =     0.6415851337E-02
- Single Lagrangian virt term =     0.4160694425E-02
- 
- 
- FOP Expansion Include Full Molecule !!!
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   0
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   4
- FOP Loop: Number of orbitals in virt total :   8
- FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0088752968
- FOP Loop: Virtual Fragment energy          :   -0.0161059389
- FOP Loop: Lagrangian Fragment energy       :   -0.0144046900
- FOP=========================================================
- FOP
- FOP
- FOP =============================================
- FOP  Expansion has converged. We start reduction 
- FOP =============================================
- FOP
-#SINGLEDIMS# basis,occ,virt       12       3       5
- >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
- >>> wall Time used in MP2workhorse Init: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      12
- Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       5       2
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       5
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.562E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.432E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.648E-05
- Memory required for tmp array 1 (GB)    = 0.180E-05
- Memory required for tmp array 2 (GB)    = 0.720E-06
- Memory required for tmp array 3 (GB)    = 0.180E-05
- Memory required for tmp array 4 (GB)    = 0.216E-05
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.576E-06
- Memory required for tmp array 1 (GB)    = 0.288E-06
- Memory required for tmp array 2 (GB)    = 0.288E-06
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.562E-04
- Big Array Memory required       (GB)    = 0.725E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -2073,33 +1963,32 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.8177930661E-02
- Single virtual  energy =    -0.1192508941E-01
- Single Lagrangian occ term  =     0.6119238399E-02
- Single Lagrangian virt term =     0.2701074509E-02
+ Single occupied energy =    -0.8840045461E-02
+ Single virtual  energy =    -0.1604511643E-01
+ Single Lagrangian occ term  =     0.6542012356E-02
+ Single Lagrangian virt term =     0.4127386567E-02
  
  
+ FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   1
+ FOP              Fragment information, loop   0
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   4
- FOP Loop: Number of orbitals in virt total :   5
- FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0081779307
- FOP Loop: Virtual Fragment energy          :   -0.0119250894
- FOP Loop: Lagrangian Fragment energy       :   -0.0112827072
- FOP Loop: Occupied energy diff             :    0.0006973661
- FOP Loop: Virtual energy diff              :    0.0041808495
- FOP Loop: Lagrangian energy diff           :    0.0031219828
+ FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in occ total  :   4
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0088400455
+ FOP Loop: Virtual Fragment energy          :   -0.0160451164
+ FOP Loop: Lagrangian Fragment energy       :   -0.0142157630
  FOP=========================================================
  FOP
- FOP: Lagrangian energy NOT converged
- FOP: Occupied energy NOT converged
- FOP: Virtual energy NOT converged
- BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
-#SINGLEDIMS# basis,occ,virt       12       4       7
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+#SINGLEDIMS# basis,occ,virt       13       3       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -2114,7 +2003,120 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
+ Number of occupied orbitals AOS/EOS     =       3       1
+ Number of virtual  orbitals AOS/EOS     =       5       2
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+ 
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.642E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
+ Memory required for tmp array 2 (GB)    = 0.432E-05
+ Memory required for tmp array 3 (GB)    = 0.112E-04
+ 
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.648E-05
+ Memory required for tmp array 1 (GB)    = 0.180E-05
+ Memory required for tmp array 2 (GB)    = 0.720E-06
+ Memory required for tmp array 3 (GB)    = 0.180E-05
+ Memory required for tmp array 4 (GB)    = 0.216E-05
+ 
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.576E-06
+ Memory required for tmp array 1 (GB)    = 0.288E-06
+ Memory required for tmp array 2 (GB)    = 0.288E-06
+ 
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.642E-04
+ Big Array Memory required       (GB)    = 0.806E-04
+ 
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       4
+ **********************************************************************
+ Single occupied energy =    -0.8189930953E-02
+ Single virtual  energy =    -0.1184587634E-01
+ Single Lagrangian occ term  =     0.6148724495E-02
+ Single Lagrangian virt term =     0.2660797327E-02
+ 
+ 
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   4
+ FOP Loop: Number of orbitals in virt total :   5
+ FOP Loop: Number of orbitals in occ total  :   3
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0081899310
+ FOP Loop: Virtual Fragment energy          :   -0.0118458763
+ FOP Loop: Lagrangian Fragment energy       :   -0.0112262855
+ FOP Loop: Occupied energy diff             :    0.0006501145
+ FOP Loop: Virtual energy diff              :    0.0041992401
+ FOP Loop: Lagrangian energy diff           :    0.0029894775
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy NOT converged
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy NOT converged
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+#SINGLEDIMS# basis,occ,virt       13       4       7
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ 
+ 
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+ 
+ 85% of available memory (GB)            =  1.63    
+ 
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
@@ -2124,10 +2126,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.634E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.717E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.806E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -2145,8 +2147,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.634E-04
- Big Array Memory required       (GB)    = 0.797E-04
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -2165,8 +2167,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2186,10 +2188,10 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.8799919088E-02
- Single virtual  energy =    -0.1607456320E-01
- Single Lagrangian occ term  =     0.6468004250E-02
- Single Lagrangian virt term =     0.4141541796E-02
+ Single occupied energy =    -0.8808897557E-02
+ Single virtual  energy =    -0.1602260525E-01
+ Single Lagrangian occ term  =     0.6527840046E-02
+ Single Lagrangian virt term =     0.4113020355E-02
  
  
  FOP
@@ -2199,19 +2201,19 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   4
  FOP Loop: Number of orbitals in virt total :   7
  FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0087999191
- FOP Loop: Virtual Fragment energy          :   -0.0160745632
- FOP Loop: Lagrangian Fragment energy       :   -0.0142649362
- FOP Loop: Occupied energy diff             :    0.0000753777
- FOP Loop: Virtual energy diff              :    0.0000313757
- FOP Loop: Lagrangian energy diff           :    0.0001397537
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0088088976
+ FOP Loop: Virtual Fragment energy          :   -0.0160226052
+ FOP Loop: Lagrangian Fragment energy       :   -0.0141906424
+ FOP Loop: Occupied energy diff             :    0.0000311479
+ FOP Loop: Virtual energy diff              :    0.0000225112
+ FOP Loop: Lagrangian energy diff           :    0.0000251206
  FOP=========================================================
  FOP
  FOP: Lagrangian energy NOT converged
  FOP: Occupied energy NOT converged
  FOP: Virtual energy NOT converged
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -2226,7 +2228,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -2236,10 +2238,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -2257,8 +2259,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -2277,8 +2279,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2298,10 +2300,10 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.8875296806E-02
- Single virtual  energy =    -0.1610593891E-01
- Single Lagrangian occ term  =     0.6415851337E-02
- Single Lagrangian virt term =     0.4160694425E-02
+ Single occupied energy =    -0.8840045461E-02
+ Single virtual  energy =    -0.1604511643E-01
+ Single Lagrangian occ term  =     0.6542012356E-02
+ Single Lagrangian virt term =     0.4127386567E-02
  
  
  FOP
@@ -2311,10 +2313,10 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   4
  FOP Loop: Number of orbitals in virt total :   8
  FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0088752968
- FOP Loop: Virtual Fragment energy          :   -0.0161059389
- FOP Loop: Lagrangian Fragment energy       :   -0.0144046900
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0088400455
+ FOP Loop: Virtual Fragment energy          :   -0.0160451164
+ FOP Loop: Lagrangian Fragment energy       :   -0.0142157630
  FOP Loop: Occupied energy diff             :    0.0000000000
  FOP Loop: Virtual energy diff              :    0.0000000000
  FOP Loop: Lagrangian energy diff           :    0.0000000000
@@ -2332,22 +2334,22 @@ Use F12 correction           =           FALSE
  FOP Done: Fragment number                  :   4
  FOP Done: Number of orbitals in virt total :   8
  FOP Done: Number of orbitals in occ total  :   4
- FOP Done: Number of basis functions        :  12
- FOP Done: Occupied Fragment energy         :   -0.0088752968
- FOP Done: Virtual Fragment energy          :   -0.0161059389
- FOP Done: Lagrangian Fragment energy       :   -0.0144046900
+ FOP Done: Number of basis functions        :  13
+ FOP Done: Occupied Fragment energy         :   -0.0088400455
+ FOP Done: Virtual Fragment energy          :   -0.0160451164
+ FOP Done: Lagrangian Fragment energy       :   -0.0142157630
  FOP Done: Occupied reduction removed      0 of      4 orbitals (  0.00 %)
  FOP Done: Virtual  reduction removed      0 of      8 orbitals (  0.00 %)
  FOP=========================================================
  FOP
 
- FOP reduction: Atom,FOT,O,V,B      4     0.100E-04      4      8     12
+ FOP reduction: Atom,FOT,O,V,B      4     0.100E-04      4      8     13
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   5
  FOP ===============================================
  FOP
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -2362,7 +2364,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -2372,10 +2374,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -2393,120 +2395,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
- 
- >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
- BATCH: Number of Gamma batches   =            3
- BATCH: Number of Alpha batches   =            3
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
- >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
- >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
- >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
- >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
- >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
- >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
- >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
- >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
- >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       5
- **********************************************************************
- Single occupied energy =    -0.1687487782E-01
- Single virtual  energy =    -0.1425555243E-01
- Single Lagrangian occ term  =     0.8015061470E-02
- Single Lagrangian virt term =     0.7683535826E-02
- 
- 
- FOP Expansion Include Full Molecule !!!
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   0
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   5
- FOP Loop: Number of orbitals in virt total :   8
- FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0168748778
- FOP Loop: Virtual Fragment energy          :   -0.0142555524
- FOP Loop: Lagrangian Fragment energy       :   -0.0154318329
- FOP=========================================================
- FOP
- FOP
- FOP =============================================
- FOP  Expansion has converged. We start reduction 
- FOP =============================================
- FOP
-#SINGLEDIMS# basis,occ,virt       12       3       5
- >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
- >>> wall Time used in MP2workhorse Init: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
- >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      12
- Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       5       2
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       5
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.562E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.432E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.648E-05
- Memory required for tmp array 1 (GB)    = 0.180E-05
- Memory required for tmp array 2 (GB)    = 0.720E-06
- Memory required for tmp array 3 (GB)    = 0.180E-05
- Memory required for tmp array 4 (GB)    = 0.216E-05
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.576E-06
- Memory required for tmp array 1 (GB)    = 0.288E-06
- Memory required for tmp array 2 (GB)    = 0.288E-06
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.562E-04
- Big Array Memory required       (GB)    = 0.725E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -2546,33 +2436,32 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
- Single occupied energy =    -0.1542650282E-01
- Single virtual  energy =    -0.1347778312E-01
- Single Lagrangian occ term  =     0.7135399610E-02
- Single Lagrangian virt term =     0.7392011198E-02
+ Single occupied energy =    -0.1651647140E-01
+ Single virtual  energy =    -0.1378089040E-01
+ Single Lagrangian occ term  =     0.8590882162E-02
+ Single Lagrangian virt term =     0.6667947352E-02
  
  
+ FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   1
+ FOP              Fragment information, loop   0
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   5
- FOP Loop: Number of orbitals in virt total :   5
- FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0154265028
- FOP Loop: Virtual Fragment energy          :   -0.0134777831
- FOP Loop: Lagrangian Fragment energy       :   -0.0143768751
- FOP Loop: Occupied energy diff             :    0.0014483750
- FOP Loop: Virtual energy diff              :    0.0007777693
- FOP Loop: Lagrangian energy diff           :    0.0010549578
+ FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in occ total  :   4
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0165164714
+ FOP Loop: Virtual Fragment energy          :   -0.0137808904
+ FOP Loop: Lagrangian Fragment energy       :   -0.0150385323
  FOP=========================================================
  FOP
- FOP: Lagrangian energy NOT converged
- FOP: Occupied energy NOT converged
- FOP: Virtual energy NOT converged
- BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
-#SINGLEDIMS# basis,occ,virt       12       4       7
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+#SINGLEDIMS# basis,occ,virt       13       3       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -2587,7 +2476,120 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
+ Number of occupied orbitals AOS/EOS     =       3       1
+ Number of virtual  orbitals AOS/EOS     =       5       2
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+ 
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.642E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
+ Memory required for tmp array 2 (GB)    = 0.432E-05
+ Memory required for tmp array 3 (GB)    = 0.112E-04
+ 
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.648E-05
+ Memory required for tmp array 1 (GB)    = 0.180E-05
+ Memory required for tmp array 2 (GB)    = 0.720E-06
+ Memory required for tmp array 3 (GB)    = 0.180E-05
+ Memory required for tmp array 4 (GB)    = 0.216E-05
+ 
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.576E-06
+ Memory required for tmp array 1 (GB)    = 0.288E-06
+ Memory required for tmp array 2 (GB)    = 0.288E-06
+ 
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.642E-04
+ Big Array Memory required       (GB)    = 0.806E-04
+ 
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       5
+ **********************************************************************
+ Single occupied energy =    -0.1517008508E-01
+ Single virtual  energy =    -0.1314022903E-01
+ Single Lagrangian occ term  =     0.7588497236E-02
+ Single Lagrangian virt term =     0.6545128637E-02
+ 
+ 
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   5
+ FOP Loop: Number of orbitals in virt total :   5
+ FOP Loop: Number of orbitals in occ total  :   3
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0151700851
+ FOP Loop: Virtual Fragment energy          :   -0.0131402290
+ FOP Loop: Lagrangian Fragment energy       :   -0.0141766882
+ FOP Loop: Occupied energy diff             :    0.0013463863
+ FOP Loop: Virtual energy diff              :    0.0006406614
+ FOP Loop: Lagrangian energy diff           :    0.0008618440
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy NOT converged
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy NOT converged
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+#SINGLEDIMS# basis,occ,virt       13       4       7
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ 
+ 
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+ 
+ 85% of available memory (GB)            =  1.63    
+ 
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
@@ -2597,10 +2599,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.634E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.717E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.806E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -2618,8 +2620,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.634E-04
- Big Array Memory required       (GB)    = 0.797E-04
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -2638,8 +2640,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2659,10 +2661,10 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
- Single occupied energy =    -0.1667402784E-01
- Single virtual  energy =    -0.1426574273E-01
- Single Lagrangian occ term  =     0.7965905848E-02
- Single Lagrangian virt term =     0.7687470679E-02
+ Single occupied energy =    -0.1648980874E-01
+ Single virtual  energy =    -0.1378120977E-01
+ Single Lagrangian occ term  =     0.8590228022E-02
+ Single Lagrangian virt term =     0.6668142557E-02
  
  
  FOP
@@ -2672,19 +2674,19 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   5
  FOP Loop: Number of orbitals in virt total :   7
  FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0166740278
- FOP Loop: Virtual Fragment energy          :   -0.0142657427
- FOP Loop: Lagrangian Fragment energy       :   -0.0152863940
- FOP Loop: Occupied energy diff             :    0.0002008500
- FOP Loop: Virtual energy diff              :    0.0000101903
- FOP Loop: Lagrangian energy diff           :    0.0001454389
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0164898087
+ FOP Loop: Virtual Fragment energy          :   -0.0137812098
+ FOP Loop: Lagrangian Fragment energy       :   -0.0150126479
+ FOP Loop: Occupied energy diff             :    0.0000266627
+ FOP Loop: Virtual energy diff              :    0.0000003194
+ FOP Loop: Lagrangian energy diff           :    0.0000258844
  FOP=========================================================
  FOP
  FOP: Lagrangian energy NOT converged
  FOP: Occupied energy NOT converged
- FOP: Virtual energy NOT converged
-#SINGLEDIMS# basis,occ,virt       12       4       8
+ FOP: Virtual energy converged, energydiff    =   0.000000319
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -2699,7 +2701,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -2709,10 +2711,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -2730,8 +2732,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -2750,8 +2752,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2771,10 +2773,10 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
- Single occupied energy =    -0.1687487782E-01
- Single virtual  energy =    -0.1425555243E-01
- Single Lagrangian occ term  =     0.8015061470E-02
- Single Lagrangian virt term =     0.7683535826E-02
+ Single occupied energy =    -0.1651647140E-01
+ Single virtual  energy =    -0.1378089040E-01
+ Single Lagrangian occ term  =     0.8590882162E-02
+ Single Lagrangian virt term =     0.6667947352E-02
  
  
  FOP
@@ -2784,10 +2786,10 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   5
  FOP Loop: Number of orbitals in virt total :   8
  FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0168748778
- FOP Loop: Virtual Fragment energy          :   -0.0142555524
- FOP Loop: Lagrangian Fragment energy       :   -0.0154318329
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0165164714
+ FOP Loop: Virtual Fragment energy          :   -0.0137808904
+ FOP Loop: Lagrangian Fragment energy       :   -0.0150385323
  FOP Loop: Occupied energy diff             :    0.0000000000
  FOP Loop: Virtual energy diff              :    0.0000000000
  FOP Loop: Lagrangian energy diff           :    0.0000000000
@@ -2805,17 +2807,17 @@ Use F12 correction           =           FALSE
  FOP Done: Fragment number                  :   5
  FOP Done: Number of orbitals in virt total :   8
  FOP Done: Number of orbitals in occ total  :   4
- FOP Done: Number of basis functions        :  12
- FOP Done: Occupied Fragment energy         :   -0.0168748778
- FOP Done: Virtual Fragment energy          :   -0.0142555524
- FOP Done: Lagrangian Fragment energy       :   -0.0154318329
+ FOP Done: Number of basis functions        :  13
+ FOP Done: Occupied Fragment energy         :   -0.0165164714
+ FOP Done: Virtual Fragment energy          :   -0.0137808904
+ FOP Done: Lagrangian Fragment energy       :   -0.0150385323
  FOP Done: Occupied reduction removed      0 of      4 orbitals (  0.00 %)
  FOP Done: Virtual  reduction removed      0 of      8 orbitals (  0.00 %)
  FOP=========================================================
  FOP
 
- FOP reduction: Atom,FOT,O,V,B      5     0.100E-04      4      8     12
-#PAIRDIMS# basis,occ,virt       12       3       6
+ FOP reduction: Atom,FOT,O,V,B      5     0.100E-04      4      8     13
+#PAIRDIMS# basis,occ,virt       13       3       6
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -2830,7 +2832,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       6
@@ -2840,10 +2842,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.570E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.651E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.518E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
+ Memory required for tmp array 3 (GB)    = 0.112E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -2861,8 +2863,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.570E-04
- Big Array Memory required       (GB)    = 0.734E-04
+ Memory required                 (GB)    = 0.651E-04
+ Big Array Memory required       (GB)    = 0.815E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -2902,13 +2904,13 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       2      3
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1111399543E-01
- Distance(Ang), pair virt energy =      0.70022       -0.7140862123E-02
- Distance(Ang), pair lagr. occ term  =      0.70022        0.7548717884E-02
- Distance(Ang), pair lagr. virt term =      0.70022        0.2881819209E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.1105091649E-01
+ Distance(Ang), pair virt energy =      0.70022       -0.7161686394E-02
+ Distance(Ang), pair lagr. occ term  =      0.70022        0.7599843791E-02
+ Distance(Ang), pair lagr. virt term =      0.70022        0.2781447650E-02
  
  
-#PAIRDIMS# basis,occ,virt       12       3       6
+#PAIRDIMS# basis,occ,virt       13       3       6
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -2923,7 +2925,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       6
@@ -2933,10 +2935,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.570E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.651E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.518E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
+ Memory required for tmp array 3 (GB)    = 0.112E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -2954,8 +2956,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.570E-04
- Big Array Memory required       (GB)    = 0.734E-04
+ Memory required                 (GB)    = 0.651E-04
+ Big Array Memory required       (GB)    = 0.815E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -2975,7 +2977,7 @@ Use F12 correction           =           FALSE
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2995,13 +2997,13 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       2      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1111399393E-01
- Distance(Ang), pair virt energy =      0.70022       -0.5835480788E-02
- Distance(Ang), pair lagr. occ term  =      0.70022        0.7548716408E-02
- Distance(Ang), pair lagr. virt term =      0.70022        0.2242501858E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.1105091500E-01
+ Distance(Ang), pair virt energy =      0.70022       -0.5804991157E-02
+ Distance(Ang), pair lagr. occ term  =      0.70022        0.7599842377E-02
+ Distance(Ang), pair lagr. virt term =      0.70022        0.2150950823E-02
  
  
-#PAIRDIMS# basis,occ,virt       12       3       6
+#PAIRDIMS# basis,occ,virt       13       3       6
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3016,7 +3018,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       6
@@ -3026,10 +3028,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.570E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.651E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.518E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
+ Memory required for tmp array 3 (GB)    = 0.112E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -3047,8 +3049,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.570E-04
- Big Array Memory required       (GB)    = 0.734E-04
+ Memory required                 (GB)    = 0.651E-04
+ Big Array Memory required       (GB)    = 0.815E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -3068,7 +3070,7 @@ Use F12 correction           =           FALSE
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -3088,13 +3090,13 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       3      4
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1111400063E-01
- Distance(Ang), pair virt energy =      0.70022       -0.5835484387E-02
- Distance(Ang), pair lagr. occ term  =      0.70022        0.7548721395E-02
- Distance(Ang), pair lagr. virt term =      0.70022        0.2242502260E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.1105092187E-01
+ Distance(Ang), pair virt energy =      0.70022       -0.5804994444E-02
+ Distance(Ang), pair lagr. occ term  =      0.70022        0.7599847759E-02
+ Distance(Ang), pair lagr. virt term =      0.70022        0.2150951095E-02
  
  
-#PAIRDIMS# basis,occ,virt       12       3       6
+#PAIRDIMS# basis,occ,virt       13       3       6
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3109,7 +3111,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       6
@@ -3119,10 +3121,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.570E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.651E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.518E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
+ Memory required for tmp array 3 (GB)    = 0.112E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -3140,8 +3142,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.570E-04
- Big Array Memory required       (GB)    = 0.734E-04
+ Memory required                 (GB)    = 0.651E-04
+ Big Array Memory required       (GB)    = 0.815E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -3161,7 +3163,7 @@ Use F12 correction           =           FALSE
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -3181,13 +3183,13 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       3      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.84144       -0.8177227071E-02
- Distance(Ang), pair virt energy =      0.84144       -0.3457419182E-02
- Distance(Ang), pair lagr. occ term  =      0.84144        0.3758341381E-02
- Distance(Ang), pair lagr. virt term =      0.84144        0.2852742543E-02
+ Distance(Ang), pair occ energy  =      0.84144       -0.8058965996E-02
+ Distance(Ang), pair virt energy =      0.84144       -0.3245095139E-02
+ Distance(Ang), pair lagr. occ term  =      0.84144        0.3959333274E-02
+ Distance(Ang), pair lagr. virt term =      0.84144        0.2301290972E-02
  
  
-#PAIRDIMS# basis,occ,virt       12       3       6
+#PAIRDIMS# basis,occ,virt       13       3       6
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3202,7 +3204,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       6
@@ -3212,10 +3214,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.570E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.651E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.518E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
+ Memory required for tmp array 3 (GB)    = 0.112E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -3233,8 +3235,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.570E-04
- Big Array Memory required       (GB)    = 0.734E-04
+ Memory required                 (GB)    = 0.651E-04
+ Big Array Memory required       (GB)    = 0.815E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -3274,13 +3276,13 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       4      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1111399920E-01
- Distance(Ang), pair virt energy =      0.70022       -0.7140861767E-02
- Distance(Ang), pair lagr. occ term  =      0.70022        0.7548719963E-02
- Distance(Ang), pair lagr. virt term =      0.70022        0.2881818929E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.1105092046E-01
+ Distance(Ang), pair virt energy =      0.70022       -0.7161685840E-02
+ Distance(Ang), pair lagr. occ term  =      0.70022        0.7599846397E-02
+ Distance(Ang), pair lagr. virt term =      0.70022        0.2781447317E-02
  
  
-#PAIRDIMS# basis,occ,virt       12       2       4
+#PAIRDIMS# basis,occ,virt       13       2       4
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3295,7 +3297,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       2       2
  Number of virtual  orbitals AOS/EOS     =       4       4
  Maximum alpha batch dimension           =       6
@@ -3305,10 +3307,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.507E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.585E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.230E-05
- Memory required for tmp array 3 (GB)    = 0.691E-05
+ Memory required for tmp array 3 (GB)    = 0.749E-05
  
  STEP 2 in integral loop
  -----------------------
@@ -3326,8 +3328,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.507E-04
- Big Array Memory required       (GB)    = 0.671E-04
+ Memory required                 (GB)    = 0.585E-04
+ Big Array Memory required       (GB)    = 0.748E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -3367,10 +3369,10 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       2      4
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.52167       -0.1019995974E-01
- Distance(Ang), pair virt energy =      0.52167       -0.9891640225E-02
- Distance(Ang), pair lagr. occ term  =      0.52167        0.7729312652E-02
- Distance(Ang), pair lagr. virt term =      0.52167        0.2440035744E-02
+ Distance(Ang), pair occ energy  =      0.52167       -0.9993305331E-02
+ Distance(Ang), pair virt energy =      0.52167       -0.9820036567E-02
+ Distance(Ang), pair lagr. occ term  =      0.52167        0.7584936835E-02
+ Distance(Ang), pair lagr. virt term =      0.52167        0.2411135419E-02
  
  
  
@@ -3385,7 +3387,7 @@ Use F12 correction           =           FALSE
  
  Pairs to be treated using input FOT            6
  
- Estimated pair correlation energy:            -0.6283317600E-01
+ Estimated pair correlation energy:            -0.6225594514E-01
  Estimated contribution from skipped pairs:      0.000000000    
  
  
@@ -3395,9 +3397,9 @@ Use F12 correction           =           FALSE
  =================================================================
  
   Atom1  Atom2     Dist(Ang)        Energy
-     2       3     0.70022         -0.1111399543E-01    PF_LASTPAIR
-     4       3     0.70022         -0.1111400063E-01    PF_LASTPAIR
-     5       3     0.84144         -0.8177227071E-02    PF_LASTPAIR
+     2       3     0.70022         -0.1105091649E-01    PF_LASTPAIR
+     4       3     0.70022         -0.1105092187E-01    PF_LASTPAIR
+     5       3     0.84144         -0.8058965996E-02    PF_LASTPAIR
  
  
  
@@ -3407,17 +3409,17 @@ Use F12 correction           =           FALSE
  =================================================================
  
   Frag1  Frag2     Dist(Ang)        Energy
-     2       3     0.70022         -0.1111399543E-01    PF_ESTIMATE
-     2       4     0.52167         -0.1019995974E-01    PF_ESTIMATE
-     2       5     0.70022         -0.1111399393E-01    PF_ESTIMATE
-     3       4     0.70022         -0.1111400063E-01    PF_ESTIMATE
-     3       5     0.84144         -0.8177227071E-02    PF_ESTIMATE
-     4       5     0.70022         -0.1111399920E-01    PF_ESTIMATE
+     2       3     0.70022         -0.1105091649E-01    PF_ESTIMATE
+     2       4     0.52167         -0.9993305331E-02    PF_ESTIMATE
+     2       5     0.70022         -0.1105091500E-01    PF_ESTIMATE
+     3       4     0.70022         -0.1105092187E-01    PF_ESTIMATE
+     3       5     0.84144         -0.8058965996E-02    PF_ESTIMATE
+     4       5     0.70022         -0.1105092046E-01    PF_ESTIMATE
  
  
   ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   2.81 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   2.82 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   2.65 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   2.66 seconds
  Preparing job list...
  
  
@@ -3426,14 +3428,14 @@ Use F12 correction           =           FALSE
          Occ Orbital fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      2      4      8     12    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
-      3      4      8     12    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
-      4      4      8     12    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
-      5      4      8     12    0.841    / 0.841      0.700    / 0.700              FRAG_SIZE
+      2      4      8     13    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
+      3      4      8     13    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
+      4      4      8     13    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
+      5      4      8     13    0.841    / 0.841      0.700    / 0.700              FRAG_SIZE
  
  FRAGANALYSIS: Max/Ave/Min occ         :        4       /     4.0000    /       4
  FRAGANALYSIS: Max/Ave/Min unocc       :        8       /     8.0000    /       8
- FRAGANALYSIS: Max/Ave/Min basis       :       12       /     12.000    /      12
+ FRAGANALYSIS: Max/Ave/Min basis       :       13       /     13.000    /      13
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :     0.84144    /    0.73553    /    0.70022    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :     0.84144    /    0.73553    /    0.70022    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:     0.70022    /    0.70022    /    0.70022    
@@ -3447,16 +3449,16 @@ Use F12 correction           =           FALSE
  Number of jobs =           10
  
  JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis
-        1                384              2                4        8       12
-        2                384              2       3        4        8       12
-        3                384              2       4        4        8       12
-        4                384              2       5        4        8       12
-        5                384              3                4        8       12
-        6                384              3       4        4        8       12
-        7                384              3       5        4        8       12
-        8                384              4                4        8       12
-        9                384              4       5        4        8       12
-       10                384              5                4        8       12
+        1                416              2                4        8       13
+        2                416              2       3        4        8       13
+        3                416              2       4        4        8       13
+        4                416              2       5        4        8       13
+        5                416              3                4        8       13
+        6                416              3       4        4        8       13
+        7                416              3       5        4        8       13
+        8                416              4                4        8       13
+        9                416              4       5        4        8       13
+       10                416              5                4        8       13
  
  
  DEC JOB SUMMARY: Number of single jobs =          4
@@ -3467,7 +3469,7 @@ Use F12 correction           =           FALSE
  
  *** Calculating single and pair interaction energies ***
  
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3482,7 +3484,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -3492,10 +3494,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -3513,8 +3515,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -3533,8 +3535,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -3554,16 +3556,16 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       2
  **********************************************************************
- Single occupied energy =    -0.8875297974E-02
- Single virtual  energy =    -0.1610593155E-01
- Single Lagrangian occ term  =     0.6415851795E-02
- Single Lagrangian virt term =     0.4160693359E-02
+ Single occupied energy =    -0.8840046545E-02
+ Single virtual  energy =    -0.1604510958E-01
+ Single Lagrangian occ term  =     0.6542012012E-02
+ Single Lagrangian virt term =     0.4127385569E-02
  
  
  Calculating MP2 gradient for fragment           2
  Initiating MP2 gradient structure for single fragment            2
  Initiating MP2 density matrix...
-#PAIRDIMS# basis,occ,virt       12       4       8
+#PAIRDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3578,7 +3580,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
  Number of virtual  orbitals AOS/EOS     =       8       4
  Maximum alpha batch dimension           =       6
@@ -3588,10 +3590,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -3609,8 +3611,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -3650,16 +3652,16 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       2      3
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1148620549E-01
- Distance(Ang), pair virt energy =      0.70022       -0.9361038860E-02
- Distance(Ang), pair lagr. occ term  =      0.70022        0.7863338754E-02
- Distance(Ang), pair lagr. virt term =      0.70022        0.3609037521E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.1146060111E-01
+ Distance(Ang), pair virt energy =      0.70022       -0.9440286346E-02
+ Distance(Ang), pair lagr. occ term  =      0.70022        0.7966755792E-02
+ Distance(Ang), pair lagr. virt term =      0.70022        0.3486599771E-02
  
  
  Calculating MP2 gradient for pair fragment           2           3
  Initiating MP2 gradient structure for pair fragment            2           3
  Initiating MP2 density matrix...
-#PAIRDIMS# basis,occ,virt       12       4       8
+#PAIRDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3674,7 +3676,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
  Number of virtual  orbitals AOS/EOS     =       8       4
  Maximum alpha batch dimension           =       6
@@ -3684,10 +3686,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -3705,8 +3707,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -3746,16 +3748,16 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       2      4
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.52167       -0.1136888927E-01
- Distance(Ang), pair virt energy =      0.52167       -0.2405809416E-01
- Distance(Ang), pair lagr. occ term  =      0.52167        0.8764635757E-02
- Distance(Ang), pair lagr. virt term =      0.52167        0.6190473848E-02
+ Distance(Ang), pair occ energy  =      0.52167       -0.1142742874E-01
+ Distance(Ang), pair virt energy =      0.52167       -0.2409270596E-01
+ Distance(Ang), pair lagr. occ term  =      0.52167        0.8820594662E-02
+ Distance(Ang), pair lagr. virt term =      0.52167        0.6183026369E-02
  
  
  Calculating MP2 gradient for pair fragment           2           4
  Initiating MP2 gradient structure for pair fragment            2           4
  Initiating MP2 density matrix...
-#PAIRDIMS# basis,occ,virt       12       4       8
+#PAIRDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3770,7 +3772,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
  Number of virtual  orbitals AOS/EOS     =       8       4
  Maximum alpha batch dimension           =       6
@@ -3780,10 +3782,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -3801,8 +3803,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -3842,16 +3844,16 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       2      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1148620327E-01
- Distance(Ang), pair virt energy =      0.70022       -0.7087388911E-02
- Distance(Ang), pair lagr. occ term  =      0.70022        0.7863336683E-02
- Distance(Ang), pair lagr. virt term =      0.70022        0.2800985239E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.1146059878E-01
+ Distance(Ang), pair virt energy =      0.70022       -0.7129542259E-02
+ Distance(Ang), pair lagr. occ term  =      0.70022        0.7966753777E-02
+ Distance(Ang), pair lagr. virt term =      0.70022        0.2703163363E-02
  
  
  Calculating MP2 gradient for pair fragment           2           5
  Initiating MP2 gradient structure for pair fragment            2           5
  Initiating MP2 density matrix...
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3866,7 +3868,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -3876,10 +3878,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -3897,8 +3899,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -3917,8 +3919,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -3938,16 +3940,16 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       3
  **********************************************************************
- Single occupied energy =    -0.1687488172E-01
- Single virtual  energy =    -0.1425555567E-01
- Single Lagrangian occ term  =     0.8015063909E-02
- Single Lagrangian virt term =     0.7683537479E-02
+ Single occupied energy =    -0.1651647519E-01
+ Single virtual  energy =    -0.1378089359E-01
+ Single Lagrangian occ term  =     0.8590884810E-02
+ Single Lagrangian virt term =     0.6667948875E-02
  
  
  Calculating MP2 gradient for fragment           3
  Initiating MP2 gradient structure for single fragment            3
  Initiating MP2 density matrix...
-#PAIRDIMS# basis,occ,virt       12       4       8
+#PAIRDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -3962,7 +3964,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
  Number of virtual  orbitals AOS/EOS     =       8       4
  Maximum alpha batch dimension           =       6
@@ -3972,10 +3974,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -3993,8 +3995,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -4034,16 +4036,16 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       3      4
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1148621185E-01
- Distance(Ang), pair virt energy =      0.70022       -0.7087391975E-02
- Distance(Ang), pair lagr. occ term  =      0.70022        0.7863342298E-02
- Distance(Ang), pair lagr. virt term =      0.70022        0.2800985175E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.1146060758E-01
+ Distance(Ang), pair virt energy =      0.70022       -0.7129545271E-02
+ Distance(Ang), pair lagr. occ term  =      0.70022        0.7966760328E-02
+ Distance(Ang), pair lagr. virt term =      0.70022        0.2703163430E-02
  
  
  Calculating MP2 gradient for pair fragment           3           4
  Initiating MP2 gradient structure for pair fragment            3           4
  Initiating MP2 density matrix...
-#PAIRDIMS# basis,occ,virt       12       4       8
+#PAIRDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -4058,7 +4060,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
  Number of virtual  orbitals AOS/EOS     =       8       4
  Maximum alpha batch dimension           =       6
@@ -4068,10 +4070,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -4089,8 +4091,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -4130,16 +4132,16 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       3      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.84144       -0.1270397591E-01
- Distance(Ang), pair virt energy =      0.84144       -0.3840120230E-02
- Distance(Ang), pair lagr. occ term  =      0.84144        0.6786228801E-02
- Distance(Ang), pair lagr. virt term =      0.84144        0.2953019664E-02
+ Distance(Ang), pair occ energy  =      0.84144       -0.1259768134E-01
+ Distance(Ang), pair virt energy =      0.84144       -0.3696187091E-02
+ Distance(Ang), pair lagr. occ term  =      0.84144        0.7024113101E-02
+ Distance(Ang), pair lagr. virt term =      0.84144        0.2449814216E-02
  
  
  Calculating MP2 gradient for pair fragment           3           5
  Initiating MP2 gradient structure for pair fragment            3           5
  Initiating MP2 density matrix...
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -4154,7 +4156,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -4164,10 +4166,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -4185,8 +4187,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -4205,7 +4207,7 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
@@ -4226,16 +4228,16 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.8875296806E-02
- Single virtual  energy =    -0.1610593891E-01
- Single Lagrangian occ term  =     0.6415851337E-02
- Single Lagrangian virt term =     0.4160694425E-02
+ Single occupied energy =    -0.8840045461E-02
+ Single virtual  energy =    -0.1604511643E-01
+ Single Lagrangian occ term  =     0.6542012356E-02
+ Single Lagrangian virt term =     0.4127386567E-02
  
  
  Calculating MP2 gradient for fragment           4
  Initiating MP2 gradient structure for single fragment            4
  Initiating MP2 density matrix...
-#PAIRDIMS# basis,occ,virt       12       4       8
+#PAIRDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -4250,7 +4252,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
  Number of virtual  orbitals AOS/EOS     =       8       4
  Maximum alpha batch dimension           =       6
@@ -4260,10 +4262,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -4281,8 +4283,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -4322,16 +4324,16 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       4      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1148620968E-01
- Distance(Ang), pair virt energy =      0.70022       -0.9361037109E-02
- Distance(Ang), pair lagr. occ term  =      0.70022        0.7863340255E-02
- Distance(Ang), pair lagr. virt term =      0.70022        0.3609036207E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.1146060528E-01
+ Distance(Ang), pair virt energy =      0.70022       -0.9440284512E-02
+ Distance(Ang), pair lagr. occ term  =      0.70022        0.7966758344E-02
+ Distance(Ang), pair lagr. virt term =      0.70022        0.3486598583E-02
  
  
  Calculating MP2 gradient for pair fragment           4           5
  Initiating MP2 gradient structure for pair fragment            4           5
  Initiating MP2 density matrix...
-#SINGLEDIMS# basis,occ,virt       12       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
@@ -4346,7 +4348,7 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      12
+ Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
@@ -4356,10 +4358,10 @@ Use F12 correction           =           FALSE
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
  Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.150E-04
  
  STEP 2 in integral loop
  -----------------------
@@ -4377,8 +4379,8 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
  
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
@@ -4397,7 +4399,7 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.08 seconds
  >>> wall Time used in MP2workhorse GammaLoop: is   0.09 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
@@ -4418,17 +4420,17 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
- Single occupied energy =    -0.1687487782E-01
- Single virtual  energy =    -0.1425555243E-01
- Single Lagrangian occ term  =     0.8015061470E-02
- Single Lagrangian virt term =     0.7683535826E-02
+ Single occupied energy =    -0.1651647140E-01
+ Single virtual  energy =    -0.1378089040E-01
+ Single Lagrangian occ term  =     0.8590882162E-02
+ Single Lagrangian virt term =     0.6667947352E-02
  
  
  Calculating MP2 gradient for fragment           5
  Initiating MP2 gradient structure for single fragment            5
  Initiating MP2 density matrix...
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   3.05 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is   3.06 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   2.92 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is   2.93 seconds
  
  
               ===============================================
@@ -4442,10 +4444,10 @@ Use F12 correction           =           FALSE
  =================================================================
  
  Fragment       Energy
-     2      -0.8875297974E-02    AF_MP2_OCC
-     3      -0.1687488172E-01    AF_MP2_OCC
-     4      -0.8875296806E-02    AF_MP2_OCC
-     5      -0.1687487782E-01    AF_MP2_OCC
+     2      -0.8840046545E-02    AF_MP2_OCC
+     3      -0.1651647519E-01    AF_MP2_OCC
+     4      -0.8840045461E-02    AF_MP2_OCC
+     5      -0.1651647140E-01    AF_MP2_OCC
  
  
  =================================================================
@@ -4453,10 +4455,10 @@ Use F12 correction           =           FALSE
  =================================================================
  
  Fragment       Energy
-     2      -0.1610593155E-01    AF_MP2_VIR
-     3      -0.1425555567E-01    AF_MP2_VIR
-     4      -0.1610593891E-01    AF_MP2_VIR
-     5      -0.1425555243E-01    AF_MP2_VIR
+     2      -0.1604510958E-01    AF_MP2_VIR
+     3      -0.1378089359E-01    AF_MP2_VIR
+     4      -0.1604511643E-01    AF_MP2_VIR
+     5      -0.1378089040E-01    AF_MP2_VIR
  
  
  =================================================================
@@ -4464,10 +4466,10 @@ Use F12 correction           =           FALSE
  =================================================================
  
  Fragment       Energy
-     2      -0.1440468437E-01    AF_MP2_LAG
-     3      -0.1543183601E-01    AF_MP2_LAG
-     4      -0.1440468995E-01    AF_MP2_LAG
-     5      -0.1543183295E-01    AF_MP2_LAG
+     2      -0.1421575855E-01    AF_MP2_LAG
+     3      -0.1503853510E-01    AF_MP2_LAG
+     4      -0.1421576296E-01    AF_MP2_LAG
+     5      -0.1503853228E-01    AF_MP2_LAG
  
  
  =================================================================
@@ -4475,12 +4477,12 @@ Use F12 correction           =           FALSE
  =================================================================
  
   Frag1  Frag2     Dist(Ang)        Energy
-     2       3     0.70022         -0.1148620549E-01    PF_MP2_OCC
-     2       4     0.52167         -0.1136888927E-01    PF_MP2_OCC
-     2       5     0.70022         -0.1148620327E-01    PF_MP2_OCC
-     3       4     0.70022         -0.1148621185E-01    PF_MP2_OCC
-     3       5     0.84144         -0.1270397591E-01    PF_MP2_OCC
-     4       5     0.70022         -0.1148620968E-01    PF_MP2_OCC
+     2       3     0.70022         -0.1146060111E-01    PF_MP2_OCC
+     2       4     0.52167         -0.1142742874E-01    PF_MP2_OCC
+     2       5     0.70022         -0.1146059878E-01    PF_MP2_OCC
+     3       4     0.70022         -0.1146060758E-01    PF_MP2_OCC
+     3       5     0.84144         -0.1259768134E-01    PF_MP2_OCC
+     4       5     0.70022         -0.1146060528E-01    PF_MP2_OCC
  
  
  =================================================================
@@ -4488,12 +4490,12 @@ Use F12 correction           =           FALSE
  =================================================================
  
   Frag1  Frag2     Dist(Ang)        Energy
-     2       3     0.70022         -0.9361038860E-02    PF_MP2_VIR
-     2       4     0.52167         -0.2405809416E-01    PF_MP2_VIR
-     2       5     0.70022         -0.7087388911E-02    PF_MP2_VIR
-     3       4     0.70022         -0.7087391975E-02    PF_MP2_VIR
-     3       5     0.84144         -0.3840120230E-02    PF_MP2_VIR
-     4       5     0.70022         -0.9361037109E-02    PF_MP2_VIR
+     2       3     0.70022         -0.9440286346E-02    PF_MP2_VIR
+     2       4     0.52167         -0.2409270596E-01    PF_MP2_VIR
+     2       5     0.70022         -0.7129542259E-02    PF_MP2_VIR
+     3       4     0.70022         -0.7129545271E-02    PF_MP2_VIR
+     3       5     0.84144         -0.3696187091E-02    PF_MP2_VIR
+     4       5     0.70022         -0.9440284512E-02    PF_MP2_VIR
  
  
  =================================================================
@@ -4501,16 +4503,16 @@ Use F12 correction           =           FALSE
  =================================================================
  
   Frag1  Frag2     Dist(Ang)        Energy
-     2       3     0.70022         -0.9374868070E-02    PF_MP2_LAG
-     2       4     0.52167         -0.2047187383E-01    PF_MP2_LAG
-     2       5     0.70022         -0.7909270259E-02    PF_MP2_LAG
-     3       4     0.70022         -0.7909276356E-02    PF_MP2_LAG
-     3       5     0.84144         -0.6804847678E-02    PF_MP2_LAG
-     4       5     0.70022         -0.9374870332E-02    PF_MP2_LAG
+     2       3     0.70022         -0.9447531896E-02    PF_MP2_LAG
+     2       4     0.52167         -0.2051651368E-01    PF_MP2_LAG
+     2       5     0.70022         -0.7920223894E-02    PF_MP2_LAG
+     3       4     0.70022         -0.7920229091E-02    PF_MP2_LAG
+     3       5     0.84144         -0.6819941117E-02    PF_MP2_LAG
+     4       5     0.70022         -0.9447532870E-02    PF_MP2_LAG
  
- MP2 occupied   correlation energy :    -0.1215180498    
- MP2 virtual    correlation energy :    -0.1215180498    
- MP2 Lagrangian correlation energy :    -0.1215180498    
+ MP2 occupied   correlation energy :    -0.1205805614    
+ MP2 virtual    correlation energy :    -0.1205805614    
+ MP2 Lagrangian correlation energy :    -0.1205805614    
  
  
  
@@ -4523,13 +4525,14 @@ Frozen core kappabar multiplier equation: Conv. thr. set to    0.100000E-03
  Starting kappabar iterations
  -------------------------
  ***  Iteration     Residual norm
- ***      1         0.45071672E-02
- ***      2         0.71902642E-04
-Zeroth order kappabar multiplier equation solved     2 iterations!
- Residual norm:  7.190264179408159E-005
- The Coulomb energy contribution   8.800395478811323E-004
- The Exchange energy contribution   5.297400722308314E-003
- The Fock energy contribution   4.417361174427180E-003
+ ***      1         0.88134331E-02
+ ***      2         0.10584132E-03
+ ***      3         0.68471973E-12
+Zeroth order kappabar multiplier equation solved     3 iterations!
+ Residual norm:  6.847197271235947E-013
+ The Coulomb energy contribution   7.684513125423173E-004
+ The Exchange energy contribution   4.733146660734814E-003
+ The Fock energy contribution   3.964695348192496E-003
  
  Starting kappabar multiplier solver for zeroth order equation...
  
@@ -4538,16 +4541,15 @@ Virt-occ kappabar multiplier equation: Conv. thr. set to    0.100000E-03
  Starting kappabar iterations
  -------------------------
  ***  Iteration     Residual norm
- ***      1         0.11930100    
- ***      2         0.29220902E-01
- ***      3         0.91402196E-02
- ***      4         0.36982281E-02
- ***      5         0.13623790E-02
- ***      6         0.27528434E-03
- ***      7         0.10618488E-03
- ***      8         0.51050397E-05
-Zeroth order kappabar multiplier equation solved     8 iterations!
- Residual norm:  5.105039716116755E-006
+ ***      1         0.11852934    
+ ***      2         0.28683001E-01
+ ***      3         0.87469331E-02
+ ***      4         0.35199969E-02
+ ***      5         0.13271339E-02
+ ***      6         0.24213571E-03
+ ***      7         0.91620093E-04
+Zeroth order kappabar multiplier equation solved     7 iterations!
+ Residual norm:  9.162009262280052E-005
  
  Starting kappabar multiplier solver for full equation...
  
@@ -4556,47 +4558,47 @@ Virt-occ kappabar multiplier equation: Conv. thr. set to    0.100000E-03
  Starting kappabar iterations
  -------------------------
  ***  Iteration     Residual norm
- The Coulomb energy contribution   3.585865226103790E-004
- The Exchange energy contribution   7.327574688529505E-004
- The Fock energy contribution   3.741709462425716E-004
- ***      1         0.22163515E-01
- The Coulomb energy contribution   3.483941943373011E-004
- The Exchange energy contribution   1.172329212756605E-003
- The Fock energy contribution   8.239350184193047E-004
- ***      2         0.97140403E-02
- The Coulomb energy contribution   4.147388126644143E-004
- The Exchange energy contribution   1.119763437977358E-003
- The Fock energy contribution   7.050246253129437E-004
- ***      3         0.46250536E-02
- The Coulomb energy contribution   3.665456463106517E-004
- The Exchange energy contribution   1.072561197700929E-003
- The Fock energy contribution   7.060155513902776E-004
- ***      4         0.24868505E-02
- The Coulomb energy contribution   3.839843225659627E-004
- The Exchange energy contribution   1.118782590956028E-003
- The Fock energy contribution   7.347982683900652E-004
- ***      5         0.95426160E-03
- The Coulomb energy contribution   3.867564770882346E-004
- The Exchange energy contribution   1.139598432570289E-003
- The Fock energy contribution   7.528419554820546E-004
- ***      6         0.35208920E-03
- The Coulomb energy contribution   3.884208560748482E-004
- The Exchange energy contribution   1.144818459430450E-003
- The Fock energy contribution   7.563976033556015E-004
- ***      7         0.14241677E-03
- The Coulomb energy contribution   3.884499532805128E-004
- The Exchange energy contribution   1.145843743559564E-003
- The Fock energy contribution   7.573937902790515E-004
- ***      8         0.38396269E-04
+ The Coulomb energy contribution   3.478412995467817E-004
+ The Exchange energy contribution   7.030092865928179E-004
+ The Fock energy contribution   3.551679870460362E-004
+ ***      1         0.22150508E-01
+ The Coulomb energy contribution   3.277901039967823E-004
+ The Exchange energy contribution   1.118876885829855E-003
+ The Fock energy contribution   7.910867818330731E-004
+ ***      2         0.94950549E-02
+ The Coulomb energy contribution   3.954718570989615E-004
+ The Exchange energy contribution   1.068894096329357E-003
+ The Fock energy contribution   6.734222392303957E-004
+ ***      3         0.44460311E-02
+ The Coulomb energy contribution   3.474560438952618E-004
+ The Exchange energy contribution   1.019658979636235E-003
+ The Fock energy contribution   6.722029357409728E-004
+ ***      4         0.24184432E-02
+ The Coulomb energy contribution   3.629616782725296E-004
+ The Exchange energy contribution   1.060584146601071E-003
+ The Fock energy contribution   6.976224683285414E-004
+ ***      5         0.92658644E-03
+ The Coulomb energy contribution   3.657217465467335E-004
+ The Exchange energy contribution   1.080789178282648E-003
+ The Fock energy contribution   7.150674317359139E-004
+ ***      6         0.33055972E-03
+ The Coulomb energy contribution   3.673617519492753E-004
+ The Exchange energy contribution   1.085691074228155E-003
+ The Fock energy contribution   7.183293222788801E-004
+ ***      7         0.13596211E-03
+ The Coulomb energy contribution   3.673537722896103E-004
+ The Exchange energy contribution   1.086515048676111E-003
+ The Fock energy contribution   7.191612763865001E-004
+ ***      8         0.37486298E-04
 Full kappabar multiplier equation solved     8 iterations!
- Residual norm:  3.839626898878846E-005
+ Residual norm:  3.748629812414225E-005
  
  
  *****************************************************************
  *                     MP2 DENSITY SANITY CHECK                  *
  *****************************************************************
  HF state : Number of electrons =      10.00000000    
- MP2 state: Number of electrons =      9.999877135    
+ MP2 state: Number of electrons =      10.00000000    
  Number of electrons from input =          10
  
  
@@ -4625,52 +4627,52 @@ Full kappabar multiplier equation solved     8 iterations!
                        MP2: Permanent dipole moment
                        ----------------------------
                au              Debye           10**-30 C m
-           0.912001           2.31808           7.73227    
+           0.916271           2.32893           7.76846    
  
  
                        MP2: Dipole moment components
                        -----------------------------
                au              Debye           10**-30 C m
- x        -0.524498          -1.33314          -4.44687    
- y        -0.746089          -1.89637          -6.32560    
- z         0.924164E-12      0.234899E-11      0.783538E-11
+ x        -0.526726          -1.33880          -4.46576    
+ y        -0.749741          -1.90565          -6.35657    
+ z         0.508461E-12      0.129238E-11      0.431091E-11
  
  
  
  Writing full molecular MP2 density to file....
- The Coulomb energy contribution   1.073638122310444E-003
- The Exchange energy contribution   2.917117807942828E-003
- The Fock energy contribution   1.843479685632384E-003
+ The Coulomb energy contribution   9.821441865930684E-004
+ The Exchange energy contribution   2.672753778319448E-003
+ The Fock energy contribution   1.690609591726379E-003
 
 
                      Coulomb contribution to gradient
                      --------------------------------
 
-   O       -1.9191378750           -2.7317137273            0.0000000000
-   H        0.9595689375            1.3658568637            1.9909096639
-   H        0.9595689375            1.3658568636           -1.9909096639
+   O       -1.9295085784           -2.7464753199            0.0000000000
+   H        0.9647542892            1.3732376600            2.0050508822
+   H        0.9647542892            1.3732376599           -2.0050508822
 
 
                     exchange contribution to gradient
                     ---------------------------------
 
-   O        0.2628631581            0.3741611271           -0.0000000000
-   H       -0.1314315791           -0.1870805636           -0.2736948636
-   H       -0.1314315791           -0.1870805636            0.2736948636
+   O        0.2638868808            0.3756182862           -0.0000000000
+   H       -0.1319434404           -0.1878091431           -0.2752319109
+   H       -0.1319434404           -0.1878091431            0.2752319109
      ********************************************************************************
      *                 MP2 MOLECULAR GRADIENT FROM DEC CALCULATION                  *
      ********************************************************************************
  
-     DEC-MP2 GRADIENT NORM:       0.56587293E-01
-     DEC-MP2 GRADIENT RMS :       0.20006630E-01
+     DEC-MP2 GRADIENT NORM:       0.53467307E-01
+     DEC-MP2 GRADIENT RMS :       0.18903548E-01
  
  
                          TOTAL MP2 MOLECULAR GRADIENT
                          ****************************
  
-    O          -0.0187957636       -0.0267532530       -0.0000000000
-    H           0.0093978818        0.0133766265        0.0282718574
-    H           0.0093978818        0.0133766265       -0.0282718574
+    O          -0.0174738193       -0.0248716029        0.0000000000
+    H           0.0087369096        0.0124358014        0.0271372106
+    H           0.0087369096        0.0124358015       -0.0271372106
  
  
  
@@ -4692,18 +4694,18 @@ Full kappabar multiplier equation solved     8 iterations!
                         One-electron integral gradient
                         ------------------------------
  
-    O           3.6056033071        5.1322258565       -0.0000000000
-    H          -1.8028016536       -2.5661129283       -3.9720774145
-    H          -1.8028016536       -2.5661129282        3.9720774145
+    O           3.6142120691        5.1444795072       -0.0000000000
+    H          -1.8071060346       -2.5722397536       -3.9843082058
+    H          -1.8071060346       -2.5722397536        3.9843082058
  
  
  
                         Reorthonormalization gradient
                         -----------------------------
  
-    O          -0.2346142044       -0.3339507012        0.0000000000
-    H           0.1173071022        0.1669753506        0.2122328414
-    H           0.1173071022        0.1669753506       -0.2122328414
+    O          -0.2334316189       -0.3322674209        0.0000000000
+    H           0.1167158095        0.1661337104        0.2126099182
+    H           0.1167158095        0.1661337104       -0.2126099182
  
  
  
@@ -4711,9 +4713,9 @@ Full kappabar multiplier equation solved     8 iterations!
                     (Fock matrix derivative contribution)
                     -------------------------------------
  
-    O          -1.6562747169       -2.3575526002        0.0000000000
-    H           0.8281373584        1.1787763001        1.7172148004
-    H           0.8281373584        1.1787763001       -1.7172148004
+    O          -1.6656216977       -2.3708570337        0.0000000000
+    H           0.8328108488        1.1854285169        1.7298189713
+    H           0.8328108488        1.1854285168       -1.7298189713
  
  
  
@@ -4721,9 +4723,9 @@ Full kappabar multiplier equation solved     8 iterations!
                              (Ltheta contribution)
                        --------------------------------
  
-    O          -0.0128958359       -0.0183559587       -0.0000000000
-    H           0.0064479179        0.0091779794        0.0151962680
-    H           0.0064479179        0.0091779794       -0.0151962680
+    O          -0.0120182582       -0.0171068062       -0.0000000000
+    H           0.0060091291        0.0085534031        0.0133111648
+    H           0.0060091291        0.0085534031       -0.0133111648
  
  
  
@@ -4736,9 +4738,9 @@ Full kappabar multiplier equation solved     8 iterations!
              **********************************************************
  
                G: Hartree-Fock energy :      -75.5853918738
-               G: Correlation energy  :       -0.1215180498
+               G: Correlation energy  :       -0.1205805614
                G: Estimated DEC error :        0.0000000000
-               G: Total MP2 energy    :      -75.7069099236
+               G: Total MP2 energy    :      -75.7059724352
  
  
  >>>  CPU Time used in DEC FINAL is   0.62 seconds
@@ -4752,9 +4754,9 @@ Full kappabar multiplier equation solved     8 iterations!
  
  CC Memory summary
  -----------------
- Allocated memory for array4   :  0.3017E-03 GB
+ Allocated memory for array4   :  0.3165E-03 GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :  0.1408E-04 GB
+ Max memory in use for array4  :  0.1491E-04 GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
@@ -4763,12 +4765,12 @@ Full kappabar multiplier equation solved     8 iterations!
  
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         6.48500     s
-Total Wall time used in DEC          :         6.50700     s
+Total CPU  time used in DEC          :         6.19500     s
+Total Wall time used in DEC          :         6.21500     s
 ------------------------------------------------------
 
  
-Job finished   : Date: 02/12/2014   Time: 21:23:45
+Job finished   : Date: 04/12/2014   Time: 10:21:07
  
  
 
@@ -4778,8 +4780,8 @@ Job finished   : Date: 02/12/2014   Time: 21:23:45
 
  
  
- >>>  CPU Time used in *SCF is   7.89 seconds
- >>> wall Time used in *SCF is   7.92 seconds
+ >>>  CPU Time used in *SCF is   7.54 seconds
+ >>> wall Time used in *SCF is   7.56 seconds
  
 Total no. of matmuls used:                      1932
 Total no. of Fock/KS matrix evaluations:           8
@@ -4831,7 +4833,7 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         85.477 MB
+  Max allocated memory, TOTAL                         85.488 MB
   Max allocated memory, type(matrix)                 138.856 kB
   Max allocated memory, real(realk)                    6.034 MB
   Max allocated memory, MPI                            0.000 Byte
@@ -4867,7 +4869,7 @@ Max no. of matrices allocated in Level 3:         74
   Max allocated memory, IntWork                      160.128 kB
   Max allocated memory, Overlap                        4.390 MB
   Max allocated memory, ODitem                         1.920 kB
-  Max allocated memory, LStensor                      12.982 kB
+  Max allocated memory, LStensor                      14.582 kB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
@@ -4884,22 +4886,22 @@ Max no. of matrices allocated in Level 3:         74
    L1 mat_trans               18            0.0000            0.0000
    L1 mat_assign              24            0.0000            0.0000
    L1 mat_copy                 8            0.0000            0.0000
-   L1 mat_mul                 24            0.0010            0.0000
-   L1 mat_add                 26            0.0000            0.0010
+   L1 mat_mul                 24            0.0000            0.0010
+   L1 mat_add                 26            0.0000            0.0000
    L1 mat_daxpy               40            0.0000            0.0000
    L1 mat_dotproduct          47            0.0000            0.0000
    L1 mat_sqnorm2             46            0.0000            0.0000
    L1 mat_zero                20            0.0000            0.0000
       ==============================================================
-   L1 TOTAL MAT                             0.0010            0.0010
+   L1 TOTAL MAT                             0.0000            0.0010
       ==============================================================
-   L1     II_get_overlap       2            0.0010            0.0030
+   L1     II_get_overlap       2            0.0020            0.0030
    L1     II_get_kinetic       2            0.0020            0.0020
-   L1   II_get_nucel_mat       2            0.0050            0.0040
-   L1 II_GET_EXCHANGE_MA       8            0.0800            0.0840
-   L1 II_get_coulomb_mat       8            0.0340            0.0310
+   L1   II_get_nucel_mat       2            0.0040            0.0040
+   L1 II_GET_EXCHANGE_MA       8            0.0760            0.0740
+   L1 II_get_coulomb_mat       8            0.0300            0.0310
       ==============================================================
-   L1 TOTAL INTEGRAL                        0.1220            0.1240
+   L1 TOTAL INTEGRAL                        0.1140            0.1140
       ==============================================================
       ===============================================================
       Overall Timings for the Matrix Operations and Integral routines
@@ -4908,51 +4910,51 @@ Max no. of matrices allocated in Level 3:         74
       ===============================================================
    L3 mat_set_from_full       35            0.0000            0.0000
    L3 mat_to_full             12            0.0000            0.0010
-   L3 mat_trans              443            0.0050            0.0080
-   L3 mat_assign             901            0.0010            0.0010
+   L3 mat_trans              443            0.0030            0.0040
+   L3 mat_assign             901            0.0020            0.0040
    L3 mat_copy                22            0.0000            0.0000
-   L3 mat_mul               1907            0.0010            0.0020
-   L3 mat_add                921            0.0000            0.0020
-   L3 mat_daxpy             7413            0.0070            0.0030
-   L3 mat_dotproduct        2048            0.0060            0.0020
-   L3 mat_sqnorm2           1739            0.0020            0.0030
+   L3 mat_mul               1907            0.0020            0.0050
+   L3 mat_add                921            0.0010            0.0020
+   L3 mat_daxpy             7413            0.0090            0.0040
+   L3 mat_dotproduct        2048            0.0030            0.0020
+   L3 mat_sqnorm2           1739            0.0030            0.0010
    L3 mat_diag_f               2            0.0010            0.0010
    L3 mat_create_block        10            0.0000            0.0000
    L3 mat_retrieve_block       8            0.0000            0.0000
-   L3 mat_scal               492            0.0000            0.0000
-   L3 mat_zero              1683            0.0040            0.0020
+   L3 mat_scal               492            0.0000            0.0010
+   L3 mat_zero              1683            0.0020            0.0020
    L3 mat_density_from_o       1            0.0000            0.0000
    L3 mat_scal_dia_vec         2            0.0000            0.0000
    L3 mat_scal_dia            16            0.0000            0.0000
    L3 mat_dsyev                1            0.0000            0.0000
-   L3 mat_dsyevx              12            0.0000            0.0010
+   L3 mat_dsyevx              12            0.0010            0.0010
    L3 mat_identity            37            0.0000            0.0000
-   L3 mat_write_to_disk       12            0.0010            0.0010
+   L3 mat_write_to_disk       12            0.0000            0.0000
       ==============================================================
-   L3 TOTAL MAT                             0.0280            0.0260
+   L3 TOTAL MAT                             0.0260            0.0270
       ==============================================================
-   L3     II_get_overlap       3            0.0030            0.0040
-   L3     II_get_kinetic       2            0.0020            0.0030
-   L3   II_get_nucel_mat       2            0.0270            0.0260
+   L3     II_get_overlap       3            0.0030            0.0030
+   L3     II_get_kinetic       2            0.0030            0.0030
+   L3   II_get_nucel_mat       2            0.0260            0.0260
    L3 II_GET_NN_GRADIENT       1            0.0000            0.0000
-   L3 II_precalc_ScreenM       1            0.0200            0.0190
+   L3 II_precalc_ScreenM       1            0.0180            0.0180
    L3 II_get_ne_gradient       1            0.0090            0.0090
-   L3 II_GET_KINETIC_GRA       1            0.0020            0.0020
+   L3 II_GET_KINETIC_GRA       1            0.0030            0.0020
    L3 II_GET_REORTHONORM       1            0.0030            0.0030
-   L3  II_get_J_gradient       1            0.0340            0.0340
-   L3  II_get_K_gradient      11            1.8530            1.8580
-   L3  II_GET_K_GRADIENT      11            1.8530            1.8580
+   L3  II_get_J_gradient       1            0.0330            0.0330
+   L3  II_get_K_gradient      11            1.7890            1.7930
+   L3  II_GET_K_GRADIENT      11            1.7890            1.7930
    L3      II_get_nucpot       2            0.0000            0.0000
-   L3 II_GET_EXCHANGE_MA      18            0.4450            0.4450
-   L3 II_get_coulomb_mat      18            0.2660            0.2640
-   L3 II_GET_DECPACKED4C     288            2.5520            2.5470
-   L3           homolumo       1            0.6500            0.6510
+   L3 II_GET_EXCHANGE_MA      18            0.4440            0.4470
+   L3 II_get_coulomb_mat      18            0.2560            0.2600
+   L3 II_GET_DECPACKED4C     288            2.3890            2.4050
+   L3           homolumo       1            0.6070            0.6080
       ==============================================================
-   L3 TOTAL INTEGRAL                       13.1830           13.2090
+   L3 TOTAL INTEGRAL                       12.5490           12.5970
       ==============================================================
- >>>  CPU Time used in LSDALTON is   8.09 seconds
- >>> wall Time used in LSDALTON is   8.12 seconds
+ >>>  CPU Time used in LSDALTON is   7.73 seconds
+ >>> wall Time used in LSDALTON is   7.75 seconds
 
 End simulation
-     Date and time (Linux)  : Tue Dec  2 21:23:45 2014
+     Date and time (Linux)  : Thu Dec  4 10:21:07 2014
      Host name              : localhost.localdomain                   
