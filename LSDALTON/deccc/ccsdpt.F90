@@ -3389,7 +3389,7 @@ contains
 
           if (b .eq. a) then
 
-!$acc enter data copyin(vovv(:,:,a,b)) async(async_id(2))
+!$acc enter data copyin(vovv%elm4(:,:,a,b)) async(async_id(2))
 
 !$acc enter data copyin(oovv(:,:,a,b)) async(async_id(3)) if(full_no_frags)
 !
@@ -3409,7 +3409,7 @@ contains
 #endif
 
 !$acc enter data copyin(ooov(:,:,:,b),&
-!$acc& vovv(:,:,a,b),vovv(:,:,b,a)) async(async_id(2))
+!$acc& vovv%elm4(:,:,a,b),vovv%elm4(:,:,b,a)) async(async_id(2))
 
 !$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3)) if(full_no_frags)
 !
@@ -3438,7 +3438,7 @@ contains
 !$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
 
 !$acc enter data copyin(ooov(:,:,:,c),&
-!$acc& vovv(:,:,a,c),vovv(:,:,c,a)) async(async_id(2))
+!$acc& vovv%elm4(:,:,a,c),vovv%elm4(:,:,c,a)) async(async_id(2))
 
 !$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a)) async(async_id(3)) if(full_no_frags)
 !
@@ -3451,7 +3451,7 @@ contains
                 ! a > b == c
                 tuple_type = 2
 
-!$acc enter data copyin(vovv(:,:,b,c)) async(async_id(2))
+!$acc enter data copyin(vovv%elm4(:,:,b,c)) async(async_id(2))
 
 !$acc enter data copyin(oovv(:,:,b,c)) async(async_id(3)) if(full_no_frags)
 !
@@ -3466,7 +3466,7 @@ contains
 !$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
 
 !$acc enter data copyin(ooov(:,:,:,c),&
-!$acc& vovv(:,:,a,c),vovv(:,:,c,a),vovv(:,:,b,c),vovv(:,:,c,b)) async(async_id(2))
+!$acc& vovv%elm4(:,:,a,c),vovv%elm4(:,:,c,a),vovv%elm4(:,:,b,c),vovv%elm4(:,:,c,b)) async(async_id(2))
 
 !$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3)) if(full_no_frags)
 !
@@ -3509,7 +3509,7 @@ contains
 
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(ooov(:,:,:,c),&
-!$acc& vovv(:,:,a,c),vovv(:,:,c,a)) async(async_id(2))
+!$acc& vovv%elm4(:,:,a,c),vovv%elm4(:,:,c,a)) async(async_id(2))
 
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
@@ -3540,7 +3540,7 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(ooov(:,:,:,c),&
-!$acc& vovv(:,:,a,c),vovv(:,:,c,a)) async(async_id(2))
+!$acc& vovv%elm4(:,:,a,c),vovv%elm4(:,:,c,a)) async(async_id(2))
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a))&
@@ -3562,7 +3562,7 @@ contains
                 if (full_no_frags) then
 
 !$acc wait(async_id(4)) async(async_id(2))
-!$acc exit data delete(vovv(:,:,b,c)) async(async_id(2))
+!$acc exit data delete(vovv%elm4(:,:,b,c)) async(async_id(2))
 
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
@@ -3592,7 +3592,7 @@ contains
                                         & a,b,1,1)
 
 !$acc wait(async_id(5)) async(async_id(2))
-!$acc exit data delete(vovv(:,:,b,c)) async(async_id(2))
+!$acc exit data delete(vovv%elm4(:,:,b,c)) async(async_id(2))
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,b,c))&
@@ -3618,7 +3618,7 @@ contains
 
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(ooov(:,:,:,c),&
-!$acc& vovv(:,:,a,c),vovv(:,:,c,a),vovv(:,:,b,c),vovv(:,:,c,b)) async(async_id(2))
+!$acc& vovv%elm4(:,:,a,c),vovv%elm4(:,:,c,a),vovv%elm4(:,:,b,c),vovv%elm4(:,:,c,b)) async(async_id(2))
 
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
@@ -3653,7 +3653,7 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(ooov(:,:,:,c),&
-!$acc& vovv(:,:,a,c),vovv(:,:,c,a),vovv(:,:,b,c),vovv(:,:,c,b)) async(async_id(2))
+!$acc& vovv%elm4(:,:,a,c),vovv%elm4(:,:,c,a),vovv%elm4(:,:,b,c),vovv%elm4(:,:,c,b)) async(async_id(2))
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b))&
@@ -3672,7 +3672,7 @@ contains
              if (full_no_frags) then
 
 !$acc wait(async_id(4)) async(async_id(2))
-!$acc exit data delete(vovv(:,:,a,b)) async(async_id(2))
+!$acc exit data delete(vovv%elm4(:,:,a,b)) async(async_id(2))
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,b)) async(async_id(3))
@@ -3680,7 +3680,7 @@ contains
              else
 
 !$acc wait(async_id(5)) async(async_id(2))
-!$acc exit data delete(vovv(:,:,a,b)) async(async_id(2))
+!$acc exit data delete(vovv%elm4(:,:,a,b)) async(async_id(2))
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,b))&
@@ -3697,7 +3697,7 @@ contains
 
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(ooov(:,:,:,b),&
-!$acc& vovv(:,:,a,b),vovv(:,:,b,a)) async(async_id(2))
+!$acc& vovv%elm4(:,:,a,b),vovv%elm4(:,:,b,a)) async(async_id(2))
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3))
@@ -3706,7 +3706,7 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(ooov(:,:,:,b),&
-!$acc& vovv(:,:,a,b),vovv(:,:,b,a)) async(async_id(2))
+!$acc& vovv%elm4(:,:,a,b),vovv%elm4(:,:,b,a)) async(async_id(2))
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a))&
