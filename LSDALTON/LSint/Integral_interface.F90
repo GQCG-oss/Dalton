@@ -5519,7 +5519,7 @@ IF (setting%do_dft) THEN
   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),GGAXfactor,lupri)
   !Augment the functional with the admm gga exchange contribution X
    IF (.NOT.separateX) THEN
-     call II_DFTaddFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor)
+     call II_DFTaddFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor,lupri)
    ENDIF
 ENDIF
 

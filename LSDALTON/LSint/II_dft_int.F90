@@ -2527,7 +2527,7 @@ ELSE
 #ifdef VAR_XCFUN
    call xcfun_host_init(Func,hfweight,lupri)
 #else
-   call lsquit('Error: II_DFTaddFunc with usexcfun_save set to true, but program compiled without XCFUN',-1)
+   call lsquit('Error: II_DFTsetFunc with usexcfun_save set to true, but program compiled without XCFUN',-1)
 #endif
 ENDIF
 
@@ -2543,7 +2543,7 @@ ENDIF
 #endif
 END SUBROUTINE II_DFTsetFunc
 
-SUBROUTINE II_DFTaddFunc(Func,GGAfactor)
+SUBROUTINE II_DFTaddFunc(Func,GGAfactor,lupri)
 use xcfun_host,only: USEXCFUN
 #ifdef VAR_MPI
 use infpar_module
@@ -2551,15 +2551,16 @@ use lsmpi_mod
 use lsmpi_type
 #endif
 implicit none
-Character(len=80),intent(IN) :: Func
-Real(realk),intent(IN)       :: GGAfactor
+Character(*),intent(IN) :: Func
+Real(realk),intent(IN)  :: GGAfactor
+integer,intent(IN)      :: lupri
 !
 IF(.NOT.USEXCFUN)THEN
   CALL DFTaddFunc(Func,GGAfactor)
 ELSE
 #ifdef VAR_XCFUN
-  call lsquit('Error: II_DFTaddFunc not yet implemented for XCFUN',-1)
-!  call xcfun_host_augment_func(Func,GGAfactor,lupri)
+!  call lsquit('Error: II_DFTaddFunc not yet implemented for XCFUN',-1)
+  call xcfun_host_augment_func(Func,GGAfactor,lupri)
 #else
   call lsquit('Error: II_DFTaddFunc with usexcfun_save set to true, but program compiled without XCFUN',-1)
 #endif
