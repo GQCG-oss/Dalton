@@ -1254,6 +1254,7 @@ implicit none
 Type(Matrix) :: D,Dval
 real(realk),pointer  :: tD(:,:), tDval(:,:)
 integer :: i,j,k,len
+integer :: l1,l2,lvi,lvj,vk
 integer, pointer :: vlist(:,:), list(:,:)
 
  call mem_alloc(tD,D%ncol,D%nrow)
@@ -1262,13 +1263,24 @@ integer, pointer :: vlist(:,:), list(:,:)
  call mat_to_full(Dval,1E0_realk,tDval)
  tD = 0E0_realk
 
- do i=1,len
- if (vlist(i,1).gt.vlist(i,2)) cycle
-  do j=1,len
-    if (vlist(j,1).gt.vlist(j,2)) cycle
+ do j=1,len
+ if (vlist(j,1).gt.vlist(j,2)) cycle
+  vk=0
+  do l1 = list(j,1),list(j,2)
+  do i=1,len
+    if (vlist(i,1).gt.vlist(i,2)) cycle
+     lvj=vlist(j,1)+vk
+     k=0
+     do l2 = list(i,1),list(i,2)
+      lvi =vlist(i,1)+k
 
-    tD(list(i,1):list(i,2),list(j,1):list(j,2)) = &
-   & tDval(vlist(i,1):vlist(i,2),vlist(j,1):vlist(j,2))
+      tD(l2,l1) = tDval(lvi,lvj)
+      k=k+1
+    !  tD(list(i,1):list(i,2),list(j,1):list(j,2)) = &
+    !    & tDval(vlist(i,1):vlist(i,2),vlist(j,1):vlist(j,2))
+     enddo
+    enddo
+     vk=vk+1
 
   enddo
  enddo
@@ -1291,7 +1303,7 @@ subroutine trilevel_cmo_valence2full(CMO,vCMO,list,vlist,len)
 implicit none
 Type(Matrix) :: CMO,vCMO
 real(realk),pointer :: tCmo(:,:), tvCMO(:,:)
-integer :: i,j,k,  len
+integer :: i,j,k,lv,vk,len
 integer, pointer :: vlist(:,:), list(:,:)
 
  call mem_alloc(tCMO,CMO%ncol,CMO%nrow)
@@ -1302,10 +1314,21 @@ integer, pointer :: vlist(:,:), list(:,:)
 
  do i=1,len
  if (vlist(i,1).gt.vlist(i,2)) cycle
+ vk = 0
+ do j= list(i,1),list(i,2)
+    lv = vlist(i,1) + vk
+ do k =1,vCMO%ncol
 
-    tCMO(list(i,1):list(i,2),1:vCMO%ncol) = &
-   & tvCMO(vlist(i,1):vlist(i,2),1:vCMO%ncol)
+   
+    tCMO(j,k) = tvCMO(lv,k)
+
+    !tCMO(list(i,1):list(i,2),1:vCMO%ncol) = &
+   !& tvCMO(vlist(i,1):vlist(i,2),1:vCMO%ncol)
  enddo
+ vk=vk+1
+ enddo
+ enddo
+
 
  k = vCMO%ncol + 1;
  do i=1, len-1

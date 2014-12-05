@@ -47,7 +47,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 20
+  integer, parameter :: ndecenergies = 22
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -69,6 +69,8 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_CCSDf12  = 18  ! CCSD-F12 energy correction
   integer,parameter :: FRAGMODEL_OCCRIMP2 = 19  ! RI-MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTRIMP2= 20  ! RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCSOS   = 21   ! SOSEX occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTSOS  = 22   ! SOSEX virtual partitioning scheme
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -260,6 +262,8 @@ module dec_typedef_module
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
      integer :: ijk_nbuffs
+     !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
+     integer :: abc_nbuffs
 
      !> F12 settings
      !> ************

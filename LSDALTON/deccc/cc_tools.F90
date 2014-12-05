@@ -9,6 +9,7 @@ module cc_tools_module
    use lstiming
    use typedeftype
    use integralinterfaceDEC, only: II_GET_ERI_INTEGRALBLOCK_INQUIRE
+   use dec_workarounds_module
    use dec_typedef_module
    use reorder_frontend_module
    use tensor_interface_module

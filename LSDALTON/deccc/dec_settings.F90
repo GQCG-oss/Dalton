@@ -202,6 +202,7 @@ contains
     DECinfo%abc               = .false.
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
+    DECinfo%abc_nbuffs        = 1000000
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -398,11 +399,7 @@ contains
           DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.RPA')
           call find_model_number_from_input(word, DECinfo%ccModel)
-!#ifdef VAR_MPI
           DECinfo%use_singles=.false.
-!#else
-!          DECinfo%use_singles=.false.; DECinfo%CCDEBUG=.true.
-!#endif
 
 
           ! CC SOLVER INFO
@@ -426,6 +423,7 @@ contains
        case('.PT_ABC'); DECinfo%abc= .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
+       case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
 
 
           ! DEC CALCULATION 
