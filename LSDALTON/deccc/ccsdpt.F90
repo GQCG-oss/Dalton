@@ -2492,7 +2492,7 @@ contains
           call time_start_phase(PHASE_WORK)
 
 !!$acc enter data copyin(ptr_pdm_b) async(async_id(2))
-!$acc enter data copyin(vovv_pdm_b) async(async_id(2))
+!$acc enter data copyin(vovv_pdm_b) async(async_id(2)) if(b_tile .ne. a_tile) 
 
           do c_tile = 1,b_tile
 
@@ -2521,7 +2521,7 @@ contains
              call time_start_phase(PHASE_WORK)
 
 !!$acc enter data copyin(ptr_pdm_c) async(async_id(2))
-!$acc enter data copyin(vovv_pdm_c) async(async_id(2))
+!$acc enter data copyin(vovv_pdm_c) async(async_id(2)) if(c_tile .ne. b_tile)
 
              call time_start_phase(PHASE_WORK, twall = time_preload )
              call preload_tiles_in_bg_buf_abc(vovv,a_tile,b_tile,c_tile,nbuffs,needed,tiles_in_buf,vovv_pdm_buff,req)
