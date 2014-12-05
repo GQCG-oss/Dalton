@@ -103,13 +103,23 @@
  C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
                           | icpc
  C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
  Static linking           | OFF
- Last Git revision        | b8d7cc1af029b927efb9669661190b00619a46c4
- Git branch               | master
- Configuration time       | 2014-11-17 11:01:46.997311
+ Last Git revision        | c8455ea8a80211a2a48591ba1f01e4cfeb0186a6
+ Git branch               | AtomicOrbitalExtent
+ Configuration time       | 2014-12-04 09:51:56.045639
 
 Start simulation
-     Date and time (Linux)  : Mon Nov 17 12:18:27 2014
+     Date and time (Linux)  : Thu Dec  4 10:27:01 2014
      Host name              : localhost.localdomain                   
                       
  -----------------------------------------
@@ -234,11 +244,15 @@ BASISSETLIBRARY
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
  OPENING FILE
- /home/tkjaer/DaltonDevelopment2015/RIMP2_timings/build-debug/basis/3-21G
+ /home/tkjaer/DaltonDevelopment2015/AtomicOrbitalInclusion2/build-debug/basis/3-
+ 21G
  OPENING FILE
- /home/tkjaer/DaltonDevelopment2015/RIMP2_timings/build-debug/basis/STO-3G
+ /home/tkjaer/DaltonDevelopment2015/AtomicOrbitalInclusion2/build-debug/basis/ST
+ O-3G
  OPENING FILE
- /home/tkjaer/DaltonDevelopment2015/RIMP2_timings/build-debug/basis/6-31G**
+ /home/tkjaer/DaltonDevelopment2015/AtomicOrbitalInclusion2/build-debug/basis/6-
+ 31G**
+ PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
  --------------------------------------------------------------------
@@ -341,6 +355,7 @@ basis and perform integral evaluation using this basis
   
   system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   
  
+ Warning **DEC and **CC enforces the use of the .LCM keyword
  
  End of configuration!
  
@@ -408,10 +423,10 @@ Matrix type: mtype_dense
  >>>  CPU Time used in Kinetic is   0.00 seconds
  >>> wall Time used in Kinetic is   0.00 seconds
  >>>  CPU Time used in reg-Jengine is   0.01 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
+ >>> wall Time used in reg-Jengine is   0.00 seconds
  The Coulomb energy contribution    4.29387019879292     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
- >>> wall Time used in st-Kbuild is   0.00 seconds
+ >>> wall Time used in st-Kbuild is   0.01 seconds
  The Exchange energy contribution    1.77767857930608     
  The Fock energy contribution   -2.51619161948684     
 **************************************************************************************###
@@ -429,10 +444,10 @@ Matrix type: mtype_dense
  The Exchange energy contribution    1.76272641797284     
  The Fock energy contribution   -2.50123945815360     
   2     -7.2449023172   -0.00621673460    0.00      0.00000    0.00    2.20E-02  ###
- >>>  CPU Time used in reg-Jengine is   0.00 seconds
+ >>>  CPU Time used in reg-Jengine is   0.01 seconds
  >>> wall Time used in reg-Jengine is   0.00 seconds
  The Coulomb energy contribution    4.26122748541207     
- >>>  CPU Time used in st-Kbuild is   0.01 seconds
+ >>>  CPU Time used in st-Kbuild is   0.00 seconds
  >>> wall Time used in st-Kbuild is   0.01 seconds
  The Exchange energy contribution    1.76135722261565     
  The Fock energy contribution   -2.49987026279642     
@@ -537,10 +552,10 @@ Matrix type: mtype_dense
  >>> wall Time used in *S is   0.00 seconds
  >>>  CPU Time used in NucElec is   0.02 seconds
  >>> wall Time used in NucElec is   0.02 seconds
- >>>  CPU Time used in Kinetic is   0.01 seconds
- >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.01 seconds
  >>>  CPU Time used in *H1 is   0.02 seconds
- >>> wall Time used in *H1 is   0.03 seconds
+ >>> wall Time used in *H1 is   0.02 seconds
  
  First density: Atoms in molecule guess
  
@@ -571,12 +586,12 @@ Matrix AO D  has nnz=       676 sparsity:    100.000 %
  The Coulomb energy contribution    60.0398786224027     
  >>>  CPU Time used in LINK-Kbuild is   0.28 seconds
  >>> wall Time used in LINK-Kbuild is   0.28 seconds
- The Exchange energy contribution    11.0552657735002     
- The Fock energy contribution   -48.9846128489024     
- >>>  CPU Time used in FCK_FO is   0.43 seconds
- >>> wall Time used in FCK_FO is   0.43 seconds
- >>>  CPU Time used in G_GRAD is   0.01 seconds
- >>> wall Time used in G_GRAD is   0.01 seconds
+ The Exchange energy contribution    11.0552657735003     
+ The Fock energy contribution   -48.9846128489025     
+ >>>  CPU Time used in FCK_FO is   0.42 seconds
+ >>> wall Time used in FCK_FO is   0.42 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -592,7 +607,7 @@ Matrix OAO F has nnz=       676 sparsity:    100.000 %
  >>>  CPU Time used in AVERAG is   0.00 seconds
  >>> wall Time used in AVERAG is   0.00 seconds
 ** Get new density 
- OAO gradnorm  0.116673698866156     
+ OAO gradnorm  0.116673698866157     
  Number of densities in queue:           0
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
  
@@ -611,19 +626,19 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 Error went down by   78.36%
   Error of red space iteration  5:        0.0006120370 (mu =       0.00, xmax =   0.304759E-01, xnorm =   0.950513E-01, THR =   0.116674E-02)
 Newton equations converged in  5 iterations!
- >>>  CPU Time used in CROP solver is   0.02 seconds
- >>> wall Time used in CROP solver is   0.02 seconds
+ >>>  CPU Time used in CROP solver is   0.00 seconds
+ >>> wall Time used in CROP solver is   0.00 seconds
  >>>  CPU Time used in NEW D is   0.00 seconds
  >>> wall Time used in NEW D is   0.00 seconds
 No. of matmuls in get_density:    57
- >>>  CPU Time used in G_DENS is   0.03 seconds
- >>> wall Time used in G_DENS is   0.03 seconds
- >>>  CPU Time used in SCF iteration is   0.47 seconds
- >>> wall Time used in SCF iteration is   0.47 seconds
+ >>>  CPU Time used in G_DENS is   0.00 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.43 seconds
+ >>> wall Time used in SCF iteration is   0.43 seconds
 ** Get Fock matrix number   2
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
- The Coulomb energy contribution    60.1080349720107     
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
+ The Coulomb energy contribution    60.1080349720106     
  >>>  CPU Time used in LINK-Kbuild is   0.28 seconds
  >>> wall Time used in LINK-Kbuild is   0.28 seconds
  The Exchange energy contribution    11.1003630571053     
@@ -632,10 +647,10 @@ No. of matmuls in get_density:    57
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.600000000000000       , resetting trust radius!
- >>>  CPU Time used in FCK_FO is   0.43 seconds
- >>> wall Time used in FCK_FO is   0.43 seconds
+ >>>  CPU Time used in FCK_FO is   0.42 seconds
+ >>> wall Time used in FCK_FO is   0.42 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
- >>> wall Time used in G_GRAD is   0.01 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
   2    -29.1384795880   -0.01001415873    0.00      0.00000    0.00    1.53E-02  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       676 sparsity:    100.000 %
@@ -645,7 +660,7 @@ Matrix OAO F has nnz=       676 sparsity:    100.000 %
  >>>  CPU Time used in AVERAG is   0.00 seconds
  >>> wall Time used in AVERAG is   0.00 seconds
 ** Get new density 
- OAO gradnorm  1.528966566292614E-002
+ OAO gradnorm  1.528966566293321E-002
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
  
@@ -664,29 +679,29 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 Error went down by   78.27%
   Error of red space iteration  5:        0.0001520654 (mu =       0.00, xmax =   0.869066E-02, xnorm =   0.246709E-01, THR =   0.152897E-03)
 Newton equations converged in  5 iterations!
- >>>  CPU Time used in CROP solver is   0.03 seconds
- >>> wall Time used in CROP solver is   0.03 seconds
+ >>>  CPU Time used in CROP solver is   0.00 seconds
+ >>> wall Time used in CROP solver is   0.00 seconds
  >>>  CPU Time used in NEW D is   0.00 seconds
  >>> wall Time used in NEW D is   0.00 seconds
 No. of matmuls in get_density:    73
- >>>  CPU Time used in G_DENS is   0.04 seconds
- >>> wall Time used in G_DENS is   0.04 seconds
- >>>  CPU Time used in SCF iteration is   0.48 seconds
- >>> wall Time used in SCF iteration is   0.48 seconds
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.43 seconds
+ >>> wall Time used in SCF iteration is   0.43 seconds
 ** Get Fock matrix number   3
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
  The Coulomb energy contribution    60.1190782927099     
  >>>  CPU Time used in LINK-Kbuild is   0.28 seconds
  >>> wall Time used in LINK-Kbuild is   0.28 seconds
  The Exchange energy contribution    11.1058302917421     
- The Fock energy contribution   -49.0132480009679     
+ The Fock energy contribution   -49.0132480009678     
  0.60000 (xnorm)    0.00869    0.02467    0.00        1.1897    0.7433         1          2    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.600000000000000       , resetting trust radius!
- >>>  CPU Time used in FCK_FO is   0.43 seconds
- >>> wall Time used in FCK_FO is   0.43 seconds
+ >>>  CPU Time used in FCK_FO is   0.42 seconds
+ >>> wall Time used in FCK_FO is   0.42 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   3    -29.1388644770   -0.00038488901    0.00      0.00000    0.00    2.90E-03  ###
@@ -698,7 +713,7 @@ Matrix OAO F has nnz=       676 sparsity:    100.000 %
  >>>  CPU Time used in AVERAG is   0.00 seconds
  >>> wall Time used in AVERAG is   0.00 seconds
 ** Get new density 
- OAO gradnorm  2.896759892781189E-003
+ OAO gradnorm  2.896759892778432E-003
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
  
@@ -718,18 +733,18 @@ Error went down by   80.56%
   Error of red space iteration  5:        0.0000693829 (mu =       0.00, xmax =   0.306889E-02, xnorm =   0.987827E-02, THR =   0.289676E-04)
   Error of red space iteration  6:        0.0000222339 (mu =       0.00, xmax =   0.307399E-02, xnorm =   0.992756E-02, THR =   0.289676E-04)
 Newton equations converged in  6 iterations!
- >>>  CPU Time used in CROP solver is   0.04 seconds
- >>> wall Time used in CROP solver is   0.04 seconds
+ >>>  CPU Time used in CROP solver is   0.00 seconds
+ >>> wall Time used in CROP solver is   0.00 seconds
  >>>  CPU Time used in NEW D is   0.00 seconds
  >>> wall Time used in NEW D is   0.00 seconds
 No. of matmuls in get_density:    82
- >>>  CPU Time used in G_DENS is   0.05 seconds
- >>> wall Time used in G_DENS is   0.05 seconds
- >>>  CPU Time used in SCF iteration is   0.48 seconds
- >>> wall Time used in SCF iteration is   0.48 seconds
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.00 seconds
+ >>>  CPU Time used in SCF iteration is   0.43 seconds
+ >>> wall Time used in SCF iteration is   0.43 seconds
 ** Get Fock matrix number   4
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
  The Coulomb energy contribution    60.1230201225015     
  >>>  CPU Time used in LINK-Kbuild is   0.28 seconds
  >>> wall Time used in LINK-Kbuild is   0.28 seconds
@@ -739,10 +754,10 @@ No. of matmuls in get_density:    82
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.600000000000000       , resetting trust radius!
- >>>  CPU Time used in FCK_FO is   0.43 seconds
- >>> wall Time used in FCK_FO is   0.43 seconds
- >>>  CPU Time used in G_GRAD is   0.01 seconds
- >>> wall Time used in G_GRAD is   0.01 seconds
+ >>>  CPU Time used in FCK_FO is   0.42 seconds
+ >>> wall Time used in FCK_FO is   0.42 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
   4    -29.1388937971   -0.00002932004    0.00      0.00000    0.00    7.21E-04  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       676 sparsity:    100.000 %
@@ -752,7 +767,7 @@ Matrix OAO F has nnz=       676 sparsity:    100.000 %
  >>>  CPU Time used in AVERAG is   0.00 seconds
  >>> wall Time used in AVERAG is   0.00 seconds
 ** Get new density 
- OAO gradnorm  7.212622790881379E-004
+ OAO gradnorm  7.212622790865575E-004
  Number of densities in queue:           3
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
  
@@ -776,35 +791,35 @@ Error went down by   77.19%
   Error of red space iteration  8:        0.0000008785 (mu =       0.00, xmax =   0.561888E-03, xnorm =   0.198454E-02, THR =   0.721262E-06)
   Error of red space iteration  9:        0.0000003156 (mu =       0.00, xmax =   0.562022E-03, xnorm =   0.198490E-02, THR =   0.721262E-06)
 Newton equations converged in  9 iterations!
- >>>  CPU Time used in CROP solver is   0.05 seconds
- >>> wall Time used in CROP solver is   0.05 seconds
+ >>>  CPU Time used in CROP solver is   0.01 seconds
+ >>> wall Time used in CROP solver is   0.01 seconds
  >>>  CPU Time used in NEW D is   0.00 seconds
  >>> wall Time used in NEW D is   0.00 seconds
 No. of matmuls in get_density:   111
- >>>  CPU Time used in G_DENS is   0.06 seconds
- >>> wall Time used in G_DENS is   0.06 seconds
- >>>  CPU Time used in SCF iteration is   0.50 seconds
- >>> wall Time used in SCF iteration is   0.50 seconds
+ >>>  CPU Time used in G_DENS is   0.01 seconds
+ >>> wall Time used in G_DENS is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.43 seconds
+ >>> wall Time used in SCF iteration is   0.43 seconds
 ** Get Fock matrix number   5
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
  The Coulomb energy contribution    60.1237509010912     
- >>>  CPU Time used in LINK-Kbuild is   0.29 seconds
- >>> wall Time used in LINK-Kbuild is   0.29 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.28 seconds
+ >>> wall Time used in LINK-Kbuild is   0.28 seconds
  The Exchange energy contribution    11.1066510721850     
  The Fock energy contribution   -49.0170998289062     
  0.60000 (xnorm)    0.00056    0.00198    0.00        1.0304    0.9737         3          4    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.600000000000000       , resetting trust radius!
- >>>  CPU Time used in FCK_FO is   0.44 seconds
- >>> wall Time used in FCK_FO is   0.44 seconds
- >>>  CPU Time used in G_GRAD is   0.01 seconds
- >>> wall Time used in G_GRAD is   0.01 seconds
+ >>>  CPU Time used in FCK_FO is   0.42 seconds
+ >>> wall Time used in FCK_FO is   0.42 seconds
+ >>>  CPU Time used in G_GRAD is   0.00 seconds
+ >>> wall Time used in G_GRAD is   0.00 seconds
   5    -29.1388949243   -0.00000112727    0.00      0.00000    0.00    9.82E-05  ###
 SCF converged in      5 iterations
- >>>  CPU Time used in **ITER is   2.37 seconds
- >>> wall Time used in **ITER is   2.38 seconds
+ >>>  CPU Time used in **ITER is   2.12 seconds
+ >>> wall Time used in **ITER is   2.13 seconds
  
 Total no. of matmuls in SCF optimization:        443
  
@@ -828,11 +843,11 @@ Total no. of matmuls in SCF optimization:        443
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1           -29.12846542930186899412      0.116673698866156D+00
-    2           -29.13847958803366111624      0.152896656629261D-01
-    3           -29.13886447704129523117      0.289675989278119D-02
-    4           -29.13889379708010096692      0.721262279088138D-03
-    5           -29.13889492434775263519      0.981647171667020D-04
+    1           -29.12846542930189741583      0.116673698866157D+00
+    2           -29.13847958803373217052      0.152896656629332D-01
+    3           -29.13886447704116733348      0.289675989277843D-02
+    4           -29.13889379708011517778      0.721262279086558D-03
+    5           -29.13889492434798000886      0.981647171724816D-04
  
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -840,7 +855,7 @@ Total no. of matmuls in SCF optimization:        443
  
       Final HF energy:                       -29.138894924348
       Nuclear repulsion:                      39.372333926579
-      Electronic energy:                     -68.511228850926
+      Electronic energy:                     -68.511228850927
  
  inside leastchange_lcm
   %LOC%   
@@ -1018,10 +1033,10 @@ Total no. of matmuls in SCF optimization:        443
   %LOC%   Min. sigma_2 and orb.number:    1.07   13
   %LOC%   Min. sigma_4 and orb.number:    1.22   13
  
- >>>  CPU Time used in OVERLAP is   0.00 seconds
+ >>>  CPU Time used in OVERLAP is   0.01 seconds
  >>> wall Time used in OVERLAP is   0.00 seconds
- >>>  CPU Time used in Orbital Localization is   3.44 seconds
- >>> wall Time used in Orbital Localization is   3.45 seconds
+ >>>  CPU Time used in Orbital Localization is   2.30 seconds
+ >>> wall Time used in Orbital Localization is   2.30 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -1132,10 +1147,10 @@ Use F12 correction           =           FALSE
  ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
  **********************************************************************
  
- Maximum occ orbital extent   =      2   -- Orbital index     1
- Maximum unocc orbital extent =      2   -- Orbital index     2
- Average occ orbital extent   =       1.4000
- Average unocc orbital extent =       1.1875
+ Maximum occ orbital extent (#AOs) =      7   -- Orbital index     4
+ Maximum unocc orbital extent (#AOs) =      7   -- Orbital index     2
+ Average occ orbital extent (#AOs)  =       4.1000
+ Average unocc orbital extent (#AOs) =       3.8750
  
  
  
@@ -1199,16 +1214,16 @@ Use F12 correction           =           FALSE
               Atomic fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      4      3      6      9     1.83    /  1.83       1.83    /  1.83              FRAG_SIZE
+      4      3      6     11     1.83    /  2.70       1.83    /  2.70              FRAG_SIZE
       2      2      6      9    0.959    /  1.04      0.959    /  1.97              FRAG_SIZE
  
  FRAGANALYSIS: Max/Ave/Min occ         :        3       /     2.5000    /       2
  FRAGANALYSIS: Max/Ave/Min unocc       :        6       /     6.0000    /       6
- FRAGANALYSIS: Max/Ave/Min basis       :        9       /     9.0000    /       9
+ FRAGANALYSIS: Max/Ave/Min basis       :       11       /     10.000    /       9
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      1.8325    /     1.3960    /    0.95943    
- FRAGANALYSIS: Max/Ave/Min Radius AE   :      1.8325    /     1.4370    /     1.0416    
+ FRAGANALYSIS: Max/Ave/Min Radius AE   :      2.7000    /     1.8708    /     1.0416    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:      1.8325    /     1.3960    /    0.95943    
- FRAGANALYSIS: Max/Ave/Min Diameter AE :      1.9746    /     1.9035    /     1.8325    
+ FRAGANALYSIS: Max/Ave/Min Diameter AE :      2.7000    /     2.3373    /     1.9746    
  
  
  
@@ -1218,7 +1233,7 @@ Use F12 correction           =           FALSE
  Number of jobs =            1
  
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
-        1               1080              2       4        5       12       18
+        1               1200              2       4        5       12       20
  
  
  DEC JOB SUMMARY: Number of single jobs =          2
@@ -1234,6 +1249,12 @@ Use F12 correction           =           FALSE
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
 #SINGLEDIMS# basis,occ,virt       20       5      13
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -1276,17 +1297,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.452E-03
  Big Array Memory required       (GB)    = 0.468E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.09 seconds
- >>> wall Time used in INIT MP2-INT is   0.09 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.57 seconds
- >>> wall Time used in MP2-INT LOOP is   0.57 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
+ >>> wall Time used in INIT MP2-INT is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.53 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.53 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.53 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.53 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.66 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.66 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.61 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.61 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
@@ -1300,11 +1351,8 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.903 MB
-  Max allocated memory, TOTAL                         86.741 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.66 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.66 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.61 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.61 seconds
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   0
@@ -1319,8 +1367,14 @@ Use F12 correction           =           FALSE
  FOP=========================================================
  FOP
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
- >>> wall Time used in FRAGMENT INIT is   0.01 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
 #SINGLEDIMS# basis,occ,virt       26       7      16
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -1363,17 +1417,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.121E-02
  Big Array Memory required       (GB)    = 0.123E-02
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.11 seconds
- >>> wall Time used in INIT MP2-INT is   0.11 seconds
- >>>  CPU Time used in MP2-INT LOOP is   1.18 seconds
- >>> wall Time used in MP2-INT LOOP is   1.19 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.10 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.10 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.10 seconds
+ >>> wall Time used in INIT MP2-INT is   0.10 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.02 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.03 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   1.02 seconds
+ >>> wall Time used in MP2-INT LOOP is   1.03 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   1.30 seconds
- >>> wall Time used in MP2-INT TOTAL is   1.30 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   1.13 seconds
+ >>> wall Time used in MP2-INT TOTAL is   1.13 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
@@ -1387,11 +1471,8 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.891 MB
-  Max allocated memory, TOTAL                         87.657 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   1.30 seconds
- >>> wall Time used in SINGLE L.ENERGY is   1.30 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   1.13 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   1.13 seconds
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -1419,7 +1500,13 @@ Use F12 correction           =           FALSE
  FOP
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       22       7      11
+#SINGLEDIMS# basis,occ,virt       20       4      11
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -1428,308 +1515,28 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      22
- Number of occupied orbitals AOS/EOS     =       7       1
+ Number of atomic basis functions        =      20
+ Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =      11       5
  Maximum alpha batch dimension           =       5
- Maximum gamma batch dimension           =      22
+ Maximum gamma batch dimension           =      20
  Maximum virtual batch dimension         =      11
  Number of OMP threads                   =       1
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.629E-03
- Memory required for tmp array 1 (GB)    = 0.426E-03
- Memory required for tmp array 2 (GB)    = 0.678E-04
- Memory required for tmp array 3 (GB)    = 0.136E-03
+ Tot memory required for tmp arrays (GB) = 0.419E-03
+ Memory required for tmp array 1 (GB)    = 0.320E-03
+ Memory required for tmp array 2 (GB)    = 0.352E-04
+ Memory required for tmp array 3 (GB)    = 0.640E-04
  
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.138E-03
- Memory required for tmp array 1 (GB)    = 0.474E-04
- Memory required for tmp array 2 (GB)    = 0.216E-04
- Memory required for tmp array 3 (GB)    = 0.474E-04
- Memory required for tmp array 4 (GB)    = 0.216E-04
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.196E-04
- Memory required for tmp array 1 (GB)    = 0.980E-05
- Memory required for tmp array 2 (GB)    = 0.980E-05
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.629E-03
- Big Array Memory required       (GB)    = 0.646E-03
- 
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.10 seconds
- >>> wall Time used in INIT MP2-INT is   0.09 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.78 seconds
- >>> wall Time used in MP2-INT LOOP is   0.78 seconds
- >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
- >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.88 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.88 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       2
- **********************************************************************
- Single occupied energy =    -0.1368738395E-01
- Single virtual  energy =    -0.1422890754E-01
- Single Lagrangian occ term  =     0.8269154186E-02
- Single Lagrangian virt term =     0.5793465445E-02
- 
- 
- >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
- >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.882 MB
-  Max allocated memory, TOTAL                         87.657 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.88 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.88 seconds
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   1
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   2
- FOP Loop: Number of orbitals in virt total :  11
- FOP Loop: Number of orbitals in occ total  :   7
- FOP Loop: Number of basis functions        :  22
- FOP Loop: Occupied Fragment energy         :   -0.0136873840
- FOP Loop: Virtual Fragment energy          :   -0.0142289075
- FOP Loop: Lagrangian Fragment energy       :   -0.0138536719
- FOP Loop: Occupied energy diff             :    0.0000073972
- FOP Loop: Virtual energy diff              :    0.0000005454
- FOP Loop: Lagrangian energy diff           :    0.0000015394
- FOP=========================================================
- FOP
- FOP: Lagrangian energy converged, energydiff =   0.000001539
- FOP: Occupied energy converged, energydiff   =   0.000007397
- FOP: Virtual energy converged, energydiff    =   0.000000545
- >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
- >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       22       7       8
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      22
- Number of occupied orbitals AOS/EOS     =       7       1
- Number of virtual  orbitals AOS/EOS     =       8       5
- Maximum alpha batch dimension           =       5
- Maximum gamma batch dimension           =      22
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.611E-03
- Memory required for tmp array 1 (GB)    = 0.426E-03
- Memory required for tmp array 2 (GB)    = 0.493E-04
- Memory required for tmp array 3 (GB)    = 0.136E-03
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.815E-04
- Memory required for tmp array 1 (GB)    = 0.251E-04
- Memory required for tmp array 2 (GB)    = 0.157E-04
- Memory required for tmp array 3 (GB)    = 0.251E-04
- Memory required for tmp array 4 (GB)    = 0.157E-04
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.196E-04
- Memory required for tmp array 1 (GB)    = 0.980E-05
- Memory required for tmp array 2 (GB)    = 0.980E-05
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.611E-03
- Big Array Memory required       (GB)    = 0.627E-03
- 
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.09 seconds
- >>> wall Time used in INIT MP2-INT is   0.09 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.76 seconds
- >>> wall Time used in MP2-INT LOOP is   0.76 seconds
- >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
- >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.85 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.86 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       2
- **********************************************************************
- Single occupied energy =    -0.1367196651E-01
- Single virtual  energy =    -0.1421389256E-01
- Single Lagrangian occ term  =     0.8277035184E-02
- Single Lagrangian virt term =     0.5773498691E-02
- 
- 
- >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
- >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.880 MB
-  Max allocated memory, TOTAL                         87.657 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.85 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.86 seconds
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   2
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   2
- FOP Loop: Number of orbitals in virt total :   8
- FOP Loop: Number of orbitals in occ total  :   7
- FOP Loop: Number of basis functions        :  22
- FOP Loop: Occupied Fragment energy         :   -0.0136719665
- FOP Loop: Virtual Fragment energy          :   -0.0142138926
- FOP Loop: Lagrangian Fragment energy       :   -0.0138353252
- FOP Loop: Occupied energy diff             :    0.0000228146
- FOP Loop: Virtual energy diff              :    0.0000144696
- FOP Loop: Lagrangian energy diff           :    0.0000168073
- FOP=========================================================
- FOP
- FOP: Lagrangian energy converged, energydiff =   0.000016807
- FOP: Occupied energy converged, energydiff   =   0.000022815
- FOP: Virtual energy converged, energydiff    =   0.000014470
- >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
- >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       22       7       7
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      22
- Number of occupied orbitals AOS/EOS     =       7       1
- Number of virtual  orbitals AOS/EOS     =       7       5
- Maximum alpha batch dimension           =       5
- Maximum gamma batch dimension           =      22
- Maximum virtual batch dimension         =       7
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.605E-03
- Memory required for tmp array 1 (GB)    = 0.426E-03
- Memory required for tmp array 2 (GB)    = 0.431E-04
- Memory required for tmp array 3 (GB)    = 0.136E-03
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.659E-04
- Memory required for tmp array 1 (GB)    = 0.192E-04
- Memory required for tmp array 2 (GB)    = 0.137E-04
- Memory required for tmp array 3 (GB)    = 0.192E-04
- Memory required for tmp array 4 (GB)    = 0.137E-04
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.196E-04
- Memory required for tmp array 1 (GB)    = 0.980E-05
- Memory required for tmp array 2 (GB)    = 0.980E-05
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.605E-03
- Big Array Memory required       (GB)    = 0.621E-03
- 
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.09 seconds
- >>> wall Time used in INIT MP2-INT is   0.09 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.76 seconds
- >>> wall Time used in MP2-INT LOOP is   0.76 seconds
- >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
- >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.85 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.85 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       2
- **********************************************************************
- Single occupied energy =    -0.1363564656E-01
- Single virtual  energy =    -0.1418829953E-01
- Single Lagrangian occ term  =     0.8275809111E-02
- Single Lagrangian virt term =     0.5744175406E-02
- 
- 
- >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
- >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.880 MB
-  Max allocated memory, TOTAL                         87.657 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.85 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.86 seconds
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   3
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   2
- FOP Loop: Number of orbitals in virt total :   7
- FOP Loop: Number of orbitals in occ total  :   7
- FOP Loop: Number of basis functions        :  22
- FOP Loop: Occupied Fragment energy         :   -0.0136356466
- FOP Loop: Virtual Fragment energy          :   -0.0141882995
- FOP Loop: Lagrangian Fragment energy       :   -0.0138039616
- FOP Loop: Occupied energy diff             :    0.0000591346
- FOP Loop: Virtual energy diff              :    0.0000400626
- FOP Loop: Lagrangian energy diff           :    0.0000481709
- FOP=========================================================
- FOP
- FOP: Lagrangian energy converged, energydiff =   0.000048171
- FOP: Occupied energy converged, energydiff   =   0.000059135
- FOP: Virtual energy converged, energydiff    =   0.000040063
- BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
- >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
- >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       16       4       7
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      16
- Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       7       5
- Maximum alpha batch dimension           =       4
- Maximum gamma batch dimension           =      16
- Maximum virtual batch dimension         =       7
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.178E-03
- Memory required for tmp array 1 (GB)    = 0.131E-03
- Memory required for tmp array 2 (GB)    = 0.143E-04
- Memory required for tmp array 3 (GB)    = 0.328E-04
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.206E-04
- Memory required for tmp array 1 (GB)    = 0.627E-05
- Memory required for tmp array 2 (GB)    = 0.448E-05
- Memory required for tmp array 3 (GB)    = 0.627E-05
- Memory required for tmp array 4 (GB)    = 0.358E-05
+ Tot memory required for tmp arrays (GB) = 0.451E-04
+ Memory required for tmp array 1 (GB)    = 0.155E-04
+ Memory required for tmp array 2 (GB)    = 0.704E-05
+ Memory required for tmp array 3 (GB)    = 0.155E-04
+ Memory required for tmp array 4 (GB)    = 0.704E-05
  
  STEP 3 in integral loop
  -----------------------
@@ -1739,60 +1546,220 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.178E-03
- Big Array Memory required       (GB)    = 0.195E-03
+ Memory required                 (GB)    = 0.419E-03
+ Big Array Memory required       (GB)    = 0.436E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.07 seconds
- >>> wall Time used in INIT MP2-INT is   0.07 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.29 seconds
- >>> wall Time used in MP2-INT LOOP is   0.29 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
+ >>> wall Time used in INIT MP2-INT is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.52 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.52 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.52 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.52 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.36 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.36 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.60 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.60 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
  Energy summary for fragment:       2
  **********************************************************************
- Single occupied energy =    -0.1365051682E-01
- Single virtual  energy =    -0.1418607586E-01
- Single Lagrangian occ term  =     0.8270270167E-02
- Single Lagrangian virt term =     0.5758444016E-02
+ Single occupied energy =    -0.1368592846E-01
+ Single virtual  energy =    -0.1421948634E-01
+ Single Lagrangian occ term  =     0.8268101071E-02
+ Single Lagrangian virt term =     0.5790879387E-02
  
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.860 MB
-  Max allocated memory, TOTAL                         87.657 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.36 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.37 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.60 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.60 seconds
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   4
+ FOP              Fragment information, loop   1
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   2
- FOP Loop: Number of orbitals in virt total :   7
+ FOP Loop: Number of orbitals in virt total :  11
  FOP Loop: Number of orbitals in occ total  :   4
- FOP Loop: Number of basis functions        :  16
- FOP Loop: Occupied Fragment energy         :   -0.0136505168
- FOP Loop: Virtual Fragment energy          :   -0.0141860759
- FOP Loop: Lagrangian Fragment energy       :   -0.0138078785
- FOP Loop: Occupied energy diff             :    0.0000442643
- FOP Loop: Virtual energy diff              :    0.0000422863
- FOP Loop: Lagrangian energy diff           :    0.0000442540
+ FOP Loop: Number of basis functions        :  20
+ FOP Loop: Occupied Fragment energy         :   -0.0136859285
+ FOP Loop: Virtual Fragment energy          :   -0.0142194863
+ FOP Loop: Lagrangian Fragment energy       :   -0.0138464343
+ FOP Loop: Occupied energy diff             :    0.0000088527
+ FOP Loop: Virtual energy diff              :    0.0000088758
+ FOP Loop: Lagrangian energy diff           :    0.0000056981
  FOP=========================================================
  FOP
- FOP: Lagrangian energy converged, energydiff =   0.000044254
- FOP: Occupied energy converged, energydiff   =   0.000044264
- FOP: Virtual energy converged, energydiff    =   0.000042286
+ FOP: Lagrangian energy converged, energydiff =   0.000005698
+ FOP: Occupied energy converged, energydiff   =   0.000008853
+ FOP: Virtual energy converged, energydiff    =   0.000008876
+ >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
+#SINGLEDIMS# basis,occ,virt       18       3       8
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ 
+ 
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+ 
+ 85% of available memory (GB)            =  1.63    
+ 
+ Number of atomic basis functions        =      18
+ Number of occupied orbitals AOS/EOS     =       3       1
+ Number of virtual  orbitals AOS/EOS     =       8       5
+ Maximum alpha batch dimension           =       4
+ Maximum gamma batch dimension           =      18
+ Maximum virtual batch dimension         =       8
+ Number of OMP threads                   =       1
+ 
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.232E-03
+ Memory required for tmp array 1 (GB)    = 0.187E-03
+ Memory required for tmp array 2 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.311E-04
+ 
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.144E-04
+ Memory required for tmp array 1 (GB)    = 0.461E-05
+ Memory required for tmp array 2 (GB)    = 0.288E-05
+ Memory required for tmp array 3 (GB)    = 0.461E-05
+ Memory required for tmp array 4 (GB)    = 0.230E-05
+ 
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.360E-05
+ Memory required for tmp array 1 (GB)    = 0.180E-05
+ Memory required for tmp array 2 (GB)    = 0.180E-05
+ 
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.232E-03
+ Big Array Memory required       (GB)    = 0.248E-03
+ 
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            5
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
+ >>> wall Time used in INIT MP2-INT is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.38 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.38 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.38 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.38 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
+ >>> wall Time used in MP2-INT FIN is   0.00 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.46 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.46 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.1366903216E-01
+ Single virtual  energy =    -0.1418105367E-01
+ Single Lagrangian occ term  =     0.8274730044E-02
+ Single Lagrangian virt term =     0.5760268227E-02
+ 
+ 
+ >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.46 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.46 seconds
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in occ total  :   3
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0136690322
+ FOP Loop: Virtual Fragment energy          :   -0.0141810537
+ FOP Loop: Lagrangian Fragment energy       :   -0.0138150876
+ FOP Loop: Occupied energy diff             :    0.0000257490
+ FOP Loop: Virtual energy diff              :    0.0000473085
+ FOP Loop: Lagrangian energy diff           :    0.0000370449
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000037045
+ FOP: Occupied energy converged, energydiff   =   0.000025749
+ FOP: Virtual energy converged, energydiff    =   0.000047308
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
 #SINGLEDIMS# basis,occ,virt       14       3       7
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -1835,17 +1802,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.870E-04
  Big Array Memory required       (GB)    = 0.103E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            6
  BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.06 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.06 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>>  CPU Time used in INIT MP2-INT is   0.06 seconds
- >>> wall Time used in INIT MP2-INT is   0.07 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.20 seconds
- >>> wall Time used in MP2-INT LOOP is   0.20 seconds
+ >>> wall Time used in INIT MP2-INT is   0.06 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.18 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.18 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.18 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.18 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.27 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.27 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.24 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.24 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
@@ -1859,14 +1856,11 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.856 MB
-  Max allocated memory, TOTAL                         87.657 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.27 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.27 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.24 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.24 seconds
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   5
+ FOP              Fragment information, loop   3
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   2
  FOP Loop: Number of orbitals in virt total :   7
@@ -1883,8 +1877,9 @@ Use F12 correction           =           FALSE
  FOP: Lagrangian energy converged, energydiff =   0.000070755
  FOP: Occupied energy converged, energydiff   =   0.000075443
  FOP: Virtual energy converged, energydiff    =   0.000073232
- BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+ BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
  FOP
+
  FOP=========================================================
  FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   2
  FOP---------------------------------------------------------
@@ -1900,6 +1895,7 @@ Use F12 correction           =           FALSE
  FOP=========================================================
  FOP
 
+ FOP reduction: Atom,FOT,O,V,B      2     0.100E-03      3      7     14
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   4
@@ -1908,6 +1904,12 @@ Use F12 correction           =           FALSE
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
 #SINGLEDIMS# basis,occ,virt       20       5      12
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -1950,17 +1952,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.448E-03
  Big Array Memory required       (GB)    = 0.464E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.10 seconds
- >>> wall Time used in INIT MP2-INT is   0.09 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.60 seconds
- >>> wall Time used in MP2-INT LOOP is   0.60 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
+ >>> wall Time used in INIT MP2-INT is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.52 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.52 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.52 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.52 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.69 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.70 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.60 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.60 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
@@ -1974,11 +2006,8 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.868 MB
-  Max allocated memory, TOTAL                         87.657 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.69 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.70 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.60 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.61 seconds
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   0
@@ -1992,9 +2021,15 @@ Use F12 correction           =           FALSE
  FOP Loop: Lagrangian Fragment energy       :   -0.0259583228
  FOP=========================================================
  FOP
- >>>  CPU Time used in FRAGMENT INIT is   0.01 seconds
- >>> wall Time used in FRAGMENT INIT is   0.01 seconds
+ >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
 #SINGLEDIMS# basis,occ,virt       26       7      16
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -2037,17 +2072,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.121E-02
  Big Array Memory required       (GB)    = 0.123E-02
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.11 seconds
- >>> wall Time used in INIT MP2-INT is   0.11 seconds
- >>>  CPU Time used in MP2-INT LOOP is   1.21 seconds
- >>> wall Time used in MP2-INT LOOP is   1.21 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.10 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.10 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.10 seconds
+ >>> wall Time used in INIT MP2-INT is   0.10 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.02 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.02 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   1.02 seconds
+ >>> wall Time used in MP2-INT LOOP is   1.02 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   1.32 seconds
- >>> wall Time used in MP2-INT TOTAL is   1.33 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   1.12 seconds
+ >>> wall Time used in MP2-INT TOTAL is   1.12 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
@@ -2061,11 +2126,8 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.885 MB
-  Max allocated memory, TOTAL                         87.657 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   1.32 seconds
- >>> wall Time used in SINGLE L.ENERGY is   1.33 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   1.12 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   1.12 seconds
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -2085,9 +2147,15 @@ Use F12 correction           =           FALSE
  FOP: Lagrangian energy converged, energydiff =   0.000087792
  FOP: Occupied energy NOT converged
  FOP: Virtual energy converged, energydiff    =   0.000030671
- >>>  CPU Time used in FRAGMENT INIT is   0.01 seconds
- >>> wall Time used in FRAGMENT INIT is   0.01 seconds
+ >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
 #SINGLEDIMS# basis,occ,virt       26       9      16
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -2130,17 +2198,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.132E-02
  Big Array Memory required       (GB)    = 0.133E-02
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.11 seconds
- >>> wall Time used in INIT MP2-INT is   0.12 seconds
- >>>  CPU Time used in MP2-INT LOOP is   1.29 seconds
- >>> wall Time used in MP2-INT LOOP is   1.29 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.10 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.10 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.10 seconds
+ >>> wall Time used in INIT MP2-INT is   0.10 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.05 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.05 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   1.05 seconds
+ >>> wall Time used in MP2-INT LOOP is   1.05 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   1.41 seconds
- >>> wall Time used in MP2-INT TOTAL is   1.41 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   1.15 seconds
+ >>> wall Time used in MP2-INT TOTAL is   1.15 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
@@ -2154,11 +2252,8 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.894 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   1.41 seconds
- >>> wall Time used in SINGLE L.ENERGY is   1.41 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   1.15 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   1.16 seconds
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
@@ -2187,380 +2282,13 @@ Use F12 correction           =           FALSE
  FOP
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       26       9      10
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      26
- Number of occupied orbitals AOS/EOS     =       9       1
- Number of virtual  orbitals AOS/EOS     =      10       4
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =      26
- Maximum virtual batch dimension         =      10
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.125E-02
- Memory required for tmp array 1 (GB)    = 0.844E-03
- Memory required for tmp array 2 (GB)    = 0.112E-03
- Memory required for tmp array 3 (GB)    = 0.292E-03
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.194E-03
- Memory required for tmp array 1 (GB)    = 0.648E-04
- Memory required for tmp array 2 (GB)    = 0.259E-04
- Memory required for tmp array 3 (GB)    = 0.648E-04
- Memory required for tmp array 4 (GB)    = 0.389E-04
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.207E-04
- Memory required for tmp array 1 (GB)    = 0.104E-04
- Memory required for tmp array 2 (GB)    = 0.104E-04
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.125E-02
- Big Array Memory required       (GB)    = 0.126E-02
- 
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.11 seconds
- >>> wall Time used in INIT MP2-INT is   0.11 seconds
- >>>  CPU Time used in MP2-INT LOOP is   1.23 seconds
- >>> wall Time used in MP2-INT LOOP is   1.23 seconds
- >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
- >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   1.34 seconds
- >>> wall Time used in MP2-INT TOTAL is   1.35 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       4
- **********************************************************************
- Single occupied energy =    -0.2485994223E-01
- Single virtual  energy =    -0.2621245237E-01
- Single Lagrangian occ term  =     0.1764059863E-01
- Single Lagrangian virt term =     0.7390912384E-02
- 
- 
- >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
- >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.889 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   1.34 seconds
- >>> wall Time used in SINGLE L.ENERGY is   1.35 seconds
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   1
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   4
- FOP Loop: Number of orbitals in virt total :  10
- FOP Loop: Number of orbitals in occ total  :   9
- FOP Loop: Number of basis functions        :  26
- FOP Loop: Occupied Fragment energy         :   -0.0248599422
- FOP Loop: Virtual Fragment energy          :   -0.0262124524
- FOP Loop: Lagrangian Fragment energy       :   -0.0260408836
- FOP Loop: Occupied energy diff             :    0.0000070928
- FOP Loop: Virtual energy diff              :    0.0000024447
- FOP Loop: Lagrangian energy diff           :    0.0000053333
- FOP=========================================================
- FOP
- FOP: Lagrangian energy converged, energydiff =   0.000005333
- FOP: Occupied energy converged, energydiff   =   0.000007093
- FOP: Virtual energy converged, energydiff    =   0.000002445
- >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
- >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       26       9       7
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      26
- Number of occupied orbitals AOS/EOS     =       9       1
- Number of virtual  orbitals AOS/EOS     =       7       4
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =      26
- Maximum virtual batch dimension         =       7
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.121E-02
- Memory required for tmp array 1 (GB)    = 0.844E-03
- Memory required for tmp array 2 (GB)    = 0.786E-04
- Memory required for tmp array 3 (GB)    = 0.292E-03
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.109E-03
- Memory required for tmp array 1 (GB)    = 0.318E-04
- Memory required for tmp array 2 (GB)    = 0.181E-04
- Memory required for tmp array 3 (GB)    = 0.318E-04
- Memory required for tmp array 4 (GB)    = 0.272E-04
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.207E-04
- Memory required for tmp array 1 (GB)    = 0.104E-04
- Memory required for tmp array 2 (GB)    = 0.104E-04
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.121E-02
- Big Array Memory required       (GB)    = 0.123E-02
- 
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.11 seconds
- >>> wall Time used in INIT MP2-INT is   0.11 seconds
- >>>  CPU Time used in MP2-INT LOOP is   1.17 seconds
- >>> wall Time used in MP2-INT LOOP is   1.18 seconds
- >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
- >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   1.29 seconds
- >>> wall Time used in MP2-INT TOTAL is   1.29 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       4
- **********************************************************************
- Single occupied energy =    -0.2476928526E-01
- Single virtual  energy =    -0.2619528061E-01
- Single Lagrangian occ term  =     0.1757571000E-01
- Single Lagrangian virt term =     0.7383189010E-02
- 
- 
- >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
- >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.887 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   1.29 seconds
- >>> wall Time used in SINGLE L.ENERGY is   1.29 seconds
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   2
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   4
- FOP Loop: Number of orbitals in virt total :   7
- FOP Loop: Number of orbitals in occ total  :   9
- FOP Loop: Number of basis functions        :  26
- FOP Loop: Occupied Fragment energy         :   -0.0247692853
- FOP Loop: Virtual Fragment energy          :   -0.0261952806
- FOP Loop: Lagrangian Fragment energy       :   -0.0260056669
- FOP Loop: Occupied energy diff             :    0.0000977498
- FOP Loop: Virtual energy diff              :    0.0000196165
- FOP Loop: Lagrangian energy diff           :    0.0000405500
- FOP=========================================================
- FOP
- FOP: Lagrangian energy converged, energydiff =   0.000040550
- FOP: Occupied energy NOT converged
- FOP: Virtual energy converged, energydiff    =   0.000019616
- >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
- >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       26       9       9
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      26
- Number of occupied orbitals AOS/EOS     =       9       1
- Number of virtual  orbitals AOS/EOS     =       9       4
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =      26
- Maximum virtual batch dimension         =       9
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.124E-02
- Memory required for tmp array 1 (GB)    = 0.844E-03
- Memory required for tmp array 2 (GB)    = 0.101E-03
- Memory required for tmp array 3 (GB)    = 0.292E-03
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.163E-03
- Memory required for tmp array 1 (GB)    = 0.525E-04
- Memory required for tmp array 2 (GB)    = 0.233E-04
- Memory required for tmp array 3 (GB)    = 0.525E-04
- Memory required for tmp array 4 (GB)    = 0.350E-04
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.207E-04
- Memory required for tmp array 1 (GB)    = 0.104E-04
- Memory required for tmp array 2 (GB)    = 0.104E-04
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.124E-02
- Big Array Memory required       (GB)    = 0.125E-02
- 
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.11 seconds
- >>> wall Time used in INIT MP2-INT is   0.11 seconds
- >>>  CPU Time used in MP2-INT LOOP is   1.20 seconds
- >>> wall Time used in MP2-INT LOOP is   1.21 seconds
- >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
- >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   1.32 seconds
- >>> wall Time used in MP2-INT TOTAL is   1.32 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       4
- **********************************************************************
- Single occupied energy =    -0.2485127046E-01
- Single virtual  energy =    -0.2621069911E-01
- Single Lagrangian occ term  =     0.1763710417E-01
- Single Lagrangian virt term =     0.7389824610E-02
- 
- 
- >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
- >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.888 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   1.32 seconds
- >>> wall Time used in SINGLE L.ENERGY is   1.32 seconds
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   3
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   4
- FOP Loop: Number of orbitals in virt total :   9
- FOP Loop: Number of orbitals in occ total  :   9
- FOP Loop: Number of basis functions        :  26
- FOP Loop: Occupied Fragment energy         :   -0.0248512705
- FOP Loop: Virtual Fragment energy          :   -0.0262106991
- FOP Loop: Lagrangian Fragment energy       :   -0.0260350408
- FOP Loop: Occupied energy diff             :    0.0000157646
- FOP Loop: Virtual energy diff              :    0.0000041980
- FOP Loop: Lagrangian energy diff           :    0.0000111761
- FOP=========================================================
- FOP
- FOP: Lagrangian energy converged, energydiff =   0.000011176
- FOP: Occupied energy converged, energydiff   =   0.000015765
- FOP: Virtual energy converged, energydiff    =   0.000004198
- >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
- >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       26       9       8
- 
- 
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
- 
- 85% of available memory (GB)            =  1.63    
- 
- Number of atomic basis functions        =      26
- Number of occupied orbitals AOS/EOS     =       9       1
- Number of virtual  orbitals AOS/EOS     =       8       4
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =      26
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
- 
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.123E-02
- Memory required for tmp array 1 (GB)    = 0.844E-03
- Memory required for tmp array 2 (GB)    = 0.899E-04
- Memory required for tmp array 3 (GB)    = 0.292E-03
- 
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.135E-03
- Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.207E-04
- Memory required for tmp array 3 (GB)    = 0.415E-04
- Memory required for tmp array 4 (GB)    = 0.311E-04
- 
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.207E-04
- Memory required for tmp array 1 (GB)    = 0.104E-04
- Memory required for tmp array 2 (GB)    = 0.104E-04
- 
- Summary
- -----------------------
- Memory required                 (GB)    = 0.123E-02
- Big Array Memory required       (GB)    = 0.124E-02
- 
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.11 seconds
- >>> wall Time used in INIT MP2-INT is   0.11 seconds
- >>>  CPU Time used in MP2-INT LOOP is   1.19 seconds
- >>> wall Time used in MP2-INT LOOP is   1.20 seconds
- >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
- >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   1.30 seconds
- >>> wall Time used in MP2-INT TOTAL is   1.31 seconds
- 
- 
- **********************************************************************
- Energy summary for fragment:       4
- **********************************************************************
- Single occupied energy =    -0.2484370156E-01
- Single virtual  energy =    -0.2620259805E-01
- Single Lagrangian occ term  =     0.1763352171E-01
- Single Lagrangian virt term =     0.7385850801E-02
- 
- 
- >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
- >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.887 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   1.31 seconds
- >>> wall Time used in SINGLE L.ENERGY is   1.31 seconds
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   4
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   4
- FOP Loop: Number of orbitals in virt total :   8
- FOP Loop: Number of orbitals in occ total  :   9
- FOP Loop: Number of basis functions        :  26
- FOP Loop: Occupied Fragment energy         :   -0.0248437016
- FOP Loop: Virtual Fragment energy          :   -0.0262025981
- FOP Loop: Lagrangian Fragment energy       :   -0.0260269271
- FOP Loop: Occupied energy diff             :    0.0000233335
- FOP Loop: Virtual energy diff              :    0.0000122990
- FOP Loop: Lagrangian energy diff           :    0.0000192898
- FOP=========================================================
- FOP
- FOP: Lagrangian energy converged, energydiff =   0.000019290
- FOP: Occupied energy converged, energydiff   =   0.000023333
- FOP: Virtual energy converged, energydiff    =   0.000012299
- BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
- >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
- >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       20       5       8
+#SINGLEDIMS# basis,occ,virt       20       5      10
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -2571,26 +2299,26 @@ Use F12 correction           =           FALSE
  
  Number of atomic basis functions        =      20
  Number of occupied orbitals AOS/EOS     =       5       1
- Number of virtual  orbitals AOS/EOS     =       8       4
+ Number of virtual  orbitals AOS/EOS     =      10       4
  Maximum alpha batch dimension           =       5
  Maximum gamma batch dimension           =      20
- Maximum virtual batch dimension         =       8
+ Maximum virtual batch dimension         =      10
  Number of OMP threads                   =       1
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.432E-03
+ Tot memory required for tmp arrays (GB) = 0.440E-03
  Memory required for tmp array 1 (GB)    = 0.320E-03
- Memory required for tmp array 2 (GB)    = 0.320E-04
+ Memory required for tmp array 2 (GB)    = 0.400E-04
  Memory required for tmp array 3 (GB)    = 0.800E-04
  
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.400E-04
- Memory required for tmp array 1 (GB)    = 0.128E-04
- Memory required for tmp array 2 (GB)    = 0.640E-05
- Memory required for tmp array 3 (GB)    = 0.128E-04
- Memory required for tmp array 4 (GB)    = 0.800E-05
+ Tot memory required for tmp arrays (GB) = 0.580E-04
+ Memory required for tmp array 1 (GB)    = 0.200E-04
+ Memory required for tmp array 2 (GB)    = 0.800E-05
+ Memory required for tmp array 3 (GB)    = 0.200E-04
+ Memory required for tmp array 4 (GB)    = 0.100E-04
  
  STEP 3 in integral loop
  -----------------------
@@ -2600,60 +2328,93 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.432E-03
- Big Array Memory required       (GB)    = 0.448E-03
+ Memory required                 (GB)    = 0.440E-03
+ Big Array Memory required       (GB)    = 0.456E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.09 seconds
- >>> wall Time used in INIT MP2-INT is   0.09 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.57 seconds
- >>> wall Time used in MP2-INT LOOP is   0.58 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
+ >>> wall Time used in INIT MP2-INT is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.52 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.52 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.52 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.52 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
- >>> wall Time used in MP2-INT FIN is   0.07 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.66 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.73 seconds
+ >>> wall Time used in MP2-INT FIN is   0.00 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.60 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.60 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.2484308872E-01
- Single virtual  energy =    -0.2621330710E-01
- Single Lagrangian occ term  =     0.1763064124E-01
- Single Lagrangian virt term =     0.7392801523E-02
+ Single occupied energy =    -0.2485862878E-01
+ Single virtual  energy =    -0.2622113652E-01
+ Single Lagrangian occ term  =     0.1763756711E-01
+ Single Lagrangian virt term =     0.7396922025E-02
  
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.866 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.66 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.73 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.60 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.61 seconds
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   5
+ FOP              Fragment information, loop   1
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   4
- FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in virt total :  10
  FOP Loop: Number of orbitals in occ total  :   5
  FOP Loop: Number of basis functions        :  20
- FOP Loop: Occupied Fragment energy         :   -0.0248430887
- FOP Loop: Virtual Fragment energy          :   -0.0262133071
- FOP Loop: Lagrangian Fragment energy       :   -0.0260329531
- FOP Loop: Occupied energy diff             :    0.0000239463
- FOP Loop: Virtual energy diff              :    0.0000015900
- FOP Loop: Lagrangian energy diff           :    0.0000132638
+ FOP Loop: Occupied Fragment energy         :   -0.0248586288
+ FOP Loop: Virtual Fragment energy          :   -0.0262211365
+ FOP Loop: Lagrangian Fragment energy       :   -0.0260452762
+ FOP Loop: Occupied energy diff             :    0.0000084063
+ FOP Loop: Virtual energy diff              :    0.0000062394
+ FOP Loop: Lagrangian energy diff           :    0.0000009407
  FOP=========================================================
  FOP
- FOP: Lagrangian energy converged, energydiff =   0.000013264
- FOP: Occupied energy converged, energydiff   =   0.000023946
- FOP: Virtual energy converged, energydiff    =   0.000001590
+ FOP: Lagrangian energy converged, energydiff =   0.000000941
+ FOP: Occupied energy converged, energydiff   =   0.000008406
+ FOP: Virtual energy converged, energydiff    =   0.000006239
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       16       3       8
+#SINGLEDIMS# basis,occ,virt       18       3       7
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -2662,28 +2423,28 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      16
+ Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       8       4
+ Number of virtual  orbitals AOS/EOS     =       7       4
  Maximum alpha batch dimension           =       4
- Maximum gamma batch dimension           =      16
- Maximum virtual batch dimension         =       8
+ Maximum gamma batch dimension           =      18
+ Maximum virtual batch dimension         =       7
  Number of OMP threads                   =       1
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.168E-03
- Memory required for tmp array 1 (GB)    = 0.131E-03
- Memory required for tmp array 2 (GB)    = 0.123E-04
- Memory required for tmp array 3 (GB)    = 0.246E-04
+ Tot memory required for tmp arrays (GB) = 0.230E-03
+ Memory required for tmp array 1 (GB)    = 0.187E-03
+ Memory required for tmp array 2 (GB)    = 0.121E-04
+ Memory required for tmp array 3 (GB)    = 0.311E-04
  
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.138E-04
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.230E-05
- Memory required for tmp array 3 (GB)    = 0.461E-05
- Memory required for tmp array 4 (GB)    = 0.230E-05
+ Tot memory required for tmp arrays (GB) = 0.111E-04
+ Memory required for tmp array 1 (GB)    = 0.353E-05
+ Memory required for tmp array 2 (GB)    = 0.202E-05
+ Memory required for tmp array 3 (GB)    = 0.353E-05
+ Memory required for tmp array 4 (GB)    = 0.202E-05
  
  STEP 3 in integral loop
  -----------------------
@@ -2693,60 +2454,220 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.168E-03
- Big Array Memory required       (GB)    = 0.184E-03
+ Memory required                 (GB)    = 0.230E-03
+ Big Array Memory required       (GB)    = 0.246E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
- >>> wall Time used in INIT MP2-INT is   0.08 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.29 seconds
- >>> wall Time used in MP2-INT LOOP is   0.30 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.07 seconds
+ >>> wall Time used in INIT MP2-INT is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.38 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.38 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.38 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.38 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.37 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.38 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.46 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.46 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.2480755499E-01
- Single virtual  energy =    -0.2632565731E-01
- Single Lagrangian occ term  =     0.1752780627E-01
- Single Lagrangian virt term =     0.7574514261E-02
+ Single occupied energy =    -0.2476611093E-01
+ Single virtual  energy =    -0.2612976803E-01
+ Single Lagrangian occ term  =     0.1755410263E-01
+ Single Lagrangian virt term =     0.7422723559E-02
  
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.858 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.37 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.38 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.46 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.46 seconds
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   6
+ FOP              Fragment information, loop   2
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   4
- FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in virt total :   7
  FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  16
- FOP Loop: Occupied Fragment energy         :   -0.0248075550
- FOP Loop: Virtual Fragment energy          :   -0.0263256573
- FOP Loop: Lagrangian Fragment energy       :   -0.0260308918
- FOP Loop: Occupied energy diff             :    0.0000594801
- FOP Loop: Virtual energy diff              :    0.0001107602
- FOP Loop: Lagrangian energy diff           :    0.0000153251
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0247661109
+ FOP Loop: Virtual Fragment energy          :   -0.0261297680
+ FOP Loop: Lagrangian Fragment energy       :   -0.0259190528
+ FOP Loop: Occupied energy diff             :    0.0001009241
+ FOP Loop: Virtual energy diff              :    0.0000851290
+ FOP Loop: Lagrangian energy diff           :    0.0001271641
  FOP=========================================================
  FOP
- FOP: Lagrangian energy converged, energydiff =   0.000015325
- FOP: Occupied energy converged, energydiff   =   0.000059480
- FOP: Virtual energy NOT converged
+ FOP: Lagrangian energy NOT converged
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy converged, energydiff    =   0.000085129
+ >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
+#SINGLEDIMS# basis,occ,virt       20       4       9
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ 
+ 
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+ 
+ 85% of available memory (GB)            =  1.63    
+ 
+ Number of atomic basis functions        =      20
+ Number of occupied orbitals AOS/EOS     =       4       1
+ Number of virtual  orbitals AOS/EOS     =       9       4
+ Maximum alpha batch dimension           =       5
+ Maximum gamma batch dimension           =      20
+ Maximum virtual batch dimension         =       9
+ Number of OMP threads                   =       1
+ 
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.413E-03
+ Memory required for tmp array 1 (GB)    = 0.320E-03
+ Memory required for tmp array 2 (GB)    = 0.288E-04
+ Memory required for tmp array 3 (GB)    = 0.640E-04
+ 
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.311E-04
+ Memory required for tmp array 1 (GB)    = 0.104E-04
+ Memory required for tmp array 2 (GB)    = 0.461E-05
+ Memory required for tmp array 3 (GB)    = 0.104E-04
+ Memory required for tmp array 4 (GB)    = 0.576E-05
+ 
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.410E-05
+ Memory required for tmp array 1 (GB)    = 0.205E-05
+ Memory required for tmp array 2 (GB)    = 0.205E-05
+ 
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.413E-03
+ Big Array Memory required       (GB)    = 0.429E-03
+ 
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            5
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
+ >>> wall Time used in INIT MP2-INT is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.51 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.51 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.51 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.51 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
+ >>> wall Time used in MP2-INT FIN is   0.00 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.59 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.60 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       4
+ **********************************************************************
+ Single occupied energy =    -0.2484987791E-01
+ Single virtual  energy =    -0.2620253467E-01
+ Single Lagrangian occ term  =     0.1763395699E-01
+ Single Lagrangian virt term =     0.7396706328E-02
+ 
+ 
+ >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.60 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.60 seconds
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   3
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   4
+ FOP Loop: Number of orbitals in virt total :   9
+ FOP Loop: Number of orbitals in occ total  :   4
+ FOP Loop: Number of basis functions        :  20
+ FOP Loop: Occupied Fragment energy         :   -0.0248498779
+ FOP Loop: Virtual Fragment energy          :   -0.0262025347
+ FOP Loop: Lagrangian Fragment energy       :   -0.0260217493
+ FOP Loop: Occupied energy diff             :    0.0000171571
+ FOP Loop: Virtual energy diff              :    0.0000123624
+ FOP Loop: Lagrangian energy diff           :    0.0000244676
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000024468
+ FOP: Occupied energy converged, energydiff   =   0.000017157
+ FOP: Virtual energy converged, energydiff    =   0.000012362
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
 #SINGLEDIMS# basis,occ,virt       18       4       8
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -2789,17 +2710,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.247E-03
  Big Array Memory required       (GB)    = 0.263E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
- >>> wall Time used in INIT MP2-INT is   0.08 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.42 seconds
- >>> wall Time used in MP2-INT LOOP is   0.43 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.07 seconds
+ >>> wall Time used in INIT MP2-INT is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.38 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.39 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.38 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.39 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.51 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.52 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.46 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.46 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
@@ -2813,14 +2764,11 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.861 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.51 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.52 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.46 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.46 seconds
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   7
+ FOP              Fragment information, loop   4
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   4
  FOP Loop: Number of orbitals in virt total :   8
@@ -2837,8 +2785,9 @@ Use F12 correction           =           FALSE
  FOP: Lagrangian energy converged, energydiff =   0.000004231
  FOP: Occupied energy converged, energydiff   =   0.000034188
  FOP: Virtual energy converged, energydiff    =   0.000043198
- BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+ BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
  FOP
+
  FOP=========================================================
  FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   4
  FOP---------------------------------------------------------
@@ -2854,9 +2803,16 @@ Use F12 correction           =           FALSE
  FOP=========================================================
  FOP
 
- >>>  CPU Time used in FRAGMENT INIT is   0.01 seconds
- >>> wall Time used in FRAGMENT INIT is   0.01 seconds
-#PAIRDIMS# basis,occ,virt       18       5      12
+ FOP reduction: Atom,FOT,O,V,B      4     0.100E-03      4      8     18
+ >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
+#PAIRDIMS# basis,occ,virt       20       5      12
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -2865,28 +2821,28 @@ Use F12 correction           =           FALSE
  
  85% of available memory (GB)            =  1.63    
  
- Number of atomic basis functions        =      18
+ Number of atomic basis functions        =      20
  Number of occupied orbitals AOS/EOS     =       5       2
  Number of virtual  orbitals AOS/EOS     =      12       9
- Maximum alpha batch dimension           =       4
- Maximum gamma batch dimension           =      18
+ Maximum alpha batch dimension           =       5
+ Maximum gamma batch dimension           =      20
  Maximum virtual batch dimension         =      12
  Number of OMP threads                   =       1
  
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.273E-03
- Memory required for tmp array 1 (GB)    = 0.187E-03
- Memory required for tmp array 2 (GB)    = 0.346E-04
- Memory required for tmp array 3 (GB)    = 0.518E-04
+ Tot memory required for tmp arrays (GB) = 0.448E-03
+ Memory required for tmp array 1 (GB)    = 0.320E-03
+ Memory required for tmp array 2 (GB)    = 0.480E-04
+ Memory required for tmp array 3 (GB)    = 0.800E-04
  
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.888E-04
+ Tot memory required for tmp arrays (GB) = 0.912E-04
  Memory required for tmp array 1 (GB)    = 0.288E-04
  Memory required for tmp array 2 (GB)    = 0.216E-04
  Memory required for tmp array 3 (GB)    = 0.288E-04
- Memory required for tmp array 4 (GB)    = 0.960E-05
+ Memory required for tmp array 4 (GB)    = 0.120E-04
  
  STEP 3 in integral loop
  -----------------------
@@ -2896,49 +2852,79 @@ Use F12 correction           =           FALSE
  
  Summary
  -----------------------
- Memory required                 (GB)    = 0.273E-03
- Big Array Memory required       (GB)    = 0.289E-03
+ Memory required                 (GB)    = 0.448E-03
+ Big Array Memory required       (GB)    = 0.464E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  CPU Time used in INIT MP2-INT is   0.09 seconds
- >>> wall Time used in INIT MP2-INT is   0.09 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.45 seconds
- >>> wall Time used in MP2-INT LOOP is   0.47 seconds
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
+ >>> wall Time used in INIT MP2-INT is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.53 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.54 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.53 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.54 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.55 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.56 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.62 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.62 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  *****************************************************************************
  Energy summary for pair fragment:       2      4
  *****************************************************************************
- Distance(Ang), pair occ energy  =       2.5793       -0.9611174607E-03
- Distance(Ang), pair virt energy =       2.5793       -0.8758403414E-03
- Distance(Ang), pair lagr. occ term  =       2.5793        0.7243171796E-03
- Distance(Ang), pair lagr. virt term =       2.5793        0.3083502424E-03
+ Distance(Ang), pair occ energy  =       2.5793       -0.9591208978E-03
+ Distance(Ang), pair virt energy =       2.5793       -0.8686799136E-03
+ Distance(Ang), pair lagr. occ term  =       2.5793        0.7230890695E-03
+ Distance(Ang), pair lagr. virt term =       2.5793        0.3061231451E-03
  
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- >>>  CPU Time used in PAIR L.ENERGY is   0.55 seconds
- >>> wall Time used in PAIR L.ENERGY is   0.56 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.62 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.62 seconds
  
  
  ******************************************************************
  *            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *
  ******************************************************************
  
- 
  Total number of pairs:                         1
- Pairs to be treated at input CC level          1
+ Number of pairs to calculate:                  1
  Pairs to be skipped from calculation           0
  
- Estimated pair correlation energy:            -0.9611174607E-03
- Estimated contribution from skipped pairs:      0.000000000    
+ Pairs to be treated using input FOT            1
  
+ Estimated pair correlation energy:            -0.9591208978E-03
+ Estimated contribution from skipped pairs:      0.000000000    
  
  
  
@@ -2947,11 +2933,11 @@ Use F12 correction           =           FALSE
  =================================================================
  
   Frag1  Frag2     Dist(Ang)        Energy
-     2       4      2.5793         -0.9611174607E-03    PF_ESTIMATE
+     2       4      2.5793         -0.9591208978E-03    PF_ESTIMATE
  
  
- >>>  CPU Time used in DEC Atomic Frags and Estimates is  16.02 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is  16.31 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   8.66 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   8.69 seconds
  Preparing job list...
  
  
@@ -2997,6 +2983,12 @@ Use F12 correction           =           FALSE
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
 #PAIRDIMS# basis,occ,virt       18       5      11
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -3039,17 +3031,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.270E-03
  Big Array Memory required       (GB)    = 0.287E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
- >>> wall Time used in INIT MP2-INT is   0.09 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.46 seconds
- >>> wall Time used in MP2-INT LOOP is   0.47 seconds
+ >>> wall Time used in INIT MP2-INT is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.41 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.41 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.41 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.41 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.55 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.56 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.49 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.49 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  *****************************************************************************
@@ -3063,8 +3085,8 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- >>>  CPU Time used in PAIR L.ENERGY is   0.55 seconds
- >>> wall Time used in PAIR L.ENERGY is   0.56 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.49 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.49 seconds
  Calculating MP2 gradient for pair fragment           2           4
  Initiating MP2 gradient structure for pair fragment            2           4
  Initiating MP2 density matrix...
@@ -3086,13 +3108,19 @@ Use F12 correction           =           FALSE
  >>> wall Time used in PHIOO MATRIX is   0.00 seconds
  >>>  CPU Time used in CS08_FRAG     6 is   0.04 seconds
  >>> wall Time used in CS08_FRAG     6 is   0.04 seconds
- >>>  CPU Time used in LTHETA K GRAD is   0.70 seconds
- >>> wall Time used in LTHETA K GRAD is   0.71 seconds
- >>>  CPU Time used in LTHETA TOTAL is   0.70 seconds
- >>> wall Time used in LTHETA TOTAL is   0.71 seconds
- >>>  CPU Time used in PAIR MP2DENS is   0.70 seconds
- >>> wall Time used in PAIR MP2DENS is   0.72 seconds
+ >>>  CPU Time used in LTHETA K GRAD is   0.66 seconds
+ >>> wall Time used in LTHETA K GRAD is   0.66 seconds
+ >>>  CPU Time used in LTHETA TOTAL is   0.66 seconds
+ >>> wall Time used in LTHETA TOTAL is   0.66 seconds
+ >>>  CPU Time used in PAIR MP2DENS is   0.66 seconds
+ >>> wall Time used in PAIR MP2DENS is   0.66 seconds
 #SINGLEDIMS# basis,occ,virt       18       4       8
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -3135,17 +3163,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.247E-03
  Big Array Memory required       (GB)    = 0.263E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>>  CPU Time used in INIT MP2-INT is   0.08 seconds
- >>> wall Time used in INIT MP2-INT is   0.08 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.42 seconds
- >>> wall Time used in MP2-INT LOOP is   0.43 seconds
+ >>> wall Time used in INIT MP2-INT is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.39 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.39 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.39 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.39 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.50 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.51 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.46 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.46 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
@@ -3159,11 +3217,8 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.756 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.50 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.51 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.46 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.47 seconds
  Calculating MP2 gradient for fragment           4
  Initiating MP2 gradient structure for single fragment            4
  Initiating MP2 density matrix...
@@ -3185,13 +3240,19 @@ Use F12 correction           =           FALSE
  >>> wall Time used in PHIOO MATRIX is   0.00 seconds
  >>>  CPU Time used in CS08_FRAG     6 is   0.04 seconds
  >>> wall Time used in CS08_FRAG     6 is   0.04 seconds
- >>>  CPU Time used in LTHETA K GRAD is   0.67 seconds
- >>> wall Time used in LTHETA K GRAD is   0.69 seconds
- >>>  CPU Time used in LTHETA TOTAL is   0.67 seconds
- >>> wall Time used in LTHETA TOTAL is   0.69 seconds
- >>>  CPU Time used in SINGLE MP2DENS is   0.68 seconds
- >>> wall Time used in SINGLE MP2DENS is   0.69 seconds
+ >>>  CPU Time used in LTHETA K GRAD is   0.65 seconds
+ >>> wall Time used in LTHETA K GRAD is   0.65 seconds
+ >>>  CPU Time used in LTHETA TOTAL is   0.65 seconds
+ >>> wall Time used in LTHETA TOTAL is   0.65 seconds
+ >>>  CPU Time used in SINGLE MP2DENS is   0.65 seconds
+ >>> wall Time used in SINGLE MP2DENS is   0.65 seconds
 #SINGLEDIMS# basis,occ,virt       14       3       7
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  
  
  =======================================================================
@@ -3234,17 +3295,47 @@ Use F12 correction           =           FALSE
  Memory required                 (GB)    = 0.870E-04
  Big Array Memory required       (GB)    = 0.103E-03
  
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            6
  BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.06 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.06 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>>  CPU Time used in INIT MP2-INT is   0.06 seconds
  >>> wall Time used in INIT MP2-INT is   0.06 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.20 seconds
- >>> wall Time used in MP2-INT LOOP is   0.20 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.18 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.18 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.18 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.18 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.26 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.27 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.24 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.24 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
  
  
  **********************************************************************
@@ -3258,11 +3349,8 @@ Use F12 correction           =           FALSE
  
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  85.752 MB
-  Max allocated memory, TOTAL                         87.766 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.26 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.27 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.24 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.24 seconds
  Calculating MP2 gradient for fragment           2
  Initiating MP2 gradient structure for single fragment            2
  Initiating MP2 density matrix...
@@ -3284,14 +3372,14 @@ Use F12 correction           =           FALSE
  >>> wall Time used in PHIOO MATRIX is   0.00 seconds
  >>>  CPU Time used in CS08_FRAG     4 is   0.03 seconds
  >>> wall Time used in CS08_FRAG     4 is   0.03 seconds
- >>>  CPU Time used in LTHETA K GRAD is   0.35 seconds
- >>> wall Time used in LTHETA K GRAD is   0.36 seconds
- >>>  CPU Time used in LTHETA TOTAL is   0.35 seconds
- >>> wall Time used in LTHETA TOTAL is   0.36 seconds
- >>>  CPU Time used in SINGLE MP2DENS is   0.35 seconds
- >>> wall Time used in SINGLE MP2DENS is   0.36 seconds
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   3.04 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is   3.11 seconds
+ >>>  CPU Time used in LTHETA K GRAD is   0.33 seconds
+ >>> wall Time used in LTHETA K GRAD is   0.33 seconds
+ >>>  CPU Time used in LTHETA TOTAL is   0.33 seconds
+ >>> wall Time used in LTHETA TOTAL is   0.33 seconds
+ >>>  CPU Time used in SINGLE MP2DENS is   0.33 seconds
+ >>> wall Time used in SINGLE MP2DENS is   0.33 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   2.84 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is   2.85 seconds
  
  
               ===============================================
@@ -3358,7 +3446,7 @@ Use F12 correction           =           FALSE
  
  =============================================================================
  >>>  CPU Time used in CS15_INPUT-Mole is   0.05 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.06 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.05 seconds
  >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
  >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
  >>>  CPU Time used in NucElec is   0.07 seconds
@@ -3377,18 +3465,18 @@ Frozen core kappabar multiplier equation: Conv. thr. set to    0.100000E-03
  ***      2         0.32507825E-03
  ***      3         0.39474201E-04
 Zeroth order kappabar multiplier equation solved     3 iterations!
- Residual norm:  3.947420050102434E-005
+ Residual norm:  3.947420050102867E-005
  >>>  CPU Time used in FC KAPPA EQ. is   0.00 seconds
  >>> wall Time used in FC KAPPA EQ. is   0.00 seconds
- >>>  CPU Time used in reg-Jengine is   0.14 seconds
- >>> wall Time used in reg-Jengine is   0.14 seconds
- The Coulomb energy contribution   1.824841689095604E-004
- >>>  CPU Time used in LINK-Kbuild is   0.24 seconds
- >>> wall Time used in LINK-Kbuild is   0.24 seconds
- The Exchange energy contribution   1.123312592618248E-003
- The Fock energy contribution   9.408284237086856E-004
- >>>  CPU Time used in KAPPABAR RHS is   0.38 seconds
- >>> wall Time used in KAPPABAR RHS is   0.38 seconds
+ >>>  CPU Time used in reg-Jengine is   0.13 seconds
+ >>> wall Time used in reg-Jengine is   0.13 seconds
+ The Coulomb energy contribution   1.824841689095685E-004
+ >>>  CPU Time used in LINK-Kbuild is   0.23 seconds
+ >>> wall Time used in LINK-Kbuild is   0.23 seconds
+ The Exchange energy contribution   1.123312592618239E-003
+ The Fock energy contribution   9.408284237086709E-004
+ >>>  CPU Time used in KAPPABAR RHS is   0.36 seconds
+ >>> wall Time used in KAPPABAR RHS is   0.36 seconds
  
  Starting kappabar multiplier solver for zeroth order equation...
  
@@ -3405,7 +3493,7 @@ Virt-occ kappabar multiplier equation: Conv. thr. set to    0.100000E-03
  ***      6         0.16561409E-03
  ***      7         0.49746068E-04
 Zeroth order kappabar multiplier equation solved     7 iterations!
- Residual norm:  4.974606813989234E-005
+ Residual norm:  4.974606813989265E-005
  >>>  CPU Time used in RED. KAPPA EQ. is   0.00 seconds
  >>> wall Time used in RED. KAPPA EQ. is   0.00 seconds
  
@@ -3417,69 +3505,69 @@ Virt-occ kappabar multiplier equation: Conv. thr. set to    0.100000E-03
  -------------------------
  ***  Iteration     Residual norm
  >>>  CPU Time used in reg-Jengine is   0.14 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
- The Coulomb energy contribution   9.763007696573100E-005
- >>>  CPU Time used in LINK-Kbuild is   0.27 seconds
- >>> wall Time used in LINK-Kbuild is   0.27 seconds
- The Exchange energy contribution   3.156457345969823E-004
- The Fock energy contribution   2.180156576312515E-004
+ >>> wall Time used in reg-Jengine is   0.14 seconds
+ The Coulomb energy contribution   9.763007696574485E-005
+ >>>  CPU Time used in LINK-Kbuild is   0.25 seconds
+ >>> wall Time used in LINK-Kbuild is   0.25 seconds
+ The Exchange energy contribution   3.156457345970073E-004
+ The Fock energy contribution   2.180156576312625E-004
  ***      1         0.10699402E-01
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
- The Coulomb energy contribution   2.077494007819009E-004
- >>>  CPU Time used in LINK-Kbuild is   0.27 seconds
- >>> wall Time used in LINK-Kbuild is   0.27 seconds
- The Exchange energy contribution   7.576166965364753E-004
- The Fock energy contribution   5.498672957545743E-004
- ***      2         0.58139243E-02
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
- The Coulomb energy contribution   1.972388102135099E-004
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
+ The Coulomb energy contribution   2.077494007819271E-004
  >>>  CPU Time used in LINK-Kbuild is   0.26 seconds
- >>> wall Time used in LINK-Kbuild is   0.27 seconds
- The Exchange energy contribution   6.644728110868647E-004
- The Fock energy contribution   4.672340008733532E-004
+ >>> wall Time used in LINK-Kbuild is   0.26 seconds
+ The Exchange energy contribution   7.576166965365206E-004
+ The Fock energy contribution   5.498672957545934E-004
+ ***      2         0.58139243E-02
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
+ The Coulomb energy contribution   1.972388102135404E-004
+ >>>  CPU Time used in LINK-Kbuild is   0.25 seconds
+ >>> wall Time used in LINK-Kbuild is   0.25 seconds
+ The Exchange energy contribution   6.644728110869128E-004
+ The Fock energy contribution   4.672340008733724E-004
  ***      3         0.21639870E-02
  >>>  CPU Time used in reg-Jengine is   0.14 seconds
  >>> wall Time used in reg-Jengine is   0.14 seconds
- The Coulomb energy contribution   2.159782389441704E-004
- >>>  CPU Time used in LINK-Kbuild is   0.27 seconds
- >>> wall Time used in LINK-Kbuild is   0.27 seconds
- The Exchange energy contribution   7.232689988902428E-004
- The Fock energy contribution   5.072907599460728E-004
+ The Coulomb energy contribution   2.159782389442041E-004
+ >>>  CPU Time used in LINK-Kbuild is   0.25 seconds
+ >>> wall Time used in LINK-Kbuild is   0.26 seconds
+ The Exchange energy contribution   7.232689988902972E-004
+ The Fock energy contribution   5.072907599460933E-004
  ***      4         0.75536464E-03
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
- The Coulomb energy contribution   2.163953091908480E-004
- >>>  CPU Time used in LINK-Kbuild is   0.27 seconds
- >>> wall Time used in LINK-Kbuild is   0.27 seconds
- The Exchange energy contribution   7.343668868265902E-004
- The Fock energy contribution   5.179715776357409E-004
- ***      5         0.34814421E-03
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
- The Coulomb energy contribution   2.176752848520166E-004
- >>>  CPU Time used in LINK-Kbuild is   0.27 seconds
- >>> wall Time used in LINK-Kbuild is   0.27 seconds
- The Exchange energy contribution   7.380116136528580E-004
- The Fock energy contribution   5.203363288008412E-004
- ***      6         0.13198182E-03
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
- The Coulomb energy contribution   2.183638815287346E-004
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
+ The Coulomb energy contribution   2.163953091908800E-004
  >>>  CPU Time used in LINK-Kbuild is   0.26 seconds
- >>> wall Time used in LINK-Kbuild is   0.27 seconds
- The Exchange energy contribution   7.395171698929402E-004
- The Fock energy contribution   5.211532883642046E-004
+ >>> wall Time used in LINK-Kbuild is   0.26 seconds
+ The Exchange energy contribution   7.343668868266424E-004
+ The Fock energy contribution   5.179715776357627E-004
+ ***      5         0.34814421E-03
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
+ The Coulomb energy contribution   2.176752848520486E-004
+ >>>  CPU Time used in LINK-Kbuild is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild is   0.26 seconds
+ The Exchange energy contribution   7.380116136529132E-004
+ The Fock energy contribution   5.203363288008644E-004
+ ***      6         0.13198182E-03
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
+ The Coulomb energy contribution   2.183638815287675E-004
+ >>>  CPU Time used in LINK-Kbuild is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild is   0.26 seconds
+ The Exchange energy contribution   7.395171698929946E-004
+ The Fock energy contribution   5.211532883642272E-004
  ***      7         0.48876147E-04
 Full kappabar multiplier equation solved     7 iterations!
- Residual norm:  4.887614687969804E-005
- >>>  CPU Time used in FULL KAPPA EQ. is   2.91 seconds
- >>> wall Time used in FULL KAPPA EQ. is   2.92 seconds
+ Residual norm:  4.887614687970339E-005
+ >>>  CPU Time used in FULL KAPPA EQ. is   2.77 seconds
+ >>> wall Time used in FULL KAPPA EQ. is   2.77 seconds
  >>>  CPU Time used in RHO MATRIX is   0.00 seconds
  >>> wall Time used in RHO MATRIX is   0.00 seconds
  >>>  CPU Time used in OVERLAP is   0.00 seconds
- >>> wall Time used in OVERLAP is   0.01 seconds
+ >>> wall Time used in OVERLAP is   0.00 seconds
  
  
  *****************************************************************
@@ -3527,24 +3615,24 @@ Full kappabar multiplier equation solved     7 iterations!
  
  
  
- >>>  CPU Time used in FULL MP2DENS is   3.31 seconds
- >>> wall Time used in FULL MP2DENS is   3.32 seconds
+ >>>  CPU Time used in FULL MP2DENS is   3.14 seconds
+ >>> wall Time used in FULL MP2DENS is   3.15 seconds
  Writing full molecular MP2 density to file....
- >>>  CPU Time used in reg-Jengine is   0.15 seconds
- >>> wall Time used in reg-Jengine is   0.15 seconds
- The Coulomb energy contribution   4.422089132960166E-004
- >>>  CPU Time used in LINK-Kbuild is   0.27 seconds
- >>> wall Time used in LINK-Kbuild is   0.27 seconds
- The Exchange energy contribution   1.217627822549825E-003
- The Fock energy contribution   7.754189092538063E-004
- >>>  CPU Time used in W MATRIX is   0.43 seconds
- >>> wall Time used in W MATRIX is   0.43 seconds
+ >>>  CPU Time used in reg-Jengine is   0.14 seconds
+ >>> wall Time used in reg-Jengine is   0.14 seconds
+ The Coulomb energy contribution   4.422089132960677E-004
+ >>>  CPU Time used in LINK-Kbuild is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild is   0.26 seconds
+ The Exchange energy contribution   1.217627822549886E-003
+ The Fock energy contribution   7.754189092538186E-004
+ >>>  CPU Time used in W MATRIX is   0.40 seconds
+ >>> wall Time used in W MATRIX is   0.40 seconds
  >>>  CPU Time used in GRAD: NUC. is   0.00 seconds
  >>> wall Time used in GRAD: NUC. is   0.00 seconds
  >>>  CPU Time used in GRAD: REORT. is   0.01 seconds
  >>> wall Time used in GRAD: REORT. is   0.01 seconds
  >>>  CPU Time used in GRAD: ONE-EL is   0.07 seconds
- >>> wall Time used in GRAD: ONE-EL is   0.07 seconds
+ >>> wall Time used in GRAD: ONE-EL is   0.06 seconds
 
 
                      Coulomb contribution to gradient
@@ -3575,8 +3663,8 @@ Full kappabar multiplier equation solved     7 iterations!
    He       0.0436062800           -0.1593643438           -0.2878723010
    He       0.1698698988            0.1275177091            0.1283901422
    He      -0.6514466491           -0.0497426842           -0.0206912166
- >>>  CPU Time used in GRAD: COU+EXC is   1.87 seconds
- >>> wall Time used in GRAD: COU+EXC is   1.88 seconds
+ >>>  CPU Time used in GRAD: COU+EXC is   1.79 seconds
+ >>> wall Time used in GRAD: COU+EXC is   1.80 seconds
      ********************************************************************************
      *                 MP2 MOLECULAR GRADIENT FROM DEC CALCULATION                  *
      ********************************************************************************
@@ -3689,10 +3777,10 @@ Full kappabar multiplier equation solved     7 iterations!
  
  
  
- >>>  CPU Time used in GRAD: ALL CONT is   1.95 seconds
- >>> wall Time used in GRAD: ALL CONT is   1.96 seconds
- >>>  CPU Time used in GET MP2GRAD is   5.69 seconds
- >>> wall Time used in GET MP2GRAD is   5.71 seconds
+ >>>  CPU Time used in GRAD: ALL CONT is   1.87 seconds
+ >>> wall Time used in GRAD: ALL CONT is   1.88 seconds
+ >>>  CPU Time used in GET MP2GRAD is   5.41 seconds
+ >>> wall Time used in GET MP2GRAD is   5.43 seconds
  
  
  
@@ -3707,8 +3795,8 @@ Full kappabar multiplier equation solved     7 iterations!
                G: Total MP2 energy    :      -29.1783080328
  
  
- >>>  CPU Time used in DEC FINAL is   5.77 seconds
- >>> wall Time used in DEC FINAL is   5.79 seconds
+ >>>  CPU Time used in DEC FINAL is   5.48 seconds
+ >>> wall Time used in DEC FINAL is   5.50 seconds
  
  DEC CALCULATION BOOK KEEPING
  ============================
@@ -3718,7 +3806,7 @@ Full kappabar multiplier equation solved     7 iterations!
  
  CC Memory summary
  -----------------
- Allocated memory for array4   :  0.4816E-03 GB
+ Allocated memory for array4   :  0.3429E-03 GB
  Memory in use for array4      :   0.000     GB
  Max memory in use for array4  :  0.8114E-04 GB
  ------------------
@@ -3729,12 +3817,12 @@ Full kappabar multiplier equation solved     7 iterations!
  
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         24.8410     s
-Total Wall time used in DEC          :         25.2190     s
+Total CPU  time used in DEC          :         16.9870     s
+Total Wall time used in DEC          :         17.0420     s
 ------------------------------------------------------
 
  
-Job finished   : Date: 17/11/2014   Time: 12:18:58
+Job finished   : Date: 04/12/2014   Time: 10:27:23
  
  
 
@@ -3744,8 +3832,8 @@ Job finished   : Date: 17/11/2014   Time: 12:18:58
 
  
  
- >>>  CPU Time used in *SCF is  30.69 seconds
- >>> wall Time used in *SCF is  31.09 seconds
+ >>>  CPU Time used in *SCF is  21.42 seconds
+ >>> wall Time used in *SCF is  21.49 seconds
  
 Total no. of matmuls used:                     28013
 Total no. of Fock/KS matrix evaluations:           6
@@ -3775,6 +3863,7 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (fragmentAOS):               0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
@@ -3796,20 +3885,21 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         87.766 MB
+  Max allocated memory, TOTAL                         87.769 MB
   Max allocated memory, type(matrix)                 288.512 kB
   Max allocated memory, real(realk)                    5.983 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       58.481 kB
-  Max allocated memory, logical                      203.004 kB
+  Max allocated memory, integer                       59.369 kB
+  Max allocated memory, logical                      203.420 kB
   Max allocated memory, character                      4.416 kB
   Max allocated memory, AOBATCH                       40.320 kB
   Max allocated memory, DECORBITAL                     7.216 kB
-  Max allocated memory, DECFRAG                      236.960 kB
+  Max allocated memory, DECFRAG                      238.720 kB
   Max allocated memory, BATCHTOORB                     0.560 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.864 kB
+  Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
   Max allocated memory, ARRAY                         84.400 MB
@@ -3850,72 +3940,72 @@ Max no. of matrices allocated in Level 3:         74
    L1 mat_copy                10            0.0000            0.0000
    L1 mat_mul                 39            0.0000            0.0000
    L1 mat_add                 43            0.0000            0.0000
-   L1 mat_daxpy               55            0.0000            0.0010
-   L1 mat_dotproduct          71            0.0010            0.0000
+   L1 mat_daxpy               55            0.0000            0.0000
+   L1 mat_dotproduct          71            0.0000            0.0000
    L1 mat_sqnorm2             74            0.0000            0.0000
    L1 mat_zero                34            0.0000            0.0000
       ==============================================================
-   L1 TOTAL MAT                             0.0010            0.0010
+   L1 TOTAL MAT                             0.0000            0.0000
       ==============================================================
-   L1     II_get_overlap       4            0.0000            0.0030
-   L1     II_get_kinetic       4            0.0000            0.0030
-   L1   II_get_nucel_mat       4            0.0090            0.0050
-   L1 II_GET_EXCHANGE_MA      13            0.0440            0.0370
-   L1 II_get_coulomb_mat      13            0.0310            0.0300
+   L1     II_get_overlap       4            0.0030            0.0020
+   L1     II_get_kinetic       4            0.0020            0.0020
+   L1   II_get_nucel_mat       4            0.0070            0.0070
+   L1 II_GET_EXCHANGE_MA      13            0.0360            0.0390
+   L1 II_get_coulomb_mat      13            0.0370            0.0290
       ==============================================================
-   L1 TOTAL INTEGRAL                        0.0840            0.0780
+   L1 TOTAL INTEGRAL                        0.0850            0.0790
       ==============================================================
       ===============================================================
       Overall Timings for the Matrix Operations and Integral routines
                in Level 3 The Full molecular Calculation             
       Matrix Operation   # calls          CPU Time         Wall Time
       ===============================================================
-   L3 mat_set_from_full    20346            0.0270            0.0240
+   L3 mat_set_from_full    20346            0.0270            0.0140
    L3 mat_to_full              9            0.0000            0.0000
-   L3 mat_trans             1010            0.0170            0.0170
-   L3 mat_assign            2449            0.0090            0.0080
-   L3 mat_copy               484            0.0010            0.0020
-   L3 mat_mul              27973            0.9100            0.8630
-   L3 mat_add                568            0.0130            0.0070
-   L3 mat_daxpy            24651            0.1040            0.0880
-   L3 mat_dotproduct        5780            0.0200            0.0240
-   L3 mat_sqnorm2           6042            0.0180            0.0180
-   L3 mat_diag_f               2            0.0060            0.0060
+   L3 mat_trans             1010            0.0220            0.0130
+   L3 mat_assign            2449            0.0000            0.0000
+   L3 mat_copy               484            0.0010            0.0010
+   L3 mat_mul              27973            0.0510            0.0450
+   L3 mat_add                568            0.0010            0.0000
+   L3 mat_daxpy            24651            0.0140            0.0290
+   L3 mat_dotproduct        5780            0.0070            0.0080
+   L3 mat_sqnorm2           6042            0.0050            0.0090
+   L3 mat_diag_f               2            0.0010            0.0010
    L3 mat_create_block       128            0.0000            0.0000
-   L3 mat_retrieve_block   28778            0.0480            0.0510
-   L3 mat_scal              2189            0.0080            0.0060
-   L3 mat_zero              5694            0.0160            0.0270
-   L3 mat_density_from_o       1            0.0000            0.0010
+   L3 mat_retrieve_block   28778            0.0450            0.0650
+   L3 mat_scal              2189            0.0030            0.0030
+   L3 mat_zero              5694            0.0190            0.0230
+   L3 mat_density_from_o       1            0.0000            0.0000
    L3 mat_scal_dia_vec         2            0.0000            0.0000
-   L3 mat_scal_dia            86            0.0000            0.0010
-   L3 mat_dsyev                1            0.0030            0.0020
-   L3 mat_dsyevx               8            0.0020            0.0030
-   L3 mat_identity           239            0.0020            0.0020
-   L3 mat_write_to_disk       10            0.0000            0.0000
+   L3 mat_scal_dia            86            0.0000            0.0000
+   L3 mat_dsyev                1            0.0000            0.0000
+   L3 mat_dsyevx               8            0.0010            0.0000
+   L3 mat_identity           239            0.0010            0.0010
+   L3 mat_write_to_disk       10            0.0010            0.0000
       ==============================================================
-   L3 TOTAL MAT                             1.1970            1.1410
+   L3 TOTAL MAT                             0.1970            0.2110
       ==============================================================
-   L3     II_get_overlap       4            0.0180            0.0190
-   L3     II_get_kinetic       2            0.0100            0.0100
-   L3   II_get_nucel_mat       2            0.0940            0.0940
+   L3     II_get_overlap       4            0.0190            0.0170
+   L3     II_get_kinetic       2            0.0090            0.0090
+   L3   II_get_nucel_mat       2            0.0860            0.0860
    L3 II_GET_NN_GRADIENT       1            0.0000            0.0000
-   L3 II_precalc_ScreenM       1            0.0520            0.0540
-   L3 II_get_ne_gradient       1            0.0570            0.0570
-   L3 II_GET_KINETIC_GRA       1            0.0100            0.0110
-   L3 II_GET_REORTHONORM       1            0.0140            0.0140
-   L3  II_get_J_gradient       1            0.3160            0.3170
-   L3  II_get_K_gradient       4            3.2760            3.3200
-   L3  II_GET_K_GRADIENT       4            3.2760            3.3200
+   L3 II_precalc_ScreenM       1            0.0520            0.0510
+   L3 II_get_ne_gradient       1            0.0540            0.0540
+   L3 II_GET_KINETIC_GRA       1            0.0100            0.0100
+   L3 II_GET_REORTHONORM       1            0.0130            0.0140
+   L3  II_get_J_gradient       1            0.3070            0.3080
+   L3  II_get_K_gradient       4            3.1240            3.1360
+   L3  II_GET_K_GRADIENT       4            3.1240            3.1360
    L3      II_get_nucpot       2            0.0000            0.0000
-   L3 II_GET_EXCHANGE_MA      15            3.8570            3.8760
-   L3 II_get_coulomb_mat      15            2.0980            2.1040
-   L3 II_GET_DECPACKED4C     107           13.1500           13.2450
+   L3 II_GET_EXCHANGE_MA      15            3.7190            3.7340
+   L3 II_get_coulomb_mat      15            1.9970            2.0010
+   L3 II_GET_DECPACKED4C      82            8.1890            8.2200
       ==============================================================
-   L3 TOTAL INTEGRAL                       47.8360           48.3780
+   L3 TOTAL INTEGRAL                       33.4870           33.5990
       ==============================================================
- >>>  CPU Time used in LSDALTON is  30.98 seconds
- >>> wall Time used in LSDALTON is  31.38 seconds
+ >>>  CPU Time used in LSDALTON is  21.70 seconds
+ >>> wall Time used in LSDALTON is  21.77 seconds
 
 End simulation
-     Date and time (Linux)  : Mon Nov 17 12:18:58 2014
+     Date and time (Linux)  : Thu Dec  4 10:27:23 2014
      Host name              : localhost.localdomain                   
