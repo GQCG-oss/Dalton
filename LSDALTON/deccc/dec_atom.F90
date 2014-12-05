@@ -5178,7 +5178,7 @@ contains
        ! use reduced orbital spaces for some of the pair fragments
        call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
             & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred, &
-            & occAOSred=occAOSred,unoccAOSred=unoccAOS,Fragbasisred=Fragbasisred)
+            & occAOSred=occAOSred,unoccAOSred=unoccAOSred,Fragbasisred=Fragbasisred)
     else
        ! No reduced pair fragments
        call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
