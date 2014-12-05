@@ -86,7 +86,7 @@ set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_t2f.F90
     )
-if(ENABLE_OPENACC)
+if(ENABLE_GPU)
     set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
         ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_acc_reord.F90
         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_acc_reord.F90
@@ -95,7 +95,7 @@ if(ENABLE_OPENACC)
 endif()
 
 get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-if(ENABLE_OPENACC)
+if(ENABLE_GPU)
 add_custom_command(
     OUTPUT
     ${MANUAL_REORDERING_SOURCES}
