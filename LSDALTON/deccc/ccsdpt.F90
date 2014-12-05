@@ -302,6 +302,13 @@ contains
 
     endif
 
+    write(DECinfo%output,*) ''
+    write(DECinfo%output,*) ''
+    write(DECinfo%output,*) '=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*='
+    write(DECinfo%output,*) '        Done with CCSD(T) integrals        '
+    write(DECinfo%output,*) '*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*'
+    write(DECinfo%output,*) ''
+
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
