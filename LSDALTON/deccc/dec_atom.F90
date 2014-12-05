@@ -3418,6 +3418,7 @@ contains
     character(len=40) :: FileName
     integer :: funit,idx,i
     logical :: file_exist
+    logical,save :: first_entry=.true.
 
     ! Sanity check: Job has been done for fragment in question
     do i=1,jobs%njobs
@@ -3453,19 +3454,22 @@ contains
     FileName='atomicfragments.info'
 
     inquire(file=FileName,exist=file_exist)
-    if(file_exist) then ! read file and update it
 
+    ! Create new file if this is the first entry AND we do not use restart
+    ! Also - always open new file if file does not already exist
+    if(  ( first_entry .and. (.not. DECinfo%DECrestart) ) &
+         & .or. (.not. file_exist)   ) then
+       open(funit,FILE=FileName,STATUS='REPLACE',FORM='UNFORMATTED')
+    else
        ! Need to open without lsopen to be able to append to end of file
        open(funit,FILE=FileName,STATUS='OLD',FORM='UNFORMATTED',POSITION='APPEND')
-
-    else ! create new file
-       open(funit,FILE=FileName,STATUS='NEW',FORM='UNFORMATTED')
     end if
 
     ! Write fragment data to file
     call fragment_write_data(funit,fragment)
     close(funit,STATUS='KEEP')
 
+    first_entry=.false.
 
   end subroutine add_fragment_to_file
 
@@ -3524,6 +3528,16 @@ contains
        write(wunit) fragment%CDocceival
        write(wunit) fragment%CDunocceival
     end if
+
+    ! Reduced fragments
+    do i=1,DECinfo%nFRAGSred
+       write(wunit) int(fragment%REDfrags(i)%noccAOS,kind=8)
+       write(wunit) int(fragment%REDfrags(i)%occAOSidx,kind=8)
+       write(wunit) int(fragment%REDfrags(i)%nunoccAOS,kind=8)
+       write(wunit) int(fragment%REDfrags(i)%unoccAOSidx,kind=8)
+       write(wunit) fragment%REDfrags(i)%FOT
+    end do
+
 
   end subroutine fragment_write_data
 
@@ -3759,6 +3773,20 @@ contains
     call mem_dealloc(virt_list)
     call mem_dealloc(occAOSidx)
     call mem_dealloc(virtAOSidx)
+
+
+
+    ! Reduced fragments
+    do i=1,DECinfo%nFRAGSred
+       call read_64bit_to_int(runit,fragment%REDfrags(i)%noccAOS)
+       call mem_alloc(fragment%REDfrags(i)%occAOSidx,fragment%REDfrags(i)%noccAOS)
+       call read_64bit_to_int(runit,fragment%REDfrags(i)%noccAOS,fragment%REDfrags(i)%occAOSidx)
+       call read_64bit_to_int(runit,fragment%REDfrags(i)%nunoccAOS)
+       call mem_alloc(fragment%REDfrags(i)%unoccAOSidx,fragment%REDfrags(i)%nunoccAOS)
+       call read_64bit_to_int(runit,fragment%REDfrags(i)%nunoccAOS,fragment%REDfrags(i)%unoccAOSidx)
+       read(runit) fragment%REDfrags(i)%FOT
+    end do
+
 
   end subroutine fragment_read_data
 
