@@ -1129,11 +1129,21 @@ TYPE(trilevel_atominfo) :: ai
 integer             :: nbast,itype,nAngmom,charge,ang,nb,nocc
 integer             :: icharge,jatom,nsegments,tmpindex,seg,iprim
 integer, pointer    :: basis_size(:)
-integer :: len
+integer :: len,R,J
 CALL trilevel_ALLOC_SYNC_VBASIS(ls%input%basis%BINFO(VALBasParam),&
      & ls%input%basis%BINFO(RegBasParam),ls%input%basis%BINFO(GCTBasParam),&
      & ls%setting%integraltransformGC,ls%input%basis%wbasis(gctbasparam),&
      & ls%input%basis%BINFO(RegBasParam)%GCbasis,ls%input%MOLECULE,lupri)
+
+R = ls%input%basis%BINFO(VALBasParam)%labelindex
+IF(R.NE.0)THEN
+   do i=1, ls%setting%nAO   
+      DO J=1,ls%setting%MOLECULE(i)%p%natoms
+         ls%setting%MOLECULE(i)%p%atom(J)%idtype(VALBasParam) = ls%input%MOLECULE%atom(J)%idtype(R)
+      ENDDO
+   enddo
+ENDIF
+
 ls%input%basis%WBASIS(VALBasParam) = .TRUE.
 do i=1, ai%ND
    itype = ai%UATOMTYPE(i)
