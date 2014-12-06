@@ -94,28 +94,32 @@
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
+ Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 14.0.3 20140422
+ C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 14.0.3 20140422
  BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
-                          | l64/libmkl_gf_lp64.so;/opt/intel/composer_xe_2013_
-                          | sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;/op
-                          | t/intel/composer_xe_2013_sp1.3.174/mkl/lib/intel64
-                          | /libmkl_core.so;/usr/lib64/libpthread.so;/usr/lib6
-                          | 4/libm.so
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
  LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
                           | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
-                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_gf_lp64.so
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
  Static linking           | OFF
- Last Git revision        | a29742218e69ae112675dae1e84d88fa2d1bf821
- Git branch               | AtomicOrbitalExtent
- Configuration time       | 2014-12-03 15:28:19.539151
+ Last Git revision        | 93fd5b971f786d8d09c94c138267278cb11604bb
+ Git branch               | master
+ Configuration time       | 2014-12-06 12:58:21.653478
 
 Start simulation
-     Date and time (Linux)  : Wed Dec  3 15:31:44 2014
+     Date and time (Linux)  : Sat Dec  6 13:22:21 2014
      Host name              : localhost.localdomain                   
                       
  -----------------------------------------
@@ -157,6 +161,8 @@ Start simulation
   .MPISPLIT                                                                                           
   0                                                                                                   
   .CCSD                                                                                               
+  .SIMPLEORBITALTHRESH                                                                                
+  0.0000001d0                                                                                         
   .USE_PNOS                                                                                           
   .ccthr                                                                                              
   10E-7                                                                                               
@@ -210,7 +216,8 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/home/tkjaer/DaltonDevelopment2015/AtomicOrbitalInclusion2/build-gfortran-debug/basis/STO-3G
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/DetectHeapMemory/build-debug/basis/STO-3G
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -263,15 +270,15 @@ total         12                               54       18
  ==============
     This is a Single core calculation. (no OpenMP)
     This is a serial calculation (no MPI)
-
+ 
 Density subspace min. method    : None                    
 Density optimization : Augmented RH optimization          
-
+ 
  Maximum size of Fock/density queue in averaging:          10
  
  Due to the tightend SCF convergence threshold we also tighten the integral Threshold
- with a factor:   9.9999999999999992E-002
-
+ with a factor:  0.100000000000000     
+ 
 Dynamic convergence threshold for gradient:   0.35E-05
  
 We perform the calculation in the Grand Canonical basis
@@ -288,9 +295,9 @@ basis and perform integral evaluation using this basis
     The Screening threshold used for Exchange              :  1.0000E-09
     The Screening threshold used for One-electron operators:  1.0000E-16
  The SCF Convergence Criteria is applied to the gradnorm in OAO basis
-
+ 
  End of configuration!
-
+ 
  
 Matrix type: mtype_dense
  
@@ -304,12 +311,12 @@ Matrix type: mtype_dense
  under the **GENERAL section. This is NOT recommended if you do TRILEVEL 
  or orbital localization.
  
-
+ 
  Level 1 atomic calculation on STO-3G Charge   1
  ================================================
- The Coulomb energy contribution   0.38730296535677067     
- The Exchange energy contribution   0.19365148267838533     
- The Fock energy contribution  -0.19365148267838533     
+ The Coulomb energy contribution   0.387302965356771     
+ The Exchange energy contribution   0.193651482678385     
+ The Fock energy contribution  -0.193651482678385     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -317,12 +324,12 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
-
+ 
  Level 1 atomic calculation on STO-3G Charge   3
  ================================================
- The Coulomb energy contribution    4.2938701987929200     
- The Exchange energy contribution    1.7776785793060785     
- The Fock energy contribution   -2.5161916194868410     
+ The Coulomb energy contribution    4.29387019879292     
+ The Exchange energy contribution    1.77767857930608     
+ The Fock energy contribution   -2.51619161948684     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -330,19 +337,19 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
- The Coulomb energy contribution    4.2639658761264378     
- The Exchange energy contribution    1.7627264179728392     
- The Fock energy contribution   -2.5012394581535995     
+ The Coulomb energy contribution    4.26396587612644     
+ The Exchange energy contribution    1.76272641797284     
+ The Fock energy contribution   -2.50123945815360     
   2     -7.2449023172   -0.00621673460    0.00      0.00000    0.00    2.20E-02  ###
- The Coulomb energy contribution    4.2612274854120686     
- The Exchange energy contribution    1.7613572226156533     
- The Fock energy contribution   -2.4998702627964144     
+ The Coulomb energy contribution    4.26122748541207     
+ The Exchange energy contribution    1.76135722261565     
+ The Fock energy contribution   -2.49987026279642     
   3     -7.2449319818   -0.00002966462   -1.00      0.00000    0.00    5.27E-05  ###
  
 Matrix type: mtype_dense
-
+ 
  First density: Trilevel procedure 
-
+ 
  Level 2 molecular calculation
 =============================
  
@@ -365,19 +372,19 @@ Matrix type: mtype_dense
 total         12                                9
 ---------------------------------------------------------------------
                       
- The Coulomb energy contribution    23.813635343638623     
- The Exchange energy contribution    6.0748426325506522     
- The Fock energy contribution   -17.738792711087971     
-  Iteration 0 energy:  -22.815490159306947     
+ The Coulomb energy contribution    23.8136353436386     
+ The Exchange energy contribution    6.07484263255065     
+ The Fock energy contribution   -17.7387927110880     
+  Iteration 0 energy:  -22.8154901593070     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        75 sparsity:     92.593 %
 Matrix AO D  has nnz=        81 sparsity:    100.000 %
-  Relative convergence threshold for solver:   1.0000000000000000E-002
-  SCF Convergence criteria for gradient norm:   3.4641016151377540E-005
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  3.464101615137754E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    24.560524022241868     
- The Exchange energy contribution    6.6529598439654629     
- The Fock energy contribution   -17.907564178276409     
+ The Coulomb energy contribution    24.5605240222419     
+ The Exchange energy contribution    6.65295984396548     
+ The Fock energy contribution   -17.9075641782765     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -391,122 +398,122 @@ Matrix AO F  has nnz=        81 sparsity:    100.000 %
 Matrix OAO D has nnz=        81 sparsity:    100.000 %
 Matrix OAO F has nnz=        81 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   7.2706723169158327E-002
+ OAO gradnorm  7.270672316915790E-002
     2 step norm =  0.149 trust radius =   0.500 mu =   0.00 micro it. =   6  %#%
 No. of matmuls in get_density:    35
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.09 seconds
+ >>> wall Time used in SCF iteration is   0.09 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    24.359014661779046     
- The Exchange energy contribution    6.5562634137425215     
- The Fock energy contribution   -17.802751248036525     
-  2    -23.3795342523   -0.01086333662    0.00      0.00000   -0.00    9.83E-03  ###
+ The Coulomb energy contribution    24.3590146617790     
+ The Exchange energy contribution    6.55626341374252     
+ The Fock energy contribution   -17.8027512480365     
+  2    -23.3795342523   -0.01086333662    0.00      0.00000    0.00    9.83E-03  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=        81 sparsity:    100.000 %
 Matrix AO F  has nnz=        81 sparsity:    100.000 %
 Matrix OAO D has nnz=        81 sparsity:    100.000 %
 Matrix OAO F has nnz=        81 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   9.8340456896254796E-003
+ OAO gradnorm  9.834045689624989E-003
     3 step norm =  0.020 trust radius =   0.500 mu =   0.00 micro it. =   6  %#%
 No. of matmuls in get_density:    53
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.09 seconds
+ >>> wall Time used in SCF iteration is   0.09 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    24.363628990918375     
- The Exchange energy contribution    6.5592875110365663     
- The Fock energy contribution   -17.804341479881810     
-  3    -23.3797828588   -0.00024860654    0.00      0.00000   -0.00    2.69E-03  ###
+ The Coulomb energy contribution    24.3636289909184     
+ The Exchange energy contribution    6.55928751103657     
+ The Fock energy contribution   -17.8043414798818     
+  3    -23.3797828588   -0.00024860654    0.00      0.00000    0.00    2.69E-03  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=        81 sparsity:    100.000 %
 Matrix AO F  has nnz=        81 sparsity:    100.000 %
 Matrix OAO D has nnz=        81 sparsity:    100.000 %
 Matrix OAO F has nnz=        81 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   2.6866183792078205E-003
+ OAO gradnorm  2.686618379207873E-003
     4 step norm =  0.008 trust radius =   0.500 mu =   0.00 micro it. =   6  %#%
 No. of matmuls in get_density:    52
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.09 seconds
+ >>> wall Time used in SCF iteration is   0.09 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    24.362905853407803     
- The Exchange energy contribution    6.5592072362500433     
- The Fock energy contribution   -17.803698617157757     
-  4    -23.3798040071   -0.00002114827    0.00      0.00000   -0.00    8.66E-05  ###
+ The Coulomb energy contribution    24.3629058534078     
+ The Exchange energy contribution    6.55920723625005     
+ The Fock energy contribution   -17.8036986171578     
+  4    -23.3798040071   -0.00002114827    0.00      0.00000    0.00    8.66E-05  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=        81 sparsity:    100.000 %
 Matrix AO F  has nnz=        81 sparsity:    100.000 %
 Matrix OAO D has nnz=        81 sparsity:    100.000 %
 Matrix OAO F has nnz=        81 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   8.6644380478255218E-005
+ OAO gradnorm  8.664438047653453E-005
     5 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =   6  %#%
 No. of matmuls in get_density:    50
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.09 seconds
+ >>> wall Time used in SCF iteration is   0.09 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    24.362996325690737     
- The Exchange energy contribution    6.5592519296235530     
- The Fock energy contribution   -17.803744396067188     
-  5    -23.3798040144   -0.00000000731    0.00      0.00000   -0.00    1.26E-05  ###
+ The Coulomb energy contribution    24.3629963256907     
+ The Exchange energy contribution    6.55925192962355     
+ The Fock energy contribution   -17.8037443960672     
+  5    -23.3798040144   -0.00000000731    0.00      0.00000    0.00    1.26E-05  ###
 SCF converged in      5 iterations
- >>>  CPU Time used in **ITER is   0.23 seconds
- >>> wall Time used in **ITER is   0.23 seconds
-
+ >>>  CPU Time used in **ITER is   0.46 seconds
+ >>> wall Time used in **ITER is   0.46 seconds
+ 
 Total no. of matmuls in SCF optimization:        283
-
+ 
  Number of occupied orbitals:           6
  Number of virtual orbitals:           3
-
+ 
  Number of occupied orbital energies to be found:           1
  Number of virtual orbital energies to be found:           1
-
-
+ 
+ 
 Calculation of HOMO-LUMO gap
 ============================
-
+ 
 Calculation of occupied orbital energies converged in     6 iterations!
-
+ 
 Calculation of virtual orbital energies converged in     2 iterations!
-
+ 
     E(LUMO):                         0.221007 au
    -E(HOMO):                        -0.237139 au
    ------------------------------
     HOMO-LUMO Gap (iteratively):     0.458146 au
-
-
+ 
+ 
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.01086333662    0.0000   -0.0000    0.0000000
-  3   -0.00024860654    0.0000   -0.0000    0.0000000
-  4   -0.00002114827    0.0000   -0.0000    0.0000000
-  5   -0.00000000731    0.0000   -0.0000    0.0000000
-
+  2   -0.01086333662    0.0000    0.0000    0.0000000
+  3   -0.00024860654    0.0000    0.0000    0.0000000
+  4   -0.00002114827    0.0000    0.0000    0.0000000
+  5   -0.00000000731    0.0000    0.0000    0.0000000
+ 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1           -23.36867091564747767052      0.727067231691583D-01
-    2           -23.37953425227031800659      0.983404568962548D-02
-    3           -23.37978285880711837308      0.268661837920782D-02
-    4           -23.37980400707868255950      0.866443804782552D-04
-    5           -23.37980401438909439094      0.125758592899286D-04
-
+    1           -23.36867091564750609223      0.727067231691579D-01
+    2           -23.37953425227035353373      0.983404568962499D-02
+    3           -23.37978285880713968936      0.268661837920787D-02
+    4           -23.37980400707869677035      0.866443804765345D-04
+    5           -23.37980401438909439094      0.125758592881555D-04
+ 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
-
-
+ 
+ 
       Final HF energy:                       -23.379804014389
       Nuclear repulsion:                      10.159409856109
       Electronic energy:                     -33.539213870498
-
+ 
  Level 2 minimization done! Starting Level 3 minimization...
  Level 3 is the final level of the TRILEVEL algorithm 
  and is the standard calculation using the TRILEVEL starting guess
  obtained from Level 2.
-
+ 
   %LOC%   
   %LOC%   ********************************************
   %LOC%   *       LEVEL 2 ORBITAL LOCALIZATION       *
@@ -520,7 +527,7 @@ Linesearch  :   0 Original function value:             1.3
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  0.67 mu =  0.0E+00 grd =  9.2E-13 it =  2 trust-region =  0.50 step = 0.00
+  %LOC%  2 sigma_2 =  0.67 mu =  0.0E+00 grd =  2.6E-13 it =  2 trust-region =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -571,50 +578,50 @@ Linesearch done, we choose previous point
   %LOC%  *                                                   *
   %LOC%  *****************************************************
   %LOC% 
-
+ 
   %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    0.67    3
   %LOC%   Max. sigma_4 and orb.number:    0.95    3
   %LOC%   Min. sigma_2 and orb.number:    0.67    2
-  %LOC%   Min. sigma_4 and orb.number:    0.94    1
-
-
+  %LOC%   Min. sigma_4 and orb.number:    0.94    2
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    2.57    5
-  %LOC%   Max. sigma_4 and orb.number:    3.35    6
+  %LOC%   Max. sigma_4 and orb.number:    3.35    5
   %LOC%   Min. sigma_2 and orb.number:    2.53    4
   %LOC%   Min. sigma_4 and orb.number:    3.32    4
-
-
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    3.47    7
   %LOC%   Max. sigma_4 and orb.number:    4.21    7
-  %LOC%   Min. sigma_2 and orb.number:    3.44    8
+  %LOC%   Min. sigma_2 and orb.number:    3.44    9
   %LOC%   Min. sigma_4 and orb.number:    4.12    8
-
- >>>  CPU Time used in Orbital Localization is   0.23 seconds
- >>> wall Time used in Orbital Localization is   0.23 seconds
-
+ 
+ >>>  CPU Time used in Orbital Localization is   0.59 seconds
+ >>> wall Time used in Orbital Localization is   0.60 seconds
+ 
  Number of electrons  in molecule =           12
  Number of occ. orb.  in molecule =            6
  Number of virt. orb. in molecule =           12
-
-
- OCCUPIED: (Orbital index, MOS) =            5   2.5687175227809633     
- VIRTUAL : (Orbital index, MOS) =            7   3.4684294977874073     
-
-
-
+ 
+ 
+ OCCUPIED: (Orbital index, MOS) =            5   2.56871752278096     
+ VIRTUAL : (Orbital index, MOS) =            7   3.46842949778741     
+ 
+ 
+ 
 Max no. of matrices allocated in Level 2 / get_initial_dens:         75
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=       220 sparsity:     67.901 %
 Matrix AO D  has nnz=        81 sparsity:     25.000 %
-  Relative convergence threshold for solver:   1.0000000000000000E-002
-  SCF Convergence criteria for gradient norm:   3.4641016151377543E-006
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  3.464101615137754E-006
 ** Get Fock matrix number   1
- The Coulomb energy contribution    24.362996325690737     
- The Exchange energy contribution    6.5592519296235530     
- The Fock energy contribution   -17.803744396067188     
+ The Coulomb energy contribution    24.3629963256907     
+ The Exchange energy contribution    6.55925192962355     
+ The Fock energy contribution   -17.8037443960672     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -628,189 +635,189 @@ Matrix AO F  has nnz=       314 sparsity:     96.914 %
 Matrix OAO D has nnz=       314 sparsity:     96.914 %
 Matrix OAO F has nnz=       314 sparsity:     96.914 %
 ** Get new density 
- OAO gradnorm  0.27297708060743375     
+ OAO gradnorm  0.272977080607435     
     2 step norm =  0.500 trust radius =   0.500 mu =  -0.00 micro it. =   9  %#%
 No. of matmuls in get_density:    45
- >>>  CPU Time used in SCF iteration is   0.19 seconds
- >>> wall Time used in SCF iteration is   0.19 seconds
+ >>>  CPU Time used in SCF iteration is   0.40 seconds
+ >>> wall Time used in SCF iteration is   0.40 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    24.458380535113967     
- The Exchange energy contribution    6.5693544965920561     
- The Fock energy contribution   -17.889026038521912     
-  2    -23.5477551715   -0.16795115711    0.00      0.00000   -0.00    9.32E-02  ###
+ The Coulomb energy contribution    24.4583805351139     
+ The Exchange energy contribution    6.56935449659204     
+ The Fock energy contribution   -17.8890260385219     
+  2    -23.5477551715   -0.16795115711    0.00      0.00000    0.00    9.32E-02  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       314 sparsity:     96.914 %
 Matrix AO F  has nnz=       314 sparsity:     96.914 %
 Matrix OAO D has nnz=       314 sparsity:     96.914 %
 Matrix OAO F has nnz=       314 sparsity:     96.914 %
 ** Get new density 
- OAO gradnorm   9.3165872267777311E-002
+ OAO gradnorm  9.316587226778193E-002
     3 step norm =  0.335 trust radius =   0.500 mu =   0.00 micro it. =   9  %#%
 No. of matmuls in get_density:    75
- >>>  CPU Time used in SCF iteration is   0.32 seconds
- >>> wall Time used in SCF iteration is   0.32 seconds
+ >>>  CPU Time used in SCF iteration is   0.63 seconds
+ >>> wall Time used in SCF iteration is   0.63 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    24.435144911343517     
- The Exchange energy contribution    6.5508719432289988     
- The Fock energy contribution   -17.884272968114516     
-  3    -23.5787843447   -0.03102917316    0.00      0.00000   -0.00    2.23E-02  ###
+ The Coulomb energy contribution    24.4351449113434     
+ The Exchange energy contribution    6.55087194322898     
+ The Fock energy contribution   -17.8842729681145     
+  3    -23.5787843447   -0.03102917316    0.00      0.00000    0.00    2.23E-02  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       314 sparsity:     96.914 %
 Matrix AO F  has nnz=       314 sparsity:     96.914 %
 Matrix OAO D has nnz=       314 sparsity:     96.914 %
 Matrix OAO F has nnz=       314 sparsity:     96.914 %
 ** Get new density 
- OAO gradnorm   2.2309789204777150E-002
+ OAO gradnorm  2.230978920477952E-002
     4 step norm =  0.068 trust radius =   0.500 mu =   0.00 micro it. =   9  %#%
 No. of matmuls in get_density:    72
- >>>  CPU Time used in SCF iteration is   0.32 seconds
- >>> wall Time used in SCF iteration is   0.32 seconds
+ >>>  CPU Time used in SCF iteration is   0.64 seconds
+ >>> wall Time used in SCF iteration is   0.64 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    24.466417338569510     
- The Exchange energy contribution    6.5679276389340373     
- The Fock energy contribution   -17.898489699635469     
-  4    -23.5800195615   -0.00123521680    0.00      0.00000   -0.00    1.50E-03  ###
+ The Coulomb energy contribution    24.4664173385694     
+ The Exchange energy contribution    6.56792763893402     
+ The Fock energy contribution   -17.8984896996354     
+  4    -23.5800195615   -0.00123521680    0.00      0.00000    0.00    1.50E-03  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       314 sparsity:     96.914 %
 Matrix AO F  has nnz=       314 sparsity:     96.914 %
 Matrix OAO D has nnz=       314 sparsity:     96.914 %
 Matrix OAO F has nnz=       314 sparsity:     96.914 %
 ** Get new density 
- OAO gradnorm   1.4966980590791340E-003
+ OAO gradnorm  1.496698059078926E-003
     5 step norm =  0.005 trust radius =   0.500 mu =   0.00 micro it. =  10  %#%
 No. of matmuls in get_density:    76
- >>>  CPU Time used in SCF iteration is   0.33 seconds
- >>> wall Time used in SCF iteration is   0.34 seconds
+ >>>  CPU Time used in SCF iteration is   0.63 seconds
+ >>> wall Time used in SCF iteration is   0.63 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    24.467860448577330     
- The Exchange energy contribution    6.5685391302254246     
- The Fock energy contribution   -17.899321318351905     
-  5    -23.5800270071   -0.00000744566    0.00      0.00000   -0.00    4.91E-04  ###
+ The Coulomb energy contribution    24.4678604485773     
+ The Exchange energy contribution    6.56853913022541     
+ The Fock energy contribution   -17.8993213183519     
+  5    -23.5800270071   -0.00000744566    0.00      0.00000    0.00    4.91E-04  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       314 sparsity:     96.914 %
 Matrix AO F  has nnz=       314 sparsity:     96.914 %
 Matrix OAO D has nnz=       314 sparsity:     96.914 %
 Matrix OAO F has nnz=       314 sparsity:     96.914 %
 ** Get new density 
- OAO gradnorm   4.9106289626485433E-004
+ OAO gradnorm  4.910628962657592E-004
     6 step norm =  0.002 trust radius =   0.500 mu =   0.00 micro it. =  12  %#%
 No. of matmuls in get_density:    87
- >>>  CPU Time used in SCF iteration is   0.34 seconds
- >>> wall Time used in SCF iteration is   0.34 seconds
+ >>>  CPU Time used in SCF iteration is   0.63 seconds
+ >>> wall Time used in SCF iteration is   0.63 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    24.468220459113191     
- The Exchange energy contribution    6.5685908780765017     
- The Fock energy contribution   -17.899629581036688     
-  6    -23.5800278413   -0.00000083422    0.00      0.00000   -0.00    7.41E-05  ###
+ The Coulomb energy contribution    24.4682204591131     
+ The Exchange energy contribution    6.56859087807648     
+ The Fock energy contribution   -17.8996295810366     
+  6    -23.5800278413   -0.00000083422    0.00      0.00000    0.00    7.41E-05  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       314 sparsity:     96.914 %
 Matrix AO F  has nnz=       314 sparsity:     96.914 %
 Matrix OAO D has nnz=       314 sparsity:     96.914 %
 Matrix OAO F has nnz=       314 sparsity:     96.914 %
 ** Get new density 
- OAO gradnorm   7.4093309582938437E-005
+ OAO gradnorm  7.409330958612258E-005
     7 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =  11  %#%
 No. of matmuls in get_density:    81
- >>>  CPU Time used in SCF iteration is   0.34 seconds
- >>> wall Time used in SCF iteration is   0.35 seconds
+ >>>  CPU Time used in SCF iteration is   0.63 seconds
+ >>> wall Time used in SCF iteration is   0.64 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    24.468195863788804     
- The Exchange energy contribution    6.5685660732102322     
- The Fock energy contribution   -17.899629790578569     
-  7    -23.5800278630   -0.00000002166    0.00      0.00000   -0.00    1.57E-05  ###
+ The Coulomb energy contribution    24.4681958637887     
+ The Exchange energy contribution    6.56856607321022     
+ The Fock energy contribution   -17.8996297905785     
+  7    -23.5800278630   -0.00000002166    0.00      0.00000    0.00    1.57E-05  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       314 sparsity:     96.914 %
 Matrix AO F  has nnz=       314 sparsity:     96.914 %
 Matrix OAO D has nnz=       314 sparsity:     96.914 %
 Matrix OAO F has nnz=       314 sparsity:     96.914 %
 ** Get new density 
- OAO gradnorm   1.5671879271447081E-005
+ OAO gradnorm  1.567187926701535E-005
     8 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =  10  %#%
 No. of matmuls in get_density:    74
- >>>  CPU Time used in SCF iteration is   0.33 seconds
- >>> wall Time used in SCF iteration is   0.34 seconds
+ >>>  CPU Time used in SCF iteration is   0.63 seconds
+ >>> wall Time used in SCF iteration is   0.63 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    24.468203512225148     
- The Exchange energy contribution    6.5685713932364767     
- The Fock energy contribution   -17.899632118988670     
-  8    -23.5800278636   -0.00000000064    0.00      0.00000   -0.00    4.01E-06  ###
+ The Coulomb energy contribution    24.4682035122251     
+ The Exchange energy contribution    6.56857139323645     
+ The Fock energy contribution   -17.8996321189886     
+  8    -23.5800278636   -0.00000000064    0.00      0.00000    0.00    4.01E-06  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       314 sparsity:     96.914 %
 Matrix AO F  has nnz=       314 sparsity:     96.914 %
 Matrix OAO D has nnz=       314 sparsity:     96.914 %
 Matrix OAO F has nnz=       314 sparsity:     96.914 %
 ** Get new density 
- OAO gradnorm   4.0064148505892856E-006
+ OAO gradnorm  4.006414850452319E-006
     9 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =   9  %#%
 No. of matmuls in get_density:    68
- >>>  CPU Time used in SCF iteration is   0.32 seconds
- >>> wall Time used in SCF iteration is   0.32 seconds
+ >>>  CPU Time used in SCF iteration is   0.63 seconds
+ >>> wall Time used in SCF iteration is   0.63 seconds
 ** Get Fock matrix number   9
- The Coulomb energy contribution    24.468201012965356     
- The Exchange energy contribution    6.5685709772865106     
- The Fock energy contribution   -17.899630035678840     
-  9    -23.5800278637   -0.00000000006    0.00      0.00000   -0.00    7.59E-07  ###
+ The Coulomb energy contribution    24.4682010129653     
+ The Exchange energy contribution    6.56857097728649     
+ The Fock energy contribution   -17.8996300356788     
+  9    -23.5800278637   -0.00000000006    0.00      0.00000    0.00    7.59E-07  ###
 SCF converged in      9 iterations
- >>>  CPU Time used in **ITER is   2.81 seconds
- >>> wall Time used in **ITER is   2.82 seconds
-
+ >>>  CPU Time used in **ITER is   5.45 seconds
+ >>> wall Time used in **ITER is   5.46 seconds
+ 
 Total no. of matmuls in SCF optimization:       1389
-
+ 
  Number of occupied orbitals:           6
  Number of virtual orbitals:          12
-
+ 
  Number of occupied orbital energies to be found:           1
  Number of virtual orbital energies to be found:           1
-
-
+ 
+ 
 Calculation of HOMO-LUMO gap
 ============================
-
+ 
 Calculation of occupied orbital energies converged in     5 iterations!
-
+ 
 Calculation of virtual orbital energies converged in     7 iterations!
-
+ 
     E(LUMO):                         0.057280 au
    -E(HOMO):                        -0.267474 au
    ------------------------------
     HOMO-LUMO Gap (iteratively):     0.324754 au
-
-
+ 
+ 
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.16795115711    0.0000   -0.0000    0.0000000
-  3   -0.03102917316    0.0000   -0.0000    0.0000000
-  4   -0.00123521680    0.0000   -0.0000    0.0000000
-  5   -0.00000744566    0.0000   -0.0000    0.0000000
-  6   -0.00000083422    0.0000   -0.0000    0.0000000
-  7   -0.00000002166    0.0000   -0.0000    0.0000000
-  8   -0.00000000064    0.0000   -0.0000    0.0000000
-  9   -0.00000000006    0.0000   -0.0000    0.0000000
-
+  2   -0.16795115711    0.0000    0.0000    0.0000000
+  3   -0.03102917316    0.0000    0.0000    0.0000000
+  4   -0.00123521680    0.0000    0.0000    0.0000000
+  5   -0.00000744566    0.0000    0.0000    0.0000000
+  6   -0.00000083422    0.0000    0.0000    0.0000000
+  7   -0.00000002166    0.0000    0.0000    0.0000000
+  8   -0.00000000064    0.0000    0.0000    0.0000000
+  9   -0.00000000006    0.0000    0.0000    0.0000000
+ 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1           -23.37980401438909439094      0.272977080607434D+00
-    2           -23.54775517149808194972      0.931658722677773D-01
-    3           -23.57878434465940387099      0.223097892047772D-01
-    4           -23.58001956146150490667      0.149669805907913D-02
-    5           -23.58002700711996624250      0.491062896264854D-03
-    6           -23.58002784133758211738      0.740933095829384D-04
-    7           -23.58002786299404363035      0.156718792714471D-04
-    8           -23.58002786363685743254      0.400641485058929D-05
-    9           -23.58002786369532088884      0.758997769793991D-06
-
+    1           -23.37980401438910860179      0.272977080607435D+00
+    2           -23.54775517149806773887      0.931658722677819D-01
+    3           -23.57878434465939676556      0.223097892047795D-01
+    4           -23.58001956146148359039      0.149669805907893D-02
+    5           -23.58002700711995203164      0.491062896265759D-03
+    6           -23.58002784133756790652      0.740933095861226D-04
+    7           -23.58002786299402231407      0.156718792670154D-04
+    8           -23.58002786363684322168      0.400641485045232D-05
+    9           -23.58002786369532088884      0.758997772721586D-06
+ 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
-
-
+ 
+ 
       Final HF energy:                       -23.580027863695
       Nuclear repulsion:                      10.159409856109
       Electronic energy:                     -33.739437719804
-
+ 
  inside leastchange_lcm
   %LOC%   
   %LOC%   ********************************************
@@ -918,33 +925,33 @@ Linesearch done, we choose previous point
   %LOC%  *                                                   *
   %LOC%  *****************************************************
   %LOC% 
-
+ 
   %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    0.67    3
-  %LOC%   Max. sigma_4 and orb.number:    0.94    1
-  %LOC%   Min. sigma_2 and orb.number:    0.67    2
+  %LOC%   Max. sigma_4 and orb.number:    0.94    2
+  %LOC%   Min. sigma_2 and orb.number:    0.67    1
   %LOC%   Min. sigma_4 and orb.number:    0.94    3
-
-
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    2.29    4
   %LOC%   Max. sigma_4 and orb.number:    3.06    4
-  %LOC%   Min. sigma_2 and orb.number:    2.26    5
-  %LOC%   Min. sigma_4 and orb.number:    2.97    5
-
-
+  %LOC%   Min. sigma_2 and orb.number:    2.26    6
+  %LOC%   Min. sigma_4 and orb.number:    2.97    6
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
-  %LOC%   Max. sigma_2 and orb.number:    3.05   10
-  %LOC%   Max. sigma_4 and orb.number:    3.78   11
+  %LOC%   Max. sigma_2 and orb.number:    3.05   16
+  %LOC%   Max. sigma_4 and orb.number:    3.78   17
   %LOC%   Min. sigma_2 and orb.number:    2.77    7
   %LOC%   Min. sigma_4 and orb.number:    3.53    7
-
- >>>  CPU Time used in Orbital Localization is   0.72 seconds
- >>> wall Time used in Orbital Localization is   0.72 seconds
+ 
+ >>>  CPU Time used in Orbital Localization is   1.72 seconds
+ >>> wall Time used in Orbital Localization is   1.73 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
-
+ 
 
 -- Full molecular info --
 
@@ -958,15 +965,15 @@ FULL: Number of core orbitals    :      3
 FULL: Number of valence orbitals :      3
 FULL: Number of occ. orbitals    :      6
 FULL: Number of virt. orbitals   :     12
-
+ 
  Calculating carmom matrix for DEC calculation...
  Memory set in input to be:    1.000     GB
-
-
+ 
+ 
 =============================================================================
              -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
 =============================================================================
-
+ 
 
 DEC calculation is carried out...
 
@@ -985,7 +992,7 @@ Use Pair Estimates to screen pairs                  =            TRUE
 Pair distance cutoff threshold (Angstrom)           =       0.100E+04
 Use Pair Estimate initialisation radius (Angstrom)  =       0.200E+01
 Pair estimate model                                 =     MP2     
-Simple orbital thr.                                 =       0.500E-01
+Simple orbital thr.                                 =       0.100E-06
 Expansion step size                                 =               5
 Print level                                         =               0
 Fragment-adapted orbitals                           =           FALSE
@@ -1002,7 +1009,7 @@ Wave function Model used for Atomic Fragment reduction scheme = MP2
 This wave function model can be changed using the .FRAGREDMODEL keyword
 .FRAGREDMODEL
 .CCSD    
-
+ 
 
 --------------------------
   Coupled-cluster input   
@@ -1022,16 +1029,17 @@ Backup Time Interval(s)      =          300.00
 Use F12 correction           =           FALSE
  
  Generating DEC orbitals using simple Lowdin charge analysis
-
-
+ 
+ 
  Simple Lowdin-based orbital assignment: Summary
  -----------------------------------------------
-
-
+ 
+ 
  ORBITAL DISTRIBUTION INFORMATION
  ********************************
-
-    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Secondary
+ 
+    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Sec
+ ondary
      1    H            0                0                0                0
      2    H            0                0                0                0
      3    H            0                0                0                0
@@ -1039,26 +1047,26 @@ Use F12 correction           =           FALSE
      5    Li           2                4                2                4
      6    Li           2                4                2                4
  Total:                6               12
-
-
-
+ 
+ 
+ 
  ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
  **********************************************************************
-
- Maximum occ orbital extent (#AOs) =      8   -- Orbital index     4
- Maximum unocc orbital extent (#AOs) =      6   -- Orbital index     1
- Average occ orbital extent (#AOs)  =       5.5000
- Average unocc orbital extent (#AOs) =       5.5833
-
-
+ 
+ Maximum occ orbital extent (#AOs) =     18   -- Orbital index     3
+ Maximum unocc orbital extent (#AOs) =     18   -- Orbital index     1
+ Average occ orbital extent (#AOs)  =      17.6667
+ Average unocc orbital extent (#AOs) =      18.0000
+ 
+ 
  >>>  CPU Time used in DEC INIT is   0.00 seconds
  >>> wall Time used in DEC INIT is   0.00 seconds
-
-
+ 
+ 
  ******************************************************************
         ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       
  ******************************************************************
-
+ 
  JobNumber  AtomType  AtomIndex  SizeMeasure
       1       Li         5         324
       2       Li         4         216
@@ -1066,13 +1074,13 @@ Use F12 correction           =           FALSE
       4       H          1           0
       5       H          2           0
       6       H          3           0
-
-
-
-
+ 
+ 
+ 
+ 
  *** Initiating optimization of atomic fragments ***
-
-
+ 
+ 
  FOP Occ Radius for initial fragment:  3.78
  FOP Virt Radius for initial fragment:  3.78
  FOP Occ Radius for initial fragment:  3.78
@@ -1080,43 +1088,43 @@ Use F12 correction           =           FALSE
  FOP Occ Radius for initial fragment:  3.78
  FOP Virt Radius for initial fragment:  3.78
  Preparing job list...
-
-
-
+ 
+ 
+ 
  *******************************************************************************
               Atomic fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      5      2      4      9     0.00    /  3.16       0.00    /  3.16              FRAG_SIZE
-      4      2      4      6     0.00    /  1.40       0.00    /  1.40              FRAG_SIZE
-      6      2      4      6     0.00    /  1.40       0.00    /  1.40              FRAG_SIZE
-
+      4      2      4     18     0.00    /  6.16       0.00    /  6.16              FRAG_SIZE
+      5      2      4     18     0.00    /  3.16       0.00    /  6.16              FRAG_SIZE
+      6      2      4     18     0.00    /  6.16       0.00    /  6.16              FRAG_SIZE
+ 
  FRAGANALYSIS: Max/Ave/Min occ         :        2       /     2.0000    /       2
  FRAGANALYSIS: Max/Ave/Min unocc       :        4       /     4.0000    /       4
- FRAGANALYSIS: Max/Ave/Min basis       :        9       /     7.0000    /       6
+ FRAGANALYSIS: Max/Ave/Min basis       :       18       /     18.000    /      18
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      0.0000    /     0.0000    /     0.0000    
- FRAGANALYSIS: Max/Ave/Min Radius AE   :      3.1591    /     1.9864    /     1.4000    
+ FRAGANALYSIS: Max/Ave/Min Radius AE   :      6.1612    /     5.1605    /     3.1591    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:      0.0000    /     0.0000    /     0.0000    
- FRAGANALYSIS: Max/Ave/Min Diameter AE :      3.1591    /     1.9864    /     1.4000    
-
-
-
+ FRAGANALYSIS: Max/Ave/Min Diameter AE :      6.1612    /     6.1612    /     6.1612    
+ 
+ 
+ 
  *****************************************************
  *      DEC ESTIMATED FRAGMENT JOB LIST              *
  *****************************************************
  Number of jobs =            3
-
+ 
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
-        1                480              4       5        4        8       15
-        2                384              4       6        4        8       12
-        3                384              5       6        4        8       12
-
-
+        1                576              4       5        4        8       18
+        2                576              4       6        4        8       18
+        3                576              5       6        4        8       18
+ 
+ 
  DEC JOB SUMMARY: Number of single jobs =          3
  DEC JOB SUMMARY: Number of pair jobs   =          3
  DEC JOB SUMMARY: Total number of jobs  =          3
-
-
+ 
+ 
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   5
@@ -1129,14 +1137,14 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
  Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       6       2
  Number of virtual  orbitals AOS/EOS     =      12       4
@@ -1144,14 +1152,14 @@ Use F12 correction           =           FALSE
  Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =      12
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.218E-03
  Memory required for tmp array 1 (GB)    = 0.140E-03
  Memory required for tmp array 2 (GB)    = 0.311E-04
  Memory required for tmp array 3 (GB)    = 0.467E-04
-
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.107E-03
@@ -1159,18 +1167,18 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.138E-04
  Memory required for tmp array 3 (GB)    = 0.415E-04
  Memory required for tmp array 4 (GB)    = 0.104E-04
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.922E-05
  Memory required for tmp array 1 (GB)    = 0.461E-05
  Memory required for tmp array 2 (GB)    = 0.461E-05
-
+ 
  Summary
  -----------------------
  Memory required                 (GB)    = 0.218E-03
  Big Array Memory required       (GB)    = 0.234E-03
-
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
@@ -1180,16 +1188,16 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.17 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.17 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.61 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.61 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.25 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.25 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1204,8 +1212,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
@@ -1213,8 +1221,8 @@ Use F12 correction           =           FALSE
  Single virtual  energy =    -0.1066529188E-01
  Single Lagrangian occ term  =     0.7133822987E-02
  Single Lagrangian virt term =     0.4123048714E-02
-
-
+ 
+ 
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
@@ -1241,14 +1249,14 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
  Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       4       2
  Number of virtual  orbitals AOS/EOS     =       8       4
@@ -1256,14 +1264,14 @@ Use F12 correction           =           FALSE
  Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       8
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.185E-03
  Memory required for tmp array 1 (GB)    = 0.140E-03
  Memory required for tmp array 2 (GB)    = 0.138E-04
  Memory required for tmp array 3 (GB)    = 0.311E-04
-
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.236E-04
@@ -1271,18 +1279,18 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.410E-05
  Memory required for tmp array 3 (GB)    = 0.819E-05
  Memory required for tmp array 4 (GB)    = 0.307E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.410E-05
  Memory required for tmp array 1 (GB)    = 0.205E-05
  Memory required for tmp array 2 (GB)    = 0.205E-05
-
+ 
  Summary
  -----------------------
  Memory required                 (GB)    = 0.185E-03
  Big Array Memory required       (GB)    = 0.201E-03
-
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
@@ -1292,16 +1300,16 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.09 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.09 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.74 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.74 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.21 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1316,8 +1324,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
@@ -1325,8 +1333,8 @@ Use F12 correction           =           FALSE
  Single virtual  energy =    -0.1053724838E-01
  Single Lagrangian occ term  =     0.6992283330E-02
  Single Lagrangian virt term =     0.3996810414E-02
-
-
+ 
+ 
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -1353,14 +1361,14 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
  Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       5       2
  Number of virtual  orbitals AOS/EOS     =      10       4
@@ -1368,14 +1376,14 @@ Use F12 correction           =           FALSE
  Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =      10
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.200E-03
  Memory required for tmp array 1 (GB)    = 0.140E-03
  Memory required for tmp array 2 (GB)    = 0.216E-04
  Memory required for tmp array 3 (GB)    = 0.389E-04
-
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.540E-04
@@ -1383,18 +1391,18 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.800E-05
  Memory required for tmp array 3 (GB)    = 0.200E-04
  Memory required for tmp array 4 (GB)    = 0.600E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.640E-05
  Memory required for tmp array 1 (GB)    = 0.320E-05
  Memory required for tmp array 2 (GB)    = 0.320E-05
-
+ 
  Summary
  -----------------------
  Memory required                 (GB)    = 0.200E-03
  Big Array Memory required       (GB)    = 0.217E-03
-
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
@@ -1404,16 +1412,16 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.61 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.62 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.22 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1428,8 +1436,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
@@ -1437,8 +1445,8 @@ Use F12 correction           =           FALSE
  Single virtual  energy =    -0.1062740517E-01
  Single Lagrangian occ term  =     0.7131895524E-02
  Single Lagrangian virt term =     0.4072289055E-02
-
-
+ 
+ 
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   2
@@ -1466,14 +1474,14 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
  Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       5       2
  Number of virtual  orbitals AOS/EOS     =       9       4
@@ -1481,14 +1489,14 @@ Use F12 correction           =           FALSE
  Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       9
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.198E-03
  Memory required for tmp array 1 (GB)    = 0.140E-03
  Memory required for tmp array 2 (GB)    = 0.194E-04
  Memory required for tmp array 3 (GB)    = 0.389E-04
-
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.450E-04
@@ -1496,18 +1504,18 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.720E-05
  Memory required for tmp array 3 (GB)    = 0.162E-04
  Memory required for tmp array 4 (GB)    = 0.540E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.640E-05
  Memory required for tmp array 1 (GB)    = 0.320E-05
  Memory required for tmp array 2 (GB)    = 0.320E-05
-
+ 
  Summary
  -----------------------
  Memory required                 (GB)    = 0.198E-03
  Big Array Memory required       (GB)    = 0.215E-03
-
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
@@ -1517,16 +1525,16 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.60 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.60 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.22 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1541,8 +1549,8 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
@@ -1550,8 +1558,8 @@ Use F12 correction           =           FALSE
  Single virtual  energy =    -0.1058262069E-01
  Single Lagrangian occ term  =     0.7061789575E-02
  Single Lagrangian virt term =     0.4034791070E-02
-
-
+ 
+ 
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   3
@@ -1602,14 +1610,14 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
  Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       6       2
  Number of virtual  orbitals AOS/EOS     =      12       4
@@ -1617,14 +1625,14 @@ Use F12 correction           =           FALSE
  Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =      12
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.218E-03
  Memory required for tmp array 1 (GB)    = 0.140E-03
  Memory required for tmp array 2 (GB)    = 0.311E-04
  Memory required for tmp array 3 (GB)    = 0.467E-04
-
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.107E-03
@@ -1632,18 +1640,18 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.138E-04
  Memory required for tmp array 3 (GB)    = 0.415E-04
  Memory required for tmp array 4 (GB)    = 0.104E-04
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.922E-05
  Memory required for tmp array 1 (GB)    = 0.461E-05
  Memory required for tmp array 2 (GB)    = 0.461E-05
-
+ 
  Summary
  -----------------------
  Memory required                 (GB)    = 0.218E-03
  Big Array Memory required       (GB)    = 0.234E-03
-
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
@@ -1653,16 +1661,16 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.17 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.60 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.61 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.24 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.25 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1677,17 +1685,17 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
  Single occupied energy =    -0.1182208418E-01
  Single virtual  energy =    -0.1113842096E-01
  Single Lagrangian occ term  =     0.7029480998E-02
- Single Lagrangian virt term =     0.4396305696E-02
-
-
+ Single Lagrangian virt term =     0.4396305695E-02
+ 
+ 
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
@@ -1714,14 +1722,14 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
  Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       4       2
  Number of virtual  orbitals AOS/EOS     =       8       4
@@ -1729,14 +1737,14 @@ Use F12 correction           =           FALSE
  Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       8
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.185E-03
  Memory required for tmp array 1 (GB)    = 0.140E-03
  Memory required for tmp array 2 (GB)    = 0.138E-04
  Memory required for tmp array 3 (GB)    = 0.311E-04
-
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.236E-04
@@ -1744,18 +1752,18 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.410E-05
  Memory required for tmp array 3 (GB)    = 0.819E-05
  Memory required for tmp array 4 (GB)    = 0.307E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.410E-05
  Memory required for tmp array 1 (GB)    = 0.205E-05
  Memory required for tmp array 2 (GB)    = 0.205E-05
-
+ 
  Summary
  -----------------------
  Memory required                 (GB)    = 0.185E-03
  Big Array Memory required       (GB)    = 0.201E-03
-
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
@@ -1765,16 +1773,16 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.61 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.61 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.22 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1789,17 +1797,17 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
  Single occupied energy =    -0.1179663281E-01
- Single virtual  energy =    -0.1110173318E-01
+ Single virtual  energy =    -0.1110173317E-01
  Single Lagrangian occ term  =     0.7025220815E-02
- Single Lagrangian virt term =     0.4350072628E-02
-
-
+ Single Lagrangian virt term =     0.4350072627E-02
+ 
+ 
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -1819,36 +1827,36 @@ Use F12 correction           =           FALSE
  FOP: Lagrangian energy converged, energydiff =   0.000011646
  FOP: Occupied energy converged, energydiff   =   0.000025451
  FOP: Virtual energy converged, energydiff    =   0.000036688
-#SINGLEDIMS# basis,occ,virt       15       3       6
+#SINGLEDIMS# basis,occ,virt       18       3       6
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
- Number of atomic basis functions        =      15
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
+ Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      15
+ Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       6
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.104E-03
- Memory required for tmp array 1 (GB)    = 0.810E-04
- Memory required for tmp array 2 (GB)    = 0.648E-05
- Memory required for tmp array 3 (GB)    = 0.162E-04
-
+ Tot memory required for tmp arrays (GB) = 0.171E-03
+ Memory required for tmp array 1 (GB)    = 0.140E-03
+ Memory required for tmp array 2 (GB)    = 0.778E-05
+ Memory required for tmp array 3 (GB)    = 0.233E-04
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.821E-05
@@ -1856,37 +1864,37 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.173E-05
  Memory required for tmp array 3 (GB)    = 0.259E-05
  Memory required for tmp array 4 (GB)    = 0.130E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.230E-05
  Memory required for tmp array 1 (GB)    = 0.115E-05
  Memory required for tmp array 2 (GB)    = 0.115E-05
-
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.104E-03
- Big Array Memory required       (GB)    = 0.120E-03
-
+ Memory required                 (GB)    = 0.171E-03
+ Big Array Memory required       (GB)    = 0.187E-03
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            6
+ BATCH: Number of Alpha batches   =            7
  BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.32 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.32 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.22 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1901,17 +1909,17 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.1172975700E-01
- Single virtual  energy =    -0.1107679079E-01
- Single Lagrangian occ term  =     0.6997691811E-02
- Single Lagrangian virt term =     0.4335089370E-02
-
-
+ Single occupied energy =    -0.1173712855E-01
+ Single virtual  energy =    -0.1108226950E-01
+ Single Lagrangian occ term  =     0.7005932265E-02
+ Single Lagrangian virt term =     0.4337263887E-02
+ 
+ 
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   2
@@ -1919,49 +1927,49 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   4
  FOP Loop: Number of orbitals in virt total :   6
  FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  15
- FOP Loop: Occupied Fragment energy         :   -0.0117297570
- FOP Loop: Virtual Fragment energy          :   -0.0110767908
- FOP Loop: Lagrangian Fragment energy       :   -0.0114737666
- FOP Loop: Occupied energy diff             :    0.0000923272
- FOP Loop: Virtual energy diff              :    0.0000616302
- FOP Loop: Lagrangian energy diff           :    0.0000609518
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0117371286
+ FOP Loop: Virtual Fragment energy          :   -0.0110822695
+ FOP Loop: Lagrangian Fragment energy       :   -0.0114762019
+ FOP Loop: Occupied energy diff             :    0.0000849556
+ FOP Loop: Virtual energy diff              :    0.0000561515
+ FOP Loop: Lagrangian energy diff           :    0.0000585165
  FOP=========================================================
  FOP
- FOP: Lagrangian energy converged, energydiff =   0.000060952
- FOP: Occupied energy converged, energydiff   =   0.000092327
- FOP: Virtual energy converged, energydiff    =   0.000061630
+ FOP: Lagrangian energy converged, energydiff =   0.000058517
+ FOP: Occupied energy converged, energydiff   =   0.000084956
+ FOP: Virtual energy converged, energydiff    =   0.000056151
  BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
-#SINGLEDIMS# basis,occ,virt       15       3       5
+#SINGLEDIMS# basis,occ,virt       18       3       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
- Number of atomic basis functions        =      15
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
+ Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       5       4
  Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      15
+ Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       5
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.103E-03
- Memory required for tmp array 1 (GB)    = 0.810E-04
- Memory required for tmp array 2 (GB)    = 0.540E-05
- Memory required for tmp array 3 (GB)    = 0.162E-04
-
+ Tot memory required for tmp arrays (GB) = 0.170E-03
+ Memory required for tmp array 1 (GB)    = 0.140E-03
+ Memory required for tmp array 2 (GB)    = 0.648E-05
+ Memory required for tmp array 3 (GB)    = 0.233E-04
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.612E-05
@@ -1969,37 +1977,37 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.144E-05
  Memory required for tmp array 3 (GB)    = 0.180E-05
  Memory required for tmp array 4 (GB)    = 0.108E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.230E-05
  Memory required for tmp array 1 (GB)    = 0.115E-05
  Memory required for tmp array 2 (GB)    = 0.115E-05
-
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.103E-03
- Big Array Memory required       (GB)    = 0.119E-03
-
+ Memory required                 (GB)    = 0.170E-03
+ Big Array Memory required       (GB)    = 0.186E-03
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            6
+ BATCH: Number of Alpha batches   =            7
  BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.30 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.31 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.21 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.21 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2014,17 +2022,17 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.1158213538E-01
- Single virtual  energy =    -0.1105670790E-01
- Single Lagrangian occ term  =     0.6976391804E-02
- Single Lagrangian virt term =     0.4317009191E-02
-
-
+ Single occupied energy =    -0.1159122814E-01
+ Single virtual  energy =    -0.1106287807E-01
+ Single Lagrangian occ term  =     0.6984304047E-02
+ Single Lagrangian virt term =     0.4319679776E-02
+ 
+ 
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   3
@@ -2032,18 +2040,18 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   4
  FOP Loop: Number of orbitals in virt total :   5
  FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  15
- FOP Loop: Occupied Fragment energy         :   -0.0115821354
- FOP Loop: Virtual Fragment energy          :   -0.0110567079
- FOP Loop: Lagrangian Fragment energy       :   -0.0113454423
- FOP Loop: Occupied energy diff             :    0.0002399488
- FOP Loop: Virtual energy diff              :    0.0000817131
- FOP Loop: Lagrangian energy diff           :    0.0001892762
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0115912281
+ FOP Loop: Virtual Fragment energy          :   -0.0110628781
+ FOP Loop: Lagrangian Fragment energy       :   -0.0113501224
+ FOP Loop: Occupied energy diff             :    0.0002308560
+ FOP Loop: Virtual energy diff              :    0.0000755429
+ FOP Loop: Lagrangian energy diff           :    0.0001845961
  FOP=========================================================
  FOP
  FOP: Lagrangian energy NOT converged
  FOP: Occupied energy NOT converged
- FOP: Virtual energy converged, energydiff    =   0.000081713
+ FOP: Virtual energy converged, energydiff    =   0.000075543
  BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
  FOP
 
@@ -2053,16 +2061,16 @@ Use F12 correction           =           FALSE
  FOP Done: Fragment number                  :   4
  FOP Done: Number of orbitals in virt total :   6
  FOP Done: Number of orbitals in occ total  :   3
- FOP Done: Number of basis functions        :  15
- FOP Done: Occupied Fragment energy         :   -0.0117297570
- FOP Done: Virtual Fragment energy          :   -0.0110767908
- FOP Done: Lagrangian Fragment energy       :   -0.0114737666
+ FOP Done: Number of basis functions        :  18
+ FOP Done: Occupied Fragment energy         :   -0.0117371286
+ FOP Done: Virtual Fragment energy          :   -0.0110822695
+ FOP Done: Lagrangian Fragment energy       :   -0.0114762019
  FOP Done: Occupied reduction removed      3 of      6 orbitals ( 50.00 %)
  FOP Done: Virtual  reduction removed      6 of     12 orbitals ( 50.00 %)
  FOP=========================================================
  FOP
 
- FOP reduction: Atom,FOT,O,V,B      4     0.100E-03      3      6     15
+ FOP reduction: Atom,FOT,O,V,B      4     0.100E-03      3      6     18
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   6
@@ -2075,14 +2083,14 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
  Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       6       2
  Number of virtual  orbitals AOS/EOS     =      12       4
@@ -2090,14 +2098,14 @@ Use F12 correction           =           FALSE
  Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =      12
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.218E-03
  Memory required for tmp array 1 (GB)    = 0.140E-03
  Memory required for tmp array 2 (GB)    = 0.311E-04
  Memory required for tmp array 3 (GB)    = 0.467E-04
-
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.107E-03
@@ -2105,18 +2113,18 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.138E-04
  Memory required for tmp array 3 (GB)    = 0.415E-04
  Memory required for tmp array 4 (GB)    = 0.104E-04
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.922E-05
  Memory required for tmp array 1 (GB)    = 0.461E-05
  Memory required for tmp array 2 (GB)    = 0.461E-05
-
+ 
  Summary
  -----------------------
  Memory required                 (GB)    = 0.218E-03
  Big Array Memory required       (GB)    = 0.234E-03
-
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
@@ -2126,16 +2134,16 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.63 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.63 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.24 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.25 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2150,17 +2158,17 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       6
  **********************************************************************
  Single occupied energy =    -0.1182208418E-01
  Single virtual  energy =    -0.1113842096E-01
  Single Lagrangian occ term  =     0.7029480998E-02
- Single Lagrangian virt term =     0.4396305695E-02
-
-
+ Single Lagrangian virt term =     0.4396305696E-02
+ 
+ 
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
@@ -2187,14 +2195,14 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
  Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       4       2
  Number of virtual  orbitals AOS/EOS     =       8       4
@@ -2202,14 +2210,14 @@ Use F12 correction           =           FALSE
  Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       8
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.185E-03
  Memory required for tmp array 1 (GB)    = 0.140E-03
  Memory required for tmp array 2 (GB)    = 0.138E-04
  Memory required for tmp array 3 (GB)    = 0.311E-04
-
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.236E-04
@@ -2217,18 +2225,18 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.410E-05
  Memory required for tmp array 3 (GB)    = 0.819E-05
  Memory required for tmp array 4 (GB)    = 0.307E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.410E-05
  Memory required for tmp array 1 (GB)    = 0.205E-05
  Memory required for tmp array 2 (GB)    = 0.205E-05
-
+ 
  Summary
  -----------------------
  Memory required                 (GB)    = 0.185E-03
  Big Array Memory required       (GB)    = 0.201E-03
-
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
@@ -2238,16 +2246,16 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.08 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.08 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.59 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.59 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.21 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2262,17 +2270,17 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       6
  **********************************************************************
  Single occupied energy =    -0.1179663281E-01
- Single virtual  energy =    -0.1110173317E-01
+ Single virtual  energy =    -0.1110173318E-01
  Single Lagrangian occ term  =     0.7025220815E-02
- Single Lagrangian virt term =     0.4350072627E-02
-
-
+ Single Lagrangian virt term =     0.4350072628E-02
+ 
+ 
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -2292,36 +2300,36 @@ Use F12 correction           =           FALSE
  FOP: Lagrangian energy converged, energydiff =   0.000011646
  FOP: Occupied energy converged, energydiff   =   0.000025451
  FOP: Virtual energy converged, energydiff    =   0.000036688
-#SINGLEDIMS# basis,occ,virt       12       3       6
+#SINGLEDIMS# basis,occ,virt       18       3       6
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
- Number of atomic basis functions        =      12
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
+ Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      12
+ Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       6
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.570E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.518E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
-
+ Tot memory required for tmp arrays (GB) = 0.171E-03
+ Memory required for tmp array 1 (GB)    = 0.140E-03
+ Memory required for tmp array 2 (GB)    = 0.778E-05
+ Memory required for tmp array 3 (GB)    = 0.233E-04
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.821E-05
@@ -2329,37 +2337,37 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.173E-05
  Memory required for tmp array 3 (GB)    = 0.259E-05
  Memory required for tmp array 4 (GB)    = 0.130E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.230E-05
  Memory required for tmp array 1 (GB)    = 0.115E-05
  Memory required for tmp array 2 (GB)    = 0.115E-05
-
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.570E-04
- Big Array Memory required       (GB)    = 0.734E-04
-
+ Memory required                 (GB)    = 0.171E-03
+ Big Array Memory required       (GB)    = 0.187E-03
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
+ BATCH: Number of Alpha batches   =            7
  BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.14 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.14 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.24 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.25 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2374,17 +2382,17 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       6
  **********************************************************************
- Single occupied energy =    -0.1172603367E-01
- Single virtual  energy =    -0.1107259456E-01
- Single Lagrangian occ term  =     0.6994279435E-02
- Single Lagrangian virt term =     0.4333995579E-02
-
-
+ Single occupied energy =    -0.1173712856E-01
+ Single virtual  energy =    -0.1108226950E-01
+ Single Lagrangian occ term  =     0.7005932269E-02
+ Single Lagrangian virt term =     0.4337263891E-02
+ 
+ 
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   2
@@ -2392,49 +2400,49 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   6
  FOP Loop: Number of orbitals in virt total :   6
  FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0117260337
- FOP Loop: Virtual Fragment energy          :   -0.0110725946
- FOP Loop: Lagrangian Fragment energy       :   -0.0114703532
- FOP Loop: Occupied energy diff             :    0.0000960505
- FOP Loop: Virtual energy diff              :    0.0000658264
- FOP Loop: Lagrangian energy diff           :    0.0000643652
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0117371286
+ FOP Loop: Virtual Fragment energy          :   -0.0110822695
+ FOP Loop: Lagrangian Fragment energy       :   -0.0114762019
+ FOP Loop: Occupied energy diff             :    0.0000849556
+ FOP Loop: Virtual energy diff              :    0.0000561515
+ FOP Loop: Lagrangian energy diff           :    0.0000585165
  FOP=========================================================
  FOP
- FOP: Lagrangian energy converged, energydiff =   0.000064365
- FOP: Occupied energy converged, energydiff   =   0.000096051
- FOP: Virtual energy converged, energydiff    =   0.000065826
+ FOP: Lagrangian energy converged, energydiff =   0.000058517
+ FOP: Occupied energy converged, energydiff   =   0.000084956
+ FOP: Virtual energy converged, energydiff    =   0.000056151
  BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
-#SINGLEDIMS# basis,occ,virt       12       3       5
+#SINGLEDIMS# basis,occ,virt       18       3       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
- Number of atomic basis functions        =      12
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
+ Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       5       4
  Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      12
+ Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       5
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.562E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.432E-05
- Memory required for tmp array 3 (GB)    = 0.104E-04
-
+ Tot memory required for tmp arrays (GB) = 0.170E-03
+ Memory required for tmp array 1 (GB)    = 0.140E-03
+ Memory required for tmp array 2 (GB)    = 0.648E-05
+ Memory required for tmp array 3 (GB)    = 0.233E-04
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.612E-05
@@ -2442,37 +2450,37 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.144E-05
  Memory required for tmp array 3 (GB)    = 0.180E-05
  Memory required for tmp array 4 (GB)    = 0.108E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.230E-05
  Memory required for tmp array 1 (GB)    = 0.115E-05
  Memory required for tmp array 2 (GB)    = 0.115E-05
-
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.562E-04
- Big Array Memory required       (GB)    = 0.725E-04
-
+ Memory required                 (GB)    = 0.170E-03
+ Big Array Memory required       (GB)    = 0.186E-03
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
+ BATCH: Number of Alpha batches   =            7
  BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.17 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.17 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.14 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.14 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.22 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2487,17 +2495,17 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       6
  **********************************************************************
- Single occupied energy =    -0.1157733144E-01
- Single virtual  energy =    -0.1105162339E-01
- Single Lagrangian occ term  =     0.6972848987E-02
- Single Lagrangian virt term =     0.4315363658E-02
-
-
+ Single occupied energy =    -0.1159122815E-01
+ Single virtual  energy =    -0.1106287808E-01
+ Single Lagrangian occ term  =     0.6984304052E-02
+ Single Lagrangian virt term =     0.4319679780E-02
+ 
+ 
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   3
@@ -2505,18 +2513,18 @@ Use F12 correction           =           FALSE
  FOP Loop: Fragment number                  :   6
  FOP Loop: Number of orbitals in virt total :   5
  FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  12
- FOP Loop: Occupied Fragment energy         :   -0.0115773314
- FOP Loop: Virtual Fragment energy          :   -0.0110516234
- FOP Loop: Lagrangian Fragment energy       :   -0.0113407422
- FOP Loop: Occupied energy diff             :    0.0002447527
- FOP Loop: Virtual energy diff              :    0.0000867976
- FOP Loop: Lagrangian energy diff           :    0.0001939763
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0115912282
+ FOP Loop: Virtual Fragment energy          :   -0.0110628781
+ FOP Loop: Lagrangian Fragment energy       :   -0.0113501224
+ FOP Loop: Occupied energy diff             :    0.0002308560
+ FOP Loop: Virtual energy diff              :    0.0000755429
+ FOP Loop: Lagrangian energy diff           :    0.0001845960
  FOP=========================================================
  FOP
  FOP: Lagrangian energy NOT converged
  FOP: Occupied energy NOT converged
- FOP: Virtual energy converged, energydiff    =   0.000086798
+ FOP: Virtual energy converged, energydiff    =   0.000075543
  BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
  FOP
 
@@ -2526,46 +2534,46 @@ Use F12 correction           =           FALSE
  FOP Done: Fragment number                  :   6
  FOP Done: Number of orbitals in virt total :   6
  FOP Done: Number of orbitals in occ total  :   3
- FOP Done: Number of basis functions        :  12
- FOP Done: Occupied Fragment energy         :   -0.0117260337
- FOP Done: Virtual Fragment energy          :   -0.0110725946
- FOP Done: Lagrangian Fragment energy       :   -0.0114703532
+ FOP Done: Number of basis functions        :  18
+ FOP Done: Occupied Fragment energy         :   -0.0117371286
+ FOP Done: Virtual Fragment energy          :   -0.0110822695
+ FOP Done: Lagrangian Fragment energy       :   -0.0114762019
  FOP Done: Occupied reduction removed      3 of      6 orbitals ( 50.00 %)
  FOP Done: Virtual  reduction removed      6 of     12 orbitals ( 50.00 %)
  FOP=========================================================
  FOP
 
- FOP reduction: Atom,FOT,O,V,B      6     0.100E-03      3      6     12
-#PAIRDIMS# basis,occ,virt       15       4       8
+ FOP reduction: Atom,FOT,O,V,B      6     0.100E-03      3      6     18
+#PAIRDIMS# basis,occ,virt       18       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
- Number of atomic basis functions        =      15
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
+ Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       4       4
  Number of virtual  orbitals AOS/EOS     =       8       8
  Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      15
+ Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       8
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.114E-03
- Memory required for tmp array 1 (GB)    = 0.810E-04
- Memory required for tmp array 2 (GB)    = 0.115E-04
- Memory required for tmp array 3 (GB)    = 0.216E-04
-
+ Tot memory required for tmp arrays (GB) = 0.185E-03
+ Memory required for tmp array 1 (GB)    = 0.140E-03
+ Memory required for tmp array 2 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.311E-04
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.276E-04
@@ -2573,37 +2581,37 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.819E-05
  Memory required for tmp array 3 (GB)    = 0.819E-05
  Memory required for tmp array 4 (GB)    = 0.307E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.164E-04
  Memory required for tmp array 1 (GB)    = 0.819E-05
  Memory required for tmp array 2 (GB)    = 0.819E-05
-
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.114E-03
- Big Array Memory required       (GB)    = 0.131E-03
-
+ Memory required                 (GB)    = 0.185E-03
+ Big Array Memory required       (GB)    = 0.201E-03
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            6
+ BATCH: Number of Alpha batches   =            7
  BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.06 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.06 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.29 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.29 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.22 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2618,47 +2626,47 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       4      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =       3.1591       -0.3597630627E-03
- Distance(Ang), pair virt energy =       3.1591       -0.1850564887E-02
- Distance(Ang), pair lagr. occ term  =       3.1591        0.1847966346E-03
- Distance(Ang), pair lagr. virt term =       3.1591        0.1072535305E-02
-
-
-#PAIRDIMS# basis,occ,virt       12       4       8
+ Distance(Ang), pair occ energy  =       3.1591       -0.3315197948E-03
+ Distance(Ang), pair virt energy =       3.1591       -0.1767664780E-02
+ Distance(Ang), pair lagr. occ term  =       3.1591        0.1818377020E-03
+ Distance(Ang), pair lagr. virt term =       3.1591        0.1014708530E-02
+ 
+ 
+#PAIRDIMS# basis,occ,virt       18       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
- Number of atomic basis functions        =      12
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
+ Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       4       4
  Number of virtual  orbitals AOS/EOS     =       8       8
  Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      12
+ Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       8
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
-
+ Tot memory required for tmp arrays (GB) = 0.185E-03
+ Memory required for tmp array 1 (GB)    = 0.140E-03
+ Memory required for tmp array 2 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.311E-04
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.276E-04
@@ -2666,37 +2674,37 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.819E-05
  Memory required for tmp array 3 (GB)    = 0.819E-05
  Memory required for tmp array 4 (GB)    = 0.307E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.164E-04
  Memory required for tmp array 1 (GB)    = 0.819E-05
  Memory required for tmp array 2 (GB)    = 0.819E-05
-
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
-
+ Memory required                 (GB)    = 0.185E-03
+ Big Array Memory required       (GB)    = 0.201E-03
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
+ BATCH: Number of Alpha batches   =            7
  BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.12 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.12 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.22 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2711,47 +2719,47 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       4      6
  *****************************************************************************
- Distance(Ang), pair occ energy  =       6.0000       -0.1811558007E-04
- Distance(Ang), pair virt energy =       6.0000       -0.4751050893E-04
- Distance(Ang), pair lagr. occ term  =       6.0000        0.8514472742E-05
- Distance(Ang), pair lagr. virt term =       6.0000        0.1662692089E-04
-
-
-#PAIRDIMS# basis,occ,virt       12       4       8
+ Distance(Ang), pair occ energy  =       6.0000       -0.8070322562E-05
+ Distance(Ang), pair virt energy =       6.0000       -0.2861044353E-04
+ Distance(Ang), pair lagr. occ term  =       6.0000        0.3991451311E-05
+ Distance(Ang), pair lagr. virt term =       6.0000        0.1437704628E-04
+ 
+ 
+#PAIRDIMS# basis,occ,virt       18       4       8
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
- Number of atomic basis functions        =      12
+ 
+ 85% of available memory (GB)            = 0.777    
+ 
+ Number of atomic basis functions        =      18
  Number of occupied orbitals AOS/EOS     =       4       4
  Number of virtual  orbitals AOS/EOS     =       8       8
  Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      12
+ Maximum gamma batch dimension           =      18
  Maximum virtual batch dimension         =       8
  Number of OMP threads                   =       1
-
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.645E-04
- Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.138E-04
-
+ Tot memory required for tmp arrays (GB) = 0.185E-03
+ Memory required for tmp array 1 (GB)    = 0.140E-03
+ Memory required for tmp array 2 (GB)    = 0.138E-04
+ Memory required for tmp array 3 (GB)    = 0.311E-04
+ 
  STEP 2 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.276E-04
@@ -2759,37 +2767,37 @@ Use F12 correction           =           FALSE
  Memory required for tmp array 2 (GB)    = 0.819E-05
  Memory required for tmp array 3 (GB)    = 0.819E-05
  Memory required for tmp array 4 (GB)    = 0.307E-05
-
+ 
  STEP 3 in integral loop
  -----------------------
  Tot memory required for tmp arrays (GB) = 0.164E-04
  Memory required for tmp array 1 (GB)    = 0.819E-05
  Memory required for tmp array 2 (GB)    = 0.819E-05
-
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.645E-04
- Big Array Memory required       (GB)    = 0.809E-04
-
+ Memory required                 (GB)    = 0.185E-03
+ Big Array Memory required       (GB)    = 0.201E-03
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
+ BATCH: Number of Alpha batches   =            7
  BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.04 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.04 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.16 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.16 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.14 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.14 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   1.22 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   1.22 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -2804,327 +2812,327 @@ Use F12 correction           =           FALSE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       5      6
  *****************************************************************************
- Distance(Ang), pair occ energy  =       3.1591       -0.3595773666E-03
- Distance(Ang), pair virt energy =       3.1591       -0.1849577631E-02
- Distance(Ang), pair lagr. occ term  =       3.1591        0.1816610172E-03
- Distance(Ang), pair lagr. virt term =       3.1591        0.1075779088E-02
-
-
-
-
+ Distance(Ang), pair occ energy  =       3.1591       -0.3315197949E-03
+ Distance(Ang), pair virt energy =       3.1591       -0.1767664775E-02
+ Distance(Ang), pair lagr. occ term  =       3.1591        0.1818377020E-03
+ Distance(Ang), pair lagr. virt term =       3.1591        0.1014708528E-02
+ 
+ 
+ 
+ 
  ******************************************************************
  *            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *
  ******************************************************************
-
+ 
  Total number of pairs:                         3
  Number of pairs to calculate:                  2
  Pairs to be skipped from calculation           1
-
+ 
  Pairs to be treated using input FOT            2
-
- Estimated pair correlation energy:            -0.7374560094E-03
- Estimated contribution from skipped pairs:    -0.1811558007E-04
-
-
-
+ 
+ Estimated pair correlation energy:            -0.6711099122E-03
+ Estimated contribution from skipped pairs:    -0.8070322562E-05
+ 
+ 
+ 
  =================================================================
  Estimated occupied pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     4       5      3.1591         -0.3597630627E-03    PF_ESTIMATE
-     4       6      6.0000         -0.1811558007E-04    PF_ESTIMATE
-     5       6      3.1591         -0.3595773666E-03    PF_ESTIMATE
-
-
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   7.45 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   7.49 seconds
+     4       5      3.1591         -0.3315197948E-03    PF_ESTIMATE
+     4       6      6.0000         -0.8070322562E-05    PF_ESTIMATE
+     5       6      3.1591         -0.3315197949E-03    PF_ESTIMATE
+ 
+ 
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is  20.82 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is  20.89 seconds
  Preparing job list...
-
-
-
+ 
+ 
+ 
  *******************************************************************************
               Atomic fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
       5      5     10     18     3.16    /  3.16       6.00    /  6.16              FRAG_SIZE
-      4      3      6     15     3.16    /  6.00       3.16    /  6.16              FRAG_SIZE
-      6      3      6     12     3.16    /  3.16       3.16    /  3.16              FRAG_SIZE
-
+      4      3      6     18     3.16    /  6.16       3.16    /  6.16              FRAG_SIZE
+      6      3      6     18     3.16    /  6.16       3.16    /  6.16              FRAG_SIZE
+ 
  FRAGANALYSIS: Max/Ave/Min occ         :        5       /     3.6667    /       3
  FRAGANALYSIS: Max/Ave/Min unocc       :       10       /     7.3333    /       6
- FRAGANALYSIS: Max/Ave/Min basis       :       18       /     15.000    /      12
+ FRAGANALYSIS: Max/Ave/Min basis       :       18       /     18.000    /      18
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      3.1591    /     3.1591    /     3.1591    
- FRAGANALYSIS: Max/Ave/Min Radius AE   :      6.0000    /     4.1061    /     3.1591    
+ FRAGANALYSIS: Max/Ave/Min Radius AE   :      6.1612    /     5.1605    /     3.1591    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:      6.0000    /     4.1061    /     3.1591    
- FRAGANALYSIS: Max/Ave/Min Diameter AE :      6.1612    /     5.1605    /     3.1591    
-
-
-
+ FRAGANALYSIS: Max/Ave/Min Diameter AE :      6.1612    /     6.1612    /     6.1612    
+ 
+ 
+ 
  *****************************************************
  *               DEC FRAGMENT JOB LIST               *
  *****************************************************
  Number of jobs =            5
-
+ 
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
-        1               1188              5       6        6       11       18
-        2                990              4       5        5       11       18
+        1               1188              4       5        6       11       18
+        2                990              5       6        5       11       18
         3                900              5                5       10       18
-        4                270              4                3        6       15
-        5                216              6                3        6       12
-
-
+        4                324              4                3        6       18
+        5                324              6                3        6       18
+ 
+ 
  DEC JOB SUMMARY: Number of single jobs =          3
  DEC JOB SUMMARY: Number of pair jobs   =          2
  DEC JOB SUMMARY: Total number of jobs  =          5
-
-
-
+ 
+ 
+ 
  *** Calculating single and pair interaction energies ***
-
- The Coulomb energy contribution    24.468201175334130     
- The Exchange energy contribution    6.5685711293787481     
- The Fock energy contribution   -17.899630045955384     
- CCSOL: MAIN LOOP      :  12.7    s
- The Coulomb energy contribution    24.468201175334105     
- The Exchange energy contribution    6.5685711293787392     
- The Fock energy contribution   -17.899630045955369     
+ 
+ The Coulomb energy contribution    24.4682011753340     
+ The Exchange energy contribution    6.56857112937870     
+ The Fock energy contribution   -17.8996300459553     
+ CCSOL: MAIN LOOP      :  32.0    s
+ The Coulomb energy contribution    24.4682011753340     
+ The Exchange energy contribution    6.56857112937869     
+ The Fock energy contribution   -17.8996300459553     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.468201175334105     
- The Exchange energy contribution    6.5685711293787410     
- The Fock energy contribution   -17.899630045955369     
+ The Coulomb energy contribution    24.4682011753339     
+ The Exchange energy contribution    6.56857112937869     
+ The Fock energy contribution   -17.8996300459553     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.460693770340981     
- The Exchange energy contribution    6.5649224855458943     
- The Fock energy contribution   -17.895771284795085     
+ The Coulomb energy contribution    24.4606937703408     
+ The Exchange energy contribution    6.56492248554585     
+ The Fock energy contribution   -17.8957712847950     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.454005535755758     
- The Exchange energy contribution    6.5619802696156126     
- The Fock energy contribution   -17.892025266140145     
+ The Coulomb energy contribution    24.4540055357556     
+ The Exchange energy contribution    6.56198026961557     
+ The Fock energy contribution   -17.8920252661400     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.450856041734436     
- The Exchange energy contribution    6.5607721333373723     
- The Fock energy contribution   -17.890083908397063     
+ The Coulomb energy contribution    24.4508560417343     
+ The Exchange energy contribution    6.56077213333733     
+ The Fock energy contribution   -17.8900839083970     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.448860478399524     
- The Exchange energy contribution    6.5600917130789407     
- The Fock energy contribution   -17.888768765320577     
+ The Coulomb energy contribution    24.4488604783994     
+ The Exchange energy contribution    6.56009171307890     
+ The Fock energy contribution   -17.8887687653205     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.448445231823811     
- The Exchange energy contribution    6.5599826815933282     
- The Fock energy contribution   -17.888462550230486     
+ The Coulomb energy contribution    24.4484452318237     
+ The Exchange energy contribution    6.55998268159328     
+ The Fock energy contribution   -17.8884625502304     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.448421906845443     
- The Exchange energy contribution    6.5599970288166318     
- The Fock energy contribution   -17.888424878028815     
+ The Coulomb energy contribution    24.4484219068453     
+ The Exchange energy contribution    6.55999702881659     
+ The Fock energy contribution   -17.8884248780287     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.448468139967172     
- The Exchange energy contribution    6.5600281355042371     
- The Fock energy contribution   -17.888440004462936     
+ The Coulomb energy contribution    24.4484681399670     
+ The Exchange energy contribution    6.56002813550419     
+ The Fock energy contribution   -17.8884400044628     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.448482613747220     
- The Exchange energy contribution    6.5600384731438171     
- The Fock energy contribution   -17.888444140603408     
+ The Coulomb energy contribution    24.4484826137471     
+ The Exchange energy contribution    6.56003847314377     
+ The Fock energy contribution   -17.8884441406033     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.448480740317134     
- The Exchange energy contribution    6.5600396736938871     
- The Fock energy contribution   -17.888441066623244     
+ The Coulomb energy contribution    24.4484807403170     
+ The Exchange energy contribution    6.56003967369384     
+ The Fock energy contribution   -17.8884410666231     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.448476021329288     
- The Exchange energy contribution    6.5600385188992938     
- The Fock energy contribution   -17.888437502429991     
+ The Coulomb energy contribution    24.4484760213291     
+ The Exchange energy contribution    6.56003851889925     
+ The Fock energy contribution   -17.8884375024299     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.448473321546007     
- The Exchange energy contribution    6.5600378108643200     
- The Fock energy contribution   -17.888435510681688     
+ The Coulomb energy contribution    24.4484733215459     
+ The Exchange energy contribution    6.56003781086427     
+ The Fock energy contribution   -17.8884355106816     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    24.448472908395903     
- The Exchange energy contribution    6.5600378270395989     
- The Fock energy contribution   -17.888435081356313     
- CCSOL: MAIN LOOP      :  20.9    s
-
-
+ The Coulomb energy contribution    24.4484729083958     
+ The Exchange energy contribution    6.56003782703955     
+ The Fock energy contribution   -17.8884350813562     
+ CCSOL: MAIN LOOP      :  49.6    s
+ 
+ 
  *****************************************************************************
- Energy summary for pair fragment:       5      6
+ Energy summary for pair fragment:       4      5
  *****************************************************************************
  Distance(Ang), pair occ energy  =       3.1591       -0.7048561711E-03
  Distance(Ang), pair virt energy =       3.1591       -0.3235939787E-02
  Distance(Ang), pair lagr. occ term  =       3.1591         0.000000000    
  Distance(Ang), pair lagr. virt term =       3.1591         0.000000000    
-
-
- The Coulomb energy contribution    17.531514651460572     
- The Exchange energy contribution    4.8803219868045042     
- The Fock energy contribution   -12.651192664656065     
- CCSOL: MAIN LOOP      :  21.6    s
- The Coulomb energy contribution    17.531514651460562     
- The Exchange energy contribution    4.8803219868044998     
- The Fock energy contribution   -12.651192664656055     
+ 
+ 
+ The Coulomb energy contribution    17.5315146514605     
+ The Exchange energy contribution    4.88032198680447     
+ The Fock energy contribution   -12.6511926646560     
+ CCSOL: MAIN LOOP      :  50.9    s
+ The Coulomb energy contribution    17.5315146514604     
+ The Exchange energy contribution    4.88032198680447     
+ The Fock energy contribution   -12.6511926646560     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.531514651460562     
- The Exchange energy contribution    4.8803219868045016     
- The Fock energy contribution   -12.651192664656058     
+ The Coulomb energy contribution    17.5315146514604     
+ The Exchange energy contribution    4.88032198680447     
+ The Fock energy contribution   -12.6511926646560     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.523722748961447     
- The Exchange energy contribution    4.8766462996567546     
- The Fock energy contribution   -12.647076449304686     
+ The Coulomb energy contribution    17.5237227489613     
+ The Exchange energy contribution    4.87664629965672     
+ The Fock energy contribution   -12.6470764493046     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.516298601900246     
- The Exchange energy contribution    4.8735254234386192     
- The Fock energy contribution   -12.642773178461621     
+ The Coulomb energy contribution    17.5162986019001     
+ The Exchange energy contribution    4.87352542343859     
+ The Fock energy contribution   -12.6427731784615     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.512729373741521     
- The Exchange energy contribution    4.8722218039897092     
- The Fock energy contribution   -12.640507569751806     
+ The Coulomb energy contribution    17.5127293737414     
+ The Exchange energy contribution    4.87222180398967     
+ The Fock energy contribution   -12.6405075697517     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.510471388943539     
- The Exchange energy contribution    4.8714961386820361     
- The Fock energy contribution   -12.638975250261506     
+ The Coulomb energy contribution    17.5104713889434     
+ The Exchange energy contribution    4.87149613868200     
+ The Fock energy contribution   -12.6389752502614     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.510007443930505     
- The Exchange energy contribution    4.8713896078329766     
- The Fock energy contribution   -12.638617836097525     
+ The Coulomb energy contribution    17.5100074439304     
+ The Exchange energy contribution    4.87138960783294     
+ The Fock energy contribution   -12.6386178360975     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.509980811467450     
- The Exchange energy contribution    4.8714111771367286     
- The Fock energy contribution   -12.638569634330731     
+ The Coulomb energy contribution    17.5099808114673     
+ The Exchange energy contribution    4.87141117713669     
+ The Fock energy contribution   -12.6385696343306     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.510026745866895     
- The Exchange energy contribution    4.8714471512715569     
- The Fock energy contribution   -12.638579594595333     
+ The Coulomb energy contribution    17.5100267458668     
+ The Exchange energy contribution    4.87144715127152     
+ The Fock energy contribution   -12.6385795945953     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.510040668072033     
- The Exchange energy contribution    4.8714590228112993     
- The Fock energy contribution   -12.638581645260734     
+ The Coulomb energy contribution    17.5100406680719     
+ The Exchange energy contribution    4.87145902281126     
+ The Fock energy contribution   -12.6385816452606     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.510038245861715     
- The Exchange energy contribution    4.8714609766657500     
- The Fock energy contribution   -12.638577269195959     
+ The Coulomb energy contribution    17.5100382458616     
+ The Exchange energy contribution    4.87146097666572     
+ The Fock energy contribution   -12.6385772691959     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.510033112312410     
- The Exchange energy contribution    4.8714599587189049     
- The Fock energy contribution   -12.638573153593505     
+ The Coulomb energy contribution    17.5100331123123     
+ The Exchange energy contribution    4.87145995871887     
+ The Fock energy contribution   -12.6385731535934     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.510030285018303     
- The Exchange energy contribution    4.8714592014900022     
- The Fock energy contribution   -12.638571083528303     
+ The Coulomb energy contribution    17.5100302850182     
+ The Exchange energy contribution    4.87145920148997     
+ The Fock energy contribution   -12.6385710835282     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.510029893989358     
- The Exchange energy contribution    4.8714591616305656     
- The Fock energy contribution   -12.638570732358799     
- CCSOL: MAIN LOOP      :  30.0    s
-
-
+ The Coulomb energy contribution    17.5100298939893     
+ The Exchange energy contribution    4.87145916163053     
+ The Fock energy contribution   -12.6385707323587     
+ CCSOL: MAIN LOOP      :  68.9    s
+ 
+ 
  *****************************************************************************
- Energy summary for pair fragment:       4      5
+ Energy summary for pair fragment:       5      6
  *****************************************************************************
  Distance(Ang), pair occ energy  =       3.1591       -0.7048637651E-03
  Distance(Ang), pair virt energy =       3.1591       -0.3235867380E-02
  Distance(Ang), pair lagr. occ term  =       3.1591         0.000000000    
  Distance(Ang), pair lagr. virt term =       3.1591         0.000000000    
-
-
- The Coulomb energy contribution    17.531514651460558     
- The Exchange energy contribution    4.8803219868045007     
- The Fock energy contribution   -12.651192664656055     
- CCSOL: MAIN LOOP      :  30.7    s
- The Coulomb energy contribution    17.531514651460558     
- The Exchange energy contribution    4.8803219868044998     
- The Fock energy contribution   -12.651192664656056     
+ 
+ 
+ The Coulomb energy contribution    17.5315146514604     
+ The Exchange energy contribution    4.88032198680446     
+ The Fock energy contribution   -12.6511926646560     
+ CCSOL: MAIN LOOP      :  70.3    s
+ The Coulomb energy contribution    17.5315146514604     
+ The Exchange energy contribution    4.88032198680447     
+ The Fock energy contribution   -12.6511926646560     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.531514651460558     
- The Exchange energy contribution    4.8803219868045007     
- The Fock energy contribution   -12.651192664656055     
+ The Coulomb energy contribution    17.5315146514604     
+ The Exchange energy contribution    4.88032198680447     
+ The Fock energy contribution   -12.6511926646560     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.523553527508398     
- The Exchange energy contribution    4.8763629556304391     
- The Fock energy contribution   -12.647190571877960     
+ The Coulomb energy contribution    17.5235535275083     
+ The Exchange energy contribution    4.87636295563041     
+ The Fock energy contribution   -12.6471905718779     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.515741213778959     
- The Exchange energy contribution    4.8728153478755178     
- The Fock energy contribution   -12.642925865903440     
+ The Coulomb energy contribution    17.5157412137788     
+ The Exchange energy contribution    4.87281534787548     
+ The Fock energy contribution   -12.6429258659034     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.512242180524641     
- The Exchange energy contribution    4.8714534681508930     
- The Fock energy contribution   -12.640788712373752     
+ The Coulomb energy contribution    17.5122421805245     
+ The Exchange energy contribution    4.87145346815086     
+ The Fock energy contribution   -12.6407887123737     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.510322305138200     
- The Exchange energy contribution    4.8708333401064197     
- The Fock energy contribution   -12.639488965031777     
+ The Coulomb energy contribution    17.5103223051381     
+ The Exchange energy contribution    4.87083334010639     
+ The Fock energy contribution   -12.6394889650317     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.509951144644759     
- The Exchange energy contribution    4.8707881548721135     
- The Fock energy contribution   -12.639162989772650     
+ The Coulomb energy contribution    17.5099511446446     
+ The Exchange energy contribution    4.87078815487208     
+ The Fock energy contribution   -12.6391629897726     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.509944830435671     
- The Exchange energy contribution    4.8708311245846643     
- The Fock energy contribution   -12.639113705851004     
+ The Coulomb energy contribution    17.5099448304356     
+ The Exchange energy contribution    4.87083112458463     
+ The Fock energy contribution   -12.6391137058509     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.509978914370357     
- The Exchange energy contribution    4.8708617409366282     
- The Fock energy contribution   -12.639117173433736     
+ The Coulomb energy contribution    17.5099789143702     
+ The Exchange energy contribution    4.87086174093660     
+ The Fock energy contribution   -12.6391171734337     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.509981747082762     
- The Exchange energy contribution    4.8708657552028258     
- The Fock energy contribution   -12.639115991879933     
+ The Coulomb energy contribution    17.5099817470826     
+ The Exchange energy contribution    4.87086575520279     
+ The Fock energy contribution   -12.6391159918799     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.509977463914492     
- The Exchange energy contribution    4.8708647709374180     
- The Fock energy contribution   -12.639112692977072     
+ The Coulomb energy contribution    17.5099774639144     
+ The Exchange energy contribution    4.87086477093739     
+ The Fock energy contribution   -12.6391126929770     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.509975267072406     
- The Exchange energy contribution    4.8708640645181571     
- The Fock energy contribution   -12.639111202554250     
+ The Coulomb energy contribution    17.5099752670723     
+ The Exchange energy contribution    4.87086406451812     
+ The Fock energy contribution   -12.6391112025542     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    17.509974645320220     
- The Exchange energy contribution    4.8708639124124193     
- The Fock energy contribution   -12.639110732907799     
- CCSOL: MAIN LOOP      :  38.7    s
-
-
+ The Coulomb energy contribution    17.5099746453201     
+ The Exchange energy contribution    4.87086391241239     
+ The Fock energy contribution   -12.6391107329077     
+ CCSOL: MAIN LOOP      :  86.9    s
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
@@ -3132,227 +3140,227 @@ Use F12 correction           =           FALSE
  Single virtual  energy =    -0.1591727393E-01
  Single Lagrangian occ term  =      0.000000000    
  Single Lagrangian virt term =      0.000000000    
-
-
- The Coulomb energy contribution    8.2395797280450775     
- The Exchange energy contribution    2.6893403515159435     
- The Fock energy contribution   -5.5502393765291336     
- CCSOL: MAIN LOOP      :  39.1    s
- The Coulomb energy contribution    8.2395797280450793     
- The Exchange energy contribution    2.6893403515159444     
- The Fock energy contribution   -5.5502393765291345     
+ 
+ 
+ The Coulomb energy contribution    8.24454066999646     
+ The Exchange energy contribution    2.69040334320585     
+ The Fock energy contribution   -5.55413732679060     
+ CCSOL: MAIN LOOP      :  88.2    s
+ The Coulomb energy contribution    8.24454066999646     
+ The Exchange energy contribution    2.69040334320586     
+ The Fock energy contribution   -5.55413732679061     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2394803210029206     
- The Exchange energy contribution    2.6897673979405785     
- The Fock energy contribution   -5.5497129230623425     
+ The Coulomb energy contribution    8.24454066999646     
+ The Exchange energy contribution    2.69040334320585     
+ The Fock energy contribution   -5.55413732679061     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2369726967211978     
- The Exchange energy contribution    2.6885267799575323     
- The Fock energy contribution   -5.5484459167636642     
+ The Coulomb energy contribution    8.24205536659549     
+ The Exchange energy contribution    2.68901891599948     
+ The Fock energy contribution   -5.55303645059601     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2346975399096198     
- The Exchange energy contribution    2.6875156711842223     
- The Fock energy contribution   -5.5471818687253966     
+ The Coulomb energy contribution    8.23980573780175     
+ The Exchange energy contribution    2.68791363465834     
+ The Fock energy contribution   -5.55189210314341     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2334702544551099     
- The Exchange energy contribution    2.6870555321096035     
- The Fock energy contribution   -5.5464147223455056     
+ The Coulomb energy contribution    8.23860468186738     
+ The Exchange energy contribution    2.68743719304819     
+ The Fock energy contribution   -5.55116748881918     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2325788506700803     
- The Exchange energy contribution    2.6867808530923103     
- The Fock energy contribution   -5.5457979975777674     
+ The Coulomb energy contribution    8.23774364791929     
+ The Exchange energy contribution    2.68715664838104     
+ The Fock energy contribution   -5.55058699953825     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2323219802644818     
- The Exchange energy contribution    2.6867275205694461     
- The Fock energy contribution   -5.5455944596950335     
+ The Coulomb energy contribution    8.23749122360172     
+ The Exchange energy contribution    2.68710297562822     
+ The Fock energy contribution   -5.55038824797350     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2322891721321501     
- The Exchange energy contribution    2.6867330989031681     
- The Fock energy contribution   -5.5455560732289824     
+ The Coulomb energy contribution    8.23745378050017     
+ The Exchange energy contribution    2.68710905479686     
+ The Fock energy contribution   -5.55034472570330     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2323013212749725     
- The Exchange energy contribution    2.6867471400443281     
- The Fock energy contribution   -5.5455541812306457     
+ The Coulomb energy contribution    8.23746326903708     
+ The Exchange energy contribution    2.68712370894490     
+ The Fock energy contribution   -5.55033956009218     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2323045638426446     
- The Exchange energy contribution    2.6867504807420142     
- The Fock energy contribution   -5.5455540831006305     
+ The Coulomb energy contribution    8.23746572024849     
+ The Exchange energy contribution    2.68712689187182     
+ The Fock energy contribution   -5.55033882837667     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2323040701396284     
- The Exchange energy contribution    2.6867507826676111     
- The Fock energy contribution   -5.5455532874720195     
+ The Coulomb energy contribution    8.23746494037915     
+ The Exchange energy contribution    2.68712701406781     
+ The Fock energy contribution   -5.55033792631134     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2323031868798449     
- The Exchange energy contribution    2.6867504999050347     
- The Fock energy contribution   -5.5455526869748102     
- CCSOL: MAIN LOOP      :  43.0    s
-
-
+ The Coulomb energy contribution    8.23746404780435     
+ The Exchange energy contribution    2.68712668220422     
+ The Fock energy contribution   -5.55033736560013     
+ CCSOL: MAIN LOOP      :  102.    s
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.1792546523E-01
- Single virtual  energy =    -0.1671161633E-01
+ Single occupied energy =    -0.1792139192E-01
+ Single virtual  energy =    -0.1673978693E-01
  Single Lagrangian occ term  =      0.000000000    
  Single Lagrangian virt term =      0.000000000    
-
-
- The Coulomb energy contribution    8.2376842822260485     
- The Exchange energy contribution    2.6887447901588124     
- The Fock energy contribution   -5.5489394920672357     
- CCSOL: MAIN LOOP      :  43.2    s
- The Coulomb energy contribution    8.2376842822260503     
- The Exchange energy contribution    2.6887447901588137     
- The Fock energy contribution   -5.5489394920672375     
+ 
+ 
+ The Coulomb energy contribution    8.24454066999644     
+ The Exchange energy contribution    2.69040334320585     
+ The Fock energy contribution   -5.55413732679059     
+ CCSOL: MAIN LOOP      :  104.    s
+ The Coulomb energy contribution    8.24454066999645     
+ The Exchange energy contribution    2.69040334320586     
+ The Fock energy contribution   -5.55413732679059     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2376034336761066     
- The Exchange energy contribution    2.6890727391423872     
- The Fock energy contribution   -5.5485306945337189     
+ The Coulomb energy contribution    8.24454066999645     
+ The Exchange energy contribution    2.69040334320586     
+ The Fock energy contribution   -5.55413732679059     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2350707652387136     
- The Exchange energy contribution    2.6878023662204078     
- The Fock energy contribution   -5.5472683990183072     
+ The Coulomb energy contribution    8.24205536661544     
+ The Exchange energy contribution    2.68901891600828     
+ The Fock energy contribution   -5.55303645060717     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2327663156622215     
- The Exchange energy contribution    2.6867662346488732     
- The Fock energy contribution   -5.5460000810133483     
+ The Coulomb energy contribution    8.23980573784569     
+ The Exchange energy contribution    2.68791363467753     
+ The Fock energy contribution   -5.55189210316816     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2315215405162370     
- The Exchange energy contribution    2.6862980448326090     
- The Fock energy contribution   -5.5452234956836275     
+ The Coulomb energy contribution    8.23860468191867     
+ The Exchange energy contribution    2.68743719307069     
+ The Fock energy contribution   -5.55116748884798     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2306365140219118     
- The Exchange energy contribution    2.6860231329513429     
- The Fock energy contribution   -5.5446133810705689     
+ The Coulomb energy contribution    8.23774364797351     
+ The Exchange energy contribution    2.68715664840523     
+ The Fock energy contribution   -5.55058699956828     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2303803800599056     
- The Exchange energy contribution    2.6859689190384817     
- The Fock energy contribution   -5.5444114610214266     
+ The Coulomb energy contribution    8.23749122365371     
+ The Exchange energy contribution    2.68710297565188     
+ The Fock energy contribution   -5.55038824800183     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2303483047978894     
- The Exchange energy contribution    2.6859744040581539     
- The Fock energy contribution   -5.5443739007397355     
+ The Coulomb energy contribution    8.23745378055116     
+ The Exchange energy contribution    2.68710905482020     
+ The Fock energy contribution   -5.55034472573096     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2303610037422033     
- The Exchange energy contribution    2.6859884941324301     
- The Fock energy contribution   -5.5443725096097749     
+ The Coulomb energy contribution    8.23746326908761     
+ The Exchange energy contribution    2.68712370896806     
+ The Fock energy contribution   -5.55033956011954     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2303642830421442     
- The Exchange energy contribution    2.6859917725080162     
- The Fock energy contribution   -5.5443725105341271     
+ The Coulomb energy contribution    8.23746572029897     
+ The Exchange energy contribution    2.68712689189498     
+ The Fock energy contribution   -5.55033882840399     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2303637786538886     
- The Exchange energy contribution    2.6859920466823386     
- The Fock energy contribution   -5.5443717319715482     
+ The Coulomb energy contribution    8.23746494042962     
+ The Exchange energy contribution    2.68712701409097     
+ The Fock energy contribution   -5.55033792633865     
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    8.2303628906614108     
- The Exchange energy contribution    2.6859917613093942     
- The Fock energy contribution   -5.5443711293520179     
- CCSOL: MAIN LOOP      :  45.2    s
-
-
+ The Coulomb energy contribution    8.23746404785483     
+ The Exchange energy contribution    2.68712668222738     
+ The Fock energy contribution   -5.55033736562745     
+ CCSOL: MAIN LOOP      :  118.    s
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       6
  **********************************************************************
- Single occupied energy =    -0.1791636340E-01
- Single virtual  energy =    -0.1670707822E-01
+ Single occupied energy =    -0.1792139195E-01
+ Single virtual  energy =    -0.1673978695E-01
  Single Lagrangian occ term  =      0.000000000    
  Single Lagrangian virt term =      0.000000000    
-
-
+ 
+ 
  WARNING: No pair points to plot!
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  32.66 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is  33.12 seconds
-
-
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  1 minute  27 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is  1 minute  27 seconds
+ 
+ 
               ===============================================
               |   Print single and pair fragment energies   |
               ===============================================
-
-
-
+ 
+ 
+ 
  =================================================================
  CCSD occupied single energies
  =================================================================
-
+ 
  Fragment       Energy
-     4      -0.1792546523E-01    AF_CCSD_OCC
+     4      -0.1792139192E-01    AF_CCSD_OCC
      5      -0.1891485744E-01    AF_CCSD_OCC
-     6      -0.1791636340E-01    AF_CCSD_OCC
-
-
+     6      -0.1792139195E-01    AF_CCSD_OCC
+ 
+ 
  =================================================================
  CCSD virtual single energies
  =================================================================
-
+ 
  Fragment       Energy
-     4      -0.1671161633E-01    AF_CCSD_VIR
+     4      -0.1673978693E-01    AF_CCSD_VIR
      5      -0.1591727393E-01    AF_CCSD_VIR
-     6      -0.1670707822E-01    AF_CCSD_VIR
-
-
+     6      -0.1673978695E-01    AF_CCSD_VIR
+ 
+ 
  =================================================================
  CCSD occupied pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     4       5      3.1591         -0.7048637651E-03    PF_CCSD_OCC
-     5       6      3.1591         -0.7048561711E-03    PF_CCSD_OCC
-
-
+     4       5      3.1591         -0.7048561711E-03    PF_CCSD_OCC
+     5       6      3.1591         -0.7048637651E-03    PF_CCSD_OCC
+ 
+ 
  =================================================================
  CCSD virtual pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     4       5      3.1591         -0.3235867380E-02    PF_CCSD_VIR
-     5       6      3.1591         -0.3235939787E-02    PF_CCSD_VIR
-
- CCSD occupied   correlation energy :    -0.5616640600E-01
- CCSD virtual    correlation energy :    -0.5580777565E-01
-
-
-
+     4       5      3.1591         -0.3235939787E-02    PF_CCSD_VIR
+     5       6      3.1591         -0.3235867380E-02    PF_CCSD_VIR
+ 
+ CCSD occupied   correlation energy :    -0.5616736124E-01
+ CCSD virtual    correlation energy :    -0.5586865498E-01
+ 
+ 
+ 
  =============================================================================
-
-
-
-
+ 
+ 
+ 
+ 
              **********************************************************
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
-
+ 
                E: Hartree-Fock energy :      -23.5800278637
-               E: Correlation energy  :       -0.0561664060
-               E: Estimated DEC error :        0.0003586304
-               E: Total CCSD energy   :      -23.6361942697
-
-
- >>>  CPU Time used in DEC FINAL is   0.05 seconds
- >>> wall Time used in DEC FINAL is   0.05 seconds
-
+               E: Correlation energy  :       -0.0561673612
+               E: Estimated DEC error :        0.0002987063
+               E: Total CCSD energy   :      -23.6361952249
+ 
+ 
+ >>>  CPU Time used in DEC FINAL is   0.11 seconds
+ >>> wall Time used in DEC FINAL is   0.11 seconds
+ 
  CC Memory summary
  -----------------
  Allocated memory for array4   :  0.2196E-03 GB
@@ -3363,28 +3371,27 @@ Use F12 correction           =           FALSE
  Memory in use for array3      :   0.000     GB
  Max memory in use for array3  :   0.000     GB
  ------------------
-
+ 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         40.1600     s
-Total Wall time used in DEC          :         40.6540     s
+Total CPU  time used in DEC          :         107.992     s
+Total Wall time used in DEC          :         108.361     s
 ------------------------------------------------------
 
-
-Hostname       : localhost.localdomain                             
-Job finished   : Date: 03/12/2014   Time: 15:32:29
-
-
+ 
+Job finished   : Date: 06/12/2014   Time: 13:24:19
+ 
+ 
 
 =============================================================================
                           -- end of DEC program --
 =============================================================================
 
-
-
- >>>  CPU Time used in *SCF is  43.87 seconds
- >>> wall Time used in *SCF is  44.38 seconds
-
+ 
+ 
+ >>>  CPU Time used in *SCF is  1 minute  56 seconds
+ >>> wall Time used in *SCF is  1 minute  56 seconds
+ 
 Total no. of matmuls used:                      2664
 Total no. of Fock/KS matrix evaluations:          15
 Max no. of matrices allocated in Level 3:         74
@@ -3435,36 +3442,36 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         72.244 MB
-  Max allocated memory, type(matrix)                 173.920 kB
-  Max allocated memory, real(realk)                    4.542 MB
+  Max allocated memory, TOTAL                         90.631 MB
+  Max allocated memory, type(matrix)                 182.320 kB
+  Max allocated memory, real(realk)                    4.543 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       46.984 kB
+  Max allocated memory, integer                       50.384 kB
   Max allocated memory, logical                      202.032 kB
   Max allocated memory, character                      3.920 kB
   Max allocated memory, AOBATCH                       27.216 kB
-  Max allocated memory, DECORBITAL                     5.184 kB
-  Max allocated memory, DECFRAG                      117.024 kB
-  Max allocated memory, BATCHTOORB                     0.448 kB
+  Max allocated memory, DECORBITAL                     7.128 kB
+  Max allocated memory, DECFRAG                      143.424 kB
+  Max allocated memory, BATCHTOORB                     0.640 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.720 kB
+  Max allocated memory, MYPOINTER                      0.960 kB
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.725 MB
-  Max allocated memory, PNOSpaceInfo                  28.392 kB
+  Max allocated memory, ARRAY                         84.814 MB
+  Max allocated memory, PNOSpaceInfo                  37.128 kB
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
   Max allocated memory, ODBATCH                        7.920 kB
-  Max allocated memory, LSAOTENSOR                    21.888 kB
-  Max allocated memory, SLSAOTENSOR                   47.472 kB
+  Max allocated memory, LSAOTENSOR                    30.528 kB
+  Max allocated memory, SLSAOTENSOR                   66.048 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 497.432 kB
+  Max allocated memory, ATOMTYPEITEM                 675.168 kB
   Max allocated memory, ATOMITEM                       4.608 kB
-  Max allocated memory, LSMATRIX                       2.968 kB
-  Max allocated memory, OverlapT                     140.864 kB
+  Max allocated memory, LSMATRIX                       2.880 kB
+  Max allocated memory, OverlapT                     197.568 kB
   Max allocated memory, linkshell                      2.052 kB
   Max allocated memory, integrand                    290.304 kB
   Max allocated memory, integralitem                   4.410 MB
@@ -3477,7 +3484,7 @@ Max no. of matrices allocated in Level 3:         74
   Max allocated memory, Lvec_data                      0.000 Byte
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
+ 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
       ===============================================================
@@ -3489,21 +3496,21 @@ Max no. of matrices allocated in Level 3:         74
    L1 mat_assign              10            0.0000            0.0000
    L1 mat_copy                 2            0.0000            0.0000
    L1 mat_mul                 12            0.0000            0.0000
-   L1 mat_add                 14            0.0000            0.0000
+   L1 mat_add                 14            0.0010            0.0000
    L1 mat_daxpy               16            0.0000            0.0000
    L1 mat_dotproduct          21            0.0000            0.0000
    L1 mat_sqnorm2             22            0.0000            0.0000
    L1 mat_zero                12            0.0000            0.0000
       ==============================================================
-   L1 TOTAL MAT                             0.0000            0.0000
+   L1 TOTAL MAT                             0.0010            0.0000
       ==============================================================
-   L1     II_get_overlap       2            0.0000            0.0010
+   L1     II_get_overlap       2            0.0020            0.0020
    L1     II_get_kinetic       2            0.0010            0.0000
-   L1   II_get_nucel_mat       2            0.0020            0.0020
-   L1 II_GET_EXCHANGE_MA       4            0.0080            0.0100
-   L1 II_get_coulomb_mat       4            0.0090            0.0060
+   L1   II_get_nucel_mat       2            0.0020            0.0030
+   L1 II_GET_EXCHANGE_MA       4            0.0160            0.0170
+   L1 II_get_coulomb_mat       4            0.0150            0.0150
       ==============================================================
-   L1 TOTAL INTEGRAL                        0.0200            0.0190
+   L1 TOTAL INTEGRAL                        0.0360            0.0370
       ==============================================================
       ===============================================================
       Overall Timings for the Matrix Operations and Integral routines
@@ -3511,20 +3518,20 @@ Max no. of matrices allocated in Level 3:         74
       Matrix Operation   # calls          CPU Time         Wall Time
       ===============================================================
    L2 mat_set_from_full        9            0.0000            0.0000
-   L2 mat_to_full             10            0.0000            0.0000
-   L2 mat_trans              141            0.0000            0.0000
+   L2 mat_to_full             10            0.0010            0.0000
+   L2 mat_trans              141            0.0010            0.0000
    L2 mat_assign             195            0.0000            0.0000
    L2 mat_copy                12            0.0000            0.0000
    L2 mat_mul                646            0.0000            0.0020
    L2 mat_add                272            0.0000            0.0000
-   L2 mat_daxpy             1047            0.0010            0.0000
-   L2 mat_dotproduct         364            0.0000            0.0000
-   L2 mat_sqnorm2            361            0.0010            0.0010
+   L2 mat_daxpy             1047            0.0030            0.0000
+   L2 mat_dotproduct         364            0.0010            0.0000
+   L2 mat_sqnorm2            361            0.0010            0.0000
    L2 mat_diag_f               2            0.0000            0.0000
    L2 mat_create_block         3            0.0000            0.0000
    L2 mat_retrieve_block       6            0.0000            0.0000
    L2 mat_scal               139            0.0000            0.0000
-   L2 mat_zero               323            0.0000            0.0010
+   L2 mat_zero               323            0.0010            0.0000
    L2 mat_density_from_o       1            0.0000            0.0000
    L2 mat_scal_dia_vec         2            0.0000            0.0000
    L2 mat_scal_dia             7            0.0000            0.0000
@@ -3532,17 +3539,17 @@ Max no. of matrices allocated in Level 3:         74
    L2 mat_identity            15            0.0000            0.0000
    L2 mat_write_to_disk        5            0.0000            0.0000
       ==============================================================
-   L2 TOTAL MAT                             0.0020            0.0040
+   L2 TOTAL MAT                             0.0080            0.0020
       ==============================================================
-   L2     II_get_overlap       2            0.0010            0.0020
-   L2     II_get_kinetic       1            0.0000            0.0010
-   L2   II_get_nucel_mat       1            0.0040            0.0030
-   L2 II_precalc_ScreenM       1            0.0090            0.0080
-   L2 II_GET_EXCHANGE_MA       6            0.1110            0.1120
-   L2 II_get_coulomb_mat       6            0.1350            0.1350
-   L2           homolumo       1            0.1750            0.1750
+   L2     II_get_overlap       2            0.0040            0.0040
+   L2     II_get_kinetic       1            0.0020            0.0020
+   L2   II_get_nucel_mat       1            0.0080            0.0080
+   L2 II_precalc_ScreenM       1            0.0170            0.0170
+   L2 II_GET_EXCHANGE_MA       6            0.2340            0.2340
+   L2 II_get_coulomb_mat       6            0.2480            0.2500
+   L2           homolumo       1            0.6020            0.6030
       ==============================================================
-   L2 TOTAL INTEGRAL                        0.4350            0.4360
+   L2 TOTAL INTEGRAL                        1.1150            1.1180
       ==============================================================
       ===============================================================
       Overall Timings for the Matrix Operations and Integral routines
@@ -3551,43 +3558,43 @@ Max no. of matrices allocated in Level 3:         74
       ===============================================================
    L3 mat_set_from_full       24            0.0000            0.0000
    L3 mat_to_full             16            0.0000            0.0000
-   L3 mat_trans              548            0.0030            0.0020
-   L3 mat_assign             802            0.0000            0.0000
-   L3 mat_copy                38            0.0010            0.0000
-   L3 mat_mul               2005            0.0070            0.0040
-   L3 mat_add               1561            0.0030            0.0010
+   L3 mat_trans              548            0.0030            0.0070
+   L3 mat_assign             802            0.0000            0.0020
+   L3 mat_copy                38            0.0000            0.0000
+   L3 mat_mul               2005            0.0030            0.0050
+   L3 mat_add               1561            0.0010            0.0030
    L3 mat_daxpy            16386            0.0130            0.0110
-   L3 mat_dotproduct        4312            0.0020            0.0030
-   L3 mat_sqnorm2           2640            0.0000            0.0030
+   L3 mat_dotproduct        4312            0.0040            0.0050
+   L3 mat_sqnorm2           2640            0.0000            0.0010
    L3 mat_diag_f               1            0.0000            0.0000
    L3 mat_create_block        13            0.0000            0.0000
    L3 mat_retrieve_block       6            0.0000            0.0000
-   L3 mat_scal               728            0.0000            0.0000
-   L3 mat_zero              2705            0.0060            0.0040
+   L3 mat_scal               728            0.0010            0.0010
+   L3 mat_zero              2705            0.0110            0.0090
    L3 mat_scal_dia_vec         2            0.0000            0.0000
    L3 mat_scal_dia            15            0.0000            0.0000
    L3 mat_dsyev                1            0.0010            0.0010
    L3 mat_identity            35            0.0000            0.0000
-   L3 mat_write_to_disk       12            0.0000            0.0000
+   L3 mat_write_to_disk       12            0.0020            0.0000
       ==============================================================
-   L3 TOTAL MAT                             0.0350            0.0280
+   L3 TOTAL MAT                             0.0380            0.0440
       ==============================================================
-   L3     II_get_overlap       2            0.0020            0.0020
-   L3     II_get_kinetic      72            0.0900            0.0830
-   L3   II_get_nucel_mat      72            0.6940            0.8050
-   L3 II_precalc_ScreenM       2            0.0750            0.0750
+   L3     II_get_overlap       2            0.0060            0.0060
+   L3     II_get_kinetic      72            0.2340            0.2330
+   L3   II_get_nucel_mat      72            2.0550            2.0660
+   L3 II_precalc_ScreenM       2            0.1610            0.1630
    L3      II_get_nucpot       2            0.0000            0.0000
-   L3 II_GET_EXCHANGE_MA      79           10.7860           11.0670
-   L3 II_get_coulomb_mat      79            9.0890            9.1200
-   L3 II_GET_DECPACKED4C     159           14.8200           14.8960
-   L3 II_GET_DECPACKED4C      60            7.8590            7.8990
-   L3           homolumo       1            0.1800            0.1800
+   L3 II_GET_EXCHANGE_MA      79           28.4220           28.5340
+   L3 II_get_coulomb_mat      79           22.2640           22.3280
+   L3 II_GET_DECPACKED4C     170           41.4090           41.5520
+   L3 II_GET_DECPACKED4C      60           21.5270           21.6050
+   L3           homolumo       1            0.5990            0.6000
       ==============================================================
-   L3 TOTAL INTEGRAL                       88.2450           89.2910
+   L3 TOTAL INTEGRAL                      234.3540          235.1630
       ==============================================================
- >>>  CPU Time used in LSDALTON is  44.68 seconds
- >>> wall Time used in LSDALTON is  45.19 seconds
+ >>>  CPU Time used in LSDALTON is  1 minute  58 seconds
+ >>> wall Time used in LSDALTON is  1 minute  58 seconds
 
 End simulation
-     Date and time (Linux)  : Wed Dec  3 15:32:29 2014
+     Date and time (Linux)  : Sat Dec  6 13:24:19 2014
      Host name              : localhost.localdomain                   
