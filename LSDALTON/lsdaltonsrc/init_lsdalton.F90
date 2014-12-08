@@ -16,8 +16,7 @@ module init_lsdalton_mod
   use linsca_debug, only: sparsetest
   use lstiming, only: lstimer
   use daltoninfo, only: ls_init
-  !AMT use IIDFTINT, only: II_DFTDISP
-  use IIDFTD, only: DFT_D_LSDAL_IFC
+  use IIDFTD, only: II_DFT_DISP
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
   use memory_handling, only: Print_Memory_info
@@ -81,10 +80,7 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
   call set_final_config_and_print(lupri,config,ls,nbast)
   
   ! eventually empirical dispersion correction in case of dft
-  !AMT CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
-  !AMT   
-  CALL DFT_D_LSDAL_IFC(LS%SETTING,DUMMY,1,1,0,LUPRI)
-  !AMT   
+  CALL II_DFT_DISP(LS%SETTING,DUMMY,1,1,0,LUPRI)
 
   call mat_pass_info(LUPRI,config%opt%info_matop,mem_monitor)
 
