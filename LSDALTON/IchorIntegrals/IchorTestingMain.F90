@@ -63,10 +63,12 @@ integer,pointer :: iBasisA(:),iBasisB(:),iBasisC(:),iBasisD(:)
 CHARACTER(len=20)    :: BASISTYPE(10)
 integer              :: iBASISTYPE(10),DebugIchorOption,ifilename,selected_device_number
 character(len=100) :: filename
-logical      :: SpecialPass,FAIL(10,10,10,10),ALLPASS
+logical      :: SpecialPass,FAIL(10,10,10,10),ALLPASS,ForceCPU,ForceGPU
 real(8) :: GPUMAXMEM
 integer(kind=accdevkind) :: acc_device_type
 
+ForceCPU = .FALSE.
+ForceGPU = .FALSE.
 DebugIchorOption = 9
 #ifdef VAR_OPENACC
 acc_device_type = acc_get_device_type()
@@ -408,7 +410,7 @@ do Ipass = IpassStart,IpassEnd
           & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
           & MaxFileStorage,MaxMemAllocated,MemAllocated,&
           & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-          & integrals,lupri)
+          & integrals,ForceCPU,ForceGPU,lupri)
      
      !     print*,'OutputDim1:',OutputDim1,OutputDim2,OutputDim3,OutputDim4
      !     do d=1,OutputDim4

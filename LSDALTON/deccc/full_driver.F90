@@ -511,11 +511,6 @@ contains
 
     if(DECinfo%F12DEBUG) then
  
-      call mem_alloc(Xijkl_term1,nocc,nocc,nocc,nocc)
-       call mem_alloc(Xijkl_term2,nocc,nocc,nocc,nocc)
-       call mem_alloc(Xijkl_term3,nocc,nocc,nocc,nocc)
-       call mem_alloc(Xijkl_term4,nocc,nocc,nocc,nocc) 
-
        if(DECinfo%use_canonical) then
           call mem_alloc(Xijij_term1,nocc,nocc)
           call mem_alloc(Xijij_term2,nocc,nocc)
@@ -526,6 +521,11 @@ contains
           call mem_alloc(Xjiij_term2,nocc,nocc)
           call mem_alloc(Xjiij_term3,nocc,nocc)
           call mem_alloc(Xjiij_term4,nocc,nocc)
+       else
+          call mem_alloc(Xijkl_term1,nocc,nocc,nocc,nocc)
+          call mem_alloc(Xijkl_term2,nocc,nocc,nocc,nocc)
+          call mem_alloc(Xijkl_term3,nocc,nocc,nocc,nocc)
+          call mem_alloc(Xijkl_term4,nocc,nocc,nocc,nocc) 
        endif
 
        call mem_alloc(Bijij_term1,nocc,nocc)
@@ -745,8 +745,7 @@ contains
           call mem_dealloc(Bjiij_term8)
           call mem_dealloc(Bjiij_term9)
        endif
-
-    else
+    else !non canonical 
 
        call mem_dealloc(Xijkl)
 

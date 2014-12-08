@@ -926,7 +926,7 @@ contains
        ! Integral screening stuff
        doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
        call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-            & nbatchesAlpha,nbatchesGamma,INTSPEC)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
        IF(doscreen)then
           call II_getBatchOrbitalScreen(DecScreen,mysetting,&
                & n31,nbatchesAlpha,nbatchesGamma,&
@@ -982,7 +982,7 @@ contains
           IF(DECinfo%useIchor)THEN
              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mysetting,n21,n41,dimAlpha,dimGamma,&
                   & tmp1,INTSPEC,FULLRHS,1,nAObatches(2),1,nAObatches(4),AOAlphaStart,&
-                  & AOAlphaEnd,AOGammaStart,AOGammaEnd,MoTrans,n21,n41,dimAlpha,dimGamma,NoSymmetry)
+                  & AOAlphaEnd,AOGammaStart,AOGammaEnd,MoTrans,n21,n41,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
           ELSE
              IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
              IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
@@ -990,7 +990,7 @@ contains
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                   & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
-                  & INTSPEC)
+                  & INTSPEC,DECinfo%IntegralThreshold)
           ENDIF
           ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
 
@@ -1232,6 +1232,8 @@ contains
     call mem_alloc(gao,nbasis,ncabsAO,nbasis,nbasis)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRR2')
+
+
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
          &                          MyMolecule%Co, MyMolecule%Cv,'irii',gAO,Tirjk)
 
@@ -1338,7 +1340,7 @@ contains
     character(len=4) :: inputstring
     integer :: ndim2(4),ndim1(4)
     real(realk),pointer :: gAO(:,:,:,:)
-    real(realk),pointer :: gMO(:,:,:,:) ,elms(:)
+    real(realk),pointer :: gMO(:,:,:,:)
     type(matrix) :: CMO(4)
     real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
     !> Virtual MO coefficients

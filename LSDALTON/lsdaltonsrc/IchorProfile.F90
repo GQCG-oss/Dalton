@@ -51,8 +51,9 @@ TYPE(BASISINFO),pointer :: originalBASIS
 CHARACTER(len=80)    :: BASISSETNAME
 logical      :: spherical,savedospherical,SameMOL,COMPARE,ForcePrint,sameBAS(4,4)
 logical :: MoTrans,NoSymmetry
-
+real(realk) :: intThreshold
 Character    :: intSpec(5)
+intThreshold = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
 NoSymmetry = .FALSE. !activate permutational symmetry
 MoTrans=.FALSE.
 intSpec(1) = 'R'
@@ -157,7 +158,7 @@ IF(config%prof%IchorProfDoIchor)THEN
       CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
       call MAIN_ICHORERI_DRIVER(LUPRI,iprint,setting,dim1,dim2,dim3,dim4,&
            & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1,MoTrans,&
-           & dim1,dim2,dim3,dim4,NoSymmetry)
+           & dim1,dim2,dim3,dim4,NoSymmetry,intThreshold)
       call FREE_SCREEN_ICHORERI
       !   setting%scheme%OD_SCREEN = .TRUE.
       !   setting%scheme%CS_SCREEN = .TRUE.

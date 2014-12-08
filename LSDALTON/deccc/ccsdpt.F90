@@ -9224,7 +9224,7 @@ contains
        call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
     ELSE
        call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
-            & nbatchesAlpha,nbatchesGamma,INTSPEC)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
        
        if (doscreen) then
           
@@ -9321,14 +9321,14 @@ contains
           IF(DECinfo%useIchor)THEN
              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
                   & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                  & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
+                  & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
           ELSE
              if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
              if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
-                  & FullRHS,INTSPEC)
+                  & FullRHS,INTSPEC,DECinfo%IntegralThreshold)
           ENDIF
 
           ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
@@ -9760,7 +9760,7 @@ contains
        call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
     ELSE
        call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
-            & nbatchesAlpha,nbatchesGamma,INTSPEC)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
        if (doscreen) then
           call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
                & nbasis,nbatchesAlpha,nbatchesGamma,&
@@ -9851,7 +9851,8 @@ contains
           IF(DECinfo%useIchor)THEN
              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
                   & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                  & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
+                  & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry,&
+                  & DECinfo%IntegralThreshold)
           ELSE
              if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
              if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
@@ -9861,7 +9862,7 @@ contains
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
-                  & FullRHS,INTSPEC)
+                  & FullRHS,INTSPEC,DECinfo%IntegralThreshold)
           ENDIF
           ! tmp2(delta,alphaB,gammaB;I) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cocc(beta,I)
           m = nbasis*dimGamma*dimAlpha

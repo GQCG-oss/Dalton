@@ -1526,7 +1526,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ELSE
         ! This subroutine builds the full screening matrix.
         call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
-             & nbatchesAlpha,nbatchesGamma,INTSPEC)
+             & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
         IF(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
            call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
                 & nb,nbatchesAlpha,nbatchesGamma,&
@@ -1755,7 +1755,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array
               call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,dimAlpha,dimGamma,&
                    & w1%d,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                   & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry)
+                   & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
            ELSE
               IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
               IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
@@ -1767,7 +1767,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !Mylsitem%setting%scheme%intprint=6
               call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1%d,batchindexAlpha(alphaB),&
                    &batchindexGamma(gammaB),&
-                   &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC)
+                   &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC,DECinfo%IntegralThreshold)
               !Mylsitem%setting%scheme%intprint=0
            ENDIF
            call LSTIMER('START',tcpu2,twall2,DECinfo%output)
@@ -1861,14 +1861,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !Build (batchA,full,batchC,full)
               call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,dimAlpha,nb,dimGamma,nb,&
                    & w1%d,INTSPEC,FULLRHS,AOAlphaStart,AOAlphaEnd,1,nAObatches,AOGammaStart,AOGammaEnd,&
-                   & 1,nAObatches,MoTrans,dimAlpha,nb,dimGamma,nb,NoSymmetry)
+                   & 1,nAObatches,MoTrans,dimAlpha,nb,dimGamma,nb,NoSymmetry,DECinfo%IntegralThreshold)
            ELSE
               IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
               IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
               
               call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
                    & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,INTSPEC,fullRHS)
+                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,&
+                   & INTSPEC,fullRHS,DECinfo%IntegralThreshold)
            ENDIF
            call lsmpi_poke()
 
@@ -3240,7 +3241,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
-                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d)
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d,&
+                 & DECinfo%IntegralThreshold)
 
            enddo
            call time_start_phase(PHASE_WORK, ttot = time_int1 )
@@ -3406,8 +3408,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
-                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d)
-
+                 & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d,&
+                 & DECinfo%IntegralThreshold)
            enddo
 
            call time_start_phase(PHASE_WORK, ttot = time_int2 )
