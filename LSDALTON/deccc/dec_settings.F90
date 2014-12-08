@@ -115,9 +115,6 @@ contains
 
 
     ! -- Orbital
-    DECinfo%mulliken_threshold           = 0.01
-    DECinfo%simple_mulliken_threshold    = .false.
-    DECinfo%approximated_norm_threshold  = 0.1E0_realk
     DECinfo%check_lcm_orbitals           = .false.
     DECinfo%check_Occ_SubSystemLocality  = .false.
     DECinfo%force_Occ_SubSystemLocality  = .false.
@@ -125,7 +122,6 @@ contains
     DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken                     = .false.
     DECinfo%Distance                     = .false.
-    DECinfo%BoughtonPulay                = .false.
     DECinfo%FitOrbitals                  = .true.
     DECinfo%simple_orbital_threshold     = 0.05E0_realk
 
@@ -209,6 +205,7 @@ contains
     DECinfo%abc               = .false.
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
+    DECinfo%abc_nbuffs        = 1000000
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -402,11 +399,7 @@ contains
           DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.RPA')
           call find_model_number_from_input(word, DECinfo%ccModel)
-!#ifdef VAR_MPI
           DECinfo%use_singles=.false.
-!#else
-!          DECinfo%use_singles=.false.; DECinfo%CCDEBUG=.true.
-!#endif
 
 
           ! CC SOLVER INFO
@@ -430,6 +423,7 @@ contains
        case('.PT_ABC'); DECinfo%abc= .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
+       case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
 
 
           ! DEC CALCULATION 
@@ -643,12 +637,10 @@ contains
           DECinfo%PureHydrogenDebug       = .true.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
        case('.DISTANCE'); DECinfo%distance=.true.
-       case('.BOUGHTONPULAY'); DECinfo%BoughtonPulay=.true.
        case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')
           read(input,*) DECinfo%simple_orbital_threshold
        case('.DECPRINT'); read(input,*) DECinfo%PL
-       case('.MULLIKENTHR'); read(input,*) DECinfo%mulliken_threshold
        case('.CHECKPAIRS') 
           DECinfo%checkpairs=.true.
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
@@ -667,8 +659,6 @@ contains
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
-       case('.SIMPLEMULLIKENTHRESH'); DECinfo%simple_mulliken_threshold=.true.
-       case('.NORMTHRESH'); read(input,*) DECinfo%approximated_norm_threshold
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
        case('.SKIPREADIN'); DECinfo%SkipReadIn=.true.
@@ -1095,10 +1085,6 @@ contains
     write(lupri,*) 'simple_orbital_threshold ', DECitem%simple_orbital_threshold
     write(lupri,*) 'PurifyMOs ', DECitem%PurifyMOs
     write(lupri,*) 'FragAdapt ', DECitem%FragAdapt
-    write(lupri,*) 'BoughtonPulay ', DECitem%BoughtonPulay
-    write(lupri,*) 'mulliken_threshold ', DECitem%mulliken_threshold
-    write(lupri,*) 'simple_mulliken_threshold ', DECitem%simple_mulliken_threshold
-    write(lupri,*) 'approximated_norm_threshold ', DECitem%approximated_norm_threshold
     write(lupri,*) 'mulliken ', DECitem%mulliken
     write(lupri,*) 'FOT ', DECitem%FOT
     write(lupri,*) 'MaxIter ', DECitem%MaxIter

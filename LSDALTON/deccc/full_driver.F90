@@ -19,8 +19,8 @@ module full
   use matrix_operations
   use memory_handling
   use MemoryLeakToolMod
-  ! DEC DEPENDENCIES (within deccc directory)   
-  ! *****************************************
+  !  DEC DEPENDENCIES (within deccc directory)   
+  !  *****************************************
   use dec_fragment_utils
   use CABS_operations
 #ifdef MOD_UNRELEASED
@@ -36,7 +36,7 @@ module full
   use full_molecule
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
   use ccdriver!,only: ccsolver_justenergy, ccsolver
-!  use fragment_energy_module,only : Full_DECMP2_calculation
+  !  use fragment_energy_module,only : Full_DECMP2_calculation
 
   public :: full_driver, full_canonical_rimp2
   private
@@ -207,7 +207,7 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> HF density matrix
     type(matrix),intent(in) :: Dmat
-    !> Canonical MP2-F12 correlation energy
+    !> MP2-F12 correlation energy
     real(realk),intent(inout) :: mp2f12_energy
     !> Canonical MP2 correlation energy
     real(realk) :: mp2_energy
@@ -320,7 +320,15 @@ contains
     type(matrix) :: Fcp
     type(matrix) :: Fii
     type(matrix) :: Fac
-    Real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
+
+    !> Singles correction
+    type(matrix) :: Fcd
+    type(matrix) :: Fic  
+        
+    !> Singles correction energy
+    real(realk)  :: ES2
+     
+    real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
     type(tensor) :: tensor_Taibj,tensor_gmo
     integer :: vs, os
     logical :: local
@@ -347,7 +355,7 @@ contains
     ! Get all F12 Fock Matrices
     ! ********************
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
     ! Get all AO integrals
     ! ********************
@@ -374,6 +382,10 @@ contains
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
     !   call mp2f12_Cjaib(Cjaib,Giajc,Fac%elms,nocc,nvirt,ncabs)
     
+    ! MP2-F12 Singles correction (Yang M. Wang 03.12.2014)
+    ! ***************************    
+    call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
+   
     if(DECinfo%use_canonical) then
        !construct canonical T amplitudes
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
@@ -708,7 +720,7 @@ contains
        endif      
     endif
 
-    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
     if(DECinfo%use_canonical) then
        call mem_dealloc(Xijij)
@@ -803,9 +815,12 @@ contains
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E23 CORRECTION TO ENERGY =     ', E23_debug
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E22_debug + E23_debug
        write(*,'(1X,a)') '-----------------------------------------------------------------'
-       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY = ', E21_debug+E22_debug+E23_debug
-       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 ENERGY =           ', mp2_energy+E21_debug+E22_debug+E23_debug
-
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY =         ', E21_debug+E22_debug+E23_debug
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 ES2 CORRECTION TO ENERGY =     ', ES2
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12-ES2 CORRECTION TO ENERGY =     ', E21_debug+E22_debug+E23_debug+ES2
+       write(*,'(1X,a)') '-----------------------------------------------------------------'
+       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 ENERGY =                   ', mp2_energy+E21_debug+E22_debug+E23_debug
+       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12-ES2 ENERGY =               ', mp2_energy+E21_debug+E22_debug+E23_debug+ES2
     else
 
        mp2f12_energy = 0.0E0_realk
@@ -1927,6 +1942,11 @@ end subroutine RIMP2_CalcEnergyContribution
     type(matrix) :: Fii
     type(matrix) :: Fac
 
+    !>   Singles correction
+    type(matrix) :: Fic
+    type(matrix) :: Fcd
+    real(realk)  :: ES2 
+    
     !   F12 specific
     real(realk),pointer :: Vijij(:,:)
     real(realk),pointer :: Vjiij(:,:)    
@@ -2039,7 +2059,7 @@ end subroutine RIMP2_CalcEnergyContribution
 
     ! Get all MO mixed matrices
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
     ! Get all AO integrals in regular basis
     call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
@@ -2504,7 +2524,11 @@ end subroutine RIMP2_CalcEnergyContribution
        call submp2f12_EBXfull(E22,Bijij,Bjiij,Xijkl,Fii%elms,nocc)
     endif
 
-    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
+    ! CCSD-F12 Singles Correction Energy
+    call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
+
+
+    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
     call mem_dealloc(Rapbq)
     call mem_dealloc(Ripaq)
     call mem_dealloc(Rambc)
@@ -2557,12 +2581,16 @@ end subroutine RIMP2_CalcEnergyContribution
 
     ! Add contributions
     ECCSD_F12 = ECCSD + EF12
-
-    write(*,'(1X,a)') '----------------------------------------------------'  
-    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD CORRECTION TO ENERGY      = ', ECCSD
-    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  = ', EF12
-    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRELATION ENERGY    = ', ECCSD_F12
-    
+   
+    write(*,'(1X,a)') '---------------------------------------------------------------------'  
+    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD CORRECTION TO ENERGY      =         ', ECCSD
+    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  =         ', EF12
+    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRELATION ENERGY    =         ', ECCSD_F12
+    write(*,'(1X,a)') '---------------------------------------------------------------------'  
+    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 SINGLES CORRECTION TO ENERGY  = ', ES2
+    write(*,'(1X,a,f20.10)') 'TOYCODE: FULL F12 CORRECTION TO ENERGY          = ', EF12 + ES2
+    write(*,'(1X,a,f20.10)') 'TOYCODE: FULL CCSD-F12 CORRECTION TO ENERGY     = ', ECCSD_F12 + ES2
+   
     !> Input to DEC
     write(DECinfo%output,*) 'TOYCODE: CCSD CORRECTION TO ENERGY      = ', ECCSD
     write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  = ', EF12
