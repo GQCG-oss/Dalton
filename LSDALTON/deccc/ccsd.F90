@@ -743,12 +743,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
        call tensor_init(gloc,[nv,no,nv,no],4)
        call tensor_cp_data( iajb, gloc )
-
-       call get_ccsd_residual_pno_style(t1%elm1,tloc%elm1,omega1%elm1,&
-          &oloc%elm1,gloc%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
-          &present(frag),pno_cv,pno_S,nspaces,ppfock%elm1,&
-          &qqfock%elm1,delta_fock%elm1,iter,f=frag)
-
+       IF(present(frag))THEN
+          call get_ccsd_residual_pno_style(t1%elm1,tloc%elm1,omega1%elm1,&
+               &oloc%elm1,gloc%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
+               &present(frag),pno_cv,pno_S,nspaces,ppfock%elm1,&
+               &qqfock%elm1,delta_fock%elm1,iter,f=frag)
+       ELSE
+          call get_ccsd_residual_pno_style(t1%elm1,tloc%elm1,omega1%elm1,&
+               &oloc%elm1,gloc%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
+               &present(frag),pno_cv,pno_S,nspaces,ppfock%elm1,&
+               &qqfock%elm1,delta_fock%elm1,iter)
+       ENDIF
        !TODO: remove these sortings
        call tensor_minit( t2, tdi, 4, local = local, atype = ats, tdims=ttd )
        call tensor_cp_data( tloc, t2,     order = [1,3,2,4] )
