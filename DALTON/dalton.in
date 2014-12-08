@@ -25,7 +25,7 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 DALTON_EXECUTABLE=$SCRIPT_DIR/dalton.x
 
-MPIRUN=@MPIEXEC@
+MPIEXEC=mpiexec
 INSTALL_BASDIR=$SCRIPT_DIR/basis
 
 
@@ -314,7 +314,7 @@ echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
 echo
-echo "   DALTON release @DALTON_VERSION@"
+echo "   DALTON release 2014.0"
 echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
@@ -410,14 +410,6 @@ fi
 
 if [ $optn -gt 1 ] ; then
 
-   if ! [ -s "$MPIRUN" -a -x "$MPIRUN" ]; then
-      echo
-      echo "ERROR: $optn MPI nodes were requested, however"
-      echo '       mpirun command has not been defined, does not exist or is not executable'
-      echo '       echo $MPIRUN gives this string: "' $MPIRUN '"'
-      exit 1
-   fi
-
    if [ -z "$OMP_NUM_THREADS" ]; then
       export OMP_NUM_THREADS=1
       echo
@@ -448,11 +440,11 @@ if [ $optn -gt 1 ] ; then
        fi
    fi
 
-   $MPIRUN -np $optn $DALTON_EXECUTABLE
+   $MPIEXEC -np $optn $DALTON_EXECUTABLE
    ierr=$?
 
    if [ $ierr -ne 0 ];then
-      echo "Error in $MPIRUN -np $optn $DALTON_EXECUTABLE, exit code $ierr"
+      echo "Error in $MPIEXEC -np $optn $DALTON_EXECUTABLE, exit code $ierr"
 #     No "exit $ierr" here, because we want to save output and 
 #     tar-file for restart possibilities !!!!!!
    fi

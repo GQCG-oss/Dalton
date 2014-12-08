@@ -13,7 +13,7 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
 LSDALTON_EXECUTABLE=$SCRIPT_DIR/lsdalton.x
-MPIRUN=@MPIEXEC@
+MPIEXEC=mpiexec
 INSTALL_BASDIR=$SCRIPT_DIR/basis
 
 if [ -z "$DALTON_TMPDIR" ]; then
@@ -269,21 +269,16 @@ if [ $optn -gt 1 ] ; then
    else
       MPI=$LSDALTON_EXECUTABLE
    fi
-   if [ -s $MPIRUN -a -x $MPIRUN ]; then
-      if [ -a $MPI -a -x $MPI ]; then
-        $MPIRUN -np $optn $MPI
-        lsdalton_exitcode=$?
-        if [ $opt_restart -eq 1 ] ; then
-           cp LSDALTON.INP.2 LSDALTON.INP
-           $MPIRUN -np $optn $MPI
-        fi
-      else
-     echo "$MPI does not exist or is not executeable"
-     exit 1
-      fi
+   if [ -a $MPI -a -x $MPI ]; then
+       $MPIEXEC -np $optn $MPI
+       lsdalton_exitcode=$?
+       if [ $opt_restart -eq 1 ] ; then
+          cp LSDALTON.INP.2 LSDALTON.INP
+          $MPIEXEC -np $optn $MPI
+       fi
    else
-      echo "$MPIRUN does not exist or is not executeable"
-      exit 1
+       echo "$MPI does not exist or is not executeable"
+       exit 1
    fi
 else
     if ! [ -s $LSDALTON_EXECUTABLE -a -x $LSDALTON_EXECUTABLE ]; then
