@@ -433,7 +433,7 @@ do Ipass = IpassStart,IpassEnd
              & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
              & MaxFileStorage,MaxMemAllocated,MemAllocated,&
              & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-             & integrals,lupri)
+             & integrals,ForceCPU,ForceGPU,lupri)
 
 
         CALL ICHOR_GETTIM(TIME1,TIME2)
