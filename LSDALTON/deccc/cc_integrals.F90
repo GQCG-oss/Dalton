@@ -82,7 +82,8 @@ contains
             & INTSPEC,SameMOL)
        call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,&
             & nbasis,nbasis,nbasis,nbasis,g_ao%val,INTSPEC,.TRUE.,&
-            & 1,1,1,1,1,1,1,1,.FALSE.,nbasis,nbasis,nbasis,nbasis,.FALSE.)
+            & 1,1,1,1,1,1,1,1,.FALSE.,nbasis,nbasis,nbasis,nbasis,.FALSE.,&
+            & DECinfo%IntegralThreshold)
        call FREE_SCREEN_ICHORERI()
     ELSE
        call ii_get_4center_eri(DECinfo%output,DECinfo%output,&
@@ -613,20 +614,20 @@ contains
        iprint = 0           !Printlevel 
        call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,ndim(1),ndim(2),ndim(3),ndim(4),&
             & gao,INTSPEC,FULLBATCH,1,nAObatches,1,nAObatches,1,nAObatches,1,nAObatches,&
-            & MoTrans,ndim(1),ndim(2),ndim(3),ndim(4),NoSymmetry)
+            & MoTrans,ndim(1),ndim(2),ndim(3),ndim(4),NoSymmetry,DECinfo%IntegralThreshold)
        !Free screening info
        call FREE_SCREEN_ICHORERI()
     ELSE
        !Use Thermite code to calculate Integrals     
        ! Set integral screening
        doscreen = mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen
-       call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,1,1,intspecConvert)
+       call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,1,1,intspecConvert,DECinfo%IntegralThreshold)
        IF(doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
        IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabRHS
        
        ! Get AO integrals
        call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output,Mylsitem%SETTING,&
-            & gao,1,1,ndim(3),ndim(4),ndim(1),ndim(2),ndim(3),ndim(4),.true.,intSpecConvert)
+            & gao,1,1,ndim(3),ndim(4),ndim(1),ndim(2),ndim(3),ndim(4),.true.,intSpecConvert,DECinfo%IntegralThreshold)
        call free_decscreen(DECSCREEN)
        nullify(mylsitem%setting%LST_GAB_RHS)
        nullify(mylsitem%setting%LST_GAB_LHS)       
@@ -1141,7 +1142,7 @@ contains
        ! *******************************************************
        ! *  This subroutine builds the full screening matrix.
        call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting, &
-            & nbatchesAlpha,nbatchesGamma,INTSPEC)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
        
        if (mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen) then
           call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
@@ -1248,7 +1249,7 @@ contains
           IF(DECinfo%useIchor)THEN
              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,dimAlpha,dimGamma,&
                   & gao,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                  & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry)
+                  & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
           ELSE
              ! setup RHS screening - here we only have a set of AO basisfunctions
              !                      so we use the batchscreening matrices.
@@ -1264,7 +1265,7 @@ contains
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & Mylsitem%setting,gao,batchindexAlpha(alphaB),batchindexGamma(gammaB), &
                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha, &
-                  & dimGamma,fullRHS,INTSPEC)
+                  & dimGamma,fullRHS,INTSPEC,DECinfo%IntegralThreshold)
           ENDIF
           idb = 0
           iub = 0
@@ -2591,7 +2592,7 @@ contains
        ELSE
           ! This subroutine builds the full screening matrix.
           call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
-               & nbatchesAlpha,nbatchesGamma,INTSPEC)
+               & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
           if(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
              call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
                   & nb,nbatchesAlpha,nbatchesGamma,&
@@ -2776,13 +2777,13 @@ contains
           IF(DECinfo%useIchor)THEN
              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,la,lg,&
                   & w1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                  & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,la,lg,NoSymmetry)
+                  & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,la,lg,NoSymmetry,DECinfo%IntegralThreshold)
           ELSE
              IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
              IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
              
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,biA,&
-                  &biG,bsA,bsG,nb,nb,la,lg,fullRHS,INTSPEC)
+                  &biG,bsA,bsG,nb,nb,la,lg,fullRHS,INTSPEC,DECinfo%IntegralThreshold)
           ENDIF
           call time_start_phase(PHASE_WORK, ttot = time_int1 )
           time_int1_tot = time_int1_tot + time_int1
@@ -2889,7 +2890,7 @@ contains
 
              call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
                 & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
-                & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1)
+                & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1,DECinfo%IntegralThreshold)
 
           enddo
           call time_start_phase(PHASE_WORK, ttot = time_int1 )

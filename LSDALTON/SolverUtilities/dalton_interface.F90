@@ -3018,6 +3018,7 @@ CONTAINS
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
       type(batchtoorb), pointer :: batch2orb(:)
       character :: INTSPEC(5)
+      real(realk) :: intThreshold
       doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
       nullify(orb2batch)
       nullify(batchdim)
@@ -3047,7 +3048,8 @@ CONTAINS
       INTSPEC(3) = 'R'
       INTSPEC(4) = 'R'
       INTSPEC(5) = 'C' !operator
-      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesXY,nbatchesXY,INTSPEC)
+      intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
+      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesXY,nbatchesXY,INTSPEC,intThreshold)
       
       IF(doscreen)then
          call II_getBatchOrbitalScreenK(DecScreen,ls%setting,&
@@ -3083,7 +3085,7 @@ CONTAINS
 
             call II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,ls%SETTING,&
                  & integrals,batchindex(X),batchindex(Y),batchsize(X),batchsize(Y),&
-                 & dimX,nbast,dimY,nbast,INTSPEC,fullRHS)
+                 & dimX,nbast,dimY,nbast,INTSPEC,fullRHS,intThreshold)
 
             do batch_iY = 1,dimY
                iY = batch2orb(Y)%orbindex(batch_iY)
@@ -3161,7 +3163,7 @@ CONTAINS
       character :: INTSPEC(5)
       type(DecAObatchinfo),pointer :: AObatchinfo(:)
       logical :: SameMOL,ForcePrint,MoTrans,NoSymmetry
-      real(realk) :: t1,t2
+      real(realk) :: t1,t2,intThreshold
       IF(ls%setting%IntegralTransformGC)THEN
          call lsquit('di_decpackedJ requires .NOGCBASIS',-1)
       ENDIF
@@ -3177,6 +3179,7 @@ CONTAINS
       INTSPEC(5) = 'C' !operator
       SameMOL = .TRUE.
       MoTrans = .FALSE.
+      intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
       call LSTIMER('START',t1,t2,LUPRI)
       call SCREEN_ICHORERI_DRIVER(lupri,iprint,ls%setting,INTSPEC,SameMOL)
       call LSTIMER('SCREENDECJ',t1,t2,LUPRI,ForcePrint)
@@ -3219,7 +3222,7 @@ CONTAINS
           !calc (beta,delta,alphaB,gammaB)
           call MAIN_ICHORERI_DRIVER(lupri,iprint,ls%setting,dim1,dim2,dimAlpha,dimGamma,&
                & Integral,INTSPEC,.FALSE.,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-               & AOGammaStart,AOGammaEnd,MoTrans,dim1,dim2,dimAlpha,dimGamma,NoSymmetry)
+               & AOGammaStart,AOGammaEnd,MoTrans,dim1,dim2,dimAlpha,dimGamma,NoSymmetry,intThreshold)
           iG = GammaStart-1
           do Gbatch = 1,dimGamma
              iG = iG + 1
@@ -3306,6 +3309,7 @@ CONTAINS
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
       type(batchtoorb), pointer :: batch2orb(:)
       character :: INTSPEC(5)
+      real(realk) :: intThreshold
       IF(ls%setting%IntegralTransformGC)THEN
          call lsquit('di_decpackedJOLD requires .NOGCBASIS',-1)
       ENDIF
@@ -3346,7 +3350,8 @@ CONTAINS
       INTSPEC(3) = 'R'
       INTSPEC(4) = 'R'
       INTSPEC(5) = 'C' !operator
-      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesXY,nbatchesXY,INTSPEC)
+      intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
+      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesXY,nbatchesXY,INTSPEC,intThreshold)
       
       IF(doscreen)then
          call II_getBatchOrbitalScreen(DecScreen,ls%setting,&
@@ -3383,7 +3388,7 @@ CONTAINS
 
             call II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,ls%SETTING,&
                  & integrals,batchindex(X),batchindex(Y),batchsize(X),batchsize(Y),&
-                 & nbast,nbast,dimX,dimY,fullRHS,INTSPEC)
+                 & nbast,nbast,dimX,dimY,fullRHS,INTSPEC,intThreshold)
 
             do batch_iY = 1,dimY
                iY = batch2orb(Y)%orbindex(batch_iY)
@@ -3481,6 +3486,7 @@ CONTAINS
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
       type(batchtoorb), pointer :: batch2orb(:)
       character :: INTSPEC(5)
+      real(realk) :: IntThreshold
       INTSPEC(1) = 'R' 
       INTSPEC(2) = 'R'
       INTSPEC(3) = 'R'
@@ -3526,7 +3532,8 @@ CONTAINS
          batch2orb(idx)%orbindex(k) = iorb
       end do
 !#########################################################################################
-      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesAB,nbatchesAB,INTSPEC)      
+      intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
+      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesAB,nbatchesAB,INTSPEC,intThreshold)      
       IF(doscreen)then
          call II_getBatchOrbitalScreen(DecScreen,ls%setting,&
               & nbast,nbatchesAB,nbatchesAB,batchsize,batchsize,batchindex,&
@@ -3564,7 +3571,7 @@ CONTAINS
 
                      call II_GET_DECBATCHPACKED(LUPRI,LUERR,ls%SETTING,&
                           & integrals,A,B,C,D,1,1,1,1,&
-                          & dimA,dimB,dimC,dimD,intSpec)
+                          & dimA,dimB,dimC,dimD,intSpec,intThreshold)
                      
                      !                  write(lupri,*) 'integrals A,B,C,D',A,B,C,D
                      !                  write(lupri,*) 'BLOCK ',batch2orb(A)%orbindex(1),':',batch2orb(A)%orbindex(dimA)
@@ -3612,7 +3619,7 @@ CONTAINS
 
                      call II_GET_DECBATCHPACKED(LUPRI,LUERR,ls%SETTING,&
                           & integrals,A,B,C,D,1,1,1,1,&
-                          & dimA,dimB,dimC,dimD,intSpec)                     
+                          & dimA,dimB,dimC,dimD,intSpec,intThreshold)                     
                      do batch_iB = 1,dimB
                         iB = batch2orb(B)%orbindex(batch_iB)
                         do batch_iA = 1,dimA

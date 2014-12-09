@@ -66,7 +66,7 @@ C NCONF
 #include "infrsp.h"
 C
       LOGICAL NEWDEF, ALLCOMP, NXTLAB
-      PARAMETER ( NTABLE = 31 )
+      PARAMETER ( NTABLE = 32 )
       PARAMETER ( THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
       CHARACTER*8 DIPLEN(3),ANGMOM(3),THETA(6),RTNLBL(2),LABFND
@@ -82,9 +82,9 @@ c
      &            '.PRINT ','.DAMPIN','.ANALYZ','.FREQ I','.MCD   ',
      &            '.MCHD  ','.NSCD  ','.BETA  ','.BFREQ ','.BFREQI',
      &            '.CFREQ ','.CFREQI','.SHG   ','.XXCOMP','.YYCOMP',
-     &            '.ZZCOMP','.IMAG F','.NBATCH','.OLDCPP','.MAX MI',
-     &            '.MAXITO','.EXCITA','.MAX MA','.THCPP ','.REDUCE',
-     &            '.BATCH '/
+     &            '.ZZCOMP','.IMAG F','.NBATCH','.NOREBD','.OLDCPP',
+     &            '.MAX MI','.MAXITO','.EXCITA','.MAX MA','.THCPP ',
+     &            '.REDUCE','.BATCH '/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
       ICHANG = 0
@@ -116,7 +116,7 @@ C
                   IF (TABLE(I) .EQ. WORD) 
      &                GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      &                     16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,
-     &                     31),I
+     &                     31,32),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -278,9 +278,12 @@ c               ABS_REDUCE = .TRUE.
                READ(LUCMD,*) ABS_NBATCHMAX
                GOTO 100
  24            CONTINUE
-                 ABS_OLDCPP = .TRUE.
+                 ABS_REBD = .FALSE.
                GOTO 100
  25            CONTINUE
+                 ABS_OLDCPP = .TRUE.
+               GOTO 100
+ 26            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_MICRO
                ELSE
@@ -288,7 +291,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 26            CONTINUE
+ 27            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_ITORB
                   IF (MAX_ITORB .GT. 0) OPTORB = .TRUE.
@@ -297,7 +300,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 27             CONTINUE
+ 28             CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) NEXCITED_STATES
                ELSE
@@ -305,7 +308,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 28             CONTINUE
+ 29             CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_MACRO
                ELSE
@@ -313,7 +316,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 29            CONTINUE
+ 30            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) THCPP_ABSORP
                   ABS_THCLR=THCPP_ABSORP
@@ -322,14 +325,14 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 30            CONTINUE
+ 31            CONTINUE
                  IF (ABS_OLDCPP) THEN
                  ABS_REDUCE=.TRUE.
                ELSE
                   WRITE(LUPRI,1020) WORD
                END IF
                GOTO 100
- 31            CONTINUE
+ 32            CONTINUE
                READ(LUCMD,*) NFREQ_BATCH
                IF (NFREQ_BATCH.GT.MXFREQ) THEN
                   NFREQ_BATCH = MXFREQ
@@ -774,7 +777,7 @@ C
                IF (IPRABSLRS.GE.0) THEN
                   WRITE(LUPRI,'(/2A,/3A,I2,A/,A,5(4F12.8,/,11X))') 
      &                 ' ABSLRS -- Solving linear response equations',
-     &                 '( E[2] - {w-iW}*S[2] ) N = B[1]  ',
+     &                 '( E[2] - {w+iW}*S[2] ) N = B[1]  ',
      &                 ' ABSLRS -- for operator ', LABEL,
      &                 ' of symmetry',ISYM,' at frequencies:',
      &                 ' ABSLRS --',(ABS_FREQ_ALPHA(I),

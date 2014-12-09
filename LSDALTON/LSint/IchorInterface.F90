@@ -293,7 +293,7 @@ end SUBROUTINE determine_Ichor_batchesofAOS
 !dim1,dim2,dim3,dim4 are the AO dimensions 
 SUBROUTINE MAIN_ICHORERI_MOTRANS_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
      & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,&
-     & Cocc,Cvirt,nOcc,nVirt)
+     & Cocc,Cvirt,nOcc,nVirt,intThreshold)
 implicit none
 TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: LUPRI,IPRINT,dim1,dim2,dim3,dim4,nOcc,nVirt
@@ -301,7 +301,7 @@ logical,intent(in)        :: FullBatch  !full batches are assumed and the nbatch
 integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
 integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
 real(realk),intent(in)    :: Cvirt(dim1,nVirt)
-real(realk),intent(in)    :: Cocc(dim2,nOcc)
+real(realk),intent(in)    :: Cocc(dim2,nOcc),intThreshold
 real(realk),intent(inout) :: integrals(nVirt,nOcc,nVirt,nOcc)
 Character,intent(IN)      :: intSpec(5)
 !
@@ -325,14 +325,14 @@ call IchorInputM2(Cvirt,dim1,nVirt,Cocc,dim2,nOcc)
 call IchorInputSpec(1,2,1,2)
 CALL MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
      & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,&
-     & nbatchDend,MoTrans,nVirt,nOcc,nVirt,nOcc,NoSymmetry)
+     & nbatchDend,MoTrans,nVirt,nOcc,nVirt,nOcc,NoSymmetry,intThreshold)
 call FreeIchorInputInfo()
 #endif
 END SUBROUTINE MAIN_ICHORERI_MOTRANS_DRIVER
 
 SUBROUTINE MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
      & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,&
-     & MoTrans,OutDim1,OutDim2,OutDim3,OutDim4,NoSymmetry)
+     & MoTrans,OutDim1,OutDim2,OutDim3,OutDim4,NoSymmetry,intThreshold)
 implicit none
 TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: LUPRI,IPRINT
@@ -343,6 +343,7 @@ logical,intent(in)        :: MoTrans,NoSymmetry
 integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
 integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
 real(realk),intent(inout) :: integrals(OutDim1,OutDim2,OutDim3,OutDim4)
+real(realk),intent(in)    :: intThreshold
 Character,intent(IN)      :: intSpec(5)
 #ifdef VAR_ICHOR
 !
@@ -484,9 +485,9 @@ OutputDim2=Outdim2
 OutputDim3=Outdim3
 OutputDim4=Outdim4
 OutputDim5=1
-THRESHOLD_OD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%OD_THRESHOLD
-THRESHOLD_CS = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-THRESHOLD_QQR = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*0.50E0_realk
+THRESHOLD_OD = intThreshold*1.0E-1_realk
+THRESHOLD_CS = intThreshold
+THRESHOLD_QQR = intThreshold
 ForceCPU = SETTING%SCHEME%IchorForceCPU
 ForceGPU = SETTING%SCHEME%IchorForceGPU
 !print*,'THRESHOLD_CS',THRESHOLD_CS,'THRESHOLD_OD',THRESHOLD_OD
@@ -573,7 +574,7 @@ end subroutine GetIchorOpereratorIntSpec
 
 SUBROUTINE MAIN_ICHORERIMEM_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
      & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,&
-     & MoTrans,OutDim1,OutDim2,OutDim3,OutDim4,NoSymmetry,MaxMemoryUsage)
+     & MoTrans,OutDim1,OutDim2,OutDim3,OutDim4,NoSymmetry,MaxMemoryUsage,intThreshold)
 implicit none
 TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: LUPRI,IPRINT
@@ -586,6 +587,7 @@ integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
 real(realk),intent(inout) :: integrals(OutDim1,OutDim2,OutDim3,OutDim4)
 Character,intent(IN)      :: intSpec(5)
 integer(kind=long),intent(inout) :: MaxMemoryUsage !only actual output  
+real(realk),intent(in) :: intThreshold
 #ifdef VAR_ICHOR
 !
 integer                :: nTypes
@@ -727,9 +729,9 @@ OutputDim2=Outdim2
 OutputDim3=Outdim3
 OutputDim4=Outdim4
 OutputDim5=1
-THRESHOLD_OD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%OD_THRESHOLD
-THRESHOLD_CS = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-THRESHOLD_QQR = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*0.50E0_realk
+THRESHOLD_OD = intThreshold*1.0E-1_realk
+THRESHOLD_CS = intThreshold
+THRESHOLD_QQR = intThreshold
 ForceCPU = SETTING%SCHEME%IchorForceCPU
 ForceGPU = SETTING%SCHEME%IchorForceGPU
 !print*,'THRESHOLD_CS',THRESHOLD_CS,'THRESHOLD_OD',THRESHOLD_OD
@@ -1089,14 +1091,14 @@ END SUBROUTINE SCREEN_ICHORERI_DRIVER
 
 !K_(A,C) = (AB|CD) D_(BD)
 SUBROUTINE MAIN_LINK_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,nDmat,Kmat,Dmat,intspec,FullBatch,&
-     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend)
+     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,intThreshold)
 implicit none
 TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: LUPRI,IPRINT,dim1,dim2,dim3,dim4,nDmat
 logical,intent(in)        :: FullBatch!full batches are assumed and the nbatchXXX arguments are not used 
 integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
 integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
-real(realk),intent(in)    :: Dmat(dim2,dim4,nDmat)
+real(realk),intent(in)    :: Dmat(dim2,dim4,nDmat),intThreshold
 real(realk),intent(inout) :: Kmat(dim1,dim3,nDmat)
 Character,intent(IN)      :: intSpec(5)
 #ifdef VAR_ICHOR
@@ -1222,9 +1224,9 @@ OutputDim2=dim3
 OutputDim3=1
 OutputDim4=1
 OutputDim5=nDmat
-THRESHOLD_OD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%OD_THRESHOLD
-THRESHOLD_CS = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-THRESHOLD_QQR = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*0.50E0_realk
+THRESHOLD_OD = intThreshold*1.0E-1_realk
+THRESHOLD_CS = intThreshold
+THRESHOLD_QQR = intThreshold
 ForceCPU = SETTING%SCHEME%IchorForceCPU
 ForceGPU = SETTING%SCHEME%IchorForceGPU
 !print*,'THRESHOLD_CS',THRESHOLD_CS,'THRESHOLD_OD',THRESHOLD_OD

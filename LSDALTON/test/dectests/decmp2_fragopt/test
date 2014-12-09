@@ -38,28 +38,28 @@ f.add(from_string = 'MP2 occupied single energies',
       abs_tolerance = 1.0e-4)
 
 f.add(from_string = 'DEC-MP2 GRADIENT',
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 5.0e-4)
 
 f.add(from_string = 'TOTAL MP2 MOLECULAR GRADIENT',
       num_lines   = 13,
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 5.0e-4)
 
 f.add(from_string = 'Nuclear repulsion gradient',
       num_lines   = 13,
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 5.0e-4)
 
 f.add(from_string = 'One-electron integral gradient',
       num_lines   = 13,
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 5.0e-4)
 
 f.add(from_string = 'Reorthonormalization gradient',
       num_lines   = 13,
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 5.0e-4)
 
 f.add(from_string = 'Two-electron integral gradient',
       num_lines   = 14,
       ignore_below = 1.0e-7,
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 5.0e-4)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

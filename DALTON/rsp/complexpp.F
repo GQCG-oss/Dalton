@@ -90,7 +90,8 @@ c
         CONV(I)=.FALSE.
       ENDDO
 C
-      IF (MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0) THEN
+      IF ((MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0).AND. ABS_REBD) THEN
+c        write(luabspri,*) 'ABS_KLRED >0, restart'
         DO I=1,KZVAR
           WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
           WRK(KGD+KZVAR-1+I)=0.5d0*(GD(I)-GD(KZVAR+I))
@@ -120,6 +121,9 @@ C
      &               KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
         ENDIF
       ELSE
+c       CALL DZERO(WRK(KRESD),4*NEQ2S*KZVAR)
+c       CALL DZERO(WRK(KREDE),3*ABS_MAXRM*ABS_MAXRM)
+c       CALL DZERO(WRK(KREDGD),2*ABS_MAXRM)
         WRK(KREDE:KREDE+3*ABS_MAXRM*ABS_MAXRM-1) = 0.0d0
         WRK(KREDGD:KREDGD+2*ABS_MAXRM-1) = 0.0d0
 c
@@ -128,11 +132,20 @@ c
         NNLT=4*NEQ2S
         KLRED(1)=0
         KLRED(2)=0
+        IF (.NOT. ABS_REBD) THEN
+          REWIND(LUSB)
+          REWIND(LUAB)
+          REWIND(LUSS)
+          REWIND(LUAS)
+        ENDIF
+        
         CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
      &               WRK(KRESD),KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
 c
       ENDIF
 c
+c       CALL DZERO(WRK(KRESD),4*NEQ2S*KZVAR)
+c      WRK(KRESD:KRESD+4*NEQ2S*KZVAR-1) = 0.0d0
       WRK(KRESD:KRESD+4*NEQ2S*KZVAR-1) = 0.0d0
       
       ITER = 1
@@ -166,6 +179,7 @@ C
 C     Compute the residual in this iteration
 C     
       WRK(KRESD:KRESD+4*NEQ2S*KZVAR-1) = 0.0d0
+c       call DZERO(WRK(KRESD),4*NEQ2S*KZVAR)
       CALL ABS_RSD(WRK(KXRED),LABEL,KZVAR,NEQ2S,FREQS,KLRED,
      &             KNVEC,NNLT,WRK(KGD),
      &             WRK(KRESD),ITER,CONVERGED,
@@ -185,12 +199,12 @@ C
           WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
           GO TO 778
         END IF
-
+C
         RESLRF(1,J,INDEX,INDEX,ITYPE) = 
      &         DDOT(KZYVAR,GD,1,XSOL(1,1,J),1)
         RESLRF(2,J,INDEX,INDEX,ITYPE) = 
      &         DDOT(KZYVAR,GD,1,XSOL(1,2,J),1)
-C    
+C     
       ENDDO
  778  CONTINUE
 c
@@ -228,26 +242,31 @@ C
 C
  777  CONTINUE
 C
-      ABS_KLRED(1)=KLRED(1)
-      ABS_KLRED(2)=KLRED(2)
+      IF (ABS_REBD) THEN 
+        ABS_KLRED(1)=KLRED(1)
+        ABS_KLRED(2)=KLRED(2)
 C
-      CALL GPINQ('ABS_E1RED','EXIST',EX1)
-      CALL GPINQ('ABS_E2RED','EXIST',EX2)
-      CALL GPINQ('ABS_SRED','EXIST',EX3)
+        CALL GPINQ('ABS_E1RED','EXIST',EX1)
+        CALL GPINQ('ABS_E2RED','EXIST',EX2)
+        CALL GPINQ('ABS_SRED','EXIST',EX3)
 c
-      IF (EX1.AND.EX2.AND.EX3) THEN
-        REWIND(LUE1RED)
-        REWIND(LUE2RED)
-        REWIND(LUSRED)
-        DO I=1,KLRED(1)
-          CALL WRITE_VEC(LUE1RED,KLRED(1),WRK(KREDE+(I-1)*ABS_MAXRM))
-        ENDDO
-        DO I=1,KLRED(2)
-          CALL WRITE_VEC(LUE2RED,KLRED(2),WRK(KREDE+(I-1)*ABS_MAXRM+
-     &                                         ABS_MAXRM*ABS_MAXRM))
-          CALL WRITE_VEC(LUSRED,KLRED(1),WRK(KREDS+(I-1)*ABS_MAXRM))
-        ENDDO
-      ENDIF
+        IF (EX1.AND.EX2.AND.EX3) THEN
+          REWIND(LUE1RED)
+          REWIND(LUE2RED)
+          REWIND(LUSRED)
+          DO I=1,KLRED(1)
+            CALL WRITE_VEC(LUE1RED,KLRED(1),WRK(KREDE+(I-1)*ABS_MAXRM))
+          ENDDO
+          DO I=1,KLRED(2)
+            CALL WRITE_VEC(LUE2RED,KLRED(2),WRK(KREDE+(I-1)*ABS_MAXRM+
+     &                                           ABS_MAXRM*ABS_MAXRM))
+            CALL WRITE_VEC(LUSRED,KLRED(1),WRK(KREDS+(I-1)*ABS_MAXRM))
+          ENDDO
+        ENDIF
+       ELSE
+         ABS_KLRED(1)=0
+         ABS_KLRED(2)=0
+       ENDIF
 C
       END
       SUBROUTINE ABS_SOLV(FREQS,NFREQS,REDE,REDS,REDGD,RDX,KLRED,
@@ -1054,10 +1073,11 @@ c
 c
 C       perform linear transformations
 C
+Cpanor
 c         IF (ABS_DALINP) THEN
          CALL ABS_LINE2_INTER(KZVAR,WRK(KE2XF),XVEC,XTMP,WRK(KSVEC),
      &        ABS_GRADSYM,NNLT,NNMAX,KNVEC,CMO,FC,FCAC,FV,UDV,XINDX,
-     &        MJWOP,WRK(KFREE),LFREE)
+     &         MJWOP,WRK(KFREE),LFREE)
 C         ELSE
 C         get linear transformations A(x) -> WRK(KE2XF)
 C         ENDIF
@@ -1202,7 +1222,6 @@ C    3.  Othonormalize trial vectors in order
 C        /RS IS RA IA/
 C
       IMPLICIT REAL*8 (A-H,O-Z)
-C abslrs.h : LUABSPRI
 #include "abslrs.h"
       INTEGER NFREQS,KLRED(2),KNVEC(2),NNLT,KZVAR
       LOGICAL CONV(NFREQS)
@@ -1252,13 +1271,13 @@ C PURPOSE:
 C      preconditioning 
 C
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "abslrs.h"
       INTEGER NBPREV,NBNEW,NNR,NNI,KZVAR,LU1
       DIMENSION XRVEC(KZVAR,NBNEW/2),XIVEC(KZVAR,NBNEW/2)
       DIMENSION XORT(NBNEW*KZVAR),WRK(LWRK)
       LOGICAL CONV(NBNEW/2)
       LOGICAL ORCHK(NBNEW),ORTHO_QUIT
 c      PARAMETER (THR_LD=1.0D-2*THCLR_ABSORP)
+#include "abslrs.h"
 C
       KTMP =1
       KFREE = KTMP + KZVAR
@@ -1266,14 +1285,13 @@ C
       IF (LFREE.LT.0) STOP 'ABS_ORTHONORM: out of memory'
 C
       THR_LD=1.0D-8
-c      THR_LD2=THR_LD*THR_LD
       THR_LD2=0.0d0
 c
       DO I=1,NBNEW/2
         ORCHK(I)=CONV(I)
         ORCHK(NBNEW/2+I)=CONV(I)
       ENDDO
-c     
+c      
       DO ITURN=1,2
 C
 C     Orthonormalize trial vectors against the old vectors
@@ -1355,7 +1373,7 @@ c
                   T1 = 2.0d0*DDOT(KZVAR,XIVEC(1,J),1,XIVEC(1,J),1)
                   IF (T1 .GT. THR_LD2) THEN
                     T2 = 2.0d0*DDOT(KZVAR,XIVEC(1,J),1,
-     &                   XIVEC(1,I),1)
+     &                      XIVEC(1,I),1)
                     TT = T2/T1
                     CALL DAXPY(KZVAR,-TT,XIVEC(1,J),1,XIVEC(1,I),1)
                   ENDIF
@@ -1403,7 +1421,7 @@ c
           ORTHO_QUIT=.FALSE.
 c        ELSE
 c          write(luabspri,*)'vector skipped',I
-       END IF  
+        END IF  
       ENDDO
       NNI=0
       DO I=1,NBNEW/2

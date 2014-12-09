@@ -161,6 +161,7 @@ contains
     real(realk),pointer :: FragEnergies(:,:,:) !(natoms,natoms,ndecenergies)
     type(decfrag),pointer :: AtomicFragments(:)
     integer :: i,j,k,dims(2),nbasis,counter
+    real(realk) :: Esos,Eerrs
     !real(realk) :: energies(ndecenergies)
     real(realk),pointer :: energies(:)!(ndecenergies)
     logical :: dens_save ! Internal control of MP2 density keyword
@@ -492,6 +493,9 @@ contains
      call mem_dealloc(FragEnergies)
     !Obtain The Correlation Energy from the list energies
     call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Ecorr)
+    if(DECinfo%ccmodel == MODEL_RPA) then
+      call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Esos,.true.)
+    endif
     ! If singles polarization was considered, we need to
     ! ensure that the fullmolecule structure contains the standard
     ! (NOT T1 transformed) Fock matrix at output
@@ -531,22 +535,32 @@ contains
 
     ! Estimate energy error
     call get_estimated_energy_error(nfrags,energies,Eerr)
+    if(DECinfo%ccmodel == MODEL_RPA) then
+      call get_estimated_energy_error(nfrags,energies,Eerrs,.true.)
+    endif
     call mem_dealloc(energies)
 
     ! Print short summary
     call print_total_energy_summary(EHF,Ecorr,Eerr)
+    if(DECinfo%ccmodel == MODEL_RPA) then
+      call print_total_energy_summary(EHF,Esos,Eerrs,.true.)
+    endif
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 
   end subroutine main_fragment_driver
 
-  subroutine ObtainModelEnergyFromEnergies(ccmodel,energies,Ecorr)
+  subroutine ObtainModelEnergyFromEnergies(ccmodel,energies,Ecorr,doSOS)
     implicit none
     integer,intent(in)        ::  ccmodel
     real(realk),intent(in)    ::  energies(ndecenergies)
     real(realk),intent(inout) ::  Ecorr
+    logical,intent(in),optional :: doSOS
+    logical ::                     SOS
     ! MODIFY FOR NEW MODEL
     ! MODIFY FOR NEW CORRECTION: Add correction to output energy
     ! Set output energy: We choose occupied partitioning scheme energy as general output
+    SOS = .false.
+    if(present(doSOS)) SOS = doSOS
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! MP2, use occ energy
@@ -573,10 +587,18 @@ contains
        ENDIF
     case(MODEL_RPA)
        ! RPA, use occ energy
-       IF(DECinfo%onlyVirtPart)THEN
-          Ecorr = energies(FRAGMODEL_VIRTRPA)
+       if(SOS) then
+         IF(DECinfo%onlyVirtPart)THEN
+           Ecorr = energies(FRAGMODEL_VIRTSOS)
+         ELSE
+           Ecorr = energies(FRAGMODEL_OCCSOS)
+         ENDIF
        ELSE
-          Ecorr = energies(FRAGMODEL_OCCRPA)
+         IF(DECinfo%onlyVirtPart)THEN
+           Ecorr = energies(FRAGMODEL_VIRTRPA)
+         ELSE
+           Ecorr = energies(FRAGMODEL_OCCRPA)
+         ENDIF
        ENDIF
     case(MODEL_CC2)
        ! CC2, use occ energy
@@ -661,26 +683,16 @@ subroutine print_dec_info()
         & LogicString(Log2It(DECinfo%FragAdapt))
    write(LU,'(a,A5)')    'Fit Molecular Orbitals                              =           ',&
         & LogicString(Log2It(DECinfo%FitOrbitals))
+   write(LU,'(a,ES12.4)')'The Integral Screening threshold                    =           ',&
+        & DECinfo%IntegralThreshold
+
    !Oribtal Assignment 
    write(LU,'(A)') ' '
-   if(DECinfo%BoughtonPulay) then
-      write(LU,'(A)') 'DEC orbitals will be generated using Boughton-Pulay criteria'
-      if(DECinfo%Distance) then
-       write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based Distance criteria'
-      else 
-         IF(DECinfo%Mulliken)then
-          write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Mulliken population analysis'
-         ELSE
-          write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis'
-         ENDIF
-      endif
+   write(LU,'(A)') 'DEC orbitals will be generated using  simple Lowdin charge analysis'
+   if(DECinfo%Distance) then
+      write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based Distance criteria'
    else 
-      write(LU,'(A)') 'DEC orbitals will be generated using  simple Lowdin charge analysis'
-      if(DECinfo%Distance) then
-       write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based Distance criteria'
-      else 
-       write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis'
-      endif
+      write(LU,'(A)') 'Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis'
    endif
 
    !Fragment Optimization 

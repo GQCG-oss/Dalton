@@ -46,8 +46,7 @@ CONTAINS
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
-       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisContmaxsize,BasisCont)
+       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
     implicit none
     integer,intent(in) :: nPrimP,nPrimA,nPrimB
     integer,intent(in) :: IntPrint,lupri
@@ -72,10 +71,9 @@ CONTAINS
     real(realk),intent(in) :: Pdistance12(3)           !Acenter-Bcenter 
     real(realk),intent(in) :: Acenter(3),Bcenter(3)
     logical,intent(in) :: spherical
-    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize
+    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize
 !   TMP variables - allocated outside
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
-    real(realk),intent(inout) :: BasisCont(BasisContmaxsize)
 !   Local variables 
     integer :: AngmomP,I,J,nContQP,la,lb,lc,ld,nsize,angmomid,IatomAPass(1),IatomBPass(1)
     
@@ -541,11 +539,11 @@ CONTAINS
   end subroutine IGI_OBS_Seg
   
   subroutine IGI_OBS_general_sizeSeg(TMParray1maxsize,&
-         &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,nContP,nPrimB)
+         &TMParray2maxsize,AngmomA,AngmomB,nPrimP,nContP,nPrimB,nContA)
     implicit none
-    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize
+    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
     integer,intent(in) :: AngmomA,AngmomB
-    integer,intent(in) :: nPrimP,nContP,nPrimB
+    integer,intent(in) :: nPrimP,nContP,nPrimB,nContA
     ! local variables
     integer :: AngmomID
     
@@ -553,7 +551,6 @@ CONTAINS
     IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code
     TMParray2maxSize = 1
     TMParray1maxSize = 1
-    BasisContmaxsize = 1
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
        TMParray2maxSize = MAX(TMParray2maxSize,1)
