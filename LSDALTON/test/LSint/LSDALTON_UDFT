@@ -44,7 +44,7 @@ He    0.0000000000   0.0000000000   3.9218840000
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_UDFT.dal <<'%EOF%'
-**INTEGRALS
+**GENERAL
 .XCFUN
 **WAVE FUNCTIONS
 .DFT

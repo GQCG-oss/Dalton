@@ -5464,7 +5464,7 @@ IF(ADMMBASISFILE)Econt(3) = mat_dotproduct(TMPF,D)
 !Subtract XC-correction
 CALL lstimer('AUX-EX',ts,te,lupri)
 !****Calculation of Level 2 XC matrix from level 2 Density matrix starts here
-call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor)
+call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor,lupri)
 
 dodisp = setting%scheme%dft%dodisp
 if(setting%scheme%dft%dodisp) setting%scheme%dft%dodisp = .false.
@@ -5516,10 +5516,10 @@ ENDIF
 
 !Restore dft functional to original
 IF (setting%do_dft) THEN
-  call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),GGAXfactor)
+  call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),GGAXfactor,lupri)
   !Augment the functional with the admm gga exchange contribution X
    IF (.NOT.separateX) THEN
-     call II_DFTaddFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor)
+     call II_DFTaddFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor,lupri)
    ENDIF
 ENDIF
 
@@ -5690,7 +5690,7 @@ DO idmat=1,ndrhs
    ! XC-correction
    !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
 
-   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor)
+   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor,lupri)
 
    dodisp = setting%scheme%dft%dodisp
    if(setting%scheme%dft%dodisp) setting%scheme%dft%dodisp = .false.
@@ -5789,7 +5789,7 @@ ENDDO !idmat
 call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
 
 !Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight,lupri)
 if(dodisp) setting%scheme%dft%dodisp = dodisp
 !
 CONTAINS
