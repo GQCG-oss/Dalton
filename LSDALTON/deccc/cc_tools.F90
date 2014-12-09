@@ -571,7 +571,7 @@ module cc_tools_module
       case(4,3,2)
          !!SYMMETRIC COMBINATION
          !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'p',fa,fg,la,lg,nb,tlen,tred,goffs)
+         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs)
          !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -584,7 +584,7 @@ module cc_tools_module
 
          !!ANTI-SYMMETRIC COMBINATION
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'m',fa,fg,la,lg,nb,tlen,tred,goffs)
+         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs)
          !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -1266,6 +1266,16 @@ module cc_tools_module
    !> \date October 2012
    subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,qu,quarry)
       implicit none
+
+      abstract interface
+      function simple_ab_return_c(a,b) result(c)
+         use precision
+         import
+         real(realk), intent(in) :: a,b
+         real(realk) :: c
+      end function simple_ab_return_c
+      end interface
+
       !> blank workspace
       real(realk),intent(inout) :: w0(:),w2(:)
       !> workspace containing the integrals
@@ -1289,21 +1299,24 @@ module cc_tools_module
       integer(kind=8), intent(inout), optional :: quarry(3)
       integer :: i,alpha,beta,gamm,delta,cagc,cagi,bs,bctr
       integer :: alpha_b,beta_b,gamm_b,delta_b,elements,aleg
-      integer :: globg, globa, loca,eldiag,elsqre,nbnb,nrnb,omp_level
+      integer :: globg, globa, loca,eldiag,elsqre,nbnb,nrnb
       real(realk) ::chk,chk2,el
       real(realk),pointer :: trick(:,:,:)
       logical :: modb,query
+      procedure(simple_ab_return_c), pointer :: a_op_b => null()
+
+      select case(op)
+      case ('+')
+         a_op_b => a_plus_b
+      case ('-')
+         a_op_b => a_minus_b
+      case default
+         call lsquit("ERROR(get_I_plusminus_le): wrong op on input",-1)
+      end select
 
       query = .false.
       if(present(qu).and.present(quarry)) query = qu
 
-!#ifdef VAR_OMP
-!      integer, external :: omp_get_level
-!#endif
-      omp_level = 0
-!#ifdef VAR_OMP
-!      omp_level = omp_get_level()
-!#endif
       bs=int(sqrt(((8.0E6_realk)/1.6E1_realk)))
       !bs=5
       !print *,"block size",bs,(bs*bs*8)/1024.0E0_realk
@@ -1320,9 +1333,11 @@ module cc_tools_module
          quarry(3) = max(quarry(3),(i8*nb*nb)*cagi)
       else
          call ass_D1to3(w2,trick,[nb,nb,cagi])
-         if(op=='p')then
-            call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-            aleg=0
+         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
+         aleg=0
+
+         !select case(op)
+         !case ('+')
             do gamm=0,lg-1
                do alpha=0,la-1
                   if(fa+alpha<=fg+gamm)then
@@ -1333,7 +1348,7 @@ module cc_tools_module
                      if(fa+alpha==fg+gamm)   call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
                      call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
                      !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-                     !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
+                     !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb,a_op_b)&
                      !$OMP DEFAULT(NONE)
                      if(nbnb>0)then
                         !$OMP DO
@@ -1343,11 +1358,8 @@ module cc_tools_module
                                  do beta=0,bctr
                                     el=trick(beta+beta_b,delta_b+delta,aleg+1)
                                     trick(beta+beta_b,delta_b+delta,aleg+1)=&
-                                       &trick(beta+beta_b,delta_b+delta,aleg+1) + &
-                                       &trick(delta_b+delta,beta+beta_b,aleg+1)
-                                    trick(delta_b+delta,beta+beta_b,aleg+1)=&
-                                       &trick(delta_b+delta,beta+beta_b,aleg+1) + &
-                                       &el
+                                       &a_op_b(trick(delta_b+delta,beta+beta_b,aleg+1),trick(beta+beta_b,delta_b+delta,aleg+1))
+                                    trick(delta_b+delta,beta+beta_b,aleg+1)=a_op_b(el,trick(delta_b+delta,beta+beta_b,aleg+1))
                                  enddo
                               enddo
                            enddo
@@ -1361,11 +1373,8 @@ module cc_tools_module
                               do beta=nbnb+1,nb
                                  el=trick(beta,delta_b+delta,aleg+1)
                                  trick(beta,delta_b+delta,aleg+1)=&
-                                    &trick(beta,delta_b+delta,aleg+1) + &
-                                    &trick(delta_b+delta,beta,aleg+1)
-                                 trick(delta_b+delta,beta,aleg+1)=&
-                                    &trick(delta_b+delta,beta,aleg+1) + &
-                                    &el
+                                    &a_op_b(trick(delta_b+delta,beta,aleg+1),trick(beta,delta_b+delta,aleg+1))
+                                 trick(delta_b+delta,beta,aleg+1)=a_op_b(el,trick(delta_b+delta,beta,aleg+1))
                               enddo
                            enddo
                         enddo
@@ -1378,15 +1387,11 @@ module cc_tools_module
                               do beta=delta+1,bctr
                                  el=trick(beta+delta_b,delta_b+delta,aleg+1)
                                  trick(beta+delta_b,delta_b+delta,aleg+1)=&
-                                    &trick(beta+delta_b,delta_b+delta,aleg+1) + &
-                                    &trick(delta_b+delta,beta+delta_b,aleg+1)
-                                 trick(delta_b+delta,beta+delta_b,aleg+1)=&
-                                    &trick(delta_b+delta,beta+delta_b,aleg+1) + &
-                                    &el
+                                    &a_op_b(trick(delta_b+delta,beta+delta_b,aleg+1),trick(beta+delta_b,delta_b+delta,aleg+1))
+                                 trick(delta_b+delta,beta+delta_b,aleg+1)=a_op_b(el,trick(delta_b+delta,beta+delta_b,aleg+1))
                               enddo
                               trick(delta+delta_b,delta_b+delta,aleg+1)=&
-                                 &trick(delta+delta_b,delta_b+delta,aleg+1) + &
-                                 &trick(delta_b+delta,delta+delta_b,aleg+1)
+                                 &a_op_b(trick(delta_b+delta,delta+delta_b,aleg+1),trick(delta+delta_b,delta_b+delta,aleg+1))
                            enddo
                         enddo
                         !$OMP END DO NOWAIT
@@ -1396,117 +1401,126 @@ module cc_tools_module
                         do delta=nbnb+1,nb
                            do beta=delta+1,nb
                               el=trick(beta,delta,aleg+1)
-                              trick(beta,delta,aleg+1)=&
-                                 &trick(beta,delta,aleg+1) + &
-                                 &trick(delta,beta,aleg+1)
-                              trick(delta,beta,aleg+1)=&
-                                 &trick(delta,beta,aleg+1) + &
-                                 &el
+                              trick(beta,delta,aleg+1)=a_op_b(trick(delta,beta,aleg+1),trick(beta,delta,aleg+1))
+                              trick(delta,beta,aleg+1)=a_op_b(el,trick(delta,beta,aleg+1))
                            enddo
-                           trick(delta,delta,aleg+1)=&
-                              &trick(delta,delta,aleg+1) + &
-                              &trick(delta,delta,aleg+1)
+                           trick(delta,delta,aleg+1)=a_op_b(trick(delta,delta,aleg+1),trick(delta,delta,aleg+1))
                         enddo
                      endif
                      aleg=aleg+1
                   endif
                enddo
             enddo
-            call array_reorder_3d(1.0E0_realk,w2,nb,nb,cagi,[2,3,1],0.0E0_realk,w0)
-         endif
 
+         !case('-')
+         !   do gamm=0,lg-1
+         !      do alpha=0,la-1
+         !         if(fa+alpha<=fg+gamm)then
+         !            !aleg = (alpha+(gamm*(gamm+1))/2) 
+         !            eldiag = aleg*nb*nb
+         !            elsqre = alpha*nb*nb+gamm*nb*nb*la
+         !            call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
+         !            !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
+         !            !$OMP SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
+         !            !$OMP DEFAULT(NONE)
+         !            if(nbnb>0)then
+         !               !$OMP DO
+         !               do delta_b=1,nbnb,bs
+         !                  do beta_b=delta_b+bs,nbnb,bs
+         !                     do delta=0,bctr
+         !                        do beta=0,bctr
+         !                           el=trick(beta+beta_b,delta_b+delta,aleg+1)
+         !                           trick(beta+beta_b,delta_b+delta,aleg+1)=&
+         !                              &trick(delta_b+delta,beta+beta_b,aleg+1)- &
+         !                              &trick(beta+beta_b,delta_b+delta,aleg+1) 
+         !                           trick(delta_b+delta,beta+beta_b,aleg+1)=&
+         !                              &el - trick(delta_b+delta,beta+beta_b,aleg+1) 
+         !                        enddo
+         !                     enddo
+         !                  enddo
+         !               enddo
+         !               !$OMP END DO NOWAIT
+         !            endif
+         !            if(nbnb>0.and.modb)then
+         !               !$OMP DO
+         !               do delta_b=1,nbnb,bs
+         !                  do delta=0,bctr
+         !                     do beta=nbnb+1,nb
+         !                        el=trick(beta,delta_b+delta,aleg+1)
+         !                        trick(beta,delta_b+delta,aleg+1)=&
+         !                           &trick(delta_b+delta,beta,aleg+1)- &
+         !                           &trick(beta,delta_b+delta,aleg+1) 
+         !                        trick(delta_b+delta,beta,aleg+1)=&
+         !                           &el -trick(delta_b+delta,beta,aleg+1)
+         !                     enddo
+         !                  enddo
+         !               enddo
+         !               !$OMP END DO NOWAIT
+         !            endif
+         !            if(nbnb>0)then
+         !               !$OMP DO
+         !               do delta_b=1,nbnb,bs
+         !                  do delta=0,bctr
+         !                     do beta=delta+1,bctr
+         !                        el=trick(beta+delta_b,delta_b+delta,aleg+1)
+         !                        trick(beta+delta_b,delta_b+delta,aleg+1)=&
+         !                           &trick(delta_b+delta,beta+delta_b,aleg+1) - &
+         !                           &trick(beta+delta_b,delta_b+delta,aleg+1)
+         !                        trick(delta_b+delta,beta+delta_b,aleg+1)=&
+         !                           &el - trick(delta_b+delta,beta+delta_b,aleg+1)
+         !                     enddo
+         !                     trick(delta_b+delta,delta+delta_b,aleg+1)=&
+         !                        &trick(delta_b+delta,delta+delta_b,aleg+1) - &
+         !                        &trick(delta+delta_b,delta_b+delta,aleg+1)
+         !                  enddo
+         !               enddo
+         !               !$OMP END DO NOWAIT
+         !            endif
+         !            !$OMP END PARALLEL 
+         !            if(modb)then
+         !               do delta=nbnb+1,nb
+         !                  do beta=delta+1,nb
+         !                     el=trick(beta,delta,aleg+1)
+         !                     trick(beta,delta,aleg+1)=&
+         !                        &trick(delta,beta,aleg+1) - &
+         !                        &trick(beta,delta,aleg+1)
+         !                     trick(delta,beta,aleg+1)=&
+         !                        &el- trick(delta,beta,aleg+1)
+         !                  enddo
+         !                  trick(delta,delta,aleg+1)=&
+         !                     &trick(delta,delta,aleg+1) - &
+         !                     &trick(delta,delta,aleg+1)
+         !               enddo
+         !            endif
+         !            aleg=aleg+1
+         !         endif
+         !      enddo
+         !   enddo
 
-         !Calculate the antisymmetric combination in the same way
-         if(op=='m')then
-            call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-            aleg=0
-            do gamm=0,lg-1
-               do alpha=0,la-1
-                  if(fa+alpha<=fg+gamm)then
-                     !aleg = (alpha+(gamm*(gamm+1))/2) 
-                     eldiag = aleg*nb*nb
-                     elsqre = alpha*nb*nb+gamm*nb*nb*la
-                     call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
-                     !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-                     !$OMP SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
-                     !$OMP DEFAULT(NONE)
-                     if(nbnb>0)then
-                        !$OMP DO
-                        do delta_b=1,nbnb,bs
-                           do beta_b=delta_b+bs,nbnb,bs
-                              do delta=0,bctr
-                                 do beta=0,bctr
-                                    el=trick(beta+beta_b,delta_b+delta,aleg+1)
-                                    trick(beta+beta_b,delta_b+delta,aleg+1)=&
-                                       &trick(delta_b+delta,beta+beta_b,aleg+1)- &
-                                       &trick(beta+beta_b,delta_b+delta,aleg+1) 
-                                    trick(delta_b+delta,beta+beta_b,aleg+1)=&
-                                       &el - trick(delta_b+delta,beta+beta_b,aleg+1) 
-                                 enddo
-                              enddo
-                           enddo
-                        enddo
-                        !$OMP END DO NOWAIT
-                     endif
-                     if(nbnb>0.and.modb)then
-                        !$OMP DO
-                        do delta_b=1,nbnb,bs
-                           do delta=0,bctr
-                              do beta=nbnb+1,nb
-                                 el=trick(beta,delta_b+delta,aleg+1)
-                                 trick(beta,delta_b+delta,aleg+1)=&
-                                    &trick(delta_b+delta,beta,aleg+1)- &
-                                    &trick(beta,delta_b+delta,aleg+1) 
-                                 trick(delta_b+delta,beta,aleg+1)=&
-                                    &el -trick(delta_b+delta,beta,aleg+1)
-                              enddo
-                           enddo
-                        enddo
-                        !$OMP END DO NOWAIT
-                     endif
-                     if(nbnb>0)then
-                        !$OMP DO
-                        do delta_b=1,nbnb,bs
-                           do delta=0,bctr
-                              do beta=delta+1,bctr
-                                 el=trick(beta+delta_b,delta_b+delta,aleg+1)
-                                 trick(beta+delta_b,delta_b+delta,aleg+1)=&
-                                    &trick(delta_b+delta,beta+delta_b,aleg+1) - &
-                                    &trick(beta+delta_b,delta_b+delta,aleg+1)
-                                 trick(delta_b+delta,beta+delta_b,aleg+1)=&
-                                    &el - trick(delta_b+delta,beta+delta_b,aleg+1)
-                              enddo
-                              trick(delta_b+delta,delta+delta_b,aleg+1)=&
-                                 &trick(delta_b+delta,delta+delta_b,aleg+1) - &
-                                 &trick(delta+delta_b,delta_b+delta,aleg+1)
-                           enddo
-                        enddo
-                        !$OMP END DO NOWAIT
-                     endif
-                     !$OMP END PARALLEL 
-                     if(modb)then
-                        do delta=nbnb+1,nb
-                           do beta=delta+1,nb
-                              el=trick(beta,delta,aleg+1)
-                              trick(beta,delta,aleg+1)=&
-                                 &trick(delta,beta,aleg+1) - &
-                                 &trick(beta,delta,aleg+1)
-                              trick(delta,beta,aleg+1)=&
-                                 &el- trick(delta,beta,aleg+1)
-                           enddo
-                           trick(delta,delta,aleg+1)=&
-                              &trick(delta,delta,aleg+1) - &
-                              &trick(delta,delta,aleg+1)
-                        enddo
-                     endif
-                     aleg=aleg+1
-                  endif
-               enddo
-            enddo
-            call array_reorder_3d(1.0E0_realk,w2,nb,nb,cagi,[2,3,1],0.0E0_realk,w0)
-         endif
+         !case default
+         !   call lsquit("ERROR(get_I_plusminus_le): wrong op on input",-1)
+         !end select
+
+         call array_reorder_3d(1.0E0_realk,w2,nb,nb,cagi,[2,3,1],0.0E0_realk,w0)
          nullify(trick)
+
       endif
+
+      contains
+
+      function a_plus_b(a,b) result(c)
+         implicit none
+         real(realk), intent(in) :: a, b
+         real(realk) :: c
+         c = a + b
+      end function a_plus_b
+      function a_minus_b(a,b) result(c)
+         implicit none
+         real(realk), intent(in) :: a, b
+         real(realk) :: c
+         c = a - b
+      end function a_minus_b
+
    end subroutine get_I_plusminus_le
 
    !> \brief subroutine to add contributions to the sio4 matrix which enters the
