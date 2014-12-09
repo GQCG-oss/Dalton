@@ -828,6 +828,7 @@ ENDDO
 CALL lsCLOSE(LUCMD,'KEEP')
 
 if (config%solver%do_dft) then
+   hfweight = 0.0E0_realk
    CALL II_DFTsetFunc(config%integral%dft%dftfunc,hfweight,lupri)
    !it is assumed that hfweight is set to zero and only  
    !changed if the functional require a HF weight  
@@ -4012,6 +4013,7 @@ use typedef
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
+  hfweight = 0.0E0_realk
   call II_DFTsetFunc(WORD,hfweight,6)
 end subroutine lsmpi_setSlaveFunc
 

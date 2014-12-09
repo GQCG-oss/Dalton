@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > LSDALTON_dftfunc_GGAKey.info <<'%EOF%'
-   LSDALTON_dftfunc_GGAKey
+cat > LSDALTON_dftfunc_GGAKey_psfun.info <<'%EOF%'
+   LSDALTON_dftfunc_GGAKey_psfun
    -------------
    Molecule:         water/6-31G**
    Wave Function:    GGAKEY HCTH147=0.2 HCTH120=0.2 HCTH407=0.2 HCTH93=0.2 B97-1=0.2
@@ -28,7 +28,7 @@ cat > LSDALTON_dftfunc_GGAKey.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > LSDALTON_dftfunc_GGAKey.mol <<'%EOF%'
+cat > LSDALTON_dftfunc_GGAKey_psfun.mol <<'%EOF%'
 BASIS
 6-31G**
 LSint test, H2O
@@ -44,7 +44,7 @@ H    -1.452350000   0.899623000   0.00000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > LSDALTON_dftfunc_GGAKey.dal <<'%EOF%'
+cat > LSDALTON_dftfunc_GGAKey_psfun.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
 GGAKey HCTH147=0.2 HCTH120=0.2 HCTH407=0.2 HCTH93=0.2 B97-1=0.2
@@ -59,8 +59,8 @@ STANDARD
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >LSDALTON_dftfunc_GGAKey.check
-cat >> LSDALTON_dftfunc_GGAKey.check <<'%EOF%'
+echo $CHECK_SHELL >LSDALTON_dftfunc_GGAKey_psfun.check
+cat >> LSDALTON_dftfunc_GGAKey_psfun.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
