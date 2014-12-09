@@ -361,9 +361,6 @@ C
 C        ... flag(11) definitely not needed after DIIS /hjaaj.apr2000
 C
 C        Call SIROPT to perform QC-SCF iterations
-         if (dodft) then
-             call quit('QC-SCF not implemented/tested for DFT')
-         end if
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
