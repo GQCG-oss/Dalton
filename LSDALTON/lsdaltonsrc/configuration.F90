@@ -943,27 +943,28 @@ subroutine read_dft_input(config,lucmd,lupri)
                     ENDIF
                  ENDIF
               ENDIF
+              if (USEXCFUN) then
+                 TMPWORD=''
+                 write(tmpword,*) config%integral%CAMmu
+                 DO IPOSMU=1,LEN(tmpword)
+                    IF (tmpword(IPOSMU:IPOSMU).NE." ") EXIT
+                 ENDDO
+                 FormatString= "(A18,A11,G22.16,A10,G22.16,A29,A13)" 
+                 write(XCfunString,FormatString) 'GGAKEY BECKECAMX=1',&
+                      & ' CAM_ALPHA=',config%integral%CAMalpha,&
+                      & ' CAM_BETA=',config%integral%CAMbeta,&
+                      & ' VWN5C=0.19 LYPC=0.81 EXX=1.0',&
+                      & ' RANGESEP_MU='
+                 XCfunString = ( trim(XCfunString) // tmpword(IPOSMU:(IPOSMU+8)) )
+              else
+                 XCfunString = WORD
+              endif
            ELSE
               config%integral%CAMalpha=0.19E0_realk
               config%integral%CAMbeta=0.46E0_realk
               config%integral%CAMmu=0.33E0_realk
-           ENDIF
-           if (USEXCFUN) then
-              TMPWORD=''
-              write(tmpword,*) config%integral%CAMmu
-              DO IPOSMU=1,LEN(tmpword)
-                 IF (tmpword(IPOSMU:IPOSMU).NE." ") EXIT
-              ENDDO
-              FormatString= "(A18,A11,G22.16,A10,G22.16,A29,A13)" 
-              write(XCfunString,FormatString) 'GGAKEY BECKECAMX=1',&
-                   & ' CAM_ALPHA=',config%integral%CAMalpha,&
-                   & ' CAM_BETA=',config%integral%CAMbeta,&
-                   & ' VWN5C=0.19 LYPC=0.81 EXX=1.0',&
-                   & ' RANGESEP_MU='
-              XCfunString = ( trim(XCfunString) // tmpword(IPOSMU:(IPOSMU+8)) )
-           else
               XCfunString = WORD
-           endif
+           ENDIF
            WRITE(LUPRI,*) 'This is a CAM functional with'
            WRITE(LUPRI,*) 'config%integral%CAMalpha',config%integral%CAMalpha
            WRITE(LUPRI,*) 'config%integral%CAMbeta',config%integral%CAMbeta
