@@ -253,13 +253,14 @@ INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,IPOS3,IPOSMU,COUNTER
 character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
-LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,WAVE
+LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,WAVE,exchangescale
 !LINSCA variables:
 real(realk)        :: shift, min_density_overlap, maxratio, zero
 integer            :: nvec, i
 Real(realk)        :: hfweight 
 
 WAVE = .FALSE.
+exchangescale = .FALSE.
 
 STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
@@ -327,6 +328,7 @@ DO
                      config%integral%exchangeFactor = 0E0_realk
                      config%integral%dft%HFexchangeFac = 0E0_realk
             CASE ('.EXCHANGESCAL');
+               exchangescale = .TRUE.
                READ(LUCMD,*) config%integral%exchangeFactor
                config%integral%dft%HFexchangeFac = config%integral%exchangeFactor
             CASE ('.DFT'); 
@@ -830,8 +832,10 @@ if (config%solver%do_dft) then
    !it is assumed that hfweight is set to zero and only  
    !changed if the functional require a HF weight  
    !different from zero. 
-   config%integral%exchangeFactor = hfweight
-   config%integral%dft%HFexchangeFac = hfweight
+   IF (.NOT.exchangescale) THEN
+     config%integral%exchangeFactor = hfweight
+     config%integral%dft%HFexchangeFac = hfweight
+   ENDIF
 #ifdef BUILD_CGTODIFF
 #ifdef VAR_MPI
    call lsquit('cgto_diff_eri not testet for MPI',-1)

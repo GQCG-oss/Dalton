@@ -120,6 +120,7 @@ Functional LB94Functional = {"LB94",      /* name */
 static integer
 lb94_read(const char* conf_line, real *hfweight)
 {
+    *hfweight = 0;
     return 1;
 }
 
