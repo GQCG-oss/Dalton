@@ -704,7 +704,7 @@ C
           WRITE(LUPRI,*) 'Vectors equal to zero'
         ELSE
           CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &               ABS_FREQ_ALPHA,
+     &               ABS_FREQ_ALPHA,NFREQ_ALPHA,
      &               WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &               WRK(KRES),WRK(KFREE),LFREE)
         ENDIF   

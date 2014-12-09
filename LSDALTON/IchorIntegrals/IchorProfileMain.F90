@@ -64,11 +64,12 @@ CHARACTER(len=20)    :: BASISTYPE(13)
 integer :: iBASISTYPE(13),DebugIchorOption,ifilename,nKK,KK
 integer :: DebugIchorOption2,nRepetitions,L,K,I,J,selected_device_number
 character(len=100) :: filename
-logical      :: SpecialPass,FAIL(13,13,13,13),ALLPASS
+logical      :: SpecialPass,FAIL(13,13,13,13),ALLPASS,ForceCPU,ForceGPU
 real(8) :: WALLTIMEFULL,WALLTIMECASE,WALLTIMEseg,WALLTIMEsegP,WALLTIMEsegQ
 real(8) :: WALLTIMEseg1Prim,WALLTIMEGen,TIME1,TIME2,DELTAWALL,CPUTIME,WALLTIME,GPUMAXMEM
 integer(kind=accdevkind) :: acc_device_type
-
+ForceCPU = .FALSE.
+ForceGPU = .FALSE.
 #ifdef VAR_OPENACC
 acc_device_type = acc_get_device_type()
 print*,'acc_get_device_type = ',acc_device_type
@@ -432,7 +433,7 @@ do Ipass = IpassStart,IpassEnd
              & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
              & MaxFileStorage,MaxMemAllocated,MemAllocated,&
              & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-             & integrals,lupri)
+             & integrals,ForceCPU,ForceGPU,lupri)
 
 
         CALL ICHOR_GETTIM(TIME1,TIME2)

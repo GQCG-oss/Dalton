@@ -56,8 +56,12 @@ if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_64BITS)
 endif()
 
-if(ENABLE_OPENACC)
+if(ENABLE_GPU)
     add_definitions(-DVAR_OPENACC)
+    add_definitions(-DVAR_CUDA)
+    if(ENABLE_CUBLAS)
+        add_definitions(-DVAR_CUBLAS)
+    endif()
 endif()
 
 if(ENABLE_CSR)

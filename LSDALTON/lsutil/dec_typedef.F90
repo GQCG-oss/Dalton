@@ -146,6 +146,13 @@ module dec_typedef_module
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
      logical :: read_dec_orbitals
 
+     
+     !> Integral Stuff
+     !> ************
+     !> Screening threshold for Integral evaluation
+     real(realk) :: IntegralThreshold
+     !> Use Ichor Integral Code
+     logical :: UseIchor
 
      !> Memory stuff
      !> ************
@@ -262,6 +269,8 @@ module dec_typedef_module
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
      integer :: ijk_nbuffs
+     !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
+     integer :: abc_nbuffs
 
      !> F12 settings
      !> ************
@@ -351,14 +360,6 @@ module dec_typedef_module
      integer,pointer :: frag_job_nr(:)
      !> Use hack to specify only pair fragment jobs
      logical         :: only_pair_frag_jobs
-     !> Use Boughton-Pulay criteria for generating orbitals rather than simple Lowdin charge criteria
-     logical :: BoughtonPulay
-     !> Simple Mulliken charge threshold (only for Boughton-Pulay procedure)
-     real(realk) :: mulliken_threshold
-     !> Simple Mulliken charge criteria 
-     logical :: simple_mulliken_threshold
-     !> Norm error in approximated (fitted orbitals)
-     real(realk) :: approximated_norm_threshold
      !> Use Mulliken population analysis to assign orbitals (default: Lowdin, only for Boughton-Pulay)
      logical :: mulliken
      !> Use Distance criteria to determine central atom
@@ -479,8 +480,6 @@ module dec_typedef_module
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
 
-     !> Use Ichor Integral Code
-     logical :: UseIchor
   end type DECSETTINGS
 
 
@@ -553,7 +552,7 @@ module dec_typedef_module
      !> Central atom to which orbital is assigned
      integer :: centralatom
      !> Number of significant atoms
-     integer :: numberofatoms
+!     integer :: numberofatoms
      !> Secondary central atom for orbital. For example, if virtual orbital "a" is assigned to
      !> a hydrogen atom "H_A" for which there are no occupied orbitals assigned, the secondary
      !> central atom for orbital "a" will be the atom closest to "H_A" which has a nonzero number
@@ -561,7 +560,11 @@ module dec_typedef_module
      integer :: secondaryatom
 
      !> List of significant atoms
-     integer, pointer :: atoms(:) => null()
+!     integer, pointer :: atoms(:) => null()
+     !> Number of significant Atomic Orbitals
+     integer :: numberofaos
+     !> List of significant Atomic Orbitals
+     integer, pointer :: aos(:) => null()
 
   end type decorbital
 
@@ -616,6 +619,10 @@ module dec_typedef_module
      integer, pointer :: atom_start(:) => null()
      !> Index of the last basis function for an atom
      integer, pointer :: atom_end(:) => null()
+     !> Index of the first basis function for the angmom
+     integer, pointer :: bas_start(:) => null()
+     !> Index of the last basis function for the angmom
+     integer, pointer :: bas_end(:) => null()
      !> Number of CABS basis functions on atoms
      integer, pointer :: atom_cabssize(:) => null()
      !> Index of the first CABS basis function for an atom

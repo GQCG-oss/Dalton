@@ -62,7 +62,7 @@ CONTAINS
     CHARACTER(len=100)   :: filename
     CHARACTER(len=20)    :: BASISTYPE(13)
     integer              :: iBasisType(13)
-    real(realk)          :: Rxyz(3),ts,te
+    real(realk)          :: Rxyz(3),ts,te,IntThreshold
     type(lsmatrix)       :: FINALVALUE(2)
     logical      :: spherical,savedospherical,SpecialPass,LHS
     logical      :: FAIL(13,13,13,13),ALLPASS,SameMOL,TestScreening
@@ -76,6 +76,7 @@ CONTAINS
     integer :: nKK,KK,DebugIchorOption2,nOperator,iOper
     type(matrix) :: GAB
     logical:: generateFiles,Profile
+    IntThreshold = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
     generateFiles = .FALSE.
     filename(1:13) = 'IchorUnitTest'
     ifilename = 14
@@ -591,7 +592,7 @@ CONTAINS
                SameMOL = .FALSE.       
                call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
                call MAIN_LINK_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,&
-                    & nDmat,KmatIchor,Dmat,intspec,.TRUE.,1,1,1,1,1,1,1,1)
+                    & nDmat,KmatIchor,Dmat,intspec,.TRUE.,1,1,1,1,1,1,1,1,intThreshold)
                call FREE_SCREEN_ICHORERI
                
                !             WRITE(lupri,*)'The Exchange Matrix: '
@@ -685,7 +686,7 @@ CONTAINS
                call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
                call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,&
                     & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1,&
-                    & MoTrans,dim1,dim2,dim3,dim4,NoSymmetry)
+                    & MoTrans,dim1,dim2,dim3,dim4,NoSymmetry,intThreshold)
                CALL LSTIMER('Ichor ',ts,te,lupri)
                
                IF(generateFiles)THEN
@@ -1278,10 +1279,11 @@ type(matrix),intent(in)          :: D(1)
 Character,intent(in)             :: intSpec(5)
 logical,intent(in)               :: SameMOL,Dsym
 !
-real(realk)           :: ts,te,IchorE1,ThermiteE1
+real(realk)           :: ts,te,IchorE1,ThermiteE1,intThreshold
 type(matrix)          :: K(1)
 integer :: iprint
 iprint = 0
+intThreshold = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
 call mat_init(K(1),nbast,nbast)
 call mat_zero(K(1))
 CALL LSTIMER('START',ts,te,lupri)
@@ -1297,7 +1299,7 @@ call mat_zero(K(1))
 CALL LSTIMER('START',ts,te,lupri)
 call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
 call MAIN_LINK_ICHORERI_DRIVER(LUPRI,IPRINT,setting,nbast,nbast,nbast,nbast,&
-     & nDmat,K(1)%elms,D(1)%elms,intspec,.TRUE.,1,1,1,1,1,1,1,1)
+     & nDmat,K(1)%elms,D(1)%elms,intspec,.TRUE.,1,1,1,1,1,1,1,1,intThreshold)
 call FREE_SCREEN_ICHORERI
 CALL LSTIMER('IchorK',ts,te,lupri)
 WRITE(lupri,*)'K exchange Matrix Ichor'

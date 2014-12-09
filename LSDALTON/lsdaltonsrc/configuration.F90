@@ -3413,11 +3413,13 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          inverse_std_conv_factor = 1.0E+5_realk
       IF(conv_factor*inverse_std_conv_factor.LT.0.9)THEN
          Write(config%LUPRI,'(A)')' '
-         Write(config%LUPRI,'(A)')' Due to the tightend SCF convergence threshold we also tighten the integral Threshold'
-         Write(config%LUPRI,*)'with a factor:',conv_factor*inverse_std_conv_factor
-         ls%input%dalton%THRESHOLD = conv_factor*inverse_std_conv_factor*ls%input%dalton%THRESHOLD
-         config%integral%THRESHOLD = conv_factor*inverse_std_conv_factor*config%integral%THRESHOLD
-         ls%setting%scheme%THRESHOLD = conv_factor*inverse_std_conv_factor*ls%setting%scheme%THRESHOLD
+         IF(.NOT.DECinfo%HFrestart)THEN
+            Write(config%LUPRI,'(A)')' Due to the tightend SCF convergence threshold we also tighten the integral Threshold'
+            Write(config%LUPRI,*)'with a factor:',conv_factor*inverse_std_conv_factor
+            ls%input%dalton%THRESHOLD = conv_factor*inverse_std_conv_factor*ls%input%dalton%THRESHOLD
+            config%integral%THRESHOLD = conv_factor*inverse_std_conv_factor*config%integral%THRESHOLD
+            ls%setting%scheme%THRESHOLD = conv_factor*inverse_std_conv_factor*ls%setting%scheme%THRESHOLD
+         ENDIF
       ENDIF
       if (config%decomp%cfg_unres) then
          config%solver%lshift_by_hlgap = .false. !HOMO LUMO shift not implemented for unrestricted

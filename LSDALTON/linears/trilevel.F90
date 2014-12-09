@@ -736,13 +736,14 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
 end subroutine trilevel_convert_ao2gcao
 
 subroutine trilevel_ALLOC_SYNC_VBASIS(VBASISINFO,BASISINFO,GCtrans,integralGCtrans,&
-     & GCtransAlloc,GCbasis,lupri)
+     & GCtransAlloc,GCbasis,MOLECULE,lupri)
 IMPLICIT NONE
 TYPE(BASISSETINFO) :: BASISINFO,VBASISINFO,GCtrans
+TYPE(MOLECULEINFO) :: MOLECULE
 logical            :: integralGCtrans,GCtransAlloc,GCbasis
 INTEGER            :: I,J,K,L,nrow,nsize,icharge,maxcharge,ncol,lupri
 real(realk),pointer:: CCtmp(:,:),Exponents(:),bCMO(:,:) 
-integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
+integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2,R
   IF(integralGCtrans)THEN
      !it is not possible to transform back and forth on level 2 
      call lsquit('VBASIS ALWAYS TRANSFORMED TO GC BASIS no integraltransform',-1)
@@ -835,22 +836,29 @@ integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
         call mem_dealloc(CCtmp)
      ENDDO
   ENDDO
-  VBASISINFO%labelindex = BASISINFO%labelindex
   IF(BASISINFO%labelindex.EQ. 0)THEN
+     VBASISINFO%labelindex = 0
      CALL MEM_ALLOC(VBASISINFO%chargeindex,BASISINFO%nchargeindex,.TRUE.)
      VBASISINFO%nchargeindex = BASISINFO%nchargeindex
      VBASISINFO%chargeindex(0:BASISINFO%nchargeindex) = &
           &BASISINFO%chargeindex(0:BASISINFO%nchargeindex)
+  ELSE
+     VBASISINFO%labelindex = VALBasParam
+     R = BASISINFO%labelindex
+     DO J=1,molecule%natoms
+        molecule%atom(J)%idtype(VALBasParam) = molecule%atom(J)%idtype(R)
+     ENDDO
   ENDIF
   VBASISINFO%label = 'VALENCE  '
 
 END SUBROUTINE trilevel_ALLOC_SYNC_VBASIS
 
-subroutine trilevel_ALLOC_SYNC_GCTRANS(GCtrans,REGULAR)
+subroutine trilevel_ALLOC_SYNC_GCTRANS(GCtrans,REGULAR,MOLECULE)
 implicit none
+TYPE(MOLECULEINFO) :: MOLECULE
 TYPE(BASISSETINFO),intent(in) :: REGULAR
 TYPE(BASISSETINFO),intent(inout) :: GCtrans
-INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK
+INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK,R
 
   IF (REGULAR%natomtypes.eq. 0) THEN
      CALL LSQUIT('Try to build GCtrans for natomtypes=0',6)
@@ -888,12 +896,18 @@ INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK
         enddo
      ENDDO
   ENDDO
-  GCtrans%labelindex = REGULAR%labelindex
   IF(REGULAR%labelindex.EQ. 0)THEN
+     GCtrans%labelindex = 0
      CALL MEM_ALLOC(GCtrans%chargeindex,REGULAR%nchargeindex,.TRUE.)
      GCtrans%nchargeindex = REGULAR%nchargeindex
      GCtrans%chargeindex(0:REGULAR%nchargeindex) = &
           &REGULAR%chargeindex(0:REGULAR%nchargeindex)
+  ELSE
+     GCtrans%labelindex = GCTBasParam 
+     R = REGULAR%labelindex
+     DO J=1,molecule%natoms
+        molecule%atom(J)%idtype(GCTBasParam) = molecule%atom(J)%idtype(R)
+     ENDDO
   ENDIF
   GCtrans%label = 'GCTRANS  '
 
@@ -946,7 +960,7 @@ ls%setting%integraltransformGC = .FALSE.
 ! This is needed whenever we go from AO to GC baiss and back.
 ls%input%basis%WBASIS(GCTBasParam) = .TRUE.
 CALL trilevel_ALLOC_SYNC_GCTRANS(ls%input%BASIS%BINFO(GCTBasParam),&
-     & ls%input%basis%BINFO(RegBasParam))
+     & ls%input%basis%BINFO(RegBasParam),ls%input%molecule)
 do i=1, ai%ND
    itype = ai%UATOMTYPE(i)
    IF(ls%input%molecule%atom(ai%NATOM(i))%pointcharge)CYCLE
@@ -1115,11 +1129,21 @@ TYPE(trilevel_atominfo) :: ai
 integer             :: nbast,itype,nAngmom,charge,ang,nb,nocc
 integer             :: icharge,jatom,nsegments,tmpindex,seg,iprim
 integer, pointer    :: basis_size(:)
-integer :: len
+integer :: len,R,J
 CALL trilevel_ALLOC_SYNC_VBASIS(ls%input%basis%BINFO(VALBasParam),&
      & ls%input%basis%BINFO(RegBasParam),ls%input%basis%BINFO(GCTBasParam),&
      & ls%setting%integraltransformGC,ls%input%basis%wbasis(gctbasparam),&
-     & ls%input%basis%BINFO(RegBasParam)%GCbasis,lupri)
+     & ls%input%basis%BINFO(RegBasParam)%GCbasis,ls%input%MOLECULE,lupri)
+
+R = ls%input%basis%BINFO(VALBasParam)%labelindex
+IF(R.NE.0)THEN
+   do i=1, ls%setting%nAO   
+      DO J=1,ls%setting%MOLECULE(i)%p%natoms
+         ls%setting%MOLECULE(i)%p%atom(J)%idtype(VALBasParam) = ls%input%MOLECULE%atom(J)%idtype(R)
+      ENDDO
+   enddo
+ENDIF
+
 ls%input%basis%WBASIS(VALBasParam) = .TRUE.
 do i=1, ai%ND
    itype = ai%UATOMTYPE(i)

@@ -36,12 +36,13 @@ CONTAINS
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
-SUBROUTINE II_precalc_DECScreenMat(DECscreen,LUPRI,LUERR,SETTING,ndimA,ndimG,intspec)
+SUBROUTINE II_precalc_DECScreenMat(DECscreen,LUPRI,LUERR,SETTING,ndimA,ndimG,intspec,intThreshold)
 IMPLICIT NONE
 TYPE(DECscreenITEM),intent(INOUT)    :: DecScreen
 TYPE(LSSETTING)      :: SETTING
 INTEGER,intent(in)   :: LUPRI,LUERR,ndimA,ndimG
 Character,intent(IN)          :: intSpec(5)
+REAL(REALK),intent(IN)        :: intTHRESHOLD
 !
 TYPE(lstensor),pointer :: GAB
 LOGICAL :: IntegralTransformGC,CSintsave,PSintsave
@@ -117,8 +118,8 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
       ENDDO
    ENDDO
    
-   !RHS
-   SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+   SETTING%SCHEME%intTHRESHOLD=intTHRESHOLD*1.0E-5_realk
+
    call null_decscreen_and_associate_MasterGab_RHS(GAB,DecSCREEN)
    IntegralTransformGC=.FALSE.
    CSintsave = setting%scheme%CS_int
@@ -478,7 +479,7 @@ end subroutine II_getBatchOrbitalScreen2K_RHS
 SUBROUTINE II_GET_DECBATCHPACKED(LUPRI,LUERR,SETTING,&
      & outputintegral,batchA,batchB,batchC,batchD,&
      & batchsizeA,batchSizeB,batchsizeC,batchSizeD,&
-     & dim1,dim2,dim3,dim4,intSpec)
+     & dim1,dim2,dim3,dim4,intSpec,intTHRESHOLD)
 IMPLICIT NONE
 TYPE(LSSETTING),intent(inout) :: SETTING
 INTEGER,intent(in)            :: LUPRI,LUERR,dim1,dim2,dim3,dim4
@@ -486,6 +487,7 @@ INTEGER,intent(in)            :: batchA,batchB,batchC,batchD
 INTEGER,intent(in)            :: batchsizeA,batchSizeB,batchsizeC,batchSizeD
 REAL(REALK),target            :: outputintegral(dim1,dim2,dim3,dim4,1)
 Character,intent(IN)          :: intSpec(5)
+REAL(REALK),intent(IN)        :: intTHRESHOLD
 !
 integer               :: I,J
 type(matrixp)         :: intmat(1)
@@ -566,7 +568,7 @@ ENDDO
 !to calculate them as (dim3,dim4,nbast1,nbast2) 
 !so we calculate them as (dim3,dim4,nbast1,nbast1) but store the 
 !result as (nbast1,nbast2,dim3,dim4)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+SETTING%SCHEME%intTHRESHOLD=intTHRESHOLD
 
 nAO = setting%nAO
 call mem_alloc(OLDsameMOLE,nAO,nAO)
@@ -594,7 +596,7 @@ setting%sameMol=.FALSE.
 !           & (setting%batchdim(I).EQ.setting%batchdim(J)))
 !   ENDDO
 !ENDDO
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+SETTING%SCHEME%intTHRESHOLD=intTHRESHOLD
 nullify(setting%output%resulttensor)
 call initIntegralOutputDims(setting%output,dim1,dim2,dim3,dim4,1)
 setting%output%DECPACKEDK = .TRUE.
@@ -660,7 +662,7 @@ END SUBROUTINE II_GET_DECBATCHPACKED
 !> \param dim4 the dimension of batch index 
 !> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
 SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,SETTING,&
-     &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,intSpec)
+     &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,intSpec,intThreshold)
 IMPLICIT NONE
 TYPE(LSSETTING),intent(inout) :: SETTING
 INTEGER,intent(in)            :: LUPRI,LUERR,nbast1,nbast2,dim3,dim4,batchC,batchD
@@ -668,6 +670,7 @@ INTEGER,intent(in)            :: batchsizeC,batchSizeD
 REAL(REALK),target            :: outputintegral(nbast1,nbast2,dim3,dim4,1)
 logical,intent(in)            :: FullRhs
 Character,intent(IN)          :: intSpec(5)
+REAL(REALK),intent(IN)        :: intTHRESHOLD
 !
 integer               :: I,J
 type(matrixp)         :: intmat(1)
@@ -748,7 +751,7 @@ ENDDO
 !to calculate them as (dim3,dim4,nbast1,nbast2) 
 !so we calculate them as (dim3,dim4,nbast1,nbast1) but store the 
 !result as (nbast1,nbast2,dim3,dim4)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+SETTING%SCHEME%intTHRESHOLD=intTHRESHOLD
 IF(.NOT.FULLRHS)THEN
    nAO = setting%nAO
    call mem_alloc(OLDsameMOLE,nAO,nAO)
@@ -770,7 +773,7 @@ IF(.NOT.FULLRHS)THEN
 ENDIF
 !saveRecalcGab = setting%scheme%recalcGab
 !setting%scheme%recalcGab = .TRUE.
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+SETTING%SCHEME%intTHRESHOLD=intTHRESHOLD
 nullify(setting%output%resulttensor)
 call initIntegralOutputDims(setting%output,dim3,dim4,nbast1,nbast2,1)
 setting%output%DECPACKED = .TRUE.
@@ -1037,7 +1040,7 @@ end subroutine JZERO
 !> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
 SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
-     & dim1,nbast2,dim3,nbast4,intSpec,FULLRHS)
+     & dim1,nbast2,dim3,nbast4,intSpec,FULLRHS,intTHRESHOLD)
   IMPLICIT NONE
   TYPE(LSSETTING),intent(inout) :: SETTING
   INTEGER,intent(in)            :: LUPRI,LUERR,nbast2,nbast4,dim1,dim3,batchA,batchC
@@ -1045,6 +1048,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
   REAL(REALK),target            :: outputintegral(dim1,nbast2,dim3,nbast4,1)
   Character,intent(IN)          :: intSpec(5)
   LOGICAL,intent(IN) :: FULLRHS 
+  REAL(REALK),intent(IN)        :: intTHRESHOLD
   !
   integer               :: I,J
   type(matrixp)         :: intmat(1)
@@ -1067,7 +1071,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      WRITE(lupri,*)'II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int'
      CALL II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,SETTING,&
           & outputintegral,batchA,batchC,batchsizeA,batchSizeC,&
-          & nbast2,nbast4,dim1,dim3,fullRHS,intSpec)
+          & nbast2,nbast4,dim1,dim3,fullRHS,intSpec,intThreshold)
   ELSE
      IF (intSpec(5).NE.'C') THEN
         nGaussian = 6
@@ -1132,7 +1136,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      ENDDO
 
      !DEC wants the integrals in (dim1,nbast2,dim3,nbast4) 
-     SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+     SETTING%SCHEME%intTHRESHOLD=intTHRESHOLD
 
      nAO = setting%nAO
      call mem_alloc(OLDsameMOLE,nAO,nAO)
@@ -1234,7 +1238,8 @@ END SUBROUTINE II_GET_ERI_INTEGRALBLOCK_INQUIRE
 
 SUBROUTINE II_GET_ERI_INTEGRALBLOCK(LUPRI,LUERR,SETTING,&
      & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
-     & ndimAs,ndimBs,ndimCs,ndimDs,intSpec,outputintegral,ScratchArray)
+     & ndimAs,ndimBs,ndimCs,ndimDs,intSpec,outputintegral,&
+     & ScratchArray,intThreshold)
   IMPLICIT NONE
   INTEGER,intent(in)            :: LUPRI,LUERR,startA,startB,startC,startD
   INTEGER,intent(in)            :: ndimA,ndimB,ndimC,ndimD
@@ -1243,6 +1248,7 @@ SUBROUTINE II_GET_ERI_INTEGRALBLOCK(LUPRI,LUERR,SETTING,&
   Character,intent(IN)          :: intSpec(5)
   REAL(REALK)                   :: outputintegral(ndimA,ndimB,ndimC,ndimD)
   REAL(REALK)                   :: ScratchArray(ndimAs,ndimBs,ndimCs,ndimDs)
+  real(realk),intent(in)        :: intThreshold
   !
   integer :: batchsizeA,batchsizeB,batchsizeC,batchsizeD
   integer :: batchindexA,batchindexB,batchindexC,batchindexD
@@ -1267,7 +1273,7 @@ SUBROUTINE II_GET_ERI_INTEGRALBLOCK(LUPRI,LUERR,SETTING,&
   call II_GET_DECBATCHPACKED(LUPRI,LUERR,SETTING,&
        & ScratchArray,batchindexA,batchindexB,batchindexC,batchindexD,&
        & batchsizeA,batchSizeB,batchsizeC,batchSizeD,&
-       & ndimAs,ndimBs,ndimCs,ndimDs,intSpec)
+       & ndimAs,ndimBs,ndimCs,ndimDs,intSpec,intThreshold)
   call LSTIMER('INTEGRALBLOCK CALC',t1,t2,LUPRI)
   IF(offsetA .EQ.0.AND.offsetB .EQ.0)THEN
    DO D=1,ndimD

@@ -2,7 +2,7 @@
 !> Utils for DEC subroutines
 !> \author Marcin Ziolkowski (modified by Kasper Kristensen)
 module dec_fragment_utils
-
+  use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use fundamental
   use precision
   use lstiming
@@ -12,9 +12,9 @@ module dec_fragment_utils
   use files!,only:lsopen,lsclose
   use DALTONINFO!, only: ls_free
   use dec_typedef_module
+  use dec_workarounds_module
   use memory_handling!, only: mem_alloc, mem_dealloc, mem_allocated_global,&
   !       & stats_mem, get_avaiLable_memory
-  use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use matrix_module!, only:matrix
   use matrix_operations
   use tensor_interface_module
@@ -717,6 +717,29 @@ end function max_batch_dimension
 
   end subroutine adjust_basis_matrix
 
+  !> \brief Adjust full molecular basis to a list of atoms and orbitals
+  !> FullMatrix(nbasis,norbitals) -> SmallMatrix(nbasis_small,norbitals_small)
+  !> for atomic indices in list atoms(natoms_small) using atoms_size(natoms),
+  !> atoms_start(natoms), atoms_end(natoms)
+  subroutine adjust_basis_matrix2(FullMatrix,SmallMatrix,orbitals,nbasis,&
+       & norbitals,nbasis_small,norbitals_small,basis_idx)
+
+    implicit none
+    integer, intent(in) :: nbasis,norbitals,nbasis_small,norbitals_small
+    real(realk), dimension(nbasis,norbitals), intent(in) :: FullMatrix
+    real(realk), dimension(nbasis_small,norbitals_small), intent(inout) :: SmallMatrix
+    integer, dimension(norbitals_small), intent(in) :: orbitals
+    integer, dimension(nbasis_small), intent(in) :: basis_idx
+    integer :: i,j
+
+    do i=1,norbitals_small
+       do j=1,nbasis_small
+          SmallMatrix(j,i)= FullMatrix(basis_idx(j),orbitals(i))
+       end do
+    end do
+
+  end subroutine adjust_basis_matrix2
+
   !> \brief Adjust full molecular suqare matrix to a list of atoms (AO matrix)
   subroutine adjust_square_matrix(FullMatrix,SmallMatrix,atoms,atom_size, &
        atom_start,atom_end,nbasis,natoms,nbasis_small,natoms_small)
@@ -746,6 +769,25 @@ end function max_batch_dimension
 
   end subroutine adjust_square_matrix
 
+  !> \brief Adjust full molecular suqare matrix to a list of AOs  (AO matrix)
+  subroutine adjust_square_matrix2(FullMatrix,SmallMatrix,aos,nbasis,nbasis_small)
+
+    implicit none
+    real(realk), dimension(nbasis,nbasis), intent(in) :: FullMatrix
+    real(realk), dimension(nbasis_small,nbasis_small), intent(inout) :: SmallMatrix
+    integer, intent(in) :: nbasis,nbasis_small
+    integer, dimension(nbasis_small), intent(in) :: aos
+    integer :: i,j,BigJ
+!    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(J,BigJ,I) SHARED(nbasis_small,FullMatrix,SmallMatrix,aos)
+    do j=1,nbasis_small
+       BigJ = aos(j)
+       do i=1,nbasis_small
+          SmallMatrix(i,j) = FullMatrix(aos(i),BigJ)
+       end do
+    end do
+!    !$OMP END PARALLEL DO
+  end subroutine adjust_square_matrix2
+
   !> \brief Adjust full molecular basis to a list of orbitals (MO matrix)
   subroutine adjust_square_matrix_mo(FullMatrix,SmallMatrix,idx,norb,norb_small)
     implicit none
@@ -755,15 +797,14 @@ end function max_batch_dimension
     integer, dimension(norb_small), intent(in) :: idx
     integer :: i,j,idx_i,idx_j
 
-    do i=1,norb_small
-       do j=1,norb_small
+    do j=1,norb_small
+       idx_j = idx(j)
+       do i=1,norb_small
           idx_i = idx(i)
-          idx_j = idx(j)
           SmallMatrix(i,j) = FullMatrix(idx_i,idx_j)
        end do
     end do
 
-    return
   end subroutine adjust_square_matrix_mo
 
   !> \brief Get SubSystem indexes 
@@ -2103,9 +2144,9 @@ end function max_batch_dimension
     implicit none
     type(decorbital), intent(inout) :: myorbital
 
-    if(associated(myorbital%atoms)) then
-       call mem_dealloc(myorbital%atoms)
-       myorbital%atoms => null()
+    if(associated(myorbital%aos)) then
+       call mem_dealloc(myorbital%aos)
+       myorbital%aos => null()
     end if
 
   end subroutine orbital_free

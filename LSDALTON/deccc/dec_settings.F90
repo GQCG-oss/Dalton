@@ -115,9 +115,6 @@ contains
 
 
     ! -- Orbital
-    DECinfo%mulliken_threshold           = 0.01
-    DECinfo%simple_mulliken_threshold    = .false.
-    DECinfo%approximated_norm_threshold  = 0.1E0_realk
     DECinfo%check_lcm_orbitals           = .false.
     DECinfo%check_Occ_SubSystemLocality  = .false.
     DECinfo%force_Occ_SubSystemLocality  = .false.
@@ -125,10 +122,12 @@ contains
     DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken                     = .false.
     DECinfo%Distance                     = .false.
-    DECinfo%BoughtonPulay                = .false.
     DECinfo%FitOrbitals                  = .true.
     DECinfo%simple_orbital_threshold     = 0.05E0_realk
 
+    !Integral
+    DECinfo%IntegralThreshold            = 1.0E-10_realk
+    DECinfo%UseIchor = .false.  !Use Ichor Integral Code
 
     ! -- Fragment
     DECinfo%MaxIter                = 20
@@ -206,6 +205,7 @@ contains
     DECinfo%abc               = .false.
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
+    DECinfo%abc_nbuffs        = 1000000
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -229,9 +229,6 @@ contains
 
     !> MPI (undefined by default)
     DECinfo%MPIgroupsize=0
-
-    !> Use Ichor Integral Code
-    DECinfo%UseIchor = .false.
 
     ! Test stuff
 
@@ -426,6 +423,7 @@ contains
        case('.PT_ABC'); DECinfo%abc= .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
+       case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
 
 
           ! DEC CALCULATION 
@@ -553,6 +551,22 @@ contains
           DECinfo%print_frags = .true.
 
 
+       !KEYWORDS FOR INTEGRAL INFO
+       !**************************************
+       case('.INTEGRALTHRESHOLD')
+          read(input,*) DECinfo%IntegralThreshold
+          IF(DECinfo%IntegralThreshold.LT.shortintCRIT)THEN
+             write(DECinfo%output,'(A)')'Error: you cannot chose integral threshold less then'
+             write(DECinfo%output,'(ES15.6,A)') shortintCRIT, 'due to technical reasons'
+             write(DECinfo%output,'(A)')'you could use .NO SCREEN (you may have to deactivate LinK with .NOLINK)'
+             write(*,'(A)')'Error: you cannot chose integral threshold less then'
+             write(*,'(ES15.6,A)') shortintCRIT, 'due to technical reasons'
+             write(*,'(A)')'you could use .NO SCREEN (you may have to deactivate LinK with .NOLINK)'
+             call lsquit('Error in choice of integral threshold',-1)
+          ENDIF
+       !Use the Ichor Integral Code (default is Thermite Code)   
+       case('.ICHOR'); DECinfo%UseIchor = .true.
+
 #ifdef MOD_UNRELEASED
 
        !CCSD SPECIFIC KEYWORDS
@@ -613,7 +627,6 @@ contains
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
-       case('.ICHOR'); DECinfo%UseIchor = .true.
        case('.F12')
           DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     
@@ -624,12 +637,10 @@ contains
           DECinfo%PureHydrogenDebug       = .true.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
        case('.DISTANCE'); DECinfo%distance=.true.
-       case('.BOUGHTONPULAY'); DECinfo%BoughtonPulay=.true.
        case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')
           read(input,*) DECinfo%simple_orbital_threshold
        case('.DECPRINT'); read(input,*) DECinfo%PL
-       case('.MULLIKENTHR'); read(input,*) DECinfo%mulliken_threshold
        case('.CHECKPAIRS') 
           DECinfo%checkpairs=.true.
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
@@ -648,8 +659,6 @@ contains
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
-       case('.SIMPLEMULLIKENTHRESH'); DECinfo%simple_mulliken_threshold=.true.
-       case('.NORMTHRESH'); read(input,*) DECinfo%approximated_norm_threshold
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
        case('.SKIPREADIN'); DECinfo%SkipReadIn=.true.
@@ -1022,6 +1031,8 @@ contains
     write(lupri,*) 'DECrestart ', DECitem%HFrestart
     write(lupri,*) 'TimeBackup ', DECitem%TimeBackup
     write(lupri,*) 'read_dec_orbitals ', DECitem%read_dec_orbitals
+    write(lupri,*) 'IntegralThreshold ', DECitem%IntegralThreshold
+    write(lupri,*) 'UseIchor ', DECitem%UseIchor
     write(lupri,*) 'memory ', DECitem%memory
     write(lupri,*) 'memory_defined ', DECitem%memory_defined
     write(lupri,*) 'fullmolecule_memory ', DECitem%fullmolecule_memory
@@ -1074,10 +1085,6 @@ contains
     write(lupri,*) 'simple_orbital_threshold ', DECitem%simple_orbital_threshold
     write(lupri,*) 'PurifyMOs ', DECitem%PurifyMOs
     write(lupri,*) 'FragAdapt ', DECitem%FragAdapt
-    write(lupri,*) 'BoughtonPulay ', DECitem%BoughtonPulay
-    write(lupri,*) 'mulliken_threshold ', DECitem%mulliken_threshold
-    write(lupri,*) 'simple_mulliken_threshold ', DECitem%simple_mulliken_threshold
-    write(lupri,*) 'approximated_norm_threshold ', DECitem%approximated_norm_threshold
     write(lupri,*) 'mulliken ', DECitem%mulliken
     write(lupri,*) 'FOT ', DECitem%FOT
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
