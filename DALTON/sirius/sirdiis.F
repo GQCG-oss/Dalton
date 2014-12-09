@@ -1037,14 +1037,14 @@ C
            CALL MEMGET2('REAL','fpe', KFPE, NNBASX, WRK, KFREE, LFREE)
            CALL MEMGET2('REAL','epe', KEPE, 1, WRK, KFREE, LFREE)
            IF (NASHT == 0 .OR. HSFOCK) THEN
-             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, E_PE)
+             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
            ELSE
              CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
-     &                         E_PE)
+     &                        WRK(KEPE))
            END IF
            ESOLT = WRK(KEPE)
            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
-     &                        + WRK(KFPE:KFPE+NNBASX-1)
+     &                          + WRK(KFPE:KFPE+NNBASX-1)
            CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, 1, KFPE,
      &                 KFREE, LFREE)
 #endif
