@@ -106,10 +106,11 @@
  Last Git revision        | 2e35c8788619af42e07ae87dc17cfd6cab14b94c
  Git branch               | XCfun-dev
  Configuration time       | 2014-12-09 10:39:25.094079
- The XCfun module is deactivated, PS functional evaluation is used instead
+ The Functional chosen is a GGA type functional
+ The Functional chosen contains no exact exchange contribution
 
 Start simulation
-     Date and time (Linux)  : Tue Dec  9 10:47:09 2014
+     Date and time (Linux)  : Tue Dec  9 10:54:09 2014
      Host name              : 1x-193-157-199-133.uio.no               
                       
  -----------------------------------------
@@ -131,13 +132,11 @@ Start simulation
           PRINTING THE LSDALTON.INP FILE 
  -----------------------------------------
                       
-  **GENERAL                                                                                           
-  .PSFUN                                                                                              
   **WAVE FUNCTIONS                                                                                    
   .DFT                                                                                                
-   PBE0                                                                                               
+   OLYP                                                                                               
   *DFT INPUT                                                                                          
-  .DFT-D3                                                                                             
+  .DFT-D3BJ                                                                                           
   .GRID TYPE                                                                                          
    BECKEORIG LMG                                                                                      
   .RADINT                                                                                             
@@ -224,11 +223,8 @@ total         10                               21        7
  ==============
     This is a Single core calculation. (no OpenMP)
     This is a serial calculation (no MPI)
- 
-     This is a DFT calculation of type: PBE0
- Weighted mixed functional:
-                     Pbex_:    0.75000
-                      PBEC:    1.00000
+ The Functional chosen is a GGA type functional
+ The Functional chosen contains no exact exchange contribution
    
   The Exchange-Correlation Grid specifications:
   Radial Quadrature : LMG scheme
@@ -244,7 +240,7 @@ total         10                               21        7
      Hardness of the partioning function   :   3
      DFT LSint screening thresholds        :   0.10D-08   0.20D-09   0.20D-11
      Threshold for number of electrons     :   0.10D-02
-     The Exact Exchange Factor             : 0.2500D+00
+     The Exact Exchange Factor             : 0.0000D+00
 
 Density subspace min. method    : DIIS                    
 Density optimization : Diagonalization                    
@@ -281,22 +277,24 @@ Canonical basis by using the keyword
          Running DFT-D Ver.   :    3
                          Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
                                J. Chem. Phys. 132 (2010), 154104
-      Becke-Johnson Damping   :   F
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
                3-body terms   :   F
 
 
                   DFT-D3 Functional Dependent Parameters
                   --------------------------------------
 
-      s_6 =       1.000000000000     sr_6 =       1.287000000000
-      s_8 =       0.928000000000     sr_8 =       1.000000000000
+      s_6 =       1.000000000000     sr_6 =       0.529900000000
+      s_8 =       2.620500000000     sr_8 =       2.806500000000
       alp =      14.000000000000
 
 
                        Dispersion Energy Correction
                        ----------------------------
 
-                       E_disp:         -0.000004895321
+                       E_disp:         -0.002848588325
  
 Matrix type: mtype_dense
  
@@ -313,14 +311,14 @@ Matrix type: mtype_dense
 
  Level 1 atomic calculation on STO-3G Charge   8
  ================================================
- The Coulomb energy contribution    37.430776996024711     
- The Exchange energy contribution    1.9461534791271067     
- The Fock energy contribution   -35.484623516897614     
+ The Coulomb energy contribution    37.430776996024719     
+ The Exchange energy contribution   -0.0000000000000000     
+ The Fock energy contribution   -37.430776996024719     
 Total Number of grid points:        8036
 
   Max allocated memory, Grid                  552.262 kB
 
-  KS electrons/energy:    7.99999999999712   -6.38789242344279 rel.err:-0.36E-12
+  KS electrons/energy:    7.99999999999712   -8.50763862029249 rel.err:-0.36E-12
 
 
                   DFT-D Empirical Dispersion Correction
@@ -329,15 +327,17 @@ Total Number of grid points:        8036
          Running DFT-D Ver.   :    3
                          Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
                                J. Chem. Phys. 132 (2010), 154104
-      Becke-Johnson Damping   :   F
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
                3-body terms   :   F
 
 
                   DFT-D3 Functional Dependent Parameters
                   --------------------------------------
 
-      s_6 =       1.000000000000     sr_6 =       1.287000000000
-      s_8 =       0.928000000000     sr_8 =       1.000000000000
+      s_6 =       1.000000000000     sr_6 =       0.529900000000
+      s_8 =       2.620500000000     sr_8 =       2.806500000000
       alp =      14.000000000000
 
 
@@ -348,18 +348,18 @@ Total Number of grid points:        8036
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
-  1    -73.7826243054    0.00000000000    0.00      0.00000    0.00    0.0000000    9.45E-14  ###
+  1    -73.9562170232    0.00000000000    0.00      0.00000    0.00    0.0000000    1.68E-13  ###
 
  Level 1 atomic calculation on STO-3G Charge   1
  ================================================
  The Coulomb energy contribution   0.38730296535677067     
- The Exchange energy contribution    4.8412870669596333E-002
- The Fock energy contribution  -0.33889009468717435     
+ The Exchange energy contribution   -0.0000000000000000     
+ The Fock energy contribution  -0.38730296535677067     
 Total Number of grid points:        9124
 
   Max allocated memory, Grid                  620.262 kB
 
-  KS electrons/energy:    0.99999999999752   -0.25147482637105 rel.err:-0.25E-11
+  KS electrons/energy:    0.99999999999752   -0.33693275587945 rel.err:-0.25E-11
 
 
                   DFT-D Empirical Dispersion Correction
@@ -368,15 +368,17 @@ Total Number of grid points:        9124
          Running DFT-D Ver.   :    3
                          Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
                                J. Chem. Phys. 132 (2010), 154104
-      Becke-Johnson Damping   :   F
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
                3-body terms   :   F
 
 
                   DFT-D3 Functional Dependent Parameters
                   --------------------------------------
 
-      s_6 =       1.000000000000     sr_6 =       1.287000000000
-      s_8 =       0.928000000000     sr_8 =       1.000000000000
+      s_6 =       1.000000000000     sr_6 =       0.529900000000
+      s_8 =       2.620500000000     sr_8 =       2.806500000000
       alp =      14.000000000000
 
 
@@ -387,20 +389,20 @@ Total Number of grid points:        9124
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
-  1     -0.3791665864    0.00000000000    0.00      0.00000    0.00    0.0000000    0.00E+00  ###
+  1     -0.4162116452    0.00000000000    0.00      0.00000    0.00    0.0000000    0.00E+00  ###
  
 Matrix type: mtype_dense
 
  First density: Atoms in molecule guess
 
  The Coulomb energy contribution    46.612404918677846     
- The Exchange energy contribution   -2.1939511969363563     
- The Fock energy contribution   -44.418453721741493     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -46.612404918677854     
 Total Number of grid points:       26270
 
   Max allocated memory, Grid                    1.227 MB
 
-  KS electrons/energy:    9.99999440818480   -7.05697185461359 rel.err:-0.56E-06
+  KS electrons/energy:    9.99999440818480   -9.37954368454066 rel.err:-0.56E-06
 
 
                   DFT-D Empirical Dispersion Correction
@@ -409,35 +411,37 @@ Total Number of grid points:       26270
          Running DFT-D Ver.   :    3
                          Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
                                J. Chem. Phys. 132 (2010), 154104
-      Becke-Johnson Damping   :   F
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
                3-body terms   :   F
 
 
                   DFT-D3 Functional Dependent Parameters
                   --------------------------------------
 
-      s_6 =       1.000000000000     sr_6 =       1.287000000000
-      s_8 =       0.928000000000     sr_8 =       1.000000000000
+      s_6 =       1.000000000000     sr_6 =       0.529900000000
+      s_8 =       2.620500000000     sr_8 =       2.806500000000
       alp =      14.000000000000
 
 
                        Dispersion Energy Correction
                        ----------------------------
 
-                       E_disp:         -0.000004895321
-  Iteration 0 energy:  -75.121313435845821     
+                       E_disp:         -0.002848588325
+  Iteration 0 energy:  -75.252777761840179     
 
-Max no. of matrices allocated in Level 2 / get_initial_dens:         10
+Max no. of matrices allocated in Level 2 / get_initial_dens:          8
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        25 sparsity:     51.020 %
 Matrix AO D  has nnz=        31 sparsity:     63.265 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   9.9999997473787516E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    48.162749747217013     
- The Exchange energy contribution   -2.2960611132254805     
- The Fock energy contribution   -45.866688633991544     
-  KS electrons/energy:    9.99999516015247   -7.17103132828263 rel.err:-0.48E-06
+ The Coulomb energy contribution    48.021018006154321     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -48.021018006154314     
+  KS electrons/energy:    9.99999517296910   -9.51733619297530 rel.err:-0.48E-06
 
 
                   DFT-D Empirical Dispersion Correction
@@ -446,36 +450,38 @@ Matrix AO D  has nnz=        31 sparsity:     63.265 %
          Running DFT-D Ver.   :    3
                          Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
                                J. Chem. Phys. 132 (2010), 154104
-      Becke-Johnson Damping   :   F
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
                3-body terms   :   F
 
 
                   DFT-D3 Functional Dependent Parameters
                   --------------------------------------
 
-      s_6 =       1.000000000000     sr_6 =       1.287000000000
-      s_8 =       0.928000000000     sr_8 =       1.000000000000
+      s_6 =       1.000000000000     sr_6 =       0.529900000000
+      s_8 =       2.620500000000     sr_8 =       2.806500000000
       alp =      14.000000000000
 
 
                        Dispersion Energy Correction
                        ----------------------------
 
-                       E_disp:         -0.000004895321
+                       E_disp:         -0.002848588325
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
-  1    -75.2216209225    0.00000000000    0.00      0.00000    0.00    0.0000000    5.96E-01  ###
+  1    -75.2960528168    0.00000000000    0.00      0.00000    0.00    0.0000000    5.26E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.11 seconds
- >>> wall Time used in SCF iteration is   0.11 seconds
+ >>>  CPU Time used in SCF iteration is   0.16 seconds
+ >>> wall Time used in SCF iteration is   0.16 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    46.563475658418739     
- The Exchange energy contribution   -2.2580760476682009     
- The Fock energy contribution   -44.305399610750534     
-  KS electrons/energy:    9.99999530442338   -7.05802242069744 rel.err:-0.47E-06
+ The Coulomb energy contribution    46.314116731769460     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -46.314116731769452     
+  KS electrons/energy:    9.99999530793632   -9.36282779979618 rel.err:-0.47E-06
 
 
                   DFT-D Empirical Dispersion Correction
@@ -484,33 +490,35 @@ No. of matmuls in get_density:     1
          Running DFT-D Ver.   :    3
                          Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
                                J. Chem. Phys. 132 (2010), 154104
-      Becke-Johnson Damping   :   F
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
                3-body terms   :   F
 
 
                   DFT-D3 Functional Dependent Parameters
                   --------------------------------------
 
-      s_6 =       1.000000000000     sr_6 =       1.287000000000
-      s_8 =       0.928000000000     sr_8 =       1.000000000000
+      s_6 =       1.000000000000     sr_6 =       0.529900000000
+      s_8 =       2.620500000000     sr_8 =       2.806500000000
       alp =      14.000000000000
 
 
                        Dispersion Energy Correction
                        ----------------------------
 
-                       E_disp:         -0.000004895321
-  2    -75.2371785411   -0.01555761865    0.00      0.00000    0.00    0.0000000    4.35E-01  ###
+                       E_disp:         -0.002848588325
+  2    -75.2952950782    0.00075773862    0.00      0.00000    0.00    0.0000000    5.89E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.11 seconds
- >>> wall Time used in SCF iteration is   0.11 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    47.198996815062387     
- The Exchange energy contribution   -2.2726618647313899     
- The Fock energy contribution   -44.926334950330990     
-  KS electrons/energy:    9.99999524681832   -7.10254614348714 rel.err:-0.48E-06
+ The Coulomb energy contribution    47.172425849786343     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -47.172425849786350     
+  KS electrons/energy:    9.99999524312334   -9.43952498471192 rel.err:-0.48E-06
 
 
                   DFT-D Empirical Dispersion Correction
@@ -519,33 +527,35 @@ No. of matmuls in get_density:     1
          Running DFT-D Ver.   :    3
                          Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
                                J. Chem. Phys. 132 (2010), 154104
-      Becke-Johnson Damping   :   F
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
                3-body terms   :   F
 
 
                   DFT-D3 Functional Dependent Parameters
                   --------------------------------------
 
-      s_6 =       1.000000000000     sr_6 =       1.287000000000
-      s_8 =       0.928000000000     sr_8 =       1.000000000000
+      s_6 =       1.000000000000     sr_6 =       0.529900000000
+      s_8 =       2.620500000000     sr_8 =       2.806500000000
       alp =      14.000000000000
 
 
                        Dispersion Energy Correction
                        ----------------------------
 
-                       E_disp:         -0.000004895321
-  3    -75.2486345909   -0.01145604984   -1.00      0.00000    0.00    0.0000000    7.85E-03  ###
+                       E_disp:         -0.002848588325
+  3    -75.3172629990   -0.02196792078   -1.00      0.00000    0.00    0.0000000    1.13E-02  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.11 seconds
- >>> wall Time used in SCF iteration is   0.11 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    47.210116399818034     
- The Exchange energy contribution   -2.2729318730063319     
- The Fock energy contribution   -44.937184526811706     
-  KS electrons/energy:    9.99999524563989   -7.10335861973716 rel.err:-0.48E-06
+ The Coulomb energy contribution    47.188576705596425     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -47.188576705596418     
+  KS electrons/energy:    9.99999524229644   -9.44089640656156 rel.err:-0.48E-06
 
 
                   DFT-D Empirical Dispersion Correction
@@ -554,33 +564,35 @@ No. of matmuls in get_density:     1
          Running DFT-D Ver.   :    3
                          Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
                                J. Chem. Phys. 132 (2010), 154104
-      Becke-Johnson Damping   :   F
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
                3-body terms   :   F
 
 
                   DFT-D3 Functional Dependent Parameters
                   --------------------------------------
 
-      s_6 =       1.000000000000     sr_6 =       1.287000000000
-      s_8 =       0.928000000000     sr_8 =       1.000000000000
+      s_6 =       1.000000000000     sr_6 =       0.529900000000
+      s_8 =       2.620500000000     sr_8 =       2.806500000000
       alp =      14.000000000000
 
 
                        Dispersion Energy Correction
                        ----------------------------
 
-                       E_disp:         -0.000004895321
-  4    -75.2486380087   -0.00000341770   -1.00      0.00000    0.00    0.0000000    1.24E-04  ###
+                       E_disp:         -0.002848588325
+  4    -75.3172740717   -0.00001107274   -1.00      0.00000    0.00    0.0000000    1.63E-04  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.11 seconds
- >>> wall Time used in SCF iteration is   0.11 seconds
+ >>>  CPU Time used in SCF iteration is   0.16 seconds
+ >>> wall Time used in SCF iteration is   0.16 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    47.210311873270101     
- The Exchange energy contribution   -2.2729365773858454     
- The Fock energy contribution   -44.937375295884252     
-  KS electrons/energy:    9.99999524562345   -7.10337235646804 rel.err:-0.48E-06
+ The Coulomb energy contribution    47.188487396519193     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -47.188487396519193     
+  KS electrons/energy:    9.99999524228060   -9.44089262810384 rel.err:-0.48E-06
 
 
                   DFT-D Empirical Dispersion Correction
@@ -589,26 +601,28 @@ No. of matmuls in get_density:     1
          Running DFT-D Ver.   :    3
                          Ref. :S. Grimme, J. Antony, S. Ehrlich and H. Krieg, 
                                J. Chem. Phys. 132 (2010), 154104
-      Becke-Johnson Damping   :   F
+                         Ref. :S. Grimme, S. Ehrlich and L. Goerigk, 
+                               J. Comput. Chem. 32 (2011), 1456-1465
+      Becke-Johnson Damping   :   T
                3-body terms   :   F
 
 
                   DFT-D3 Functional Dependent Parameters
                   --------------------------------------
 
-      s_6 =       1.000000000000     sr_6 =       1.287000000000
-      s_8 =       0.928000000000     sr_8 =       1.000000000000
+      s_6 =       1.000000000000     sr_6 =       0.529900000000
+      s_8 =       2.620500000000     sr_8 =       2.806500000000
       alp =      14.000000000000
 
 
                        Dispersion Energy Correction
                        ----------------------------
 
-                       E_disp:         -0.000004895321
-  5    -75.2486380098   -0.00000000113   -1.00      0.00000    0.00    0.0000000    7.32E-06  ###
+                       E_disp:         -0.002848588325
+  5    -75.3172740744   -0.00000000267   -1.00      0.00000    0.00    0.0000000    1.91E-05  ###
 SCF converged in      5 iterations
- >>>  CPU Time used in **ITER is   0.54 seconds
- >>> wall Time used in **ITER is   0.54 seconds
+ >>>  CPU Time used in **ITER is   0.83 seconds
+ >>> wall Time used in **ITER is   0.83 seconds
 
 Total no. of matmuls in SCF optimization:         84
 
@@ -626,45 +640,45 @@ Calculation of occupied orbital energies converged in     3 iterations!
 
 Calculation of virtual orbital energies converged in     2 iterations!
 
-    E(LUMO):                         0.362555 au
-   -E(HOMO):                        -0.245381 au
+    E(LUMO):                         0.295681 au
+   -E(HOMO):                        -0.168834 au
    ------------------------------
-    HOMO-LUMO Gap (iteratively):     0.607935 au
+    HOMO-LUMO Gap (iteratively):     0.464515 au
 
 
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.01555761865    0.0000    0.0000    0.0000000
-  3   -0.01145604984   -1.0000    0.0000    0.0000000
-  4   -0.00000341770   -1.0000    0.0000    0.0000000
-  5   -0.00000000113   -1.0000    0.0000    0.0000000
+  2    0.00075773862    0.0000    0.0000    0.0000000
+  3   -0.02196792078   -1.0000    0.0000    0.0000000
+  4   -0.00001107274   -1.0000    0.0000    0.0000000
+  5   -0.00000000267   -1.0000    0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -75.22162092245943654234      0.595528576051431D+00
-    2           -75.23717854110688563196      0.435471097937710D+00
-    3           -75.24863459094981976705      0.784516333354440D-02
-    4           -75.24863800865121277184      0.124121303415718D-03
-    5           -75.24863800977706773665      0.731897501699347D-05
+    1           -75.29605281683025452821      0.526251232479624D+00
+    2           -75.29529507821455069916      0.588938484822255D+00
+    3           -75.31726299899601428933      0.112601434824190D-01
+    4           -75.31727407173943333873      0.162907058392070D-03
+    5           -75.31727407440732235955      0.191040080416679D-04
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
 
 
-      Final DFT energy:                      -75.248638009777
+      Final DFT energy:                      -75.317274074407
       Nuclear repulsion:                       9.055004525638
-      Electronic energy:                     -84.303642535415
+      Electronic energy:                     -84.372278600045
 
- >>>  CPU Time used in *SCF is   0.70 seconds
- >>> wall Time used in *SCF is   0.70 seconds
+ >>>  CPU Time used in *SCF is   1.00 seconds
+ >>> wall Time used in *SCF is   1.00 seconds
 
 Total no. of matmuls used:                        92
 Total no. of Fock/KS matrix evaluations:           6
-Max no. of matrices allocated in Level 3:         28
+Max no. of matrices allocated in Level 3:         26
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -712,7 +726,7 @@ Max no. of matrices allocated in Level 3:         28
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                         72.146 MB
-  Max allocated memory, type(matrix)                  11.352 kB
+  Max allocated memory, type(matrix)                  10.200 kB
   Max allocated memory, real(realk)                    5.377 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
@@ -740,13 +754,13 @@ Max no. of matrices allocated in Level 3:         28
   Max allocated memory, ATOMITEM                       2.048 kB
   Max allocated memory, LSMATRIX                       1.120 kB
   Max allocated memory, OverlapT                      36.352 kB
-  Max allocated memory, linkshell                      0.432 kB
+  Max allocated memory, linkshell                      0.000 Byte
   Max allocated memory, integrand                     64.512 kB
   Max allocated memory, integralitem                 829.440 kB
   Max allocated memory, IntWork                       25.720 kB
   Max allocated memory, Overlap                      388.288 kB
   Max allocated memory, ODitem                         1.280 kB
-  Max allocated memory, LStensor                       5.203 kB
+  Max allocated memory, LStensor                       5.187 kB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
@@ -755,9 +769,9 @@ Max no. of matrices allocated in Level 3:         28
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is   0.91 seconds
- >>> wall Time used in LSDALTON is   0.91 seconds
+ >>>  CPU Time used in LSDALTON is   1.29 seconds
+ >>> wall Time used in LSDALTON is   1.30 seconds
 
 End simulation
-     Date and time (Linux)  : Tue Dec  9 10:47:09 2014
+     Date and time (Linux)  : Tue Dec  9 10:54:10 2014
      Host name              : 1x-193-157-199-133.uio.no               

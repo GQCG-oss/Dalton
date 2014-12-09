@@ -2697,7 +2697,7 @@
       character(*),intent(IN) :: Func
       dft_d3_check = 0
       select case(Func)
-      case ("Slater") 
+      case ("SLATER") 
         dft_d3_check = 1
       case ("BLYP") 
         dft_d3_check = 1
@@ -2804,7 +2804,7 @@
       character(*),intent(IN) :: Func
       real(realk) :: dft_d3_s6
       select case(Func)
-      case("Slater") 
+      case("SLATER") 
         dft_d3_s6 = 1.0_realk
       case("BLYP") 
         dft_d3_s6 = 1.0_realk
@@ -2911,7 +2911,7 @@
       character(*),intent(IN) :: Func
       real(realk) :: dft_d3_alp
       select case(Func)
-      case("Slater") 
+      case("SLATER") 
         dft_d3_alp = 14.0_realk
       case("BLYP") 
         dft_d3_alp = 14.0_realk
@@ -3019,7 +3019,7 @@
       character(*),intent(IN) :: Func
       real(realk) :: dft_d3_rs18
       select case(Func)
-      case("Slater") 
+      case("SLATER") 
         dft_d3_rs18 = 0.687_realk
       case("BLYP") 
         dft_d3_rs18 = 1.0_realk
@@ -3127,7 +3127,7 @@
       character(*),intent(IN) :: Func
       real(realk) :: dft_d3_rs6
       select case(Func)
-      case("Slater") 
+      case("SLATER") 
         dft_d3_rs6 = 0.999_realk
       case("BLYP") 
         dft_d3_rs6 = 1.094_realk
@@ -3235,7 +3235,7 @@
       character(*),intent(IN) :: Func
       real(realk) :: dft_d3_s18
       select case(Func)
-      case("Slater") 
+      case("SLATER") 
         dft_d3_s18 = -1.957_realk
       case("BLYP") 
         dft_d3_s18 = 1.682_realk
