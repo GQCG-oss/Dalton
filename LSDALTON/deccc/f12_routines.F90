@@ -1718,7 +1718,7 @@ contains
     ES2 = 0.0E0_realk
     do i=1,nocc
        do a=1,ncabs
-          ES2 = ES2 + abs(Fia(i,a)*Fia(i,a))/(eps_i(i)-eps_c(a))           
+          ES2 = ES2 + (Fia(i,a)*Fia(i,a))/(eps_i(i)-eps_c(a))           
        enddo
     enddo
 
