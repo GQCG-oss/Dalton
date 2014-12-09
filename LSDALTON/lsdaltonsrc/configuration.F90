@@ -85,7 +85,6 @@ subroutine config_set_default_config(config)
 implicit none
    !> Contains info, settings and data for entire calculation
    type(ConfigItem), intent(inout) :: config
-  USEXCFUN = .TRUE.  
   nullify(config%solver)
   allocate(config%solver)
   call arh_set_default_config(config%solver)
@@ -93,6 +92,11 @@ implicit none
   allocate(config%decomp)
   call decomp_set_default_config(config%decomp)
   call integral_set_default_config(config%integral)
+#ifdef VAR_XCFUN
+  USEXCFUN = .TRUE.  
+#else
+  USEXCFUN = .FALSE.  
+#endif
   call opt_set_default_config(config%opt)
   call av_set_default_config(config%av)
   !DEC calculation. The DEC info is kept as a global derived type parameter for now.
