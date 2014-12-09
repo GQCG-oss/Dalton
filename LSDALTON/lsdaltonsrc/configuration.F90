@@ -4012,16 +4012,7 @@ use typedef
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  IF(.NOT.USEXCFUN)THEN
-     CALL DFTsetFunc(WORD(1:80),hfweight,ierror)
-     IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
-  ELSE
-#ifdef VAR_XCFUN
-     call xcfun_host_init(WORD,hfweight,6)
-#else
-     call lsquit('XCFUN mismatch ',-1)
-#endif
-  ENDIF
+  call II_DFTsetFunc(WORD,hfweight,6)
 end subroutine lsmpi_setSlaveFunc
 
 subroutine lsmpi_addSlaveFunc()

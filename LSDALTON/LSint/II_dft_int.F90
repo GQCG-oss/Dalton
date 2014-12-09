@@ -2221,6 +2221,9 @@ Real(realk),intent(INOUT)    :: hfweight
 integer                      :: lupri
 integer                      :: ierror
 
+!For GGA's hfweight is not set, so initialize it here
+hfweight = 0.0_realk
+
 !For dft calculations, check whether xcfun is to be used or not and 
 !send the functional string accordingly either to the PS  
 !or to the XCfun interface
