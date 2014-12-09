@@ -641,9 +641,10 @@ SUBROUTINE pbc_init_recvec(realspace,recvec,is_active,lu)
 	LOGICAL,INTENT(IN)     :: is_active(3)
 	INTEGER,INTENT(IN)     :: lu
 	! local
-	REAL(realk)            :: t2ct3(3)
+	REAL(realk)            :: t2ct3(3), norm_a(2), tmp(3)
+	REAL(realk)            :: a(3, 2), b(3, 2), e(3, 2), rotmat(3, 3)
 	REAL(realk)            :: vol
-	INTEGER                :: active_dims,plane,i
+	INTEGER                :: active_dims, i, j
     
 	! count the number of active dimensions
 	active_dims = 0
@@ -691,48 +692,56 @@ SUBROUTINE pbc_init_recvec(realspace,recvec,is_active,lu)
 		recvec(:,:)=recvec(:,:)/vol
 
 	CASE(2)
-		plane = 0
-		if(realspace(3,1) .eq. 0 .and. realspace(3,2) .eq. 0) then
-			recvec(1,1)=realspace(2,2)*2._realk*pi
-			recvec(2,1)=-realspace(1,2)*2._realk*pi
 
-			recvec(1,2)=-realspace(1,1)*2._realk*pi
-			recvec(2,2)=realspace(2,1)*2._realk*pi
-
-			vol=realspace(1,1)*realspace(2,2)+realspace(2,1)*realspace(1,2)
-			recvec(:,:)=recvec(:,:)/vol
-			if(realspace(3,1) .ne. 0._realk .or. realspace(3,2) .ne. 0._realk)then
-				write(*,*) 'Use just two axes it is a two dimensional system'
-				call LSquit('Not correct usage of lattice vectors',lu)
+		! the formula for the 2D reciprocal vectors is
+	   ! $b_i = 2\pi \frac{ E a_j }{ a_i \cdot E a_j }$	
+		! where $E = (e_i \otimes \e_j - e_j \otimes e_i)$, $e_i = a_i/|a_i|$ 
+		! and $i\neq j, \, i,j\in\{1,2\}$
+		
+		! pick the 'active' primitive vectors
+		do i = 1, 3
+			if ( is_active(i) ) then
+				a(:, i) = realspace(:, i)
 			endif
-		elseif(realspace(2,1) .eq. 0 .and. realspace(2,2) .eq. 0) then
-			recvec(1,1)=realspace(3,2)*2._realk*pi
-			recvec(3,1)=-realspace(1,2)*2._realk*pi
+		enddo
+		
+		! calculate reciprocal vectors
+		do i = 1, 2
+			norm_a(i) = sqrt( dot_product(a(:, i), a(:, i)) )
+			e(:, i) = a(:, i) / norm_a(i)
+		enddo
+		do i = 1, 3
+			rotmat(:, i) = e(i, 1)*e(:, 2) - e(i, 2)*e(:, 1)
+		enddo
+		do i = 1, 3
+			tmp(i) =  dot_product(rotmat(:, i), e(:, 2)) 
+		enddo
+		b(:, 1) = 2.0_realk * pi * tmp(:) &
+			/ ( norm_a(1) * dot_product(e(:, 1), tmp(:)) )
+		do i = 1, 3
+			tmp(i) =  dot_product(rotmat(:, i), e(:, 1)) 
+		enddo
+		b(:, 2) = 2.0_realk * pi *tmp(:) &
+			/ ( norm_a(2) * dot_product(e(:, 2), tmp(:)) )
 
-			recvec(1,2)=-realspace(1,1)*2._realk*pi
-			recvec(3,2)=realspace(3,1)*2._realk*pi
-
-			vol=realspace(1,1)*realspace(3,2)+realspace(3,1)*realspace(1,2)
-			recvec(:,:)=recvec(:,:)/vol
-			if(realspace(2,1) .ne. 0._realk .or. realspace(2,2) .ne. 0._realk)then
-				write(*,*) 'Use just two axes it is a two dimensional system'
-				call LSquit('Not correct usage of lattice vectors',lu)
+		! set reciprocal vectors
+		j = 1
+		do i = 1, 3
+			if ( is_active(i) ) then
+				recvec(:, i) = b(:, j)
+				j = j + 1
+			else
+				recvec(:, i) = 0.0_realk
 			endif
-		elseif(realspace(1,1) .eq. 0 .and. realspace(1,2) .eq. 0) then
-			recvec(2,1)=realspace(3,2)*2._realk*pi
-			recvec(3,1)=-realspace(2,2)*2._realk*pi
-
-			recvec(2,2)=-realspace(2,1)*2._realk*pi
-			recvec(3,2)=realspace(3,1)*2._realk*pi
-
-			vol=realspace(3,1)*realspace(2,2)+realspace(2,1)*realspace(3,2)
-			recvec(:,:)=recvec(:,:)/vol
-			if(realspace(1,1) .ne. 0._realk .or. realspace(1,2) .ne. 0._realk)then
-				write(*,*) 'Use just two axes it is a two dimensional system'
-				call LSquit('Not correct usage of lattice vectors',lu)
-			endif
-		endif
-
+		enddo
+		
+!		write (*, *) 'test'
+!		write (*, *) 'a1b1', dot_product(a(:,1), b(:,1)), 'should be 2 pi'
+!		write (*, *) 'a1b2', dot_product(a(:,1), b(:,2)), 'should be 0'
+!		write (*, *) 'a2b1', dot_product(a(:,2), b(:,1)), 'should be 0'
+!		write (*, *) 'a2b2', dot_product(a(:,2), b(:,2)), 'should be 2 pi'
+!		
+!	 	write (*, *) recvec
 
 	CASE(1)
 		if(realspace(1,1) .ne. 0) then

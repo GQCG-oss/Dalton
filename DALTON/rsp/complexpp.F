@@ -90,7 +90,7 @@ c
         CONV(I)=.FALSE.
       ENDDO
 C
-      IF (MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0) THEN
+      IF ((MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0).AND. ABS_REBD) THEN
 c        write(luabspri,*) 'ABS_KLRED >0, restart'
         DO I=1,KZVAR
           WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
@@ -132,6 +132,13 @@ c
         NNLT=4*NEQ2S
         KLRED(1)=0
         KLRED(2)=0
+        IF (.NOT. ABS_REBD) THEN
+          REWIND(LUSB)
+          REWIND(LUAB)
+          REWIND(LUSS)
+          REWIND(LUAS)
+        ENDIF
+        
         CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
      &               WRK(KRESD),KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
 c
@@ -235,26 +242,31 @@ C
 C
  777  CONTINUE
 C
-      ABS_KLRED(1)=KLRED(1)
-      ABS_KLRED(2)=KLRED(2)
+      IF (ABS_REBD) THEN 
+        ABS_KLRED(1)=KLRED(1)
+        ABS_KLRED(2)=KLRED(2)
 C
-      CALL GPINQ('ABS_E1RED','EXIST',EX1)
-      CALL GPINQ('ABS_E2RED','EXIST',EX2)
-      CALL GPINQ('ABS_SRED','EXIST',EX3)
+        CALL GPINQ('ABS_E1RED','EXIST',EX1)
+        CALL GPINQ('ABS_E2RED','EXIST',EX2)
+        CALL GPINQ('ABS_SRED','EXIST',EX3)
 c
-      IF (EX1.AND.EX2.AND.EX3) THEN
-        REWIND(LUE1RED)
-        REWIND(LUE2RED)
-        REWIND(LUSRED)
-        DO I=1,KLRED(1)
-          CALL WRITE_VEC(LUE1RED,KLRED(1),WRK(KREDE+(I-1)*ABS_MAXRM))
-        ENDDO
-        DO I=1,KLRED(2)
-          CALL WRITE_VEC(LUE2RED,KLRED(2),WRK(KREDE+(I-1)*ABS_MAXRM+
-     &                                         ABS_MAXRM*ABS_MAXRM))
-          CALL WRITE_VEC(LUSRED,KLRED(1),WRK(KREDS+(I-1)*ABS_MAXRM))
-        ENDDO
-      ENDIF
+        IF (EX1.AND.EX2.AND.EX3) THEN
+          REWIND(LUE1RED)
+          REWIND(LUE2RED)
+          REWIND(LUSRED)
+          DO I=1,KLRED(1)
+            CALL WRITE_VEC(LUE1RED,KLRED(1),WRK(KREDE+(I-1)*ABS_MAXRM))
+          ENDDO
+          DO I=1,KLRED(2)
+            CALL WRITE_VEC(LUE2RED,KLRED(2),WRK(KREDE+(I-1)*ABS_MAXRM+
+     &                                           ABS_MAXRM*ABS_MAXRM))
+            CALL WRITE_VEC(LUSRED,KLRED(1),WRK(KREDS+(I-1)*ABS_MAXRM))
+          ENDDO
+        ENDIF
+       ELSE
+         ABS_KLRED(1)=0
+         ABS_KLRED(2)=0
+       ENDIF
 C
       END
       SUBROUTINE ABS_SOLV(FREQS,NFREQS,REDE,REDS,REDGD,RDX,KLRED,

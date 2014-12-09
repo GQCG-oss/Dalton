@@ -118,6 +118,16 @@ INTEGER             :: maxAngmom,nAtoms,GRDONE,MXPRIM,Ushells
 INTEGER,pointer     :: CHARGE(:)!size natoms
 END TYPE BASINF
 
+TYPE BRAKEBASINFO
+INTEGER             :: OriginalType
+INTEGER             :: OriginalnAngmom
+INTEGER             :: nAngmom
+INTEGER,pointer     :: OriginalnOrb(:)
+INTEGER,pointer     :: nOrb(:)
+INTEGER,pointer     :: Orb(:,:) 
+INTEGER,pointer     :: angmom(:)
+END TYPE BRAKEBASINFO
+
 contains
 subroutine nullifyBasisset(BAS)
   implicit none

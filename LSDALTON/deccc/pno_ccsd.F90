@@ -2295,7 +2295,7 @@ module pno_ccsd_module
      if(.not.this_is_query)then
         ! This subroutine builds the full screening matrix.
         call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
-           & a_batch%nbatches,g_batch%nbatches,INTSPEC)
+           & a_batch%nbatches,g_batch%nbatches,INTSPEC,DECinfo%IntegralThreshold)
         if(mylsitem%setting%scheme%cs_screen.or.mylsitem%setting%scheme%ps_screen)then
            call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
               & nb,a_batch%nbatches,g_batch%nbatches,&
@@ -2369,7 +2369,8 @@ module pno_ccsd_module
 
               call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
                  & Mylsitem%setting,w1,a_batch%batchindex(alphaB),g_batch%batchindex(gammaB),&
-                 & a_batch%batchsize(alphaB),g_batch%batchsize(gammaB),la,nb,lg,nb,INTSPEC,fullRHS)
+                 & a_batch%batchsize(alphaB),g_batch%batchsize(gammaB),la,nb,lg,nb,INTSPEC,&
+                 & fullRHS,DECinfo%IntegralThreshold)
 
               call time_start_phase(PHASE_WORK, ttot = times(1) )
               times(3) = times(3) + times(1)

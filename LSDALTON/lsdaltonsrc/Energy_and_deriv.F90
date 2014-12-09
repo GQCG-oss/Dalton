@@ -160,6 +160,9 @@ contains
        endif
 
        if (config%av%CFG_averaging == config%av%CFG_AVG_van_lenthe) then !FIXME: put this somewhere else!
+          ! Need to free memory allocated previously in LSDALTON driver
+          call mat_free(config%av%Fprev)
+          call mat_free(config%av%Dprev)
           call mat_init(config%av%Fprev,nbast,nbast)
           call mat_init(config%av%Dprev,nbast,nbast)
        endif
