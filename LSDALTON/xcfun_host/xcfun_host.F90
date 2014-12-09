@@ -242,12 +242,14 @@ module xcfun_host
     nullify(current%next)
 
   end subroutine xcfun_host_add_functional
+#endif
 
   subroutine xcfun_host_augment_func(DFTfuncString,hfweight,lupri)
     implicit none
     integer                     :: lupri
     character(*),intent(in)     :: DFTfuncString
     real(realk),intent(in)      :: hfweight
+#ifdef VAR_XCFUN
     !
     type(xc_functional),pointer :: current
     character(len=1024)         :: augmentedFunc
@@ -267,8 +269,8 @@ module xcfun_host
 
     call xcfun_host_init(augmentedFunc,weight,lupri)
 
-  end subroutine xcfun_host_augment_func
 #endif
+  end subroutine xcfun_host_augment_func
 
 
   subroutine xcfundftreport(lupri)
