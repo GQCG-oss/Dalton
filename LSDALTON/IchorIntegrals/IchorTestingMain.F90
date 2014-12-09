@@ -69,7 +69,7 @@ integer(kind=accdevkind) :: acc_device_type
 
 ForceCPU = .FALSE.
 ForceGPU = .FALSE.
-DebugIchorOption = 9
+DebugIchorOption = 5
 #ifdef VAR_OPENACC
 acc_device_type = acc_get_device_type()
 print*,'acc_get_device_type = ',acc_device_type
@@ -534,6 +534,7 @@ IF(ALLPASS)THEN
 ELSE
    WRITE(*,'(A)')'Ichor Integrals UnitTest: FAILED'
 ENDIF
+call acc_shutdown(acc_device_type)
 CONTAINS
 subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
   implicit none
@@ -557,7 +558,6 @@ subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
   ELSE
      STOP 'Error in specification of operator in GetIchorOpereratorIntSpec'
   ENDIF
-  call acc_shutdown(acc_device_type)
 end subroutine GetIchorOpereratorIntSpec
 
 END PROGRAM IchorErimoduleTEST

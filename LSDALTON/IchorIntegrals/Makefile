@@ -223,11 +223,13 @@ F90_OBJS = \
 	IchorEri_GabIntegral_OBS_Gen.o \
 	IchorEri_GabIntegral_OBS_Seg.o \
 	IchorEri_GabIntegral_OBS_general.o \
+	IchorEri_GabIntegral_Prim.o \
         IchorEriTools.o \
         IchorEriDist.o \
         IchorEriLink.o \
         IchorEri.o \
         IchorGab.o \
+        IchorGabLoop.o \
         MainIchorInterface.o 
 
 F_CPPS = $(F_OBJS:.o=.i)
