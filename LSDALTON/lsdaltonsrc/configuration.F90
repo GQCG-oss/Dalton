@@ -470,10 +470,8 @@ DO
                                  call lsquit('Keyword .MOCHANGE nolonger supported',-1)
             CASE('.MUOPT');      config%diag%CFG_lshift = diag_lshift_search
                                  config%av%CFG_lshift = Diag_lshift_search
-#ifdef MOD_UNRELEASED
             CASE('.NALPHA');     read(LUCMD,*) config%decomp%nocca ; config%decomp%alpha_specified = .true.
             CASE('.NBETA');      read(LUCMD,*) config%decomp%noccb ; config%decomp%beta_specified = .true.
-#endif
             CASE('.NOAV');       config%av%CFG_averaging =   config%av%CFG_AVG_none  
             CASE('.NO HLSHIFT'); config%solver%lshift_by_hlgap = .false. !Don't use the default scheme (level shift by homo lumo gap), 
                                                                          !use instead the "old" scheme developed for the Davidson algorithm
@@ -569,14 +567,12 @@ DO
             CASE('.MWPURIFYATOMSTART');               
                !Perform McWeeny purification on the non idempotent Atoms Density
                config%opt%MWPURIFYATOMSTART=.TRUE.
-#ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
                                  config%diag%cfg_unres=.true.
                                  config%opt%cfg_unres=.true.
                                  config%soeoinp%cfg_unres=.true.
                                  config%response%RSPsolverinput%cfg_unres = .true.
-#endif
             CASE('.UNSAFE');     config%solver%cfg_arh_crop_safe = .false.
             CASE('.VanLenthe');  config%opt%CFG_density_method =  config%opt%CFG_F2D_ROOTHAAN !Diagonalization
                                  config%av%CFG_averaging = config%av%CFG_AVG_van_lenthe
@@ -3297,7 +3293,6 @@ config%av%ediis_history_size = config%av%diis_history_size
       config%decomp%nactive = 0
 
    ELSE
-#ifdef MOD_UNRELEASED
       !Odd number of electrons
       !Stinne change 23/4-2010: why subtract one here???
       !config%decomp%nocc = (config%integral%nelectrons - 1 - config%integral%molcharge)/2
@@ -3305,15 +3300,10 @@ config%av%ediis_history_size = config%av%diis_history_size
       !Cecilie change 07/07 2010: Same here
       config%decomp%nocc = config%integral%nelectrons/2
       config%decomp%nactive = 1
-#else
-      print*,'Error: Odd number of electrons'
-      call lsquit('Only Closed Shell Systems are allowed',-1)
-#endif
    ENDIF
    config%diag%nocc = config%decomp%nocc
 
    if (config%decomp%alpha_specified .or. config%decomp%beta_specified) then
-#ifdef MOD_UNRELEASED
       config%integral%unres =.TRUE.
       config%decomp%cfg_unres =.TRUE.
       config%diag%cfg_unres =.TRUE.
@@ -3337,13 +3327,8 @@ config%av%ediis_history_size = config%av%diis_history_size
       write(LUPRI,'(1x,a,i6)')   'ALPHA spin occupancy =',config%decomp%nocca
       write(LUPRI,'(1x,a,i6,/)') 'BETA  spin occupancy =',config%decomp%noccb
       call mat_select_type(mtype_unres_dense,lupri)
-#else
-      print*,'Error: alpha_specified or beta_specified'
-      call lsquit('Only Closed Shell Systems are allowed',-1)
-#endif
    else IF(config%decomp%nactive /= 0 .or. config%decomp%cfg_unres) THEN
       !unrestricted SCF if Nelec uneven or if cfg_unres=.true.
-#ifdef MOD_UNRELEASED
 
       config%integral%unres = .true.
       config%decomp%cfg_unres = .true.
@@ -3356,10 +3341,6 @@ config%av%ediis_history_size = config%av%diis_history_size
 
       config%diag%nocca = config%decomp%NOCCA
       config%diag%noccb = config%decomp%NOCCb
-#else
-      print*,'Error: nactive not equal to zero'
-      call lsquit('Only Closed Shell Systems are allowed',-1)
-#endif
       if(config%integral%nelectrons /= 0) then
 WRITE(config%LUPRI,*)
 write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stinne'
@@ -3415,6 +3396,20 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
             call lsquit('Only spin = 0, 1, and 2 implemented!',config%lupri) 
          endif
       endif
+   ENDIF
+
+   !Check XCFUN consistency for unrestricted calculations
+   IF (config%decomp%cfg_unres) THEN
+#ifndef VAR_XCFUN
+      write(LUPRI,'(1x,a)')   'Unrestricted calculations require the use of XCFUN.'
+      write(LUPRI,'(1x,a)')   'Recompile the code with XCFUN turned on to run unrestriced calculations.'
+      call lsquit('Unrestricted calculations require the use of XCFUN',-1)
+#endif
+      IF (.NOT.CONFIG%INTEGRAL%DFT%XCFUN) THEN
+        write(LUPRI,'(1x,a)')   'Unrestricted calculations require the use of XCFUN.'
+        write(LUPRI,'(1x,a)')   'Remove keyword .PSFUN under **GENERAL to run unrestriced calculations.'
+        CALL LSQUIT('Unrestricted calculations require the use of XCFUN',lupri)
+      ENDIF
       WRITE(config%LUPRI,*)
       write(LUPRI,'(/,1x,a)') '--------------------------'
       write(LUPRI,'(1x,a)')   '<Unrestricted calculation>'
@@ -3423,13 +3418,10 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
            & write(LUPRI,'(1x,a)') 'Spin symmetry = Triplet'
       write(LUPRI,'(1x,a,i6)')   'ALPHA spin occupancy =', config%decomp%nocca
       write(LUPRI,'(1x,a,i6,/)') 'BETA  spin occupancy =', config%decomp%noccb
+
       !fixme: should be available for other matrix types as well
-#ifdef MOD_UNRELEASED
       call mat_select_type(mtype_unres_dense,lupri)
-#else
-      print*,'Error: mtype_unres_densechosen'
-      call lsquit('Only Closed Shell Systems are allowed',-1)
-#endif
+
    ENDIF
 
 !Settings concerning SCF gradient convergence threshold:
