@@ -197,12 +197,33 @@ recommended step length is 0.05~\cite{krpoaprtjcp112}. As for the calculation of
 calculation requires the determination of one analytical Hessian in
 order to determine the harmonic force field.
 
-
 The default maximum number of iterations is 20. However, \dalton\ will
 automatically reset the maximum number of iterations to 6$K$+1 in case
 of vibrational averaging calculations. The maximum number of
 iterations can also be set explicitly by using
 the keyword \verb|.MAX IT| in the \verb|**DALTON INPUT| module.
+
+It is important to understand that in some cases a property will acquire a
+non-zero value only after the walk to the "effective" geometry has lowered
+the symmetry of the system, an example being the dipole moment of CH3CD3:
+CH3CH3 has at least $D_3$~symmetry whereas CH3CD3 at the effective
+geometry has either $C_3$ or at most $C_{3v}$~symmetry, and the latter
+cases permit a non-vanishing dipole moment.  A consequence of this is that
+if the walk to the effective geometry does not lower the symmetry of the
+Born-Oppenheimer Hamiltonian, then a property that vanishes at the
+equilibrium geometry will remain zero at the effective geometry.  This is
+the case for diatomic molecules.  There is only one geometry parameter,
+and varying it does not change the symmetry of the electronic Hamiltonian
+of the system.  A property that is nonzero at the equilibrium bond length,
+such as the dipole moment of CO, or the quadrupole moment of H$_2$, can
+and most likely will have a nonzero value at the effective geometry for a
+particular isotopically substituted species such as HD.  But the dipole
+moment of a homonuclear molecule is zero at any geometry, because of the
+symmetry of the Hamiltonian and of the eigenfunctions of that Hamiltonian.
+ Further, symmetry dictates that the vibrational averaging contribution
+will also be zero.  Hence, for example, it is not possible to obtain the
+(known) dipole moment of HD this way, because within the Born-Oppenheimer
+approximation this quantity is zero.
 
 \section{Vibrationally averaged spin--spin coupling constants}
 

@@ -13,6 +13,7 @@ MODULE pbc_scfdiis
   USE PBC_MSC
   USE PBC_kspce_rspc_operations
   USE pbc_ff_contrib
+  USE pbc_timings
 	
   PRIVATE  					
   PUBLIC :: pbc_startzdiis	
@@ -375,6 +376,29 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 	! threshhold for removing singularities in overlap matrix s
 	REAL(realk) :: singular_threshh = 1e-4_realk 
+	
+	! timings
+	integer timer_exc, timer_coul, timer_fmm, timer_h1, timer_ovl 
+	integer timer_fmm_mm, timer_kptenergy
+
+	type(timing_info), pointer :: timings(:)
+	timer_exc = 1
+	timer_coul = 2 
+	timer_fmm = 3 
+	timer_h1 = 4
+	timer_ovl = 5
+	timer_fmm_mm = 6
+	timer_kptenergy = 7
+
+	! initialize timings module
+	call pbc_timings_init(timings, 7)
+	call pbc_timings_name_timer(timings, 'Exchange integrals  ', timer_exc)
+	call pbc_timings_name_timer(timings, 'Coulomb integrals   ', timer_coul)
+	call pbc_timings_name_timer(timings, 'Farfield integrals  ', timer_fmm)
+	call pbc_timings_name_timer(timings, '1 particle integrals', timer_h1)
+	call pbc_timings_name_timer(timings, 'Overlap Matrices    ', timer_ovl)
+	call pbc_timings_name_timer(timings, 'FMM-multip. moments ', timer_fmm_mm)
+	call pbc_timings_name_timer(timings, 'K-point energy      ',timer_kptenergy)
 
 	write(lupri,*) 'Entering routine startzdiis'
 
@@ -402,49 +426,46 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 	write(lupri,*) 'Density first'
 	call mat_print(nfdensity(n1),1,ndim,1,ndim,lupri)
 
-
 	call set_refcell(refcell,molecule)
 	call set_lattice_cells(numrealvec,molecule,lattice,lupri)
 	errlm=molecule%nelectrons/2*(ndim-molecule%nelectrons/2.)
 	call mem_alloc(error,lattice%num_store,errlm)
 
-	CALL LSTIMER('START ',TS,TE,LUPRI)
+	call pbc_timings_start(timings, timer_ovl)
 	call pbc_overlap_k(lupri,luerr,setting,molecule%natoms,ndim,&
 		& lattice,refcell,numrealvec,ovl)
-	CALL LSTIMER('pbc_overlap_k',TS,TE,LUPRI)
+	call pbc_timings_stop(timings, timer_ovl, 2, lupri)
 
-	!CALCULATES kinetic energy of electrons
-	CALL LSTIMER('START ',TS,TE,LUPRI)
+	!calculate 1 particle operators
+	call pbc_timings_start(timings, timer_h1)
+	
+	! - kinetic energy of electrons
 	call pbc_kinetic_k(lupri,luerr,setting,molecule%natoms,ndim,&
 		& lattice,refcell,numrealvec,nfdensity,f_1)
-	CALL LSTIMER('pbc_kinetic_k',TS,TE,LUPRI)
 
-	!CALCULATES electron nuclei attraction
-	CALL LSTIMER('START ',TS,TE,LUPRI)
+	! - electron nuclei attraction
 	call pbc_nucattrc_k(lupri,luerr,setting,molecule%natoms,ndim,&
 		& lattice,refcell,numrealvec,nfdensity,f_1)
-	CALL LSTIMER('pbc_nucattrc_k',TS,TE,LUPRI)
 
-	!CALCULATES nuclear repulsion
-	CALL LSTIMER('START ',TS,TE,LUPRI)
+	! - nuclear repulsion
 	CALL pbc_nucpot(lupri,luerr,setting,molecule%natoms,lattice,&
 		& refcell,numrealvec,E_nuc)
-	CALL LSTIMER('pbc_nucpot',TS,TE,LUPRI)
+
+	call pbc_timings_stop(timings, timer_h1, 2, lupri)
 
 	!computing the nuclear moments
 	call mem_alloc(nucmom,(1+maxmultmom)**2)
 	call pbc_comp_nucmom(refcell,nucmom,maxmultmom,lupri)
 
-	CALL LSTIMER('START ',TS,TE,LUPRI)
+	call pbc_timings_start(timings, timer_fmm_mm)
 	call pbc_multipole_expan_k(lupri,luerr,setting,ndim,lattice,&
 		&refcell,numrealvec,maxmultmom)
-	CALL LSTIMER('pbc_multipole',TS,TE,LUPRI)
+	call pbc_timings_stop(timings, timer_fmm_mm, 2, lupri)
 
 	call pbc_controlmm(20,Tlat,lattice%Tlmax,maxmultmom,.false.,lattice%ldef%avec,&
 		& ndim,lupri,nfdensity,numrealvec,lattice,E_ff,E_nnff,refcell)
 
-	DO k=1,BZ%nk
-
+	do k=1,bz%nk
 		call pbc_get_kpoint(k,kvec)
 		if(lattice%store_mats)then
 			!get the overlap matrices S^0l
@@ -460,7 +481,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		call pbc_spectral_decomp_ovl(smatk,bz%kpnt(k)%Uk, & 
 			& bz%kpnt(k)%is_singular,Ndim,bz%kpnt(k)%nsingular,singular_threshh,lupri)
 		call mem_alloc(bz%kpnt(k)%eigv,ndim-bz%kpnt(k)%nsingular)
-	ENDDO
+	enddo
 
 	k=0
 	i=0 !either 0 or 1, check it, for zero no errors
@@ -471,7 +492,6 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 	! self consistent iterations
 	DO WHILE(tol .le. lattice%num_its)! 20)!should have an input parameter
 
-		CALL LSTIMER('START ',TOT,TWT,LUPRI)
 		k=k+1
 		i=i+1
 
@@ -495,20 +515,17 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 		call pbc_get_onehamenergy(numrealvec,lattice,f_1,nfdensity,E_1)
 
-		CALL LSTIMER('START ',TST,TET,LUPRI)
-		CALL LSTIMER('START ',TS,TE,LUPRI)
+		! coulomb integrals
+		call pbc_timings_start(timings, timer_coul)
 		call pbc_electron_rep_k(lupri,luerr,setting,molecule%natoms,ndim,&
 			& lattice,refcell,numrealvec,nfdensity,g_2,E_J)
-		CALL LSTIMER('pbc Coul',TS,TE,LUPRI)
+		call pbc_timings_stop(timings, timer_coul, 2, lupri)
 
-		!if hybrid or HF, include parameter if hybrid
-		CALL LSTIMER('START ',TS,TE,LUPRI)
+		! exchange integrals
+		call pbc_timings_start(timings, timer_exc)
 		call pbc_exact_xc_k(lupri,luerr,setting,molecule%natoms,ndim,&
 			& lattice,refcell,numrealvec,nfdensity,g_2,E_K)
-		CALL LSTIMER('pbc xchange',TS,TE,LUPRI)
-		CALL LSTIMER('rep xchange',TST,TET,LUPRI)
-
-		!KOHN sham
+		call pbc_timings_stop(timings, timer_exc, 2, lupri)
 
 		lattice%fc1=max(lattice%oneop1,lattice%col1)
 		lattice%fc1=max(lattice%fc1,lattice%Kx1)
@@ -518,10 +535,10 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		lattice%fc3=max(lattice%fc3,lattice%Kx3)
 
 		!Far-field contribution to fock
-		CALL LSTIMER('START ',TS,TE,LUPRI)
+		call pbc_timings_start(timings, timer_fmm)
 		call pbc_ff_fck(maxmultmom,tlat,lattice%tlmax,ndim,lattice,nfdensity,nucmom,&
 			& g_2,E_ff,E_nn,lupri)
-		CALL LSTIMER('pbc farfield',TS,TE,LUPRI)
+		call pbc_timings_stop(timings, timer_fmm, 2, lupri)
 
 		!sums the parts for the fock matrices from  f^0l
 		call pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lupri)
@@ -539,7 +556,7 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 		!No we have the fock matrices in real space
 		!We transform to kspace and solve
-		CALL LSTIMER('START',TST,TET,LUPRI)
+		call pbc_timings_start(timings, timer_kptenergy)
 		do kpt=1,bz%nk
 
 			call pbc_get_kpoint(kpt,kvec)
@@ -548,12 +565,10 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 
 			! We compute only weights for the gamma point
 			if(bz%kpnt(kpt)%is_gamma )then
-				CALL LSTIMER('START',TS,TE,LUPRI)
 				call mem_alloc(weight,i)
 				weight=0.0_realk
 				call pbc_get_diisweights(lattice,Bz,weight,i,tol,kvec,ndim,C_0,fockMO,fock,errortest,error,&
 					& diis_exit,errlm,molecule%nelectrons,lupri)
-				CALL LSTIMER('diis weights',TS,TE,LUPRI)
 			endif ! is_gamma
 
 			if(tol .gt. 0) then
@@ -601,7 +616,8 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
                           & BZ%NK_nosym,ndim,kpt,diis_exit,lupri)
 
 		enddo !kpt
-		CALL LSTIMER('k point energy',TST,TET,LUPRI)
+		!CALL LSTIMER('k point energy',TST,TET,LUPRI)
+		call pbc_timings_stop(timings, timer_kptenergy, 2, lupri)
 
                 if(diis_exit) then
                   write(lupri,*) 'Max Density elements for each layer'
@@ -636,11 +652,10 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		write(*,*) 'h_1=',E_1
 		write(*,*) 'Nuclear=',E_nuc
 		write(*,*) 'Far field=', E_ff
-
+	
 		if(diis_exit) exit
 
 		tol=tol+1
-		CALL LSTIMER('Diis Iteration',TOT,TWT,LUPRI)
 
 	ENDDO
 
@@ -653,6 +668,13 @@ SUBROUTINE pbc_startzdiis(molecule,setting,ndim,lattice,numrealvec,&
 		if(nfdensity(i)%init_magic_tag.NE.mat_init_magic_value) CYCLE
 		call mat_free(nfdensity(i))
 	enddo
+		
+	! print timings
+	call pbc_timings_print(timings, lupri)
+	call pbc_timings_print(timings, 6)
+	! deallocate allocated memory in timings 
+	call pbc_timings_destruct(timings)
+
 	call free_Moleculeinfo(refcell)
 	call mem_dealloc(tlat)
 	call mem_dealloc(nfdensity)
@@ -731,7 +753,7 @@ SUBROUTINE pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lup
 	TYPE(matrix),target,intent(inout) :: f_1(numrealvec)
 	TYPE(matrix),target,intent(inout) :: g_2(numrealvec)
 	CHARACTER(LEN=12) :: diismats
-	INTEGER,intent(OUT) :: realcut(3)
+	INTEGER,intent(INOUT) :: realcut(3)
 	! local
 	INTEGER :: i,j
 	REAL(realk) :: focknorm !for finding time usage

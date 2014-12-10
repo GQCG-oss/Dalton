@@ -1,49 +1,59 @@
 MODULE AGC_CPU_OBS_VERTICALRECURRENCEMODASeg1Prim
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 
-subroutine VerticalRecurrenceCPUSeg1Prim0(nPasses,nPrimP,nPrimQ,&
+subroutine VerticalRecurrenceCPUSeg1Prim0(nPassP,nPrimP,nPrimQ,&
          & reducedExponents,TABFJW,&
-         & Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
+         & Pcent,Qcent,integralPrefactor,&
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
          & AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: reducedExponents(1)
-  REAL(REALK),intent(in) :: integralPrefactor(1)
-  REAL(REALK),intent(in) :: Pcent(3),Qcent(3,nPasses)
-  REAL(REALK),intent(in) :: TABFJW(0:3,0:1200)
-  REAL(REALK),intent(in) :: QpreExpFac(nPasses),PpreExpFac(1)
-  real(realk),intent(inout) :: AUXarray(nPasses)
+  integer,intent(in) :: nPassP,nPrimP,nPrimQ
+  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(in) :: TABFJW(0:3,0:1200)
+  real(realk),intent(in) :: reducedExponents(1)
+  real(realk),intent(in) :: integralPrefactor(1)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
+  real(realk),intent(in) :: QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(inout) :: AUXarray(nPassP)
   !local variables
-  REAL(REALK),PARAMETER :: D2JP36=  3.6000000000000000E+01_realk
+  real(realk),PARAMETER :: D2JP36=  3.6000000000000000E+01_realk
   real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D05 =0.5E0_realk,D1=1E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk
-  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-!  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk
-  Real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL,Pexpfac
-  Real(realk) :: W2,W3,PX,PY,PZ,PQX,PQY,PQZ,squaredDistance,RJ000
-  Integer :: IPNT,iPassQ,iPrimP,iPrimQ,iPQ
-  DO iPassQ = 1,nPasses
-   px = Pcent(1)
-   py = Pcent(2)
-   pz = Pcent(3)
-   pqx = px - Qcent(1,iPassQ)
-   pqy = py - Qcent(2,iPassQ)
-   pqz = pz - Qcent(3,iPassQ)
-   squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz
-   WVAL = reducedExponents(1)*squaredDistance
+  real(realk),PARAMETER :: D05 =0.5E0_realk,D1=1E0_realk
+  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
+  real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk
+  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  real(realk),PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk
+  real(realk),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  real(realk),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  real(realk),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  real(realk),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  real(realk),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  real(realk),PARAMETER :: SQRPIH = SQRTPI/D2
+  real(realk),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+!  real(realk),PARAMETER :: SMALL = 1E-15_realk
+  real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL
+  real(realk) :: W2,W3,PX,PY,PZ,XPQ,YPQ,ZPQ,squaredDistance,RJ000
+  Integer :: IPNT,iAtomA,iAtomB
+  Integer :: iP,iPrimQ,iPrimP,iPassP
+!$OMP DO &
+!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
+!$OMP         RWVAL,GVAL,&
+!$OMP         Px,Py,Pz,&
+!$OMP         iP,iPassP)
+  DO iP = 1,nPassP
+   iPassP = iP
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+     Xpq = Pcent(1,iAtomA,iAtomB) - Qcent(1)
+     Ypq = Pcent(2,iAtomA,iAtomB) - Qcent(2)
+     Zpq = Pcent(3,iAtomA,iAtomB) - Qcent(3)
+     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
+     WVAL = reducedExponents(1)*squaredDistance
      !  0 < WVAL < 0.000001
 !     IF (ABS(WVAL) .LT. SMALL) THEN
 !      RJ000 = D1
@@ -66,59 +76,76 @@ subroutine VerticalRecurrenceCPUSeg1Prim0(nPasses,nPrimP,nPrimQ,&
      ELSE
       RJ000 = SQRT(PID4/WVAL)
      ENDIF
-     AUXarray(iPassQ)=integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)*RJ000
-  enddo
+     AUXarray(iP)=integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)*RJ000
+  ENDDO !iP = 1,nPassP
+!$OMP END DO
 end subroutine VerticalRecurrenceCPUSeg1Prim0
 
-subroutine VerticalRecurrenceCPUSeg1Prim1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,&
-         & QpreExpFac,AUXarray)
+subroutine VerticalRecurrenceCPUSeg1Prim1A(nPassP,nPrimP,nPrimQ,&
+         & reducedExponents,TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
+         & PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)
+  integer,intent(in) :: nPassP,nPrimP,nPrimQ
+  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(in) :: TABFJW(0:4,0:1200)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
-  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)
-  real(realk),intent(in) :: Acenter(3)
-  real(realk),intent(inout) :: AUXarray(4,nPasses)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: Acenter(3,nAtomsA)
+  real(realk),intent(inout) :: AUXarray(4,nPassP)
   !local variables
-  integer :: iPassQ,iPrimP,iPrimQ,ipnt
+  Integer :: iP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa
   real(realk) :: mPX,mPY,mPZ,invexpP,alphaP,RJ000(0:1)
-  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
   real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  real(realk),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
   real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  3.8000000000000000E+01_realk
+  real(realk),PARAMETER :: D2JP36=  3.8000000000000000E+01_realk
   real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
+  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  real(realk),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  real(realk), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  real(realk), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  real(realk), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  real(realk), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  real(realk), parameter :: PI=3.14159265358979323846E0_realk
+  real(realk), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  real(realk), PARAMETER :: SQRPIH = SQRTPI/D2
+  real(realk), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !ThetaAux(n,1,0,0) = Xpa*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)
   !i = 0 last 2 term vanish
   !We include scaling of RJ000 
-  Ax = -Acenter(1)
-  Ay = -Acenter(2)
-  Az = -Acenter(3)
-  DO iPassQ = 1,nPasses
-    Pexpfac = PpreExpFac(1)
-    mPX = -Pcent(1)
-    mPY = -Pcent(2)
-    mPZ = -Pcent(3)
+!$OMP DO &
+!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
+!$OMP         RWVAL,GVAL,&
+!$OMP         mPx,mPy,mPz,&
+!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&
+!$OMP         alphaXpq,alphaYpq,alphaZpq,&
+!$OMP         invexpP,&
+!$OMP         PREF,&
+!$OMP         TMP1,TMP2,&
+!$OMP         iP,iPassP)
+  DO iP = 1,nPassP
+   iPassP = iP
+   iAtomA = iAtomApass(iPassP)
+   iAtomB = iAtomBpass(iPassP)
+   Ax = -Acenter(1,iAtomA)
+   Ay = -Acenter(2,iAtomA)
+   Az = -Acenter(3,iAtomA)
+    mPX = -Pcent(1,iAtomA,iAtomB)
+    mPY = -Pcent(2,iAtomA,iAtomB)
+    mPZ = -Pcent(3,iAtomA,iAtomB)
     invexpP = D1/Pexp(1)
-    Xpa = Pcent(1) + Ax
-    Ypa = Pcent(2) + Ay
-    Zpa = Pcent(3) + Az
-     Xpq = mPX + Qcent(1,iPassQ)
-     Ypq = mPY + Qcent(2,iPassQ)
-     Zpq = mPZ + Qcent(3,iPassQ)
+    Xpa = Pcent(1,iAtomA,iAtomB) + Ax
+    Ypa = Pcent(2,iAtomA,iAtomB) + Ay
+    Zpa = Pcent(3,iAtomA,iAtomB) + Az
+   Xpq = mPX + Qcent(1)
+   Ypq = mPY + Qcent(2)
+   Zpq = mPZ + Qcent(3)
      alphaP = reducedExponents(1)*invexpP
      alphaXpq = alphaP*Xpq
      alphaYpq = alphaP*Ypq
@@ -147,108 +174,78 @@ subroutine VerticalRecurrenceCPUSeg1Prim1A(nPasses,nPrimP,nPrimQ,reducedExponent
       RJ000(0) = SQRT(RWVAL)
       RJ000(1) = RWVAL*PID4I*D05*RJ000(0)
      ENDIF
-     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)
+     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)
      TMP1 = PREF*RJ000(0)
      TMP2 = PREF*RJ000(1)
-     AUXarray(1,iPassQ) = TMP1
-     AUXarray(2,iPassQ) = Xpa*TMP1 + alphaXpq*TMP2
-     AUXarray(3,iPassQ) = Ypa*TMP1 + alphaYpq*TMP2
-     AUXarray(4,iPassQ) = Zpa*TMP1 + alphaZpq*TMP2
-  enddo
-end subroutine
+     AUXarray(1,iP) = TMP1
+     AUXarray(2,iP) = Xpa*TMP1 + alphaXpq*TMP2
+     AUXarray(3,iP) = Ypa*TMP1 + alphaYpq*TMP2
+     AUXarray(4,iP) = Zpa*TMP1 + alphaZpq*TMP2
+  ENDDO !iP = 1,nPassP
+!$OMP END DO
+end subroutine VerticalRecurrenceCPUSeg1Prim1A
 
-subroutine VerticalRecurrenceCPUSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrenceCPUSeg1Prim2A(nPassP,nPrimP,nPrimQ,&
+         & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: TABFJW(0: 5,0:1200)
+  integer,intent(in) :: nPassP,nPrimP,nPrimQ
+  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(in) :: RJ000Array(0: 2,nPassP)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
-  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)
-  real(realk),intent(in) :: Acenter(3)
-  real(realk),intent(inout) :: AUXarray(   10,nPasses)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: Acenter(3,nAtomsA)
+  real(realk),intent(inout) :: AUXarray(   10,nPassP)
   !local variables
-  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
+  integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(    4)
   real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa
-  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP,RJ000(0: 2)
+  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP
   real(realk) :: TwoTerms(   1)
-  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
-  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
-  real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  4.0000000000000000E+01_realk
-  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk
   real(realk) :: TMParray1(  1:  1,2:3)
   real(realk) :: TMParray2(  2:  4,2:2)
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-  Ax = -Acenter(1)
-  Ay = -Acenter(2)
-  Az = -Acenter(3)
-  DO iPassQ = 1,nPasses
-   iP = iPassQ
-    Pexpfac = PpreExpFac(1)
-    mPX = -Pcent(1)
-    mPY = -Pcent(2)
-    mPZ = -Pcent(3)
+!$OMP DO &
+!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!$OMP         mPx,mPy,mPz,&
+!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&
+!$OMP         alphaXpq,alphaYpq,alphaZpq,&
+!$OMP         invexpP,inv2expP,&
+!$OMP         PREF,&
+!$OMP         TMPAUXarray,&
+!$OMP         TMParray1,&
+!$OMP         TMParray2,&
+!$OMP         TwoTerms,&
+!$OMP         iP,iPassP)
+  DO iP = 1,nPassP
+   iPassP = iP
+     iAtomA = iAtomApass(iPassP)
+     iAtomB = iAtomBpass(iPassP)
+   Ax = -Acenter(1,iAtomA)
+   Ay = -Acenter(2,iAtomA)
+   Az = -Acenter(3,iAtomA)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
-    Xpa = Pcent(1) + Ax
-    Ypa = Pcent(2) + Ay
-    Zpa = Pcent(3) + Az
-     Xpq = mPX + Qcent(1,iPassQ)
-     Ypq = mPY + Qcent(2,iPassQ)
-     Zpq = mPZ + Qcent(3,iPassQ)
+    Xpa = Pcent(1,iAtomA,iAtomB) + Ax
+    Ypa = Pcent(2,iAtomA,iAtomB) + Ay
+    Zpa = Pcent(3,iAtomA,iAtomB) + Az
+     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)
+     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)
+     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)
      alphaP = -reducedExponents(1)*invexpP
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
-     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
-     WVAL = reducedExponents(1)*squaredDistance
-     !  0 < WVAL < 12 
-     IF (WVAL .LT. D12) THEN
-      IPNT = NINT(D100*WVAL)
-      WDIFF = WVAL - TENTH*IPNT
-      W2    = WDIFF*WDIFF
-      W3    = W2*WDIFF
-      W2    = W2*D05
-      W3    = W3*COEF3
-      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
-      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
-      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
-     !  12 < WVAL <= (2J+36) 
-     ELSE IF (WVAL.LE.D2JP36) THEN
-      REXPW = D05*EXP(-WVAL)
-      RWVAL = D1/WVAL
-      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
-      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
-      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
-      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
-     !  (2J+36) < WVAL 
-     ELSE
-      RWVAL = PID4/WVAL
-      RJ000(0) = SQRT(RWVAL)
-      RWVAL = RWVAL*PID4I
-      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
-      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
-     ENDIF
-     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)
-     TMPAuxarray(1) = PREF*RJ000(0)
-     TMParray1(1, 2) = PREF*RJ000( 1)
-     TMParray1(1, 3) = PREF*RJ000( 2)
+     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)
+     TMPAuxarray(1) = PREF*RJ000Array(0,iPassP)
+     TMParray1(1, 2) = PREF*RJ000Array( 1,iPassP)
+     TMParray1(1, 3) = PREF*RJ000Array( 2,iPassP)
      TMPAuxArray(2) = Xpa*TMPAuxArray(1) + alphaXpq*TmpArray1(1,2)
      TMPAuxArray(3) = Ypa*TMPAuxArray(1) + alphaYpq*TmpArray1(1,2)
      TMPAuxArray(4) = Zpa*TMPAuxArray(1) + alphaZpq*TmpArray1(1,2)
@@ -257,114 +254,82 @@ subroutine VerticalRecurrenceCPUSeg1Prim2A(nPasses,nPrimP,nPrimQ,reducedExponent
      tmpArray2(4,2) = Zpa*tmpArray1(1,2) + alphaZpq*TmpArray1(1,3)
      TwoTerms(1) = inv2expP*(TMPAuxArray(1) + alphaP*TmpArray1(1,2))
      do iTUV = 1,    4
-      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)
+      AuxArray(iTUV,iP) = TMPAuxarray(iTUV)
      enddo
-     AuxArray(5,IPassQ) = Xpa*TMPAuxArray(2) + alphaXpq*TmpArray2(2,2) + TwoTerms(1)
-     AuxArray(6,IPassQ) = Xpa*TMPAuxArray(3) + alphaXpq*TmpArray2(3,2)
-     AuxArray(7,IPassQ) = Xpa*TMPAuxArray(4) + alphaXpq*TmpArray2(4,2)
-     AuxArray(8,IPassQ) = Ypa*TMPAuxArray(3) + alphaYpq*TmpArray2(3,2) + TwoTerms(1)
-     AuxArray(9,IPassQ) = Ypa*TMPAuxArray(4) + alphaYpq*TmpArray2(4,2)
-     AuxArray(10,IPassQ) = Zpa*TMPAuxArray(4) + alphaZpq*TmpArray2(4,2) + TwoTerms(1)
-  ENDDO
+     AuxArray(5,iP) = Xpa*TMPAuxArray(2) + alphaXpq*TmpArray2(2,2) + TwoTerms(1)
+     AuxArray(6,iP) = Xpa*TMPAuxArray(3) + alphaXpq*TmpArray2(3,2)
+     AuxArray(7,iP) = Xpa*TMPAuxArray(4) + alphaXpq*TmpArray2(4,2)
+     AuxArray(8,iP) = Ypa*TMPAuxArray(3) + alphaYpq*TmpArray2(3,2) + TwoTerms(1)
+     AuxArray(9,iP) = Ypa*TMPAuxArray(4) + alphaYpq*TmpArray2(4,2)
+     AuxArray(10,iP) = Zpa*TMPAuxArray(4) + alphaZpq*TmpArray2(4,2) + TwoTerms(1)
+  ENDDO !iP = 1,nPassP
+!$OMP END DO
  end subroutine
 
-subroutine VerticalRecurrenceCPUSeg1Prim3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrenceCPUSeg1Prim3A(nPassP,nPrimP,nPrimQ,&
+         & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: TABFJW(0: 6,0:1200)
+  integer,intent(in) :: nPassP,nPrimP,nPrimQ
+  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(in) :: RJ000Array(0: 3,nPassP)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
-  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)
-  real(realk),intent(in) :: Acenter(3)
-  real(realk),intent(inout) :: AUXarray(   20,nPasses)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: Acenter(3,nAtomsA)
+  real(realk),intent(inout) :: AUXarray(   20,nPassP)
   !local variables
-  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
+  integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   10)
   real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa
-  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP,RJ000(0: 3)
+  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP
   real(realk) :: TwoTerms(   3)
-  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
-  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
-  real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  4.2000000000000000E+01_realk
-  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk
   real(realk) :: TMParray1(  1:  1,2:4)
   real(realk) :: TMParray2(  2:  4,2:3)
   real(realk) :: TMParray3(  5: 10,2:2)
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-  Ax = -Acenter(1)
-  Ay = -Acenter(2)
-  Az = -Acenter(3)
-  DO iPassQ = 1,nPasses
-   iP = iPassQ
-    Pexpfac = PpreExpFac(1)
-    mPX = -Pcent(1)
-    mPY = -Pcent(2)
-    mPZ = -Pcent(3)
+!$OMP DO &
+!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!$OMP         mPx,mPy,mPz,&
+!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&
+!$OMP         alphaXpq,alphaYpq,alphaZpq,&
+!$OMP         invexpP,inv2expP,&
+!$OMP         PREF,&
+!$OMP         TMPAUXarray,&
+!$OMP         TMParray1,&
+!$OMP         TMParray2,&
+!$OMP         TMParray3,&
+!$OMP         TwoTerms,&
+!$OMP         iP,iPassP)
+  DO iP = 1,nPassP
+   iPassP = iP
+     iAtomA = iAtomApass(iPassP)
+     iAtomB = iAtomBpass(iPassP)
+   Ax = -Acenter(1,iAtomA)
+   Ay = -Acenter(2,iAtomA)
+   Az = -Acenter(3,iAtomA)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
-    Xpa = Pcent(1) + Ax
-    Ypa = Pcent(2) + Ay
-    Zpa = Pcent(3) + Az
-     Xpq = mPX + Qcent(1,iPassQ)
-     Ypq = mPY + Qcent(2,iPassQ)
-     Zpq = mPZ + Qcent(3,iPassQ)
+    Xpa = Pcent(1,iAtomA,iAtomB) + Ax
+    Ypa = Pcent(2,iAtomA,iAtomB) + Ay
+    Zpa = Pcent(3,iAtomA,iAtomB) + Az
+     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)
+     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)
+     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)
      alphaP = -reducedExponents(1)*invexpP
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
-     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
-     WVAL = reducedExponents(1)*squaredDistance
-     !  0 < WVAL < 12 
-     IF (WVAL .LT. D12) THEN
-      IPNT = NINT(D100*WVAL)
-      WDIFF = WVAL - TENTH*IPNT
-      W2    = WDIFF*WDIFF
-      W3    = W2*WDIFF
-      W2    = W2*D05
-      W3    = W3*COEF3
-      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
-      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
-      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
-      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
-     !  12 < WVAL <= (2J+36) 
-     ELSE IF (WVAL.LE.D2JP36) THEN
-      REXPW = D05*EXP(-WVAL)
-      RWVAL = D1/WVAL
-      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
-      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
-      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
-      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
-      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
-     !  (2J+36) < WVAL 
-     ELSE
-      RWVAL = PID4/WVAL
-      RJ000(0) = SQRT(RWVAL)
-      RWVAL = RWVAL*PID4I
-      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
-      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
-      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
-     ENDIF
-     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)
-     TMPAuxarray(1) = PREF*RJ000(0)
-     TMParray1(1, 2) = PREF*RJ000( 1)
-     TMParray1(1, 3) = PREF*RJ000( 2)
-     TMParray1(1, 4) = PREF*RJ000( 3)
+     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)
+     TMPAuxarray(1) = PREF*RJ000Array(0,iPassP)
+     TMParray1(1, 2) = PREF*RJ000Array( 1,iPassP)
+     TMParray1(1, 3) = PREF*RJ000Array( 2,iPassP)
+     TMParray1(1, 4) = PREF*RJ000Array( 3,iPassP)
      TMPAuxArray(2) = Xpa*TMPAuxArray(1) + alphaXpq*TmpArray1(1,2)
      TMPAuxArray(3) = Ypa*TMPAuxArray(1) + alphaYpq*TmpArray1(1,2)
      TMPAuxArray(4) = Zpa*TMPAuxArray(1) + alphaZpq*TmpArray1(1,2)
@@ -392,54 +357,43 @@ subroutine VerticalRecurrenceCPUSeg1Prim3A(nPasses,nPrimP,nPrimQ,reducedExponent
      TwoTerms(2) = inv2expP*(TMPAuxArray(3) + alphaP*TmpArray2(3,2))
      TwoTerms(3) = inv2expP*(TMPAuxArray(4) + alphaP*TmpArray2(4,2))
      do iTUV = 1,   10
-      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)
+      AuxArray(iTUV,iP) = TMPAuxarray(iTUV)
      enddo
-     AuxArray(11,IPassQ) = Xpa*TMPAuxArray(5) + alphaXpq*TmpArray3(5,2) + 2*TwoTerms(1)
-     AuxArray(12,IPassQ) = Ypa*TMPAuxArray(5) + alphaYpq*TmpArray3(5,2)
-     AuxArray(13,IPassQ) = Zpa*TMPAuxArray(5) + alphaZpq*TmpArray3(5,2)
-     AuxArray(14,IPassQ) = Xpa*TMPAuxArray(8) + alphaXpq*TmpArray3(8,2)
-     AuxArray(15,IPassQ) = Xpa*TMPAuxArray(9) + alphaXpq*TmpArray3(9,2)
-     AuxArray(16,IPassQ) = Xpa*TMPAuxArray(10) + alphaXpq*TmpArray3(10,2)
-     AuxArray(17,IPassQ) = Ypa*TMPAuxArray(8) + alphaYpq*TmpArray3(8,2) + 2*TwoTerms(2)
-     AuxArray(18,IPassQ) = Zpa*TMPAuxArray(8) + alphaZpq*TmpArray3(8,2)
-     AuxArray(19,IPassQ) = Ypa*TMPAuxArray(10) + alphaYpq*TmpArray3(10,2)
-     AuxArray(20,IPassQ) = Zpa*TMPAuxArray(10) + alphaZpq*TmpArray3(10,2) + 2*TwoTerms(3)
-  ENDDO
+     AuxArray(11,iP) = Xpa*TMPAuxArray(5) + alphaXpq*TmpArray3(5,2) + 2*TwoTerms(1)
+     AuxArray(12,iP) = Ypa*TMPAuxArray(5) + alphaYpq*TmpArray3(5,2)
+     AuxArray(13,iP) = Zpa*TMPAuxArray(5) + alphaZpq*TmpArray3(5,2)
+     AuxArray(14,iP) = Xpa*TMPAuxArray(8) + alphaXpq*TmpArray3(8,2)
+     AuxArray(15,iP) = Xpa*TMPAuxArray(9) + alphaXpq*TmpArray3(9,2)
+     AuxArray(16,iP) = Xpa*TMPAuxArray(10) + alphaXpq*TmpArray3(10,2)
+     AuxArray(17,iP) = Ypa*TMPAuxArray(8) + alphaYpq*TmpArray3(8,2) + 2*TwoTerms(2)
+     AuxArray(18,iP) = Zpa*TMPAuxArray(8) + alphaZpq*TmpArray3(8,2)
+     AuxArray(19,iP) = Ypa*TMPAuxArray(10) + alphaYpq*TmpArray3(10,2)
+     AuxArray(20,iP) = Zpa*TMPAuxArray(10) + alphaZpq*TmpArray3(10,2) + 2*TwoTerms(3)
+  ENDDO !iP = 1,nPassP
+!$OMP END DO
  end subroutine
 
-subroutine VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrenceCPUSeg1Prim4A(nPassP,nPrimP,nPrimQ,&
+         & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: TABFJW(0: 7,0:1200)
+  integer,intent(in) :: nPassP,nPrimP,nPrimQ
+  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(in) :: RJ000Array(0: 4,nPassP)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
-  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)
-  real(realk),intent(in) :: Acenter(3)
-  real(realk),intent(inout) :: AUXarray(   35,nPasses)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: Acenter(3,nAtomsA)
+  real(realk),intent(inout) :: AUXarray(   35,nPassP)
   !local variables
-  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
+  integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   20)
   real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa
-  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP,RJ000(0: 4)
+  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP
   real(realk) :: TwoTerms(   6)
-  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
-  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
-  real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  4.4000000000000000E+01_realk
-  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk
   real(realk) :: TMParray1(  1:  1,2:5)
   real(realk) :: TMParray2(  2:  4,2:4)
   real(realk) :: TMParray3(  5: 10,2:3)
@@ -447,68 +401,45 @@ subroutine VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponent
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-  Ax = -Acenter(1)
-  Ay = -Acenter(2)
-  Az = -Acenter(3)
-  DO iPassQ = 1,nPasses
-   iP = iPassQ
-    Pexpfac = PpreExpFac(1)
-    mPX = -Pcent(1)
-    mPY = -Pcent(2)
-    mPZ = -Pcent(3)
+!$OMP DO &
+!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!$OMP         mPx,mPy,mPz,&
+!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&
+!$OMP         alphaXpq,alphaYpq,alphaZpq,&
+!$OMP         invexpP,inv2expP,&
+!$OMP         PREF,&
+!$OMP         TMPAUXarray,&
+!$OMP         TMParray1,&
+!$OMP         TMParray2,&
+!$OMP         TMParray3,&
+!$OMP         TMParray4,&
+!$OMP         TwoTerms,&
+!$OMP         iP,iPassP)
+  DO iP = 1,nPassP
+   iPassP = iP
+     iAtomA = iAtomApass(iPassP)
+     iAtomB = iAtomBpass(iPassP)
+   Ax = -Acenter(1,iAtomA)
+   Ay = -Acenter(2,iAtomA)
+   Az = -Acenter(3,iAtomA)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
-    Xpa = Pcent(1) + Ax
-    Ypa = Pcent(2) + Ay
-    Zpa = Pcent(3) + Az
-     Xpq = mPX + Qcent(1,iPassQ)
-     Ypq = mPY + Qcent(2,iPassQ)
-     Zpq = mPZ + Qcent(3,iPassQ)
+    Xpa = Pcent(1,iAtomA,iAtomB) + Ax
+    Ypa = Pcent(2,iAtomA,iAtomB) + Ay
+    Zpa = Pcent(3,iAtomA,iAtomB) + Az
+     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)
+     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)
+     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)
      alphaP = -reducedExponents(1)*invexpP
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
-     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
-     WVAL = reducedExponents(1)*squaredDistance
-     !  0 < WVAL < 12 
-     IF (WVAL .LT. D12) THEN
-      IPNT = NINT(D100*WVAL)
-      WDIFF = WVAL - TENTH*IPNT
-      W2    = WDIFF*WDIFF
-      W3    = W2*WDIFF
-      W2    = W2*D05
-      W3    = W3*COEF3
-      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
-      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
-      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
-      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
-      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
-     !  12 < WVAL <= (2J+36) 
-     ELSE IF (WVAL.LE.D2JP36) THEN
-      REXPW = D05*EXP(-WVAL)
-      RWVAL = D1/WVAL
-      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
-      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
-      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
-      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
-      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
-      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
-     !  (2J+36) < WVAL 
-     ELSE
-      RWVAL = PID4/WVAL
-      RJ000(0) = SQRT(RWVAL)
-      RWVAL = RWVAL*PID4I
-      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
-      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
-      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
-      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
-     ENDIF
-     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)
-     TMPAuxarray(1) = PREF*RJ000(0)
-     TMParray1(1, 2) = PREF*RJ000( 1)
-     TMParray1(1, 3) = PREF*RJ000( 2)
-     TMParray1(1, 4) = PREF*RJ000( 3)
-     TMParray1(1, 5) = PREF*RJ000( 4)
+     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)
+     TMPAuxarray(1) = PREF*RJ000Array(0,iPassP)
+     TMParray1(1, 2) = PREF*RJ000Array( 1,iPassP)
+     TMParray1(1, 3) = PREF*RJ000Array( 2,iPassP)
+     TMParray1(1, 4) = PREF*RJ000Array( 3,iPassP)
+     TMParray1(1, 5) = PREF*RJ000Array( 4,iPassP)
      TMPAuxArray(2) = Xpa*TMPAuxArray(1) + alphaXpq*TmpArray1(1,2)
      TMPAuxArray(3) = Ypa*TMPAuxArray(1) + alphaYpq*TmpArray1(1,2)
      TMPAuxArray(4) = Zpa*TMPAuxArray(1) + alphaZpq*TmpArray1(1,2)
@@ -572,59 +503,48 @@ subroutine VerticalRecurrenceCPUSeg1Prim4A(nPasses,nPrimP,nPrimQ,reducedExponent
      TwoTerms(2) = inv2expP*(TMPAuxArray(8) + alphaP*TmpArray3(8,2))
      TwoTerms(3) = inv2expP*(TMPAuxArray(10) + alphaP*TmpArray3(10,2))
      do iTUV = 1,   20
-      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)
+      AuxArray(iTUV,iP) = TMPAuxarray(iTUV)
      enddo
-     AuxArray(21,IPassQ) = Xpa*TMPAuxArray(11) + alphaXpq*TmpArray4(11,2) + 3*TwoTerms(1)
-     AuxArray(22,IPassQ) = Ypa*TMPAuxArray(11) + alphaYpq*TmpArray4(11,2)
-     AuxArray(23,IPassQ) = Zpa*TMPAuxArray(11) + alphaZpq*TmpArray4(11,2)
-     AuxArray(24,IPassQ) = Xpa*TMPAuxArray(14) + alphaXpq*TmpArray4(14,2) + TwoTerms(2)
-     AuxArray(25,IPassQ) = Ypa*TMPAuxArray(13) + alphaYpq*TmpArray4(13,2)
-     AuxArray(26,IPassQ) = Xpa*TMPAuxArray(16) + alphaXpq*TmpArray4(16,2) + TwoTerms(3)
-     AuxArray(27,IPassQ) = Xpa*TMPAuxArray(17) + alphaXpq*TmpArray4(17,2)
-     AuxArray(28,IPassQ) = Xpa*TMPAuxArray(18) + alphaXpq*TmpArray4(18,2)
-     AuxArray(29,IPassQ) = Xpa*TMPAuxArray(19) + alphaXpq*TmpArray4(19,2)
-     AuxArray(30,IPassQ) = Xpa*TMPAuxArray(20) + alphaXpq*TmpArray4(20,2)
-     AuxArray(31,IPassQ) = Ypa*TMPAuxArray(17) + alphaYpq*TmpArray4(17,2) + 3*TwoTerms(2)
-     AuxArray(32,IPassQ) = Zpa*TMPAuxArray(17) + alphaZpq*TmpArray4(17,2)
-     AuxArray(33,IPassQ) = Ypa*TMPAuxArray(19) + alphaYpq*TmpArray4(19,2) + TwoTerms(3)
-     AuxArray(34,IPassQ) = Ypa*TMPAuxArray(20) + alphaYpq*TmpArray4(20,2)
-     AuxArray(35,IPassQ) = Zpa*TMPAuxArray(20) + alphaZpq*TmpArray4(20,2) + 3*TwoTerms(3)
-  ENDDO
+     AuxArray(21,iP) = Xpa*TMPAuxArray(11) + alphaXpq*TmpArray4(11,2) + 3*TwoTerms(1)
+     AuxArray(22,iP) = Ypa*TMPAuxArray(11) + alphaYpq*TmpArray4(11,2)
+     AuxArray(23,iP) = Zpa*TMPAuxArray(11) + alphaZpq*TmpArray4(11,2)
+     AuxArray(24,iP) = Xpa*TMPAuxArray(14) + alphaXpq*TmpArray4(14,2) + TwoTerms(2)
+     AuxArray(25,iP) = Ypa*TMPAuxArray(13) + alphaYpq*TmpArray4(13,2)
+     AuxArray(26,iP) = Xpa*TMPAuxArray(16) + alphaXpq*TmpArray4(16,2) + TwoTerms(3)
+     AuxArray(27,iP) = Xpa*TMPAuxArray(17) + alphaXpq*TmpArray4(17,2)
+     AuxArray(28,iP) = Xpa*TMPAuxArray(18) + alphaXpq*TmpArray4(18,2)
+     AuxArray(29,iP) = Xpa*TMPAuxArray(19) + alphaXpq*TmpArray4(19,2)
+     AuxArray(30,iP) = Xpa*TMPAuxArray(20) + alphaXpq*TmpArray4(20,2)
+     AuxArray(31,iP) = Ypa*TMPAuxArray(17) + alphaYpq*TmpArray4(17,2) + 3*TwoTerms(2)
+     AuxArray(32,iP) = Zpa*TMPAuxArray(17) + alphaZpq*TmpArray4(17,2)
+     AuxArray(33,iP) = Ypa*TMPAuxArray(19) + alphaYpq*TmpArray4(19,2) + TwoTerms(3)
+     AuxArray(34,iP) = Ypa*TMPAuxArray(20) + alphaYpq*TmpArray4(20,2)
+     AuxArray(35,iP) = Zpa*TMPAuxArray(20) + alphaZpq*TmpArray4(20,2) + 3*TwoTerms(3)
+  ENDDO !iP = 1,nPassP
+!$OMP END DO
  end subroutine
 
-subroutine VerticalRecurrenceCPUSeg1Prim5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrenceCPUSeg1Prim5A(nPassP,nPrimP,nPrimQ,&
+         & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: TABFJW(0: 8,0:1200)
+  integer,intent(in) :: nPassP,nPrimP,nPrimQ
+  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(in) :: RJ000Array(0: 5,nPassP)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
-  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)
-  real(realk),intent(in) :: Acenter(3)
-  real(realk),intent(inout) :: AUXarray(   56,nPasses)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: Acenter(3,nAtomsA)
+  real(realk),intent(inout) :: AUXarray(   56,nPassP)
   !local variables
-  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
+  integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   35)
   real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa
-  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP,RJ000(0: 5)
+  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP
   real(realk) :: TwoTerms(  10)
-  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
-  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
-  real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  4.6000000000000000E+01_realk
-  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk
   real(realk) :: TMParray1(  1:  1,2:6)
   real(realk) :: TMParray2(  2:  4,2:5)
   real(realk) :: TMParray3(  5: 10,2:4)
@@ -633,72 +553,47 @@ subroutine VerticalRecurrenceCPUSeg1Prim5A(nPasses,nPrimP,nPrimQ,reducedExponent
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-  Ax = -Acenter(1)
-  Ay = -Acenter(2)
-  Az = -Acenter(3)
-  DO iPassQ = 1,nPasses
-   iP = iPassQ
-    Pexpfac = PpreExpFac(1)
-    mPX = -Pcent(1)
-    mPY = -Pcent(2)
-    mPZ = -Pcent(3)
+!$OMP DO &
+!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!$OMP         mPx,mPy,mPz,&
+!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&
+!$OMP         alphaXpq,alphaYpq,alphaZpq,&
+!$OMP         invexpP,inv2expP,&
+!$OMP         PREF,&
+!$OMP         TMPAUXarray,&
+!$OMP         TMParray1,&
+!$OMP         TMParray2,&
+!$OMP         TMParray3,&
+!$OMP         TMParray4,&
+!$OMP         TMParray5,&
+!$OMP         TwoTerms,&
+!$OMP         iP,iPassP)
+  DO iP = 1,nPassP
+   iPassP = iP
+     iAtomA = iAtomApass(iPassP)
+     iAtomB = iAtomBpass(iPassP)
+   Ax = -Acenter(1,iAtomA)
+   Ay = -Acenter(2,iAtomA)
+   Az = -Acenter(3,iAtomA)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
-    Xpa = Pcent(1) + Ax
-    Ypa = Pcent(2) + Ay
-    Zpa = Pcent(3) + Az
-     Xpq = mPX + Qcent(1,iPassQ)
-     Ypq = mPY + Qcent(2,iPassQ)
-     Zpq = mPZ + Qcent(3,iPassQ)
+    Xpa = Pcent(1,iAtomA,iAtomB) + Ax
+    Ypa = Pcent(2,iAtomA,iAtomB) + Ay
+    Zpa = Pcent(3,iAtomA,iAtomB) + Az
+     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)
+     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)
+     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)
      alphaP = -reducedExponents(1)*invexpP
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
-     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
-     WVAL = reducedExponents(1)*squaredDistance
-     !  0 < WVAL < 12 
-     IF (WVAL .LT. D12) THEN
-      IPNT = NINT(D100*WVAL)
-      WDIFF = WVAL - TENTH*IPNT
-      W2    = WDIFF*WDIFF
-      W3    = W2*WDIFF
-      W2    = W2*D05
-      W3    = W3*COEF3
-      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
-      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
-      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
-      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
-      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
-      RJ000( 5) = TABFJW( 5,IPNT)-TABFJW( 6,IPNT)*WDIFF+TABFJW( 7,IPNT)*W2+TABFJW( 8,IPNT)*W3
-     !  12 < WVAL <= (2J+36) 
-     ELSE IF (WVAL.LE.D2JP36) THEN
-      REXPW = D05*EXP(-WVAL)
-      RWVAL = D1/WVAL
-      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
-      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
-      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
-      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
-      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
-      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
-      RJ000( 5) = RWVAL*(( 5 - D05)*RJ000( 4)-REXPW)
-     !  (2J+36) < WVAL 
-     ELSE
-      RWVAL = PID4/WVAL
-      RJ000(0) = SQRT(RWVAL)
-      RWVAL = RWVAL*PID4I
-      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
-      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
-      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
-      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
-      RJ000( 5) = RWVAL*( 5 - D05)*RJ000( 4)
-     ENDIF
-     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)
-     TMPAuxarray(1) = PREF*RJ000(0)
-     TMParray1(1, 2) = PREF*RJ000( 1)
-     TMParray1(1, 3) = PREF*RJ000( 2)
-     TMParray1(1, 4) = PREF*RJ000( 3)
-     TMParray1(1, 5) = PREF*RJ000( 4)
-     TMParray1(1, 6) = PREF*RJ000( 5)
+     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)
+     TMPAuxarray(1) = PREF*RJ000Array(0,iPassP)
+     TMParray1(1, 2) = PREF*RJ000Array( 1,iPassP)
+     TMParray1(1, 3) = PREF*RJ000Array( 2,iPassP)
+     TMParray1(1, 4) = PREF*RJ000Array( 3,iPassP)
+     TMParray1(1, 5) = PREF*RJ000Array( 4,iPassP)
+     TMParray1(1, 6) = PREF*RJ000Array( 5,iPassP)
      TMPAuxArray(2) = Xpa*TMPAuxArray(1) + alphaXpq*TmpArray1(1,2)
      TMPAuxArray(3) = Ypa*TMPAuxArray(1) + alphaYpq*TmpArray1(1,2)
      TMPAuxArray(4) = Zpa*TMPAuxArray(1) + alphaZpq*TmpArray1(1,2)
@@ -824,65 +719,54 @@ subroutine VerticalRecurrenceCPUSeg1Prim5A(nPasses,nPrimP,nPrimQ,reducedExponent
      TwoTerms(5) = inv2expP*(TMPAuxArray(19) + alphaP*TmpArray4(19,2))
      TwoTerms(6) = inv2expP*(TMPAuxArray(20) + alphaP*TmpArray4(20,2))
      do iTUV = 1,   35
-      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)
+      AuxArray(iTUV,iP) = TMPAuxarray(iTUV)
      enddo
-     AuxArray(36,IPassQ) = Xpa*TMPAuxArray(21) + alphaXpq*TmpArray5(21,2) + 4*TwoTerms(1)
-     AuxArray(37,IPassQ) = Ypa*TMPAuxArray(21) + alphaYpq*TmpArray5(21,2)
-     AuxArray(38,IPassQ) = Zpa*TMPAuxArray(21) + alphaZpq*TmpArray5(21,2)
-     AuxArray(39,IPassQ) = Xpa*TMPAuxArray(24) + alphaXpq*TmpArray5(24,2) + 2*TwoTerms(2)
-     AuxArray(40,IPassQ) = Ypa*TMPAuxArray(23) + alphaYpq*TmpArray5(23,2)
-     AuxArray(41,IPassQ) = Xpa*TMPAuxArray(26) + alphaXpq*TmpArray5(26,2) + 2*TwoTerms(3)
-     AuxArray(42,IPassQ) = Xpa*TMPAuxArray(27) + alphaXpq*TmpArray5(27,2) + TwoTerms(4)
-     AuxArray(43,IPassQ) = Zpa*TMPAuxArray(24) + alphaZpq*TmpArray5(24,2)
-     AuxArray(44,IPassQ) = Ypa*TMPAuxArray(26) + alphaYpq*TmpArray5(26,2)
-     AuxArray(45,IPassQ) = Xpa*TMPAuxArray(30) + alphaXpq*TmpArray5(30,2) + TwoTerms(6)
-     AuxArray(46,IPassQ) = Xpa*TMPAuxArray(31) + alphaXpq*TmpArray5(31,2)
-     AuxArray(47,IPassQ) = Xpa*TMPAuxArray(32) + alphaXpq*TmpArray5(32,2)
-     AuxArray(48,IPassQ) = Xpa*TMPAuxArray(33) + alphaXpq*TmpArray5(33,2)
-     AuxArray(49,IPassQ) = Xpa*TMPAuxArray(34) + alphaXpq*TmpArray5(34,2)
-     AuxArray(50,IPassQ) = Xpa*TMPAuxArray(35) + alphaXpq*TmpArray5(35,2)
-     AuxArray(51,IPassQ) = Ypa*TMPAuxArray(31) + alphaYpq*TmpArray5(31,2) + 4*TwoTerms(4)
-     AuxArray(52,IPassQ) = Zpa*TMPAuxArray(31) + alphaZpq*TmpArray5(31,2)
-     AuxArray(53,IPassQ) = Ypa*TMPAuxArray(33) + alphaYpq*TmpArray5(33,2) + 2*TwoTerms(5)
-     AuxArray(54,IPassQ) = Ypa*TMPAuxArray(34) + alphaYpq*TmpArray5(34,2) + TwoTerms(6)
-     AuxArray(55,IPassQ) = Ypa*TMPAuxArray(35) + alphaYpq*TmpArray5(35,2)
-     AuxArray(56,IPassQ) = Zpa*TMPAuxArray(35) + alphaZpq*TmpArray5(35,2) + 4*TwoTerms(6)
-  ENDDO
+     AuxArray(36,iP) = Xpa*TMPAuxArray(21) + alphaXpq*TmpArray5(21,2) + 4*TwoTerms(1)
+     AuxArray(37,iP) = Ypa*TMPAuxArray(21) + alphaYpq*TmpArray5(21,2)
+     AuxArray(38,iP) = Zpa*TMPAuxArray(21) + alphaZpq*TmpArray5(21,2)
+     AuxArray(39,iP) = Xpa*TMPAuxArray(24) + alphaXpq*TmpArray5(24,2) + 2*TwoTerms(2)
+     AuxArray(40,iP) = Ypa*TMPAuxArray(23) + alphaYpq*TmpArray5(23,2)
+     AuxArray(41,iP) = Xpa*TMPAuxArray(26) + alphaXpq*TmpArray5(26,2) + 2*TwoTerms(3)
+     AuxArray(42,iP) = Xpa*TMPAuxArray(27) + alphaXpq*TmpArray5(27,2) + TwoTerms(4)
+     AuxArray(43,iP) = Zpa*TMPAuxArray(24) + alphaZpq*TmpArray5(24,2)
+     AuxArray(44,iP) = Ypa*TMPAuxArray(26) + alphaYpq*TmpArray5(26,2)
+     AuxArray(45,iP) = Xpa*TMPAuxArray(30) + alphaXpq*TmpArray5(30,2) + TwoTerms(6)
+     AuxArray(46,iP) = Xpa*TMPAuxArray(31) + alphaXpq*TmpArray5(31,2)
+     AuxArray(47,iP) = Xpa*TMPAuxArray(32) + alphaXpq*TmpArray5(32,2)
+     AuxArray(48,iP) = Xpa*TMPAuxArray(33) + alphaXpq*TmpArray5(33,2)
+     AuxArray(49,iP) = Xpa*TMPAuxArray(34) + alphaXpq*TmpArray5(34,2)
+     AuxArray(50,iP) = Xpa*TMPAuxArray(35) + alphaXpq*TmpArray5(35,2)
+     AuxArray(51,iP) = Ypa*TMPAuxArray(31) + alphaYpq*TmpArray5(31,2) + 4*TwoTerms(4)
+     AuxArray(52,iP) = Zpa*TMPAuxArray(31) + alphaZpq*TmpArray5(31,2)
+     AuxArray(53,iP) = Ypa*TMPAuxArray(33) + alphaYpq*TmpArray5(33,2) + 2*TwoTerms(5)
+     AuxArray(54,iP) = Ypa*TMPAuxArray(34) + alphaYpq*TmpArray5(34,2) + TwoTerms(6)
+     AuxArray(55,iP) = Ypa*TMPAuxArray(35) + alphaYpq*TmpArray5(35,2)
+     AuxArray(56,iP) = Zpa*TMPAuxArray(35) + alphaZpq*TmpArray5(35,2) + 4*TwoTerms(6)
+  ENDDO !iP = 1,nPassP
+!$OMP END DO
  end subroutine
 
-subroutine VerticalRecurrenceCPUSeg1Prim6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrenceCPUSeg1Prim6A(nPassP,nPrimP,nPrimQ,&
+         & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: TABFJW(0: 9,0:1200)
+  integer,intent(in) :: nPassP,nPrimP,nPrimQ
+  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(in) :: RJ000Array(0: 6,nPassP)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
-  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)
-  real(realk),intent(in) :: Acenter(3)
-  real(realk),intent(inout) :: AUXarray(   84,nPasses)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: Acenter(3,nAtomsA)
+  real(realk),intent(inout) :: AUXarray(   84,nPassP)
   !local variables
-  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
+  integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   56)
   real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa
-  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP,RJ000(0: 6)
+  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP
   real(realk) :: TwoTerms(  15)
-  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
-  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
-  real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  4.8000000000000000E+01_realk
-  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk
   real(realk) :: TMParray1(  1:  1,2:7)
   real(realk) :: TMParray2(  2:  4,2:6)
   real(realk) :: TMParray3(  5: 10,2:5)
@@ -892,76 +776,49 @@ subroutine VerticalRecurrenceCPUSeg1Prim6A(nPasses,nPrimP,nPrimQ,reducedExponent
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-  Ax = -Acenter(1)
-  Ay = -Acenter(2)
-  Az = -Acenter(3)
-  DO iPassQ = 1,nPasses
-   iP = iPassQ
-    Pexpfac = PpreExpFac(1)
-    mPX = -Pcent(1)
-    mPY = -Pcent(2)
-    mPZ = -Pcent(3)
+!$OMP DO &
+!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!$OMP         mPx,mPy,mPz,&
+!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&
+!$OMP         alphaXpq,alphaYpq,alphaZpq,&
+!$OMP         invexpP,inv2expP,&
+!$OMP         PREF,&
+!$OMP         TMPAUXarray,&
+!$OMP         TMParray1,&
+!$OMP         TMParray2,&
+!$OMP         TMParray3,&
+!$OMP         TMParray4,&
+!$OMP         TMParray5,&
+!$OMP         TMParray6,&
+!$OMP         TwoTerms,&
+!$OMP         iP,iPassP)
+  DO iP = 1,nPassP
+   iPassP = iP
+     iAtomA = iAtomApass(iPassP)
+     iAtomB = iAtomBpass(iPassP)
+   Ax = -Acenter(1,iAtomA)
+   Ay = -Acenter(2,iAtomA)
+   Az = -Acenter(3,iAtomA)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
-    Xpa = Pcent(1) + Ax
-    Ypa = Pcent(2) + Ay
-    Zpa = Pcent(3) + Az
-     Xpq = mPX + Qcent(1,iPassQ)
-     Ypq = mPY + Qcent(2,iPassQ)
-     Zpq = mPZ + Qcent(3,iPassQ)
+    Xpa = Pcent(1,iAtomA,iAtomB) + Ax
+    Ypa = Pcent(2,iAtomA,iAtomB) + Ay
+    Zpa = Pcent(3,iAtomA,iAtomB) + Az
+     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)
+     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)
+     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)
      alphaP = -reducedExponents(1)*invexpP
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
-     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
-     WVAL = reducedExponents(1)*squaredDistance
-     !  0 < WVAL < 12 
-     IF (WVAL .LT. D12) THEN
-      IPNT = NINT(D100*WVAL)
-      WDIFF = WVAL - TENTH*IPNT
-      W2    = WDIFF*WDIFF
-      W3    = W2*WDIFF
-      W2    = W2*D05
-      W3    = W3*COEF3
-      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
-      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
-      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
-      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
-      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
-      RJ000( 5) = TABFJW( 5,IPNT)-TABFJW( 6,IPNT)*WDIFF+TABFJW( 7,IPNT)*W2+TABFJW( 8,IPNT)*W3
-      RJ000( 6) = TABFJW( 6,IPNT)-TABFJW( 7,IPNT)*WDIFF+TABFJW( 8,IPNT)*W2+TABFJW( 9,IPNT)*W3
-     !  12 < WVAL <= (2J+36) 
-     ELSE IF (WVAL.LE.D2JP36) THEN
-      REXPW = D05*EXP(-WVAL)
-      RWVAL = D1/WVAL
-      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
-      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
-      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
-      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
-      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
-      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
-      RJ000( 5) = RWVAL*(( 5 - D05)*RJ000( 4)-REXPW)
-      RJ000( 6) = RWVAL*(( 6 - D05)*RJ000( 5)-REXPW)
-     !  (2J+36) < WVAL 
-     ELSE
-      RWVAL = PID4/WVAL
-      RJ000(0) = SQRT(RWVAL)
-      RWVAL = RWVAL*PID4I
-      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
-      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
-      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
-      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
-      RJ000( 5) = RWVAL*( 5 - D05)*RJ000( 4)
-      RJ000( 6) = RWVAL*( 6 - D05)*RJ000( 5)
-     ENDIF
-     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)
-     TMPAuxarray(1) = PREF*RJ000(0)
-     TMParray1(1, 2) = PREF*RJ000( 1)
-     TMParray1(1, 3) = PREF*RJ000( 2)
-     TMParray1(1, 4) = PREF*RJ000( 3)
-     TMParray1(1, 5) = PREF*RJ000( 4)
-     TMParray1(1, 6) = PREF*RJ000( 5)
-     TMParray1(1, 7) = PREF*RJ000( 6)
+     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)
+     TMPAuxarray(1) = PREF*RJ000Array(0,iPassP)
+     TMParray1(1, 2) = PREF*RJ000Array( 1,iPassP)
+     TMParray1(1, 3) = PREF*RJ000Array( 2,iPassP)
+     TMParray1(1, 4) = PREF*RJ000Array( 3,iPassP)
+     TMParray1(1, 5) = PREF*RJ000Array( 4,iPassP)
+     TMParray1(1, 6) = PREF*RJ000Array( 5,iPassP)
+     TMParray1(1, 7) = PREF*RJ000Array( 6,iPassP)
      TMPAuxArray(2) = Xpa*TMPAuxArray(1) + alphaXpq*TmpArray1(1,2)
      TMPAuxArray(3) = Ypa*TMPAuxArray(1) + alphaYpq*TmpArray1(1,2)
      TMPAuxArray(4) = Zpa*TMPAuxArray(1) + alphaZpq*TmpArray1(1,2)
@@ -1185,72 +1042,61 @@ subroutine VerticalRecurrenceCPUSeg1Prim6A(nPasses,nPrimP,nPrimQ,reducedExponent
      TwoTerms(8) = inv2expP*(TMPAuxArray(34) + alphaP*TmpArray5(34,2))
      TwoTerms(9) = inv2expP*(TMPAuxArray(35) + alphaP*TmpArray5(35,2))
      do iTUV = 1,   56
-      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)
+      AuxArray(iTUV,iP) = TMPAuxarray(iTUV)
      enddo
-     AuxArray(57,IPassQ) = Xpa*TMPAuxArray(36) + alphaXpq*TmpArray6(36,2) + 5*TwoTerms(1)
-     AuxArray(58,IPassQ) = Ypa*TMPAuxArray(36) + alphaYpq*TmpArray6(36,2)
-     AuxArray(59,IPassQ) = Zpa*TMPAuxArray(36) + alphaZpq*TmpArray6(36,2)
-     AuxArray(60,IPassQ) = Xpa*TMPAuxArray(39) + alphaXpq*TmpArray6(39,2) + 3*TwoTerms(2)
-     AuxArray(61,IPassQ) = Ypa*TMPAuxArray(38) + alphaYpq*TmpArray6(38,2)
-     AuxArray(62,IPassQ) = Xpa*TMPAuxArray(41) + alphaXpq*TmpArray6(41,2) + 3*TwoTerms(3)
-     AuxArray(63,IPassQ) = Xpa*TMPAuxArray(42) + alphaXpq*TmpArray6(42,2) + 2*TwoTerms(4)
-     AuxArray(64,IPassQ) = Zpa*TMPAuxArray(39) + alphaZpq*TmpArray6(39,2)
-     AuxArray(65,IPassQ) = Ypa*TMPAuxArray(41) + alphaYpq*TmpArray6(41,2)
-     AuxArray(66,IPassQ) = Xpa*TMPAuxArray(45) + alphaXpq*TmpArray6(45,2) + 2*TwoTerms(5)
-     AuxArray(67,IPassQ) = Xpa*TMPAuxArray(46) + alphaXpq*TmpArray6(46,2) + TwoTerms(6)
-     AuxArray(68,IPassQ) = Zpa*TMPAuxArray(42) + alphaZpq*TmpArray6(42,2)
-     AuxArray(69,IPassQ) = Xpa*TMPAuxArray(48) + alphaXpq*TmpArray6(48,2) + TwoTerms(7)
-     AuxArray(70,IPassQ) = Ypa*TMPAuxArray(45) + alphaYpq*TmpArray6(45,2)
-     AuxArray(71,IPassQ) = Xpa*TMPAuxArray(50) + alphaXpq*TmpArray6(50,2) + TwoTerms(9)
-     AuxArray(72,IPassQ) = Xpa*TMPAuxArray(51) + alphaXpq*TmpArray6(51,2)
-     AuxArray(73,IPassQ) = Xpa*TMPAuxArray(52) + alphaXpq*TmpArray6(52,2)
-     AuxArray(74,IPassQ) = Xpa*TMPAuxArray(53) + alphaXpq*TmpArray6(53,2)
-     AuxArray(75,IPassQ) = Xpa*TMPAuxArray(54) + alphaXpq*TmpArray6(54,2)
-     AuxArray(76,IPassQ) = Xpa*TMPAuxArray(55) + alphaXpq*TmpArray6(55,2)
-     AuxArray(77,IPassQ) = Xpa*TMPAuxArray(56) + alphaXpq*TmpArray6(56,2)
-     AuxArray(78,IPassQ) = Ypa*TMPAuxArray(51) + alphaYpq*TmpArray6(51,2) + 5*TwoTerms(6)
-     AuxArray(79,IPassQ) = Zpa*TMPAuxArray(51) + alphaZpq*TmpArray6(51,2)
-     AuxArray(80,IPassQ) = Ypa*TMPAuxArray(53) + alphaYpq*TmpArray6(53,2) + 3*TwoTerms(7)
-     AuxArray(81,IPassQ) = Ypa*TMPAuxArray(54) + alphaYpq*TmpArray6(54,2) + 2*TwoTerms(8)
-     AuxArray(82,IPassQ) = Ypa*TMPAuxArray(55) + alphaYpq*TmpArray6(55,2) + TwoTerms(9)
-     AuxArray(83,IPassQ) = Ypa*TMPAuxArray(56) + alphaYpq*TmpArray6(56,2)
-     AuxArray(84,IPassQ) = Zpa*TMPAuxArray(56) + alphaZpq*TmpArray6(56,2) + 5*TwoTerms(9)
-  ENDDO
+     AuxArray(57,iP) = Xpa*TMPAuxArray(36) + alphaXpq*TmpArray6(36,2) + 5*TwoTerms(1)
+     AuxArray(58,iP) = Ypa*TMPAuxArray(36) + alphaYpq*TmpArray6(36,2)
+     AuxArray(59,iP) = Zpa*TMPAuxArray(36) + alphaZpq*TmpArray6(36,2)
+     AuxArray(60,iP) = Xpa*TMPAuxArray(39) + alphaXpq*TmpArray6(39,2) + 3*TwoTerms(2)
+     AuxArray(61,iP) = Ypa*TMPAuxArray(38) + alphaYpq*TmpArray6(38,2)
+     AuxArray(62,iP) = Xpa*TMPAuxArray(41) + alphaXpq*TmpArray6(41,2) + 3*TwoTerms(3)
+     AuxArray(63,iP) = Xpa*TMPAuxArray(42) + alphaXpq*TmpArray6(42,2) + 2*TwoTerms(4)
+     AuxArray(64,iP) = Zpa*TMPAuxArray(39) + alphaZpq*TmpArray6(39,2)
+     AuxArray(65,iP) = Ypa*TMPAuxArray(41) + alphaYpq*TmpArray6(41,2)
+     AuxArray(66,iP) = Xpa*TMPAuxArray(45) + alphaXpq*TmpArray6(45,2) + 2*TwoTerms(5)
+     AuxArray(67,iP) = Xpa*TMPAuxArray(46) + alphaXpq*TmpArray6(46,2) + TwoTerms(6)
+     AuxArray(68,iP) = Zpa*TMPAuxArray(42) + alphaZpq*TmpArray6(42,2)
+     AuxArray(69,iP) = Xpa*TMPAuxArray(48) + alphaXpq*TmpArray6(48,2) + TwoTerms(7)
+     AuxArray(70,iP) = Ypa*TMPAuxArray(45) + alphaYpq*TmpArray6(45,2)
+     AuxArray(71,iP) = Xpa*TMPAuxArray(50) + alphaXpq*TmpArray6(50,2) + TwoTerms(9)
+     AuxArray(72,iP) = Xpa*TMPAuxArray(51) + alphaXpq*TmpArray6(51,2)
+     AuxArray(73,iP) = Xpa*TMPAuxArray(52) + alphaXpq*TmpArray6(52,2)
+     AuxArray(74,iP) = Xpa*TMPAuxArray(53) + alphaXpq*TmpArray6(53,2)
+     AuxArray(75,iP) = Xpa*TMPAuxArray(54) + alphaXpq*TmpArray6(54,2)
+     AuxArray(76,iP) = Xpa*TMPAuxArray(55) + alphaXpq*TmpArray6(55,2)
+     AuxArray(77,iP) = Xpa*TMPAuxArray(56) + alphaXpq*TmpArray6(56,2)
+     AuxArray(78,iP) = Ypa*TMPAuxArray(51) + alphaYpq*TmpArray6(51,2) + 5*TwoTerms(6)
+     AuxArray(79,iP) = Zpa*TMPAuxArray(51) + alphaZpq*TmpArray6(51,2)
+     AuxArray(80,iP) = Ypa*TMPAuxArray(53) + alphaYpq*TmpArray6(53,2) + 3*TwoTerms(7)
+     AuxArray(81,iP) = Ypa*TMPAuxArray(54) + alphaYpq*TmpArray6(54,2) + 2*TwoTerms(8)
+     AuxArray(82,iP) = Ypa*TMPAuxArray(55) + alphaYpq*TmpArray6(55,2) + TwoTerms(9)
+     AuxArray(83,iP) = Ypa*TMPAuxArray(56) + alphaYpq*TmpArray6(56,2)
+     AuxArray(84,iP) = Zpa*TMPAuxArray(56) + alphaZpq*TmpArray6(56,2) + 5*TwoTerms(9)
+  ENDDO !iP = 1,nPassP
+!$OMP END DO
  end subroutine
 
-subroutine VerticalRecurrenceCPUSeg1Prim7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrenceCPUSeg1Prim7A(nPassP,nPrimP,nPrimQ,&
+         & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: TABFJW(0:10,0:1200)
+  integer,intent(in) :: nPassP,nPrimP,nPrimQ
+  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(in) :: RJ000Array(0: 7,nPassP)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
-  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)
-  real(realk),intent(in) :: Acenter(3)
-  real(realk),intent(inout) :: AUXarray(  120,nPasses)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: Acenter(3,nAtomsA)
+  real(realk),intent(inout) :: AUXarray(  120,nPassP)
   !local variables
-  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
+  integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   84)
   real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa
-  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP,RJ000(0: 7)
+  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP
   real(realk) :: TwoTerms(  21)
-  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
-  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
-  real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  5.0000000000000000E+01_realk
-  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk
   real(realk) :: TMParray1(  1:  1,2:8)
   real(realk) :: TMParray2(  2:  4,2:7)
   real(realk) :: TMParray3(  5: 10,2:6)
@@ -1261,80 +1107,51 @@ subroutine VerticalRecurrenceCPUSeg1Prim7A(nPasses,nPrimP,nPrimQ,reducedExponent
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-  Ax = -Acenter(1)
-  Ay = -Acenter(2)
-  Az = -Acenter(3)
-  DO iPassQ = 1,nPasses
-   iP = iPassQ
-    Pexpfac = PpreExpFac(1)
-    mPX = -Pcent(1)
-    mPY = -Pcent(2)
-    mPZ = -Pcent(3)
+!$OMP DO &
+!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!$OMP         mPx,mPy,mPz,&
+!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&
+!$OMP         alphaXpq,alphaYpq,alphaZpq,&
+!$OMP         invexpP,inv2expP,&
+!$OMP         PREF,&
+!$OMP         TMPAUXarray,&
+!$OMP         TMParray1,&
+!$OMP         TMParray2,&
+!$OMP         TMParray3,&
+!$OMP         TMParray4,&
+!$OMP         TMParray5,&
+!$OMP         TMParray6,&
+!$OMP         TMParray7,&
+!$OMP         TwoTerms,&
+!$OMP         iP,iPassP)
+  DO iP = 1,nPassP
+   iPassP = iP
+     iAtomA = iAtomApass(iPassP)
+     iAtomB = iAtomBpass(iPassP)
+   Ax = -Acenter(1,iAtomA)
+   Ay = -Acenter(2,iAtomA)
+   Az = -Acenter(3,iAtomA)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
-    Xpa = Pcent(1) + Ax
-    Ypa = Pcent(2) + Ay
-    Zpa = Pcent(3) + Az
-     Xpq = mPX + Qcent(1,iPassQ)
-     Ypq = mPY + Qcent(2,iPassQ)
-     Zpq = mPZ + Qcent(3,iPassQ)
+    Xpa = Pcent(1,iAtomA,iAtomB) + Ax
+    Ypa = Pcent(2,iAtomA,iAtomB) + Ay
+    Zpa = Pcent(3,iAtomA,iAtomB) + Az
+     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)
+     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)
+     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)
      alphaP = -reducedExponents(1)*invexpP
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
-     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
-     WVAL = reducedExponents(1)*squaredDistance
-     !  0 < WVAL < 12 
-     IF (WVAL .LT. D12) THEN
-      IPNT = NINT(D100*WVAL)
-      WDIFF = WVAL - TENTH*IPNT
-      W2    = WDIFF*WDIFF
-      W3    = W2*WDIFF
-      W2    = W2*D05
-      W3    = W3*COEF3
-      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
-      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
-      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
-      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
-      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
-      RJ000( 5) = TABFJW( 5,IPNT)-TABFJW( 6,IPNT)*WDIFF+TABFJW( 7,IPNT)*W2+TABFJW( 8,IPNT)*W3
-      RJ000( 6) = TABFJW( 6,IPNT)-TABFJW( 7,IPNT)*WDIFF+TABFJW( 8,IPNT)*W2+TABFJW( 9,IPNT)*W3
-      RJ000( 7) = TABFJW( 7,IPNT)-TABFJW( 8,IPNT)*WDIFF+TABFJW( 9,IPNT)*W2+TABFJW(10,IPNT)*W3
-     !  12 < WVAL <= (2J+36) 
-     ELSE IF (WVAL.LE.D2JP36) THEN
-      REXPW = D05*EXP(-WVAL)
-      RWVAL = D1/WVAL
-      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
-      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
-      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
-      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
-      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
-      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
-      RJ000( 5) = RWVAL*(( 5 - D05)*RJ000( 4)-REXPW)
-      RJ000( 6) = RWVAL*(( 6 - D05)*RJ000( 5)-REXPW)
-      RJ000( 7) = RWVAL*(( 7 - D05)*RJ000( 6)-REXPW)
-     !  (2J+36) < WVAL 
-     ELSE
-      RWVAL = PID4/WVAL
-      RJ000(0) = SQRT(RWVAL)
-      RWVAL = RWVAL*PID4I
-      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
-      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
-      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
-      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
-      RJ000( 5) = RWVAL*( 5 - D05)*RJ000( 4)
-      RJ000( 6) = RWVAL*( 6 - D05)*RJ000( 5)
-      RJ000( 7) = RWVAL*( 7 - D05)*RJ000( 6)
-     ENDIF
-     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)
-     TMPAuxarray(1) = PREF*RJ000(0)
-     TMParray1(1, 2) = PREF*RJ000( 1)
-     TMParray1(1, 3) = PREF*RJ000( 2)
-     TMParray1(1, 4) = PREF*RJ000( 3)
-     TMParray1(1, 5) = PREF*RJ000( 4)
-     TMParray1(1, 6) = PREF*RJ000( 5)
-     TMParray1(1, 7) = PREF*RJ000( 6)
-     TMParray1(1, 8) = PREF*RJ000( 7)
+     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)
+     TMPAuxarray(1) = PREF*RJ000Array(0,iPassP)
+     TMParray1(1, 2) = PREF*RJ000Array( 1,iPassP)
+     TMParray1(1, 3) = PREF*RJ000Array( 2,iPassP)
+     TMParray1(1, 4) = PREF*RJ000Array( 3,iPassP)
+     TMParray1(1, 5) = PREF*RJ000Array( 4,iPassP)
+     TMParray1(1, 6) = PREF*RJ000Array( 5,iPassP)
+     TMParray1(1, 7) = PREF*RJ000Array( 6,iPassP)
+     TMParray1(1, 8) = PREF*RJ000Array( 7,iPassP)
      TMPAuxArray(2) = Xpa*TMPAuxArray(1) + alphaXpq*TmpArray1(1,2)
      TMPAuxArray(3) = Ypa*TMPAuxArray(1) + alphaYpq*TmpArray1(1,2)
      TMPAuxArray(4) = Zpa*TMPAuxArray(1) + alphaZpq*TmpArray1(1,2)
@@ -1704,80 +1521,69 @@ subroutine VerticalRecurrenceCPUSeg1Prim7A(nPasses,nPrimP,nPrimQ,reducedExponent
      TwoTerms(12) = inv2expP*(TMPAuxArray(55) + alphaP*TmpArray6(55,2))
      TwoTerms(13) = inv2expP*(TMPAuxArray(56) + alphaP*TmpArray6(56,2))
      do iTUV = 1,   84
-      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)
+      AuxArray(iTUV,iP) = TMPAuxarray(iTUV)
      enddo
-     AuxArray(85,IPassQ) = Xpa*TMPAuxArray(57) + alphaXpq*TmpArray7(57,2) + 6*TwoTerms(1)
-     AuxArray(86,IPassQ) = Ypa*TMPAuxArray(57) + alphaYpq*TmpArray7(57,2)
-     AuxArray(87,IPassQ) = Zpa*TMPAuxArray(57) + alphaZpq*TmpArray7(57,2)
-     AuxArray(88,IPassQ) = Xpa*TMPAuxArray(60) + alphaXpq*TmpArray7(60,2) + 4*TwoTerms(2)
-     AuxArray(89,IPassQ) = Ypa*TMPAuxArray(59) + alphaYpq*TmpArray7(59,2)
-     AuxArray(90,IPassQ) = Xpa*TMPAuxArray(62) + alphaXpq*TmpArray7(62,2) + 4*TwoTerms(3)
-     AuxArray(91,IPassQ) = Xpa*TMPAuxArray(63) + alphaXpq*TmpArray7(63,2) + 3*TwoTerms(4)
-     AuxArray(92,IPassQ) = Zpa*TMPAuxArray(60) + alphaZpq*TmpArray7(60,2)
-     AuxArray(93,IPassQ) = Ypa*TMPAuxArray(62) + alphaYpq*TmpArray7(62,2)
-     AuxArray(94,IPassQ) = Xpa*TMPAuxArray(66) + alphaXpq*TmpArray7(66,2) + 3*TwoTerms(5)
-     AuxArray(95,IPassQ) = Xpa*TMPAuxArray(67) + alphaXpq*TmpArray7(67,2) + 2*TwoTerms(6)
-     AuxArray(96,IPassQ) = Zpa*TMPAuxArray(63) + alphaZpq*TmpArray7(63,2)
-     AuxArray(97,IPassQ) = Xpa*TMPAuxArray(69) + alphaXpq*TmpArray7(69,2) + 2*TwoTerms(7)
-     AuxArray(98,IPassQ) = Ypa*TMPAuxArray(66) + alphaYpq*TmpArray7(66,2)
-     AuxArray(99,IPassQ) = Xpa*TMPAuxArray(71) + alphaXpq*TmpArray7(71,2) + 2*TwoTerms(8)
-     AuxArray(100,IPassQ) = Xpa*TMPAuxArray(72) + alphaXpq*TmpArray7(72,2) + TwoTerms(9)
-     AuxArray(101,IPassQ) = Zpa*TMPAuxArray(67) + alphaZpq*TmpArray7(67,2)
-     AuxArray(102,IPassQ) = Xpa*TMPAuxArray(74) + alphaXpq*TmpArray7(74,2) + TwoTerms(10)
-     AuxArray(103,IPassQ) = Xpa*TMPAuxArray(75) + alphaXpq*TmpArray7(75,2) + TwoTerms(11)
-     AuxArray(104,IPassQ) = Ypa*TMPAuxArray(71) + alphaYpq*TmpArray7(71,2)
-     AuxArray(105,IPassQ) = Xpa*TMPAuxArray(77) + alphaXpq*TmpArray7(77,2) + TwoTerms(13)
-     AuxArray(106,IPassQ) = Xpa*TMPAuxArray(78) + alphaXpq*TmpArray7(78,2)
-     AuxArray(107,IPassQ) = Xpa*TMPAuxArray(79) + alphaXpq*TmpArray7(79,2)
-     AuxArray(108,IPassQ) = Xpa*TMPAuxArray(80) + alphaXpq*TmpArray7(80,2)
-     AuxArray(109,IPassQ) = Xpa*TMPAuxArray(81) + alphaXpq*TmpArray7(81,2)
-     AuxArray(110,IPassQ) = Xpa*TMPAuxArray(82) + alphaXpq*TmpArray7(82,2)
-     AuxArray(111,IPassQ) = Xpa*TMPAuxArray(83) + alphaXpq*TmpArray7(83,2)
-     AuxArray(112,IPassQ) = Xpa*TMPAuxArray(84) + alphaXpq*TmpArray7(84,2)
-     AuxArray(113,IPassQ) = Ypa*TMPAuxArray(78) + alphaYpq*TmpArray7(78,2) + 6*TwoTerms(9)
-     AuxArray(114,IPassQ) = Zpa*TMPAuxArray(78) + alphaZpq*TmpArray7(78,2)
-     AuxArray(115,IPassQ) = Ypa*TMPAuxArray(80) + alphaYpq*TmpArray7(80,2) + 4*TwoTerms(10)
-     AuxArray(116,IPassQ) = Ypa*TMPAuxArray(81) + alphaYpq*TmpArray7(81,2) + 3*TwoTerms(11)
-     AuxArray(117,IPassQ) = Ypa*TMPAuxArray(82) + alphaYpq*TmpArray7(82,2) + 2*TwoTerms(12)
-     AuxArray(118,IPassQ) = Ypa*TMPAuxArray(83) + alphaYpq*TmpArray7(83,2) + TwoTerms(13)
-     AuxArray(119,IPassQ) = Ypa*TMPAuxArray(84) + alphaYpq*TmpArray7(84,2)
-     AuxArray(120,IPassQ) = Zpa*TMPAuxArray(84) + alphaZpq*TmpArray7(84,2) + 6*TwoTerms(13)
-  ENDDO
+     AuxArray(85,iP) = Xpa*TMPAuxArray(57) + alphaXpq*TmpArray7(57,2) + 6*TwoTerms(1)
+     AuxArray(86,iP) = Ypa*TMPAuxArray(57) + alphaYpq*TmpArray7(57,2)
+     AuxArray(87,iP) = Zpa*TMPAuxArray(57) + alphaZpq*TmpArray7(57,2)
+     AuxArray(88,iP) = Xpa*TMPAuxArray(60) + alphaXpq*TmpArray7(60,2) + 4*TwoTerms(2)
+     AuxArray(89,iP) = Ypa*TMPAuxArray(59) + alphaYpq*TmpArray7(59,2)
+     AuxArray(90,iP) = Xpa*TMPAuxArray(62) + alphaXpq*TmpArray7(62,2) + 4*TwoTerms(3)
+     AuxArray(91,iP) = Xpa*TMPAuxArray(63) + alphaXpq*TmpArray7(63,2) + 3*TwoTerms(4)
+     AuxArray(92,iP) = Zpa*TMPAuxArray(60) + alphaZpq*TmpArray7(60,2)
+     AuxArray(93,iP) = Ypa*TMPAuxArray(62) + alphaYpq*TmpArray7(62,2)
+     AuxArray(94,iP) = Xpa*TMPAuxArray(66) + alphaXpq*TmpArray7(66,2) + 3*TwoTerms(5)
+     AuxArray(95,iP) = Xpa*TMPAuxArray(67) + alphaXpq*TmpArray7(67,2) + 2*TwoTerms(6)
+     AuxArray(96,iP) = Zpa*TMPAuxArray(63) + alphaZpq*TmpArray7(63,2)
+     AuxArray(97,iP) = Xpa*TMPAuxArray(69) + alphaXpq*TmpArray7(69,2) + 2*TwoTerms(7)
+     AuxArray(98,iP) = Ypa*TMPAuxArray(66) + alphaYpq*TmpArray7(66,2)
+     AuxArray(99,iP) = Xpa*TMPAuxArray(71) + alphaXpq*TmpArray7(71,2) + 2*TwoTerms(8)
+     AuxArray(100,iP) = Xpa*TMPAuxArray(72) + alphaXpq*TmpArray7(72,2) + TwoTerms(9)
+     AuxArray(101,iP) = Zpa*TMPAuxArray(67) + alphaZpq*TmpArray7(67,2)
+     AuxArray(102,iP) = Xpa*TMPAuxArray(74) + alphaXpq*TmpArray7(74,2) + TwoTerms(10)
+     AuxArray(103,iP) = Xpa*TMPAuxArray(75) + alphaXpq*TmpArray7(75,2) + TwoTerms(11)
+     AuxArray(104,iP) = Ypa*TMPAuxArray(71) + alphaYpq*TmpArray7(71,2)
+     AuxArray(105,iP) = Xpa*TMPAuxArray(77) + alphaXpq*TmpArray7(77,2) + TwoTerms(13)
+     AuxArray(106,iP) = Xpa*TMPAuxArray(78) + alphaXpq*TmpArray7(78,2)
+     AuxArray(107,iP) = Xpa*TMPAuxArray(79) + alphaXpq*TmpArray7(79,2)
+     AuxArray(108,iP) = Xpa*TMPAuxArray(80) + alphaXpq*TmpArray7(80,2)
+     AuxArray(109,iP) = Xpa*TMPAuxArray(81) + alphaXpq*TmpArray7(81,2)
+     AuxArray(110,iP) = Xpa*TMPAuxArray(82) + alphaXpq*TmpArray7(82,2)
+     AuxArray(111,iP) = Xpa*TMPAuxArray(83) + alphaXpq*TmpArray7(83,2)
+     AuxArray(112,iP) = Xpa*TMPAuxArray(84) + alphaXpq*TmpArray7(84,2)
+     AuxArray(113,iP) = Ypa*TMPAuxArray(78) + alphaYpq*TmpArray7(78,2) + 6*TwoTerms(9)
+     AuxArray(114,iP) = Zpa*TMPAuxArray(78) + alphaZpq*TmpArray7(78,2)
+     AuxArray(115,iP) = Ypa*TMPAuxArray(80) + alphaYpq*TmpArray7(80,2) + 4*TwoTerms(10)
+     AuxArray(116,iP) = Ypa*TMPAuxArray(81) + alphaYpq*TmpArray7(81,2) + 3*TwoTerms(11)
+     AuxArray(117,iP) = Ypa*TMPAuxArray(82) + alphaYpq*TmpArray7(82,2) + 2*TwoTerms(12)
+     AuxArray(118,iP) = Ypa*TMPAuxArray(83) + alphaYpq*TmpArray7(83,2) + TwoTerms(13)
+     AuxArray(119,iP) = Ypa*TMPAuxArray(84) + alphaYpq*TmpArray7(84,2)
+     AuxArray(120,iP) = Zpa*TMPAuxArray(84) + alphaZpq*TmpArray7(84,2) + 6*TwoTerms(13)
+  ENDDO !iP = 1,nPassP
+!$OMP END DO
  end subroutine
 
-subroutine VerticalRecurrenceCPUSeg1Prim8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-         & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,PpreExpFac,QpreExpFac,&
-         & AUXarray)
+subroutine VerticalRecurrenceCPUSeg1Prim8A(nPassP,nPrimP,nPrimQ,&
+         & reducedExponents,RJ000Array,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)
   implicit none
-  integer,intent(in) :: nPasses,nPrimP,nPrimQ
-  REAL(REALK),intent(in) :: TABFJW(0:11,0:1200)
+  integer,intent(in) :: nPassP,nPrimP,nPrimQ
+  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+  real(realk),intent(in) :: RJ000Array(0: 8,nPassP)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
-  real(realk),intent(in) :: Pcent(3),Qcent(3,nPasses),integralPrefactor(1),QpreExpFac(nPasses),PpreExpFac(1)
-  real(realk),intent(in) :: Acenter(3)
-  real(realk),intent(inout) :: AUXarray(  165,nPasses)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: Acenter(3,nAtomsA)
+  real(realk),intent(inout) :: AUXarray(  165,nPassP)
   !local variables
-  integer :: iPassQ,iPrimP,iPrimQ,ipnt,IP,iTUV
+  integer :: iPassP,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(  120)
   real(realk) :: Ax,Ay,Az,Xpa,Ypa,Zpa
-  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP,RJ000(0: 8)
+  real(realk) :: mPX,mPY,mPZ,invexpP,inv2expP,alphaP
   real(realk) :: TwoTerms(  28)
-  real(realk) :: Pexpfac,PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
-  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
-  real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  5.2000000000000000E+01_realk
-  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
+  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk
+  real(realk),parameter :: D1=1.0E0_realk
   real(realk) :: TMParray1(  1:  1,2:9)
   real(realk) :: TMParray2(  2:  4,2:8)
   real(realk) :: TMParray3(  5: 10,2:7)
@@ -1789,84 +1595,53 @@ subroutine VerticalRecurrenceCPUSeg1Prim8A(nPasses,nPrimP,nPrimQ,reducedExponent
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
-  Ax = -Acenter(1)
-  Ay = -Acenter(2)
-  Az = -Acenter(3)
-  DO iPassQ = 1,nPasses
-   iP = iPassQ
-    Pexpfac = PpreExpFac(1)
-    mPX = -Pcent(1)
-    mPY = -Pcent(2)
-    mPZ = -Pcent(3)
+!$OMP DO &
+!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
+!$OMP         mPx,mPy,mPz,&
+!$OMP         Ax,Ay,Az,Xpa,Ypa,Zpa,alphaP,&
+!$OMP         alphaXpq,alphaYpq,alphaZpq,&
+!$OMP         invexpP,inv2expP,&
+!$OMP         PREF,&
+!$OMP         TMPAUXarray,&
+!$OMP         TMParray1,&
+!$OMP         TMParray2,&
+!$OMP         TMParray3,&
+!$OMP         TMParray4,&
+!$OMP         TMParray5,&
+!$OMP         TMParray6,&
+!$OMP         TMParray7,&
+!$OMP         TMParray8,&
+!$OMP         TwoTerms,&
+!$OMP         iP,iPassP)
+  DO iP = 1,nPassP
+   iPassP = iP
+     iAtomA = iAtomApass(iPassP)
+     iAtomB = iAtomBpass(iPassP)
+   Ax = -Acenter(1,iAtomA)
+   Ay = -Acenter(2,iAtomA)
+   Az = -Acenter(3,iAtomA)
     invexpP = D1/Pexp(1)
     inv2expP = D05*invexpP
-    Xpa = Pcent(1) + Ax
-    Ypa = Pcent(2) + Ay
-    Zpa = Pcent(3) + Az
-     Xpq = mPX + Qcent(1,iPassQ)
-     Ypq = mPY + Qcent(2,iPassQ)
-     Zpq = mPZ + Qcent(3,iPassQ)
+    Xpa = Pcent(1,iAtomA,iAtomB) + Ax
+    Ypa = Pcent(2,iAtomA,iAtomB) + Ay
+    Zpa = Pcent(3,iAtomA,iAtomB) + Az
+     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)
+     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)
+     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)
      alphaP = -reducedExponents(1)*invexpP
      alphaXpq = -alphaP*Xpq
      alphaYpq = -alphaP*Ypq
      alphaZpq = -alphaP*Zpq
-     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq
-     WVAL = reducedExponents(1)*squaredDistance
-     !  0 < WVAL < 12 
-     IF (WVAL .LT. D12) THEN
-      IPNT = NINT(D100*WVAL)
-      WDIFF = WVAL - TENTH*IPNT
-      W2    = WDIFF*WDIFF
-      W3    = W2*WDIFF
-      W2    = W2*D05
-      W3    = W3*COEF3
-      RJ000( 0) = TABFJW( 0,IPNT)-TABFJW( 1,IPNT)*WDIFF+TABFJW( 2,IPNT)*W2+TABFJW( 3,IPNT)*W3
-      RJ000( 1) = TABFJW( 1,IPNT)-TABFJW( 2,IPNT)*WDIFF+TABFJW( 3,IPNT)*W2+TABFJW( 4,IPNT)*W3
-      RJ000( 2) = TABFJW( 2,IPNT)-TABFJW( 3,IPNT)*WDIFF+TABFJW( 4,IPNT)*W2+TABFJW( 5,IPNT)*W3
-      RJ000( 3) = TABFJW( 3,IPNT)-TABFJW( 4,IPNT)*WDIFF+TABFJW( 5,IPNT)*W2+TABFJW( 6,IPNT)*W3
-      RJ000( 4) = TABFJW( 4,IPNT)-TABFJW( 5,IPNT)*WDIFF+TABFJW( 6,IPNT)*W2+TABFJW( 7,IPNT)*W3
-      RJ000( 5) = TABFJW( 5,IPNT)-TABFJW( 6,IPNT)*WDIFF+TABFJW( 7,IPNT)*W2+TABFJW( 8,IPNT)*W3
-      RJ000( 6) = TABFJW( 6,IPNT)-TABFJW( 7,IPNT)*WDIFF+TABFJW( 8,IPNT)*W2+TABFJW( 9,IPNT)*W3
-      RJ000( 7) = TABFJW( 7,IPNT)-TABFJW( 8,IPNT)*WDIFF+TABFJW( 9,IPNT)*W2+TABFJW(10,IPNT)*W3
-      RJ000( 8) = TABFJW( 8,IPNT)-TABFJW( 9,IPNT)*WDIFF+TABFJW(10,IPNT)*W2+TABFJW(11,IPNT)*W3
-     !  12 < WVAL <= (2J+36) 
-     ELSE IF (WVAL.LE.D2JP36) THEN
-      REXPW = D05*EXP(-WVAL)
-      RWVAL = D1/WVAL
-      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
-      RJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
-      RJ000( 1) = RWVAL*(( 1 - D05)*RJ000( 0)-REXPW)
-      RJ000( 2) = RWVAL*(( 2 - D05)*RJ000( 1)-REXPW)
-      RJ000( 3) = RWVAL*(( 3 - D05)*RJ000( 2)-REXPW)
-      RJ000( 4) = RWVAL*(( 4 - D05)*RJ000( 3)-REXPW)
-      RJ000( 5) = RWVAL*(( 5 - D05)*RJ000( 4)-REXPW)
-      RJ000( 6) = RWVAL*(( 6 - D05)*RJ000( 5)-REXPW)
-      RJ000( 7) = RWVAL*(( 7 - D05)*RJ000( 6)-REXPW)
-      RJ000( 8) = RWVAL*(( 8 - D05)*RJ000( 7)-REXPW)
-     !  (2J+36) < WVAL 
-     ELSE
-      RWVAL = PID4/WVAL
-      RJ000(0) = SQRT(RWVAL)
-      RWVAL = RWVAL*PID4I
-      RJ000( 1) = RWVAL*( 1 - D05)*RJ000( 0)
-      RJ000( 2) = RWVAL*( 2 - D05)*RJ000( 1)
-      RJ000( 3) = RWVAL*( 3 - D05)*RJ000( 2)
-      RJ000( 4) = RWVAL*( 4 - D05)*RJ000( 3)
-      RJ000( 5) = RWVAL*( 5 - D05)*RJ000( 4)
-      RJ000( 6) = RWVAL*( 6 - D05)*RJ000( 5)
-      RJ000( 7) = RWVAL*( 7 - D05)*RJ000( 6)
-      RJ000( 8) = RWVAL*( 8 - D05)*RJ000( 7)
-     ENDIF
-     PREF = integralPrefactor(1)*QpreExpFac(iPassQ)*PpreExpFac(1)
-     TMPAuxarray(1) = PREF*RJ000(0)
-     TMParray1(1, 2) = PREF*RJ000( 1)
-     TMParray1(1, 3) = PREF*RJ000( 2)
-     TMParray1(1, 4) = PREF*RJ000( 3)
-     TMParray1(1, 5) = PREF*RJ000( 4)
-     TMParray1(1, 6) = PREF*RJ000( 5)
-     TMParray1(1, 7) = PREF*RJ000( 6)
-     TMParray1(1, 8) = PREF*RJ000( 7)
-     TMParray1(1, 9) = PREF*RJ000( 8)
+     PREF = integralPrefactor(1)*QpreExpFac(1)*PpreExpFac(iAtomA,iAtomB)
+     TMPAuxarray(1) = PREF*RJ000Array(0,iPassP)
+     TMParray1(1, 2) = PREF*RJ000Array( 1,iPassP)
+     TMParray1(1, 3) = PREF*RJ000Array( 2,iPassP)
+     TMParray1(1, 4) = PREF*RJ000Array( 3,iPassP)
+     TMParray1(1, 5) = PREF*RJ000Array( 4,iPassP)
+     TMParray1(1, 6) = PREF*RJ000Array( 5,iPassP)
+     TMParray1(1, 7) = PREF*RJ000Array( 6,iPassP)
+     TMParray1(1, 8) = PREF*RJ000Array( 7,iPassP)
+     TMParray1(1, 9) = PREF*RJ000Array( 8,iPassP)
      TMPAuxArray(2) = Xpa*TMPAuxArray(1) + alphaXpq*TmpArray1(1,2)
      TMPAuxArray(3) = Ypa*TMPAuxArray(1) + alphaYpq*TmpArray1(1,2)
      TMPAuxArray(4) = Zpa*TMPAuxArray(1) + alphaZpq*TmpArray1(1,2)
@@ -2444,53 +2219,54 @@ subroutine VerticalRecurrenceCPUSeg1Prim8A(nPasses,nPrimP,nPrimQ,reducedExponent
      TwoTerms(17) = inv2expP*(TMPAuxArray(83) + alphaP*TmpArray7(83,2))
      TwoTerms(18) = inv2expP*(TMPAuxArray(84) + alphaP*TmpArray7(84,2))
      do iTUV = 1,  120
-      AuxArray(iTUV,IPassQ) = TMPAuxarray(iTUV)
+      AuxArray(iTUV,iP) = TMPAuxarray(iTUV)
      enddo
-     AuxArray(121,IPassQ) = Xpa*TMPAuxArray(85) + alphaXpq*TmpArray8(85,2) + 7*TwoTerms(1)
-     AuxArray(122,IPassQ) = Ypa*TMPAuxArray(85) + alphaYpq*TmpArray8(85,2)
-     AuxArray(123,IPassQ) = Zpa*TMPAuxArray(85) + alphaZpq*TmpArray8(85,2)
-     AuxArray(124,IPassQ) = Xpa*TMPAuxArray(88) + alphaXpq*TmpArray8(88,2) + 5*TwoTerms(2)
-     AuxArray(125,IPassQ) = Ypa*TMPAuxArray(87) + alphaYpq*TmpArray8(87,2)
-     AuxArray(126,IPassQ) = Xpa*TMPAuxArray(90) + alphaXpq*TmpArray8(90,2) + 5*TwoTerms(3)
-     AuxArray(127,IPassQ) = Xpa*TMPAuxArray(91) + alphaXpq*TmpArray8(91,2) + 4*TwoTerms(4)
-     AuxArray(128,IPassQ) = Zpa*TMPAuxArray(88) + alphaZpq*TmpArray8(88,2)
-     AuxArray(129,IPassQ) = Ypa*TMPAuxArray(90) + alphaYpq*TmpArray8(90,2)
-     AuxArray(130,IPassQ) = Xpa*TMPAuxArray(94) + alphaXpq*TmpArray8(94,2) + 4*TwoTerms(5)
-     AuxArray(131,IPassQ) = Xpa*TMPAuxArray(95) + alphaXpq*TmpArray8(95,2) + 3*TwoTerms(6)
-     AuxArray(132,IPassQ) = Zpa*TMPAuxArray(91) + alphaZpq*TmpArray8(91,2)
-     AuxArray(133,IPassQ) = Xpa*TMPAuxArray(97) + alphaXpq*TmpArray8(97,2) + 3*TwoTerms(7)
-     AuxArray(134,IPassQ) = Ypa*TMPAuxArray(94) + alphaYpq*TmpArray8(94,2)
-     AuxArray(135,IPassQ) = Xpa*TMPAuxArray(99) + alphaXpq*TmpArray8(99,2) + 3*TwoTerms(8)
-     AuxArray(136,IPassQ) = Xpa*TMPAuxArray(100) + alphaXpq*TmpArray8(100,2) + 2*TwoTerms(9)
-     AuxArray(137,IPassQ) = Zpa*TMPAuxArray(95) + alphaZpq*TmpArray8(95,2)
-     AuxArray(138,IPassQ) = Xpa*TMPAuxArray(102) + alphaXpq*TmpArray8(102,2) + 2*TwoTerms(10)
-     AuxArray(139,IPassQ) = Xpa*TMPAuxArray(103) + alphaXpq*TmpArray8(103,2) + 2*TwoTerms(11)
-     AuxArray(140,IPassQ) = Ypa*TMPAuxArray(99) + alphaYpq*TmpArray8(99,2)
-     AuxArray(141,IPassQ) = Xpa*TMPAuxArray(105) + alphaXpq*TmpArray8(105,2) + 2*TwoTerms(12)
-     AuxArray(142,IPassQ) = Xpa*TMPAuxArray(106) + alphaXpq*TmpArray8(106,2) + TwoTerms(13)
-     AuxArray(143,IPassQ) = Zpa*TMPAuxArray(100) + alphaZpq*TmpArray8(100,2)
-     AuxArray(144,IPassQ) = Xpa*TMPAuxArray(108) + alphaXpq*TmpArray8(108,2) + TwoTerms(14)
-     AuxArray(145,IPassQ) = Xpa*TMPAuxArray(109) + alphaXpq*TmpArray8(109,2) + TwoTerms(15)
-     AuxArray(146,IPassQ) = Xpa*TMPAuxArray(110) + alphaXpq*TmpArray8(110,2) + TwoTerms(16)
-     AuxArray(147,IPassQ) = Ypa*TMPAuxArray(105) + alphaYpq*TmpArray8(105,2)
-     AuxArray(148,IPassQ) = Xpa*TMPAuxArray(112) + alphaXpq*TmpArray8(112,2) + TwoTerms(18)
-     AuxArray(149,IPassQ) = Xpa*TMPAuxArray(113) + alphaXpq*TmpArray8(113,2)
-     AuxArray(150,IPassQ) = Xpa*TMPAuxArray(114) + alphaXpq*TmpArray8(114,2)
-     AuxArray(151,IPassQ) = Xpa*TMPAuxArray(115) + alphaXpq*TmpArray8(115,2)
-     AuxArray(152,IPassQ) = Xpa*TMPAuxArray(116) + alphaXpq*TmpArray8(116,2)
-     AuxArray(153,IPassQ) = Xpa*TMPAuxArray(117) + alphaXpq*TmpArray8(117,2)
-     AuxArray(154,IPassQ) = Xpa*TMPAuxArray(118) + alphaXpq*TmpArray8(118,2)
-     AuxArray(155,IPassQ) = Xpa*TMPAuxArray(119) + alphaXpq*TmpArray8(119,2)
-     AuxArray(156,IPassQ) = Xpa*TMPAuxArray(120) + alphaXpq*TmpArray8(120,2)
-     AuxArray(157,IPassQ) = Ypa*TMPAuxArray(113) + alphaYpq*TmpArray8(113,2) + 7*TwoTerms(13)
-     AuxArray(158,IPassQ) = Zpa*TMPAuxArray(113) + alphaZpq*TmpArray8(113,2)
-     AuxArray(159,IPassQ) = Ypa*TMPAuxArray(115) + alphaYpq*TmpArray8(115,2) + 5*TwoTerms(14)
-     AuxArray(160,IPassQ) = Ypa*TMPAuxArray(116) + alphaYpq*TmpArray8(116,2) + 4*TwoTerms(15)
-     AuxArray(161,IPassQ) = Ypa*TMPAuxArray(117) + alphaYpq*TmpArray8(117,2) + 3*TwoTerms(16)
-     AuxArray(162,IPassQ) = Ypa*TMPAuxArray(118) + alphaYpq*TmpArray8(118,2) + 2*TwoTerms(17)
-     AuxArray(163,IPassQ) = Ypa*TMPAuxArray(119) + alphaYpq*TmpArray8(119,2) + TwoTerms(18)
-     AuxArray(164,IPassQ) = Ypa*TMPAuxArray(120) + alphaYpq*TmpArray8(120,2)
-     AuxArray(165,IPassQ) = Zpa*TMPAuxArray(120) + alphaZpq*TmpArray8(120,2) + 7*TwoTerms(18)
-  ENDDO
+     AuxArray(121,iP) = Xpa*TMPAuxArray(85) + alphaXpq*TmpArray8(85,2) + 7*TwoTerms(1)
+     AuxArray(122,iP) = Ypa*TMPAuxArray(85) + alphaYpq*TmpArray8(85,2)
+     AuxArray(123,iP) = Zpa*TMPAuxArray(85) + alphaZpq*TmpArray8(85,2)
+     AuxArray(124,iP) = Xpa*TMPAuxArray(88) + alphaXpq*TmpArray8(88,2) + 5*TwoTerms(2)
+     AuxArray(125,iP) = Ypa*TMPAuxArray(87) + alphaYpq*TmpArray8(87,2)
+     AuxArray(126,iP) = Xpa*TMPAuxArray(90) + alphaXpq*TmpArray8(90,2) + 5*TwoTerms(3)
+     AuxArray(127,iP) = Xpa*TMPAuxArray(91) + alphaXpq*TmpArray8(91,2) + 4*TwoTerms(4)
+     AuxArray(128,iP) = Zpa*TMPAuxArray(88) + alphaZpq*TmpArray8(88,2)
+     AuxArray(129,iP) = Ypa*TMPAuxArray(90) + alphaYpq*TmpArray8(90,2)
+     AuxArray(130,iP) = Xpa*TMPAuxArray(94) + alphaXpq*TmpArray8(94,2) + 4*TwoTerms(5)
+     AuxArray(131,iP) = Xpa*TMPAuxArray(95) + alphaXpq*TmpArray8(95,2) + 3*TwoTerms(6)
+     AuxArray(132,iP) = Zpa*TMPAuxArray(91) + alphaZpq*TmpArray8(91,2)
+     AuxArray(133,iP) = Xpa*TMPAuxArray(97) + alphaXpq*TmpArray8(97,2) + 3*TwoTerms(7)
+     AuxArray(134,iP) = Ypa*TMPAuxArray(94) + alphaYpq*TmpArray8(94,2)
+     AuxArray(135,iP) = Xpa*TMPAuxArray(99) + alphaXpq*TmpArray8(99,2) + 3*TwoTerms(8)
+     AuxArray(136,iP) = Xpa*TMPAuxArray(100) + alphaXpq*TmpArray8(100,2) + 2*TwoTerms(9)
+     AuxArray(137,iP) = Zpa*TMPAuxArray(95) + alphaZpq*TmpArray8(95,2)
+     AuxArray(138,iP) = Xpa*TMPAuxArray(102) + alphaXpq*TmpArray8(102,2) + 2*TwoTerms(10)
+     AuxArray(139,iP) = Xpa*TMPAuxArray(103) + alphaXpq*TmpArray8(103,2) + 2*TwoTerms(11)
+     AuxArray(140,iP) = Ypa*TMPAuxArray(99) + alphaYpq*TmpArray8(99,2)
+     AuxArray(141,iP) = Xpa*TMPAuxArray(105) + alphaXpq*TmpArray8(105,2) + 2*TwoTerms(12)
+     AuxArray(142,iP) = Xpa*TMPAuxArray(106) + alphaXpq*TmpArray8(106,2) + TwoTerms(13)
+     AuxArray(143,iP) = Zpa*TMPAuxArray(100) + alphaZpq*TmpArray8(100,2)
+     AuxArray(144,iP) = Xpa*TMPAuxArray(108) + alphaXpq*TmpArray8(108,2) + TwoTerms(14)
+     AuxArray(145,iP) = Xpa*TMPAuxArray(109) + alphaXpq*TmpArray8(109,2) + TwoTerms(15)
+     AuxArray(146,iP) = Xpa*TMPAuxArray(110) + alphaXpq*TmpArray8(110,2) + TwoTerms(16)
+     AuxArray(147,iP) = Ypa*TMPAuxArray(105) + alphaYpq*TmpArray8(105,2)
+     AuxArray(148,iP) = Xpa*TMPAuxArray(112) + alphaXpq*TmpArray8(112,2) + TwoTerms(18)
+     AuxArray(149,iP) = Xpa*TMPAuxArray(113) + alphaXpq*TmpArray8(113,2)
+     AuxArray(150,iP) = Xpa*TMPAuxArray(114) + alphaXpq*TmpArray8(114,2)
+     AuxArray(151,iP) = Xpa*TMPAuxArray(115) + alphaXpq*TmpArray8(115,2)
+     AuxArray(152,iP) = Xpa*TMPAuxArray(116) + alphaXpq*TmpArray8(116,2)
+     AuxArray(153,iP) = Xpa*TMPAuxArray(117) + alphaXpq*TmpArray8(117,2)
+     AuxArray(154,iP) = Xpa*TMPAuxArray(118) + alphaXpq*TmpArray8(118,2)
+     AuxArray(155,iP) = Xpa*TMPAuxArray(119) + alphaXpq*TmpArray8(119,2)
+     AuxArray(156,iP) = Xpa*TMPAuxArray(120) + alphaXpq*TmpArray8(120,2)
+     AuxArray(157,iP) = Ypa*TMPAuxArray(113) + alphaYpq*TmpArray8(113,2) + 7*TwoTerms(13)
+     AuxArray(158,iP) = Zpa*TMPAuxArray(113) + alphaZpq*TmpArray8(113,2)
+     AuxArray(159,iP) = Ypa*TMPAuxArray(115) + alphaYpq*TmpArray8(115,2) + 5*TwoTerms(14)
+     AuxArray(160,iP) = Ypa*TMPAuxArray(116) + alphaYpq*TmpArray8(116,2) + 4*TwoTerms(15)
+     AuxArray(161,iP) = Ypa*TMPAuxArray(117) + alphaYpq*TmpArray8(117,2) + 3*TwoTerms(16)
+     AuxArray(162,iP) = Ypa*TMPAuxArray(118) + alphaYpq*TmpArray8(118,2) + 2*TwoTerms(17)
+     AuxArray(163,iP) = Ypa*TMPAuxArray(119) + alphaYpq*TmpArray8(119,2) + TwoTerms(18)
+     AuxArray(164,iP) = Ypa*TMPAuxArray(120) + alphaYpq*TmpArray8(120,2)
+     AuxArray(165,iP) = Zpa*TMPAuxArray(120) + alphaZpq*TmpArray8(120,2) + 7*TwoTerms(18)
+  ENDDO !iP = 1,nPassP
+!$OMP END DO
  end subroutine
 end module

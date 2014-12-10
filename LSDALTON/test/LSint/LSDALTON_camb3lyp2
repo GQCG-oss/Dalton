@@ -58,6 +58,8 @@ C   0.0  80.0     0.0
 #  DALTON INPUT                                                       #
 #######################################################################
 cat > LSDALTON_camb3lyp2.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **WAVE FUNCTIONS
 .DFT
  CAMB3LYP alpha=0.21 beta=0.79 mu=0.45          

@@ -1,6 +1,6 @@
 module lsmpi_test
   use precision
-  use Integralparameters
+  use LSparameters
   use memory_handling
   use lsmpi_type
 #ifdef VAR_MPI
@@ -25,8 +25,8 @@ CONTAINS
     real(realk),parameter :: DS=1.12345698765412E-16_realk
     real(realk),parameter :: D0=0.0E0_realk
     integer(kind=8),parameter :: S8R=1
-    integer(kind=8),parameter :: S8S=9223372036854775807
-    integer(kind=8),parameter :: S8M=-9223372036854775807
+    integer(kind=8),parameter :: S8S=9223372036854775807_long
+    integer(kind=8),parameter :: S8M=-9223372036854775807_long
     integer(kind=8),parameter :: S80=0
     integer :: N, N3
     integer(kind=ls_mpik) :: i,master,mynum

@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+#enedft
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-9)
+
+#qm3pcmconv
+f.add(from_string = 'QM/MM/PCM calculation converged',
+      num_lines = 6,
+      rel_tolerance = 1.0e-5)
+
+#pcmsol
+f.add(string = 'LOOKING UP INTERNALLY STORED DATA FOR SOLVENT',
+      rel_tolerance = 1.0e-5)
+
+#surf
+f.add(string = 'Surface area',
+      rel_tolerance = 1.0e-7)
+
+#nucchg
+f.add(string = 'NUCLEAR APPARENT CHARGE',
+      rel_tolerance = 1.0e-4)
+
+#tramom
+f.add(string = ' STATE NO: ',
+      rel_tolerance = 1.0e-5)
+
+f.add(string = '@ Excitation energy :',
+      rel_tolerance = 1.0e-5)
+
+f.add(string = '@ Oscillator strength (LENGTH)',
+      rel_tolerance = 1.0e-3)
+
+
+test.run(['qm3pcm_1.dal'], ['CH2O_STO-3G_2H2O_MM.mol'], f={'out': f}, args='-put POTENTIAL.INP')
+
+sys.exit(test.return_code)
+
+
+#

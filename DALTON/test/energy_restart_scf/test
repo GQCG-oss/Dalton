@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+#    energy_restart_scf
+#    --------------
+#    Molecule:         H2O
+#    Wave Functions:   HF / cc-pVDZ
+#    Test Purpose:     Restart an HF wave function optimization
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-5)
+# This job is NOT filtered since DALTON kills himself due to non-convergence.
+# That is an accepted error since we want the SIRIUS.RST file for the next step which is
+# going to be filtered.
+test.run(['energy_restart_scf__1.dal'], ['H2O_ccpVDZ.mol'], f={'out': f}, args = '-get SIRIUS.RST',
+        accepted_errors = ['DALTON aborted because wave function not converged','Floating point exception'])
+
+shutil.move('energy_restart_scf__1_H2O_ccpVDZ.SIRIUS.RST', 'SIRIUS.RST')
+
+f_rst = Filter()
+f_rst.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+f_rst.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+f_rst.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+f_rst.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+f_rst.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-9)
+
+test.run(['energy_restart_scf__2.dal'], ['H2O_ccpVDZ.mol'], f={'out': f_rst}, args = '-put SIRIUS.RST')
+
+os.remove('SIRIUS.RST')
+
+sys.exit(test.return_code)

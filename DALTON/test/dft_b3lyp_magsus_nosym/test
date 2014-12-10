@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+#    dft_b3lyp_magsus_nosym 
+#    ----------------------
+#    Molecule:         HOF
+#    Wave Function:    DFT (B3LYP) / 6-31G** 
+#    Test Purpose:     Test magnetizability and molecular
+#                      rotational g-factor calculation 
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+
+# Magnetizabilities (check SI numbers since they are largest)
+f.add(from_string = 'Magnetizabilities                    au',
+      num_lines = 9,
+      rel_tolerance = 1.0e-5,
+      mask = [2])
+
+f.add(from_string = 'Total magnetizability tensor (au)',
+      num_lines = 9,
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = 'Molecular rotational g-tensor in principal axis system (a.u.):',
+      num_lines = 32,
+      abs_tolerance = 1.0e-5)
+
+test.run(['dft_b3lyp_magsus_nosym.dal'], ['HOF_6-31Gss.mol'], f={'out': f})
+
+sys.exit(test.return_code)

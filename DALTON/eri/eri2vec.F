@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck eriexp */
       SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,
@@ -49,14 +48,14 @@ C  /* Deck eriexp */
 #include "hertop.h"
 #include "aobtch.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERIEXP','*',103)
       END IF
 C
       SFAC = SQRT(DP5)*FMULT(
-     &       IBTAND(IBTAND(ISTBLA,ISTBLB),IBTAND(ISTBLC,ISTBLD)))
+     &       IAND(IAND(ISTBLA,ISTBLB),IAND(ISTBLC,ISTBLD)))
 C
       DO 100 I = 1, NPRFAB
       DO 100 PQ = 1, NPQBCS
@@ -150,7 +149,7 @@ C  /* Deck ericor */
 #include "hertop.h"
 #include "aobtch.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       DO IATOM = 1,4
 #if defined (VAR_CRY)
@@ -202,29 +201,29 @@ C  /* Deck erisso */
 #include "aobtch.h"
 #include "symmet.h"
 #include "erisop.h"
-#include "ibtfun.h"
-      XPAR(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YPAR(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZPAR(I) = PT(IBTAND(ISYMAX(3,1),I))
+
+      XPAR(I) = PT(IAND(ISYMAX(1,1),I))
+      YPAR(I) = PT(IAND(ISYMAX(2,1),I))
+      ZPAR(I) = PT(IAND(ISYMAX(3,1),I))
 C
       RST = 0
       IT = 0
       DO T = 0, MAXOPR
-      IF (IBTAND(T,ISTBLT) .EQ. 0) THEN
+      IF (IAND(T,ISTBLT) .EQ. 0) THEN
          IT = IT + 1
          XC0 = XPAR(T)
          YC0 = YPAR(T)
          ZC0 = ZPAR(T)
          IS = 0
          DO S = 0, MAXOPR
-         IF (IBTAND(S,ISTBLS) .EQ. 0) THEN
+         IF (IAND(S,ISTBLS) .EQ. 0) THEN
             IS = IS + 1
-            XD0 = XPAR(IBTXOR(S,T))
-            YD0 = YPAR(IBTXOR(S,T))
-            ZD0 = ZPAR(IBTXOR(S,T))
+            XD0 = XPAR(IEOR(S,T))
+            YD0 = YPAR(IEOR(S,T))
+            ZD0 = ZPAR(IEOR(S,T))
             IR = 0
             DO R = 0, MAXOPR
-            IF (IBTAND(R,ISTBLR) .EQ. 0) THEN
+            IF (IAND(R,ISTBLR) .EQ. 0) THEN
                IR = IR + 1
                RST = RST + 1
                NSOP(RST,1)  = IR
@@ -232,7 +231,7 @@ C
                NSOP(RST,3)  = IT
                NSOQ(RST,1)  = R
                NSOQ(RST,2)  = T
-               NSOQ(RST,3)  = IBTXOR(S,T)
+               NSOQ(RST,3)  = IEOR(S,T)
                SGNX(RST,1)  = D1
                SGNX(RST,2)  = D1
                SGNX(RST,3)  = D1
@@ -383,7 +382,7 @@ C  /* Deck erivcs */
 #include "eriao.h"
 #include "erithr.h"
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
 C     AB coordinates
 C     ==============
@@ -439,9 +438,9 @@ C
          CALL LOCSYB(COORAO(1,1,3),ICD0,ICDXYZ)
       END IF
       IHHXYZ = IPQXYZ
-      IHCXYZ = IBTAND(IPQXYZ,IABXYZ)
-      ICHXYZ = IBTAND(IPQXYZ,ICDXYZ)
-      ICCXYZ = IBTAND(IPQXYZ,IBTAND(IABXYZ,ICDXYZ))
+      IHCXYZ = IAND(IPQXYZ,IABXYZ)
+      ICHXYZ = IAND(IPQXYZ,ICDXYZ)
+      ICCXYZ = IAND(IPQXYZ,IAND(IABXYZ,ICDXYZ))
 C
       IF (IPATH .EQ. 1) THEN
          I12XYZ  = IABXYZ
@@ -588,8 +587,8 @@ C
 #include "aobtch.h"
 #include "ericom.h"
 #include "erisop.h"
-#include "ibtfun.h"
-      IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
+
+      IBTAXO(I,J) = IAND(I,IEOR(I,J))
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERICNT','*',103)

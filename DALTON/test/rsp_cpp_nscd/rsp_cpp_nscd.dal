@@ -1,0 +1,35 @@
+**DALTON INPUT
+.RUN RESPONSE                                     
+.DIRECT                                           
+**INTEGRALS                                       
+.DIPLEN                                           
+.ANGMOM                                           
+.PSO
+.SELECT 
+ 2    !select two atoms
+ 1 2  !atoms number 1 and 2 on MOL file
+**WAVE FUNCTION INPUT                             
+.HF
+!.DFT                                              
+! CAMB3LYP                                         
+*SCF INPUT
+.AUTOCCUPATION
+.THRESHOLD
+ 3.D-10
+.MAX DIIS ITERATIONS
+ 200
+.MAX ERROR VECTORS
+ 100
+**RESPONSE INPUT                                  
+*ABSORP                                           
+.NSCD                                              
+.BFREQ                                            
+ 1                                                 
+ 0.112502104                                            
+.DAMPING                                          
+ 0.004556                                         
+.MAXRM                                            
+ 1000                                             
+.THCLR                                            
+ 1.0D-5
+**END OF DALTON INPUT

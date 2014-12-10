@@ -9,9 +9,9 @@ MODULE IchorEriCoulombintegralMod
 use precision
 use ThermiteMem_module
 private 
-public :: IchorCoulombIntegral_SSSS
+public :: ICI_SSSS
 CONTAINS
-  subroutine IchorCoulombIntegral_SSSS(nPrimA,nPrimB,nPrimC,nPrimD,&
+  subroutine ICI_SSSS(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimPQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
@@ -104,7 +104,7 @@ CONTAINS
             & RJ000,PpreExpFac,QpreExpFac,CDAB)
     ENDIF
 
-  end subroutine IchorCoulombIntegral_SSSS
+  end subroutine ICI_SSSS
 
   subroutine ContractEcoeffPQ_seg_SSSS(nPrimP,nPrimQ,nPasses,MaxPasses,&
        & RJ000,PpreExpFac,QpreExpFac,CDAB)

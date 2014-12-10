@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_input */
       SUBROUTINE CC_INPUT(WORD,IREST,MSYM)
@@ -805,6 +804,9 @@ C
          IF (DIRECT) MINSCR = .FALSE.
          MINMEM = .FALSE.
          IF (DIRECT) MINMEM = .FALSE.
+Casm
+         IF (CHEXDI) MINSCR = .TRUE.
+Casm
       ENDIF
       IF ( .NOT. MINSCR ) MINMEM = .TRUE.
 
@@ -998,7 +1000,7 @@ C
       CHARACTER*6 FLDTYP
       CHARACTER*1 FLDDIR
 C
-#include "ibtfun.h"
+
 C
 C----------------------------------------------
 C     Calculate total electric field.
@@ -1059,7 +1061,7 @@ C
          ELSE
 C
             DO 320 ISYOPR = 0,MAXOPR
-               IF (IBTAND(ISYOPR,MULCNT) .EQ. 0) THEN
+               IF (IAND(ISYOPR,MULCNT) .EQ. 0) THEN
 C
                   JATOM = JATOM + 1
 C
@@ -1067,7 +1069,7 @@ C
 C
                   DO 330 I = 1,3
 C
-                     PTAT          = PT(IBTAND(ISYMAX(I,1),ISYOPR))
+                     PTAT          = PT(IAND(ISYMAX(I,1),ISYOPR))
                      GEOM(I,JATOM) = PTAT*CORD(I,ICENT)
 C
   330             CONTINUE
@@ -1174,6 +1176,8 @@ C=====================================================================*
 #include "ccrspprp.h"
 #include "ccexci.h"
 
+#include "maxorb.h"
+#include "ccdeco.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -1200,7 +1204,7 @@ C=====================================================================*
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
      *            '.OMEINP','.STVEC ','.STOLD ','.CCTREN','.THREXC',
      *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL',
-     *            '.ANALYS','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     *            '.ANALYS','.CHEXDI','.DV4DIS','.XXXXXX','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1233,6 +1237,9 @@ C
       MARGIN = .FALSE.
       EXCI_CONT = .FALSE.
       XMARGIN = 1.0
+C
+      CHEXDI = .FALSE.
+      DV4DIS = .FALSE.
 C
       SQROVLP    = .FALSE.
       CCSDTRENRM = .FALSE.
@@ -1504,17 +1511,20 @@ C
             GO TO 100
 C
 C----------------------------------------------------------------
-C           .XXXXXX  unused
+C           .CHEXDI  Use DIIS solver for Cholesky CC2 excitations
 C----------------------------------------------------------------
 C
 22          CONTINUE
+               CHEXDI = .TRUE.
+               MINSCR = .TRUE.
             GO TO 100
 C
 C----------------------------------------------------------------
-C           .XXXXXX  unused
+C           .DV4DIS Use Davidson with omega=zero before CC2/DIIS
 C----------------------------------------------------------------
 C
 23          CONTINUE
+               DV4DIS = .TRUE.
             GO TO 100
 C
 C----------------------------------------------------------------
@@ -9699,6 +9709,7 @@ C
   300 STOP 'Error when reading in CC_CTOMAG'
 C
   999 CONTINUE
+      CALL GPCLOSE(LUPROP,'KEEP')
 C
       RETURN
       END
@@ -9797,7 +9808,7 @@ C                    Select active atoms (no boxes)
                         WRITE(LUPRI,*) 'ERROR: From center.h, ' ,
      &                                 'maximum number of active ',
      &                                 'atoms is',MXACAT
-                        STOP 'Too many active atoms'
+                        CALL QUIT('Too many active atoms')
                      END IF
 C
                      IF (NACINP .GT. 0) THEN
@@ -9815,11 +9826,11 @@ C
                            WRITE(LUPRI,*) 'Error in number of ',
      &                            'active atoms : NACINP/ILAST',
      &                            NACINP,ILAST
-                           STOP 'Error defining active atoms'
+                           CALL QUIT('Error defining active atoms')
                         END IF
                      ELSE
                         WRITE(LUPRI,*) 'Number of active atoms is zero'
-                        STOP 'NACINP = 0'
+                        CALL QUIT('NACINP = 0')
                      END IF
 C
                      DO I = 1,NACINP
@@ -9828,7 +9839,7 @@ C
                               WRITE(LUPRI,*) 'ERROR : ',
      &                                       'One atom declared ',
      &                                       'twice as active'
-                              STOP 'One atom is hyperactive'
+                              CALL QUIT('One atom is hyperactive')
                            ELSE IF (LACINP(J) .GT. LACINP(I)) THEN
                               ITMP = LACINP(J)          ! Not needed,
                               LACINP(J) = LACINP(I)     ! but output
@@ -9889,7 +9900,8 @@ C                    Give list of diagonals to decompose
                         WRITE(LUPRI,*) 'Number of occupied diagonals',
      &                                 NABSOC
                         WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
-                        STOP 'Too many occupied diagonals under SELDIA'
+                        CALL QUIT(
+     &                  'Too many occupied diagonals under SELDIA')
                      END IF
                      READ(LUCMD,*) (LACBAS(I),I=1,NABSOC)
                      READ(LUCMD,*) NABSVI
@@ -9897,7 +9909,8 @@ C                    Give list of diagonals to decompose
                         WRITE(LUPRI,*) 'Number of virtual diagonals',
      &                                 NABSVI
                         WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
-                        STOP 'Too many virtual diagonals under SELDIA'
+                        CALL QUIT(
+     &                  'Too many occupied diagonals under SELDIA')
                      END IF
                      IF (NABSVI .LT. 0) THEN
                         NABSVI = -NABSVI
@@ -9912,7 +9925,7 @@ C                    Give list of diagonals to decompose
                            WRITE(LUPRI,*) 'Error in number of ',
      &                            'active basis : NABSVI/ILAST',
      &                            NABSVI,ILAST
-                           STOP 'Error defining active basis'
+                           CALL QUIT('Error defining active basis')
                         END IF
                      ELSE
                         READ(LUCMD,*) (LACBSV(I),I=1,NABSVI)
@@ -9934,7 +9947,7 @@ C                    Calculate orbital spread
                      IF (MSYM .GT. 1) THEN
                         WRITE(LUPRI,*) 'Calculation of orbital',
      &                       ' spreads is only possible w/o symmetry'
-                        STOP 'DOSPRE with NSYM .GT. 1'
+                        CALL QUIT('DOSPRE with NSYM .GT. 1')
                      END IF
                   GOTO 100
 C
@@ -9946,7 +9959,7 @@ C                    Select diagonals to minimize orbital spreads
                      IF (MSYM .GT. 1) THEN
                         WRITE(LUPRI,*) 'Calculation of orbital',
      &                       ' spreads is only possible w/o symmetry'
-                        STOP 'MINSPR with NSYM .GT. 1'
+                        CALL QUIT('MINSPR with NSYM .GT. 1')
                      END IF
                   GOTO 100
 C

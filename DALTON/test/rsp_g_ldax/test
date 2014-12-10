@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+#    rsp_g_ldax
+#    -----------
+#    Molecule:       CH2
+#    Wave Function:  LDA 
+#    Test Purpuse:   Three step calculation for numerical difference test
+#                    of perturbed g-tensor component
+#                    Analytical (quadratic response)          0.00064170
+#                    Numerical  (linear response) + field/2  -1.766935551362D-04
+#                                                 - field/2  -1.773352501451D-04
+#                        difference/field                     0.000641695
+#                    Here: field=0.001
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+a = Filter()
+a.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+a.add(string = 'CONTRIBUTION TO HYPVAL',
+      abs_tolerance = 1.0e-8)
+a.add(string = '@ omega B',
+      abs_tolerance = 1.0e-8)
+
+b = Filter()
+b.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+b.add(from_string = 'FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES',
+      num_lines = 6,
+      rel_tolerance = 1.0e-8)
+
+test.run(['rsp_g_ldax_1.dal'], ['CH3_STO-3G_sym.mol'], f={'out': a}, args='-get SIRIUS.RST',
+         accepted_errors=['not implemented for parallel calculations.'])
+
+shutil.move('rsp_g_ldax_1_CH3_STO-3G_sym.SIRIUS.RST','SIRIUS.RST')
+
+test.run(['rsp_g_ldax_2.dal'], ['CH3_STO-3G_sym.mol'], f={'out': b}, args='-put SIRIUS.RST -get SIRIUS.RST')
+
+shutil.move('rsp_g_ldax_2_CH3_STO-3G_sym.SIRIUS.RST','SIRIUS.RST')
+
+test.run(['rsp_g_ldax_3.dal'], ['CH3_STO-3G_sym.mol'], f={'out': b}, args='-put SIRIUS.RST')
+
+os.remove('SIRIUS.RST')
+
+sys.exit(test.return_code)

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck flshfo */
       SUBROUTINE FLSHFO (IUNIT)
@@ -607,7 +606,6 @@ C  18-aug-2005 wmk    Changed C1 to 1.D-15
 Cwas: DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
 Cwas: DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       IF (NB.LE.1 .OR. NMAX.LE.0) RETURN
-Cwas: IF (NB.EQ.1) RETURN !900727-hjaaj
       CALL QENTER('JACO')
       CALL GETTIM(TSTRT, WSTRT)
       DO 190 I=1,NB
@@ -787,6 +785,219 @@ c    &    'JACO -- CPUTIME, WALLTIME     :',TEND-TSTRT, WEND-WSTRT
       CALL QEXIT('JACO')
       RETURN
       END
+C  /* Deck jaco_thr */
+      SUBROUTINE JACO_THR (F,V,NB,NMAX,NROWV,THR_conv)
+C
+C     F is symmetric packed matrix of dimension NB.
+C       The first block of size NMAX will be diagonalized.
+C     V is for eigenvectors, only V(NROWV,NMAX) will be referenced.
+C       On entry it must correspond the basis vectors corresponding to the
+C       F matrix on entry, e.g. unit matrix or AO coefficients for each MO.
+C
+C Revisions:
+C   2-Nov-1984 hjaaj (new parameter NROWV such that
+C                     dim(V) = (NROWV,NMAX). This makes
+C                     it possible to solve eigenproblem
+C                     in a reduced basis but get the
+C                     eigenvectors in the original full
+C                     basis, e.g. less mo's than ao's)
+C  23-Feb-1989 hjaaj  Note that if NROWV = 0 then only
+C                     eigenvalues will be calculated,
+C                     V matrix will not be referenced.
+C  27-Jul-1990 hjaaj  Changed -CX,+SX transformation to +CX,-SX
+C                     transformation; probably the -CX,+SX
+C                     transformation was responsible for that
+C                     the eigenvectors easily changed sign.
+C                     Changed initial test on NB. Changed SD.
+C                     Optimized IR loop.
+C     Jun-1992 ov     Parameters for 0.5, 1.5, ... (for Cray)
+C  20-Jul-1992 hjaaj  Changed C1,C2 to THRZER
+C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
+C                     absolute conv.threshold SD=C1
+C  18-aug-2005 wmk    Changed C1 to 1.D-15
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION F(*),V(NROWV,*)
+
+!     local variables and arrays:
+
+      DIMENSION BIG(NB), JBIG(NB) ! automatic arrays
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
+      PARAMETER(DP5 = 0.5D0, D1P5 = 1.5D0, D1P375 = 1.375D0,
+     *          D3P875 = 3.875D0, DP25 = 0.25D0)
+      DATA C1,C3,C4,C5,C6 /1.D-15,1.D-20,1.D-14,1.D-9,1.D-5/
+Cwas: DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
+
+      IF (NB.LE.1 .OR. NMAX.LE.0) RETURN
+
+      CALL QENTER('JACO_THR')
+c     CALL GETTIM(TSTRT, WSTRT)
+
+      NNB = (NB*NB+NB)/2
+
+C
+C 921030-hjaaj: SD = C1 now
+C 900727-hjaaj:
+C SD calculation was done in every Jacobi iteration.
+C Now the largest absolute element in F is found once and
+C     SD = 1.05D0
+C     DO J = 1,NNB
+C        SD = MAX(SD, ABS(F(J)) )
+C     END DO
+C     SD=MAX(C1,C2*SD)
+      SD = max(C1, THR_conv)
+
+      JBIG(1:NB) = 0
+      BIG(1:NB)  = D0
+      DO I = 1,NB
+         J = MIN(I-1,NMAX)
+         IF (J .GT. 0) THEN
+            II = (I*I-I)/2
+            JBIGI = 0
+            ABIGI = SD
+            DO K=1,J
+            IF (ABIGI .GE. ABS(F(II+K))) CYCLE
+               ABIGI = ABS(F(II+K))
+               JBIGI = K
+            END DO
+            IF (JBIGI .GT. 0) THEN
+               JBIG(I) = JBIGI
+               BIG(I)  = F(II+JBIGI)
+            END IF
+         END IF
+      END DO
+
+      MXITJA = 50*NNB
+
+      ITJACO = 0
+  200 ITJACO = ITJACO + 1
+      IF (ITJACO .GT. MXITJA) THEN
+         CALL QUIT('ERROR: JACO_THR did not converge ...')
+      END IF
+
+         T = D0
+         DO I = 2,NB
+         IF (T .GE. ABS(BIG(I))) CYCLE
+            T  = ABS(BIG(I))
+            IB = I
+         END DO
+
+      IF (T .LT. SD) GO TO 8000 ! finished 
+
+         IA  = JBIG(IB)
+         IAA = IA*(IA-1)/2
+         IBB = IB*(IB-1)/2
+         DIF = F(IAA+IA) - F(IBB+IB)
+         IF( ABS(DIF) .LE. C3) THEN
+            CX = ROOT2
+            SX = ROOT2
+         ELSE
+            T2X2  = BIG(IB)/DIF
+            T2X25 = T2X2*T2X2
+         IF(T2X25 .GT. C4) GO TO 240
+            CX = D1
+            SX = T2X2
+         GO TO 270
+  240    IF(T2X25 .GT. C5) GO TO 250
+            CX = D1 - DP5*T2X25
+            SX = T2X2*(D1 - D1P5*T2X25)
+         GO TO 270
+  250    IF(T2X25 .GT. C6) GO TO 260
+            CX = D1 + T2X25*(T2X25*D1P375 - DP5 )
+            SX = T2X2*(D1 + T2X25*(T2X25*D3P875 - D1P5))
+         GO TO 270
+  260       T  = DP25 / SQRT(DP25 + T2X25)
+            CX = SQRT(DP5 + T)
+            SX = SIGN( SQRT(DP5 - T),T2X2 )
+  270    CONTINUE
+         END IF
+
+#include "ivdep.h"
+         DO 275 IR=1,IA
+            T        = F(IAA+IR)*SX
+            F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SX
+            F(IBB+IR)=-T           +F(IBB+IR)*CX
+  275    CONTINUE
+         IEAA=IAA+IA
+         IEAB=IBB+IA
+         TT  =F(IEAB)
+         F(IEAB)=BIG(IB)
+         IF (JBIG(IA) .EQ. 0) THEN
+            IRST = IA   + 1
+            IEAR = IEAA + IA
+            IEBR = IEAB + 1
+         ELSE
+            IRST = IA
+            IEAR = IEAA
+            IEBR = IEAB
+         END IF
+         DO 390 IR = IRST,NB
+            IF (IR .EQ. IA) GO TO 360
+C              ... we have checked above that JBIG(IA) .ne. 0
+            T      = F(IEAR)*SX
+            F(IEAR)= F(IEAR)*CX+F(IEBR)*SX
+            F(IEBR)=-T         +F(IEBR)*CX
+            T   =F(IEAR)
+            IT  =IA
+            IF(IR-IB) 340,310,320
+  310          F(IEAA)=F(IEAA)*CX+F(IEAB)*SX
+C              921030+hjaaj: zero f(ab) to avoid round-off errors
+C              F(IEAB)=     TT*CX+F(IEBR)*SX
+               F(IEAB)=     D0
+               F(IEBR)=    -TT*SX+F(IEBR)*CX
+            GO TO 360
+  320       IF(ABS(T) .GE.  ABS(F(IEBR))) GO TO 340
+               T   =F(IEBR)
+               IT  =IB
+  340       IF(ABS(T) .LT.  ABS(BIG(IR))) GO TO 350
+               BIG(IR)  = T
+               JBIG(IR) = IT
+            GO TO 380
+  350       IF(IA .NE. JBIG(IR) .AND. IB .NE. JBIG(IR))  GO TO 380
+  360          K= IEAR - IA
+               JBIGI = 0
+               IR1=MIN (IR-1,NMAX)
+               IF (IR1 .GT. 0) THEN
+                  ABIGI = SD
+                  DO I=1,IR1
+                  IF(ABIGI .GE. ABS(F(K+I))) CYCLE
+                     ABIGI = ABS(F(K+I))
+                     JBIGI =I
+                  END DO
+               END IF
+               IF (JBIGI .GT. 0) THEN
+                  JBIG(IR) = JBIGI
+                  BIG(IR)  = F(K+JBIGI)
+               ELSE
+                  JBIG(IR) = 0
+                  BIG(IR)  = D0
+               END IF
+  380       CONTINUE
+            IEAR = IEAR + IR
+            IF (IR .GE. IB) THEN
+               IEBR = IEBR + IR
+            ELSE
+               IEBR = IEBR + 1
+            END IF
+  390    CONTINUE
+C
+#include "ivdep.h"
+         DO I=1,NROWV
+            VIIA = V(I,IA)
+            VIIB = V(I,IB)
+            V(I,IA) =  VIIA*CX + VIIB*SX
+            V(I,IB) = -VIIA*SX + VIIB*CX
+         END DO
+      GO TO 200
+
+ 8000 CONTINUE
+c     CALL GETTIM(TEND, WEND)
+c     WRITE(LUPRI,'(/A,4I10/A,2F20.2)')
+c    &    'JACO_THR -- ITJACO, NB,NMAX,NROWV :',ITJACO, NB,NMAX,NROWV,
+c    &    'JACO_THR -- CPUTIME, WALLTIME     :',TEND-TSTRT, WEND-WSTRT
+      CALL QEXIT('JACO_THR')
+      RETURN
+      END
 C  /* Deck norm */
       SUBROUTINE NORM(S,VC,N,M,W,THNORM,IRETUR)
 C
@@ -911,7 +1122,43 @@ C  /* Deck readi */
 C
 C (30-Jan-1984) hjaaj
 C
-      DIMENSION INTX(N)
+      INTEGER IT, N, INTX(N)
+      IF (N .GT. 0) THEN
+         READ (IT,END = 10) INTX
+      ELSE
+         READ (IT,END = 10)
+      END IF
+      RETURN
+   10 CONTINUE
+      INTX(N)=-1
+      RETURN
+      END
+C  /* Deck readi4 */
+      SUBROUTINE READI4(IT,N,INTX)
+C
+C (Jul-2014) hjaaj, based on READI
+C Purpose: when INTX is always INTEGER*4
+C
+      INTEGER   IT, N
+      INTEGER*4 INTX(N)
+      IF (N .GT. 0) THEN
+         READ (IT,END = 10) INTX
+      ELSE
+         READ (IT,END = 10)
+      END IF
+      RETURN
+   10 CONTINUE
+      INTX(N)=-1
+      RETURN
+      END
+C  /* Deck readi8 */
+      SUBROUTINE READI8(IT,N,INTX)
+C
+C (Jul-2014) hjaaj, based on READI
+C Purpose: when INTX is always INTEGER*8
+C
+      INTEGER   IT, N
+      INTEGER*8 INTX(N)
       IF (N .GT. 0) THEN
          READ (IT,END = 10) INTX
       ELSE

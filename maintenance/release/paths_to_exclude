@@ -31,6 +31,7 @@ LSDALTON/test/pbc2/pbc2_h2SCF_iter1
 LSDALTON/test/pbc2/pbc2_h2STO6G
 LSDALTON/doc_LSDALTON/TODO_BEFORE_RELEASE2013
 LSDALTON/deccc/dec_readme
+LSDALTON/deccc/cc_debug_routines
 LSDALTON/interest
 LSDALTON/test/LSint/interest
 DALTON/Doc_cc
@@ -46,3 +47,5 @@ external/gen1int/.git
 external/xcfun/.git
 external/pelib/.git
 external/ls-matrix-defop/.git
+basis/cc-pVTZ_apra
+DALTON/test/nonconverted_runtests

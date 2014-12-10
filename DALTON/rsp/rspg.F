@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -26,10 +26,9 @@
 ! calculation of ESR g-tensors.
 ! 
 !
-#include "single.h"
 C /* Deck gdrv */
       SUBROUTINE GDRV(WORK,LWORK)
-#include "implicit.h"
+      IMPLICIT NONE
       INTEGER LWORK
       REAL*8 WORK(LWORK)
 #include "infdim.h"
@@ -46,7 +45,7 @@ C /* Deck gdrv */
 #include "gtensor.h"
       INTEGER KFREE, LFREE, LWRK1, KWRK1
       INTEGER KINDX, KCMO, KUDV, KPVX, KFOCK, KFC, KFV, KFCAC, KH2AC
-      INTEGER ISYM
+      INTEGER ISYM, KCREF, KTMP
 C
       CALL QENTER('GDRV')
 C
@@ -82,6 +81,9 @@ C
      *           WORK(KFV),WORK(KFCAC),WORK(KH2AC),WORK(KINDX),
      *           WORK(KWRK1),LWRK1)
 C
+      IF ( .NOT.TDHF ) THEN
+         CALL GETCIX(WORK(KINDX),IREFSY,IREFSY,WORK(KFREE),LFREE,0)
+      END IF
       IF (.NOT.TDHF .AND. .NOT.RSPCI) THEN
          CALL GETREF(WORK(KCREF),NCREF)
          CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WORK(KCREF),WORK(KCREF),
@@ -786,7 +788,7 @@ C
       LOGICAL FNDLB2
       LOGICAL OLDDX
       CHARACTER*7 RTNLBL(2)
-#include "ibtfun.h"
+
 C
       CALL QENTER('GETGC1')
 C
@@ -844,7 +846,7 @@ C
      &   WRK(KFREE),LFREE,IPRG
      &   )
       CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC1(3,3),10,'D1-SO ZZ')
-      IF (IBTXOR(ISYMAX(1,1),ISYMAX(2,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(1,1),ISYMAX(2,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D1-SO XY',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -856,7 +858,7 @@ C
      &      )
          CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC1(2,1),10,'D1-SO YX')
       END IF
-      IF (IBTXOR(ISYMAX(1,1),ISYMAX(3,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(1,1),ISYMAX(3,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D1-SO XZ',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -868,7 +870,7 @@ C
      &      )
          CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC1(3,1),10,'D1-SO ZX')
       END IF
-      IF (IBTXOR(ISYMAX(2,1),ISYMAX(3,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(2,1),ISYMAX(3,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D1-SO YZ',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -912,7 +914,7 @@ C Deck Scaled effective gauge correction
       LOGICAL FNDLB2
       LOGICAL OLDDX
       CHARACTER*7 RTNLBL(2)
-#include "ibtfun.h"
+
 C
       CALL QENTER('GETGC2SCA')
 C
@@ -970,7 +972,7 @@ C
      &   WRK(KFREE),LFREE,IPRG
      &   )
       CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC2(3,3),10,'D-SSO ZZ')
-      IF (IBTXOR(ISYMAX(1,1),ISYMAX(2,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(1,1),ISYMAX(2,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D-SSO XY',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -982,7 +984,7 @@ C
      &      )
          CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC2(2,1),10,'D-SSO YX')
       END IF
-      IF (IBTXOR(ISYMAX(1,1),ISYMAX(3,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(1,1),ISYMAX(3,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D-SSO XZ',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -994,7 +996,7 @@ C
      &      )
          CALL PRPONE(WRK(KPRPMO),WRK(KDEN1),GC2(3,1),10,'D-SSO ZX')
       END IF
-      IF (IBTXOR(ISYMAX(2,1),ISYMAX(3,1)).EQ.0) THEN
+      IF (IEOR(ISYMAX(2,1),ISYMAX(3,1)).EQ.0) THEN
          CALL PRPGET(
      &      'D-SSO YZ',CMO,WRK(KPRPMO),KSYMOP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG

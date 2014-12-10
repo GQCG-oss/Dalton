@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck erisym */
       SUBROUTINE ERISYM(AO,SO,IATOM,ICRB,IREPE,IODDCC,IPNTUV,IPRINT)
@@ -41,7 +40,7 @@ C  /* Deck erisym */
 #include "symmet.h"
 #include "hertop.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Output from ERISYM',-1)
@@ -64,7 +63,7 @@ C
       CALL ERITRA(TMAT,MLTPT,ISTBLT)
 C
       IPARE = 0
-      IF (GDER.AND.ICRB.GT.0) IPARE = IBTXOR(IREPE,ISYMAX(ICRB,1))
+      IF (GDER.AND.ICRB.GT.0) IPARE = IEOR(IREPE,ISYMAX(ICRB,1))
 C
 C     Run over components
 C     ===================
@@ -100,16 +99,16 @@ C
             IPARC  = ISYMAO(NHKTC,ICOMPC)
             IPARD  = ISYMAO(NHKTD,ICOMPD)
             IF (GDER) THEN
-               IF (IATOM.EQ.2) IPARB = IBTXOR(IPARB,IPARE)
-               IF (IATOM.EQ.3) IPARC = IBTXOR(IPARC,IPARE)
-               IF (IATOM.EQ.4) IPARD = IBTXOR(IPARD,IPARE)
+               IF (IATOM.EQ.2) IPARB = IEOR(IPARB,IPARE)
+               IF (IATOM.EQ.3) IPARC = IEOR(IPARC,IPARE)
+               IF (IATOM.EQ.4) IPARD = IEOR(IPARD,IPARE)
             END IF
 C
 C           Transform T
 C
             CALL DGEMM('N','N',NCCS*MLTPR*MLTPS,MLTPT,MLTPT,
      &                 D1,AO(1,1,1,1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS,
-     &                 TMAT(1,IBTXOR(IPARC,IPARD)),MLTPT,
+     &                 TMAT(1,IEOR(IPARC,IPARD)),MLTPT,
      &                 D0,SO(1,1,1,1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS)
 C
 C           Transform S
@@ -156,19 +155,19 @@ C  /* Deck eritra */
       DIMENSION RMAT(64,0:7)
 #include "maxorb.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       IRED = 0
       DO 100 I = 0, MAXOPR
-      IF (IBTAND(I,ISTBLX) .EQ. 0) THEN
+      IF (IAND(I,ISTBLX) .EQ. 0) THEN
          IRED = IRED + 1
          JRED = 0
          DO 200 J = 0, MAXOPR
-         IF (IBTAND(J,ISTBLX) .EQ. 0) THEN
+         IF (IAND(J,ISTBLX) .EQ. 0) THEN
             JRED = JRED + 1
             JI = (IRED - 1)*MLTPX + JRED
             DO 300 K = 0, MAXREP
-               RMAT(JI,K) = PT(IBTAND(J,IBTXOR(I,K)))
+               RMAT(JI,K) = PT(IAND(J,IEOR(I,K)))
   300       CONTINUE
          END IF
   200    CONTINUE

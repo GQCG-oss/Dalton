@@ -14,7 +14,7 @@
 #ifdef COMMENT
 ! NOTE : MXSHEL should have value of MXSHEL in maxorb.h
 #endif
-#define MXSHEL 1000
+#define MXSHEL 1500
 #define MAXNOD 999
 #define NPARI  ((MAXNOD + 1) + 6)
 #define MAXTSK ( MXSHEL * (MXSHEL + 1) / 2 )

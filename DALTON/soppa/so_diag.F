@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_diag */
       SUBROUTINE SO_DIAG(FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,LDENSAB,

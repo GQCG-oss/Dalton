@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -66,7 +66,7 @@ C NCONF
 #include "infrsp.h"
 C
       LOGICAL NEWDEF, ALLCOMP, NXTLAB
-      PARAMETER ( NTABLE = 31 )
+      PARAMETER ( NTABLE = 32 )
       PARAMETER ( THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
       CHARACTER*8 DIPLEN(3),ANGMOM(3),THETA(6),RTNLBL(2),LABFND
@@ -82,9 +82,9 @@ c
      &            '.PRINT ','.DAMPIN','.ANALYZ','.FREQ I','.MCD   ',
      &            '.MCHD  ','.NSCD  ','.BETA  ','.BFREQ ','.BFREQI',
      &            '.CFREQ ','.CFREQI','.SHG   ','.XXCOMP','.YYCOMP',
-     &            '.ZZCOMP','.IMAG F','.NBATCH','.OLDCPP','.MAX MI',
-     &            '.MAXITO','.EXCITA','.MAX MA','.THCPP ','.REDUCE',
-     &            '.BATCH '/
+     &            '.ZZCOMP','.IMAG F','.NBATCH','.NOREBD','.OLDCPP',
+     &            '.MAX MI','.MAXITO','.EXCITA','.MAX MA','.THCPP ',
+     &            '.REDUCE','.BATCH '/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
       ICHANG = 0
@@ -116,7 +116,7 @@ C
                   IF (TABLE(I) .EQ. WORD) 
      &                GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      &                     16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,
-     &                     31),I
+     &                     31,32),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -278,9 +278,12 @@ c               ABS_REDUCE = .TRUE.
                READ(LUCMD,*) ABS_NBATCHMAX
                GOTO 100
  24            CONTINUE
-                 ABS_OLDCPP = .TRUE.
+                 ABS_REBD = .FALSE.
                GOTO 100
  25            CONTINUE
+                 ABS_OLDCPP = .TRUE.
+               GOTO 100
+ 26            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_MICRO
                ELSE
@@ -288,7 +291,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 26            CONTINUE
+ 27            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_ITORB
                   IF (MAX_ITORB .GT. 0) OPTORB = .TRUE.
@@ -297,7 +300,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 27             CONTINUE
+ 28             CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) NEXCITED_STATES
                ELSE
@@ -305,7 +308,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 28             CONTINUE
+ 29             CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) MAX_MACRO
                ELSE
@@ -313,7 +316,7 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 29            CONTINUE
+ 30            CONTINUE
                  IF (ABS_OLDCPP) THEN
                   READ (LUCMD,*) THCPP_ABSORP
                   ABS_THCLR=THCPP_ABSORP
@@ -322,14 +325,14 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 30            CONTINUE
+ 31            CONTINUE
                  IF (ABS_OLDCPP) THEN
                  ABS_REDUCE=.TRUE.
                ELSE
                   WRITE(LUPRI,1020) WORD
                END IF
                GOTO 100
- 31            CONTINUE
+ 32            CONTINUE
                READ(LUCMD,*) NFREQ_BATCH
                IF (NFREQ_BATCH.GT.MXFREQ) THEN
                   NFREQ_BATCH = MXFREQ
@@ -359,7 +362,8 @@ C     Process user input
 C
 #ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
 !     sanity check for incomplete/untested xc functional implementations
-      IF (ABSLRS_BETA .AND. DODFT) THEN
+      IF ((ABSLRS_BETA .OR. ABSLRS_GAMMA .OR. ABSLRS_MCD .OR. 
+     &     ABSLRS_MCHD .OR. ABSLRS_NSCD) .AND. DODFT) THEN
          IF (.NOT. fun_is_ready_for_qr()) THEN
             WRITE(LUPRI, *) 'ERROR: functional not fully implemented'
             WRITE(LUPRI, *) '       or tested for QR'
@@ -421,6 +425,12 @@ C
            END IF
          END DO
          IF (ABSLRS_NSCD) THEN
+           !stop if we are using symmetry.
+           if (NSYM.gt.1) then
+               WRITE (LUPRI,*)
+     &  'NSCD not yet working symmetry: remove sym and resubmit'
+               CALL QUIT('NSCD not fully working with symmetry')
+           end if
            CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                   'UNFORMATTED',IDUMMY,.FALSE.)
  333      CONTINUE
@@ -548,16 +558,19 @@ c           ELSE
 c         END IF
 C
          WRITE(LUPRI,'(A,F9.6,F8.1)')
-     &      ' Damping parameter (a.u. and cm-1)        : ABS_DAMP     ='
+     &      ' Damping parameter (a.u. and cm-1)        : DAMPING      ='
      &      ,ABS_DAMP,ABS_DAMP*XTKAYS
          WRITE(LUPRI,'(A,1P,D8.1)')
      &      ' Threshold of convergence in LR solver    : THCLR        ='
      &      ,ABS_THCLR
-           WRITE(LUPRI,'(A,I4)')
-     &      ' Maximum iterations in complex LR solver  : MAXIT     ='
+         WRITE(LUPRI,'(A,I4)')
+     &      ' Maximum iterations in complex LR solver  : MAXIT        ='
      &       ,ABS_MAXITER
          WRITE(LUPRI,'(A,I4)')
-     &      ' Print level in absorption modules        : IPRABSLRS    ='
+     &      ' Maximum size of reduced space            : MAXRM        ='
+     &       ,ABS_MAXRM
+         WRITE(LUPRI,'(A,I4)')
+     &      ' Print level in absorption modules        : PRINT        ='
      &       ,IPRABSLRS
       END IF
       ENDIF
@@ -614,12 +627,13 @@ C
       KFREE = 1
       LFREE = LWRK
 C    
+      LUABSVECS = -1
       CALL GPINQ('ABSVECS','EXIST',EX)
       IF (.NOT.EX) THEN
-        OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+        CALL GPOPEN(LUABSVECS,'ABSVECS','NEW',' ',' ',IDUMMY,.FALSE.)
         WRITE(LUABSVECS) 'EOFLABEL'
       ELSE
-        OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+        CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',' ',IDUMMY,.FALSE.)
       END IF
 C
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
@@ -641,9 +655,9 @@ C
          ABS_NFREQ_INTERVAL = ABS_NFREQ_ALPHA
       END IF
 C
-      CALL MEMGET('REAL',KRES,2*ABS_NFREQ_INTERVAL*3*3*2,WRK,
+      CALL MEMGET('REAL',KRES,2*ABS_NFREQ_INTERVAL*3*3*3,WRK,
      &                   KFREE,LFREE)
-      CALL DZERO(WRK(KRES),2*ABS_NFREQ_INTERVAL*3*3*2)
+      CALL DZERO(WRK(KRES),2*ABS_NFREQ_INTERVAL*3*3*3)
 C
 C     Determine linear response vectors
 C
@@ -663,7 +677,7 @@ C     Print-out a summary of results
 C
       CALL ABSLRSRESULT(WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
 c
-      CLOSE(LUABSVECS,status='keep')
+      CALL GPCLOSE(LUABSVECS,'KEEP')
 C
       RETURN
       END
@@ -684,7 +698,7 @@ c
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
 c      DIMENSION XINDX(*),MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*),MJWOP(*)
-      DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2),WRK(LWRK)
+      DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,3),WRK(LWRK)
 C     local
       REAL*8  DUMMY
       INTEGER IDUMMY
@@ -741,7 +755,7 @@ C
                IF (IPRABSLRS.GE.0) THEN
                   WRITE(LUPRI,'(/2A,/3A,I2,A/,A,5(4F12.8,/,11X))') 
      &                 ' ABSLRS -- Solving linear response equations',
-     &                 '( E[2] - {w-iW}*S[2] ) N = B[1]  ',
+     &                 '( E[2] - {w+iW}*S[2] ) N = B[1]  ',
      &                 ' ABSLRS -- for operator ', LABEL,
      &                 ' of symmetry',ISYM,' at frequencies:',
      &                 ' ABSLRS --',(ABS_FREQ_ALPHA(I),
@@ -762,7 +776,7 @@ C
                  WRITE(LUPRI,*) 'Vectors equal to zero'
                ELSE
                  CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                        ABS_FREQ_ALPHA,
+     &                        ABS_FREQ_ALPHA,ABS_NFREQ_INTERVAL,
      &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
      &                        WRK(KFREE),LFREE)
                ENDIF
@@ -833,7 +847,6 @@ C
         ENDDO
       ENDDO
       LUABSPRI=LUPRI
-c      LUABSVECS=LURSP
       CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
       CALL SETZY(MJWOP)
       ABS_KZVAR=KZVAR
@@ -884,7 +897,6 @@ c
         ENDDO
       ENDDO
       LUABSPRI=LUPRI
-c      LUABSVECS=LURSP
       CALL SETZY(MJWOP)
       ABS_KZVAR=KZVAR
 C
@@ -955,7 +967,6 @@ C
       ELSE
         NTMAX=NNMAX
       ENDIF
-      ABS_DIRFCK = DIRFCK
 c
       CALL MEMGET('REAL',KDENS,NTMAX*N2BASX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,NTMAX*N2BASX,WRK,KFREE,LFREE)
@@ -1054,6 +1065,7 @@ c          END IF
         END DO
       END IF  
 C
+      CALL DZERO(WRK(KFMAO(1)),NTMAX*N2BASX)
       CALL SIRFCK(WRK(KFMAO(1)),WRK(KDMAO(1)),NTMAX,ISYMDM,IFCTYP,
      &     DIRFCK,WRK(KFREE),LFREE)
 C
@@ -1149,13 +1161,6 @@ c         CALL ORBEX(ISYMB,ISYMB,KZYVAR,WRK(KFMMO(I)),DUMMY,
 c     &        DUMMY,DUMMY,XTMP(1,I),1.0D0,UDV,MJWOP)
       ENDIF
 C
-c     FLAG(16) MEANS SOLVENT CALCULATION
-C
-      IF (FLAG(16) .OR. PCM .OR. QM3) THEN
-         CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
-     &               XTMP,WRK(KFREE),LFREE)
-      ENDIF
-c
       CALL QEXIT('ABS_LINE2')
       RETURN
       END
@@ -1249,19 +1254,32 @@ c
          IF (KMOD.NE.0) THEN
            KTOT=KINT+1
          ENDIF
-       ELSE
+      ELSE
          KINT=1
          KTOT=1
          KNMAX=NNMAX
-       ENDIF
-       KNTOT=KNMAX
-       CALL MEMGET('REAL',KZYMB,KNMAX*NORBT*NORBT,WRK,KFREE,LFREE)
-       DO K=1,KTOT
+      ENDIF
+      KNTOT=KNMAX
+      CALL MEMGET('REAL',KZYMB,KNMAX*NORBT*NORBT,WRK,KFREE,LFREE)
+      DO K=1,KTOT
          IF (K.GT.KINT) KNTOT=KMOD
+         IF (IPRABSLRS.GE.1) THEN
+           WRITE(LUABSPRI,'(A,I4,A,I4)')
+     &     'Number of linear transformations',KNTOT,' in batch ',K
+         END IF
          CALL ABS_LINE2(KZVAR,XTMP(1,(K-1)*KNMAX+1),WRK(KZYMB),ISYMDM,
      &                 ISYMB,KNTOT,CMO,FC,FCAC,FV,
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
-       ENDDO
+      ENDDO
+C
+C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM .OR. PEQM) THEN
+      IF (EMBEDDING) THEN
+         CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
+     &               XTMP,WRK(KFREE),LFREE)
+      ENDIF
+      IF (QMMM) THEN
+        CALL QUIT('ERROR: CPP cannot be used with QMMM')
+      END IF
 C
       CALL DZERO(VECS,NLT*KZVAR)
       DO I=1,MIN(NNS,NNA)
@@ -2085,11 +2103,11 @@ C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
      &   "B(A')+B(G)",'Dichro'
          CALL PRSYMB(LUPRI,'-',94,1)
          DO IFREQ=1,NFREQ_BETA_B
-         BIREFR(IFREQ)=(FREQ_BETA_B(IFREQ)/5)*AIMAABB(IFREQ)*
-     &   0.5+
-     &   GREABG(IFREQ)*0.25
-         DICHRO(IFREQ)=(FREQ_BETA_B(IFREQ)/5)*AREAABB(IFREQ)*0.5+
-     &   GIMABG(IFREQ)*0.25
+         BIREFR(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AIMAABB(IFREQ)*
+     &   0.5D0+
+     &   GREABG(IFREQ)*0.25D0
+         DICHRO(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AREAABB(IFREQ)*0.5D0+
+     &   GIMABG(IFREQ)*0.25D0
 !          WRITE(LUPRI,'(F13.6,F13.6,F13.6,F13.6,F13.6,F13.6,F13.6)')
 !      &   FREQ_BETA_B(IFREQ),0.25*GREABG(IFREQ),
 !      &   0.25*GIMABG(IFREQ),0.5*AREAABB(IFREQ),0.5*AIMAABB(IFREQ),
@@ -2100,13 +2118,13 @@ C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
 !      &   FREQ_BETA_B(IFREQ)/5
          WRITE(LUPRI,'(A5,F10.6,F13.6,F13.6,
      &   F13.6,F13.6,F13.6,F13.6,F13.6)')
-     &   "DBGJC",DAMPING,FREQ_BETA_B(IFREQ),0.25*GREABG(IFREQ),
-     &   0.25*GIMABG(IFREQ),0.5*AREAABB(IFREQ),0.5*AIMAABB(IFREQ),
+     &   "DBGJC",DAMPING,FREQ_BETA_B(IFREQ),0.25D0*GREABG(IFREQ),
+     &   0.25D0*GIMABG(IFREQ),0.5D0*AREAABB(IFREQ),0.5D0*AIMAABB(IFREQ),
      &   BIREFR(IFREQ),
      &   DICHRO(IFREQ)
          WRITE(LUPRI,'(A15,F13.6)') "DBGJC B(A')=",
-     &   0.5*AIMAABB(IFREQ)*
-     &   FREQ_BETA_B(IFREQ)/5
+     &   0.5D0*AIMAABB(IFREQ)*
+     &   FREQ_BETA_B(IFREQ)/5.0D0
          END DO
          CALL GPCLOSE(LUFU,'KEEP')
       END IF
@@ -2476,7 +2494,7 @@ c      ENDDO
      & ' frequencies:'
          WRITE(LUPRI,'(/A,5(4F12.8,/,9X))')
      &        ' LR FREQ:',(ABS_FREQ_ALPHA(I),I=1,ABS_NFREQ_ALPHA)
-         WRITE (LUPRI,'(/A,I4,A)')
+         WRITE (LUPRI,'(/A,I5,A)')
      & ' and the evaluation of',NQRF,' quadratic response functions:'
          WRITE(LUPRI,'(/2A,/A3,6A12,/2A)')
      &        '--------------------------------------',
@@ -2486,7 +2504,7 @@ c      ENDDO
      &        '--------------------------------------',
      &        '-------------------------------------'
          DO IQRF=1,NQRF
-            WRITE(LUPRI,'(I3,3A12,3F12.8)') IQRF,
+            WRITE(LUPRI,'(I4,3A12,3F12.8)') IQRF,
      &           (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3)
          END DO
          WRITE(LUPRI,'(2A)')

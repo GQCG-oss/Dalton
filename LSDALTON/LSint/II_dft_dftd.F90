@@ -1,7 +1,7 @@
       MODULE IIDFTD
       use gridgenerationmodule
       use dft_memory_handling
-      use Integralparameters
+      use LSparameters
       !use memory_handling
       !WARNING you must not add memory_handling, all memory goes through 
       !grid_memory_handling  module so as to determine the memory used in this
@@ -12,7 +12,7 @@
       use dft_typetype
       use IIDFTKSMWORK
       private
-      public :: DFT_D_LSDAL_IFC 
+      public :: II_DFT_DISP 
       CONTAINS
 
 !      INTEGER FUNCTION GET_INDX(I,J)
@@ -62,7 +62,7 @@
 !AMT  The DFT-D3 empirical PARAMETERs are taken from the DFT-D3 code v3.0 rev 0.
 !AMT
 !AMT----------------------------------------------------------------------
-      SUBROUTINE DFT_D_LSDAL_IFC(SETTING,GRAD,DIM1,DIM2,NDERIV,LUPRI)
+      SUBROUTINE II_DFT_DISP(SETTING,GRAD,DIM1,DIM2,NDERIV,LUPRI)
       use ls_util
       IMPLICIT NONE
       ! external real
@@ -208,7 +208,7 @@
       call mem_dft_dealloc(CN)
 
       RETURN
-      END  SUBROUTINE DFT_D_LSDAL_IFC
+      END  SUBROUTINE II_DFT_DISP
 
       SUBROUTINE DFT_D(SETTING,EDISP,NDERIV,C6AB, R0AB, FCOORD,&
      &                 TEMPG, MXC, &
@@ -243,25 +243,21 @@
       logical     :: L_GRAD
       INTEGER     :: LUPRI, NVER, NDERIV, IPRLOC, IOFF, IATOM
       INTEGER     :: J
-!AMT External c-code routines for functional dependent PARAMETER setup
-      !DFT-D2
-      REAL(REALK), EXTERNAL  ::     DFT_D2_S6, DFT_D2_RS6, DFT_D2_ALP 
-      !DFT-D3
-      REAL(REALK), EXTERNAL  ::     DFT_D3_S6, DFT_D3_RS6, DFT_D3_ALP, DFT_D3_RS18 
-      REAL(REALK), EXTERNAL  ::     DFT_D3_S18
-      !DFT-D3-BJ
-      REAL(REALK), EXTERNAL  ::     DFT_D3BJ_S6, DFT_D3BJ_RS6, DFT_D3BJ_ALP, DFT_D3BJ_RS18 
-      REAL(REALK), EXTERNAL  ::     DFT_D3BJ_S18
-      !  external types
       TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
+
+      CHARACTER(len=80) :: Func
 
 !AMT Parameters k1, k2 and k3
       REAL(REALK) :: k1, k2, k3
       PARAMETER (k1=16.0E0_realk)
       PARAMETER (k2=4.0E0_realk/3.0E0_realk)
       PARAMETER (k3=-4.0E0_realk)
+
       NVER=0
 !AMT  Determine which flavour of DFT-D we are to run (2,3,3+BJ)
+
+!SSR  XC functional name
+      Func = setting%scheme%dft%DFTfuncObject(dftfunc_Default)
       IF (SETTING%SCHEME%DFT%DO_DFTD2) THEN
         NVER=2
       ELSE IF (SETTING%SCHEME%DFT%DO_DFTD3) THEN
@@ -316,9 +312,9 @@
            ALP = SETTING%SCHEME%DFT%D2_alp_inp
            S18 = 0.0E0_realk
          ELSE
-           S6  = DFT_D2_S6()
-           RS6 = DFT_D2_RS6()
-           ALP = DFT_D2_ALP()
+           S6  = DFT_D2_S6(Func)
+           RS6 = DFT_D2_RS6(Func)
+           ALP = DFT_D2_ALP(Func)
            S18 = 0.0E0_realk
          ENDIF
          CALL LSHEADER(LUPRI,'DFT-D2 Functional Dependent Parameters')
@@ -338,17 +334,17 @@
          RS18 = SETTING%SCHEME%DFT%D3_rs18_inp
         ELSE
          IF (SETTING%SCHEME%DFT%DO_BJDAMP) THEN
-           S6   = DFT_D3BJ_S6() 
-           ALP  = DFT_D3BJ_ALP()
-           RS6  = DFT_D3BJ_RS6()
-           S18  = DFT_D3BJ_S18()
-           RS18 = DFT_D3BJ_RS18()
+           S6   = DFT_D3BJ_S6(Func) 
+           ALP  = DFT_D3BJ_ALP(Func)
+           RS6  = DFT_D3BJ_RS6(Func)
+           S18  = DFT_D3BJ_S18(Func)
+           RS18 = DFT_D3BJ_RS18(Func)
          ELSE
-           S6   = DFT_D3_S6()
-           ALP  = DFT_D3_ALP()
-           RS6  = DFT_D3_RS6()
-           S18  = DFT_D3_S18()
-           RS18 = DFT_D3_RS18()
+           S6   = DFT_D3_S6(Func)
+           ALP  = DFT_D3_ALP(Func)
+           RS6  = DFT_D3_RS6(Func)
+           S18  = DFT_D3_S18(Func)
+           RS18 = DFT_D3_RS18(Func)
          ENDIF
         ENDIF
         CALL LSHEADER(LUPRI,'DFT-D3 Functional Dependent Parameters')
@@ -2541,6 +2537,1352 @@
 
       RETURN
       END SUBROUTINE SET_R2R4
+
+      INTEGER FUNCTION dft_d2_check(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      dft_d2_check = 0
+      select case(Func)
+      case ("BP86")     
+        dft_d2_check = 1
+      case ("BLYP")     
+        dft_d2_check = 1
+      case ("PBE")      
+        dft_d2_check = 1
+      case ("B3LYP")    
+        dft_d2_check = 1
+      case ("PBE0")     
+        dft_d2_check = 1
+      !Cases not in lsdalton
+      case ("B97-D")    
+        dft_d2_check = 1
+      case ("B2PLYP")   
+        dft_d2_check = 1
+      case ("B2GPPLYP") 
+        dft_d2_check = 1
+      case ("REVPBE")   
+        dft_d2_check = 1
+      case ("PW6B95")   
+        dft_d2_check = 1
+      case ("TPSS")     
+        dft_d2_check = 1
+      case ("TPSS0")    
+        dft_d2_check = 1
+      case ("DSD-BLYP") 
+        dft_d2_check = 1
+      case DEFAULT
+         write(*,*) 'Error in dft_d2_check, non-valid case Func=',Func
+         call lsquit('Error in dft_d2_check, non-valid case',-1)
+      end select
+      END FUNCTION dft_d2_check
+
+      FUNCTION dft_d2_s6(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d2_s6
+      select case(Func)
+      case ("BP86")     
+        dft_d2_s6 = 1.05_realk 
+      case ("BLYP")     
+        dft_d2_s6 = 1.20_realk 
+      case ("PBE")      
+        dft_d2_s6 = 0.75_realk 
+      case ("B3LYP")    
+        dft_d2_s6 = 1.05_realk 
+      case ("PBE0")     
+        dft_d2_s6 = 0.6_realk
+      !Cases not in lsdalton        
+      case ("B97-D")    
+        dft_d2_s6 = 1.25_realk
+      case ("B2PLYP")   
+        dft_d2_s6 = 0.55_realk
+      case ("B2GPPLYP") 
+        dft_d2_s6 = 0.4_realk
+      case ("REVPBE")   
+        dft_d2_s6 = 1.25_realk 
+      case ("PW6B95")   
+        dft_d2_s6 = 0.5_realk  
+      case ("TPSS")     
+        dft_d2_s6 = 1.0_realk  
+      case ("TPSS0")    
+        dft_d2_s6 = 0.85_realk 
+      case ("DSD-BLYP") 
+        dft_d2_s6 = 0.41_realk 
+      case DEFAULT
+         write(*,*) 'Error in dft_d2_s6, non-valid case Func=',Func
+         call lsquit('Error in dft_d2_s6, non-valid case',-1)
+      end select
+      END FUNCTION dft_d2_s6
+      
+      FUNCTION dft_d2_alp(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d2_alp
+      select case(Func)
+      case ("BP86")     
+        dft_d2_alp = 20.0_realk
+      case ("BLYP")     
+        dft_d2_alp = 20.0_realk
+      case ("PBE")      
+        dft_d2_alp = 20.0_realk
+      case ("B3LYP")    
+        dft_d2_alp = 20.0_realk
+      case ("PBE0")     
+        dft_d2_alp = 20.0_realk
+      !Cases not in lsdalton        
+      case ("B97-D")    
+        dft_d2_alp = 20.0_realk
+      case ("B2PLYP")   
+        dft_d2_alp = 20.0_realk
+      case ("B2GPPLYP") 
+        dft_d2_alp = 20.0_realk
+      case ("REVPBE")   
+        dft_d2_alp = 20.0_realk
+      case ("PW6B95")   
+        dft_d2_alp = 20.0_realk
+      case ("TPSS")     
+        dft_d2_alp = 20.0_realk
+      case ("TPSS0")    
+        dft_d2_alp = 20.0_realk
+      case ("DSD-BLYP") 
+        dft_d2_alp = 60.0_realk
+      case DEFAULT
+         write(*,*) 'Error in dft_d2_alp, non-valid case Func=',Func
+         call lsquit('Error in dft_d2_alp, non-valid case',-1)
+      end select
+      END FUNCTION dft_d2_alp
+      
+
+      FUNCTION dft_d2_rs6(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d2_rs6
+      select case(Func)
+      case ("BP86")     
+        dft_d2_rs6 = 1.1_realk
+      case ("BLYP")     
+        dft_d2_rs6 = 1.1_realk
+      case ("PBE")      
+        dft_d2_rs6 = 1.1_realk
+      case ("B3LYP")    
+        dft_d2_rs6 = 1.1_realk
+      case ("PBE0")     
+        dft_d2_rs6 = 1.1_realk
+      !Cases not in lsdalton        
+      case ("B97-D")    
+        dft_d2_rs6 = 1.1_realk
+      case ("B2PLYP")   
+        dft_d2_rs6 = 1.1_realk
+      case ("B2GPPLYP") 
+        dft_d2_rs6 = 1.1_realk
+      case ("REVPBE")   
+        dft_d2_rs6 = 1.1_realk
+      case ("PW6B95")   
+        dft_d2_rs6 = 1.1_realk
+      case ("TPSS")     
+        dft_d2_rs6 = 1.1_realk
+      case ("TPSS0")    
+        dft_d2_rs6 = 1.1_realk
+      case ("DSD-BLYP") 
+        dft_d2_rs6 = 1.1_realk
+      case DEFAULT
+         write(*,*) 'Error in dft_d2_rs6, non-valid case Func=',Func
+         call lsquit('Error in dft_d2_rs6, non-valid case',-1)
+      end select
+      END FUNCTION dft_d2_rs6
+      
+     
+      INTEGER FUNCTION dft_d3_check(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      dft_d3_check = 0
+      select case(Func)
+      case ("SLATER") 
+        dft_d3_check = 1
+      case ("BLYP") 
+        dft_d3_check = 1
+      case ("BP86") 
+        dft_d3_check = 1
+      case ("B97-D") 
+        dft_d3_check = 1
+      case ("rev-PBE") 
+        dft_d3_check = 1
+      case ("PBE") 
+        dft_d3_check = 1
+      case ("PBEsol") 
+        dft_d3_check = 1
+      case ("rpw86-pbe") 
+        dft_d3_check = 1
+      case ("rPBE") 
+        dft_d3_check = 1
+      case ("TPSS") 
+        dft_d3_check = 1
+      case ("B3LYP") 
+        dft_d3_check = 1
+      case ("PBE0") 
+        dft_d3_check = 1
+      case ("REBPBE38") 
+        dft_d3_check = 1
+      case ("PW6B95") 
+        dft_d3_check = 1
+      case ("TPSS0") 
+        dft_d3_check = 1
+      case ("B2-PLYP") 
+        dft_d3_check = 1
+      case ("PWPB95") 
+        dft_d3_check = 1
+      case ("B2GP-PLYP") 
+        dft_d3_check = 1
+      case ("PTPSS") 
+        dft_d3_check = 1
+      case ("HF") 
+        dft_d3_check = 1
+      case ("MPWLYP") 
+        dft_d3_check = 1
+      case ("BPBE") 
+        dft_d3_check = 1
+      case ("BHLYP") 
+        dft_d3_check = 1
+      case ("TPSSh") 
+        dft_d3_check = 1
+      case ("PWB6K") 
+        dft_d3_check = 1
+      case ("B1B95") 
+        dft_d3_check = 1
+      case ("BOP") 
+        dft_d3_check = 1
+      case ("OLYP") 
+        dft_d3_check = 1
+      case ("OPBE") 
+        dft_d3_check = 1
+      case ("SSB") 
+        dft_d3_check = 1
+      case ("revSSB") 
+        dft_d3_check = 1
+      case ("OTPSS") 
+        dft_d3_check = 1
+      case ("B3PW91") 
+        dft_d3_check = 1
+      case ("revPBE0") 
+        dft_d3_check = 1
+      case ("PBE38") 
+        dft_d3_check = 1
+      case ("MPW1B95") 
+        dft_d3_check = 1
+      case ("MPWB1K") 
+        dft_d3_check = 1
+      case ("BMK") 
+        dft_d3_check = 1
+      case ("CAMB3LYP") 
+        dft_d3_check = 1
+      case ("LC-wPBE") 
+        dft_d3_check = 1
+      case ("M05") 
+        dft_d3_check = 1
+      case ("M052X") 
+        dft_d3_check = 1
+      case ("M06-L") 
+        dft_d3_check = 1
+      case ("M06") 
+        dft_d3_check = 1
+      case ("M062X") 
+        dft_d3_check = 1
+      case ("M06HF") 
+        dft_d3_check = 1
+      case ("DFTB3") 
+        dft_d3_check = 1
+      case ("HCTH120") 
+        dft_d3_check = 1
+      case default
+        write(*,*) 'Error in dft_d3_check. Option unknown Func=',Func
+        call lsquit('Error in dft_d3_check. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3_check
+
+      FUNCTION dft_d3_s6(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3_s6
+      select case(Func)
+      case("SLATER") 
+        dft_d3_s6 = 1.0_realk
+      case("BLYP") 
+        dft_d3_s6 = 1.0_realk
+      case("BP86") 
+        dft_d3_s6 = 1.0_realk
+      case("B97-D") 
+        dft_d3_s6 = 1.0_realk
+      case("rev-PBE") 
+        dft_d3_s6 = 1.0_realk
+      case("PBE") 
+        dft_d3_s6 = 1.0_realk
+      case("PBEsol") 
+        dft_d3_s6 = 1.0_realk
+      case("rpw86-pbe") 
+        dft_d3_s6 = 1.0_realk
+      case("rPBE") 
+        dft_d3_s6 = 1.0_realk
+      case("TPSS") 
+        dft_d3_s6 = 1.0_realk
+      case("B3LYP") 
+        dft_d3_s6 = 1.0_realk
+      case("PBE0") 
+        dft_d3_s6 = 1.0_realk
+      case("REBPBE38") 
+        dft_d3_s6 = 1.0_realk
+      case("PW6B95") 
+        dft_d3_s6 = 1.0_realk
+      case("TPSS0") 
+        dft_d3_s6 = 1.0_realk
+      case("B2-PLYP") 
+        dft_d3_s6 = 0.64_realk
+      case("PWPB95") 
+        dft_d3_s6 = 0.82_realk
+      case("B2GP-PLYP") 
+        dft_d3_s6 = 0.56_realk
+      case("PTPSS") 
+        dft_d3_s6 = 0.75_realk
+      case("HF") 
+        dft_d3_s6 = 1.0_realk
+      case("MPWLYP") 
+        dft_d3_s6 = 1.0_realk
+      case("BPBE") 
+        dft_d3_s6 = 1.0_realk
+      case("BHLYP") 
+        dft_d3_s6 = 1.0_realk
+      case("TPSSh") 
+        dft_d3_s6 = 1.0_realk
+      case("PWB6K") 
+        dft_d3_s6 = 1.0_realk
+      case("B1B95") 
+        dft_d3_s6 = 1.0_realk
+      case("BOP") 
+        dft_d3_s6 = 1.0_realk
+      case("OLYP") 
+        dft_d3_s6 = 1.0_realk
+      case("OPBE") 
+        dft_d3_s6 = 1.0_realk
+      case("SSB") 
+        dft_d3_s6 = 1.0_realk
+      case("revSSB") 
+        dft_d3_s6 = 1.0_realk
+      case("OTPSS") 
+        dft_d3_s6 = 1.0_realk
+      case("B3PW91") 
+        dft_d3_s6 = 1.0_realk
+      case("revPBE0") 
+        dft_d3_s6 = 1.0_realk
+      case("PBE38") 
+        dft_d3_s6 = 1.0_realk
+      case("MPW1B95") 
+        dft_d3_s6 = 1.0_realk
+      case("MPWB1K") 
+        dft_d3_s6 = 1.0_realk
+      case("BMK") 
+        dft_d3_s6 = 1.0_realk
+      case("CAMB3LYP") 
+        dft_d3_s6 = 1.0_realk
+      case("LC-wPBE") 
+        dft_d3_s6 = 1.0_realk
+      case("M05") 
+        dft_d3_s6 = 1.0_realk
+      case("M052X") 
+        dft_d3_s6 = 1.0_realk
+      case("M06-L") 
+        dft_d3_s6 = 1.0_realk
+      case("M06") 
+        dft_d3_s6 = 1.0_realk
+      case("M062X") 
+        dft_d3_s6 = 1.0_realk
+      case("M06HF") 
+        dft_d3_s6 = 1.0_realk
+      case("DFTB3") 
+        dft_d3_s6 = 1.0_realk
+      case("HCTH120") 
+        dft_d3_s6 = 1.0_realk
+      case default
+        write(*,*) 'Error in dft_d3_s6. Option unknown Func=',Func
+        call lsquit('Error in dft_d3_s6. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3_s6
+
+      FUNCTION dft_d3_alp(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3_alp
+      select case(Func)
+      case("SLATER") 
+        dft_d3_alp = 14.0_realk
+      case("BLYP") 
+        dft_d3_alp = 14.0_realk
+      case("BP86") 
+        dft_d3_alp = 14.0_realk
+      case("B97-D") 
+        dft_d3_alp = 14.0_realk
+      case("rev-PBE") 
+        dft_d3_alp = 14.0_realk
+      case("PBE") 
+        dft_d3_alp = 14.0_realk
+      case("PBEsol") 
+        dft_d3_alp = 14.0_realk
+      case("rpw86-pbe") 
+        dft_d3_alp = 14.0_realk
+      case("rPBE") 
+        dft_d3_alp = 14.0_realk
+      case("TPSS") 
+        dft_d3_alp = 14.0_realk
+      case("B3LYP") 
+        dft_d3_alp = 14.0_realk
+      case("PBE0") 
+        dft_d3_alp = 14.0_realk
+      case("REBPBE38") 
+        dft_d3_alp = 14.0_realk
+      case("PW6B95") 
+        dft_d3_alp = 14.0_realk
+      case("TPSS0") 
+        dft_d3_alp = 14.0_realk
+      case("B2-PLYP") 
+        dft_d3_alp = 14.0_realk
+      case("PWPB95") 
+        dft_d3_alp = 14.0_realk
+      case("B2GP-PLYP") 
+        dft_d3_alp = 14.0_realk
+      case("PTPSS") 
+        dft_d3_alp = 14.0_realk
+      case("HF") 
+        dft_d3_alp = 14.0_realk
+      case("MPWLYP") 
+        dft_d3_alp = 14.0_realk
+      case("BPBE") 
+        dft_d3_alp = 14.0_realk
+      case("BHLYP") 
+        dft_d3_alp = 14.0_realk
+      case("TPSSh") 
+        dft_d3_alp = 14.0_realk
+      case("PWB6K") 
+        dft_d3_alp = 14.0_realk
+      case("B1B95") 
+        dft_d3_alp = 14.0_realk
+      case("BOP") 
+        dft_d3_alp = 14.0_realk
+      case("OLYP") 
+        dft_d3_alp = 14.0_realk
+      case("OPBE") 
+        dft_d3_alp = 14.0_realk
+      case("SSB") 
+        dft_d3_alp = 14.0_realk
+      case("revSSB") 
+        dft_d3_alp = 14.0_realk
+      case("OTPSS") 
+        dft_d3_alp = 14.0_realk
+      case("B3PW91") 
+        dft_d3_alp = 14.0_realk
+      case("revPBE0") 
+        dft_d3_alp = 14.0_realk
+      case("PBE38") 
+        dft_d3_alp = 14.0_realk
+      case("MPW1B95") 
+        dft_d3_alp = 14.0_realk
+      case("MPWB1K") 
+        dft_d3_alp = 14.0_realk
+      case("BMK") 
+        dft_d3_alp = 14.0_realk
+      case("CAMB3LYP") 
+        dft_d3_alp = 14.0_realk
+      case("LC-wPBE") 
+        dft_d3_alp = 14.0_realk
+      case("M05") 
+        dft_d3_alp = 14.0_realk
+      case("M052X") 
+        dft_d3_alp = 14.0_realk
+      case("M06-L") 
+        dft_d3_alp = 14.0_realk
+      case("M06") 
+        dft_d3_alp = 14.0_realk
+      case("M062X") 
+        dft_d3_alp = 14.0_realk
+      case("M06HF") 
+        dft_d3_alp = 14.0_realk
+      case("DFTB3") 
+        dft_d3_alp = 14.0_realk
+      case("HCTH120") 
+        dft_d3_alp = 14.0_realk
+      case default
+        write(*,*) 'Error in dft_d3_alp. Option unknown Func=',Func
+        call lsquit('Error in dft_d3_alp. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3_alp
+
+
+      FUNCTION dft_d3_rs18(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3_rs18
+      select case(Func)
+      case("SLATER") 
+        dft_d3_rs18 = 0.687_realk
+      case("BLYP") 
+        dft_d3_rs18 = 1.0_realk
+      case("BP86") 
+        dft_d3_rs18 = 1.0_realk
+      case("B97-D") 
+        dft_d3_rs18 = 1.0_realk
+      case("rev-PBE") 
+        dft_d3_rs18 = 1.0_realk
+      case("PBE") 
+        dft_d3_rs18 = 1.0_realk
+      case("PBEsol") 
+        dft_d3_rs18 = 1.0_realk
+      case("rpw86-pbe") 
+        dft_d3_rs18 = 1.0_realk
+      case("rPBE") 
+        dft_d3_rs18 = 1.0_realk
+      case("TPSS") 
+        dft_d3_rs18 = 1.0_realk
+      case("B3LYP") 
+        dft_d3_rs18 = 1.0_realk
+      case("PBE0") 
+        dft_d3_rs18 = 1.0_realk
+      case("REBPBE38") 
+        dft_d3_rs18 = 1.0_realk
+      case("PW6B95") 
+        dft_d3_rs18 = 1.0_realk
+      case("TPSS0") 
+        dft_d3_rs18 = 1.0_realk
+      case("B2-PLYP") 
+        dft_d3_rs18 = 1.0_realk
+      case("PWPB95") 
+        dft_d3_rs18 = 1.0_realk
+      case("B2GP-PLYP") 
+        dft_d3_rs18 = 1.0_realk
+      case("PTPSS") 
+        dft_d3_rs18 = 1.0_realk
+      case("HF") 
+        dft_d3_rs18 = 1.0_realk
+      case("MPWLYP") 
+        dft_d3_rs18 = 1.0_realk
+      case("BPBE") 
+        dft_d3_rs18 = 1.0_realk
+      case("BHLYP") 
+        dft_d3_rs18 = 1.0_realk
+      case("TPSSh") 
+        dft_d3_rs18 = 1.0_realk
+      case("PWB6K") 
+        dft_d3_rs18 = 1.0_realk
+      case("B1B95") 
+        dft_d3_rs18 = 1.0_realk
+      case("BOP") 
+        dft_d3_rs18 = 1.0_realk
+      case("OLYP") 
+        dft_d3_rs18 = 1.0_realk
+      case("OPBE") 
+        dft_d3_rs18 = 1.0_realk
+      case("SSB") 
+        dft_d3_rs18 = 1.0_realk
+      case("revSSB") 
+        dft_d3_rs18 = 1.0_realk
+      case("OTPSS") 
+        dft_d3_rs18 = 1.0_realk
+      case("B3PW91") 
+        dft_d3_rs18 = 1.0_realk
+      case("revPBE0") 
+        dft_d3_rs18 = 1.0_realk
+      case("PBE38") 
+        dft_d3_rs18 = 1.0_realk
+      case("MPW1B95") 
+        dft_d3_rs18 = 1.0_realk
+      case("MPWB1K") 
+        dft_d3_rs18 = 1.0_realk
+      case("BMK") 
+        dft_d3_rs18 = 1.0_realk
+      case("CAMB3LYP") 
+        dft_d3_rs18 = 1.0_realk
+      case("LC-wPBE") 
+        dft_d3_rs18 = 1.0_realk
+      case("M05") 
+        dft_d3_rs18 = 1.0_realk
+      case("M052X") 
+        dft_d3_rs18 = 1.0_realk
+      case("M06-L") 
+        dft_d3_rs18 = 1.0_realk
+      case("M06") 
+        dft_d3_rs18 = 1.0_realk
+      case("M062X") 
+        dft_d3_rs18 = 1.0_realk
+      case("M06HF") 
+        dft_d3_rs18 = 1.0_realk
+      case("DFTB3") 
+        dft_d3_rs18 = 1.0_realk
+      case("HCTH120") 
+        dft_d3_rs18 = 1.0_realk
+      case default
+        write(*,*) 'Error in dft_d3_rs18. Option unknown Func=',Func
+        call lsquit('Error in dft_d3_rs18. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3_rs18
+
+
+      FUNCTION dft_d3_rs6(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3_rs6
+      select case(Func)
+      case("SLATER") 
+        dft_d3_rs6 = 0.999_realk
+      case("BLYP") 
+        dft_d3_rs6 = 1.094_realk
+      case("BP86") 
+        dft_d3_rs6 = 1.139_realk
+      case("B97-D") 
+        dft_d3_rs6 = 0.892_realk
+      case("rev-PBE") 
+        dft_d3_rs6 = 0.923_realk
+      case("PBE") 
+        dft_d3_rs6 = 1.217_realk
+      case("PBEsol") 
+        dft_d3_rs6 = 1.345_realk
+      case("rpw86-pbe") 
+        dft_d3_rs6 = 1.224_realk
+      case("rPBE") 
+        dft_d3_rs6 = 0.872_realk
+      case("TPSS") 
+        dft_d3_rs6 = 1.166_realk
+      case("B3LYP") 
+        dft_d3_rs6 = 1.261_realk
+      case("PBE0") 
+        dft_d3_rs6 = 1.287_realk
+      case("REBPBE38") 
+        dft_d3_rs6 = 1.021_realk
+      case("PW6B95") 
+        dft_d3_rs6 = 1.532_realk
+      case("TPSS0") 
+        dft_d3_rs6 = 1.252_realk
+      case("B2-PLYP") 
+        dft_d3_rs6 = 1.427_realk
+      case("PWPB95") 
+        dft_d3_rs6 = 1.557_realk
+      case("B2GP-PLYP") 
+        dft_d3_rs6 = 1.586_realk
+      case("PTPSS") 
+        dft_d3_rs6 = 1.541_realk
+      case("HF") 
+        dft_d3_rs6 = 1.158_realk
+      case("MPWLYP") 
+        dft_d3_rs6 = 1.239_realk
+      case("BPBE") 
+        dft_d3_rs6 = 1.087_realk
+      case("BHLYP") 
+        dft_d3_rs6 = 1.370_realk
+      case("TPSSh") 
+        dft_d3_rs6 = 1.223_realk
+      case("PWB6K") 
+        dft_d3_rs6 = 1.660_realk
+      case("B1B95") 
+        dft_d3_rs6 = 1.613_realk
+      case("BOP") 
+        dft_d3_rs6 = 0.929_realk
+      case("OLYP") 
+        dft_d3_rs6 = 0.806_realk
+      case("OPBE") 
+        dft_d3_rs6 = 0.837_realk
+      case("SSB") 
+        dft_d3_rs6 = 1.215_realk
+      case("revSSB") 
+        dft_d3_rs6 = 1.221_realk
+      case("OTPSS") 
+        dft_d3_rs6 = 1.128_realk
+      case("B3PW91") 
+        dft_d3_rs6 = 1.176_realk
+      case("revPBE0") 
+        dft_d3_rs6 = 0.949_realk
+      case("PBE38") 
+        dft_d3_rs6 = 1.333_realk
+      case("MPW1B95") 
+        dft_d3_rs6 = 1.605_realk
+      case("MPWB1K") 
+        dft_d3_rs6 = 1.671_realk
+      case("BMK") 
+        dft_d3_rs6 = 1.931_realk
+      case("CAMB3LYP") 
+        dft_d3_rs6 = 1.378_realk
+      case("LC-wPBE") 
+        dft_d3_rs6 = 1.355_realk
+      case("M05") 
+        dft_d3_rs6 = 1.373_realk
+      case("M052X") 
+        dft_d3_rs6 = 1.417_realk
+      case("M06-L") 
+        dft_d3_rs6 = 1.581_realk
+      case("M06") 
+        dft_d3_rs6 = 1.325_realk
+      case("M062X") 
+        dft_d3_rs6 = 1.619_realk
+      case("M06HF") 
+        dft_d3_rs6 = 1.446_realk
+      case("DFTB3") 
+        dft_d3_rs6 = 1.235_realk
+      case("HCTH120") 
+        dft_d3_rs6 = 1.221_realk
+      case default
+        write(*,*) 'Error in dft_d3_rs6. Option unknown Func=',Func
+        call lsquit('Error in dft_d3_rs6. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3_rs6
+
+
+      FUNCTION dft_d3_s18(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3_s18
+      select case(Func)
+      case("SLATER") 
+        dft_d3_s18 = -1.957_realk
+      case("BLYP") 
+        dft_d3_s18 = 1.682_realk
+      case("BP86") 
+        dft_d3_s18 = 1.683_realk
+      case("B97-D") 
+        dft_d3_s18 = 0.909_realk
+      case("rev-PBE") 
+        dft_d3_s18 = 1.010_realk
+      case("PBE") 
+        dft_d3_s18 = 0.722_realk
+      case("PBEsol") 
+        dft_d3_s18 = 0.612_realk
+      case("rpw86-pbe") 
+        dft_d3_s18 = 0.901_realk
+      case("rPBE") 
+        dft_d3_s18 = 0.514_realk
+      case("TPSS") 
+        dft_d3_s18 = 1.105_realk
+      case("B3LYP") 
+        dft_d3_s18 = 1.703_realk
+      case("PBE0") 
+        dft_d3_s18 = 0.928_realk
+      case("REBPBE38") 
+        dft_d3_s18 = 0.862_realk
+      case("PW6B95") 
+        dft_d3_s18 = 0.862_realk
+      case("TPSS0") 
+        dft_d3_s18 = 1.242_realk
+      case("B2-PLYP") 
+        dft_d3_s18 = 1.022_realk
+      case("PWPB95") 
+        dft_d3_s18 = 0.705_realk
+      case("B2GP-PLYP") 
+        dft_d3_s18 = 0.760_realk
+      case("PTPSS") 
+        dft_d3_s18 = 0.879_realk
+      case("HF") 
+        dft_d3_s18 = 1.746_realk
+      case("MPWLYP") 
+        dft_d3_s18 = 1.098_realk
+      case("BPBE") 
+        dft_d3_s18 = 2.033_realk
+      case("BHLYP") 
+        dft_d3_s18 = 1.442_realk
+      case("TPSSh") 
+        dft_d3_s18 = 1.219_realk
+      case("PWB6K") 
+        dft_d3_s18 = 0.550_realk
+      case("B1B95") 
+        dft_d3_s18 = 1.868_realk
+      case("BOP") 
+        dft_d3_s18 = 1.975_realk
+      case("OLYP") 
+        dft_d3_s18 = 1.764_realk
+      case("OPBE") 
+        dft_d3_s18 = 2.055_realk
+      case("SSB") 
+        dft_d3_s18 = 0.663_realk
+      case("revSSB") 
+        dft_d3_s18 = 0.560_realk
+      case("OTPSS") 
+        dft_d3_s18 = 1.494_realk
+      case("B3PW91") 
+        dft_d3_s18 = 1.775_realk
+      case("revPBE0") 
+        dft_d3_s18 = 0.792_realk
+      case("PBE38") 
+        dft_d3_s18 = 0.998_realk
+      case("MPW1B95") 
+        dft_d3_s18 = 1.118_realk
+      case("MPWB1K") 
+        dft_d3_s18 = 1.061_realk
+      case("BMK") 
+        dft_d3_s18 = 2.168_realk
+      case("CAMB3LYP") 
+        dft_d3_s18 = 1.217_realk
+      case("LC-wPBE") 
+        dft_d3_s18 = 1.279_realk
+      case("M05") 
+        dft_d3_s18 = 0.595_realk
+      case("M052X") 
+        dft_d3_s18 = 0.000_realk
+      case("M06-L") 
+        dft_d3_s18 = 0.000_realk
+      case("M06") 
+        dft_d3_s18 = 0.000_realk
+      case("M062X") 
+        dft_d3_s18 = 0.000_realk
+      case("M06HF") 
+        dft_d3_s18 = 0.000_realk
+      case("DFTB3") 
+        dft_d3_s18 = 0.673_realk
+      case("HCTH120") 
+        dft_d3_s18 = 1.206_realk
+      case default
+        write(*,*) 'Error in dft_d3_s18. Option unknown Func=',Func
+        call lsquit('Error in dft_d3_s18. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3_s18
+
+
+      INTEGER FUNCTION dft_d3bj_check(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      dft_d3bj_check = 0
+      select case(Func)
+      case("BP86") 
+        dft_d3bj_check = 1
+      case("BLYP") 
+        dft_d3bj_check = 1
+      case("revPBE") 
+        dft_d3bj_check = 1
+      case("B97-D") 
+        dft_d3bj_check = 1
+      case("PBE") 
+        dft_d3bj_check = 1
+      case("rpw86-pbe") 
+        dft_d3bj_check = 1
+      case("B3LYP") 
+        dft_d3bj_check = 1
+      case("TPSS") 
+        dft_d3bj_check = 1
+      case("HF") 
+        dft_d3bj_check = 1
+      case("TPSS0") 
+        dft_d3bj_check = 1
+      case("PBE0") 
+        dft_d3bj_check = 1
+      case("revPBE38") 
+        dft_d3bj_check = 1
+      case("PW6B95") 
+        dft_d3bj_check = 1
+      case("B2PLYP") 
+        dft_d3bj_check = 1
+      case("DSD-BLYP") 
+        dft_d3bj_check = 1
+      case("DSD-BLYP-FC") 
+        dft_d3bj_check = 1
+      case("BOP") 
+        dft_d3bj_check = 1
+      case("MPWLYP") 
+        dft_d3bj_check = 1
+      case("OLYP") 
+        dft_d3bj_check = 1
+      case("PBEsol") 
+        dft_d3bj_check = 1
+      case("BPBE") 
+        dft_d3bj_check = 1
+      case("OPBE") 
+        dft_d3bj_check = 1
+      case("SSB") 
+        dft_d3bj_check = 1
+      case("revSSB") 
+        dft_d3bj_check = 1
+      case("OTPSS") 
+        dft_d3bj_check = 1
+      case("B3PW91") 
+        dft_d3bj_check = 1
+      case("BHLYP") 
+        dft_d3bj_check = 1
+      case("revPBE0") 
+        dft_d3bj_check = 1
+      case("TPSSh") 
+        dft_d3bj_check = 1
+      case("MPW1B95") 
+        dft_d3bj_check = 1
+      case("PWB6K") 
+        dft_d3bj_check = 1
+      case("B1B95") 
+        dft_d3bj_check = 1
+      case("BMK") 
+        dft_d3bj_check = 1
+      case("CAMB3LYP") 
+        dft_d3bj_check = 1
+      case("LC-wPBE") 
+        dft_d3bj_check = 1
+      case("B2GP-PLYP") 
+        dft_d3bj_check = 1
+      case("PTPSS") 
+        dft_d3bj_check = 1
+      case("PWPB95") 
+        dft_d3bj_check = 1
+      case("HCTH120") 
+        dft_d3bj_check = 1
+      case("DFTB3") 
+        dft_d3bj_check = 1
+      case default
+        write(*,*) 'Error in dft_d3bj_check. Option unknown Func=',Func
+        call lsquit('Error in dft_d3bj_check. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3bj_check
+
+      FUNCTION dft_d3bj_s6(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3bj_s6
+      select case(Func)
+      case("BP86") 
+        dft_d3bj_s6 = 1.0_realk
+      case("BLYP") 
+        dft_d3bj_s6 = 1.0_realk
+      case("revPBE") 
+        dft_d3bj_s6 = 1.0_realk
+      case("B97-D") 
+        dft_d3bj_s6 = 1.0_realk
+      case("PBE") 
+        dft_d3bj_s6 = 1.0_realk
+      case("rpw86-pbe") 
+        dft_d3bj_s6 = 1.0_realk
+      case("B3LYP") 
+        dft_d3bj_s6 = 1.0_realk
+      case("TPSS") 
+        dft_d3bj_s6 = 1.0_realk
+      case("HF") 
+        dft_d3bj_s6 = 1.0_realk
+      case("TPSS0") 
+        dft_d3bj_s6 = 1.0_realk
+      case("PBE0") 
+        dft_d3bj_s6 = 1.0_realk
+      case("revPBE38") 
+        dft_d3bj_s6 = 1.0_realk
+      case("PW6B95") 
+        dft_d3bj_s6 = 1.0_realk
+      case("B2PLYP") 
+        dft_d3bj_s6 = 0.64_realk
+      case("DSD-BLYP") 
+        dft_d3bj_s6 = 0.50_realk
+      case("DSD-BLYP-FC") 
+        dft_d3bj_s6 = 0.50_realk
+      case("BOP") 
+        dft_d3bj_s6 = 1.0_realk
+      case("MPWLYP") 
+        dft_d3bj_s6 = 1.0_realk
+      case("OLYP") 
+        dft_d3bj_s6 = 1.0_realk
+      case("PBEsol") 
+        dft_d3bj_s6 = 1.0_realk
+      case("BPBE") 
+        dft_d3bj_s6 = 1.0_realk
+      case("OPBE") 
+        dft_d3bj_s6 = 1.0_realk
+      case("SSB") 
+        dft_d3bj_s6 = 1.0_realk
+      case("revSSB") 
+        dft_d3bj_s6 = 1.0_realk
+      case("OTPSS") 
+        dft_d3bj_s6 = 1.0_realk
+      case("B3PW91") 
+        dft_d3bj_s6 = 1.0_realk
+      case("BHLYP") 
+        dft_d3bj_s6 = 1.0_realk
+      case("revPBE0") 
+        dft_d3bj_s6 = 1.0_realk
+      case("TPSSh") 
+        dft_d3bj_s6 = 1.0_realk
+      case("MPW1B95") 
+        dft_d3bj_s6 = 1.0_realk
+      case("PWB6K") 
+        dft_d3bj_s6 = 1.0_realk
+      case("B1B95") 
+        dft_d3bj_s6 = 1.0_realk
+      case("BMK") 
+        dft_d3bj_s6 = 1.0_realk
+      case("CAMB3LYP") 
+        dft_d3bj_s6 = 1.0_realk
+      case("LC-wPBE") 
+        dft_d3bj_s6 = 1.0_realk
+      case("B2GP-PLYP") 
+        dft_d3bj_s6 = 0.560_realk
+      case("PTPSS") 
+        dft_d3bj_s6 = 0.750_realk
+      case("PWPB95") 
+        dft_d3bj_s6 = 0.820_realk
+      case("HCTH120") 
+        dft_d3bj_s6 = 1.0_realk
+      case("DFTB3") 
+        dft_d3bj_s6 = 1.0_realk
+      case default
+        write(*,*) 'Error in dft_d3bj_s6. Option unknown Func=',Func
+        call lsquit('Error in dft_d3bj_s6. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3bj_s6
+
+      FUNCTION dft_d3bj_alp(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3bj_alp
+      select case(Func)
+      case("BP86") 
+        dft_d3bj_alp = 14.0_realk
+      case("BLYP") 
+        dft_d3bj_alp = 14.0_realk
+      case("revPBE") 
+        dft_d3bj_alp = 14.0_realk
+      case("B97-D") 
+        dft_d3bj_alp = 14.0_realk
+      case("PBE") 
+        dft_d3bj_alp = 14.0_realk
+      case("rpw86-pbe") 
+        dft_d3bj_alp = 14.0_realk
+      case("B3LYP") 
+        dft_d3bj_alp = 14.0_realk
+      case("TPSS") 
+        dft_d3bj_alp = 14.0_realk
+      case("HF") 
+        dft_d3bj_alp = 14.0_realk
+      case("TPSS0") 
+        dft_d3bj_alp = 14.0_realk
+      case("PBE0") 
+        dft_d3bj_alp = 14.0_realk
+      case("revPBE38") 
+        dft_d3bj_alp = 14.0_realk
+      case("PW6B95") 
+        dft_d3bj_alp = 14.0_realk
+      case("B2PLYP") 
+        dft_d3bj_alp = 14.0_realk
+      case("DSD-BLYP") 
+        dft_d3bj_alp = 14.0_realk
+      case("DSD-BLYP-FC") 
+        dft_d3bj_alp = 14.0_realk
+      case("BOP") 
+        dft_d3bj_alp = 14.0_realk
+      case("MPWLYP") 
+        dft_d3bj_alp = 14.0_realk
+      case("OLYP") 
+        dft_d3bj_alp = 14.0_realk
+      case("PBEsol") 
+        dft_d3bj_alp = 14.0_realk
+      case("BPBE") 
+        dft_d3bj_alp = 14.0_realk
+      case("OPBE") 
+        dft_d3bj_alp = 14.0_realk
+      case("SSB") 
+        dft_d3bj_alp = 14.0_realk
+      case("revSSB") 
+        dft_d3bj_alp = 14.0_realk
+      case("OTPSS") 
+        dft_d3bj_alp = 14.0_realk
+      case("B3PW91") 
+        dft_d3bj_alp = 14.0_realk
+      case("BHLYP") 
+        dft_d3bj_alp = 14.0_realk
+      case("revPBE0") 
+        dft_d3bj_alp = 14.0_realk
+      case("TPSSh") 
+        dft_d3bj_alp = 14.0_realk
+      case("MPW1B95") 
+        dft_d3bj_alp = 14.0_realk
+      case("PWB6K") 
+        dft_d3bj_alp = 14.0_realk
+      case("B1B95") 
+        dft_d3bj_alp = 14.0_realk
+      case("BMK") 
+        dft_d3bj_alp = 14.0_realk
+      case("CAMB3LYP") 
+        dft_d3bj_alp = 14.0_realk
+      case("LC-wPBE") 
+        dft_d3bj_alp = 14.0_realk
+      case("B2GP-PLYP") 
+        dft_d3bj_alp = 14.0_realk
+      case("PTPSS") 
+        dft_d3bj_alp = 14.0_realk
+      case("PWPB95") 
+        dft_d3bj_alp = 14.0_realk
+      case("HCTH120") 
+        dft_d3bj_alp = 14.0_realk
+      case("DFTB3") 
+        dft_d3bj_alp = 14.0_realk
+      case default
+        write(*,*) 'Error in dft_d3bj_alp. Option unknown Func=',Func
+        call lsquit('Error in dft_d3bj_alp. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3bj_alp
+
+      FUNCTION dft_d3bj_rs18(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3bj_rs18
+      select case(Func)
+      case("BP86") 
+        dft_d3bj_rs18 = 4.8516_realk
+      case("BLYP") 
+        dft_d3bj_rs18 = 4.2359_realk
+      case("revPBE") 
+        dft_d3bj_rs18 = 3.5016_realk
+      case("B97-D") 
+        dft_d3bj_rs18 = 3.2297_realk
+      case("PBE") 
+        dft_d3bj_rs18 = 4.4407_realk
+      case("rpw86-pbe") 
+        dft_d3bj_rs18 = 4.5062_realk
+      case("B3LYP") 
+        dft_d3bj_rs18 = 4.4211_realk
+      case("TPSS") 
+        dft_d3bj_rs18 = 4.4752_realk
+      case("HF") 
+        dft_d3bj_rs18 = 2.8830_realk
+      case("TPSS0") 
+        dft_d3bj_rs18 = 4.5865_realk
+      case("PBE0") 
+        dft_d3bj_rs18 = 4.8593_realk
+      case("revPBE38") 
+        dft_d3bj_rs18 = 3.9446_realk
+      case("PW6B95") 
+        dft_d3bj_rs18 = 6.3750_realk
+      case("B2PLYP") 
+        dft_d3bj_rs18 = 5.0570_realk
+      case("DSD-BLYP") 
+        dft_d3bj_rs18 = 6.0519_realk
+      case("DSD-BLYP-FC") 
+        dft_d3bj_rs18 = 5.9807_realk
+      case("BOP") 
+        dft_d3bj_rs18 = 3.5043_realk
+      case("MPWLYP") 
+        dft_d3bj_rs18 = 4.5323_realk
+      case("OLYP") 
+        dft_d3bj_rs18 = 2.8065_realk
+      case("PBEsol") 
+        dft_d3bj_rs18 = 6.1742_realk
+      case("BPBE") 
+        dft_d3bj_rs18 = 4.3908_realk
+      case("OPBE") 
+        dft_d3bj_rs18 = 2.9444_realk
+      case("SSB") 
+        dft_d3bj_rs18 = 5.2170_realk
+      case("revSSB") 
+        dft_d3bj_rs18 = 4.0986_realk
+      case("OTPSS") 
+        dft_d3bj_rs18 = 4.3153_realk
+      case("B3PW91") 
+        dft_d3bj_rs18 = 4.4693_realk
+      case("BHLYP") 
+        dft_d3bj_rs18 = 4.9615_realk
+      case("revPBE0") 
+        dft_d3bj_rs18 = 3.7619_realk
+      case("TPSSh") 
+        dft_d3bj_rs18 = 4.6550_realk
+      case("MPW1B95") 
+        dft_d3bj_rs18 = 6.4177_realk
+      case("PWB6K") 
+        dft_d3bj_rs18 = 7.7627_realk
+      case("B1B95") 
+        dft_d3bj_rs18 = 5.5545_realk
+      case("BMK") 
+        dft_d3bj_rs18 = 5.9197_realk
+      case("CAMB3LYP") 
+        dft_d3bj_rs18 = 5.4743_realk
+      case("LC-wPBE") 
+        dft_d3bj_rs18 = 5.0987_realk
+      case("B2GP-PLYP") 
+        dft_d3bj_rs18 = 6.3332_realk
+      case("PTPSS") 
+        dft_d3bj_rs18 = 6.5745_realk
+      case("PWPB95") 
+        dft_d3bj_rs18 = 7.3141_realk
+      case("HCTH120") 
+        dft_d3bj_rs18 = 4.3359_realk
+      case("DFTB3") 
+        dft_d3bj_rs18 = 4.1906_realk
+      case default
+        write(*,*) 'Error in dft_d3bj_rs18. Option unknown Func=',Func
+        call lsquit('Error in dft_d3bj_rs18. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3bj_rs18
+
+      FUNCTION dft_d3bj_rs6(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3bj_rs6
+      select case(Func)
+      case("BP86") 
+        dft_d3bj_rs6 = 0.3946_realk
+      case("BLYP") 
+        dft_d3bj_rs6 = 0.4298_realk
+      case("revPBE") 
+        dft_d3bj_rs6 = 0.5238_realk
+      case("B97-D") 
+        dft_d3bj_rs6 = 0.5545_realk
+      case("PBE") 
+        dft_d3bj_rs6 = 0.4289_realk
+      case("rpw86-pbe") 
+        dft_d3bj_rs6 = 0.4613_realk
+      case("B3LYP") 
+        dft_d3bj_rs6 = 0.3981_realk
+      case("TPSS") 
+        dft_d3bj_rs6 = 0.4535_realk
+      case("HF") 
+        dft_d3bj_rs6 = 0.3385_realk
+      case("TPSS0") 
+        dft_d3bj_rs6 = 0.3768_realk
+      case("PBE0") 
+        dft_d3bj_rs6 = 0.4145_realk
+      case("revPBE38") 
+        dft_d3bj_rs6 = 0.4309_realk
+      case("PW6B95") 
+        dft_d3bj_rs6 = 0.2076_realk
+      case("B2PLYP") 
+        dft_d3bj_rs6 = 0.3065_realk
+      case("DSD-BLYP") 
+        dft_d3bj_rs6 = 0.0000_realk
+      case("DSD-BLYP-FC") 
+        dft_d3bj_rs6 = 0.0009_realk
+      case("BOP") 
+        dft_d3bj_rs6 = 0.4870_realk
+      case("MPWLYP") 
+        dft_d3bj_rs6 = 0.4831_realk
+      case("OLYP") 
+        dft_d3bj_rs6 = 0.5299_realk
+      case("PBEsol") 
+        dft_d3bj_rs6 = 0.4466_realk
+      case("BPBE") 
+        dft_d3bj_rs6 = 0.4567_realk
+      case("OPBE") 
+        dft_d3bj_rs6 = 0.5512_realk
+      case("SSB") 
+        dft_d3bj_rs6 = -0.0952_realk
+      case("revSSB") 
+        dft_d3bj_rs6 = 0.4720_realk
+      case("OTPSS") 
+        dft_d3bj_rs6 = 0.4634_realk
+      case("B3PW91") 
+        dft_d3bj_rs6 = 0.4312_realk
+      case("BHLYP") 
+        dft_d3bj_rs6 = 0.2793_realk
+      case("revPBE0") 
+        dft_d3bj_rs6 = 0.4679_realk
+      case("TPSSh") 
+        dft_d3bj_rs6 = 0.4529_realk
+      case("MPW1B95") 
+        dft_d3bj_rs6 = 0.1955_realk
+      case("PWB6K") 
+        dft_d3bj_rs6 = 0.1805_realk
+      case("B1B95") 
+        dft_d3bj_rs6 = 0.2092_realk
+      case("BMK") 
+        dft_d3bj_rs6 = 0.1940_realk
+      case("CAMB3LYP") 
+        dft_d3bj_rs6 = 0.3708_realk
+      case("LC-wPBE") 
+        dft_d3bj_rs6 = 0.3919_realk
+      case("B2GP-PLYP") 
+        dft_d3bj_rs6 = 0.0000_realk
+      case("PTPSS") 
+        dft_d3bj_rs6 = 0.0000_realk
+      case("PWPB95") 
+        dft_d3bj_rs6 = 0.0000_realk
+      case("HCTH120") 
+        dft_d3bj_rs6 = 0.3563_realk
+      case("DFTB3") 
+        dft_d3bj_rs6 = 0.7461_realk
+      case default
+        write(*,*) 'Error in dft_d3bj_rs6. Option unknown Func=',Func
+        call lsquit('Error in dft_d3bj_rs6. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3bj_rs6
+
+      FUNCTION dft_d3bj_s18(Func)
+      implicit none
+      character(*),intent(IN) :: Func
+      real(realk) :: dft_d3bj_s18
+      select case(Func)
+      case("BP86") 
+        dft_d3bj_s18 = 3.2822_realk
+      case("BLYP") 
+        dft_d3bj_s18 = 2.6996_realk
+      case("revPBE") 
+        dft_d3bj_s18 = 2.3550_realk
+      case("B97-D") 
+        dft_d3bj_s18 = 2.2609_realk
+      case("PBE") 
+        dft_d3bj_s18 = 0.7875_realk
+      case("rpw86-pbe") 
+        dft_d3bj_s18 = 1.3845_realk
+      case("B3LYP") 
+        dft_d3bj_s18 = 1.9889_realk
+      case("TPSS") 
+        dft_d3bj_s18 = 1.9435_realk
+      case("HF") 
+        dft_d3bj_s18 = 0.9171_realk
+      case("TPSS0") 
+        dft_d3bj_s18 = 1.2576_realk
+      case("PBE0") 
+        dft_d3bj_s18 = 1.2177_realk
+      case("revPBE38") 
+        dft_d3bj_s18 = 1.4760_realk
+      case("PW6B95") 
+        dft_d3bj_s18 = 0.7257_realk
+      case("B2PLYP") 
+        dft_d3bj_s18 = 0.9147_realk
+      case("DSD-BLYP") 
+        dft_d3bj_s18 = 0.2130_realk
+      case("DSD-BLYP-FC") 
+        dft_d3bj_s18 = 0.2112_realk
+      case("BOP") 
+        dft_d3bj_s18 = 3.2950_realk
+      case("MPWLYP") 
+        dft_d3bj_s18 = 2.0077_realk
+      case("OLYP") 
+        dft_d3bj_s18 = 2.6205_realk
+      case("PBEsol") 
+        dft_d3bj_s18 = 2.9491_realk
+      case("BPBE") 
+        dft_d3bj_s18 = 4.0728_realk
+      case("OPBE") 
+        dft_d3bj_s18 = 3.3816_realk
+      case("SSB") 
+        dft_d3bj_s18 = -0.1744_realk
+      case("revSSB") 
+        dft_d3bj_s18 = 0.4389_realk
+      case("OTPSS") 
+        dft_d3bj_s18 = 2.7465_realk
+      case("B3PW91") 
+        dft_d3bj_s18 = 2.8524_realk
+      case("BHLYP") 
+        dft_d3bj_s18 = 1.0354_realk
+      case("revPBE0") 
+        dft_d3bj_s18 = 1.7588_realk
+      case("TPSSh") 
+        dft_d3bj_s18 = 2.2382_realk
+      case("MPW1B95") 
+        dft_d3bj_s18 = 1.0508_realk
+      case("PWB6K") 
+        dft_d3bj_s18 = 0.9383_realk
+      case("B1B95") 
+        dft_d3bj_s18 = 1.4507_realk
+      case("BMK") 
+        dft_d3bj_s18 = 2.0860_realk
+      case("CAMB3LYP") 
+        dft_d3bj_s18 = 2.0674_realk
+      case("LC-wPBE") 
+        dft_d3bj_s18 = 1.8541_realk
+      case("B2GP-PLYP") 
+        dft_d3bj_s18 = 0.2597_realk
+      case("PTPSS") 
+        dft_d3bj_s18 = 0.2804_realk
+      case("PWPB95") 
+        dft_d3bj_s18 = 0.2904_realk
+      case("HCTH120") 
+        dft_d3bj_s18 = 1.0821_realk
+      case("DFTB3") 
+        dft_d3bj_s18 = 3.2090_realk
+      case default
+        write(*,*) 'Error in dft_d3bj_s18. Option unknown Func=',Func
+        call lsquit('Error in dft_d3bj_s18. Option unknown',-1)
+      end select
+      END FUNCTION dft_d3bj_s18
 
       END MODULE IIDFTD
 

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,39 +21,32 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef UNDEF
-===========================================================================
+========================================================================
 /* Comdeck rev_log */
 Revision 1.2  2001/01/17 10:41:29  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 
 Revision 1.3  2000/05/24 18:48:53  hjj
 new GETREF calls with NDREF (fixing triplet with CSF)
-change dummy 2 to * in DIMENSION
-polish in output
 do not save S(2) CI diagonal on LURSP4 ( all ones)
 
 revision 1.2 2000/04/14 14:33:01 hjj
-1) partial bug fix for triplet and CSFs (more need to be done)
-2) polishing
-=============================================================================
+partial bug fix for triplet and CSFs (more need to be done)
+========================================================================
 950208-hjaaj
-RSPORT: s/ZEQLY/OVLMIN/ (OVLMIN = 1.0D-4; ZEQLY was 1.0D-6 but they tested
-  the same thing; Hans Agren had problems for cubic response with
-  ZEQLY=1.0D-6 and OVLMIN=1.0D-4);  improved code for Z = Y or Z = -Y tests.
+RSPORT: s/ZEQLY/OVLMIN/ (OVLMIN = 1.0D-4; ZEQLY was 1.0D-6 but they
+  tested the same thing; Hans Agren had problems for cubic response with
+  ZEQLY=1.0D-6 and OVLMIN=1.0D-4);  improved code for Z=Y or Z=-Y tests.
 940708-hjaaj: SOPPA changes
-931004-pj/hjaaj
-PPST  : fixed DCOPY problem for RHF
-930910-hjaaj
-RSPNEX: always use relative convergence
+931004-pj/hjaaj PPST  : fixed DCOPY problem for RHF
+930910-hjaaj    RSPNEX: always use relative convergence
 930712-hjaaj
 RSPORT: ZEQLY = 1.0D-6 instead of 1.0D-10; lowered print level;
         discard trial vector for linear dep. if OVLPI close to 1;
         do symmetric orthonormalization twice
-920929-ov
-RSPSLI: fixed work dimension check
+920929-ov      RSPSLI: fixed work dimension check
 920904-hjaaj
 RSPNEX: 1) fixed error in print statement
         -- corrected print of solution and residual vectors
@@ -63,9 +56,8 @@ RSPNEX: 1) fixed error in print statement
         3) skip S[2]*X(i) calculation if EIVAL(i) .eq. D0
         4) only DZERO(BVECS(KINFIX)) if OPTORB
 920721-hinne hettema
-RSPRED: moved N vs. MAXNVE test down after ICTL test
-RSPORT,RSPSOR: implemented RSPSUP (super symmetry averaging)
-===========================================================================
+  RSPORT,RSPSOR: implemented RSPSUP (super symmetry averaging)
+========================================================================
 #endif
 C  /* Deck rsplin */
       SUBROUTINE RSPLIN(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
@@ -197,13 +189,13 @@ C
          DO 100 ISIM = 1,NCSIM
             KSZOFF = 1 + (ISIM-1)*KZYVAR
             CALL DAXPY(KZCONF,D1,ZYCVEC(1+(ISIM-1)*KZCONF),
-     *                 1,SVEC(KSZOFF),1)
+     &                 1,SVEC(KSZOFF),1)
  100     CONTINUE
          IF (IPRRSP.GT.110) THEN
-            WRITE(LUPRI,'(/A)')
-     *        ' S(2) linear transformed configuration part'
-            CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,
-     *                  KZYVAR,NCSIM,1,LUPRI)
+            WRITE(LUPRI,'(/A)') ' S(2) linear transformed'//
+     &         ' configuration part (X1 Y1 X2 Y2 ...)'
+            CALL OUTPUT(SVEC,1,KZVAR,1,2*NCSIM,
+     &                  KZVAR,2*NCSIM,-1,LUPRI)
          END IF
       END IF
 C
@@ -237,8 +229,8 @@ C
 C
             IF (IPRRSP.GT.100) THEN
                WRITE(LUPRI,'(/A)')' ACTIVE PART OF  ZYMAT '
-               CALL OUTPUT(WRK(KUFCAC),1,NASHT,1,NASHT,NASHT,
-     *                     NASHT,1,LUPRI)
+               CALL OUTPUT(WRK(KUFCAC),1,NASHT,1,NASHT,
+     *                     NASHT,NASHT,-1,LUPRI)
             END IF
             IF (TRPLET) THEN
                ISPIN1 = 0
@@ -252,7 +244,7 @@ C
      *                  WRK(KUFCAC),DUMMY,.TRUE.,.TRUE.,
      *                  XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
 C
-            IF (IREFSY .EQ. KSYMST) THEN
+            IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C           ... remove CREF component of S[2] vector
                T1 = DDOT(KZCONF,WRK(KCREF),1,
      *                   SVEC(KCVETO+1+(ISIM-1)*KZYVAR),1)
@@ -262,8 +254,8 @@ C           ... remove CREF component of S[2] vector
             IF (IPRRSP.GT.110) THEN
                WRITE(LUPRI,'(/A)')
      *        ' CSF PART OF S(2) TRANSFORMED ORBITAL VECTOR: Z PART'
-               CALL OUTPUT(SVEC(KCVETO+1+(ISIM-1)*KZYVAR),1,KZCONF,1,1,
-     *                     KZCONF,1,1,LUPRI)
+               CALL OUTPUT(SVEC(KCVETO+1+(ISIM-1)*KZYVAR),1,1,1,KZCONF,
+     *                     1,KZCONF,-1,LUPRI)
             END IF
 C
 C CREATE Y PART OF S(2) LINEAR TRANSFORMED TRIAL VECTOR
@@ -284,8 +276,8 @@ C ELECTRON OPERATOR
  320        CONTINUE
             IF (IPRRSP.GT.100) THEN
                WRITE(LUPRI,'(/A)')' ACTIVE PART OF TRANSPOSED ZYMAT '
-               CALL OUTPUT(WRK(KUFCAC),1,NASHT,1,NASHT,NASHT,
-     *                     NASHT,1,LUPRI)
+               CALL OUTPUT(WRK(KUFCAC),1,NASHT,1,NASHT,
+     *                     NASHT,NASHT,-1,LUPRI)
             END IF
             IF (TRPLET) THEN
                ISPIN1 = 0
@@ -298,7 +290,7 @@ C ELECTRON OPERATOR
      *                  SVEC(KCVETO+1+(ISIM-1)*KZYVAR+KZVAR),
      *                  WRK(KUFCAC),DUMMY,.TRUE.,.TRUE.,
      *                  XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
-            IF (IREFSY .EQ. KSYMST) THEN
+            IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C     
                T1 = DDOT(KZCONF,WRK(KCREF),1,
      *                   SVEC(KCVETO+1+(ISIM-1)*KZYVAR+KZVAR),1)
@@ -309,7 +301,7 @@ C
                WRITE(LUPRI,'(/A)')
      *        ' CSF PART OF S(2) TRANSFORMED ORBITAL VECTOR: Y PART'
                CALL OUTPUT(SVEC(KCVETO+1+(ISIM-1)*KZYVAR+KZVAR),
-     *                     1,KZCONF,1,1,KZCONF,1,1,LUPRI)
+     *                     1,1,1,KZCONF,1,KZCONF,-1,LUPRI)
             END IF
  200     CONTINUE
       END IF
@@ -337,7 +329,7 @@ C    *                 XNDXCI,WORK,KFREE,LFREE)
          CALL DSCAL(NCSIM*N2ASHX,DM1,WRK(KDVT),1)
 C THE MINUS SIGN IN THE LINEAR TRANSFORMATION IS PUT
 C INTO THE ONE ELECTRON TRANSITION DENSITY MATRIX
-         CALL RSPSOR(.FALSE.,NCSIM,WRK(KDVT),SVEC(1),DUMMY)
+         CALL RSPSOR(.FALSE.,NCSIM,WRK(KDVT),SVEC,DUMMY)
       END IF
       IF (NOSIM.GT.0) THEN
          IF (SOPPA) THEN
@@ -350,7 +342,7 @@ C           CALL RSPSOR(ONEIND,NSIM,UDV,SVECS,ZYMAT)
          ENDIF
       END IF
 C      IF ( (NCSIM.GT.0) .AND. (.NOT.RSPCI) ) THEN
-C         CALL RSPSOR(.FALSE.,NCSIM,WRK(KDVT),SVEC(1),DUMMY)
+C         CALL RSPSOR(.FALSE.,NCSIM,WRK(KDVT),SVEC,DUMMY)
 C      END IF
 C
 C END OF RSPSLI
@@ -538,15 +530,17 @@ C *** Perform supersymmetry averaging
 C
       IF (RSPSUP .AND. (KSYMOP .EQ. 1)) THEN
          IF (IPRRSP.GT.210) THEN
-            WRITE(LUPRI,*)' TRANSFORMATION WITH  S(2) BEFORE RSPAVE'
-            CALL OUTPUT(SVECS,1,KZYVAR,1,NSIM,KZYVAR,NSIM,1,LUPRI)
+            WRITE(LUPRI,*)' TRANSFORMATION WITH S(2) BEFORE RSPAVE'//
+     &      ' (Z1 Y1 Z1 Y2 ...)'
+            CALL OUTPUT(SVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
          END IF
          CALL RSPAVE(SVECS(KZCONF+1,1),KZVAR,2*NSIM)
       END IF
 C
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  S(2)'
-         CALL OUTPUT(SVECS,1,KZYVAR,1,NSIM,KZYVAR,NSIM,1,LUPRI)
+         WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  S(2)'//
+     &      ' (Z1 Y1 Z1 Y2 ...)'
+         CALL OUTPUT(SVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
       END IF
 C
 C END OF RSPSOR
@@ -572,6 +566,9 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -591,7 +588,13 @@ C
 #include "infrsp.h"
 #include "gnrinf.h"
 #include "mxcent.h"
-#include "wavpcm.h"
+C
+      logical :: is_pcmsolver = .false.
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        is_pcmsolver = .true.
+      end if
+#endif
 C
       CALL QENTER('RSPELI')
 C
@@ -668,7 +671,7 @@ C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
 C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM .OR. .OR. QMNPMM
 C
-      IF (EMBEDDING .OR. WAVPCM) THEN
+      IF (EMBEDDING .or. is_pcmsolver) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
@@ -994,8 +997,9 @@ C
  3000 CONTINUE
 C
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  E(2)'
-         CALL OUTPUT(EVECS,1,KZYVAR,1,NSIM,KZYVAR,NSIM,1,LUPRI)
+         WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  E(2)'//
+     &      ' (Z1 Y1 Z1 Y2 ...)'
+         CALL OUTPUT(EVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
       END IF
 C
 C END OF RSPORB
@@ -1106,12 +1110,12 @@ C
          GO TO 200
 C
    25    CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS(1+KZYVAR),
-     *               BVECS(1),NBX,(ISIMC-1))
+     *               BVECS,NBX,(ISIMC-1))
          IF (IPRRSP.GT.101) THEN
             WRITE (LUPRI,*) ' RSPNEX: Solution vectors no.',
-     *         ISIMC,' to',(ISIMC-1+NBX)
-            CALL OUTPUT(BVECS(1+KZYVAR),1,KZYVAR,1,NBX,
-     *                  KZYVAR,NBX,-1,LUPRI)
+     *         ISIMC,' to',(ISIMC-1+NBX),' (Z1 Y1 ...)'
+            CALL OUTPUT(BVECS(1+KZYVAR),1,KZVAR,1,2*NBX,
+     *                  KZVAR,2*NBX,-1,LUPRI)
          ENDIF
          KRES   = 1
          KINFIX = KRES + (NBX+1)*KZYVAR
@@ -1133,14 +1137,7 @@ C  Read in the D-matrix in SOPPA from LURSP4
 C
          IF (SOPPA) THEN
             CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-            JRSP4 = 0
-            CALL READST(LURSP4,LRSP4,BVECS(KDIA),JRSP4,.TRUE.)
-            IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP4 in RSPNEX')
-#else
             CALL READT(LURSP4,KZCONF,BVECS(KDIA))
-#endif
          ENDIF
          DO 50 IBX = 1,NBX
             IRESO = (IBX-1)*KZYVAR + 1
@@ -1207,13 +1204,7 @@ C EIGENVECTOR AND EIGENVALUE RESPECTIVELY OF THE REDUCED
 C RSP PROBLEM
 C
          CALL REWSPL(LURSP5)
-#if !defined (VAR_SPLITFILES)
          IF (KOFFTY.EQ.1) READ(LURSP5)
-#else
-         JRSP5 = 0
-         IF (KOFFTY .EQ. 1)
-     &        CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#endif
          DO 600 K = 1,KZRED
 C
 C   If SOPPA and the b-vector is 2p2h then only read the p-h part
@@ -1221,28 +1212,12 @@ C   from LURSP5 since the 2p-2h is constructed explicitly above
 C
             IF (SOPPA) THEN
                IF (IBTYP(K+KOFFTY) .EQ. JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP5,LRSP5,BVECS(KWRK1),JRSP5,.TRUE.)
-                  IF (LRSP5 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP5 in RSPNEX')
-               ELSE
-                  CALL READST(LURSP5,LRSP5,BVECS(KWRK1),JRSP5,.TRUE.)
-                  IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP5 in RSPNEX (2)')
-#else
                   CALL READT(LURSP5,KZYWOP,BVECS(KWRK1))
                ELSE
                   CALL READT(LURSP5,KZYVAR,BVECS(KWRK1))
-#endif
                ENDIF
             ELSE
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP5,LRSP5,BVECS(KWRK1),JRSP5,.TRUE.)
-                  IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP5 in RSPNEX (3)')
-#else
                CALL READT(LURSP5,KZYVAR,BVECS(KWRK1))
-#endif
             ENDIF
             DO 700 JR = 1,NBX
                JROFF  = (JR-1)*KZYVAR
@@ -1315,8 +1290,8 @@ C
             KFIXOF = KFIXOR
             DO 1050 JR=1,NBX
                JROFF = (JR-1)*KZYVAR
-               CALL DAXPY(KZYVAR,DM1,GD(1),1,
-     *                                  BVECS(1+JROFF),1)
+               CALL DAXPY(KZYVAR,DM1,GD,1,
+     *                        BVECS(1+JROFF),1)
                IF (OPTORB) THEN
                   CALL DAXPY(KZWOPT,DM1,GD(1+KZCONF),1,
      *                        BVECS(KFIXOF),1)
@@ -1329,8 +1304,8 @@ C
          IF (IPRRSP.GT.101) THEN
             WRITE (LUPRI,*) ' RSPNEX: (Z,Y) residual vectors no.',
      *         ISIMC,' to',(ISIMC-1+NBX)
-            CALL OUTPUT(BVECS,1,KZYVAR,1,2*NBX,
-     *                  KZYVAR,2*NBX,-1,LUPRI)
+            CALL OUTPUT(BVECS,1,KZVAR,1,2*NBX,
+     *                  KZVAR,2*NBX,-1,LUPRI)
          ENDIF
 C
 C        THE RESIDUAL IS NOW CONSTRUCTED
@@ -1527,14 +1502,15 @@ C        ... NTCONV is number of non-converged response vectors
 C
       IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
          WRITE(LUPRI,*)' NCSIM CSF TRIAL VECTORS',NCSIM
-         CALL OUTPUT(BVECS,1,KZCONF,1,NCSIM,KZCONF,NCSIM,1,LUPRI)
+         CALL OUTPUT(BVECS,1,KZCONF,1,NCSIM,KZCONF,NCSIM,-1,LUPRI)
       ENDIF
       IF ((IPRRSP.GT.110).AND.(NOSIM.GT.0)) THEN
          WRITE(LUPRI,*)' NBX ORBITAL VECTORS WRITTEN OUT',NBX
          WRITE(LUPRI,*)' NOSIM ORBITAL TRIAL VECTORS    ',NOSIM
-         WRITE(LUPRI,*)' KZYWOP                         ',KZYWOP
-         CALL OUTPUT(BVECS(KFIXOR),1,KZYWOP,
-     *             1,NBX,KZYWOP,NBX,1,LUPRI)
+         WRITE(LUPRI,*)' KZWOPT                         ',KZWOPT
+         WRITE(LUPRI,*)' (Z1 Y1 Z2 Y2 ...)'
+         CALL OUTPUT(BVECS(KFIXOR),1,KZWOPT,1,2*NBX,
+     &               KZWOPT,2*NBX,-1,LUPRI)
       ENDIF
          KCVEC = 1
          KOVEC = KCVEC + NCSIM * KZCONF
@@ -1603,14 +1579,14 @@ C
       ENDIF
       IF ((IPRRSP.GT.105).AND.(NCSIM.GT.0)) THEN
          WRITE(LUPRI,*)' NCSIM CSF trial vectors after RSPORT',NCSIM
-         CALL OUTPUT(BVECS,1,KZCONF,1,NCSIM,KZCONF,NCSIM,1,LUPRI)
+         CALL OUTPUT(BVECS,1,KZCONF,1,NCSIM,KZCONF,NCSIM,-1,LUPRI)
       ENDIF
       IF ((IPRRSP.GT.105).AND.(NOSIM.GT.0)) THEN
          WRITE(LUPRI,'(/A,I5/A)')
      +      ' NOSIM orbital trial vectors after RSPORT',NOSIM,
      +      ' ( columns: Z_1 Y_1 Z_2 Y_2 ... Z_NOSIM Y_NOSIM)'
          CALL OUTPUT(BVECS(1+NCSIM*KZCONF),1,KZWOPT,
-     *             1,NOSIM*2,KZWOPT,NOSIM*2,1,LUPRI)
+     *             1,NOSIM*2,KZWOPT,NOSIM*2,-1,LUPRI)
       ENDIF
 C
  3999 CONTINUE
@@ -1739,20 +1715,20 @@ C
 C
       IF (IPRRSP .GT. 20) THEN
          WRITE (LUPRI,'(//A/A)')
-     *      '  (ALFAR + i ALFAI) / BETA are eigenvalues;',
-     *      '     ALFAR           ALFAI          BETA'
-         WRITE (LUPRI,'(1P,3D15.6)')
-     *      (ALFAR(I),ALFAI(I),BETA(I),I=1,KZYRED)
+     *      '     (ALFAR + i ALFAI) / BETA are eigenvalues;',
+     *      '   I      ALFAR           ALFAI          BETA'
+         WRITE (LUPRI,'(1P,I5,3D15.6)')
+     *      (I,ALFAR(I),ALFAI(I),BETA(I),I=1,KZYRED)
       END IF
       DO 10 I=1,KZYRED
-         IF(ABS(BETA(I)).GE.ZEROT) THEN
+         IF (ABS(BETA(I)).GE.ZEROT) THEN
             ALFAR(I)=ALFAR(I)/BETA(I)
             ALFAI(I)=ALFAI(I)/BETA(I)
          ELSE
 C           singularities
             WRITE(LUPRI,1010)KSYMOP,KZYRED,I,ALFAR(I),ALFAI(I),BETA(I)
  1010       FORMAT(/' *** WARNING Singularity in reduced',
-     +          ' response eq. of symmetry',I3,
+     +          ' response equation of symmetry',I3,
      +         /' *** WARNING KZYRED,I,ALFAR(I),ALFAI(I),BETA(I):',
      +          2I4,1P,3D15.6)
          END IF
@@ -1765,7 +1741,7 @@ C        IF(RATIO.GT.ZCRIT) WRITE(LUPRI,1020) ALFAR(I),ALFAI(I)
             WRITE(LUPRI,1020) KSYMOP,KZYRED,I,ALFAR(I),ALFAI(I)
  1020       FORMAT(/' *** WARNING Complex eigenvalue in reduced',
      +          ' response eq. of symmetry',I3,
-     +         /' *** WARNING real and imaginary part :',2I4,1P,2D15.4)
+     +         /' *** WARNING real and imaginary part :',2I4,1P,2D15.6)
 C
 C SET EIGENVALUE EQUAL TO COMPLX IN ORDER TO BE ABLE TO SKIP
 C CONTRIBUTIONS FROM THIS ROOT WHEN SUMMING UP TERMS
@@ -1775,8 +1751,9 @@ C
          END IF
   10  CONTINUE
       IF (IPRRSP .GT. 15) THEN
-         WRITE (LUPRI,'(/A)') ' Eigenvalues of E(2) :'
-         WRITE (LUPRI,'(I10,1P,D12.2)') (I,ALFAR(I),I=1,KZYRED)
+         WRITE (LUPRI,'(/A)')
+     &      ' Unsorted eigenvalues of [ E(2) , S(2) ] :'
+         WRITE (LUPRI,'(I10,1P,D15.6)') (I,ALFAR(I),I=1,KZYRED)
       END IF
 C
 C     reduced S(2) in eigenvector basis
@@ -1790,39 +1767,42 @@ C
      &           WRK1,KZYRED,0.D0,
      &           WRK2,KZYRED)
       IF (IPRRSP .GT. 20) THEN
-         WRITE (LUPRI,'(/A)') ' Reduced S(2) in diagonal basis :'
-         WRITE (LUPRI,'(I10,1P,D12.2)') (I,WRK2(I,I),I=1,KZYRED)
-C        CALL OUTPUT(WRK2,1,KZYRED,1,KZYRED,KZYRED,KZYRED,1,LUPRI)
+         WRITE (LUPRI,'(/A)') ' Reduced S(2) in eigenvector basis :'
+         IF (IPRRSP .GE. 25) THEN
+            CALL OUTPUT(WRK2,1,KZYRED,1,KZYRED,KZYRED,KZYRED,-1,LUPRI)
+         ELSE
+            WRITE (LUPRI,'(I10,1P,D20.4)') (I,WRK2(I,I),I=1,KZYRED)
+         END IF
       END IF
 C
-C     select eigenvectors with positive normalization and store them
-C      as the first eigenvectors.
+C     Select eigenvectors with positive normalization and store them
+C        as the first eigenvectors.
 C
       IPOS = 0
       IZER = 0
       INEG = 0
       DO 20 I=1,KZYRED
          IF (BETA(I) .LE. ZEROT) THEN
-            IZER = IZER + 1
+            IZER  = IZER + 1
          ELSE IF (WRK2(I,I) .GT. D0) THEN
-            IPOS = IPOS + 1
-            SCALE= D1/SQRT(WRK2(I,I))
+            IPOS  = IPOS + 1
+            SCALE = D1/SQRT(WRK2(I,I))
             CALL DSCAL(KZYRED,SCALE,EIVEC(1,I),1)
             IF (IPOS.NE.I) THEN
                CALL DSWAP(KZYRED,EIVEC(1,I),1,EIVEC(1,IPOS),1)
-               XSAVE = ALFAR(IPOS)
-               ALFAR(IPOS)=ALFAR(I)
-               ALFAR(I)   =XSAVE
-               XSAVE = WRK2(IPOS,IPOS)
+               XSAVE           = ALFAR(IPOS)
+               ALFAR(IPOS)     = ALFAR(I)
+               ALFAR(I)        = XSAVE
+               XSAVE           = WRK2(IPOS,IPOS)
                WRK2(IPOS,IPOS) = WRK2(I,I)
                WRK2(I,I)       = XSAVE
-               XSAVE = BETA(IPOS)
-               BETA(IPOS) = BETA(I)
-               BETA(I) = XSAVE
+               XSAVE           = BETA(IPOS)
+               BETA(IPOS)      = BETA(I)
+               BETA(I)         = XSAVE
             END IF
-         ELSE IF (WRK2(I,I) .LT. -D0) THEN
-            INEG = INEG + 1
-            SCALE= D1/SQRT(ABS(WRK2(I,I)))
+         ELSE IF (WRK2(I,I) .LT. D0) THEN
+            INEG  = INEG + 1
+            SCALE = D1/SQRT(ABS(WRK2(I,I)))
             CALL DSCAL(KZYRED,SCALE,EIVEC(1,I),1)
             IF (ALFAR(I) .EQ. COMPLX) ALFAR(I) = -COMPLX
          END IF
@@ -1833,10 +1813,10 @@ C
             NNEG = NNEG + 1
             IF (NNEG.NE.I) THEN
                CALL DSWAP(KZYRED,EIVEC(1,I),1,EIVEC(1,NNEG),1)
-               XSAVE = ALFAR(NNEG)
-               ALFAR(NNEG)=ALFAR(I)
-               ALFAR(I)   =XSAVE
-               XSAVE = WRK2(NNEG,NNEG)
+               XSAVE           = ALFAR(NNEG)
+               ALFAR(NNEG)     = ALFAR(I)
+               ALFAR(I)        = XSAVE
+               XSAVE           = WRK2(NNEG,NNEG)
                WRK2(NNEG,NNEG) = WRK2(I,I)
                WRK2(I,I)       = XSAVE
             END IF
@@ -1845,23 +1825,23 @@ C
       ISNDX(1) = IPOS
       ISNDX(2) = IZER
       ISNDX(3) = INEG
-      IF (IPOS.NE.(KZYRED/2))
-     *   WRITE (LUPRI,2020) IPOS,IZER,INEG
+      IF (IPOS.NE.(KZYRED/2) .OR. IZER.NE.0)
+     &   WRITE (LUPRI,2020) IPOS,IZER,INEG
  2020 FORMAT(/' *** EIGENVECTORS WITH POSITIVE METRIC:',I6,
-     *       /'     EIGENVECTORS WITH ZERO METRIC:    ',I6,
-     *       /'     EIGENVECTORS WITH NEGATIVE METRIC:',I6)
+     *       /' *** EIGENVECTORS WITH ZERO METRIC:    ',I6,
+     *       /' *** EIGENVECTORS WITH NEGATIVE METRIC:',I6)
 C
-C order eigensolutions in ascending order of eigenvalues.
+C Order eigensolutions in ascending order of eigenvalues.
 C
       DO 100 I=1,IPOS
          JMIN = I
          AMIN = ALFAR(I)
-         DO 90 J=I+1,IPOS
+         DO, J=I+1,IPOS
             IF(ALFAR(J).LT.AMIN) THEN
                AMIN = ALFAR(J)
                JMIN = J
             ENDIF
-   90    CONTINUE
+         END DO
          IF (JMIN.NE.I) THEN
             ALFAR(JMIN)=ALFAR(I)
             ALFAR(I)=AMIN
@@ -1871,12 +1851,12 @@ C
       DO 110 I=IPOS+1,IPOS+INEG
          JMIN = I
          AMIN = ALFAR(I)
-         DO 92 J=I+1,IPOS+INEG
+         DO, J=I+1,IPOS+INEG
             IF(ALFAR(J).GT.AMIN) THEN
                AMIN = ALFAR(J)
                JMIN = J
             ENDIF
-   92    CONTINUE
+         END DO
          IF (JMIN.NE.I) THEN
             ALFAR(JMIN)=ALFAR(I)
             ALFAR(I)=AMIN
@@ -1885,39 +1865,29 @@ C
   110 CONTINUE
       IF (INEG.NE.IPOS) THEN
          WRITE(LUPRI,'(3(/A))')' ***** WARNING *********'
-     *   ,' number of eigenvalues with negative metric differ from'
-     *   ,' number with positive metric'
+     &   ,' number of eigenvalues with negative metric differ from'
+     &   ,' number with positive metric'
          IF (IPRRSP.GT.20) THEN
-            WRITE(LUPRI,'(/A)')
-     *      '   NUMBER    EIGENVALUE '
-            DO 117 I=1,KZYRED
-               WRITE(LUPRI,'(I10,5X,1P,D15.8)')
-     *                      I,ALFAR(I)
- 117        CONTINUE
+            WRITE(LUPRI,'(/A)') '   NUMBER    EIGENVALUE '
+            WRITE(LUPRI,'(I10,1P,D20.8)') (I,ALFAR(I),I=1,KZYRED)
          END IF
       ELSE
          IF (IPRRSP.GT.20) WRITE(LUPRI,'(/A)')
-     *      '   NUMBER    EIGENVALUE    PAIRED EIGENVALUE'
-         DO 115 I=1,IPOS
+     &      '      NUMBER      EIGENVALUE      PAIRED EIGENVALUE'
+         DO, I=1,IPOS
             IF (ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I))).GT.ZEROT)
-     *                                                    THEN
-               WRITE(LUPRI,'(/A)')
-     *          ' **WARNING** EIGENVALUES NOT PAIRED'
-            END IF
-            IF (IPRRSP.GT.20)
-     *         WRITE(LUPRI,'(I10,5X,1P,D15.8,5X,D15.8)')
-     *                      I,ALFAR(I),ALFAR(IPOS+I)
- 115     CONTINUE
-         IF (IZER .GT. 0 .AND. IPRRSP .GT. 20) THEN
-            WRITE(LUPRI,'(/A)')
-     *         ' ZERO METRIC EIGENVALUE AND ZERO EIGENVALUE'
-            WRITE(LUPRI,'(/A)')
-     *         'NUMBER    EIGENVALUE'
-            DO 116 I=1,IZER
-               WRITE(LUPRI,'(I10,5X,1P,D15.8)')
-     *                     I,ALFAR(IPOS+INEG+I)
- 116        CONTINUE
+     &         WRITE(LUPRI,'(/A)')
+     &         ' **WARNING**  EIGENVALUES NOT PAIRED'
+            IF (IPRRSP.GT.20) WRITE(LUPRI,'(I10,1P,2D20.8)')
+     &         I,ALFAR(I),ALFAR(IPOS+I)
+         END DO
+         IF (IZER .GT. 0) THEN
+            WRITE(LUPRI,'(/A//A)')
+     &         ' WARNING: ZERO METRIC EIGENVALUE AND ZERO EIGENVALUE',
+     &         '     NUMBER       EIGENVALUE'
+            WRITE(LUPRI,'(I10,1P,D20.8)')(I,ALFAR(IPOS+INEG+I),I=1,IZER)
          END IF
+         CALL FLSHFO(LUPRI)
       END IF
 C
       CALL QEXIT('RSPORD')
@@ -2072,18 +2042,11 @@ C        Orthogonalize new b-vectors agains previous b-vectors
 C        (both (Z, Y) and (Y, Z))
 C
          CALL REWSPL(LU3)
-#if defined (VAR_SPLITFILES)
-         JRSP3 = 0
-#endif
          DO 2000 K = 1,NBPREV
             IBTYPK = IBTYP(K)
             IF (IBTYPK .EQ. JBCNDX) THEN
                IF (NCNEW .EQ. 0) THEN
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LU3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else
                   READ (LU3)
-#endif
                   GO TO 2000
 C        v------------------
                END IF
@@ -2092,11 +2055,7 @@ C        v------------------
                LBSKIP = 2*KZWOPT
             ELSE IF (IBTYPK .EQ. JBONDX) THEN
                IF (NONEW .EQ. 0) THEN
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LU3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else
                   READ (LU3)
-#endif
                   GO TO 2000
 C        v------------------
                END IF
@@ -2106,13 +2065,7 @@ C        v------------------
             ELSE
                GO TO 9100
             END IF
-#if defined (VAR_SPLITFILES)
-            CALL READST(LU3,LRSP3,OLDVEC,JRSP3,.TRUE.)
-            IF (LRSP3 .NE. LBZY) CALL QUIT('Inconsistent record '//
-     &           'length on unit LU(RSP)3 in RSPORT')
-#else
             CALL READT(LU3,LBZY,OLDVEC)
-#endif
             IBVEC = 1
             DO 1900 IRX = 1,NBNEW
                IF (IBTYP(NBPREV+IRX) .NE. IBTYPK) THEN
@@ -2267,7 +2220,7 @@ C     ^-------------------------------
      *        'root no.',I3,' is removed',/,14X,'because of lin.dep.,',
      *        '<Z Y|Y Z> overlap =',1P,D14.6)
 C
-C Save new vector together with old ones on LU3
+C Save new b-vectors after the old ones on LU3
 C
       IBVECX = 1
       IBVEC  = 1
@@ -2284,11 +2237,7 @@ C
             IBPREV = IBPREV + 1
             IBTYP(IBPREV) = IBTYPI
 C
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LU3,LBZY,BVECS(IBVEC),JRSP3)
-#else
             CALL WRITT(LU3,LBZY,BVECS(IBVEC))
-#endif
             IF (IBVECX .NE. IBVEC) THEN
                DO 5000 I = 1,LBZY
                   BVECS(IBVECX-1+I) = BVECS(IBVEC-1+I)
@@ -2767,7 +2716,7 @@ C  REDE,REDS, the old reduced matrices (dimension: KZYRED-2*N)
 C  BCVEC,BOVEC, the N new vectors
 C  EVECS, E times the N b-vectors
 C  S times the N b-vectors are created in RSPSLI and
-C  stored in EVECS after EVECS is used
+C    stored in EVECS after EVECS is used
 C  N, number of new vectors
 C
 C
@@ -2779,11 +2728,12 @@ C  EVALR, real part of eigenvalues of the new reduced  mcrsp/rpa eq.
 C
 C Scratch:
 C  WRK, real scratch array dimension kzyvar
-C  bcvec ( in second part) dimension 3*kzyred**2+2*kzyred
+C  BCVEC ( in second part) dimension 3*kzyred**2+2*kzyred
+C
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION IBTYP(*),GD(*),REDGD(*),REDE(*),REDS(*),
-     *          UDV(*),BOVEC(*),BCVEC(*),EVECS(KZYVAR,*)
+     &          UDV(*),BOVEC(*),BCVEC(*),EVECS(KZYVAR,*)
       DIMENSION EIVEC(KZYRED,*),EIVAL(*),XINDX(*),WRK(*)
 C
 #include "ibndxdef.h"
@@ -2822,10 +2772,10 @@ C
 CSPAS:01.05.2009 bug fix for large number of  excitation energies
       IF (KZYRED.GT.LIROW) THEN
          WRITE(LUPRI,'(//A/A,A,I5,A,I5,/A)')
-     *   ' >>> ERROR IN RSPRED >>>',
-     *   ' DIMENSION OF INDEX VECTOR IROW IS TO SMALL; ',
-     *   ' NEEDED ',KZYRED,', GIVEN :',LIROW,
-     *   ' CHANGE DIMENSION IN infind.h AND RECOMPILE'
+     &   ' >>> ERROR IN RSPRED >>>',
+     &   ' DIMENSION OF INDEX VECTOR IROW IS TO SMALL; ',
+     &   ' NEEDED ',KZYRED,', GIVEN :',LIROW,
+     &   ' CHANGE DIMENSION IN infind.h AND RECOMPILE'
          CALL QUIT('RSPRED: TOO SMALL DIMENSION OF IROW: RECOMPILE')
       END IF
 CKeinSPASmehr
@@ -2837,9 +2787,9 @@ C
       IF (ICTL.EQ.2) GO TO 1000
       IF (N .GT. MAXNVE) THEN
          WRITE(LUPRI,'(//A/A,I5,/A,I5)')
-     *   ' >>> ERROR IN RSPRED >>>',
-     *   ' Number of new trial vectors is ',N,
-     *   ' which exceeds the allowed maximum, MAXNVE =',MAXNVE
+     &   ' >>> ERROR IN RSPRED >>>',
+     &   ' Number of new trial vectors is ',N,
+     &   ' which exceeds the allowed maximum, MAXNVE =',MAXNVE
          CALL QUIT('RSPRED: TOO MANY NEW TRIAL VECTORS')
       END IF
       IF (N.LT.1) GO TO 1000
@@ -2876,12 +2826,12 @@ C
       END DO
       IF ( IPRRSP .GT. 20 ) THEN
          WRITE(LUPRI,' (/A)')
-     *   ' INDEX VECTOR FOR E(2) TRANSFORMED TRIAL VECTORS'
+     &   ' INDEX VECTOR FOR E(2) TRANSFORMED TRIAL VECTORS'
          WRITE(LUPRI,*) ( IVENU(INUM),INUM=1,N )
          WRITE(LUPRI,' (/A)')
-     *   ' IBTYP VECTOR FOR E(2) TRANSFORMED TRIAL VECTORS'
+     &   ' IBTYP VECTOR FOR E(2) TRANSFORMED TRIAL VECTORS'
          WRITE(LUPRI,*)
-     *   ( IBTYP(INUM),INUM=KOFFTY+IZRED+1,KOFFTY+IZRED+N )
+     &   ( IBTYP(INUM),INUM=KOFFTY+IZRED+1,KOFFTY+IZRED+N )
       END IF
       IF (LINEQ) THEN
 C
@@ -2890,32 +2840,32 @@ C
          IZYRED= 2*IZRED
          IF (IPRRSP.GT.100) THEN
             WRITE(LUPRI,*)'  GRADIENT VECTOR (Z-part and Y-part)'
-            CALL OUTPUT(GD,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+            CALL OUTPUT(GD,1,2,1,KZVAR,2,KZVAR,-1,LUPRI)
             WRITE(LUPRI,*)KEXSIM,' REDUCED GRADIENT VECTORS DIM IZYRED',
      &         IZYRED
-            IF (IZYRED.GT.0)
-     *         CALL OUTPUT(REDGD,1,IZYRED,1,KEXSIM,IZYRED,KEXSIM,1,
-     &                     LUPRI)
          ENDIF
-         DO 14 I=1,KEXSIM
-            IF (IZYRED.GT.0)
-     *         CALL DCOPY(IZYRED,REDGD((I-1)*IZYRED+1),1,EIVEC(1,I),1)
- 14      CONTINUE
+         IF (IZYRED.GT.0) THEN
+            DO I=1,KEXSIM
+               IF (IPRRSP.GT.100) CALL OUTPUT(REDGD((I-1)*IZYRED+1),
+     &            1,2,1,IZRED,2,IZRED,-1,LUPRI)
+               CALL DCOPY(IZYRED,REDGD((I-1)*IZYRED+1),1,EIVEC(1,I),1)
+            END DO
+         END IF
          DO 12 J = 1,KEXSIM
             ISTBC = 1
             ISTBO = 1
             DO 10 I=1,N
                IF (IBTYP(IZRED+KOFFTY+I).EQ.JBCNDX) THEN
-                  PZY = DDOT(KZCONF,BCVEC(ISTBC),1,GD(1),1)
+                  PZY = DDOT(KZCONF,BCVEC(ISTBC),1,GD,1)
                   PYZ = DDOT(KZCONF,BCVEC(ISTBC),1,GD(1+KZVAR),1)
                   ISTBC = ISTBC + KZCONF
                ELSE
                   PZY = DDOT(KZWOPT,BOVEC(ISTBO),1,GD(1+KZCONF),1)
-     *                 +DDOT(KZWOPT,BOVEC(ISTBO+KZWOPT),1,
-     *                       GD(1+KZVAR+KZCONF),1)
+     &                + DDOT(KZWOPT,BOVEC(ISTBO+KZWOPT),1,
+     &                       GD(1+KZVAR+KZCONF),1)
                   PYZ = DDOT(KZWOPT,BOVEC(ISTBO),1,
-     *                       GD(1+KZVAR+KZCONF),1)
-     *             + DDOT(KZWOPT,BOVEC(ISTBO+KZWOPT),1,GD(1+KZCONF),1)
+     &                       GD(1+KZVAR+KZCONF),1)
+     &             + DDOT(KZWOPT,BOVEC(ISTBO+KZWOPT),1,GD(1+KZCONF),1)
                   ISTBO = ISTBO + KZYWOP
                ENDIF
                EIVEC(IZYRED+2*I-1,J) = PZY
@@ -2925,23 +2875,21 @@ C
          NTOT = KEXSIM*KZYRED
          CALL DCOPY(NTOT,EIVEC,1,REDGD,1)
          IF (IPRRSP.GE.15) THEN
-            WRITE(LUPRI,'(/I3,A,I5)') KEXSIM,
-     &         ' REDUCED GRADIENT VECTORS DIM KZYRED', KZYRED
-            CALL OUTPUT(REDGD,1,KZYRED,1,KEXSIM,KZYRED,KEXSIM,1,LUPRI)
+            DO I = 1,KEXSIM
+               WRITE(LUPRI,'(/I3,A,I5)') I,
+     &            ' REDUCED GRADIENT VECTORS (GZ, GY) DIM KZRED', KZRED
+               CALL OUTPUT(REDGD(1+(I-1)*KZYRED),1,2,1,KZRED,
+     &            2,KZRED,-1,LUPRI)
+            END DO
          ENDIF
       ENDIF
 C
-C  EXTEND REDUCED S-AND E-MATRICES
+C  EXTEND REDUCED S- AND E-MATRICES
 C
 C  b-vectors times new S-and E-vectors
 C
       CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
       IF (KOFFTY.EQ.1) READ (LURSP3)
-#else
-      JRSP3 = 0
-      IF (KOFFTY.EQ.1) CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
       KBOVEC = 1
       KBCVEC = 1
       DO 15 J = 1,KZRED
@@ -2958,13 +2906,7 @@ C
             JYOFF = KZVAR+1
          ENDIF
          IF(J.LE.IZRED) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK,JRSP3,.TRUE.)
-            IF (LRSP3 .NE. JZYVAR) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in RSPRED')
-#else
             CALL READT(LURSP3,JZYVAR,WRK)
-#endif
             KMIN = 1
          ELSE
             IF (IBTYP(J+KOFFTY).EQ.JBONDX) THEN
@@ -3005,16 +2947,11 @@ C
       NTOT = (NOSIM+NCSIM) * KZYVAR
       CALL DZERO(EVECS,NTOT)
       CALL RSPSLI(NCSIM,NOSIM,BCVEC,BOVEC,
-     *                  UDV,EVECS,XINDX,WRK,LWRK)
+     *            UDV,EVECS,XINDX,WRK,LWRK)
 C     CALL RSPSLI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
 C    *                  UDV,SVEC,XINDX,WRK,LWRK)
       CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
       IF (KOFFTY.EQ.1) READ (LURSP3)
-#else
-      JRSP3 = 0
-      IF (KOFFTY.EQ.1) CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
       KBOVEC = 1
       KBCVEC = 1
       DO 25 J = 1,KZRED
@@ -3031,13 +2968,7 @@ C    *                  UDV,SVEC,XINDX,WRK,LWRK)
             JYOFF = KZVAR+1
          ENDIF
          IF(J.LE.IZRED) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK,JRSP3,.TRUE.)
-            IF (LRSP3 .NE. JZYVAR) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in RSPRED (2)')
-#else
             CALL READT(LURSP3,JZYVAR,WRK)
-#endif
             KMIN = 1
          ELSE
             IF (IBTYP(J+KOFFTY).EQ.JBONDX) THEN
@@ -3070,9 +3001,9 @@ C
  1000 CONTINUE
       IF (IPRRSP .GE. 10) THEN
          WRITE (LUPRI,'(/A)') ' RSPRED: REDUCED HESSIAN MATRIX:'
-         CALL OUTPAK(REDE,KZYRED,1,LUPRI)
+         CALL OUTPAK(REDE,KZYRED,-1,LUPRI)
          WRITE (LUPRI,'(/A)') ' RSPRED: REDUCED METRIC MATRIX:'
-         CALL OUTPAK(REDS,KZYRED,1,LUPRI)
+         CALL OUTPAK(REDS,KZYRED,-1,LUPRI)
       END IF
       IF (ICTL .EQ. 1) GO TO 2000
 C
@@ -3096,9 +3027,9 @@ C
          ENDIF
          IF (IPRRSP.GT.20) THEN
             WRITE(LUPRI,'(/A)') ' REDUCED E(2)-W*S(2) MATRIX:'
-            CALL OUTPAK(BCVEC,KZYRED,1,LUPRI)
-            WRITE(LUPRI,*)'REDUCED GRADIENT VECTORS DIM KZYRED',KZYRED
-            CALL OUTPUT(EIVEC(1,IGD),1,KZYRED,1,1,KZYRED,1,1,LUPRI)
+            CALL OUTPAK(BCVEC,KZYRED,-1,LUPRI)
+            WRITE(LUPRI,*)'REDUCED GRADIENT VECTORS DIM (2,KZRED)',KZRED
+            CALL OUTPUT(EIVEC(1,IGD),1,2,1,KZRED,2,KZRED,-1,LUPRI)
          ENDIF
 C
 C           USE DSPSLI ( WHICH CALLS LINPACK ROUTINES ) TO SOLVE
@@ -3130,7 +3061,7 @@ C
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET
             END IF
  1800       FORMAT(/' GP * SOLUTION vector at frequency',F12.5,' a.u.',
-     *             /' after',I5,' linear transformations is ',F15.8,
+     *             /' after',I5,' linear transformations is',1P,D20.8,
      *             /' INERTIA (POS,ZER,NEG) of reduced matrix is',3I5,
      *             /' Determinant of reduced matrix is',F6.2,
      *              ' * 10 **',F5.1)
@@ -3149,79 +3080,91 @@ C Solve reduced general problem in subspace
 C
 C Expand reduced matrices to square matrices
 C
-         KZYRDQ = KZYRED*KZYRED
-         IJ=0
-         DO 77 I=1,KZYRED
-            DO 78 J=1,I
-               IJ=IJ+1
-               IJE=(I-1)*KZYRED+J
-               JIE=(J-1)*KZYRED+I
-               BCVEC(IJE)=REDE(IJ)
-               BCVEC(JIE)=REDE(IJ)
-               BCVEC(IJE+KZYRDQ)=REDS(IJ)
-               BCVEC(JIE+KZYRDQ)=REDS(IJ)
-   78       CONTINUE
-   77    CONTINUE
+         N2ZYRED = KZYRED*KZYRED
+         CALL DSPTGE(KZYRED,REDE,BCVEC)
+         CALL DSPTGE(KZYRED,REDS,BCVEC(1+N2ZYRED))
 C
-         KK1 = 1   + 2*KZYRDQ
+         KK1 = 1   + 2*N2ZYRED
          KK2 = KK1 + KZYRED
          KK3 = KK2 + KZYRED
-         KK4 = KK3 + KZYRDQ
+         KK4 = KK3 + N2ZYRED
 C
 C        Use EISPACK routine for real general matrices in
 C        generalized eigenvalue problem
 C
-         CALL RGG(KZYRED,KZYRED,BCVEC(1),BCVEC(1+KZYRDQ),EIVAL,
+         CALL RGG(KZYRED,KZYRED,BCVEC,BCVEC(1+N2ZYRED),EIVAL,
      *            BCVEC(KK1),BCVEC(KK2),1,EIVEC,IERR)
 C        CALL RGG(NM,N,A,B,ALFR,ALFI,BETA,MATZ,Z,IERR)
 C
          IF ( IERR.NE.0 ) THEN
-            WRITE(LUPRI,'(/A)')
-     *      ' WARNING: EIGENVALUE PROBLEM NOT CONVERGED '
-            CALL QUIT(' RSPRED: EIGENVALUE EQUATION NOT CONVERGED ')
+            WRITE(LUPRI,'(/A)') ' FATAL ERROR **RESPONS:'//
+     &      ' Eigenvalue routine RGG failed'
+            CALL QUIT(' RSPRED: Eigenvalue routine failed')
          END IF
 C
-      IF (IPRRSP .GE. 25) THEN
-         WRITE (LUPRI,'(/A)') ' REDUCED EIGENVECTORS BEFORE ORDERING:'
-         CALL OUTPUT(EIVEC,1,KZYRED,1,KZYRED,KZYRED,KZYRED,1,LUPRI)
-         WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES:'
-         CALL OUTPUT(EIVAL,1,KZYRED,1,1,KZYRED,1,1,LUPRI)
-      END IF
-         IJ = 0
-         DO 72 I=1,KZYRED
-            DO 72 J=1,I
-               IJ=IJ+1
-               IJE=(I-1)*KZYRED+J
-               JIE=(J-1)*KZYRED+I
-               BCVEC(IJE)=REDS(IJ)
-               BCVEC(JIE)=REDS(IJ)
-   72    CONTINUE
+         IF (IPRRSP .GE. 25) THEN
+           WRITE (LUPRI,'(/A)') ' REDUCED EIGENVECTORS BEFORE ORDERING:'
+           CALL OUTPUT(EIVEC,1,KZYRED,1,KZYRED,KZYRED,KZYRED,-1,LUPRI)
+           WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES (2,KZRED):'
+           CALL OUTPUT(EIVAL,1,2,1,KZRED,2,KZRED,-1,LUPRI)
+         END IF
 C
-         CALL RSPORD(BCVEC(1),EIVEC,EIVAL,BCVEC(KK1),BCVEC(KK2),
-     *            BCVEC(KK3),BCVEC(1+KZYRDQ),ISNDX)
+         CALL DSPTGE(KZYRED,REDS,BCVEC)
+         CALL RSPORD(BCVEC,EIVEC,EIVAL,BCVEC(KK1),BCVEC(KK2),
+     &               BCVEC(KK3),BCVEC(1+N2ZYRED),ISNDX)
 C        CALL RSPORD(SRED,EIVEC,ALFAR,ALFI,BETA,BVECS1,BVECS2,ISNDX)
 C
+         IF (ISNDX(2) .GT. 0 .OR. ISNDX(1) .NE. ISNDX(3) .OR.
+     &       IPRRSP .GE. 30) THEN
+            NNZYRED = (KZYRED*(KZYRED+1))/2
+            CALL DCOPY(NNZYRED,REDS,1,BCVEC,1)
+            WRITE (lupri,*) 'S[2] reduced matrix'
+            CALL outpak(bcvec,kzyred,-1,lupri)
+            CALL JACO(BCVEC,BCVEC(KK1),KZYRED,KZYRED,0,
+     &          BCVEC(KK2),BCVEC(KK3))
+C           CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
+            DO, I = 1,KZYRED
+               BCVEC(I) = BCVEC( (I*I+I)/2 )
+            END DO
+            ! CALL ORDER(WRK,BCVEC,KZYRED,0)
+            WRITE(LUPRI,*) 'The eigenvalues of S[2] reduced matri'
+            CALL OUTPUT(BCVEC,1,2,1,KZRED,2,KZRED,-1,LUPRI)
+
+            CALL DCOPY(NNZYRED,REDE,1,BCVEC,1)
+            WRITE (lupri,*) 'E[2] reduced matrix'
+            CALL outpak(bcvec,kzyred,-1,lupri)
+            CALL JACO(BCVEC,BCVEC(KK1),KZYRED,KZYRED,0,
+     &          BCVEC(KK2),BCVEC(KK3))
+C           CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
+            DO, I = 1,KZYRED
+               BCVEC(I) = BCVEC( (I*I+I)/2 )
+            END DO
+            ! CALL ORDER(WRK,BCVEC,KZYRED,0)
+            WRITE(LUPRI,*) 'The eigenvalues of E[2] reduced matrix'
+            CALL OUTPUT(BCVEC,1,2,1,KZRED,2,KZRED,-1,LUPRI)
+
+         END IF
          IF (IPRRSP .GE. 10) THEN
             IF (IPRRSP .GE. 25) THEN
                WRITE (LUPRI,'(/A)')
-     *               ' REDUCED EIGENVECTORS AFTER ORDERING:'
-               CALL OUTPUT(EIVEC,1,KZYRED,1,KZYRED,KZYRED,KZYRED,1,
-     &                     LUPRI)
+     &               ' REDUCED EIGENVECTORS AFTER ORDERING:'
+               CALL OUTPUT(EIVEC,1,KZYRED,1,KZYRED,KZYRED,KZYRED,
+     &                     -1,LUPRI)
             END IF
             WRITE(LUPRI,'(//2A,3I5//A/A)')
      *         ' NUMBER OF EIGENVALUES WITH POSITIVE,',
      *         ' ZERO, AND NEGATIVE METRIC:',ISNDX,
      *         ' THE EIGENVALUES WITH POSITIVE METRIC:',
-     *         ' NUMBER         EIGENVALUE'
+     *         '      NUMBER      EIGENVALUE'
             IPOS = ISNDX(1)
-            DO 85 I=1,IPOS
+            DO, I=1,IPOS
                IF (ABS(EIVAL(I)) .LT. DRTEST) THEN
-                 WRITE(LUPRI,'(I10,1P,D15.8,A/)') I,EIVAL(I),
+                 WRITE(LUPRI,'(I10,1P,D20.8,A/)') I,EIVAL(I),
      *            ' *** RSPRED  WARNING **** ZERO EIGENVALUE.'
                ELSE
-                  WRITE(LUPRI,'(I10,1P,D15.8)') I,EIVAL(I)
+                  WRITE(LUPRI,'(I10,1P,D20.8)') I,EIVAL(I)
                END IF
- 85         CONTINUE
+            END DO
          END IF
       ENDIF
 C
@@ -3368,8 +3311,8 @@ C
 C
       IF (JEXSTV .LT. KEXSTV .OR. JEXST2 .EQ. KEXST2) THEN
          IF (KEXST2 .LT. KZVAR) THEN
-            WRITE(LUPRI,'(//1X,A/)')
-     &         'ERROR in PPST: too few diagonal elements sorted.'
+            WRITE(LUPRI,'(//A/)')
+     &         ' ERROR in PPST: too few diagonal elements sorted.'
             IPRRSP = 7
          END IF
       END IF
@@ -3408,10 +3351,6 @@ C
       NOVLMX = 0
       CALL REWSPL(LURSP3)
       CALL REWSPL(LURSP5)
-#if defined (VAR_SPLITFILES)
-      JRSP3 = 0
-      JRSP5 = 0
-#endif
       IF (KOFFTY.EQ.1) THEN
 C
 C PUT REFERENCE CONFIGURATION AS FIRST RECORD ON LURSP3
@@ -3429,11 +3368,7 @@ Chj      KTOT   = MAX(KCRFRE + MAXPHP, KCREF + KZYVAR)
      *         ' REFERENCE CONFIGURATION. KZCONF,NCREF =',KZCONF,NCREF
             CALL OUTPUT(WRK(KCREF),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
          END IF
-#if defined (VAR_SPLITFILES)
-         CALL WRITST(LURSP3,KZCONF,WRK(KCREF),JRSP3)
-#else
          CALL WRITT(LURSP3,KZCONF,WRK(KCREF))
-#endif
          NCNUM = 0
          IRX   = 0
          ISIMX = 1
@@ -3449,7 +3384,7 @@ Chj         ... PHP pointer in KPNTR is also based on KZCONF
          DO  80 ISIM = 1,KEXSTV
             IF (ISTART(ISIMX) .LE. KZCONF) THEN
                IF (DOEVEC) THEN
-                  NCNUM = NCNUM + 1
+                  NCNUM  = NCNUM + 1
                   KRDVEC = KPEVEC + (NCNUM-1)*NPCVAR
                   OVLPRF = DDOT(NPCVAR,WRK(KCRFRE),1,WRK(KRDVEC),1)
                ELSE
@@ -3478,11 +3413,7 @@ Chj         ... PHP pointer in KPNTR is also based on KZCONF
             END IF
             WRITE(LUPRI,*)' OVERLAP =',OVLPMX
          END IF
-#if defined (VAR_SPLITFILES)
-         CALL WRITST(LURSP5,1,DUMMY,JRSP3)
-#else
          WRITE (LURSP5) D0,D0,D0,D0
-#endif
 Chj      ... record 1 on LURSP5 should never be read when KOFFTY.eq.1 !
          IBTYP(1) = JBCNDX
       ENDIF
@@ -3539,14 +3470,14 @@ Chj      ... record 1 on LURSP5 should never be read when KOFFTY.eq.1 !
                      IF (IPRRSP.GT.85) THEN
                         WRITE(LUPRI,*)' START VECTOR BEFORE SCATTERING'
                         CALL OUTPUT(WRK(KEVSC),1,NPCVAR,1,1,
-     *                                         NPCVAR,1,1,LUPRI)
+     *                              NPCVAR,1,1,LUPRI)
                      END IF
                      CALL SCAVEC(WRK(KCOFF),WRK(KEVSC),
      *                           WRK(KPNTR),NPCVAR)
                      IF (IPRRSP.GT.109) THEN
                         WRITE(LUPRI,*)' START VECTOR AFTER SCATTERING'
                         CALL OUTPUT(WRK(KCOFF),1,KZCONF,1,1,
-     *                                         KZCONF,1,1,LUPRI)
+     *                              KZCONF,1,1,LUPRI)
                      END IF
                   ELSE
                      DO 242 IEQL = 1,IEQUAL(ISIM-1+IR)
@@ -3578,7 +3509,7 @@ Chj      ... record 1 on LURSP5 should never be read when KOFFTY.eq.1 !
          IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
             WRITE(LUPRI,*)' NCSIM CSF TRIAL VECTORS',NCSIM
             CALL OUTPUT(WRK(KDIASO),1,KZCONF,1,NCSIM,
-     *                                    KZCONF,NCSIM,1,LUPRI)
+     *                  KZCONF,NCSIM,1,LUPRI)
          ENDIF
          IF ((IPRRSP.GT.110).AND.(NOSIM.GT.0)) THEN
             WRITE(LUPRI,*)' NOSIM ORBITAL TRIAL VECTORS',NOSIM
@@ -3601,12 +3532,12 @@ C        CALL RSPORT(BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
             IF (NCSIM.GT.0) THEN
                WRITE(LUPRI,*)' NCSIM CSF TRIAL VECTORS',NCSIM
                CALL OUTPUT(WRK(KDIASO),1,KZCONF,1,NCSIM,
-     *                                   KZCONF,NCSIM,1,LUPRI)
+     *                     KZCONF,NCSIM,-1,LUPRI)
             ENDIF
             IF (NOSIM.GT.0) THEN
                WRITE(LUPRI,*)' NOSIM ORBITAL TRIAL VECTORS',NOSIM
                CALL OUTPUT(WRK(KDIASO+NCSIM*KZCONF),1,KZYWOP,
-     *                   1,NOSIM,KZYWOP,NOSIM,1,LUPRI)
+     *                   1,NOSIM,KZYWOP,NOSIM,-1,LUPRI)
             END IF
          END IF
          NTSIM = NTSIM + NLSIM
@@ -3622,7 +3553,7 @@ C        CALL RSPORT(BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
             DO 300 I = 1,NTOT
                WRK(I) = WRK((KDIASO-1)+I)
   300       CONTINUE
-C           CALL DCOPY(NTOT,WRK(KDIASO),1,WRK(1),1)
+C           CALL DCOPY(NTOT,WRK(KDIASO),1,WRK,1)
          END IF
       ELSE
          BINMEM = .FALSE.
@@ -3708,13 +3639,13 @@ C
       IF ( IPRRSP.GT.90 ) THEN
          WRITE(LUPRI,*)NSIM,' DENA MATRICES'
          DO 3000 ISIM = 1, NSIM
-            CALL OUTPUT(DENA(1,1,ISIM),1,NORBT,1,NASHT,NORBT,NASHT,1,
-     &                  LUPRI)
+            CALL OUTPUT(DENA(1,1,ISIM),1,NORBT,1,NASHT,NORBT,NASHT,
+     &                  -1,LUPRI)
  3000    CONTINUE
          WRITE(LUPRI,*)NSIM,' DENB MATRICES'
          DO 3010 ISIM = 1, NSIM
-            CALL OUTPUT(DENB(1,1,ISIM),1,NORBT,1,NASHT,NORBT,NASHT,1,
-     &                  LUPRI)
+            CALL OUTPUT(DENB(1,1,ISIM),1,NORBT,1,NASHT,NORBT,NASHT,
+     &                  -1,LUPRI)
  3010    CONTINUE
       END IF
       CALL QEXIT('RSPTR1')
@@ -3767,8 +3698,8 @@ C 300  CONTINUE
       IF (IPRRSP.GT.100) THEN
          WRITE(LUPRI,*)NSIM,' ZYMAT MATRICES'
          DO 400 ISIM = 1,NSIM
-            CALL OUTPUT(ZYMAT(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,1,
-     &                  LUPRI)
+            CALL OUTPUT(ZYMAT(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,
+     &                  -1,LUPRI)
  400     CONTINUE
       END IF
 C
@@ -3799,41 +3730,26 @@ C
 C
       CALL DZERO(BVECS,KZCONF)
       CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
       IF (KOFFTY.EQ.1) READ (LURSP3)
-#else
-      JRSP3 = 0
-      IF (KOFFTY.EQ.1) CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
       DO 200 K = 1,KZRED
          IBTYPK = IBTYP(K+KOFFTY)
          IF (IBTYPK.EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK,JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in RSPVEC')
-#else
             CALL READT(LURSP3,KZCONF,WRK)
-#endif
             IF (IOFFC.EQ.0) THEN
                CALL DAXPY(KZCONF,EIVEC((2*K-1),IBNUM),
-     *                    WRK(1),1,BVECS(1),1)
+     *                    WRK,1,BVECS,1)
             ELSE
                CALL DAXPY(KZCONF,EIVEC(2*K,IBNUM),
-     *                 WRK(1),1,BVECS(1),1)
+     *                 WRK,1,BVECS,1)
             END IF
          ELSE
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else
             READ(LURSP3)
-#endif
          ENDIF
  200  CONTINUE
 C
       IF (IPRRSP .GE. 35) THEN
          WRITE(LUPRI,*)'  SOLUTION VECTOR FOR OLSEN ALGORITHM'
-         CALL OUTPUT(BVECS(1),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
+         CALL OUTPUT(BVECS,1,KZCONF,1,1,KZCONF,1,1,LUPRI)
       END IF
 C
 C     END OF RSPCVE
@@ -3866,43 +3782,23 @@ C
 C *** now SKIP diagonals of E[2]-matrix needed for RSPLIN
 C
       IF (KZCONF .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,DUMMY,JRSP4,.FALSE.)
-#else
          READ (LURSP4)
-#endif
       END IF
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,DUMMY,JRSP4,.FALSE.)
-#else
          READ (LURSP4)
-#endif
       END IF
 C
 C *** now SKIP diagonals of S[2]-matrix needed for RSPTRN
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,DUMMY,JRSP4,.FALSE.)
-#else
          READ (LURSP4)
-#endif
       END IF
 C
 C    read or write diagonal phpinformation
 C
       IF (PHPWRT) THEN
-#if defined (VAR_SPLITFILES)
-         CALL WRITST(LURSP4,LPHPMX,A(1),JRSP4)
+         CALL WRITT(LURSP4,LPHPMX,A)
       ELSE
-         CALL READST(LURSP4,LRSP4,A(1),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. LPHPMX) CALL QUIT('Inconsistent record '//
-     &        'length on unit LURSP4 in PHPDSK')
-#else
-         CALL WRITT(LURSP4,LPHPMX,A(1))
-      ELSE
-          CALL READT(LURSP4,LPHPMX,A(1))
-#endif
+          CALL READT(LURSP4,LPHPMX,A)
       END IF
 C
 C *** END OF PHPDSK
@@ -3910,3 +3806,4 @@ C
       CALL QEXIT('PHPDSK')
       RETURN
       END
+!  -- end of rsp/rspc82.F --

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef UNDEF
 !===========================================================================
@@ -303,11 +302,12 @@ C
 C
 C     error branch IF (MEMCK .NE. MEMID) THEN
 C
- 8002    WRITE (LUWMEM,'(/A/2A/A,2I10,2(/A,I25))')
+ 8002    WRITE (LUWMEM,'(/A/2A/A,2I10/A,I25,A,G20.12,A/A,I25)')
      *      ' MEMREL ERROR, not a valid memget id in work(krel)',
      *      ' Text from calling routine : ',TEXT,
      *      ' KFIRST,KREL =',KFIRST,KREL,
      *      ' found memory check at work(krel):',MEMCK,
+     &      ' ( value as real*8: ',WMEMCK,' )',
      *      ' expected                        :',MEMID
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
@@ -364,15 +364,16 @@ Chj1  CALL QEXIT('MEMCHK  ')
 C
 C        error branch IF (MEMCK .NE. MEMID) THEN
 C
- 8001    WRITE (LUWMEM,'(/A/2A/A,3I10,2(/A,I25))')
+ 8001    WRITE (LUWMEM,'(/A/2A/A,3I10/A,I25,A,G20.12,A/A,I25)')
      *      ' MEMCHK ERROR, not a valid memget id in work(kalloc-1)',
      *      ' Text from calling routine : ',TEXT,
      *      ' KFIRST,KALLOC,IALLOC =',KFIRST,KALLOC,IALLOC,
      *      ' found memory checks:',MEMCK,
+     &      ' ( value as real*8: ',WMEMCK,' )',
      *      ' expected           :',MEMID
          WRITE (LUWMEM,'(/A/A)')
      &      ' Dump of allocations before invalid memget id:',
-     &      ' IALLOC #    IDENT       KBASE         Length'
+     &      ' IALLOC #   IDENT           KBASE         Length'
          KALLOC = KFIRST
          IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
          DO I = 1, IALLOC

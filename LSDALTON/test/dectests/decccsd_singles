@@ -59,7 +59,7 @@ TRILEVEL
 **DEC
 .CCSD
 .FOT
-4
+1.0e-4
 .SinglesPolari
 .SinglesThr
 0.1

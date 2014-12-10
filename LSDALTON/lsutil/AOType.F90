@@ -22,6 +22,7 @@ TYPE AOBATCH
 Logical                 :: TYPE_Empty
 Logical                 :: TYPE_Nucleus
 Logical                 :: TYPE_pCharge
+Logical                 :: TYPE_elField
 Logical                 :: spherical
 real(realk)             :: CENTER(3)
 INTEGER                 :: nPrimitives

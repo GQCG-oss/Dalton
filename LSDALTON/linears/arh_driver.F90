@@ -104,14 +104,15 @@ contains
        call dd_debug_homolumo(decomp,debug%diag_hlgap)
     endif
 
-    if (arh%debug_hessian) then
-       if (decomp%cfg_unres) call lsquit('Debug routine not tested for unrestricted',decomp%lupri)
-       hesdim = ndim*(ndim+1)/2 - ndim
-       call mat_init(hes,hesdim,hesdim)
-       call debug_get_hessian(arh,decomp,fifoqueue,hes)
-       call util_diag(arh%lupri,hes,.false.,0.25E0_realk,'Lowest Hessian eigenvalue:')
-       call mat_free(hes)
-    endif
+    if (arh%debug_hessian) call lsquit('debug_get_hessian Code removed. TK',-1)
+!!$    if (arh%debug_hessian) then
+!!$       if (decomp%cfg_unres) call lsquit('Debug routine not tested for unrestricted',decomp%lupri)
+!!$       hesdim = ndim*(ndim+1)/2 - ndim
+!!$       call mat_init(hes,hesdim,hesdim)
+!!$       call debug_get_hessian(arh,decomp,fifoqueue,hes)
+!!$       call util_diag(arh%lupri,hes,.false.,0.25E0_realk,'Lowest Hessian eigenvalue:')
+!!$       call mat_free(hes)
+!!$    endif
 
     !write(arh%lupri,*) 'FU:'
     !call mat_print(decomp%FU,1,ndim,1,ndim,arh%lupri)
@@ -890,6 +891,7 @@ end subroutine linesearch_thresholds
       type(lshiftItem)             :: lshift
 !Levelshift by homo-lumo gap
        real(realk)                 :: hlgap, tstart, tend
+       xsave_lu=-113
        OnMaster=.TRUE.
    if (arh%set_arhterms) then
       ndens = fifoqueue%offset
@@ -950,10 +952,24 @@ end subroutine linesearch_thresholds
 
    !The maximum number of rejections is currently set to six
    ! - if there are that many rejections, the calculation is definitely
-   ! unhealthy and should be stopped. This is almost always caused by lack of
-   ! integral accuracy.
+   ! unhealthy and should be stopped. 
    if (arh%Nrejections > 6) then
-     WRITE(arh%LUPRI, "('Too many rejections - probably related to lack of integral accuracy!')")
+     print*,'Too many rejections; Number of rejections',arh%Nrejections
+     print*,'This could be related to lack of integral accuracy or a complicated electronic structure.'
+     print*,'Try to restart the calculation by adding the .RESTART option under *DENSOPT (and save the dens.restart)'
+     print*,'or try to increase the integral accuracy by addint for instance'
+     print*,'**INTEGRALS'
+     print*,'.THRESH'
+     print*,'1.0d-13'
+     print*,'to the LSDALTON.INP file'
+     WRITE(arh%LUPRI,*)'Too many rejections; Number of rejections',arh%Nrejections
+     WRITE(arh%LUPRI,*)'This could be related to lack of integral accuracy or a complicated electronic structure.'
+     WRITE(arh%LUPRI,*)'Try to restart the calculation by adding the .RESTART option under *DENSOPT (and save the dens.restart)'
+     WRITE(arh%LUPRI,*)'or try to increase the integral accuracy by addint for instance'
+     WRITE(arh%LUPRI,*)'**INTEGRALS'
+     WRITE(arh%LUPRI,*)'.THRESH'
+     WRITE(arh%LUPRI,*)'1.0d-13'
+     WRITE(arh%LUPRI,*)'to the LSDALTON.INP file'
      CALL lsQUIT('Too many rejections - probably related to lack of integral accuracy!',decomp%lupri)
    endif
 

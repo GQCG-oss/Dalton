@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  FILE: sirius/sirsav.F
 C
@@ -641,7 +640,7 @@ C        write startvec with new vectors
             CALL WRITT(LUIT1,NC4,WRK(JCVECS))
  9022    CONTINUE
 C        write nat. orb. occupation numbers, when available
-         IF (NASHT.EQ.1 .OR.
+         IF (NASHT.LE.1 .OR.
      &      (CNOLBL.NE.'ONLYFD' .AND. NASHT.GT.0)) THEN
             IF (NASHT.EQ.1) WRK(KAOCC) = NACTEL
             WRITE (LUIT1) LAB123,TABLE(9)

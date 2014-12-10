@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck anainp */
       SUBROUTINE ANAINP(WORD)
@@ -225,7 +224,7 @@ C
       SAVE DIST, ANGLE, DIHED
 C     statement function:
       ARCCOS(ARG) = FACANG*ACOS(ARG)
-#include "ibtfun.h"
+
 C
 #ifndef PRG_DIRAC
       IF (REDCNT) RETURN
@@ -243,24 +242,24 @@ C
       IATOMA = 0
       DO 100 ICENTA = 1, NCTOT
          DO 110 IA = 0, MAXOPR
-            IF (IBTAND(IA,ISTBNU(ICENTA)) .EQ. 0) THEN
+            IF (IAND(IA,ISTBNU(ICENTA)) .EQ. 0) THEN
                IATOMA = IATOMA + 1
-               CXA = PT(IBTAND(ISYMAX(1,1),IA))*COORD(1,ICENTA)
-               CYA = PT(IBTAND(ISYMAX(2,1),IA))*COORD(2,ICENTA)
-               CZA = PT(IBTAND(ISYMAX(3,1),IA))*COORD(3,ICENTA)
+               CXA = PT(IAND(ISYMAX(1,1),IA))*COORD(1,ICENTA)
+               CYA = PT(IAND(ISYMAX(2,1),IA))*COORD(2,ICENTA)
+               CZA = PT(IAND(ISYMAX(3,1),IA))*COORD(3,ICENTA)
 C
                ICHARG(IATOMA) = IZATOM(ICENTA)
 C
                IATOMB = 0
                DO 200 ICENTB = 1, NCTOT
                   DO 210 IB = 0, MAXOPR
-                     IF (IBTAND(IB,ISTBNU(ICENTB)) .EQ. 0) THEN
+                     IF (IAND(IB,ISTBNU(ICENTB)) .EQ. 0) THEN
                         IATOMB = IATOMB + 1
                         IF (IATOMB .GT. IATOMA) GO TO 110
 C                       ... next IATOMA, only IATOMB .le. IATOMA needed
-                          CXB=PT(IBTAND(ISYMAX(1,1),IB))*COORD(1,ICENTB)
-                          CYB=PT(IBTAND(ISYMAX(2,1),IB))*COORD(2,ICENTB)
-                          CZB=PT(IBTAND(ISYMAX(3,1),IB))*COORD(3,ICENTB)
+                          CXB=PT(IAND(ISYMAX(1,1),IB))*COORD(1,ICENTB)
+                          CYB=PT(IAND(ISYMAX(2,1),IB))*COORD(2,ICENTB)
+                          CZB=PT(IAND(ISYMAX(3,1),IB))*COORD(3,ICENTB)
                           VEC(1,IATOMB,IATOMA) = XTANG*(CXA - CXB)
                           VEC(2,IATOMB,IATOMA) = XTANG*(CYA - CYB)
                           VEC(3,IATOMB,IATOMA) = XTANG*(CZA - CZB)
@@ -364,12 +363,14 @@ C
      &       ADISTYX_MIN,' Angstrom (',ADISTYX_MIN/XTANG,' Bohr)'
 
             IF (N_SHORT_YX .GT. 0 .OR. N_SHORT_HX .GT. 0) THEN
+              NWARN = NWARN + 1
               WRITE(LUPRI,'(/A,2I5/A/A)')
-     &          'WARNING: Number of short HX and YX bond lengths:',
+     &          '@ WARNING: Number of short HX and YX bond lengths:',
      &            N_SHORT_HX,N_SHORT_YX,
-     &          'WARNING: If not intentional, maybe your coordinates'
+     &          '@ WARNING: If not intentional, maybe your coordinates'
      &            //' were in Angstrom,',
-     &          'WARNING: but "Angstrom" was not specified in .mol file'
+     &          '@ WARNING: but "Angstrom" was not specified'
+     &            //' in .mol file'
             END IF
 
            END IF
@@ -473,7 +474,7 @@ C
  40         CONTINUE
             IF (IJK .EQ. 0) WRITE(LUPRI,'(5X,A)') 'No angles found'
           END IF
-        END IF
+        END IF ! not QM3
       END IF
 C
 C     Punch bonding information in Gamess output format on unit LUPUNCH

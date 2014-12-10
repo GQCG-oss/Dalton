@@ -14,10 +14,12 @@ export CTEST_PROJECT_NAME=LSDALTON
 ./setup --fc=gfortran --cc=gcc --cxx=g++ --omp -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-release" build
 cd build
 make release
-#this creates a tar file named DALTON-2013.1-Source.tar.gz
-tar -zxvf DALTON-2013.1-Source.tar.gz
-cd DALTON-2013.1-Source
-./setup --fc=gfortran --cc=gcc --cxx=g++ --omp -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-release" build
-cd build
-ctest -D Nightly -L linsca
+#this creates a tar file named DALTON-Source.tar.gz
+if [[ -e  DALTON-Source.tar.gz ]]; then
+ tar -zxvf DALTON-Source.tar.gz
+ cd DALTON-Source
+ ./setup --fc=gfortran --cc=gcc --cxx=g++ --omp -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-release" build
+ cd build
+ ctest -D Nightly --track NightlyMakeRelease -L linsca
+fi
 exit 0

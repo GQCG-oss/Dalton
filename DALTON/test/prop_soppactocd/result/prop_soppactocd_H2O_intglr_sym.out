@@ -1,0 +1,1913 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2013.2
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Fri May 30 13:29:22 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /Users/ast018/dalton/DALTON/test/runtest_prop_soppactocd
+   2) /Users/ast018/dalton/build-master/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | ast018
+ Host                     | rfb-ntf-m0022.bargi.uit.no
+ System                   | Darwin-13.1.0
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /usr/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (MacPorts gcc48 4.8.2_0) 4.8.2
+ C compiler               | /usr/local/bin/mpicc
+ C compiler version       | gcc (MacPorts gcc48 4.8.2_0) 4.8.2
+ C++ compiler             | /usr/local/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /usr/lib/libblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | 0c3e398ca4c78bacad0308b5fa7e055981e33872
+ Configuration time       | 2014-05-26 21:29:21.213348
+
+ * Sequential calculation.
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN PROPERTIES                                   
+**WAVE FUNCTIONS                                  
+.HF                                               
+.MP2                                              
+**PROPERTIES                                      
+.SOPPA                                            
+.CTOCD                                            
+.MAGNET                                           
+.SHIELD                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+INTGRL                                                                         
+Calculation of CTOCD-DZ magnetizability and shielding constants through ABACUS 
+                                                                               
+c   2    2  X  Y      0.10D-15  0.10D-15                                       
+      8.00    1    3    6    5    1                                            
+O   0.00000             0.00000              0.1241444240                      
+F  6    1                                                                      
+31195.6 0.00021                                                                
+4669.38 0.001628                                                               
+1062.62 0.00845                                                                
+301.426 0.034191                                                               
+98.5153 0.110311                                                               
+35.4609 .269493                                                                
+F  1    1                                                                      
+13.6179 .423545                                                                
+F  1    1                                                                      
+5.38618 .283038                                                                
+F  1    1                                                                      
+1.53873 .027484                                                                
+F  1    1                                                                      
+.6055 -.005144                                                                 
+F  1    1                                                                      
+.22054 .00164                                                                  
+F  3    1                                                                      
+114.863 .002266                                                                
+26.8767 0.017192                                                               
+8.32077 0.075341                                                               
+F  1    1                                                                      
+2.97237 .212775                                                                
+F  1    1                                                                      
+1.12848 .370478                                                                
+F  1    1                                                                      
+.4236 .398523                                                                  
+F  1    1                                                                      
+.15074 .184703                                                                 
+F  2    1                                                                      
+1.21879 .357851                                                                
+.36102 .759561                                                                 
+      1.00    1    2    3    1                                                 
+H   0.00000             1.43153              -0.985265576                      
+F  3    1                                                                      
+33.865014 .006068                                                              
+5.094788 0.045316                                                              
+1.158786 0.202846                                                              
+F  1    1                                                                      
+0.32584 0.503709                                                               
+F  1    1                                                                      
+.102741 .383568                                                                
+F  1    1                                                                      
+1.16 1.0                                                                       
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Static molecular property section will be executed (ABACUS module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Calculation of CTOCD-DZ magnetizability and shielding constants through 
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  INFO from READIN: Threshold for discarding integrals was    1.00D-16
+  INFO from READIN: Threshold is reset to minimum value       1.00D-15
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000015
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    44    27      [11s7p2d|6s5p1d]                                   
+  H           2    1.0000     8     6      [5s1p|3s1p]                                        
+  ----------------------------------------------------------------------
+  total:      3   10.0000    60    39
+  ----------------------------------------------------------------------
+  Cartesian basis used.
+  (Note that d, f, ... atomic GTOs are not all normalized.)
+
+  Threshold for neglecting AO integrals:  1.00D-15
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.1241444240
+  H   / 1 :     4  x   0.0000000000    5  y   1.4315300000    6  z  -0.9852655760
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4315300000    9  z  -0.9852655760
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+  Symmetry  A1  ( 1)
+
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
+
+  Symmetry  B1  ( 2)
+
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
+
+  Symmetry  B2  ( 3)
+
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
+
+  Symmetry  A2  ( 4)
+
+    9   H     x    [  4  -    7 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H   _1      H   _2
+            ------      ------      ------
+ O     :    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
+
+
+  Max    interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9584 Angstrom (    1.8111 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.450
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.616959          0.000000    1.000000    0.000000
+   IB       1.156694          0.000000    0.000000    1.000000
+   IC       1.773652          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         819145.5126         436916.9575         284936.9149 MHz
+           27.323753           14.573981            9.504472 cm-1
+
+
+@  Nuclear repulsion energy :    9.183706230245 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          19    7   11    2
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        s          1
+    2     O        s          2
+    3     O        s          3
+    4     O        s          4
+    5     O        s          5
+    6     O        s          6
+    7     O        pz         9
+    8     O        pz        12
+    9     O        pz        15
+   10     O        pz        18
+   11     O        pz        21
+   12     O        dxx       22
+   13     O        dyy       25
+   14     O        dzz       27
+   15     H        s         28 +   29
+   16     H        s         30 +   31
+   17     H        s         32 +   33
+   18     H        py        36 -   37
+   19     H        pz        38 +   39
+
+
+  Symmetry  B1 ( 2)
+
+   20     O        px         7
+   21     O        px        10
+   22     O        px        13
+   23     O        px        16
+   24     O        px        19
+   25     O        dxz       24
+   26     H        px        34 +   35
+
+
+  Symmetry  B2 ( 3)
+
+   27     O        py         8
+   28     O        py        11
+   29     O        py        14
+   30     O        py        17
+   31     O        py        20
+   32     O        dyz       26
+   33     H        s         28 -   29
+   34     H        s         30 -   31
+   35     H        s         32 -   33
+   36     H        py        36 +   37
+   37     H        pz        38 -   39
+
+
+  Symmetry  A2 ( 4)
+
+   38     O        dxy       23
+   39     H        px        34 -   35
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.000015049426
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-15
+ Number of two-electron integrals written:       75206 ( 24.7% )
+ Megabytes written:                              0.866
+
+ >>>> Total CPU  time used in HERMIT:   0.11 seconds
+ >>>> Total wall time used in HERMIT:   0.11 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    1    2    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.705520      -1.505990      -0.670643      -0.292535
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.616200
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.731199      -0.257813
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Fri May 30 13:29:22 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ Title lines from ".mol" input file:
+     Calculation of CTOCD-DZ magnetizability and shielding constants through 
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    MP2, closed-shell Moeller-Plesset second-order calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+@    Wave function type        >>> MP2 <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                           |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           39 |   19    7   11    2
+     Number of basis functions          39 |   19    7   11    2
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-06
+
+
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+@  1  -75.8289971698       2.45D+00  -7.58D+01     3   1   1   0
+      Virial theorem: -V/T =      1.995901
+@      MULPOP O      -0.57; H   _1  0.28; H   _2  0.28; 
+ -----------------------------------------------------------------------------
+@  2  -76.0524932147       3.68D-01  -2.23D-01     3   1   1   0
+      Virial theorem: -V/T =      2.001335
+@      MULPOP O      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+@  3  -76.0600659833       8.25D-02  -7.57D-03     3   1   1   0
+      Virial theorem: -V/T =      2.001271
+@      MULPOP O      -0.81; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+@  4  -76.0607504694       1.69D-02  -6.84D-04     3   1   1   0
+      Virial theorem: -V/T =      2.000709
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+@  5  -76.0607819108       5.34D-03  -3.14D-05     3   1   1   0
+      Virial theorem: -V/T =      2.000876
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+@  6  -76.0607838671       1.91D-03  -1.96D-06     3   1   1   0
+      Virial theorem: -V/T =      2.000775
+@      MULPOP O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+@  7  -76.0607842019       3.26D-04  -3.35D-07     3   1   1   0
+      Virial theorem: -V/T =      2.000810
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+@  8  -76.0607842185       4.25D-05  -1.66D-08     3   1   1   0
+      Virial theorem: -V/T =      2.000809
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+@  9  -76.0607842187       8.01D-06  -2.01D-10     3   1   1   0
+      Virial theorem: -V/T =      2.000810
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+@ 10  -76.0607842187       1.50D-06  -9.61D-12     3   1   1   0
+      Virial theorem: -V/T =      2.000810
+@      MULPOP O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+@ 11  -76.0607842187       3.97D-07  -3.98D-13     3   1   1   0
+
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:    -76.060784218682    3.97D-07
+    - total time used in SIRFCK :              0.00 seconds
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.021       0.028
+
+
+ >>>>> Output from SIRIUS MP2 module <<<<<
+
+ Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,
+            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
+
+ Checking that the closed shell orbitals are canonical Hartree-Fock orbitals
+
+    Number of electrons  :   10
+    Closed shell orbitals:    3    1    1    0
+
+ Generating Fock matrix
+
+ Hartree-Fock electronic energy:         -85.244490448927
+ Hartree-Fock total      energy:         -76.060784218682
+
+ Hartree-Fock orbital energies, symmetry 1 ( A1 ),    3 occupied SCF orbitals
+
+       -20.56238100    -1.35070292    -0.58322553     0.13488236     0.46314710
+         0.61795220     0.96390625     1.24752064     1.69113077     2.01359247
+         2.63200618     3.49717243     3.65989625     4.20360190     6.56227717
+         7.19443823    20.57248744    23.27802619    94.32736808
+
+ Hartree-Fock orbital energies, symmetry 2 ( B1 ),    1 occupied SCF orbitals
+
+        -0.50745990     0.47365390     1.30684668     2.03588081     3.06713277
+         6.59507910    23.12059735
+
+ Hartree-Fock orbital energies, symmetry 3 ( B2 ),    1 occupied SCF orbitals
+
+        -0.71596732     0.19111002     0.50061393     0.67340607     1.74928910
+         2.12363466     2.66276194     3.17158895     4.26606044     6.89290269
+        23.35853256
+
+ Hartree-Fock orbital energies, symmetry 4 ( A2 ),    0 occupied SCF orbitals
+
+         1.26154317     2.98152149
+
+    E(LUMO) :     0.13488236   (in symmetry 1)
+  - E(HOMO) :    -0.50745990   (in symmetry 2)
+  --------------------------
+    gap     :     0.64234226
+
+ Integral transformation: Total CPU and WALL times (sec)       0.022       0.027
+
+ MP2 move   0.117186 electrons to unoccupied HF orbitals
+
+
+@   Hartree-Fock total energy   :           -76.0607842187
+@   + MP2 contribution          :            -0.2501840653
+@   = MP2 second order energy   :           -76.3109682840
+
+ Natural orbital occupation numbers, symmetry 1 (irrep A1 )
+ Sum =     5.99958557; RHF =     6.00000000; Difference =    -0.00041443
+
+         1.99920066     1.98542334     1.96579845     0.02287771     0.01158038
+         0.00631193     0.00549171     0.00093836     0.00075593     0.00046041
+         0.00021704     0.00018724     0.00012141     0.00010378     0.00006155
+         0.00002933     0.00001933     0.00000570     0.00000129
+
+ Natural orbital occupation numbers, symmetry 2 (irrep B1 )
+ Sum =     1.99505853; RHF =     2.00000000; Difference =    -0.00494147
+
+         1.96805137     0.02040443     0.00557570     0.00058235     0.00030663
+         0.00011477     0.00002328
+
+ Natural orbital occupation numbers, symmetry 3 (irrep B2 )
+ Sum =     1.99882541; RHF =     2.00000000; Difference =    -0.00117459
+
+         1.96560153     0.02469526     0.00609470     0.00086205     0.00075193
+         0.00041826     0.00020119     0.00010649     0.00006169     0.00003048
+         0.00000183
+
+ Natural orbital occupation numbers, symmetry 4 (irrep A2 )
+ Sum =     0.00653049; RHF =     0.00000000; Difference =     0.00653049
+
+         0.00616699     0.00036350
+
+ Time used for MP2 natural orbitals :       0.038 CPU seconds,       0.046 wall seconds.
+
+ >>>> CPU and wall time for MP2 :       0.038       0.046
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+
+@    Final HF energy:             -76.060784218682                 
+@    Nuclear repulsion:             9.183706230245
+@    Electronic energy:           -85.244490448927
+
+@    Final gradient norm:           0.000000397032
+
+ 
+     Date and time (Linux)  : Fri May 30 13:29:23 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+ INFO: Sorry, plot of MOs with Molden is only implemented for spherical GTOs
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5
+   1 O   :s      0.3905  -0.0859  -0.0284   0.0258   0.0135
+   2 O   :s      0.4237  -0.1378  -0.0459   0.0378   0.0306
+   3 O   :s      0.2819  -0.1215  -0.0431   0.0497  -0.0041
+   4 O   :s      0.0265   0.2173   0.0651  -0.2180  -0.2033
+   5 O   :s      0.0055  -0.5023  -0.2007  -0.1581  -0.0657
+   6 O   :s      0.0155   0.1756   0.2265  -0.9082  -0.1321
+   7 O   :pz    -0.0012  -0.0103   0.0721   0.0191  -0.0321
+   8 O   :pz    -0.0004  -0.0234   0.1696   0.0449  -0.1369
+   9 O   :pz    -0.0002  -0.0499   0.2999   0.0858   0.0069
+  10 O   :pz     0.0004  -0.0487   0.3172   0.0693  -0.7063
+  11 O   :pz    -0.0006  -0.0078   0.1975   0.2876   1.6736
+  12 O   :dxx   -0.0029   0.0146   0.0070  -0.0620  -0.1443
+  13 O   :dyy   -0.0030   0.0263   0.0015  -0.0507  -0.1683
+  14 O   :dzz   -0.0030   0.0251  -0.0304  -0.0614  -0.1732
+  15 H   :s      0.0003   0.0918  -0.0879   0.0285  -0.0105
+  16 H   :s      0.0001   0.0539  -0.1102  -0.0295   0.5540
+  17 H   :s     -0.0008   0.0066  -0.0189   0.9445   0.1271
+  18 H   :py    -0.0001  -0.0144   0.0141   0.0199  -0.0037
+  19 H   :pz     0.0000   0.0099   0.0025  -0.0117   0.0068
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :px     0.0819  -0.0403   0.0108
+   2 O   :px     0.1941  -0.1683   0.0187
+   3 O   :px     0.3396  -0.0020   0.0667
+   4 O   :px     0.3822  -0.8903  -0.0370
+   5 O   :px     0.2591   1.3740   0.0656
+   6 O   :dxz   -0.0383  -0.0021   0.9472
+   7 H   :px     0.0183   0.0056  -0.0833
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :py     0.0653  -0.0306   0.0081
+   2 O   :py     0.1529  -0.0600  -0.0127
+   3 O   :py     0.2746  -0.1667   0.0964
+   4 O   :py     0.2860   0.0539  -0.0558
+   5 O   :py     0.1253  -0.9468   1.9322
+   6 O   :dyz   -0.0554  -0.0253  -0.0628
+   7 H   :s      0.1438   0.0176  -0.0539
+   8 H   :s      0.1473  -0.1648  -1.1763
+   9 H   :s      0.0368   2.0991  -0.4183
+  10 H   :py    -0.0096   0.0204   0.0307
+  11 H   :pz     0.0163  -0.0225  -0.0098
+
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 O   :dxy    0.9129   0.7003
+   2 H   :px     0.1116  -0.8095
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total wall time used in SIRIUS :      0.08 seconds
+
+ 
+     Date and time (Linux)  : Fri May 30 13:29:23 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ NOTE:    1 informational messages have been issued.
+ Check output, result, and error files for "INFO".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+        *****************************************************************
+        ******** Output from **PROPE input processing for ABACUS ********
+        *****************************************************************
+
+
+
+      SOPPA : Second Order Polarization Propagator Approximation
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+ Default print level:        0
+
+      Nuclear magnetic shieldings
+      Magnetic susceptibilities
+      CTOCD-DZ: 
+       Continuous Transformation of the Origin of the Current Density
+      CTOCD-DZ Magnetic susceptibilities
+      CTOCD-DZ Nuclear magnetic shieldings
+         (Ref.: A. Ligabue, S. P. A. Sauer and P. Lazzeretti,
+          J. Chem. Phys. 118, 6830 (2003) & J. Chem. Phys. 126, 154111 (2007))
+      INFO - London orbitals are NOT used
+      Molecular rotational g-factor
+      No mass-velocity correction calculated
+      No Darwin correction calculated
+      Natural orbital connection is used
+      for perturbation dependent basis sets.
+
+ WARNING SIR_INTOPEN, old integral transformation not found as expected, ICASE = 3
+ - ICASE = 1: MO integral file MOTWOINT does not exist
+ - ICASE = 2: no MO integrals on MOTWOINT
+ - ICASE = 3: transformation level on MOTWOINT not sufficient
+ ITRLVL requested & ITRLVL on MOTWOINT :   10    5
+
+ NSETUP: MO transformation level too low or no MO integral file found.
+ NSETUP: generating MO 2-el. integral file.
+
+
+ Old direct access AO file found, SORTA skipped.
+
+ Integral transformation: Total CPU and WALL times (sec)       0.035       0.035
+
+ Center of mass dipole origin  :    0.000000    0.000000   -0.000015
+
+ Center of mass gauge origin   :    0.000000    0.000000   -0.000015
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
+
+
+ 
+     Date and time (Linux)  : Fri May 30 13:29:23 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ TRACTL_1: Integral transformation abandoned,
+           the required MO integrals are already available.
+
+    Convergence for MAGFLD.2. Last residual and threshold:   0.00003   0.00010
+
+    Convergence for MAGFLD.1. Last residual and threshold:   0.00002   0.00010
+
+    Convergence for MAGFLD.3. Last residual and threshold:   0.00004   0.00010
+ >>>  Time used in CTOABA     is   0.28 seconds
+
+
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Fri May 30 13:29:23 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ O          0.0000000000            0.0000000000            0.1241444240
+ H   _1     0.0000000000            1.4315300000           -0.9852655760
+ H   _2     0.0000000000           -1.4315300000           -0.9852655760
+
+
+
+
+
+                        Molecular wave function and energy
+                        ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+     Total energy        -76.0607842187 au (Hartrees)
+                         -2069.71922269 eV
+                           -199697.5582 kJ/mol
+
+
+   ****************************************************************************
+   ************************ ABACUS - MAGNETIZABILITIES ************************
+   ****************************************************************************
+
+
+  Units:  JT**(-2)/(10**(-30))   (SI) 
+          ppm cm**(3) mol**(-1)  (cgs)
+
+ Calculation without London orbitals (GIAOs).
+
+ CTOCD-DZ results:
+
+
+  Magnetizabilities                    au          SI         cgs
+  ---------------------------------------------------------------
+
+  Isotropic magnetizability:      -2.3078   -182.1102    -10.9669
+  Diamagnetic contribution:       -2.5820   -203.7459    -12.2699
+  Paramagnetic contribution:       0.2742     21.6357      1.3029
+  1st anisotropy:                 -0.1620    -12.7851     -0.7699
+  2nd anisotropy:                  0.2032     16.0339      0.9656
+
+
+
+  Principal values (au, SI, and cgs) and axes:
+  --------------------------------------------
+
+  khi_aa      -2.3353   -184.2761    -11.0974      0.0000    0.0000    1.0000
+  khi_bb      -2.1723   -171.4209    -10.3232      0.0000    1.0000    0.0000
+  khi_cc      -2.4158   -190.6336    -11.4802      1.0000    0.0000    0.0000
+
+
+                        Total magnetizability tensor (au)
+                        ---------------------------------
+
+                       Bx                  By                  Bz
+
+  Bx        -2.415824096390     -0.000000000000     -0.000000000000
+  By        -0.000000000000     -2.172349732924     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000     -2.335258041920
+
+
+
+                     Diamagnetic magnetizability tensor (au)
+                     ---------------------------------------
+
+                       Bx                  By                  Bz
+
+  Bx        -2.871431464547      0.000000000000      0.000000000000
+  By         0.000000000000     -2.300002095534      0.000000000000
+  Bz         0.000000000000      0.000000000000     -2.574539908213
+
+
+
+                     Paramagnetic magnetizability tensor (au)
+                     ----------------------------------------
+
+                       Bx                  By                  Bz
+
+  Bx         0.455607368157     -0.000000000000     -0.000000000000
+  By        -0.000000000000      0.127652362610     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000      0.239281866293
+
+
+
+  ******************************************************************************
+  ************************ ABACUS - CHEMICAL SHIELDINGS ************************
+  ******************************************************************************
+
+
+
+  CTOCD-DZ results
+  ----------------
+
+
+
+                 Shielding tensors in symmetry coordinates (ppm)
+                 -----------------------------------------------
+
+
+    Symmetry 2
+                       By
+
+        O    y     6.11632786
+        H    y     1.19880740
+        H    z    -0.43018249
+
+    Symmetry 3
+                       Bx
+
+        O    x     6.28026842
+        H    x     0.49963090
+
+    Symmetry 4
+                       Bz
+
+        O    z     6.23395399
+        H    y    -0.58081248
+        H    z     0.77875284
+
+
+
+
+  CTOCD-DZ: Chemical shielding for O     :
+  ========================================
+
+
+
+  Gauge Origin set on the atom
+  ----------------------------
+
+
+  Shielding constant:    234.8202 ppm
+  Anisotropy:             48.6640 ppm
+  Asymmetry:               0.1613    
+
+  S parameter:            48.8746 ppm
+  A parameter:             0.0000 ppm
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                    Bx             By             Bz
+
+  O      x   215.98206356     0.00000000     0.00000000
+  O      y     0.00000000   267.26288636     0.00000000
+  O      z     0.00000000     0.00000000   221.21580002
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  O      x   335.6275     0.0000     0.0000     -119.6455     0.0000     0.0000
+  O      y     0.0000   330.7274     0.0000        0.0000   -63.4645     0.0000
+  O      z     0.0000     0.0000   331.9665        0.0000     0.0000  -110.7507
+
+  Diamagnetic contribution:    332.773806         Paramagnetic:     -97.953556
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  O      x     0.0000     0.0000     0.0000      -18.8382     0.0000     0.0000
+  O      y     0.0000     0.0000     0.0000        0.0000    32.4426     0.0000
+  O      z     0.0000     0.0000     0.0000        0.0000     0.0000   -13.6044
+
+
+  Principal values and axes:
+  --------------------------
+
+  O         215.982064  =  234.82  -  18.84:     1.000000  0.000000  0.000000
+  O         221.215800  =  234.82  -  13.60:     0.000000  0.000000  1.000000
+  O         267.262886  =  234.82  +  32.44:     0.000000  1.000000  0.000000
+
+
+  CTOCD-DZ: Chemical shielding for H   _1:
+  ========================================
+
+
+
+  Gauge Origin set on the atom
+  ----------------------------
+
+
+  Shielding constant:     27.9389 ppm
+  Anisotropy:             14.7784 ppm
+  Asymmetry:               0.0596    
+
+  S parameter:            14.7871 ppm
+  A parameter:             1.3890 ppm
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                    Bx             By             Bz
+
+  H   _1 x    22.71933425     0.00000000     0.00000000
+  H   _1 y     0.00000000    34.09908122    -7.70148541
+  H   _1 z     0.00000000    -4.92357099    26.99834729
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _1 x   120.0138     0.0000     0.0000      -97.2945     0.0000     0.0000
+  H   _1 y     0.0000    67.0045    35.5132        0.0000   -32.9054   -43.2147
+  H   _1 z     0.0000    37.2498    91.4994        0.0000   -42.1734   -64.5011
+
+  Diamagnetic contribution:     92.839247         Paramagnetic:     -64.900326
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _1 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
+  H   _1 y     0.0000     0.0000    -1.3890        0.0000     6.1602    -6.3125
+  H   _1 z     0.0000     1.3890     0.0000        0.0000    -6.3125    -0.9406
+
+
+  Principal values and axes:
+  --------------------------
+
+  H   _1     22.719334  =   27.94  -   5.22:     1.000000  0.000000  0.000000
+  H   _1     23.306262  =   27.94  -   4.63:     0.000000  0.504868  0.863196
+  H   _1     37.791167  =   27.94  +   9.85:     0.000000  0.863196 -0.504868
+
+
+  CTOCD-DZ: Chemical shielding for H   _2:
+  ========================================
+
+
+
+  Gauge Origin set on the atom
+  ----------------------------
+
+
+  Shielding constant:     27.9389 ppm
+  Anisotropy:             14.7784 ppm
+  Asymmetry:               0.0596    
+
+  S parameter:            14.7871 ppm
+  A parameter:             1.3890 ppm
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                    Bx             By             Bz
+
+  H   _2 x    22.71933425     0.00000000     0.00000000
+  H   _2 y     0.00000000    34.09908122     7.70148541
+  H   _2 z     0.00000000     4.92357099    26.99834729
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _2 x   120.0138     0.0000     0.0000      -97.2945     0.0000     0.0000
+  H   _2 y     0.0000    67.0045   -35.5132        0.0000   -32.9054    43.2147
+  H   _2 z     0.0000   -37.2498    91.4994        0.0000    42.1734   -64.5011
+
+  Diamagnetic contribution:     92.839247         Paramagnetic:     -64.900326
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _2 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
+  H   _2 y     0.0000     0.0000     1.3890        0.0000     6.1602     6.3125
+  H   _2 z     0.0000    -1.3890     0.0000        0.0000     6.3125    -0.9406
+
+
+  Principal values and axes:
+  --------------------------
+
+  H   _2     22.719334  =   27.94  -   5.22:     1.000000  0.000000  0.000000
+  H   _2     23.306262  =   27.94  -   4.63:     0.000000 -0.504868  0.863196
+  H   _2     37.791167  =   27.94  +   9.85:     0.000000  0.863196  0.504868
+
+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
+
+@1  Definitions from J. Mason, Solid state Nuc. Magn. Res. 2 (1993), 285
+
+@1 London orbitals (GIAOs) not used.
+@1 Gauge origin    (bohr):      0.000000000000      0.000000000000     -0.000015049426
+
+@1 atom   shielding       dia      para     skew      span     (aniso     asym)
+@1 ----------------------------------------------------------------------------
+@1 O       234.8202  332.7738  -97.9536    0.7959   51.2808   48.6640    0.1613
+@1 H   _1   27.9389   92.8392  -64.9003    0.9221   15.0718   14.7784    0.0596
+@1 H   _2   27.9389   92.8392  -64.9003    0.9221   15.0718   14.7784    0.0596
+
+
+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
+
+@2  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992), 107
+
+@2 London orbitals (GIAOs) not used.
+@2 Gauge origin    (bohr):      0.000000000000      0.000000000000     -0.000015049426
+
+@2 atom   shielding       dia      para     aniso      asym        S        A
+@2 ----------------------------------------------------------------------------
+@2 O       234.8202  332.7738  -97.9536   48.6640    0.1613   48.8746    0.0000
+@2 H   _1   27.9389   92.8392  -64.9003   14.7784    0.0596   14.7871    1.3890
+@2 H   _2   27.9389   92.8392  -64.9003   14.7784    0.0596   14.7871    1.3890
+
+
+
+  ******************************************************************************
+  ************************ ABACUS - CHEMICAL SHIELDINGS ************************
+  ******************************************************************************
+
+
+
+  CTOCD-DZ results
+  ----------------
+
+
+
+                 Shielding tensors in symmetry coordinates (ppm)
+                 -----------------------------------------------
+
+
+    Symmetry 2
+                       By
+
+        O    y     6.11632786
+        H    y     1.19880740
+        H    z    -0.43018249
+
+    Symmetry 3
+                       Bx
+
+        O    x     6.28026842
+        H    x     0.49963090
+
+    Symmetry 4
+                       Bz
+
+        O    z     6.23395399
+        H    y    -0.58081248
+        H    z     0.77875284
+
+
+
+
+  CTOCD-DZ: Chemical shielding for O     :
+  ========================================
+
+
+  Shielding constant:    234.8202 ppm
+  Anisotropy:             48.6640 ppm
+  Asymmetry:               0.1613    
+
+  S parameter:            48.8746 ppm
+  A parameter:             0.0000 ppm
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                    Bx             By             Bz
+
+  O      x   215.98206356     0.00000000     0.00000000
+  O      y     0.00000000   267.26288636     0.00000000
+  O      z     0.00000000     0.00000000   221.21580002
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  O      x   334.4328     0.0000     0.0000     -118.4507     0.0000     0.0000
+  O      y     0.0000   325.7027     0.0000        0.0000   -58.4399     0.0000
+  O      z     0.0000     0.0000   331.9665        0.0000     0.0000  -110.7507
+
+  Diamagnetic contribution:    330.700673         Paramagnetic:     -95.880423
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  O      x     0.0000     0.0000     0.0000      -18.8382     0.0000     0.0000
+  O      y     0.0000     0.0000     0.0000        0.0000    32.4426     0.0000
+  O      z     0.0000     0.0000     0.0000        0.0000     0.0000   -13.6044
+
+
+  Principal values and axes:
+  --------------------------
+
+  O         215.982064  =  234.82  -  18.84:     1.000000  0.000000  0.000000
+  O         221.215800  =  234.82  -  13.60:     0.000000  0.000000  1.000000
+  O         267.262886  =  234.82  +  32.44:     0.000000  1.000000  0.000000
+
+
+  CTOCD-DZ: Chemical shielding for H   _1:
+  ========================================
+
+
+  Shielding constant:     27.9389 ppm
+  Anisotropy:             14.7784 ppm
+  Asymmetry:               0.0596    
+
+  S parameter:            14.7871 ppm
+  A parameter:             1.3890 ppm
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                    Bx             By             Bz
+
+  H   _1 x    22.71933425     0.00000000     0.00000000
+  H   _1 y     0.00000000    34.09908122    -7.70148541
+  H   _1 z     0.00000000    -4.92357099    26.99834729
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _1 x    13.3030     0.0000     0.0000        9.4163     0.0000     0.0000
+  H   _1 y     0.0000    31.9191   -15.4645        0.0000     2.1800     7.7630
+  H   _1 z     0.0000   -11.4539    20.7348        0.0000     6.5303     6.2635
+
+  Diamagnetic contribution:     21.985630         Paramagnetic:       5.953291
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _1 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
+  H   _1 y     0.0000     0.0000    -1.3890        0.0000     6.1602    -6.3125
+  H   _1 z     0.0000     1.3890     0.0000        0.0000    -6.3125    -0.9406
+
+
+  Principal values and axes:
+  --------------------------
+
+  H   _1     22.719334  =   27.94  -   5.22:     1.000000  0.000000  0.000000
+  H   _1     23.306262  =   27.94  -   4.63:     0.000000  0.504868  0.863196
+  H   _1     37.791167  =   27.94  +   9.85:     0.000000  0.863196 -0.504868
+
+
+  CTOCD-DZ: Chemical shielding for H   _2:
+  ========================================
+
+
+  Shielding constant:     27.9389 ppm
+  Anisotropy:             14.7784 ppm
+  Asymmetry:               0.0596    
+
+  S parameter:            14.7871 ppm
+  A parameter:             1.3890 ppm
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                    Bx             By             Bz
+
+  H   _2 x    22.71933425     0.00000000     0.00000000
+  H   _2 y     0.00000000    34.09908122     7.70148541
+  H   _2 z     0.00000000     4.92357099    26.99834729
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _2 x    13.3030     0.0000     0.0000        9.4163     0.0000     0.0000
+  H   _2 y     0.0000    31.9191    15.4645        0.0000     2.1800    -7.7630
+  H   _2 z     0.0000    11.4539    20.7348        0.0000    -6.5303     6.2635
+
+  Diamagnetic contribution:     21.985630         Paramagnetic:       5.953291
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _2 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
+  H   _2 y     0.0000     0.0000     1.3890        0.0000     6.1602     6.3125
+  H   _2 z     0.0000    -1.3890     0.0000        0.0000     6.3125    -0.9406
+
+
+  Principal values and axes:
+  --------------------------
+
+  H   _2     22.719334  =   27.94  -   5.22:     1.000000  0.000000  0.000000
+  H   _2     23.306262  =   27.94  -   4.63:     0.000000 -0.504868  0.863196
+  H   _2     37.791167  =   27.94  +   9.85:     0.000000  0.863196  0.504868
+
+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
+
+@1  Definitions from J. Mason, Solid state Nuc. Magn. Res. 2 (1993), 285
+
+@1 London orbitals (GIAOs) not used.
+@1 Gauge origin    (bohr):      0.000000000000      0.000000000000     -0.000015049426
+
+@1 atom   shielding       dia      para     skew      span     (aniso     asym)
+@1 ----------------------------------------------------------------------------
+@1 O       234.8202  330.7007  -95.8804    0.7959   51.2808   48.6640    0.1613
+@1 H   _1   27.9389   21.9856    5.9533    0.9221   15.0718   14.7784    0.0596
+@1 H   _2   27.9389   21.9856    5.9533    0.9221   15.0718   14.7784    0.0596
+
+
+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
+
+@2  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992), 107
+
+@2 London orbitals (GIAOs) not used.
+@2 Gauge origin    (bohr):      0.000000000000      0.000000000000     -0.000015049426
+
+@2 atom   shielding       dia      para     aniso      asym        S        A
+@2 ----------------------------------------------------------------------------
+@2 O       234.8202  330.7007  -95.8804   48.6640    0.1613   48.8746    0.0000
+@2 H   _1   27.9389   21.9856    5.9533   14.7784    0.0596   14.7871    1.3890
+@2 H   _2   27.9389   21.9856    5.9533   14.7784    0.0596   14.7871    1.3890
+
+
+
+   ****************************************************************************
+   ************************ ABACUS - MAGNETIZABILITIES ************************
+   ****************************************************************************
+
+
+  Units:  JT**(-2)/(10**(-30))   (SI) 
+          ppm cm**(3) mol**(-1)  (cgs)
+
+ Calculation without London orbitals (GIAOs).
+
+
+  Magnetizabilities                    au          SI         cgs
+  ---------------------------------------------------------------
+
+  Isotropic magnetizability:      -3.0371   -239.6605    -14.4327
+  Diamagnetic contribution:       -3.3113   -261.2962    -15.7356
+  Paramagnetic contribution:       0.2742     21.6357      1.3029
+  1st anisotropy:                 -0.0377     -2.9713     -0.1789
+  2nd anisotropy:                  0.0626      4.9428      0.2977
+
+
+
+  Principal values (au, SI, and cgs) and axes:
+  --------------------------------------------
+
+  khi_aa      -3.0538   -240.9748    -14.5118      1.0000    0.0000    0.0000
+  khi_bb      -2.9954   -236.3653    -14.2343      0.0000    1.0000    0.0000
+  khi_cc      -3.0622   -241.6414    -14.5520      0.0000    0.0000    1.0000
+
+
+                        Total magnetizability tensor (au)
+                        ---------------------------------
+
+                       Bx                  By                  Bz
+
+  Bx        -3.053778636182     -0.000000000000     -0.000000000000
+  By        -0.000000000000     -2.995363921793     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000     -3.062225735271
+
+
+
+                     Diamagnetic magnetizability tensor (au)
+                     ---------------------------------------
+
+                       Bx                  By                  Bz
+
+  Bx        -3.509386004339      0.000000000000      0.000000000000
+  By         0.000000000000     -3.123016284403      0.000000000000
+  Bz         0.000000000000      0.000000000000     -3.301507601564
+
+
+
+                     Paramagnetic magnetizability tensor (au)
+                     ----------------------------------------
+
+                       Bx                  By                  Bz
+
+  Bx         0.455607368157     -0.000000000000     -0.000000000000
+  By        -0.000000000000      0.127652362610     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000      0.239281866293
+
+
+
+ ****************************************************************************************
+ ************************ ABACUS - MOLECULAR ROTATIONAL g-TENSOR ************************
+ ****************************************************************************************
+
+
+ Calculation without London orbitals.
+
+
+ Principal moments of inertia (a.u.) and principal axes
+ ------------------------------------------------------
+
+   IA    2.203200          0.000000    1.000000    0.000000
+   IB    4.130627          0.000000    0.000000    1.000000
+   IC    6.333827          1.000000    0.000000    0.000000
+
+
+  Molecular rotational g-tensor
+  -----------------------------
+
+  Isotropic g-tensor       :       0.72231054
+  Nuclear contribution     :       0.97453340
+  Diamagnetic contribution :       0.00000000
+  Electronic contribution  :      -0.25222287
+  1st anisotropy:                 -0.01765612
+  2nd anisotropy:                  0.06561651
+
+
+
+  Molecular rotational g-tensor in principal axis system (a.u.):
+  --------------------------------------------------------------
+
+   A            0.71053979      0.00000000      0.00000000
+   B            0.00000000      0.76605487      0.00000000
+   C            0.00000000      0.00000000      0.69033694
+
+
+  Nuclear contribution in principal axis system (a.u.):
+  -----------------------------------------------------
+
+   A            0.94398430      0.00000000      0.00000000
+   B            0.00000000      0.99945573      0.00000000
+   C            0.00000000      0.00000000      0.98016018
+
+
+  Electronic contribution in principal axis system (a.u.):
+  --------------------------------------------------------
+
+   A           -0.23344451      0.00000000      0.00000000
+   B            0.00000000     -0.23340085      0.00000000
+   C            0.00000000      0.00000000     -0.28982324
+
+
+  Diamagnetic contribution in principal axis system (a.u.):
+  ---------------------------------------------------------
+
+   A            0.00000000      0.00000000      0.00000000
+   B            0.00000000      0.00000000      0.00000000
+   C            0.00000000      0.00000000      0.00000000
+
+
+  ******************************************************************************
+  ************************ ABACUS - CHEMICAL SHIELDINGS ************************
+  ******************************************************************************
+
+
+
+                 Shielding tensors in symmetry coordinates (ppm)
+                 -----------------------------------------------
+
+
+    Symmetry 2
+                       By
+
+        O    y   355.21826569
+        H    y    78.24710880
+        H    z   -15.20511871
+
+    Symmetry 3
+                       Bx
+
+        O    x   297.16195768
+        H    x    46.81780510
+
+    Symmetry 4
+                       Bz
+
+        O    z   304.75558381
+        H    y   -19.14051149
+        H    z    59.89596097
+
+
+
+
+  Chemical shielding for O     :
+  ==============================
+
+
+  Shielding constant:    319.0453 ppm
+  Anisotropy:             54.2595 ppm
+  Asymmetry:               0.2099    
+
+  S parameter:            54.6566 ppm
+  A parameter:             0.0000 ppm
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                    Bx             By             Bz
+
+  O      x   297.16195768     0.00000000     0.00000000
+  O      y     0.00000000   355.21826569     0.00000000
+  O      z     0.00000000     0.00000000   304.75558381
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  O      x   415.6127     0.0000     0.0000     -118.4507     0.0000     0.0000
+  O      y     0.0000   413.6581     0.0000        0.0000   -58.4399     0.0000
+  O      z     0.0000     0.0000   415.5063        0.0000     0.0000  -110.7507
+
+  Diamagnetic contribution:    414.925692         Paramagnetic:     -95.880423
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  O      x     0.0000     0.0000     0.0000      -21.8833     0.0000     0.0000
+  O      y     0.0000     0.0000     0.0000        0.0000    36.1730     0.0000
+  O      z     0.0000     0.0000     0.0000        0.0000     0.0000   -14.2897
+
+
+  Principal values and axes:
+  --------------------------
+
+  O         297.161958  =  319.05  -  21.88:     1.000000  0.000000  0.000000
+  O         304.755584  =  319.05  -  14.29:     0.000000  0.000000  1.000000
+  O         355.218266  =  319.05  +  36.17:     0.000000  1.000000  0.000000
+
+
+  Chemical shielding for H   _1:
+  ==============================
+
+
+  Shielding constant:     30.8268 ppm
+  Anisotropy:             20.1662 ppm
+  Asymmetry:               0.1035    
+
+  S parameter:            20.2022 ppm
+  A parameter:             0.9838 ppm
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                    Bx             By             Bz
+
+  H   _1 x    23.40890255     0.00000000     0.00000000
+  H   _1 y     0.00000000    39.12355440    -9.57025574
+  H   _1 z     0.00000000    -7.60255936    29.94798048
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _1 x    13.9926     0.0000     0.0000        9.4163     0.0000     0.0000
+  H   _1 y     0.0000    36.9435   -17.3333        0.0000     2.1800     7.7630
+  H   _1 z     0.0000   -14.1329    23.6845        0.0000     6.5303     6.2635
+
+  Diamagnetic contribution:     24.873522         Paramagnetic:       5.953291
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _1 x     0.0000     0.0000     0.0000       -7.4179     0.0000     0.0000
+  H   _1 y     0.0000     0.0000    -0.9838        0.0000     8.2967    -8.5864
+  H   _1 z     0.0000     0.9838     0.0000        0.0000    -8.5864    -0.8788
+
+
+  Principal values and axes:
+  --------------------------
+
+  H   _1     23.408903  =   30.83  -   7.42:     1.000000  0.000000  0.000000
+  H   _1     24.800564  =   30.83  -   6.03:     0.000000  0.514170  0.857688
+  H   _1     44.270971  =   30.83  +  13.44:     0.000000  0.857688 -0.514170
+
+
+  Chemical shielding for H   _2:
+  ==============================
+
+
+  Shielding constant:     30.8268 ppm
+  Anisotropy:             20.1662 ppm
+  Asymmetry:               0.1035    
+
+  S parameter:            20.2022 ppm
+  A parameter:             0.9838 ppm
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                    Bx             By             Bz
+
+  H   _2 x    23.40890255     0.00000000     0.00000000
+  H   _2 y     0.00000000    39.12355440     9.57025574
+  H   _2 z     0.00000000     7.60255936    29.94798048
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _2 x    13.9926     0.0000     0.0000        9.4163     0.0000     0.0000
+  H   _2 y     0.0000    36.9435    17.3333        0.0000     2.1800    -7.7630
+  H   _2 z     0.0000    14.1329    23.6845        0.0000    -6.5303     6.2635
+
+  Diamagnetic contribution:     24.873522         Paramagnetic:       5.953291
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+                 Bx         By         Bz            Bx         By         Bz
+
+  H   _2 x     0.0000     0.0000     0.0000       -7.4179     0.0000     0.0000
+  H   _2 y     0.0000     0.0000     0.9838        0.0000     8.2967     8.5864
+  H   _2 z     0.0000    -0.9838     0.0000        0.0000     8.5864    -0.8788
+
+
+  Principal values and axes:
+  --------------------------
+
+  H   _2     23.408903  =   30.83  -   7.42:     1.000000  0.000000  0.000000
+  H   _2     24.800564  =   30.83  -   6.03:     0.000000 -0.514170  0.857688
+  H   _2     44.270971  =   30.83  +  13.44:     0.000000  0.857688  0.514170
+
+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
+
+@1  Definitions from J. Mason, Solid state Nuc. Magn. Res. 2 (1993), 285
+
+@1 London orbitals (GIAOs) not used.
+@1 Gauge origin    (bohr):      0.000000000000      0.000000000000     -0.000015049426
+
+@1 atom   shielding       dia      para     skew      span     (aniso     asym)
+@1 ----------------------------------------------------------------------------
+@1 O       319.0453  414.9257  -95.8804    0.7384   58.0563   54.2595    0.2099
+@1 H   _1   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
+@1 H   _2   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
+
+
+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
+
+@2  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992), 107
+
+@2 London orbitals (GIAOs) not used.
+@2 Gauge origin    (bohr):      0.000000000000      0.000000000000     -0.000015049426
+
+@2 atom   shielding       dia      para     aniso      asym        S        A
+@2 ----------------------------------------------------------------------------
+@2 O       319.0453  414.9257  -95.8804   54.2595    0.2099   54.6566    0.0000
+@2 H   _1   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
+@2 H   _2   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
+
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H   _1      H   _2
+            ------      ------      ------
+ O     :    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
+
+
+  Max    interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9584 Angstrom (    1.8111 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.450
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.52 seconds
+ >>>> Total wall time used in ABACUS:   0.80 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   0.74 seconds
+ >>>> Total wall time used in DALTON:   1.08 seconds
+
+ 
+     Date and time (Linux)  : Fri May 30 13:29:23 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              

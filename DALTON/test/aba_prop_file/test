@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+#    aba_prop_file
+#    -----------
+#    Molecule:         CH2O
+#    Wave Function:    HF / STO-3G  
+#    Test Purpose:     Test if correct write to DALTON.PROP from ABACUS
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-12)
+
+f.add(from_string = 'SCF/DFT    properties :',
+      to_string = 'THE_END',
+      rel_tolerance = 1.0e-7)
+
+test.run(['aba_prop_file.dal'], ['CH2O_STO-3G.mol'], f={'out': f})
+
+sys.exit(test.return_code)

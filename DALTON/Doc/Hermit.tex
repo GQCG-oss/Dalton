@@ -506,7 +506,7 @@ wave function optimization is generated in the \Sec{ONEINT} section.
 
 \begin{list}{}{}
 \item Integral:
-$\frac{1}{2}\left<\chi_{\mu}\left|\nabla^{2}\right|\chi_{\nu}\right>$
+$-\frac{1}{2}\left<\chi_{\mu}\left|\nabla^{2}\right|\chi_{\nu}\right>$
 \item Property label: \verb|KINENERG|.
 \end{list}
 
@@ -584,7 +584,7 @@ of the symmetry-adapted nuclear coordinate.
 \end{list}
 
 \item[\Key{NO HAM}] Do not calculate ordinary one- and two-electron
-  Hamiltonian integrals.
+  Hamiltonian integrals. Delete any old files with one- and two-electron integrals.
 
 \item[\Key{NO2SO}] Do not calculate two-electron contribution to
   spin--orbit integrals.
@@ -606,6 +606,7 @@ parallel calculations.
 
 \item[\Key{NOTWO}] Only calculate the one-electron part of the
 Hamiltonian integrals. It is default for direct and parallel calculations.
+NOTE: old files with two-electron integrals are deleted.
 
 \item[\Key{NPOTST}] Test of the nuclear potential integrals
 calculated with the keyword \Key{NUCPOT}. Mainly for debugging

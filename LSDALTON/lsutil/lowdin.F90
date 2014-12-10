@@ -6,7 +6,7 @@ use precision
 use matrix_module
 use matrix_operations
 use matrix_operations_aux
-
+use memory_handling
 
 contains
 
@@ -77,7 +77,7 @@ contains
        converged = testx .le.  1.0E-7_realk 
        call ls_gettim(dummy,tend)
 
-       write(*,'(I2,A,E10.4,A,F6.4,A,F6.4,A,E10.4,A,F8.1,A)')&
+       write(*,'(I2,A,E12.4,A,F12.4,A,F12.4,A,E12.4,A,F8.1,A)')&
       &iter,    " Norm= ", testx, " l2= ", l2," emax= ", emax," emin= ",&
       &emin, " time= ", tend-tstart, " sec"
        if (converged) exit
@@ -297,7 +297,7 @@ contains
 
      do i=1,n
         if (eigen_sqrt(i).le. 0E0_realk) then
-           write(msg,'(A,1X,I4,A,1X,E12.6)') &
+           write(msg,'(A,1X,I4,A,1X,E14.6)') &
                 &'Matrix not positive definite! Eigenvalue(',i,') =',&
                 &eigen_sqrt(i)
            call lsquit(msg,lupri)
@@ -312,7 +312,6 @@ contains
         t2(:,i) = t1(:,i)*eigen_sqrt(i)
      enddo
 
-     allocate(t3(n,n))
      ! S^1/2
      call dgemm('n','t', n,n,n, 1.0E0_realk, t2,n, t1,n, 0.0E0_realk,S_sqrt,n)
 
@@ -327,14 +326,97 @@ contains
      !deallocate
      deallocate(eigen_sqrt,eigen_minus_sqrt,t1,t2)
 
-!!$#if 0
-!!$     !verify
-!!$     call mat_init(T3,S%ncol,S%ncol)
-!!$     call mat_mul(S_sqrt,S_minus_sqrt,'n','n',1.0E0_realk,0.0E0_realk,T3)
-!!$     print *, 'T norm:', abs(sqrt(mat_sqnorm2(T3)) - sqrt(1.0E0_realk*S%ncol))
-!!$     call mat_free(T3)
-!!$#endif
+!     !verify
+!     allocate(T3(n,n))
+!     call dgemm('n','n',n,n,n,1.0E0_realk,S_sqrt,n,S_minus_sqrt,n,0.0E0_realk,T3,n)
+!     print*,'S_sqrt,n*S_minus_sqrt'
+!     call ls_output(T3,1,n,1,n,n,n,1,6)
+!     deallocate(T3)
 
    end subroutine lowdin_diag
+
+   ! Given matrix S, computes S^{-1/2}.
+   subroutine lowdin_diag_S_minus_sqrt(n, S, S_minus_sqrt, lupri)
+     implicit none
+     integer, intent(in)          :: n
+     real(realk), intent(in)      :: S(n,n)
+     real(realk), intent(inout)   :: S_minus_sqrt(n,n)
+     real(realk),pointer          :: T1(:,:), T2(:,:)
+     real(realk),pointer          ::  eigen_minus_sqrt(:)
+     integer                      :: i, infdiag, lupri
+     character*70                 :: msg
+     integer                      :: lwork
+     real(realk), pointer :: work(:)
+#ifdef VAR_LSESSL
+     integer :: liwork
+     integer, pointer :: iwork(:)
+     liwork = -1
+#endif
+     infdiag=0
+
+     call mem_alloc(T1,n,n)
+     call mem_alloc(T2,n,n)
+     call mem_alloc(eigen_minus_sqrt,n)
+
+     T1 = S
+!FIXME REPLACE WITH dsyevr
+
+     ! we inquire the size of lwork (NOT max(n*n,5*n)
+     lwork = -1
+     call mem_alloc(work,5)
+#ifdef VAR_LSESSL
+     call mem_alloc(iwork,5)
+     call dsyevd('V','U',n,T1,n,eigen_minus_sqrt,work,lwork,iwork,liwork,infdiag)
+     liwork = iwork(1)
+     call mem_dealloc(iwork)
+     call mem_alloc(iwork,liwork)
+#else
+     call dsyev('V','U',n,T1,n,eigen_minus_sqrt,work,lwork,infdiag)
+#endif
+     lwork = NINT(work(1))
+     call mem_dealloc(work)
+!=============================================================     
+
+     call mem_alloc(work,lwork)
+     !diagonalization
+#ifdef VAR_LSESSL
+     call dsyevd('V','U',n,T1,n,eigen_minus_sqrt,work,lwork,iwork,liwork,infdiag)
+     call mem_dealloc(iwork)
+#else
+     call dsyev('V','U',n,T1,n,eigen_minus_sqrt,work,lwork,infdiag)
+#endif
+     call mem_dealloc(work)
+
+     if(infdiag.ne. 0) then
+        write(lupri,*) 'lowdin_diag: dsyev failed, info=',infdiag
+        call lsquit('lowdin_diag: diagonalization failed.',lupri)
+     end if
+
+     !compute squareroot S^(-1/2) = V*E^(-1/2)*V'
+
+     do i=1,n
+        if (eigen_minus_sqrt(i).le. 0E0_realk) then
+           write(msg,'(A,1X,I4,A,1X,E14.6)') &
+                &'Matrix not positive definite! Eigenvalue(',i,') =',&
+                &eigen_minus_sqrt(i)
+           call lsquit(msg,lupri)
+        endif
+        eigen_minus_sqrt(i) = 1.0E0_realk/sqrt(eigen_minus_sqrt(i))
+     enddo
+
+     !T = V*E^-1/2
+     do i=1,n
+        t2(:,i) = t1(:,i)*eigen_minus_sqrt(i)
+     enddo
+
+     ! S^-1/2 = T*V'
+     call dgemm('n','t', n,n,n, 1.0E0_realk, t2,n, t1,n, 0.0E0_realk,S_minus_sqrt,n)
+
+     !deallocate
+     call mem_dealloc(eigen_minus_sqrt)
+     call mem_dealloc(t1)
+     call mem_dealloc(t2)
+
+   end subroutine lowdin_diag_S_minus_sqrt
 
 end module lowdin_module

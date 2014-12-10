@@ -228,7 +228,7 @@ SUBROUTINE build_lvec_list(ll,nbast)
   implicit none
   INTEGER, intent(in) ::nbast
   type(lvec_list_t), intent(inout) :: ll
-  INTEGER:: l1, l2,l3,alstat,idx
+  INTEGER :: l1, l2,l3,alstat,idx,i
   
   ! make sure fdim is set
   ll%fdim = 0
@@ -258,9 +258,11 @@ SUBROUTINE build_lvec_list(ll,nbast)
   idx = 1
 !  index = -ll%max_layer
 
-  do l3 = -ll%max_layer*ll%fdim(3), ll%max_layer*ll%fdim(3)
-  do l2 = -ll%max_layer*ll%fdim(2), ll%max_layer*ll%fdim(2)
-  do l1 = -ll%max_layer*ll%fdim(1), ll%max_layer*ll%fdim(1)
+  do i = 0,ll%max_layer
+  do l3 = -i*ll%fdim(3), i*ll%fdim(3)
+  do l2 = -i*ll%fdim(2), i*ll%fdim(2)
+  do l1 = -i*ll%fdim(1), i*ll%fdim(1)
+     if(abs(l3) .eq. i .or. abs(l2) .eq. i .or. abs(l1) .eq. i) then
      ll%lvec(idx)%lat_coord(1:3) = (/ real(l1), real(l2), real(l3) /)
      call latt_2_std_coord(ll%lvec(idx)%lat_coord,ll%lvec(idx)%std_coord,ll%ldef%avec)  
      !allocate(ll%lvec(idx)%fck_vec(nbast*nbast))
@@ -277,6 +279,8 @@ SUBROUTINE build_lvec_list(ll,nbast)
      ll%lvec(idx)%Vz_computed=.false.
      ll%lvec(idx)%dm_computed=.false.
      idx = idx + 1
+   endif
+  end do
   end do
   end do
   end do
@@ -299,7 +303,7 @@ SUBROUTINE build_nflvec_list(ll,nbast)
   implicit none
   INTEGER, intent(in) ::nbast
   type(lvec_list_t), intent(inout) :: ll
-  INTEGER:: l1, l2,l3, alstat,idx
+  INTEGER :: l1, l2,l3, alstat,idx,i
 
   ! make sure fdim is set
   ll%fdim = 0
@@ -313,9 +317,11 @@ SUBROUTINE build_nflvec_list(ll,nbast)
   allocate(ll%nflvec(ll%nf_entries), STAT=alstat)
 
   idx=1
-  do l3 = -ll%nneighbour*ll%fdim(3), ll%nneighbour*ll%fdim(3)
-  do l2 = -ll%nneighbour*ll%fdim(2), ll%nneighbour*ll%fdim(2)
-  do l1 = -ll%nneighbour*ll%fdim(1), ll%nneighbour*ll%fdim(1)
+  do i = 0,ll%max_layer
+  do l3 = -i*ll%fdim(3), i*ll%fdim(3)
+  do l2 = -i*ll%fdim(2), i*ll%fdim(2)
+  do l1 = -i*ll%fdim(1), i*ll%fdim(1)
+     if(abs(l3) .eq. i .or. abs(l2) .eq. i .or. abs(l1) .eq. i) then
      ll%nflvec(idx)%lat_coord(1:3) = (/ real(l1), real(l2), real(l3) /)
      call latt_2_std_coord(ll%nflvec(idx)%lat_coord,ll%nflvec(idx)%std_coord,ll%ldef%avec)  
      !allocate(ll%nflvec(idx)%fck_vec(nbast*nbast))
@@ -325,6 +331,8 @@ SUBROUTINE build_nflvec_list(ll,nbast)
      !ll%nflvec(idx)%fck_vec=0 
      !ll%nflvec(idx)%fck_mat=0 
      idx = idx + 1
+   endif
+  end do
   end do
   end do
   end do
@@ -445,30 +453,157 @@ INTEGER, INTENT(IN) :: maxlayer
 INTEGER, INTENT(OUT) :: ll
 TYPE(lvec_list_t),INTENT(IN) :: latt
 !!!!!
-INTEGER :: nx,ny,nz
+INTEGER :: nx,ny,nz,layer,layn,tmp,tmp1,tmp2
 
   nx=maxlayer*latt%fdim(1)
   ny=maxlayer*latt%fdim(2)
   nz=maxlayer*latt%fdim(3)
+  layer=max(abs(l1),abs(l2))
+  layer=max(layer,abs(l3))
+  layn=layer-1
 
-  ll=l1+nx+1+2*(ny+l2)*nx+ny+l2+2*(nz+l3)*(nx+ny)+4*(nz+l3)*nx*ny+nz+l3
+  ! one dimensional case
+  if(latt%fdim(1)+latt%fdim(2)+latt%fdim(3) .eq. 1) then
+    tmp= (2*layn+1)
+
+    if(layer .eq. 0) then
+      ll = 1
+    else
+      ll = tmp +1+(1+l1/layer)/2*latt%fdim(1)+(1+l2/layer)/2*latt%fdim(2)&
+        & +(1+l3/layer)/2*latt%fdim(3)
+    endif
 
 
-!idex=0
-!DO vec1=-latt%fdim(1)*latt%max_layer,latt%fdim(1)*latt%max_layer
-! DO vec2=-latt%fdim(2)*latt%max_layer,latt%fdim(2)*latt%max_layer
-!  DO vec3=-latt%fdim(3)*latt%max_layer,latt%fdim(3)*latt%max_layer
-!    idex=idex+1
-!    IF(vec1 /= l1) CYCLE
-!    IF(vec2 /= l2) CYCLE
-!    IF(vec3 /= l3) CYCLE
-!    ll=idex
-!  ENDDO
-! ENDDO
-!ENDDO
+  !Two dimensional case
+  elseif(latt%fdim(1)+latt%fdim(2)+latt%fdim(3) .eq. 2) then
+    layn=layer-1
+    tmp= (2*layn+1)**2
+
+    if(latt%fdim(3) .eq. 0) then
+      if(l2 .eq. -layer) then
+        ll=tmp + layer+l1+1
+      endif
+      if(l2 .eq. layer) then
+        tmp1=(2*layer+1)
+        tmp2=(2*layer)*(tmp1)
+        ll=tmp2+layer+l1+1
+      endif
+      if(abs(l2) .ne. layer) then
+        ll=(2*layer+1)+(l2+layer-1)*2+1+(1+l1/layer)/2+tmp
+      endif
+    endif
+    if(latt%fdim(2) .eq. 0)then
+      if(l3 .eq. -layer) then
+        ll=tmp + layer+l1+1
+      endif
+      if(l3 .eq. layer) then
+        tmp1=(2*layer+1)
+        tmp2=(2*layer)*(tmp1)
+        ll=tmp2+layer+l1+1
+      endif
+      if(abs(l3) .ne. layer) then
+        ll=(2*layer+1)+(l3+layer-1)*2+1+(1+l1/layer)/2+tmp
+      endif
+    endif
+    if(latt%fdim(1) .eq. 0)then
+      if(l3 .eq. -layer) then
+        ll=tmp + layer+l2+1
+      endif
+      if(l3 .eq. layer) then
+        tmp1=(2*layer+1)
+        tmp2=(2*layer)*(tmp1)
+        ll=tmp2+layer+l2+1
+      endif
+      if(abs(l3) .ne. layer) then
+        ll=(2*layer+1)+(l3+layer-1)*2+1+(1+l2/layer)/2+tmp
+      endif
+    endif
+
+
+  !Three dimesional case
+  elseif(latt%fdim(1)+latt%fdim(2)+latt%fdim(3) .eq. 3) then
+    tmp= (2*layn+1)**3
+    if(l3 .eq. -layer)then
+      ll=tmp + layer+l1+1+2*layer*(layer+l2)+layer+l2
+    endif
+
+    if(l3 .eq. layer) then
+      tmp1=(2*layer+1)**2
+      tmp2=(2*layer)*(tmp1)
+      ll=tmp2+layer+l1+1+2*layer*(layer+l2)+layer+l2
+    endif
+
+    if(abs(l3) .ne. layer .and. abs(l2)==layer) then
+      ll=tmp+(2*layer+1)**2+1+layer+l1;
+      ll=ll+(layer+l3-1)*((2*layer+1)+2*(2*layer-1)+(2*layer+1))
+
+      if(l2 .eq. layer)then
+        ll=ll+2*layer+1+2*(2*layer-1)
+      endif
+    endif
+
+    if(abs(l3) .ne. layer .and. abs(l2) .ne. layer) then
+
+      tmp1=tmp+(2*layer+1)**2+1+2*layer+1
+      ll=tmp1+(layer+l1)/(2*layer)+(layn+l2)*2
+      ll=ll+(layer+l3-1)*((2*layer+1)+2*(2*layer-1)+(2*layer+1))
+    endif
+
+  endif
+
+  if(int(latt%lvec(ll)%lat_coord(1)) .ne. l1 &
+    & .or. int(latt%lvec(ll)%lat_coord(2)) .ne. l2 &
+    & .or. int(latt%lvec(ll)%lat_coord(3)) .ne. l3) then
+    call LSQUIT('Wrong in algorithm',6)
+  endif
+
+
+
+  !ll=l1+nx+1+2*(ny+l2)*nx+ny+l2+2*(nz+l3)*(nx+ny)+4*(nz+l3)*nx*ny+nz+l3
+
 
 END SUBROUTINE find_latt_index
 
+
+SUBROUTINE reset_integral_computed(latt,maxlayer,to_reset)
+IMPLICIT NONE
+TYPE(lvec_list_t),INTENT(INOUT) :: latt
+INTEGER,INTENT(IN) :: maxlayer
+CHARACTER,INTENT(IN) :: to_reset
+!!!!
+INTEGER :: l
+
+DO l = 1,maxlayer
+  !SELECT CASE(to_reset)
+
+  !CASE('all')
+    latt%lvec(l)%ovl_computed=.false.
+    latt%lvec(l)%g2_computed=.false.
+    latt%lvec(l)%f1_computed=.false.
+    latt%lvec(l)%J_computed=.false.
+    latt%lvec(l)%kx_computed=.false.
+    latt%lvec(l)%Vz_computed=.false.
+    latt%lvec(l)%dm_computed=.false.
+  !CASE('ovl')
+  !  latt%lvec(l)%ovl_computed=.false.
+  !CASE('g2')
+  !  latt%lvec(l)%g2_computed=.false.
+  !CASE('f1')
+  !  latt%lvec(l)%f1_computed=.false.
+  !CASE('J')
+  !  latt%lvec(l)%J_computed=.false.
+  !CASE('kx')
+  !  latt%lvec(l)%kx_computed=.false.
+  !CASE('Vz')
+  !  latt%lvec(l)%Vz_computed=.false.
+  !CASE('dm')
+  !  latt%lvec(l)%dm_computed=.false.
+  !END SELECT
+
+ENDDO
+
+
+END SUBROUTINE reset_integral_computed
 
 END MODULE lattice_vectors
 

@@ -293,8 +293,8 @@ module gen1int_host
                                  mat_add,   &
                                  mat_free,  &
                                  mat_trab
-    use Integralparameters, only: AORegular, &
-                                  Contractedinttype
+    use LSparameters, only: AORegular, &
+                                 Contractedinttype
     use IntegralInterfaceMOD, only: II_get_prop,ii_get_kinetic,ii_get_nucel_mat,ii_get_overlap
     type(LSSETTING), intent(inout) :: ls_setting
     type(Matrix), intent(in) :: D

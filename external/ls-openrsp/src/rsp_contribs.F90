@@ -17,7 +17,7 @@ module lsdalton_rsp_contribs
   use TYPEDEFTYPE, only: LSSETTING
   use TYPEDEF, only: retrieve_output
   use GCtransMod, only: GCAO2AO_transform_matrixD2
-  use Integralparameters
+  use LSparameters
   use lsdalton_matrix_defop
   use RSPsolver, only: rsp_molcfg
   use dal_interface , only: di_GET_GbDs, di_GET_GbDs_and_XC_linrsp

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck lrsinp */
       SUBROUTINE LRSINP(WORD)
@@ -31,13 +30,16 @@ C  /* Deck lrsinp */
       PARAMETER (NTABLE = 15)
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include "cbilrs.h"
+C
+C Used from common blocks:
+C   gnrinf.h : THR_REDFAC
 C
 #include "gnrinf.h"
 #include "abainf.h"
 #include "anrinf.h"
 #include "dorps.h"
 #include "nuclei.h"
+#include "cbilrs.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.XXXXXX','.XXXXXX',
@@ -95,6 +97,13 @@ C
 C              .THRESH
     4          CONTINUE
                   READ (LUCMD,*) THRCLC
+                  IF (THR_REDFAC .GT. 0.0D0) THEN
+                     WRITE (LUPRI,'(4A,1P,D10.2)') '@ INFO ',
+     &               WORD1, WORD,
+     &               ' threshold multiplied with general factor',
+     &               THR_REDFAC
+                     THRCLC = THRCLC*THR_REDFAC
+                  END IF
                GO TO 100
     5          CONTINUE
                   READ (LUCMD,*) MXRM
@@ -131,12 +140,6 @@ C              .THRESH
             END IF
       END IF
   300 CONTINUE
-      IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
-         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
-     &   ' thresholds multiplied with general factor',THR_REDFAC
-         THRCLC = THRCLC*THR_REDFAC
-      END IF
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for LINRES:',0)
          IF (SKIP) THEN
@@ -146,15 +149,18 @@ C              .THRESH
      &         ' Singlet linear response module for properties',
      &         ' as VCD, MAGSUS, SPIN-SPIN, SHIELD, SPINRO, MOLGFA'
             WRITE (LUPRI,'(A,I5)')
-     *         ' Print level in LINRES        :',IPRCLC
+     &         ' Print level in LINRES        :',IPRCLC
             WRITE (LUPRI,'(A,1P,D9.2)')
-     *         ' Threshold in LINRES          :',THRCLC
+     &         ' Threshold in LINRES          :',THRCLC
             WRITE(LUPRI,'(A,I5)')
      &         ' Maximum iterations in LINRES :',MAXCLC
             IF (CUT) THEN
                WRITE (LUPRI,'(/,A)') ' Program is stopped after LINRES.'
             END IF
          END IF
+      ELSE
+            WRITE (LUPRI,'(A,1P,D9.2)')
+     &         ' Threshold in singlet response:',THRCLC
       END IF
       IPRNR = IPRCLC
       RETURN
@@ -165,7 +171,9 @@ C
 C     Initialize /LRSRES/
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
+#include "gnrinf.h"
 #include "abainf.h"
 #include "cbilrs.h"
 C
@@ -178,6 +186,12 @@ C
          THRCLC = 1.D-04
       ELSE
          THRCLC = 2.D-03
+      END IF
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         WRITE (LUPRI,'(2A,1P,D10.2)') '@ INFO ',
+     &   ' *LINRES default threshold multiplied with general factor',
+     &   THR_REDFAC
+         THRCLC = THRCLC*THR_REDFAC
       END IF
       MAXCLC = 60
       MXRM   = 400
@@ -379,10 +393,17 @@ C
      &                           EXVAL,NEXVAL,NABATY,1,IMGLAB(IREC),
      &                           LUGDVE,LUSOVE,LUREVE,THRCLC,MAXCLC,
      &                           IPRCLC,MXRM,MXPHP,WORK,LWORK)
-                     IF (NOCONV) WRITE
-     &                 (LUPRI,'(/,3A,2F10.5)') ' No convergence for ',
+                     IF (NOCONV) THEN
+                        WRITE (LUPRI,'(/3A,2F10.5)')
+     &                    '@ WARNING  No convergence for ',
      &                    IMGLAB(IREC),'. Last residual and threshold:',
      &                    FINRES, THRCLC
+                     ELSE
+                        WRITE (LUPRI,'(3A,2F10.5)')
+     &                    '    Convergence for ',
+     &                    IMGLAB(IREC),'. Last residual and threshold:',
+     &                    FINRES, THRCLC
+                     END IF
                   END IF
                END IF
 C
@@ -411,7 +432,7 @@ C
                   CALL WRITDX (LURDI,IREC2,IRAT*NVARPT,
      &                         WORK(NVARPT + 1))
 ckr                  IDORCI(IREC,2) = 2
-                  CALL ABAWRITRS
+                  CALL ABAWRIT_RESTART
                   IF (IPRCLC .GT. 5) THEN
                      CALL HEADER('Response and residuum vectors in '//
      &                   'GETMRH for symmetry '//CHRNOS(ISYM)//':',-1)
@@ -465,5 +486,5 @@ C
       CALL GPCLOSE(LUGDR,'KEEP')
       RETURN
       END
-#endif /* uyy1Gse_getrhs */
+#endif /* use_getrhs */
 C--- end of abalrs.F ---

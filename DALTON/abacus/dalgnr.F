@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck srestr */
       SUBROUTINE SRESTR
@@ -45,7 +44,7 @@ C
       IF (.NOT. INPPRC) RETURN
 C
 C     /INFINP/ values are restored
-C     
+C
       ISPIN  = ISPINB
       ISTATE = ISTATB
       LSYM   = LSYMB
@@ -144,9 +143,9 @@ C
          EFIELD(I) = EFILDB(I)
          LFIELD(I) = LFILDB(I)
       END DO
-C     
+C
 C     /INFPRI/ values are restored
-C     
+C
       DO I = 1, NPFLAG
          P4FLAG(I) = P4FLGB(I)
          P6FLAG(I) = P6FLGB(I)
@@ -280,7 +279,7 @@ C
          EFILDB(I) = EFIELD(I)
          LFILDB(I) = LFIELD(I)
  150  CONTINUE
-C     
+C
 C        /INFPRI/ values are saved
 C
       DO I = 1, NPFLAG
@@ -414,13 +413,12 @@ C
       IF (QM3 .AND. .NOT.ONLYOV) CALL QM3_RDPOT()
 C
 C     ***************************************************************
-C     Reading in the interaction parameters for the NP and MM 
+C     Reading in the interaction parameters for the NP and MM
 C     subsystems needed by QM/NP/MM embedding scheme
 C     ***************************************************************
 C
       IF (QMNPMM .AND. .NOT.ONLYOV) THEN
-         call quit('not available in this version')
-!        CALL READ_POT_QMNPMM()
+         CALL READ_POT_QMNPMM()
       END IF
 C
 C     ***************************************************************
@@ -440,7 +438,7 @@ C
 C
 C     Third parameter .TRUE. in call indicates that LUONEL will be written.
 C
-      CALL READIN(WORK(1),LMWORK,.TRUE.)
+      CALL READIN(WORK(1),LMWORK,RNHERM)
 C
 C     Initialize Hermit variables, also when RNHERM false (e.g. for ABACUS)
 C
@@ -463,7 +461,7 @@ C
          CALL HERCTL(WORK(1),LMWORK)
 C        ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
 C        for transformation control, old AO/MO files cannot be used any more.
-C     ***************************************************************
+C        ***************************************************************
          CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'HERMIT')
          CALL TITLER('End of Integral Section (HERMIT)',' ',200)
          CALL FLSHFO(LUPRI)
@@ -516,7 +514,7 @@ C     Several files left open, have to be closed manually
 C
 C     With the present version of the code, AOSUPINT cannot be used either
 C     in RESPONSE or ABACUS, and for this reason we delete the file here
-C     
+C
       IF (LUSUPM.LE.0) CALL GPOPEN(LUSUPM,
      &   FNSUPM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       CALL GPCLOSE(LUSUPM,'DELETE')
@@ -579,7 +577,7 @@ C
 
       CALL CC_DRV(WORK(1),LMWORK)
 
-      ITRNMR = ISAVITR 
+      ITRNMR = ISAVITR
 
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC')
 
@@ -626,11 +624,25 @@ C
       END
 C  /* Deck dalton_exedrv */
       SUBROUTINE DALTON_EXEDRV(LMWORK, WRKDLM)
+#if defined(ENABLE_QMATRIX)
+!         added by Bin Gao, September 11, 2014
+          use matrix_operations, only: SET_MATRIX_DEFAULT
+          use dalton_qmatrix, only: DalQMat,
+     &                              dalton_qmatrix_init,
+     &                              dalton_qmatrix_input,
+     &                              dalton_qmatrix_test,
+     &                              dalton_qmatrix_finalize
+#endif
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
 C     variables.
 C
+#if defined (HAS_PCMSOLVER)
+      use pcm_scf
+      use pcmmod_cfg
+#endif
+
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -653,7 +665,6 @@ C
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "cbisol.h"
-#include "taymol.h"
 #include "pcmlog.h"
 Cef begin
 #include "incore.h"
@@ -677,9 +688,47 @@ C
       DIMENSION CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
+
+#include "trkoor.h"
+#include "taymol.h"
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
       real(8), allocatable :: work(:)
+
+#if defined(ENABLE_QMATRIX)
+      type(DalQMat) dal_qmat
+      logical qmatrix_input_found
+#endif
+
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
+
+#if defined(ENABLE_QMATRIX) || defined(ENABLE_OPENRSP) || defined(ENABLE_TDRSP)
+!     We should first read input in subroutine DALTON_EXEDRV() before any calculation,
+!     and some variables will indicate if required keyword (for instance, **QMATRIX)
+!     read. If yes, we will do the calculations after geometry optimization finished
+!     (indicated by GEOCNV) or after SCF procedure for a single point energy calculation.
+      call GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
+     &            IDUMMY, .false.)
+#if defined(ENABLE_QMATRIX)
+!     initializes global matrix counters of LSDalton matrix module
+      call SET_MATRIX_DEFAULT()
+!     searches **QMATRIX in input
+      qmatrix_input_found = .false.
+      do
+         read(LUCMD, '(A)', end=1) WORD
+         if (WORD=='**QMATR') then
+            call dalton_qmatrix_init(dal_qmat)
+            call dalton_qmatrix_input(dal_qmat, LUCMD, LUPRI)
+            qmatrix_input_found = .true.
+            exit
+         end if
+      end do
+1     rewind(LUCMD)
+#endif
+      call GPCLOSE(LUCMD, 'KEEP')
+#endif
+
 C
 !     allocate memory using f90 utilities
       allocate(work(0:lmwork+1),stat=i)
@@ -868,7 +917,7 @@ c#endif
                IF (NEWWLK) THEN
                   CALL WLKINI
                   IF (WALKIN) THEN
-C     
+C
 C     We made some changes to walk default. Need to process these
 C
                      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ',
@@ -890,7 +939,7 @@ C
                   NEWWLK = .FALSE.
                   CALL WLKINI
                   IF (WALKIN) THEN
-C     
+C
 C     We made some changes to walk default. Need to process these
 C
                      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ',
@@ -908,15 +957,19 @@ C     We may have more DOSYM under **START than under **PROPE
                   DOREPW(I) = DOSYM(I + 1) .AND. DOREPW(I)
                END DO
                IF (REUSED .AND. ITERNR .GT. 0) THEN
+                  allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+                  CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
                   REWIND (LUSIFC)
                   CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
                   READ (LUSIFC) POTNUC,EMY,EACTIV,ERGMOL
+                  CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+                  deallocate ( GRDMOL, HESMOL )
                   CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        WORK(1),LMWORK)
                ELSE
                   CALL EXEABA(WORK(0),LMWORK,WRKDLM)
                END IF
-               IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3) 
+               IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3)
      &              .OR. (IWKTYP .EQ. 6))) THEN
                   IF (MOD(ITERNR+2,10) .EQ. 0) THEN
                      IPRUSR = 0
@@ -939,8 +992,8 @@ C
             RDMLIN = .TRUE.
          IF ((.NOT. GEOCNV).AND.(ITERNR .LE. ITERMX)) THEN
             RDINPC = .FALSE.
-            CALL GPINQ('RSPVEC','EXIST',EX) 
-            IF (EX) THEN 
+            CALL GPINQ('RSPVEC','EXIST',EX)
+            IF (EX) THEN
                LU = -9982
                CALL GPOPEN(LU,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
      &                     .FALSE.)
@@ -1010,7 +1063,7 @@ C
             CALL EXEABA(WORK(0),LMWORK,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
-C     
+C
             CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &                  IDUMMY,.FALSE.)
             REWIND (LUCMD)
@@ -1034,7 +1087,14 @@ C
             ELSE
                GOTO 133
             END IF
- 134        CONTINUE 
+ 134        CONTINUE
+
+#if defined(ENABLE_QMATRIX)
+!           performs tests of QMatrix interface and library
+            if (qmatrix_input_found) then
+                call dalton_qmatrix_test(dal_qmat)
+            end if
+#endif
 
 #ifdef BUILD_OPENRSP
 C added by Bin Gao, April 2, 2009
@@ -1061,21 +1121,6 @@ C
                END IF
             END DO
  137        CONTINUE
-#endif
-
-#ifdef BUILD_TDRSP
-C added by Bin Gao, March 21, 2010
-C solves the equation of motion of reduced single-electron density matrix in real time domain
-            rewind( LUCMD )
-C tries to find $TDRSP input
-            do while ( .true. )
-              read( LUCMD, '(A6)', end=136 ) WORD
-              if ( WORD .eq. '$TDRSP' ) then
-                call tdrsp_driver( WORK(10), LMWORK-9 )
-                exit
-              end if
-            end do
-136         continue
 #endif
 
             IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
@@ -1147,6 +1192,13 @@ C
      &         'End of Dynamic Property Section (RESPONS)',' ',200)
          END IF
 
+#if defined(ENABLE_QMATRIX)
+!        performs tests of QMatrix interface and library
+         if (qmatrix_input_found) then
+             call dalton_qmatrix_test(dal_qmat)
+         end if
+#endif
+
 #ifdef BUILD_OPENRSP
 C added by Bin Gao, April 2, 2009
 C for response theory in atomic orbital basis
@@ -1177,26 +1229,6 @@ C search for $RESPON in input
  147     if (lucmd > 0) call gpclose(lucmd, 'KEEP')
 #endif
 
-#ifdef BUILD_TDRSP
-C added by Bin Gao, March 21, 2010
-C solves the equation of motion of reduced single-electron density matrix in real time domain
-         if ( LUCMD .lt. 0 ) then
-           call GPOPEN( LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
-     &                  IDUMMY, .FALSE. )
-         end if
-         rewind( LUCMD )
-C tries to find $TDRSP input
-         do while ( .true. )
-           read( LUCMD, '(A)', end=146 ) WORD
-           if ( WORD .eq. '$TDRSP' ) then
-             call tdrsp_driver( WORK(10), LMWORK-9 )
-             exit
-           end if
-         end do
-146      if ( LUCMD .gt. 0 ) call GPCLOSE( LUCMD, 'KEEP' )
-#endif
-
-
          IF (RNABAC) THEN
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL WLKINI
@@ -1217,6 +1249,7 @@ C
          END IF
       END IF
  87   CONTINUE
+
 C
 C     We finally punch information for Gamess-US graphic packages
 C
@@ -1228,11 +1261,33 @@ C
 C
       CALL MOLPLT(WORK(KKIND),WORK(KKOL),TITMOL,WORK(KLAST),LLEFT)
       CALL PLTORB(WORK(KKIND),LMWORK)
+
+#if defined(ENABLE_QMATRIX)
+!     cleans up the QMatrix interface
+      if (qmatrix_input_found) then
+          call dalton_qmatrix_finalize(dal_qmat)
+      end if
+#endif
+
 C
+!     release memory used in PElib
+#if defined (BUILD_PELIB)
+      IF (PEQM) CALL PE_IFC_FINALIZE()
+#endif
+
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
       WTOT = WEND - WSTR
 C
+! Finalize pcm_scf if an EXTPCM calculation (PCM using PCMSolver
+! library) was requested.
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        call pcm_scf_finalize
+        write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
+      end if
+#endif
+
       CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRI)
       CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRI)
 C
@@ -1251,6 +1306,11 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+      use pcm_write
+#endif
+
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1280,7 +1340,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 12, NTABLE = 33, D0 = 0.D0)
+      PARAMETER (NDIR = 14, NTABLE = 35, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1288,23 +1348,29 @@ C
 #endif
 C
       LOGICAL ALLOPT
+
+#if defined (HAS_PCMSOLVER)
+      logical extpcm_input_provided
+#endif
+
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-     &            '*READIN', '*QMNPMM'/
+     &            '*READIN', '*QMNPMM', '*QFIT  ', '*EXTPCM'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
      &            '.WALK  ', '.MAX IT', '.RESPON', ! 12
      &            '.RUN PR', '.RUN RE', '.RUN WA',
      &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
+     &            '.EXTPCM', 'xxxxxxx', 'xxxxxxx',
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
-     &            '.THRRED', '.DOUGLA', '.PEQM  '/
+     &            '.THRRED', '.DOUGLA', '.PEQM  ',
+     &            '.QFIT  ', '.LSLIB '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1368,6 +1434,8 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       PEQM   = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
+      QFIT   = .FALSE.
+      USE_LSLIB = .FALSE.
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
@@ -1388,7 +1456,7 @@ C     IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                             ELSE calculate g(R12) listed above
 C
       CHIVAL = -1.0D0
-      CHI1ST = .FALSE. 
+      CHI1ST = .FALSE.
 C
 C     SRINTS: calculate 1/R12 - g(R12)
 C
@@ -1405,8 +1473,12 @@ C         but we may restart with old integrals. FTRCTL is set
 C         true by EXEHER signalling that new AO integrals have
 C         been calculated.
 C
-C     Initialize /PCMLOG/
+C     Initialize /PCMLOG/ and /EXTPCM/
 C
+#if defined (HAS_PCMSOLVER)
+      extpcm_input_provided = .false.
+      pcmmod_is_pcm_calculation = .false.
+#endif
       PCM    = .FALSE.
       OUTFLD = .FALSE.
       NEWMAT = .TRUE.
@@ -1456,12 +1528,12 @@ C         if reading input from a terminal
             GO TO 900
          END IF
   910 CONTINUE
-         WRITE (LUPRI,'(A,I10,A)') 
+         WRITE (LUPRI,'(A,I10,A)')
      &   'End of file on DALTON.INP, no **DALTON input found in',
      &   J,' lines.'
          CALL QUIT('End of file on DALTON.INP, no **DALTON input found')
   920 CONTINUE
-         WRITE (LUPRI,'(A,I10,A)') 
+         WRITE (LUPRI,'(A,I10,A)')
      &   'Error reading line',J+1,' of DALTON.INP'//
      &   ' before finding any **DALTON input.'
          CALL QUIT('Error reading DALTON.INP, no **DALTON input found')
@@ -1470,14 +1542,14 @@ C         if reading input from a terminal
 C
 C     ***** Process input for COMMON  /GENINF/  *****
 C
-C Table(01:33) :
+C Table(01:34) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
+C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.EXTPCM',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-33: '.THRRED', '.DOUGLA', '.PEQM  '.
+C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  '.
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1491,7 +1563,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133), I
+     &                131,132,133,134,135), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1570,6 +1642,14 @@ C        ".WALK  "
             DIRCAL = .TRUE.
          GO TO 100
  119     CONTINUE
+#ifdef HAS_PCMSOLVER
+            extpcm_input_provided = .true.
+#else
+      WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+      CALL QUIT('Recompile including the PCM Module')
+#endif
+         goto 100
  120     CONTINUE
  121     CONTINUE
  122     CONTINUE
@@ -1611,13 +1691,31 @@ C        '.DOUGLA'
  132     CONTINUE
             DKTRAN = .TRUE.
          GOTO 100
-!        .PEQM
+!        '.PEQM  '
  133     CONTINUE
 #if defined (BUILD_PELIB)
             PEQM = .TRUE.
 #else
             WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
             CALL QUIT('ERROR for .PEQM: PE library not enabled.')
+#endif
+         GOTO 100
+!        '.QFIT  '
+ 134     CONTINUE
+#if defined (BUILD_QFITLIB)
+         QFIT = .TRUE.
+#else
+         WRITE(LUPRI,*) 'ERROR for .QFIT: QFITLIB not enabled.'
+         CALL QUIT('ERROR for .QFIT: QFITLIB not enabled.')
+#endif
+         GOTO 100
+!        '.LSLIB '
+ 135     CONTINUE
+#if defined (BUILD_LSLIB)
+         USE_LSLIB  = .TRUE.
+#else
+         WRITE(LUPRI,*) 'ERROR for .LSLIB : LSLIB not enabled.'
+         CALL QUIT('ERROR for .LSLIB : LSLIB not enabled.')
 #endif
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1640,7 +1738,7 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
       IF (THR_REDFAC .GT. 0.0D0) THEN
          WRITE (LUPRI,'(A,1P,D10.2)')
-     &   '@ INFO: All thresholds are multiplied by',THR_REDFAC
+     &   '@   INFO: All thresholds are multiplied by',THR_REDFAC
          IF (THR_REDFAC .LT. 1.D-10) THEN
             WRITE (LUPRI,'(A)') ' FATAL INPUT ERROR: Illegal value'
             CALL QUIT('Illegal input value for .THRRED')
@@ -1671,12 +1769,12 @@ C     ... default print level for statistics /hjaaj apr 2000
 #endif
       IF (OPTWLK) THEN
          IF (NMWALK) THEN
-            WRITE (LUPRI,'(4X,A/6X,A,I5)') 
-     &      'Numerical derivatives will be calculated',
-     &        'Number of different geometries:', ITERMX
+            WRITE (LUPRI,'(A/A,I5)')
+     &      '@   Numerical derivatives will be calculated.',
+     &      '      Number of different geometries:', ITERMX
          ELSE
-            WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
-     &      'Geometry walk module activated.',
+            WRITE (LUPRI,'(A/6X,A,I5/6X,A,I5)')
+     &        '@   Geometry optimization',
      &        'Starting at iteration:', ITERNR,
      &        'Maximum number of steps:', ITERMX
          END IF
@@ -1694,14 +1792,14 @@ C     ... default print level for statistics /hjaaj apr 2000
      &     'Use instead the .WALK module together with .TOTSYM'
          CALL QUIT('.TOTSYM and .OPTIMIZE is incompatible options')
       END IF
-      IF (TOTSYM) WRITE (LUPRI,'(4X,A)') 
+      IF (TOTSYM) WRITE (LUPRI,'(4X,A)')
      &   'Only totally symmetric part of molecular Hessian calculated'
       IF (DIRCAL) WRITE(LUPRI,'(4X,A)')
      &   'AO-direct calculation (in sections where implemented)'
-      IF (DKTRAN) WRITE (LUPRI,'(4X,A)') 
+      IF (DKTRAN) WRITE (LUPRI,'(4X,A)')
      &   'The second order Douglas-Kroll-Hess transformation is applied'
       IF (RNHERM) WRITE (LUPRI,'(4X,A)')
-     &     'HERMIT 1- and 2-electron integral sections will be executed'
+     &   'HERMIT 1- and 2-electron integral sections will be executed'
       IF (RUNERI) THEN
          WRITE (LUPRI,'(4X,A)')
      &     '2-elctron integrals are calculated using ERI '//
@@ -1731,11 +1829,15 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (RNABAC) WRITE (LUPRI,'(4X,A)')
      &     'Static molecular property section will be executed'//
      &          ' (ABACUS module)'
-      IF (WESTA) WRITE (LUPRI,'(4X,A)') 
+      IF (NMWALK) WRITE (LUPRI,'(4X,A)')
+     &   'Numerical derivatives will be calculated'
+      IF (WESTA) WRITE (LUPRI,'(4X,A)')
      &  'Information for WESTA will be calculated and written to files.'
       IF (PEQM) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
+      IF(QFIT) WRITE(LUPRI,'(4X,A)')
+     &   'Potential derived charges will be calculated (QFITLIB)'
 C
 Cholesky
       IF (CHOINT) THEN
@@ -1759,7 +1861,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1773,7 +1875,7 @@ C
          CALL QUIT('Program stopped in DALTON_GNRLINP, illegal prompt.')
       END IF
 C     "*PARALL" input
- 2    CONTINUE 
+ 2    CONTINUE
 #if defined (VAR_MPI) || defined (VAR_PVM)
         CALL PRLINP(WORD)
 #else
@@ -1801,9 +1903,9 @@ C     "*NMDDRV" input
 C
 C     We have to wait with the input processing of "*NMDDRV"
 C     until we know more about the molecule
-C       
+C
   205   READ (LUCMD,'(A7)') WORD
-        IF (WORD(1:1) .NE. '*') GOTO 205        
+        IF (WORD(1:1) .NE. '*') GOTO 205
       GO TO 200
 C
 C     "*MOLBAS" input
@@ -1833,7 +1935,7 @@ C     "*QMMM  " input
 !     "*PEQM  " input
    10 CONTINUE
 #if defined (BUILD_PELIB)
-        CALL PE_IFC_DALINP_READER(WORD)
+        CALL PE_IFC_INPUT_READER(WORD)
 #else
         CALL QUIT('ERROR for *PEQM: PE library not enabled.')
 #endif
@@ -1847,12 +1949,46 @@ C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
 C
 C     "*QMNPMM" input
    12 CONTINUE
-        call quit('not available in this version')
-!       CALL QMNPINP(WORD)
-      GO TO 200    
+        CALL QMNPINP(WORD)
+      GO TO 200
+   13 CONTINUE
+#if defined (BUILD_QFITLIB)
+        CALL QFITINP(WORD)! *QFIT
+#else
+        CALL QUIT('ERROR for *QFIT: QFITLIB not enabled.')
+#endif
+      GOTO 200
+C     "*END OF" or "**something"
+
+!     *EXTPCM input
+   14 CONTINUE
+#if defined (HAS_PCMSOLVER)
+            call move_to_next_star(word,lucmd)
+#else
+            WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+            CALL QUIT('Recompile including the PCM Module')
+#endif
+      GOTO 200
 C     "*END OF" or "**something"
     1 CONTINUE
 C
+#if defined (HAS_PCMSOLVER)
+!     read EXTPCM input if applicable
+      if(extpcm_input_provided)then
+        call read_menu_input('DALTON.INP', lucmd,
+     &                       '*EXTPCM', extpcm_input_provided)
+        pcmmod_is_pcm_calculation = .true.
+        if (.not. extpcm_input_provided) then
+        call quit('Oops, read_menu_input could not find *EXTPCM input')
+        end if
+      end if
+      if(pcmmod_is_pcm_calculation) then
+! Print useful info about DALTON+PCMSolver input options specified              
+              call report_after_pcm_input(lupri)
+      end if
+#endif
+
 #if defined (VAR_MPI) || defined (VAR_PVM)
       CALL PRLINP(WORD)
 #endif
@@ -1893,11 +2029,11 @@ C         if reading input from a terminal
  8000 CALL FLSHFO(LUPRI)
 C
 C     *** Doing just a survey of the wavefunctions we use. ***
-C     
+C
 c      INPERR = 0
-c      NUMRUN = 0 
+c      NUMRUN = 0
 c      IRDMO  = 8
-c      IREST  = 0 
+c      IREST  = 0
 c      NSYM   = 1
 c      REWIND (LUCMD,IOSTAT=IOS)
 c 8100 READ (LUCMD,'(A7)') WORD
@@ -1913,7 +2049,7 @@ C
 C  /* Deck pariot */
       SUBROUTINE PARIOT
 C
-C     Master routine for checking whether we will do parallell I/O by 
+C     Master routine for checking whether we will do parallell I/O by
 C     parallelizing over nuclear geometries
 C
 #include "implicit.h"
@@ -1966,7 +2102,7 @@ C
          DO 43 I = 1, 60
             IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
             LENWRK = LENWRK + 1
- 43      CONTINUE 
+ 43      CONTINUE
  44      CONTINUE
          IF (WRKDIR(LENWRK:LENWRK) .NE. '/') THEN
             LENWRK = LENWRK + 1
@@ -1976,7 +2112,7 @@ C
      &               'FORMATTED',IDUMMY,.FALSE.)
          WRITE (LUNMCL,'(I5)') I0
          CALL GPCLOSE(LUNMCL,'KEEP')
-#endif         
+#endif
          DO ILINE = 1, KMLINE
             MLINE(ILINE) = '                                        '//
      &           '                                        '
@@ -2012,7 +2148,7 @@ C
          REWIND (LUCMD)
       END IF
 C
-C     We should have sent everything we need know. Return to the 
+C     We should have sent everything we need know. Return to the
 C     main program.
 C
       RETURN
@@ -2049,7 +2185,7 @@ C
          DO 43 I = 1, 60
             IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
             LENWRK = LENWRK + 1
- 43      CONTINUE 
+ 43      CONTINUE
  44      CONTINUE
          IF (WRKDIR(LENWRK:LENWRK) .NE. '/') THEN
             LENWRK = LENWRK + 1

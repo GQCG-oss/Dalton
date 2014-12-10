@@ -102,18 +102,6 @@ implicit none
            config%davidOrbLoc%NOL2OPT = .true.
            config%decomp%cfg_mlo_m(1) = 0
            config%decomp%cfg_mlo_m(2) = 2
-       CASE('.CLM')
-           config%davidOrbLoc%PM_input%ChargeLocMulliken=.true.
-           config%davidOrbLoc%PM=.true.
-           config%davidOrbLoc%NOL2OPT = .true.
-           config%decomp%cfg_mlo = .true.
-           READ(input,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-       CASE('.CLL')
-           config%davidOrbLoc%PM_input%ChargeLocLowdin=.true.
-           config%davidOrbLoc%PM=.true.
-           config%decomp%cfg_mlo = .true.
-           config%davidOrbLoc%NOL2OPT = .true.
-           READ(input,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
 
        ! SPECIFIC SETTINGS
        CASE('.NO LEVEL2 LOCALIZATION')

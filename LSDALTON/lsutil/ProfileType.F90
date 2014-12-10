@@ -23,6 +23,7 @@ module profile_type
      CHARACTER(len=20) :: IchorProfInputBasisString(4)
      logical :: IchorProfDoThermite
      logical :: IchorProfDoIchor
+     logical :: IchorProfDoLink
   end type profileinput
   
 CONTAINS

@@ -3,13 +3,23 @@ MODULE IIDFTKSMWORK
 use precision
 !use TYPEDEF
 use dft_type
+use LS_UTIL,only: DGEMM_TS
 use dft_memory_handling
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
 #ifdef VAR_XCFUN
 use xcfun_host
 #endif
+
+logical,save :: XCintNoOMP
+
 CONTAINS
+SUBROUTINE SetNoOMP(InputNoOMP)
+implicit none
+logical,intent(in) :: InputNoOMP
+XCintNoOMP = InputNoOMP
+END SUBROUTINE SetNoOMP
+
 SUBROUTINE DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 implicit none
 LOGICAL,intent(inout) :: DOGGA,DOMETA
@@ -40,7 +50,7 @@ END SUBROUTINE DFT_DOGGA_DOMETA
 !> Worker routine that for a batch of gridpoints build the LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                   RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                   RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                   GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -81,6 +91,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 REAL(REALK),intent(in) :: DFTHRI
@@ -141,7 +153,7 @@ IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 ! LDA Exchange-correlation contribution to Kohn-Sham matrix
 DO IDMAT = 1, NDMAT
    CALL II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-        & VXC(:,IDMAT),GAO(:,:,1),DFTDATA%FKSM(:,:,IDMAT),DFTHRI,WORK(W1:W2),&
+        & VXC(:,IDMAT),GAO(:,:,1),SHAREDDFTDATA%FKSM(:,:,IDMAT),DFTHRI,WORK(W1:W2),&
         & WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
 ENDDO
 call mem_dft_dealloc(VXC)
@@ -155,7 +167,7 @@ END SUBROUTINE II_DFT_KSMLDA
 !> Worker routine that for a batch of gridpoints build the unrestricted LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMLDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                        RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                        RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                        GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -195,6 +207,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -268,10 +282,10 @@ IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
 #endif
 DO IDMAT = 1, NDMAT 
    CALL II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-        & VXC(:,IDMAT),GAO(:,:,1),DFTDATA%FKSM(:,:,IDMAT),DFTHRI,WORK(W1:W2),WORK(W3:W4),&
+        & VXC(:,IDMAT),GAO(:,:,1),SHAREDDFTDATA%FKSM(:,:,IDMAT),DFTHRI,WORK(W1:W2),WORK(W3:W4),&
         & WORK(W5:W6),WORK(W7:W8))
 !   CALL II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-!        & VXC(:,2),GAO(:,:,1),DFTDATA%FKSM(:,:,2),DFTHRI,WORK(W1:W2),WORK(W3:W4),&
+!        & VXC(:,2),GAO(:,:,1),SHAREDDFTDATA%FKSM(:,:,2),DFTHRI,WORK(W1:W2),WORK(W3:W4),&
 !        & WORK(W5:W6),WORK(W7:W8))
 ENDDO
 call mem_dft_dealloc(VXC)
@@ -284,7 +298,7 @@ END SUBROUTINE II_DFT_KSMLDAUNRES
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                   RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                   RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                   GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -324,6 +338,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -342,7 +358,7 @@ Real(realk), parameter :: D8 = 8.0E0_realk,D4 = 4.0E0_realk
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
 REAL(REALK) :: VX(3),DFTENE,GRD,GRDA,A
 REAL(REALK),pointer :: VXC(:,:,:)
-REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(5,1)
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(5,1)
 EXTERNAL DFTENE
 call mem_dft_alloc(VXC,4,NBLEN,NDMAT)
 !     GGA Exchange-correlation contribution to Kohn-Sham matrix
@@ -385,16 +401,16 @@ DO IDMAT=1,NDMAT
          ENDIF
 #ifdef VAR_XCFUN
       ELSE
-         XCFUNINPUT2(1,1) = RHO(IPNT,IDMAT)
-         XCFUNINPUT2(2,1) = GRAD(1,IPNT,IDMAT)
-         XCFUNINPUT2(3,1) = GRAD(2,IPNT,IDMAT)
-         XCFUNINPUT2(4,1) = GRAD(3,IPNT,IDMAT)
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)
+         XCFUNINPUT(3,1) = GRAD(2,IPNT,IDMAT)
+         XCFUNINPUT(4,1) = GRAD(3,IPNT,IDMAT)
          ! Input:
          !rho   = XCFUNINPUT(1,1)
          !grad_x = XCFUNINPUT(2,1)
          !grad_y = XCFUNINPUT(3,1)
          !grad_z = XCFUNINPUT(4,1)
-         call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,5,XCFUNOUTPUT2,1)
+         call xcfun_gga_components_xc_single_eval(XCFUNINPUT,5,XCFUNOUTPUT,1)
          ! Output
          ! Order 0
          ! out(1,1) Exc
@@ -404,17 +420,17 @@ DO IDMAT=1,NDMAT
          ! out(4,1) d^1 Exc / d grad_y
          ! out(5,1) d^1 Exc / d grad_z
 
-         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT2(1,1)*WGHT(IPNT)
+         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
          IF(DFTDATA%LB94)THEN
             call lsquit('error lb94 not implemented for xcfun',-1)
          ELSEIF(DFTDATA%CS00)THEN
             call lsquit('error cs00 not implemented for xcfun',-1)
          ENDIF
          !the \Omega_{\mu \nu} part
-         VXC(1,IPNT,IDMAT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
-         VXC(2,IPNT,IDMAT) = D4*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
-         VXC(3,IPNT,IDMAT) = D4*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
-         VXC(4,IPNT,IDMAT) = D4*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
+         VXC(1,IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         VXC(2,IPNT,IDMAT) = D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+         VXC(3,IPNT,IDMAT) = D4*XCFUNOUTPUT(4,1)*WGHT(IPNT)
+         VXC(4,IPNT,IDMAT) = D4*XCFUNOUTPUT(5,1)*WGHT(IPNT)
       ENDIF
 #endif
    ELSE
@@ -436,7 +452,7 @@ IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 #endif
 
 CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,NactBast,NBAST,NTYPSO,NDMAT,&
-     & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,WORK(W5:W6),MaxNactbast)
+     & VXC,GAO,SHAREDDFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,WORK(W5:W6),MaxNactbast)
 call mem_dft_dealloc(VXC)
 
 END SUBROUTINE II_DFT_KSMGGA
@@ -445,7 +461,7 @@ END SUBROUTINE II_DFT_KSMGGA
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMMETA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                    RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                    RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                    GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -485,6 +501,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -548,7 +566,7 @@ IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 #endif
 
 CALL II_DISTMETA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,NactBast,NBAST,NTYPSO,NDMAT,&
-     & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
+     & VXC,GAO,SHAREDDFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
 call mem_dft_dealloc(VXC)
 
 END SUBROUTINE II_DFT_KSMMETA
@@ -557,7 +575,7 @@ END SUBROUTINE II_DFT_KSMMETA
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                        RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                        RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                        GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -597,6 +615,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -698,11 +718,11 @@ DO IDMAT = 1,NDMAT/2
 
  ! call with drho_alpha dgradrho_alpha dmixed and gradA, gradB
  CALL II_DISTGGABUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,NactBast,NBAST,&
-      &  VXC(:,1,1),VXC(:,2,1),VXM,GAO(:,:,1:4),GRAD(:,:,1),GRAD(:,:,2),DFTDATA%FKSM(:,:,IDMAT1),&
+      &  VXC(:,1,1),VXC(:,2,1),VXM,GAO(:,:,1:4),GRAD(:,:,1),GRAD(:,:,2),SHAREDDFTDATA%FKSM(:,:,IDMAT1),&
       &DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
  ! call with drho_beta dmixed dgradrho_beta and gradA, gradB
  CALL II_DISTGGABUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,NactBast,NBAST,&
-      &  VXC(:,1,2),VXM,VXC(:,2,2),GAO(:,:,1:4),GRAD(:,:,1),GRAD(:,:,2),DFTDATA%FKSM(:,:,IDMAT2),&
+      &  VXC(:,1,2),VXM,VXC(:,2,2),GAO(:,:,1:4),GRAD(:,:,1),GRAD(:,:,2),SHAREDDFTDATA%FKSM(:,:,IDMAT2),&
       &DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
 ENDDO
 #else
@@ -715,7 +735,7 @@ END SUBROUTINE II_DFT_KSMGGAUNRES
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_geoderiv_molgrad_worker_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-     & NDMAT,DMAT,NTYPSO,GAOS,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,&
+     & NDMAT,DMAT,NTYPSO,GAOS,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,&
      & WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
   IMPLICIT NONE
 !> the logical unit number for the output file
@@ -755,6 +775,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -867,8 +889,13 @@ IF (NRED.GT. 0) THEN
    ENDDO
    
    ! Density-matrix contraction
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
-        &                 NBLEN,DRED,NRED,0.0E0_realk,GDRED,NBLEN    )
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &                 NBLEN,DRED,NRED,0.0E0_realk,GDRED,NBLEN    )
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &                 NBLEN,DRED,NRED,0.0E0_realk,GDRED,NBLEN    )
+   ENDIF
    DO IRED=1,NRED
       iatom = atom(IRED)
       KA = INXRED(IRED)  !KA is active index
@@ -891,7 +918,7 @@ END SUBROUTINE II_GEODERIV_MOLGRAD_WORKER_LDA
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_geoderiv_molgrad_worker_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-     & NDMAT,DMAT,NTYPSO,GAOS,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,&
+     & NDMAT,DMAT,NTYPSO,GAOS,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,&
      & WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
   IMPLICIT NONE
 !> the logical unit number for the output file
@@ -931,6 +958,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -955,7 +984,7 @@ REAL(REALK),pointer :: GAORED(:,:,:),GDRED(:,:,:)
 REAL(REALK),pointer :: DRED(:,:)
 INTEGER     :: INXRED(NACTBAST),IRED,JRED,NRED,orb2atom(nbast)
 INTEGER     :: atom(NACTBAST),iatom,IX,K1,K2,K3,KA,ik,jk
-REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT2(4,1),XCFUNOUTPUT2(5,1)
+REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT(4,1),XCFUNOUTPUT(5,1)
 
 orb2atom = DFTDATA%orb2atom
 KVALS(1:3,1) = (/1, 2, 3/)
@@ -990,16 +1019,16 @@ DO IPNT = 1, NBLEN
          ENDIF
 #ifdef VAR_XCFUN
       ELSE
-         XCFUNINPUT2(1,1) = RHO(IPNT,1)
-         XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
-         XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
-         XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
+         XCFUNINPUT(1,1) = RHO(IPNT,1)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+         XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+         XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
          ! Input:
          !rho   = XCFUNINPUT(1,1)
          !grad_x = XCFUNINPUT(2,1)
          !grad_y = XCFUNINPUT(3,1)
          !grad_z = XCFUNINPUT(4,1)
-         call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,5,XCFUNOUTPUT2,1)
+         call xcfun_gga_components_xc_single_eval(XCFUNINPUT,5,XCFUNOUTPUT,1)
          ! Output
          ! Order 0
          ! out(1,1) Exc
@@ -1013,10 +1042,10 @@ DO IPNT = 1, NBLEN
          ELSEIF(DFTDATA%CS00)THEN
             call lsquit('error cs00 not implemented for xcfun',-1)
          ENDIF
-         VXC(1,IPNT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
-         VXC(2,IPNT) = D2*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
-         VXC(3,IPNT) = D2*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
-         VXC(4,IPNT) = D2*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
+         VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         VXC(2,IPNT) = D2*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+         VXC(3,IPNT) = D2*XCFUNOUTPUT(4,1)*WGHT(IPNT)
+         VXC(4,IPNT) = D2*XCFUNOUTPUT(5,1)*WGHT(IPNT)
       ENDIF
 #endif
    ELSE
@@ -1087,8 +1116,13 @@ IF (NRED.GT. 0) THEN
    ! \frac{\partial \chi_{\mu}}{\frac \partial y} D_{\mu \nu}
    ! \frac{\partial \chi_{\mu}}{\frac \partial z} D_{\mu \nu}
    DO J=1,4
-      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(1,1,J),&
-           &                  NBLEN,DRED,NRED,0.0E0_realk,GDRED(1,1,J),NBLEN )
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(1,1,J),&
+           &        NBLEN,DRED,NRED,0.0E0_realk,GDRED(1,1,J),NBLEN )
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,J),&
+              &        NBLEN,DRED,NRED,0.0E0_realk,GDRED(:,:,J),NBLEN )
+      ENDIF
    ENDDO
    DO IRED=1,NRED
       iatom = atom(IRED)
@@ -1137,7 +1171,7 @@ END SUBROUTINE II_GEODERIV_MOLGRAD_WORKER_GGA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE ii_dft_linrsplda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                     GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -1177,6 +1211,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -1225,7 +1261,7 @@ ENDDO
 IF(DOCALC)THEN
    !get expectation value of BMAT = \sum_{\mu \nu} \chi_{\mu} \chi_{\nu} BMAT_{\mu \nu}
  call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-        &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
+        &Nactbast,NBAST,GAO,EXPVAL,SHAREDDFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
  IF(NRED.GT. 0)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
@@ -1264,7 +1300,7 @@ IF(DOCALC)THEN
   END DO
   DO IBMAT = 1,NBMAT
    CALL II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-        & VXC(:,IBMAT),GAO(:,:,1),DFTDATA%FKSM(:,:,IBMAT),DFTHRI,&
+        & VXC(:,IBMAT),GAO(:,:,1),SHAREDDFTDATA%FKSM(:,:,IBMAT),DFTHRI,&
         & WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
   ENDDO
  ENDIF
@@ -1278,7 +1314,7 @@ END SUBROUTINE II_DFT_LINRSPLDA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_LINRSPLDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,&
-     & NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     & NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      & GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -1318,6 +1354,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -1339,7 +1377,7 @@ END SUBROUTINE II_DFT_LINRSPLDAUNRES
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_LINRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                      RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                      RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                      GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -1379,6 +1417,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -1400,8 +1440,7 @@ Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk
 Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
 Real(realk), parameter :: D16 = 16.0E0_realk,D32 = 32.0E0_realk
 REAL(REALK) :: fR,fZ,fRR,fRZ,fZZ,fRG,fZG,fGG,fG,A,B
-REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(6,1)
-REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(15,1)
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(15,1)
 NBMAT = DFTDATA%NBMAT
 call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
 call mem_dft_alloc(EXPGRAD,3,NBLEN,NBMAT)
@@ -1427,7 +1466,7 @@ IF(DOCALC)THEN
   IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_LINRSPGGA',lupri)
 #endif
   call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-       & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
+       & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,SHAREDDFTDATA%BMAT,&
        & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,&
        & WORK(W5:W6),MaxNactBast)
  IF(NRED.GT. 0)THEN
@@ -1467,16 +1506,16 @@ IF(DOCALC)THEN
        ENDDO
 #ifdef VAR_XCFUN
     ELSE
-       XCFUNINPUT2(1,1) = RHO(IPNT,1)
-       XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
-       XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
-       XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
        ! Input:
        !rho   = XCFUNINPUT(1,1)
        !grad_x = XCFUNINPUT(2,1)
        !grad_y = XCFUNINPUT(3,1)
        !grad_z = XCFUNINPUT(4,1)
-       call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,15,XCFUNOUTPUT2,2)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT,15,XCFUNOUTPUT,2)
        ! Output
        ! Order 0
        ! out(1,1) Exc
@@ -1499,30 +1538,30 @@ IF(DOCALC)THEN
        DO IBMAT = 1,NBMAT
           !the \Omega_{\mu \nu} part
           VXC(1,IPNT,IBMAT) = &
-               &   D4*XCFUNOUTPUT2(6,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT) &
-               & + D4*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D4*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D4*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+               &   D4*XCFUNOUTPUT(6,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT) &
+               & + D4*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D4*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D4*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
           !the \frac{\partial \Omega_{\mu \nu}}{\partial x} part
           VXC(2,IPNT,IBMAT) = &
-               &   D8*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+               &   D8*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
           !the \frac{\partial \Omega_{\mu \nu}}{\partial y} part             
           VXC(3,IPNT,IBMAT) = &
-               &   D8*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+               &   D8*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
           !the \frac{\partial \Omega_{\mu \nu}}{\partial z} part =
           !     (d^2 Exc/d rho d gz)kappa + (d^2 Exc/d gx d gz)dkappa/dx
           !+ (d^2 Exc/d gy d gz)dkappa/dy + (d^2 Exc/d gz d gz)dkappa/dz 
           VXC(4,IPNT,IBMAT) = &
-               &   D8*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+               &   D8*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
        ENDDO
 
     ENDIF
@@ -1541,7 +1580,7 @@ IF(DOCALC)THEN
   IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
 #endif
   CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NTYPSO,NBMAT,&
-       & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
+       & VXC,GAO,SHAREDDFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
  ENDIF
 ENDIF
 call mem_dft_dealloc(EXPVAL)
@@ -1554,7 +1593,7 @@ END SUBROUTINE II_DFT_LINRSPGGA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_LINRSPGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                           RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                           RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                           GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -1594,6 +1633,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -1615,7 +1656,7 @@ END SUBROUTINE II_DFT_LINRSPGGAUNRES
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE ii_dft_quadrsplda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                       RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                       RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                       GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -1655,6 +1696,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -1674,8 +1717,9 @@ REAL(REALK) :: VX(27),DFTENE
 INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred
 INTEGER     :: W1,W2,W3,W4,W5,W6,W7,W8
 LOGICAL     :: DOCALC
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk, D8=8.0E0_realk
 REAL(REALK) :: fRRR
+REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(4,1)
 
 W1 = 1
 W2 = NBLEN*Nactbast                        !W1 - 1 + NBLEN*Nactbast    -> GAORED 
@@ -1702,7 +1746,7 @@ ENDDO
 IF(DOCALC)THEN
 !get expectation value of BMAT=\sum_{\mu \nu}\chi_{\mu}\chi_{\nu}BMAT_{\mu \nu}
  call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-        &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
+        &Nactbast,NBAST,GAO,EXPVAL,SHAREDDFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
  IF(NRED.GT. 0)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
@@ -1725,7 +1769,16 @@ IF(DOCALC)THEN
        VXC(IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)  
 #ifdef VAR_XCFUN
     ELSE
-       call lsquit('xcfun version of quadratic response not implemented',-1)
+        XCFUNINPUT(1,1) = RHO(IPNT,1)
+        call xcfun3_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+        !1 = E
+        !2 = fR
+        !3 = fRR
+        !4 = fRRR
+        DO IBMAT = 1,NBMAT
+           fRRR = XCFUNOUTPUT(4,1)*WGHT(IPNT)
+           VXC(IPNT) =D8*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
+        ENDDO
     ENDIF
 #endif
    ELSE
@@ -1733,7 +1786,7 @@ IF(DOCALC)THEN
    ENDIF
   END DO
    CALL II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-        & VXC(:),GAO(:,:,1),DFTDATA%FKSM(:,:,1),DFTHRI,WORK(W1:W2),&
+        & VXC(:),GAO(:,:,1),SHAREDDFTDATA%FKSM(:,:,1),DFTHRI,WORK(W1:W2),&
         & WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
  ENDIF
 ENDIF
@@ -1746,7 +1799,7 @@ END SUBROUTINE II_DFT_QUADRSPLDA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_QUADRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                       RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                       RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                       GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -1786,6 +1839,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -1801,13 +1856,14 @@ REAL(REALK),intent(in) :: GAOMAX
 !
 REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:),EXPGRAD(:,:,:)
 REAL(REALK) :: VX(27),DFTENE,GRD,GRDA,MIXEDGRDA
-INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8
+INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8,X,Y,Z,XYZ
 LOGICAL     :: DOCALC
 Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk,D3 = 3E0_realk
 Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
 REAL(REALK) :: GRD2,GRDA2,GRDA3
 REAL(REALK) :: fRZ,fRG,fZZ,fRRR,fRRZ,fRRG,fRRGX,fRZZ,fZZZ,gradY,gradZ,gradYZ,A,B,C
-REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(10,1)
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(35,1)
+REAL(realk) :: FDERIV(4,4,4),E1(4),E2(4),TMP
 NBMAT = DFTDATA%NBMAT
 IF(NBMAT.NE. 2)call lsquit('QRSP XC error',lupri)
 call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
@@ -1831,7 +1887,7 @@ IF(DOCALC)THEN
  IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
 #endif
  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
+      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,SHAREDDFTDATA%BMAT,&
       & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),&
       & GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
  IF(NRED.GT. 0)THEN
@@ -1841,14 +1897,25 @@ IF(DOCALC)THEN
    IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
    GRDA = D05*GRD
    IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-    !get the functional derivatives 
-    GRD2 = GRD*GRD
-    GRDA2 = GRDA*GRDA
-    GRDA3 = GRDA2*GRDA
 #ifdef VAR_XCFUN
     IF(.NOT.USEXCFUN)THEN
 #endif
+       !get the functional derivatives 
        CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+
+       GRD2 = GRD*GRD
+       GRDA2 = GRDA*GRDA
+       GRDA3 = GRDA2*GRDA
+       gradY = D05*(EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+       gradZ = D05*(EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
+       gradYZ = (EXPGRAD(1,IPNT,2)*EXPGRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*EXPGRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*EXPGRAD(3,IPNT,1))
+
        fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
        fRG = D2*VX(10)                      !2*drvs.df10001   
        fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA) !(drvs.df0020 + drvs.df0011)/(4*grada2)-drvs.df0010/(4*grada3)
@@ -1861,15 +1928,6 @@ IF(DOCALC)THEN
        !((drvs.df0030 + 3*drvs.df0021)/grada3& 
        !         &-3*(drvs.df0020 + drvs.df0011)/(grada2*grada2)&
        !         &+3*drvs.df0010/(grada3*grada2))/8.0
-       gradY = D05*(EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1) &
-            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1) &
-            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-       gradZ = D05*(EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1) &
-            &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1) &
-            &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
-       gradYZ = (EXPGRAD(1,IPNT,2)*EXPGRAD(1,IPNT,1) &
-            &+EXPGRAD(2,IPNT,2)*EXPGRAD(2,IPNT,1) &
-            &+EXPGRAD(3,IPNT,2)*EXPGRAD(3,IPNT,1))
        VXC(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &!OK
             &+D4*(fRRZ*EXPVAL(IPNT,1)*gradZ+fRRZ*EXPVAL(IPNT,2)*gradY) & !OK
             &+D8*gradZ*gradY*fRZZ &! OK
@@ -1883,14 +1941,103 @@ IF(DOCALC)THEN
             & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*gradYZ
        B = D8*fZZ*gradY + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
        C = D8*fZZ*gradZ + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
-       
+
        VXC(2,IPNT) = D2*A*GRAD(1,IPNT,1) + D2*B*EXPGRAD(1,IPNT,2) + D2*C*EXPGRAD(1,IPNT,1)
        VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
        VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
+       
 #ifdef VAR_XCFUN
     ELSE
-       call lsquit('xcfun version of quadratic response not implemented',-1)
-    ENDIF
+       DO IBMAT = 1,NBMAT
+       ! Input:
+       !rho    = XCFUNINPUT(1,1)
+       !grad_x = XCFUNINPUT(2,1)
+       !grad_y = XCFUNINPUT(3,1)
+       !grad_z = XCFUNINPUT(4,1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT,35,XCFUNOUTPUT,3)
+       ! Output
+       ! Order 0
+       ! out(1,1) Exc
+       ! Order 1
+       ! out(2,1) d^1 Exc / d n
+       ! out(3,1) d^1 Exc / d nx
+       ! out(4,1) d^1 Exc / d ny
+       ! out(5,1) d^1 Exc / d nz
+       ! Order 2
+       ! out(6,1) d^2 Exc / d n n
+       ! out(7,1) d^2 Exc / d n nx
+       ! out(8,1) d^2 Exc / d n ny
+       ! out(9,1) d^2 Exc / d n nz
+       ! out(10,1) d^2 Exc / d nx nx
+       ! out(11,1) d^2 Exc / d nx ny
+       ! out(12,1) d^2 Exc / d nx nz
+       ! out(13,1) d^2 Exc / d ny ny
+       ! out(14,1) d^2 Exc / d ny nz
+       ! out(15,1) d^2 Exc / d nz nz
+       ! Order 3
+       ! out(16,1) d^3 Exc / d n n n
+       ! out(17,1) d^3 Exc / d n n nx
+       ! out(18,1) d^3 Exc / d n n ny
+       ! out(19,1) d^3 Exc / d n n nz
+       ! out(20,1) d^3 Exc / d n nx nx
+       ! out(21,1) d^3 Exc / d n nx ny
+       ! out(22,1) d^3 Exc / d n nx nz
+       ! out(23,1) d^3 Exc / d n ny ny
+       ! out(24,1) d^3 Exc / d n ny nz
+       ! out(25,1) d^3 Exc / d n nz nz
+       ! out(26,1) d^3 Exc / d nx nx nx
+       ! out(27,1) d^3 Exc / d nx nx ny
+       ! out(28,1) d^3 Exc / d nx nx nz
+       ! out(29,1) d^3 Exc / d nx ny ny
+       ! out(30,1) d^3 Exc / d nx ny nz
+       ! out(31,1) d^3 Exc / d nx nz nz
+       ! out(32,1) d^3 Exc / d ny ny ny
+       ! out(33,1) d^3 Exc / d ny ny nz
+       ! out(34,1) d^3 Exc / d ny nz nz
+       ! out(35,1) d^3 Exc / d nz nz nz
+       
+       ! Constructing intermediates for the VXC automated loop
+       XYZ = 15
+       DO X=1,4
+         DO Y=X,4
+           DO Z=Y,4
+             XYZ = XYZ + 1
+             FDERIV(X,Y,Z) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(X,Z,Y) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Y,X,Z) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Y,Z,X) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Z,X,Y) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Z,Y,X) = XCFUNOUTPUT(XYZ,1)
+           ENDDO
+         ENDDO
+       ENDDO
+       E1(1) = EXPVAL(IPNT,1)
+       E1(2) = EXPGRAD(1,IPNT,1)
+       E1(3) = EXPGRAD(2,IPNT,1)
+       E1(4) = EXPGRAD(3,IPNT,1)
+       E2(1) = EXPVAL(IPNT,2)
+       E2(2) = EXPGRAD(1,IPNT,2)
+       E2(3) = EXPGRAD(2,IPNT,2)
+       E2(4) = EXPGRAD(3,IPNT,2)
+
+       ! VXC loop
+       DO X=1,4
+         VXC(X,IPNT) = 0E0_realk
+         DO Y=1,4
+           TMP = D8*E1(Y)*WGHT(IPNT)
+           IF (X.GE.2) TMP = D2*TMP
+           DO Z=1,4
+             VXC(X,IPNT) = VXC(X,IPNT) + FDERIV(Z,Y,X)*E2(Z)*TMP
+           ENDDO
+         ENDDO
+       ENDDO
+
+       ENDDO !IPNT
+     ENDIF !XCFUN
 #endif
    ELSE
     VXC(:,IPNT) = 0.0E0_realk
@@ -1906,7 +2053,7 @@ IF(DOCALC)THEN
   IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
 #endif
   CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NTYPSO,1,&
-       & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
+       & VXC,GAO,SHAREDDFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
  ENDIF
 ENDIF
 call mem_dft_dealloc(EXPVAL)
@@ -1920,7 +2067,7 @@ END SUBROUTINE II_DFT_QUADRSPGGA
 !> \date 2010
 SUBROUTINE II_DFT_magderiv_kohnshamLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+     & DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -1959,6 +2106,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -2004,7 +2153,7 @@ DO IPNT = 1, NBLEN
 END DO
 !ntypso should be 4
 CALL II_DFT_distmagderiv_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-     &VXC,GAO(:,:,:),DFTDATA%FKSM(:,:,1:3),COORD,DFTHRI,NTYPSO)
+     &VXC,GAO(:,:,:),SHAREDDFTDATA%FKSM(:,:,1:3),COORD,DFTHRI,NTYPSO)
 
 END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMLDA
 
@@ -2013,7 +2162,7 @@ END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMLDA
 !> \date 2010
 SUBROUTINE II_DFT_magderiv_kohnshamGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+     & DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
 !> the number of gridpoints
@@ -2051,6 +2200,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -2065,7 +2216,8 @@ REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
 REAL(REALK),intent(in) :: GAOMAX
 !
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk,D05 = 0.5E0_realk
-REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
+Real(realk), parameter :: D4 = 4.0E0_realk
+REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,XCFUNINPUT(4,1),XCFUNOUTPUT(5,1)
 REAL(REALK),pointer :: VXC(:,:)
 INTEGER     :: I,J
 IDMAT = 1
@@ -2100,12 +2252,19 @@ DO IPNT = 1, NBLEN
          ENDIF
 #ifdef VAR_XCFUN
       ELSE
-         call lsquit('xcfun version of II_DFT_MAGDERIV_KOHNSHAMGGA not implemented',-1)
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
-         XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
-              &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-              &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1)
-         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+         XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+         XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
+         call xcfun_gga_components_xc_single_eval(XCFUNINPUT,5,XCFUNOUTPUT,1)
+         ! Output
+         ! Order 0
+         ! out(1,1) Exc
+         ! Order 1
+         ! out(2,1) d^1 Exc / d rho
+         ! out(3,1) d^1 Exc / d grad_x
+         ! out(4,1) d^1 Exc / d grad_y
+         ! out(5,1) d^1 Exc / d grad_z
 
          IF(DFTDATA%LB94)THEN
             call lsquit('error lb94 xcfun',-1)
@@ -2114,10 +2273,9 @@ DO IPNT = 1, NBLEN
          ENDIF
 
          VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
-         VXC(2,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
-         VXC(3,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
-         VXC(4,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
-         call lsquit('XCFUN',-1)
+         VXC(2,IPNT) = D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+         VXC(3,IPNT) = D4*XCFUNOUTPUT(4,1)*WGHT(IPNT)
+         VXC(4,IPNT) = D4*XCFUNOUTPUT(5,1)*WGHT(IPNT)
       ENDIF
 #endif
    ELSE
@@ -2125,7 +2283,7 @@ DO IPNT = 1, NBLEN
    END IF
 END DO
 CALL II_DFT_distmagderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-     &VXC,GAO,DFTDATA%FKSM,COORD,DFTHRI,NTYPSO)
+     &VXC,GAO,SHAREDDFTDATA%FKSM,COORD,DFTHRI,NTYPSO)
 call mem_dft_dealloc(VXC)
 
 END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMGGA
@@ -2135,7 +2293,7 @@ END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMGGA
 !> \date 2010
 SUBROUTINE II_DFT_MAGDERIV_LINRSPLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+     & DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2174,6 +2332,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -2211,7 +2371,7 @@ ENDDO
 IF(DOCALC)THEN
 !get expectation value of BMAT
  call II_get_magderiv_expval_lda(LUPRI,NTYPSO,NBLEN,NBLOCKS,BLOCKS,&
-        & INXACT,Nactbast,NBAST,GAO,COORD,EXPVAL,EXPGRAD,DFTDATA%BMAT,nBMAT,&
+        & INXACT,Nactbast,NBAST,GAO,COORD,EXPVAL,EXPGRAD,SHAREDDFTDATA%BMAT,nBMAT,&
         & NRED,DFTHRI,dosympart)
  IF(NRED.GT. 0)THEN
   VXC2 = 0.0E0_realk
@@ -2243,7 +2403,7 @@ IF(DOCALC)THEN
    ENDIF
   END DO
   CALL II_DFT_DISTMAGDERIV_linrsp_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-    &Nactbast,NBAST,VXC,VXC2,NBMAT,GAO,DFTDATA%FKSM,DFTDATA%FKSMS,COORD,DFTHRI,NTYPSO,dosympart)
+    &Nactbast,NBAST,VXC,VXC2,NBMAT,GAO,SHAREDDFTDATA%FKSM,SHAREDDFTDATA%FKSMS,COORD,DFTHRI,NTYPSO,dosympart)
  ENDIF
 ENDIF
 call mem_dft_dealloc(EXPVAL)
@@ -2258,7 +2418,7 @@ END SUBROUTINE II_DFT_MAGDERIV_LINRSPLDA
 !> \date 2010
 SUBROUTINE II_DFT_MAGDERIV_LINRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+     & DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2297,6 +2457,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -2310,14 +2472,17 @@ REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
 !> Maximum gaussian atomic orbital value (non differentiated)
 REAL(REALK),intent(in) :: GAOMAX
 !
-INTEGER     :: I,J,NBMAT,ibmat,N,NRED,IPNT
+INTEGER     :: I,J,NBMAT,ibmat,N,NRED,IPNT,IJ
 REAL(REALK) :: VX(14),GRD,GRDA,MIXEDGRDA,MIXEDGRDAMAG(3)
 LOGICAL     :: DOCALC,dosympart
 REAL(REALK),pointer :: VXC1(:,:),VXC1MAG(:,:,:)
 REAL(REALK),pointer :: EXPGRAD(:,:,:,:),VXC2(:,:,:),VXC2MAG(:,:,:,:)
+Real(realk), parameter :: D0 = 0.0E0_realk
 Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk
 Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
 REAL(REALK) :: fR,fZ,fRR,fRZ,fZZ,fRG,fZG,fGG,fG,A,B,AMAG(3)
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(15,1)
+REAL(REALK) :: fxc(4,4),vxc(4,4),FAC
 NBMAT = DFTDATA%NBMAT
 dosympart = DFTDATA%dosympart
 call mem_dft_alloc(EXPGRAD,NBLEN,4,4,NBMAT)!mixed geo,magn gradients of EXPVAL
@@ -2335,7 +2500,7 @@ ENDDO
 IF(DOCALC)THEN
 !get expectation value of BMAT
  call II_get_magderiv_expval_gga(LUPRI,NTYPSO,NBLEN,NBLOCKS,BLOCKS,&
-        & INXACT,Nactbast,NBAST,GAO,COORD,EXPGRAD,DFTDATA%BMAT,nBMAT,&
+        & INXACT,Nactbast,NBAST,GAO,COORD,EXPGRAD,SHAREDDFTDATA%BMAT,nBMAT,&
         & NRED,DFTHRI,dosympart)
  IF(NRED.GT. 0)THEN
   VXC2 = 0.0E0_realk
@@ -2392,7 +2557,61 @@ IF(DOCALC)THEN
        ENDDO
 #ifdef VAR_XCFUN
     ELSE
-        call lsquit('xcfun version of II_DFT_MAGDERIV_LINRSPGGA not implemented',-1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
+       ! Input:
+       !rho   = XCFUNINPUT(1,1)
+       !grad_x = XCFUNINPUT(2,1)
+       !grad_y = XCFUNINPUT(3,1)
+       !grad_z = XCFUNINPUT(4,1)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT,15,XCFUNOUTPUT,2)
+       ! Output
+       ! Order 0
+       ! out(1,1) Exc
+       ! Order 1
+       ! out(2,1) d^1 Exc / d n
+       ! out(3,1) d^1 Exc / d nx
+       ! out(4,1) d^1 Exc / d ny
+       ! out(5,1) d^1 Exc / d nz
+       ! Order 2
+       ! out(6,1) d^2 Exc / d n n
+       ! out(7,1) d^2 Exc / d n nx
+       ! out(8,1) d^2 Exc / d n ny
+       ! out(9,1) d^2 Exc / d n nz
+       ! out(10,1) d^2 Exc / d nx nx
+       ! out(11,1) d^2 Exc / d nx ny
+       ! out(12,1) d^2 Exc / d nx nz
+       ! out(13,1) d^2 Exc / d ny ny
+       ! out(14,1) d^2 Exc / d ny nz
+       ! out(15,1) d^2 Exc / d nz nz
+       ij=5
+       DO i=1,4
+         DO j=i,4
+           ij=ij+1
+           fxc(i,j) = XCFUNOUTPUT(ij,1)*WGHT(IPNT)
+           fxc(j,i) = fxc(i,j)
+           vxc(i,j) = D0
+           vxc(j,i) = D0
+         ENDDO
+       ENDDO
+       DO IBMAT = 1,NBMAT
+          VXC1(IPNT,IBMAT) = D0
+          DO i=1,4
+            FAC = D4
+            IF (i.GE.2) FAC = D8
+            DO j=1,4
+              DO N=1,4
+                vxc(i,j) = vxc(i,j) + FAC*fxc(i,N)*EXPGRAD(IPNT,N,j,IBMAT)
+              ENDDO
+            ENDDO
+          ENDDO
+          VXC1(IPNT,IBMAT)        = vxc(1,1)
+          VXC2(IPNT,IBMAT,1:3)    = vxc(2:4,1)
+          VXC1MAG(IPNT,IBMAT,1:3) = vxc(1,2:4)
+          VXC2MAG(IPNT,IBMAT,1:3,1:3) = vxc(2:4,2:4)
+       ENDDO
     ENDIF
 #endif
    ELSE
@@ -2404,7 +2623,7 @@ IF(DOCALC)THEN
   END DO
   CALL II_DFT_DISTMAGDERIV_linrsp_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
     &Nactbast,NBAST,VXC1,VXC1MAG,VXC2,VXC2MAG,NBMAT,GAO,&
-    &DFTDATA%FKSM,DFTDATA%FKSMS,COORD,DFTHRI,NTYPSO,dosympart)
+    &SHAREDDFTDATA%FKSM,SHAREDDFTDATA%FKSMS,COORD,DFTHRI,NTYPSO,dosympart)
  ENDIF
 ENDIF
 call mem_dft_dealloc(EXPGRAD)
@@ -2420,7 +2639,7 @@ END SUBROUTINE II_DFT_MAGDERIV_LINRSPGGA
 !> \date 2010
 SUBROUTINE II_DFT_geoderiv_kohnshamLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+     & DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2459,6 +2678,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -2477,6 +2698,7 @@ REAL(REALK) :: fR(NBLEN),fRR(NBLEN)
 REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,DUMMY = 0E0_realk 
 INTEGER     :: I,J,nred,nbmat,ipnt
 logical :: DOCALC
+REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(4,1)
 nbmat=1
 DOCALC = .FALSE.
 DO IPNT = 1, NBLEN
@@ -2487,8 +2709,8 @@ DO IPNT = 1, NBLEN
 ENDDO
 IF(DOCALC)THEN
  call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-!      &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
-      &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,1,DFTHRI,NRED)
+!      &Nactbast,NBAST,GAO,EXPVAL,SHAREDDFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
+      &Nactbast,NBAST,GAO,EXPVAL,SHAREDDFTDATA%BMAT,1,DFTHRI,NRED)
  IF(NRED.GT. 0)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
@@ -2500,7 +2722,13 @@ IF(DOCALC)THEN
       fRR(IPNT) = D2*(VX(6) + VX(7))*EXPVAL(IPNT,1) 
 #ifdef VAR_XCFUN
     ELSE
-       call lsquit('xcfun version of II_DFT_GEODERIV_KOHNSHAMLDA not implemented',-1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       call xcfun2_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+       !1 = E
+       !2 = fR
+       !3 = fRR
+       fR(IPNT)  = D4*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+       fRR(IPNT) = D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)*EXPVAL(IPNT,1)
     ENDIF
 #endif
    ELSE
@@ -2510,7 +2738,7 @@ IF(DOCALC)THEN
   END DO
    CALL II_DFT_distgeoderiv_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
         &NBAST,fR,fRR,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
-        &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
+        &SHAREDDFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
  ENDIF
 ENDIF
 END SUBROUTINE II_DFT_GEODERIV_KOHNSHAMLDA
@@ -2520,7 +2748,7 @@ END SUBROUTINE II_DFT_GEODERIV_KOHNSHAMLDA
 !> \date 2010
 SUBROUTINE II_DFT_geoderiv_kohnshamGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+     & DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2559,6 +2787,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -2578,7 +2808,7 @@ REAL(REALK) :: fR,fRR,fZ,fRZ,fZZ,fRG,fZG,fGG,fG,A,B
 REAL(REALK) :: VXC1(NBLEN),VXC2(3,NBLEN),VXC3(NBLEN),VXC4(3,NBLEN)
 REAL(REALK),parameter :: D2=2E0_realk, D4=4E0_realk, DUMMY = 0E0_realk, D05=0.5E0_realk, D025=0.25E0_realk 
 REAL(REALK),parameter :: D8=8E0_realk
-REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(15,1)
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(15,1)
 INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6,W9,W10
 logical :: DOCALC
 nbmat=1
@@ -2600,7 +2830,7 @@ IF(DOCALC)THEN
  IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_kohnshamGGA',lupri)
 #endif
  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
+      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,SHAREDDFTDATA%BMAT,&
       & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),&
       & GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
  IF(NRED.GT. 0)THEN
@@ -2642,54 +2872,16 @@ IF(DOCALC)THEN
        VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
 #ifdef VAR_XCFUN
       ELSE
-       call lsquit('xcfun version of II_DFT_GEODERIV_KOHNSHAMGGA not implemented',-1)
-       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
-       fZ  = VX(3)                    !drvs.df0010;
-       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
-       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
-       fRG = D05*VX(10)             !0.5*drvs.df10001;   
-       fZG = D05*VX(13)             !0.5*drvs.df00101; 
-       fGG = D025*VX(14)            !0.25*drvs.df00002; 
-       fG  = D05*VX(5)               !0.5*drvs.df00001;  
-       MIXEDGRDA = (EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
-            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-
-       VXC1(IPNT) = D4*VX(1)
-       print*,'VXC1(IPNT)',VXC1(IPNT)
-       A = D2*(VX(3)/GRDA + VX(5))
-       VXC2(1,IPNT) = A*GRAD(1,IPNT,1)
-       VXC2(2,IPNT) = A*GRAD(2,IPNT,1)
-       VXC2(3,IPNT) = A*GRAD(3,IPNT,1)
-       print*,'VXC2(1,IPNT)',VXC2(1,IPNT)
-       print*,'VXC2(2,IPNT)',VXC2(2,IPNT)
-       print*,'VXC2(3,IPNT)',VXC2(3,IPNT)
-       !the LDA part
-       VXC3(IPNT) =D4*fRR*EXPVAL(IPNT,1)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
-       print*,'VXC3(IPNT)',VXC3(IPNT)
-       !the non LDA parts
-       A = D4*((fRZ/GRD + fRG)*EXPVAL(IPNT,1)&
-            & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
-       B= D4*(fZ/GRD + fG)
-       VXC4(1,IPNT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,1)
-       VXC4(2,IPNT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,1)
-       VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
-       print*,'VXC4(1,IPNT)',VXC4(1,IPNT)
-       print*,'VXC4(2,IPNT)',VXC4(2,IPNT)
-       print*,'VXC4(3,IPNT)',VXC4(3,IPNT)
-
-       XCFUNINPUT2(1,1) = RHO(IPNT,1)
-       XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
-       XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
-       XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
        ! Input:
-       !rho   = XCFUNINPUT(1,1)
+       !rho    = XCFUNINPUT(1,1)
        !grad_x = XCFUNINPUT(2,1)
        !grad_y = XCFUNINPUT(3,1)
        !grad_z = XCFUNINPUT(4,1)
-       call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,15,XCFUNOUTPUT2,2)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT,15,XCFUNOUTPUT,2)
        ! Output
        ! Order 0
        ! out(1,1) Exc
@@ -2710,39 +2902,31 @@ IF(DOCALC)THEN
        ! out(14,1) d^2 Exc / d ny nz
        ! out(15,1) d^2 Exc / d nz nz
        !the \Omega_{\mu \nu} part
-       VXC1(IPNT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
-       print*,'NEW VXC1(IPNT)',VXC1(IPNT)
-       VXC2(1,IPNT) = D4*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
-       VXC2(2,IPNT) = D4*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
-       VXC2(3,IPNT) = D4*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
-       print*,'NEW VXC2(1,IPNT)',VXC2(1,IPNT)
-       print*,'NEW VXC2(2,IPNT)',VXC2(2,IPNT)
-       print*,'NEW VXC2(3,IPNT)',VXC2(3,IPNT)
+       VXC1(IPNT)   = D4*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+       VXC2(1,IPNT) = D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+       VXC2(2,IPNT) = D4*XCFUNOUTPUT(4,1)*WGHT(IPNT)
+       VXC2(3,IPNT) = D4*XCFUNOUTPUT(5,1)*WGHT(IPNT)
 
        VXC3(IPNT) = &
-               &   D4*XCFUNOUTPUT2(6,1)*WGHT(IPNT)*EXPVAL(IPNT,1) &
-               & + D4*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-               & + D4*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-               & + D4*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
-       print*,'NEW VXC3(IPNT)',VXC3(IPNT)
+               &   D4*XCFUNOUTPUT(6,1)*WGHT(IPNT)*EXPVAL(IPNT,1) &
+               & + D4*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+               & + D4*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+               & + D4*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
        VXC4(1,IPNT) = &
-            &   D8*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
-            & + D8*XCFUNOUTPUT2(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
+            &   D4*XCFUNOUTPUT(7,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
+            & + D4*XCFUNOUTPUT(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+            & + D4*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+            & + D4*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
        VXC4(2,IPNT) = &
-            &   D8*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
-            & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
+            &   D4*XCFUNOUTPUT(8,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
+            & + D4*XCFUNOUTPUT(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+            & + D4*XCFUNOUTPUT(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+            & + D4*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
        VXC4(3,IPNT) = &
-            &   D8*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
-            & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
-       print*,'NEW VXC4(1,IPNT)',VXC4(1,IPNT)
-       print*,'NEW VXC4(2,IPNT)',VXC4(2,IPNT)
-       print*,'NEW VXC4(3,IPNT)',VXC4(3,IPNT)
+            &   D4*XCFUNOUTPUT(9,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
+            & + D4*XCFUNOUTPUT(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+            & + D4*XCFUNOUTPUT(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+            & + D4*XCFUNOUTPUT(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
       ENDIF
 #endif
     ELSE
@@ -2767,7 +2951,7 @@ IF(DOCALC)THEN
 #endif
   CALL II_DFT_distgeoderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
       &NBAST,VXC1,VXC2,VXC3,VXC4,GAO(:,:,:),DFTDATA%GRAD,&
-      &DFTDATA%orb2atom,DFTDATA%BMAT,DMAT,DFTDATA%natoms,&
+      &DFTDATA%orb2atom,SHAREDDFTDATA%BMAT,DMAT,DFTDATA%natoms,&
       &COORD,DFTHRI,NTYPSO,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),&
       &WORK(W7:W8),WORK(W9:W10))
  ENDIF
@@ -2779,7 +2963,7 @@ END SUBROUTINE II_DFT_GEODERIV_KOHNSHAMGGA
 !> \date 2010
 SUBROUTINE II_DFT_geoderiv_linrspLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+     & DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2818,6 +3002,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -2834,8 +3020,11 @@ REAL(REALK),intent(in) :: GAOMAX
 REAL(REALK) :: VX(27),DFTENE,EXPVAL(NBLEN,2)
 REAL(REALK) :: fRRR(NBLEN),fRR(2,NBLEN),A
 REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,D3=3E0_realk,DUMMY = 0E0_realk 
+REAL(REALK),parameter :: D8=8E0_realk
 INTEGER     :: I,J,nred,nbmat,IPNT
 logical :: DOCALC
+REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(4,1)
+
 nbmat=DFTDATA%nBMAT
 IF(nbmat.NE. 2)call LSQUIT('II_DFT_geoderiv_linrspLDA requires 2 matrices',lupri)
 DOCALC = .FALSE.
@@ -2847,7 +3036,7 @@ DO IPNT = 1, NBLEN
 ENDDO
 IF(DOCALC)THEN
  call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-      &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,nbmat,DFTHRI,NRED)
+      &Nactbast,NBAST,GAO,EXPVAL,SHAREDDFTDATA%BMAT,nbmat,DFTHRI,NRED)
  IF(NRED.GT. 0)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
@@ -2862,7 +3051,15 @@ IF(DOCALC)THEN
       fRRR(IPNT) = A*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
 #ifdef VAR_XCFUN
      ELSE
-        call lsquit('xcfun version of II_DFT_GEODERIV_LINRSPLDA not implemented',-1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       call xcfun3_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+       !1 = E
+       !2 = fR
+       !3 = fRR
+       !4 = fRRR
+       fRR(1,IPNT) =  D8*XCFUNOUTPUT(3,1)*WGHT(IPNT)*EXPVAL(IPNT,1)
+       fRR(2,IPNT) =  D8*XCFUNOUTPUT(3,1)*WGHT(IPNT)*EXPVAL(IPNT,2)
+       fRRR(IPNT)  =  D8*XCFUNOUTPUT(4,1)*WGHT(IPNT)*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
      ENDIF
 #endif
    ELSE
@@ -2873,7 +3070,7 @@ IF(DOCALC)THEN
   END DO
    CALL II_DFT_distgeoderiv2_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
         &NBAST,fRR,fRRR,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
-        &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
+        &SHAREDDFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
  ENDIF
 ENDIF
 END SUBROUTINE II_DFT_GEODERIV_LINRSPLDA
@@ -2883,7 +3080,7 @@ END SUBROUTINE II_DFT_GEODERIV_LINRSPLDA
 !> \date 2010
 SUBROUTINE II_DFT_geoderiv_linrspGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+     & DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2922,6 +3119,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -2943,8 +3142,10 @@ REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,DUMMY = 0E0_realk,D05=0.5E0_r
 REAL(REALK),parameter :: D8=8E0_realk,D3=3E0_realk,D16=16E0_realk
 REAL(REALK) :: fR,fZ,fRZ,fZZ,fRG,fZG,fGG,fG,B,facW,factorRZ,A,fRR,fRRR,fRRZ,fRRG
 REAL(REALK) :: fRRGX,fRZZ,fZZZ,gradA,gradB,gradAB,C
-INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6
+INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6,X,Y,Z,XY,XYZ
 logical :: DOCALC
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(35,1)
+REAL(realk) :: FDERIV(4,4,4),E1(4),E2(4),TMP,F2(4,4),VXCTMP(4,2)
 nbmat=DFTDATA%nBMAT
 IF(nbmat.NE. 2)call LSQUIT('II_DFT_geoderiv_linrspGGA requires 2 matrices',lupri)
 DOCALC = .FALSE.
@@ -2965,7 +3166,7 @@ IF(DOCALC)THEN
  IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_linrspGGA',lupri)
 #endif
  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
+      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,SHAREDDFTDATA%BMAT,&
       & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),&
       & GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
  IF(NRED.GT. 0)THEN
@@ -3043,20 +3244,130 @@ IF(DOCALC)THEN
        VXC3(4,IPNT) = A*GRAD(3,IPNT,1) + B*EXPGRAD(3,IPNT,2) + C*EXPGRAD(3,IPNT,1)
 #ifdef VAR_XCFUN
     ELSE
-        call lsquit('xcfun version of II_DFT_GEODERIV_LINRSPGGA not implemented',-1)
-    ENDIF
+       ! Input:
+       !rho    = XCFUNINPUT(1,1)
+       !grad_x = XCFUNINPUT(2,1)
+       !grad_y = XCFUNINPUT(3,1)
+       !grad_z = XCFUNINPUT(4,1)
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT(4,1) = GRAD(3,IPNT,1)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT,35,XCFUNOUTPUT,3)
+       ! Output
+       ! Order 0
+       ! out(1,1) Exc
+       ! Order 1
+       ! out(2,1) d^1 Exc / d n
+       ! out(3,1) d^1 Exc / d nx
+       ! out(4,1) d^1 Exc / d ny
+       ! out(5,1) d^1 Exc / d nz
+       ! Order 2
+       ! out(6,1) d^2 Exc / d n n
+       ! out(7,1) d^2 Exc / d n nx
+       ! out(8,1) d^2 Exc / d n ny
+       ! out(9,1) d^2 Exc / d n nz
+       ! out(10,1) d^2 Exc / d nx nx
+       ! out(11,1) d^2 Exc / d nx ny
+       ! out(12,1) d^2 Exc / d nx nz
+       ! out(13,1) d^2 Exc / d ny ny
+       ! out(14,1) d^2 Exc / d ny nz
+       ! out(15,1) d^2 Exc / d nz nz
+       ! Order 3
+       ! out(16,1) d^3 Exc / d n n n
+       ! out(17,1) d^3 Exc / d n n nx
+       ! out(18,1) d^3 Exc / d n n ny
+       ! out(19,1) d^3 Exc / d n n nz
+       ! out(20,1) d^3 Exc / d n nx nx
+       ! out(21,1) d^3 Exc / d n nx ny
+       ! out(22,1) d^3 Exc / d n nx nz
+       ! out(23,1) d^3 Exc / d n ny ny
+       ! out(24,1) d^3 Exc / d n ny nz
+       ! out(25,1) d^3 Exc / d n nz nz
+       ! out(26,1) d^3 Exc / d nx nx nx
+       ! out(27,1) d^3 Exc / d nx nx ny
+       ! out(28,1) d^3 Exc / d nx nx nz
+       ! out(29,1) d^3 Exc / d nx ny ny
+       ! out(30,1) d^3 Exc / d nx ny nz
+       ! out(31,1) d^3 Exc / d nx nz nz
+       ! out(32,1) d^3 Exc / d ny ny ny
+       ! out(33,1) d^3 Exc / d ny ny nz
+       ! out(34,1) d^3 Exc / d ny nz nz
+       ! out(35,1) d^3 Exc / d nz nz nz
+       
+       ! Constructing intermediates for the VXC automated loop
+       XYZ = 15
+       XY  = 5
+       DO X=1,4
+         DO Y=X,4
+           XY = XY + 1
+           F2(X,Y) = XCFUNOUTPUT(XY,1)
+           F2(Y,X) = XCFUNOUTPUT(XY,1)
+           DO Z=Y,4
+             XYZ = XYZ + 1
+             FDERIV(X,Y,Z) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(X,Z,Y) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Y,X,Z) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Y,Z,X) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Z,X,Y) = XCFUNOUTPUT(XYZ,1)
+             FDERIV(Z,Y,X) = XCFUNOUTPUT(XYZ,1)
+           ENDDO
+         ENDDO
+       ENDDO
+       E1(1) = EXPVAL(IPNT,1)
+       E1(2) = EXPGRAD(1,IPNT,1)
+       E1(3) = EXPGRAD(2,IPNT,1)
+       E1(4) = EXPGRAD(3,IPNT,1)
+       E2(1) = EXPVAL(IPNT,2)
+       E2(2) = EXPGRAD(1,IPNT,2)
+       E2(3) = EXPGRAD(2,IPNT,2)
+       E2(4) = EXPGRAD(3,IPNT,2)
+
+       ! VXC3 loop
+       DO X=1,4
+         VXC3(X,IPNT) = 0E0_realk
+         DO Y=1,4
+           TMP = D8*E1(Y)*WGHT(IPNT)
+           DO Z=1,4
+             VXC3(X,IPNT) = VXC3(X,IPNT) + FDERIV(Z,Y,X)*E2(Z)*TMP
+           ENDDO
+         ENDDO
+       ENDDO
+
+       ! VXC2 loop
+       DO X=1,4
+         VXCTMP(X,1) = 0E0_realk
+         VXCTMP(X,2) = 0E0_realk
+         DO Y=1,4
+           TMP = -D8*WGHT(IPNT)*F2(Y,X)
+           VXCTMP(X,1) = VXCTMP(X,1) - E1(Y)*TMP
+           VXCTMP(X,2) = VXCTMP(X,2) - E2(Y)*TMP
+         ENDDO
+       ENDDO
+
+       VXC1(1,IPNT)   = VXCTMP(1,1)
+       VXC2(1,IPNT,1) = VXCTMP(2,1)
+       VXC2(2,IPNT,1) = VXCTMP(3,1)
+       VXC2(3,IPNT,1) = VXCTMP(4,1)
+       VXC1(2,IPNT)   = VXCTMP(1,2)
+       VXC2(1,IPNT,2) = VXCTMP(2,2)
+       VXC2(2,IPNT,2) = VXCTMP(3,2)
+       VXC2(3,IPNT,2) = VXCTMP(4,2)
+
+     ENDIF !XCFUN
 #endif
    ELSE
       VXC1(:,IPNT) = 0.0E0_realk
       VXC2(:,IPNT,:) = 0.0E0_realk
       VXC3(:,IPNT) = 0.0E0_realk
-   ENDIF
-  END DO
+   ENDIF !RHO/GRAD THR
+  END DO !IPNT
   CALL II_DFT_distgeoderiv2_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
        &NBAST,VXC1,VXC2,VXC3,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
-       &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
+       &SHAREDDFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
  ENDIF
 ENDIF
+
 END SUBROUTINE II_DFT_GEODERIV_LINRSPGGA
 
 !> \brief main kohn-sham matrix driver
@@ -3066,7 +3377,7 @@ END SUBROUTINE II_DFT_GEODERIV_LINRSPGGA
 !> Worker routine that for a batch of gridpoints build the LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMELDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                    RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                    RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                    GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -3106,6 +3417,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 REAL(REALK),intent(in) :: DFTHRI
@@ -3152,7 +3465,7 @@ END SUBROUTINE II_DFT_KSMELDA
 !> Worker routine that for a batch of gridpoints build the unrestricted LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMELDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,&
-     &                         GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,&
+     &                         GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,&
      &                         WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -3192,6 +3505,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -3242,7 +3557,7 @@ END SUBROUTINE II_DFT_KSMELDAUNRES
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMEGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                    RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                    RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
      &                    GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -3282,6 +3597,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -3336,7 +3653,7 @@ END SUBROUTINE II_DFT_KSMEGGA
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMEGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,&
-     & GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+     & GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -3376,6 +3693,8 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: WGHT(NBLEN)
 !> contains all info required which is not directly related to the integration
 TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> contains all info required which is not directly related to the integration (OpenMP shared)
+TYPE(DFTDATATYPE),intent(inout) :: sharedDFTDATA
 !> threshold on the electron density
 REAL(REALK),intent(in) :: RHOTHR
 !> threshold on the value of GAOs
@@ -3509,15 +3828,23 @@ IF (NRED.GT. 0) THEN
 !   call mem_dft_alloc(EXCRED,NRED,NRED)
    !  Second half-contraction of GAO's with potential
 !   call mem_dft_alloc(EXCRED,NRED,NRED)
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,&
-        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-        &                EXCRED(1:NRED*NRED),NRED)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,&
+            &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+            &                EXCRED(1:NRED*NRED),NRED)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,&
+            &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+            &                EXCRED(1:NRED*NRED),NRED)
+    ENDIF
    !  Distribute contributions to KS-matrix
+
    DO JRED=1,NRED         !Jred is reduced index
       J = INXRED(JRED)    !J is orbitalindex
       offset = (JRED-1)*NRED
       DO IRED=1,NRED      !Ired is reduced index
          I = INXRED(IRED) !I is orbitalindex
+!$OMP ATOMIC
          EXCMAT(I,J) = EXCMAT(I,J) + EXCRED(IRED+offset)
       ENDDO
    ENDDO
@@ -3616,15 +3943,22 @@ IF (NRED.GT. 0) THEN
    ENDDO
 !  Second half-contraction of GAO's with potential
 !   CALL MEM_DFT_ALLOC(EXCRED,NRED,NRED)
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
-        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-        &                EXCRED(1:NRED*NRED),NRED)
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+           &                EXCRED(1:NRED*NRED),NRED)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+           &                EXCRED(1:NRED*NRED),NRED)
+   ENDIF
 !  Distribute contributions to KS-matrix
    DO JRED=1,NRED         !Jred is reduced index
       J = INXRED(JRED)    !J is orbital index
       offset = (JRED-1)*NRED
       DO IRED=1,NRED      !Ired is reduced index
          I = INXRED(IRED) !I is orbital index
+!$OMP ATOMIC
          EXCMAT(I,J) = EXCMAT(I,J) + EXCRED(IRED+offset)
       ENDDO
    ENDDO
@@ -3710,15 +4044,20 @@ IF (NRED.GT. 0) THEN
       ENDDO
       !  Second half-contraction of GAO's with potential
       !   CALL MEM_DFT_ALLOC(EXCRED,NRED,NRED)
-      CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
-           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-           &                EXCRED(1:NRED*NRED),NRED)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+              & GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,EXCRED(1:NRED*NRED),NRED)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+              & GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,EXCRED(1:NRED*NRED),NRED)
+      ENDIF
       !  Distribute contributions to KS-matrix
       DO JRED=1,NRED          !Jred is reduced index
          J = INXRED(JRED)     !J is orbital index
          offset = (JRED-1)*NRED
          DO IRED=1,NRED       !Ired is reduced index
             I = INXRED(IRED)  !I is orbital index
+!$OMP ATOMIC
             EXCMAT(I,J,IDMAT) = EXCMAT(I,J,IDMAT) + EXCRED(IRED+offset)
          ENDDO
       ENDDO
@@ -3817,15 +4156,22 @@ DO IDMAT = 1,NDMAT
    ENDDO
 !  Second half-contraction of GAO's with potential
 !   CALL MEM_DFT_ALLOC(EXCRED,NRED,NRED)
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
-        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-        &                EXCRED(1:NRED*NRED),NRED)
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+           &                EXCRED(1:NRED*NRED),NRED)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+           &                EXCRED(1:NRED*NRED),NRED)
+   ENDIF
 !  Distribute contributions to KS-matrix
    DO JRED=1,NRED          !Jred is reduced index
       J = INXRED(JRED)     !J is orbital index
       offset = (JRED-1)*NRED
       DO IRED=1,NRED       !Ired is reduced index
          I = INXRED(IRED)  !I is orbital index
+!$OMP ATOMIC
          EXCMAT(I,J,IDMAT) = EXCMAT(I,J,IDMAT) + EXCRED(IRED+offset)
       ENDDO
    ENDDO
@@ -3993,8 +4339,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
     ENDDO
     ! First half-contraction of Gaussian AO with density-matrix
-    CALL DGEMM("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED,NBLEN,&
-         &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED,NBLEN,&
+            &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED,NBLEN,&
+            &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    ENDIF
     ! Second half-contraction 
     DO K = 1, NBLEN
        EXPVAL(K,IBMAT) = GAORED(K,1)*TMP(K,1)
@@ -4114,8 +4465,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
     ENDDO
     ! First half-contraction of Gaussian AO with density-matrix
-    CALL DGEMM("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED1,NBLEN,&
-         &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED1,NBLEN,&
+            &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED1,NBLEN,&
+            &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    ENDIF
     ! Second half-contraction 
     DO K = 1, NBLEN
        EXPVAL(K,IBMAT) = GAORED1(K,1)*TMP(K,1)
@@ -4237,14 +4593,20 @@ IF (NRED.GT. 0) THEN
  !  Second half-contraction of GAO's
  call mem_dft_alloc(EXCRED,NRED,NRED,3)
  DO ALPHA = 1,3
-  CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
-       &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    ENDIF
  ENDDO
  DO ALPHA=1,3
   DO JRED=1,NRED    !Jred is reduced index
    J = INXRED(JRED) !J is orbital index
    DO IRED=1,NRED   !Ired is reduced index
     I = INXRED(IRED)!I is orbital index 
+!$OMP ATOMIC
     EXCMAT(I,J,ALPHA) = EXCMAT(I,J,ALPHA) + EXCRED(IRED,JRED,ALPHA)
    ENDDO
   ENDDO
@@ -4358,8 +4720,13 @@ IF (NRED.GT. 0) THEN
  ENDDO
  call mem_dft_alloc(EXCRED,NRED,NRED,3)
  DO ALPHA = 1,3
-    CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
-         &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    ENDIF
  ENDDO
  DO COORDINATE=2,4
     DO ALPHA = 1,3
@@ -4377,8 +4744,13 @@ IF (NRED.GT. 0) THEN
      ENDDO
     ENDDO
     DO ALPHA = 1,3
-       CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,COORDINATE),NBLEN,&
-            &     TMP(:,:,ALPHA),NBLEN,1.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+       IF(XCintNoOMP)THEN
+          CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,COORDINATE),NBLEN,&
+               &     TMP(:,:,ALPHA),NBLEN,1.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+       ELSE !Use Thread Safe version 
+          CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,COORDINATE),NBLEN,&
+               &     TMP(:,:,ALPHA),NBLEN,1.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+       ENDIF
     ENDDO
  ENDDO
  DO ALPHA=1,3
@@ -4386,6 +4758,7 @@ IF (NRED.GT. 0) THEN
    J = INXRED(JRED)  !J is orbital index
    DO IRED=1,NRED    !Ired is reduced index
     I = INXRED(IRED) !I is orbital index
+!$OMP ATOMIC
     EXCMAT(I,J,ALPHA) = EXCMAT(I,J,ALPHA) + EXCRED(IRED,JRED,ALPHA)
    ENDDO
   ENDDO
@@ -4510,8 +4883,13 @@ IF (NRED.GT. 0) THEN
 
    ! First half-contraction of Gaussian AO with density-matrix
  DO IBMAT=1,NBMAT
-    CALL DGEMM("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NBLEN,&
-        &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,1),NBLEN)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,1),NBLEN)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,1),NBLEN)
+    ENDIF
     ! Second half-contraction 
     DO K = 1, NBLEN
        EXPVAL(K,IBMAT) = GAORED(K,1,1)*TMP(K,1,1)
@@ -4534,8 +4912,13 @@ IF (NRED.GT. 0) THEN
    ! First half-contraction of Gaussian AO with density-matrix
     !TMP(K,J,N) = GAORED(K,I,N)*BRED(I,J) - TMP(K,J,1) is already built
     DO N=2,4
-     CALL DGEMM("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,N),NBLEN,&
-          &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,N),NBLEN)
+       IF(XCintNoOMP)THEN
+          CALL DGEMM("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,N),NBLEN,&
+               &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,N),NBLEN)
+       ELSE !Use Thread Safe version 
+          CALL DGEMM_TS("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,N),NBLEN,&
+               &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,N),NBLEN)
+       ENDIF
     ENDDO
    ! Second half-contraction of Gaussian AOs
     J=1
@@ -4697,8 +5080,13 @@ IF (NRED.GT. 0) THEN
   ENDDO
   !  Second half-contraction of GAO's
   DO ALPHA = 1,3
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
-        &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+     IF(XCintNoOMP)THEN
+        CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+             &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+     ELSE !Use Thread Safe version 
+        CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+             &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+     ENDIF
   ENDDO
   DO ALPHA=1,3
    N = ALPHA+(IBMAT-1)*NBMAT
@@ -4706,6 +5094,7 @@ IF (NRED.GT. 0) THEN
     J = INXRED(JRED)   !J is orbital index 
     DO IRED=1,NRED     !Ired is reduced index 
      I = INXRED(IRED)  !I is orbital index 
+!$OMP ATOMIC
      EXCMAT(I,J,N) = EXCMAT(I,J,N) + EXCRED(IRED,JRED,ALPHA)
     ENDDO
    ENDDO
@@ -4721,8 +5110,13 @@ IF (NRED.GT. 0) THEN
    ENDDO
    !  Second half-contraction of GAO's
    DO ALPHA = 1,3
-     CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
-          &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+              &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+              &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+      ENDIF
    ENDDO
    DO ALPHA=1,3
     N = ALPHA+(IBMAT-1)*NBMAT
@@ -4730,6 +5124,7 @@ IF (NRED.GT. 0) THEN
      J = INXRED(JRED)  !J is orbital index  
      DO IRED=1,NRED    !Ired is reduced index  
       I = INXRED(IRED) !I is orbital index 
+!$OMP ATOMIC
       EXCMATSYM(I,J,N) = EXCMATSYM(I,J,N) + EXCRED(IRED,JRED,ALPHA)
      ENDDO
     ENDDO
@@ -4820,13 +5215,19 @@ DO IBMAT = 1,NBMAT
          ENDDO
       ENDDO
       !  Second half-contraction of GAO's
-      CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+              &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
            &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      ENDIF
       N = ALPHA+(IBMAT-1)*3
       DO JRED=1,NACTBAST       !Jred is active index 
          J = INXACT(JRED)     !J is orbital index 
          DO IRED=1,NACTBAST   !Ired is active index 
             I = INXACT(IRED)  !I is orbital index 
+!$OMP ATOMIC
             EXCMAT(I,J,N) = EXCMAT(I,J,N) + EXCRED(IRED,JRED)
          ENDDO
       ENDDO
@@ -4843,13 +5244,19 @@ DO IBMAT = 1,NBMAT
             ENDDO
          ENDDO
       !  Second half-contraction of GAO's
-         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
-              &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+                 &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+                 &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+         ENDIF
          N = ALPHA+(IBMAT-1)*NBMAT
          DO JRED=1,NACTBAST       !Jred is active index 
             J = INXACT(JRED)      !J is orbital index 
             DO IRED=1,NACTBAST    !Ired is active index 
                I = INXACT(IRED)   !I is orbital index 
+!$OMP ATOMIC
                EXCMATSYM(I,J,N) = EXCMATSYM(I,J,N) + EXCRED(IRED,JRED)
             ENDDO
          ENDDO
@@ -4880,8 +5287,13 @@ DO IBMAT = 1,NBMAT
                  &+D05*(GAOS(K,J,gab2Zgamma)*Rbeta-GAOS(K,J,gab2Zbeta)*Rgamma)*coef2(K,IBMAT,3)
          ENDDO
       ENDDO
-      CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
-           &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+              &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+              &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      ENDIF
       DO COORDINATE=1,3
          beta = betaList(ALPHA)
          gamma= gammaList(ALPHA)
@@ -4895,13 +5307,21 @@ DO IBMAT = 1,NBMAT
                     &*coef2(K,IBMAT,COORDINATE)
             ENDDO
          ENDDO
-         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS(:,:,1+COORDINATE),NBLEN,&
-              &     TMP,NBLEN,1.0E0_realk,EXCRED,NACTBAST)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,&
+                 & GAOS(:,:,1+COORDINATE),NBLEN,TMP,NBLEN,1.0E0_realk,&
+                 & EXCRED,NACTBAST)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,&
+                 & GAOS(:,:,1+COORDINATE),NBLEN,TMP,NBLEN,1.0E0_realk,&
+                 & EXCRED,NACTBAST)
+         ENDIF
       ENDDO
       DO JRED=1,NACTBAST      !Jred is active index 
          J = INXACT(JRED)     !J is orbital index    
          DO IRED=1,NACTBAST   !Ired is active index 
             I = INXACT(IRED)  !I is orbital index   
+!$OMP ATOMIC
             EXCMAT(I,J,ALPHA) = EXCMAT(I,J,ALPHA) + EXCRED(IRED,JRED)
          ENDDO
       ENDDO
@@ -4919,14 +5339,21 @@ DO IBMAT = 1,NBMAT
          ENDDO
       ENDDO
       !  Second half-contraction of GAO's with potential
-      CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1.0E0_realk,&
-           &                GAOS,NBLEN,TMP,NBLEN,0.0E0_realk,&
-           &                EXCRED,NACTBAST)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1.0E0_realk,&
+              &                GAOS,NBLEN,TMP,NBLEN,0.0E0_realk,&
+              &                EXCRED,NACTBAST)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1.0E0_realk,&
+              &                GAOS,NBLEN,TMP,NBLEN,0.0E0_realk,&
+              &                EXCRED,NACTBAST)
+      ENDIF
       !  Distribute contributions to KS-matrix
       DO JRED=1,NACTBAST      !Jred is active index   
          J = INXACT(JRED)     !J is orbital index   
          DO IRED=1,NACTBAST   !Ired is active index   
             I = INXACT(IRED)  !I is orbital index   
+!$OMP ATOMIC
             EXCMATSYM(I,J,ALPHA) = EXCMATSYM(I,J,ALPHA) + EXCRED(IRED,JRED)
          ENDDO
       ENDDO
@@ -4992,8 +5419,13 @@ call mem_dft_alloc(TMP,NBLEN,NACTBAST,4)
 !-------------------------------------------------------------
    ! First half-contraction of Gaussian AO with density-matrix
  DO IBMAT=1,NBMAT
-    CALL DGEMM("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS,NBLEN,&
-        &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP,NBLEN)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS,NBLEN,&
+            &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP,NBLEN)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS,NBLEN,&
+            &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP,NBLEN)
+    ENDIF
     ! Second half-contraction 
     DO K = 1, NBLEN
        EXPGRAD(K,1,1,IBMAT) = GAOS(K,1,1)*TMP(K,1,1)
@@ -5023,8 +5455,13 @@ call mem_dft_alloc(TMP,NBLEN,NACTBAST,4)
     !TMP(K,J,N) = GAOS(K,I,N)*BMAT(I,J) - TMP(K,J,1) is already built
     DO N=2,4
        M=N+3
-       CALL DGEMM("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS(:,:,M),NBLEN,&
-            &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP(:,:,N),NBLEN)
+       IF(XCintNoOMP)THEN
+          CALL DGEMM("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS(:,:,M),NBLEN,&
+               &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP(:,:,N),NBLEN)
+       ELSE !Use Thread Safe version 
+          CALL DGEMM_TS("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS(:,:,M),NBLEN,&
+               &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP(:,:,N),NBLEN)
+       ENDIF
     ENDDO
    ! Second half-contraction of Gaussian AOs
     J=1
@@ -5325,10 +5762,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
    ENDDO
 
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
-        &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
-!   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
-!        &          NBLEN,BRED,NRED,0.0E0_realk,TMPB,NBLEN)
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   ENDIF
    DO JRED = 1,NRED
       IRED =1
       BT = D05*(BRED(IRED,JRED)+BRED(JRED,IRED))
@@ -5504,14 +5944,25 @@ IF (NRED.GT. 0) THEN
       atom(IRED) = orb2atom(I)
    ENDDO
 
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
         &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPZ,NBLEN)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPZ,NBLEN)
+   ENDIF
    !TMPRED contain DRED
    DO COORDINATE = 1,3
     R=1+COORDINATE
@@ -5538,15 +5989,25 @@ IF (NRED.GT. 0) THEN
          TMPRED(IRED,JRED) = D05*(BMAT(IORB,JORB) + BMAT(JORB,IORB))
       ENDDO
    ENDDO
-
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPZ,NBLEN)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
         &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPZ,NBLEN)
+   ENDIF
    !TMPRED CONTAINS BRED
    DO COORDINATE = 1,3
     R=1+COORDINATE
@@ -5709,8 +6170,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
    ENDDO
 
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
-        &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   ENDIF
    DO JRED = 1,NRED
       IRED =1
       AT = D05*(ARED(IRED,JRED)+ARED(JRED,IRED))
@@ -5909,8 +6375,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
    ENDDO
    DO I=1,4
-      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,I),&
-           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD(:,:,I),NBLEN)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,I),&
+              &          NBLEN,DRED,NRED,0.0E0_realk,TMPD(:,:,I),NBLEN)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,I),&
+              &          NBLEN,DRED,NRED,0.0E0_realk,TMPD(:,:,I),NBLEN)
+      ENDIF
    ENDDO
    DO JRED = 1,NRED
       IRED =1

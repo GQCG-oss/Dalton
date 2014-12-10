@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_open */
       SUBROUTINE SO_OPEN(LUFILE,FILENM,LARRAY)

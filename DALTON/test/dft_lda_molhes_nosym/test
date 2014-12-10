@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+#    dft_lda_molhes 
+#    -------------
+#    Molecule:         Ethane
+#    Wave Function:    DFT (LDA) / STO-3G 
+#    Test Purpose:     Test analytical molecular hessian and dipole
+#                      gradient 
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+
+# Molecular gradients
+f.add(from_string = 'Molecular gradient (au)',
+      num_lines    = 12,
+      abs_tolerance = 1.0e-6)
+
+# Molecular hessians
+f.add(from_string = 'Molecular Hessian (au)',
+      num_lines    = 94,
+      abs_tolerance = 1.0e-5)
+
+# Dipole moment gradient
+f.add(from_string = 'Dipole moment gradient (au)',
+      num_lines    = 38,
+      abs_tolerance = 1.0e-5)
+
+# Vibrational Frequencies and IR Intensities
+f.add(from_string = 'Vibrational Frequencies and IR Intensities',
+      num_lines    = 30,
+      mask = [2,4],
+      abs_tolerance = 1.0e-1)
+
+# Rotational constant
+f.add(from_string = 'Rotational constants',
+      num_lines = 6,
+      rel_tolerance = 1.0e-6)
+
+
+
+test.run(['dft_lda_molhes_nosym.dal'], ['C2H6_STO-3G.mol'], f={'out': f})
+
+sys.exit(test.return_code)

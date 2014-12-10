@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+#    prop_vibg1
+#    ----------
+#    Molecule:         H2
+#    Wave Function:    Full CI / 6-31G**
+#    Test Purpose:     Calculation of vibrational g-factor
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Basis set 
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+# Molecular geometry
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+
+
+# Symmetry
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+# Energy
+f.add(string = 'Final MCSCF energy:',
+      rel_tolerance = 1.0e-9)
+
+f.add(string = 'The molecular gradient',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'The molecular Hessian',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Vibrational analysis',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'First-order non-adiabatic coupling matrix elements (NACMEs)',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Vibrational g-factors :',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Linear response properties',
+      rel_tolerance = 1.0e-2)
+
+# Vibrational g-factor
+f.add(from_re = 'Vibrational g\-factor\n',
+       num_lines = 22,
+       abs_tolerance = 1.0e-6)
+
+test.run(['prop_vibg1.dal'], ['H2_6-31Gpp_sym.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

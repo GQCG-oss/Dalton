@@ -1,42 +1,44 @@
 module lsmpi_op
   use precision
+  use lstiming
   use molecule_typetype, only: molecularOrbitalInfo
   use io, only: io_init
   use typedeftype, only: DALTONINPUT,LSITEM,lssetting,reducedScreeningInfo,&
        & lsintscheme, integralconfig
   use typedef, only: integral_set_default_config, typedef_init_setting,&
-       & init_reduced_screen_info
-  use basis_typetype, only: BASISSETINFO
+       & init_reduced_screen_info, typedef_free_setting
+  use basis_typetype, only: BASISSETINFO,nBasisBasParam,nullifyMainBasis,&
+       & nullifyBasisset
   use basis_type, only: lsmpi_alloc_basissetinfo
-  use lstiming, only: lstimer
-  use memory_handling, only: mem_alloc,mem_dealloc
-  use integralparameters
+  use memory_handling, only: mem_alloc,mem_dealloc, mem_shortintsize,&
+       & mem_realsize, mem_intsize, mem_allocated_mem_lstensor
+  use LSparameters
   use Matrix_Operations, only: mat_mpicopy, mtype_scalapack, matrix_type
   use matrix_operations_scalapack, only: pdm_matrixsync
   use molecule_typetype, only: MOLECULEINFO
   use LSTENSOR_OPERATIONSMOD, only: lstensor_NULLIFY, lstensor,&
-       & add_mem_to_global,slsaotensor_nullify,lsaotensor_nullify,&
-       & lsaotensor,slsaotensor, LSTENSOR_mem_est
+       & slsaotensor_nullify,lsaotensor_nullify,&
+       & lsaotensor,slsaotensor
   use LSTENSORmem, only: mem_LSTpointer_alloc, init_lstensorMem, &
        & retrieve_lstMemVal, free_lstensorMem, set_lstmemrealkbufferpointer
   use f12_module, only: GaussianGeminal
   use integraloutput_typetype, only: INTEGRALOUTPUT
-#ifdef VAR_MPI
   use dft_type,only: mpicopy_DFTparam
+#ifdef VAR_MPI
   use lsmpi_type, only: ls_mpibcast, lsmpi_reduction, ls_mpisendrecv, &
        & ls_mpi_buffer, lsmpi_local_reduction, get_rank_for_comm, &
        & get_size_for_comm, ls_mpiInitBuffer, ls_MpiFinalizeBuffer, &
        & lsmpi_print, lsmpi_default_mpi_group, lsmpi_finalize, lsmpi_barrier,&
-       & LSMPIREDUCTION, LSMPIREDUCTIONmaster
+       & LSMPIREDUCTION, LSMPIREDUCTIONmaster, LSMPIBROADCAST,&
+       & ls_mpiinitbufferaddtobuffer,printmpibuffersizes,ls_mpiModbuffersizes
   use infpar_module
-
-#ifdef USE_MPI_MOD_F90
-  use mpi
+  use lsmpi_module
 #else
-  include 'mpif.h'
-#endif 
-
+  use lsmpi_type, only: ls_mpi_buffer, get_rank_for_comm, get_size_for_comm, &
+       & ls_mpiInitBuffer, ls_MpiFinalizeBuffer,LSMPIBROADCAST,&
+       & ls_mpiinitbufferaddtobuffer,printmpibuffersizes,ls_mpiModbuffersizes
 #endif
+  use screen_mod
   !*****************************************
   !*
   !* OBJECTS CONTAINING INFORMATION ABOUT 
@@ -115,16 +117,14 @@ contains
 SUBROUTINE LSMPI_ALLOC_DALTONINPUT(DALTON)
 IMPLICIT NONE
 TYPE(DALTONINPUT) :: DALTON
+integer :: I
 ! THE MOLECULE
 NULLIFY(DALTON%MOLECULE%ATOM)
 call mem_alloc(DALTON%MOLECULE%ATOM,DALTON%MOLECULE%nAtoms)
 !THE BASISSET
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%REGULAR)
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%AUXILIARY)
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%CABS)
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%JK)
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%VALENCE)
-
+do I=1,nBasisBasParam
+   CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%BINFO(I))
+enddo
 END SUBROUTINE LSMPI_ALLOC_DALTONINPUT
 
 !> \brief mpi copy the lsitem structure - highly discouraged this should not be necessary
@@ -140,7 +140,7 @@ integer(kind=ls_mpik) :: mynum
 #ifdef VAR_MPI
 call get_rank_for_comm(comm,mynum)
 call mpicopy_daltoninput(ls%input,comm)
-call mpicopy_setting(ls%setting,comm)
+call mpicopy_setting(ls%setting,comm,.FALSE.)
 IF(mynum.NE.infpar%master)THEN !SLAVE
    ls%lupri = -1
    ls%luerr = -1
@@ -160,6 +160,7 @@ integer(kind=ls_mpik),intent(in) :: comm  ! communicator
 #ifdef VAR_MPI
 integer(kind=ls_mpik) :: MASTER
 LOGICAL :: SLAVE
+integer :: I
 integer(kind=ls_mpik) :: mynum,nodtot,ierr
 call get_rank_for_comm(comm, mynum)
 CALL get_size_for_comm(comm, nodtot)
@@ -179,28 +180,18 @@ IF(SLAVE)THEN
    NULLIFY(input%BASIS)
    ALLOCATE(input%Molecule)
    ALLOCATE(input%Basis)
+   call nullifyMainBasis(input%Basis)
    CALL io_init(input%IO)
    call integral_set_default_config(input%dalton)
 ENDIF
 call mpicopy_integralconfig(input%dalton,Slave,Master)
 call mpicopy_molecule(input%Molecule,Slave,Master)
-call mpicopy_basissetinfo(input%basis%REGULAR,Slave,Master)
-call mpicopy_basissetinfo(input%basis%AUXILIARY,Slave,Master)
-call mpicopy_basissetinfo(input%basis%CABS,Slave,Master)
-call mpicopy_basissetinfo(input%basis%JK,Slave,Master)
-call mpicopy_basissetinfo(input%basis%VALENCE,Slave,Master)
-call LS_MPI_BUFFER(input%basis%GCtransAlloc,Master)
-IF(input%basis%GCtransAlloc)THEN
-   call mpicopy_basissetinfo(input%basis%GCtrans,Slave,Master)
-ELSE
-   IF(SLAVE)THEN
-      input%basis%GCtrans%nAtomtypes=0
-      input%basis%GCtrans%labelindex=0
-      input%basis%GCtrans%nChargeindex=0
-      nullify(input%basis%GCtrans%ATOMTYPE)
+call LS_MPI_BUFFER(input%basis%WBASIS,nBasisBasParam,Master)
+do I=1,nBasisBasParam
+   IF(input%basis%WBASIS(I))THEN
+      call mpicopy_basissetinfo(input%basis%BINFO(I),Slave,Master)
    ENDIF
-ENDIF
-
+enddo
 #endif
 END SUBROUTINE mpicopy_daltoninput
 
@@ -208,38 +199,46 @@ END SUBROUTINE mpicopy_daltoninput
 !> \author T. Kjaergaard
 !> \date 2010
 !> \param setting the setting structure to broadcast
-SUBROUTINE mpicopy_setting(setting,comm)
+SUBROUTINE mpicopy_setting(setting,comm,rankslave)
   implicit none
   type(lssetting),intent(inout) :: setting
   integer(kind=ls_mpik),intent(in) :: comm  ! communicator
-  integer :: lupri
+  logical,intent(in) :: rankslave
   !
-#ifdef VAR_MPI
-  integer :: I,nAO,ndmat,dim1,dim2,dim3,iAO
+  integer :: lupri
+  integer :: I,nAO,ndmat,dim1,dim2,dim3,iAO,J
   logical :: SLAVE,nonemptyMolecule,DsymRHSassociated,DsymLHSassociated
   logical :: LHS_GAB,RHS_GAB
 
   real(realk) :: ts,te
   integer(kind=ls_mpik) :: mynum,nodtot,ierr,master
+#ifdef VAR_MPI
   Master  = infpar%master
-
+#else
+  Master  = 0  
+#endif
   call get_rank_for_comm(comm,mynum)
   CALL get_size_for_comm(comm, nodtot)
   setting%numNodes = nodtot 
-  setting%node = mynum
+  IF(rankslave)THEN
+     setting%node = 1
+     mynum = 1
+  ELSE
+     setting%node = mynum     
+  ENDIF
   setting%comm = comm
 
   dim1 = AORdefault
   dim2 = AODFdefault
   CALL LS_MPI_BUFFER(dim1,Master)        
   CALL LS_MPI_BUFFER(dim2,Master)        
-  IF(mynum.NE.infpar%master)THEN !SLAVE
+  IF(mynum.NE.master)THEN !SLAVE
      call set_default_AOs(dim1,dim2)
   ENDIF
 
 
   !call lstimer('START',ts,te,6)
-  IF(mynum.NE.infpar%master)THEN !SLAVE
+  IF(mynum.NE.master)THEN !SLAVE
      call typedef_init_setting(SETTING)
   ENDIF
   call mpicopy_scheme(setting%SCHEME,Slave,Master)                           !LSSETTING008
@@ -274,27 +273,18 @@ SUBROUTINE mpicopy_setting(setting,comm)
         IF(SLAVE)THEN
            allocate(setting%Molecule(I)%p)
            allocate(setting%Basis(I)%p)
+           call nullifyMainBasis(setting%Basis(I)%p)
         ENDIF
         call mpicopy_molecule(setting%Molecule(I)%p,Slave,Master)              !LSSETTING005
-        call mpicopy_basissetinfo(setting%basis(I)%p%REGULAR,Slave,Master)     !LSSETTING006
-        call mpicopy_basissetinfo(setting%basis(I)%p%AUXILIARY,Slave,Master) 
-        call mpicopy_basissetinfo(setting%basis(I)%p%CABS,Slave,Master)
-        call mpicopy_basissetinfo(setting%basis(I)%p%JK,Slave,Master)
-        call mpicopy_basissetinfo(setting%basis(I)%p%VALENCE,Slave,Master)
-        call LS_MPI_BUFFER(setting%basis(I)%p%GCtransAlloc,Master)
-        IF(setting%basis(I)%p%GCtransAlloc)THEN
-           call mpicopy_basissetinfo(setting%basis(I)%p%GCtrans,Slave,Master) 
-        ELSE
-           IF(SLAVE)THEN
-              setting%basis(I)%p%GCtrans%nAtomtypes=0
-              setting%basis(I)%p%GCtrans%labelindex=0
-              setting%basis(I)%p%GCtrans%nChargeindex=0
-              nullify(setting%basis(I)%p%GCtrans%ATOMTYPE)
+        call LS_MPI_BUFFER(setting%basis(I)%p%WBASIS,nBasisBasParam,Master)
+        DO J=1,nBasisBasParam
+           IF(setting%basis(I)%p%WBASIS(J))THEN
+              call mpicopy_basissetinfo(setting%basis(I)%p%BINFO(J),Slave,Master) 
            ENDIF
-        ENDIF
+        ENDDO
      ELSE
         setting%molBuild(I) = .FALSE.                                            !LSSETTING018
-        setting%basBuild(I) = .FALSE.                                            !LSSETTING019     
+        setting%basBuild(I) = .FALSE.                                            !LSSETTING019
      ENDIF
   enddo
   call LS_MPI_BUFFER(setting%Batchindex,nAO,Master)                           !LSSETTING011
@@ -469,6 +459,7 @@ SUBROUTINE mpicopy_setting(setting,comm)
   call LS_MPI_BUFFER(SETTING%RHSdmatAOindex2,Master)                         !LSSETTING073
   !if (.NOT.SLAVE) call lstimer('copy6b',ts,te,6)
   !if (.NOT.SLAVE) call lstimer('copy6c',ts,te,6)
+
   call mpicopy_output(setting%output,Slave,Master)                           !LSSETTING078
   !if (.NOT.SLAVE) call lstimer('copy6d',ts,te,6)
 
@@ -479,10 +470,117 @@ SUBROUTINE mpicopy_setting(setting,comm)
   call mpicopy_reduced_screen_info(setting%redCS,slave,master)               !LSSETTING080
 
   !if (.NOT.SLAVE) call lstimer('copy8',ts,te,6)
-
-#endif
+  CALL LS_MPI_BUFFER(setting%GPUMAXMEM,Master)                               !LSSETTING081
 
 END SUBROUTINE mpicopy_setting
+
+Subroutine TestMPIcopySetting(setting)
+implicit none
+type(lssetting) :: setting
+!
+integer(kind=ls_mpik) :: master,comm
+integer :: Job
+logical :: AddToBuffer2,rankslave
+Job=LSMPIBROADCAST 
+master=0
+comm=1
+!This will set the addtobuffer (lsmpiType.F90 module variable)
+!and allocate the mpibuffers
+call ls_mpiInitBuffer(master,Job,comm) 
+!place info of setting into buffers (using setting%node = 0 => SLAVE=FALSE)
+rankslave = .FALSE.
+call mpicopy_setting(setting,comm,rankslave)
+CALL typedef_free_setting(setting)
+!This will set the addtobuffer (lsmpiType.F90 module variable) to false
+AddToBuffer2 = .FALSE.
+call ls_mpiInitBufferAddToBuffer(AddToBuffer2)
+!place info of buffers into setting (using setting%node = 1 => SLAVE=TRUE)
+rankslave = .TRUE.
+call mpicopy_setting(setting,comm,rankslave)
+!sets the nDP = iDP etc. in lsmpiType.F90 (otherwise an error in ls_MpiFinalizeBuffer)
+call ls_mpiModbuffersizes
+setting%node = 0
+call ls_MpiFinalizeBuffer(master,Job,comm)
+end Subroutine TestMPIcopySetting
+
+SUBROUTINE mpicopy_screen(Slave,Master)
+implicit none
+logical :: slave
+integer(kind=ls_mpik) :: master
+!
+logical :: assStart
+
+IF(SLAVE)call screen_init()
+assStart = associated(SCREENFROMLSSCREEN%start)
+call LS_MPI_BUFFER(assStart,Master)
+IF(assStart)THEN
+   IF(SLAVE)THEN
+      allocate(SCREENFROMLSSCREEN%start)
+      nullify(SCREENFROMLSSCREEN%start%next)
+   ENDIF
+   call mpicopy_screenchain(SCREENFROMLSSCREEN,SCREENFROMLSSCREEN%start,slave,Master)
+ELSE
+   IF(SLAVE)nullify(SCREENFROMLSSCREEN%start)
+ENDIF
+end SUBROUTINE mpicopy_screen
+
+recursive SUBROUTINE mpicopy_screenchain(screen,screenchain,Slave,Master)
+implicit none
+type(screenitem) :: screen
+type(screenchainitem),pointer :: ScreenChain
+logical :: slave
+integer(kind=ls_mpik) :: master
+!
+type(LSTENSOR),pointer :: GAB  
+logical :: assStart
+
+call LS_MPI_BUFFER(ScreenChain%filename,80,master)
+IF(SLAVE)THEN
+   nullify(ScreenChain%LST%p)
+   allocate(ScreenChain%LST%p)   
+ENDIF
+call mpicopy_lstensor(ScreenChain%LST%p,slave,master)
+assStart = associated(Screenchain%next)
+call LS_MPI_BUFFER(assStart,Master)
+IF(assStart)THEN
+   IF(SLAVE)THEN
+      allocate(ScreenChain%next)
+      nullify(ScreenChain%next%next)
+   ENDIF
+   call mpicopy_screenchain(SCREEN,ScreenChain%next,Slave,Master)
+ELSE
+   IF(SLAVE)THEN
+      nullify(Screenchain%next)
+      SCREEN%end => Screenchain
+   ENDIF
+ENDIF
+end SUBROUTINE mpicopy_screenchain
+
+Subroutine TestMPIcopyScreen()
+implicit none
+integer(kind=ls_mpik) :: master,comm
+integer :: Job
+logical :: AddToBuffer2,slave
+Job=LSMPIBROADCAST 
+master=0
+comm=1
+!This will set the addtobuffer (lsmpiType.F90 module variable)
+!and allocate the mpibuffers
+call ls_mpiInitBuffer(master,Job,comm) 
+!place info of setting into buffers (using setting%node = 0 => SLAVE=FALSE)
+slave = .FALSE.
+call mpicopy_screen(slave,master)
+call screen_free
+!This will set the addtobuffer (lsmpiType.F90 module variable) to false
+AddToBuffer2 = .FALSE.
+call ls_mpiInitBufferAddToBuffer(AddToBuffer2)
+!place info of buffers into setting (using setting%node = 1 => SLAVE=TRUE)
+slave = .TRUE.
+call mpicopy_screen(slave,master)
+!sets the nDP = iDP etc. in lsmpiType.F90 (otherwise an error in ls_MpiFinalizeBuffer)
+call ls_mpiModbuffersizes
+call ls_MpiFinalizeBuffer(master,Job,comm)
+end Subroutine TestMPIcopyScreen
 
 #ifdef VAR_MPI
 subroutine lsmpi_isend_lstmemrealkbuf(lstmem_index,NodeToRecv,Mynum,comm)
@@ -523,7 +621,7 @@ integer(kind=long)  :: nbuffer
 real(realk),pointer :: buffer(:)
 integer(kind=ls_mpik) :: COUNT,TAG,IERR,request,COUNT2
 real(realk),pointer :: buffer2(:)
-integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE),nMess,j,i
+integer(kind=ls_mpik) :: lsmpi_status(MPI_STATUS_SIZE),nMess,j,i
 logical(kind=ls_mpik) :: MessageRecieved
 logical :: ALLOC,MessageRecievedW
 TAG = 155534879
@@ -534,7 +632,7 @@ MessageRecieved = .TRUE.
 MessageRecievedW = .TRUE.
 ALLOC=.FALSE.
 DO WHILE(MessageRecievedW)
-   call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,status,ierr)
+   call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,lsmpi_status,ierr)
    MessageRecievedW = MessageRecieved 
    IF(MessageRecievedW)THEN
       IF(.NOT.ALLOC)THEN
@@ -542,8 +640,8 @@ DO WHILE(MessageRecievedW)
          ALLOC=.TRUE.
       ENDIF
       !get the sender ID
-      j = status(MPI_SOURCE)
-      call MPI_GET_COUNT(status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
+      j = lsmpi_status(MPI_SOURCE)
+      call MPI_GET_COUNT(lsmpi_status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
       IF(COUNT2.NE.COUNT)CALL LSQUIT('COUNT WRONG IN lsmpi_probe_and_irecv_add_lstmemrealkbuf ',-1)
       inputMessageRecieved(j+1) = .TRUE.
       call MPI_IRECV(buffer2,COUNT,MPI_DOUBLE_PRECISION,J,TAG,MPI_COMM_WORLD,request,ierr)
@@ -569,7 +667,7 @@ integer(kind=long)             :: nbuffer
 real(realk),pointer :: buffer(:)
 integer(kind=ls_mpik) :: COUNT,TAG,IERR,request
 real(realk),pointer :: buffer2(:)
-integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE),nMess,k,i,COUNT2,j
+integer(kind=ls_mpik) :: lsmpi_status(MPI_STATUS_SIZE),nMess,k,i,COUNT2,j
 integer :: Nmissing
 logical :: ALLOC,ALLMessageRecieved
 TAG = 155534879
@@ -592,16 +690,16 @@ DO WHILE(.NOT.ALLMessageRecieved)
       ALLOC=.TRUE.
    ENDIF
    !blocking Recv   
-   call MPI_PROBE(MPI_ANY_SOURCE,TAG,comm,status,ierr)
+   call MPI_PROBE(MPI_ANY_SOURCE,TAG,comm,lsmpi_status,ierr)
    !get the sender ID
-   j = status(MPI_SOURCE)
-   call MPI_GET_COUNT(status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
+   j = lsmpi_status(MPI_SOURCE)
+   call MPI_GET_COUNT(lsmpi_status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
    IF(COUNT2.NE.COUNT)THEN
       print*,'COUNT',COUNT,'infpar%mynm',infpar%mynum
       print*,'COUNT2',COUNT2,'infpar%mynm',infpar%mynum
       call lsquit('COUNT WRONG lsmpi_blocking_recv_add_lstmemrealkbuf',-1)
    ENDIF
-   call MPI_RECV(buffer2,COUNT,MPI_DOUBLE_PRECISION,J,TAG,comm,status,ierr)
+   call MPI_RECV(buffer2,COUNT,MPI_DOUBLE_PRECISION,J,TAG,comm,lsmpi_status,ierr)
    !add to buffer
    do K=1,COUNT
       buffer(K)=buffer(K)+buffer2(K) 
@@ -611,7 +709,7 @@ DO WHILE(.NOT.ALLMessageRecieved)
 ENDDO
 IF(ALLOC)call mem_dealloc(buffer2)
 end subroutine lsmpi_blocking_recv_add_lstmemrealkbuf
-
+#endif
 !!$subroutine lsmpi_blocking_recv_add_lstmemrealkbuf2(lstmem_index,Mynum,comm,&
 !!$     & inputMessageRecieved,numnodes)
 !!$implicit none
@@ -622,7 +720,7 @@ end subroutine lsmpi_blocking_recv_add_lstmemrealkbuf
 !!$real(realk),pointer :: buffer(:)
 !!$integer :: COUNT,TAG,IERR,request
 !!$real(realk),pointer :: buffer2(:)
-!!$integer :: status(MPI_STATUS_SIZE),nMess,k,i,COUNT2,j
+!!$integer :: lsmpi_status(MPI_STATUS_SIZE),nMess,k,i,COUNT2,j
 !!$logical :: MessageRecieved,ALLMessageRecieved,ALLOC
 !!$
 !!$TAG = 155534879
@@ -639,15 +737,15 @@ end subroutine lsmpi_blocking_recv_add_lstmemrealkbuf
 !!$ENDDO
 !!$
 !!$DO WHILE(.NOT.ALLMessageRecieved)
-!!$   call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,status,ierr)
+!!$   call MPI_IPROBE(MPI_ANY_SOURCE,TAG,comm,MessageRecieved,lsmpi_status,ierr)
 !!$   IF(MessageRecieved)THEN
 !!$      IF(.NOT.ALLOC)THEN
 !!$         call mem_alloc(buffer2,COUNT)
 !!$         ALLOC=.TRUE.
 !!$      ENDIF
 !!$      !get the sender ID
-!!$      j = status(MPI_SOURCE)
-!!$      call MPI_GET_COUNT(status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
+!!$      j = lsmpi_status(MPI_SOURCE)
+!!$      call MPI_GET_COUNT(lsmpi_status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
 !!$      IF(COUNT2.NE.COUNT)CALL LSQUIT('COUNT WRONG IN lsmpi_probe_and_irecv_add_lstmemrealkbuf ',-1)
 !!$      inputMessageRecieved(j+1) = .TRUE.
 !!$      print*,'BLOCKING mynum',mynum,'RECV BUFFER FROM ',J,' OF SIZE',COUNT
@@ -696,7 +794,7 @@ integer(kind=ls_mpik) :: master
 !
 logical    :: isAssociated
 INTEGER    :: I,J,K,L,offset,n1,n2,n3,n4
-integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS,nsize
 integer :: AllocInt4,AllocRealk4,AllocIntS4
 real(realk) :: ts,te
 
@@ -763,6 +861,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call Mem_alloc(TENSOR%maxgab,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%maxgab,KIND=long)*mem_shortintsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%maxgab,TENSOR%nbatches(1),TENSOR%nbatches(2),Master)
 ELSE
@@ -774,6 +874,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%maxprimgab,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%maxprimgab,KIND=long)*mem_shortintsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%maxprimgab,TENSOR%nbatches(1),TENSOR%nbatches(2),Master)
 ELSE
@@ -785,6 +887,8 @@ call LS_MPI_BUFFER(isAssociated,Master)
 IF(isAssociated)THEN
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%MBIE,TENSOR%nMBIE,TENSOR%nbatches(1),TENSOR%nbatches(2))
+      nsize = size(TENSOR%MBIE,KIND=long)*mem_realsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%MBIE,TENSOR%nMBIE,TENSOR%nbatches(1),&
         & TENSOR%nbatches(2),Master)
@@ -806,6 +910,8 @@ IF(isAssociated)THEN
    call LS_MPI_BUFFER(n2,Master)
    IF(SLAVE)THEN
       call mem_alloc(TENSOR%nAOBATCH,n1,n2)
+      nsize = size(TENSOR%nAOBATCH,KIND=long)*mem_intsize
+      call mem_allocated_mem_lstensor(nsize)
    ENDIF
    call LS_MPI_BUFFER(TENSOR%nAOBATCH,n1,n2,Master)
 ELSE
@@ -835,6 +941,8 @@ IF(isAssociated)THEN
          IF(n2.NE.1)call lsquit('error in mpicopy_lstensor A.',-1)
          IF(n3.NE.1)call lsquit('error in mpicopy_lstensor B.',-1)
          call mem_alloc(TENSOR%INDEX,n1,n2,n3,n4)
+         nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+         call mem_allocated_mem_lstensor(nsize)
          DO L=1,n1
             DO I=1,n4
                TENSOR%INDEX(I,1,1,L) = I
@@ -859,6 +967,8 @@ IF(isAssociated)THEN
       call LS_MPI_BUFFER(n4,Master)
       IF(SLAVE)THEN
          call mem_alloc(TENSOR%INDEX,n1,n2,n3,n4)
+         nsize = size(TENSOR%INDEX,KIND=long)*mem_intsize
+         call mem_allocated_mem_lstensor(nsize)
       ENDIF
       call LS_MPI_BUFFER(TENSOR%INDEX,n1,n2,n3,n4,Master)
    ENDIF
@@ -896,10 +1006,6 @@ ENDIF
 !   Call Determine_slstensor_memory(tensor,nmemsize)
 !   call add_mem_to_global(nmemsize)
 !ENDIF
-IF(SLAVE)THEN
-   call LSTENSOR_mem_est(TENSOR,nmemsize)
-   call add_mem_to_global(nmemsize)
-ENDIF
 end SUBROUTINE mpicopy_lstensor
 
 subroutine mpicopy_slsaotensor(LSAO,Slave,Master)
@@ -1109,6 +1215,7 @@ ENDIF
 
 END SUBROUTINE mpicopy_output
 
+#ifdef VAR_MPI
 SUBROUTINE mpicopy_integralconfig(dalton,Slave,Master)
 implicit none
 type(integralconfig) :: dalton
@@ -1116,7 +1223,11 @@ logical :: slave
 integer(kind=ls_mpik) :: master
 
 call LS_MPI_BUFFER(dalton%contang,Master)
+call LS_MPI_BUFFER(dalton%NOGCINTEGRALTRANSFORM,Master)
+call LS_MPI_BUFFER(dalton%FORCEGCBASIS,Master)
 call LS_MPI_BUFFER(dalton%noOMP,Master)
+call LS_MPI_BUFFER(dalton%IchorForceCPU,Master)
+call LS_MPI_BUFFER(dalton%IchorForceGPU,Master)
 call LS_MPI_BUFFER(dalton%UNRES,Master)
 call LS_MPI_BUFFER(dalton%CFG_LSDALTON,Master)
 call LS_MPI_BUFFER(dalton%TRILEVEL,Master)
@@ -1164,6 +1275,9 @@ call LS_MPI_BUFFER(dalton%DEBUG4CENTER,Master)
 call LS_MPI_BUFFER(dalton%DEBUG4CENTER_ERI,Master)
 call LS_MPI_BUFFER(dalton%DEBUGPROP,Master)
 call LS_MPI_BUFFER(dalton%DEBUGICHOR,Master)
+call LS_MPI_BUFFER(dalton%DEBUGICHORLINK,Master)
+call LS_MPI_BUFFER(dalton%DEBUGICHORLINKFULL,Master)
+call LS_MPI_BUFFER(dalton%DEBUGICHOROPTION,Master)
 call LS_MPI_BUFFER(dalton%DEBUGGEN1INT,Master)
 call LS_MPI_BUFFER(dalton%DEBUGCGTODIFF,Master)
 call LS_MPI_BUFFER(dalton%DEBUGEP,Master)
@@ -1207,10 +1321,7 @@ call LS_MPI_BUFFER(dalton%MM_NOSCREEN,Master)
 call LS_MPI_BUFFER(dalton%MMunique_ID1,Master)
 !*BASIS PARAMETERS
 call LS_MPI_BUFFER(dalton%ATOMBASIS,Master)
-call LS_MPI_BUFFER(dalton%BASIS,Master)
-call LS_MPI_BUFFER(dalton%AUXBASIS,Master)
-call LS_MPI_BUFFER(dalton%CABSBASIS,Master)
-call LS_MPI_BUFFER(dalton%JKBASIS,Master)
+call LS_MPI_BUFFER(dalton%BASIS,nBasisBasParam,Master)
 call LS_MPI_BUFFER(dalton%NOFAMILY,Master)
 call LS_MPI_BUFFER(dalton%Hermiteecoeff,Master)
 call LS_MPI_BUFFER(dalton%DoSpherical,Master)
@@ -1257,12 +1368,17 @@ call LS_MPI_BUFFER(dalton%LR_EXCHANGE_DF,Master)
 call LS_MPI_BUFFER(dalton%LR_EXCHANGE_PARI,Master)
 call LS_MPI_BUFFER(dalton%LR_EXCHANGE,Master)
 call LS_MPI_BUFFER(dalton%ADMM_EXCHANGE,Master)
-call LS_MPI_BUFFER(dalton%ADMM_GCBASIS,Master)
-call LS_MPI_BUFFER(dalton%ADMM_JKBASIS,Master)
-call LS_MPI_BUFFER(dalton%ADMM_DFBASIS,Master)
-call LS_MPI_BUFFER(dalton%ADMM_MCWEENY,Master)
+call LS_MPI_BUFFER(dalton%ADMM1,Master)
 call LS_MPI_BUFFER(dalton%ADMM_2ERI,Master)
+call LS_MPI_BUFFER(dalton%ADMMQ,Master)
+call LS_MPI_BUFFER(dalton%ADMM_FUNC,len(dalton%ADMM_FUNC),Master)
+call LS_MPI_BUFFER(dalton%ADMMS,Master)
+call LS_MPI_BUFFER(dalton%ADMMP,Master)
+call LS_MPI_BUFFER(dalton%ADMM_separateX,Master)
+call LS_MPI_BUFFER(dalton%PRINT_EK3,Master)
+call LS_MPI_BUFFER(dalton%ADMMBASISFILE,Master)
 call LS_MPI_BUFFER(dalton%SR_EXCHANGE,Master)
+
 !Coulomb attenuated method CAM parameters
 call LS_MPI_BUFFER(dalton%CAM,Master)
 call LS_MPI_BUFFER(dalton%CAMalpha,Master)
@@ -1276,6 +1392,7 @@ call LS_MPI_BUFFER(dalton%molcharge,Master)
 call LS_MPI_BUFFER(dalton%run_dec_gradient_test,Master)
 
 END SUBROUTINE MPICOPY_INTEGRALCONFIG
+#endif
 
 SUBROUTINE mpicopy_scheme(scheme,slave,master)
 implicit none
@@ -1285,7 +1402,11 @@ integer(kind=ls_mpik) :: master
 
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 call LS_MPI_BUFFER(scheme%NOBQBQ,Master)
+call LS_MPI_BUFFER(scheme%doMPI,Master)
+call LS_MPI_BUFFER(scheme%MasterWakeSlaves,Master)
 call LS_MPI_BUFFER(scheme%noOMP,Master)
+call LS_MPI_BUFFER(scheme%IchorForceCPU,Master)
+call LS_MPI_BUFFER(scheme%IchorForceGPU,Master)
 call LS_MPI_BUFFER(scheme%CFG_LSDALTON,Master)
 call LS_MPI_BUFFER(scheme%DOPASS,Master)
 call LS_MPI_BUFFER(scheme%DENSFIT,Master)
@@ -1343,7 +1464,7 @@ call LS_MPI_BUFFER(scheme%LU_LUINTR,Master)
 call LS_MPI_BUFFER(scheme%LU_LUINDM,Master)
 call LS_MPI_BUFFER(scheme%LU_LUINDR,Master)
 !*BASIS PARAMETERS
-call LS_MPI_BUFFER(scheme%AUXBASIS,Master)
+call LS_MPI_BUFFER(scheme%BASIS,nBasisBasParam,Master)
 call LS_MPI_BUFFER(scheme%NOFAMILY,Master)
 call LS_MPI_BUFFER(scheme%Hermiteecoeff,Master)
 call LS_MPI_BUFFER(scheme%DoSpherical,Master)
@@ -1396,6 +1517,18 @@ call LS_MPI_BUFFER(scheme%LR_EXCHANGE_DF,Master)
 call LS_MPI_BUFFER(scheme%LR_EXCHANGE_PARI,Master)
 call LS_MPI_BUFFER(scheme%LR_EXCHANGE,Master)
 call LS_MPI_BUFFER(scheme%SR_EXCHANGE,Master)
+
+call LS_MPI_BUFFER(scheme%ADMM_EXCHANGE,Master)
+call LS_MPI_BUFFER(scheme%ADMM1,Master)
+call LS_MPI_BUFFER(scheme%ADMM_2ERI,Master)
+call LS_MPI_BUFFER(scheme%ADMMQ,Master)
+call LS_MPI_BUFFER(scheme%ADMMS,Master)
+call LS_MPI_BUFFER(scheme%ADMMP,Master)
+call LS_MPI_BUFFER(scheme%ADMM_separateX,Master)
+call LS_MPI_BUFFER(scheme%PRINT_EK3,Master)
+call LS_MPI_BUFFER(scheme%ADMM_CONSTRAIN_FACTOR,Master)
+call LS_MPI_BUFFER(scheme%ADMM_LARGE_LAMBDA,Master)
+
 call LS_MPI_BUFFER(scheme%CAM,Master)
 call LS_MPI_BUFFER(scheme%CAMalpha,Master)
 call LS_MPI_BUFFER(scheme%CAMbeta,Master)
@@ -1410,6 +1543,7 @@ call LS_MPI_BUFFER(scheme%PropOper,Master)
   
 END SUBROUTINE mpicopy_scheme
 
+#ifdef VAR_MPI
 subroutine lsmpi_lstensor_reduction(Tensor,master,mynum,comm)
 implicit none
 type(lstensor) :: tensor
@@ -1437,6 +1571,7 @@ CALL LS_GETTIM(t3,t4)
 !write(*,*) 'debug:master-reduction2',t3 - t1
 ENDIF
 end subroutine lsmpi_lstensor_reduction
+#endif
 
 !> \brief fill the lstensor into buffer or extract from buffer
 !> \author T. Kjaergaard
@@ -1509,17 +1644,21 @@ integer :: I
 
 call LS_MPI_BUFFER(MOLECULE%nAtoms,Master)
 call LS_MPI_BUFFER(MOLECULE%nAtomsNPC,Master)
+call LS_MPI_BUFFER(MOLECULE%nelectrons,Master)
+call LS_MPI_BUFFER(MOLECULE%charge,Master)
 
 IF(SLAVE)THEN
    MOLECULE%nbastREG = 0
    MOLECULE%nbastAUX = 0
    MOLECULE%nbastCABS = 0
    MOLECULE%nbastJK = 0
+   MOLECULE%nbastADMM = 0
    MOLECULE%nbastVAL = 0
    MOLECULE%nprimbastREG = 0
    MOLECULE%nprimbastAUX = 0
    MOLECULE%nprimbastCABS = 0
    MOLECULE%nprimbastJK = 0
+   MOLECULE%nprimbastADMM = 0
    MOLECULE%nprimbastVAL = 0
    call mem_alloc(MOLECULE%ATOM,MOLECULE%nAtoms)
 ENDIF
@@ -1527,9 +1666,24 @@ do I = 1, MOLECULE%nAtoms
    call mpicopy_atom(MOLECULE,I,Slave,Master)
 enddo
 
+call LS_MPI_BUFFER(MOLECULE%pointMolecule,Master)
+call LS_MPI_BUFFER(MOLECULE%nSubSystems,Master)
 call LS_MPI_BUFFER(MOLECULE%label,22,Master)
-call LS_MPI_BUFFER(MOLECULE%nelectrons,Master)
-call LS_MPI_BUFFER(MOLECULE%charge,Master)
+IF(Molecule%nSubSystems.NE.0)THEN
+   IF(SLAVE)THEN
+      call mem_alloc(Molecule%SubSystemLabel,Molecule%nSubSystems)
+   ENDIF
+   IF(len(Molecule%SubSystemLabel(1)).NE.80)THEN
+      CALL LSQUIT('Dim mismatch in mpicopy_molecule',-1)
+   ENDIF
+   do I = 1,Molecule%nSubSystems       
+      call LS_MPI_BUFFER(Molecule%SubSystemLabel(I),80,Master)
+   enddo
+ELSE
+   IF(SLAVE)THEN
+      NULLIFY(Molecule%SubSystemLabel)
+   ENDIF
+ENDIF
 
 end subroutine mpicopy_molecule
 
@@ -1558,9 +1712,10 @@ call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Frag,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%CENTER,3,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Atomic_number,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%molecularIndex,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%SubsystemIndex,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Charge,Master)
-call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nbasis,Master)
-do K = 1,MOLECULE%ATOM(I)%nbasis
+!call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nbasis,Master)
+do K = 1,nBasisBasParam!MOLECULE%ATOM(I)%nbasis
    call LS_MPI_BUFFER(MOLECULE%ATOM(I)%basislabel(K),len(MOLECULE%ATOM(I)%basislabel(K)),Master)
    call LS_MPI_BUFFER(MOLECULE%ATOM(I)%basisindex(K),Master)
    call LS_MPI_BUFFER(MOLECULE%ATOM(I)%IDtype(K),Master)
@@ -1576,6 +1731,8 @@ call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nContOrbCABS,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nPrimOrbCABS,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nContOrbJK,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nPrimOrbJK,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nContOrbADMM,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nPrimOrbADMM,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nContOrbVAL,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nPrimOrbVAL,Master)
 IF(SLAVE)THEN
@@ -1587,6 +1744,8 @@ IF(SLAVE)THEN
    MOLECULE%nPrimbastCABS= MOLECULE%nPrimbastCABS+ MOLECULE%ATOM(I)%nPrimOrbCABS
    MOLECULE%nbastJK      = MOLECULE%nbastJK     + MOLECULE%ATOM(I)%nContOrbJK
    MOLECULE%nPrimbastJK = MOLECULE%nPrimbastJK + MOLECULE%ATOM(I)%nPrimOrbJK
+   MOLECULE%nbastADMM     = MOLECULE%nbastADMM   + MOLECULE%ATOM(I)%nContOrbADMM
+   MOLECULE%nPrimbastADMM= MOLECULE%nPrimbastADMM+ MOLECULE%ATOM(I)%nPrimOrbADMM
    MOLECULE%nbastVAL     = MOLECULE%nbastVAL     + MOLECULE%ATOM(I)%nContOrbVAL
    MOLECULE%nPrimbastVAL = MOLECULE%nPrimbastVAL + MOLECULE%ATOM(I)%nPrimOrbVAL
 ENDIF
@@ -1606,18 +1765,20 @@ SUBROUTINE mpicopy_basissetinfo(BAS,slave,master)
 !
   INTEGER            :: I,J,K,nrow,ncol,nsize1,nsize2
 
+  IF(slave)THEN
+     call nullifyBasisset(BAS)
+  ENDIF
   call LS_MPI_BUFFER(BAS%natomtypes,Master)
+  call LS_MPI_BUFFER(BAS%label,len(BAS%label),Master)
+  call LS_MPI_BUFFER(BAS%labelindex,Master)
+  call LS_MPI_BUFFER(BAS%nChargeindex,Master)
+  call LS_MPI_BUFFER(BAS%nbast,Master)
+  call LS_MPI_BUFFER(BAS%nprimbast,Master)
+  call LS_MPI_BUFFER(BAS%DunningsBasis,Master)
+  call LS_MPI_BUFFER(BAS%GCbasis,Master)
+  call LS_MPI_BUFFER(BAS%Spherical,Master)
+  call LS_MPI_BUFFER(BAS%Gcont,Master)     
   IF(BAS%natomtypes.NE. 0)THEN
-     call LS_MPI_BUFFER(BAS%labelindex,Master)
-     call LS_MPI_BUFFER(BAS%nChargeindex,Master)
-     call LS_MPI_BUFFER(BAS%nbast,Master)
-     call LS_MPI_BUFFER(BAS%nprimbast,Master)
-     call LS_MPI_BUFFER(BAS%label,len(BAS%label),Master)
-     call LS_MPI_BUFFER(BAS%DunningsBasis,Master)
-     call LS_MPI_BUFFER(BAS%GCbasis,Master)
-     call LS_MPI_BUFFER(BAS%Spherical,Master)
-     call LS_MPI_BUFFER(BAS%Gcont,Master)
-     
      IF(slave)THEN
         call mem_alloc(BAS%ATOMTYPE,BAS%natomtypes)
      ENDIF
@@ -1672,19 +1833,14 @@ SUBROUTINE mpicopy_basissetinfo(BAS,slave,master)
            ENDDO
         ENDDO
      ENDDO
-     IF(BAS%nChargeindex .NE. 0)THEN
-        IF(SLAVE)THEN
-           call mem_alloc(BAS%Chargeindex,BAS%nChargeindex,.TRUE.)
-        ENDIF
-        DO I = 0,BAS%nChargeindex
-           call LS_MPI_BUFFER(BAS%Chargeindex(I),Master)
-        ENDDO
-     ELSE
-        BAS%nChargeindex=0
+  ENDIF
+  IF(BAS%nChargeindex .NE. 0)THEN
+     IF(SLAVE)THEN
+        call mem_alloc(BAS%Chargeindex,BAS%nChargeindex,.TRUE.)
      ENDIF
-  ELSE
-     call LS_MPI_BUFFER(BAS%labelindex,Master)
-     call LS_MPI_BUFFER(BAS%nChargeindex,Master)
+     DO I = 0,BAS%nChargeindex
+        call LS_MPI_BUFFER(BAS%Chargeindex(I),Master)
+     ENDDO
   ENDIF
 
 END SUBROUTINE mpicopy_basissetinfo
@@ -1721,7 +1877,9 @@ IF (GGem%is_set) THEN
   IF (GGem%N.GT.0) THEN
     call LS_MPI_BUFFER(GGem%coeff,GGem%N,Master)
     call LS_MPI_BUFFER(GGem%exponent,GGem%N,Master)
-    IF(isassociated)call LS_MPI_BUFFER(GGem%expProd,GGem%N,Master)
+    IF(isassociated)THEN
+       call LS_MPI_BUFFER(GGem%expProd,GGem%N,Master)
+    ENDIF
   ENDIF
 ENDIF
 END SUBROUTINE mpicopy_GaussianGeminal
@@ -1736,7 +1894,116 @@ logical                                  :: slave
 IF (SLAVE) call init_reduced_screen_info(redCS)
 
 END SUBROUTINE mpicopy_reduced_screen_info
+
+#ifdef VAR_MPI
+  subroutine init_slave_timers(times,comm)
+     implicit none
+     integer(kind=ls_mpik),intent(in) :: comm
+     real(realk), pointer,intent(inout) :: times(:)
+     integer(kind=ls_mpik) :: nnod,me
+
+     call time_start_phase(PHASE_WORK)
+     if(associated(times)) call lsquit("ERROR(init_slave_timers):pointer already associtated",-1)
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     if(me==0_ls_mpik) then
+        call time_start_phase(PHASE_COMM)
+        call ls_mpibcast(INITSLAVETIME,me,comm)
+        call time_start_phase(PHASE_WORK)
+     endif
+
+     call mem_alloc(times,nphases*nnod)
+     times = 0.0E0_realk
+     call time_start_phase(PHASE_WORK, &
+        &swinit = times(me*nphases+PHASE_INIT_IDX) ,&
+        &swwork = times(me*nphases+PHASE_WORK_IDX) ,&
+        &swcomm = times(me*nphases+PHASE_COMM_IDX) ,&
+        &swidle = times(me*nphases+PHASE_IDLE_IDX) )
+
+
+     call time_start_phase(PHASE_COMM)
+     call lsmpi_reduction(times,nphases*nnod,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+
+  end subroutine init_slave_timers
+
+  subroutine get_slave_timers(times,comm)
+     implicit none
+     integer(kind=ls_mpik),intent(in) :: comm
+     real(realk), pointer,intent(inout) :: times(:)
+     integer(kind=ls_mpik) :: nnod,me
+
+     call time_start_phase(PHASE_WORK)
+     if(.not.associated(times)) call lsquit("ERROR(get_slave_timers):pointer not associtated",-1)
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     if(me==infpar%master) then
+        call time_start_phase(PHASE_COMM)
+        call ls_mpibcast(GETSLAVETIME,me,comm)
+        call time_start_phase(PHASE_WORK)
+        times(nphases+1:) = -1.E0_realk * times(nphases+1:)
+     endif
+
+     call time_start_phase(PHASE_WORK, &
+        &dwinit = times(me*nphases+PHASE_INIT_IDX) ,&
+        &dwwork = times(me*nphases+PHASE_WORK_IDX) ,&
+        &dwcomm = times(me*nphases+PHASE_COMM_IDX) ,&
+        &dwidle = times(me*nphases+PHASE_IDLE_IDX) )
+
+
+     call time_start_phase(PHASE_COMM)
+     call lsmpi_reduction(times,nphases*nnod,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+
+  end subroutine get_slave_timers
+
 #endif
 
 end module lsmpi_op
 
+#ifdef VAR_MPI
+subroutine init_slave_timers_slave(comm)
+   use precision, only: realk
+   use lstiming
+   use memory_handling, only: mem_dealloc
+   use lsmpi_op, only: init_slave_timers
+   implicit none
+   integer(kind=ls_mpik) :: comm,nnod
+   real(realk), pointer :: times(:)
+
+   times => null()
+
+   call init_slave_timers(times,comm)
+
+   call mem_dealloc(times)
+
+end subroutine init_slave_timers_slave
+
+subroutine get_slave_timers_slave(comm)
+   use precision, only: realk, ls_mpik
+   use lstiming, only: nphases
+   use lsmpi_type, only: get_size_for_comm
+   use memory_handling, only: mem_alloc,mem_dealloc
+   use lsmpi_op, only: get_slave_timers
+   implicit none
+   integer(kind=ls_mpik) :: comm,nnod
+   real(realk), pointer :: times(:)
+
+   call get_size_for_comm(comm, nnod)
+   call mem_alloc(times,nphases*nnod) 
+   times = 0.0E0_realk
+
+   call get_slave_timers(times,comm)
+
+   call mem_dealloc(times)
+
+end subroutine get_slave_timers_slave
+#endif

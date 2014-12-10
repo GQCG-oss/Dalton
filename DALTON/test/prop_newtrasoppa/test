@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+#    prop_newtrasoppa
+#    ----------------
+#    Molecule:         CH4
+#    Wave Function:    MP2 (SOPPA) / cc-pVDZ
+#    Test Purpose:     Calculation of SOPPA spin-spin coupling constants
+#                      through ABACUS using the NEWTRA option 
+#                       (new integral transformation)
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+      
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+
+f.add(string = 'Hartree-Fock total energy',
+      rel_tolerance = 1.0e-10)
+f.add(string = 'MP2 second order energy',
+      rel_tolerance = 1.0e-10)
+#f.add(string = 'Total MCSCF energy',
+#      rel_tolerance = 1.0e-10)
+
+f.add(string = '"New" (from 1988!) integral transformation used',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Nuclear spin-spin coupling constants',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'SOPPA \: * Second Order Polarization Propagator Approximation',
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Isotropic coupling',
+      num_lines = 10,
+      abs_tolerance = 1.0e-4)
+
+test.run(['prop_newtrasoppa.dal'], ['CH4_cc-pVDZ_sym.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

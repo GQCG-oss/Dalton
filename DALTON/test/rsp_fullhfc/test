@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+#    rsp_fullhfc
+#    -----------
+#    Molecule:         ClO2
+#    Wave Function:    Spin-restricted open shell Kohn-Sham 
+#    Test Purpose:     Hyperfine coupling tensor
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+
+# Fermi contact term
+f.add(from_string = 'Fermi contact contribution to HFC (in G)',
+      num_lines = 8,
+      abs_tolerance = 1.0e-3)
+
+# Spin-dipolar term
+f.add(from_string = 'Spin-dipolar contribution to HFC (in G )',
+      num_lines = 11,
+      abs_tolerance = 1.0e-3)
+
+#Spin-orbit term
+f.add(from_string = 'Spin-orbit contribution to HFC (in G)',
+      num_lines = 12,
+      abs_tolerance = 1.0e-3)
+
+test.run(['rsp_fullhfc.dal'], ['H2O_3-21G_sym.mol'], f={'out': f})
+
+sys.exit(test.return_code)

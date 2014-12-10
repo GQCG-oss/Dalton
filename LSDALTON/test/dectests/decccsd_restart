@@ -63,7 +63,7 @@ TRILEVEL
 !.CCSDsolver_par
 !.ccsd_old
 .FOT
-4
+1.0e-4
 .MEMORY
 2.0
 *END OF INPUT  
@@ -86,7 +86,7 @@ TRILEVEL
 .MPIsplit
 0
 .FOT
-4
+1.0e-4
 .MEMORY
 2.0
 *END OF INPUT  
@@ -129,8 +129,14 @@ TEST[3]=`expr  $CRIT1`
 CTRL[3]=1                                                                 
 ERROR[3]="Memory leak for array4 -" 
 
+# HF ENERGY 
+CRIT1=`$GREP "E: Hartree-Fock energy : * \-74\.190045" $log | wc -l`
+TEST[4]=`expr   $CRIT1`
+CTRL[4]=1
+ERROR[4]="HF ENERGY NOT CORRECT -"
+
 PASSED=1
-for i in 1 2 3
+for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

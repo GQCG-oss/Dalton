@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+#    rsp_hyperpolar
+#    --------------
+#    Molecule:         H2O
+#    Wave Function:    MCSCF (CAS) / 6-31++G**
+#    Test Purpose:     First hyperpolarizability
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string='label', to_string='Spherical',
+      rel_tolerance = 1.0e-7)
+
+f.add(from_string='Total number of coordinates', to_string='Symmetry',
+      rel_tolerance = 1.0e-7)
+
+f.add(string='coordinates in each symmetry',
+      rel_tolerance = 1.0e-7)
+
+f.add(string='orbitals in each symmetry',
+      rel_tolerance = 1.0e-7)
+
+f.add(string='Hartree-Fock total', rel_tolerance = 1.0e-7)
+f.add(string='MP2 second order energy', rel_tolerance = 1.0e-7)
+f.add(string='Final MCSCF energy', rel_tolerance = 1.0e-7)
+
+f.add(re='^@.*beta', rel_tolerance=1.0e-3)
+
+test.run(['rsp_hyperpolar.dal'], ['h2o.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

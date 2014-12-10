@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE ECPINP(Q,QEFF,IATOM,IPRINT,ECPNAME)
 C
@@ -206,7 +205,7 @@ C
      &            1,11,15,2,3,7,12,10,14,4,6,13,5,8,9/
       DATA IOFF/0,1,4,10,20/  
 C
-#include "ibtfun.h"
+
 C
       IF (L1 .GT. MAX_L .OR. L2 .GT. MAX_L) THEN
          write(lupri,'(//A,3I8)')
@@ -241,10 +240,10 @@ C
             YCI   = CORD(2,IATOM) 
             ZCI   = CORD(3,IATOM) 
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-                  XC = PT(IBTAND(ISYMAX(1,1),ISYMOP))*XCI
-                  YC = PT(IBTAND(ISYMAX(2,1),ISYMOP))*YCI
-                  ZC = PT(IBTAND(ISYMAX(3,1),ISYMOP))*ZCI
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+                  XC = PT(IAND(ISYMAX(1,1),ISYMOP))*XCI
+                  YC = PT(IAND(ISYMAX(2,1),ISYMOP))*YCI
+                  ZC = PT(IAND(ISYMAX(3,1),ISYMOP))*ZCI
                   CALL PSEUD1(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
                   CALL PSEUD2(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
                END IF

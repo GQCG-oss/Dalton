@@ -1,0 +1,9 @@
+   pehf_cube
+   -----------
+   Molecule:         Formaldehyde and two classical water molecules
+   Wave Function:    PE-HF / STO-3G
+   Test Purpose:     Test the calculation of cube files containing the
+                     electrostatic potential and electric field from
+                     the embedding potential using the PE library
+                     NOTE: if using the TEST script then the option
+                     -param "-get *.cube" is required

@@ -7,8 +7,9 @@ git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
 export OMP_NUM_THREADS=2
 export DALTON_TMPDIR=$SCRATCH_DIR
-export DALTON_NUM_MPI_PROCS=6
+export DALTON_NUM_MPI_PROCS=3
 export CTEST_PROJECT_NAME=LSDALTON
+export LSDALTON_LAUNCHER="mpirun -np 3 -mca btl ^openib"
 #module load mpi/openmpi-$(uname -i)
 #the module load do not seem to work when called from a crontab script, so instead we do
 export PATH=/usr/lib64/openmpi/bin:$PATH
@@ -22,11 +23,13 @@ export MATH_ROOT=/lib64/atlas
 
 cd build
 make release
-#this creates a tar file named DALTON-2013.1-Source.tar.gz
-tar -zxvf DALTON-2013.1-Source.tar.gz
-cd DALTON-2013.1-Source
+#this creates a tar file named DALTON-Source.tar.gz
+if [[ -e  DALTON-Source.tar.gz ]]; then
+ tar -zxvf DALTON-Source.tar.gz
+ cd DALTON-Source
 
-./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-openMPI-release" build
-cd build
-ctest -D Nightly -L linsca
+ ./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-openMPI-release" build
+ cd build
+ ctest -D Nightly --track NightlyMakeRelease -L linsca
+fi
 exit 0

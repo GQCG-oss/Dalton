@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -187,7 +187,7 @@ CAMT Require higher derivatives for explicit potential construction
          if (.not. export_file_exists) then
             if ((nr_points_export + nlen) > max_export_grid_length) then
                print *, 'ERROR in grid export, array too small'
-               stop 1
+               call quit('ERROR in grid export, array too small')
             end if
             do i = 1, nlen
                rx(nr_points_export + i) = coor(1, i)
@@ -383,13 +383,13 @@ c
 #include "mxcent.h"
 #include "symmet.h"
 c
-#include "ibtfun.h"
+
 c       Just to find out errors in the code.
       ISTRA = 1
       DO IREPA = 0, MAXREP
          NORBA = NAOS(IREPA+1)
          DO I = ISTRA,ISTRA + NORBA - 1
-            ISHEL = IBTAND(IBTSHR(IPIND(I),16),65535)
+            ISHEL = IAND(ISHFT(IPIND(I),-16),65535)
             ISHELL(I) = ISHEL
          END DO
          ISTRA = ISTRA + NORBA

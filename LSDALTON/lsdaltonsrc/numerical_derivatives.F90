@@ -41,8 +41,10 @@ Type(moleculeinfo),pointer :: unperturbed_molecule
 character(len=1) :: V,L
 real(realk),allocatable :: WORK(:)
 integer :: LWORK,IERR
-logical :: doNumHess,doNumGrad,doNumGradHess
+logical :: doNumHess,doNumGrad,doNumGradHess,debugAnaGrad
 real(realk) :: Eerr
+
+debugAnaGrad = .FALSE.
 
 CALL mat_init(H1,nbast,nbast)
 CALL mat_init(S,nbast,nbast)
@@ -69,11 +71,24 @@ call mem_alloc(analytical_gradient_min,3,nAtoms)
 call mem_alloc(numerical_gradient_plus,ls%INPUT%MOLECULE%nAtoms,3)
 call mem_alloc(numerical_gradient_min,ls%INPUT%MOLECULE%nAtoms,3)
 call mem_alloc(numerical_gradient,ls%INPUT%MOLECULE%nAtoms,3)
- 
 
 if(doNumGrad) then
+   IF(debugAnaGrad) THEN
+       call get_gradient(E(1),Eerr,lupri,ls%INPUT%MOLECULE%nAtoms,S,F(1),D(1),ls,config,C,analytical_gradient)
+   ENDIF
    call get_numerical_gradient(h,E(1),lupri,luerr,nbast,ls,H1,S,F(1),D(1),C,config,unperturbed_molecule,numerical_gradient)
    call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,TRANSPOSE(numerical_gradient),ls%SETTING%MOLECULE(1)%p%nAtoms,'NUMGR')
+
+   IF(debugAnaGrad) THEN
+        call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,analytical_gradient,ls%INPUT%MOLECULE%nAtoms,'Ana molgrad')
+        call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,TRANSPOSE(numerical_gradient),ls%INPUT%MOLECULE%nAtoms,'Num molgrad')
+        DO i = 1,ls%INPUT%MOLECULE%nAtoms
+             analytical_gradient(:,i) = numerical_gradient(i,:) - analytical_gradient(:,i)
+        ENDDO
+        write (*,*) "Difference: (Ana - Num) molgrad"
+        write (lupri,*) "Difference: (Ana - Num) molgrad"
+        call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,analytical_gradient,ls%INPUT%MOLECULE%nAtoms,'Ana-Num molgrad')
+   ENDIF
 endif
 
 !Checking whether the molecule is linear to determine vibrational degrees of freedom.
@@ -157,6 +172,10 @@ real(realk) :: Eerr
 
 do i=1,ls%INPUT%MOLECULE%nAtoms
    do j=1, 3
+   write(lupri,*) 'atom: ', i, 'out of ', ls%INPUT%MOLECULE%nAtoms
+   write(lupri,*) 'coordinate: ', j, 'out of 3'
+   write(*,*) 'atom: ', i, 'out of ', ls%INPUT%MOLECULE%nAtoms
+   write(*,*) 'coordinate: ', j, 'out of 3'
       ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h 
       CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,ls%INPUT%MOLECULE%nAtoms,lupri,luerr)
       Emin=E(1)
@@ -385,7 +404,7 @@ enddo
 !write(lupri,*)
 
 
-!call output(numerical_hessian,1,3*ls%INPUT%MOLECULE%nAtoms,1,3*ls%INPUT%MOLECULE%nAtoms,&
+!call ls_output(numerical_hessian,1,3*ls%INPUT%MOLECULE%nAtoms,1,3*ls%INPUT%MOLECULE%nAtoms,&
 !     & 3*ls%INPUT%MOLECULE%nAtoms,3*ls%INPUT%MOLECULE%nAtoms,1,lupri)
 
 end subroutine get_hessian_from_numerical_gradient
@@ -438,7 +457,7 @@ do i = 1,nAtoms
 enddo
  
 write(lupri,*)
-call output(symmetric_hessian,1,3*nAtoms,1,3*nAtoms,3*nAtoms,3*nAtoms,1,lupri)
+call ls_output(symmetric_hessian,1,3*nAtoms,1,3*nAtoms,3*nAtoms,3*nAtoms,1,lupri)
 
 
 !Mass Weighting the Hessian
@@ -462,7 +481,7 @@ do i = 1,ls%INPUT%MOLECULE%nAtoms
    write(lupri,*) ls%INPUT%MOLECULE%ATOM(i)%NAME, '(x,y,z) '
 enddo
 write(lupri,*)
-call output(symmetric_hessian,1,3*nAtoms,1,3*nAtoms,3*nAtoms,3*nAtoms,1,lupri)
+call ls_output(symmetric_hessian,1,3*nAtoms,1,3*nAtoms,3*nAtoms,3*nAtoms,1,lupri)
 
 
 !Diagonalizing
@@ -499,7 +518,7 @@ write(lupri,*) '                                Normal Modes'
 write(lupri,*) '                               -------------'
 write(lupri,*)
 
-call output(symmetric_hessian,1,3*nAtoms,DegFree+1,3*nAtoms,&
+call ls_output(symmetric_hessian,1,3*nAtoms,DegFree+1,3*nAtoms,&
      & 3*nAtoms,3*nAtoms,1,lupri)
 write(lupri,*)
 write(lupri,*) 

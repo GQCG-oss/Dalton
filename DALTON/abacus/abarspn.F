@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck abarsp */
       SUBROUTINE ABARSP(CICLC,HFCLC,TRPCLC,OOTV,IOPSYM,EXCLC,
@@ -386,13 +385,13 @@ C
       END IF
 C
       IF (ABSLRS) THEN
-        ABS_DIRFCK=DIRFCK
+        LUABSVECS = -1
         CALL GPINQ('ABSVECS','EXIST',EX)
         IF (.NOT.EX) THEN
-          OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+          CALL GPOPEN(LUABSVECS,'ABSVECS','NEW',' ',' ',IDUMMY,.FALSE.)
           WRITE(LUABSVECS) 'EOFLABEL'
         ELSE
-          OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+          CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',' ',IDUMMY,.FALSE.)
         END IF
       ENDIF
 C
@@ -483,8 +482,8 @@ C
       CALL GPCLOSE(LURSP4,'DELETE')
       CALL GPCLOSE(LURSP5,'KEEP')
       CALL GPCLOSE(LURSP ,'KEEP')
-      IF (LUSOL.GT.0) CALL GPCLOSE(LUSOL,'KEEP')
-      IF (ABSLRS) CLOSE(LUABSVECS,status='keep')
+      IF (LUSOL.GT.0) CALL GPCLOSE(LUSOL    ,'KEEP')
+      IF (ABSLRS)     CALL GPCLOSE(LUABSVECS,'KEEP')
 C
       TIMRSP = SECOND() - TIMRSP
       IF (IPRRSP .GT. 0) WRITE (LUPRI,'(/A,F13.2,A)')
@@ -682,7 +681,7 @@ C
 C
       KFREE = 1
       LFREE = LWRK
-      IF (ABSLRS .AND. ABS_DIRFCK .AND. NCONF.LE.1) THEN
+      IF (ABSLRS .AND. NCONF.LE.1) THEN
         CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,
      &              LFREE)
         CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
@@ -705,7 +704,7 @@ C
           WRITE(LUPRI,*) 'Vectors equal to zero'
         ELSE
           CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &               ABS_FREQ_ALPHA,
+     &               ABS_FREQ_ALPHA,NFREQ_ALPHA,
      &               WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &               WRK(KRES),WRK(KFREE),LFREE)
         ENDIF   

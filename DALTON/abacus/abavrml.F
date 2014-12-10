@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,14 +21,11 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-960319-vebjornb: New module for visualization with VRML models.
-===========================================================================
-#endif
+C FILE: abacus/abavrml.F
+C
+C 960319-vebjornb: New module for visualization with VRML models.
+C
 C  /* Deck mkvrml */
       SUBROUTINE MKVRML(LAST, ATMARR, IEDIM, EVEC, EVC1, EVC2)
 C     
@@ -49,7 +46,7 @@ C
       DIMENSION ATMARR(MXCENT,8), EVEC(IEDIM,IEDIM)
       DIMENSION EVC1(MXCOOR), EVC2(MXCOOR)
       CHARACTER*12 FILENM
-#include "ibtfun.h"
+
 C
 C     Initialize the ATMARR array. The first index runs over all
 C     atoms, the second marks the following properties:
@@ -188,7 +185,7 @@ C
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
       DIMENSION ATMARR(MXCENT,8)
       CHARACTER*12 FILENM
-#include "ibtfun.h"
+
 C
 C     This factor is a humble attempt to give the vectors a nice length
 C
@@ -306,7 +303,7 @@ C
       DIMENSION VEC(3)
       CHARACTER*12 FILENM
       LOGICAL TURN
-#include "ibtfun.h"
+
 C
 C     We copy the contents of ATM to ATMARR
 C
@@ -460,7 +457,7 @@ C
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), RGBCOL(3)      
       DIMENSION COLOUR(60)
-#include "ibtfun.h"
+
 C
 C     Array with colours for the first 20 elements
 C
@@ -531,7 +528,7 @@ C
 #include "symmet.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), VEC3(3)
-#include "ibtfun.h"
+
 C
       RADIUS = 0.06D0
       IF (VIBRA) RADIUS = 0.015D0
@@ -626,7 +623,7 @@ C
 #include "priunit.h"
 #include "symmet.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCENT,8)
-#include "ibtfun.h"
+
       CALL DZERO(TMPMAT,8*MXCENT)
 C
 C     We have to find the highest absolute value of any
@@ -689,7 +686,7 @@ C
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION EVEC1(MXCOOR), EVEC2(MXCOOR)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
-#include "ibtfun.h"
+
 C
       CALL DZERO(EVEC2,MXCOOR)
       CALL DAXPY(NCR,1.0D0,EVEC1,1,EVEC2,1)
@@ -734,14 +731,14 @@ C     *****************************************************************
 C     NOTE!!!!! This test is probably _NOT_ correct!
 C     *****************************************************************
 C
-            IF (IBTAND(ISYMOP,IREP) .GT. 0) FAC = -FAC
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,IREP) .GT. 0) FAC = -FAC
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                ATMARR(IATOM,6) =
-     &      FAC*PT(IBTAND(ISYMAX(1,1),ISYMOP))*EVEC2((ICENT-1)*3+1)
+     &      FAC*PT(IAND(ISYMAX(1,1),ISYMOP))*EVEC2((ICENT-1)*3+1)
                ATMARR(IATOM,7) =
-     &      FAC*PT(IBTAND(ISYMAX(2,1),ISYMOP))*EVEC2((ICENT-1)*3+2)
+     &      FAC*PT(IAND(ISYMAX(2,1),ISYMOP))*EVEC2((ICENT-1)*3+2)
                ATMARR(IATOM,8) =
-     &      FAC*PT(IBTAND(ISYMAX(3,1),ISYMOP))*EVEC2((ICENT-1)*3+3)
+     &      FAC*PT(IAND(ISYMAX(3,1),ISYMOP))*EVEC2((ICENT-1)*3+3)
                IATOM = IATOM + 1
             END IF
  45      CONTINUE
@@ -1003,7 +1000,7 @@ C
 #include "symmet.h"
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR
-#include "ibtfun.h"
+
 C
 C     We initialize the ATMARR array. The first index runs over all
 C     atoms, the second marks the following properties:
@@ -1021,15 +1018,15 @@ C
       DO 10 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                ATMARR(IATOM,1) = IZATOM(ICENT)
                ATMARR(IATOM,2) =
-     &              FAC*PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+     &              FAC*PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                ATMARR(IATOM,3) =
-     &              FAC*PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+     &              FAC*PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                ATMARR(IATOM,4) =
-     &              FAC*PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+     &              FAC*PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                RAD = RADIUS( IZATOM(ICENT) )
                IF (RAD .LT. 0.0D0) RAD = 1.0D0
                ATMARR(IATOM,5) = RAD
