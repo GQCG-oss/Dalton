@@ -22,6 +22,6 @@ f.add(from_string = 'Dipole moment',
       num_lines = 5,
       mask = [1])
 
-test.run(['dft_b3lyp_cart.dal'], ['H2O_intgrl.mol'], {'out': f})
+test.run(['dft_b3lyp_cart.dal'], ['H2O_intgrl.mol'], f={'out': f})
 
 sys.exit(test.return_code)

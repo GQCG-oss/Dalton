@@ -69,7 +69,7 @@ f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
       ignore_sign = True,
       rel_tolerance = 1.0e-3)
 
-test.run(['prop_exci_aosoppa.dal'], ['H2O_intgrl_sym.mol'], {'out': f},
+test.run(['prop_exci_aosoppa.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.','ERI does not work with Cartesian basis.'])
 
 sys.exit(test.return_code)

@@ -12,8 +12,8 @@ contains
 
    subroutine get_mep(nr_points, nr_points_irr, centers, mep, density, work, lwork)
 
-   integer, intent(in)  :: nr_points
-   integer, intent(in)  :: nr_points_irr
+   integer(4), intent(in)  :: nr_points
+   integer(4), intent(in)  :: nr_points_irr
    real(8), intent(in)  :: centers(3, nr_points)
    real(8), intent(out) :: mep(nr_points)
    real(8)              :: density(*)
@@ -38,8 +38,8 @@ contains
 #include "symmet.h"      
 #include "nuclei.h"
 
-   integer, intent(in)  :: nr_points                           
-   integer, intent(in)  :: nr_points_irr                   
+   integer(4), intent(in)  :: nr_points                           
+   integer(4), intent(in)  :: nr_points_irr                   
    real(8), intent(in)  :: centers(3, nr_points)               
    real(8), intent(out) :: mep(nr_points)
 
@@ -142,8 +142,8 @@ contains
    !                           
    use pcmmod_cfg                                     
    
-   integer, intent(in)  :: nr_points 
-   integer, intent(in)  :: nr_points_irr                   
+   integer(4), intent(in)  :: nr_points 
+   integer(4), intent(in)  :: nr_points_irr                   
    real(8), intent(in)  :: centers(3, nr_points)
    real(8), intent(out) :: vector(nr_points) 
    real(8)              :: matrix(*)                           
@@ -203,7 +203,8 @@ contains
 #include "infpar.h"
 
    ! Passed variables
-   integer(4)   :: nr_points, nr_points_irr, nosim, ksymp, lwork
+   integer(4)   :: nr_points, nr_points_irr
+   integer      :: nosim, ksymp, lwork
    real(8)      :: centers(3, nr_points), expval(nr_points, nosim)
    real(8)      :: denmat(*)
    real(8)      :: work(*)
@@ -345,8 +346,8 @@ contains
    ! Parameters                   
    real(8), parameter :: d0 = 0.0d0
    ! Passed variables
-   integer :: nr_points
-   integer :: nr_points_irr
+   integer(4) :: nr_points
+   integer(4) :: nr_points_irr
    real(8) :: centers(3, nr_points)
    integer :: nosim
    real(8) :: vtex(nr_points, nosim) 
@@ -527,7 +528,7 @@ contains
    ! Parameters
    real(8), parameter :: pi = acos(-1.0d0)
 
-   integer, intent(in)  :: nr_points                                    
+   integer(4), intent(in)  :: nr_points                                    
    real(8), intent(in)  :: centers(3, nr_points)                          
    real(8), intent(out) :: vector(nr_points)                         
    real(8)              :: matrix(nbast, nbast)!matrix(*)                           
@@ -658,7 +659,8 @@ contains
    ! Parameters
    real(8), parameter :: pi = acos(-1.0d0) 
    ! Passed variables
-   integer, intent(in) :: nr_points, iprint, lwork
+   integer(4), intent(in) :: nr_points
+   integer, intent(in) :: iprint, lwork
    real(8) :: points(3, nr_points), ader(nr_points, kckta, kcktb)
    real(8) :: work(*)
    real(8) :: tolog, tols, factor=1.0
@@ -761,7 +763,8 @@ contains
    ! Parameters
    real(8), parameter :: pi = acos(-1.0d0) 
    ! Passed variables
-   integer :: jmax, nr_points
+   integer :: jmax
+   integer(4) :: nr_points
    real(8), intent(out) :: ahgtf(nr_points, 0:jmax, 0:jmax, 0:jmax) 
    real(8), intent(in)  :: cp(3, nr_points)
    real(8) :: r(nr_points, 0:jmax, 0:jmax, 0:jmax, 0:jmax)
@@ -832,7 +835,8 @@ contains
 #include "lmns.h"
 
    ! Passed variables
-   integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, nr_points 
+   integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm
+   integer(4) :: nr_points 
    real(8) :: ahgtf(nr_points, 0:jmax, 0:jmax, 0:jmax)
    real(8) :: ader(nr_points, kckta, kcktb)
    real(8) :: odc(0:jmaxa, 0:jmaxb, 0:jmaxt, 0:jmaxd, 0:jmaxm, 3)

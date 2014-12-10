@@ -469,7 +469,8 @@ C
 #include "aosotr.h"
 #include "infpar.h"
 #include "huckel.h"
-#include "optinf.h" ! ITRNMR and IPRE
+! ITRNMR and IPRE
+#include "optinf.h"
 C
       CHARACTER*(len_MLINE) TMP_MLINE
 C
@@ -2595,7 +2596,7 @@ C
          CALL PRICAR(WORK,LWORK)
 
          IF (PEQM) THEN
-#if defined(BUILD_PELIB)
+#if defined (BUILD_PELIB)
             CALL PE_IFC_INIT()
 #endif
          END IF

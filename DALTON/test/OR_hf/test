@@ -41,6 +41,6 @@ f.add(string = 'Optical rotation (',
 f.add(string = 'Center of mass gauge origin',
       rel_tolerance = 1.0e-5)
 
-test.run(['OR_hf.dal'], ['CH3CHFOH_cc-pVDZ.mol'], {'out': f})
+test.run(['OR_hf.dal'], ['CH3CHFOH_cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

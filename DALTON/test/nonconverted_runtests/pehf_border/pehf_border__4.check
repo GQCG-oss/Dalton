@@ -28,12 +28,12 @@ ERROR[1]="REDISTRIBUTION OF PARAMETERS NOT CORRECT"
 #
 # redistribution of charges
 #
-CRIT1=`$GREP "C * 2 * ( |0)\.3206" $log | wc -l`
-CRIT2=`$GREP "C * 4 * (\-|\-0)\.0699" $log | wc -l`
-CRIT3=`$GREP "H * 13 * ( |0)\.1850" $log | wc -l`
-CRIT4=`$GREP "N * 25 * (\-|\-0)\.2349" $log | wc -l`
-CRIT5=`$GREP "C * 27 * (\-|\-0)\.2329" $log | wc -l`
-CRIT6=`$GREP "H * 42 * ( |0)\.2036" $log | wc -l`
+CRIT1=`$GREP "C * 2 * 0*\.3206" $log | wc -l`
+CRIT2=`$GREP "C * 4 * \-0*\.0699" $log | wc -l`
+CRIT3=`$GREP "H * 13 * 0*\.1850" $log | wc -l`
+CRIT4=`$GREP "N * 25 * \-0*\.2349" $log | wc -l`
+CRIT5=`$GREP "C * 27 * \-0*\.2329" $log | wc -l`
+CRIT6=`$GREP "H * 42 * 0*\.2036" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[2]=6
 ERROR[2]="REDISTRIBUTION OF CHARGES NOT CORRECT"
@@ -41,17 +41,17 @@ ERROR[2]="REDISTRIBUTION OF CHARGES NOT CORRECT"
 #
 # redistribution of ORDER 1
 #
-CRIT1=`$GREP "C * 2 * (\-|\-0)\.2123 * (\-|\-0)\.2682 * ( |0)\.0297" $log | wc -l`
-CRIT2=`$GREP "C * 4 * ( |0)\.1369 * (\-|\-0)\.1605 * ( |0)\.1134" $log | wc -l`
-CRIT3=`$GREP "H * 13 * ( |0)\.2988 * (\-|\-0)\.1728 * ( |0)\.3768" $log | wc -l`
-CRIT4=`$GREP "N * 25 * ( |0)\.0541 * ( |0)\.0703 * ( |0)\.0140" $log | wc -l`
-CRIT5=`$GREP "C * 27 * ( |0)\.2476 * ( |0)\.2260 * (\-|\-0)\.1596" $log | wc -l`
-CRIT6=`$GREP "H * 42 * ( |0)\.2383 * (\-|\-0)\.0044 * ( |0)\.3294" $log | wc -l`
+CRIT1=`$GREP "C * 2 * \-0*\.2123 * \-0*\.2682 * 0*\.0297" $log | wc -l`
+CRIT2=`$GREP "C * 4 * 0*\.1369 * \-0*\.1605 * 0*\.1134" $log | wc -l`
+CRIT3=`$GREP "H * 13 * 0*\.2988 * \-0*\.1728 * 0*\.3768" $log | wc -l`
+CRIT4=`$GREP "N * 25 * 0*\.0541 * 0*\.0703 * 0*\.0140" $log | wc -l`
+CRIT5=`$GREP "C * 27 * 0*\.2476 * 0*\.2260 * \-0*\.1596" $log | wc -l`
+CRIT6=`$GREP "H * 42 * 0*\.2383 * \-0*\.0044 * 0*\.3294" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[3]=6
 ERROR[3]="REDISTRIBUTION OF DIPOLES NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then

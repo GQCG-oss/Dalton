@@ -42,7 +42,7 @@ f.add(from_string = 'Polarizability tensor for frequency',
       num_lines = 10,
       abs_tolerance = 1.0e-5)
 
-test.run(['dftmm_3.dal'], ['CH2O_STO-3G_2H2O_MM.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['dftmm_3.dal'], ['CH2O_STO-3G_2H2O_MM.mol'], f={'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)
 

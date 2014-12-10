@@ -364,6 +364,16 @@ contains
     call target_indices(fragment)
 
 
+    ! Reduced fragments 
+    ! (just allocate fragmentAOS type here but we of course do not know the reduced fragments
+    !  and this stage so the fragment%fragmentsAOS%occAOSidx and fragment%fragmentsAOS%unoccAOSidx
+    !  should be set later).
+    call mem_alloc(fragment%REDfrags,DECinfo%nFRAGSred)
+    do i=1,DECinfo%nfragsred
+       call zero_fragmentAOS_type(fragment%REDfrags(i))
+    end do
+
+
     ! Fragment-adapted orbital info
     !******************************
     fragment%RejectThr=0.0_realk
@@ -432,6 +442,7 @@ contains
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Occ AOS     : ',Fragment%noccAOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Unocc AOS   : ',Fragment%nunoccAOS
        write(DECinfo%output,'(a,i6)')   ' FRAGINIT: Basis       : ',Fragment%nbasis
+
        write(DECinfo%output,'(a,2f10.3)')   ' FRAGINIT: Dist AOS/AE : ',&
        &Fragment%DmaxAOS*bohr_to_angstrom,Fragment%DmaxAE*bohr_to_angstrom
        write(DECinfo%output,*)
@@ -440,6 +451,76 @@ contains
     call LSTIMER('FRAGMENT INIT',tcpu,twall,DECinfo%output)
 
   end subroutine atomic_fragment_init_orbital_specific
+
+
+  !> \brief Initialize atomic fragment based on a integer list of specific AOS orbitals,
+  !> rather than a logical list.
+  !> (wrapper for atomic_fragment_init_orbital_specific).
+  !> \author Kasper Kristensen
+  subroutine atomic_fragment_init_integer_list(MyAtom,nunocc, nocc, nunoccAOS,noccAOS,&
+       & unocc_integer_list,occ_integer_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
+       & fragment,DoBasis,pairfrag)
+
+    implicit none
+    !> Number of atom to build a fragment on
+    integer, intent(in) :: MyAtom
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of occupied orbitals in full molecule
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer, intent(in) :: nunocc
+    !> Number of occupied/unoccupied orbitals in fragment AOS
+    integer,intent(in) :: noccAOS,nunoccAOS
+    !> Integer vector telling which unoccupied AOS orbitals are included in fragment
+    integer, dimension(nunoccAOS), intent(in) :: Unocc_integer_list
+    !> Logical vector telling which occupied AOS orbitals are included in fragment
+    integer, dimension(noccAOS), intent(in) :: Occ_integer_list
+    !> Information about DEC occupied orbitals
+    type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
+    !> Information about DEC unoccupied orbitals
+    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Fragment to construct
+    type(decfrag), intent(inout) :: fragment
+    !> Make fragment basis (MO coeff and Fock matrix for fragment)?
+    logical, intent(in) :: DoBasis
+    !> Is it a pair fragment?
+    logical,intent(in) :: pairfrag
+    logical :: occ_logical_list(nocc),unocc_logical_list(nunocc)
+    integer :: i
+
+    ! Sanity check: Meaningful indices
+    do i=1,noccAOS
+       if(occ_integer_list(i) > nocc .or. occ_integer_list(i) < 1) then
+          print *, 'occ_integer_list', occ_integer_list
+          call lsquit('atomic_fragment_init_integer_list: Bad index in occ list ',-1)
+       end if
+    end do
+    do i=1,nunoccAOS
+       if(unocc_integer_list(i) > nunocc .or. unocc_integer_list(i) < 1) then
+          print *, 'unocc_integer_list', unocc_integer_list
+          call lsquit('atomic_fragment_init_integer_list: Bad index in unocc list ',-1)
+       end if
+    end do
+
+    ! Make logical lists with dimensions of total number of occ/unocc orbitals corresponding
+    ! to input integer lists
+    occ_logical_list=.false.
+    unocc_logical_list=.false.
+    do i=1,noccAOS
+       occ_logical_list(occ_integer_list(i)) = .true.
+    end do
+    do i=1,nunoccAOS
+       unocc_logical_list(unocc_integer_list(i)) = .true.
+    end do
+
+    ! Initialize fragment
+    call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_logical_list, &
+         & occ_logical_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,pairfrag)
+
+  end subroutine atomic_fragment_init_integer_list
 
   
   !> \brief Initialize atomic fragment based on a list of specific AOS orbitals for F12-related matrices
@@ -1006,8 +1087,6 @@ contains
    !          of occ/virt orbitals. The tuning of the binary search is defined by
    !          nred_occ/nred_vir which correspond to the minimum gap in number of orbital
    !          that is allowed between the last two steps of the binary search.
-   !          A step is accepted if the energy difference between the expanded and 
-   !          the reduced fragment is smaller than dE_red_occ/dE_red_vir.
    !
    !          Scheme 2: Same as scheme 1 but instead of taking orbitals based on their 
    !          contribution to the fragment energy, we choose them based on their 
@@ -1021,8 +1100,7 @@ contains
    ! Author:  Pablo Baudin
    ! Date:    July 2014
    subroutine define_frag_reduction(no_full,nv_full,natoms,MyAtom,MyMolecule,MyFragment, &
-            & track_occ_priority_list,track_vir_priority_list,dE_red_occ,dE_red_vir, &
-            & nred_occ,nred_vir)
+            & track_occ_priority_list,track_vir_priority_list,nred_occ,nred_vir)
 
       implicit none
    
@@ -1041,8 +1119,6 @@ contains
       !> Return priority list of occ/vir orbitals
       integer, intent(out) :: track_occ_priority_list(no_full)
       integer, intent(out) :: track_vir_priority_list(nv_full)
-      !> energy error acceptance in reduction steps:
-      real(realk), intent(out) :: dE_red_occ, dE_red_vir
       !> minimum gap in number of orbital allowed between the 
       !  last two steps of the binary search.
       integer, intent(out) :: nred_occ, nred_vir
@@ -1054,14 +1130,6 @@ contains
       nred_occ = max( ceiling(5.0E0_realk*MyFragment%noccAOS/100), 1)
       nred_vir = max( ceiling(5.0E0_realk*MyFragment%nunoccAOS/100), 1)
 
-      ! By default dE_red_xxx is set to X*FOT where X is <= FOT 
-      if(.not.DECinfo%OnlyVirtPart) then
-         dE_red_occ = DECinfo%frag_red_occ_thr*DECinfo%FOT
-         dE_red_vir = DECinfo%frag_red_virt_thr*DECinfo%FOT
-      else
-         dE_red_occ = DECinfo%frag_red_virt_thr*DECinfo%FOT
-         dE_red_vir = DECinfo%frag_red_occ_thr*DECinfo%FOT
-      end if
 
       ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:
       ! ======================================
@@ -1109,8 +1177,8 @@ contains
          call lsquit('ERROR FOP: Occupied Reduction scheme not defined',DECinfo%output)
       end if
 
-      ! 2) DEFINE REDUCTION OF OCCUPIED SPACE:
-      ! ======================================
+      ! 2) DEFINE REDUCTION OF VIRTUAL SPACE:
+      ! =====================================
       ! SCHEME 1:
       if (DECinfo%Frag_RedVir_Scheme == 1) then
          ! Get contribution from local virtual orbitals:
@@ -1152,12 +1220,6 @@ contains
          call lsquit('ERROR FOP: Virtual Reduction scheme not defined',DECinfo%output)
       end if
 
-
-      ! Sanity check: check that dE_red is never > FOT:
-      if ((dE_red_occ>DECinfo%FOT).or.(dE_red_vir>DECinfo%FOT)) then
-         call lsquit('ERROR FOP Reduction: dE_red_*** need to be set smaller &
-            & than 1',DECinfo%output)
-      end if
 
    end subroutine define_frag_reduction
 
@@ -1940,12 +2002,11 @@ contains
     ! as this will destroy the overall MPI framework.
     if(infpar%mynum/=infpar%master) then
        call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
-            fragment%natoms,DECinfo%output,0)
+            & fragment%natoms,fragment%basis_idx,fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
     endif
 #else
     call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
-         fragment%natoms,DECinfo%output,0)
-
+         & fragment%natoms,fragment%basis_idx,fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
 #endif
 
     !Build F12 Cabs and Ri for a fragment
@@ -2203,7 +2264,7 @@ contains
     logical, dimension(nocc) :: Occ_list
     logical :: pairfrag,estimated_frags
     logical,pointer :: EOSatoms(:)
-    integer :: i,j,idx
+    integer :: i,j,idx,n,atom1,atom2
     real(realk) :: pairdist
 
     ! Note: When we do this, the atomic fragment has to use MO coeff and dimensions for LOCAL orbitals
@@ -2275,6 +2336,10 @@ contains
        end if
     end do
 
+    ! Atoms in pair
+    atom1 = fragment1%EOSatoms(1)
+    atom2 = fragment2%EOSatoms(1)
+
 
     ! Occupied AOS and unoccupied AOS for pair: Union of input fragments
     ! ******************************************************************
@@ -2282,21 +2347,49 @@ contains
     occ_list=.false.
     unocc_list=.false.
 
-    ! Occupied
-    do i=1,fragment1%noccAOS
-       occ_list(fragment1%occAOSidx(i))=.true.
-    end do
-    do i=1,fragment2%noccAOS
-       occ_list(fragment2%occAOSidx(i))=.true.
-    end do
+    ReducedPairs: if(MyMolecule%PairFOTlevel(atom1,atom2)>0) then  
+       ! generate pair from union of fragments with increased FOT
 
-    ! Unoccupied
-    do i=1,fragment1%nunoccAOS
-       unocc_list(fragment1%unoccAOSidx(i))=.true.
-    end do
-    do i=1,fragment2%nunoccAOS
-       unocc_list(fragment2%unoccAOSidx(i))=.true.
-    end do
+       ! PairFOT level
+       n = MyMolecule%PairFOTlevel(atom1,atom2)
+
+       ! Occupied AOS union from reduced fragments at level n
+       do i=1,fragment1%REDfrags(n)%noccAOS
+          occ_list(fragment1%REDfrags(n)%occAOSidx(i))=.true.
+       end do
+       do i=1,fragment2%REDfrags(n)%noccAOS
+          occ_list(fragment2%REDfrags(n)%occAOSidx(i))=.true.
+       end do
+
+       ! Unoccupied union from reduced fragments at level n
+       do i=1,fragment1%REDfrags(n)%nunoccAOS
+          unocc_list(fragment1%REDfrags(n)%unoccAOSidx(i))=.true.
+       end do
+       do i=1,fragment2%REDfrags(n)%nunoccAOS
+          unocc_list(fragment2%REDfrags(n)%unoccAOSidx(i))=.true.
+       end do
+
+    else
+       ! Pairs using union of FOT-adapted fragments
+
+
+       ! Occupied
+       do i=1,fragment1%noccAOS
+          occ_list(fragment1%occAOSidx(i))=.true.
+       end do
+       do i=1,fragment2%noccAOS
+          occ_list(fragment2%occAOSidx(i))=.true.
+       end do
+
+       ! Unoccupied
+       do i=1,fragment1%nunoccAOS
+          unocc_list(fragment1%unoccAOSidx(i))=.true.
+       end do
+       do i=1,fragment2%nunoccAOS
+          unocc_list(fragment2%unoccAOSidx(i))=.true.
+       end do
+
+    end if ReducedPairs
 
 
     ! Construct pair fragment as union of input fragments
@@ -2309,7 +2402,6 @@ contains
 
     ! Set remaining information special for pair
     ! ******************************************
-    PairFragment%EOSatoms(1) = fragment1%EOSatoms(1) ! atom 1 in pair
     ! Distance between original fragments
     PairFragment%pairdist =  pairdist
     call mem_dealloc(EOSatoms)
@@ -2918,8 +3010,9 @@ contains
     type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Fragment info
     type(decfrag), intent(inout) :: fragment
-    integer :: i,j,idx,cntr,MyAtom
-    logical,pointer :: which_atoms(:)
+    integer :: i,j,idx,cntr,MyAtom,nu,atom
+    integer,pointer :: AOtoAtom(:)
+    logical,pointer :: which_aos(:),which_atoms(:)
 
     if(.not.fragment%pairfrag) MyAtom = fragment%EOSatoms(1)
 
@@ -2939,26 +3032,48 @@ contains
     end do
     ! --
 
+    call mem_alloc(AOtoAtom,MyMolecule%nbasis)
+    AOtoAtom = 0
+    do atom=1,MyMolecule%natoms
+       do nu=MyMolecule%atom_start(atom),MyMolecule%atom_end(atom)
+          AOtoAtom(nu) = atom
+       enddo
+    enddo
 
     ! Which atoms are included in atomic fragment extent?
     call mem_alloc(which_atoms,MyMolecule%natoms)
     which_atoms=.false.
+    call mem_alloc(which_aos,MyMolecule%nbasis)
+    which_aos=.false.
 
     do i=1,fragment%nunoccAOS  ! loop over unocc orbitals
        ! Loop over atoms used to span MO "i"
-       do j=1,fragment%unoccAOSorb(i)%numberofatoms
-          idx = fragment%unoccAOSorb(i)%atoms(j) ! full space index for atom j in orbital extent
-          which_atoms(idx)=.true. ! atom "idx" included in orbital extent for orbital "i"
+       do j=1,fragment%unoccAOSorb(i)%numberofaos
+          idx = fragment%unoccAOSorb(i)%aos(j) ! full space index for atom j in orbital extent
+          which_aos(idx)=.true. ! basis "idx" included in orbital extent for orbital "i"
+          which_atoms(AOtoAtom(idx))=.true. ! atom included in orbital extent for orbital "i"
        end do
     end do
 
     ! Same for occ orbitals
     do i=1,fragment%noccAOS
-       do j=1,fragment%occAOSorb(i)%numberofatoms
-          idx = fragment%occAOSorb(i)%atoms(j)
-          which_atoms(idx)=.true.
+       do j=1,fragment%occAOSorb(i)%numberofaos
+          idx = fragment%occAOSorb(i)%aos(j)
+          which_aos(idx)=.true.
+          which_atoms(AOtoAtom(idx))=.true. 
        end do
     end do
+    call mem_dealloc(AOtoAtom)
+
+    fragment%nbasis = COUNT(which_aos)
+    call mem_alloc(fragment%basis_idx,fragment%nbasis)
+    idx  = 0
+    do i=1,MyMolecule%nbasis
+       if(which_aos(i)) then
+          idx=idx+1
+          fragment%basis_idx(idx)=i
+       endif
+    enddo
 
     ! assign atomic extent
     fragment%RmaxAE = 0.0E0_realk
@@ -3011,31 +3126,7 @@ contains
       if( cntr > 1 ) fragment%DsdvAE = ( fragment%DsdvAE / float( cntr - 1 ) )**(0.5E0_realk)
     endif
     call mem_dealloc(which_atoms)
-
-    ! count number of basis functions on selected atoms
-    fragment%nbasis = 0
-    do i=1,fragment%natoms
-       fragment%nbasis = fragment%nbasis &
-            & + MyMolecule%atom_size(fragment%atoms_idx(i))
-    end do
-
-    ! Set basis function indices
-    call mem_alloc(fragment%basis_idx,fragment%nbasis)
-    idx=0
-    do i=1,fragment%natoms
-       do j=1,MyMolecule%atom_size(fragment%atoms_idx(i))
-          idx=idx+1
-          ! Basis function index
-          fragment%basis_idx(idx) = MyMolecule%atom_start(fragment%atoms_idx(i)) + j-1
-       end do
-    end do
-
-    ! Sanity check
-    if(idx/=fragment%nbasis) then
-       print *, 'Counter,nbasis: ', idx,fragment%nbasis
-       call lsquit('init_atomic_fragment_extent: Counter does not equal number &
-            & of basis functions!',-1)
-    end if
+    call mem_dealloc(which_aos)
 
     IF(decinfo%F12)THEN
        ! count number of basis functions on selected atoms
@@ -3072,7 +3163,7 @@ contains
     type(array2) :: S,tmp1,tmp2
     real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:)
     integer :: i,j,idx,atom_k,nocc,nunocc,nbasis,natoms,k,bas_offset,offset, &
-         full_orb_idx
+         full_orb_idx,bas_k
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
 
@@ -3096,9 +3187,8 @@ contains
 
     ! Overlap matrix for fragment
     call mem_alloc(fragment%S,fragment%nbasis,fragment%nbasis)
-    call adjust_square_matrix(MyMolecule%overlap,fragment%S,fragment%atoms_idx, &
-         & MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end, &
-         & nbasis,natoms,fragment%nbasis,Fragment%natoms)
+    call adjust_square_matrix2(MyMolecule%overlap,fragment%S,fragment%basis_idx, &
+         & nbasis,fragment%nbasis)
 
     FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
 
@@ -3125,11 +3215,9 @@ contains
           ! for each orbital truncate half transformed overlap orbital
           correct_vector_moS = 0.0E0_realk
           bas_offset = 1
-          do k=1,Fragment%natoms
-             atom_k = fragment%atoms_idx(k)
-             correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
-                  S%val(full_orb_idx,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
-             bas_offset = bas_offset + MyMolecule%atom_size(atom_k)
+          do k=1,Fragment%nbasis
+             bas_k = fragment%basis_idx(k)
+             correct_vector_moS(k) = S%val(full_orb_idx,bas_k)
           end do
 
           ! fit orbital
@@ -3149,11 +3237,9 @@ contains
           ! for each orbital truncate half transformed overlap orbital
           correct_vector_moS = 0.0E0_realk
           bas_offset = 1
-          do k=1,Fragment%natoms
-             atom_k = fragment%atoms_idx(k)
-             correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
-                  S%val(full_orb_idx,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
-             bas_offset = bas_offset + MyMolecule%atom_size(atom_k)
+          do k=1,Fragment%nbasis
+             bas_k = fragment%basis_idx(k)
+             correct_vector_moS(k) = S%val(full_orb_idx,bas_k)
           end do
 
           ! fit orbital
@@ -3184,11 +3270,9 @@ contains
 
              correct_vector_moS = 0.0E0_realk
              bas_offset = 1
-             do k=1,Fragment%natoms
-                atom_k = fragment%atoms_idx(k)
-                correct_vector_moS(bas_offset:bas_offset + MyMolecule%atom_size(atom_k) - 1) = &
-                     S%val(full_orb_idx,MyMolecule%atom_start(atom_k):MyMolecule%atom_end(atom_k))
-                bas_offset = bas_offset + MyMolecule%atom_size(atom_k)
+             do k=1,Fragment%nbasis
+                bas_k = fragment%basis_idx(k)
+                correct_vector_moS(k) = S%val(full_orb_idx,bas_k)
              end do
 
              ! fit orbital
@@ -3214,14 +3298,12 @@ contains
        end if
 
        ! Fragment Co
-       call adjust_basis_matrix(MyMolecule%Co,fragment%CoLOC,fragment%occAOSidx, &
-            fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nocc,natoms, &
-            fragment%nbasis,fragment%noccLOC,Fragment%natoms)
+       call adjust_basis_matrix2(MyMolecule%Co,fragment%CoLOC,fragment%occAOSidx, &
+            nbasis,nocc,fragment%nbasis,fragment%noccLOC,Fragment%basis_idx)
 
        ! Fragment Cv
-       call adjust_basis_matrix(MyMolecule%Cv,fragment%CvLOC,fragment%unoccAOSidx, &
-            fragment%atoms_idx,MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end,nbasis,nunocc,natoms, &
-            fragment%nbasis,fragment%nunoccLOC,Fragment%natoms)
+       call adjust_basis_matrix2(MyMolecule%Cv,fragment%CvLOC,fragment%unoccAOSidx, &
+            nbasis,nunocc,fragment%nbasis,fragment%nunoccLOC,Fragment%basis_idx)
 
     end if FitOrbitalsForFragment
 
@@ -3239,9 +3321,8 @@ contains
     ! adjust fock matrix in ao basis
     call mem_alloc(fragment%fock,fragment%nbasis,fragment%nbasis)
     fragment%fock=0.0E0_realk
-    call adjust_square_matrix(MyMolecule%fock,fragment%fock,fragment%atoms_idx,MyMolecule%atom_size, &
-         MyMolecule%atom_start,MyMolecule%atom_end,MyMolecule%nbasis,MyMolecule%natoms, &
-         fragment%nbasis,Fragment%natoms)
+    call adjust_square_matrix2(MyMolecule%fock,fragment%fock,fragment%basis_idx,&
+         & MyMolecule%nbasis,fragment%nbasis)
 
 
     ! adjust fock matrices in mo basis
@@ -3337,6 +3418,7 @@ contains
     character(len=40) :: FileName
     integer :: funit,idx,i
     logical :: file_exist
+    logical,save :: first_entry=.true.
 
     ! Sanity check: Job has been done for fragment in question
     do i=1,jobs%njobs
@@ -3372,19 +3454,22 @@ contains
     FileName='atomicfragments.info'
 
     inquire(file=FileName,exist=file_exist)
-    if(file_exist) then ! read file and update it
 
+    ! Create new file if this is the first entry AND we do not use restart
+    ! Also - always open new file if file does not already exist
+    if(  ( first_entry .and. (.not. DECinfo%DECrestart) ) &
+         & .or. (.not. file_exist)   ) then
+       open(funit,FILE=FileName,STATUS='REPLACE',FORM='UNFORMATTED')
+    else
        ! Need to open without lsopen to be able to append to end of file
        open(funit,FILE=FileName,STATUS='OLD',FORM='UNFORMATTED',POSITION='APPEND')
-
-    else ! create new file
-       open(funit,FILE=FileName,STATUS='NEW',FORM='UNFORMATTED')
     end if
 
     ! Write fragment data to file
     call fragment_write_data(funit,fragment)
     close(funit,STATUS='KEEP')
 
+    first_entry=.false.
 
   end subroutine add_fragment_to_file
 
@@ -3443,6 +3528,16 @@ contains
        write(wunit) fragment%CDocceival
        write(wunit) fragment%CDunocceival
     end if
+
+    ! Reduced fragments
+    do i=1,DECinfo%nFRAGSred
+       write(wunit) int(fragment%REDfrags(i)%noccAOS,kind=8)
+       write(wunit) int(fragment%REDfrags(i)%occAOSidx,kind=8)
+       write(wunit) int(fragment%REDfrags(i)%nunoccAOS,kind=8)
+       write(wunit) int(fragment%REDfrags(i)%unoccAOSidx,kind=8)
+       write(wunit) fragment%REDfrags(i)%FOT
+    end do
+
 
   end subroutine fragment_write_data
 
@@ -3678,6 +3773,20 @@ contains
     call mem_dealloc(virt_list)
     call mem_dealloc(occAOSidx)
     call mem_dealloc(virtAOSidx)
+
+
+
+    ! Reduced fragments
+    do i=1,DECinfo%nFRAGSred
+       call read_64bit_to_int(runit,fragment%REDfrags(i)%noccAOS)
+       call mem_alloc(fragment%REDfrags(i)%occAOSidx,fragment%REDfrags(i)%noccAOS)
+       call read_64bit_to_int(runit,fragment%REDfrags(i)%noccAOS,fragment%REDfrags(i)%occAOSidx)
+       call read_64bit_to_int(runit,fragment%REDfrags(i)%nunoccAOS)
+       call mem_alloc(fragment%REDfrags(i)%unoccAOSidx,fragment%REDfrags(i)%nunoccAOS)
+       call read_64bit_to_int(runit,fragment%REDfrags(i)%nunoccAOS,fragment%REDfrags(i)%unoccAOSidx)
+       read(runit) fragment%REDfrags(i)%FOT
+    end do
+
 
   end subroutine fragment_read_data
 
@@ -4796,11 +4905,12 @@ contains
     !> Job list of fragments listed according to size
     type(joblist),intent(inout) :: jobs
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags, minocc,minunocc,minbasis
-    integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
+    integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs,nred,m,k
     real(realk) :: avocc,avunocc,tcpu,twall,avbasis
     real(realk) :: avRmaxAOS, avRmaxAE, maxRmaxAOS, maxRmaxAE, minRmaxAOS, minRmaxAE
     real(realk) :: avDmaxAOS, avDmaxAE, maxDmaxAOS, maxDmaxAE, minDmaxAOS, minDmaxAE
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),fragbasis(:,:)
+    logical,pointer :: occAOSred(:,:,:),unoccAOSred(:,:,:),fragbasisred(:,:,:)
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -4808,6 +4918,7 @@ contains
     write(DECinfo%output,*) 'Preparing job list...'
     write(DECinfo%output,*)
     nbasis = MyMolecule%nbasis
+    nred = DECinfo%nfragsred
 
 
     ! Fragment dimension statistics
@@ -4849,6 +4960,14 @@ contains
     occsize   = 0
     unoccsize = 0
     basissize = 0
+    if(nred>0) then
+       call mem_alloc(occAOSred,nocc,natoms,nred)
+       call mem_alloc(unoccAOSred,nunocc,natoms,nred)
+       call mem_alloc(Fragbasisred,nbasis,natoms,nred)
+       occAOSred=.false.
+       unoccAOSred=.false.
+       FragBasisred=.false.
+    end if
 
 
     GetStandardFrag: do atom=1,natoms
@@ -4862,6 +4981,13 @@ contains
           idx=AtomicFragments(atom)%occAOSidx(j)  ! index for local occupied AOS orbital
           occAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
        end do
+       ! Reduced fragments
+       do m=1,nred
+          do j=1,AtomicFragments(atom)%REDfrags(m)%noccAOS
+             idx=AtomicFragments(atom)%REDfrags(m)%occAOSidx(j)
+             occAOSred(idx,atom,m) = .true.  
+          end do
+       end do
 
 
        ! Set unoccupied AOS logical vector
@@ -4870,6 +4996,13 @@ contains
           idx=AtomicFragments(atom)%unoccAOSidx(j)  ! index for unoccupied AOS orbital
           unoccAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
        end do
+       ! Reduced fragments
+       do m=1,nred
+          do j=1,AtomicFragments(atom)%REDfrags(m)%nunoccAOS
+             idx=AtomicFragments(atom)%REDfrags(m)%unoccAOSidx(j)
+             unoccAOSred(idx,atom,m) = .true.  
+          end do
+       end do
 
 
        ! Set AO basis logical vector
@@ -4877,6 +5010,29 @@ contains
        do j=1,AtomicFragments(atom)%nbasis
           idx=AtomicFragments(atom)%basis_idx(j)  ! index for AO basis function
           fragbasis(idx,atom) = .true.  ! idx is included in "atom" fragment
+       end do
+       ! Reduced spaces
+       ! --------------
+       ! Atomic orbitals coming from occ orbitals
+       do m=1,nred ! loop over number of reduced spaces
+          do j=1,nocc  ! loop over all occupied orbitals in molecule
+             if(occAOSred(j,atom,m)) then  ! is occupied orbital "j" in reduced fragment
+                do k=1,OccOrbitals(j)%numberofaos ! loop over number of atomic orbitals in occ orb. j
+                   ! Include atomic orbital "aos(k)" in atomic fragment extent for reduced fragment
+                   fragbasisred(OccOrbitals(j)%aos(k),atom,m) = .true.
+                end do
+             end if
+          end do
+       end do
+       ! Atomic orbitals coming from unocc orbitals (same as for occupied orbitals)
+       do m=1,nred 
+          do j=1,nunocc  
+             if(unoccAOSred(j,atom,m)) then 
+                do k=1,UnoccOrbitals(j)%numberofaos 
+                   fragbasisred(UnoccOrbitals(j)%aos(k),atom,m) = .true.
+                end do
+             end if
+          end do
        end do
 
 
@@ -4956,7 +5112,7 @@ contains
          &****************'
 
     if(DECinfo%PL <= 1) then
-      write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
+       write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
     endif
 
     do i=1,natoms
@@ -4965,8 +5121,8 @@ contains
        PrintFragInfo: if(which_fragments(myatom)) then
 
           if(DECinfo%PL>1)then
-            write(DECinfo%output,*)
-            write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
+             write(DECinfo%output,*)
+             write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
           endif
           write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,10X,"FRAG_SIZE")') &
                & myatom, &
@@ -4978,18 +5134,19 @@ contains
                & AtomicFragments(myatom)%DmaxAOS*bohr_to_angstrom, &
                & AtomicFragments(myatom)%DmaxAE*bohr_to_angstrom
           if(DECinfo%PL>1)then
-            write(DECinfo%output,*) '   Rave(AOS/AE)      Rsdv(AOS/AE)      Dave(AOS/AE)      Dsdv(AOS/AE)'
-            write(DECinfo%output,'(4X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3," FRAG_SIZE_EXT")') &
-               & AtomicFragments(myatom)%RaveAOS*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%RaveAE*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%RsdvAOS*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%RsdvAE*bohr_to_angstrom , &
-               & AtomicFragments(myatom)%DaveAOS*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%DaveAE*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%DsdvAOS*bohr_to_angstrom, &
-               & AtomicFragments(myatom)%DsdvAE*bohr_to_angstrom
-            write(DECinfo%output,*)
-            write(DECinfo%output,'(4X,"------------------------------------------------------------------")')
+             write(DECinfo%output,*) '   Rave(AOS/AE)      Rsdv(AOS/AE)      Dave(AOS/AE)      Dsdv(AOS/AE)'
+             write(DECinfo%output,&
+                  & '(4X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3," FRAG_SIZE_EXT")') &
+                  & AtomicFragments(myatom)%RaveAOS*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%RaveAE*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%RsdvAOS*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%RsdvAE*bohr_to_angstrom , &
+                  & AtomicFragments(myatom)%DaveAOS*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%DaveAE*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%DsdvAOS*bohr_to_angstrom, &
+                  & AtomicFragments(myatom)%DsdvAE*bohr_to_angstrom
+             write(DECinfo%output,*)
+             write(DECinfo%output,'(4X,"------------------------------------------------------------------")')
           endif
 
        end if PrintFragInfo
@@ -4998,23 +5155,23 @@ contains
     write(DECinfo%output,*)
 
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-    &'FRAGANALYSIS: Max/Ave/Min occ         : ', maxocc,avocc,minocc
+         &'FRAGANALYSIS: Max/Ave/Min occ         : ', maxocc,avocc,minocc
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-    &'FRAGANALYSIS: Max/Ave/Min unocc       : ', maxunocc,avunocc,minunocc
+         &'FRAGANALYSIS: Max/Ave/Min unocc       : ', maxunocc,avunocc,minunocc
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-    &'FRAGANALYSIS: Max/Ave/Min basis       : ', maxbasis,avbasis,minbasis
+         &'FRAGANALYSIS: Max/Ave/Min basis       : ', maxbasis,avbasis,minbasis
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min Radius AOS  : ',&
-    &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
+         &'FRAGANALYSIS: Max/Ave/Min Radius AOS  : ',&
+         &maxRmaxAOS*bohr_to_angstrom,avRmaxAOS*bohr_to_angstrom,minRmaxAOS*bohr_to_angstrom
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min Radius AE   : ', &
-    &maxRmaxAE*bohr_to_angstrom,avRmaxAE*bohr_to_angstrom,minRmaxAE*bohr_to_angstrom
+         &'FRAGANALYSIS: Max/Ave/Min Radius AE   : ', &
+         &maxRmaxAE*bohr_to_angstrom,avRmaxAE*bohr_to_angstrom,minRmaxAE*bohr_to_angstrom
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min Diameter AOS: ',&
-    &maxDmaxAOS*bohr_to_angstrom,avDmaxAOS*bohr_to_angstrom,minDmaxAOS*bohr_to_angstrom
+         &'FRAGANALYSIS: Max/Ave/Min Diameter AOS: ',&
+         &maxDmaxAOS*bohr_to_angstrom,avDmaxAOS*bohr_to_angstrom,minDmaxAOS*bohr_to_angstrom
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
-    &'FRAGANALYSIS: Max/Ave/Min Diameter AE : ', &
-    &maxDmaxAE*bohr_to_angstrom,avDmaxAE*bohr_to_angstrom,minDmaxAE*bohr_to_angstrom
+         &'FRAGANALYSIS: Max/Ave/Min Diameter AE : ', &
+         &maxDmaxAE*bohr_to_angstrom,avDmaxAE*bohr_to_angstrom,minDmaxAE*bohr_to_angstrom
     write(DECinfo%output,*)
 
 
@@ -5045,8 +5202,16 @@ contains
 
     call init_joblist(njobs,jobs)
 
-    call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-         & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs)
+    if(nred>0) then  
+       ! use reduced orbital spaces for some of the pair fragments
+       call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+            & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred, &
+            & occAOSred=occAOSred,unoccAOSred=unoccAOSred,Fragbasisred=Fragbasisred)
+    else
+       ! No reduced pair fragments
+       call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+            & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred)
+    end if
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -5069,10 +5234,10 @@ contains
     do i=1,njobs
        if(jobs%atom1(i)==jobs%atom2(i)) then ! single
           write(DECinfo%output,'(1X,i8,4X,i15,7X,i8,11X,i6,3X,i6,3X,i6)') &
-             &i,jobs%jobsize(i),jobs%atom1(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+               &i,jobs%jobsize(i),jobs%atom1(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
        else ! pair
           write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8,3X,i6,3X,i6,3X,i6)') &
-             &i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+               &i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
        end if
     end do
     write(DECinfo%output,*)
@@ -5094,6 +5259,11 @@ contains
     call mem_dealloc( unoccsize )
     call mem_dealloc( basissize )
 
+    if(nred>0) then
+       call mem_dealloc(occAOSred)
+       call mem_dealloc(unoccAOSred)
+       call mem_dealloc(Fragbasisred)
+    end if
 
   end subroutine create_dec_joblist_driver
 
@@ -5229,7 +5399,7 @@ contains
   !> \author Kasper Kristensen
   !> \date April 2013
   subroutine set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-       & FragBasis,which_fragments, DistanceTable, esti,jobs)
+       & FragBasis,which_fragments, DistanceTable, esti,jobs,nred,occAOSred,unoccAOSred,Fragbasisred)
 
     implicit none
     !> Full molecule info
@@ -5249,7 +5419,7 @@ contains
     !> Logical vector describing unoccupied AOS (see create_dec_joblist_driver)
     logical,dimension(nunocc,natoms),intent(in) :: unoccAOS
     !> Logical vector describing which atomic basis functions to include for each fragment
-    logical,dimension(nbasis,natoms) :: FragBasis
+    logical,dimension(nbasis,natoms),intent(in) :: FragBasis
     !> Logical vector describing which atoms have orbitals assigned
     logical,dimension(natoms),intent(in) :: which_fragments
     !> Distance table with interatomic distances
@@ -5258,10 +5428,34 @@ contains
     logical,intent(in) :: esti
     !> Job list for fragments
     type(joblist),intent(inout) :: jobs
+    !> Number of reduced AOS orbital spaces for each fragment
+    !> If this argument is nonzero then occAOSred, unoccAOSred, and FragBasisred must be present
+    integer,intent(in) :: nred
+    !> Logical vector describing reduced occupied AOS (see create_dec_joblist_driver)
+    logical,dimension(nocc,natoms,nred),intent(in),optional :: occAOSred
+    !> Logical vector describing reduced unoccupied AOS (see create_dec_joblist_driver)
+    logical,dimension(nunocc,natoms,nred),intent(in),optional :: unoccAOSred
+    !> Logical vector describing reduced atomic fragment extent
+    logical,dimension(nbasis,natoms,nred),intent(in),optional :: FragBasisred
     logical,pointer :: occpairAOS(:), unoccpairAOS(:),basispair(:)
-    integer :: i,j,k,njobs,nsingle
+    integer :: i,j,k,njobs,nsingle,fotlevel
     real(realk) :: dist
     integer,pointer :: atom1(:),atom2(:),order(:),tmpnocc(:),tmpnunocc(:),tmpnbasis(:)
+    logical,pointer :: MyOccAOS1(:), MyUnoccAOS1(:), MyFragBasis1(:)
+    logical,pointer :: MyOccAOS2(:), MyUnoccAOS2(:), MyFragBasis2(:)
+
+    ! Sanity check for reduced fragments
+    if(nred/=0) then
+       if(.not. present(occAOSred)) then
+          call lsquit('set_dec_joblist: occAOSred argument not present!',-1)
+       end if
+       if(.not. present(unoccAOSred)) then
+          call lsquit('set_dec_joblist: unoccAOSred argument not present!',-1)
+       end if
+       if(.not. present(FragBasisRed)) then
+          call lsquit('set_dec_joblist: FragBasisRed argument not present!',-1)
+       end if
+    end if
 
     ! Init stuff
     k=0
@@ -5283,7 +5477,12 @@ contains
     call mem_alloc(occpairAOS,nocc)
     call mem_alloc(unoccpairAOS,nunocc)
     call mem_alloc(basispair,nbasis)
-
+    call mem_alloc(MyOccAOS1,nocc)
+    call mem_alloc(MyUnoccAOS1,nunocc)
+    call mem_alloc(MyFragBasis1,nbasis)
+    call mem_alloc(MyOccAOS2,nocc)
+    call mem_alloc(MyUnoccAOS2,nunocc)
+    call mem_alloc(MyFragBasis2,nbasis)
 
 
     ! **************************
@@ -5294,6 +5493,11 @@ contains
 
        if(.not. which_fragments(i)) cycle  ! No fragment for atom i
 
+       ! Set logical vectors for first fragment
+       MyOccAOS1 = occAOS(1:nocc,i)
+       MyUnoccAOS1 = unoccAOS(1:nunocc,i)
+       MyFragBasis1 = fragbasis(1:nbasis,i)
+
        ! Repeat atomic fragments if requested
        if(calcAF) then
 
@@ -5303,11 +5507,11 @@ contains
           atom2(k) = i   ! Same index for both atoms to distinguish single from pair jobs
 
           ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
-          jobs%jobsize(k) = count(occAOS(1:nocc,i))*count(unoccAOS(1:nunocc,i))&
-               &*count(fragbasis(1:nbasis,i))
-          tmpnocc(k)    = count(occAOS(1:nocc,i))
-          tmpnunocc(k)  = count(unoccAOS(1:nunocc,i))
-          tmpnbasis(k)  = count(fragbasis(1:nbasis,i))
+          jobs%jobsize(k) = count(MyOccAOS1)*count(MyUnoccAOS1)&
+               &*count(MyFragBasis1)
+          tmpnocc(k)    = count(MyOccAOS1)
+          tmpnunocc(k)  = count(MyUnoccAOS1)
+          tmpnbasis(k)  = count(MyFragBasis1)
 
        end if
 
@@ -5322,13 +5526,44 @@ contains
                & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold ) then
              k=k+1
 
+             ! **************
+             ! Reduced pairs?
+             ! **************
+             if(MyMolecule%PairFOTlevel(i,j)==0) then
+
+                ! Pair generated from standard atomic fragment corresponding to input FOT
+                ! -----------------------------------------------------------------------
+                ! Fragment 1 already set correctly - set logical vectors for second fragment
+                MyOccAOS2 = occAOS(1:nocc,j)
+                MyUnoccAOS2 = unoccAOS(1:nunocc,j)
+                MyFragBasis2 = fragbasis(1:nbasis,j)
+
+             else
+
+                ! Pair generated from fragments of reduced size (larger FOT)
+                ! ----------------------------------------------------------
+                fotlevel = MyMolecule%PairFOTlevel(i,j)
+
+                ! Fragment 1 orbital spaces for fotlevel
+                MyOccAOS1 = occAOSred(1:nocc,i,fotlevel)
+                MyUnoccAOS1 = unoccAOSred(1:nunocc,i,fotlevel)
+                MyFragBasis1 = FragBasisred(1:nbasis,i,fotlevel)
+
+                ! Fragment 2 orbital spaces for fotlevel
+                MyOccAOS2 = occAOSred(1:nocc,j,fotlevel)
+                MyUnoccAOS2 = unoccAOSred(1:nunocc,j,fotlevel)
+                MyFragBasis2 = FragBasisred(1:nbasis,j,fotlevel)
+
+             end if
+
+
              ! Merge AOS for fragment 1 and 2 for standard pair
-             call get_logical_pair_vector(nocc,occAOS(1:nocc,i),occAOS(1:nocc,j),occpairAOS)
-             call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,i),&
-                  &unoccAOS(1:nunocc,j),unoccpairAOS)
+             call get_logical_pair_vector(nocc,MyOccAOS1,MyOccAOS2,occpairAOS)
+             call get_logical_pair_vector(nunocc,MyUnoccAOS1,&
+                  &MyUnoccAOS2,unoccpairAOS)
 
              ! Logical vector for basis functions
-             call get_logical_pair_vector(nbasis,FragBasis(1:nbasis,i),FragBasis(1:nbasis,j),&
+             call get_logical_pair_vector(nbasis,MyFragBasis1,MyFragBasis2,&
                   & basispair)
 
              ! Atomic indices and jobsize for pair
@@ -5394,6 +5629,13 @@ contains
     call mem_dealloc(occpairAOS)
     call mem_dealloc(unoccpairAOS)
     call mem_dealloc(basispair)
+    call mem_dealloc(MyOccAOS1)
+    call mem_dealloc(MyUnoccAOS1)
+    call mem_dealloc(MyFragBasis1)
+    call mem_dealloc(MyOccAOS2)
+    call mem_dealloc(MyUnoccAOS2)
+    call mem_dealloc(MyFragBasis2)
+
 
   end subroutine set_dec_joblist
 
@@ -5907,54 +6149,45 @@ contains
     type(fullmolecule), intent(in) :: MyMolecule
     !> Number of basis functions in fragment
     integer,intent(inout) :: nbasisFragment
-    logical,pointer :: FragmentAtoms(:)
+    logical,pointer :: FragmentBasis(:)
     integer :: i,j
 
 
-    ! FragmentAtoms: Defines which atoms are included in atomic fragment extent describing
-    !                molecular orbitals for fragment.
-    call mem_alloc(FragmentAtoms,MyMolecule%natoms)
-    FragmentAtoms=.false.
+    ! FragmentBasis: Defines which basis functions (AOs) are included 
+    !                in atomic fragment extent describing molecular orbitals for fragment.
 
+    call mem_alloc(FragmentBasis,MyMolecule%nbasis)
+    FragmentBasis=.false.
 
     ! Occupied orbitals
     do i=1,nocc
-
        if(occAOS(i)) then ! occupied orbital "i" is in fragment AOS
-
-          do j=1,OccOrbitals(i)%numberofatoms
-             ! Atom "j" in list is included in atomic fragment extent
-             FragmentAtoms(OccOrbitals(i)%atoms(j)) = .true.
+          ! Occupied orbitals
+          do j=1,OccOrbitals(i)%numberofaos
+             ! AO "j" in list is included in atomic fragment extent
+             FragmentBasis(OccOrbitals(i)%aos(j)) = .true.
           end do
-
-       end if
-    end do
-
+       endif
+    enddo
 
     ! Unoccupied orbitals
     do i=1,nunocc
-
        if(unoccAOS(i)) then ! unoccupied orbital "i" is in fragment AOS
-
-          do j=1,UnoccOrbitals(i)%numberofatoms
-             ! Atom "j" in list is included in atomic fragment extent
-             FragmentAtoms(UnoccOrbitals(i)%atoms(j)) = .true.
+          do j=1,UnoccOrbitals(i)%numberofaos
+             ! AO "j" in list is included in atomic fragment extent
+             FragmentBasis(UnoccOrbitals(i)%aos(j)) = .true.
           end do
-
        end if
     end do
 
-
-    ! Count number of basis function based on which atoms are included
     nbasisFragment=0
-    do i=1,MyMolecule%natoms
-       if(FragmentAtoms(i)) then
-          nbasisFragment = nbasisFragment + MyMolecule%atom_size(i)
+    do i=1,MyMolecule%nbasis
+       if(FragmentBasis(i)) then
+          nbasisFragment = nbasisFragment + 1
        end if
     end do
 
-    call mem_dealloc(FragmentAtoms)
-
+    call mem_dealloc(FragmentBasis)
 
   end subroutine get_nbasis_for_fragment
 
@@ -6119,26 +6352,11 @@ contains
     type(decfrag),intent(inout) :: fragment
     !> Which atomic orbitals in full AO list are included in atomic fragment extent?
     integer,intent(inout) :: which_orbitals(fragment%nbasis)
-    integer :: i,j,idx,atom
+    integer :: i
 
-    idx=0
-    do i=1,fragment%natoms  ! loop over atoms in fragment
-       atom = fragment%atoms_idx(i)  ! atom index in full atom list
-
-       do j=1,MyMolecule%atom_size(atom)  ! loop over basis functions for atom
-          idx =idx+1
-          which_orbitals(idx) = MyMolecule%atom_start(atom) + j -1
-       end do
-
+    do i=1,fragment%nbasis  ! loop over atoms in fragment
+       which_orbitals(i) = fragment%basis_idx(i)  
     end do
-
-    ! Sanity check
-    if(idx/=fragment%nbasis) then
-       call lsquit('which_orbitals_in_atomic_extents: &
-            & counter does not match number of basis functions in atomic &
-            & fragment extent!',-1)
-    end if
-
 
   end subroutine which_orbitals_in_atomic_extents
 
@@ -6963,11 +7181,13 @@ contains
 
 
   !> \brief For each pair, determine whether pair calculation should be calculated
-  !> should be calculated (i) using input CC model, (ii) MP2 model, or (iii) simply be skipped.
-  !> This information is stored in MyMolecule%ccmodel(P,Q) in terms of an integer
-  !> defining the model to be used for pair (P,Q), according to the model.
-  !> See details defining the model inside subroutine.
-  !> definitions in dec_typedef.F90.
+  !> should be calculated (i) using input FOT, (ii) increased FOT (reduced accuary),
+  !> (iii) simply be skipped.
+  !> This information is stored in MyMolecule%PairFOTlevel(P,Q) in terms of an integer
+  !> defining the orbital spaces to be used for pair (P,Q):
+  !>  0: Use input FOT
+  !>  n>0: Use AOS information from fragment%REDfrags(n)
+  !> If MyMolecule%ccmodel(P,Q) = MODEL_NONE the pair is skipped.
   !> \author Kasper Kristensen
   !> \date October 2013
   subroutine define_pair_calculations(natoms,dofrag,FragEnergies,MyMolecule,Epair_est,Eskip_est)
@@ -6979,17 +7199,18 @@ contains
     logical,intent(in) :: dofrag(natoms)
     !> Estimated fragment energies
     real(realk),intent(in) :: FragEnergies(natoms,natoms)
-    !> Full molecule structure, where only MyMolecule%ccmodel is modified
+    !> Full molecule structure
     type(fullmolecule),intent(inout) :: MyMolecule
     !> Estimated correlation energy from estimated pair fragments
     real(realk),intent(inout) :: Epair_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
     real(realk),intent(inout) :: Eskip_est
-    integer :: P,Q,Qidx,Qstart,Nskip,NMP2,NCC,Qquit,Pmax,Qmax
+    integer :: P,Q,Qidx,Qstart,Qquit,Pmax,Qmax,n,npairsskip,npairsFOT,npairscalc,npairstot
     real(realk),dimension(natoms) :: EPQ
-    real(realk) :: Eacc,Epairmax
+    real(realk) :: Eacc,Epairmax,Eref
     integer,dimension(natoms) :: atomindices
     integer,dimension(natoms,2) :: lastpair
+    integer,pointer :: npairsRED(:)
 
 
     ! ****************************************************************************************
@@ -6999,7 +7220,7 @@ contains
     ! The basic philosophy is that, since we have an error of ~FOT in the atomic fragment energy E_P,
     ! we also allow error(s) of size ~FOT in the pair fragment energies dE_PQ associated with
     ! atomic site P.
-    ! We use usually write the DEC correlation energy like this:
+    ! We usually write the DEC correlation energy like this:
     !
     ! Ecorr = sum_P E_P  +  sum_P sum_{Q<P} dE_PQ
     !
@@ -7012,34 +7233,33 @@ contains
     !
     ! 1. For each atomic site P, sort estimated pair energies (1/2)dE_PQ according to size.
     ! 2. Add up the smallest contributions until they add up to the FOT. Skip those pairs.
-    ! 3. Add up the "second-smallest" contributions until they add up to the FOT.
-    !    Calculate these pairs at the MP2 level.
-    ! 4. In case that we are calculating Interaction Energies we skip all pairs which 
-    !    have same SubSystem index on P and Q. 
+    ! 3. REF = FOT
+    !    For n=DECinfo%nFRAGSred,1,-1:
+    !    Add the next contributions in the list (to the ones we already added) until they add up to 
     !
-    ! 5. Thus, at the end we get this where the (absolute)
+    !    REF = REF * f
+    !
+    !    where f=DECinfo%FOTscaling
+    !
+    !    Calculate these pairs with fragments corresponding to reduced FOT spaces of level n,
+    !    which is stored in fragment%REDfrags(n)
+    ! 4. Thus, at the end we get this where the (absolute)
     !    pair energies are arranged in decreasing order:
     !
     !
-    !    (1/2) dE_PQ: (*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*)
-    !                 |          CC MODEL             |    MP2 LEVEL  |    SKIP PAIRS   |
+    !    (1/2) dE_PQ: (*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*)
+    !                 |          FOT          |   REF1    |  REF2 |  .... |     SKIP PAIRS    |
     !
     !
-    ! In this way we (2) skip pairs for which the contribution to the energy is so small
-    ! that it anyways drowns in numerical noise from the E_P FOT error; and then (3) we allow an
-    ! additional error of order FOT by treating the next pairs only at the MP2 level. Point (3) is
-    ! a very conservative strategy, where we basically assume that the error introduced by doing MP2
-    ! rather than the actual CC model is of the same order as the actual pair interaction energy.
-    ! In practice this error is typically 1%-10% of the pair interaction energy itself,
-    ! but for now we choose to be very conservative here...
-
 
     ! Init stuff
-    MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model as initialization model
+    MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model for all pairs
+    MyMolecule%PairFOTlevel = 0   ! initialize to use main FOT for all pairs - modify below
     lastpair = 1
 
     ! Loop over all atoms P
     Ploop: do P=1,natoms
+
        lastpair(P,1) = P
        ! If no orbitals assigned to P, no pairs for this atom
        if(.not. dofrag(P)) then
@@ -7058,6 +7278,7 @@ contains
 
        ! Step 2 above: Find which pairs to skip
        ! **************************************
+       Eref = DECinfo%FOT  ! reference energy = FOT
        Eacc = 0.0_realk
        Qquit = natoms
        Qloop2: do Q=natoms,1,-1
@@ -7068,8 +7289,8 @@ contains
 
           ! Accumulated estimated energy from smallest pair interaction energies
           Eacc = Eacc + EPQ(Q)
-          if(Eacc < DECinfo%FOT) then
-             ! Accumulated value smaller than FOT --> (P,Qidx) can be skipped!
+          if(Eacc < Eref) then
+             ! Accumulated value smaller than ref energy --> (P,Qidx) can be skipped!
              MyMolecule%ccmodel(P,Qidx)=MODEL_NONE
           else
              ! Not possible to skip (P,Q). Save current counter value.
@@ -7082,22 +7303,24 @@ contains
        ! Print last included pair for atomic center P:
        lastpair(P,2) = Qquit
 
-       ! Step 3 above: Find which pairs to treat at MP2 level
-       ! ****************************************************
-       ! (Only do this if DECinfo%PairMP2 is turned on)
+       ! Step 3 above: Pairs using reduced fragments
+       ! *******************************************
+       ReducedFOT: do n=DECinfo%nFRAGSred,1,-1
 
-       NotMP2model: if(DECinfo%PairMP2 .and. DECinfo%ccmodel/=MODEL_MP2) then
+          ! Reference energy 
+          Eref = Eref*DECinfo%FOTscaling
 
-          ! Same procedure as step 2 above, now the loop starts where we ended above...
-          Eacc = 0.0_realk
+          ! Loop starts where we ended in previous step.
           Qstart=Qquit
+          Qquit=0
           Qloop3: do Q=Qstart,1,-1
              Qidx = atomindices(Q)
              if(.not. dofrag(Qidx) .or. Qidx==P) cycle Qloop3
 
              Eacc = Eacc + EPQ(Q)
-             if(Eacc < DECinfo%FOT) then
-                MyMolecule%ccmodel(P,Qidx)=MODEL_MP2
+             if(Eacc < Eref) then
+                ! Set pair FOT level according to increased FOT
+                MyMolecule%PairFOTlevel(P,Qidx)=n
              else
                 Qquit = Q
                 exit Qloop3
@@ -7105,10 +7328,10 @@ contains
 
           end do Qloop3
 
-       end if NotMP2model
+          ! If Qquit=0, then all pairs have been assigned to a FOT level
+          if(Qquit==0) exit ReducedFOT
 
-       ! Sanity precaution: Atomic fragment energies should always use input CC model
-       MyMolecule%ccmodel(P,P) = DECinfo%ccmodel
+       end do ReducedFOT
 
     end do Ploop
 
@@ -7116,43 +7339,66 @@ contains
     ! identical to MyMolecule%ccmodel(Q,P) from the above procedure
     call fix_inconsistencies_for_pair_model(MyMolecule)
 
-    ! Count number of pairs to be treated at the different levels
-    NCC=0
-    NMP2=0
-    Nskip=0
+    ! Find number of pairs treated at the different levels.
+    ! Also find max pair energy and associated indices (for sanity check below).
     Epairmax=0.0_realk
     Pmax=0
     Qmax=0
+    npairsskip=0
+    npairsFOT=0
+    if(DECinfo%nFRAGSred>0) then
+       call mem_alloc(npairsRED,DECinfo%nFRAGSred)
+       npairsRED=0
+    end if
     do P=1,natoms
        if(.not. dofrag(P)) cycle
        do Q=1,P-1
           if(.not. dofrag(Q)) cycle
-          if(MyMolecule%ccmodel(P,Q)==DECinfo%ccmodel) then
-             NCC=NCC+1
-          elseif(MyMolecule%ccmodel(P,Q)==MODEL_MP2) then
-             NMP2=NMP2+1
-          elseif(MyMolecule%ccmodel(P,Q)==MODEL_NONE) then
-             Nskip=Nskip+1
-          end if
 
-          ! Find max pair energy and associated indices (for sanity check below)
+          ! Count pairs
+          Dopair: if(MyMolecule%ccmodel(P,Q)==MODEL_NONE) then
+             ! Skip pairs
+             npairsskip = npairsskip+1
+
+          else ! Do pair at some level
+
+             if(MyMolecule%PairFOTlevel(P,Q)==0) then
+                ! Do pair using union of fragments at main FOT level
+                npairsFOT = npairsFOT +1
+             else
+                ! Do pair using union of fragments at reduced FOT level
+                npairsRED(MyMolecule%PairFOTlevel(P,Q)) = npairsRED(MyMolecule%PairFOTlevel(P,Q)) +1
+             end if
+
+          end if Dopair
+
+          ! Find max
           if(Epairmax < abs(FragEnergies(P,Q))) then
              Epairmax = abs(FragEnergies(P,Q))
              Pmax=P
              Qmax=Q
           end if
-
+ 
        end do
     end do
 
+    ! Number of pairs to calculate
+    if(DECinfo%nFRAGSred>0) then
+       npairscalc =npairsFOT + sum(npairsRED)
+    else
+       npairscalc =npairsFOT 
+    end if
+
     ! Sanity check to avoid empty job list --> Always have at least one pair
     ! (only relevant for debug molecules)
-    if(NCC+NMP2==0) then
+    if(npairscalc==0) then
        ! Simply calculate the pair with the largest (absolute) estimated energy
        MyMolecule%ccmodel(Pmax,Qmax) = DECinfo%ccmodel
        MyMolecule%ccmodel(Qmax,Pmax) = DECinfo%ccmodel
-       NCC=1
-       Nskip = Nskip-1
+       npairsFOT = 1
+       npairsskip = npairsskip-1
+       npairscalc=1
+       write(DECinfo%output,*) 'WARNING: Including one pair to avoid empty job list!'
     end if
 
     ! Estimate correlation energy by adding all estimated atomic and pair fragment energy contributions
@@ -7161,9 +7407,40 @@ contains
     ! Estimate energy contribution from pairs which will be skipped from the calculation
     call estimate_energy_of_skipped_pairs(natoms,FragEnergies,dofrag,MyMolecule,Eskip_est)
 
-    ! Print summary for pair analysis and estimated energies
-    call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
-         & lastpair,FragEnergies,MyMolecule%DistanceTable)
+    ! Total number of pairs
+    npairstot = count(dofrag)*(count(dofrag)-1)/2
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(1X,a)') '******************************************************************'
+    write(DECinfo%output,'(1X,a)') '*            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *'
+    write(DECinfo%output,'(1X,a)') '******************************************************************'
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(1X,a,i10)') 'Total number of pairs:                ', npairstot
+    write(DECinfo%output,'(1X,a,i10)') 'Number of pairs to calculate:         ', npairscalc
+    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be skipped from calculation  ', npairsskip
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be treated using input FOT   ', npairsFOT
+    do n=1,DECinfo%nFRAGSred
+       write(DECinfo%output,'(1X,a,i10,a,i10)') 'FOT level: ', n, '    --- #pairs   ', npairsRED(n)
+    end do
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated pair correlation energy:         ', Epair_est
+    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution from skipped pairs: ', Eskip_est
+    write(DECinfo%output,*)
+
+    ! Also print estimated pair fragment energies. Maybe this should be removed at some point
+    if(DECinfo%PairEstimateIgnore) then
+      call print_spec_pair_fragment_energies(natoms,natoms,lastpair,FragEnergies,dofrag,&
+           & MyMolecule%DistanceTable, 'Last pairs included for each atomic center','PF_LASTPAIR')
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+    end if
+    call print_pair_fragment_energies(natoms,FragEnergies,dofrag,&
+         & MyMolecule%DistanceTable, 'Estimated occupied pair energies','PF_ESTIMATE')
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+
 
     if(DECinfo%PairEstimateIgnore) then
        write(DECinfo%output,*) ' ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** ' 
@@ -7176,120 +7453,70 @@ contains
        end do
     end if
 
+    if(DECinfo%nFRAGSred>0) call mem_dealloc(npairsRED)
 
-  end subroutine define_pair_calculations
+  End subroutine define_pair_calculations
 
 
-  !> \brief Print summary of analysis used to define pair calculations (see define_pair_calculations).
-  !> \author Kasper Kristensen
-  !> \date October 2013
-  subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
-       & lastpair,FragEnergies,DistanceTable)
-    implicit none
-    !> Number of atoms in molecule
-    integer,intent(in) :: natoms
-    !> Number of pairs skipped
-    integer,intent(in) :: Nskip
-    !> Number of pairs treated at MP2 level
-    integer,intent(in) :: NMP2
-    !> Number of pairs treated at input CC level
-    integer,intent(in) :: NCC
-    !> Which atomic sites have orbitals assigned?
-    logical,intent(in),dimension(natoms) :: dofrag
-    !> Estimated correlation energy from estimated pair fragments
-    real(realk),intent(in) :: Epair_est
-    !> Estimated correlation energy from the pairs that will be skipped in the calculation
-    real(realk),intent(in) :: Eskip_est
-    !> Last pair included for each atomic fragment:
-    integer,intent(in) :: lastpair(natoms,2)
-    !> Estimated fragment energies
-    real(realk),intent(in) :: FragEnergies(natoms,natoms)
-    !> Interatomic distance table
-    real(realk),intent(in) :: DistanceTable(natoms,natoms)
-    integer :: npairs
 
-    ! Total number of pairs
-    npairs = count(dofrag)*(count(dofrag)-1)/2
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '******************************************************************'
-    write(DECinfo%output,'(1X,a)') '*            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *'
-    write(DECinfo%output,'(1X,a)') '******************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,i10)') 'Total number of pairs:                ', npairs
-    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be treated at input CC level ', NCC
-    if(DECinfo%PairMP2 .and. DECinfo%ccmodel/=MODEL_MP2) then
-       write(DECinfo%output,'(1X,a,i10)') 'Pairs to be treated at MP2 level      ', NMP2
-    end if
-    write(DECinfo%output,'(1X,a,i10)') 'Pairs to be skipped from calculation  ', Nskip
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated pair correlation energy:         ', Epair_est
-    write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution from skipped pairs: ', Eskip_est
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    ! Also print estimated pair fragment energies. Maybe this should be removed at some point
-    if(DECinfo%PairEstimateIgnore) then
-      call print_spec_pair_fragment_energies(natoms,natoms,lastpair,FragEnergies,dofrag,&
-           & DistanceTable, 'Last pairs included for each atomic center','PF_LASTPAIR')
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-    end if
-    call print_pair_fragment_energies(natoms,FragEnergies,dofrag,&
-         & DistanceTable, 'Estimated occupied pair energies','PF_ESTIMATE')
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-  end subroutine print_pair_estimate_summary
-
-  !> Once the CC model to be used for each pair has been defined in define_pair_calculations,
+  !> Once the pair treatment for each pair has been defined in define_pair_calculations,
   !> there will in general be inconsistencies. For example, it might be that from P's point
-  !> of view the pair (P,Q) should be treated at the CCSD level [MyMolecule%ccmodel(P,Q)=MODEL_CCSD],
-  !> while from the point of view of Q, this pair should be skipped
-  !> [MyMolecule%ccmodel(Q,P)=MODEL_NONE]. In such cases we always choose the more accurate model.
-  !> (Thus, for this example we would do a CCSD calculation for pair (P,Q)).
+  !> of view the pair (P,Q) should be treated at the FOT level, 
+  !> while from the point of view of Q, this pair should be skipped.
+  !> In such cases we always choose the more accurate solution.
+  !> (Thus, for this example we would do the calculation at the FOT level.)
   !> \author Kasper Kristensen
   !> \date October 2013
   subroutine fix_inconsistencies_for_pair_model(MyMolecule)
     implicit none
-    !> Full molecule structure, where only MyMolecule%ccmodel is modified
+    !> Full molecule structure
     type(fullmolecule),intent(inout) :: MyMolecule
-    integer :: P,Q
+    integer :: P,Q,commonFOTlevel
 
     do P=1,MyMolecule%natoms
        do Q=1,MyMolecule%natoms
+
+
+          ! Model check, i.e. skip calculation or do it?
+          ! ********************************************
+
           ! Check whether model defined by (P,Q) is different from that defined by (Q,P)
-          Inconsistency: if(MyMolecule%ccmodel(P,Q) /= MyMolecule%ccmodel(Q,P)) then
+          ModelInconsistency: if(MyMolecule%ccmodel(P,Q) /= MyMolecule%ccmodel(Q,P)) then
+             MyMolecule%ccmodel(P,Q)=DECinfo%ccmodel
+             MyMolecule%ccmodel(Q,P)=DECinfo%ccmodel
+          end if ModelInconsistency
 
-             ! Possibility 1: Either (P,Q) or (Q,P) requires original CC model, the
-             ! other one requires a less accurate model
-             if(MyMolecule%ccmodel(P,Q)==DECinfo%ccmodel .or. &
-                  & MyMolecule%ccmodel(Q,P)==DECinfo%ccmodel) then
-                MyMolecule%ccmodel(P,Q)=DECinfo%ccmodel
-                MyMolecule%ccmodel(Q,P)=DECinfo%ccmodel
 
-                ! Possibility 2: Either (P,Q) or (Q,P) requires MP2 model, the
-                ! other one dictates that the pair should be skipped
-             elseif(MyMolecule%ccmodel(P,Q)==MODEL_MP2 .or. &
-                  & MyMolecule%ccmodel(Q,P)==MODEL_MP2) then
-                MyMolecule%ccmodel(P,Q)=MODEL_MP2
-                MyMolecule%ccmodel(Q,P)=MODEL_MP2
+          ! FOT level check
+          ! ***************
 
-                ! This should never happen! Something very wrong...
-             else
-                print *, 'P,Q: ', P,Q
-                print *, 'Model(P,Q): ', MyMolecule%ccmodel(P,Q)
-                print *, 'Model(Q,P): ', MyMolecule%ccmodel(Q,P)
-                call lsquit('fix_inconsistencies_for_pair_model: Something wrong &
-                     & with definitions of CC model for pair!',-1)
-             end if
-
-          end if Inconsistency
+          ! Check whether pair FOT level defined by (P,Q) is different from that defined by (Q,P)
+          FOTInconsistency: if(MyMolecule%PairFOTlevel(P,Q) /= MyMolecule%PairFOTlevel(Q,P)) then
+             ! The common FOT level is the smallest one, since this is most accurace
+             commonFOTlevel = min(MyMolecule%PairFOTlevel(P,Q),MyMolecule%PairFOTlevel(Q,P))
+             MyMolecule%PairFOTlevel(P,Q)=commonFOTlevel
+             MyMolecule%PairFOTlevel(Q,P)=commonFOTlevel
+          end if FOTInconsistency
 
        end do
     end do
 
   end subroutine fix_inconsistencies_for_pair_model
+
+
+  !> Zero elements in fragmentAOS type.
+  !> Pointers are nullified and not allocated.
+  subroutine zero_fragmentAOS_type(MyFragmentAOS)
+    implicit none
+    !> FragmentAOS information
+    type(fragmentAOS),intent(inout) :: MyFragmentAOS
+
+    MyFragmentAOS%noccAOS=0
+    MyFragmentAOS%nunoccAOS=0
+    MyFragmentAOS%FOT=0.0_realk
+    nullify(MyFragmentAOS%occAOSidx)
+    nullify(MyFragmentAOS%unoccAOSidx)
+
+  end subroutine zero_fragmentAOS_type
 
 end module atomic_fragment_operations

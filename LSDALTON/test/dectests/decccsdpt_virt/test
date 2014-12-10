@@ -15,8 +15,11 @@ f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-6)
 
 f.add(from_string = 'Print single and pair fragment energies',
-      to_string   = 'Total CCSD(T) energy:',
-      abs_tolerance = 1.0e-5)
+      to_string   = 'Total CCSD(T) virtual  correlation energy',
+      abs_tolerance = 1.0e-3)
+
+f.add(string = 'Correlation energy',
+      rel_tolerance = 1.2e-2) # taking accumulation into account
 
 # to ignore sign set                      ignore_sign = True   
 # to ignore numbers below 1.0e-4 set      ignore_below = 1.0e-4

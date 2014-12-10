@@ -983,10 +983,10 @@ C              .PROP2Average
                  SOPPA  = .TRUE.
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
-     &            ' This is a solvent-SOPPA calculation w/ dynamic'
+     &            ' This is a SOPPA embedding calculation w/ dynamic'
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
-     &            ' solvent response at RPA level only,'
+     &            ' environment response at RPA level only,'
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
      &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
@@ -1248,7 +1248,7 @@ C  Initializing ABSORP
       DATA THCLR_ABSORP/1.0D-3/,THCPP_ABSORP/1.0D-3/
       DATA FREQ_ALPHA(1)/0.0D0/
       DATA FREQ_BETA_B(1)/0.0D0/,FREQ_BETA_C(1)/0.0D0/
-      DATA ABS_OLDCPP/.FALSE./
+      DATA ABS_OLDCPP/.FALSE./,ABS_REBD/.TRUE./
 C  Initializing CHANNEL
       DATA CHANNEL_CALC/.FALSE./,CHANNEL_VCALC/.FALSE./
       DATA CHANNEL_VIRT/-1,-1,-1,-1,-1,-1,-1,-1/
@@ -4340,7 +4340,7 @@ C
          write(lupri,*) 'MCSCF detected (NCONRF > 1) in QMMM calc.'
          write(lupri,*) 'NCONRF...........................', NCONRF
          write(lupri,*) '=> Subtracting QMMM Fock matrix (PCM-like)'
-         CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI) 
+         CALL MOLLAB('QMMMTMAT',LUSIFC,LUPRI)
          CALL READT (LUSIFC,NNORBT,WRK)
          DO I = 1,NNORBT
              FC(I) = FC(I) - WRK(I)
@@ -4348,10 +4348,10 @@ C
       END IF
 C
       IF (PEQM .AND. .NOT. TDHF) THEN
-        CALL MOLLAB('PETMAT  ', LUSIFC, LUPRI)
-        CALL READT (LUSIFC, NNORBT, WRK)
-        FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
-       ENDIF
+         CALL MOLLAB('PEFMAT  ', LUSIFC, LUPRI)
+         CALL READT (LUSIFC, NNORBX, WRK)
+         FC(1:NNORBX) = FC(1:NNORBX) - WRK(1:NNORBX)
+      ENDIF
 C
       IF (SOPPA) THEN
 C

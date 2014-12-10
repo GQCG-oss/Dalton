@@ -91,6 +91,7 @@ write(lupri,*) 'Exponents ',(input%Basis%binfo(regbasparam)%atomtype(1)%shell(1)
 
   write(lupri,*) 'setting%p%atom%center', lattice%lvec(2)%molecule%atom(1)%center(1)
 
+  call reset_integral_computed(lattice,num_latvectors,'all')
 
   write(lupri,*) 'cutoff' 
   call find_cutoff_onep(lupri,luerr,setting,nbast,refcell,lattice)
@@ -147,7 +148,7 @@ write(lupri,*) 'Exponents ',(input%Basis%binfo(regbasparam)%atomtype(1)%shell(1)
 
   write(*,*) 'lattice%nneighbour', lattice%nneighbour
   write(*,*) 'lattice%nf', lattice%nf
-  write(*,*) 'Number of k points', Bz%nk
+  write(*,*) 'Number of k points', Bz%nk !TODO Should be nk_nosym ????
   write(lupri,*) 'Number of k points', Bz%nk
 
     k=0
@@ -624,132 +625,151 @@ else
 
 END SUBROUTINE set_pbc_molecules
 
+
+!TODO move this s.r. to pbc-msc ?? 
+
+!> @brief Calculate basis vectors of the reciprocal space.
+!> @param realspace Primitive vectors of the lattice.
+!> @param recvec Reciprocal vectors.
+!> @param is_active Active dimensions in the calculation.
+!> @param lu 
 SUBROUTINE pbc_init_recvec(realspace,recvec,is_active,lu)
-IMPLICIT NONE
-REAL(realk),INTENT(IN) :: realspace(3,3)
-REAL(realk),INTENT(INOUT) :: recvec(3,3)
-LOGICAL,INTENT(IN)     :: is_active(3)
-INTEGER,INTENT(IN)     :: lu
-REAL(realk)            :: t2ct3(3)
-REAL(realk)            :: vol
-INTEGER                :: active_dims,plane
-!REAL(realk) :: PI=3.14159265358979323846D0
-    active_dims=1
-    if(is_active(2))then
-      active_dims=2
-      if(is_active(3)) active_dims=3
-    endif
-    recvec(:,:)=0.0_realk
+	IMPLICIT NONE
+	! input
+	REAL(realk),INTENT(IN) :: realspace(3,3)
+	REAL(realk),INTENT(INOUT) :: recvec(3,3)
+	LOGICAL,INTENT(IN)     :: is_active(3)
+	INTEGER,INTENT(IN)     :: lu
+	! local
+	REAL(realk)            :: t2ct3(3), norm_a(2), tmp(3)
+	REAL(realk)            :: a(3, 2), b(3, 2), e(3, 2), rotmat(3, 3)
+	REAL(realk)            :: vol
+	INTEGER                :: active_dims, i, j
+    
+	! count the number of active dimensions
+	active_dims = 0
+	do i = 1, 3
+      if(is_active(i)) active_dims = active_dims + 1
+	enddo
+   recvec(:,:) = 0.0_realk
 
-    SELECT CASE(active_dims)
+	SELECT CASE(active_dims)
 
-    CASE(3)
+	CASE(3)
 
-      recvec(1,1)=2.*pi*(realspace(2,2)*realspace(3,3)-&
-        & realspace(3,2)*realspace(2,3))
-      recvec(2,1)=2.*pi*(realspace(3,2)*realspace(1,3)-&
-        & realspace(1,2)*realspace(3,3))
-      recvec(3,1)=2.*pi*(realspace(1,2)*realspace(2,3)-&
-        & realspace(2,2)*realspace(1,3))
+		recvec(1,1)=2.*pi*(realspace(2,2)*realspace(3,3)-&
+			& realspace(3,2)*realspace(2,3))
+		recvec(2,1)=2.*pi*(realspace(3,2)*realspace(1,3)-&
+			& realspace(1,2)*realspace(3,3))
+		recvec(3,1)=2.*pi*(realspace(1,2)*realspace(2,3)-&
+			& realspace(2,2)*realspace(1,3))
 
-      recvec(1,2)=2.*pi*(realspace(2,3)*realspace(3,1)-&
-        & realspace(3,3)*realspace(2,1))
-      recvec(2,2)=2.*pi*(realspace(3,3)*realspace(1,1)-&
-        & realspace(1,3)*realspace(3,1))
-      recvec(3,2)=2.*pi*(realspace(1,3)*realspace(2,1)-&
-        & realspace(2,3)*realspace(1,1))
+		recvec(1,2)=2.*pi*(realspace(2,3)*realspace(3,1)-&
+			& realspace(3,3)*realspace(2,1))
+		recvec(2,2)=2.*pi*(realspace(3,3)*realspace(1,1)-&
+			& realspace(1,3)*realspace(3,1))
+		recvec(3,2)=2.*pi*(realspace(1,3)*realspace(2,1)-&
+			& realspace(2,3)*realspace(1,1))
 
-      recvec(1,3)=2.*pi*(realspace(2,1)*realspace(3,3)-&
-        & realspace(3,1)*realspace(2,3))
-      recvec(2,3)=2.*pi*(realspace(3,1)*realspace(1,2)-&
-        & realspace(1,1)*realspace(3,2))
-      recvec(3,3)=2.*pi*(realspace(1,1)*realspace(2,2)-&
-        &realspace(2,1)*realspace(1,2))
+		recvec(1,3)=2.*pi*(realspace(2,1)*realspace(3,3)-&
+			& realspace(3,1)*realspace(2,3))
+		recvec(2,3)=2.*pi*(realspace(3,1)*realspace(1,2)-&
+			& realspace(1,1)*realspace(3,2))
+		recvec(3,3)=2.*pi*(realspace(1,1)*realspace(2,2)-&
+			&realspace(2,1)*realspace(1,2))
 
-      t2ct3(1)=realspace(2,2)*realspace(3,3)-&
-        & realspace(3,2)*realspace(2,3)
+		t2ct3(1)=realspace(2,2)*realspace(3,3)-&
+			& realspace(3,2)*realspace(2,3)
 
-      t2ct3(2)=realspace(3,2)*realspace(1,3)-&
-        & realspace(1,2)*realspace(3,3)
+		t2ct3(2)=realspace(3,2)*realspace(1,3)-&
+			& realspace(1,2)*realspace(3,3)
 
-      t2ct3(3)=realspace(1,2)*realspace(2,3)-&
-        & realspace(2,2)*realspace(1,3)
+		t2ct3(3)=realspace(1,2)*realspace(2,3)-&
+			& realspace(2,2)*realspace(1,3)
 
-      vol= dot_product(t2ct3,realspace(:,1))
+		vol= dot_product(t2ct3,realspace(:,1))
 
-      recvec(:,:)=recvec(:,:)/vol
+		recvec(:,:)=recvec(:,:)/vol
 
-    CASE(2)
-      plane = 0
-      if(realspace(3,1) .eq. 0 .and. realspace(3,2) .eq. 0) then
-        recvec(1,1)=realspace(2,2)*2._realk*pi
-        recvec(2,1)=-realspace(1,2)*2._realk*pi
+	CASE(2)
 
-        recvec(1,2)=-realspace(1,1)*2._realk*pi
-        recvec(2,2)=realspace(2,1)*2._realk*pi
+		! the formula for the 2D reciprocal vectors is
+	   ! $b_i = 2\pi \frac{ E a_j }{ a_i \cdot E a_j }$	
+		! where $E = (e_i \otimes \e_j - e_j \otimes e_i)$, $e_i = a_i/|a_i|$ 
+		! and $i\neq j, \, i,j\in\{1,2\}$
+		
+		! pick the 'active' primitive vectors
+		do i = 1, 3
+			if ( is_active(i) ) then
+				a(:, i) = realspace(:, i)
+			endif
+		enddo
+		
+		! calculate reciprocal vectors
+		do i = 1, 2
+			norm_a(i) = sqrt( dot_product(a(:, i), a(:, i)) )
+			e(:, i) = a(:, i) / norm_a(i)
+		enddo
+		do i = 1, 3
+			rotmat(:, i) = e(i, 1)*e(:, 2) - e(i, 2)*e(:, 1)
+		enddo
+		do i = 1, 3
+			tmp(i) =  dot_product(rotmat(:, i), e(:, 2)) 
+		enddo
+		b(:, 1) = 2.0_realk * pi * tmp(:) &
+			/ ( norm_a(1) * dot_product(e(:, 1), tmp(:)) )
+		do i = 1, 3
+			tmp(i) =  dot_product(rotmat(:, i), e(:, 1)) 
+		enddo
+		b(:, 2) = 2.0_realk * pi *tmp(:) &
+			/ ( norm_a(2) * dot_product(e(:, 2), tmp(:)) )
 
-        vol=realspace(1,1)*realspace(2,2)+realspace(2,1)*realspace(1,2)
-        recvec(:,:)=recvec(:,:)/vol
-        if(realspace(3,1) .ne. 0._realk .or. realspace(3,2) .ne. 0._realk)then
-          write(*,*) 'Use just two axes it is a two dimensional system'
-          call LSquit('Not correct usage of lattice vectors',lu)
-        endif
-      elseif(realspace(2,1) .eq. 0 .and. realspace(2,2) .eq. 0) then
-        recvec(1,1)=realspace(3,2)*2._realk*pi
-        recvec(3,1)=-realspace(1,2)*2._realk*pi
+		! set reciprocal vectors
+		j = 1
+		do i = 1, 3
+			if ( is_active(i) ) then
+				recvec(:, i) = b(:, j)
+				j = j + 1
+			else
+				recvec(:, i) = 0.0_realk
+			endif
+		enddo
+		
+!		write (*, *) 'test'
+!		write (*, *) 'a1b1', dot_product(a(:,1), b(:,1)), 'should be 2 pi'
+!		write (*, *) 'a1b2', dot_product(a(:,1), b(:,2)), 'should be 0'
+!		write (*, *) 'a2b1', dot_product(a(:,2), b(:,1)), 'should be 0'
+!		write (*, *) 'a2b2', dot_product(a(:,2), b(:,2)), 'should be 2 pi'
+!		
+!	 	write (*, *) recvec
 
-        recvec(1,2)=-realspace(1,1)*2._realk*pi
-        recvec(3,2)=realspace(3,1)*2._realk*pi
+	CASE(1)
+		if(realspace(1,1) .ne. 0) then
+			recvec(1,1)=2._realk*pi/realspace(1,1)
+			if(realspace(2,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
+				write(*,*) 'Use just one axis it is a one dimensional system'
+				call LSquit('Not correct usage of lattice vectors',lu)
+			endif
+		elseif(realspace(2,1) .ne. 0) then
+			recvec(2,1)=2._realk*pi/realspace(2,1)
+			if(realspace(1,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
+				write(*,*) 'Use just one axis it is a one dimensional system'
+				call LSquit('Not correct usage of lattice vectors',lu)
+			endif
+		elseif(realspace(3,1) .ne. 0) then
+			recvec(3,1)=2._realk*pi/realspace(3,1)
+			if(realspace(2,1) .ne. 0._realk .or. realspace(1,1) .ne. 0._realk) then
+				write(*,*) 'Use just one axis it is a one dimensional system'
+				call LSquit('Not correct usage of lattice vectors',lu)
+			endif
+		endif
 
-        vol=realspace(1,1)*realspace(3,2)+realspace(3,1)*realspace(1,2)
-        recvec(:,:)=recvec(:,:)/vol
-        if(realspace(2,1) .ne. 0._realk .or. realspace(2,2) .ne. 0._realk)then
-          write(*,*) 'Use just two axes it is a two dimensional system'
-          call LSquit('Not correct usage of lattice vectors',lu)
-        endif
-      elseif(realspace(1,1) .eq. 0 .and. realspace(1,2) .eq. 0) then
-        recvec(2,1)=realspace(3,2)*2._realk*pi
-        recvec(3,1)=-realspace(2,2)*2._realk*pi
+	END SELECT
 
-        recvec(2,2)=-realspace(2,1)*2._realk*pi
-        recvec(3,2)=realspace(3,1)*2._realk*pi
 
-        vol=realspace(3,1)*realspace(2,2)+realspace(2,1)*realspace(3,2)
-        recvec(:,:)=recvec(:,:)/vol
-        if(realspace(1,1) .ne. 0._realk .or. realspace(1,2) .ne. 0._realk)then
-          write(*,*) 'Use just two axes it is a two dimensional system'
-          call LSquit('Not correct usage of lattice vectors',lu)
-        endif
-      endif
-      
 
-   CASE(1)
-     if(realspace(1,1) .ne. 0) then
-       recvec(1,1)=2._realk*pi/realspace(1,1)
-       if(realspace(2,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
-         write(*,*) 'Use just one axis it is a one dimensional system'
-         call LSquit('Not correct usage of lattice vectors',lu)
-       endif
-     elseif(realspace(2,1) .ne. 0) then
-       recvec(2,1)=2._realk*pi/realspace(2,1)
-       if(realspace(1,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
-         write(*,*) 'Use just one axis it is a one dimensional system'
-         call LSquit('Not correct usage of lattice vectors',lu)
-       endif
-     elseif(realspace(3,1) .ne. 0) then
-       recvec(3,1)=2._realk*pi/realspace(3,1)
-       if(realspace(2,1) .ne. 0._realk .or. realspace(1,1) .ne. 0._realk) then
-         write(*,*) 'Use just one axis it is a one dimensional system'
-         call LSquit('Not correct usage of lattice vectors',lu)
-       endif
-     endif
-
-   END SELECT
-     
-      
-
-      !recvec=2.*pi*recvec/(recvec(1,1)*realspace(1,1)+recvec(2,1)*realspace(2,1)+&
-      !     recvec(3,1)*realspace(3,1))!This gives NaN for the moment
+	!recvec=2.*pi*recvec/(recvec(1,1)*realspace(1,1)+recvec(2,1)*realspace(2,1)+&
+	!     recvec(3,1)*realspace(3,1))!This gives NaN for the moment
 
 END SUBROUTINE pbc_init_recvec
 

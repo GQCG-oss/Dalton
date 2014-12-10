@@ -24,7 +24,7 @@ TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7
 CTRL[1]=10
 ERROR[1]="REMOVAL OF PARAMETERS NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then

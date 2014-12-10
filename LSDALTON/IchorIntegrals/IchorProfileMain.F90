@@ -1,13 +1,16 @@
 PROGRAM IchorErimoduleTEST
+use IchorPrecisionMod
 #ifdef VAR_OPENACC
 #ifdef VAR_PGF90
 use openacc, only: acc_get_device_type,ACC_DEVICE_NONE,&
      & ACC_DEVICE_DEFAULT,ACC_DEVICE_HOST,ACC_DEVICE_NOT_HOST,&
-     & acc_get_num_devices,acc_set_device_num, acc_init,ACC_DEVICE_NVIDIA
+     & acc_get_num_devices,acc_set_device_num, acc_init, acc_shutdown,&
+     & ACC_DEVICE_NVIDIA
+!ACC_DEVICE_NVIDIA only defined with PGI
 #else
 use openacc, only: acc_get_device_type,ACC_DEVICE_NONE,&
      & ACC_DEVICE_DEFAULT,ACC_DEVICE_HOST,ACC_DEVICE_NOT_HOST,&
-     & acc_get_num_devices,acc_set_device_num, acc_init
+     & acc_get_num_devices,acc_set_device_num, acc_init, acc_shutdown
 #endif
 #endif
 implicit none
@@ -61,12 +64,15 @@ CHARACTER(len=20)    :: BASISTYPE(13)
 integer :: iBASISTYPE(13),DebugIchorOption,ifilename,nKK,KK
 integer :: DebugIchorOption2,nRepetitions,L,K,I,J,selected_device_number
 character(len=100) :: filename
-logical      :: SpecialPass,FAIL(13,13,13,13),ALLPASS
+logical      :: SpecialPass,FAIL(13,13,13,13),ALLPASS,ForceCPU,ForceGPU
 real(8) :: WALLTIMEFULL,WALLTIMECASE,WALLTIMEseg,WALLTIMEsegP,WALLTIMEsegQ
 real(8) :: WALLTIMEseg1Prim,WALLTIMEGen,TIME1,TIME2,DELTAWALL,CPUTIME,WALLTIME,GPUMAXMEM
-
+integer(kind=accdevkind) :: acc_device_type
+ForceCPU = .FALSE.
+ForceGPU = .FALSE.
 #ifdef VAR_OPENACC
-print*,'acc_get_device_type = ',acc_get_device_type()
+acc_device_type = acc_get_device_type()
+print*,'acc_get_device_type = ',acc_device_type
 print*,'================================'
 !4 device types are always supported 
 print*,'ACC_DEVICE_NONE     = ',ACC_DEVICE_NONE
@@ -79,9 +85,9 @@ print*,'ACC_DEVICE_NVIDIA   = ',ACC_DEVICE_NVIDIA
 #endif
 print*,'================================'
 #ifdef VAR_PGF90
-IF(acc_get_device_type().EQ.ACC_DEVICE_NVIDIA)print*,'ACC_DEVICE_NVIDIA have been selected'
+IF(acc_device_type.EQ.ACC_DEVICE_NVIDIA)print*,'ACC_DEVICE_NVIDIA have been selected'
 #endif
-IF(acc_get_device_type().EQ.ACC_DEVICE_NONE)THEN
+IF(acc_device_type.EQ.ACC_DEVICE_NONE)THEN
    print*,'ACC_DEVICE_NONE have been selected'
    print*,'please use the command'
    print*,'export ACC_DEVICE=NVIDIA'
@@ -89,10 +95,11 @@ IF(acc_get_device_type().EQ.ACC_DEVICE_NONE)THEN
    print*,'export ACC_DEVICE=HOST'
    print*,'to chose to run the GPU kernel on the CPU'
 ENDIF
-print*,'There are ',acc_get_num_devices(acc_get_device_type()),'devices'
+#ifdef VAR_PGF90
+print*,'There are ',acc_get_num_devices(acc_device_type),'devices'
 print*,'The Program only support 1 device at present'
 selected_device_number = 2
-IF(acc_get_num_devices(acc_get_device_type()).GT.1)THEN
+IF(acc_get_num_devices(acc_device_type).GT.1)THEN
    IF(selected_device_number .EQ. 0)THEN
       print*,'Using default behavior of which device to use'
       print*,'Change this behavior by choosing device number in input or'
@@ -102,7 +109,8 @@ IF(acc_get_num_devices(acc_get_device_type()).GT.1)THEN
       call acc_set_device_num(2,0)
    ENDIF
 ENDIF
-call acc_init(acc_get_device_type())
+#endif
+call acc_init(acc_device_type)
 #endif
 
 
@@ -425,7 +433,7 @@ do Ipass = IpassStart,IpassEnd
              & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
              & MaxFileStorage,MaxMemAllocated,MemAllocated,&
              & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-             & integrals,lupri)
+             & integrals,ForceCPU,ForceGPU,lupri)
 
 
         CALL ICHOR_GETTIM(TIME1,TIME2)
@@ -614,6 +622,8 @@ WRITE(*,'(A,F16.8)')'Seg1Prim Wall Time =',WALLTIMEseg1Prim
 WRITE(*,'(A,F16.8)')'SegQ Wall Time     =',WALLTIMEsegQ
 WRITE(*,'(A,F16.8)')'Gen Wall Time      =',WALLTIMEGen
 WRITE(*,'(A,F16.8)')'Total Wall Time    =',WALLTIMEFULL
+
+call acc_shutdown(acc_device_type)
 
 CONTAINS
 subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)

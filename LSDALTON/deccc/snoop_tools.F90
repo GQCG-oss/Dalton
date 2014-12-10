@@ -65,7 +65,7 @@ contains
     call list_of_atoms_for_subsystem(this,MyMolecule,natomssub,subatoms)
 
     ! Build lssub with atoms for subsystem
-    call build_ccfragmentlsitem(lsfull,lssub,subatoms,natomssub,DECinfo%output,DECinfo%output)
+    call build_AtomSpecfragmentlsitem(lsfull,lssub,subatoms,natomssub,DECinfo%output,DECinfo%output)
     call mem_dealloc(subatoms)
 
   end subroutine build_subsystem_lsitem_no_ghost
@@ -323,7 +323,7 @@ contains
     end do
 
     ! Build lssub with all atoms included
-    call build_ccfragmentlsitem(lsfull,lssub,atoms,natoms,DECinfo%output,DECinfo%output)
+    call build_AtomSpecfragmentlsitem(lsfull,lssub,atoms,natoms,DECinfo%output,DECinfo%output)
 
 
     ! 2. Make modifications such that atoms on other centers are considered as "ghost atoms"

@@ -3,7 +3,8 @@ MODULE ProfileIchorMod
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
        & BASISSETLIBRARYITEM
   use basis_type, only: free_basissetinfo
-  use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam
+  use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam,&
+       & nullifymainbasis
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
   use LSparameters
@@ -50,8 +51,9 @@ TYPE(BASISINFO),pointer :: originalBASIS
 CHARACTER(len=80)    :: BASISSETNAME
 logical      :: spherical,savedospherical,SameMOL,COMPARE,ForcePrint,sameBAS(4,4)
 logical :: MoTrans,NoSymmetry
-
+real(realk) :: intThreshold
 Character    :: intSpec(5)
+intThreshold = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
 NoSymmetry = .FALSE. !activate permutational symmetry
 MoTrans=.FALSE.
 intSpec(1) = 'R'
@@ -78,9 +80,11 @@ IF(config%prof%IchorProfInputBasis)THEN
    do A = 1,4       
       BASISSETNAME(1:20) = config%prof%IchorProfInputBasisString(A)
       WRITE(lupri,*)'Using Input Basis:',BASISSETNAME(1:20)
+      call nullifyMainBasis(UNITTESTBASIS(A))
       CALL Build_basis(LUPRI,IPRINT,&
            &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
            &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
+      UNITTESTBASIS(A)%WBASIS(RegBasParam) = .TRUE.
       SETTING%BASIS(A)%p => UNITTESTBASIS(A)
       call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
    enddo
@@ -154,7 +158,7 @@ IF(config%prof%IchorProfDoIchor)THEN
       CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
       call MAIN_ICHORERI_DRIVER(LUPRI,iprint,setting,dim1,dim2,dim3,dim4,&
            & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1,MoTrans,&
-           & dim1,dim2,dim3,dim4,NoSymmetry)
+           & dim1,dim2,dim3,dim4,NoSymmetry,intThreshold)
       call FREE_SCREEN_ICHORERI
       !   setting%scheme%OD_SCREEN = .TRUE.
       !   setting%scheme%CS_SCREEN = .TRUE.

@@ -2,7 +2,7 @@
 !> Utils for DEC subroutines
 !> \author Marcin Ziolkowski (modified by Kasper Kristensen)
 module dec_fragment_utils
-
+  use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use fundamental
   use precision
   use lstiming
@@ -12,9 +12,9 @@ module dec_fragment_utils
   use files!,only:lsopen,lsclose
   use DALTONINFO!, only: ls_free
   use dec_typedef_module
+  use dec_workarounds_module
   use memory_handling!, only: mem_alloc, mem_dealloc, mem_allocated_global,&
   !       & stats_mem, get_avaiLable_memory
-  use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use matrix_module!, only:matrix
   use matrix_operations
   use tensor_interface_module
@@ -717,6 +717,29 @@ end function max_batch_dimension
 
   end subroutine adjust_basis_matrix
 
+  !> \brief Adjust full molecular basis to a list of atoms and orbitals
+  !> FullMatrix(nbasis,norbitals) -> SmallMatrix(nbasis_small,norbitals_small)
+  !> for atomic indices in list atoms(natoms_small) using atoms_size(natoms),
+  !> atoms_start(natoms), atoms_end(natoms)
+  subroutine adjust_basis_matrix2(FullMatrix,SmallMatrix,orbitals,nbasis,&
+       & norbitals,nbasis_small,norbitals_small,basis_idx)
+
+    implicit none
+    integer, intent(in) :: nbasis,norbitals,nbasis_small,norbitals_small
+    real(realk), dimension(nbasis,norbitals), intent(in) :: FullMatrix
+    real(realk), dimension(nbasis_small,norbitals_small), intent(inout) :: SmallMatrix
+    integer, dimension(norbitals_small), intent(in) :: orbitals
+    integer, dimension(nbasis_small), intent(in) :: basis_idx
+    integer :: i,j
+
+    do i=1,norbitals_small
+       do j=1,nbasis_small
+          SmallMatrix(j,i)= FullMatrix(basis_idx(j),orbitals(i))
+       end do
+    end do
+
+  end subroutine adjust_basis_matrix2
+
   !> \brief Adjust full molecular suqare matrix to a list of atoms (AO matrix)
   subroutine adjust_square_matrix(FullMatrix,SmallMatrix,atoms,atom_size, &
        atom_start,atom_end,nbasis,natoms,nbasis_small,natoms_small)
@@ -746,6 +769,25 @@ end function max_batch_dimension
 
   end subroutine adjust_square_matrix
 
+  !> \brief Adjust full molecular suqare matrix to a list of AOs  (AO matrix)
+  subroutine adjust_square_matrix2(FullMatrix,SmallMatrix,aos,nbasis,nbasis_small)
+
+    implicit none
+    real(realk), dimension(nbasis,nbasis), intent(in) :: FullMatrix
+    real(realk), dimension(nbasis_small,nbasis_small), intent(inout) :: SmallMatrix
+    integer, intent(in) :: nbasis,nbasis_small
+    integer, dimension(nbasis_small), intent(in) :: aos
+    integer :: i,j,BigJ
+!    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(J,BigJ,I) SHARED(nbasis_small,FullMatrix,SmallMatrix,aos)
+    do j=1,nbasis_small
+       BigJ = aos(j)
+       do i=1,nbasis_small
+          SmallMatrix(i,j) = FullMatrix(aos(i),BigJ)
+       end do
+    end do
+!    !$OMP END PARALLEL DO
+  end subroutine adjust_square_matrix2
+
   !> \brief Adjust full molecular basis to a list of orbitals (MO matrix)
   subroutine adjust_square_matrix_mo(FullMatrix,SmallMatrix,idx,norb,norb_small)
     implicit none
@@ -755,15 +797,14 @@ end function max_batch_dimension
     integer, dimension(norb_small), intent(in) :: idx
     integer :: i,j,idx_i,idx_j
 
-    do i=1,norb_small
-       do j=1,norb_small
+    do j=1,norb_small
+       idx_j = idx(j)
+       do i=1,norb_small
           idx_i = idx(i)
-          idx_j = idx(j)
           SmallMatrix(i,j) = FullMatrix(idx_i,idx_j)
        end do
     end do
 
-    return
   end subroutine adjust_square_matrix_mo
 
   !> \brief Get SubSystem indexes 
@@ -1915,6 +1956,12 @@ end function max_batch_dimension
        call mem_dealloc(fragment%unoccAOSorb)
     end if
 
+    ! Reduced fragment info
+    do i=1,DECinfo%nFRAGSred
+       call fragmentAOS_type_free(fragment%REDfrags(i))
+    end do
+    call mem_dealloc(fragment%REDfrags)
+
   end subroutine atomic_fragment_free_simple
 
   
@@ -1990,6 +2037,24 @@ end function max_batch_dimension
     end if
     
   end subroutine atomic_fragment_free_basis_info
+
+
+  !> Free pointers in fragmentAOS type
+  subroutine fragmentAOS_type_free(MyFragmentAOS)
+    implicit none
+    !> FragmentAOS information
+    type(fragmentAOS),intent(inout) :: MyFragmentAOS
+
+    if(associated(MyFragmentAOS%occAOSidx)) then
+       call mem_dealloc(MyFragmentAOS%occAOSidx)
+    end if
+    if(associated(MyFragmentAOS%unoccAOSidx)) then
+       call mem_dealloc(MyFragmentAOS%unoccAOSidx)
+    end if
+
+  end subroutine fragmentAOS_type_free
+
+
 
   !> \brief Free the f12 fragment free matrices
   !> \author Yang Min Wang
@@ -2079,9 +2144,9 @@ end function max_batch_dimension
     implicit none
     type(decorbital), intent(inout) :: myorbital
 
-    if(associated(myorbital%atoms)) then
-       call mem_dealloc(myorbital%atoms)
-       myorbital%atoms => null()
+    if(associated(myorbital%aos)) then
+       call mem_dealloc(myorbital%aos)
+       myorbital%aos => null()
     end if
 
   end subroutine orbital_free
@@ -3060,11 +3125,11 @@ end function max_batch_dimension
 
     implicit none
     ! Fragment 1 in pair
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     ! Fragment 2 in pair
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
-    type(decfrag),intent(inout) :: PairFragment
+    type(decfrag),intent(in) :: PairFragment
     !> Do pair or not - dimension: (noccEOS,noccEOS) for PAIR
     logical,dimension(PairFragment%noccEOS,PairFragment%noccEOS),&
          & intent(inout) :: dopair
@@ -3165,11 +3230,11 @@ end function max_batch_dimension
 
     implicit none
     ! Fragment 1 in pair
-    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(in) :: Fragment1
     ! Fragment 2 in pair
-    type(decfrag),intent(inout) :: Fragment2
+    type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
-    type(decfrag),intent(inout) :: PairFragment
+    type(decfrag),intent(in) :: PairFragment
     !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
     logical,dimension(PairFragment%nunoccEOS,PairFragment%nunoccEOS),&
          & intent(inout) :: dopair
@@ -4013,7 +4078,7 @@ end function max_batch_dimension
   end subroutine orthogonalize_MOs
 
   !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
-  subroutine print_total_energy_summary(EHF,Ecorr,Eerr)
+  subroutine print_total_energy_summary(EHF,Ecorr,Eerr,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF
@@ -4021,13 +4086,22 @@ end function max_batch_dimension
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
     real(realk),intent(in) :: Eerr
+    logical,intent(in),optional :: doSOS
     integer :: lupri
 
     lupri=6
-    call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    if(present(doSOS))then
+      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+    else
+      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    endif
 
     lupri=DECinfo%output
-    call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    if(present(doSOS))then
+      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+    else
+      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+    endif
 
 
   end subroutine print_total_energy_summary
@@ -4036,7 +4110,7 @@ end function max_batch_dimension
   !> (Necessary to place here because it is used both for DEC and for full calculation).
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+  subroutine print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF
@@ -4046,6 +4120,12 @@ end function max_batch_dimension
     real(realk),intent(in) :: Eerr
     !> Logical unit number to print to
     integer,intent(in) :: lupri
+    !> SOS cont
+    logical,intent(in),optional :: doSOS
+    logical :: SOS
+
+    SOS = .false.
+    if(present(doSOS)) SOS = doSOS
 
     ! MODIFY FOR NEW MODEL
 
@@ -4091,12 +4171,12 @@ end function max_batch_dimension
              write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy    :', Ehf+Ecorr
           endif
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)')  'G: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
-         if(.not. DECinfo%SOS) then
-           write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy:', Ehf+Ecorr
+         if(.not. SOS) then
+           write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy   :', Ehf+Ecorr
          else
-           write(lupri,'(15X,a,f20.10)') 'G: Total SOSEX energy:', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)') 'G: Total SOSEX energy  :', Ehf+Ecorr
          endif
        else
           write(lupri,'(15X,A,I4,A,I4)') 'G: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel
@@ -4108,7 +4188,12 @@ end function max_batch_dimension
        IF(DECinfo%DFTreference)THEN
           write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Ehf
        ENDIF
-       write(lupri,'(15X,a,f20.10)')       'E: Correlation energy  :', Ecorr
+       if(SOS) then
+         write(lupri,'(15X,a,f20.10)')       'E: SOSEX energy        :', Ecorr
+       else
+         write(lupri,'(15X,a,f20.10)')       'E: Correlation energy  :', Ecorr
+       endif
+
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
           write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC error :', Eerr
@@ -4134,8 +4219,8 @@ end function max_batch_dimension
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)')    'E: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
-          if(.not. DECinfo%SOS) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total RPA energy    :', Ehf+Ecorr
+          if(.not. SOS) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy   :', Ehf+Ecorr
           else
              write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy  :', Ehf+Ecorr
           endif
@@ -4257,28 +4342,56 @@ end function max_batch_dimension
 
        if(.not.DECinfo%onlyvirtpart) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
-               & 'RPA occupied single energies','AF_RPA_OCC')
+               & 'dRPA occupied single energies','AF_RPA_OCC')
        endif
        if(.not.DECinfo%onlyoccpart) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
-               & 'RPA virtual single energies','AF_RPA_VIR')
+               & 'dRPA virtual single energies','AF_RPA_VIR')
        endif
 
        if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
-               & DistanceTable, 'RPA occupied pair energies','PF_RPA_OCC')
+               & DistanceTable, 'dRPA occupied pair energies','PF_RPA_OCC')
        endif
        if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
-               & DistanceTable, 'RPA virtual pair energies','PF_RPA_VIR')          
+               & DistanceTable, 'dRPA virtual pair energies','PF_RPA_VIR')          
        endif
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'RPA occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'dRPA occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
             & energies(FRAGMODEL_OCCRPA)
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'RPA virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'dRPA virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTRPA)
+       end if
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCSOS),dofrag,&
+               & 'SOSEX occupied single energies','AF_SOS_OCC')
+       endif
+       if(.not.DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTSOS),dofrag,&
+               & 'SOSEX virtual single energies','AF_SOS_VIR')
+       endif
+
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCSOS),dofrag,&
+               & DistanceTable, 'SOSEX occupied pair energies','PF_SOS_OCC')
+       endif
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTSOS),dofrag,&
+               & DistanceTable, 'SOSEX virtual pair energies','PF_SOS_VIR') 
+       endif
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'SOSEX occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
+            & energies(FRAGMODEL_OCCSOS)
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'SOSEX virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
+               & energies(FRAGMODEL_VIRTSOS)
        end if
        write(DECinfo%output,*)
 
@@ -5001,7 +5114,7 @@ end function max_batch_dimension
   !> \brief Estimate (absolute) energy error in DEC calculation.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine get_estimated_energy_error(natoms,energies,Eerr)
+  subroutine get_estimated_energy_error(natoms,energies,Eerr,doSOS)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
@@ -5009,8 +5122,12 @@ end function max_batch_dimension
     real(realk),intent(in) :: energies(ndecenergies)
     !> Estimated (absolute) energy error
     real(realk),intent(inout) :: Eerr
+    logical,intent(in),optional :: doSOS
     real(realk) :: Eocc,Evirt
+    logical :: SOS
 
+    SOS = .false.
+    if(present(doSOS)) SOS=doSOS
     ! MODIFY FOR NEW MODEL
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
@@ -5024,7 +5141,11 @@ end function max_batch_dimension
 
     case(MODEL_RPA)
        ! Energy error = difference between occ and virt energies
-       Eerr = abs(energies(FRAGMODEL_OCCRPA) - energies(FRAGMODEL_VIRTRPA))
+       if(SOS) then
+         Eerr = abs(energies(FRAGMODEL_OCCSOS) - energies(FRAGMODEL_VIRTSOS))
+       else
+         Eerr = abs(energies(FRAGMODEL_OCCRPA) - energies(FRAGMODEL_VIRTRPA))
+       endif
 
     case(MODEL_CCSD)
        Eerr = abs(energies(FRAGMODEL_OCCCCSD) - energies(FRAGMODEL_VIRTCCSD))
@@ -5320,15 +5441,19 @@ end function max_batch_dimension
         endif
      case( TT_TILED_DIST )
 
-        if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
-           call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
-        endif
 
         call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
            &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset )
 
         if(DECinfo%use_singles)then
-           call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
+
+          !This was put outside of this test, it did not make sense
+          !as t1 may not have been initialized.
+          if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
+            call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
+          endif
+
+          call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
         else
            !this is just copying t2 to u
            call tensor_add( u, 1.0E0_realk, t2, a = 0.0E0_realk)

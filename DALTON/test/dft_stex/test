@@ -30,19 +30,19 @@ c.add(string = 'Number of orbitals frozen with',
       rel_tolerance = 1.0e-2)
 
 
-test.run(['dft_stex_1.dal'], ['OCS_aug-cc-pCVTZ.mol'], {'out': a}, args='-get SIRIUS.RST')
+test.run(['dft_stex_1.dal'], ['OCS_aug-cc-pCVTZ.mol'], f={'out': a}, args='-get SIRIUS.RST')
 
 shutil.move('dft_stex_1_OCS_aug-cc-pCVTZ.SIRIUS.RST','SIRIUS.RST')
 
-test.run(['dft_stex_2.dal'], ['OCS_aug-cc-pCVTZ.mol'], {'out': b}, args='-put SIRIUS.RST -get SIRIUS.RST')
+test.run(['dft_stex_2.dal'], ['OCS_aug-cc-pCVTZ.mol'], f={'out': b}, args='-put SIRIUS.RST -get SIRIUS.RST')
 
 shutil.move('dft_stex_2_OCS_aug-cc-pCVTZ.SIRIUS.RST','SIRIUS.RST')
 
-test.run(['dft_stex_3.dal'], ['OCS_aug-cc-pCVTZ.mol'], {'out': c}, args='-put SIRIUS.RST -get SIRIUS.RST')
+test.run(['dft_stex_3.dal'], ['OCS_aug-cc-pCVTZ.mol'], f={'out': c}, args='-put SIRIUS.RST -get SIRIUS.RST')
 
 shutil.move('dft_stex_3_OCS_aug-cc-pCVTZ.SIRIUS.RST','SIRIUS.RST')
 
-test.run(['dft_stex_4.dal'], ['OCS_aug-cc-pCVTZ.mol'], {'out': c}, args='-put SIRIUS.RST')
+test.run(['dft_stex_4.dal'], ['OCS_aug-cc-pCVTZ.mol'], f={'out': c}, args='-put SIRIUS.RST')
 
 os.remove('SIRIUS.RST')
 

@@ -28,7 +28,7 @@ f.add(from_string = 'Molecular geometry (au)',
       abs_tolerance = 1.0e-6)
 
 
-test.run(['b3lyp_optimize.dal'], ['H2O_6-31Gs_nosym.mol'], {'out': f})
-test.run(['b3lypgauss_optimize.dal'], ['H2O_6-31Gs_sym.mol'], {'out': f})
+test.run(['b3lyp_optimize.dal'], ['H2O_6-31Gs_nosym.mol'], f={'out': f})
+test.run(['b3lypgauss_optimize.dal'], ['H2O_6-31Gs_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

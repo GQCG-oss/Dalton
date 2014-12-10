@@ -5,7 +5,7 @@ C...
 C...   The source code in this file is part of 
 C...   "Dalton, an ab initio electronic structure program, Release 1.0
 C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, T. Andersen, K. L. Bak, V. Bakken,
+C...   J. Olsen, K. Ruud, H. Agren, T. Andersen, K. L. Bak, V. Bakken,
 C...   O. Christiansen, P. Dahle, E. K. Dalskov, T. Enevoldsen,
 C...   H. Heiberg, D. Jonsson, S. Kirpekar, R. Kobayashi, H. Koch,
 C...   K. V. Mikkelsen, P. Norman, M. J. Packer, T.Saue,

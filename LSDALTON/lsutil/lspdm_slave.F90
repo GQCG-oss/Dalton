@@ -11,6 +11,10 @@ subroutine pdm_tensor_slave(comm)
   use lsmpi_type
 #endif
 
+  !this is a special case since this slave routine is associated with the tensor
+  !structure it is allwed to use lspdm_tensor_operaions, otherwise this is not
+  !allowed
+  use lspdm_tensor_operations_module
   use tensor_interface_module
 
    IMPLICIT NONE
@@ -43,7 +47,9 @@ subroutine pdm_tensor_slave(comm)
       call mem_alloc(intarr1,A%mode)
       intarr1 =A%dims
       call tensor_free_aux(A)
-      call tensor_init_standard(A,intarr1,A%mode,AT_MASTER_ACCESS) 
+      print *,"this is deprecated"
+      stop 0
+      !call tensor_init_standard(A,intarr1,A%mode,AT_MASTER_ACCESS) 
       call mem_dealloc(intarr1)
 
    CASE(JOB_INIT_TENSOR_TILED)
@@ -284,7 +290,9 @@ subroutine pdm_tensor_slave(comm)
 
       call tensor_free(AUX)
    CASE(JOB_GET_MP2_ST_GUESS)
-      call lspdm_get_mp2_starting_guess(A,B,C,D)
+      call ls_mpibcast(INT1,infpar%master,infpar%lg_comm)
+      call ls_mpibcast(LOG1,infpar%master,infpar%lg_comm)
+      call lspdm_get_starting_guess(A,B,C,D,INT1,LOG1)
 
    CASE DEFAULT
         call lsquit("ERROR(pdm_tensor_slave): Unknown job",-1)

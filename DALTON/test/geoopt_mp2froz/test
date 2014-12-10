@@ -87,6 +87,6 @@ f.add(from_string = 'Bond distances (Angstrom):',
       abs_tolerance = 1.0e-6)
       
 
-test.run(['geoopt_mp2froz.dal'], ['c6h6_sto-3g_sym.mol'], {'out': f})
+test.run(['geoopt_mp2froz.dal'], ['c6h6_sto-3g_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

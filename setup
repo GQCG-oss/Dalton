@@ -61,10 +61,14 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable 64bit integers [default: %(default)s]')
-    group.add_argument('--openacc',
+    group.add_argument('--gpu',
             action='store_true',
             default=False,
-            help='enable OpenACC [default: %(default)s]')
+            help='enable GPU acceleration [default: %(default)s]')
+    group.add_argument('--cublas',
+            action='store_true',
+            default=False,
+            help='enable the CUBLAS GPU library [default: %(default)s]')
     group.add_argument('--collapse',
             action='store_true',
             default=False,
@@ -189,10 +193,6 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable interest external library [default: %(default)s]')
-    group.add_argument('--ichor',
-            action='store_true',
-            default=False,
-            help='enable ichor integrals library [default: %(default)s]')
     group.add_argument('--qmatrix',
             action='store_true',
             default=False,
@@ -269,14 +269,14 @@ def gen_cmake_command(args):
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
     command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
     command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
-    command += ' -DENABLE_OPENACC=%s'        % translate_cmake(args.openacc)
+    command += ' -DENABLE_GPU=%s'            % translate_cmake(args.gpu)
+    command += ' -DENABLE_CUBLAS=%s'         % translate_cmake(args.cublas)
     command += ' -DENABLE_COLLAPSE=%s'       % translate_cmake(args.collapse)
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
     command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
-    command += ' -DENABLE_ICHOR=%s'          % translate_cmake(args.ichor)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
     command += ' -DENABLE_QMATRIX=%s'        % translate_cmake(args.qmatrix)
     command += ' -DENABLE_TDRSP=%s'          % translate_cmake(args.tdrsp)
@@ -320,6 +320,10 @@ def gen_cmake_command(args):
         command += ' -DENABLE_CRAY_WRAPPERS=ON'
         command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
+
+    if args.gpu:
+        command += ' -DENABLE_OPENACC=ON'
+        command += ' -DENABLE_CUDA=ON'
 
     if args.mkl != 'none':
         if args.mkl == None:

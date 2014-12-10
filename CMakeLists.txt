@@ -37,18 +37,20 @@ set(CMAKE_MODULE_PATH
     )
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                           OFF)
-option(ENABLE_OPENACC        "Enable OpenACC"                                   OFF)
+option(ENABLE_GPU            "Enable GPU acceleration"                          OFF)
+option(ENABLE_OPENACC        "Enable OpenACC GPU acceleration"                  OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
+option(ENABLE_CUBLAS         "Enable the CUBLAS GPU library"                    OFF)
 option(ENABLE_COLLAPSE       "Enable COLLAPSE clause for reorderings"           OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization"                    OFF)
 option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
-option(ENABLE_QFITLIB        "Enable charge fittling library (QFITLIB)"         ON)
+option(ENABLE_QFITLIB        "Enable charge fitting library (QFITLIB)"          ON)
 option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                         OFF)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
@@ -62,14 +64,12 @@ option(ENABLE_LSEEK          "Enable lseek"                                     
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
-option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
+option(ENABLE_ICHOR          "Enable ichor integrals"                           ON)
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
 option(ENABLE_QMATRIX        "Enable QMatrix library"                           OFF)
 option(ENABLE_OPENRSP        "Enable OPENRSP library (need QMatrix library)"    OFF)
 option(ENABLE_TDRSP          "Enable TDRSP library (need QMatrix library)"      OFF)
-
 option(ENABLE_EFS            "Enable Echidna Fock Solver"                       OFF)
-
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
@@ -82,7 +82,6 @@ option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             
 #endif()
 
 set(EXTERNAL_LIBS)
-
 
 include(ConfigVersion)
 include(SourcesDALTON)
@@ -115,6 +114,20 @@ endif()
 set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
+
+if(ENABLE_GPU)
+    message(STATUS "Enabling GPU acceleration (OpenACC/CUDA).")
+    message(STATUS "If your compiler does not support OpenACC, this *will* fail.")
+    if(NOT ENABLE_CRAY_WRAPPERS AND NOT ENABLE_CUBLAS)
+        set(ENABLE_GPU OFF CACHE BOOL "Enable GPU acceleration" FORCE)
+        set(ENABLE_OPENACC OFF CACHE BOOL "Enable OpenACC GPU acceleration" FORCE)
+        set(ENABLE_CUDA OFF CACHE BOOL "Enable CUDA GPU acceleration" FORCE)
+        message(STATUS "No GPU math library found, so GPU acceleration is disabled!")
+        message(STATUS "GPU acceleration currently only works in combination with:")
+        message(STATUS "'--cray' (Libsci_acc) OR '--cublas' (CUBLAS)")
+    endif()
+endif()
+
 
 if(ENABLE_PCMSOLVER)
     find_package(ZLIB)
@@ -227,4 +240,3 @@ include(ConfigMakeRelease)
 # give information about system, compiler flags, and size of static allocations
 set(STATIC_MEM_INFO_BINARIES dalton lsdalton)
 include(ConfigInfo)
-

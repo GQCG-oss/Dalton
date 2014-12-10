@@ -207,6 +207,7 @@ set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc-data.F90
     LSDALTON/pbc2/pbc-ffdata.F90
     LSDALTON/pbc2/pbcmain.F90
+    LSDALTON/pbc2/pbc-timings.F90
     )
 set(FMM_SOURCES
     LSDALTON/mm/mm_T_contractors.F90
@@ -252,13 +253,6 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorGaussianGeminal.F90
     LSDALTON/IchorIntegrals/IchorBatchTools.F90
     LSDALTON/IchorIntegrals/IchorSaveGab.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_WTUV_general.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specR.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL2.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_general.F90
-    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_general.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_general.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_Gen.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_SegQ.F90
@@ -291,6 +285,13 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_SegPSize.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_SegSize.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_Seg1PrimSize.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_WTUV_general.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specR.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_general.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_general.F90
     LSDALTON/IchorIntegrals/IchorEriTools.F90
     LSDALTON/IchorIntegrals/IchorEriDist.F90
     LSDALTON/IchorIntegrals/IchorEriLink.F90
@@ -299,6 +300,8 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Gen.F90
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Seg.F90
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_general.F90
+    LSDALTON/IchorIntegrals/IchorEri_GabIntegral_Prim.F90
+    LSDALTON/IchorIntegrals/IchorGabLoop.F90
     LSDALTON/IchorIntegrals/IchorGab.F90
     LSDALTON/IchorIntegrals/AGC_CPU_BuildRJ000Gen.F90
     LSDALTON/IchorIntegrals/AGC_CPU_BuildRJ000Seg1Prim.F90

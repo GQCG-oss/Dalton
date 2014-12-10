@@ -443,16 +443,16 @@ contains
        call ls_mpi_buffer(OccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(OccOrbitals(i)%centralatom,master)
        call ls_mpi_buffer(OccOrbitals(i)%secondaryatom,master)
-       call ls_mpi_buffer(OccOrbitals(i)%numberofatoms,master)
+       call ls_mpi_buffer(OccOrbitals(i)%numberofaos,master)
 
-       ! Pointer for atoms for orbital "i"
+       ! Pointer for Atomic Orbitals (AOs) for orbital "i"
        if(.not. gm) then ! allocate for local masters (not global master)
-          Nullify(OccOrbitals(i)%atoms)
-          call mem_alloc(OccOrbitals(i)%atoms,OccOrbitals(i)%numberofatoms)
+          Nullify(OccOrbitals(i)%aos)
+          call mem_alloc(OccOrbitals(i)%aos,OccOrbitals(i)%numberofaos)
        end if
        ! Buffer handling for both master and slave
-       call ls_mpi_buffer(OccOrbitals(i)%atoms, &
-            & OccOrbitals(i)%numberofatoms,master)
+       call ls_mpi_buffer(OccOrbitals(i)%aos, &
+            & OccOrbitals(i)%numberofaos,master)
     end do
 
 
@@ -464,16 +464,16 @@ contains
        call ls_mpi_buffer(UnoccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(UnoccOrbitals(i)%centralatom,master)
        call ls_mpi_buffer(UnoccOrbitals(i)%secondaryatom,master)
-       call ls_mpi_buffer(UnoccOrbitals(i)%numberofatoms,master)
+       call ls_mpi_buffer(UnoccOrbitals(i)%numberofaos,master)
 
-       ! Pointer for atoms for orbital "i"
+       ! Pointer for Atomic Orbitals (AOs) for orbital "i"
        if(.not. gm) then ! allocate for local masters (not global master)
-          Nullify(UnoccOrbitals(i)%atoms)
-          call mem_alloc(UnoccOrbitals(i)%atoms,UnoccOrbitals(i)%numberofatoms)
+          Nullify(UnoccOrbitals(i)%aos)
+          call mem_alloc(UnoccOrbitals(i)%aos,UnoccOrbitals(i)%numberofaos)
        end if
        ! Buffer handling for both master and slave
-       call ls_mpi_buffer(UnoccOrbitals(i)%atoms, &
-            & UnoccOrbitals(i)%numberofatoms,master)
+       call ls_mpi_buffer(UnoccOrbitals(i)%aos, &
+            & UnoccOrbitals(i)%numberofaos,master)
     end do
 
 
@@ -542,6 +542,8 @@ contains
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_end,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%bas_start,MyMolecule%nbasis)
+       call mem_alloc(MyMolecule%bas_end,MyMolecule%nbasis)
        IF(DECINFO%F12)THEN
           call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
           call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
@@ -577,6 +579,7 @@ contains
        call mem_alloc(MyMolecule%SubSystemIndex,MyMolecule%nAtoms)
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags)
+       call mem_alloc(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags)
     end if
 
 
@@ -585,6 +588,8 @@ contains
     call ls_mpibcast(MyMolecule%atom_size,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_start,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%atom_end,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%bas_start,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%bas_end,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     IF(DECINFO%F12)THEN
        call ls_mpibcast(MyMolecule%atom_cabssize,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
        call ls_mpibcast(MyMolecule%atom_cabsstart,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
@@ -623,6 +628,8 @@ contains
     call ls_mpibcast(MyMolecule%SubSystemIndex,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags,&
+         & master,MPI_COMM_LSDALTON)
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -837,6 +844,15 @@ contains
     end if
 
 
+    ! Reduced fragment types
+    ! ----------------------
+    if(.not. AddToBuffer) then
+       call mem_alloc(MyFragment%REDfrags,DECinfo%nFRAGSred)
+    end if
+    do i=1,DECinfo%nFRAGSred
+       call mpicopy_fragmentAOStype(MyFragment%REDfrags(i),comm)
+    end do
+
 
     ! CCORBITAL types
     ! ---------------
@@ -853,31 +869,31 @@ contains
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%secondaryatom,master)
-       call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofatoms,master)
+       call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofaos,master)
 
        ! Pointers inside decorbital sub-type (which again is inside decfrag type)
        if(.not. AddToBuffer) then
-          Nullify(MyFragment%occAOSorb(i)%atoms)
-          call mem_alloc(MyFragment%occAOSorb(i)%atoms,&
-               & MyFragment%occAOSorb(i)%numberofatoms)
+          Nullify(MyFragment%occAOSorb(i)%aos)
+          call mem_alloc(MyFragment%occAOSorb(i)%aos,&
+               & MyFragment%occAOSorb(i)%numberofaos)
        end if
        ! Buffer handling
-       call ls_mpi_buffer(MyFragment%occAOSorb(i)%atoms, &
-            & MyFragment%occAOSorb(i)%numberofatoms,master)
+       call ls_mpi_buffer(MyFragment%occAOSorb(i)%aos, &
+            & MyFragment%occAOSorb(i)%numberofaos,master)
     end do
 
     do i=1,MyFragment%nunoccLOC ! unocc orbitals
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%centralatom,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%secondaryatom,master)
-       call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%numberofatoms,master)
+       call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%numberofaos,master)
        if(.not. AddToBuffer) then ! allocate for slave
-          Nullify(MyFragment%unoccAOSorb(i)%atoms)
-          call mem_alloc(MyFragment%unoccAOSorb(i)%atoms,&
-               & MyFragment%unoccAOSorb(i)%numberofatoms)
+          Nullify(MyFragment%unoccAOSorb(i)%aos)
+          call mem_alloc(MyFragment%unoccAOSorb(i)%aos,&
+               & MyFragment%unoccAOSorb(i)%numberofaos)
        end if
-       call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%atoms, &
-            & MyFragment%unoccAOSorb(i)%numberofatoms,master)
+       call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%aos, &
+            & MyFragment%unoccAOSorb(i)%numberofaos,master)
     end do
 
 
@@ -958,6 +974,36 @@ contains
     end if
 
   End subroutine mpicopy_fragment
+
+
+  !> \brief MPI copy fragment AOS type
+  !> \author Kasper Kristensen
+  !> \date November 2014
+  subroutine mpicopy_fragmentAOStype(MyFragmentAOS,comm)
+
+    implicit none
+
+    !> FragmentAOS information
+    type(fragmentAOS),intent(inout) :: MyFragmentAOS
+    !> Communicator
+    integer(kind=ls_mpik),intent(in) :: comm
+    integer(kind=ls_mpik) :: master
+    master = 0
+
+    CALL ls_mpi_buffer(MyFragmentAOS%noccAOS,master)
+    CALL ls_mpi_buffer(MyFragmentAOS%nunoccAOS,master)
+    CALL ls_mpi_buffer(MyFragmentAOS%FOT,master)
+
+    ! Nullify and allocate stuff for receiver (global addtobuffer is false)
+    if(.not. AddToBuffer) then
+       call mem_alloc(MyFragmentAOS%occAOSidx,MyFragmentAOS%noccAOS)
+       call mem_alloc(MyFragmentAOS%unoccAOSidx,MyFragmentAOS%nunoccAOS)
+    end if
+    call ls_mpi_buffer(MyFragmentAOS%occAOSidx,MyFragmentAOS%noccAOS,master)
+    call ls_mpi_buffer(MyFragmentAOS%unoccAOSidx,MyFragmentAOS%nunoccAOS,master)
+
+  end subroutine mpicopy_fragmentAOStype
+
 
   subroutine buffercopy_PNOSpaceInfo_struct(inf,master)
     implicit none
@@ -2157,6 +2203,7 @@ contains
     call ls_mpi_buffer(DECitem%abc,Master)
     call ls_mpi_buffer(DECitem%abc_tile_size,Master)
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
+    call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
     call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
@@ -2180,6 +2227,7 @@ contains
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
     call ls_mpi_buffer(DECitem%cc_solver_tile_mem,Master)
     call ls_mpi_buffer(DECitem%en_mem,Master)
+    call ls_mpi_buffer(DECitem%ccsolver_overwrite_prec,Master)
     call ls_mpi_buffer(DECitem%precondition_with_full,Master)
     call ls_mpi_buffer(DECitem%ccsd_expl,Master)
     call ls_mpi_buffer(DECitem%ccMaxIter,Master)
@@ -2219,10 +2267,6 @@ contains
     call ls_mpi_buffer(DECitem%simple_orbital_threshold,Master)
     call ls_mpi_buffer(DECitem%purifyMOs,Master)
     call ls_mpi_buffer(DECitem%fragadapt,Master)
-    call ls_mpi_buffer(DECitem%BoughtonPulay,Master)
-    call ls_mpi_buffer(DECitem%mulliken_threshold,Master)
-    call ls_mpi_buffer(DECitem%simple_mulliken_threshold,Master)
-    call ls_mpi_buffer(DECitem%approximated_norm_threshold,Master)
     call ls_mpi_buffer(DECitem%mulliken,Master)
     call ls_mpi_buffer(DECitem%distance,Master)
     call ls_mpi_buffer(DECitem%FOT,Master)
@@ -2234,8 +2278,10 @@ contains
     call ls_mpi_buffer(DECitem%Frag_RedVir_Scheme,Master)
     call ls_mpi_buffer(DECitem%Frag_Init_Size,Master)
     call ls_mpi_buffer(DECitem%Frag_Exp_Size,Master)
-    call ls_mpi_buffer(DECitem%Frag_red_occ_thr,Master)
-    call ls_mpi_buffer(DECitem%Frag_red_virt_thr,Master)
+    call ls_mpi_buffer(DECitem%Frag_red1_thr,Master)
+    call ls_mpi_buffer(DECitem%Frag_red2_thr,Master)
+    call ls_mpi_buffer(DECitem%Frag_red_occ,Master)
+    call ls_mpi_buffer(DECitem%Frag_red_virt,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
     call ls_mpi_buffer(DECitem%fragopt_red_model,Master)
     call ls_mpi_buffer(DECitem%no_orb_based_fragopt,Master)
@@ -2248,11 +2294,12 @@ contains
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
     call ls_mpi_buffer(DECitem%checkpairs,Master)
     call ls_mpi_buffer(DECitem%pairFOthr,Master)
-    call ls_mpi_buffer(DECitem%PairMP2,Master)
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
     call ls_mpi_buffer(DECitem%EstimateInitRadius,Master)
     call ls_mpi_buffer(DECitem%EstimateInitAtom,Master)
     call ls_mpi_buffer(DECitem%PairEstimateModel,Master)
+    call ls_mpi_buffer(DECitem%nFRAGSred,Master)
+    call ls_mpi_buffer(DECitem%FOTscaling,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
@@ -2274,149 +2321,194 @@ contains
        endif
        call ls_mpi_buffer(DECitem%frag_job_nr,DECitem%only_n_frag_jobs,Master)
     endif
+    call ls_mpi_buffer(DECitem%UseIchor,Master)
+    call ls_mpi_buffer(DECitem%IntegralThreshold,Master)
 
   end subroutine mpicopy_dec_settings
 
-  subroutine rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
+!  subroutine rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
+!    implicit none
+!    !real(realk),intent(inout),pointer :: gmo(:)
+!    !type(array4), intent(inout) :: omega2
+!    type(tensor), intent(inout) :: gmo
+!    type(tensor), intent(inout) :: omega2
+!    !type(array4),intent(inout)         :: t2
+!    type(tensor),intent(inout)         :: t2
+!    !real(realk),intent(inout)         :: t2(:,:,:,:)
+!    integer,intent(inout)             :: nvirt,nocc
+!    logical :: master
+!    integer :: addr1(infpar%lg_nodtot)
+!    integer :: addr2(infpar%lg_nodtot)
+!    integer :: addr3(infpar%lg_nodtot)
+!
+!
+!    master = (infpar%lg_mynum == infpar%master)
+!
+!    if(master) then
+!   !   write(*,*)'Johannes addr in comm', omega2%addr_p_arr
+!      call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
+!      addr1 = omega2%addr_p_arr
+!      addr2 = gmo%addr_p_arr
+!      addr3 = t2%addr_p_arr
+!    endif
+!
+!    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+!    call ls_mpi_buffer(nvirt,infpar%master)
+!    call ls_mpi_buffer(nocc,infpar%master)
+!    call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+!    call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+!    call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+!
+!
+!    if(.not.master)then
+!     ! call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+!      omega2 = get_tensor_from_parr(addr1(infpar%lg_mynum+1))
+!      gmo     = get_tensor_from_parr(addr2(infpar%lg_mynum+1))
+!      t2     = get_tensor_from_parr(addr3(infpar%lg_mynum+1))
+!      !t2=array4_init([nvirt,nocc,nvirt,nocc])
+!      !omega2=array4_init([nvirt,nocc,nvirt,nocc])
+!      !omega2=tensor_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+!      !call tensor_ainit(gmo,[nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
+!      !call tensor_ainit(t2, [nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
+!    endif
+!    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+!    !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+!    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+!
+!    !print*,' inside rpa_res_comm',infpar%lg_mynum
+!
+!    
+!    !print*,' after gmo',infpar%lg_mynum
+!
+!    !print*,' after omega2',infpar%lg_mynum
+!
+!
+!    !call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+!    !print*,' after t2',infpar%lg_mynum
+!    !call ls_mpibcast(gmo%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+!
+!
+!    !call ls_mpibcast(omega2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+!
+!    !print*,' after finalize',infpar%lg_mynum
+!    !call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+!
+!
+!  end subroutine rpa_res_communicate_data
+
+  subroutine rpa_residual_communicate_data(t2,omega2,iajb,oof,vvf,no,nv)
     implicit none
-    !real(realk),intent(inout),pointer :: gmo(:)
-    !type(array4), intent(inout) :: omega2
-    type(tensor), intent(inout) :: gmo
-    type(tensor), intent(inout) :: omega2
-    !type(array4),intent(inout)         :: t2
-    type(tensor),intent(inout)         :: t2
-    !real(realk),intent(inout)         :: t2(:,:,:,:)
-    integer,intent(inout)             :: nvirt,nocc
+    type(tensor),intent(inout) :: omega2,iajb,t2,oof,vvf
     logical :: master
-    integer :: addr1(infpar%lg_nodtot)
-    integer :: addr2(infpar%lg_nodtot)
-    !integer :: addr3(infpar%lg_nodtot)
-
-
-    master = (infpar%lg_mynum == infpar%master)
-
-    if(master) then
-   !   write(*,*)'Johannes addr in comm', omega2%addr_p_arr
-      addr1 = omega2%addr_p_arr
-      !addr2 = gmo%addr_p_arr
-      !addr3 = t2%addr_p_arr
-    endif
-
-    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(nvirt,infpar%master)
-    call ls_mpi_buffer(nocc,infpar%master)
-    call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
-    !call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
-    !call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
-
-
-    if(.not.master)then
-     ! call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
-      omega2 = get_tensor_from_parr(addr1(infpar%lg_mynum+1))
-      !gmo     = get_tensor_from_parr(addr2(infpar%lg_mynum+1))
-      !t2     = get_tensor_from_parr(addr3(infpar%lg_mynum+1))
-      !t2=array4_init([nvirt,nocc,nvirt,nocc])
-      !omega2=array4_init([nvirt,nocc,nvirt,nocc])
-      !omega2=tensor_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
-      call tensor_ainit(gmo,[nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
-      call tensor_ainit(t2, [nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
-    endif
-    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
-    !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-
-    !print*,' inside rpa_res_comm',infpar%lg_mynum
-
-    
-    !print*,' after gmo',infpar%lg_mynum
-
-    !print*,' after omega2',infpar%lg_mynum
-
-
-    !call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    !print*,' after t2',infpar%lg_mynum
-    call ls_mpibcast(gmo%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
-
-
-    !call ls_mpibcast(omega2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-
-    !print*,' after finalize',infpar%lg_mynum
-    call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
-
-
-  end subroutine rpa_res_communicate_data
-
-  subroutine rpa_fock_communicate_data(t2,omega2,pfock,qfock,no,nv)
-    implicit none
-    !type(array4), intent(inout) :: omega2
-    type(tensor), intent(inout) :: omega2
-    type(tensor),intent(inout)         :: t2
-    type(tensor), intent(inout) :: pfock,qfock
-    integer,intent(inout)             :: nv,no
     integer :: addr1(infpar%lg_nodtot)
     integer :: addr2(infpar%lg_nodtot)
     integer :: addr3(infpar%lg_nodtot)
     integer :: addr4(infpar%lg_nodtot)
-    !real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
-    logical :: master
+    integer :: addr5(infpar%lg_nodtot)
+    !integer :: iter
+    !type(array4), intent(inout) :: omega2
+    !type(tensor), intent(inout) :: omega2
+    !type(tensor),intent(inout)         :: t2
+    !type(tensor), intent(inout) :: pfock,qfock
+    integer,intent(inout)             :: nv,no
+    !integer :: addr1(infpar%lg_nodtot)
+    !integer :: addr2(infpar%lg_nodtot)
+    !integer :: addr3(infpar%lg_nodtot)
+    !integer :: addr4(infpar%lg_nodtot)
+    !!real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
+    !logical :: master
 
 
     master = (infpar%lg_mynum == infpar%master)
 
+
+    if(master) then
+      call ls_mpibcast(RPAGETFOCK,infpar%master,infpar%lg_comm)
+      addr1 = omega2%addr_p_arr
+      addr2 = iajb%addr_p_arr
+      addr3 = t2%addr_p_arr
+      addr4 = oof%addr_p_arr
+      addr5 = vvf%addr_p_arr
+    endif
+
+
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(nv,infpar%master)
     call ls_mpi_buffer(no,infpar%master)
-
-    if(master) then
-      addr1 = pfock%addr_p_arr
-      addr2 = qfock%addr_p_arr
-      addr3 = t2%addr_p_arr
-      addr4 = omega2%addr_p_arr
-    endif
-
     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
     call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
     call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
     call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
-
-
-!    if(.not.master)then
-!      !call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
-!      !t2=array4_init([nvirt,nocc,nvirt,nocc])
-!      !omega2=array4_init([nv,no,nv,no])
-!
-!      write(*,*) 't2 ainit'
-!      !t2=tensor_ainit([nv,nv,no,no],4,atype='TDAR')
-!      write(*,*) 't2 init'
-!    !  pfock=tensor_ainit([no,no],2,atype='TDAR')
-!      write(*,*) 'pf init'
-!    !  qfock=tensor_ainit([nv,nv],2,atype='TDAR')
-!    !  pfock   = get_tensor_from_parr(addr1(infpar%lg_mynum+1))
-!      write(*,*) 'vf init'
-!    !  qfock    = get_tensor_from_parr(addr2(infpar%lg_mynum+1))
-!      !pfock=array2_init([nocc,nocc])
-!      !qfock=array2_init([nvirt,nvirt])
-!    endif
-!    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
-    !call ls_mpi_buffer(pfock%val,nocc,nocc,infpar%master)
-    !call ls_mpi_buffer(qfock%val,nvirt,nvirt,infpar%master)
-
-!    write(*,*) 'bcast t2',infpar%lg_mynum
-    
-    !call ls_mpibcast(t2%elm4,nv,nv,no,no,infpar%master,infpar%lg_comm)
-!    write(*,*) 'after bcast t2',infpar%lg_mynum
-    !call ls_mpibcast(pfock%elm2,no,no,infpar%master,infpar%lg_comm)
-    !call ls_mpibcast(qfock%elm2,nv,nv,infpar%master,infpar%lg_comm)
-
-!    write(*,*) 'finalized buffer',infpar%lg_mynum
+    call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
     if(.not.master)then
-      !t2=tensor_ainit([nv,nv,no,no],4,local =.true.,atype='TDAR')
-      pfock   = get_tensor_from_parr(addr1(infpar%lg_mynum+1))
-      qfock    = get_tensor_from_parr(addr2(infpar%lg_mynum+1))
-      t2    = get_tensor_from_parr(addr3(infpar%lg_mynum+1))
-      omega2   = get_tensor_from_parr(addr4(infpar%lg_mynum+1))
+      omega2 = get_tensor_from_parr(addr1(infpar%lg_mynum+1))
+      iajb   = get_tensor_from_parr(addr2(infpar%lg_mynum+1))
+      t2     = get_tensor_from_parr(addr3(infpar%lg_mynum+1))
+      oof    = get_tensor_from_parr(addr4(infpar%lg_mynum+1))
+      vvf    = get_tensor_from_parr(addr5(infpar%lg_mynum+1))
+    endif
+    !call ls_mpibcast(t2%elm1,nv*nv*no*no,infpar%master,infpar%lg_comm)
+
+
+  end subroutine rpa_residual_communicate_data
+
+
+
+
+  subroutine rpa_fock_communicate_data(t2,omega2,iajb,oof,vvf,no,nv)
+    implicit none
+    type(tensor),intent(inout) :: omega2,iajb,t2,oof,vvf
+    logical :: master
+    integer :: addr1(infpar%lg_nodtot)
+    integer :: addr2(infpar%lg_nodtot)
+    integer :: addr3(infpar%lg_nodtot)
+    integer :: addr4(infpar%lg_nodtot)
+    integer :: addr5(infpar%lg_nodtot)
+    !integer :: iter
+    !type(array4), intent(inout) :: omega2
+    !type(tensor), intent(inout) :: omega2
+    !type(tensor),intent(inout)         :: t2
+    !type(tensor), intent(inout) :: pfock,qfock
+    integer,intent(inout)             :: nv,no
+    !integer :: addr1(infpar%lg_nodtot)
+    !integer :: addr2(infpar%lg_nodtot)
+    !integer :: addr3(infpar%lg_nodtot)
+    !integer :: addr4(infpar%lg_nodtot)
+    !!real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
+    !logical :: master
+
+
+    master = (infpar%lg_mynum == infpar%master)
+
+
+    if(master) then
+      call ls_mpibcast(RPAGETFOCK,infpar%master,infpar%lg_comm)
+      addr1 = omega2%addr_p_arr
+      addr2 = iajb%addr_p_arr
+      addr3 = t2%addr_p_arr
+      addr4 = oof%addr_p_arr
+      addr5 = vvf%addr_p_arr
+    endif
+
+
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpi_buffer(nv,infpar%master)
+    call ls_mpi_buffer(no,infpar%master)
+    call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+    if(.not.master)then
+      omega2 = get_tensor_from_parr(addr1(infpar%lg_mynum+1))
+      iajb   = get_tensor_from_parr(addr2(infpar%lg_mynum+1))
+      t2     = get_tensor_from_parr(addr3(infpar%lg_mynum+1))
+      oof    = get_tensor_from_parr(addr4(infpar%lg_mynum+1))
+      vvf    = get_tensor_from_parr(addr5(infpar%lg_mynum+1))
     endif
     !call ls_mpibcast(t2%elm1,nv*nv*no*no,infpar%master,infpar%lg_comm)
 

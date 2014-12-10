@@ -101,6 +101,6 @@ f.add(from_string = 'Bond distances (Angstrom):',
 
 
 
-test.run(['geoopt_numgrd.dal'], ['h2o_6-31G_sym.mol'], {'out': f})
+test.run(['geoopt_numgrd.dal'], ['h2o_6-31G_sym.mol'], f={'out': f})
 
 sys.exit(test.return_code)

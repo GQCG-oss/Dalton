@@ -31,7 +31,7 @@ TEST[2]=`expr $CRIT1 \+ $CRIT2`
 CTRL[2]=2
 ERROR[2]="EXCITATION ENERGIES NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -47,4 +47,4 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi

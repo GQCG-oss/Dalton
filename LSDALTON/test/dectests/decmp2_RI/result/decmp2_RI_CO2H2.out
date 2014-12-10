@@ -87,28 +87,35 @@
      for further information.
   
   
-   This is an MPI run using       3 processes.
- Who compiled             | tkjaer
- Host                     | localhost
- System                   | Linux-3.6.10-4.fc18.x86_64
+ Who compiled             | pablo
+ Host                     | Pablo-PC
+ System                   | Linux-3.11.0-12-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /home/tkjaer/mpich2-install-debug/bin/mpif90
- Fortran compiler version | ifort (IFORT) 13.1.3 20130607
- C compiler               | /home/tkjaer/mpich2-install-debug/bin/mpicc
- C compiler version       | icc (ICC) 13.1.3 20130607
- C++ compiler             | /home/tkjaer/mpich2-install-debug/bin/mpic++
- C++ compiler version     | unknown
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.8.1-10ubuntu9) 4.8.1
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu/Linaro 4.8.1-10ubuntu9) 4.8.1
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Ubuntu/Linaro 4.8.1-10ubuntu9) 4.8.1
+ BLAS                     | /opt/intel/composerxe/mkl/lib/intel64/libmkl_gf_lp
+                          | 64.so;/opt/intel/composerxe/mkl/lib/intel64/libmkl
+                          | _sequential.so;/opt/intel/composerxe/mkl/lib/intel
+                          | 64/libmkl_core.so;/usr/lib/x86_64-linux-gnu/libpth
+                          | read.so;/usr/lib/x86_64-linux-gnu/libm.so
+ LAPACK                   | /opt/intel/composerxe/mkl/lib/intel64/libmkl_lapac
+                          | k95_lp64.a;/opt/intel/composerxe/mkl/lib/intel64/l
+                          | ibmkl_gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 268f4c309700d4f103b667b90f9f8c879b7de3d3
+ Last Git revision        | a1e562f7711f30b5dfc4307c15c970d0e3a8d656
  Git branch               | master
- Configuration time       | 2014-10-13 17:54:56.058141
+ Configuration time       | 2014-11-25 09:47:59.739956
 
 Start simulation
-     Date and time (Linux)  : Mon Oct 13 18:20:10 2014
-     Host name              : localhost                               
+     Date and time (Linux)  : Tue Nov 25 15:15:56 2014
+     Host name              : Pablo-PC                                
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -151,7 +158,7 @@ Start simulation
   .MPISPLIT                                                                                           
   0                                                                                                   
   .FOT                                                                                                
-  3                                                                                                   
+  1.0e-3                                                                                              
   .MEMORY                                                                                             
   2.0                                                                                                 
   *END OF INPUT                                                                                       
@@ -188,7 +195,6 @@ Start simulation
   15            z     -1.1800016898
  
  
- Integrals calculated using            3  fragments
  BASISSETLIBRARY  : REGULAR  
    
 BASISSETLIBRARY
@@ -206,14 +212,11 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE
- /home/tkjaer/DaltonDevelopment2014/DebugMasterBranch/build-mpi/basis/6-31G
+ OPENING FILE/home/pablo/Prog/daltons/build_serial_dbg/basis/6-31G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE
- /home/tkjaer/DaltonDevelopment2014/DebugMasterBranch/build-mpi/basis/Ahlrichs-C
- oulomb-Fit
+ OPENING FILE/home/pablo/Prog/daltons/build_serial_dbg/basis/Ahlrichs-Coulomb-Fit
                       
 THE MOLECULE
  --------------------------------------------------------------------
@@ -278,17 +281,17 @@ total         24                              150      142
                       
  Configuration:
  ==============
-    This is an OpenMP calculation using   4 threads.
-    This is an MPI calculation using   3 processors
- 
+    This is a Single core calculation. (no OpenMP)
+    This is a serial calculation (no MPI)
+
 Density subspace min. method    : None                    
 Density optimization : Augmented RH optimization          
- 
+
  Maximum size of Fock/density queue in averaging:          10
  
  Due to the tightend SCF convergence threshold we also tighten the integral Threshold
- with a factor:  0.100000000000000     
- 
+ with a factor:   9.9999999999999992E-002
+
 Dynamic convergence threshold for gradient:   0.49E-05
  
 We perform the calculation in the Grand Canonical basis
@@ -305,8 +308,10 @@ basis and perform integral evaluation using this basis
     The Screening threshold used for Exchange              :  1.0000E-09
     The Screening threshold used for One-electron operators:  1.0000E-16
  The SCF Convergence Criteria is applied to the gradnorm in OAO basis
- 
+ Warning **DEC and **CC enforces the use of the .LCM keyword
+
  End of configuration!
+
  
 Matrix type: mtype_dense
  
@@ -320,12 +325,12 @@ Matrix type: mtype_dense
  under the **GENERAL section. This is NOT recommended if you do TRILEVEL 
  or orbital localization.
  
- 
+
  Level 1 atomic calculation on 6-31G Charge   6
  ================================================
- The Coulomb energy contribution    21.7261415480678     
- The Exchange energy contribution    5.18239575976293     
- The Fock energy contribution   -16.5437457883048     
+ The Coulomb energy contribution    21.726141548067758     
+ The Exchange energy contribution    5.1823957597629313     
+ The Fock energy contribution   -16.543745788304825     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -333,28 +338,28 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
- The Coulomb energy contribution    16.4716605244914     
- The Exchange energy contribution    4.55284829587886     
- The Fock energy contribution   -11.9188122286125     
+ The Coulomb energy contribution    16.471660524491380     
+ The Exchange energy contribution    4.5528482958788512     
+ The Fock energy contribution   -11.918812228612529     
   2    -37.2417446448   -1.11555631170    0.00      0.00000    0.00    5.28E-01  ###
- The Coulomb energy contribution    17.4789637648046     
- The Exchange energy contribution    4.65668536216511     
- The Fock energy contribution   -12.8222784026395     
+ The Coulomb energy contribution    17.478963764804565     
+ The Exchange energy contribution    4.6566853621650983     
+ The Fock energy contribution   -12.822278402639464     
   3    -37.3143365252   -0.07259188037   -1.00      0.00000    0.00    8.03E-02  ###
- The Coulomb energy contribution    17.4415623248900     
- The Exchange energy contribution    4.64735083022442     
- The Fock energy contribution   -12.7942114946656     
+ The Coulomb energy contribution    17.441562324889972     
+ The Exchange energy contribution    4.6473508302244149     
+ The Fock energy contribution   -12.794211494665557     
   4    -37.3153570603   -0.00102053510   -1.00      0.00000    0.00    1.00E-02  ###
- The Coulomb energy contribution    17.4245517121411     
- The Exchange energy contribution    4.64537097992274     
- The Fock energy contribution   -12.7791807322184     
+ The Coulomb energy contribution    17.424551712141124     
+ The Exchange energy contribution    4.6453709799227374     
+ The Fock energy contribution   -12.779180732218387     
   5    -37.3153753736   -0.00001831338   -1.00      0.00000    0.00    5.08E-04  ###
- 
+
  Level 1 atomic calculation on 6-31G Charge   8
  ================================================
- The Coulomb energy contribution    46.4873087778983     
- The Exchange energy contribution    8.93517220548522     
- The Fock energy contribution   -37.5521365724131     
+ The Coulomb energy contribution    46.487308777898342     
+ The Exchange energy contribution    8.9351722054852178     
+ The Fock energy contribution   -37.552136572413133     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -362,32 +367,32 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
- The Coulomb energy contribution    31.9040369308874     
- The Exchange energy contribution    7.12159352219801     
- The Fock energy contribution   -24.7824434086894     
+ The Coulomb energy contribution    31.904036930887393     
+ The Exchange energy contribution    7.1215935221980073     
+ The Fock energy contribution   -24.782443408689382     
   2    -73.8341599123   -2.33947399805    0.00      0.00000    0.00    2.66E+00  ###
- The Coulomb energy contribution    35.9046648077262     
- The Exchange energy contribution    7.57614516985084     
- The Fock energy contribution   -28.3285196378754     
+ The Coulomb energy contribution    35.904664807726299     
+ The Exchange energy contribution    7.5761451698508591     
+ The Fock energy contribution   -28.328519637875438     
   3    -74.2580432558   -0.42388334348   -1.00      0.00000    0.00    1.61E-01  ###
- The Coulomb energy contribution    36.0802039297369     
- The Exchange energy contribution    7.59211210481349     
- The Fock energy contribution   -28.4880918249234     
+ The Coulomb energy contribution    36.080203929736875     
+ The Exchange energy contribution    7.5921121048134887     
+ The Fock energy contribution   -28.488091824923391     
   4    -74.2598387062   -0.00179545041   -1.00      0.00000    0.00    3.16E-02  ###
- The Coulomb energy contribution    36.0352727087599     
- The Exchange energy contribution    7.58649713363216     
- The Fock energy contribution   -28.4487755751277     
+ The Coulomb energy contribution    36.035272708759884     
+ The Exchange energy contribution    7.5864971336321556     
+ The Fock energy contribution   -28.448775575127730     
   5    -74.2598920070   -0.00005330082   -1.00      0.00000    0.00    2.60E-03  ###
- The Coulomb energy contribution    36.0314424613037     
- The Exchange energy contribution    7.58598118612629     
- The Fock energy contribution   -28.4454612751774     
+ The Coulomb energy contribution    36.031442461303683     
+ The Exchange energy contribution    7.5859811861262783     
+ The Fock energy contribution   -28.445461275177408     
   6    -74.2598924085   -0.00000040150   -1.00      0.00000    0.00    1.48E-06  ###
- 
+
  Level 1 atomic calculation on 6-31G Charge   1
  ================================================
- The Coulomb energy contribution   0.314355826775682     
- The Exchange energy contribution   0.157177913387841     
- The Fock energy contribution  -0.157177913387841     
+ The Coulomb energy contribution   0.31435582677568180     
+ The Exchange energy contribution   0.15717791338784087     
+ The Fock energy contribution  -0.15717791338784087     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -395,18 +400,19 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
- The Coulomb energy contribution   0.287072743052035     
- The Exchange energy contribution   0.143536371526018     
- The Fock energy contribution  -0.143536371526018     
+ The Coulomb energy contribution   0.28707274305203540     
+ The Exchange energy contribution   0.14353637152601770     
+ The Fock energy contribution  -0.14353637152601773     
   2     -0.3488197504   -0.00776475307    0.00      0.00000    0.00    1.27E-02  ###
- The Coulomb energy contribution   0.285350114585253     
- The Exchange energy contribution   0.142675057292626     
- The Fock energy contribution  -0.142675057292626     
+ The Coulomb energy contribution   0.28535011458525256     
+ The Exchange energy contribution   0.14267505729262625     
+ The Fock energy contribution  -0.14267505729262631     
   3     -0.3488518065   -0.00003205613   -1.00      0.00000    0.00    3.94E-05  ###
+ 
 Matrix type: mtype_dense
- 
+
  First density: Trilevel procedure 
- 
+
  Level 2 molecular calculation
 =============================
  
@@ -428,19 +434,19 @@ Matrix type: mtype_dense
 total         24                               17
 ---------------------------------------------------------------------
                       
- The Coulomb energy contribution    157.687671056660     
- The Exchange energy contribution    22.1144921792271     
- The Fock energy contribution   -135.573178877433     
-  Iteration 0 energy:  -189.518622988578     
+ The Coulomb energy contribution    157.68767105666012     
+ The Exchange energy contribution    22.114492179227131     
+ The Fock energy contribution   -135.57317887743298     
+  Iteration 0 energy:  -189.51862298857753     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=       229 sparsity:     79.239 %
 Matrix AO D  has nnz=       289 sparsity:    100.000 %
-  Relative convergence threshold for solver:  1.000000000000000E-002
-  SCF Convergence criteria for gradient norm:  4.898979485566356E-005
+  Relative convergence threshold for solver:   1.0000000000000000E-002
+  SCF Convergence criteria for gradient norm:   4.8989794855663562E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    159.872740615410     
- The Exchange energy contribution    22.2530581696626     
- The Fock energy contribution   -137.619682445748     
+ The Coulomb energy contribution    159.87274061541049     
+ The Exchange energy contribution    22.253058169662619     
+ The Fock energy contribution   -137.61968244574786     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -454,176 +460,176 @@ Matrix AO F  has nnz=       289 sparsity:    100.000 %
 Matrix OAO D has nnz=       289 sparsity:    100.000 %
 Matrix OAO F has nnz=       289 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  0.387938577967625     
+ OAO gradnorm  0.38793857796761738     
     2 step norm =  0.442 trust radius =   0.500 mu =   0.00 micro it. =  10  %#%
 No. of matmuls in get_density:    48
- >>>  CPU Time used in SCF iteration is   1.93 seconds
- >>> wall Time used in SCF iteration is   4.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.99 seconds
+ >>> wall Time used in SCF iteration is   1.03 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    158.362936417125     
- The Exchange energy contribution    21.9383130835806     
- The Fock energy contribution   -136.424623333545     
-  2   -188.2137241314   -0.08967845237    0.00      0.00000    0.00    2.27E-01  ###
+ The Coulomb energy contribution    158.36293641712578     
+ The Exchange energy contribution    21.938313083580667     
+ The Fock energy contribution   -136.42462333354513     
+  2   -188.2137241314   -0.08967845237    0.00      0.00000   -0.00    2.27E-01  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       289 sparsity:    100.000 %
 Matrix AO F  has nnz=       289 sparsity:    100.000 %
 Matrix OAO D has nnz=       289 sparsity:    100.000 %
 Matrix OAO F has nnz=       289 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  0.226829542295178     
+ OAO gradnorm  0.22682954229517643     
     3 step norm =  0.154 trust radius =   0.500 mu =   0.00 micro it. =   8  %#%
 No. of matmuls in get_density:    68
- >>>  CPU Time used in SCF iteration is   2.11 seconds
- >>> wall Time used in SCF iteration is   4.19 seconds
+ >>>  CPU Time used in SCF iteration is   0.98 seconds
+ >>> wall Time used in SCF iteration is   0.99 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    158.712982741191     
- The Exchange energy contribution    22.0206271248294     
- The Fock energy contribution   -136.692355616362     
-  3   -188.2418298000   -0.02810566855    0.00      0.00000    0.00    4.06E-02  ###
+ The Coulomb energy contribution    158.71298274119198     
+ The Exchange energy contribution    22.020627124829545     
+ The Fock energy contribution   -136.69235561636248     
+  3   -188.2418298000   -0.02810566855    0.00      0.00000   -0.00    4.06E-02  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       289 sparsity:    100.000 %
 Matrix AO F  has nnz=       289 sparsity:    100.000 %
 Matrix OAO D has nnz=       289 sparsity:    100.000 %
 Matrix OAO F has nnz=       289 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  4.060110170875283E-002
+ OAO gradnorm   4.0601101708752835E-002
     4 step norm =  0.048 trust radius =   0.500 mu =   0.00 micro it. =   9  %#%
 No. of matmuls in get_density:    72
- >>>  CPU Time used in SCF iteration is   1.91 seconds
- >>> wall Time used in SCF iteration is   4.22 seconds
+ >>>  CPU Time used in SCF iteration is   0.99 seconds
+ >>> wall Time used in SCF iteration is   0.99 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    158.756567280307     
- The Exchange energy contribution    22.0268728712206     
- The Fock energy contribution   -136.729694409086     
-  4   -188.2436814917   -0.00185169168    0.00      0.00000    0.00    1.65E-02  ###
+ The Coulomb energy contribution    158.75656728030748     
+ The Exchange energy contribution    22.026872871220636     
+ The Fock energy contribution   -136.72969440908679     
+  4   -188.2436814917   -0.00185169168    0.00      0.00000   -0.00    1.65E-02  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       289 sparsity:    100.000 %
 Matrix AO F  has nnz=       289 sparsity:    100.000 %
 Matrix OAO D has nnz=       289 sparsity:    100.000 %
 Matrix OAO F has nnz=       289 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  1.654795510862855E-002
+ OAO gradnorm   1.6547955108624605E-002
     5 step norm =  0.025 trust radius =   0.500 mu =   0.00 micro it. =  10  %#%
 No. of matmuls in get_density:    77
- >>>  CPU Time used in SCF iteration is   1.93 seconds
- >>> wall Time used in SCF iteration is   4.21 seconds
+ >>>  CPU Time used in SCF iteration is   0.99 seconds
+ >>> wall Time used in SCF iteration is   0.99 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    158.716989509482     
- The Exchange energy contribution    22.0227970283467     
- The Fock energy contribution   -136.694192481135     
-  5   -188.2440708751   -0.00038938349    0.00      0.00000    0.00    3.83E-03  ###
+ The Coulomb energy contribution    158.71698950948223     
+ The Exchange energy contribution    22.022797028346847     
+ The Fock energy contribution   -136.69419248113542     
+  5   -188.2440708751   -0.00038938349    0.00      0.00000   -0.00    3.83E-03  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       289 sparsity:    100.000 %
 Matrix AO F  has nnz=       289 sparsity:    100.000 %
 Matrix OAO D has nnz=       289 sparsity:    100.000 %
 Matrix OAO F has nnz=       289 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  3.832047920612737E-003
+ OAO gradnorm   3.8320479206143242E-003
     6 step norm =  0.007 trust radius =   0.500 mu =   0.00 micro it. =  10  %#%
 No. of matmuls in get_density:    76
- >>>  CPU Time used in SCF iteration is   1.98 seconds
- >>> wall Time used in SCF iteration is   4.11 seconds
+ >>>  CPU Time used in SCF iteration is   0.98 seconds
+ >>> wall Time used in SCF iteration is   0.98 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    158.717139519146     
- The Exchange energy contribution    22.0236044010439     
- The Fock energy contribution   -136.693535118101     
-  6   -188.2440985160   -0.00002764086    0.00      0.00000    0.00    9.35E-04  ###
+ The Coulomb energy contribution    158.71713951914600     
+ The Exchange energy contribution    22.023604401044004     
+ The Fock energy contribution   -136.69353511810198     
+  6   -188.2440985160   -0.00002764086    0.00      0.00000   -0.00    9.35E-04  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       289 sparsity:    100.000 %
 Matrix AO F  has nnz=       289 sparsity:    100.000 %
 Matrix OAO D has nnz=       289 sparsity:    100.000 %
 Matrix OAO F has nnz=       289 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  9.351980793309098E-004
+ OAO gradnorm   9.3519807933330570E-004
     7 step norm =  0.002 trust radius =   0.500 mu =   0.00 micro it. =  11  %#%
 No. of matmuls in get_density:    81
- >>>  CPU Time used in SCF iteration is   1.94 seconds
- >>> wall Time used in SCF iteration is   4.06 seconds
+ >>>  CPU Time used in SCF iteration is   0.98 seconds
+ >>> wall Time used in SCF iteration is   0.98 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    158.716640949822     
- The Exchange energy contribution    22.0234544792594     
- The Fock energy contribution   -136.693186470563     
-  7   -188.2440999020   -0.00000138595    0.00      0.00000    0.00    1.88E-04  ###
+ The Coulomb energy contribution    158.71664094982293     
+ The Exchange energy contribution    22.023454479259563     
+ The Fock energy contribution   -136.69318647056338     
+  7   -188.2440999020   -0.00000138595    0.00      0.00000   -0.00    1.88E-04  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       289 sparsity:    100.000 %
 Matrix AO F  has nnz=       289 sparsity:    100.000 %
 Matrix OAO D has nnz=       289 sparsity:    100.000 %
 Matrix OAO F has nnz=       289 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  1.882512840263038E-004
+ OAO gradnorm   1.8825128402259880E-004
     8 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =  11  %#%
 No. of matmuls in get_density:    81
- >>>  CPU Time used in SCF iteration is   1.85 seconds
- >>> wall Time used in SCF iteration is   4.15 seconds
+ >>>  CPU Time used in SCF iteration is   1.01 seconds
+ >>> wall Time used in SCF iteration is   1.01 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    158.716524884021     
- The Exchange energy contribution    22.0234177570384     
- The Fock energy contribution   -136.693107126983     
-  8   -188.2440999530   -0.00000005106    0.00      0.00000    0.00    2.02E-05  ###
+ The Coulomb energy contribution    158.71652488402168     
+ The Exchange energy contribution    22.023417757038455     
+ The Fock energy contribution   -136.69310712698319     
+  8   -188.2440999530   -0.00000005106    0.00      0.00000   -0.00    2.02E-05  ###
 SCF converged in      8 iterations
- >>>  CPU Time used in **ITER is  15.76 seconds
- >>> wall Time used in **ITER is  33.04 seconds
- 
+ >>>  CPU Time used in **ITER is   7.92 seconds
+ >>> wall Time used in **ITER is   7.96 seconds
+
 Total no. of matmuls in SCF optimization:        674
- 
+
  Number of occupied orbitals:          12
  Number of virtual orbitals:           5
- 
+
  Number of occupied orbital energies to be found:           1
  Number of virtual orbital energies to be found:           1
- 
- 
+
+
 Calculation of HOMO-LUMO gap
 ============================
- 
+
 Calculation of occupied orbital energies converged in    12 iterations!
- 
+
 Calculation of virtual orbital energies converged in     5 iterations!
- 
+
     E(LUMO):                         0.071733 au
    -E(HOMO):                        -0.537089 au
    ------------------------------
     HOMO-LUMO Gap (iteratively):     0.608823 au
- 
- 
+
+
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.08967845237    0.0000    0.0000    0.0000000
-  3   -0.02810566855    0.0000    0.0000    0.0000000
-  4   -0.00185169168    0.0000    0.0000    0.0000000
-  5   -0.00038938349    0.0000    0.0000    0.0000000
-  6   -0.00002764086    0.0000    0.0000    0.0000000
-  7   -0.00000138595    0.0000    0.0000    0.0000000
-  8   -0.00000005106    0.0000    0.0000    0.0000000
- 
+  2   -0.08967845237    0.0000   -0.0000    0.0000000
+  3   -0.02810566855    0.0000   -0.0000    0.0000000
+  4   -0.00185169168    0.0000   -0.0000    0.0000000
+  5   -0.00038938349    0.0000   -0.0000    0.0000000
+  6   -0.00002764086    0.0000   -0.0000    0.0000000
+  7   -0.00000138595    0.0000   -0.0000    0.0000000
+  8   -0.00000005106    0.0000   -0.0000    0.0000000
+
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1          -188.12404567905701924246      0.387938577967625D+00
-    2          -188.21372413142449886436      0.226829542295178D+00
-    3          -188.24182979997431175434      0.406011017087528D-01
-    4          -188.24368149165508157239      0.165479551086286D-01
-    5          -188.24407087514958902830      0.383204792061274D-02
-    6          -188.24409851601063792259      0.935198079330910D-03
-    7          -188.24409990196187436595      0.188251284026304D-03
-    8          -188.24409995302522702332      0.201734989449520D-04
- 
+    1          -188.12404567905662133853      0.387938577967617D+00
+    2          -188.21372413142421464727      0.226829542295176D+00
+    3          -188.24182979997453912802      0.406011017087528D-01
+    4          -188.24368149165530894606      0.165479551086246D-01
+    5          -188.24407087514953218488      0.383204792061432D-02
+    6          -188.24409851601092213969      0.935198079333306D-03
+    7          -188.24409990196204489621      0.188251284022599D-03
+    8          -188.24409995302539755357      0.201734989586324D-04
+
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
- 
- 
+
+
       Final HF energy:                      -188.244099953025
       Nuclear repulsion:                      70.551359307093
       Electronic energy:                    -258.795459260118
- 
+
  Level 2 minimization done! Starting Level 3 minimization...
  Level 3 is the final level of the TRILEVEL algorithm 
  and is the standard calculation using the TRILEVEL starting guess
  obtained from Level 2.
- 
+
   %LOC%   
   %LOC%   ********************************************
   %LOC%   *       LEVEL 2 ORBITAL LOCALIZATION       *
@@ -749,56 +755,56 @@ Linesearch done, we choose previous point
   %LOC%  *                                                   *
   %LOC%  *****************************************************
   %LOC% 
- 
+
   %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    0.31    3
   %LOC%   Max. sigma_4 and orb.number:    0.40    3
   %LOC%   Min. sigma_2 and orb.number:    0.23    1
   %LOC%   Min. sigma_4 and orb.number:    0.29    2
- 
- 
+
+
   %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    1.75   12
   %LOC%   Max. sigma_4 and orb.number:    2.19   12
   %LOC%   Min. sigma_2 and orb.number:    1.33    7
   %LOC%   Min. sigma_4 and orb.number:    1.82    7
- 
- 
+
+
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    2.11   16
   %LOC%   Max. sigma_4 and orb.number:    2.61   16
   %LOC%   Min. sigma_2 and orb.number:    1.95   15
   %LOC%   Min. sigma_4 and orb.number:    2.43   15
- 
- >>>  CPU Time used in Orbital Localization is   7.62 seconds
- >>> wall Time used in Orbital Localization is  14.85 seconds
- 
+
+ >>>  CPU Time used in Orbital Localization is   1.24 seconds
+ >>> wall Time used in Orbital Localization is   1.25 seconds
+
  Number of electrons  in molecule =           24
  Number of occ. orb.  in molecule =           12
  Number of virt. orb. in molecule =           19
- 
- 
- OCCUPIED: (Orbital index, MOS) =           12   1.74710114479152     
- VIRTUAL : (Orbital index, MOS) =           18   2.49778813930849     
- 
- 
- 
+
+
+ OCCUPIED: (Orbital index, MOS) =           12   1.7471011447915274     
+ VIRTUAL : (Orbital index, MOS) =           18   2.4977881393084882     
+
+
+
 Max no. of matrices allocated in Level 2 / get_initial_dens:         75
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=       741 sparsity:     77.107 %
 Matrix AO D  has nnz=       289 sparsity:     30.073 %
-  Relative convergence threshold for solver:  1.000000000000000E-002
-  SCF Convergence criteria for gradient norm:  4.898979485566356E-006
- The Coulomb energy contribution    157.687671056660     
- The Exchange energy contribution    22.1144921792274     
- The Fock energy contribution   -135.573178877433     
-  Iteration 0 energy:  -189.518622988578     
- The Coulomb energy contribution    163.004484662421     
- The Coulomb energy contribution    158.716524884021     
- The Exchange energy contribution    22.5654612566301     
- The Exchange energy contribution    22.0234177570382     
- The Fock energy contribution   -140.439023405791     
- The Fock energy contribution   -136.693107126983     
+  Relative convergence threshold for solver:   1.0000000000000000E-002
+  SCF Convergence criteria for gradient norm:   4.8989794855663559E-006
+ The Coulomb energy contribution    157.68767105666015     
+ The Exchange energy contribution    22.114492179227398     
+ The Fock energy contribution   -135.57317887743272     
+  Iteration 0 energy:  -189.51862298857770     
+ The Coulomb energy contribution    163.00448466242162     
+ The Coulomb energy contribution    158.71652488402154     
+ The Exchange energy contribution    22.565461256630101     
+ The Exchange energy contribution    22.023417757038281     
+ The Fock energy contribution   -140.43902340579146     
+ The Fock energy contribution   -136.69310712698331     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -821,206 +827,206 @@ Matrix AO D  has nnz=       289 sparsity:     30.073 %
 Matrix AO F  has nnz=       961 sparsity:    100.000 %
 Matrix OAO D has nnz=       961 sparsity:    100.000 %
 Matrix OAO F has nnz=       961 sparsity:    100.000 %
- OAO gradnorm  0.829621765277502     
+ OAO gradnorm  0.82962176527750142     
     2 step norm =  0.500 trust radius =   0.500 mu =  -0.10 micro it. =  10  %#%
 No. of matmuls in get_density:    81
 ** Get Fock matrix number   2
- The Coulomb energy contribution    160.653787230026     
- The Exchange energy contribution    22.1886340955169     
- The Fock energy contribution   -138.465153134509     
-  2   -188.6305586130   -0.38645865999    0.00      0.00000    0.00    2.64E-01  ###
+ The Coulomb energy contribution    160.65378723002598     
+ The Exchange energy contribution    22.188634095516846     
+ The Fock energy contribution   -138.46515313450911     
+  2   -188.6305586130   -0.38645865999    0.00      0.00000   -0.00    2.64E-01  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       961 sparsity:    100.000 %
 Matrix AO F  has nnz=       961 sparsity:    100.000 %
 Matrix OAO D has nnz=       961 sparsity:    100.000 %
 Matrix OAO F has nnz=       961 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  0.263960451094993     
+ OAO gradnorm  0.26396045109499866     
     3 step norm =  0.146 trust radius =   0.500 mu =   0.00 micro it. =  11  %#%
 No. of matmuls in get_density:    86
- >>>  CPU Time used in SCF iteration is   3.39 seconds
- >>> wall Time used in SCF iteration is   6.43 seconds
+ >>>  CPU Time used in SCF iteration is   1.11 seconds
+ >>> wall Time used in SCF iteration is   1.12 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    161.308152254082     
- The Exchange energy contribution    22.3168805865376     
- The Fock energy contribution   -138.991271667544     
-  3   -188.6599636722   -0.02940505914    0.00      0.00000    0.00    3.93E-02  ###
+ The Coulomb energy contribution    161.30815225408216     
+ The Exchange energy contribution    22.316880586537586     
+ The Fock energy contribution   -138.99127166754462     
+  3   -188.6599636722   -0.02940505914    0.00      0.00000   -0.00    3.93E-02  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       961 sparsity:    100.000 %
 Matrix AO F  has nnz=       961 sparsity:    100.000 %
 Matrix OAO D has nnz=       961 sparsity:    100.000 %
 Matrix OAO F has nnz=       961 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  3.926043919134118E-002
+ OAO gradnorm   3.9260439191336392E-002
     4 step norm =  0.033 trust radius =   0.500 mu =   0.00 micro it. =  11  %#%
 No. of matmuls in get_density:    83
- >>>  CPU Time used in SCF iteration is   3.24 seconds
- >>> wall Time used in SCF iteration is   6.19 seconds
+ >>>  CPU Time used in SCF iteration is   1.12 seconds
+ >>> wall Time used in SCF iteration is   1.12 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    161.494507060051     
- The Exchange energy contribution    22.3337413305607     
- The Fock energy contribution   -139.160765729490     
-  4   -188.6607721317   -0.00080845951    0.00      0.00000    0.00    2.42E-02  ###
+ The Coulomb energy contribution    161.49450706005095     
+ The Exchange energy contribution    22.333741330560677     
+ The Fock energy contribution   -139.16076572949018     
+  4   -188.6607721317   -0.00080845951    0.00      0.00000   -0.00    2.42E-02  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       961 sparsity:    100.000 %
 Matrix AO F  has nnz=       961 sparsity:    100.000 %
 Matrix OAO D has nnz=       961 sparsity:    100.000 %
 Matrix OAO F has nnz=       961 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  2.424842279374496E-002
+ OAO gradnorm   2.4248422793738088E-002
     5 step norm =  0.012 trust radius =   0.500 mu =   0.00 micro it. =  11  %#%
 No. of matmuls in get_density:    82
- >>>  CPU Time used in SCF iteration is   2.78 seconds
- >>> wall Time used in SCF iteration is   5.87 seconds
+ >>>  CPU Time used in SCF iteration is   1.12 seconds
+ >>> wall Time used in SCF iteration is   1.12 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    161.400938083187     
- The Exchange energy contribution    22.3232595055889     
- The Fock energy contribution   -139.077678577598     
-  5   -188.6610066677   -0.00023453600    0.00      0.00000    0.00    5.62E-03  ###
+ The Coulomb energy contribution    161.40093808318738     
+ The Exchange energy contribution    22.323259505588851     
+ The Fock energy contribution   -139.07767857759848     
+  5   -188.6610066677   -0.00023453600    0.00      0.00000   -0.00    5.62E-03  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       961 sparsity:    100.000 %
 Matrix AO F  has nnz=       961 sparsity:    100.000 %
 Matrix OAO D has nnz=       961 sparsity:    100.000 %
 Matrix OAO F has nnz=       961 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  5.624184425599547E-003
+ OAO gradnorm   5.6241844255976153E-003
     6 step norm =  0.006 trust radius =   0.500 mu =   0.00 micro it. =  12  %#%
 No. of matmuls in get_density:    88
- >>>  CPU Time used in SCF iteration is   3.09 seconds
- >>> wall Time used in SCF iteration is   6.25 seconds
+ >>>  CPU Time used in SCF iteration is   1.11 seconds
+ >>> wall Time used in SCF iteration is   1.11 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    161.391230858541     
- The Exchange energy contribution    22.3227192055970     
- The Fock energy contribution   -139.068511652944     
-  6   -188.6610318689   -0.00002520118    0.00      0.00000    0.00    1.39E-03  ###
+ The Coulomb energy contribution    161.39123085854141     
+ The Exchange energy contribution    22.322719205596975     
+ The Fock energy contribution   -139.06851165294444     
+  6   -188.6610318689   -0.00002520118    0.00      0.00000   -0.00    1.39E-03  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       961 sparsity:    100.000 %
 Matrix AO F  has nnz=       961 sparsity:    100.000 %
 Matrix OAO D has nnz=       961 sparsity:    100.000 %
 Matrix OAO F has nnz=       961 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  1.388168733449364E-003
+ OAO gradnorm   1.3881687334505333E-003
     7 step norm =  0.002 trust radius =   0.500 mu =   0.00 micro it. =  12  %#%
 No. of matmuls in get_density:    87
- >>>  CPU Time used in SCF iteration is   3.49 seconds
- >>> wall Time used in SCF iteration is   6.76 seconds
+ >>>  CPU Time used in SCF iteration is   1.13 seconds
+ >>> wall Time used in SCF iteration is   1.13 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    161.396552928666     
- The Exchange energy contribution    22.3232780760019     
- The Fock energy contribution   -139.073274852664     
-  7   -188.6610337564   -0.00000188759    0.00      0.00000    0.00    3.84E-04  ###
+ The Coulomb energy contribution    161.39655292866621     
+ The Exchange energy contribution    22.323278076001891     
+ The Fock energy contribution   -139.07327485266427     
+  7   -188.6610337564   -0.00000188759    0.00      0.00000   -0.00    3.84E-04  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       961 sparsity:    100.000 %
 Matrix AO F  has nnz=       961 sparsity:    100.000 %
 Matrix OAO D has nnz=       961 sparsity:    100.000 %
 Matrix OAO F has nnz=       961 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  3.844272747588326E-004
+ OAO gradnorm   3.8442727474738149E-004
     8 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =  13  %#%
 No. of matmuls in get_density:    93
- >>>  CPU Time used in SCF iteration is   3.23 seconds
- >>> wall Time used in SCF iteration is   6.20 seconds
+ >>>  CPU Time used in SCF iteration is   1.15 seconds
+ >>> wall Time used in SCF iteration is   1.15 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    161.395928099306     
- The Exchange energy contribution    22.3231449786620     
- The Fock energy contribution   -139.072783120644     
-  8   -188.6610339000   -0.00000014357    0.00      0.00000    0.00    5.99E-05  ###
+ The Coulomb energy contribution    161.39592809930630     
+ The Exchange energy contribution    22.323144978662000     
+ The Fock energy contribution   -139.07278312064426     
+  8   -188.6610339000   -0.00000014357    0.00      0.00000   -0.00    5.99E-05  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       961 sparsity:    100.000 %
 Matrix AO F  has nnz=       961 sparsity:    100.000 %
 Matrix OAO D has nnz=       961 sparsity:    100.000 %
 Matrix OAO F has nnz=       961 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  5.991954026783893E-005
+ OAO gradnorm   5.9919540266647351E-005
     9 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =  12  %#%
 No. of matmuls in get_density:    86
- >>>  CPU Time used in SCF iteration is   3.12 seconds
- >>> wall Time used in SCF iteration is   6.36 seconds
+ >>>  CPU Time used in SCF iteration is   1.18 seconds
+ >>> wall Time used in SCF iteration is   1.18 seconds
 ** Get Fock matrix number   9
- The Coulomb energy contribution    161.395756909539     
- The Exchange energy contribution    22.3231245569394     
- The Fock energy contribution   -139.072632352599     
-  9   -188.6610339039   -0.00000000386    0.00      0.00000    0.00    9.96E-06  ###
+ The Coulomb energy contribution    161.39575690953865     
+ The Exchange energy contribution    22.323124556939408     
+ The Fock energy contribution   -139.07263235259927     
+  9   -188.6610339039   -0.00000000386    0.00      0.00000   -0.00    9.96E-06  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       961 sparsity:    100.000 %
 Matrix AO F  has nnz=       961 sparsity:    100.000 %
 Matrix OAO D has nnz=       961 sparsity:    100.000 %
 Matrix OAO F has nnz=       961 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  9.956965601241419E-006
+ OAO gradnorm   9.9569656161197657E-006
    10 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =  11  %#%
 No. of matmuls in get_density:    80
- >>>  CPU Time used in SCF iteration is   3.22 seconds
- >>> wall Time used in SCF iteration is   6.18 seconds
+ >>>  CPU Time used in SCF iteration is   1.16 seconds
+ >>> wall Time used in SCF iteration is   1.16 seconds
 ** Get Fock matrix number  10
- The Coulomb energy contribution    161.395769487912     
- The Exchange energy contribution    22.3231239498984     
- The Fock energy contribution   -139.072645538013     
- 10   -188.6610339040   -0.00000000011    0.00      0.00000    0.00    1.75E-06  ###
+ The Coulomb energy contribution    161.39576948791159     
+ The Exchange energy contribution    22.323123949898381     
+ The Fock energy contribution   -139.07264553801321     
+ 10   -188.6610339040   -0.00000000011    0.00      0.00000   -0.00    1.75E-06  ###
 SCF converged in     10 iterations
- >>>  CPU Time used in **ITER is  33.01 seconds
- >>> wall Time used in **ITER is  1 minute   5 seconds
- 
+ >>>  CPU Time used in **ITER is  11.99 seconds
+ >>> wall Time used in **ITER is  12.00 seconds
+
 Total no. of matmuls in SCF optimization:       3101
- 
+
  Number of occupied orbitals:          12
  Number of virtual orbitals:          19
- 
+
  Number of occupied orbital energies to be found:           1
  Number of virtual orbital energies to be found:           1
- 
- 
+
+
 Calculation of HOMO-LUMO gap
 ============================
- 
+
 Calculation of occupied orbital energies converged in    12 iterations!
- 
+
 Calculation of virtual orbital energies converged in    12 iterations!
- 
+
     E(LUMO):                         0.147818 au
    -E(HOMO):                        -0.474431 au
    ------------------------------
     HOMO-LUMO Gap (iteratively):     0.622249 au
- 
- 
+
+
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.38645865999    0.0000    0.0000    0.0000000
-  3   -0.02940505914    0.0000    0.0000    0.0000000
-  4   -0.00080845951    0.0000    0.0000    0.0000000
-  5   -0.00023453600    0.0000    0.0000    0.0000000
-  6   -0.00002520118    0.0000    0.0000    0.0000000
-  7   -0.00000188759    0.0000    0.0000    0.0000000
-  8   -0.00000014357    0.0000    0.0000    0.0000000
-  9   -0.00000000386    0.0000    0.0000    0.0000000
- 10   -0.00000000011    0.0000    0.0000    0.0000000
- 
+  2   -0.38645865999    0.0000   -0.0000    0.0000000
+  3   -0.02940505914    0.0000   -0.0000    0.0000000
+  4   -0.00080845951    0.0000   -0.0000    0.0000000
+  5   -0.00023453600    0.0000   -0.0000    0.0000000
+  6   -0.00002520118    0.0000   -0.0000    0.0000000
+  7   -0.00000188759    0.0000   -0.0000    0.0000000
+  8   -0.00000014357    0.0000   -0.0000    0.0000000
+  9   -0.00000000386    0.0000   -0.0000    0.0000000
+ 10   -0.00000000011    0.0000   -0.0000    0.0000000
+
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-  Atoms        -188.53917997921718097132      0.513035039809269D+00
-    1          -188.24409995302522702332      0.829621765277502D+00
-    2          -188.63055861301774029926      0.263960451094993D+00
-    3          -188.65996367215706186471      0.392604391913412D-01
-    4          -188.66077213167085346868      0.242484227937450D-01
-    5          -188.66100666767306393012      0.562418442559955D-02
-    6          -188.66103186885663944850      0.138816873344936D-02
-    7          -188.66103375644689776891      0.384427274758833D-03
-    8          -188.66103390001836714873      0.599195402678389D-04
-    9          -188.66103390387883109724      0.995696560124142D-05
-   10          -188.66103390399194950078      0.175099228671632D-05
- 
+  Atoms        -188.53917997921786309234      0.513035039809269D+00
+    1          -188.24409995302545439699      0.829621765277501D+00
+    2          -188.63055861301808135977      0.263960451094999D+00
+    3          -188.65996367215717555155      0.392604391913364D-01
+    4          -188.66077213166994397398      0.242484227937381D-01
+    5          -188.66100666767272286961      0.562418442559762D-02
+    6          -188.66103186885692366559      0.138816873345053D-02
+    7          -188.66103375644684092549      0.384427274747381D-03
+    8          -188.66103390001831030531      0.599195402666474D-04
+    9          -188.66103390387849003673      0.995696561611977D-05
+   10          -188.66103390399223371787      0.175099228406767D-05
+
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
- 
- 
+
+
       Final HF energy:                      -188.661033903992
       Nuclear repulsion:                      70.551359307093
       Electronic energy:                    -259.212393211085
- 
+
  inside leastchange_lcm
   %LOC%   
   %LOC%   ********************************************
@@ -1157,33 +1163,33 @@ Linesearch done, we choose previous point
   %LOC%   *                                                   *
   %LOC%   *****************************************************
   %LOC% 
- 
+
   %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    0.31    3
   %LOC%   Max. sigma_4 and orb.number:    0.40    3
   %LOC%   Min. sigma_2 and orb.number:    0.23    1
   %LOC%   Min. sigma_4 and orb.number:    0.30    2
- 
- 
+
+
   %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    1.48   12
   %LOC%   Max. sigma_4 and orb.number:    1.95    5
   %LOC%   Min. sigma_2 and orb.number:    1.31    6
   %LOC%   Min. sigma_4 and orb.number:    1.75    6
- 
- 
+
+
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    2.45   19
   %LOC%   Max. sigma_4 and orb.number:    3.00   19
   %LOC%   Min. sigma_2 and orb.number:    1.51   17
   %LOC%   Min. sigma_4 and orb.number:    1.98   17
- 
- >>>  CPU Time used in Orbital Localization is  16.24 seconds
- >>> wall Time used in Orbital Localization is  32.04 seconds
+
+ >>>  CPU Time used in Orbital Localization is   1.66 seconds
+ >>> wall Time used in Orbital Localization is   1.66 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
- 
+
 
 -- Full molecular info --
 
@@ -1197,15 +1203,15 @@ FULL: Number of core orbitals    :      3
 FULL: Number of valence orbitals :      9
 FULL: Number of occ. orbitals    :     12
 FULL: Number of virt. orbitals   :     19
- 
+
  Calculating carmom matrix for DEC calculation...
- 
- 
+ Memory set in input to be:    2.000     GB
+
+
 =============================================================================
              -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
 =============================================================================
- 
- Memory set in input to be:    2.000     GB
+
 
 DEC calculation is carried out...
 
@@ -1222,7 +1228,8 @@ DEC calculation is carried out...
 FOT (Fragment Optimization Threshold)               =        0.10E-02
 Use Pair Estimates to screen pairs                  =            TRUE
 Pair distance cutoff threshold (Angstrom)           =       0.100E+04
-Use Pair Estimate initialisation number of atom     =     1
+Use Pair Estimate initialisation radius (Angstrom)  =       0.200E+01
+Pair estimate model                                 =     MP2     
 Simple orbital thr.                                 =       0.500E-01
 Expansion step size                                 =              10
 Print level                                         =               0
@@ -1234,6 +1241,7 @@ Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysi
  
 The wave function Model used for Atomic Fragment expansion scheme = RIMP2   
 Wave function Model used for Atomic Fragment reduction scheme = RIMP2   
+
 
 --------------------------
   Coupled-cluster input   
@@ -1253,357 +1261,936 @@ Backup Time Interval(s)      =          300.00
 Use F12 correction           =           FALSE
  
  Generating DEC orbitals using simple Lowdin charge analysis
- 
- 
+
+
  Simple Lowdin-based orbital assignment: Summary
  -----------------------------------------------
- 
- 
+
+
  ORBITAL DISTRIBUTION INFORMATION
  ********************************
- 
-    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Sec
- ondary
+
+    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Secondary
      1    C            2                9                2                9
      2    O            5                4                5                4
      3    O            5                6                5                6
      4    H            0                0                0                0
      5    H            0                0                0                0
  Total:               12               19
- 
- 
- 
+
+
+
  ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
  **********************************************************************
- 
+
  Maximum occ orbital extent   =      2   -- Orbital index     4
  Maximum unocc orbital extent =      4   -- Orbital index     7
  Average occ orbital extent   =       1.7500
  Average unocc orbital extent =       2.3158
- 
- 
- >>>  CPU Time used in DEC INIT is   0.01 seconds
- >>> wall Time used in DEC INIT is   0.03 seconds
- 
- 
+
+
+ >>>  CPU Time used in DEC INIT is   0.00 seconds
+ >>> wall Time used in DEC INIT is   0.00 seconds
+
+
  ******************************************************************
         ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       
  ******************************************************************
- 
+
  JobNumber  AtomType  AtomIndex  SizeMeasure
       1       O          3        2728
       2       O          2        2232
       3       C          1        2046
       4       H          4           0
       5       H          5           0
- 
- 
- 
- 
+
+
+
+
  *** Initiating optimization of atomic fragments ***
- 
- 
+
+
+ FOP Occ Radius for initial fragment:  3.78
+ FOP Virt Radius for initial fragment:  3.78
+ FOP Occ Radius for initial fragment:  3.78
+ FOP Virt Radius for initial fragment:  3.78
+ FOP Occ Radius for initial fragment:  3.78
+ FOP Virt Radius for initial fragment:  3.78
  Preparing job list...
- 
- 
- 
+
+
+
  *******************************************************************************
               Atomic fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      3      8     10     31     2.18    /  2.18       2.18    /  2.84              FRAG_SIZE
-      1      5     13     29     1.34    /  1.34       2.18    /  2.18              FRAG_SIZE
-      2      8      8     29     2.18    /  2.18       2.18    /  2.18              FRAG_SIZE
- 
- FRAGANALYSIS: Max/Ave/Min occ         :        8       /     7.0000    /       5
- FRAGANALYSIS: Max/Ave/Min unocc       :       13       /     10.333    /       8
- FRAGANALYSIS: Max/Ave/Min basis       :       31       /     29.667    /      29
- FRAGANALYSIS: Max/Ave/Min Radius AOS  :      2.1815    /     1.9025    /     1.3444    
- FRAGANALYSIS: Max/Ave/Min Radius AE   :      2.1815    /     1.9025    /     1.3444    
- FRAGANALYSIS: Max/Ave/Min Diameter AOS:      2.1815    /     2.1815    /     2.1815    
- FRAGANALYSIS: Max/Ave/Min Diameter AE :      2.8413    /     2.4014    /     2.1815    
- 
- 
- 
+      1     12     19     31     1.34    /  1.91       2.18    /  2.84              FRAG_SIZE
+      3      7     15     31     1.34    /  2.18       1.34    /  2.84              FRAG_SIZE
+      2      7     13     29     1.21    /  2.18       1.21    /  2.18              FRAG_SIZE
+
+ FRAGANALYSIS: Max/Ave/Min occ         :       12       /     8.6667    /       7
+ FRAGANALYSIS: Max/Ave/Min unocc       :       19       /     15.667    /      13
+ FRAGANALYSIS: Max/Ave/Min basis       :       31       /     30.333    /      29
+ FRAGANALYSIS: Max/Ave/Min Radius AOS  :      1.3444    /     1.3001    /     1.2114    
+ FRAGANALYSIS: Max/Ave/Min Radius AE   :      2.1815    /     2.0922    /     1.9137    
+ FRAGANALYSIS: Max/Ave/Min Diameter AOS:      2.1815    /     1.5791    /     1.2114    
+ FRAGANALYSIS: Max/Ave/Min Diameter AE :      2.8413    /     2.6214    /     2.1815    
+
+
+
  *****************************************************
  *      DEC ESTIMATED FRAGMENT JOB LIST              *
  *****************************************************
  Number of jobs =            3
- 
+
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
-        1               6324              2       3        8       14       29
-        2               5022              1       3        9       18       31
-        3               3248              1       2       12       17       31
- 
- 
+        1               7068              1       2       12       19       31
+        2               7068              1       3       12       19       31
+        3               7068              2       3       12       19       31
+
+
  DEC JOB SUMMARY: Number of single jobs =          3
  DEC JOB SUMMARY: Number of pair jobs   =          3
  DEC JOB SUMMARY: Total number of jobs  =          3
- 
- 
- *** MPI GROUPSIZE SET TO            2
-Master received job       1 from        1 -- missing #jobs:        5
-Master received job       2 from        1 -- missing #jobs:        4
-Master received job       3 from        1 -- missing #jobs:        3
-Master received job       4 from        1 -- missing #jobs:        2
-Master received job       5 from        1 -- missing #jobs:        1
-Master received job       6 from        1 -- missing #jobs:        0
- 
- 
+
+
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   3
+ FOP ===============================================
+ FOP
+
+
+ **********************************************************************
+ Energy summary for fragment:       3
+ **********************************************************************
+ Single occupied energy =    -0.1338639189    
+ Single virtual  energy =    -0.7913370235E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP Expansion Include Full Molecule !!!
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   0
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :  19
+ FOP Loop: Number of orbitals in occ total  :  12
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.1338639189
+ FOP Loop: Virtual Fragment energy          :   -0.0791337024
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+
+
+ **********************************************************************
+ Energy summary for fragment:       3
+ **********************************************************************
+ Single occupied energy =    -0.1320483566    
+ Single virtual  energy =    -0.7879277748E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :  13
+ FOP Loop: Number of orbitals in occ total  :   9
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.1320483566
+ FOP Loop: Virtual Fragment energy          :   -0.0787927775
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0018155623
+ FOP Loop: Virtual energy diff              :    0.0003409249
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy converged, energydiff    =   0.000340925
+
+
+ **********************************************************************
+ Energy summary for fragment:       3
+ **********************************************************************
+ Single occupied energy =    -0.1334025083    
+ Single virtual  energy =    -0.7909211583E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :  16
+ FOP Loop: Number of orbitals in occ total  :  11
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.1334025083
+ FOP Loop: Virtual Fragment energy          :   -0.0790921158
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0004614106
+ FOP Loop: Virtual energy diff              :    0.0000415865
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy converged, energydiff   =   0.000461411
+ FOP: Virtual energy converged, energydiff    =   0.000041587
+
+
+ **********************************************************************
+ Energy summary for fragment:       3
+ **********************************************************************
+ Single occupied energy =    -0.1331339142    
+ Single virtual  energy =    -0.7907998787E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   3
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :  15
+ FOP Loop: Number of orbitals in occ total  :  10
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.1331339142
+ FOP Loop: Virtual Fragment energy          :   -0.0790799879
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0007300047
+ FOP Loop: Virtual energy diff              :    0.0000537145
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy converged, energydiff   =   0.000730005
+ FOP: Virtual energy converged, energydiff    =   0.000053714
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+ BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
+ FOP
+ FOP=========================================================
+ FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   3
+ FOP---------------------------------------------------------
+ FOP Done: Fragment number                  :   3
+ FOP Done: Number of orbitals in virt total :  15
+ FOP Done: Number of orbitals in occ total  :  10
+ FOP Done: Number of basis functions        :  31
+ FOP Done: Occupied Fragment energy         :   -0.1331339142
+ FOP Done: Virtual Fragment energy          :   -0.0790799879
+ FOP Done: Lagrangian Fragment energy       :    0.0000000000
+ FOP Done: Occupied reduction removed      2 of     12 orbitals ( 16.67 %)
+ FOP Done: Virtual  reduction removed      4 of     19 orbitals ( 21.05 %)
+ FOP=========================================================
+ FOP
+
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   2
+ FOP ===============================================
+ FOP
+
+
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.1554751247    
+ Single virtual  energy =    -0.5123034812E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP Expansion Include Full Molecule !!!
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   0
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :  19
+ FOP Loop: Number of orbitals in occ total  :  12
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.1554751247
+ FOP Loop: Virtual Fragment energy          :   -0.0512303481
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+
+
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.1513970240    
+ Single virtual  energy =    -0.5102800260E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :  12
+ FOP Loop: Number of orbitals in occ total  :   9
+ FOP Loop: Number of basis functions        :  29
+ FOP Loop: Occupied Fragment energy         :   -0.1513970240
+ FOP Loop: Virtual Fragment energy          :   -0.0510280026
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0040781007
+ FOP Loop: Virtual energy diff              :    0.0002023455
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy converged, energydiff    =   0.000202346
+
+
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.1547853461    
+ Single virtual  energy =    -0.5123781671E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :  16
+ FOP Loop: Number of orbitals in occ total  :  11
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.1547853461
+ FOP Loop: Virtual Fragment energy          :   -0.0512378167
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0006897786
+ FOP Loop: Virtual energy diff              :    0.0000074686
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy converged, energydiff   =   0.000689779
+ FOP: Virtual energy converged, energydiff    =   0.000007469
+
+
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.1531917641    
+ Single virtual  energy =    -0.5113763036E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   3
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :  14
+ FOP Loop: Number of orbitals in occ total  :  10
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.1531917641
+ FOP Loop: Virtual Fragment energy          :   -0.0511376304
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0022833606
+ FOP Loop: Virtual energy diff              :    0.0000927178
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy converged, energydiff    =   0.000092718
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+
+
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.1541057789    
+ Single virtual  energy =    -0.5116413263E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   4
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :  15
+ FOP Loop: Number of orbitals in occ total  :  11
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.1541057789
+ FOP Loop: Virtual Fragment energy          :   -0.0511641326
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0013693458
+ FOP Loop: Virtual energy diff              :    0.0000662155
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy converged, energydiff    =   0.000066215
+ BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
+ FOP
+ FOP=========================================================
+ FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   2
+ FOP---------------------------------------------------------
+ FOP Done: Fragment number                  :   2
+ FOP Done: Number of orbitals in virt total :  16
+ FOP Done: Number of orbitals in occ total  :  11
+ FOP Done: Number of basis functions        :  31
+ FOP Done: Occupied Fragment energy         :   -0.1547853461
+ FOP Done: Virtual Fragment energy          :   -0.0512378167
+ FOP Done: Lagrangian Fragment energy       :    0.0000000000
+ FOP Done: Occupied reduction removed      1 of     12 orbitals (  8.33 %)
+ FOP Done: Virtual  reduction removed      3 of     19 orbitals ( 15.79 %)
+ FOP=========================================================
+ FOP
+
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   1
+ FOP ===============================================
+ FOP
+
+
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.1575452522E-01
+ Single virtual  energy =    -0.1266576228    
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP Expansion Include Full Molecule !!!
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   0
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :  19
+ FOP Loop: Number of orbitals in occ total  :  12
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.0157545252
+ FOP Loop: Virtual Fragment energy          :   -0.1266576228
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+
+
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.1562851688E-01
+ Single virtual  energy =    -0.1086276463    
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :  14
+ FOP Loop: Number of orbitals in occ total  :   7
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.0156285169
+ FOP Loop: Virtual Fragment energy          :   -0.1086276463
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0001260083
+ FOP Loop: Virtual energy diff              :    0.0180299765
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy converged, energydiff   =   0.000126008
+ FOP: Virtual energy NOT converged
+
+
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.1572559339E-01
+ Single virtual  energy =    -0.1261035511    
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :  17
+ FOP Loop: Number of orbitals in occ total  :  10
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.0157255934
+ FOP Loop: Virtual Fragment energy          :   -0.1261035511
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0000289318
+ FOP Loop: Virtual energy diff              :    0.0005540717
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy converged, energydiff   =   0.000028932
+ FOP: Virtual energy converged, energydiff    =   0.000554072
+
+
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.1568906282E-01
+ Single virtual  energy =    -0.1223819654    
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   3
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :  16
+ FOP Loop: Number of orbitals in occ total  :   9
+ FOP Loop: Number of basis functions        :  31
+ FOP Loop: Occupied Fragment energy         :   -0.0156890628
+ FOP Loop: Virtual Fragment energy          :   -0.1223819654
+ FOP Loop: Lagrangian Fragment energy       :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0000654624
+ FOP Loop: Virtual energy diff              :    0.0042756573
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000000
+ FOP: Occupied energy converged, energydiff   =   0.000065462
+ FOP: Virtual energy NOT converged
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+ BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
+ FOP
+ FOP=========================================================
+ FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   1
+ FOP---------------------------------------------------------
+ FOP Done: Fragment number                  :   1
+ FOP Done: Number of orbitals in virt total :  17
+ FOP Done: Number of orbitals in occ total  :  10
+ FOP Done: Number of basis functions        :  31
+ FOP Done: Occupied Fragment energy         :   -0.0157255934
+ FOP Done: Virtual Fragment energy          :   -0.1261035511
+ FOP Done: Lagrangian Fragment energy       :    0.0000000000
+ FOP Done: Occupied reduction removed      2 of     12 orbitals ( 16.67 %)
+ FOP Done: Virtual  reduction removed      2 of     19 orbitals ( 10.53 %)
+ FOP=========================================================
+ FOP
+
+#PAIRDIMS# basis,occ,virt       31      12      19
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      31
+ Number of occupied orbitals AOS/EOS     =      12       7
+ Number of virtual  orbitals AOS/EOS     =      19      13
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =      31
+ Maximum virtual batch dimension         =      19
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.232E-02
+ Memory required for tmp array 1 (GB)    = 0.143E-02
+ Memory required for tmp array 2 (GB)    = 0.339E-03
+ Memory required for tmp array 3 (GB)    = 0.554E-03
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.125E-02
+ Memory required for tmp array 1 (GB)    = 0.416E-03
+ Memory required for tmp array 2 (GB)    = 0.285E-03
+ Memory required for tmp array 3 (GB)    = 0.416E-03
+ Memory required for tmp array 4 (GB)    = 0.131E-03
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.389E-03
+ Memory required for tmp array 1 (GB)    = 0.195E-03
+ Memory required for tmp array 2 (GB)    = 0.195E-03
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.232E-02
+ Big Array Memory required       (GB)    = 0.234E-02
+
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            7
+ BATCH: Number of virtual batches =           1
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       1      2
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       1.2114       -0.1223077245E-01
+ Distance(Ang), pair virt energy =       1.2114       -0.4314779252E-01
+ Distance(Ang), pair lagr. occ term  =       1.2114        0.5669883806E-02
+ Distance(Ang), pair lagr. virt term =       1.2114        0.1900406150E-01
+
+
+#PAIRDIMS# basis,occ,virt       31      12      19
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      31
+ Number of occupied orbitals AOS/EOS     =      12       7
+ Number of virtual  orbitals AOS/EOS     =      19      15
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =      31
+ Maximum virtual batch dimension         =      19
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.232E-02
+ Memory required for tmp array 1 (GB)    = 0.143E-02
+ Memory required for tmp array 2 (GB)    = 0.339E-03
+ Memory required for tmp array 3 (GB)    = 0.554E-03
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.129E-02
+ Memory required for tmp array 1 (GB)    = 0.416E-03
+ Memory required for tmp array 2 (GB)    = 0.328E-03
+ Memory required for tmp array 3 (GB)    = 0.416E-03
+ Memory required for tmp array 4 (GB)    = 0.131E-03
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.518E-03
+ Memory required for tmp array 1 (GB)    = 0.259E-03
+ Memory required for tmp array 2 (GB)    = 0.259E-03
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.232E-02
+ Big Array Memory required       (GB)    = 0.234E-02
+
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            7
+ BATCH: Number of virtual batches =           1
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       1      3
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       1.3444       -0.7936151199E-02
+ Distance(Ang), pair virt energy =       1.3444       -0.3907564435E-01
+ Distance(Ang), pair lagr. occ term  =       1.3444        0.3623190768E-02
+ Distance(Ang), pair lagr. virt term =       1.3444        0.2009022711E-01
+
+
+#PAIRDIMS# basis,occ,virt       31      12      19
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      31
+ Number of occupied orbitals AOS/EOS     =      12      10
+ Number of virtual  orbitals AOS/EOS     =      19      10
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =      31
+ Maximum virtual batch dimension         =      19
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.232E-02
+ Memory required for tmp array 1 (GB)    = 0.143E-02
+ Memory required for tmp array 2 (GB)    = 0.339E-03
+ Memory required for tmp array 3 (GB)    = 0.554E-03
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.131E-02
+ Memory required for tmp array 1 (GB)    = 0.416E-03
+ Memory required for tmp array 2 (GB)    = 0.347E-03
+ Memory required for tmp array 3 (GB)    = 0.416E-03
+ Memory required for tmp array 4 (GB)    = 0.131E-03
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.578E-03
+ Memory required for tmp array 1 (GB)    = 0.289E-03
+ Memory required for tmp array 2 (GB)    = 0.289E-03
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.232E-02
+ Big Array Memory required       (GB)    = 0.234E-02
+
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            7
+ BATCH: Number of virtual batches =           1
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       2      3
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       2.1815       -0.1537268019E-01
+ Distance(Ang), pair virt energy =       2.1815       -0.1462881194E-02
+ Distance(Ang), pair lagr. occ term  =       2.1815        0.8308634504E-02
+ Distance(Ang), pair lagr. virt term =       2.1815        0.7584454070E-03
+
+
+
+
  ******************************************************************
  *            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *
  ******************************************************************
- 
- 
+
+
  Total number of pairs:                         3
  Pairs to be treated at input CC level          3
  Pairs to be skipped from calculation           0
- 
- Estimated pair correlation energy:            -0.3464459365E-01
+
+ Estimated pair correlation energy:            -0.3553960384E-01
  Estimated contribution from skipped pairs:      0.000000000    
- 
- 
- 
- 
+
+
+
+
  =================================================================
  Estimated occupied pair energies
  =================================================================
- 
+
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.2114         -0.1200304246E-01    PF_ESTIMATE
-     1       3      1.3444         -0.7892185866E-02    PF_ESTIMATE
-     2       3      2.1815         -0.1474936532E-01    PF_ESTIMATE
- 
- 
- 
- 
- *********************************************************************
-  MPI fragment statistics: FRAGMENT OPT. + ESTIM.
- *********************************************************************
- 
- 
- Printed information
- -------------------
- Job    : Fragment job number
- #occ   : Number of occupied AOS orbitals in fragment
- #virt  : Number of virtual AOS orbitals in fragment
- #basis : Number of basis functions in fragment
- slotsiz: Number of slaves used for fragment incl. local master (slot size)
- #tasks : Number of integral tasks for fragment (nalpha*ngamma)
- GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)
- Time(s): Time (in seconds) used by local master (NOT local slaves)
- Load   : Load distribution measure (ideally 1.0, smaller in practice): 
-            (Sum of effective work times for ALL MPI processes in slot)
-          / (slotsiz * [Local master time] )
- 
- Note: Load print is currently only implemented for MP2 calculations
-       and not for atomic fragment optimizations.
-       The Load given below is set to -1 for cases where it is not implemented
-       Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library
- 
- 
-     Job    #occ   #virt  #basis slotsiz  #tasks     GFLOPS     Time(s)    Load1      Load2
-       4      12      17      31       2      21    -1.000       22.2      0.964      0.962    STAT
-       5       9      18      31       2      21    -1.000       20.2      0.976      0.976    STAT
-       6       8      14      29       2      21    -1.000       16.6      0.976      0.974    STAT
- -----------------------------------------------------------------------------
- Number of jobs done     =        6
- Time-to-solution (s)    =     143.    
- TOTAL time(s) all nodes =     285.    
- Global MPI loss (%)     =    0.631E-01
- Local MPI loss (%)      =     2.64    
- Total MPI loss (%)      =     2.71    
- -----------------------------------------------------------------------------
- 
- 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is  1 minute   8 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is  2 minutes 23 seconds
+     1       2      1.2114         -0.1223077245E-01    PF_ESTIMATE
+     1       3      1.3444         -0.7936151199E-02    PF_ESTIMATE
+     2       3      2.1815         -0.1537268019E-01    PF_ESTIMATE
+
+
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is  16.21 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is  16.35 seconds
  Preparing job list...
- 
- 
- 
+
+
+
  *******************************************************************************
               Atomic fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      2      9     16     31     2.18    /  2.26       2.18    /  2.84              FRAG_SIZE
-      3      9     15     31     2.18    /  2.18       2.18    /  2.84              FRAG_SIZE
-      1     10     12     31     1.34    /  1.91       2.18    /  2.84              FRAG_SIZE
- 
- FRAGANALYSIS: Max/Ave/Min occ         :       10       /     9.3333    /       9
- FRAGANALYSIS: Max/Ave/Min unocc       :       16       /     14.333    /      12
+      2     11     16     31     2.18    /  2.26       2.18    /  2.84              FRAG_SIZE
+      1     10     17     31     1.34    /  1.91       2.18    /  2.84              FRAG_SIZE
+      3     10     15     31     2.18    /  2.18       2.18    /  2.84              FRAG_SIZE
+
+ FRAGANALYSIS: Max/Ave/Min occ         :       11       /     10.333    /      10
+ FRAGANALYSIS: Max/Ave/Min unocc       :       17       /     16.000    /      15
  FRAGANALYSIS: Max/Ave/Min basis       :       31       /     31.000    /      31
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      2.1815    /     1.9025    /     1.3444    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :      2.2563    /     2.1172    /     1.9137    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:      2.1815    /     2.1815    /     2.1815    
  FRAGANALYSIS: Max/Ave/Min Diameter AE :      2.8413    /     2.8413    /     2.8413    
- 
- 
- 
+
+
+
  *****************************************************
  *               DEC FRAGMENT JOB LIST               *
  *****************************************************
  Number of jobs =            3
- 
+
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
-        1               6479              2       3       11       17       31
-        2               5797              1       2       11       17       31
-        3               5797              1       3       11       19       31
- 
- 
+        1               7068              2       3       12       19       31
+        2               6479              1       2       11       19       31
+        3               6479              1       3       11       19       31
+
+
  DEC JOB SUMMARY: Number of single jobs =          3
  DEC JOB SUMMARY: Number of pair jobs   =          3
  DEC JOB SUMMARY: Total number of jobs  =          3
- 
- 
- 
+
+
+
  *** Calculating single and pair interaction energies ***
- 
- *** MPI GROUPSIZE SET TO            2
-Master received job       1 from        1 -- missing #jobs:        2
-Master received job       2 from        1 -- missing #jobs:        1
-Master received job       3 from        1 -- missing #jobs:        0
- >>>  CPU Time used in DEC PAIR Fragment calc is   7.62 seconds
- >>> wall Time used in DEC PAIR Fragment calc is  16.30 seconds
- 
- 
- *********************************************************************
-  MPI fragment statistics: PAIR FRAGMENTS
- *********************************************************************
- 
- 
- Printed information
- -------------------
- Job    : Fragment job number
- #occ   : Number of occupied AOS orbitals in fragment
- #virt  : Number of virtual AOS orbitals in fragment
- #basis : Number of basis functions in fragment
- slotsiz: Number of slaves used for fragment incl. local master (slot size)
- #tasks : Number of integral tasks for fragment (nalpha*ngamma)
- GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)
- Time(s): Time (in seconds) used by local master (NOT local slaves)
- Load   : Load distribution measure (ideally 1.0, smaller in practice): 
-            (Sum of effective work times for ALL MPI processes in slot)
-          / (slotsiz * [Local master time] )
- 
- Note: Load print is currently only implemented for MP2 calculations
-       and not for atomic fragment optimizations.
-       The Load given below is set to -1 for cases where it is not implemented
-       Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library
- 
- 
-     Job    #occ   #virt  #basis slotsiz  #tasks     GFLOPS     Time(s)    Load1      Load2
-       1      11      19      31       2       5    -1.000       5.76      0.982      0.977    STAT
-       2      11      17      31       2       5    -1.000       5.12      0.979      0.976    STAT
-       3      11      17      31       2       5    -1.000       5.34      0.977      0.973    STAT
- -----------------------------------------------------------------------------
- Number of jobs done     =        3
- Time-to-solution (s)    =     16.3    
- TOTAL time(s) all nodes =     32.4    
- Global MPI loss (%)     =    0.485    
- Local MPI loss (%)      =     2.04    
- Total MPI loss (%)      =     2.52    
- -----------------------------------------------------------------------------
- 
- 
- 
- 
- =============================================================================
- 
- 
+
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       2      3
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       2.1815       -0.1541461456E-01
+ Distance(Ang), pair virt energy =       2.1815       -0.1465993322E-02
+ Distance(Ang), pair lagr. occ term  =       2.1815         0.000000000    
+ Distance(Ang), pair lagr. virt term =       2.1815         0.000000000    
+
+
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       1      2
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       1.2114       -0.1233698126E-01
+ Distance(Ang), pair virt energy =       1.2114       -0.4322834814E-01
+ Distance(Ang), pair lagr. occ term  =       1.2114         0.000000000    
+ Distance(Ang), pair lagr. virt term =       1.2114         0.000000000    
+
+
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       1      3
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       1.3444       -0.8001341374E-02
+ Distance(Ang), pair virt energy =       1.3444       -0.3912909169E-01
+ Distance(Ang), pair lagr. occ term  =       1.3444         0.000000000    
+ Distance(Ang), pair lagr. virt term =       1.3444         0.000000000    
+
+
+ >>>  CPU Time used in DEC PAIR Fragment calc is   2.08 seconds
+ >>> wall Time used in DEC PAIR Fragment calc is   2.08 seconds
+
+
+              ===============================================
+              |   Print single and pair fragment energies   |
+              ===============================================
+
+
+
  =================================================================
  RI-MP2 occupied single energies
  =================================================================
- 
+
  Fragment       Energy
-     1      -0.1560077484E-01    AF_RI_MP2_OCC
-     2      -0.1547541766        AF_RI_MP2_OCC
-     3      -0.1330416082        AF_RI_MP2_OCC
- 
- 
+     1      -0.1572559339E-01    AF_RI_MP2_OCC
+     2      -0.1547853461        AF_RI_MP2_OCC
+     3      -0.1331339142        AF_RI_MP2_OCC
+
+
  =================================================================
  RI-MP2 virtual single energies
  =================================================================
- 
+
  Fragment       Energy
-     1      -0.1256944916        AF_RI_MP2_VIR
-     2      -0.5119404214E-01    AF_RI_MP2_VIR
-     3      -0.7880559065E-01    AF_RI_MP2_VIR
- 
- 
+     1      -0.1261035511        AF_RI_MP2_VIR
+     2      -0.5123781671E-01    AF_RI_MP2_VIR
+     3      -0.7907998787E-01    AF_RI_MP2_VIR
+
+
  =================================================================
  RI-MP2 occupied pair energies
  =================================================================
- 
+
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.2114         -0.1226179559E-01    PF_RI_MP2_OCC
-     1       3      1.3444         -0.7949799037E-02    PF_RI_MP2_OCC
-     2       3      2.1815         -0.1541461482E-01    PF_RI_MP2_OCC
- 
- 
+     1       2      1.2114         -0.1233698126E-01    PF_RI_MP2_OCC
+     1       3      1.3444         -0.8001341374E-02    PF_RI_MP2_OCC
+     2       3      2.1815         -0.1541461456E-01    PF_RI_MP2_OCC
+
+
  =================================================================
  RI-MP2 virtual pair energies
  =================================================================
- 
+
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.2114         -0.4321918222E-01    PF_RI_MP2_VIR
-     1       3      1.3444         -0.3912395588E-01    PF_RI_MP2_VIR
-     2       3      2.1815         -0.1464495098E-02    PF_RI_MP2_VIR
- 
- RI-MP2 occupied   correlation energy :    -0.3390227691    
- RI-MP2 virtual    correlation energy :    -0.3395017576    
- 
- 
- 
+     1       2      1.2114         -0.4322834814E-01    PF_RI_MP2_VIR
+     1       3      1.3444         -0.3912909169E-01    PF_RI_MP2_VIR
+     2       3      2.1815         -0.1465993322E-02    PF_RI_MP2_VIR
+
+ RI-MP2 occupied   correlation energy :    -0.3393977909    
+ RI-MP2 virtual    correlation energy :    -0.3402447889    
+
+
+
  =============================================================================
- 
- 
- 
- 
+
+
+
+
              **********************************************************
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
- 
+
                E: Hartree-Fock energy :     -188.6610339040
-               E: Correlation energy  :       -0.3390227691
-               E: Estimated DEC error :        0.0004789885
-               G: Total RIMP2 energy  :     -189.0000566731
- 
- 
- >>>  CPU Time used in DEC FINAL is   0.95 seconds
- >>> wall Time used in DEC FINAL is   1.95 seconds
- 
+               E: Correlation energy  :       -0.3393977909
+               E: Estimated DEC error :        0.0008469980
+               G: Total RIMP2 energy  :     -189.0004316949
+
+
+ >>>  CPU Time used in DEC FINAL is   0.20 seconds
+ >>> wall Time used in DEC FINAL is   0.22 seconds
+
  CC Memory summary
  -----------------
- Allocated memory for array4   :   0.000     GB
+ Allocated memory for array4   :  0.2282E-02 GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :   0.000     GB
+ Max memory in use for array4  :  0.8080E-03 GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
  Max memory in use for array3  :   0.000     GB
  ------------------
- 
+
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         76.3684     s
-Total Wall time used in DEC          :         161.054     s
+Total CPU  time used in DEC          :         18.4888     s
+Total Wall time used in DEC          :         18.6810     s
 ------------------------------------------------------
 
- 
-Job finished   : Date: 13/10/2014   Time: 18:25:35
- 
- 
+
+Hostname       : Pablo-PC                                          
+Job finished   : Date: 25/11/2014   Time: 15:16:39
+
+
 
 =============================================================================
                           -- end of DEC program --
 =============================================================================
 
- 
- 
- >>>  CPU Time used in *SCF is  2 minutes  7 seconds
- >>> wall Time used in *SCF is  4 minutes 20 seconds
- 
+
+
+ >>>  CPU Time used in *SCF is  32.35 seconds
+ >>> wall Time used in *SCF is  32.68 seconds
+
 Total no. of matmuls used:                      5670
 Total no. of Fock/KS matrix evaluations:          20
 Max no. of matrices allocated in Level 3:         81
@@ -1653,237 +2240,53 @@ Max no. of matrices allocated in Level 3:         81
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         85.247 MB
-  Max allocated memory, type(matrix)                 549.584 kB
-  Max allocated memory, real(realk)                   31.610 MB
+  Max allocated memory, TOTAL                         71.307 MB
+  Max allocated memory, type(matrix)                 541.184 kB
+  Max allocated memory, real(realk)                   10.343 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                      414.032 kB
-  Max allocated memory, logical                      204.752 kB
-  Max allocated memory, character                    291.520 kB
-  Max allocated memory, AOBATCH                       20.160 kB
-  Max allocated memory, DECORBITAL                    13.552 kB
-  Max allocated memory, DECFRAG                      130.080 kB
-  Max allocated memory, BATCHTOORB                     0.000 Byte
+  Max allocated memory, integer                      103.508 kB
+  Max allocated memory, logical                      202.552 kB
+  Max allocated memory, character                      4.064 kB
+  Max allocated memory, AOBATCH                       92.232 kB
+  Max allocated memory, DECORBITAL                    13.696 kB
+  Max allocated memory, DECFRAG                       97.040 kB
+  Max allocated memory, BATCHTOORB                     0.448 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.000 Byte
+  Max allocated memory, MYPOINTER                      0.720 kB
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         83.600 MB
+  Max allocated memory, ARRAY                         66.400 MB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        6.952 kB
-  Max allocated memory, LSAOTENSOR                    36.720 kB
-  Max allocated memory, SLSAOTENSOR                   29.440 kB
+  Max allocated memory, ODBATCH                        6.336 kB
+  Max allocated memory, LSAOTENSOR                    15.200 kB
+  Max allocated memory, SLSAOTENSOR                   16.560 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 675.168 kB
-  Max allocated memory, ATOMITEM                       3.328 kB
-  Max allocated memory, LSMATRIX                       4.560 kB
-  Max allocated memory, OverlapT                     702.464 kB
+  Max allocated memory, ATOMTYPEITEM                 918.336 kB
+  Max allocated memory, ATOMITEM                       5.120 kB
+  Max allocated memory, LSMATRIX                      12.040 kB
+  Max allocated memory, OverlapT                     129.504 kB
   Max allocated memory, linkshell                      1.632 kB
-  Max allocated memory, integrand                      2.867 MB
-  Max allocated memory, integralitem                  31.360 MB
-  Max allocated memory, IntWork                      646.432 kB
-  Max allocated memory, Overlap                       19.281 MB
-  Max allocated memory, ODitem                         5.056 kB
-  Max allocated memory, LStensor                     163.565 kB
+  Max allocated memory, integrand                    896.000 kB
+  Max allocated memory, integralitem                   7.840 MB
+  Max allocated memory, IntWork                      161.608 kB
+  Max allocated memory, Overlap                        7.892 MB
+  Max allocated memory, ODitem                         4.608 kB
+  Max allocated memory, LStensor                     319.462 kB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
- 
-  The total memory used across all MPI nodes
-  Max allocated memory, TOTAL                        269.195 MB
-time spent in unlock:        0.0000000000
-  Largest memory allocated on a single MPI slave node (including Master)
-  Max allocated memory, TOTAL                         93.335 MB
-  Largest memory allocated on a single MPI slave node (exclusing Master)
-  Max allocated memory, TOTAL                         93.335 MB
-  Memory statistics for MPI node number         1 
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (TOTAL):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (type(matrix)):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MPI):                     0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (complex):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (character):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (AOBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMITEM):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECORBITAL):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECFRAG):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlapType):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (BATCHTOORB):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECAOBATCHINFO):          0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MYPOINTER):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY2):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY4):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (PNOSpaceInfo):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2DENS):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (TRACEBACK):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2GRAD):                 0 byte  - Should be zero - otherwise a leakage is present
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Additional Memory information          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (linkshell):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integrand):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integralitem):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (IntWork):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlap):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODitem):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lstensor):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (FMM   ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         90.613 MB
-  Max allocated memory, type(matrix)                  19.256 kB
-  Max allocated memory, real(realk)                   41.318 MB
-  Max allocated memory, MPI                            0.000 Byte
-  Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                      414.032 kB
-  Max allocated memory, logical                      205.708 kB
-  Max allocated memory, character                    293.120 kB
-  Max allocated memory, AOBATCH                       92.232 kB
-  Max allocated memory, DECORBITAL                    11.616 kB
-  Max allocated memory, DECFRAG                      130.080 kB
-  Max allocated memory, BATCHTOORB                     0.800 kB
-  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      3.840 kB
-  Max allocated memory, ARRAY2                         0.000 Byte
-  Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         83.600 MB
-  Max allocated memory, PNOSpaceInfo                   0.000 Byte
-  Max allocated memory, MP2DENS                        0.000 Byte
-  Max allocated memory, TRACEBACK                      0.252 kB
-  Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        9.504 kB
-  Max allocated memory, LSAOTENSOR                    36.720 kB
-  Max allocated memory, SLSAOTENSOR                   29.440 kB
-  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                   4.051 MB
-  Max allocated memory, ATOMITEM                       9.216 kB
-  Max allocated memory, LSMATRIX                      17.200 kB
-  Max allocated memory, OverlapType                  702.464 kB
-  Max allocated memory, linkshell                      1.632 kB
-  Max allocated memory, integrand                      3.584 MB
-  Max allocated memory, integralitem                  31.360 MB
-  Max allocated memory, IntWork                        0.000 Byte
-  Max allocated memory, Overlap                       31.569 MB
-  Max allocated memory, ODitem                         6.912 kB
-  Max allocated memory, LStensor                     634.187 kB
-  Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                             0.000 Byte
-  Max allocated memory, Lvec_data                      0.000 Byte
-  Max allocated memory, Lattice_cell                   0.000 Byte
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
- 
-  Memory statistics for MPI node number         2 
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (TOTAL):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (type(matrix)):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MPI):                     0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (complex):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (character):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (AOBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMITEM):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECORBITAL):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECFRAG):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlapType):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (BATCHTOORB):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECAOBATCHINFO):          0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MYPOINTER):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY2):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY4):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (PNOSpaceInfo):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2DENS):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (TRACEBACK):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2GRAD):                 0 byte  - Should be zero - otherwise a leakage is present
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Additional Memory information          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (linkshell):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integrand):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integralitem):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (IntWork):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlap):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODitem):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lstensor):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (FMM   ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         93.335 MB
-  Max allocated memory, type(matrix)                  18.728 kB
-  Max allocated memory, real(realk)                   41.265 MB
-  Max allocated memory, MPI                            0.000 Byte
-  Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                      414.032 kB
-  Max allocated memory, logical                      203.620 kB
-  Max allocated memory, character                    112.816 kB
-  Max allocated memory, AOBATCH                       28.224 kB
-  Max allocated memory, DECORBITAL                    11.616 kB
-  Max allocated memory, DECFRAG                      130.080 kB
-  Max allocated memory, BATCHTOORB                     0.800 kB
-  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      3.840 kB
-  Max allocated memory, ARRAY2                         0.000 Byte
-  Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         83.600 MB
-  Max allocated memory, PNOSpaceInfo                   0.000 Byte
-  Max allocated memory, MP2DENS                        0.000 Byte
-  Max allocated memory, TRACEBACK                      0.252 kB
-  Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        6.864 kB
-  Max allocated memory, LSAOTENSOR                    36.720 kB
-  Max allocated memory, SLSAOTENSOR                   29.440 kB
-  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                   6.752 MB
-  Max allocated memory, ATOMITEM                      14.336 kB
-  Max allocated memory, LSMATRIX                      10.320 kB
-  Max allocated memory, OverlapType                  702.464 kB
-  Max allocated memory, linkshell                      1.632 kB
-  Max allocated memory, integrand                      3.584 MB
-  Max allocated memory, integralitem                  31.360 MB
-  Max allocated memory, IntWork                        0.000 Byte
-  Max allocated memory, Overlap                       31.569 MB
-  Max allocated memory, ODitem                         4.992 kB
-  Max allocated memory, LStensor                     633.085 kB
-  Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                             0.000 Byte
-  Max allocated memory, Lvec_data                      0.000 Byte
-  Max allocated memory, Lattice_cell                   0.000 Byte
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
- 
+
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
- >>>  CPU Time used in LSDALTON is  2 minutes 39 seconds
- >>> wall Time used in LSDALTON is  5 minutes 25 seconds
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+ >>>  CPU Time used in LSDALTON is  42.86 seconds
+ >>> wall Time used in LSDALTON is  44.07 seconds
 
 End simulation
-     Date and time (Linux)  : Mon Oct 13 18:25:36 2014
-     Host name              : localhost                               
+     Date and time (Linux)  : Tue Nov 25 15:16:39 2014
+     Host name              : Pablo-PC                                

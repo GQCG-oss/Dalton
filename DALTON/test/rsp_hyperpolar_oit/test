@@ -35,7 +35,7 @@ f.add(string='Direct linear transformations NOT used in RESPONSE')
 
 f.add(re='^@.*beta', rel_tolerance=1.0e-3)
 
-test.run(['rsp_hyperpolar_oit.dal'], ['h2o.mol'], {'out': f},
+test.run(['rsp_hyperpolar_oit.dal'], ['h2o.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

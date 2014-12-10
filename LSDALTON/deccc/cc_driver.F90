@@ -50,15 +50,187 @@ use rpa_module
 
 
 public :: ccsolver, ccsolver_par, fragment_ccsolver, ccsolver_justenergy,&
-   & mp2_solver
+   & mp2_solver, SOLVE_AMPLITUDES,SOLVE_AMPLITUDES_PNO, SOLVE_MULTIPLIERS,ccsolver_energy_multipliers
 private
 
 interface mp2_solver
    module procedure mp2_solver_frag, mp2_solver_mol
 end interface mp2_solver
 
+
 contains
 
+#ifdef MOD_UNRELEASED
+   subroutine ccsolver_energy_multipliers(ccmodel,Co,Cv,fock,nb,no,nv, &
+        &mylsitem,ccPrintLevel,fragment_job,oof,vvf,ccenergy)
+
+     implicit none
+
+     !> CC model
+     integer,intent(in) :: ccmodel
+     !> Number of occupied orbitals in full molecule/fragment AOS
+     integer, intent(in) :: no
+     !> Number of virtual orbitals in full molecule/fragment AOS
+     integer, intent(in) :: nv
+     !> Number of basis functions in full molecule/atomic extent
+     integer, intent(in) :: nb
+     !> Fock matrix in AO basis for fragment or full molecule
+     real(realk), dimension(nb,nb), intent(inout) :: fock
+     !> Occupied MO coefficients  for fragment/full molecule
+     real(realk), dimension(nb,no), intent(inout) :: Co
+     !> Virtual MO coefficients  for fragment/full molecule
+     real(realk), dimension(nb,nv), intent(inout) :: Cv
+     !> Occ-occ block of Fock matrix in MO basis
+     real(realk), dimension(no,no), intent(inout) :: oof
+     !> Virt-virt block of Fock matrix in MO basis
+     real(realk), dimension(nv,nv), intent(inout) :: vvf
+     !> Is this a fragment job (true) or a full molecular calculation (false)
+     logical, intent(in) :: fragment_job
+     !> LS item information
+     type(lsitem), intent(inout) :: mylsitem
+     !> How much to print? ( ccPrintLevel>0 --> print info stuff)
+     integer, intent(in) :: ccPrintLevel
+     !> Coupled cluster energy for fragment/full molecule
+     real(realk),intent(inout) :: ccenergy!,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
+     type(array4) :: t2inal,VOVO!,ccsdpt_t2
+     type(array2) :: t1inal!,ccsdpt_t1
+     !> stuff needed for pair analysis
+     type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
+     integer :: natoms,ncore,no_tot,p,pdx,i
+     type(decorbital), pointer :: occ_orbitals(:)
+     type(decorbital), pointer :: uno_orbitals(:)
+     logical, pointer :: orbitals_assigned(:)
+     type(array4) :: mult2
+     type(array2) :: mult1
+     type(tensor) :: t1f,t2f,m1f,m2f,aibj
+     integer :: solver_ccmodel
+     logical :: loc
+
+     solver_ccmodel = ccmodel
+     if(ccmodel == MODEL_CCSDpT)solver_ccmodel = MODEL_CCSD
+     loc=.true.
+#ifdef VAR_MPI
+     loc = (infpar%lg_nodtot == 1)
+#endif
+
+     call ccsolver_job(ccmodel,Co,Cv,fock,nb,no,nv,mylsitem,ccPrintLevel,&
+        &oof,vvf,ccenergy,aibj,.false.,loc,t1f,t2f,m1f,m2f)
+
+     call tensor_free(t1f)
+     call tensor_free(t2f)
+     call tensor_free(m1f)
+     call tensor_free(m2f)
+     call tensor_free(aibj)
+
+
+   end subroutine ccsolver_energy_multipliers
+#endif
+
+   subroutine ccsolver_job(ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,oof,vvf,e,vovo,lrt1,loc,t1f,t2f,m1f,m2f,frag)
+      implicit none
+      integer, intent(in) :: ccmodel, nb,no,nv, ccPr
+      real(realk), intent(out) :: e
+      type(lsitem), intent(inout) :: myls
+      logical, intent(in)    :: lrt1
+      logical, intent(inout) :: loc
+      real(realk), intent(inout) :: Co(:,:), Cv(:,:), oof(:,:),  vvf(:,:), fock(:,:)
+      type(tensor), intent(inout) :: vovo,t1f,t2f
+      type(tensor), intent(inout), optional :: m1f,m2f
+      type(decfrag), intent(inout), optional :: frag
+      logical :: fj
+      integer :: os,vs, solver_job, solver_ccmodel
+      type(tensor) :: mp2_amp
+      type(array4) :: t2a4,VOVOa4, m2a4, mp2a4
+      type(array2) :: t1a2, m1a2
+
+      solver_ccmodel = ccmodel
+      if(ccmodel == MODEL_CCSDpT) solver_ccmodel = MODEL_CCSD
+      fj = present(frag)
+      call get_symm_tensor_segmenting_simple(no,nv,os,vs)
+
+#ifdef MOD_UNRELEASED
+      if(DECinfo%ccdebug)then
+
+         solver_job = SOLVE_AMPLITUDES
+
+         if(DECinfo%use_pnos)then
+            call ccsolver_debug(MODEL_MP2,Co,Cv,fock,nb,no,nv,myls,ccPr,fj,oof,vvf,e,t1a2,mp2a4,VOVOa4,lrt1,solver_job)
+            call array4_free(VOVOa4)
+         endif
+
+         call ccsolver_debug(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,fj,oof,vvf,e,t1a2,t2a4,VOVOa4,lrt1,solver_job,&
+            &use_pnos=DECinfo%use_pnos,m2=mp2a4)
+
+         if(DECinfo%use_pnos) call array4_free(mp2a4)
+
+         !convert to output
+         call tensor_minit(vovo,[nv,no,nv,no],4,local=loc,tdims=[vs,os,vs,os],atype="TDAR")
+         call tensor_minit(t2f, [nv,no,nv,no],4,local=loc,tdims=[vs,os,vs,os],atype="TDAR")
+         call tensor_convert( VOVOa4%val,vovo )
+         call tensor_convert( t2a4%val,  t2f  )
+         if(solver_ccmodel == MODEL_CCSD .or. solver_ccmodel == MODEL_CC2)then
+            call tensor_minit(t1f, [nv,no],2,atype="LDAR")
+            call tensor_convert( t1a2%val,  t1f  )
+         endif
+         
+         if(DECinfo%CCSDmultipliers)then
+            solver_job = SOLVE_MULTIPLIERS
+            call array4_free(VOVOa4)
+
+            call ccsolver_debug(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,fj,oof,vvf,e, &
+               & t1a2,t2a4,VOVOa4,lrt1,SOLVE_MULTIPLIERS,m2=m2a4,m1=m1a2)
+
+            call tensor_minit(m2f, [nv,no,nv,no],4,local=loc,tdims=[vs,os,vs,os],atype="TDAR")
+            call tensor_convert( m2a4%val,  m2f  )
+            call array4_free(m2a4)
+
+            if(solver_ccmodel == MODEL_CCSD .or. solver_ccmodel == MODEL_CC2)then
+               call tensor_minit(m1f, [nv,no],2,atype="LDAR")
+               call tensor_convert( m1a2%val,  m1f  )
+               call array2_free(m1a2)
+            endif
+
+         endif
+
+         call array4_free(vovoa4)
+         call array4_free(t2a4)
+         if(solver_ccmodel == MODEL_CCSD .or. solver_ccmodel == MODEL_CC2)then
+            call array2_free(t1a2)
+         endif
+
+      else
+#endif
+
+         if(DECinfo%use_pnos)then
+
+            call ccsolver_par(MODEL_MP2,Co,Cv,fock,nb,no,nv,myls,ccPr,oof,vvf,&
+               &e,vovo,lrt1,loc,SOLVE_AMPLITUDES,p4=mp2_amp,frag=frag)
+
+            if(fj)then
+               !GET THE MP2 CORRELATION DENSITY FOR THE CENTRAL ATOM
+               call calculate_MP2corrdens_frag(mp2_amp,frag) 
+            endif
+
+            solver_job = SOLVE_AMPLITUDES_PNO
+         else
+            solver_job = SOLVE_AMPLITUDES
+         endif
+
+         call ccsolver_par(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,oof,vvf,e,&
+            & vovo,lrt1,loc,solver_job, p2=t1f, p4=t2f, m4=mp2_amp, vovo_supplied=DECinfo%use_pnos, frag=frag )
+
+         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
+
+#ifdef MOD_UNRELEASED
+         if(DECinfo%CCSDmultipliers)then
+            call ccsolver_par(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,oof,vvf,e,&
+               & vovo,lrt1,loc,SOLVE_MULTIPLIERS, p2=m1f, p4=m2f, m2=t1f, m4=t2f,vovo_supplied=.true., frag=frag )
+         endif
+
+      endif
+#endif
+
+   end subroutine ccsolver_job
 
 !> \brief get ccsd(t) corrections for full molecule.
 !> \author Janus Juul Eriksen, modified by Patrick Ettenhuber and TK
@@ -85,9 +257,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    !> How much to print? ( ccPrintLevel>0 --> print info stuff)
    integer, intent(in) :: ccPrintLevel
    !> Occupied MO coefficients  for fragment/full molecule (only used for Frozen core)
-   real(realk), dimension(nbasis,nocc), intent(in),optional :: Co_fc
+   real(realk), dimension(nbasis,nocc), intent(in),optional,target :: Co_fc
    !> Occ-occ block of Fock matrix in MO basis (only used for frozen core)
-   real(realk), dimension(nocc,nocc), intent(in),optional :: ppfock_fc
+   real(realk), dimension(nocc,nocc), intent(in),optional,target :: ppfock_fc
    !type(array2) :: t1_final_arr2
    !type(array4) :: t2_final_arr4, VOVO_arr4
    type(tensor) :: t2_final,ccsdpt_t2,VOVO, mp2_amp
@@ -102,6 +274,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk), pointer :: FragEnergies(:,:,:), FragEnergies_tmp(:,:), ccenergies(:)
    real(realk) :: ccenergy
    integer :: nenergies, cc_sol, pT_4, pT_5, pT_full
+   real(realk), pointer :: Co(:,:), Cv(:,:), oof(:,:),  vvf(:,:), fock(:,:)
    !> local variables 
    character(len=30) :: CorrEnergyString
    integer :: iCorrLen, nsingle, npair, njobs
@@ -115,8 +288,35 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
+   Cv   => MyMolecule%Cv
+   fock => MyMolecule%fock
+   vvf  => MyMolecule%qqfock
+
+   ! is this a frozen core calculation or not?
+   if (DECinfo%frozencore) then
+
+      ncore = MyMolecule%ncore
+
+      if(.not. present(Co_fc)) then
+         call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
+      end if
+
+      if(.not. present(ppfock_fc)) then
+         call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
+      end if
+
+      Co  => Co_fc
+      oof => ppfock_fc
+
+
+   else
+      ncore = 0
+      Co => MyMolecule%Co
+      oof => MyMolecule%ppfock
+   end if
 
 #ifdef MOD_UNRELEASED
+
    ! nenergies is set to 4: a CC solver model plus pT corrections, 
    ! (4th order, 5th order and both):
    nenergies = 4
@@ -129,47 +329,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
    if (DECinfo%print_frags) then ! should we print fragment energies?
 
-      ! is this a frozen core calculation or not?
-      if (DECinfo%frozencore) then
-
-         ncore = MyMolecule%ncore
-
-         if(.not. present(Co_fc)) then
-            call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
-         end if
-
-         if(.not. present(ppfock_fc)) then
-            call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
-         end if
-
-         if(DECinfo%use_pnos)then
-            call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
-         endif
-
-         call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos )
-
-         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
-
-      else
-         ncore = 0
-         if(DECinfo%use_pnos)then
-            call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
-         endif
-
-         call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos, m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
-
-         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
-
-      end if
-   
+      call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
+         & VOVO,.false.,local,t1_final,t2_final)
    
       if(DECinfo%PL>1)then
          call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
@@ -346,39 +507,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
    else ! we do not print fragment energies
 
-      ! is this a frozen core calculation or not?
-      if (DECinfo%frozencore) then
-   
-         ncore = MyMolecule%ncore
-   
-         if(.not. present(Co_fc)) then
-            call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
-         end if
-   
-         if(.not. present(ppfock_fc)) then
-            call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
-         end if
-   
-         if(DECinfo%use_pnos)then
-            call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
-         endif
-         call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
-      else
-         ncore = 0
-         if(DECinfo%use_pnos)then
-            call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
-         endif
-   
-         call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
-      end if
+      call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
+         & VOVO,.false.,local,t1_final,t2_final)
 
       if(DECinfo%PL>1)then
          call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
@@ -541,29 +671,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
 !else mod unreleased
 #else
-   ! is this a frozen core calculation or not?
-   if (DECinfo%frozencore) then
 
-      ncore = MyMolecule%ncore
-
-      if(.not. present(Co_fc)) then
-         call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
-      end if
-
-      if(.not. present(ppfock_fc)) then
-         call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
-      end if
-
-      call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-         & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-         & t1_final,t2_final,VOVO,.false.,local,.false.)
-   else
-      ncore = 0
-
-      call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-         mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-         & t1_final,t2_final,VOVO,.false.,local,.false.)
-   end if
+   call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergy,&
+      & VOVO,.false.,local,t1_final,t2_final)
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
       call tensor_free(t1_final)
@@ -626,33 +736,10 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
       call tensor_convert(MyFragment%t1,t1)
    end if
 
-#ifdef MOD_UNRELEASED
-   if(DECinfo%use_pnos)then
-      call ccsolver_par(MODEL_MP2,myfragment%Co,myfragment%Cv,&
-         & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
-         & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-         & myfragment%ppfock,myfragment%qqfock,ccenergy,&
-         & t1,mp2_amp,VOVO,MyFragment%t1_stored,local,.false.,frag=myfragment)
+   call ccsolver_job(myfragment%ccmodel,myfragment%Co,myfragment%Cv,myfragment%fock,myfragment%nbasis,myfragment%noccAOS,&
+      & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,myfragment%ppfock,myfragment%qqfock,ccenergy,&
+      & VOVO,myfragment%t1_stored,local,t1,t2,m1f=m1,m2f=m2,frag=MyFragment)
 
-      !GET THE MP2 CORRELATION DENSITY FOR THE CENTRAL ATOM
-      call calculate_MP2corrdens_frag(mp2_amp,MyFragment) 
-   endif
-#endif
-
-   call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
-      & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
-      & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-      & myfragment%ppfock,myfragment%qqfock,ccenergy,&
-      & t1,t2,VOVO,MyFragment%t1_stored,local,DECinfo%use_pnos,frag=myfragment, &
-      & m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
-
-#ifdef MOD_UNRELEASED
-   if(DECinfo%use_pnos)call tensor_free(mp2_amp)
-
-   if(DECinfo%CCSDmultipliers)then
-      call lsquit("ERROR(fragment_ccsolver):no parallel version of multipliers, yet. run with .CCDEBUG",-1)
-   endif
-#endif
 
    ! Save singles amplitudes in fragment structure
    if(DECinfo%SinglesPolari) then
@@ -687,7 +774,6 @@ subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
    !> output mp2 energy
    real(realk), intent(out), optional   :: mp2_energy
    real(realk)  :: tcpu1,twall1,tcpu2,twall2
-   type(tensor) :: t1_dummy
    real(realk) :: e
    integer :: Ncore, no, nv, nb
    logical :: local
@@ -712,16 +798,12 @@ subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
 
    call ccsolver_par(MODEL_MP2,frag%Co,frag%Cv,frag%fock,nb,&
       & no,nv, frag%mylsitem,DECinfo%PL,frag%ppfock,&
-      & frag%qqfock,e,t1_dummy,t2,RHS,.false.,local,.false.,frag=frag,&
-      & vovo_supplied = rhs_input)
+      & frag%qqfock,e,RHS,.false.,local,SOLVE_AMPLITUDES,frag=frag,&
+      & vovo_supplied = rhs_input, p4=t2)
 
    if(present(mp2_energy)) mp2_energy = e
 
    call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-
-   if(t1_dummy%initialized)then
-      call lsquit("ERROR(mp2_solver_frag) something wrong with singles handling in ccsolver_par",-1)
-   endif
 
 end subroutine mp2_solver_frag
 
@@ -752,7 +834,6 @@ subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
 
    !internal variables
    real(realk)  :: tcpu1,twall1,tcpu2,twall2
-   type(tensor) :: t1_dummy
    real(realk)  :: e
    real(realk), pointer :: Co(:,:),oof(:,:)
    integer :: Ncore, no, nv, nb, i, j
@@ -808,13 +889,9 @@ subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
    end if
 
    call ccsolver_par(MODEL_MP2,Co,mol%Cv,mol%fock,nb,no,nv,mls,DECinfo%PL,oof,&
-      & mol%qqfock,e,t1_dummy,t2,RHS,.false.,local,.false., vovo_supplied = rhs_input)
+      & mol%qqfock,e,RHS,.false.,local,SOLVE_AMPLITUDES, vovo_supplied=rhs_input, p4=t2)
 
    if(present(mp2_energy)) mp2_energy = e
-
-   if(t1_dummy%initialized)then
-      call lsquit("ERROR(mp2_solver_mol) something wrong with singles handling in ccsolver_par",-1)
-   endif
 
    call mem_dealloc(Co)
    call mem_dealloc(oof)
@@ -1480,17 +1557,20 @@ end subroutine mp2_solver_mol
 ! qqfock_f    : virt virt fock matrix
 ! longrange_singles : the longrange singles correction for the fock matrix on input
 ! local       : boolean which steers whether everything should be treated locally
+! m1,m2 ...   : additional parameter sets needed for special calcultions (pno ccsd, multipliers)
+!
+! INPUT AND/OR OUTPUT:
+! VOVO        : mo-integral WITHOUT T1 trafo on output
+! vovo_supplied : does the VOVO contain the desired integrals or is it an empty containter, t
 !
 ! OUTPUT:
 ! ccenergy    : output correlation energy
-! t1_final    : final singles amplitudes, will be allocated in the solver, output
-! t2_final    : final doubles amplitudes, will be allocated in the solver, output
-! VOVO        : mo-integral WITHOUT T1 trafo on output
+! p1,p2 ...   : parameter sets p with mode number containing the final parameters
 !> \author Patrick Ettenhuber (heavily adapted version from Marcin)
 subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       & mylsitem,ccPrintLevel,ppfock_f,qqfock_f,ccenergy, &
-      & t1_final,t2_final,VOVO,longrange_singles,local,use_pnos, &
-      & m2,m1,frag,vovo_supplied)
+      & VOVO,longrange_singles,local,JOB, &
+      & frag,vovo_supplied,p1,p2,p3,p4,m1,m2,m3,m4)
 
    implicit none
 
@@ -1519,10 +1599,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer, intent(in)                       :: ccPrintLevel
    !> Coupled cluster energy for fragment/full molecule
    real(realk),intent(inout)                 :: ccenergy
-   !> Final singles amplitudes
-   type(tensor),intent(inout)                :: t1_final
-   !> Final doubles amplitudes
-   type(tensor),intent(inout)                :: t2_final
    !> Two electron integrals (a i | b j) stored as (a,i,b,j)
    type(tensor),intent(inout)                :: VOVO
    !> Include long-range singles effects using singles amplitudes
@@ -1531,9 +1607,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !> (from previous calculations) must be stored in t1_final at input!
    logical,intent(in)                        :: longrange_singles
    logical,intent(inout)                     :: local
-   logical,intent(in)                        :: use_pnos
-   type(tensor), intent(inout), optional     :: m2
-   type(tensor), intent(inout), optional     :: m1
+   integer,intent(in)                        :: JOB
+   !additional information and parameter set
+   type(tensor), intent(inout), optional     :: m1,m2,m3,m4
+   !final parameters 
+   type(tensor), intent(inout), optional     :: p1,p2,p3,p4
    type(decfrag), intent(inout), optional    :: frag
    logical, intent(in), optional             :: vovo_supplied
    !
@@ -1550,7 +1628,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims, ord2
    integer, dimension(4) :: ampl4_dims
    type(tensor)  :: fock,Co,Cv,Uo,Uv
-   type(tensor)  :: ppfock,qqfock,pqfock,qpfock
+   type(tensor)  :: ppfock,qqfock,pqfock,qpfock, fockt1
    type(tensor)  :: ifock,delta_fock
    type(tensor)  :: iajb
    type(tensor), pointer :: t2(:),omega2(:)
@@ -1561,13 +1639,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(tensor) :: Lmo
    real(realk)             :: test_norm,two_norm_total, one_norm_total,one_norm1, one_norm2, prev_norm
    real(realk), pointer    :: B(:,:),c(:)
-   integer                 :: iter,last_iter,i,j,k,l
-   logical                 :: crop_ok,break_iterations,saferun, use_pseudo_diag_basis
+   integer                 :: iter,last_iter,i,j,k,l,iter_idx,next,nSS
+   logical                 :: crop_ok,break_iterations,saferun, use_pseudo_diag_basis, use_pnos, get_multipliers
    type(ri)                :: l_ao
-   type(tensor)            :: ppfock_prec, qqfock_prec, qpfock_prec
+   type(tensor)            :: ppfock_prec, qqfock_prec, qpfock_prec, pqfock_prec
    real(realk)             :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
    real(realk)             :: iter_cpu,iter_wall
-   integer                 :: nnodes
+   integer                 :: nnodes, t2idx, t1idx
    logical                 :: fragment_job
    type(PNOSpaceInfo), pointer :: pno_cv(:), pno_S(:)
    character(3), parameter :: safefilet11 = 't11'
@@ -1589,8 +1667,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
    logical                :: restart, restart_from_converged,collective,use_singles,vovo_avail
-   logical                :: trafo_vovo, trafo_m2
-   logical                :: diag_oo_block, diag_vv_block
+   logical                :: trafo_vovo, trafo_m4, trafo_m2
+   logical                :: diag_oo_block, diag_vv_block, prec, prec_not1, prec_in_b
    character(4)           :: atype
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
@@ -1616,18 +1694,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    time_write       = 0.0E0_realk
    time_finalize    = 0.0E0_realk
 
-
    collective       = .true.
    fragment_job     = present(frag)
    
    o2v2             = (i8*nv**2)*no**2
    mem_o2v2         = (8.0E0_realk*o2v2)/(1.024E3_realk**3)
 
+
    call get_currently_available_memory(MemFree)
 
    !Set defaults
    restart          = .false.
    saferun          = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
+   prec             = .true.
+   prec_not1        = .false.
 
    if( saferun .and. (2.0E0_realk*mem_o2v2 > 0.5E0_realk*MemFree) )then
       print *,"WARNING(ccsolver_par): detected high memory requirements, I will"
@@ -1658,17 +1738,97 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! Sanity check 2: Singles amplitudes initiated appropriately
    if(longrange_singles) then
-      if(.not. t1_final%initialized) then
+      if(.not.present(p2))then
+         call lsquit('ccsolver: Long range singles corrections requested, &
+            & but p2 not present!',DECinfo%output)
+      endif
+      if(.not. p2%initialized) then
          call lsquit('ccsolver: Long range singles corrections requested, &
             & but t1_final does not contain existing amplitudes!',DECinfo%output)
       end if
    end if
 
-   if(use_pnos)then
-      if(.not.present(m2)) then
+   !Settings for the models
+   !MODIFY FOR NEW MODEL
+   ModelSpecificSettings: select case(ccmodel)
+   case( MODEL_MP2 )
+
+      use_singles = .false.
+      atype = 'REAR'
+
+   case( MODEL_CC2, MODEL_CCSD )
+
+      if(.not.present(p2))then
+         call lsquit("ERROR(ccsolver_par): singles parameters need to be present in p2",-1)
+      endif
+      use_singles = .true.
+      atype = 'LDAR'
+
+   case(MODEL_RPA)
+
+      use_singles = .false.
+      atype = 'LDAR'
+
+   case default
+
+      call lsquit("ERROR(ccsolver_par): requested model not yet implemented",-1)
+
+   end select ModelSpecificSettings
+
+   !set job related
+   select case(JOB)
+   case(SOLVE_AMPLITUDES)
+
+      use_pnos        = .false.
+      get_multipliers = .false.
+      prec_in_b       = .true.
+      trafo_m4        = .false.
+      trafo_m2        = .false.
+
+   case(SOLVE_AMPLITUDES_PNO)
+
+      use_pnos        = .true.
+      get_multipliers = .false.
+      prec_in_b       = .true.
+
+      if(.not.present(m4)) then
          call lsquit('ccsolver: When using PNOs make sure MP2 amplitudes are &
-            & in m2',DECinfo%output)
+            & in m4',DECinfo%output)
       end if
+
+      trafo_m4 = .true.
+      trafo_m2 = .false.
+
+   case(SOLVE_MULTIPLIERS)
+
+      use_pnos        = .false.
+      get_multipliers = .true.
+      prec_in_b       = .false.
+
+      if(.not.present(m4)) then
+         call lsquit('ccsolver: When solving for the multipliers, make sure the&
+         & doubles amplitudes are given in m4',DECinfo%output)
+      end if
+      trafo_m4 = .true.
+
+      if(use_singles)then
+         if(.not.present(m2)) then
+            call lsquit('ccsolver: When solving for the multipliers, make sure the&
+               & singles amplitudes are given in m2',DECinfo%output)
+         end if
+         trafo_m2 = .true.
+      else
+         trafo_m2 = .false.
+      endif
+
+   case default
+      call lsquit("ERROR(ccsolver_par):unknown jobid",-1)
+   end select
+ 
+   if( DECinfo%ccsolver_overwrite_prec )then
+      prec      = DECinfo%use_preconditioner
+      prec_not1 = DECinfo%precondition_with_full
+      prec_in_b = DECinfo%use_preconditioner_in_b
    endif
 
    vovo_avail = .false.
@@ -1691,35 +1851,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    endif
 
    !see if m2 has to be transformed to the pseudo diag basis
-   trafo_m2 = .false.
-   if(present(m2))then
 
-      trafo_m2 = use_pnos
-
-   endif
-
-   !Settings for the models
-   ModelSpecificSettings: select case(ccmodel)
-   case( MODEL_MP2 )
-
-      use_singles = .false.
-      atype = 'REAR'
-
-   case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
-
-      use_singles = .true.
-      atype = 'LDAR'
-
-   case(MODEL_RPA)
-
-      use_singles = .false.
-      atype = 'LDAR'
-
-   case default
-
-      call lsquit("ERROR(ccsolver_par): requested model not yet implemented",-1)
-
-   end select ModelSpecificSettings
 
    ! go to a (pseudo) canonical basis
    call mem_alloc( focc,     no     )
@@ -1732,56 +1864,40 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(Uv,   [nv,nv],  2, local=local, atype="TDPD", tdims = [vs,vs] )
 
    use_pseudo_diag_basis = .not.(DECinfo%CCSDpreventcanonical)
-   !if(DECinfo%CCSDpreventcanonical.or.(use_pnos.and.ccmodel/=MODEL_MP2))then
-   
+
+   diag_oo_block = use_pseudo_diag_basis.and..not.use_pnos
+   diag_vv_block = use_pseudo_diag_basis
+
    if(use_pseudo_diag_basis)then
-
-      diag_oo_block = .not.use_pnos
-      diag_vv_block = .true.
-
       call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,Co_f,Cv_f,&
          & Co_d,Cv_d,Uo%elm2,Uv%elm2,focc,fvirt)
+   endif
 
-      !OO BLOCK
-      if( diag_oo_block )then
-         ppfock_d = 0.0E0_realk
-         do ii=1,no
-            ppfock_d(ii,ii) = focc(ii)
-         enddo
-      else
-         Co_d     = Co_f
-         ppfock_d = ppfock_f
-         Uo%elm2  = 0.0E0_realk
-         do ii=1,no
-            Uo%elm2(ii,ii) = 1.0E0_realk
-         enddo
-      endif
-
-      !VV BLOCK
-      if( diag_vv_block )then
-         qqfock_d = 0.0E0_realk
-         do aa=1,nv
-            qqfock_d(aa,aa) = fvirt(aa)
-         enddo
-      else
-         Cv_d     = Cv_f
-         qqfock_d = qqfock_f
-         Uv%elm2  = 0.0E0_realk
-         do aa=1,nv
-            Uv%elm2(aa,aa) = 1.0E0_realk
-         enddo
-      endif
+   !OO BLOCK
+   if( diag_oo_block )then
+      ppfock_d = 0.0E0_realk
+      do ii=1,no
+         ppfock_d(ii,ii) = focc(ii)
+      enddo
    else
-      !no diagonalization
       Co_d     = Co_f
-      Cv_d     = Cv_f
       ppfock_d = ppfock_f
-      qqfock_d = qqfock_f
       Uo%elm2  = 0.0E0_realk
-      Uv%elm2  = 0.0E0_realk
       do ii=1,no
          Uo%elm2(ii,ii) = 1.0E0_realk
       enddo
+   endif
+
+   !VV BLOCK
+   if( diag_vv_block )then
+      qqfock_d = 0.0E0_realk
+      do aa=1,nv
+         qqfock_d(aa,aa) = fvirt(aa)
+      enddo
+   else
+      Cv_d     = Cv_f
+      qqfock_d = qqfock_f
+      Uv%elm2  = 0.0E0_realk
       do aa=1,nv
          Uv%elm2(aa,aa) = 1.0E0_realk
       enddo
@@ -1796,15 +1912,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
    !transform input to the diagonal basis!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-   if(trafo_m2)   call tensor_transform_basis([Uo,Uv],2,&
-      & [ m2   ], [[2,1,2,1]], [[1,1,1,1]],  4, 1)
-   if(trafo_vovo) call tensor_transform_basis([Uo,Uv],2,&
-      & [ VOVO ], [[2,1,2,1]], [[1,1,1,1]],  4, 1)
+   if(trafo_m2)   call local_can_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=m2%elm1)
+   if(trafo_m4)   call tensor_transform_basis([Uo,Uv],2,[ m4   ], [[2,1,2,1]], [[1,1,1,1]], 4, 1)
+   if(trafo_vovo) call tensor_transform_basis([Uo,Uv],2,[ VOVO ], [[2,1,2,1]], [[1,1,1,1]], 4, 1)
 
    if(fragment_job.and.use_pnos)then
       call local_can_trans(no,nv,nb,Uo%elm2,Uv%elm2,vv=frag%VirtMat,oo=frag%OccMat)
    endif
+
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -1849,9 +1964,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! Get Fock matrix using singles amplitudes from previous
          ! fragment calculation, thereby effectively including long-range
          ! correlated polarization effects
-         call Get_AOt1Fock(mylsitem,t1_final,ifock,no,nv,nb,Co,Co,Cv)
+         call Get_AOt1Fock(mylsitem,p2,ifock,no,nv,nb,Co,Co,Cv)
       else
          ! Fock matrix for fragment from density made from input MOs
+         write(*,*) 'Johannes ao basis',nb
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
       end if
 
@@ -1863,6 +1979,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_add(delta_fock,-1.0E0_realk,ifock)
 
    else 
+      write(*,*) 'Johannes ao basis full molecule',nb
       ! Full molecule: deltaF = F(Dcore) for frozen core (0 otherwise)
       if(DECinfo%frozencore) then
          ! Fock matrix from input MOs
@@ -1886,11 +2003,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(ppfock_prec, [no,no], 2, local=local, atype='REPD' )
    call tensor_minit(qqfock_prec, [nv,nv], 2, local=local, atype='REPD' )
    call tensor_minit(qpfock_prec, [nv,no], 2, local=local, atype='REPD' )
+   if( JOB == SOLVE_MULTIPLIERS )then
+      call tensor_minit(pqfock_prec, [no,nv], 2, local=local, atype='REPD' )
+   endif
 
    call tensor_change_atype_to_rep( ppfock_prec, local )
    call tensor_change_atype_to_rep( qqfock_prec, local )
 
-   if(DECinfo%precondition_with_full) then
+   if( prec_not1 ) then
       call tensor_convert( ppfock_d, ppfock_prec )
       call tensor_convert( qqfock_d, qqfock_prec )
       call tensor_zero(qpfock_prec)
@@ -1910,6 +2030,19 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_contract(1.0E0_realk,fock,Co,[2],[1],1,0.0E0_realk,tmp,ord2)
       call tensor_contract(1.0E0_realk,Cv,tmp,[1],[1],1,0.0E0_realk,qpfock_prec,ord2)
       call tensor_free(tmp)
+
+      if(JOB == SOLVE_MULTIPLIERS )then
+         call tensor_minit(fockt1, [nb,nb], 2, local=local, atype='LDAR' )
+         call Get_AOt1Fock(mylsitem,m2,fockt1,no,nv,nb,Co,Co,Cv)
+
+         call tensor_minit(tmp, [nb,nv], 2, local=local, atype='LDAR'  )
+         call tensor_contract(1.0E0_realk,fockt1,Cv,[2],[1],1,0.0E0_realk,tmp,ord2)
+         call tensor_contract(-2.0E0_realk,Co,tmp,[1],[1],1,0.0E0_realk,pqfock_prec,ord2)
+         call tensor_free(tmp)
+
+         call tensor_free(fockt1)
+      endif
+
    end if
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA )then
@@ -1937,8 +2070,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_minit(qpfock, [nv,no], 2, local=local, atype='LDAR' )
       call tensor_minit(qqfock, [nv,nv], 2, local=local, atype='LDAR' )
    end if
-   call mem_alloc(t2,DECinfo%ccMaxIter)
-   call mem_alloc(omega2,DECinfo%ccMaxIter)
+   call mem_alloc( t2,     DECinfo%ccMaxDIIS )
+   call mem_alloc( omega2, DECinfo%ccMaxDIIS )
 
    ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
    if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA) then
@@ -1958,8 +2091,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_free(VOVO)
    endif
 
-   call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
-   call mem_alloc( c, DECinfo%ccMaxIter                    )
+   call mem_alloc( B, DECinfo%ccMaxDIIS, DECinfo%ccMaxDIIS )
+   call mem_alloc( c, DECinfo%ccMaxDIIS                    )
 
    call time_start_phase( PHASE_work, at = time_work, twall = time_start_guess )
 
@@ -1972,148 +2105,61 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
       call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
 
-      call get_guess_vectors(ccmodel,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
-         & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
+      call get_guess_vectors(ccmodel,JOB,prec,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
+         & ppfock_prec,qqfock_prec,qpfock_prec, pqfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
          & t1(1),safefilet11,safefilet12, safefilet1f  )
    else
 
       call tensor_minit(t2(1),  ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
 
-      call get_guess_vectors(ccmodel,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
-         & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
+      call get_guess_vectors(ccmodel,JOB,prec,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
+         & ppfock_prec,qqfock_prec,qpfock_prec,pqfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
 
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
 
    call tensor_free(qpfock_prec)
+   if( JOB == SOLVE_MULTIPLIERS )then
+      call tensor_free(pqfock_prec)
+   endif
 
    if(DECinfo%PL>1)call time_start_phase( PHASE_WORK, at = time_work, ttot = time_start_guess,&
       &labelttot = 'CCSOL: STARTING GUESS :', output = DECinfo%output, twall = time_main  )
 
-
    ! Print Job Header
    ! ****************
    Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,&
-      &.false.,nb,no,nv,DECinfo%ccMaxDIIS,restart,restart_from_converged,old_iter)
+      &(JOB==SOLVE_MULTIPLIERS),nb,no,nv,DECinfo%ccMaxDIIS,restart,restart_from_converged,old_iter)
 
 
    If_not_converged: if(.not.restart_from_converged)then
 
-      mo_ccsd = .true.
-      if (DECinfo%NO_MO_CCSD.or.(no+nv>200).or.use_pnos.or.(ccmodel==MODEL_MP2) &
-       & .or. (ccmodel==MODEL_RPA)) mo_ccsd = .false.
-       
-      if (DECinfo%force_scheme) then
-        if (DECinfo%en_mem<5) then
-          DECinfo%NO_MO_CCSD = .true.
-          mo_ccsd            = .false.
-        else if (DECinfo%en_mem>=5) then 
-          mo_ccsd            = .true.
-          if (DECinfo%NO_MO_CCSD) call lsquit('ERROR(CCSD): Inconsistent input, CCSD schemes &
-             & 5 and 6 require the MO based algorithm. (Remove NO_MO_CCSD keyword)', DECinfo%output)
-        end if
-      end if
+      !set special quantities, if the mos are precalculated set mos, if a PNO
+      !calculation is requested, set the pno space information
+      call ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv,pgmo_diag,pgmo_up,&
+         &MOinfo,nspaces,pno_cv,pno_S,m4=m4,frag=frag)
 
-#ifdef MOD_UNRELEASED
-      !============================================================================!
-      !                          MO-CCSD initialization                            !
-      !____________________________________________________________________________!
-      ! Check if there is enough memory to performed an MO-CCSD calculation.
-      !   YES: get full set of t1 free gmo and pack them
-      !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
-      if (mo_ccsd.or.(ccmodel == MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
-         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
-
-         call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,pgmo_diag,pgmo_up, &
-            & nb,no,nv,MOinfo)
-
-         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
-            &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
-
-      end if
-#endif
-
-      nspaces = 0
-      set_pno_info:if(use_pnos)then
-
-         !FIXME: do the PNO construction in MPI parallel
-         call tensor_init(tmp,[nv,no,nv,no],4)
-         call tensor_convert(m2, tmp%elm1 )
-
-         !GET THE PNO TRANSFORMATION MATRICES
-         if(fragment_job)then
-
-            !COUNT PAIRS OUTSIDE EOS
-            nspaces = ( no - frag%noccEOS ) * ( no - frag%noccEOS + 1) / 2 &
-            !COUNT PAIRS WITH 1 IDX IN EOS          !EOS
-            &+ frag%noccEOS * ( no - frag%noccEOS ) + 1
-
-            frag%nspaces = nspaces
-
-            call mem_alloc( frag%CLocPNO, nspaces )
-            call get_pno_trafo_matrices(no,nv,nb,tmp%elm1,frag%CLocPNO,frag%nspaces,f=frag)
-            pno_cv => frag%CLocPNO
-
-         else
-            !ALL PAIRS
-            nspaces = no * ( no + 1 ) / 2
-            call mem_alloc( pno_cv, nspaces )
-            call get_pno_trafo_matrices(no,nv,nb,tmp%elm1,pno_cv,nspaces,f=frag)
-
-         endif
-
-         call tensor_free(tmp)
-
-         !GET THE OVERLAP BETWEEN THE PNO SPACES
-         call mem_alloc( pno_S , nspaces * (nspaces - 1)/2 )   
-         !Get all the overlap matrices necessary
-         call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.true.)
-
-      endif set_pno_info
-
-
-      ! readme : the iteration sequence is universal and may be used for all
-      !          iterative cc models (linear or non-linear) and is
-      !          semi-independent on the storage of vectors (allocation and
-      !          deallocation, etc)
-
-
-      ! iterate
       break_iterations = .false.
       crop_ok          = .false.
       prev_norm        = huge(prev_norm)
 
-
       CCIteration : do iter=1,DECinfo%ccMaxIter
+         !if (iter == 2) stop 0
 
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_iter ) 
 
-         ! remove old vectors
-         RemoveOldVectors : if(iter > DECinfo%ccMaxDIIS) then
-
-            if(DECinfo%cc_driver_debug) then
-               write(DECinfo%output,'(a,i4)') ' debug :: vector to delete : ',iter-DECinfo%ccMaxDIIS
-            end if
-
-            if(use_singles) then
-               call tensor_free( t1(iter-DECinfo%ccMaxDIIS)     )
-               Call tensor_free( omega1(iter-DECinfo%ccMaxDIIS) )
-
-            end if
-            call tensor_free(t2(iter-DECinfo%ccMaxDIIS))
-            call tensor_free(omega2(iter-DECinfo%ccMaxDIIS))
-
-         end if RemoveOldVectors
-
+         iter_idx = get_iter_idx(iter    )
+         next     = get_iter_idx(iter + 1)
+         nSS      = min(iter,DECinfo%ccMaxDIIS)
 
          ! Initialize residual vectors
          if(use_singles)then
-            call tensor_minit(omega1(iter), ampl2_dims, 2 , local=local, atype='LDAR' )
-            call tensor_zero(omega1(iter))
+            if(iter <= DECinfo%ccMaxDIIS)call tensor_minit(omega1(iter_idx), ampl2_dims, 2 , local=local, atype='LDAR' )
+            call tensor_zero(omega1(iter_idx))
          endif
-         call tensor_minit(omega2(iter), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-         !call tensor_minit(omega2(iter), ampl4_dims, 4, local=local, atype='TDAR')
-         call tensor_zero(omega2(iter))
+         if(iter <= DECinfo%ccMaxDIIS)call tensor_minit(omega2(iter_idx), ampl4_dims, 4, local=local,&
+            & atype='TDAR', tdims=[vs,vs,os,os] )
+         call tensor_zero(omega2(iter_idx))
 
 
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
@@ -2121,105 +2167,50 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          T1Related : if(use_singles) then
 
             ! synchronize singles data on slaves
-            call tensor_sync_replicated(t1(iter))
+            call tensor_sync_replicated(t1(iter_idx))
 
             ! get the T1 transformation matrices
             call tensor_cp_data(Cv,yv)
             call tensor_cp_data(Cv,xv)
             ord2 = [1,2]
-            call tensor_contract(-1.0E0_realk,Co,t1(iter),[2],[2],1,1.0E0_realk,xv,ord2)
+            if(JOB==SOLVE_MULTIPLIERS)then
+               call tensor_contract(-1.0E0_realk,Co,m2,[2],[2],1,1.0E0_realk,xv,ord2)
+            else
+               call tensor_contract(-1.0E0_realk,Co,t1(iter_idx),[2],[2],1,1.0E0_realk,xv,ord2)
+            endif
             
 
             call tensor_cp_data(Co,yo)
             call tensor_cp_data(Co,xo)
-            call tensor_contract(1.0E0_realk,Cv,t1(iter),[2],[1],1,1.0E0_realk,yo,ord2)
+            if(JOB==SOLVE_MULTIPLIERS)then
+               call tensor_contract(1.0E0_realk,Cv,m2,[2],[1],1,1.0E0_realk,yo,ord2)
+            else
+               call tensor_contract(1.0E0_realk,Cv,t1(iter_idx),[2],[1],1,1.0E0_realk,yo,ord2)
+            endif
 
          end if T1Related
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_t1_trafo, &
             &labelttot= 'CCIT: T1 TRAFO        :', output = DECinfo%output, twall = time_residual ) 
 
-         ! readme : get residuals, so far this solver supports only singles and doubles
-         !          amplitudes (extension to higher iterative model is trivial); differences
-         !          are mainly based on the set of residual vectors to be evaluated
 
-         ! MODIFY FOR NEW MODEL
-         ! If you implement a new model, please insert call to your own residual routine here!
-         SelectCoupledClusterModel : select case( CCmodel )
-         case( MODEL_MP2 )
+         call ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
+         & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,ppfock_prec,qqfock_prec,xo,xv,yo,yv,nb,&
+         & MyLsItem,omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
+         & pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag,m2=m2,m4=m4)
 
-            call get_simple_parallel_mp2_residual(omega2(iter),&
-               &iajb,t2(iter),ppfock_prec,qqfock_prec,iter,local)
-
-         case( MODEL_RIMP2 )
-
-            call lsquit('RI-MP2 has no residual - non iterative scheme',-1)
-
-         case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
-
-            call ccsd_residual_wrapper(ccmodel,delta_fock,omega2(iter),t2(iter),&
-               & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
-               & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
-               & pno_cv,pno_s,nspaces,&
-               & iter,local,use_pnos,restart,frag=frag)
-
-         case( MODEL_RPA )
-
-#ifdef VAR_MPI
-            call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv,local)
-#else
-            call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
-#endif
-
-         case default
-
-            call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
-
-         end select SelectCoupledClusterModel
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
             &labelttot= 'CCIT: RESIDUAL        :', output = DECinfo%output, twall = time_crop_mat ) 
 
-         ! calculate crop/diis matrix
-         B=0.0E0_realk
-         do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
-            do j=iter,i,-1
-               if(use_singles) then
-                  if(DECinfo%use_preconditioner_in_b) then
-                     omega1_prec = precondition_singles( omega1(j), ppfock_prec, qqfock_prec        )
-                     omega2_prec = precondition_doubles( omega2(j), ppfock_prec, qqfock_prec, local )
-                     B(i,j) =          tensor_ddot( omega1(i), omega1_prec ) 
-                     B(i,j) = B(i,j) + tensor_ddot( omega2(i), omega2_prec )
-
-                     call tensor_free( omega1_prec )
-                     call tensor_free( omega2_prec )
-                  else
-                     B(i,j) =          tensor_ddot( omega1(i), omega1(j) ) 
-                     B(i,j) = B(i,j) + tensor_ddot( omega2(i), omega2(j) )
-                  end if
-               else
-                  ! just doubles
-                  if(DECinfo%use_preconditioner_in_b) then
-                     omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec,local)
-                     B(i,j) = tensor_ddot( omega2(i), omega2_prec )
-                     call tensor_free( omega2_prec )
-                  else
-                     B(i,j) = tensor_ddot( omega2(i), omega2(j) )
-                  end if
-               end if
-               B(j,i) = B(i,j)
-            end do
-         end do
-
-         !msg="DIIS mat, new"
-         !call print_norm(B,DECinfo%ccMaxIter*DECinfo%ccMaxIter,msg)
+         !calculate crop matrix
+         call ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock_prec,ccmodel,local,prec_in_b)
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_crop_mat, &
             &labelttot= 'CCIT: CROP MATRIX     :', output = DECinfo%output, twall = time_solve_crop ) 
+
          ! solve crop/diis equation
-         c=0.0E0_realk
-         call CalculateDIIScoefficients(DECinfo%ccMaxDIIS,DECinfo%ccMaxIter,iter,B,c, &
-            DECinfo%cc_driver_debug)
+         call CalculateDIIScoefficientsII(nSS,B,c,DECinfo%PL>3)
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_solve_crop, &
             &labelttot= 'CCIT: SOLVE CROP      :', output = DECinfo%output, twall = time_mixing ) 
@@ -2235,12 +2226,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          call tensor_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
          call tensor_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-         !call tensor_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR')
-         !call tensor_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR')
+
          call tensor_zero( omega2_opt )
          call tensor_zero( t2_opt     )
 
-         do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
+         do i=1,nSS
 
             ! mix singles
             if(use_singles) then
@@ -2260,11 +2250,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! if crop, put the optimal in place of trial (not for diis)
          if(DECinfo%use_crop) then
             if(use_singles) then
-               call tensor_cp_data( omega1_opt, omega1(iter) )
-               call tensor_cp_data( t1_opt,     t1(iter)     )
+               call tensor_cp_data( omega1_opt, omega1(iter_idx) )
+               call tensor_cp_data( t1_opt,     t1(iter_idx)     )
             end if
-            call tensor_cp_data( omega2_opt, omega2(iter) )
-            call tensor_cp_data( t2_opt,     t2(iter)     )
+            call tensor_cp_data( omega2_opt, omega2(iter_idx) )
+            call tensor_cp_data( t2_opt,     t2(iter_idx)     )
          end if
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_copy_opt, &
@@ -2273,8 +2263,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! check for the convergence
          one_norm1 = 0.0E0_realk
          one_norm2 = 0.0E0_realk
-         if(use_singles)call print_norm(omega1(iter),one_norm1,.true.)
-         call print_norm(omega2(iter),one_norm2,.true.)
+         if(use_singles)call print_norm(omega1(iter_idx),one_norm1,.true.)
+         call print_norm(omega2(iter_idx),one_norm2,.true.)
          one_norm_total = one_norm1 + one_norm2
          two_norm_total = sqrt(one_norm_total)
          test_norm      = two_norm_total
@@ -2309,39 +2299,41 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             &labelttot= 'CCIT: GET NORMS       :', output = DECinfo%output, twall = time_energy ) 
 
 
-         ! calculate the correlation energy and fragment energy
-         ! MODIFY FOR NEW MODEL
-         ! If you implement a new model, please insert call to energy routine here,
-         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
-         EnergyForCCmodel: select case(CCmodel)
-         case( MODEL_MP2 )
+         if( JOB == SOLVE_AMPLITUDES.or.JOB == SOLVE_AMPLITUDES_PNO )then
 
-            ccenergy = get_mp2_energy(t2(iter),iajb,no,nv)
+            ! calculate the correlation energy and fragment energy
+            ! MODIFY FOR NEW MODEL
+            ! If you implement a new model, please insert call to energy routine here,
+            ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
 
-         case( MODEL_RIMP2 )
+            EnergyForCCmodel: select case(CCmodel)
+            case( MODEL_MP2 )
 
-            ccenergy = get_mp2_energy(t2(iter),iajb,no,nv)
+               ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
 
-         case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
+            case( MODEL_CC2, MODEL_CCSD )
 
-            ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
-            ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
+               ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
+               ccenergy = get_cc_energy(t1(iter_idx),t2(iter_idx),iajb,no,nv)
 
-         case(MODEL_RPA)
+            case(MODEL_RPA)
 
-            ccenergy = get_RPA_energy_arrnew(t2(iter),iajb,no,nv)
+               ccenergy = get_RPA_energy_arrnew(t2(iter_idx),iajb,no,nv)
 
-            if(DECinfo%SOS) then
-               ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter),iajb,no,nv)
-            endif
+               if(DECinfo%SOS) then
+                  ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter_idx),iajb,no,nv)
+               endif
 
 
-         case default
+            case default
+               ! MODEL RIMP2 defaults here since it shoule not use this solver
 
-            call lsquit("ERROR(ccsolver_par):energy expression for your model&
-               & not yet implemented",-1)
+               call lsquit("ERROR(ccsolver_par):energy expression for your model&
+                  & not yet implemented",-1)
 
-         end select EnergyForCCmodel
+            end select EnergyForCCmodel
+
+         endif
 
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_energy, &
@@ -2349,31 +2341,38 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          ! generate next trial vector if this is not the last iteration
          if(.not.break_iterations) then
-            if(DECinfo%use_preconditioner) then
+            if( prec ) then
                if(use_singles) then
                   omega1_prec = precondition_singles(omega1_opt,ppfock_prec,qqfock_prec)
-                  call tensor_minit(t1(iter+1),  ampl2_dims, 2, local=local, atype='REPD' )
-                  call tensor_cp_data(t1_opt,t1(iter+1))
-                  call tensor_add(t1(iter+1),1.0E0_realk,omega1_prec)
+                  if(iter+1<=DECinfo%ccMaxDIIS)then
+                     call tensor_minit(t1(next),  ampl2_dims, 2, local=local, atype='REPD' )
+                  endif
+                  call tensor_cp_data(t1_opt,t1(next))
+                  call tensor_add(t1(next),1.0E0_realk,omega1_prec)
                   call tensor_free(omega1_prec)
                end if
                omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
 
-               call tensor_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-               !call tensor_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
-               call tensor_cp_data(t2_opt,t2(iter+1))
-               call tensor_add(t2(iter+1),1.0E0_realk,omega2_prec)
+               if(iter+1<=DECinfo%ccMaxDIIS)then
+                  call tensor_minit(t2(next), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+               endif
+               call tensor_cp_data(t2_opt,t2(next))
+               call tensor_add(t2(next),1.0E0_realk,omega2_prec)
                call tensor_free(omega2_prec)
+
             else
                if(use_singles)then
-                  call tensor_minit(t1(iter+1), ampl2_dims, 2, local=local, atype='REPD' )
-                  call tensor_cp_data(t1_opt,t1(iter+1))
-                  call tensor_add(t1(iter+1),1.0E0_realk,omega1_opt)
+                  if(iter+1<=DECinfo%ccMaxDIIS)then
+                     call tensor_minit(t1(next), ampl2_dims, 2, local=local, atype='REPD' )
+                  endif
+                  call tensor_cp_data(t1_opt,t1(next))
+                  call tensor_add(t1(next),1.0E0_realk,omega1_opt)
                endif
-               call tensor_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-               !call tensor_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
-               call tensor_cp_data(t2_opt,t2(iter+1))
-               call tensor_add(t2(iter+1),1.0E0_realk,omega2_opt)
+               if(iter+1<=DECinfo%ccMaxDIIS)then
+                  call tensor_minit(t2(next), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+               endif
+               call tensor_cp_data(t2_opt,t2(next))
+               call tensor_add(t2(next),1.0E0_realk,omega2_opt)
             end if
          end if
 
@@ -2395,10 +2394,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, twall = time_write ) 
 
             if(use_singles)then
-               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,t2(iter+1),safefilet21,&
-                  &safefilet22,t1(iter+1),safefilet11,safefilet12)                  
+               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,t2(next),safefilet21,&
+                  &safefilet22,t1(next),safefilet11,safefilet12)                  
             else                                                                     
-               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,t2(iter+1),safefilet21,&
+               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,t2(next),safefilet21,&
                   &safefilet22)
             endif
 
@@ -2415,7 +2414,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call flush(DECinfo%output)
 #endif
 
-         call print_ccjob_iterinfo(iter+old_iter,two_norm_total,ccenergy,.false.,fragment_job)
+         call print_ccjob_iterinfo(iter+old_iter,two_norm_total,ccenergy,(JOB==SOLVE_MULTIPLIERS),fragment_job)
 
          last_iter = iter
          if(break_iterations) exit
@@ -2428,21 +2427,23 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
 
-      EnergyForCCmodelRestart: select case(CCmodel)
-      case( MODEL_MP2 )
-         ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
-      case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
-         ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
-         ccenergy_check = get_cc_energy(t1(1),t2(1),iajb,no,nv)
-      case(MODEL_RPA)
-         ccenergy_check = get_RPA_energy_arrnew(t2(1),iajb,no,nv)
-         if(DECinfo%SOS) then
-            ccenergy_check =ccenergy+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
-         endif
-      case default
-         call lsquit("ERROR(ccsolver_par):energy expression for your model&
-            & not yet implemented",-1)
-      end select EnergyForCCmodelRestart
+      if( JOB == SOLVE_AMPLITUDES.or.JOB == SOLVE_AMPLITUDES_PNO )then
+         EnergyForCCmodelRestart: select case(CCmodel)
+         case( MODEL_MP2 )
+            ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
+         case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
+            ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
+            ccenergy_check = get_cc_energy(t1(1),t2(1),iajb,no,nv)
+         case(MODEL_RPA)
+            ccenergy_check = get_RPA_energy_arrnew(t2(1),iajb,no,nv)
+            if(DECinfo%SOS) then
+               ccenergy_check =ccenergy+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
+            endif
+         case default
+            call lsquit("ERROR(ccsolver_par):energy expression for your model&
+               & not yet implemented",-1)
+         end select EnergyForCCmodelRestart
+      endif
 
       if( abs(ccenergy_check-ccenergy) > DECinfo%ccConvergenceThreshold )then
          print *,"WARNING(ccsolver_par): Energy saved in restart and energy calculated" 
@@ -2458,7 +2459,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 #endif
 
-      call print_ccjob_iterinfo(old_iter,two_norm_total,ccenergy,.false.,fragment_job)
+      call print_ccjob_iterinfo(old_iter,two_norm_total,ccenergy,(JOB==SOLVE_MULTIPLIERS),fragment_job)
 
       break_iterations = .true.
       last_iter        = 1
@@ -2476,57 +2477,57 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! remove rest of the singles amplitudes and residuals
    do i=last_iter,max(last_iter-DECinfo%ccMaxDIIS+1,1),-1
 
+      iter_idx = get_iter_idx(i)
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
-         call tensor_minit( t2_final, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR")
-         call tensor_add(   t2_final, 1.0E0_realk, t2(last_iter), a = 0.0E0_realk, order = [1,3,2,4] )
+         call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR")
+         call tensor_cp_data(t2(iter_idx), p4, order = [1,3,2,4] )
 
          if(use_singles) then
             if(.not.longrange_singles) then ! intitialize and copy, else just copy
-               call tensor_minit(t1_final,[nv,no],2)
+               call tensor_minit(p2,[nv,no],2)
             end if
-            call dcopy(int(t1(i)%nelms),t1(last_iter)%elm1,1,t1_final%elm1,1)
+            call tensor_cp_data(t1(iter_idx), p2 )
          endif
 
          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
-         if(saferun.and..not.restart_from_converged)then
+         if(saferun.and..not.restart_from_converged.and..not.DECinfo%CRASHCALC)then
             if(use_singles)then
                call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,&
-                  &t2(last_iter),safefilet2f,safefilet2f,t1(last_iter),safefilet1f,safefilet1f)
+                  &t2(iter_idx),safefilet2f,safefilet2f,t1(iter_idx),safefilet1f,safefilet1f)
             else
                call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,&
-                  &t2(last_iter),safefilet2f,safefilet2f)
+                  &t2(iter_idx),safefilet2f,safefilet2f)
             endif
          endif
 
-         !call tensor_change_itype_to_td(t2(last_iter),local)
       end if
 
       ! Free doubles residuals
-      if(.not.restart_from_converged)call tensor_free(omega2(i))
+      if(.not.restart_from_converged)call tensor_free(omega2(iter_idx))
       ! Free doubles amplitudes
-      call tensor_free(t2(i))
+      call tensor_free(t2(iter_idx))
 
 
       ! Free singles amplitudes and residuals
       if(use_singles) then
-         call tensor_free( t1(i)     )
-         if(.not.restart_from_converged)call tensor_free( omega1(i) )
+         call tensor_free( t1(iter_idx) )
+         if(.not.restart_from_converged)call tensor_free( omega1(iter_idx) )
       end if
 
    end do
 
    call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
 
-   call print_norm(t2_final,t2fnorm2,.true.)
+   call print_norm(p4,t2fnorm2,.true.)
    if(use_singles)then
-      call print_norm(t1_final,t1fnorm2,.true.)
+      call print_norm(p2,t1fnorm2,.true.)
    endif
 
-   call print_ccjob_summary(break_iterations,.false.,fragment_job,&
+   call print_ccjob_summary(break_iterations,(JOB==SOLVE_MULTIPLIERS),fragment_job,&
       &last_iter+old_iter,use_singles,ccenergy,ttotend_wall,&
-      &ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2)
+      &ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2,nm1=t1fnorm2,nm2=t2fnorm2)
    
 
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used
@@ -2576,10 +2577,331 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_free(Cv)
    call tensor_free(fock)
 
+   call ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart_from_converged,&
+      &mo_ccsd,pno_cv,pno_S,nspaces,use_pnos,frag)
+
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   !transform back to original basis!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+   call tensor_transform_basis( [Uo,Uv], 2, [p4,VOVO], [[2,1,2,1],[2,1,2,1]], [[2,2,2,2],[2,2,2,2]], 4, 2)
+
+   if(use_singles)then
+      !FIXME: all can local trans and local can trans should be replaced by
+      !tensor_transform_basis
+      call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=p2%elm1)
+   endif
+
+   if(trafo_m2) call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=m2%elm1 )
+   if(trafo_m4) call tensor_transform_basis([Uo,Uv],2, [m4], [[2,1,2,1]], [[2,2,2,2]], 4, 1)
+
+   if(fragment_job.and.use_pnos)then
+      call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,oo=frag%OccMat,vv=frag%VirtMat)
+   endif
+
+   call tensor_free(Uo)
+   call tensor_free(Uv)
+
+
+   if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_finalize, &
+      &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output )
+
+end subroutine ccsolver_par
+
+function get_iter_idx(iter) result(iter_idx)
+   implicit none
+   integer, intent(in) :: iter
+   integer :: iter_idx
+   iter_idx = mod(iter-1, DECinfo%ccMaxDIIS)+1
+end function get_iter_idx
+
+subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
+      & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,ppfock_prec,qqfock_prec,xo,xv,yo,yv,nb,&
+      & MyLsItem,omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
+      & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag,m1,m2,m3,m4)
+   implicit none
+   integer,intent(in) :: ccmodel, JOB, nb,no,nv, nspaces, iter
+   type(lsitem),intent(inout) :: MyLsItem
+   type(tensor) :: delta_fock,omega2(:),t2(:),fock,iajb,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv
+   type(tensor) :: omega1(:),t1(:),pgmo_diag,pgmo_up,ppfock_prec,qqfock_prec
+   type(MObatchInfo),intent(inout) :: MOinfo
+   type(tensor), intent(inout), optional :: m1,m2,m3,m4
+   logical, intent(in) :: mo_ccsd, use_pnos, local
+   logical, intent(inout) :: restart
+   type(PNOSpaceInfo), intent(in), pointer :: pno_cv(:), pno_S(:)
+   type(decfrag), intent(inout), optional    :: frag
+   integer :: use_i
+   !FIXME: remove these by implementing a massively parallel version of the
+   !multipliers residual
+   type(tensor) :: o2,tl2,ml4
+   ! readme : get residuals, so far this solver supports only singles and doubles
+   !          amplitudes (extension to higher iterative model is trivial); differences
+   !          are mainly based on the set of residual vectors to be evaluated
+
+   use_i = get_iter_idx(iter)
+
+   ! MODIFY FOR NEW MODEL
+   ! If you implement a new model, please insert call to your own residual routine here!
+   SelectCoupledClusterModel : select case( CCmodel )
+   case( MODEL_MP2 )
+
+      select case(JOB)
+      case( SOLVE_AMPLITUDES )
+         call get_simple_parallel_mp2_residual(omega2(use_i),&
+            &iajb,t2(use_i),ppfock_prec,qqfock_prec,iter,local)
+      case default
+         call lsquit("ERROR(ccsolver_get_residual): job not implemented for MP2",-1)
+      end select
+
+   case( MODEL_RIMP2 )
+
+      call lsquit('ERROR(get_residual): RI-MP2 has no residual - non iterative',-1)
+
+   case( MODEL_CC2, MODEL_CCSD ) !CC2 or  CCSD
+
+      select case(JOB)
+      case( SOLVE_AMPLITUDES, SOLVE_AMPLITUDES_PNO )
+
+         call ccsd_residual_wrapper(ccmodel,delta_fock,omega2(use_i),t2(use_i),&
+            & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
+            & MyLsItem,omega1(use_i),t1(use_i),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
+            & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
+
+#ifdef MOD_UNRELEASED
+      case( SOLVE_MULTIPLIERS )
+
+         if (JOB == MODEL_CC2)then
+            call lsquit("ERROR(ccsolver_get_residual): CC2 multipliers not implemented",-1)
+         endif
+
+         if(.not. local)then
+            print *,"WARNING(ccsolver_get_residual): the CCSD multiplier residual is not yet parallelized"
+         endif
+
+         !FIXME: remove this dirty workaround due to the noddy implementation
+         call tensor_minit(o2,[nv,no,nv,no],4)
+         call tensor_zero(o2)
+         call tensor_minit(tl2,[nv,no,nv,no],4)
+         call tensor_cp_data(t2(use_i),tl2,order=[1,3,2,4])
+         call tensor_minit(ml4,[nv,no,nv,no],4)
+         call tensor_cp_data(m4,ml4)
+
+         call get_ccsd_multipliers_simple(omega1(use_i)%elm2,o2%elm4,m2%elm2&
+            &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
+            &,no,nv,nb,MyLsItem)
+
+         call tensor_cp_data(o2,omega2(use_i),order=[1,3,2,4])
+         call tensor_free(o2)
+         call tensor_free(tl2)
+         call tensor_free(ml4)
+#endif
+
+      case default
+         call lsquit("ERROR(ccsolver_get_residual): job not implemented for CC2, CCSD or CCSD(T)",-1)
+      end select
+
+   case( MODEL_RPA )
+
+      call RPA_residual_par(omega2(use_i),t2(use_i),iajb,ppfock_prec,qqfock_prec,no,nv,local)
+
+   case default
+
+      call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
+
+   end select SelectCoupledClusterModel
+end subroutine ccsolver_get_residual
+
+subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock_prec,ccmodel,local,prec)
+   implicit none
+   real(realk), intent(out) :: B(nSS,nSS)
+   integer, intent(in)      :: nSS
+   type(tensor), intent(inout) :: omega2(:),omega1(:)
+   type(tensor), intent(inout) :: ppfock_prec,qqfock_prec
+   integer, intent(in)         :: ccmodel
+   logical, intent(in)         :: local, prec
+   !internal
+   type(tensor) :: omega2_prec,omega1_prec
+   integer :: i,j
+
+   ! calculate crop/diis matrix
+   B=0.0E0_realk
+
+   ! MODIFY FOR NEW MODEL
+   ! If you implement a new model, please insert call to your own residual routine here!
+   SelectCoupledClusterModel : select case( CCmodel )
+   case( MODEL_RPA, MODEL_MP2 ) 
+
+      do i=1,nSS
+         do j=1,i
+            ! just doubles
+            if( prec ) then
+               omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec,local)
+               B(i,j) = tensor_ddot( omega2(i), omega2_prec )
+               call tensor_free( omega2_prec )
+            else
+               B(i,j) = tensor_ddot( omega2(i), omega2(j) )
+            end if
+            B(j,i) = B(i,j)
+         end do
+      end do
+
+   case( MODEL_CC2, MODEL_CCSD ) 
+
+      do i=1,nSS
+         do j=1,i
+            if( prec ) then
+               omega1_prec = precondition_singles( omega1(j), ppfock_prec, qqfock_prec        )
+               omega2_prec = precondition_doubles( omega2(j), ppfock_prec, qqfock_prec, local )
+               B(i,j) =          tensor_ddot( omega1(i), omega1_prec ) 
+               B(i,j) = B(i,j) + tensor_ddot( omega2(i), omega2_prec )
+
+               call tensor_free( omega1_prec )
+               call tensor_free( omega2_prec )
+            else
+               B(i,j) =          tensor_ddot( omega1(i), omega1(j) ) 
+               B(i,j) = B(i,j) + tensor_ddot( omega2(i), omega2(j) )
+            end if
+            B(j,i) = B(i,j)
+         end do
+      end do
+
+   case default
+      call lsquit("ERROR(ccsolver_calculate_crop_matrix): ccmodel not known",-1)
+   end select SelectCoupledClusterModel
+
+end subroutine ccsolver_calculate_crop_matrix
+
+subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv,&
+      &pgmo_diag,pgmo_up,MOinfo,nspaces,pno_cv,pno_S,m4,frag)
+   implicit none
+   integer, intent(in) :: ccmodel, no,nv,nb
+   type(lsitem), intent(inout) :: mylsitem
+   integer, intent(out) :: nspaces
+   logical, intent(in) :: use_pnos
+   logical, intent(out) :: mo_ccsd
+   type(tensor), intent(inout) :: Co, Cv, pgmo_up, pgmo_diag
+   type(MObatchInfo),intent(inout) :: MOinfo
+   type(PNOSpaceInfo), intent(inout), pointer :: pno_cv(:), pno_S(:)
+   type(tensor), optional, intent(inout) :: m4
+   type(decfrag), optional :: frag
+   type(tensor) :: tmp
+   logical :: fragment_job
+   real(realk) :: time_mo_ints, time_pno_setup
+
+   fragment_job = present(frag)
+
+   mo_ccsd = .true.
+   if (DECinfo%NO_MO_CCSD.or.(no+nv>200).or.use_pnos.or.(ccmodel==MODEL_MP2) &
+      & .or. (ccmodel==MODEL_RPA)) mo_ccsd = .false.
+
+   if (DECinfo%force_scheme) then
+      if (DECinfo%en_mem<5) then
+         DECinfo%NO_MO_CCSD = .true.
+         mo_ccsd            = .false.
+      else if (DECinfo%en_mem>=5) then 
+         mo_ccsd            = .true.
+         if (DECinfo%NO_MO_CCSD) call lsquit('ERROR(CCSD): Inconsistent input, CCSD schemes &
+            & 5 and 6 require the MO based algorithm. (Remove NO_MO_CCSD keyword)', DECinfo%output)
+      end if
+   end if
+
+
+#ifdef MOD_UNRELEASED
+   !============================================================================!
+   !                          MO-CCSD initialization                            !
+   !____________________________________________________________________________!
+   ! Check if there is enough memory to performed an MO-CCSD calculation.
+   !   YES: get full set of t1 free gmo and pack them
+   !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
+   if (mo_ccsd.or.(ccmodel == MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
+      if(DECinfo%PL>1)call time_start_phase( PHASE_work, twall = time_mo_ints ) 
+
+      call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,pgmo_diag,pgmo_up, &
+         & nb,no,nv,MOinfo)
+
+      if(DECinfo%PL>1)call time_start_phase( PHASE_work, ttot = time_mo_ints,&
+         &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
+
+   end if
+#endif
+
+   nspaces = 0
+   set_pno_info:if(use_pnos)then
+
+      if(DECinfo%PL>1)call time_start_phase( PHASE_work, twall = time_pno_setup ) 
+
+      !FIXME: do the PNO construction in MPI parallel
+      call tensor_init(tmp,[nv,no,nv,no],4)
+      call tensor_convert(m4, tmp%elm1 )
+
+      !GET THE PNO TRANSFORMATION MATRICES
+      if(fragment_job)then
+
+         !COUNT PAIRS OUTSIDE EOS
+         nspaces = ( no - frag%noccEOS ) * ( no - frag%noccEOS + 1) / 2 &
+            !COUNT PAIRS WITH 1 IDX IN EOS          !EOS
+         &+ frag%noccEOS * ( no - frag%noccEOS ) + 1
+
+         frag%nspaces = nspaces
+
+         call mem_alloc( frag%CLocPNO, nspaces )
+         call get_pno_trafo_matrices(no,nv,nb,tmp%elm1,frag%CLocPNO,frag%nspaces,f=frag)
+         pno_cv => frag%CLocPNO
+
+      else
+         !ALL PAIRS
+         nspaces = no * ( no + 1 ) / 2
+         call mem_alloc( pno_cv, nspaces )
+         call get_pno_trafo_matrices(no,nv,nb,tmp%elm1,pno_cv,nspaces,f=frag)
+
+      endif
+
+      call tensor_free(tmp)
+
+      !GET THE OVERLAP BETWEEN THE PNO SPACES
+      call mem_alloc( pno_S , nspaces * (nspaces - 1)/2 )   
+      !Get all the overlap matrices necessary
+      call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.true.)
+
+      if(DECinfo%PL>1)call time_start_phase( PHASE_work, ttot = time_pno_setup,&
+         &labelttot = 'CCSOL: PNO SPACE SETUP:', output = DECinfo%output )
+   endif set_pno_info
+
+end subroutine ccsolver_get_special
+
+subroutine ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart,mo_ccsd,pno_cv,pno_S,nspaces,use_pnos,frag)
+   implicit none
+   type(tensor), intent(inout) :: pgmo_up,pgmo_diag
+   type(MObatchInfo),intent(inout) :: MOinfo
+   type(PNOSpaceInfo), intent(inout), pointer :: pno_cv(:), pno_S(:)
+   logical, intent(in) :: restart, mo_ccsd, use_pnos
+   integer, intent(in) :: nspaces
+   type(decfrag), optional :: frag
+   integer :: i,j,cc
+   logical :: fragment_job
+#ifdef MOD_UNRELEASED
+
+   fragment_job = present(frag)
+
+   ! free memory from MO-based CCSD
+   if(.not. restart)then
+      if (mo_ccsd) then
+         if (pgmo_diag%dims(2)>1) call tensor_free(pgmo_up)
+         call tensor_free(pgmo_diag)
+         call mem_dealloc(MOinfo%dimInd1)
+         call mem_dealloc(MOinfo%dimInd2)
+         call mem_dealloc(MOinfo%StartInd1)
+         call mem_dealloc(MOinfo%StartInd2)
+         call mem_dealloc(MOinfo%dimTot)
+         call mem_dealloc(MOinfo%tileInd)
+      end if
+   endif
+
    !Free PNO information
    if(use_pnos)then
 
       if(.not.fragment_job)then
+
          do i = 1, nspaces
 
             if( pno_cv(i)%allocd )then
@@ -2595,6 +2917,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call mem_dealloc( pno_cv )
 
       else
+
          do i = 1, nspaces
 
             if( frag%CLocPNO(i)%allocd )then
@@ -2609,61 +2932,19 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          call mem_dealloc( frag%CLocPNO )
          pno_cv => null()
+
       endif
 
       call mem_dealloc( pno_S )
 
    endif
 
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   !transform back to original basis!
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-   call tensor_transform_basis([Uo,Uv],2,&
-      & [ t2_final, VOVO    ],  &
-      & [[2,1,2,1],[2,1,2,1]], &
-      & [[2,2,2,2],[2,2,2,2]],  4, 2)
-
-   if(use_singles)then
-      !this should be replaced if/whenever t1 is not local
-      call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=t1_final%elm1)
-   endif
-
-   if(trafo_m2)   call tensor_transform_basis([Uo,Uv],2,&
-      & [ m2   ], [[2,1,2,1]], [[2,2,2,2]],  4, 1)
-
-   if(fragment_job.and.use_pnos)then
-      call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,oo=frag%OccMat,vv=frag%VirtMat)
-   endif
-
-   call tensor_free(Uo)
-   call tensor_free(Uv)
-
-#ifdef MOD_UNRELEASED
-   ! free memory from MO-based CCSD
-   if(.not. restart_from_converged)then
-      if (mo_ccsd) then
-         if (pgmo_diag%dims(2)>1) call tensor_free(pgmo_up)
-         call tensor_free(pgmo_diag)
-         call mem_dealloc(MOinfo%dimInd1)
-         call mem_dealloc(MOinfo%dimInd2)
-         call mem_dealloc(MOinfo%StartInd1)
-         call mem_dealloc(MOinfo%StartInd2)
-         call mem_dealloc(MOinfo%dimTot)
-         call mem_dealloc(MOinfo%tileInd)
-      end if
-   endif
 
    if( .not. fragment_job .and. DECinfo%PL>2 )then
       call tensor_print_mem_info(DECinfo%output,.true.,.false.)
    endif
 #endif
-
-   if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_finalize, &
-      &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output )
-
-end subroutine ccsolver_par
-
+end subroutine ccsolver_free_special
 
 !> \brief should be a general subroutine to get the guess amplitudes when
 !starting up a CCSD or CC2 calculation and checks for files which contain
@@ -2671,15 +2952,15 @@ end subroutine ccsolver_par
 !is returned
 !> \author Patrick Ettenhuber
 !> \date December 2012
-subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,Uv,oof,vvf,vof,mylsitem,local,&
+subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,Uv,oof,vvf,vof,ovf,mylsitem,local,&
    & safefilet21,safefilet22,safefilet2f, t1,safefilet11,safefilet12,safefilet1f)
    implicit none
-   integer, intent(in) :: nb,ccmodel
+   integer, intent(in) :: nb,ccmodel,JOB
    logical,intent(out) :: restart
    real(realk), intent(inout) :: norm,energy,Uo(:,:),Uv(:,:)
    !> contains the guess doubles amplitudes on output
-   type(tensor), intent(inout) :: t2,iajb,Co,Cv,oof,vvf,vof
-   logical, intent(in) :: local
+   type(tensor), intent(inout) :: t2,iajb,Co,Cv,oof,vvf,vof,ovf
+   logical, intent(in) :: local,prec
    !> integral info
    type(lsitem), intent(inout) :: mylsitem
    !> the filenames to check for valid doubles amplitudes
@@ -2700,9 +2981,10 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
    character(tensor_MSG_LEN) :: msg
    integer :: a,i
-   logical :: use_singles
+   logical :: use_singles, get_multipliers
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12).and.present(safefilet1f)
+   get_multipliers = (JOB == SOLVE_MULTIPLIERS)
 
    !MODIFY FOR NEW MODEL THAT IS USING THE CC DRIVER
    ! set model specifics here
@@ -2712,8 +2994,6 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
    case(MODEL_CC2)
       use_singles = .true.
    case(MODEL_CCSD)
-      use_singles = .true.
-   case(MODEL_CCSDpT)
       use_singles = .true.
    case(MODEL_RPA)
       use_singles = .false.
@@ -2902,18 +3182,32 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
          !This was an attempt to start with something else than 0 for CCSD, but
          !it does not seem worth it, even if the start is the amplitudes of the
          !second iteration
-         select case(ccmodel)
-         case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
-            do a=1,nv
-               do i=1,no
+         if(get_multipliers)then
+            select case(ccmodel)
+            case(MODEL_CCSD)
+               call array_reorder_2d(-2.0E0_realk,ovf%elm2,no,nv,[2,1],0.0E0_realk,t1%elm2)
+            case default
+               call tensor_zero(t1)
+            end select
+         else
+            select case(ccmodel)
+            case(MODEL_CC2,MODEL_CCSD)
+               call tensor_cp_data(vof,t1)
+            case default
+               call tensor_zero(t1)
+            end select
 
-                  t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
+            if(prec)then
+               do a=1,nv
+                  do i=1,no
 
+                     t1%elm2(a,i) = t1%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
+
+                  end do
                end do
-            end do
-         case default
-            call tensor_zero(t1)
-         end select
+            endif
+
+         endif
       endif
    endif
 
@@ -2929,12 +3223,21 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
       if (.not.local) call tensor_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
-      select case(ccmodel)
-      case(MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
-         call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
-      case default
-         call tensor_zero(t2)
-      end select
+      if(get_multipliers)then
+         select case(ccmodel)
+         case(MODEL_CCSD)
+            call get_starting_guess( iajb, t2, oof, vvf, local, "CCSD_LAG_RHS", prec )
+         case default
+            call tensor_zero(t2)
+         end select
+      else
+         select case(ccmodel)
+         case(MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
+            call get_starting_guess( iajb, t2, oof, vvf, local, "MP2AMP", prec )
+         case default
+            call tensor_zero(t2)
+         end select
+      endif
    endif
 end subroutine get_guess_vectors
 
@@ -2990,8 +3293,6 @@ subroutine save_current_guess(local,iter,nb,res_norm,energy,Uo,Uv,t2,safefilet21
 
       call can_local_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
 
-      !msg="singles norm save"
-      !call print_norm(t1,msg)
 #ifdef SYS_AIX
       fullname11=safefilet11//'.writing\0'
       fullname12=safefilet12//'.writing\0'

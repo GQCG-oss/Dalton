@@ -10,11 +10,11 @@ module dec_typedef_module
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
   !Could someone please rename ri to something less generic. TK!!
-!  private
-!  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
-!       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
-!       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
-!       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
+  !  private
+  !  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
+  !       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
+  !       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
+  !       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
 
 
 
@@ -47,7 +47,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 20
+  integer, parameter :: ndecenergies = 22
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -69,6 +69,8 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_CCSDf12  = 18  ! CCSD-F12 energy correction
   integer,parameter :: FRAGMODEL_OCCRIMP2 = 19  ! RI-MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTRIMP2= 20  ! RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCSOS   = 21   ! SOSEX occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTSOS  = 22   ! SOSEX virtual partitioning scheme
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -132,6 +134,7 @@ module dec_typedef_module
 
 
 
+
      !> Restart options
      !> ***************
      !> Use HF info generated in previous run (does not necessarily require DECrestart to be true)
@@ -143,6 +146,13 @@ module dec_typedef_module
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
      logical :: read_dec_orbitals
 
+     
+     !> Integral Stuff
+     !> ************
+     !> Screening threshold for Integral evaluation
+     real(realk) :: IntegralThreshold
+     !> Use Ichor Integral Code
+     logical :: UseIchor
 
      !> Memory stuff
      !> ************
@@ -224,6 +234,8 @@ module dec_typedef_module
      logical :: cc_driver_debug
      !> Integer specifying which scheme to use in CCSD calculations (debug)
      integer :: en_mem
+     !overwrite standard preconditioning settings in solver
+     logical :: ccsolver_overwrite_prec
      !> Use full molecular Fock matrix to precondition
      logical :: precondition_with_full
      !> Use devel version of doubles
@@ -257,6 +269,8 @@ module dec_typedef_module
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
      integer :: ijk_nbuffs
+     !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
+     integer :: abc_nbuffs
 
      !> F12 settings
      !> ************
@@ -346,14 +360,6 @@ module dec_typedef_module
      integer,pointer :: frag_job_nr(:)
      !> Use hack to specify only pair fragment jobs
      logical         :: only_pair_frag_jobs
-     !> Use Boughton-Pulay criteria for generating orbitals rather than simple Lowdin charge criteria
-     logical :: BoughtonPulay
-     !> Simple Mulliken charge threshold (only for Boughton-Pulay procedure)
-     real(realk) :: mulliken_threshold
-     !> Simple Mulliken charge criteria 
-     logical :: simple_mulliken_threshold
-     !> Norm error in approximated (fitted orbitals)
-     real(realk) :: approximated_norm_threshold
      !> Use Mulliken population analysis to assign orbitals (default: Lowdin, only for Boughton-Pulay)
      logical :: mulliken
      !> Use Distance criteria to determine central atom
@@ -382,8 +388,12 @@ module dec_typedef_module
      integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion
      integer :: Frag_Exp_Size
-     real(realk) :: Frag_red_occ_thr
-     real(realk) :: Frag_red_virt_thr
+     !> Threshold in reduction in case of unbalanced red:
+     real(realk) :: Frag_red1_thr
+     real(realk) :: Frag_red2_thr
+     !> space to reduce first in FOP:
+     logical :: Frag_red_occ
+     logical :: Frag_red_virt
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
@@ -418,8 +428,6 @@ module dec_typedef_module
      !> Fragment-adapted threshold for throwing away orbitals in atomic fragments
      !> that constitute pair fragment (currently on a testing basis)
      real(realk) :: pairFOthr
-     !> Do some pairs at MP2 level
-     logical :: PairMP2
      !> Estimate pair interaction energies using simple estimates?
      logical :: PairEstimate
      !> Carry out pair estimate, but anyway run all pairs.
@@ -430,6 +438,12 @@ module dec_typedef_module
      integer :: EstimateInitAtom
      !> Which model to use for pair estimates
      integer :: PairEstimateModel
+     !> Number of reduced fragments (increased FOT) to used for pair calculations 
+     !> (NOT including fragment for main FOT)
+     integer :: nFRAGSred
+     !> Factor to scale FOT by for reduced fragments
+     integer :: FOTscaling
+
 
      ! --
 
@@ -465,7 +479,6 @@ module dec_typedef_module
      real(realk) :: EerrFactor
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
-
 
   end type DECSETTINGS
 
@@ -539,7 +552,7 @@ module dec_typedef_module
      !> Central atom to which orbital is assigned
      integer :: centralatom
      !> Number of significant atoms
-     integer :: numberofatoms
+!     integer :: numberofatoms
      !> Secondary central atom for orbital. For example, if virtual orbital "a" is assigned to
      !> a hydrogen atom "H_A" for which there are no occupied orbitals assigned, the secondary
      !> central atom for orbital "a" will be the atom closest to "H_A" which has a nonzero number
@@ -547,7 +560,11 @@ module dec_typedef_module
      integer :: secondaryatom
 
      !> List of significant atoms
-     integer, pointer :: atoms(:) => null()
+!     integer, pointer :: atoms(:) => null()
+     !> Number of significant Atomic Orbitals
+     integer :: numberofaos
+     !> List of significant Atomic Orbitals
+     integer, pointer :: aos(:) => null()
 
   end type decorbital
 
@@ -594,7 +611,7 @@ module dec_typedef_module
      integer :: nCabsMO
      !> Number of possible fragments
      integer :: nfrags
-     
+
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
@@ -602,6 +619,10 @@ module dec_typedef_module
      integer, pointer :: atom_start(:) => null()
      !> Index of the last basis function for an atom
      integer, pointer :: atom_end(:) => null()
+     !> Index of the first basis function for the angmom
+     integer, pointer :: bas_start(:) => null()
+     !> Index of the last basis function for the angmom
+     integer, pointer :: bas_end(:) => null()
      !> Number of CABS basis functions on atoms
      integer, pointer :: atom_cabssize(:) => null()
      !> Index of the first CABS basis function for an atom
@@ -664,6 +685,10 @@ module dec_typedef_module
      !> model=MODEL_MP2 :  Do MP2
      !> etc., see MODEL_* definitions below
      integer,pointer :: ccmodel(:,:) => null()
+     !> FOT level to use for each pair calculation
+     !>  0: Use input FOT
+     !>  n>0: Use AOS information from fragment%REDfrags(n)
+     integer,pointer :: PairFOTlevel(:,:) => null()
 
      !> Partitioning of energy into dispersion, charge transfer,
      !> and internal subsystem excitations 
@@ -709,12 +734,13 @@ module dec_typedef_module
      !> Core orbitals indices (only used for frozen core approx, 
      !> otherwise there are included in the occAOSidx list).
      integer,pointer :: coreidx(:) => null()
-
-
      !> Indices of occupied EOS in AOS basis
      integer, pointer :: idxo(:) => null()
      !> Indices of unoccupied EOS in AOS basis
      integer, pointer :: idxu(:) => null()
+
+     ! Reduced fragments (dimension DECinfo%nFOTred)
+     type(fragmentAOS),pointer :: REDfrags(:)
 
      !> DEC fragment energies are stored in the energies array
      !> according to the global integers "FRAGMODEL_*" defined below.
@@ -1287,4 +1313,16 @@ module dec_typedef_module
      integer(kind=8)          :: n_arrays
      integer(kind=8), pointer :: size_array(:)
   end type pno_query_info
+
+  ! Information for fragment AOS (intended to be used for fragments of reduced FOT)
+  ! Remember to modify mpicopy_fragmentAOStype if you add/remove someting here!
+  type fragmentAOS
+     !> Number of occupied and unoccupied orbitals in fragment AOS
+     integer          :: noccAOS, nunoccAOS
+     !> Occupied and unoccupied AOS indices
+     integer, pointer :: occAOSidx(:), unoccAOSidx(:)
+     !> FOT corresponding to orbital spaces
+     real(realk) :: FOT
+  end type fragmentAOS
+
 end module dec_typedef_module
