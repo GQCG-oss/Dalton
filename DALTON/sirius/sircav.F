@@ -182,6 +182,9 @@ C
 C     check on the number of spheres
 C
       IF (NE .GT. MXSP) THEN
+        WRITE(LUPRI,'(//A,I10/A)')
+     &  'PEDRA ERROR: Too many PCM spheres, MXSP must be at least',NE,
+     &  'PEDRA ERROR: in .../DALTON/include/pcmdef.h'
         CALL QUIT('PEDRA: TOO MANY SPHERES, -MXSP- MUST BE LARGER.')
       ENDIF
 C
