@@ -193,7 +193,10 @@
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(6)
 #endif
-        call pe_master(runtype='mep')
+        call pe_master(runtype='mep',
+     &                 triang=.true.,
+     &                 ndim=0,
+     &                 nmats=0)
         call qexit('pe_ifc_mepcalc_noqm')
       end subroutine pe_ifc_mepcalc_noqm
 
@@ -214,6 +217,7 @@
         call pe_master(runtype='magnetic_gradient',
      &                 triang=.true.,
      &                 ndim=nbast,
+     &                 nmats=0,
      &                 fckmats=fckmats_packed)
         do i = 1, 3
             j = (i - 1) * nnbasx + 1
