@@ -12,27 +12,25 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA)
     real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPrimA,nPrimB)
-    real(realk),intent(inout) :: AUXarrayCont(nPrimB,nPrimB,nContA)
+    real(realk),intent(inout) :: AUXarrayCont(nPrimB*nPrimB*nContA)
     !
-    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iP
     real(realk) :: TMP,TMPACC
-    !$OMP DO COLLAPSE(3) &
-    !$OMP PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,TMPACC) 
-     do iContC=1,nContA
-      do iPrimB=1,nPrimB
-       do iPrimD=1,nPrimB
-        TMP = 0.0E0_realk
-        do iPrimA=1,nPrimA
-         TMPACC = ACC(iPrimA,iContC)
-         do iPrimC=1,nPrimA
-          TMP = TMP + TMPACC*ACC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB)
-         enddo
-        enddo
-        AUXarrayCont(iPrimD,iPrimB,iContC) = TMP
-       enddo
+    !$OMP DO PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,TMPACC,iP) 
+    do iP=1,nPrimB*nPrimB*nContA
+     iPrimD = mod(IP-1,nPrimB)+1
+     iPrimB = mod((IP-(mod(IP-1,nPrimB)+1))/nPrimB,nPrimB)+1
+     iContC = (IP-1)/(nPrimB*nPrimB) + 1
+     TMP = 0.0E0_realk
+     do iPrimA=1,nPrimA
+      TMPACC = ACC(iPrimA,iContC)
+      do iPrimC=1,nPrimA
+       TMP = TMP + TMPACC*ACC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB)
       enddo
      enddo
-     !$OMP ENDDO 
+     AUXarrayCont(iP) = TMP
+    enddo
+    !$OMP ENDDO 
   end subroutine GabPrimitiveContractionGen1A
 
   subroutine GabPrimitiveContractionGen1B(AUXarray2,AUXarrayCont,nPrimP,&
@@ -43,24 +41,24 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: BCC(nPrimB,nContB)
     real(realk),intent(in) :: AUXarray2(nPrimB,nPrimB,nContA)
-    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB)
+    real(realk),intent(inout) :: AUXarrayCont(nContA*nContB)
     !
-    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
+    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iP
     real(realk) :: TMP,TMPBCC
-    !$OMP DO COLLAPSE(2) PRIVATE(iContC,iPrimD,iPrimB,iContD,TMP,TMPBCC) 
-     do iContC=1,nContA
-      do iContD=1,nContB
-       TMP = 0.0E0_realk
-       do iPrimB=1,nPrimB
-        TMPBCC = BCC(iPrimB,iContD)
-        do iPrimD=1,nPrimB
-         TMP = TMP + TMPBCC*BCC(iPrimD,iContD)*AUXarray2(iPrimD,iPrimB,iContC)
-        enddo
-       enddo
-       AUXarrayCont(iContC,iContD) = TMP
+    !$OMP DO PRIVATE(iContC,iPrimD,iPrimB,iContD,TMP,TMPBCC,iP) 
+    do iP=1,nContA*nContB
+     iContC = mod(IP-1,nContA)+1
+     iContD = (IP-1)/(nContA) + 1
+     TMP = 0.0E0_realk
+     do iPrimB=1,nPrimB
+      TMPBCC = BCC(iPrimB,iContD)
+      do iPrimD=1,nPrimB
+       TMP = TMP + TMPBCC*BCC(iPrimD,iContD)*AUXarray2(iPrimD,iPrimB,iContC)
       enddo
      enddo
-     !$OMP END DO
+     AUXarrayCont(iP) = TMP
+    enddo
+    !$OMP END DO
   end subroutine GabPrimitiveContractionGen1B
 
   subroutine GabPrimitiveContractionGen16A(AUXarray2,AUXarrayCont,nPrimP,&
@@ -71,28 +69,26 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA)
     real(realk),intent(in) :: AUXarray2(   16,nPrimA,nPrimB,nPrimA,nPrimB)
-    real(realk),intent(inout) :: AUXarrayCont(   16,nPrimB,nPrimB,nContA)
+    real(realk),intent(inout) :: AUXarrayCont(   16,nContA*nPrimB*nPrimB)
     !
-    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV
+    integer :: iContC,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP
     real(realk) :: TMP,ACCTMP
-!$OMP DO COLLAPSE(4) &     
-!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,iContC,TMP,ACCTMP)
-     do iContC=1,nContA
-      do iPrimB=1,nPrimB
-       do iPrimD=1,nPrimB
-        do iTUV=1,   16
-         TMP = 0.0E0_realk
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContC)
-          do iPrimC=1,nPrimA
-           TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)
-          enddo
-         enddo
-         AUXarrayCont(iTUV,iPrimD,iPrimB,iContC) = TMP
-        enddo
+!$OMP DO PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,TMP,ACCTMP,iP)
+    do iP=1,nContA*nPrimB*nPrimB
+     iContC= mod(IP-1,nContA)+1
+     iPrimB= mod((IP-(mod(IP-1,nContA)+1))/nContA,nPrimB)+1
+     iPrimD= (IP-1)/(nContA*nPrimB) + 1
+     do iTUV=1,   16
+      TMP = 0.0E0_realk
+      do iPrimA=1,nPrimA
+       ACCTMP = ACC(iPrimA,iContC)
+       do iPrimC=1,nPrimA
+        TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)
        enddo
       enddo
+      AUXarrayCont(iTUV,iP) = TMP
      enddo
+    enddo
 !$OMP END DO
   end subroutine GabPrimitiveContractionGen16A
 
@@ -103,27 +99,25 @@ CONTAINS
     integer,intent(in) :: nPrimP,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(   16,nPrimB,nPrimB,nContA)
-    real(realk),intent(inout) :: AUXarrayCont(   16,nContA,nContB)
+    real(realk),intent(in) :: AUXarray2(   16,nContA,nPrimB,nPrimB)
+    real(realk),intent(inout) :: AUXarrayCont(   16*nContA*nContB)
     !
-    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV
+    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP
     real(realk) :: TMP,BCCTMP
-!$OMP DO COLLAPSE(3) &
-!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP) 
-     do iContC=1,nContA
-      do iContD=1,nContB
-       do iTUV=1,   16
-        TMP = 0.0E0_realk
-        do iPrimB=1,nPrimB
-         BCCTMP = BCC(iPrimB,iContD)
-         do iPrimD=1,nPrimB
-          TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iPrimD,iPrimB,iContC)
-         enddo
-        enddo
-        AUXarrayCont(iTUV,iContC,iContD) = TMP
-       enddo
+!$OMP DO PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP,iP) 
+    do iP=1,nContA*nContB*16 ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)
+     iTUV=mod(IP-1,16)+1
+     iContC=mod((IP-(mod(IP-1,16)+1))/16,nContA)+1
+     iContD=(IP-1)/(16*nContA) + 1
+     TMP = 0.0E0_realk
+     do iPrimB=1,nPrimB
+      BCCTMP = BCC(iPrimB,iContD)
+      do iPrimD=1,nPrimB
+       TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iContC,iPrimD,iPrimB)
       enddo
      enddo
+     AUXarrayCont(iP) = TMP
+    enddo
 !$OMP END DO
   end subroutine GabPrimitiveContractionGen16B
 
@@ -135,28 +129,26 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA)
     real(realk),intent(in) :: AUXarray2(  100,nPrimA,nPrimB,nPrimA,nPrimB)
-    real(realk),intent(inout) :: AUXarrayCont(  100,nPrimB,nPrimB,nContA)
+    real(realk),intent(inout) :: AUXarrayCont(  100,nContA*nPrimB*nPrimB)
     !
-    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV
+    integer :: iContC,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP
     real(realk) :: TMP,ACCTMP
-!$OMP DO COLLAPSE(4) &     
-!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,iContC,TMP,ACCTMP)
-     do iContC=1,nContA
-      do iPrimB=1,nPrimB
-       do iPrimD=1,nPrimB
-        do iTUV=1,  100
-         TMP = 0.0E0_realk
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContC)
-          do iPrimC=1,nPrimA
-           TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)
-          enddo
-         enddo
-         AUXarrayCont(iTUV,iPrimD,iPrimB,iContC) = TMP
-        enddo
+!$OMP DO PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,TMP,ACCTMP,iP)
+    do iP=1,nContA*nPrimB*nPrimB
+     iContC= mod(IP-1,nContA)+1
+     iPrimB= mod((IP-(mod(IP-1,nContA)+1))/nContA,nPrimB)+1
+     iPrimD= (IP-1)/(nContA*nPrimB) + 1
+     do iTUV=1,  100
+      TMP = 0.0E0_realk
+      do iPrimA=1,nPrimA
+       ACCTMP = ACC(iPrimA,iContC)
+       do iPrimC=1,nPrimA
+        TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)
        enddo
       enddo
+      AUXarrayCont(iTUV,iP) = TMP
      enddo
+    enddo
 !$OMP END DO
   end subroutine GabPrimitiveContractionGen100A
 
@@ -167,27 +159,25 @@ CONTAINS
     integer,intent(in) :: nPrimP,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(  100,nPrimB,nPrimB,nContA)
-    real(realk),intent(inout) :: AUXarrayCont(  100,nContA,nContB)
+    real(realk),intent(in) :: AUXarray2(  100,nContA,nPrimB,nPrimB)
+    real(realk),intent(inout) :: AUXarrayCont(  100*nContA*nContB)
     !
-    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV
+    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP
     real(realk) :: TMP,BCCTMP
-!$OMP DO COLLAPSE(3) &
-!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP) 
-     do iContC=1,nContA
-      do iContD=1,nContB
-       do iTUV=1,  100
-        TMP = 0.0E0_realk
-        do iPrimB=1,nPrimB
-         BCCTMP = BCC(iPrimB,iContD)
-         do iPrimD=1,nPrimB
-          TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iPrimD,iPrimB,iContC)
-         enddo
-        enddo
-        AUXarrayCont(iTUV,iContC,iContD) = TMP
-       enddo
+!$OMP DO PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP,iP) 
+    do iP=1,nContA*nContB*100 ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)
+     iTUV=mod(IP-1,100)+1
+     iContC=mod((IP-(mod(IP-1,100)+1))/100,nContA)+1
+     iContD=(IP-1)/(100*nContA) + 1
+     TMP = 0.0E0_realk
+     do iPrimB=1,nPrimB
+      BCCTMP = BCC(iPrimB,iContD)
+      do iPrimD=1,nPrimB
+       TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iContC,iPrimD,iPrimB)
       enddo
      enddo
+     AUXarrayCont(iP) = TMP
+    enddo
 !$OMP END DO
   end subroutine GabPrimitiveContractionGen100B
 
@@ -199,28 +189,26 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA)
     real(realk),intent(in) :: AUXarray2(  400,nPrimA,nPrimB,nPrimA,nPrimB)
-    real(realk),intent(inout) :: AUXarrayCont(  400,nPrimB,nPrimB,nContA)
+    real(realk),intent(inout) :: AUXarrayCont(  400,nContA*nPrimB*nPrimB)
     !
-    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV
+    integer :: iContC,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP
     real(realk) :: TMP,ACCTMP
-!$OMP DO COLLAPSE(4) &     
-!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,iContC,TMP,ACCTMP)
-     do iContC=1,nContA
-      do iPrimB=1,nPrimB
-       do iPrimD=1,nPrimB
-        do iTUV=1,  400
-         TMP = 0.0E0_realk
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContC)
-          do iPrimC=1,nPrimA
-           TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)
-          enddo
-         enddo
-         AUXarrayCont(iTUV,iPrimD,iPrimB,iContC) = TMP
-        enddo
+!$OMP DO PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,TMP,ACCTMP,iP)
+    do iP=1,nContA*nPrimB*nPrimB
+     iContC= mod(IP-1,nContA)+1
+     iPrimB= mod((IP-(mod(IP-1,nContA)+1))/nContA,nPrimB)+1
+     iPrimD= (IP-1)/(nContA*nPrimB) + 1
+     do iTUV=1,  400
+      TMP = 0.0E0_realk
+      do iPrimA=1,nPrimA
+       ACCTMP = ACC(iPrimA,iContC)
+       do iPrimC=1,nPrimA
+        TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)
        enddo
       enddo
+      AUXarrayCont(iTUV,iP) = TMP
      enddo
+    enddo
 !$OMP END DO
   end subroutine GabPrimitiveContractionGen400A
 
@@ -231,27 +219,25 @@ CONTAINS
     integer,intent(in) :: nPrimP,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(  400,nPrimB,nPrimB,nContA)
-    real(realk),intent(inout) :: AUXarrayCont(  400,nContA,nContB)
+    real(realk),intent(in) :: AUXarray2(  400,nContA,nPrimB,nPrimB)
+    real(realk),intent(inout) :: AUXarrayCont(  400*nContA*nContB)
     !
-    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV
+    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP
     real(realk) :: TMP,BCCTMP
-!$OMP DO COLLAPSE(3) &
-!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP) 
-     do iContC=1,nContA
-      do iContD=1,nContB
-       do iTUV=1,  400
-        TMP = 0.0E0_realk
-        do iPrimB=1,nPrimB
-         BCCTMP = BCC(iPrimB,iContD)
-         do iPrimD=1,nPrimB
-          TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iPrimD,iPrimB,iContC)
-         enddo
-        enddo
-        AUXarrayCont(iTUV,iContC,iContD) = TMP
-       enddo
+!$OMP DO PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP,iP) 
+    do iP=1,nContA*nContB*400 ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)
+     iTUV=mod(IP-1,400)+1
+     iContC=mod((IP-(mod(IP-1,400)+1))/400,nContA)+1
+     iContD=(IP-1)/(400*nContA) + 1
+     TMP = 0.0E0_realk
+     do iPrimB=1,nPrimB
+      BCCTMP = BCC(iPrimB,iContD)
+      do iPrimD=1,nPrimB
+       TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iContC,iPrimD,iPrimB)
       enddo
      enddo
+     AUXarrayCont(iP) = TMP
+    enddo
 !$OMP END DO
   end subroutine GabPrimitiveContractionGen400B
 
@@ -263,28 +249,26 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA)
     real(realk),intent(in) :: AUXarray2( 1225,nPrimA,nPrimB,nPrimA,nPrimB)
-    real(realk),intent(inout) :: AUXarrayCont( 1225,nPrimB,nPrimB,nContA)
+    real(realk),intent(inout) :: AUXarrayCont( 1225,nContA*nPrimB*nPrimB)
     !
-    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV
+    integer :: iContC,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP
     real(realk) :: TMP,ACCTMP
-!$OMP DO COLLAPSE(4) &     
-!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,iContC,TMP,ACCTMP)
-     do iContC=1,nContA
-      do iPrimB=1,nPrimB
-       do iPrimD=1,nPrimB
-        do iTUV=1, 1225
-         TMP = 0.0E0_realk
-         do iPrimA=1,nPrimA
-          ACCTMP = ACC(iPrimA,iContC)
-          do iPrimC=1,nPrimA
-           TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)
-          enddo
-         enddo
-         AUXarrayCont(iTUV,iPrimD,iPrimB,iContC) = TMP
-        enddo
+!$OMP DO PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,TMP,ACCTMP,iP)
+    do iP=1,nContA*nPrimB*nPrimB
+     iContC= mod(IP-1,nContA)+1
+     iPrimB= mod((IP-(mod(IP-1,nContA)+1))/nContA,nPrimB)+1
+     iPrimD= (IP-1)/(nContA*nPrimB) + 1
+     do iTUV=1, 1225
+      TMP = 0.0E0_realk
+      do iPrimA=1,nPrimA
+       ACCTMP = ACC(iPrimA,iContC)
+       do iPrimC=1,nPrimA
+        TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)
        enddo
       enddo
+      AUXarrayCont(iTUV,iP) = TMP
      enddo
+    enddo
 !$OMP END DO
   end subroutine GabPrimitiveContractionGen1225A
 
@@ -295,27 +279,25 @@ CONTAINS
     integer,intent(in) :: nPrimP,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2( 1225,nPrimB,nPrimB,nContA)
-    real(realk),intent(inout) :: AUXarrayCont( 1225,nContA,nContB)
+    real(realk),intent(in) :: AUXarray2( 1225,nContA,nPrimB,nPrimB)
+    real(realk),intent(inout) :: AUXarrayCont( 1225*nContA*nContB)
     !
-    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV
+    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP
     real(realk) :: TMP,BCCTMP
-!$OMP DO COLLAPSE(3) &
-!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP) 
-     do iContC=1,nContA
-      do iContD=1,nContB
-       do iTUV=1, 1225
-        TMP = 0.0E0_realk
-        do iPrimB=1,nPrimB
-         BCCTMP = BCC(iPrimB,iContD)
-         do iPrimD=1,nPrimB
-          TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iPrimD,iPrimB,iContC)
-         enddo
-        enddo
-        AUXarrayCont(iTUV,iContC,iContD) = TMP
-       enddo
+!$OMP DO PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP,iP) 
+    do iP=1,nContA*nContB*1225 ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)
+     iTUV=mod(IP-1,1225)+1
+     iContC=mod((IP-(mod(IP-1,1225)+1))/1225,nContA)+1
+     iContD=(IP-1)/(1225*nContA) + 1
+     TMP = 0.0E0_realk
+     do iPrimB=1,nPrimB
+      BCCTMP = BCC(iPrimB,iContD)
+      do iPrimD=1,nPrimB
+       TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iContC,iPrimD,iPrimB)
       enddo
      enddo
+     AUXarrayCont(iP) = TMP
+    enddo
 !$OMP END DO
   end subroutine GabPrimitiveContractionGen1225B
 

@@ -1967,7 +1967,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call Get_AOt1Fock(mylsitem,p2,ifock,no,nv,nb,Co,Co,Cv)
       else
          ! Fock matrix for fragment from density made from input MOs
-         write(*,*) 'Johannes ao basis',nb
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
       end if
 
@@ -1979,7 +1978,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_add(delta_fock,-1.0E0_realk,ifock)
 
    else 
-      write(*,*) 'Johannes ao basis full molecule',nb
       ! Full molecule: deltaF = F(Dcore) for frozen core (0 otherwise)
       if(DECinfo%frozencore) then
          ! Fock matrix from input MOs

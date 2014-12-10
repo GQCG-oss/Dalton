@@ -2,9 +2,8 @@
 MODULE IIDFTKSM
 use precision
 use TYPEDEFTYPE, only: LSSETTING
-!AMT use IIDFTINT, only: II_DFTINT, II_DFTDISP, TEST_NELECTRONS
 use IIDFTINT, only: II_DFTINT, TEST_NELECTRONS
-use IIDFTD, only: DFT_D_LSDAL_IFC
+use IIDFTD, only: II_DFT_DISP
 use dft_type
 use dft_memory_handling
 use IIDFTKSMWORK
@@ -475,12 +474,9 @@ IF(IPRINT.GT. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
 #endif
-   ! add eventually empirical dispersion correction \Andreas Krapp Only Master
-   !AMT CALL II_DFTDISP(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,1,LUPRI,IPRINT)
-   !AMT
+   ! add eventually empirical dispersion correction
    NDERIV=1
-   CALL DFT_D_LSDAL_IFC(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,NDERIV,LUPRI)
-   !AMT
+   CALL II_DFT_DISP(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,NDERIV,LUPRI)
 #ifdef VAR_MPI
 ENDIF
 #endif

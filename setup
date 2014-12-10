@@ -189,10 +189,6 @@ def parse_input():
             help='build using timings [default: %(default)s]')
     
     group = parser.add_argument_group('external libraries')
-    group.add_argument('--xcfun',
-            action='store_true',
-            default=False,
-            help='enable XCFun external library [default: %(default)s]')
     group.add_argument('--interest',
             action='store_true',
             default=False,
@@ -280,7 +276,6 @@ def gen_cmake_command(args):
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
     command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
-    command += ' -DENABLE_XCFUN=%s'          % translate_cmake(args.xcfun)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
     command += ' -DENABLE_QMATRIX=%s'        % translate_cmake(args.qmatrix)

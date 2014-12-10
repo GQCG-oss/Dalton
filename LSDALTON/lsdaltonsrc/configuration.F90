@@ -68,10 +68,12 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
+use ls_util,only: capitalize_string
 #ifdef HAS_PCMSOLVER
 use ls_pcm_config, only: pcmtype, ls_pcm_init, ls_pcm_input
 #endif
 use LSparameters
+use iidftksmwork, only: dft_dogga_dometa
 
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
@@ -85,7 +87,6 @@ subroutine config_set_default_config(config)
 implicit none
    !> Contains info, settings and data for entire calculation
    type(ConfigItem), intent(inout) :: config
-  USEXCFUN = .FALSE.  
   nullify(config%solver)
   allocate(config%solver)
   call arh_set_default_config(config%solver)
@@ -93,6 +94,11 @@ implicit none
   allocate(config%decomp)
   call decomp_set_default_config(config%decomp)
   call integral_set_default_config(config%integral)
+#ifdef VAR_XCFUN
+  USEXCFUN = .TRUE.  
+#else
+  USEXCFUN = .FALSE.  
+#endif
   call opt_set_default_config(config%opt)
   call av_set_default_config(config%av)
   !DEC calculation. The DEC info is kept as a global derived type parameter for now.
@@ -238,20 +244,25 @@ use IIDFTINT, only: II_DFTsetFunc
 use ls_qmatrix, only: ls_qmatrix_init, &
                       ls_qmatrix_input
 #endif
+
 implicit none
 !> Logical unit number for LSDALTON.OUT
 INTEGER            :: LUPRI
 !> Contains info, settings and data for entire calculation
 type(ConfigItem), intent(inout) :: config
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
-INTEGER            :: IDUMMY,IPOS,IPOS2,IPOS3,COUNTER
+INTEGER            :: IDUMMY,IPOS,IPOS2,IPOS3,IPOSMU,COUNTER
 character(len=80)  :: WORD,TMPWORD
+character(len=1024):: Func
 character(len=2)   :: PROMPT
-LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
+LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,WAVE,exchangescale
 !LINSCA variables:
 real(realk)        :: shift, min_density_overlap, maxratio, zero
 integer            :: nvec, i
-Real(realk)  :: hfweight 
+Real(realk)        :: hfweight 
+
+WAVE = .FALSE.
+exchangescale = .FALSE.
 
 STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
@@ -294,6 +305,7 @@ DO
    ENDIF
    IF (WORD(1:10) == '**INTEGRAL') THEN
       READWORD = .TRUE.
+      IF (WAVE) CALL LSQUIT('**INTEGRAL section must be defined before **WAVE FUN in the lsdalton input',lupri)
       CALL INTEGRAL_INPUT(config%integral,readword,word,lucmd,lupri)
    ENDIF
    IF (WORD(1:6) == '**WAVE') THEN
@@ -318,93 +330,11 @@ DO
                      config%integral%exchangeFactor = 0E0_realk
                      config%integral%dft%HFexchangeFac = 0E0_realk
             CASE ('.EXCHANGESCAL');
+               exchangescale = .TRUE.
                READ(LUCMD,*) config%integral%exchangeFactor
                config%integral%dft%HFexchangeFac = config%integral%exchangeFactor
-            CASE ('.DFT'); config%opt%calctype = config%opt%dftcalc !DFT calc
-                           config%av%CFG_SET_type = config%av%CFG_THR_dft
-                           config%solver%do_dft = .true.
-                           config%soeoinp%do_dft = .true.
-                           config%davidSCF%arh_dodft = .true.
-               DO 
-                  READ (LUCMD, '(A80)') WORD
-                  IF ((WORD(1:1) .EQ. '!') .OR. (WORD(1:1) .EQ. '#')) CYCLE   
-                  IF (WORD(1:1) .EQ. '.' .OR. WORD(1:1) .EQ. '*') THEN
-                     WRITE (LUPRI,'(/A/A//A)')&
-                          & '--> Input error for line following .DFT',&
-                          & '    expected functional specification but read:',&
-                          & WORD
-                  ELSE
-!                     IF(WORD(1:3) .EQ. 'LDA') 
-                     IPOS = INDEX(WORD,'CAM')
-                     IPOS2 = INDEX(WORD,'cam')                     
-                     IPOS3 = INDEX(WORD,'Cam')                     
-                     IF((IPOS.NE.0.OR.IPOS2.NE.0).OR.IPOS3.NE.0)THEN !CAM
-                        config%integral%CAM=.TRUE.
-                        IPOS = INDEX(WORD,'alpha')
-                        IF (IPOS .NE. 0) THEN
-                           IPOS2 = INDEX(WORD(IPOS:),'=')
-                           IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
-                              WRITE (LUPRI,'(2X,A40)') 'Incorrect input for CAM parameters'
-                              WRITE (LUPRI,'(2X,A40)') 'Format is "alpha=?  beta=? mu=?"'
-                              CALL lsQUIT('Incorrect input for alpha parameter',lupri)
-                           ELSE
-                              READ (WORD((IPOS+IPOS2):80),*) config%integral%CAMalpha
-                              IPOS = INDEX(WORD,'beta')
-                              IF (IPOS .NE. 0) THEN
-                                 IPOS2 = INDEX(WORD(IPOS:),'=')
-                                 IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
-                                    WRITE (LUPRI,'(2X,A40)') 'Incorrect input for CAM parameters'
-                                    WRITE (LUPRI,'(2X,A40)') 'Format is "alpha=?  beta=? mu=?"'
-                                    CALL lsQUIT('Incorrect input for alpha parameter',lupri)
-                                 ELSE
-                                    READ (WORD((IPOS+IPOS2):80),*) config%integral%CAMbeta
-                                    IPOS = INDEX(WORD,'mu')
-                                    IF (IPOS .NE. 0) THEN
-                                       IPOS2 = INDEX(WORD(IPOS:),'=')
-                                       IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 3)) THEN
-                                          WRITE (LUPRI,'(2X,A40)') 'Incorrect input for CAM parameters'
-                                          WRITE (LUPRI,'(2X,A40)') 'Format is "alpha=?  beta=? mu=?"'
-                                          CALL lsQUIT('Incorrect input for alpha parameter',lupri)
-                                       ELSE
-                                          READ (WORD((IPOS+IPOS2):80),*) config%integral%CAMmu
-                                       ENDIF
-                                    ENDIF
-                                 ENDIF
-                              ENDIF
-                           ENDIF
-                        ELSE
-                           config%integral%CAMalpha=0.19E0_realk
-                           config%integral%CAMbeta=0.46E0_realk
-                           config%integral%CAMmu=0.33E0_realk
-                        ENDIF
-                        WRITE(LUPRI,*) 'This is a CAM functional with'
-                        WRITE(LUPRI,*) 'config%integral%CAMalpha',config%integral%CAMalpha
-                        WRITE(LUPRI,*) 'config%integral%CAMbeta',config%integral%CAMbeta
-                        WRITE(LUPRI,*) 'config%integral%CAMmu',config%integral%CAMmu
-                     END IF
-                     hfweight=0E0_realk 
-                     !it is assumed that hfweight is set to zero and only  
-                     !changed if the functional require a HF weight  
-                     !different from zero. 
-                     !note the 40 is harcoded in DFTsetFunc routine in general.c 
-                     config%integral%dft%dftfunc = WORD
-                     IF(.NOT.USEXCFUN)THEN
-                        CALL II_DFTsetFunc(WORD,hfweight)
-                     ELSE
-!                        CALL II_DFTsetFunc(WORD,hfweight)
-                        call xcfun_host_init(WORD,hfweight,lupri)
-                     ENDIF
-                     config%integral%exchangeFactor = hfweight
-                     config%integral%dft%HFexchangeFac = hfweight
-#ifdef BUILD_CGTODIFF
-#ifdef VAR_MPI
-                     call lsquit('cgto_diff_eri not testet for MPI',-1)
-#endif                     
-!                     call cgto_diff_eri_xfac_general(config%integral%exchangeFactor)
-#endif
-                  ENDIF
-                  EXIT
-               ENDDO
+            CASE ('.DFT'); 
+               call read_dft_input(config,lucmd,lupri)
             CASE DEFAULT
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                     & '" not recognized in **WAVE FUNCTION'
@@ -542,10 +472,8 @@ DO
                                  call lsquit('Keyword .MOCHANGE nolonger supported',-1)
             CASE('.MUOPT');      config%diag%CFG_lshift = diag_lshift_search
                                  config%av%CFG_lshift = Diag_lshift_search
-#ifdef MOD_UNRELEASED
             CASE('.NALPHA');     read(LUCMD,*) config%decomp%nocca ; config%decomp%alpha_specified = .true.
             CASE('.NBETA');      read(LUCMD,*) config%decomp%noccb ; config%decomp%beta_specified = .true.
-#endif
             CASE('.NOAV');       config%av%CFG_averaging =   config%av%CFG_AVG_none  
             CASE('.NO HLSHIFT'); config%solver%lshift_by_hlgap = .false. !Don't use the default scheme (level shift by homo lumo gap), 
                                                                          !use instead the "old" scheme developed for the Davidson algorithm
@@ -641,14 +569,12 @@ DO
             CASE('.MWPURIFYATOMSTART');               
                !Perform McWeeny purification on the non idempotent Atoms Density
                config%opt%MWPURIFYATOMSTART=.TRUE.
-#ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
                                  config%diag%cfg_unres=.true.
                                  config%opt%cfg_unres=.true.
                                  config%soeoinp%cfg_unres=.true.
                                  config%response%RSPsolverinput%cfg_unres = .true.
-#endif
             CASE('.UNSAFE');     config%solver%cfg_arh_crop_safe = .false.
             CASE('.VanLenthe');  config%opt%CFG_density_method =  config%opt%CFG_F2D_ROOTHAAN !Diagonalization
                                  config%av%CFG_averaging = config%av%CFG_AVG_van_lenthe
@@ -908,13 +834,176 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
+if (config%solver%do_dft) then
+   hfweight = 0.0E0_realk
+   CALL II_DFTsetFunc(config%integral%dft%dftfunc,hfweight,lupri)
+   !it is assumed that hfweight is set to zero and only  
+   !changed if the functional require a HF weight  
+   !different from zero. 
+   IF (.NOT.exchangescale) THEN
+     config%integral%exchangeFactor = hfweight
+     config%integral%dft%HFexchangeFac = hfweight
+   ENDIF
+#ifdef BUILD_CGTODIFF
+#ifdef VAR_MPI
+   call lsquit('cgto_diff_eri not testet for MPI',-1)
+#endif                     
+   !call cgto_diff_eri_xfac_general(config%integral%exchangeFactor)
+#endif
+endif
+
 if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
-   call init_dftfunc(config%integral%DFT,config%integral%ADMM_FUNC)
+   call init_dftfunc(config%integral%DFT)
+   IF (config%integral%CAM) THEN
+      IF (USEXCFUN) THEN
+         write(Func,'(A28,A11,G22.16,A10,G22.16,A13,G22.16)') 'GGAKEY BECKEX=1 BECKECAMX=-1',&
+                      & ' CAM_ALPHA=',config%integral%CAMalpha,&
+                      & ' CAM_BETA=',config%integral%CAMbeta,&
+                      & ' RANGESEP_MU=',config%integral%CAMmu
+      ELSE
+         write(Func,'(A15,G22.16,A6,G22.16,A4,G22.16)') 'Camcompx alpha=',config%integral%CAMalpha,&
+           & ' beta=',config%integral%CAMbeta,' mu=',config%integral%CAMmu
+      ENDIF
+   ELSE
+      Func = config%integral%admm_func
+   ENDIF
+   config%integral%DFT%DFTfuncObject(dftfunc_ADMML2) = Func
 endif
 
 END SUBROUTINE read_dalton_input
 
+
+subroutine read_dft_input(config,lucmd,lupri)
+
+  implicit none
+  !> Contains info, settings and data for entire calculation
+  type(ConfigItem), intent(inout) :: config
+  character(len=80)  :: WORD,MUWORD,TMPWORD,FormatString
+  character(len=1024):: XCfunString
+  integer,intent(in) :: LUCMD !Logical unit number for the daltoninput
+  integer,intent(in) :: LUPRI !Logical unit number for the daltonoutput file
+  integer            :: ipos,ipos2,iposmu
+  Real(realk)        :: hfweight 
+  
+  config%opt%calctype = config%opt%dftcalc !DFT calc
+  config%av%CFG_SET_type = config%av%CFG_THR_dft
+  config%solver%do_dft = .true.
+  config%soeoinp%do_dft = .true.
+  config%davidSCF%arh_dodft = .true.
+  
+  DO 
+     READ (LUCMD, '(A80)') WORD
+     IF ((WORD(1:1) .EQ. '!') .OR. (WORD(1:1) .EQ. '#')) CYCLE   
+     IF (WORD(1:1) .EQ. '.' .OR. WORD(1:1) .EQ. '*') THEN
+        WRITE (LUPRI,'(/A/A//A)')&
+             & '--> Input error for line following .DFT',&
+             & '    expected functional specification but read:',&
+             & WORD
+     ELSE
+        call capitalize_string(WORD)
+        IF ((INDEX(WORD,'LDAERF')).NE.0) THEN !LDAERF   
+           config%integral%CAM=.TRUE. !Activate lr intergrals
+           config%integral%CAMalpha=0E0_realk !No exact exchange
+           config%integral%CAMbeta=1E0_realk !Lr HF exchange prefactor
+           READ (LUCMD, '(A80)') MUWORD
+           call capitalize_string(MUWORD)
+           IPOS = INDEX(MUWORD,'MU')
+           mu: IF (IPOS .NE. 0) THEN
+              IPOS2 = INDEX(MUWORD(IPOS:),'=')
+              IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 3)) THEN
+                 WRITE (LUPRI,'(2X,A40)') 'Incorrect input for ERF parameters'
+                 WRITE (LUPRI,'(2X,A40)') 'Format is "mu=?"'
+                 CALL lsQUIT('Incorrect range-separation parameter mu',lupri)
+              ELSE
+                 !Set value of the range-separation parameter mu
+                 READ (MUWORD((IPOS+IPOS2):80),*) config%integral%CAMmu 
+                 write(LUPRI,*) ''
+                 WRITE(LUPRI,*) 'This is a LDAERF functional with mu=',config%integral%CAMmu
+                 !String to be passed to xcfun_host
+                 !EXX=1 sets hfweight and activates exchange integral evaluation
+                 XCfunString = ('LDAERF EXX=1 RANGESEP_MU='//trim(MUWORD((IPOS+IPOS2):80))) 
+                 write(LUPRI,*) XCfunString
+              ENDIF
+           ELSE
+              CALL lsQUIT('Range-separation parameter mu required when using LDAERF',lupri)
+           ENDIF mu
+        ELSE IF ((INDEX(WORD,'CAM')).NE.0) THEN !CAM
+           config%integral%CAM=.TRUE.
+           IPOS = INDEX(WORD,'ALPHA')
+           IF (IPOS .NE. 0) THEN
+              IPOS2 = INDEX(WORD(IPOS:),'=')
+              IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
+                 WRITE (LUPRI,'(2X,A40)') 'Incorrect input for CAM parameters'
+                 WRITE (LUPRI,'(2X,A40)') 'Format is "alpha=?  beta=? mu=?"'
+                 CALL lsQUIT('Incorrect input for alpha parameter',lupri)
+              ELSE
+                 READ (WORD((IPOS+IPOS2):80),*) config%integral%CAMalpha
+                 IPOS = INDEX(WORD,'BETA')
+                 IF (IPOS .NE. 0) THEN
+                    IPOS2 = INDEX(WORD(IPOS:),'=')
+                    IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
+                       WRITE (LUPRI,'(2X,A40)') 'Incorrect input for CAM parameters'
+                       WRITE (LUPRI,'(2X,A40)') 'Format is "alpha=?  beta=? mu=?"'
+                       CALL lsQUIT('Incorrect input for beta parameter',lupri)
+                    ELSE
+                       READ (WORD((IPOS+IPOS2):80),*) config%integral%CAMbeta
+                       IPOS = INDEX(WORD,'MU')
+                       IF (IPOS .NE. 0) THEN
+                          IPOS2 = INDEX(WORD(IPOS:),'=')
+                          IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 3)) THEN
+                             WRITE (LUPRI,'(2X,A40)') 'Incorrect input for CAM parameters'
+                             WRITE (LUPRI,'(2X,A40)') 'Format is "alpha=?  beta=? mu=?"'
+                             CALL lsQUIT('Incorrect input for mu parameter',lupri)
+                          ELSE
+                             READ (WORD((IPOS+IPOS2):80),*) config%integral%CAMmu
+                          ENDIF
+                       ENDIF
+                    ENDIF
+                 ENDIF
+              ENDIF
+              if (USEXCFUN) then
+                 TMPWORD=''
+                 write(tmpword,*) config%integral%CAMmu
+                 DO IPOSMU=1,LEN(tmpword)
+                    IF (tmpword(IPOSMU:IPOSMU).NE." ") EXIT
+                 ENDDO
+                 FormatString= "(A18,A11,G22.16,A10,G22.16,A29,A13)" 
+                 write(XCfunString,FormatString) 'GGAKEY BECKECAMX=1',&
+                      & ' CAM_ALPHA=',config%integral%CAMalpha,&
+                      & ' CAM_BETA=',config%integral%CAMbeta,&
+                      & ' VWN5C=0.19 LYPC=0.81 EXX=1.0',&
+                      & ' RANGESEP_MU='
+                 XCfunString = ( trim(XCfunString) // tmpword(IPOSMU:(IPOSMU+8)) )
+              else
+                 XCfunString = WORD
+              endif
+           ELSE
+              config%integral%CAMalpha=0.19E0_realk
+              config%integral%CAMbeta=0.46E0_realk
+              config%integral%CAMmu=0.33E0_realk
+              XCfunString = WORD
+           ENDIF
+           WRITE(LUPRI,*) 'This is a CAM functional with'
+           WRITE(LUPRI,*) 'config%integral%CAMalpha',config%integral%CAMalpha
+           WRITE(LUPRI,*) 'config%integral%CAMbeta',config%integral%CAMbeta
+           WRITE(LUPRI,*) 'config%integral%CAMmu',config%integral%CAMmu
+        ELSE
+           XCfunString = WORD
+        END IF
+        hfweight=0E0_realk 
+        ! Remove starting blancks
+        DO IPOS=1,LEN(XCfunString)
+           IF (XCfunString(IPOS:IPOS).NE." ") EXIT
+        ENDDO
+        ! Store functional string
+        ! Waiting for user to decide whether to use xcfun or not
+        config%integral%dft%dftfunc = XCfunString(IPOS:)
+     ENDIF
+     EXIT
+  ENDDO
+  
+end subroutine read_dft_input
 
 !> \brief For DEC calculations, check that DEC input is consistent with input for other parts 
 !> of the code. Specifically, check input for geometry optimization orbital localization.
@@ -1111,6 +1200,20 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
+        CASE ('.XCFUN')
+#ifdef VAR_XCFUN
+           USEXCFUN = .TRUE. 
+           CONFIG%INTEGRAL%DFT%XCFUN = .TRUE.
+           print*,'USEXCFUN',USEXCFUN
+           write(lupri,*) 'The XCfun module is activated'
+#else
+           call lsquit('.XCFUN requires ENABLE_XCFUN', -1)
+#endif
+        CASE ('.PSFUN')
+           USEXCFUN = .FALSE. 
+           CONFIG%INTEGRAL%DFT%XCFUN = .FALSE.
+           print*,'USEXCFUN',USEXCFUN
+           write(lupri,*) 'The XCfun module is deactivated, PS functional evaluation is used instead'
         CASE('.INTERACTIONENERGY')
            !Calculated the Interaction energy 
            !using Counter Poise Correction
@@ -1229,14 +1332,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
-        CASE ('.XCFUN')
-#ifdef VAR_XCFUN
-           USEXCFUN = .TRUE. 
-           INTEGRAL%DFT%XCFUN = .TRUE.
-           print*,'USEXCFUN',USEXCFUN
-#else
-           call lsquit('.XCFUN requires ENABLE_XCFUN', -1)
-#endif
         CASE ('.CONTANG'); INTEGRAL%CONTANG=.TRUE. ! Specifies that the AO-shell ordering is contracted first then 
                                                    ! angular components (for genereally contracted functions)
         CASE ('.NOGCINTEGRALTRANSFORM'); INTEGRAL%NOGCINTEGRALTRANSFORM=.TRUE.
@@ -3006,6 +3101,7 @@ implicit none
         & 'No level shifting                  ',&
         & 'Van Lenthe fixed level shifts      '/)
    integer :: nocc,nvirt,nthreads_test,nthreads
+   logical :: dogga,dometa
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer, external :: OMP_GET_NESTED
@@ -3257,7 +3353,6 @@ config%av%ediis_history_size = config%av%diis_history_size
       config%decomp%nactive = 0
 
    ELSE
-#ifdef MOD_UNRELEASED
       !Odd number of electrons
       !Stinne change 23/4-2010: why subtract one here???
       !config%decomp%nocc = (config%integral%nelectrons - 1 - config%integral%molcharge)/2
@@ -3265,15 +3360,10 @@ config%av%ediis_history_size = config%av%diis_history_size
       !Cecilie change 07/07 2010: Same here
       config%decomp%nocc = config%integral%nelectrons/2
       config%decomp%nactive = 1
-#else
-      print*,'Error: Odd number of electrons'
-      call lsquit('Only Closed Shell Systems are allowed',-1)
-#endif
    ENDIF
    config%diag%nocc = config%decomp%nocc
 
    if (config%decomp%alpha_specified .or. config%decomp%beta_specified) then
-#ifdef MOD_UNRELEASED
       config%integral%unres =.TRUE.
       config%decomp%cfg_unres =.TRUE.
       config%diag%cfg_unres =.TRUE.
@@ -3297,13 +3387,8 @@ config%av%ediis_history_size = config%av%diis_history_size
       write(LUPRI,'(1x,a,i6)')   'ALPHA spin occupancy =',config%decomp%nocca
       write(LUPRI,'(1x,a,i6,/)') 'BETA  spin occupancy =',config%decomp%noccb
       call mat_select_type(mtype_unres_dense,lupri)
-#else
-      print*,'Error: alpha_specified or beta_specified'
-      call lsquit('Only Closed Shell Systems are allowed',-1)
-#endif
    else IF(config%decomp%nactive /= 0 .or. config%decomp%cfg_unres) THEN
       !unrestricted SCF if Nelec uneven or if cfg_unres=.true.
-#ifdef MOD_UNRELEASED
 
       config%integral%unres = .true.
       config%decomp%cfg_unres = .true.
@@ -3316,10 +3401,6 @@ config%av%ediis_history_size = config%av%diis_history_size
 
       config%diag%nocca = config%decomp%NOCCA
       config%diag%noccb = config%decomp%NOCCb
-#else
-      print*,'Error: nactive not equal to zero'
-      call lsquit('Only Closed Shell Systems are allowed',-1)
-#endif
       if(config%integral%nelectrons /= 0) then
 WRITE(config%LUPRI,*)
 write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stinne'
@@ -3375,6 +3456,28 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
             call lsquit('Only spin = 0, 1, and 2 implemented!',config%lupri) 
          endif
       endif
+   ENDIF
+
+   !Check XCFUN consistency for unrestricted calculations
+   IF (config%decomp%cfg_unres) THEN
+      !For dft calculations we require the use of XCFUN as the interface to PSFUN is flawed
+      IF (config%opt%calctype.EQ.config%opt%dftcalc) THEN
+       call dft_dogga_dometa(dogga,dometa)
+       IF (dogga.OR.dometa) THEN
+#ifndef VAR_XCFUN
+        write(LUPRI,'(1x,a)')   'The current gga or meta-gga calculation is unrestricted.'
+        write(LUPRI,'(1x,a)')   'Unrestricted calculations require the use of XCFUN.'
+        write(LUPRI,'(1x,a)')   'Recompile the code with XCFUN turned on to run unrestriced calculations.'
+        call lsquit('Unrestricted calculations require the use of XCFUN',-1)
+#endif
+        IF (.NOT.CONFIG%INTEGRAL%DFT%XCFUN) THEN
+          write(LUPRI,'(1x,a)')   'The current gga or meta-gga calculation is unrestricted.'
+          write(LUPRI,'(1x,a)')   'Unrestricted calculations require the use of XCFUN.'
+          write(LUPRI,'(1x,a)')   'Remove keyword .PSFUN under **GENERAL to run unrestriced calculations.'
+          CALL LSQUIT('Unrestricted calculations require the use of XCFUN',lupri)
+        ENDIF
+       ENDIF
+      ENDIF
       WRITE(config%LUPRI,*)
       write(LUPRI,'(/,1x,a)') '--------------------------'
       write(LUPRI,'(1x,a)')   '<Unrestricted calculation>'
@@ -3383,13 +3486,10 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
            & write(LUPRI,'(1x,a)') 'Spin symmetry = Triplet'
       write(LUPRI,'(1x,a,i6)')   'ALPHA spin occupancy =', config%decomp%nocca
       write(LUPRI,'(1x,a,i6,/)') 'BETA  spin occupancy =', config%decomp%noccb
+
       !fixme: should be available for other matrix types as well
-#ifdef MOD_UNRELEASED
       call mat_select_type(mtype_unres_dense,lupri)
-#else
-      print*,'Error: mtype_unres_densechosen'
-      call lsquit('Only Closed Shell Systems are allowed',-1)
-#endif
+
    ENDIF
 
 !Settings concerning SCF gradient convergence threshold:
@@ -3975,16 +4075,8 @@ use typedef
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  IF(.NOT.USEXCFUN)THEN
-     CALL DFTsetFunc(WORD(1:80),hfweight,ierror)
-     IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
-  ELSE
-#ifdef VAR_XCFUN
-     call xcfun_host_init(WORD,hfweight,6)
-#else
-     call lsquit('XCFUN mismatch ',-1)
-#endif
-  ENDIF
+  hfweight = 0.0E0_realk
+  call II_DFTsetFunc(WORD,hfweight,6)
 end subroutine lsmpi_setSlaveFunc
 
 subroutine lsmpi_addSlaveFunc()

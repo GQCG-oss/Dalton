@@ -127,7 +127,7 @@ static void pbex_third(FunThirdFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
  
 Functional PbexFunctional = {
-  "Pbex",       /* name */
+  "Pbex_",       /* name */
   pbex_isgga,   /* gga-corrected */
   pbex_read,
   NULL,

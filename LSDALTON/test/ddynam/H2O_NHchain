@@ -72,7 +72,7 @@ cat > H2O_NHchain.dal <<'%EOF%'
 0.001
 **WAVE FUNCTIONS
 .DFT
- PBE
+ BLYP
 *DFT INPUT
 .DFT-D2
 *DENSOPT
@@ -100,13 +100,13 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-75\.2219469" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-75\.2735498" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
 
 # Temperature
-CRIT1=`$GREP "Temperature\:    99\.0486" $log | wc -l`
+CRIT1=`$GREP "Temperature\:    48\.4696" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="Temperature -"

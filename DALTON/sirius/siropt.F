@@ -131,6 +131,9 @@ C
             WF_TYPE = 'HF-srDFT'
             len_WF_TYPE = 8
          ELSE IF (DODFT) THEN
+            ! radovan: added block 2014-12-09
+            !          my information is that this is not fully implemented
+            call quit('QC-SCF not implemented/tested for DFT')
             WF_TYPE = 'QC-DFT'
             len_WF_TYPE = 6
          ELSE IF (HSROHF) THEN

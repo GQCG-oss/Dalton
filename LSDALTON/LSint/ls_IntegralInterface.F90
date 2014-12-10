@@ -2918,6 +2918,9 @@ IF(Input%CS_SCREEN.OR.Input%PS_SCREEN.OR.Input%MBIE_SCREEN) THEN
 !???????? SIMEN ???????? Alternatives to Coulomb here?
     CALL AttachScreenMatrixToInput('LHS',Input,AO1,AO2,CoulombOperator,SETTING,LUPRI,LUERR)
     CALL AttachScreenMatrixToInput('RHS',Input,AO3,AO4,NucleiOperator,SETTING,LUPRI,LUERR)
+  ELSEIF (Oper.EQ.NucpotOperator.AND.AO1.EQ.AOdfCABS) THEN
+    CALL AttachScreenMatrixToInput('LHS',Input,AO1,AO2,CoulombOperator,SETTING,LUPRI,LUERR)
+    CALL AttachScreenMatrixToInput('RHS',Input,AO3,AO4,NucleiOperator,SETTING,LUPRI,LUERR)
   ELSEIF (Oper.EQ.NucpotOperator.AND.AO3.EQ.AORdefault) THEN
     CALL AttachScreenMatrixToInput('LHS',Input,AO1,AO2,NucleiOperator,SETTING,LUPRI,LUERR)
     CALL AttachScreenMatrixToInput('RHS',Input,AO3,AO4,CoulombOperator,SETTING,LUPRI,LUERR)

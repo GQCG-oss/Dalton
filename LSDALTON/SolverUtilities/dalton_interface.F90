@@ -2702,7 +2702,7 @@ CONTAINS
                 ! X3(B)- X2(b): XC-correction
                 !****Calculation of Level 2 XC gradient
                 !     from level 2 Density matrix starts here
-                call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
+                call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight,lupri)
                 !choose the ADMM Level 2 grid
                 setting%scheme%dft%igrid = Grid_ADMML2
                      
@@ -2750,7 +2750,7 @@ CONTAINS
                 call mat_daxpy(1E0_realk,Gx3(ibmat),K(ibmat))
                                 
                 IF (setting%do_dft) &
-      &           call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
+      &           call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight,lupri)
             ENDDO
 !            ! ---------------------------------------------------------------
 

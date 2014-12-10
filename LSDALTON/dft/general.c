@@ -120,7 +120,7 @@ integer
 FSYM(dftsetfunc)(const char* line, real *hfweight, integer *ierror)
 {
   integer i, off, len;
-  len=80;
+  len=1024;
   /* set the functional code printf function and HF weight setting
      functions to the dalton version that appends the output to the
      DALTON.OUT file. */
