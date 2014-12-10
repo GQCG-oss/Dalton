@@ -72,6 +72,7 @@ use ls_util,only: capitalize_string
 use ls_pcm_config, only: pcmtype, ls_pcm_init, ls_pcm_input
 #endif
 use LSparameters
+use iidftksmwork, only: dft_dogga_dometa
 
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
@@ -3052,6 +3053,7 @@ implicit none
         & 'No level shifting                  ',&
         & 'Van Lenthe fixed level shifts      '/)
    integer :: nocc,nvirt,nthreads_test,nthreads
+   logical :: dogga,dometa
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer, external :: OMP_GET_NESTED
@@ -3410,15 +3412,23 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 
    !Check XCFUN consistency for unrestricted calculations
    IF (config%decomp%cfg_unres) THEN
+      !For dft calculations we require the use of XCFUN as the interface to PSFUN is flawed
+      IF (config%opt%calctype.EQ.config%opt%dftcalc) THEN
+       call dft_dogga_dometa(dogga,dometa)
+       IF (dogga.OR.dometa) THEN
 #ifndef VAR_XCFUN
-      write(LUPRI,'(1x,a)')   'Unrestricted calculations require the use of XCFUN.'
-      write(LUPRI,'(1x,a)')   'Recompile the code with XCFUN turned on to run unrestriced calculations.'
-      call lsquit('Unrestricted calculations require the use of XCFUN',-1)
-#endif
-      IF (.NOT.CONFIG%INTEGRAL%DFT%XCFUN) THEN
+        write(LUPRI,'(1x,a)')   'The current gga or meta-gga calculation is unrestricted.'
         write(LUPRI,'(1x,a)')   'Unrestricted calculations require the use of XCFUN.'
-        write(LUPRI,'(1x,a)')   'Remove keyword .PSFUN under **GENERAL to run unrestriced calculations.'
-        CALL LSQUIT('Unrestricted calculations require the use of XCFUN',lupri)
+        write(LUPRI,'(1x,a)')   'Recompile the code with XCFUN turned on to run unrestriced calculations.'
+        call lsquit('Unrestricted calculations require the use of XCFUN',-1)
+#endif
+        IF (.NOT.CONFIG%INTEGRAL%DFT%XCFUN) THEN
+          write(LUPRI,'(1x,a)')   'The current gga or meta-gga calculation is unrestricted.'
+          write(LUPRI,'(1x,a)')   'Unrestricted calculations require the use of XCFUN.'
+          write(LUPRI,'(1x,a)')   'Remove keyword .PSFUN under **GENERAL to run unrestriced calculations.'
+          CALL LSQUIT('Unrestricted calculations require the use of XCFUN',lupri)
+        ENDIF
+       ENDIF
       ENDIF
       WRITE(config%LUPRI,*)
       write(LUPRI,'(/,1x,a)') '--------------------------'
