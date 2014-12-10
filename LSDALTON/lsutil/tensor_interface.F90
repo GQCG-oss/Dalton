@@ -14,7 +14,7 @@ module tensor_interface_module
   use lspdm_tensor_operations_module
   use matrix_module
   use dec_workarounds_module
-
+  use tensor_algebra_dil
 
   !This defines the public interface to the tensors
   !The tensor type itself

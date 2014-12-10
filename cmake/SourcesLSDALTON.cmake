@@ -809,6 +809,7 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/tensor_basic.F90
     LSDALTON/lsutil/lspdm_tensor_operations.F90
     LSDALTON/lsutil/dec_workarounds.F90
+    LSDALTON/lsutil/tensor_algebra_dil.F90
     )
 set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/lowdin.F90
