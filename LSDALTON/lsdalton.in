@@ -13,7 +13,7 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
 LSDALTON_EXECUTABLE=$SCRIPT_DIR/lsdalton.x
-MPIEXEC=mpiexec
+MPIEXEC=mpirun
 INSTALL_BASDIR=$SCRIPT_DIR/basis
 
 if [ -z "$DALTON_TMPDIR" ]; then
