@@ -5330,8 +5330,9 @@ DO j=1,n1
 ENDDO
 call mem_dealloc(F1)
 
+setting%IntegralTransformGC = IntegralTransformGC
+
 IF (allocD2p) THEN
-  setting%IntegralTransformGC = IntegralTransformGC
   call mem_dealloc(D2p)
 ENDIF
 
@@ -5576,7 +5577,7 @@ character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
 real(realk)         :: constrain_factor, largeLambda
 logical             :: isADMMQ,separateX,DODISP
-logical             :: isADMMS, isADMMP,PRINT_EK3
+logical             :: isADMMS, isADMMP,PRINT_EK3,saveDF
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
 isADMMQ = setting%scheme%ADMMQ
@@ -5728,11 +5729,14 @@ IF (PRINT_EK3) THEN
 !***  Simen: 2014-11-19, Added for the basis-set optimization
    !Factor 2 included here because the Coulomb factor used in the FTUVs are set to two for default AOs, and 
    !one for other.
+   saveDF = setting%scheme%densfit
+   setting%scheme%densfit = .FALSE.
    var = 2E0_realk * II_get_rho2(LUPRI,LUERR,SETTING,D2(1),D2(1),AOadmm,AOadmm,.FALSE.,.FALSE.,nbast2,nbast2)
    var = var + II_get_rho2(LUPRI,LUERR,SETTING,D,D,AO3,AO3,GC3,GC3,nbast,nbast)
    var = var - 2E0_realk * II_get_rho2(LUPRI,LUERR,SETTING,D2(1),D,AOadmm,AO3,.FALSE.,GC3,nbast2,nbast)
    write(*,*) "Fitting error = ", 2E0_realk * var
    write(lupri,*) "Fitting error = ", 2E0_realk * var
+   setting%scheme%densfit = saveDF
 
 
 ENDIF
