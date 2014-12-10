@@ -48,10 +48,10 @@ END TYPE GridItem
 
 !> Keywords and input to gridgeneration and exchange-correlation calculation
 TYPE DFTparam
-INTEGER           :: iGrid !which gridObject to use
-TYPE(Griditem)    :: GridObject(3) !3 different grids (Grid_Default,Grid_ADMML2,..)
-INTEGER           :: iDFTtype
-CHARACTER(len=80) :: dftfuncObject(2)    !2 different functionals (dftfunc_Default,dftfunc_ADMML2,..)
+INTEGER            :: iGrid !which gridObject to use
+TYPE(Griditem)     :: GridObject(3) !3 different grids (Grid_Default,Grid_ADMML2,..)
+INTEGER            :: iDFTtype
+CHARACTER(len=1024) :: dftfuncObject(2)    !2 different functionals (dftfunc_Default,dftfunc_ADMML2,..)
 !
 INTEGER           :: RADIALGRID !(1 = GC2, 2 = LMG, 3 = TURBO)
 INTEGER           :: PARTITIONING !integer in following list
@@ -108,7 +108,7 @@ REAL(REALK)       :: CS00ZND2   !Zhan-Nichols-Dixon shift parameter
 REAL(REALK)       :: HFexchangeFac
 !type(dft_grid)    :: L2GRID     !Grid parameters for level 2/ADMM grid
 !type(dft_grid)    :: L3GRID     !Grid parameters for level 3/regular grid
-CHARACTER(len=80) :: dftfunc                 !""
+CHARACTER(len=1024) :: dftfunc                 !""
 LOGICAL           :: XCFUN                   !.FALSE.
 END type DFTPARAM
 
@@ -168,42 +168,28 @@ do iGrid=1,size(gridObject)
 enddo
 end subroutine init_gridObject
 
-subroutine init_dftfunc(dft,admm_exchange_func)
-TYPE(dftparam) :: dft
+
+subroutine init_dftfunc(dft)
+!TYPE(integralconfig) :: integral
+TYPE(DFTparam) :: dft
 !
 integer :: iDFT,ialpha
 character(80)         :: word
-character(*),optional :: admm_exchange_func
 
-do iDFT=1,size(dft%dftfuncObject)
-   DFT%DFTfuncObject(iDFT) = dft%dftfunc
+
+do iDFT=1,size(DFT%dftfuncObject)
+   DFT%DFTfuncObject(iDFT) = DFT%dftfunc
 enddo
-IF ((INDEX(dft%dftfunc,'cam').NE.0).OR.(INDEX(dft%dftfunc,'CAM').NE.0)) THEN
-  !word = 'Camx'
-  ialpha = max (INDEX(dft%dftfunc,'alpha='),INDEX(dft%dftfunc,'ALPHA='))
-  IF (ialpha.NE.0) THEN
-    write(word,'(A8,X,A71)') 'Camcompx',dft%dftfunc(ialpha:)
-  ELSE
-    word = 'Camcompx'
-  ENDIF
-ELSE
-  IF (present(admm_exchange_func)) THEN
-    word = admm_exchange_func
-  ELSE
-    word = 'B88X'
-  ENDIF
-ENDIF
-call set_admmfun(dft,word)
 
 end subroutine init_dftfunc
 
-subroutine set_admmfun(dft,func)
-TYPE(dftparam) :: dft
-character(80)  :: func
-
-DFT%DFTfuncObject(dftfunc_ADMML2) = func
-
-end subroutine set_admmfun
+!!$subroutine set_admmfun(dft,func)
+!!$TYPE(dftparam) :: dft
+!!$character(80)  :: func
+!!$
+!!$DFT%DFTfuncObject(dftfunc_ADMML2) = func
+!!$
+!!$end subroutine set_admmfun
 
 
 !!$SUBROUTINE store_dft_grid(grid,filename,dft)
@@ -231,5 +217,6 @@ end subroutine set_admmfun
 !!$  call lsquit('Filename error in get_dft_grid',-1)
 !!$ENDIF
 !!$END SUBROUTINE get_dft_grid
+
 
 END MODULE dft_typetype

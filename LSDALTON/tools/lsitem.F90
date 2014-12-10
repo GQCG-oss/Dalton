@@ -2,7 +2,7 @@ program make_lsitem
   use configuration
   use daltoninfo
   use IIDFTINT
-  use IIDFTD, only: DFT_D_LSDAL_IFC
+  use IIDFTD, only: II_DFT_DISP
 
 implicit none
   TYPE(lsitem),target :: ls
@@ -37,10 +37,7 @@ implicit none
   call set_final_config_and_print(lupri,config,ls,nbast)
 
   ! eventually empirical dispersion correction in case of dft
-  !AMT CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
-  ! AMT
-  CALL DFT_D_LSDAL_IFC(LS%SETTING,0,DUMMY,LUPRI)
-  ! AMT  
+  CALL II_DFT_DISP(LS%SETTING,0,DUMMY,LUPRI)
 
   call mat_pass_info(LUPRI,config%opt%info_matop,mem_monitor)
 
