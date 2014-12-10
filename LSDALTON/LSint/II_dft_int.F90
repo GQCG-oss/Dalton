@@ -2219,15 +2219,16 @@ implicit none
 Character(*),intent(IN)      :: Func
 Real(realk),intent(INOUT)    :: hfweight
 integer                      :: lupri
-integer                      :: ierror
+integer                      :: ierror,length
 
 !For dft calculations, check whether xcfun is to be used or not and 
 !send the functional string accordingly either to the PS  
 !or to the XCfun interface
 IF(.NOT.USEXCFUN)THEN
-   if (len_trim(Func).gt.80) &
+   length = len_trim(Func)
+   if (length.gt.1024) &
       & call lsquit('Functional string length exceed 80',-1)
-   CALL DFTsetFunc(Func,hfweight,ierror)
+   CALL DFTsetFunc(Func(1:length),hfweight,ierror)
    IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
 ELSE
 #ifdef VAR_XCFUN

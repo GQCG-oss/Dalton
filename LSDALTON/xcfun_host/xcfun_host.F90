@@ -158,7 +158,8 @@ module xcfun_host
          &               ( (INDEX(DFTfuncStringSingle(I),'LDAX')).NE.0 ) .OR. &
          &               ( (INDEX(DFTfuncStringSingle(I),'PBEX')).NE.0 ) .OR. &
          &               ( (INDEX(DFTfuncStringSingle(I),'KT3X')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'OPTX')).NE.0 )
+         &               ( (INDEX(DFTfuncStringSingle(I),'OPTX')).NE.0 ) .OR. &
+         &               ( (INDEX(DFTfuncStringSingle(I),'CAMX')).NE.0 )
           IF (admm_ggacorr) THEN
             WeightSingle(I) = hfweight
           ELSE

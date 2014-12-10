@@ -48,10 +48,10 @@ END TYPE GridItem
 
 !> Keywords and input to gridgeneration and exchange-correlation calculation
 TYPE DFTparam
-INTEGER           :: iGrid !which gridObject to use
-TYPE(Griditem)    :: GridObject(3) !3 different grids (Grid_Default,Grid_ADMML2,..)
-INTEGER           :: iDFTtype
-CHARACTER(len=80) :: dftfuncObject(2)    !2 different functionals (dftfunc_Default,dftfunc_ADMML2,..)
+INTEGER            :: iGrid !which gridObject to use
+TYPE(Griditem)     :: GridObject(3) !3 different grids (Grid_Default,Grid_ADMML2,..)
+INTEGER            :: iDFTtype
+CHARACTER(len=1024) :: dftfuncObject(2)    !2 different functionals (dftfunc_Default,dftfunc_ADMML2,..)
 !
 INTEGER           :: RADIALGRID !(1 = GC2, 2 = LMG, 3 = TURBO)
 INTEGER           :: PARTITIONING !integer in following list

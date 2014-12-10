@@ -253,6 +253,7 @@ type(ConfigItem), intent(inout) :: config
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,IPOS3,IPOSMU,COUNTER
 character(len=80)  :: WORD,TMPWORD
+character(len=1024):: Func
 character(len=2)   :: PROMPT
 LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,WAVE,exchangescale
 !LINSCA variables:
@@ -855,11 +856,19 @@ if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
    call init_dftfunc(config%integral%DFT)
    IF (config%integral%CAM) THEN
-      write(word,'(A15,G22.16)') 'Camcompx alpha=',config%integral%CAMalpha
+      IF (USEXCFUN) THEN
+         write(Func,'(A28,A11,G22.16,A10,G22.16,A13,G22.16)') 'GGAKEY BECKEX=1 BECKECAMX=-1',&
+                      & ' CAM_ALPHA=',config%integral%CAMalpha,&
+                      & ' CAM_BETA=',config%integral%CAMbeta,&
+                      & ' RANGESEP_MU=',config%integral%CAMmu
+      ELSE
+         write(Func,'(A15,G22.16,A6,G22.16,A4,G22.16)') 'Camcompx alpha=',config%integral%CAMalpha,&
+           & ' beta=',config%integral%CAMbeta,' mu=',config%integral%CAMmu
+      ENDIF
    ELSE
-      word = config%integral%admm_func
+      Func = config%integral%admm_func
    ENDIF
-   config%integral%DFT%DFTfuncObject(dftfunc_ADMML2) = word
+   config%integral%DFT%DFTfuncObject(dftfunc_ADMML2) = Func
 endif
 
 END SUBROUTINE read_dalton_input
