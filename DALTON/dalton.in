@@ -314,7 +314,7 @@ echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
 echo
-echo "   DALTON release 2014.0"
+echo "   DALTON release @DALTON_VERSION@"
 echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
