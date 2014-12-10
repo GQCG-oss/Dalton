@@ -523,11 +523,6 @@ contains
 
     if(DECinfo%F12DEBUG) then
  
-      call mem_alloc(Xijkl_term1,nocc,nocc,nocc,nocc)
-       call mem_alloc(Xijkl_term2,nocc,nocc,nocc,nocc)
-       call mem_alloc(Xijkl_term3,nocc,nocc,nocc,nocc)
-       call mem_alloc(Xijkl_term4,nocc,nocc,nocc,nocc) 
-
        if(DECinfo%use_canonical) then
           call mem_alloc(Xijij_term1,nocc,nocc)
           call mem_alloc(Xijij_term2,nocc,nocc)
@@ -538,6 +533,11 @@ contains
           call mem_alloc(Xjiij_term2,nocc,nocc)
           call mem_alloc(Xjiij_term3,nocc,nocc)
           call mem_alloc(Xjiij_term4,nocc,nocc)
+       else
+          call mem_alloc(Xijkl_term1,nocc,nocc,nocc,nocc)
+          call mem_alloc(Xijkl_term2,nocc,nocc,nocc,nocc)
+          call mem_alloc(Xijkl_term3,nocc,nocc,nocc,nocc)
+          call mem_alloc(Xijkl_term4,nocc,nocc,nocc,nocc) 
        endif
 
        call mem_alloc(Bijij_term1,nocc,nocc)
@@ -757,8 +757,7 @@ contains
           call mem_dealloc(Bjiij_term8)
           call mem_dealloc(Bjiij_term9)
        endif
-
-    else
+    else !non canonical 
 
        call mem_dealloc(Xijkl)
 
@@ -810,6 +809,7 @@ contains
        mp2f12_energy = 0.0E0_realk
        mp2f12_energy = mp2_energy+E21_debug+E22_debug+E23_debug
 
+       write(*,'(1X,a)') '-----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') 'TOYCODE: MP2 CORRELATION ENERGY =           ', mp2_energy
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E21 CORRECTION TO ENERGY =     ', E21_debug
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22 CORRECTION TO ENERGY =     ', E22_debug
@@ -818,7 +818,7 @@ contains
        write(*,'(1X,a)') '-----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY =         ', E21_debug+E22_debug+E23_debug
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 ES2 CORRECTION TO ENERGY =     ', ES2
-       write(*,'(1X,a,f20.10)') 'TOYCODE: F12-ES2 CORRECTION TO ENERGY =     ', E21_debug+E22_debug+E23_debug+ES2
+       write(*,'(1X,a,f20.10)') 'TOYCODE: FULL F12 CORRECTION TO ENERGY =    ', E21_debug+E22_debug+E23_debug+ES2
        write(*,'(1X,a)') '-----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 ENERGY =                   ', mp2_energy+E21_debug+E22_debug+E23_debug
        write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12-ES2 ENERGY =               ', mp2_energy+E21_debug+E22_debug+E23_debug+ES2

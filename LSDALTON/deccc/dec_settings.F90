@@ -125,6 +125,9 @@ contains
     DECinfo%FitOrbitals                  = .true.
     DECinfo%simple_orbital_threshold     = 0.05E0_realk
 
+    !Integral
+    DECinfo%IntegralThreshold            = 1.0E-10_realk
+    DECinfo%UseIchor = .false.  !Use Ichor Integral Code
 
     ! -- Fragment
     DECinfo%MaxIter                = 20
@@ -226,9 +229,6 @@ contains
 
     !> MPI (undefined by default)
     DECinfo%MPIgroupsize=0
-
-    !> Use Ichor Integral Code
-    DECinfo%UseIchor = .false.
 
     ! Test stuff
 
@@ -551,6 +551,22 @@ contains
           DECinfo%print_frags = .true.
 
 
+       !KEYWORDS FOR INTEGRAL INFO
+       !**************************************
+       case('.INTEGRALTHRESHOLD')
+          read(input,*) DECinfo%IntegralThreshold
+          IF(DECinfo%IntegralThreshold.LT.shortintCRIT)THEN
+             write(DECinfo%output,'(A)')'Error: you cannot chose integral threshold less then'
+             write(DECinfo%output,'(ES15.6,A)') shortintCRIT, 'due to technical reasons'
+             write(DECinfo%output,'(A)')'you could use .NO SCREEN (you may have to deactivate LinK with .NOLINK)'
+             write(*,'(A)')'Error: you cannot chose integral threshold less then'
+             write(*,'(ES15.6,A)') shortintCRIT, 'due to technical reasons'
+             write(*,'(A)')'you could use .NO SCREEN (you may have to deactivate LinK with .NOLINK)'
+             call lsquit('Error in choice of integral threshold',-1)
+          ENDIF
+       !Use the Ichor Integral Code (default is Thermite Code)   
+       case('.ICHOR'); DECinfo%UseIchor = .true.
+
 #ifdef MOD_UNRELEASED
 
        !CCSD SPECIFIC KEYWORDS
@@ -611,7 +627,6 @@ contains
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
-       case('.ICHOR'); DECinfo%UseIchor = .true.
        case('.F12')
           DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     
@@ -1016,6 +1031,8 @@ contains
     write(lupri,*) 'DECrestart ', DECitem%HFrestart
     write(lupri,*) 'TimeBackup ', DECitem%TimeBackup
     write(lupri,*) 'read_dec_orbitals ', DECitem%read_dec_orbitals
+    write(lupri,*) 'IntegralThreshold ', DECitem%IntegralThreshold
+    write(lupri,*) 'UseIchor ', DECitem%UseIchor
     write(lupri,*) 'memory ', DECitem%memory
     write(lupri,*) 'memory_defined ', DECitem%memory_defined
     write(lupri,*) 'fullmolecule_memory ', DECitem%fullmolecule_memory

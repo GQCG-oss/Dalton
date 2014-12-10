@@ -683,6 +683,9 @@ subroutine print_dec_info()
         & LogicString(Log2It(DECinfo%FragAdapt))
    write(LU,'(a,A5)')    'Fit Molecular Orbitals                              =           ',&
         & LogicString(Log2It(DECinfo%FitOrbitals))
+   write(LU,'(a,ES12.4)')'The Integral Screening threshold                    =           ',&
+        & DECinfo%IntegralThreshold
+
    !Oribtal Assignment 
    write(LU,'(A)') ' '
    write(LU,'(A)') 'DEC orbitals will be generated using  simple Lowdin charge analysis'

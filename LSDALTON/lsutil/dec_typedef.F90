@@ -146,6 +146,13 @@ module dec_typedef_module
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
      logical :: read_dec_orbitals
 
+     
+     !> Integral Stuff
+     !> ************
+     !> Screening threshold for Integral evaluation
+     real(realk) :: IntegralThreshold
+     !> Use Ichor Integral Code
+     logical :: UseIchor
 
      !> Memory stuff
      !> ************
@@ -473,8 +480,6 @@ module dec_typedef_module
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
 
-     !> Use Ichor Integral Code
-     logical :: UseIchor
   end type DECSETTINGS
 
 
