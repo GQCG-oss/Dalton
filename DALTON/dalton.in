@@ -25,7 +25,12 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 DALTON_EXECUTABLE=$SCRIPT_DIR/dalton.x
 
-MPIEXEC=mpiexec
+which -s mpirun # check if mpirun exists, if not, then assume mpiexec
+if [ $? -eq 0 ]; then
+   MPIEXEC=mpirun
+else
+   MPIEXEC=mpiexec
+fi
 INSTALL_BASDIR=$SCRIPT_DIR/basis
 
 WRKDIR=`pwd` ; export WRKDIR
@@ -351,7 +356,7 @@ echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
 echo
-echo "   DALTON release 2014.0"
+echo "   DALTON release @DALTON_VERSION@"
 echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
