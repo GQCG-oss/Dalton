@@ -1,3 +1,4 @@
+ THIS IS A DEBUG BUILD
   
      ******************************************************************    
      **********  LSDALTON - An electronic structure program  **********    
@@ -87,31 +88,28 @@
   
   
  Who compiled             | simensr
- Host                     | 1x-193-157-199-133.uio.no
+ Host                     | 1x-193-157-251-168.uio.no
  System                   | Darwin-14.0.0
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/local/bin/gfortran
+ Fortran compiler         | /Users/simensr/Downloads/usr/local/bin/gfortran
  Fortran compiler version | GNU Fortran (GCC) 5.0.0 20141012 (experimental)
- C compiler               | /usr/local/bin/gcc
+ C compiler               | /Users/simensr/Downloads/usr/local/bin/gcc
  C compiler version       | gcc (GCC) 5.0.0 20141012 (experimental)
- C++ compiler             | /usr/local/bin/g++
+ C++ compiler             | /Users/simensr/Downloads/usr/local/bin/g++
  C++ compiler version     | g++ (GCC) 5.0.0 20141012 (experimental)
  BLAS                     | /usr/lib/libblas.dylib
  LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | af9eb969f2e86ccb503110b2c4160fffad6aa2ba
+ Last Git revision        | 33ec37ae141e8fb1013b211a7103c35edf9f3d6e
  Git branch               | XCfun-dev
- Configuration time       | 2014-12-10 14:20:55.451242
- The Functional chosen is a GGA type functional
- The Functional chosen contains an exact exchange contribution
- with the weight:  0.20999999999999999     
+ Configuration time       | 2014-11-18 11:53:42.153036
 
 Start simulation
-     Date and time (Linux)  : Wed Dec 10 14:27:02 2014
-     Host name              : 1x-193-157-199-133.uio.no               
+     Date and time (Linux)  : Tue Nov 18 13:11:37 2014
+     Host name              : 1x-193-157-200-23.uio.no                
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -179,8 +177,7 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/simensr/Dalton/2014/xcbuild-omp/basis/STO-3G
- PRINT MOLECULE AND BASIS IN FULL INPUT
+ OPENING FILE/Users/simensr/Dalton/2014/build-debug5.0/basis/STO-3G
                       
 THE MOLECULE
  --------------------------------------------------------------------
@@ -221,11 +218,10 @@ total         10                               21        7
                       
  Configuration:
  ==============
-    This is an OpenMP calculation using   8 threads.
+    This is a Single core calculation. (no OpenMP)
     This is a serial calculation (no MPI)
- The Functional chosen is a GGA type functional
- The Functional chosen contains a exact exchange contribution
- with the weight:  0.20999999999999999     
+ 
+     This is a DFT calculation of type: B97-1
    
   The Exchange-Correlation Grid specifications:
   Radial Quadrature : LMG scheme
@@ -286,100 +282,99 @@ Matrix type: mtype_dense
 
  Level 1 atomic calculation on STO-3G Charge   8
  ================================================
- The Coulomb energy contribution    37.430776996024719     
- The Exchange energy contribution    1.6347689224667696     
+ The Coulomb energy contribution    37.430776996024711     
+ The Exchange energy contribution    1.6347689224667694     
  The Fock energy contribution   -35.796008073557950     
-    This is an OpenMP Gridgeneration calculation using  8 threads.
 Total Number of grid points:        8036
 
-  Max allocated memory, Grid                  776.426 kB
+  Max allocated memory, Grid                  552.262 kB
 
-  KS electrons/energy:    7.99999999999717   -6.77456958745176 rel.err:-0.35E-12
+  KS electrons/energy:    7.99999999999712   -6.77457234546944 rel.err:-0.36E-12
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
-  1    -73.8579169128    0.00000000000    0.00      0.00000    0.00    0.0000000    1.09E-13  ###
+  1    -73.8579196708    0.00000000000    0.00      0.00000    0.00    0.0000000    1.09E-13  ###
 
  Level 1 atomic calculation on STO-3G Charge   1
  ================================================
  The Coulomb energy contribution   0.38730296535677067     
  The Exchange energy contribution    4.0666811362460920E-002
  The Fock energy contribution  -0.34663615399430975     
-    This is an OpenMP Gridgeneration calculation using  8 threads.
 Total Number of grid points:        9124
 
-  Max allocated memory, Grid                  844.316 kB
+  Max allocated memory, Grid                  620.262 kB
 
-  KS electrons/energy:    0.99999999999751   -0.26734359252404 rel.err:-0.25E-11
+  KS electrons/energy:    0.99999999999752   -0.26734369878780 rel.err:-0.25E-11
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
-  1     -0.3872892932    0.00000000000    0.00      0.00000    0.00    0.0000000    0.00E+00  ###
+  1     -0.3872893995    0.00000000000    0.00      0.00000    0.00    0.0000000    0.00E+00  ###
  
 Matrix type: mtype_dense
 
  First density: Atoms in molecule guess
 
  The Coulomb energy contribution    46.612404918677846     
- The Exchange energy contribution   -1.8429190054265399     
+ The Exchange energy contribution   -1.8429190054265401     
  The Fock energy contribution   -44.769485913251309     
-    This is an OpenMP Gridgeneration calculation using  8 threads.
 Total Number of grid points:       26270
 
-  Max allocated memory, Grid                    1.971 MB
+  Max allocated memory, Grid                    1.227 MB
 
-  KS electrons/energy:    9.99999440818480   -7.47514133803145 rel.err:-0.56E-06
-  Iteration 0 energy:  -75.188445832432976     
+  KS electrons/energy:    9.99999440818480   -7.47514452303300 rel.err:-0.56E-06
+  Iteration 0 energy:  -75.188449017434493     
+
+Max no. of matrices allocated in Level 2 / get_initial_dens:         10
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        25 sparsity:     51.020 %
 Matrix AO D  has nnz=        31 sparsity:     63.265 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   9.9999997473787516E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    48.120581265522333     
- The Exchange energy contribution   -1.9277833888846838     
- The Fock energy contribution   -46.192797876637655     
-  KS electrons/energy:    9.99999516479903   -7.59036243587069 rel.err:-0.48E-06
+ The Coulomb energy contribution    48.120582650840461     
+ The Exchange energy contribution   -1.9277834189705674     
+ The Fock energy contribution   -46.192799231869898     
+  KS electrons/energy:    9.99999516479881   -7.59036578005903 rel.err:-0.48E-06
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
-  1    -75.2790827041    0.00000000000    0.00      0.00000    0.00    0.0000000    5.79E-01  ###
+  1    -75.2790858720    0.00000000000    0.00      0.00000    0.00    0.0000000    5.79E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.12 seconds
- >>> wall Time used in SCF iteration is   0.02 seconds
+ >>>  CPU Time used in SCF iteration is   0.13 seconds
+ >>> wall Time used in SCF iteration is   0.13 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    46.520082098714568     
- The Exchange energy contribution   -1.8960077458375895     
- The Fock energy contribution   -44.624074352876988     
-  KS electrons/energy:    9.99999530611041   -7.47345929331950 rel.err:-0.47E-06
-  2    -75.2925044448   -0.01342174074    0.00      0.00000    0.00    0.0000000    4.51E-01  ###
+ The Coulomb energy contribution    46.520082541590057     
+ The Exchange energy contribution   -1.8960077540349523     
+ The Fock energy contribution   -44.624074787555102     
+  KS electrons/energy:    9.99999530611030   -7.47346249295659 rel.err:-0.47E-06
+  2    -75.2925076296   -0.01342175762    0.00      0.00000    0.00    0.0000000    4.51E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.12 seconds
- >>> wall Time used in SCF iteration is   0.02 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    47.180392972690292     
- The Exchange energy contribution   -1.9086916933987423     
- The Fock energy contribution   -45.271701279291555     
-  KS electrons/energy:    9.99999524744971   -7.52124010710205 rel.err:-0.48E-06
-  3    -75.3048977346   -0.01239328983   -1.00      0.00000    0.00    0.0000000    8.24E-03  ###
+ The Coulomb energy contribution    47.180393733619695     
+ The Exchange energy contribution   -1.9086917085185446     
+ The Fock energy contribution   -45.271702025101149     
+  KS electrons/energy:    9.99999524744967   -7.52124335796019 rel.err:-0.48E-06
+  3    -75.3049009297   -0.01239330010   -1.00      0.00000    0.00    0.0000000    8.24E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.12 seconds
- >>> wall Time used in SCF iteration is   0.02 seconds
+ >>>  CPU Time used in SCF iteration is   0.13 seconds
+ >>> wall Time used in SCF iteration is   0.13 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    47.192756758179918     
- The Exchange energy contribution   -1.9089403643486924     
- The Fock energy contribution   -45.283816393831231     
-  KS electrons/energy:    9.99999524629691   -7.52215589364571 rel.err:-0.48E-06
-  4    -75.3049019359   -0.00000420122   -1.00      0.00000    0.00    0.0000000    5.94E-05  ###
+ The Coulomb energy contribution    47.192757515237624     
+ The Exchange energy contribution   -1.9089403794150979     
+ The Fock energy contribution   -45.283817135822524     
+  KS electrons/energy:    9.99999524629684   -7.52215914478131 rel.err:-0.48E-06
+  4    -75.3049051309   -0.00000420121   -1.00      0.00000    0.00    0.0000000    5.94E-05  ###
 SCF converged in      4 iterations
- >>>  CPU Time used in **ITER is   0.49 seconds
- >>> wall Time used in **ITER is   0.09 seconds
+ >>>  CPU Time used in **ITER is   0.52 seconds
+ >>> wall Time used in **ITER is   0.52 seconds
 
 Total no. of matmuls in SCF optimization:         72
 
@@ -407,32 +402,33 @@ Calculation of virtual orbital energies converged in     2 iterations!
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.01342174074    0.0000    0.0000    0.0000000
-  3   -0.01239328983   -1.0000    0.0000    0.0000000
-  4   -0.00000420122   -1.0000    0.0000    0.0000000
+  2   -0.01342175762    0.0000    0.0000    0.0000000
+  3   -0.01239330010   -1.0000    0.0000    0.0000000
+  4   -0.00000420121   -1.0000    0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -75.27908270406778967754      0.578997670438771D+00
-    2           -75.29250444481033355260      0.450979646521517D+00
-    3           -75.30489773463845892820      0.823520385421503D-02
-    4           -75.30490193585443137181      0.594145849285835D-04
+    1           -75.27908587198628254100      0.578997993169152D+00
+    2           -75.29250762960924703293      0.450979817260765D+00
+    3           -75.30490092970930504634      0.823520058790654D-02
+    4           -75.30490513092202320422      0.594146506957154D-04
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
 
 
-      Final DFT energy:                      -75.304901935854
+      Final DFT energy:                      -75.304905130922
       Nuclear repulsion:                       9.055004525638
-      Electronic energy:                     -84.359906461492
+      Electronic energy:                     -84.359909656560
 
- >>>  CPU Time used in *SCF is   0.68 seconds
- >>> wall Time used in *SCF is   0.29 seconds
+ >>>  CPU Time used in *SCF is   0.72 seconds
+ >>> wall Time used in *SCF is   0.72 seconds
 
 Total no. of matmuls used:                        80
 Total no. of Fock/KS matrix evaluations:           5
+Max no. of matrices allocated in Level 3:         25
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -458,7 +454,6 @@ Total no. of Fock/KS matrix evaluations:           5
   Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (fragmentAOS):               0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
@@ -482,10 +477,10 @@ Total no. of Fock/KS matrix evaluations:           5
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                         67.725 MB
   Max allocated memory, type(matrix)                  10.176 kB
-  Max allocated memory, real(realk)                    7.692 MB
+  Max allocated memory, real(realk)                    1.001 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                      209.131 kB
+  Max allocated memory, integer                      193.696 kB
   Max allocated memory, logical                      201.092 kB
   Max allocated memory, character                      2.448 kB
   Max allocated memory, AOBATCH                        7.560 kB
@@ -494,7 +489,6 @@ Total no. of Fock/KS matrix evaluations:           5
   Max allocated memory, BATCHTOORB                     0.000 Byte
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.000 Byte
-  Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
   Max allocated memory, ARRAY                         66.400 MB
@@ -509,12 +503,12 @@ Total no. of Fock/KS matrix evaluations:           5
   Max allocated memory, ATOMTYPEITEM                 153.056 kB
   Max allocated memory, ATOMITEM                       2.048 kB
   Max allocated memory, LSMATRIX                       1.120 kB
-  Max allocated memory, OverlapT                     254.464 kB
+  Max allocated memory, OverlapT                      36.352 kB
   Max allocated memory, linkshell                      0.432 kB
-  Max allocated memory, integrand                    516.096 kB
-  Max allocated memory, integralitem                   3.686 MB
-  Max allocated memory, IntWork                      205.760 kB
-  Max allocated memory, Overlap                        3.106 MB
+  Max allocated memory, integrand                     64.512 kB
+  Max allocated memory, integralitem                 829.440 kB
+  Max allocated memory, IntWork                       25.720 kB
+  Max allocated memory, Overlap                      388.288 kB
   Max allocated memory, ODitem                         1.280 kB
   Max allocated memory, LStensor                       5.203 kB
   Max allocated memory, FMM                            0.000 Byte
@@ -525,9 +519,9 @@ Total no. of Fock/KS matrix evaluations:           5
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is   0.92 seconds
- >>> wall Time used in LSDALTON is   0.41 seconds
+ >>>  CPU Time used in LSDALTON is   0.95 seconds
+ >>> wall Time used in LSDALTON is   0.95 seconds
 
 End simulation
-     Date and time (Linux)  : Wed Dec 10 14:27:02 2014
-     Host name              : 1x-193-157-199-133.uio.no               
+     Date and time (Linux)  : Tue Nov 18 13:11:38 2014
+     Host name              : 1x-193-157-200-23.uio.no                
