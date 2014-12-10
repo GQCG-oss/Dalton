@@ -164,13 +164,12 @@
 
 !-----------------------------------------------------------------------------
 
-      subroutine pe_ifc_mepcalc(denmats, nmats)
+      subroutine pe_ifc_mepcalc(denmats)
         use polarizable_embedding, only: pe_master
         use pe_variables, only: mep_qmcube
         implicit none
 #include "inforb.h"
-        integer, intent(in) :: nmats
-        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+        real*8, dimension(nnbasx), intent(in) :: denmats
         call qenter('pe_ifc_mepcalc')
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(6)
@@ -212,7 +211,7 @@
 #if defined(VAR_MPI)
         call pe_ifc_start_slaves(4)
 #endif
-        call pe_master('magnetic_gradient',
+        call pe_master(runtype='magnetic_gradient',
      &                 triang=.true.,
      &                 ndim=nbast,
      &                 fckmats=fckmats_packed)
