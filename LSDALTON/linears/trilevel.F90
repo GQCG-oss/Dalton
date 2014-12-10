@@ -1985,7 +1985,7 @@ type(LowAccuracyStartType)  :: LAStype
   lun = -1
   call lsopen(lun,'lcv_basis.restart','unknown','UNFORMATTED')
   call mat_write_to_disk(lun,config%decomp%lcv_Cmo,OnMaster)
-  write (lun) config%decomp%cfg_lcv
+  call mat_write_info_to_disk(lun,config%decomp%cfg_lcv)
   call lsclose(lun,'KEEP')
 
   call mat_free(Cmo)
