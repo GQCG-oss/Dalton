@@ -2344,8 +2344,11 @@ end subroutine set_lowertriangular_zero
          implicit none
          integer, intent(in) :: iunit
          logical, intent(in) :: info
-
-         write(iunit) info
+         logical(kind=8) :: info8
+         !always read (and write) using 64 bit logicals to ensure uniform
+         !read and write format independent of compilation
+         info8 = info
+         write(iunit) info8
       end subroutine mat_write_info_to_disk
 
 !> \brief Read a type(matrix) from disk.
@@ -2410,7 +2413,11 @@ end subroutine set_lowertriangular_zero
         implicit none
         integer, intent(in)  :: iunit
         logical, intent(out) :: info
-        read(iunit) info
+        logical(kind=8) :: info8
+        !always read (and write) using 64 bit logicals to ensure uniform
+        !read and write format independent of compilation
+        read(iunit) info8
+        info = info8
       end subroutine mat_read_info_from_disk
 
 !> \brief Extract diagonal of A, store in dense vector vec.

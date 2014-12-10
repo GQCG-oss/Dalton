@@ -131,9 +131,8 @@ subroutine get_initial_dens(H1,S,D,ls,config)
         restart_lun = -1;
         call lsopen(restart_lun,'lcv_basis.restart','unknown','UNFORMATTED')
         call mat_read_from_disk(restart_lun,config%decomp%lcv_Cmo,OnMaster)
-        read (restart_lun) lcv_on_file
+        call mat_read_info_from_disk(restart_lun,lcv_on_file)
         call lsclose(restart_lun,'KEEP')
-
      endif
 
      ! Quit in case orbitals on file are not localized lcv basis and we are
