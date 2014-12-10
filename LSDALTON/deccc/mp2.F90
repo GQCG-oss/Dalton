@@ -1936,8 +1936,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk), pointer   :: work1(:),Etmp2222(:)
   real(realk)            :: RCOND
   integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
-  real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPU1,CPU2,WALL1,WALL2,CPU_MPICOMM,WALL_MPICOMM
-  real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT
+  real(realk) :: TS,TE,TS2,TE2,TS3,TE3
   real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
   logical :: useAlphaCD5,useAlphaCD6,ChangedDefault
@@ -2213,19 +2212,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('AlphaBetaInv ',TS3,TE3,LUPRI,FORCEPRINT)
   ENDIF
 #ifdef VAR_MPI
-  CALL LS_GETTIM(CPU1,WALL1)
   call time_start_phase( PHASE_IDLE )
   call lsmpi_barrier(infpar%lg_comm)
-  CALL LS_GETTIM(CPU2,WALL2)
-  CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-  WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-  CALL LS_GETTIM(CPU1,WALL1)
   call time_start_phase( PHASE_COMM )
   call ls_mpibcast(AlphaBeta_inv,nbasisAux,nbasisAux,infpar%master,infpar%lg_comm)
   call time_start_phase(PHASE_WORK)   
-  CALL LS_GETTIM(CPU2,WALL2)
-  CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-  WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
 #endif
 
   CALL LSTIMER('DECRIMP2: AlphaBeta ',TS2,TE2,LUPRI,FORCEPRINT)

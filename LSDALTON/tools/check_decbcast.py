@@ -12,40 +12,31 @@ def main():
    all_good = all_good and good
 
    good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","LSSETTING","../lsutil/lsmpi-operations.F90","mpicopy_setting",exceptions=["comm","molbuild","basbuild","fragbuild","numnodes","node","lstensor_attached","lhsdmatalloc","rhsdmatalloc","lhsdalloc","rhsdalloc","lhssameasrhsdmat"])
-   print "IS GOOD",good
    all_good = all_good and good
 
    good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","integralconfig","../lsutil/lsmpi-operations.F90","mpicopy_integralconfig")
-   print "IS GOOD",good
    all_good = all_good and good
 
    good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","lsintscheme","../lsutil/lsmpi-operations.F90","mpicopy_scheme")
-   print "IS GOOD",good
    all_good = all_good and good
 
    good = compare_struct_and_its_bcast("../lsutil/TYPE-DEF.F90","DALTONINPUT","../lsutil/lsmpi-operations.F90","mpicopy_daltoninput",exceptions=["numnodes","node"])
-   print "IS GOOD",good
    all_good = all_good and good
 
    good = compare_struct_and_its_bcast("../lsutil/dftType.F90","DFTparam","../lsutil/dft_operations.F90","mpicopy_DFTparam",exceptions=["dftfuncObject"])
-   print "IS GOOD",good
    all_good = all_good and good
 
    good = compare_struct_and_its_bcast("../lsutil/f12.F90","GaussianGeminal","../lsutil/lsmpi-operations.F90","mpicopy_GaussianGeminal")
-   print "IS GOOD",good
    all_good = all_good and good
 
    good = compare_struct_and_its_bcast("../lsutil/BasisinfoType.F90","basissetinfo","../lsutil/lsmpi-operations.F90","mpicopy_basissetinfo",exceptions=["Chargeindex"])
-   print "IS GOOD",good
    all_good = all_good and good
 
    good = compare_struct_and_its_bcast("../lsutil/BasisinfoType.F90","basissetinfo","../lsutil/lsmpi-operations.F90","mpicopy_basissetinfo",exceptions=["Chargeindex"])
-   print "IS GOOD",good
    all_good = all_good and good
 
    good = compare_struct_and_its_bcast("../lsutil/MoleculeType.F90","moleculeinfo","../lsutil/lsmpi-operations.F90","mpicopy_molecule",exceptions=["nbastreg","nbastaux","nbastcabs","nbastjk","nbastadmm","nbastval","nprimbastreg","nprimbastaux","nprimbastcabs","nprimbastjk","nprimbastadmm","nprimbastval","subsystemlabel"])
 
-   print "IS GOOD",good
    all_good = all_good and good
 
    if all_good:
@@ -62,8 +53,6 @@ def compare_struct_and_its_bcast(filename_with_struct,struct_name,filename_with_
 
    swd = os.path.realpath(__file__)
    swd = swd[:swd.rfind("/")+1]
-
-   print "checking: "+struct_name
 
    filename_with_struct = swd+filename_with_struct
    filename_with_bcast  = swd+filename_with_bcast
@@ -144,13 +133,13 @@ def compare_struct_and_its_bcast(filename_with_struct,struct_name,filename_with_
    ALL_FOUND = True
    for var_nr in range(len(found_in_bcast_list)):
       if not found_in_bcast_list[var_nr] :
-         print "VARIABLE:",variable_name_list[var_nr]," not found in bcast"
+         print "VARIABLE:",variable_name_list[var_nr].upper()," DEFINED BUT NOT COMMUNICATED"
          ALL_FOUND = False
    
-   if ALL_FOUND:
-      print "NO PROBLEMS DETECTED IN "+struct_name
-   else:
-      print "PROBLEMS DETECTED IN "+struct_name
+   if not ALL_FOUND:
+      print "PROBLEMS DETECTED IN "+struct_name.upper()
+      print "CHECK DEFINITIONS IN "+filename_with_struct
+      print "ALSO CHECK BROADCAST IN "+filename_with_bcast
 
    return ALL_FOUND
 
