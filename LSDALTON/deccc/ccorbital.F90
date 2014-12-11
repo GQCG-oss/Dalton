@@ -66,8 +66,6 @@ contains
           
           call GenerateOrbitals_simple(nocc,nunocc,natoms, &
                & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
-          if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
-          if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
 
        end if OrbitalGeneration
 
@@ -1489,27 +1487,6 @@ contains
 !!$    call mem_dealloc(C)
 !!$
 !!$  end subroutine GetOrbitalAtomicNorm
-
-  !> \brief Print some info about orbitals
-  subroutine PrintOrbitalsInfo(orbitals,num_orbitals,lu_output)
-
-    implicit none
-    integer, intent(in) :: num_orbitals,lu_output
-    type(decorbital), dimension(num_orbitals), intent(in) :: orbitals
-    integer :: i,j
-
-    write(lu_output,'(/,a)') 'Orbital Atom #AOs List of AOs'
-    do i=1,num_orbitals
-       write(lu_output,*) orbitals(i)%orbitalnumber, &
-            orbitals(i)%centralatom, orbitals(i)%numberofaos, ' -> '
-       do j=1,orbitals(i)%numberofaos
-          write(lu_output,*) orbitals(i)%aos(j)
-       end do
-       write(lu_output,'(a)') ''
-    end do
-
-    return
-  end subroutine PrintOrbitalsInfo
 
 
   !> \brief Write orbital to file
