@@ -857,12 +857,12 @@ if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_dftfunc(config%integral%DFT)
    IF (config%integral%CAM) THEN
       IF (USEXCFUN) THEN
-         write(Func,'(A28,A11,G22.16,A10,G22.16,A13,G22.16)') 'GGAKEY BECKEX=1 BECKECAMX=-1',&
+         write(Func,'(A28,A11,G23.16,A10,G23.16,A13,G23.16)') 'GGAKEY BECKEX=1 BECKECAMX=-1',&
                       & ' CAM_ALPHA=',config%integral%CAMalpha,&
                       & ' CAM_BETA=',config%integral%CAMbeta,&
                       & ' RANGESEP_MU=',config%integral%CAMmu
       ELSE
-         write(Func,'(A15,G22.16,A6,G22.16,A4,G22.16)') 'Camcompx alpha=',config%integral%CAMalpha,&
+         write(Func,'(A15,G23.16,A6,G23.16,A4,G23.16)') 'Camcompx alpha=',config%integral%CAMalpha,&
            & ' beta=',config%integral%CAMbeta,' mu=',config%integral%CAMmu
       ENDIF
    ELSE
