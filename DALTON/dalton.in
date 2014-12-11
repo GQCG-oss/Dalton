@@ -25,7 +25,7 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 DALTON_EXECUTABLE=$SCRIPT_DIR/dalton.x
 
-which -s mpirun # check if mpirun exists, if not, then assume mpiexec
+which mpirun > /dev/null # check if mpirun exists, if not, then assume mpiexec
 if [ $? -eq 0 ]; then
    MPIEXEC=mpirun
 else
@@ -65,6 +65,7 @@ opti=0
 opto=0
 frl=rel
 optx=0
+opt_cpexe=0
 opt_nobackup=0
 opt_noarch=0
 opt_noappend=0
@@ -108,20 +109,27 @@ usage (){
         echo ' -mw mem          : set dalton max usable work memory to mem double precision words'
         echo ' -nb mem          : set node max usable work memory to mem Megabytes'
         echo ' -nw mem          : set node max usable work memory to mem double precision words'
-        echo ' -N num           : use num MPI processes'
-        echo '                    (defaults to 1 or DALTON_NUM_MPI_PROCS if defined)'
-        echo ' -rsh             : use rsh/rcp for communication with MPI nodes'
-        echo '                    (default: ssh/scp)'
-        echo ' -nocpex          : force to not copy dalton executable from master node to'
-        echo '                    slave nodes (for global work)'
         echo ' -omp num         : set the number of OpenMP threads (default: 1). Note that'
         echo '                    Dalton is not OpenMP parallelized, however, this option'
         echo '                    can be used with e.g. threaded MKL'
+        echo ' -N num           : use num MPI processes'
+        echo '                    (defaults to 1 or DALTON_NUM_MPI_PROCS if defined)'
+        echo ' -cpexe           : copy dalton.x to scratch directory before execution, either to'
+        echo '                    global scratch (if DALTON_USE_GLOBAL_SCRATCH is set) or to'
+        echo '                    DALTON_TMPDIR on all nodes'
+        echo ' -rsh             : use rsh/rcp for communication with MPI nodes'
+        echo '                    (default: ssh/scp)'
+        echo ' -nodelist "node1 ..." : set nodelist DALTON_NODELIST, dalton.x will be copied to'
+        echo '                         DALTON_TMPDIR on each node unless DALTON_USE_GLOBAL_SCRATCH'
+        echo '                         is defined. The script uses PBS_NODEFILE or SLURM_NODELIST'
+        echo '                         if available.'
         echo ' -x dalmol1 dalmol2 : calculate nexafs spectrum from ground and core hole states'
         echo
         echo "Environment variables understood by the $0 script:"
         echo '    DALTON_TMPDIR             : scratch directory'
         echo '    DALTON_USE_GLOBAL_SCRATCH : use global scratch directory, do not copy any files to worker nodes'
+        echo '    DALTON_NODELIST           : list of nodes, dalton.x will be copied to DALTON_TMPDIR on each node'
+        echo '                                unless DALTON_USE_GLOBAL_SCRATCH is defined'
         echo '    DALTON_LAUNCHER           : launcher for the dalton.x binary'
          }
 #
@@ -157,8 +165,9 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -D ) optD=0;;
       -nobackup ) opt_nobackup=1;;
       -noarch ) opt_noarch=1;;
-      -nocpex ) opt_nocpex=1;;
+      -cpexe ) opt_cpexe=1;;
       -noappend ) opt_noappend=1;;
+      -nodelist ) DALTON_NODELIST=$2; shift;;
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
@@ -393,7 +402,7 @@ ierr=0
      if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
         cp $WRKDIR/$potfil.$POTEXT POTENTIAL.INP
      else
-        echo "$WRKDIR/$potfil.$POTEXT for QM/MM does not exist or is not readable"
+        echo "$WRKDIR/$potfil.$POTEXT does not exist or is not readable"
         ierr=1
      fi
    fi
@@ -446,7 +455,6 @@ if [ -n "$DALTON_NUM_MPI_PROCS" ]; then
     fi
 fi
 
-
 # set environment variables for EFS code
 if [ -z "$EFS_MEM_MB" ]; then
     export EFS_MEM_MB=4096
@@ -458,37 +466,46 @@ if [ -z "$QIC_DIR" ]; then
     export QIC_DIR=$SCRIPT_DIR/external/efs-build/qic
 fi
 
+if [ $opt_cpexe -eq 1 ] ; then
+   cp $DALTON_EXECUTABLE $SCRATCHDIR/dalton.x
+   if [ $optn -gt 1 -a -z "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
+      if [ -n "$DALTON_NODELIST" ] ; then
+         NODELIST=$(echo "$DALTON_NODELIST" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+      elif [ -n "$PBS_NODEFILE" ] ; then
+         NODELIST=`sort -u $PBS_NODEFILE`
+      elif [ -n "$SLURM_NODELIST" ] ; then
+         NODELIST=$(scontrol show hostname $SLURM_NODELIST)
+      else
+         echo " The '-cpexe' option is active and more than one MPI process requested,"
+         echo " but no nodelist was found. A list of nodes can be provided using the"
+         echo " '-nodelist \"node1 ...\"' option or by setting DALTON_NODELIST=\"node1 ...\"."
+         echo " Attempt to continue using executable in scratch on the local node."
+         NODELIST=$HOSTNAME
+      fi
+      for node in $NODELIST ; do
+         if [ ${node} == ${HOSTNAME%\.local} ] ; then
+            continue
+         else
+            $SSH ${node} "mkdir -p $SCRATCHDIR"
+            $SCP $DALTON_EXECUTABLE ${node}:$SCRATCHDIR/dalton.x
+         fi
+      done
+   fi
+   DALTON_EXECUTABLE=$SCRATCHDIR/dalton.x
+fi
 
 if [ $optn -gt 1 ] ; then
 
    if [ -z "$OMP_NUM_THREADS" ]; then
       export OMP_NUM_THREADS=1
       echo
-      echo 'INFO : OMP_NUM_THREADS set to 1 because it was not defined by user'
-      echo 'INFO : and the cores are probably used by MPI'
+      echo ' INFO : OMP_NUM_THREADS set to 1 because it was not defined by user'
+      echo ' INFO : and the cores are probably used by MPI'
       echo
    fi
 
    if [ -n "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
-       echo 'DALTON_USE_GLOBAL_SCRATCH is defined: Dalton will use global scratch dir'
-   else
-       if [ -n "$PBS_NODEFILE" -a "$opt_nocpex" != "1" ] ; then
-       echo 'Copying dalton executable from master node: ' ${HOSTNAME}
-           # $PBS_NODEFILE is defined, then do the instructions below
-           echo 'Nodelist:'
-           cat $PBS_NODEFILE | sort | uniq
-           for node in `cat $PBS_NODEFILE | sort | uniq`
-           do
-              if [ ${node} == ${HOSTNAME%\.local} ]
-              then
-                  continue
-              else
-                  $SSH ${node} "mkdir -p $SCRATCHDIR"
-                  $SCP dalton.x ${node}:$SCRATCHDIR/dalton.x
-                  echo 'Copying executable to: ' ${node}
-              fi
-           done
-       fi
+      echo ' DALTON_USE_GLOBAL_SCRATCH is defined: Dalton will use global scratch dir'
    fi
 
    $MPIEXEC -np $optn $DALTON_EXECUTABLE
