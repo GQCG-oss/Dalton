@@ -20,7 +20,8 @@ PROGRAM TUV
   integer :: nlmA,nlmB,nlmC,nlmD,angmomID,iseg,ILUMOD,I,nUniquenTUVs
   real(realk),pointer :: uniqeparam(:)
   character(len=15),pointer :: uniqeparamNAME(:)
-  character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=9) :: STRINGIN2,STRINGOUT2,TMPSTRING2
   character(len=4) :: SPEC
   character(len=3) :: ARCSTRING
   logical :: BUILD(0:2,0:2,0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE,CPU
@@ -1120,9 +1121,9 @@ DO GPUrun=1,2
                     nlmB = 2*AngmomB+1
                     nlmC = 2*AngmomC+1
                     nlmD = 2*AngmomD+1
-                    STRINGIN(1:9)  = 'TMParray1'
-                    STRINGOUT(1:9) = 'TMParray2'                                      
-                    TMPSTRING(1:9) = '         '
+                    STRINGIN(1:12)  = 'TMParray1(1)'
+                    STRINGOUT(1:12) = 'TMParray2(1)'                                      
+                    TMPSTRING(1:12) = '            '
                     !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                     call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                          & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
@@ -1144,9 +1145,9 @@ DO GPUrun=1,2
                     nlmB = 2*AngmomB+1
                     nlmC = 2*AngmomC+1
                     nlmD = 2*AngmomD+1
-                    STRINGIN(1:9)  = 'TMParray1'
-                    STRINGOUT(1:9) = 'TMParray2'
-                    TMPSTRING(1:9) = '         '
+                    STRINGIN(1:12)  = 'TMParray1(1)'
+                    STRINGOUT(1:12) = 'TMParray2(1)'
+                    TMPSTRING(1:12) = '            '
                     call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                          & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                  ENDIF
@@ -1192,9 +1193,9 @@ DO GPUrun=1,2
                        nlmB = 2*AngmomB+1
                        nlmC = 2*AngmomC+1
                        nlmD = 2*AngmomD+1
-                       STRINGIN(1:9)  = 'TMParray1'
-                       STRINGOUT(1:9) = 'TMParray2'
-                       TMPSTRING(1:9) = '         '
+                       STRINGIN(1:12)  = 'TMParray1(1)'
+                       STRINGOUT(1:12) = 'TMParray2(1)'
+                       TMPSTRING(1:12) = '            '
                        !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                        call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                             & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
@@ -1216,9 +1217,9 @@ DO GPUrun=1,2
                        nlmB = 2*AngmomB+1
                        nlmC = 2*AngmomC+1
                        nlmD = 2*AngmomD+1
-                       STRINGIN(1:9)  = 'TMParray1'
-                       STRINGOUT(1:9) = 'TMParray2'
-                       TMPSTRING(1:9) = '         '
+                       STRINGIN(1:12)  = 'TMParray1(1)'
+                       STRINGOUT(1:12) = 'TMParray2(1)'
+                       TMPSTRING(1:12) = '            '
                        call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                             & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                     ENDIF
@@ -1487,10 +1488,10 @@ DO GPUrun=1,2
                  nlmB = 2*AngmomB+1
                  nlmC = 2*AngmomC+1
                  nlmD = 2*AngmomD+1
-                 STRINGIN(1:9)  = 'TMParray1'
-                 STRINGOUT(1:9) = 'TMParray2'
-                 TMPSTRING(1:9) = '         '
-                 call determineSizes(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+                 STRINGIN2(1:9)  = 'TMParray1'
+                 STRINGOUT2(1:9) = 'TMParray2'
+                 TMPSTRING2(1:9) = '         '
+                 call determineSizes(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN2,STRINGOUT2,TMPSTRING2,nTUV,AngmomP,AngmomQ,&
                       & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
               ENDDO
            ENDDO
@@ -1657,7 +1658,7 @@ contains
     integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,nTUV,AngmomP,AngmomQ
     integer,intent(in) :: nlmA,nlmB,nlmC,nlmD
     integer,intent(in) :: AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec
-    character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+    character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
     logical :: spherical,OutputSet,Gen,SegQ,SegP,Seg,Seg1Prim,Contracted,noTransfer
     character(len=8) :: BASISSPEC
     integer :: iBasisSpec
