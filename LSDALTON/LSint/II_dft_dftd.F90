@@ -257,7 +257,7 @@
 !AMT  Determine which flavour of DFT-D we are to run (2,3,3+BJ)
 
 !SSR  XC functional name
-      Func = setting%scheme%dft%DFTfuncObject(dftfunc_Default)
+      Func = TRIM(setting%scheme%dft%DFTfuncObject(dftfunc_Default))
       IF (SETTING%SCHEME%DFT%DO_DFTD2) THEN
         NVER=2
       ELSE IF (SETTING%SCHEME%DFT%DO_DFTD3) THEN
