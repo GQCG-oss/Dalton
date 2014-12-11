@@ -1184,7 +1184,7 @@ intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
    AObasis => setting%basis(1)%p%BINFO(RegBasParam)
-ELSEIF(AOspec.EQ.'C')THEN
+ELSEIF(AOspec.EQ.'D')THEN
    !   The Aux AO-type basis
    AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
