@@ -20,7 +20,8 @@ PROGRAM TUV
   integer :: nlmA,nlmB,nlmC,nlmD,angmomID,iseg,ILUMOD,I,nUniquenTUVs
   real(realk),pointer :: uniqeparam(:)
   character(len=15),pointer :: uniqeparamNAME(:)
-  character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=9) :: STRINGIN2,STRINGOUT2,TMPSTRING2
   character(len=4) :: SPEC
   character(len=3) :: ARCSTRING
   logical :: BUILD(0:2,0:2,0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE,CPU
@@ -1120,9 +1121,9 @@ DO GPUrun=1,2
                     nlmB = 2*AngmomB+1
                     nlmC = 2*AngmomC+1
                     nlmD = 2*AngmomD+1
-                    STRINGIN(1:9)  = 'TMParray1'
-                    STRINGOUT(1:9) = 'TMParray2'                                      
-                    TMPSTRING(1:9) = '         '
+                    STRINGIN(1:12)  = 'TMParray1(1)'
+                    STRINGOUT(1:12) = 'TMParray2(1)'                                      
+                    TMPSTRING(1:12) = '            '
                     !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                     call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                          & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
@@ -1144,9 +1145,9 @@ DO GPUrun=1,2
                     nlmB = 2*AngmomB+1
                     nlmC = 2*AngmomC+1
                     nlmD = 2*AngmomD+1
-                    STRINGIN(1:9)  = 'TMParray1'
-                    STRINGOUT(1:9) = 'TMParray2'
-                    TMPSTRING(1:9) = '         '
+                    STRINGIN(1:12)  = 'TMParray1(1)'
+                    STRINGOUT(1:12) = 'TMParray2(1)'
+                    TMPSTRING(1:12) = '            '
                     call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                          & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                  ENDIF
@@ -1192,9 +1193,9 @@ DO GPUrun=1,2
                        nlmB = 2*AngmomB+1
                        nlmC = 2*AngmomC+1
                        nlmD = 2*AngmomD+1
-                       STRINGIN(1:9)  = 'TMParray1'
-                       STRINGOUT(1:9) = 'TMParray2'
-                       TMPSTRING(1:9) = '         '
+                       STRINGIN(1:12)  = 'TMParray1(1)'
+                       STRINGOUT(1:12) = 'TMParray2(1)'
+                       TMPSTRING(1:12) = '            '
                        !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                        call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                             & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
@@ -1216,9 +1217,9 @@ DO GPUrun=1,2
                        nlmB = 2*AngmomB+1
                        nlmC = 2*AngmomC+1
                        nlmD = 2*AngmomD+1
-                       STRINGIN(1:9)  = 'TMParray1'
-                       STRINGOUT(1:9) = 'TMParray2'
-                       TMPSTRING(1:9) = '         '
+                       STRINGIN(1:12)  = 'TMParray1(1)'
+                       STRINGOUT(1:12) = 'TMParray2(1)'
+                       TMPSTRING(1:12) = '            '
                        call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                             & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                     ENDIF
@@ -1487,10 +1488,10 @@ DO GPUrun=1,2
                  nlmB = 2*AngmomB+1
                  nlmC = 2*AngmomC+1
                  nlmD = 2*AngmomD+1
-                 STRINGIN(1:9)  = 'TMParray1'
-                 STRINGOUT(1:9) = 'TMParray2'
-                 TMPSTRING(1:9) = '         '
-                 call determineSizes(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+                 STRINGIN2(1:9)  = 'TMParray1'
+                 STRINGOUT2(1:9) = 'TMParray2'
+                 TMPSTRING2(1:9) = '         '
+                 call determineSizes(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN2,STRINGOUT2,TMPSTRING2,nTUV,AngmomP,AngmomQ,&
                       & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
               ENDDO
            ENDDO
@@ -1657,7 +1658,7 @@ contains
     integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,nTUV,AngmomP,AngmomQ
     integer,intent(in) :: nlmA,nlmB,nlmC,nlmD
     integer,intent(in) :: AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec
-    character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+    character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
     logical :: spherical,OutputSet,Gen,SegQ,SegP,Seg,Seg1Prim,Contracted,noTransfer
     character(len=8) :: BASISSPEC
     integer :: iBasisSpec
@@ -1704,7 +1705,7 @@ contains
           !       call AddToString(nTUV)
           !       call AddToString(')')                
        ELSEIF(Seg)THEN
-          call AddToString('LOCALINTS')
+          call AddToString('LOCALINTS(1)')
           OutputSet = .TRUE.
           !          call AddToString('(1:nPasses*')
           !       call AddToString(nTUV)
@@ -1720,7 +1721,7 @@ contains
           call AddToString(STRINGOUT)
 !          Contracted = .TRUE.
        ELSEIF(Seg1Prim)THEN
-          call AddToString('LOCALINTS')
+          call AddToString('LOCALINTS(1)')
           OutputSet = .TRUE.
           Contracted = .TRUE.
        ENDIF
@@ -2014,7 +2015,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
              IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
                 !no subsequent Horizontal or spherical transformations 
                 IF(.NOT.OutputSet)THEN
-                   STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                   STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
                 ELSE
                    STOP 'LOCALINTS already set MAJOER PROBLEM A2'
                 ENDIF
@@ -2029,7 +2030,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
              IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
                 !no subsequent Horizontal or spherical transformations 
                 IF(.NOT.OutputSet)THEN
-                   STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                   STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
                 ELSE
                    STOP 'LOCALINTS already set MAJOER PROBLEM A2'
                 ENDIF
@@ -2050,7 +2051,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
              !no subsequent Horizontal or spherical transformations 
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
@@ -2066,7 +2067,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
              !no subsequent Horizontal or spherical transformations 
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
@@ -2087,7 +2088,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
              !no subsequent Horizontal or spherical transformations 
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
@@ -2122,7 +2123,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomQ.EQ.0)THEN
              !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     '
+                STRINGOUT  = 'LOCALINTS(1)     '
                 OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
@@ -2235,7 +2236,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           !no need for RHS horizontal transfer nor spherical transformation
           IF(.NOT.OutputSet)THEN
              !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
-             STRINGOUT  = 'LOCALINTS     '
+             STRINGOUT  = 'LOCALINTS(1)     '
              OutputSet = .TRUE.
           ELSE
              STOP 'LOCALINTS already set MAJOER PROBLEM B1'
@@ -2356,7 +2357,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        IF(.NOT.OutputSet)THEN
           IF(.NOT.(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1)))THEN
              !no Spherical afterwards which means we can 
-             STRINGOUT  = 'LOCALINTS     '
+             STRINGOUT  = 'LOCALINTS(1)     '
              OutputSet = .TRUE.
           ENDIF
        ELSE
@@ -2452,7 +2453,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
     IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
        !       WRITE(LUMOD3,'(A)')'        !Spherical Transformation RHS'
        IF(.NOT.OutputSet)THEN
-          STRINGOUT  = 'LOCALINTS     '
+          STRINGOUT  = 'LOCALINTS(1)     '
        ELSE
           STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED D1'
        ENDIF

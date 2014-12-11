@@ -11592,7 +11592,20 @@ contains
 
          if ((mem_est_avail .lt. 0.0E0_realk)) then
 
-            if (ts .eq. 1) call lsquit('mem_est_avail .lt. 0 GB for smallest possible abc_tile_size - aborting...',DECinfo%output)
+            if (ts .eq. 1) then
+
+               print *,'ts                = ',ts
+               print *,'num_tiles_tot     = ',num_tiles_tot
+               print *,'num_tiles_node    = ',num_tiles_node
+               print *,'mem_avail_start   = ',mem_avail_start
+               print *,'mem_est_avail_tmp = ',mem_est_avail_tmp
+               print *,'mem_vovv_pdm      = ',mem_vovv_pdm
+               print *,'mem_vovv_local    = ',mem_vovv_local
+               print *,'mem_est_avail     = ',mem_est_avail
+
+               call lsquit('mem_est_avail .lt. 0 GB for smallest possible abc_tile_size - aborting...',DECinfo%output)
+
+            endif
 
             cycle
 

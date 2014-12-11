@@ -94,22 +94,22 @@ CONTAINS
 #endif
         call VerticalRecurrenceCPUGen0(1,nPrimP,nPrimP,&
                & reducedExponents,TABFJW,Pcent,Pcent,integralPrefactor,&
-               & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,TMParray2)
+               & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,TMParray2(1))
         !No reason for the Electron Transfer Recurrence Relation 
 #ifdef VAR_DEBUGICHOR
         IF(nContP*1.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-         call GabPrimitiveContractionGen1A(TMParray2,TMParray1,nPrimP,&
+         call GabPrimitiveContractionGen1A(TMParray2(1),TMParray1(1),nPrimP,&
               & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
-         call GabPrimitiveContractionGen1B(TMParray1,TMParray2,nPrimP,&
+         call GabPrimitiveContractionGen1B(TMParray1(1),TMParray2(1),nPrimP,&
               & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
-        call ExtractGabElmP1Gen(TMParray2,LOCALINTS,nContP)
+        call ExtractGabElmP1Gen(TMParray2(1),LOCALINTS,nContP)
     CASE(  10)  !Angmom(A= 1,B= 0,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*3.GT.TMParray2maxsize)THEN
@@ -118,16 +118,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen2(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*10.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen2A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*16.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
@@ -136,33 +136,33 @@ CONTAINS
         call TransferRecurrenceCPUP1Q1AtoCGen(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*16.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-         call GabPrimitiveContractionGen16A(TMParray2,TMParray1,nPrimP,&
+         call GabPrimitiveContractionGen16A(TMParray2(1),TMParray1(1),nPrimP,&
               & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
-         call GabPrimitiveContractionGen16B(TMParray1,TMParray2,nPrimP,&
+         call GabPrimitiveContractionGen16B(TMParray1(1),TMParray2(1),nPrimP,&
               & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*12.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nContP*9.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,1,3,Pdistance12,TMParray1,&
-            & TMParray2,lupri)
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,1,3,Pdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
         !no Spherical Transformation RHS needed
-        call ExtractGabElmP3Gen(TMParray2,LOCALINTS,nContP)
+        call ExtractGabElmP3Gen(TMParray2(1),LOCALINTS,nContP)
     CASE(  11)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*5.GT.TMParray2maxsize)THEN
@@ -171,16 +171,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen4(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*35.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen4A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*100.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
@@ -189,33 +189,33 @@ CONTAINS
         call TransferRecurrenceCPUP2Q2AtoCGen(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*100.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-         call GabPrimitiveContractionGen100A(TMParray2,TMParray1,nPrimP,&
+         call GabPrimitiveContractionGen100A(TMParray2(1),TMParray1(1),nPrimP,&
               & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
-         call GabPrimitiveContractionGen100B(TMParray1,TMParray2,nPrimP,&
+         call GabPrimitiveContractionGen100B(TMParray1(1),TMParray2(1),nPrimP,&
               & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*90.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nContP*81.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,1,9,Pdistance12,TMParray1,&
-            & TMParray2,lupri)
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,1,9,Pdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
         !no Spherical Transformation RHS needed
-        call ExtractGabElmP9Gen(TMParray2,LOCALINTS,nContP)
+        call ExtractGabElmP9Gen(TMParray2(1),LOCALINTS,nContP)
     CASE(  20)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*5.GT.TMParray2maxsize)THEN
@@ -224,16 +224,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen4(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*35.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen4A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*100.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
@@ -242,45 +242,45 @@ CONTAINS
         call TransferRecurrenceCPUP2Q2AtoCGen(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*100.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-         call GabPrimitiveContractionGen100A(TMParray2,TMParray1,nPrimP,&
+         call GabPrimitiveContractionGen100A(TMParray2(1),TMParray1(1),nPrimP,&
               & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
-         call GabPrimitiveContractionGen100B(TMParray1,TMParray2,nPrimP,&
+         call GabPrimitiveContractionGen100B(TMParray1(1),TMParray2(1),nPrimP,&
               & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*60.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContP,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContP,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*50.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,nContP,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,nContP,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*30.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,1,5,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,1,5,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*25.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,nContP,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP5Gen(TMParray2,LOCALINTS,nContP)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,nContP,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP5Gen(TMParray2(1),LOCALINTS,nContP)
     CASE(  21)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*7.GT.TMParray2maxsize)THEN
@@ -289,16 +289,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen6(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*84.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen6A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*400.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
@@ -307,45 +307,45 @@ CONTAINS
         call TransferRecurrenceCPUP3Q3AtoCGen(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*400.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-         call GabPrimitiveContractionGen400A(TMParray2,TMParray1,nPrimP,&
+         call GabPrimitiveContractionGen400A(TMParray2(1),TMParray1(1),nPrimP,&
               & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
-         call GabPrimitiveContractionGen400B(TMParray1,TMParray2,nPrimP,&
+         call GabPrimitiveContractionGen400B(TMParray1(1),TMParray2(1),nPrimP,&
               & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*360.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContP,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContP,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*300.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,nContP,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,nContP,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*270.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,1,15,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,1,15,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*225.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,nContP,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP15Gen(TMParray2,LOCALINTS,nContP)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,nContP,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP15Gen(TMParray2(1),LOCALINTS,nContP)
     CASE(  22)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*9.GT.TMParray2maxsize)THEN
@@ -354,16 +354,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen8(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*165.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen8A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*1225.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
@@ -372,45 +372,45 @@ CONTAINS
         call TransferRecurrenceCPUP4Q4AtoCGen(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*1225.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-         call GabPrimitiveContractionGen1225A(TMParray2,TMParray1,nPrimP,&
+         call GabPrimitiveContractionGen1225A(TMParray2(1),TMParray1(1),nPrimP,&
               & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
-         call GabPrimitiveContractionGen1225B(TMParray1,TMParray2,nPrimP,&
+         call GabPrimitiveContractionGen1225B(TMParray1(1),TMParray2(1),nPrimP,&
               & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*1260.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContP,1,35,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContP,1,35,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*875.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(35,nContP,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(35,nContP,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*900.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,1,25,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,1,25,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*625.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(25,nContP,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP25Gen(TMParray2,LOCALINTS,nContP)
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(25,nContP,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP25Gen(TMParray2(1),LOCALINTS,nContP)
     CASE(   1)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*3.GT.TMParray2maxsize)THEN
@@ -419,16 +419,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen2(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*10.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen2B(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*16.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
@@ -437,33 +437,33 @@ CONTAINS
         call TransferRecurrenceCPUP1Q1BtoDGen(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Aexp,Aexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*16.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-         call GabPrimitiveContractionGen16A(TMParray2,TMParray1,nPrimP,&
+         call GabPrimitiveContractionGen16A(TMParray2(1),TMParray1(1),nPrimP,&
               & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
-         call GabPrimitiveContractionGen16B(TMParray1,TMParray2,nPrimP,&
+         call GabPrimitiveContractionGen16B(TMParray1(1),TMParray2(1),nPrimP,&
               & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*12.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(nContP*9.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,1,3,Pdistance12,TMParray1,&
-            & TMParray2,lupri)
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,1,3,Pdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
         !no Spherical Transformation RHS needed
-        call ExtractGabElmP3Gen(TMParray2,LOCALINTS,nContP)
+        call ExtractGabElmP3Gen(TMParray2(1),LOCALINTS,nContP)
     CASE(   2)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*5.GT.TMParray2maxsize)THEN
@@ -472,16 +472,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen4(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*35.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen4B(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*100.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
@@ -490,45 +490,45 @@ CONTAINS
         call TransferRecurrenceCPUP2Q2BtoDGen(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Aexp,Aexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*100.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-         call GabPrimitiveContractionGen100A(TMParray2,TMParray1,nPrimP,&
+         call GabPrimitiveContractionGen100A(TMParray2(1),TMParray1(1),nPrimP,&
               & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
-         call GabPrimitiveContractionGen100B(TMParray1,TMParray2,nPrimP,&
+         call GabPrimitiveContractionGen100B(TMParray1(1),TMParray2(1),nPrimP,&
               & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*60.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*50.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContP,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContP,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*30.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,1,5,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,1,5,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*25.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nContP,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP5Gen(TMParray2,LOCALINTS,nContP)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nContP,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP5Gen(TMParray2(1),LOCALINTS,nContP)
     CASE(  12)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*7.GT.TMParray2maxsize)THEN
@@ -537,16 +537,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen6(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*84.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen6B(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*400.GT.TMParray2maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
@@ -555,45 +555,45 @@ CONTAINS
         call TransferRecurrenceCPUP3Q3BtoDGen(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Aexp,Aexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*400.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-         call GabPrimitiveContractionGen400A(TMParray2,TMParray1,nPrimP,&
+         call GabPrimitiveContractionGen400A(TMParray2(1),TMParray1(1),nPrimP,&
               & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
-         call GabPrimitiveContractionGen400B(TMParray1,TMParray2,nPrimP,&
+         call GabPrimitiveContractionGen400B(TMParray1(1),TMParray2(1),nPrimP,&
               & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*360.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*300.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nContP,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nContP,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nContP*270.GT.TMParray1maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,1,15,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,1,15,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*225.GT.TMParray2maxsize)THEN
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nContP,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP15Gen(TMParray2,LOCALINTS,nContP)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nContP,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP15Gen(TMParray2(1),LOCALINTS,nContP)
     CASE DEFAULT
         call IGI_CPU_McM_general(nPrimA,nPrimB,&
            & nPrimP,IntPrint,lupri,&

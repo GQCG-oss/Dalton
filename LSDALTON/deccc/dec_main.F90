@@ -76,26 +76,17 @@ contains
     ! Get informations about full molecule
     ! ************************************
     call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
-
+    
     !> F12
     !call molecule_init_f12(molecule,mylsitem,D)
-    print *, "*************************************************"
-    print *, "    This is the F12-singles part of the code     "
-    print *, "*************************************************"
 
-    print *, "mat_sqnorm2(F)", mat_sqnorm2(F)
-    print *, "mat_sqnorm2(S)", mat_sqnorm2(S)
-    print *, "mat_sqnorm2(C)", mat_sqnorm2(C)
-   
-    
-    
     ! Fock, overlap, and MO coefficient matrices are now stored
     ! in Molecule, and there is no reason to store them twice.
     ! So we delete them now and reset them at the end.
     call mat_free(F)
     call mat_free(S)
     call mat_free(C)
-
+    
     call dec_main_prog(MyLsitem,molecule,D,E)
 
     ! Restore input matrices
@@ -247,6 +238,12 @@ contains
        write(DECinfo%output,*)
        write(DECinfo%output,*)
     end if
+
+    !>
+    !!>
+    !!>> Make Cabs
+    !!>>> F12 Singles
+    !!>>>> 
 
     if(DECinfo%full_molecular_cc) then
        ! -- Call full molecular CC

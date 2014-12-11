@@ -112,7 +112,7 @@ CONTAINS
         call VerticalRecurrenceCPUSegQ1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray2)
+               & TMParray2(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
@@ -120,17 +120,17 @@ CONTAINS
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,1,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,1,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
         call BuildRJ000CPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUSegQ2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
@@ -138,15 +138,15 @@ CONTAINS
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(1,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,1,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(1,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
         call VerticalRecurrenceCPUSegQ1C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray2)
+               & TMParray2(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
@@ -154,17 +154,17 @@ CONTAINS
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,nPasses,1,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,nPasses,1,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
         call BuildRJ000CPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUSegQ2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
@@ -172,17 +172,17 @@ CONTAINS
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,nPasses,1,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri)
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,nPasses,1,Qdistance12,TMParray1(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUSegQ3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
@@ -190,18 +190,18 @@ CONTAINS
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(1,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,1,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(1,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
         call BuildRJ000CPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUSegQ2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
@@ -209,18 +209,18 @@ CONTAINS
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(1,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,1,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(1,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUSegQ3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
@@ -228,18 +228,18 @@ CONTAINS
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(1,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,1,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(1,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUSegQ4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ35(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
@@ -247,1157 +247,1157 @@ CONTAINS
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(1,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,1,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(1,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
         call VerticalRecurrenceCPUSegQ1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray2)
+               & TMParray2(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ4(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ4(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,nPasses,1,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE( 101)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
         call BuildRJ000CPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q1BtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ16(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri)
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q2DtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
         call BuildRJ000CPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q1BtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ16(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri)
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q2CtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri)
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q3DtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q2CtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q3CtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q4CtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ140(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
         call BuildRJ000CPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUSegQ2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ10(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ10(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,nPasses,1,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(1,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(1,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q1BtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q2BtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q1BtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q2BtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q3DtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(20,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(20,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q2BtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q3CtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(20,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(5,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(20,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(5,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
         call BuildRJ000CPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q4CtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ350(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(35,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(5,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(35,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(5,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
         call BuildRJ000CPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q1AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ16(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ16(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri)
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q2DtoASegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q3DtoASegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q2CtoASegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q3CtoASegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP1Q4CtoASegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ140(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,3,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q1AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,9,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri)
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,9,Qdistance12,TMParray1(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q2AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(9,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,9,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(9,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q3DtoASegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(9,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,9,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(9,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q2AtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(9,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,9,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(9,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q3CtoASegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(9,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,9,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(9,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
         call BuildRJ000CPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q4CtoASegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ350(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(9,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,9,Qdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(9,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUSegQ3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
          call PrimitiveContractionACPUSegQ20(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ20(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,nPasses,1,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
-            & TMParray2,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(1,nContP*nPasses,TMParray2,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
+            & TMParray2(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(1,nContP*nPasses,TMParray2(1),&
+            & LOCALINTS(1))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q1BtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q2BtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q1BtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q2BtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
         call BuildRJ000CPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q3BtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ400(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q2BtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(15,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(15,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
         call BuildRJ000CPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q3BtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ400(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
         call BuildRJ000CPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q4CtoBSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ700(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(35,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(15,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(35,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(15,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
         call BuildRJ000CPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q1AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ40(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ40(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(4,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(4,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q2AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ100(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ100(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP2Q3DtoASegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(20,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(20,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,5,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
         call BuildRJ000CPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q1AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ80(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ80(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(4,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(4,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q2AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ200(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ200(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(10,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(10,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
         call BuildRJ000CPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP3Q3AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ400(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ400(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,15,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
         call BuildRJ000CPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP4Q1AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ140(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ140(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(4,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,25,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(4,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,nPasses,25,Qdistance12,TMParray2(1),&
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
         call BuildRJ000CPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP4Q2AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ350(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ350(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(10,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,25,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(25,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(10,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,nPasses,25,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(25,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
         call BuildRJ000CPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2)
+               & MaxPasses,nAtomsA,nAtomsB,TMParray2(1))
         call VerticalRecurrenceCPUGen7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
         call TransferRecurrenceCPUP4Q3AtoDSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
          call PrimitiveContractionACPUSegQ700(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,ACC,nPrimA,nContA,nPrimB,nContB)
          call PrimitiveContractionBCPUSegQ700(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,BCC,nPrimA,nContA,nPrimB,nContB)
         call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(20,nContP*nPasses,TMParray1,&
-            & TMParray2)
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,25,Qdistance12,TMParray2,&
-            & TMParray1,lupri)
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(25,nContP*nPasses,TMParray1,&
-            & LOCALINTS)
+            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(20,nContP*nPasses,TMParray1(1),&
+            & TMParray2(1))
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,nPasses,25,Qdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(25,nContP*nPasses,TMParray1(1),&
+            & LOCALINTS(1))
     CASE DEFAULT
 #ifdef VAR_OPENACC
         CALL ICHORQUIT('ICI_CPU_McM_general called with OpenACC',-1)

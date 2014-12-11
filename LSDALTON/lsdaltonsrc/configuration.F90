@@ -4067,6 +4067,7 @@ subroutine lsmpi_setSlaveFunc()
 use infpar_module
 use lsmpi_mod
 use xcfun_host,only: xcfun_host_init, USEXCFUN
+use IIDFTINT, only: II_DFTsetFunc
 use typedef
   implicit none
   character(len=80)  :: WORD
