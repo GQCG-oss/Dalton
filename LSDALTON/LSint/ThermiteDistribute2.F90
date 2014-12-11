@@ -428,7 +428,11 @@ DO iP=1,nP
   ELSE
      IF(abs(Gabint(iP,iP)).GT.thresh) THEN
         write(lupri,*) 'Error in addGab. Negative screening int',Gabint(iP,iP)
-        call lsquit('Error in addGab. Negative screening int',lupri)
+       print *, "Gabint(iP,iP):", Gabint(iP,iP)
+       print *, "thresh:", thresh
+       print *, "np:", np
+       print *, "Gabint:", Gabint 
+       call lsquit('Error in addGab. Negative screening int',lupri)
      ENDIF
   ENDIF
 #endif

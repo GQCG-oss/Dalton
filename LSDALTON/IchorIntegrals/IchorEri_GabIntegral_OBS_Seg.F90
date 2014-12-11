@@ -96,14 +96,14 @@ CONTAINS
 #endif
         call VerticalRecurrenceCPUSeg0(1,nPrimP,nPrimP,&
                & reducedExponents,TABFJW,Pcent,Pcent,integralPrefactor,&
-               & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,TMParray2)
+               & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,TMParray2(1))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
-        call ExtractGabElmP1Seg(TMParray2,LOCALINTS)
+        call ExtractGabElmP1Seg(TMParray2(1),LOCALINTS)
     CASE(  10)  !Angmom(A= 1,B= 0,C= 1,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*3.GT.TMParray2maxsize)THEN
@@ -112,16 +112,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen2(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*10.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen2A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*16.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
@@ -130,25 +130,25 @@ CONTAINS
         call TransferRecurrenceCPUP1Q1AtoCSeg(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(1*12.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P1A1B0AtoB(1,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(1,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(1*9.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,1,3,Pdistance12,TMParray1,&
-            & TMParray2,lupri)
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,1,3,Pdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
         !no Spherical Transformation RHS needed
-        call ExtractGabElmP3Seg(TMParray2,LOCALINTS)
+        call ExtractGabElmP3Seg(TMParray2(1),LOCALINTS)
     CASE(  11)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*5.GT.TMParray2maxsize)THEN
@@ -157,16 +157,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen4(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*35.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen4A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*100.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
@@ -175,25 +175,25 @@ CONTAINS
         call TransferRecurrenceCPUP2Q2AtoCSeg(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(1*90.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P2A1B1AtoB(1,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(1,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(1*81.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,1,9,Pdistance12,TMParray1,&
-            & TMParray2,lupri)
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,1,9,Pdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
         !no Spherical Transformation RHS needed
-        call ExtractGabElmP9Seg(TMParray2,LOCALINTS)
+        call ExtractGabElmP9Seg(TMParray2(1),LOCALINTS)
     CASE(  20)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*5.GT.TMParray2maxsize)THEN
@@ -202,16 +202,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen4(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*35.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen4A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*100.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
@@ -220,37 +220,37 @@ CONTAINS
         call TransferRecurrenceCPUP2Q2AtoCSeg(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(1*60.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P2A2B0AtoB(1,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(1,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*50.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,1,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,1,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*30.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,1,5,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,1,5,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*25.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,1,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP5Seg(TMParray2,LOCALINTS)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,1,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP5Seg(TMParray2(1),LOCALINTS)
     CASE(  21)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*7.GT.TMParray2maxsize)THEN
@@ -259,16 +259,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen6(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*84.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen6A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*400.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
@@ -277,37 +277,37 @@ CONTAINS
         call TransferRecurrenceCPUP3Q3AtoCSeg(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(1*360.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P3A2B1AtoB(1,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(1,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*300.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,1,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,1,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*270.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,1,15,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,1,15,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*225.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,1,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP15Seg(TMParray2,LOCALINTS)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,1,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP15Seg(TMParray2(1),LOCALINTS)
     CASE(  22)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*9.GT.TMParray2maxsize)THEN
@@ -316,16 +316,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen8(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*165.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen8A(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Acenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*1225.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
@@ -334,37 +334,37 @@ CONTAINS
         call TransferRecurrenceCPUP4Q4AtoCSeg(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Bexp,Bexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(1*1260.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P4A2B2AtoB(1,1,35,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(1,1,35,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*875.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(35,1,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(35,1,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*900.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,1,25,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,1,25,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*625.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(25,1,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP25Seg(TMParray2,LOCALINTS)
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(25,1,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP25Seg(TMParray2(1),LOCALINTS)
     CASE(   1)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*3.GT.TMParray2maxsize)THEN
@@ -373,16 +373,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen2(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*10.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen2B(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*16.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
@@ -391,25 +391,25 @@ CONTAINS
         call TransferRecurrenceCPUP1Q1BtoDSeg(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Aexp,Aexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(1*12.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
         IF(1*9.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,1,3,Pdistance12,TMParray1,&
-            & TMParray2,lupri)
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,1,3,Pdistance12,TMParray1(1),&
+            & TMParray2(1),lupri)
         !no Spherical Transformation RHS needed
-        call ExtractGabElmP3Seg(TMParray2,LOCALINTS)
+        call ExtractGabElmP3Seg(TMParray2(1),LOCALINTS)
     CASE(   2)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*5.GT.TMParray2maxsize)THEN
@@ -418,16 +418,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen4(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*35.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen4B(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*100.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
@@ -436,37 +436,37 @@ CONTAINS
         call TransferRecurrenceCPUP2Q2BtoDSeg(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Aexp,Aexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(1*60.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*50.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,1,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,1,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*30.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,1,5,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,1,5,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*25.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,1,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP5Seg(TMParray2,LOCALINTS)
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,1,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP5Seg(TMParray2(1),LOCALINTS)
     CASE(  12)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*7.GT.TMParray2maxsize)THEN
@@ -475,16 +475,16 @@ CONTAINS
 #endif
         call BuildRJ000CPUGen6(1,nPrimP,nPrimP,reducedExponents,&
                & TABFJW,Pcent,Pcent,IatomApass,IatomBpass,&
-               & 1,1,1,TMParray2)
+               & 1,1,1,TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(nPrimP*nPrimP*84.GT.TMParray1maxsize)THEN
           call ichorquit('nPrimP*nPrimPtoo small',-1)
         ENDIF
 #endif
         call VerticalRecurrenceCPUGen6B(1,nPrimP,nPrimP,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
+               & TMParray2(1),Pexp,Bcenter,Pcent,Pcent,integralPrefactor,&
                & IatomApass,IatomBpass,1,1,1,PpreExpFac,PpreExpFac,&
-               & TMParray1)
+               & TMParray1(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*400.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
@@ -493,37 +493,37 @@ CONTAINS
         call TransferRecurrenceCPUP3Q3BtoDSeg(1,nPrimP,nPrimP,reducedExponents,&
                & Pexp,Pexp,Pdistance12,Pdistance12,Aexp,Aexp,nPrimA,nPrimB,nPrimA,nPrimB,&
                & 1,1,1,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2)
+               & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
 #ifdef VAR_DEBUGICHOR
         IF(1*360.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*300.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,1,TMParray1,&
-            & TMParray2)
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,1,TMParray1(1),&
+            & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*270.GT.TMParray1maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,1,15,Pdistance12,TMParray2,&
-            & TMParray1,lupri)
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,1,15,Pdistance12,TMParray2(1),&
+            & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(1*225.GT.TMParray2maxsize)THEN
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,1,TMParray1,&
-            & TMParray2)
-        call ExtractGabElmP15Seg(TMParray2,LOCALINTS)
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,1,TMParray1(1),&
+            & TMParray2(1))
+        call ExtractGabElmP15Seg(TMParray2(1),LOCALINTS)
     CASE DEFAULT
         call IGI_CPU_McM_general(nPrimA,nPrimB,&
            & nPrimP,IntPrint,lupri,&

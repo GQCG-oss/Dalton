@@ -773,6 +773,10 @@ contains
        call mem_dealloc(molecule%Fcp)
     end if
 
+!    if(associated(molecule%Fcd)) then
+!       call mem_dealloc(molecule%Fcd)
+!    end if
+
     ! Delete atomic info
     if(associated(molecule%atom_size)) then
        call mem_dealloc(molecule%atom_size)
@@ -1115,7 +1119,8 @@ contains
     call mem_alloc(MyMolecule%Frm,ncabsAO,noccfull) !HACK not RI MO orbitals (AO basis)
     call mem_alloc(MyMolecule%Fcp,ncabsAO,nbasis)   !HACK not ncabsMO,nbasis - not CABS MOs
     call mem_alloc(MyMolecule%Fij,nocc,nocc)
-
+   ! call mem_alloc(MyMolecule%Fcd,ncabsAO,ncabsAO)
+    
     ! Constructing the F12 MO matrices from F12_routines.F90
     call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&
          & nocc,noccfull,nvirt,MyMolecule%hJir,MyMolecule%Krs,MyMolecule%Frs,&
@@ -1132,6 +1137,7 @@ contains
       print *, "norm2D(Frm)",  norm2D(MyMolecule%Frm)
       print *, "norm2D(Fcp)",  norm2D(MyMolecule%Fcp)
       print *, "norm2D(Fij)",  norm2D(MyMolecule%Fij)
+    !  print *, "norm2D(Fcd)",  norm2D(MyMolecule%Fcd)
       print *,'-------------------------------------------' 
     end if
 

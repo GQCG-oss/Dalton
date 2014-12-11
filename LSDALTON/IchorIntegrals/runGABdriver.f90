@@ -19,7 +19,8 @@ PROGRAM TUV
   integer :: nlmA,nlmB,nlmC,nlmD,angmomID,iseg,ILUMOD,I,nUniquenTUVs
   real(realk),pointer :: uniqeparam(:)
   character(len=15),pointer :: uniqeparamNAME(:)
-  character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=9) :: STRINGIN2,STRINGOUT2,TMPSTRING2
   character(len=4) :: SPEC
   character(len=3) :: ARCSTRING
   logical :: BUILD(0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE
@@ -295,9 +296,9 @@ PROGRAM TUV
               nlmB = 2*AngmomB+1
               nlmC = nlmA
               nlmD = nlmB
-              STRINGIN(1:9)  = 'TMParray1'
-              STRINGOUT(1:9) = 'TMParray2'
-              TMPSTRING(1:9) = '         '
+              STRINGIN(1:12)  = 'TMParray1(1)'
+              STRINGOUT(1:12) = 'TMParray2(1)'
+              TMPSTRING(1:12) = '            '
               !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
               call subroutineMAIN(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
                    & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
@@ -307,9 +308,9 @@ PROGRAM TUV
               nlmB = 2*AngmomB+1
               nlmC = nlmA
               nlmD = nlmB
-              STRINGIN(1:9)  = 'TMParray1'
-              STRINGOUT(1:9) = 'TMParray2'
-              TMPSTRING(1:9) = '         '
+              STRINGIN(1:12)  = 'TMParray1(1)'
+              STRINGOUT(1:12) = 'TMParray2(1)'
+              TMPSTRING(1:12) = '            '
               call subroutineMAIN(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
                    & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
            ENDIF
@@ -333,9 +334,9 @@ PROGRAM TUV
                  spherical = .TRUE.
                  nlmA = 2*AngmomA+1
                  nlmB = 2*AngmomB+1
-                 STRINGIN(1:9)  = 'TMParray1'
-                 STRINGOUT(1:9) = 'TMParray2'
-                 TMPSTRING(1:9) = '         '
+                 STRINGIN(1:12)  = 'TMParray1(1)'
+                 STRINGOUT(1:12) = 'TMParray2(1)'
+                 TMPSTRING(1:12) = '            '
                  !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                  call subroutineMAIN(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
                       & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
@@ -343,9 +344,9 @@ PROGRAM TUV
                  spherical = .TRUE.
                  nlmA = 2*AngmomA+1
                  nlmB = 2*AngmomB+1
-                 STRINGIN(1:9)  = 'TMParray1'
-                 STRINGOUT(1:9) = 'TMParray2'
-                 TMPSTRING(1:9) = '         '
+                 STRINGIN(1:12)  = 'TMParray1(1)'
+                 STRINGOUT(1:12) = 'TMParray2(1)'
+                 TMPSTRING(1:12) = '            '
                  call subroutineMAIN(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
                       & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
               ENDIF
@@ -440,10 +441,10 @@ PROGRAM TUV
            spherical = .TRUE.
            nlmA = 2*AngmomA+1
            nlmB = 2*AngmomB+1
-           STRINGIN(1:9)  = 'TMParray1'
-           STRINGOUT(1:9) = 'TMParray2'
-           TMPSTRING(1:9) = '         '
-           call determineSizes(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
+           STRINGIN2(1:9)  = 'TMParray1(1)'
+           STRINGOUT2(1:9) = 'TMParray2(1)'
+           TMPSTRING2(1:9) = '         '
+           call determineSizes(ILUMOD,AngmomA,AngmomB,STRINGIN2,STRINGOUT2,TMPSTRING2,AngmomP,&
                       & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
         ENDDO
      ENDDO
@@ -840,7 +841,7 @@ contains
     implicit none
     integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomP
     integer,intent(in) :: nTUVP,nTUVAspec,nTUVBspec,nTUV
-    character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+    character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
     logical :: spherical,OutputSet,Gen,Seg,Contracted
     character(len=8) :: BASISSPEC
     integer :: iBasisSpec
