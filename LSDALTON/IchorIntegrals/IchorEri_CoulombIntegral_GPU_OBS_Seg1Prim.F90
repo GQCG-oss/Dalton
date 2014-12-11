@@ -111,7 +111,7 @@ CONTAINS
         call VerticalRecurrenceGPUSeg1Prim0(nPasses,nPrimP,nPrimQ,&
                & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-               & PpreExpFac,QpreExpFac,LOCALINTS,iASync)
+               & PpreExpFac,QpreExpFac,LOCALINTS(1),iASync)
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
@@ -127,7 +127,7 @@ CONTAINS
         !Primitive Contraction have already been done
         call HorizontalRR_GPU_LHS_P1A1B0AtoB(1,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -149,7 +149,7 @@ CONTAINS
             & TMParray1(1),lupri,iASync)
         !no Spherical Transformation LHS needed
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
         call BuildRJ000GPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -169,7 +169,7 @@ CONTAINS
             & TMParray1(1),lupri,iASync)
         !no Spherical Transformation LHS needed
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
         call BuildRJ000GPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -183,7 +183,7 @@ CONTAINS
         !Primitive Contraction have already been done
         call HorizontalRR_GPU_LHS_P2A1B1AtoB(1,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -205,7 +205,7 @@ CONTAINS
             & TMParray1(1),lupri,iASync)
         !no Spherical Transformation LHS needed
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,9,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
         call BuildRJ000GPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -225,7 +225,7 @@ CONTAINS
             & TMParray1(1),lupri,iASync)
         !no Spherical Transformation LHS needed
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,9,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
         call BuildRJ000GPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -241,7 +241,7 @@ CONTAINS
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri,iASync)
         call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(1,nPasses,TMParray2(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2010)  !Angmom(A= 2,B= 0,C= 1,D= 0) combi
@@ -263,7 +263,7 @@ CONTAINS
         call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(4,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
         call BuildRJ000GPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -284,7 +284,7 @@ CONTAINS
         call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(10,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
         call BuildRJ000GPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -307,7 +307,7 @@ CONTAINS
         call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(5,nPasses,TMParray1(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
         call BuildRJ000GPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -329,7 +329,7 @@ CONTAINS
         call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(5,nPasses,TMParray1(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
         call BuildRJ000GPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -351,7 +351,7 @@ CONTAINS
         call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(5,nPasses,TMParray1(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
         call BuildRJ000GPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -366,7 +366,7 @@ CONTAINS
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri,iASync)
         call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(1,nPasses,TMParray2(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
@@ -388,7 +388,7 @@ CONTAINS
         call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(4,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
         call BuildRJ000GPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -409,7 +409,7 @@ CONTAINS
         call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(10,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
         call BuildRJ000GPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -432,7 +432,7 @@ CONTAINS
         call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(15,nPasses,TMParray1(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
         call BuildRJ000GPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -454,7 +454,7 @@ CONTAINS
         call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(15,nPasses,TMParray1(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
         call BuildRJ000GPUSeg1Prim7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -476,7 +476,7 @@ CONTAINS
         call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(15,nPasses,TMParray1(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
         call BuildRJ000GPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -491,7 +491,7 @@ CONTAINS
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri,iASync)
         call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(1,nPasses,TMParray2(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
@@ -513,7 +513,7 @@ CONTAINS
         call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(4,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(1,nPasses,25,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
         call BuildRJ000GPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -534,7 +534,7 @@ CONTAINS
         call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(10,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(1,nPasses,25,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri,iASync)
+            & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
         call BuildRJ000GPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -557,7 +557,7 @@ CONTAINS
         call HorizontalRR_GPU_RHS_Q2C2D0CtoD(1,nPasses,25,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(25,nPasses,TMParray1(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
         call BuildRJ000GPUSeg1Prim7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -579,7 +579,7 @@ CONTAINS
         call HorizontalRR_GPU_RHS_Q3C2D1CtoD(1,nPasses,25,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(25,nPasses,TMParray1(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
         call BuildRJ000GPUSeg1Prim8(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -601,7 +601,7 @@ CONTAINS
         call HorizontalRR_GPU_RHS_Q4C2D2CtoD(1,nPasses,25,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(25,nPasses,TMParray1(1),&
-            & LOCALINTS   ,iASync)
+            & LOCALINTS(1),iASync)
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in ICI_GPU_OBS_Seg1Prim',-1)
     END SELECT

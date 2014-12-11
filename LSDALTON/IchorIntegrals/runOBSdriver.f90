@@ -1705,7 +1705,7 @@ contains
           !       call AddToString(nTUV)
           !       call AddToString(')')                
        ELSEIF(Seg)THEN
-          call AddToString('LOCALINTS')
+          call AddToString('LOCALINTS(1)')
           OutputSet = .TRUE.
           !          call AddToString('(1:nPasses*')
           !       call AddToString(nTUV)
@@ -1721,7 +1721,7 @@ contains
           call AddToString(STRINGOUT)
 !          Contracted = .TRUE.
        ELSEIF(Seg1Prim)THEN
-          call AddToString('LOCALINTS')
+          call AddToString('LOCALINTS(1)')
           OutputSet = .TRUE.
           Contracted = .TRUE.
        ENDIF
@@ -2015,7 +2015,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
              IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
                 !no subsequent Horizontal or spherical transformations 
                 IF(.NOT.OutputSet)THEN
-                   STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                   STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
                 ELSE
                    STOP 'LOCALINTS already set MAJOER PROBLEM A2'
                 ENDIF
@@ -2030,7 +2030,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
              IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
                 !no subsequent Horizontal or spherical transformations 
                 IF(.NOT.OutputSet)THEN
-                   STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                   STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
                 ELSE
                    STOP 'LOCALINTS already set MAJOER PROBLEM A2'
                 ENDIF
@@ -2051,7 +2051,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
              !no subsequent Horizontal or spherical transformations 
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
@@ -2067,7 +2067,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
              !no subsequent Horizontal or spherical transformations 
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
@@ -2088,7 +2088,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
              !no subsequent Horizontal or spherical transformations 
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
@@ -2123,7 +2123,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomQ.EQ.0)THEN
              !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     '
+                STRINGOUT  = 'LOCALINTS(1)     '
                 OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
@@ -2236,7 +2236,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           !no need for RHS horizontal transfer nor spherical transformation
           IF(.NOT.OutputSet)THEN
              !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
-             STRINGOUT  = 'LOCALINTS     '
+             STRINGOUT  = 'LOCALINTS(1)     '
              OutputSet = .TRUE.
           ELSE
              STOP 'LOCALINTS already set MAJOER PROBLEM B1'
@@ -2357,7 +2357,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        IF(.NOT.OutputSet)THEN
           IF(.NOT.(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1)))THEN
              !no Spherical afterwards which means we can 
-             STRINGOUT  = 'LOCALINTS     '
+             STRINGOUT  = 'LOCALINTS(1)     '
              OutputSet = .TRUE.
           ENDIF
        ELSE
@@ -2453,7 +2453,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
     IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
        !       WRITE(LUMOD3,'(A)')'        !Spherical Transformation RHS'
        IF(.NOT.OutputSet)THEN
-          STRINGOUT  = 'LOCALINTS     '
+          STRINGOUT  = 'LOCALINTS(1)     '
        ELSE
           STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED D1'
        ENDIF
