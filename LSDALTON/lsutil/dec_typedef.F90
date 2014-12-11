@@ -660,7 +660,7 @@ module dec_typedef_module
      Logical, pointer :: PhantomAtom(:) => null()
 
 
-     !> Occ-Occ Fock matrix in MO basis
+     !> Occ-Occ Fock matrix in MO basis (change)
      real(realk), pointer :: Fij(:,:) => null()
 
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
@@ -675,7 +675,9 @@ module dec_typedef_module
      real(realk), pointer :: Frm(:,:) => null()
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
-
+     !> Cabs-Cabs  Fock matrix in MO basis
+     real(realk), pointer :: Fcd(:,:) => null()
+     
      integer,pointer :: SubSystemIndex(:) => null()
 
      !> Pair distance table giving interatomic distances
@@ -864,7 +866,7 @@ module dec_typedef_module
      real(realk), pointer :: Frm(:,:) => null()
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
-
+    
      ! Information for local orbitals
      ! ******************************
      !> Local occupied MO coefficients

@@ -110,7 +110,7 @@ contains
 !ALL TRANSFORMATIONS RELATED TO CABS AND RI IS NOT DONE YET
 !THIS IS DONE AT THE FRAGMENT LEVEL. 
   subroutine get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-       & nocc,noccfull,nvirt,HJir_real,Krr_real,Frr_real,Fac_real,Fii_real,Frm_real,Fcp_real)
+       & nocc,noccfull,nvirt,HJir_real,Krr_real,Frr_real,Fac_real,Fii_real,Frm_real,Fcp_real,Fcd_real)
 
     implicit none
     !> Fragmet molecule info
@@ -128,6 +128,8 @@ contains
     real(realk), intent(inout) :: Frm_real(ncabsAO,nocc)   !ONLY HALF TRANSFORMED
     real(realk), intent(inout) :: Fcp_real(ncabsAO,nbasis) !HACK not (ncabsMO,nbasis)
 
+    real(realk), intent(inout) :: Fcd_real(ncabsAO,ncabsAO) 
+    
     !> Fock matrices for singles correction
     !real(realk), intent(inout), optional :: Fic_real(nocc,ncabsAO) !HACK not (ncabsMO,nbasis)
     !real(realk), intent(inout), optional :: Fcc_real(ncabsAO,ncabsAO) !HACK not (ncabsMO,nbasis)
@@ -139,6 +141,7 @@ contains
     type(matrix) :: Fii
     type(matrix) :: Frm
     type(matrix) :: Fcp
+    type(matrix) :: Fcd
 
     !> Temp
     type(matrix) :: HJrc
@@ -194,7 +197,6 @@ contains
     call mat_to_full(Fii,1.0E0_realk,Fii_real)
     call mat_free(Fii)
 
-
     !> Mixed CABS/AO MO Fock matrix
     call mat_init(Fcr,ncabsAO,nbasis)
     call get_AO_Fock(nbasis,ncabsAO,Fcr,Dmat,MyLsitem,'CRRRC')
@@ -210,9 +212,18 @@ contains
          & MyMolecule%Co, MyMolecule%Cv,'p',Fcr,Fcp,2)
     call mat_to_full(Fcp,1.0E0_realk,Fcp_real)
     call mat_free(Fcp)
-
     call mat_free(Fcr) 
 
+    !Fcd
+    call mat_init(Fcc,ncabsAO,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    call mat_init(Fcd,ncabs,ncabs)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
+    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
+    call mat_free(Fcd)
+    call mat_free(Fcc)
+      
 !!$    print *, '****************************************'
 !!$    print *, '(Norm of HJir_real):', norm2(HJir_real)       
 !!$    print *, '(Norm of HJir):', sqrt(mat_sqnorm2(HJir))
@@ -365,7 +376,7 @@ contains
         
   end subroutine free_F12_mixed_MO_Matrices
 
-  subroutine free_F12_mixed_MO_Matrices_real(HJir,Krr,Frr,Fac,Fii,Frm,Fcp)
+  subroutine free_F12_mixed_MO_Matrices_real(HJir,Krr,Frr,Fac,Fii,Frm,Fcp,Fcd)
 
     implicit none  
     real(realk), pointer :: HJir(:,:) 
@@ -375,7 +386,8 @@ contains
     real(realk), pointer :: Fii(:,:)
     real(realk), pointer :: Frm(:,:)
     real(realk), pointer :: Fcp(:,:)
-
+    real(realk), pointer :: Fcd(:,:)
+    
     call mem_dealloc(HJir)
     call mem_dealloc(Krr)
     call mem_dealloc(Frr)
@@ -383,6 +395,7 @@ contains
     call mem_dealloc(Fii)
     call mem_dealloc(Frm)
     call mem_dealloc(Fcp)
+    call mem_dealloc(Fcd)
 
   end subroutine free_F12_mixed_MO_Matrices_real
 
@@ -945,7 +958,7 @@ contains
        ! Integral screening stuff
        doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
        call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-            & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC)
        IF(doscreen)then
           call II_getBatchOrbitalScreen(DecScreen,mysetting,&
                & n31,nbatchesAlpha,nbatchesGamma,&
@@ -1001,7 +1014,7 @@ contains
           IF(DECinfo%useIchor)THEN
              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mysetting,n21,n41,dimAlpha,dimGamma,&
                   & tmp1,INTSPEC,FULLRHS,1,nAObatches(2),1,nAObatches(4),AOAlphaStart,&
-                  & AOAlphaEnd,AOGammaStart,AOGammaEnd,MoTrans,n21,n41,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
+                  & AOAlphaEnd,AOGammaStart,AOGammaEnd,MoTrans,n21,n41,dimAlpha,dimGamma,NoSymmetry)
           ELSE
              IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
              IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
@@ -1009,7 +1022,7 @@ contains
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                   & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
-                  & INTSPEC,DECinfo%IntegralThreshold)
+                  & INTSPEC)
           ENDIF
           ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
 
@@ -1251,8 +1264,6 @@ contains
     call mem_alloc(gao,nbasis,ncabsAO,nbasis,nbasis)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRR2')
-
-
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
          &                          MyMolecule%Co, MyMolecule%Cv,'irii',gAO,Tirjk)
 
@@ -1359,7 +1370,7 @@ contains
     character(len=4) :: inputstring
     integer :: ndim2(4),ndim1(4)
     real(realk),pointer :: gAO(:,:,:,:)
-    real(realk),pointer :: gMO(:,:,:,:)
+    real(realk),pointer :: gMO(:,:,:,:) ,elms(:)
     type(matrix) :: CMO(4)
     real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
     !> Virtual MO coefficients
