@@ -361,7 +361,7 @@ contains
     logical,pointer ::which_hydrogens(:), dofrag(:)
     real(realk),pointer :: tmplowdin_charge(:),atomic_gross_charge(:)
     integer,pointer :: tmpatomic_idx(:)
-    integer :: nunoccperatom,II,IDX,nu,k,kk
+    integer :: nunoccperatom,II,IDX,nu,k,kk,endidx
     logical,pointer :: WhichAOs(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -597,8 +597,10 @@ contains
           write(DECinfo%output,'(1X,a,i10)') 'ORBITAL: ', i
           write(DECinfo%output,*) '-------------------------------------'
           write(DECinfo%output,'(1X,a,1i5)')        '#AOS   : ', norbital_extent
-          write(DECinfo%output,'(1X,a,100i5)')      'AOS    : ', list_of_aos_to_consider
-          
+          do j=1,norbital_extent,10
+             endidx=min(j+9,norbital_extent)
+             write(DECinfo%output,'(1X,10i7)') list_of_aos_to_consider(j:endidx)
+          end do
 
 !          write(DECinfo%output,'(1X,a,100f10.3)')   'LOWDIN : ', lowdin_charge(1:norbital_extent,i) !not true anymore
           write(DECinfo%output,'(1X,a,f12.5)')      'TOTAL LOWDIN : ', charge 
