@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2014/12/02 (started 2014/09/01).
+!REVISION: 2014/12/10 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -1225,7 +1225,6 @@
 #ifdef VAR_MPI
         integer(MPI_ADDRESS_KIND):: mpi_size
 #endif
-        
         ierr=0
         if(nelems.gt.0_INTL) then
          if(present(attr)) then; flags=attr; else; flags=DIL_ALLOC_BASIC; endif
@@ -1247,18 +1246,19 @@
           call MPI_ALLOC_MEM(mpi_size,MPI_INFO_NULL,caddr,ierr)
 #else
           caddr = c_null_ptr
+          ierr=2
 #endif
           if(ierr.ne.0) then
            if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): MPI memory allocation failed: ",i11)') ierr
-           ierr=2
+           ierr=3
           endif
           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
          case default
           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): invalid allocation attributes: ",i11)') flags
-          ierr=3
+          ierr=4
          end select
         else
-         ierr=4
+         ierr=5
         endif
         return
         end subroutine cpu_ptr_alloc_r
@@ -1270,6 +1270,8 @@
         i=-1
 #ifdef VAR_MPI
         call MPI_COMM_RANK(MPI_COMM_WORLD,i,ierr)
+#else
+        i=0
 #endif
         my_mpi_rank=i
         return
@@ -4045,8 +4047,8 @@
         type(contr_spec_t):: cspec
         integer(INTD):: i,j,k,l,m,n,ngpus,nmics,nd,nl,nr,impis,impir
 
-#ifdef VAR_MPI
         ierr=0
+#ifdef VAR_MPI
         call MPI_COMM_SIZE(infpar%lg_comm,impis,i); if(i.ne.0) then; ierr=1; return; endif
         call MPI_COMM_RANK(infpar%lg_comm,impir,i); if(i.ne.0) then; ierr=2; return; endif
 #endif
@@ -4263,15 +4265,30 @@
         rvol=1_INTL; do i=1,rrank; rvol=rvol*rful(i); enddo
         allocate(darr(1:dvol),STAT=i)
         if(i.ne.0) then
-         write(*,'("MEM ALLOC 1 failed!")'); call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+         write(*,'("MEM ALLOC 1 failed!")')
+#ifdef VAR_MPI
+         call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+#else
+         stop
+#endif
         endif
         allocate(larr(1:lvol),STAT=i)
         if(i.ne.0) then
-         write(*,'("MEM ALLOC 2 failed!")'); call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+         write(*,'("MEM ALLOC 2 failed!")')
+#ifdef VAR_MPI
+         call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+#else
+         stop
+#endif
         endif
         allocate(rarr(1:rvol),STAT=i)
         if(i.ne.0) then
-         write(*,'("MEM ALLOC 3 failed!")'); call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+         write(*,'("MEM ALLOC 3 failed!")')
+#ifdef VAR_MPI
+         call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+#else
+         stop
+#endif
         endif
         do i=1,lvol; larr(i)=1d-2; enddo
         do i=1,rvol; rarr(i)=1d-3; enddo
@@ -4396,13 +4413,17 @@
         val0=dil_tensor_norm1(dtens,errc); print *,'NORM1 ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm1: ",D25.15)') val0
 !Exit:
-999        write(CONS_OUT,'("### DEBUG END: Global Rank ",i7)') impir
+999     write(CONS_OUT,'("### DEBUG END: Global Rank ",i7)') impir
         close(DIL_DEBUG_FILE)
         if(associated(darr)) deallocate(darr)
         if(associated(larr)) deallocate(larr)
         if(associated(rarr)) deallocate(rarr)
         call lsmpi_barrier(infpar%lg_comm)
+#ifdef VAR_MPI
         call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+#else
+        stop
+#endif
         return
         end subroutine dil_debug
 #endif
