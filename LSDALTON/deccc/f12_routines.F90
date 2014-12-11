@@ -110,7 +110,7 @@ contains
 !ALL TRANSFORMATIONS RELATED TO CABS AND RI IS NOT DONE YET
 !THIS IS DONE AT THE FRAGMENT LEVEL. 
   subroutine get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-       & nocc,noccfull,nvirt,HJir_real,Krr_real,Frr_real,Fac_real,Fii_real,Frm_real,Fcp_real,Fcd_real)
+       & nocc,noccfull,nvirt,HJir_real,Krr_real,Frr_real,Fac_real,Fii_real,Frm_real,Fcp_real)
 
     implicit none
     !> Fragmet molecule info
@@ -128,7 +128,6 @@ contains
     real(realk), intent(inout) :: Frm_real(ncabsAO,nocc)   !ONLY HALF TRANSFORMED
     real(realk), intent(inout) :: Fcp_real(ncabsAO,nbasis) !HACK not (ncabsMO,nbasis)
 
-    real(realk), intent(inout) :: Fcd_real(ncabsAO,ncabsAO) 
     
     !> Fock matrices for singles correction
     !real(realk), intent(inout), optional :: Fic_real(nocc,ncabsAO) !HACK not (ncabsMO,nbasis)
@@ -141,7 +140,6 @@ contains
     type(matrix) :: Fii
     type(matrix) :: Frm
     type(matrix) :: Fcp
-    type(matrix) :: Fcd
 
     !> Temp
     type(matrix) :: HJrc
@@ -214,15 +212,15 @@ contains
     call mat_free(Fcp)
     call mat_free(Fcr) 
 
-    !Fcd
-    call mat_init(Fcc,ncabsAO,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
-    call mat_init(Fcd,ncabs,ncabs)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
-    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
-    call mat_free(Fcd)
-    call mat_free(Fcc)
+!!$    !Fcd
+!!$    call mat_init(Fcc,ncabsAO,ncabsAO)
+!!$    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+!!$    call mat_init(Fcd,ncabs,ncabs)
+!!$    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+!!$         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
+!!$    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
+!!$    call mat_free(Fcd)
+!!$    call mat_free(Fcc)
       
 !!$    print *, '****************************************'
 !!$    print *, '(Norm of HJir_real):', norm2(HJir_real)       
@@ -376,7 +374,7 @@ contains
         
   end subroutine free_F12_mixed_MO_Matrices
 
-  subroutine free_F12_mixed_MO_Matrices_real(HJir,Krr,Frr,Fac,Fii,Frm,Fcp,Fcd)
+  subroutine free_F12_mixed_MO_Matrices_real(HJir,Krr,Frr,Fac,Fii,Frm,Fcp)
 
     implicit none  
     real(realk), pointer :: HJir(:,:) 
@@ -386,7 +384,6 @@ contains
     real(realk), pointer :: Fii(:,:)
     real(realk), pointer :: Frm(:,:)
     real(realk), pointer :: Fcp(:,:)
-    real(realk), pointer :: Fcd(:,:)
     
     call mem_dealloc(HJir)
     call mem_dealloc(Krr)
@@ -395,7 +392,6 @@ contains
     call mem_dealloc(Fii)
     call mem_dealloc(Frm)
     call mem_dealloc(Fcp)
-    call mem_dealloc(Fcd)
 
   end subroutine free_F12_mixed_MO_Matrices_real
 
@@ -958,7 +954,7 @@ contains
        ! Integral screening stuff
        doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
        call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
-            & nbatchesAlpha,nbatchesGamma,INTSPEC)
+            & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%integralthreshold)
        IF(doscreen)then
           call II_getBatchOrbitalScreen(DecScreen,mysetting,&
                & n31,nbatchesAlpha,nbatchesGamma,&
@@ -1014,7 +1010,7 @@ contains
           IF(DECinfo%useIchor)THEN
              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,mysetting,n21,n41,dimAlpha,dimGamma,&
                   & tmp1,INTSPEC,FULLRHS,1,nAObatches(2),1,nAObatches(4),AOAlphaStart,&
-                  & AOAlphaEnd,AOGammaStart,AOGammaEnd,MoTrans,n21,n41,dimAlpha,dimGamma,NoSymmetry)
+                  & AOAlphaEnd,AOGammaStart,AOGammaEnd,MoTrans,n21,n41,dimAlpha,dimGamma,NoSymmetry,DECinfo%integralthreshold)
           ELSE
              IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
              IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
@@ -1022,7 +1018,7 @@ contains
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                   & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
-                  & INTSPEC)
+                  & INTSPEC,DECinfo%integralthreshold)
           ENDIF
           ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
 

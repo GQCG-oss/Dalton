@@ -676,7 +676,7 @@ module dec_typedef_module
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
      !> Cabs-Cabs  Fock matrix in MO basis
-     real(realk), pointer :: Fcd(:,:) => null()
+     !real(realk), pointer :: Fcd(:,:) => null()
      
      integer,pointer :: SubSystemIndex(:) => null()
 
