@@ -79,6 +79,11 @@ C
       END IF
 C
 Cend-PFP
+C     TODO implement triplet excitations and remove this statement
+      IF (TRIPLET) THEN
+         CALL QUIT('Triplet excitations are not yet fully integrated')
+      ENDIF
+C      
 C
 C-------------------------------------------
 C     Initializes memory statistics routine.
@@ -394,8 +399,8 @@ C
                MODEL = 'DCRPA'
 C
 CPFP   2009-Jun
-C               NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-               NVARPT = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
+               NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               !NVARPT = 2*(NT1AM(ISYM)+N2P2HOP(ISYM)) ! TODO triplet excitations are not yet integrated
 Cend-PFP
 C
                IF (IPRSOP .GE. 3) THEN
@@ -404,8 +409,8 @@ C
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables.            :',2*NT1AM(ISYM),
 CPFP   2009-Jun
-C     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
+     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+C     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
 Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
@@ -482,8 +487,8 @@ C
                MODEL = 'AOSOP'
 C
 CPFP   2009-Jun
-C               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-               NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
+               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               !NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM)) ! TODO triplet excitations are not yet integrated
 Cend-PFP
 C
                IF (IPRSOP .GE. 3) THEN
@@ -493,8 +498,8 @@ C
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables.            :',2*NT1AM(ISYM),
 CPFP   2009-Jun
-C     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
+     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+C     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
 Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
@@ -571,8 +576,8 @@ C
                MODEL = 'AOSOC'
 C
 CPFP   2009-Jun
-C               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-               NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
+               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               !NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM)) ! TODO triplet excitations are not yet integrated
 Cend-PFP
 C
                IF (IPRSOP .GE. 3) THEN
@@ -582,8 +587,8 @@ C
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables.            :',2*NT1AM(ISYM),
 CPFP   2009-Jun
-C     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
+     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+C     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
 Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)

@@ -47,14 +47,8 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*5
       integer :: inewtr, nnewtr, isymd1, ntosym
-      logical, save :: assemble_densai=.true.
-   
-C todo This inew variables changes behaviour erratically unless saved. Using Write(*,*) statements to print its value will retain it's intended value, but omitting the write statement will turn it into a non-functioning integer.
-C The error seems to occur after the parallel call to par_so_eres.
-C The implicit save of inew removes the error and makes sure it's correct throughout the calculation.
-C I advise using a debugger that will monitor the adress of INEW and see when it changes. This MIGHT be an out-of-bounds error in par_so_eres.
+C   
       integer, save :: inew=0
-
 C
 #include "ccorb.h"
 #include "infind.h"
@@ -71,7 +65,7 @@ C
 #include "infpar.h"
 #include "parsoppa.h"
       integer, save :: numprocs
-      forceupdate      = .true.
+      forceupdate = .true.
 #endif
 C
 C------------------
@@ -351,14 +345,12 @@ C***********************************************************
          call par_so_eres(WORK, LWORK, 0)
 
          ! receive the newly assembled densai array from process 1 before continuing
-         if (densai_was_reduced) then
+
+         IF (  (MODEL.NE.'AOSOC').AND.(NIT.EQ.1) ) THEN
             call mpi_recv(densai, ldensai, mpi_real8, 1, 0, 
-     &                    mpi_comm_world, mpistatus, ierr)
-            densai_was_reduced = .false.
-         else
-         endif
-         
-       
+     &      mpi_comm_world, mpistatus, ierr)
+         ENDIF
+
          goto 888  ! Skips over the do loop that would normally assemble the Fock/density matrix sequentially
 
       endif parallelsoppa
@@ -519,9 +511,7 @@ C-------------------------------------------------------------------
 C
                   DTIME      = SECOND()
                   IF ( (MODEL  .NE.'AOSOC').AND.
-     &                 (NIT    .EQ. 1)     .AND. 
-     &                 (INEWTR .EQ. 1)     .AND.
-     &                  assemble_densai )  THEN
+     &                 (NIT    .EQ. 1)    ) THEN
                      
                      CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
      &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
@@ -760,13 +750,9 @@ C     Calculate the last part of the second order density matrix.
 C----------------------------------------------------------------
 C
       DTIME      = SECOND()
-      IF ( (MODEL .NE. 'AOSOC') .AND.
-     &   (NIT .EQ. 1)         .and.
-     &   (assemble_densai ))  THEN
-
+      IF ( (MODEL .NE. 'AOSOC')   .AND.
+     &     (NIT .EQ. 1)         )  THEN
          CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
-         assemble_densai = .false. 
-
       END IF
 C
       DTIME      = SECOND()   - DTIME
@@ -795,7 +781,7 @@ C
 C-----------------
 C     Close files.
 C-----------------
-C
+C   
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
       CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
@@ -934,8 +920,7 @@ C     be changed to the correct type.
       real*8, allocatable, dimension(:) :: temp
       real*8, allocatable, dimension(:) :: tempdens
 
-      logical, save :: assemble_densai =.true.
-      logical       :: aijreduce        !This array is only calculated under special circumstances. This variable regulates when it needs to be transferred back to so_eres
+      logical :: aijreduce        !This array is only calculated under special circumstances. This variable regulates when it needs to be transferred back to so_eres
       integer, save :: inewtr
       integer :: allocstatus, deallocstatus, isymtr, ldensai, nit
 
@@ -946,8 +931,6 @@ C     be changed to the correct type.
 C**************************************************
 C     Initialization variables.
 C**************************************************
-      densai_was_reduced = .false. 
-
 
       ! This bcast determines how many variables and common blocks
       ! need to be updated before the parallel calculation can start.
@@ -1181,8 +1164,7 @@ C**************************************************
          call dzero( work(ksigda2), lsigda2)
       endif
 
-
-      if (assemble_densai) then
+      if ( (model.ne.'AOSOC') .and. (nit.eq.1) )  then
          allocate(densai(ldensai), stat=allocstatus)
          if (allocstatus.ne.0)  then
             call quit('Allocation error in par_so_eres densai')
@@ -1286,6 +1268,7 @@ C *******************************************
       doilll: DO 300 workindex=1, maxnumjobs
          ILLL = AssignedIndices(workindex)
          if (ILLL.eq.0) exit
+
 
          if (forcedynamicloadbalance) then
             call system_clock(counti, count_rate)
@@ -1411,9 +1394,7 @@ C                 Calculate part of the second order density matrix.
 C-------------------------------------------------------------------
 C
                   IF ( (MODEL .NE. 'AOSOC') .AND.
-     &                 (NIT   .EQ. 1)       .AND. 
-     &                 (INEWTR.EQ. 1)       .AND.
-     &                  assemble_densai )   THEN
+     &                 (NIT   .EQ. 1)     ) THEN
 
                      CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
      &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
@@ -1516,6 +1497,7 @@ C**************************************************
 C  END OF PARALLEL PORTION 
 C**************************************************  
 
+
 C     Relase all surplus processes from the spinning barrier.
 C     The slaves are redirected to label 800
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
@@ -1528,6 +1510,7 @@ C     The slaves are redirected to label 800
          endif
       endif
 800   continue 
+
 
 C ************************************************** 
 C Now assemble the Fock matrix, the result vectors and the sigma vectors
@@ -1596,23 +1579,38 @@ C**************************************************C
 C     Assemble the density matrix on process 1.
 C     Process 1 will send this matrix to the master, once the master
 C     has successfully exited PAR_SO_ERES and returned to SO_ERES.
-      if(assemble_densai) then
+
+
+      IF ( (MODEL.NE.'AOSOC').AND.(NIT.EQ.1) ) THEN
+
          allocate(tempdens(ldensai))
          tempdens = 0.0000
          call mpi_reduce(densai, tempdens, ldensai, MPI_REAL8,
-     &                   MPI_SUM, 1, MPI_COMM_WORLD, ierr)
-         assemble_densai = .false. ! This reduction should only ever occur ONCE in an entire SOPPA calculation
-         if( (myid.eq.0) .or. (myid.eq.1) ) densai_was_reduced = .true.
-      endif
+     &   MPI_SUM, 1, MPI_COMM_WORLD, ierr)
 
-      ! This array is given to SO_ERES as an input parameter. It needs
-      ! to be transferred back from PAR_SO_ERES before process 1 returns.
-      ! The master posts a recv call immediately after returning from PAR_SO ERES
-      if ((densai_was_reduced).and.(myid.eq.1).and.(nit.eq.1) )then
-         call mpi_send(tempdens, ldensai, mpi_real8, 0, 0, 
-     &                 mpi_comm_world, ierr)
-         densai_was_reduced = .false. 
-      endif
+
+         ! This array is given to SO_ERES as an input parameter. It needs
+         ! to be transferred back from PAR_SO_ERES before process 1 returns.
+         ! The master posts a recv call immediately after returning from PAR_SO ERES
+         if (myid.eq.1) then
+            call mpi_send(tempdens, ldensai, mpi_real8, 0, 0, 
+     &      mpi_comm_world, ierr)
+         endif
+
+         deallocate(tempdens, stat=deallocstatus)
+         if(.not.(allocstatus.eq.0) ) then
+            call quit('Deallocation error in PAR_SO_ERES (tempdens)')
+         endif
+
+         if (allocated(densai) ) then
+            deallocate(densai, stat=deallocstatus)
+            if(.not.(deallocstatus.eq.0) ) then
+              call quit('densai was not deallocated in PAR_SO_ERES')
+            endif
+         endif
+
+
+      ENDIF
 
 
 C************************************************** 
@@ -1626,20 +1624,6 @@ C**************************************************
       deallocate(t2mp, stat=deallocstatus)
       if(.not.(deallocstatus.eq.0) ) then
         call quit('t2mp was not deallocated in PAR_SO_ERES')
-      endif
-
-      if (allocated(tempdens) ) then
-         deallocate(tempdens, stat=deallocstatus)
-         if(.not.(allocstatus.eq.0) ) then
-            call quit('Deallocation error in PAR_SO_ERES (tempdens)')
-         endif
-      endif
-
-      if (allocated(densai) ) then
-         deallocate(densai, stat=deallocstatus)
-         if(.not.(deallocstatus.eq.0) ) then
-           call quit('densai was not deallocated in PAR_SO_ERES')
-         endif
       endif
 
 
