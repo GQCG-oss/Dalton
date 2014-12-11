@@ -1810,7 +1810,9 @@ C           1. put FV in DCAO:
                DCAO(1:N2BASX) = -DCAO(1:N2BASX)
                CALL FCK2AO(.TRUE.,FCAO(1+N2BASX),DCAO,WRK,KFREE,LFREE) ! calculate FVAO in FCAO(1+N2BASX)
                ! ( first parameter .TRUE. tells FCK2AO only one density matrix )
-               CALL UTHUB(FCAO(1+N2BASX),DCAO,CMO,WRK(KFREE),          ! and now FV in DCAO
+               CALL DGETSP(NBAST,FCAO(1+N2BASX),WRK(KFREE))
+               CALL PKSYM1(WRK(KFREE),FCAO(1+N2BASX),NBAS,NSYM,1)
+               CALL UTHUB(FCAO(1+N2BASX),DCAO,CMO,WRK(KFREE),          ! and now FV is in DCAO
      &                    NSYM,NBAS,NORB)
 
                HSFOCK = HSFOCK_SAVE
@@ -1825,7 +1827,7 @@ C           2. form FC' = FD - FV' in FCAO, both for standard FV'=FV and for HSR
 
 C           3. FQ matrix is zero matrix for open shell RHF
             CALL DZERO(WRK(KFQ),NASHT*NORBT)
-         END IF
+         END IF  ! (NASHT.GT.0)
 C
 C *** LOCALIZATION
 C
