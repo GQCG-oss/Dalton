@@ -1199,6 +1199,7 @@ contains
     integer(kind=long) :: longdim1,longdim2
     real(realk),pointer :: Dfull(:,:)
     logical :: gcbasis
+    logical(kind=8) :: gcbasis8
     ! Open density file
     funit=-1
     call lsopen(funit,'dens.restart','OLD','UNFORMATTED')
@@ -1220,7 +1221,8 @@ contains
     ! Read density elements
     read(funit) Dfull
 
-    read(funit) gcbasis
+    read(funit) gcbasis8
+    gcbasis = gcbasis8
 
     ! Basis set Sanity check
     if (gcbasis .and. .not. DECinfo%GCBASIS) then

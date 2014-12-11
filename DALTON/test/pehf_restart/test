@@ -21,8 +21,6 @@ f.add(string = 'DIIS converged in',
 
 test.run(['pehf_restart.dal'], ['pehf_restart.mol'], ['pehf_restart.pot'], f={'out': f}, noarch=False)
 
-f.add(string = 'Existing files will be used to restart if possible.')
-
 test.run(['pehf_restart_iter.dal', 'pehf_restart_direct.dal'], ['pehf_restart.mol'], ['pehf_restart.pot'], f={'out': f}, args='-f pehf_restart')
 
 sys.exit(test.return_code)

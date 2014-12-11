@@ -235,9 +235,7 @@ if(ENABLE_INTEREST)
         interestlib
         ${INTERESTLIB_SOURCES}
         )
-    if(ENABLE_XCFUN)
-        target_link_libraries(interestlib xcfun_interface)
-    endif()
+    target_link_libraries(interestlib xcfun_interface)
 endif()
 
 add_library(
@@ -246,9 +244,6 @@ add_library(
     ${FMM_C_SOURCES}
     )
 
-if(ENABLE_XCFUN)
-    target_link_libraries(fmmlib xcfun_interface)
-endif()
 
 add_dependencies(fmmlib lsutillib_precision)
 add_dependencies(fmmlib lsutillib_common)
@@ -279,6 +274,7 @@ add_library(
     )
 
 target_link_libraries(lsintlib dftfunclib)
+add_dependencies(lsintlib xcfun_interface)
 add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)

@@ -10,7 +10,7 @@ PROGRAM TUV
   real(realk),pointer :: SCMAT1(:,:),SCMAT2(:,:)
   logical :: sph1,sph2,sphericalTrans,sphericalGTO,newparam,ELSESTATEMENT,Spherical
   integer :: LUMAIN,LUMOD1,LUMOD2,LUMOD3,LUMOD4,iparam,iparam2,nparam
-  integer :: LUMOD5,LUMOD6,LUMOD7
+  integer :: LUMOD5,LUMOD6,LUMOD7,LUMOD9
   integer :: JMAX2,JMAX3,JMAX4,ituvP,jp,tp,up,vp,ntuvP,l1,l2,l12
   integer :: ip1,jp1,kp1,p1,ip2,jp2,kp2,p2,ijkcartP,AngmomA,AngmomB
   integer :: AngmomC,AngmomD,AngmomP,AngmomQ,nTUVQ,AngmomPQ
@@ -40,6 +40,21 @@ PROGRAM TUV
   WRITE(LUMOD3,'(A)')'MODULE IchorEriGabintegralOBSGeneralModGen'
   WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runGABdriver.f90 in tools directory'
   WRITE(LUMOD3,'(A)')'!Contains routines for General Contracted Basisset '
+
+  LUMOD9=9
+  open(unit = LUMOD9, file="IchorEri_GabIntegral_Prim.F90",status="unknown")
+  WRITE(LUMOD9,'(A)')'MODULE IchorEriGabPrimMod'
+  WRITE(LUMOD9,'(A)')'!Automatic Generated Code (AGC) by runGABdriver.f90 in tools directory'
+  WRITE(LUMOD9,'(A)')'!Contains routines for General Contracted Basisset '
+  WRITE(LUMOD9,'(A)')'use IchorprecisionMod'
+  WRITE(LUMOD9,'(A)')' '
+!  WRITE(LUMOD9,'(A)')'private   '
+!  WRITE(LUMOD9,'(A)')'public :: GabPrimitiveContractionGen1, GabPrimitiveContractionGen16, &'
+!  WRITE(LUMOD9,'(A)')'     & GabPrimitiveContractionGen100, GabPrimitiveContractionGen400, &'
+!  WRITE(LUMOD9,'(A)')'     & GabPrimitiveContractionGen1225, ExtractGabElmP1Gen,&'
+!  WRITE(LUMOD9,'(A)')'     & ExtractGabElmP3Gen, ExtractGabElmP5Gen, ExtractGabElmP9Gen,&'
+!  WRITE(LUMOD9,'(A)')'     & ExtractGabElmP15Gen, ExtractGabElmP25Gen'
+  WRITE(LUMOD9,'(A)')'CONTAINS'
 
   LUMOD6=4
   open(unit = LUMOD6, file="GAB_OBS_DRIVERSeg.f90",status="unknown")
@@ -94,6 +109,7 @@ PROGRAM TUV
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoASeg'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoBSeg'
   WRITE(LUMOD6,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSeg'
+  WRITE(LUMOD3,'(A)')'use IchorEriGabPrimMod' !only for Gen
   DO ILUMOD=3,4
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceLHSModAtoB'
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceLHSModBtoA'
@@ -122,8 +138,7 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&'
   WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&'
-  WRITE(LUMOD2,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
-  WRITE(LUMOD2,'(A)')'       & BasisContmaxsize,BasisCont)'
+  WRITE(LUMOD2,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)'
   WRITE(LUMOD2,'(A)')'    implicit none'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimP,nPrimA,nPrimB'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: IntPrint,lupri'
@@ -148,10 +163,9 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Pdistance12(3)           !Acenter-Bcenter '
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Acenter(3),Bcenter(3)'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: spherical'
-  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize'
   WRITE(LUMOD2,'(A)')'!   TMP variables - allocated outside'  
   WRITE(LUMOD2,'(A)')'    real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)'
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(inout) :: BasisCont(BasisContmaxsize)'  
   WRITE(LUMOD2,'(A)')'    IF(PQorder)THEN'
   WRITE(LUMOD2,'(A)')'       call IchorQuit(''PQorder OBS general expect to get QP ordering'',-1)'
   WRITE(LUMOD2,'(A)')'    ENDIF'
@@ -168,8 +182,7 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&'
   WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&'
-  WRITE(LUMOD2,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
-  WRITE(LUMOD2,'(A)')'       & BasisContmaxsize,BasisCont)'
+  WRITE(LUMOD2,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)'
   WRITE(LUMOD2,'(A)')'   ELSE'
   WRITE(LUMOD2,'(A)')'    call IGI_OBS_Gen(nPrimA,nPrimB,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,IntPrint,lupri,&'
@@ -179,8 +192,7 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'       & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&'
   WRITE(LUMOD2,'(A)')'       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&'
-  WRITE(LUMOD2,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
-  WRITE(LUMOD2,'(A)')'       & BasisContmaxsize,BasisCont)'
+  WRITE(LUMOD2,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)'
   WRITE(LUMOD2,'(A)')'   ENDIF'
   WRITE(LUMOD2,'(A)')'  end subroutine IGI_OBS_general'
   WRITE(LUMOD2,'(A)')'  '
@@ -207,8 +219,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'       & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
      WRITE(ILUMOD,'(A)')'       & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&'
      WRITE(ILUMOD,'(A)')'       & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&'
-     WRITE(ILUMOD,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
-     WRITE(ILUMOD,'(A)')'       & BasisContmaxsize,BasisCont)'
+     WRITE(ILUMOD,'(A)')'       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)'
      WRITE(ILUMOD,'(A)')'    implicit none'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimP,nPrimA,nPrimB'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: IntPrint,lupri'
@@ -233,10 +244,9 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Pdistance12(3)           !Acenter-Bcenter '
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Acenter(3),Bcenter(3)'
      WRITE(ILUMOD,'(A)')'    logical,intent(in) :: spherical'
-     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize'
      WRITE(ILUMOD,'(A)')'!   TMP variables - allocated outside'  
      WRITE(ILUMOD,'(A)')'    real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)'
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(inout) :: BasisCont(BasisContmaxsize)'  
      WRITE(ILUMOD,'(A)')'!   Local variables '  
      !  WRITE(ILUMOD,'(A)')'    real(realk),pointer :: squaredDistance(:)'!,Rpq(:)'!,Rqc(:),Rpa(:)
      WRITE(ILUMOD,'(A)')'    integer :: AngmomP,I,J,nContQP,la,lb,lc,ld,nsize,angmomid,IatomAPass(1),IatomBPass(1)'
@@ -365,22 +375,21 @@ PROGRAM TUV
 
   WRITE(LUMOD2,'(A)')'  '
   WRITE(LUMOD2,'(A)')'  subroutine IGI_OBS_general_size(TMParray1maxsize,&'
-  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,&'
-  WRITE(LUMOD2,'(A)')'         & nContP,nPrimB,Psegmented)'
+  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,nPrimP,&'
+  WRITE(LUMOD2,'(A)')'         & nContP,nPrimB,nContA,Psegmented)'
   WRITE(LUMOD2,'(A)')'    implicit none'
   WRITE(LUMOD2,'(A)')'    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize'
-  WRITE(LUMOD2,'(A)')'    integer,intent(inout) :: BasisContmaxsize'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: AngmomA,AngmomB'
-  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimP,nContP,nPrimB'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimP,nContP,nPrimB,nContA'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: Psegmented'
   WRITE(LUMOD2,'(A)')'    IF(Psegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call IGI_OBS_general_sizeSeg(TMParray1maxsize,&'
-  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&'
-  WRITE(LUMOD2,'(A)')'         & nPrimP,nContP,nPrimB)'
+  WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nContP,nPrimB,nContA)'
   WRITE(LUMOD2,'(A)')'    ELSE'
   WRITE(LUMOD2,'(A)')'     call IGI_OBS_general_sizeGen(TMParray1maxsize,&'
-  WRITE(LUMOD2,'(A)')'         &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&'
-  WRITE(LUMOD2,'(A)')'         & nPrimP,nContP,nPrimB)'
+  WRITE(LUMOD2,'(A)')'         &TMParray2maxsize,AngmomA,AngmomB,&'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nContP,nPrimB,nContA)'
   WRITE(LUMOD2,'(A)')'    ENDIF'
   WRITE(LUMOD2,'(A)')'  end subroutine IGI_OBS_general_size'
   WRITE(LUMOD2,'(A)')'  '
@@ -402,11 +411,11 @@ PROGRAM TUV
         WRITE(LUMOD6,'(A)')'  subroutine IGI_OBS_general_sizeSeg(TMParray1maxsize,&'
         ILUMOD = LUMOD6
      ENDIF
-     WRITE(ILUMOD,'(A)')'         &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,nContP,nPrimB)'
+     WRITE(ILUMOD,'(A)')'         &TMParray2maxsize,AngmomA,AngmomB,nPrimP,nContP,nPrimB,nContA)'
      WRITE(ILUMOD,'(A)')'    implicit none'
-     WRITE(ILUMOD,'(A)')'    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize'
+     WRITE(ILUMOD,'(A)')'    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: AngmomA,AngmomB'
-     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimP,nContP,nPrimB'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimP,nContP,nPrimB,nContA'
      WRITE(ILUMOD,'(A)')'    ! local variables'
      WRITE(ILUMOD,'(A)')'    integer :: AngmomID'
      WRITE(ILUMOD,'(A)')'    '
@@ -414,7 +423,6 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code'
      WRITE(ILUMOD,'(A)')'    TMParray2maxSize = 1'
      WRITE(ILUMOD,'(A)')'    TMParray1maxSize = 1'
-     WRITE(ILUMOD,'(A)')'    BasisContmaxsize = 1'
      WRITE(ILUMOD,'(A)')'    SELECT CASE(AngmomID)'  
      DO AngmomA = 0,2
         DO AngmomB = 0,2
@@ -435,9 +443,6 @@ PROGRAM TUV
            STRINGIN(1:9)  = 'TMParray1'
            STRINGOUT(1:9) = 'TMParray2'
            TMPSTRING(1:9) = '         '
-           IF(Gen)THEN
-              WRITE(ILUMOD,'(A,I5,A)')'       BasisContmaxsize = ',nTUVP*nTUVP,'*nPrimB*nPrimB'
-           ENDIF
            call determineSizes(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
                       & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
         ENDDO
@@ -461,55 +466,62 @@ PROGRAM TUV
      ENDIF
   ENDDO
 
-  WRITE(LUMOD3,'(A)')'  subroutine GabPrimitiveContractionGen1(AUXarray2,AUXarrayCont,nPrimP,&'
-  WRITE(LUMOD3,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont)'
-  WRITE(LUMOD3,'(A)')'    implicit none'
-  WRITE(LUMOD3,'(A)')'    !Warning Primitive screening modifies this!!! '
-  WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimP,nContP'
-  WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
-  WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
-  WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPrimA,nPrimB)'
-  WRITE(LUMOD3,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB)'
-  WRITE(LUMOD3,'(A)')'    real(realk),intent(inout) :: BasisCont(nPrimB,nPrimB)'
-  WRITE(LUMOD3,'(A)')'    !'
-  WRITE(LUMOD3,'(A)')'    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
-  WRITE(LUMOD3,'(A)')'    real(realk) :: TMP,TMPACC,TMPBCC'
-  WRITE(LUMOD3,'(A)')'    !Scaling p**4*c: nPrimA*nPrimB*nPrimC*nPrimD*nContC'
-!  WRITE(LUMOD3,'(A)')'    !$OMP PARALLEL DO DEFAULT(none) &'
-!  WRITE(LUMOD3,'(A)')'    !$OMP SHARED(nContA,nContB,nPrimA,nPrimB,ACC,BCC,AUXarray2,AUXarrayCont) '
-  WRITE(LUMOD3,'(A)')'     do iContC=1,nContA'
-  WRITE(LUMOD3,'(A)')'!$OMP DO COLLAPSE(2) &'
-  WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,TMPACC) '
-  WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
-  WRITE(LUMOD3,'(A)')'       do iPrimD=1,nPrimB'
-  WRITE(LUMOD3,'(A)')'        TMP = 0.0E0_realk'
-  WRITE(LUMOD3,'(A)')'        do iPrimA=1,nPrimA'
-  WRITE(LUMOD3,'(A)')'         TMPACC = ACC(iPrimA,iContC)'  
-  WRITE(LUMOD3,'(A)')'         do iPrimC=1,nPrimA'
-  WRITE(LUMOD3,'(A)')'          TMP = TMP + TMPACC*ACC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB)'
-  WRITE(LUMOD3,'(A)')'         enddo'
-  WRITE(LUMOD3,'(A)')'        enddo'
-  WRITE(LUMOD3,'(A)')'        BasisCont(iPrimD,iPrimB) = TMP'
-  WRITE(LUMOD3,'(A)')'       enddo'
-  WRITE(LUMOD3,'(A)')'      enddo'
-  WRITE(LUMOD3,'(A)')'!$OMP ENDDO '
-  WRITE(LUMOD3,'(A)')'!$OMP DO &'
-  WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iPrimD,iPrimB,iContD,TMP,TMPBCC) '
-  WRITE(LUMOD3,'(A)')'      do iContD=1,nContB'
-  WRITE(LUMOD3,'(A)')'       TMP = 0.0E0_realk'
-  WRITE(LUMOD3,'(A)')'       do iPrimB=1,nPrimB'
-  WRITE(LUMOD3,'(A)')'        TMPBCC = BCC(iPrimB,iContD)'  
-  WRITE(LUMOD3,'(A)')'        do iPrimD=1,nPrimB'
-  WRITE(LUMOD3,'(A)')'         TMP = TMP + TMPBCC*BCC(iPrimD,iContD)*BasisCont(iPrimD,iPrimB)'
-  WRITE(LUMOD3,'(A)')'        enddo'
-  WRITE(LUMOD3,'(A)')'       enddo'
-  WRITE(LUMOD3,'(A)')'       AUXarrayCont(iContC,iContD) = TMP'
-  WRITE(LUMOD3,'(A)')'      enddo'
-  WRITE(LUMOD3,'(A)')'!$OMP END DO'
-  WRITE(LUMOD3,'(A)')'     enddo'
-!  WRITE(LUMOD3,'(A)')'    !$OMP END PARALLEL DO'
-  WRITE(LUMOD3,'(A)')'  end subroutine GabPrimitiveContractionGen1'
-
+  WRITE(LUMOD9,'(A)')'  subroutine GabPrimitiveContractionGen1A(AUXarray2,AUXarrayCont,nPrimP,&'
+  WRITE(LUMOD9,'(A)')'       & nContP,ACC,nPrimA,nContA,nPrimB,nContB)'
+  WRITE(LUMOD9,'(A)')'    implicit none'
+  WRITE(LUMOD9,'(A)')'    !Warning Primitive screening modifies this!!! '
+  WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimP,nContP'
+  WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
+  WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA)'
+  WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPrimA,nPrimB)'
+  WRITE(LUMOD9,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nPrimB*nPrimB*nContA)'
+  WRITE(LUMOD9,'(A)')'    !'
+  WRITE(LUMOD9,'(A)')'    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iP'
+  WRITE(LUMOD9,'(A)')'    real(realk) :: TMP,TMPACC'
+  WRITE(LUMOD9,'(A)')'    !$OMP DO PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,TMPACC,iP) '
+  WRITE(LUMOD9,'(A)')'    do iP=1,nPrimB*nPrimB*nContA'! iPrimB,iPrimD,iContC 
+  WRITE(LUMOD9,'(A)')'     iPrimD = mod(IP-1,nPrimB)+1'
+  WRITE(LUMOD9,'(A)')'     iPrimB = mod((IP-(mod(IP-1,nPrimB)+1))/nPrimB,nPrimB)+1'
+  WRITE(LUMOD9,'(A)')'     iContC = (IP-1)/(nPrimB*nPrimB) + 1'
+  WRITE(LUMOD9,'(A)')'     TMP = 0.0E0_realk'
+  WRITE(LUMOD9,'(A)')'     do iPrimA=1,nPrimA'
+  WRITE(LUMOD9,'(A)')'      TMPACC = ACC(iPrimA,iContC)'
+  WRITE(LUMOD9,'(A)')'      do iPrimC=1,nPrimA'
+  WRITE(LUMOD9,'(A)')'       TMP = TMP + TMPACC*ACC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB)'
+  WRITE(LUMOD9,'(A)')'      enddo'
+  WRITE(LUMOD9,'(A)')'     enddo'
+  WRITE(LUMOD9,'(A)')'     AUXarrayCont(iP) = TMP'
+  WRITE(LUMOD9,'(A)')'    enddo'
+  WRITE(LUMOD9,'(A)')'    !$OMP ENDDO '
+  WRITE(LUMOD9,'(A)')'  end subroutine GabPrimitiveContractionGen1A'
+  WRITE(LUMOD9,'(A)')''
+  WRITE(LUMOD9,'(A)')'  subroutine GabPrimitiveContractionGen1B(AUXarray2,AUXarrayCont,nPrimP,&'
+  WRITE(LUMOD9,'(A)')'       & nContP,BCC,nPrimA,nContA,nPrimB,nContB)'
+  WRITE(LUMOD9,'(A)')'    implicit none'
+  WRITE(LUMOD9,'(A)')'    !Warning Primitive screening modifies this!!! '
+  WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimP,nContP'
+  WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
+  WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: BCC(nPrimB,nContB)'
+  WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: AUXarray2(nPrimB,nPrimB,nContA)'
+  WRITE(LUMOD9,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nContA*nContB)'
+  WRITE(LUMOD9,'(A)')'    !'
+  WRITE(LUMOD9,'(A)')'    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iP'
+  WRITE(LUMOD9,'(A)')'    real(realk) :: TMP,TMPBCC'
+  WRITE(LUMOD9,'(A)')'    !$OMP DO PRIVATE(iContC,iPrimD,iPrimB,iContD,TMP,TMPBCC,iP) '
+  WRITE(LUMOD9,'(A)')'    do iP=1,nContA*nContB'
+  WRITE(LUMOD9,'(A)')'     iContC = mod(IP-1,nContA)+1'
+  WRITE(LUMOD9,'(A)')'     iContD = (IP-1)/(nContA) + 1'
+  WRITE(LUMOD9,'(A)')'     TMP = 0.0E0_realk'
+  WRITE(LUMOD9,'(A)')'     do iPrimB=1,nPrimB'
+  WRITE(LUMOD9,'(A)')'      TMPBCC = BCC(iPrimB,iContD)'
+  WRITE(LUMOD9,'(A)')'      do iPrimD=1,nPrimB'
+  WRITE(LUMOD9,'(A)')'       TMP = TMP + TMPBCC*BCC(iPrimD,iContD)*AUXarray2(iPrimD,iPrimB,iContC)'
+  WRITE(LUMOD9,'(A)')'      enddo'
+  WRITE(LUMOD9,'(A)')'     enddo'
+  WRITE(LUMOD9,'(A)')'     AUXarrayCont(iP) = TMP'
+  WRITE(LUMOD9,'(A)')'    enddo'
+  WRITE(LUMOD9,'(A)')'    !$OMP END DO'
+  WRITE(LUMOD9,'(A)')'  end subroutine GabPrimitiveContractionGen1B'
 
   allocate(UniquenTUVs(3*3*3*3))
   UniquenTUVs(1) = 1
@@ -528,109 +540,161 @@ PROGRAM TUV
        nUniquenTUVs = nUniquenTUVs + 1
        UniquenTUVs(nUniquenTUVs) = nTUVP*nTUVP
 !GENERAL 
-         WRITE(LUMOD3,'(A)')''
+         WRITE(LUMOD9,'(A)')''
          IF(nTUVP*nTUVP.LT.10)THEN
-            WRITE(LUMOD3,'(A,I1,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'(AUXarray2,AUXarrayCont,nPrimP,&'
+            WRITE(LUMOD9,'(A,I1,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A(AUXarray2,AUXarrayCont,nPrimP,&'
          ELSEIF(nTUVP*nTUVP.LT.100)THEN
-            WRITE(LUMOD3,'(A,I2,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'(AUXarray2,AUXarrayCont,nPrimP,&'
+            WRITE(LUMOD9,'(A,I2,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A(AUXarray2,AUXarrayCont,nPrimP,&'
          ELSEIF(nTUVP*nTUVP.LT.1000)THEN
-            WRITE(LUMOD3,'(A,I3,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'(AUXarray2,AUXarrayCont,nPrimP,&'
+            WRITE(LUMOD9,'(A,I3,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A(AUXarray2,AUXarrayCont,nPrimP,&'
          ELSEIF(nTUVP*nTUVP.LT.10000)THEN
-            WRITE(LUMOD3,'(A,I4,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'(AUXarray2,AUXarrayCont,nPrimP,&'
+            WRITE(LUMOD9,'(A,I4,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A(AUXarray2,AUXarrayCont,nPrimP,&'
          ELSEIF(nTUVP*nTUVP.LT.100000)THEN
-            WRITE(LUMOD3,'(A,I5,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'(AUXarray2,AUXarrayCont,nPrimP,&'
+            WRITE(LUMOD9,'(A,I5,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A(AUXarray2,AUXarrayCont,nPrimP,&'
          ELSE
             STOP 'Primitive contraction'
          ENDIF
-         WRITE(LUMOD3,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont)'
-         WRITE(LUMOD3,'(A)')'    implicit none'
-         WRITE(LUMOD3,'(A)')'    !Warning Primitive screening modifies this!!! '
-         WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimP,nContP'
-         WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
-         WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVP,',nPrimA,nPrimB,nPrimA,nPrimB)'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVP,',nContA,nContB)'
-         WRITE(LUMOD3,'(A)')'    !'
-         WRITE(LUMOD3,'(A)')'    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
-         WRITE(LUMOD3,'(A)')'    integer :: iTUV'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMP'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont(',nTUVP*nTUVP,',nPrimB,nPrimB)'
-         WRITE(LUMOD3,'(A)')'    real(realk) :: ACCTMP,BCCTMP'
-         WRITE(LUMOD3,'(A)')'     do iContC=1,nContA'
-         WRITE(LUMOD3,'(A)')'!$OMP DO &'
-         WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,ACCTMP) '
-         WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
-         WRITE(LUMOD3,'(A)')'       do iPrimD=1,nPrimB'
-      WRITE(LUMOD3,'(A,I5)')'        do iTUV=1,',nTUVP*nTUVP
-         WRITE(LUMOD3,'(A)')'         TMP = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'         do iPrimA=1,nPrimA'
-         WRITE(LUMOD3,'(A)')'          ACCTMP = ACC(iPrimA,iContC)'
-         WRITE(LUMOD3,'(A)')'          do iPrimC=1,nPrimA'
-         WRITE(LUMOD3,'(A)')'           TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)'
-         WRITE(LUMOD3,'(A)')'          enddo'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'         BasisCont(iTUV,iPrimD,iPrimB) = TMP'
-         WRITE(LUMOD3,'(A)')'        enddo'
-         WRITE(LUMOD3,'(A)')'       enddo'
-         WRITE(LUMOD3,'(A)')'      enddo'
-         WRITE(LUMOD3,'(A)')'!$OMP END DO'
-         WRITE(LUMOD3,'(A)')'!$OMP DO &'
-         WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,TMP,BCCTMP) '
-         WRITE(LUMOD3,'(A)')'      do iContD=1,nContB'
-      WRITE(LUMOD3,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVP
-         WRITE(LUMOD3,'(A)')'        TMP = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'        do iPrimB=1,nPrimB'
-         WRITE(LUMOD3,'(A)')'         BCCTMP = BCC(iPrimB,iContD)'         
-         WRITE(LUMOD3,'(A)')'         do iPrimD=1,nPrimB'
-         WRITE(LUMOD3,'(A)')'          TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*BasisCont(iTUV,iPrimD,iPrimB)'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'        enddo'
-         WRITE(LUMOD3,'(A)')'        AUXarrayCont(iTUV,iContC,iContD) = TMP'
-         WRITE(LUMOD3,'(A)')'       enddo'
-         WRITE(LUMOD3,'(A)')'      enddo'
-         WRITE(LUMOD3,'(A)')'!$OMP END DO'
-         WRITE(LUMOD3,'(A)')'     enddo'
+         WRITE(LUMOD9,'(A)')'       & nContP,ACC,nPrimA,nContA,nPrimB,nContB)'
+         WRITE(LUMOD9,'(A)')'    implicit none'
+         WRITE(LUMOD9,'(A)')'    !Warning Primitive screening modifies this!!! '
+         WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimP,nContP'
+         WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
+         WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA)'
+         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVP,',nPrimA,nPrimB,nPrimA,nPrimB)'
+         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVP,',nContA*nPrimB*nPrimB)'
+         WRITE(LUMOD9,'(A)')'    !'
+         WRITE(LUMOD9,'(A)')'    integer :: iContC,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP'
+         WRITE(LUMOD9,'(A)')'    real(realk) :: TMP,ACCTMP'
+         WRITE(LUMOD9,'(A)')'!$OMP DO PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,TMP,ACCTMP,iP)'
+         WRITE(LUMOD9,'(A)')'    do iP=1,nContA*nPrimB*nPrimB'
+         WRITE(LUMOD9,'(A)')'     iContC= mod(IP-1,nContA)+1'
+         WRITE(LUMOD9,'(A)')'     iPrimB= mod((IP-(mod(IP-1,nContA)+1))/nContA,nPrimB)+1'
+         WRITE(LUMOD9,'(A)')'     iPrimD= (IP-1)/(nContA*nPrimB) + 1'
+      WRITE(LUMOD9,'(A,I5)')'     do iTUV=1,',nTUVP*nTUVP
+         WRITE(LUMOD9,'(A)')'      TMP = 0.0E0_realk'
+         WRITE(LUMOD9,'(A)')'      do iPrimA=1,nPrimA'
+         WRITE(LUMOD9,'(A)')'       ACCTMP = ACC(iPrimA,iContC)'
+         WRITE(LUMOD9,'(A)')'       do iPrimC=1,nPrimA'
+         WRITE(LUMOD9,'(A)')'        TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)'
+         WRITE(LUMOD9,'(A)')'       enddo'
+         WRITE(LUMOD9,'(A)')'      enddo'
+         WRITE(LUMOD9,'(A)')'      AUXarrayCont(iTUV,iP) = TMP'
+         WRITE(LUMOD9,'(A)')'     enddo'
+         WRITE(LUMOD9,'(A)')'    enddo'
+         WRITE(LUMOD9,'(A)')'!$OMP END DO'
          IF(nTUVP*nTUVP.LT.10)THEN
-            WRITE(LUMOD3,'(A,I1)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP
+            WRITE(LUMOD9,'(A,I1,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A'
          ELSEIF(nTUVP*nTUVP.LT.100)THEN
-            WRITE(LUMOD3,'(A,I2)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP
+            WRITE(LUMOD9,'(A,I2,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A'
          ELSEIF(nTUVP*nTUVP.LT.1000)THEN
-            WRITE(LUMOD3,'(A,I3)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP
+            WRITE(LUMOD9,'(A,I3,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A'
          ELSEIF(nTUVP*nTUVP.LT.10000)THEN
-            WRITE(LUMOD3,'(A,I4)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP
+            WRITE(LUMOD9,'(A,I4,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A'
          ELSEIF(nTUVP*nTUVP.LT.100000)THEN
-            WRITE(LUMOD3,'(A,I5)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP
+            WRITE(LUMOD9,'(A,I5,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A'
          ELSE
             STOP 'Primitive contraction'
          ENDIF
+
+         WRITE(LUMOD9,'(A)')''
+         IF(nTUVP*nTUVP.LT.10)THEN
+            WRITE(LUMOD9,'(A,I1,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B(AUXarray2,AUXarrayCont,nPrimP,&'
+         ELSEIF(nTUVP*nTUVP.LT.100)THEN
+            WRITE(LUMOD9,'(A,I2,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B(AUXarray2,AUXarrayCont,nPrimP,&'
+         ELSEIF(nTUVP*nTUVP.LT.1000)THEN
+            WRITE(LUMOD9,'(A,I3,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B(AUXarray2,AUXarrayCont,nPrimP,&'
+         ELSEIF(nTUVP*nTUVP.LT.10000)THEN
+            WRITE(LUMOD9,'(A,I4,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B(AUXarray2,AUXarrayCont,nPrimP,&'
+         ELSEIF(nTUVP*nTUVP.LT.100000)THEN
+            WRITE(LUMOD9,'(A,I5,A)')'  subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B(AUXarray2,AUXarrayCont,nPrimP,&'
+         ELSE
+            STOP 'Primitive contraction'
+         ENDIF
+         WRITE(LUMOD9,'(A)')'       & nContP,BCC,nPrimA,nContA,nPrimB,nContB)'
+         WRITE(LUMOD9,'(A)')'    implicit none'
+         WRITE(LUMOD9,'(A)')'    !Warning Primitive screening modifies this!!! '
+         WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimP,nContP'
+         WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
+         WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: BCC(nPrimB,nContB)'
+         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVP,',nContA,nPrimB,nPrimB)'
+         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVP,'*nContA*nContB)'
+         WRITE(LUMOD9,'(A)')'    !'
+         WRITE(LUMOD9,'(A)')'    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP'
+         WRITE(LUMOD9,'(A)')'    real(realk) :: TMP,BCCTMP'
+         WRITE(LUMOD9,'(A)')'!$OMP DO PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP,iP) '
+ IF(nTUVP*nTUVP.LT.100)THEN !16
+    WRITE(LUMOD9,'(A,I2,A)')'    do iP=1,nContA*nContB*',nTUVP*nTUVP,' ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)'
+    WRITE(LUMOD9,'(A,I2,A)')'     iTUV=mod(IP-1,',nTUVP*nTUVP,')+1'
+    WRITE(LUMOD9,'(A,I2,A,I2,A)')'     iContC=mod((IP-(mod(IP-1,',nTUVP*nTUVP,')+1))/',nTUVP*nTUVP,',nContA)+1'
+    WRITE(LUMOD9,'(A,I2,A)')'     iContD=(IP-1)/(',nTUVP*nTUVP,'*nContA) + 1'
+ ELSEIF(nTUVP*nTUVP.LT.1000)THEN !100,1400
+    WRITE(LUMOD9,'(A,I3,A)')'    do iP=1,nContA*nContB*',nTUVP*nTUVP,' ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)'
+    WRITE(LUMOD9,'(A,I3,A)')'     iTUV=mod(IP-1,',nTUVP*nTUVP,')+1'
+    WRITE(LUMOD9,'(A,I3,A,I3,A)')'     iContC=mod((IP-(mod(IP-1,',nTUVP*nTUVP,')+1))/',nTUVP*nTUVP,',nContA)+1'
+    WRITE(LUMOD9,'(A,I3,A)')'     iContD=(IP-1)/(',nTUVP*nTUVP,'*nContA) + 1'
+ ELSEIF(nTUVP*nTUVP.LT.10000)THEN !1225
+    WRITE(LUMOD9,'(A,I4,A)')'    do iP=1,nContA*nContB*',nTUVP*nTUVP,' ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)'
+    WRITE(LUMOD9,'(A,I4,A)')'     iTUV=mod(IP-1,',nTUVP*nTUVP,')+1'
+    WRITE(LUMOD9,'(A,I4,A,I4,A)')'     iContC=mod((IP-(mod(IP-1,',nTUVP*nTUVP,')+1))/',nTUVP*nTUVP,',nContA)+1'
+    WRITE(LUMOD9,'(A,I4,A)')'     iContD=(IP-1)/(',nTUVP*nTUVP,'*nContA) + 1'
+ ELSE
+    STOP 'Primitive contraction1225AB'
+ ENDIF
+!         WRITE(LUMOD9,'(A)')'        iContC=mod(IP-1,nContA)+1'
+!         WRITE(LUMOD9,'(A)')'        iContD=mod((IP-(mod(IP-1,nContA)+1))/nContA,nContB)+1'
+!         WRITE(LUMOD9,'(A)')'        iTUV=(IP-1)/(nContA*nContB) + 1'
+         WRITE(LUMOD9,'(A)')'     TMP = 0.0E0_realk'
+         WRITE(LUMOD9,'(A)')'     do iPrimB=1,nPrimB'
+         WRITE(LUMOD9,'(A)')'      BCCTMP = BCC(iPrimB,iContD)'         
+         WRITE(LUMOD9,'(A)')'      do iPrimD=1,nPrimB'
+         WRITE(LUMOD9,'(A)')'       TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iContC,iPrimD,iPrimB)'
+         WRITE(LUMOD9,'(A)')'      enddo'
+         WRITE(LUMOD9,'(A)')'     enddo'
+         WRITE(LUMOD9,'(A)')'     AUXarrayCont(iP) = TMP'
+         WRITE(LUMOD9,'(A)')'    enddo'
+         WRITE(LUMOD9,'(A)')'!$OMP END DO'
+         IF(nTUVP*nTUVP.LT.10)THEN
+            WRITE(LUMOD9,'(A,I1,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B'
+         ELSEIF(nTUVP*nTUVP.LT.100)THEN
+            WRITE(LUMOD9,'(A,I2,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B'
+         ELSEIF(nTUVP*nTUVP.LT.1000)THEN
+            WRITE(LUMOD9,'(A,I3,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B'
+         ELSEIF(nTUVP*nTUVP.LT.10000)THEN
+            WRITE(LUMOD9,'(A,I4,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B'
+         ELSEIF(nTUVP*nTUVP.LT.100000)THEN
+            WRITE(LUMOD9,'(A,I5,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B'
+         ELSE
+            STOP 'Primitive contraction'
+         ENDIF
+
     ENDIF
  ENDDO
 ENDDO
 deallocate(UniquenTUVs)
 
 
-WRITE(LUMOD3,'(A)')''
-WRITE(LUMOD3,'(A)')'  subroutine ExtractGabElmP1Gen(AUXarray,Output,nContP)'
-WRITE(LUMOD3,'(A)')'    implicit none'
-WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nContP'
-WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: AUXarray(nContP)'
-WRITE(LUMOD3,'(A)')'    real(realk),intent(inout) :: Output(1)'
-WRITE(LUMOD3,'(A)')'    !'
-WRITE(LUMOD3,'(A)')'    integer :: iContP'
-WRITE(LUMOD3,'(A)')'    real(realk) :: TMP'
-WRITE(LUMOD3,'(A)')'    !$OMP SINGLE'
-WRITE(LUMOD3,'(A)')'     TMP = ABS(AUXarray(1))'
-WRITE(LUMOD3,'(A)')'     do iContP=2,nContP'
-WRITE(LUMOD3,'(A)')'      IF(ABS(AUXarray(iContP)).GT.TMP)THEN'
-WRITE(LUMOD3,'(A)')'       TMP = ABS(AUXarray(iContP))'
-WRITE(LUMOD3,'(A)')'      ENDIF'
-WRITE(LUMOD3,'(A)')'     enddo'
-WRITE(LUMOD3,'(A)')'     Output(1) = SQRT(TMP)'
-!WRITE(LUMOD3,'(A)')'    Output(1) = MAX(ABS(MAX(AUXarray)),ABS(MIN(AUXarray)))'
-WRITE(LUMOD3,'(A)')'    !$OMP END SINGLE'
-WRITE(LUMOD3,'(A)')'    !$OMP BARRIER'
-WRITE(LUMOD3,'(A)')'  end subroutine ExtractGabElmP1Gen'
-WRITE(LUMOD3,'(A)')''
+WRITE(LUMOD9,'(A)')''
+WRITE(LUMOD9,'(A)')'  subroutine ExtractGabElmP1Gen(AUXarray,Output,nContP)'
+WRITE(LUMOD9,'(A)')'    implicit none'
+WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nContP'
+WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: AUXarray(nContP)'
+WRITE(LUMOD9,'(A)')'    real(realk),intent(inout) :: Output(1)'
+WRITE(LUMOD9,'(A)')'    !'
+WRITE(LUMOD9,'(A)')'    integer :: iContP'
+WRITE(LUMOD9,'(A)')'    real(realk) :: TMP'
+WRITE(LUMOD9,'(A)')'    !$OMP SINGLE'
+WRITE(LUMOD9,'(A)')'     TMP = ABS(AUXarray(1))'
+WRITE(LUMOD9,'(A)')'     do iContP=2,nContP'
+WRITE(LUMOD9,'(A)')'      IF(ABS(AUXarray(iContP)).GT.TMP)THEN'
+WRITE(LUMOD9,'(A)')'       TMP = ABS(AUXarray(iContP))'
+WRITE(LUMOD9,'(A)')'      ENDIF'
+WRITE(LUMOD9,'(A)')'     enddo'
+WRITE(LUMOD9,'(A)')'     Output(1) = SQRT(TMP)'
+!WRITE(LUMOD9,'(A)')'    Output(1) = MAX(ABS(MAX(AUXarray)),ABS(MIN(AUXarray)))'
+WRITE(LUMOD9,'(A)')'    !$OMP END SINGLE'
+WRITE(LUMOD9,'(A)')'    !$OMP BARRIER'
+WRITE(LUMOD9,'(A)')'  end subroutine ExtractGabElmP1Gen'
+WRITE(LUMOD9,'(A)')''
 WRITE(LUMOD6,'(A)')'  subroutine ExtractGabElmP1Seg(AUXarray,Output)'
 WRITE(LUMOD6,'(A)')'    implicit none'
 WRITE(LUMOD6,'(A)')'    real(realk),intent(in) :: AUXarray(1)'
@@ -659,55 +723,55 @@ DO AngmomA = 0,2
          nUniquenTUVs = nUniquenTUVs + 1
          UniquenTUVs(nUniquenTUVs) = nlmA*nlmB
          !GENERAL 
-         WRITE(LUMOD3,'(A)')''
+         WRITE(LUMOD9,'(A)')''
          IF(nlmA*nlmB.LT.10)THEN
-            WRITE(LUMOD3,'(A,I1,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
+            WRITE(LUMOD9,'(A,I1,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
          ELSEIF(nlmA*nlmB.LT.100)THEN
-            WRITE(LUMOD3,'(A,I2,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
+            WRITE(LUMOD9,'(A,I2,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
          ELSEIF(nlmA*nlmB.LT.1000)THEN
-            WRITE(LUMOD3,'(A,I3,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
+            WRITE(LUMOD9,'(A,I3,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
          ELSEIF(nlmA*nlmB.LT.10000)THEN
-            WRITE(LUMOD3,'(A,I4,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
+            WRITE(LUMOD9,'(A,I4,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
          ELSEIF(nlmA*nlmB.LT.100000)THEN
-            WRITE(LUMOD3,'(A,I5,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
+            WRITE(LUMOD9,'(A,I5,A)')'  subroutine ExtractGabElmP',nlmA*nlmB,'Gen(AUXarray,Output,nContP)'
          ELSE
             STOP 'Primitive contraction'
          ENDIF
-         WRITE(LUMOD3,'(A)')'    implicit none'
-         WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nContP'
-         WRITE(LUMOD3,'(A,I5,A,I5,A)')'    real(realk),intent(in) :: AUXarray(',nlmA*nlmB,',',nlmA*nlmB,',nContP)'
-         WRITE(LUMOD3,'(A)')'    real(realk),intent(inout) :: Output(1)'
-         WRITE(LUMOD3,'(A)')'    !'
-         WRITE(LUMOD3,'(A)')'    integer :: iContP,i'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMP(',nlmA*nlmB,')'
-         WRITE(LUMOD3,'(A)')'    real(realk) :: MaxValue,TotalMaxValue'
-         WRITE(LUMOD3,'(A)')'    !$OMP SINGLE'
-         WRITE(LUMOD3,'(A,I5)')'     do i=1,',nlmA*nlmB
-         WRITE(LUMOD3,'(A)')'      TMP(i) = ABS(AUXarray(i,i,1))'
-         WRITE(LUMOD3,'(A)')'     enddo'
-         WRITE(LUMOD3,'(A)')'     TotalMaxValue = MAXVAL(TMP)'
-         WRITE(LUMOD3,'(A)')'     do iContP=2,nContP'
-         WRITE(LUMOD3,'(A,I5)')'      do i=1,',nlmA*nlmB
-         WRITE(LUMOD3,'(A)')'       TMP(i) = ABS(AUXarray(i,i,iContP))'
-         WRITE(LUMOD3,'(A)')'      enddo'
-         WRITE(LUMOD3,'(A)')'      maxvalue = MAXVAL(TMP)'
-         WRITE(LUMOD3,'(A)')'      IF(MaxValue.GT.TotalMaxValue)THEN'
-         WRITE(LUMOD3,'(A)')'       TotalMaxValue = MaxValue'       
-         WRITE(LUMOD3,'(A)')'      ENDIF'
-         WRITE(LUMOD3,'(A)')'     enddo'
-         WRITE(LUMOD3,'(A)')'     Output(1) = SQRT(TotalMaxValue)'
-         WRITE(LUMOD3,'(A)')'    !$OMP END SINGLE'
-         WRITE(LUMOD3,'(A)')'    !$OMP BARRIER'
+         WRITE(LUMOD9,'(A)')'    implicit none'
+         WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nContP'
+         WRITE(LUMOD9,'(A,I5,A,I5,A)')'    real(realk),intent(in) :: AUXarray(',nlmA*nlmB,',',nlmA*nlmB,',nContP)'
+         WRITE(LUMOD9,'(A)')'    real(realk),intent(inout) :: Output(1)'
+         WRITE(LUMOD9,'(A)')'    !'
+         WRITE(LUMOD9,'(A)')'    integer :: iContP,i'
+         WRITE(LUMOD9,'(A,I5,A)')'    real(realk) :: TMP(',nlmA*nlmB,')'
+         WRITE(LUMOD9,'(A)')'    real(realk) :: MaxValue,TotalMaxValue'
+         WRITE(LUMOD9,'(A)')'    !$OMP SINGLE'
+         WRITE(LUMOD9,'(A,I5)')'     do i=1,',nlmA*nlmB
+         WRITE(LUMOD9,'(A)')'      TMP(i) = ABS(AUXarray(i,i,1))'
+         WRITE(LUMOD9,'(A)')'     enddo'
+         WRITE(LUMOD9,'(A)')'     TotalMaxValue = MAXVAL(TMP)'
+         WRITE(LUMOD9,'(A)')'     do iContP=2,nContP'
+         WRITE(LUMOD9,'(A,I5)')'      do i=1,',nlmA*nlmB
+         WRITE(LUMOD9,'(A)')'       TMP(i) = ABS(AUXarray(i,i,iContP))'
+         WRITE(LUMOD9,'(A)')'      enddo'
+         WRITE(LUMOD9,'(A)')'      maxvalue = MAXVAL(TMP)'
+         WRITE(LUMOD9,'(A)')'      IF(MaxValue.GT.TotalMaxValue)THEN'
+         WRITE(LUMOD9,'(A)')'       TotalMaxValue = MaxValue'       
+         WRITE(LUMOD9,'(A)')'      ENDIF'
+         WRITE(LUMOD9,'(A)')'     enddo'
+         WRITE(LUMOD9,'(A)')'     Output(1) = SQRT(TotalMaxValue)'
+         WRITE(LUMOD9,'(A)')'    !$OMP END SINGLE'
+         WRITE(LUMOD9,'(A)')'    !$OMP BARRIER'
          IF(nlmA*nlmB.LT.10)THEN
-            WRITE(LUMOD3,'(A,I1,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
+            WRITE(LUMOD9,'(A,I1,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
          ELSEIF(nlmA*nlmB.LT.100)THEN
-            WRITE(LUMOD3,'(A,I2,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
+            WRITE(LUMOD9,'(A,I2,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
          ELSEIF(nlmA*nlmB.LT.1000)THEN
-            WRITE(LUMOD3,'(A,I3,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
+            WRITE(LUMOD9,'(A,I3,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
          ELSEIF(nlmA*nlmB.LT.10000)THEN
-            WRITE(LUMOD3,'(A,I4,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
+            WRITE(LUMOD9,'(A,I4,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
          ELSEIF(nlmA*nlmB.LT.100000)THEN
-            WRITE(LUMOD3,'(A,I5,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
+            WRITE(LUMOD9,'(A,I5,A)')'  end subroutine ExtractGabElmP',nlmA*nlmB,'Gen'
          ELSE
             STOP 'Primitive contraction'
          ENDIF
@@ -766,6 +830,9 @@ WRITE(LUMOD6,'(A)')'END MODULE IchorEriGabintegralOBSGeneralModSeg'
 close(unit = LUMOD2)
 close(unit = LUMOD3)
 close(unit = LUMOD6)
+
+WRITE(LUMOD9,'(A)')'END MODULE IchorEriGabPrimMod'
+close(unit = LUMOD9)
 
 contains
   subroutine subroutineMain(LUMOD3,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
@@ -1029,23 +1096,67 @@ contains
        call DebugMemoryTest(STRINGOUT,'nContP',nTUVP*nTUVP,LUMOD3)
 
 !  nPrimP*nPrimP*nTUVP*nTUVP*nPasses  to nContP*nTUVP*nTUVP*nPasses
+
        IF(nTUVP*nTUVP.LT.10)THEN       
-          WRITE(LUMOD3,'(A,I1,A,A,A,I1,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'(',STRINGIN,'(1:nPrimP*nPrimP*',nTUVP*nTUVP,'),&'
-          WRITE(LUMOD3,'(A,A,A,I1,A)')'             & ',STRINGOUT,'(1:nContP*',nTUVP*nTUVP,'),nPrimP,&'
+          WRITE(LUMOD3,'(A,I1,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'A(',STRINGIN,',',STRINGOUT,',nPrimP,&'
        ELSEIF(nTUVP*nTUVP.LT.100)THEN
-          WRITE(LUMOD3,'(A,I2,A,A,A,I2,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'(',STRINGIN,'(1:nPrimP*nPrimP*',nTUVP*nTUVP,'),&'
-          WRITE(LUMOD3,'(A,A,A,I2,A)')'             & ',STRINGOUT,'(1:nContP*',nTUVP*nTUVP,'),nPrimP,&'
+          WRITE(LUMOD3,'(A,I2,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'A(',STRINGIN,',',STRINGOUT,',nPrimP,&'
        ELSEIF(nTUVP*nTUVP.LT.1000)THEN
-          WRITE(LUMOD3,'(A,I3,A,A,A,I3,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'(',STRINGIN,'(1:nPrimP*nPrimP*',nTUVP*nTUVP,'),&'
-          WRITE(LUMOD3,'(A,A,A,I3,A)')'             & ',STRINGOUT,'(1:nContP*',nTUVP*nTUVP,'),nPrimP,&'
+          WRITE(LUMOD3,'(A,I3,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'A(',STRINGIN,',',STRINGOUT,',nPrimP,&'
        ELSEIF(nTUVP*nTUVP.LT.10000)THEN
-          WRITE(LUMOD3,'(A,I4,A,A,A,I4,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'(',STRINGIN,'(1:nPrimP*nPrimP*',nTUVP*nTUVP,'),&'
-          WRITE(LUMOD3,'(A,A,A,I4,A)')'             & ',STRINGOUT,'(1:nContP*',nTUVP*nTUVP,'),nPrimP,&'
-!          WRITE(LUMOD3,'(A,I4,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPasses,&'
+          WRITE(LUMOD3,'(A,I4,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'A(',STRINGIN,',',STRINGOUT,',nPrimP,&'
        ELSE
           STOP 'GenPrimCont'
        ENDIF
-       WRITE(LUMOD3,'(A)')'              & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont)'
+!!$       IF(nTUVP*nTUVP.LT.10)THEN       
+!!$          WRITE(LUMOD3,'(A,I1,A,A,A,I1,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'A(',STRINGIN,'(1:nPrimP*nPrimP*',nTUVP*nTUVP,'),&'
+!!$          WRITE(LUMOD3,'(A,A,A,I1,A)')'             & ',STRINGOUT,'(1:nPrimB*nPrimB*nContA*',nTUVP*nTUVP,'),nPrimP,&'
+!!$       ELSEIF(nTUVP*nTUVP.LT.100)THEN
+!!$          WRITE(LUMOD3,'(A,I2,A,A,A,I2,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'A(',STRINGIN,'(1:nPrimP*nPrimP*',nTUVP*nTUVP,'),&'
+!!$          WRITE(LUMOD3,'(A,A,A,I2,A)')'             & ',STRINGOUT,'(1:nPrimB*nPrimB*nContA*',nTUVP*nTUVP,'),nPrimP,&'
+!!$       ELSEIF(nTUVP*nTUVP.LT.1000)THEN
+!!$          WRITE(LUMOD3,'(A,I3,A,A,A,I3,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'A(',STRINGIN,'(1:nPrimP*nPrimP*',nTUVP*nTUVP,'),&'
+!!$          WRITE(LUMOD3,'(A,A,A,I3,A)')'             & ',STRINGOUT,'(1:nPrimB*nPrimB*nContA*',nTUVP*nTUVP,'),nPrimP,&'
+!!$       ELSEIF(nTUVP*nTUVP.LT.10000)THEN
+!!$          WRITE(LUMOD3,'(A,I4,A,A,A,I4,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'A(',STRINGIN,'(1:nPrimP*nPrimP*',nTUVP*nTUVP,'),&'
+!!$          WRITE(LUMOD3,'(A,A,A,I4,A)')'             & ',STRINGOUT,'(1:nPrimB*nPrimB*nContA*',nTUVP*nTUVP,'),nPrimP,&'
+!!$!          WRITE(LUMOD3,'(A,I4,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPasses,&'
+!!$       ELSE
+!!$          STOP 'GenPrimCont'
+!!$       ENDIF
+       WRITE(LUMOD3,'(A)')'              & nContP,ACC,nPrimA,nContA,nPrimB,nContB)'
+       !swap 
+       TMPSTRING = STRINGIN
+       STRINGIN  = STRINGOUT
+       STRINGOUT  = TMPSTRING
+       IF(nTUVP*nTUVP.LT.10)THEN       
+          WRITE(LUMOD3,'(A,I1,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'B(',STRINGIN,',',STRINGOUT,',nPrimP,&'
+       ELSEIF(nTUVP*nTUVP.LT.100)THEN
+          WRITE(LUMOD3,'(A,I2,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'B(',STRINGIN,',',STRINGOUT,',nPrimP,&'
+       ELSEIF(nTUVP*nTUVP.LT.1000)THEN
+          WRITE(LUMOD3,'(A,I3,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'B(',STRINGIN,',',STRINGOUT,',nPrimP,&'
+       ELSEIF(nTUVP*nTUVP.LT.10000)THEN
+          WRITE(LUMOD3,'(A,I4,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'B(',STRINGIN,',',STRINGOUT,',nPrimP,&'
+       ELSE
+          STOP 'GenPrimCont'
+       ENDIF
+!!$       IF(nTUVP*nTUVP.LT.10)THEN       
+!!$          WRITE(LUMOD3,'(A,I1,A,A,A,I1,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'B(',STRINGIN,'(1:nPrimB*nPrimB*nContA*',nTUVP*nTUVP,'),&'
+!!$          WRITE(LUMOD3,'(A,A,A,I1,A)')'             & ',STRINGOUT,'(1:nContP*',nTUVP*nTUVP,'),nPrimP,&'
+!!$       ELSEIF(nTUVP*nTUVP.LT.100)THEN
+!!$          WRITE(LUMOD3,'(A,I2,A,A,A,I2,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'B(',STRINGIN,'(1:nPrimB*nPrimB*nContA*',nTUVP*nTUVP,'),&'
+!!$          WRITE(LUMOD3,'(A,A,A,I2,A)')'             & ',STRINGOUT,'(1:nContP*',nTUVP*nTUVP,'),nPrimP,&'
+!!$       ELSEIF(nTUVP*nTUVP.LT.1000)THEN
+!!$          WRITE(LUMOD3,'(A,I3,A,A,A,I3,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'B(',STRINGIN,'(1:nPrimB*nPrimB*nContA*',nTUVP*nTUVP,'),&'
+!!$          WRITE(LUMOD3,'(A,A,A,I3,A)')'             & ',STRINGOUT,'(1:nContP*',nTUVP*nTUVP,'),nPrimP,&'
+!!$       ELSEIF(nTUVP*nTUVP.LT.10000)THEN
+!!$          WRITE(LUMOD3,'(A,I4,A,A,A,I4,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'B(',STRINGIN,'(1:nPrimB*nPrimB*nContA*',nTUVP*nTUVP,'),&'
+!!$          WRITE(LUMOD3,'(A,A,A,I4,A)')'             & ',STRINGOUT,'(1:nContP*',nTUVP*nTUVP,'),nPrimP,&'
+!!$!          WRITE(LUMOD3,'(A,I4,A,A,A,A,A)')'         call GabPrimitiveContractionGen',nTUVP*nTUVP,'(',STRINGIN,',',STRINGOUT,',nPrimP,nPasses,&'
+!!$       ELSE
+!!$          STOP 'GenPrimCont'
+!!$       ENDIF
+       WRITE(LUMOD3,'(A)')'              & nContP,BCC,nPrimA,nContA,nPrimB,nContB)'
        !swap 
        TMPSTRING = STRINGIN
        STRINGIN  = STRINGOUT
@@ -1496,6 +1607,23 @@ contains
     ENDIF
     IF(PerformBasisContAndPlaceInTmp)THEN
 !       WRITE(LUMOD3,'(A)')'       ! BasisCont Recurrence'
+       call initString(7)
+       call AddToString(STRINGOUT)
+       call AddToString('maxSize = MAX(')
+       call AddToString(STRINGOUT)
+       call AddToString('maxSize,')
+       call AddToString(nTUVQ*nTUVP)       
+       IF(Gen)THEN
+!          call AddToString('*nContP*nContP)')
+          call AddToString('*nPrimB*nPrimB*nContA)')
+       ELSE
+          call AddToString(')')
+       ENDIF
+       call writeString(LUMOD3)                
+       !swap 
+       TMPSTRING = STRINGIN
+       STRINGIN  = STRINGOUT
+       STRINGOUT  = TMPSTRING
        call initString(7)
        call AddToString(STRINGOUT)
        call AddToString('maxSize = MAX(')

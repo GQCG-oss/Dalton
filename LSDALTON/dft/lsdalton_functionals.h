@@ -395,6 +395,7 @@ extern Functional Camb3lypFunctional;
 extern Functional CamxFunctional;
 extern Functional CamcompxFunctional;
 extern Functional GGAKeyFunctional;
+extern Functional CombineFunctional;
 extern Functional KT1Functional;
 extern Functional KT2Functional;
 extern Functional KT3Functional;

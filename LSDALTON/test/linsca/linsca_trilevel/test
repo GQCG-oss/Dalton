@@ -11,10 +11,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 
 f.add(string = 'Final DFT energy',
-      rel_tolerance = 1.0e-9)
+      rel_tolerance = 1.0e-8)
 
 f.add(string = 'HOMO-LUMO Gap',
-      rel_tolerance = 1.0e-9)
+      rel_tolerance = 1.0e-5)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

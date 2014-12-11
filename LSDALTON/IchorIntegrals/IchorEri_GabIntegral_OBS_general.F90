@@ -21,8 +21,7 @@ CONTAINS
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
-       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisContmaxsize,BasisCont)
+       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
     implicit none
     integer,intent(in) :: nPrimP,nPrimA,nPrimB
     integer,intent(in) :: IntPrint,lupri
@@ -47,10 +46,9 @@ CONTAINS
     real(realk),intent(in) :: Pdistance12(3)           !Acenter-Bcenter 
     real(realk),intent(in) :: Acenter(3),Bcenter(3)
     logical,intent(in) :: spherical
-    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize
+    integer,intent(in) :: TMParray1maxsize,TMParray2maxsize
 !   TMP variables - allocated outside
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
-    real(realk),intent(inout) :: BasisCont(BasisContmaxsize)
     IF(PQorder)THEN
        call IchorQuit('PQorder OBS general expect to get QP ordering',-1)
     ENDIF
@@ -67,8 +65,7 @@ CONTAINS
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
-       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisContmaxsize,BasisCont)
+       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
    ELSE
     call IGI_OBS_Gen(nPrimA,nPrimB,&
        & nPrimP,IntPrint,lupri,&
@@ -78,29 +75,27 @@ CONTAINS
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
-       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisContmaxsize,BasisCont)
+       & spherical,TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
    ENDIF
   end subroutine IGI_OBS_general
   
   
   subroutine IGI_OBS_general_size(TMParray1maxsize,&
-         & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,&
-         & nContP,nPrimB,Psegmented)
+         & TMParray2maxsize,AngmomA,AngmomB,nPrimP,&
+         & nContP,nPrimB,nContA,Psegmented)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
-    integer,intent(inout) :: BasisContmaxsize
     integer,intent(in) :: AngmomA,AngmomB
-    integer,intent(in) :: nPrimP,nContP,nPrimB
+    integer,intent(in) :: nPrimP,nContP,nPrimB,nContA
     logical,intent(in) :: Psegmented
     IF(Psegmented)THEN
      call IGI_OBS_general_sizeSeg(TMParray1maxsize,&
-         & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&
-         & nPrimP,nContP,nPrimB)
+         & TMParray2maxsize,AngmomA,AngmomB,&
+         & nPrimP,nContP,nPrimB,nContA)
     ELSE
      call IGI_OBS_general_sizeGen(TMParray1maxsize,&
-         &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&
-         & nPrimP,nContP,nPrimB)
+         &TMParray2maxsize,AngmomA,AngmomB,&
+         & nPrimP,nContP,nPrimB,nContA)
     ENDIF
   end subroutine IGI_OBS_general_size
   
