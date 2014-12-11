@@ -76,7 +76,17 @@ contains
     ! Get informations about full molecule
     ! ************************************
     call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
+    
+    !> F12
+    !call molecule_init_f12(molecule,mylsitem,D)
 
+    ! Fock, overlap, and MO coefficient matrices are now stored
+    ! in Molecule, and there is no reason to store them twice.
+    ! So we delete them now and reset them at the end.
+    call mat_free(F)
+    call mat_free(S)
+    call mat_free(C)
+    
     call dec_main_prog(MyLsitem,molecule,D,E)
 
     ! Restore input matrices

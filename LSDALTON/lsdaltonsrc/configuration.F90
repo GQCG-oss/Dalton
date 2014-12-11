@@ -1342,6 +1342,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.4CENTERERI');  INTEGRAL%DO4CENTERERI = .TRUE.
         CASE ('.AOPRINT');  READ(LUCMD,*) INTEGRAL%AOPRINT
         CASE ('.BASPRINT');  READ(LUCMD,*) INTEGRAL%BASPRINT
+        CASE ('.ForceRIMP2memReduced'); INTEGRAL%ForceRIMP2memReduced = .TRUE.
         CASE ('.DEBUGICHOR')
            INTEGRAL%DEBUGICHOR = .TRUE.
            READ(LUCMD,*) INTEGRAL%DEBUGICHORoption

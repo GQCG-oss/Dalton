@@ -1184,6 +1184,9 @@ intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
    AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+ELSEIF(AOspec.EQ.'D')THEN
+   !   The Aux AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
    AObasis => setting%basis(1)%p%BINFO(CABBasParam)
@@ -1395,15 +1398,20 @@ intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
    AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+ELSEIF(AOspec.EQ.'D')THEN
+   !   The Aux AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
    AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
-
+Family = setting%SCHEME%NOFAMILY
+setting%SCHEME%NOFAMILY = .FALSE.
 call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
      & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+setting%SCHEME%NOFAMILY = Family
 
 Family = .FALSE.
 do I=1,AO%nbatches
@@ -1445,6 +1453,61 @@ do I=1,nbatches
    enddo   
 enddo
 end subroutine build_minimalbatchesOfAOs
+
+subroutine build_minimalbatchesOfAOs2(lupri,setting,batchdim,nbatches,AOspec)
+implicit none
+integer,intent(in) :: lupri
+type(lssetting) :: setting
+integer,pointer :: batchdim(:)
+integer,intent(inout) :: nbatches
+character(len=1),intent(in) :: AOspec
+!
+integer :: I,A,norbitals,iOrb,tmporb,allocnbatches
+logical :: uncont,intnrm,Family
+type(AOITEM) :: AO
+TYPE(BASISSETINFO),pointer :: AObasis
+uncont=.FALSE.
+intnrm = .false.
+IF(AOspec.EQ.'R')THEN
+   !   The regular AO-basis
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+ELSEIF(AOspec.EQ.'D')THEN
+   !   The Aux AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
+ELSEIF(AOspec.EQ.'C')THEN
+   !   The CABS AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
+Family = setting%SCHEME%NOFAMILY
+setting%SCHEME%NOFAMILY = .FALSE.
+call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+setting%SCHEME%NOFAMILY = Family
+
+Family = .FALSE.
+do I=1,AO%nbatches
+   IF(AO%BATCH(I)%nAngmom.GT.1) Family = .TRUE.
+enddo
+IF(Family)THEN
+   call lsquit('Family basis set not allowed in build_minimalbatchesOfAOs',-1)
+ENDIF
+
+nbatches = AO%nbatches
+call mem_alloc(batchdim,nbatches)
+do I=1,nbatches
+   batchdim(I) = 0
+enddo
+do I=1,AO%nbatches
+   norbitals = 0
+   DO A=1,AO%BATCH(I)%nAngmom
+      norbitals = norbitals + AO%BATCH(I)%norbitals(A)
+   ENDDO
+   batchdim(I) = norbitals
+enddo
+call free_aoitem(lupri,AO)
+end subroutine build_minimalbatchesOfAOs2
 
 subroutine determine_MaxOrbitals(lupri,setting,maxallowedorbitals,MaxOrbitals,AOspec)
 implicit none
@@ -1507,6 +1570,9 @@ intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
    AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+ELSEIF(AOspec.EQ.'D')THEN
+   !   The CABS AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
    AObasis => setting%basis(1)%p%BINFO(CABBasParam)

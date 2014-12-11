@@ -57,7 +57,7 @@ option(ENABLE_CSR            "Enable MKL compressed sparse row"                 
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
 option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
-option(ENABLE_XCFUN          "Enable XCFUN"                                     OFF)
+option(ENABLE_XCFUN          "Enable XCFUN"                                     ON)
 option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
@@ -112,7 +112,7 @@ if(ENABLE_CODE_COVERAGE)
 endif()
 
 set(CMAKE_Fortran_MODULE_DIRECTORY
-    ${PROJECT_BINARY_DIR}/modules
+    ${PROJECT_BINARY_DIR}#/modules
     )
 
 if(ENABLE_GPU)

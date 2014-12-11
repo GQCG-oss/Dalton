@@ -117,7 +117,7 @@ CONTAINS
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
         call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,1,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
         call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -134,7 +134,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(1,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
         call VerticalRecurrenceCPUSeg1Prim1C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
@@ -145,7 +145,7 @@ CONTAINS
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
         call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,nPasses,1,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
         call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -160,7 +160,7 @@ CONTAINS
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
         call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,nPasses,1,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -177,7 +177,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(1,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
         call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -193,7 +193,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(1,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -209,7 +209,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(1,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -225,7 +225,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(1,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
         call VerticalRecurrenceCPUSeg1Prim1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
@@ -235,7 +235,7 @@ CONTAINS
         !Primitive Contraction have already been done
         call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -257,7 +257,7 @@ CONTAINS
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -279,7 +279,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
         call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -298,7 +298,7 @@ CONTAINS
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -318,7 +318,7 @@ CONTAINS
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -340,7 +340,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -361,7 +361,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -382,7 +382,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -403,7 +403,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
         call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -418,7 +418,7 @@ CONTAINS
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(1,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
@@ -440,7 +440,7 @@ CONTAINS
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nPasses,TMParray1(1),&
             & TMParray2(1))
         call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -463,7 +463,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -483,7 +483,7 @@ CONTAINS
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nPasses,TMParray1(1),&
             & TMParray2(1))
         call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -504,7 +504,7 @@ CONTAINS
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nPasses,TMParray1(1),&
             & TMParray2(1))
         call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -527,7 +527,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -549,7 +549,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -571,7 +571,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(5,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
         call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -593,7 +593,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(5,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
         call BuildRJ000CPUSeg1Prim2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -612,7 +612,7 @@ CONTAINS
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -634,7 +634,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -655,7 +655,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -676,7 +676,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -697,7 +697,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -718,7 +718,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -737,7 +737,7 @@ CONTAINS
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
         call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,9,Qdistance12,TMParray1(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -759,7 +759,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(9,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -780,7 +780,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(9,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -801,7 +801,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(9,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -822,7 +822,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(9,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
         call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -843,7 +843,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(9,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -858,7 +858,7 @@ CONTAINS
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(1,nPasses,TMParray2(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
@@ -880,7 +880,7 @@ CONTAINS
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nPasses,TMParray1(1),&
             & TMParray2(1))
         call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -903,7 +903,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -923,7 +923,7 @@ CONTAINS
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nPasses,TMParray1(1),&
             & TMParray2(1))
         call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -944,7 +944,7 @@ CONTAINS
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nPasses,TMParray1(1),&
             & TMParray2(1))
         call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
         call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -967,7 +967,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -989,7 +989,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(15,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
         call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -1011,7 +1011,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
         call BuildRJ000CPUSeg1Prim7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -1033,7 +1033,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(15,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
         call BuildRJ000CPUSeg1Prim3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -1053,7 +1053,7 @@ CONTAINS
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(4,nPasses,TMParray1(1),&
             & TMParray2(1))
         call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1076,7 +1076,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -1098,7 +1098,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
         call BuildRJ000CPUSeg1Prim4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -1118,7 +1118,7 @@ CONTAINS
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(4,nPasses,TMParray1(1),&
             & TMParray2(1))
         call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1141,7 +1141,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
         call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -1163,7 +1163,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
         call BuildRJ000CPUSeg1Prim5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -1183,7 +1183,7 @@ CONTAINS
         call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(4,nPasses,TMParray1(1),&
             & TMParray2(1))
         call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,25,Qdistance12,TMParray2(1),&
-            & LOCALINTS   ,lupri)
+            & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
         call BuildRJ000CPUSeg1Prim6(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -1206,7 +1206,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,25,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(25,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
         call BuildRJ000CPUSeg1Prim7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
@@ -1228,7 +1228,7 @@ CONTAINS
         call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,25,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(25,nPasses,TMParray1(1),&
-            & LOCALINTS   )
+            & LOCALINTS(1))
     CASE DEFAULT
 #ifdef VAR_OPENACC
         CALL ICHORQUIT('ICI_CPU_McM_general called with OpenACC',-1)
