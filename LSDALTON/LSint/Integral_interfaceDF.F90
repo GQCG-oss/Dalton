@@ -17,12 +17,14 @@ MODULE IntegralInterfaceModuleDF
   use AtomSparse
   use linsolvdf
   use GCtransMod
+  use dec_typedef_module, only: batchTOorb
   use screen_mod
+  use BUILDAOBATCH
   public :: II_get_df_coulomb_mat,II_get_df_J_gradient, &
        & II_get_df_exchange_mat, II_get_pari_df_exchange_mat,&
        & init_IIDF_matrix,free_IIDF_matrix,&
        & II_get_RI_alphaCD_3CenterInt, II_get_RI_alphabeta_2CenterInt, &
-       & II_get_RI_alphaCD_3CenterInt2,getRIbasisMPI
+       & II_get_RI_alphaCD_3CenterInt2,getRIbasisMPI,getMaxAtomicnAux
   private
 
 SAVE
@@ -2299,6 +2301,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   integer :: J,mynum2,startF,iatomampi,MynbasisAuxMPI
   logical :: doMPI,MasterWakeSlaves
   integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
+  !
+  integer :: iShell, nAuxShellA,nbatches
+  integer, pointer :: batchdim(:)
 
   SETTING%scheme%CS_SCREEN = .FALSE.
   SETTING%scheme%PS_SCREEN = .FALSE.
@@ -2315,7 +2320,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
 !  print*,'nsize',nsize
 !  print*,'maxsize',maxsize
   call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)
-  IF(numnodes.EQ.1.AND.maxsize.GT.nsize )THEN     
+  IF((numnodes.EQ.1.AND.maxsize.GT.nsize).AND.&
+       & (.NOT.setting%scheme%ForceRIMP2memReduced))THEN     
      !serial version
      call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
      IF(nbasis.NE.nBast)THEN
@@ -2374,8 +2380,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
 !$OMP END PARALLEL DO
      call mem_dealloc(AlphaCD2)
   ELSE
-     
-     !DO THE MPI ON THE BATCH LEVEL do not need to modify MOLECULE
+     !need to deactivate MPI inside ls_getIntegrals. 
+     !both master and slaves call this routine 
+     doMPI = SETTING%SCHEME%doMPI
+     MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
+     SETTING%SCHEME%doMPI = .FALSE.
+     SETTING%SCHEME%MasterWakeSlaves = .FALSE.
 
      !MPI version and memory reduced version
      !     print*,'MEMORY OPTIMIZED VERSION'
@@ -2384,6 +2394,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      call getMolecularDimensions(molecule1,nAtoms,nBast,nBastAux)
      allocate(ATOMS(nAtoms))
      CALL pari_set_atomic_fragments(molecule1,ATOMS,nAtoms,lupri)
+
      ! Split only on of the atomic loops over nodes
      call mem_alloc(nbasisAuxMPI,numnodes)
      call mem_alloc(nAtomsMPI,numnodes)    
@@ -2403,34 +2414,62 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
            iAtomA = AtomsMPI(iAtomAMPI,mynum+1)
            nAuxA = nAuxMPI(iAtomAMPI,mynum+1)
            call typedef_setMolecules(setting,molecule1,3,4,ATOMS(iAtomA),1)             
-           call initIntegralOutputDims(setting%Output,nAuxA,1,nBast,nBast,1)
-           !need to deactivate MPI inside ls_getIntegrals. 
-           !both master and slaves call this routine 
-           doMPI = SETTING%SCHEME%doMPI
-           SETTING%SCHEME%doMPI = .FALSE.
-           MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
-           SETTING%SCHEME%MasterWakeSlaves = .FALSE.
-           call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,&
-                &CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
-           SETTING%SCHEME%doMPI = doMPI
-           SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
-           call mem_alloc(alphaCD,nAuxA,nBast,nBast)
-           CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
-           ! Transform index delta to diagonal occupied index 
-           !(alphaAux;gamma,J) = (alphaAux;gamma,delta)*C(delta,J)
-           M = nAuxA*nbast        !rows of Output Matrix
-           N = nocc               !columns of Output Matrix
-           K = nbast              !summation dimension
-           call mem_alloc(AlphaCD2,nAuxA,nBast,nocc)
-           call Test_if_64bit_integer_required(N,K)
-           call Test_if_64bit_integer_required(M,K)
-           call Test_if_64bit_integer_required(M,N)
-           call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,0.0E0_realk,AlphaCD2,M)
-           call mem_dealloc(AlphaCD)
-           !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
-           call DF3centerTrans(nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,Cvirt,AlphaCD2,FullAlphaCD,startF)
-           call mem_dealloc(AlphaCD2)
-           startF = startF + nAUXA
+           nsize = (MynbasisAuxMPI*nvirt*nocc+2*nAuxA*nBast*nBast)*mem_realsize
+           IF(nsize.GT.maxsize.OR.setting%scheme%ForceRIMP2memReduced)THEN     
+              !Memory reduced version:   We split up the atom into batches
+              nullify(batchdim)
+              call build_minimalbatchesOfAOs2(lupri,setting,batchdim,nbatches,'D')
+              BatchD: do iShell = 1,nbatches
+                 nAuxShellA = batchdim(iShell)
+                 call initIntegralOutputDims(setting%Output,nAuxShellA,1,nBast,nBast,1)
+                 setting%batchindex(1)=iShell
+                 setting%batchdim(1)=nAuxShellA
+                 call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,&
+                      &CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+                 setting%batchindex(1)=0
+                 setting%batchdim(1)=nAuxShellA
+                 call mem_alloc(alphaCD,nAuxShellA,nBast,nBast)
+                 CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
+                 ! Transform index delta to diagonal occupied index 
+                 !(alphaAux;gamma,J) = (alphaAux;gamma,delta)*C(delta,J)
+                 M = nAuxShellA*nbast   !rows of Output Matrix
+                 N = nocc               !columns of Output Matrix
+                 K = nbast              !summation dimension
+                 call mem_alloc(AlphaCD2,nAuxShellA,nBast,nocc)
+                 call Test_if_64bit_integer_required(N,K)
+                 call Test_if_64bit_integer_required(M,K)
+                 call Test_if_64bit_integer_required(M,N)
+                 call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,0.0E0_realk,AlphaCD2,M)
+                 call mem_dealloc(AlphaCD)
+                 !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
+                 call DF3centerTrans(nvirt,nocc,nbast,nAuxShellA,MynbasisAuxMPI,Cvirt,AlphaCD2,FullAlphaCD,startF)
+                 call mem_dealloc(AlphaCD2)
+                 startF = startF + nAuxShellA !nAUXA
+              ENDDO BatchD
+              call mem_dealloc(batchdim)
+           ELSE
+              !Original code
+              call initIntegralOutputDims(setting%Output,nAuxA,1,nBast,nBast,1)
+              call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,&
+                   &CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+              call mem_alloc(alphaCD,nAuxA,nBast,nBast)
+              CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
+              ! Transform index delta to diagonal occupied index 
+              !(alphaAux;gamma,J) = (alphaAux;gamma,delta)*C(delta,J)
+              M = nAuxShellA*nbast   !rows of Output Matrix
+              N = nocc               !columns of Output Matrix
+              K = nbast              !summation dimension
+              call mem_alloc(AlphaCD2,nAuxA,nBast,nocc)
+              call Test_if_64bit_integer_required(N,K)
+              call Test_if_64bit_integer_required(M,K)
+              call Test_if_64bit_integer_required(M,N)
+              call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,0.0E0_realk,AlphaCD2,M)
+              call mem_dealloc(AlphaCD)
+              !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
+              call DF3centerTrans(nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,Cvirt,AlphaCD2,FullAlphaCD,startF)
+              call mem_dealloc(AlphaCD2)
+              startF = startF + nAUXA
+           ENDIF
         ENDDO
         call typedef_setMolecules(setting,molecule1,1,2,3,4)
         call pari_free_atomic_fragments(ATOMS,nAtoms)
@@ -2439,6 +2478,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      call mem_dealloc(AtomsMPI)
      call mem_dealloc(nAtomsMPI)
      call mem_dealloc(nAuxMPI)
+     SETTING%SCHEME%doMPI = doMPI
+     SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
   ENDIF
   SETTING%MOLECULE(1)%p => molecule1
   SETTING%MOLECULE(2)%p => molecule2
@@ -2506,6 +2547,23 @@ subroutine getRIbasisMPI(molecule1,nAtoms,numnodes,nbasisAuxMPI,&
   ENDDO
   CALL freeMolecularOrbitalInfo(orbitalInfo)
 end subroutine getRIbasisMPI
+
+subroutine getMaxAtomicnAux(molecule1,MaxAtomicnAux,nAtoms)
+  implicit none
+  TYPE(MoleculeInfo),intent(in)    :: molecule1
+  integer,intent(in) :: nAtoms
+  integer,intent(inout) :: MaxAtomicnAux
+  !
+  TYPE(MOLECULARORBITALINFO) :: orbitalInfo
+  integer :: iAtomA,nBastLocA,startRegA,endRegA,nauxA,startAuxA,endAuxA
+  call setMolecularOrbitalInfo(molecule1,orbitalInfo)     
+  MaxAtomicnAux = 0
+  DO iAtomA=1,nAtoms
+     call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nBastLocA,startRegA,endRegA,nauxA,startAuxA,endAuxA)
+     MaxAtomicnAux = MAX(MaxAtomicnAux,nAuxA)
+  ENDDO
+  CALL freeMolecularOrbitalInfo(orbitalInfo)
+end subroutine getMaxAtomicnAux
 
 SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAux)
   IMPLICIT NONE

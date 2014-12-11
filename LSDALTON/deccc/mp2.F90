@@ -1970,7 +1970,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
   TAG = 131124879
-#endif
+#endif  
 
   call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
   LUPRI = DECinfo%output
@@ -2256,12 +2256,16 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ! Major Step 3: Obtain 3 center RI integrals (alpha,a,i) 
   !=====================================================================================
   IF(MynbasisAuxMPI.GT.0)THEN
+     call get_currently_available_memory(MemInGBCollected)
+     !maxsize = max number of floating point elements
+     maxsize = NINT(MemInGBCollected*1.E9_realk)
      !call mem_alloc(AlphaCD3,nbasisAux,nvirt,nocc)
      !It is very annoying but I allocated AlphaCD3 inside 
      !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
-     !This Part of the Code is MPI/OpenMP parallel and AlphaCD3 will have the dimensions
-     !(MynbasisAuxMPI,nvirt,nocc) 
-     !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly nbasisAuxMPI = nbasisAux/numnodes
+     !This Part of the Code is MPI/OpenMP parallel and AlphaCD3 
+     !will have the dimensions (MynbasisAuxMPI,nvirt,nocc) 
+     !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly 
+     !nbasisAuxMPI = nbasisAux/numnodes
      call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
           & AlphaCD3,MyFragment%mylsitem%setting,nbasisAux,nbasis,&
           & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)

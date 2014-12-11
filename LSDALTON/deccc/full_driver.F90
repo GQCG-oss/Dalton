@@ -881,17 +881,36 @@ contains
   !> \brief Memory check for full_canonical_rimp2 subroutine
   !> \author Thomas Kjaergaard
   !> \date October 2014
-  subroutine full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,numnodes)
+  subroutine full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,numnodes,MinAtomicnAux)
     implicit none
-    integer,intent(in) :: nbasis,nocc,nvirt,nAux,numnodes
-    real(realk) :: MemRequired,GB
+    integer,intent(in) :: nbasis,nocc,nvirt,nAux,numnodes,MinAtomicnAux
+    real(realk) :: MemRequired,GB,MemStep1,MemStep2
 
     GB = 1.0E9_realk
 
     ! Check that arrays fit in memory (hard-coded)
-    MemRequired = 2*real(nAux*nocc*nvirt/numnodes) + real(nAux*nAux)
+    MemStep1=2*real(MinAtomicnAux*nbasis*nbasis)+real(nAux*nocc*nvirt)/numnodes
+    MemStep2=2*real(nAux*nocc*nvirt)/numnodes + real(nAux*nAux)
+    MemRequired = MAX(MemStep1,MemStep2)
+!    MemRequired = 2*real(nAux*nocc*nvirt/numnodes) + real(nAux*nAux)
     MemRequired = MemRequired*realk/GB
     if(MemRequired > DECinfo%memory) then
+       print *, 'RIMP2 Have 2 memory intensive steps:'
+       print *, 'Step1:'
+       print *, '2 arrays of size MinAtomicnAux*nbasis*nbasis=',&
+            & MinAtomicnAux*nbasis*nbasis
+       print *, '1 array of size (nAux/numnodes)*nocc*nvirt  =',&
+            & (nAux/numnodes)*nocc*nvirt
+       print *, 'Resulting in =',MemStep1/GB,' GB'
+       print *, 'Step1:'
+       print *, '2 arrays of size (nAux/numnodes)*nocc*nvirt  =',&
+            & (nAux/numnodes)*nocc*nvirt
+       print *, '1 array of size nAux*nAux  =',(nAux/numnodes)*nocc*nvirt
+       print *, 'Resulting in =',MemStep2/GB,' GB'
+       print *, 'With'
+       print *, 'MinAtomicnAux=',MinAtomicnAux
+       print *, 'nbasis       =',nbasis
+       print *, 'nAux         =',nAux
        print *, 'RIMP2 Mem required (GB) = ', MemRequired
        print *, 'RIMP2 Max memory (GB)   = ', DECinfo%memory
        call lsquit('full_canonical_rimp2: Memory exceeded! Try to increase memory &
@@ -925,14 +944,14 @@ contains
     real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:),EpsOcc(:),EpsVirt(:)
     integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2,comm,TAG1,TAG2
     integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
-    integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri
+    integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri,MinAtomicnAux
     logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
     logical :: RoundRobin2,RoundRobin3,useCalpha2,useCalpha3,FORCEPRINT
     integer(kind=ls_mpik)  :: request1,request2,request5,request6,request7,request8
     integer,pointer :: nbasisauxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
     integer(KIND=long) :: MaxMemAllocated,MemAllocated
     real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPU1,CPU2,WALL1,WALL2,CPU_MPICOMM,WALL_MPICOMM
-    real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT
+    real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT,MemInGBCollected
 #ifdef VAR_TIME    
     FORCEPRINT = .TRUE.
 #endif
@@ -980,7 +999,11 @@ contains
     ! Memory check!
     ! ********************
     CALL LSTIMER('START ',TS2,TE2,LUPRI,FORCEPRINT)
-    call full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,numnodes)
+!    call getMaxAtomicnAux(Mylsitem%SETTING%MOLECULE(1)%p,MaxAtomicnAux,nAtoms)
+    call determine_maxBatchOrbitalsize(DECinfo%output,&
+         & Mylsitem%setting,MinAtomicnAux,'D')
+    call full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,&
+         & numnodes,MinAtomicnAux)
     call Test_if_64bit_integer_required(nAux,nAux)
     CALL LSTIMER('RIMP2: MemCheck ',TS2,TE2,LUPRI,FORCEPRINT)
 #ifdef VAR_MPI 
@@ -1086,6 +1109,10 @@ contains
        ENDIF
     ENDIF
     CALL LSTIMER('RIMP2: MPI AlphaBetaTmp ',TS2,TE2,LUPRI,FORCEPRINT)
+
+    call get_currently_available_memory(MemInGBCollected)
+    !maxsize = mem in number of floating point elements
+    maxsize = NINT(MemInGBCollected*1.E9_realk) 
 
     IF(MynauxMPI.GT.0)THEN
        !call mem_alloc(AlphaCD,naux,nvirt,nocc)
