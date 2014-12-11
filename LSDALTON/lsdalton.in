@@ -14,7 +14,7 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
 LSDALTON_EXECUTABLE=$SCRIPT_DIR/lsdalton.x
 
-which -s mpirun # check if mpirun exists, if not, then assume mpiexec
+which mpirun > /dev/null # check if mpirun exists, if not, then assume mpiexec
 if [ $? -eq 0 ]; then
    MPIEXEC=mpirun
 else
