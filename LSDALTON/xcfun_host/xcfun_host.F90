@@ -99,7 +99,7 @@ module xcfun_host
     integer                       :: Ipos,nStrings,ierr,I,ierrLDA,ierrGGA,ierrMETA,ierrHF
     !logical                       :: GGAkeyString,ErfString           deprecated
     real(realk),pointer           :: WeightSingle(:)
-    logical                       :: new_func,admm_ggacorr
+    logical                       :: new_func,admm_ggacorr_single,admm_ggacorr
     type(xc_functional),pointer   :: current
 
     nullify(current)
@@ -117,6 +117,7 @@ module xcfun_host
     IF (XCFUNfunctional.EQ.-1) &
      &CALL LSQUIT('Error in xcfun_host_add_functional, xcfun internal maximum number of functionals reached',lupri)
 
+    admm_ggacorr = .FALSE.
     IPOS = INDEX(DFTfuncString,'GGAKEY')
     if (IPOS.NE.0) then
        !GGAkeyString = .TRUE.
@@ -154,14 +155,15 @@ module xcfun_host
        allocate(WeightSingle(nStrings))
        call trim_strings(DFTfuncString,nStrings,DFTfuncStringSingle,WeightSingle)
        do I=1,nStrings
-          admm_ggacorr = ( (INDEX(DFTfuncStringSingle(I),'B88X')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'LDAX')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'PBEX')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'KT3X')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'OPTX')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'CAMX')).NE.0 )
-          IF (admm_ggacorr) THEN
+          admm_ggacorr_single = ( (INDEX(DFTfuncStringSingle(I),'B88X')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'LDAX')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'PBEX')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'KT3X')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'OPTX')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'CAMCOMPX')).NE.0 )
+          IF (admm_ggacorr_single) THEN
             WeightSingle(I) = hfweight
+            admm_ggacorr = .TRUE.
           ELSE
             WeightSingle(I) = 1.0E0_realk
           ENDIF
