@@ -219,15 +219,19 @@ module xcfun_host
        XCFUN_DOGGA = .FALSE.
        XCFUN_DOMETA = .FALSE.
     ENDIF
-    ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
-    IF(ierrHF.NE.0)THEN
-       call lsquit('Error determining exact (HF) exchange weight.',lupri)
-    ENDIF
-    IF(ABS(hfweight).GT.1.0E-16_realk)THEN
-       WRITE(lupri,*)'The Functional chosen contains an exact exchange contribution'
-       WRITE(lupri,*)'with the weight:', hfweight
+    IF (admm_ggacorr) THEN
+      !hfweight is an input, not an output
     ELSE
-       WRITE(lupri,*)'The Functional chosen contains no exact exchange contribution'
+      ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
+      IF(ierrHF.NE.0)THEN
+         call lsquit('Error determining exact (HF) exchange weight.',lupri)
+      ENDIF
+      IF(ABS(hfweight).GT.1.0E-16_realk)THEN
+         WRITE(lupri,*)'The Functional chosen contains an exact exchange contribution'
+         WRITE(lupri,*)'with the weight:', hfweight
+      ELSE
+         WRITE(lupri,*)'The Functional chosen contains no exact exchange contribution'
+      ENDIF
     ENDIF
     deallocate(DFTfuncStringSingle)
     deallocate(WeightSingle)

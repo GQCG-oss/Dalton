@@ -4077,7 +4077,6 @@ use typedef
   call ls_mpibcast(WORD,1024,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  hfweight = 0.0E0_realk
   call II_DFTsetFunc(WORD,hfweight,6)
 end subroutine lsmpi_setSlaveFunc
 
@@ -4085,6 +4084,7 @@ subroutine lsmpi_addSlaveFunc()
 use infpar_module
 use lsmpi_mod
 use xcfun_host,only: USEXCFUN
+use IIDFTINT, only: II_DFTaddFunc
 use typedef
   implicit none
   character(len=1024)  :: WORD
@@ -4092,14 +4092,6 @@ use typedef
   call ls_mpibcast(WORD,1024,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  IF(.NOT.USEXCFUN)THEN
-     CALL DFTaddFunc(WORD(1:1024),hfweight)
-  ELSE
-#ifdef VAR_XCFUN
-     call lsquit('DFTaddFunc not implemented',-1)
-#else
-     call lsquit('XCFUN mismatch ',-1)
-#endif
-  ENDIF
+  call II_DFTaddFunc(WORD,hfweight,6)
 end subroutine lsmpi_addSlaveFunc
 #endif
