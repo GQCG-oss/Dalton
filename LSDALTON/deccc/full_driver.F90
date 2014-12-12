@@ -881,11 +881,12 @@ contains
   !> \brief Memory check for full_canonical_rimp2 subroutine
   !> \author Thomas Kjaergaard
   !> \date October 2014
-  subroutine full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,numnodes,MinAtomicnAux)
+  subroutine full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,&
+       & numnodes,MinAtomicnAux,MemoryReduced)
     implicit none
     integer,intent(in) :: nbasis,nocc,nvirt,nAux,numnodes,MinAtomicnAux
     real(realk) :: MemRequired,GB,MemStep1,MemStep2
-
+    logical :: MemoryReduced
     GB = 1.0E9_realk
 
     ! Check that arrays fit in memory (hard-coded)
@@ -894,6 +895,7 @@ contains
     MemRequired = MAX(MemStep1,MemStep2)
 !    MemRequired = 2*real(nAux*nocc*nvirt/numnodes) + real(nAux*nAux)
     MemRequired = MemRequired*realk/GB
+
     if(MemRequired > DECinfo%memory) then
        print *, 'RIMP2 Have 2 memory intensive steps:'
        print *, 'Step1:'
@@ -916,6 +918,21 @@ contains
        call lsquit('full_canonical_rimp2: Memory exceeded! Try to increase memory &
             & using the .MaxMemory (in GB) keyword in the *DEC section.',-1)
     end if
+
+    IF(MemoryReduced)THEN
+       WRITE(DECinfo%output,*)'MemoryReduced RIMP2 scheme chosen as default'
+    ELSE
+       !determine if MemoryReduced scheme must be used
+       MemStep1=2*real(MinAtomicnAux*nbasis*nbasis)
+       MemStep1=MemStep1+real(nAux*nocc*nvirt)/numnodes
+       MemStep2=4*real(nAux*nocc*nvirt)/numnodes + real(nAux*nAux)
+       MemRequired = MAX(MemStep1,MemStep2)
+       MemRequired = MemRequired*realk/GB       
+       if(MemRequired .LT. DECinfo%memory) then
+          MemoryReduced = .TRUE.
+          WRITE(DECinfo%output,*)'MemoryReduced RIMP2 scheme chosen'
+       endif
+    ENDIF
 
   end subroutine full_canonical_rimp2_memory_check
 
@@ -952,6 +969,8 @@ contains
     integer(KIND=long) :: MaxMemAllocated,MemAllocated
     real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPU1,CPU2,WALL1,WALL2,CPU_MPICOMM,WALL_MPICOMM
     real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT,MemInGBCollected
+    logical :: MemoryReduced,AlphaCDAlloced,TransferCompleted,AlphaCD_Deallocate
+    MemoryReduced = MyLsitem%setting%scheme%ForceRIMP2memReduced
 #ifdef VAR_TIME    
     FORCEPRINT = .TRUE.
 #endif
@@ -1003,7 +1022,7 @@ contains
     call determine_maxBatchOrbitalsize(DECinfo%output,&
          & Mylsitem%setting,MinAtomicnAux,'D')
     call full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,&
-         & numnodes,MinAtomicnAux)
+         & numnodes,MinAtomicnAux,MemoryReduced)
     call Test_if_64bit_integer_required(nAux,nAux)
     CALL LSTIMER('RIMP2: MemCheck ',TS2,TE2,LUPRI,FORCEPRINT)
 #ifdef VAR_MPI 
@@ -1114,6 +1133,7 @@ contains
     !maxsize = mem in number of floating point elements
     maxsize = NINT(MemInGBCollected*1.E9_realk) 
 
+    AlphaCDAlloced = .FALSE.
     IF(MynauxMPI.GT.0)THEN
        !call mem_alloc(AlphaCD,naux,nvirt,nocc)
        !It is very annoying but I allocated AlphaCD inside 
@@ -1125,11 +1145,12 @@ contains
             & AlphaCD,mylsitem%setting,naux,nbasis,&
             & nvirt,nocc,MyMolecule%Cv,MyMolecule%Co,maxsize,mynum,numnodes)
        call mem_LeakTool_alloc(AlphaCD,LT_AlphaCD)
+       AlphaCDAlloced = .TRUE.
     ENDIF
     CALL LSTIMER('RIMP2: AlphaCD ',TS2,TE2,LUPRI,FORCEPRINT)
 
     IF(wakeslaves)THEN !START BY SENDING MY OWN PACKAGE alphaCD
-#ifdef VAR_MPI
+#ifdef VAR_MPI       
        !A given rank always recieve a package from the same node 
        !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
        Receiver = MOD(1+mynum,numnodes)
@@ -1158,6 +1179,30 @@ contains
                & natoms,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD,&
                & Calpha,TMPAlphaBeta_minus_sqrt,naux)
           CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
+       ENDIF
+       IF(AlphaCDAlloced)THEN
+          AlphaCD_Deallocate = .FALSE.
+          IF(MemoryReduced)THEN 
+             !Wait for alphaCD have been received and deallocate it 
+             IF(MynauxMPI.GT.0)THEN
+                CALL LS_GETTIM(CPU1,WALL1)
+                call MPI_WAIT(request,lsmpi_status,ierr)
+                CALL LS_GETTIM(CPU2,WALL2)
+                CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+             ENDIF
+             AlphaCD_Deallocate = .TRUE.
+          ELSE
+             IF(MynauxMPI.GT.0)THEN 
+                call MPI_TEST(request,TransferCompleted,lsmpi_status,ierr)
+                AlphaCD_Deallocate = TransferCompleted
+             ENDIF
+          ENDIF
+          IF(AlphaCD_Deallocate)THEN
+             call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
+             call mem_dealloc(AlphaCD) !no longer need this
+             AlphaCDAlloced = .FALSE.      
+          ENDIF
        ENDIF
        !To complete construction of  c_(nauxMPI,nvirt,nocc) we need all
        !alphaCD(nauxMPI,nvirt,nocc) contributions from all ranks
@@ -1188,9 +1233,11 @@ contains
           IF(OriginalRanknauxMPI.GT.0)THEN
              call Test_if_64bit_integer_required(OriginalRanknauxMPI,nocc,nvirt)
              !Step 1 : MPI recieve a alphaCD from 'Receiver' 
-             IF(nAwaitDealloc.EQ.2)THEN
-                !all buffers are allocated and await to be deallocated once the memory
-                !have been recieved by the reciever.
+             IF(MemoryReduced.OR.nAwaitDealloc.EQ.2)THEN
+                !all buffers are allocated and await to be deallocated .OR.
+                !Memory Reduced version is used: 
+                !once the memory have been recieved by the reciever the 
+                !memory can be deallocated. 
                 IF(CurrentWait(1).EQ.5)THEN
                    !I need to wait for AlphaCD5 to be received before I can deallocate
                    CALL LS_GETTIM(CPU1,WALL1)
@@ -1211,9 +1258,15 @@ contains
                    call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
                    call mem_dealloc(AlphaCD6)
                 ENDIF
-                nAwaitDealloc = 1
-                CurrentWait(1) = CurrentWait(2)
-                CurrentWait(2) = 0 
+                IF(nAwaitDealloc.EQ.2)THEN
+                   nAwaitDealloc = 1
+                   CurrentWait(1) = CurrentWait(2)
+                   CurrentWait(2) = 0 
+                ELSE
+                   nAwaitDealloc = 0
+                   CurrentWait(2) = 0 
+                   CurrentWait(1) = 0
+                ENDIF
              ENDIF
              IF(useAlphaCD5)THEN
                 call mem_alloc(AlphaCD5,OriginalRanknauxMPI,nvirt,nocc)
@@ -1332,6 +1385,18 @@ contains
              ENDIF
           enddo
        ENDIF
+       IF(.NOT.MemoryReduced)THEN
+          IF(MynauxMPI.GT.0)THEN
+             CALL LS_GETTIM(CPU1,WALL1)
+             call MPI_WAIT(request,lsmpi_status,ierr)
+             CALL LS_GETTIM(CPU2,WALL2)
+             CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+             WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+             call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
+             call mem_dealloc(AlphaCD) !no longer need this
+             AlphaCDAlloced = .FALSE.      
+          ENDIF
+       ENDIF
 #endif
     ELSE
        call mem_alloc(Calpha,naux,nvirt,nocc)
@@ -1341,25 +1406,12 @@ contains
             & naux,AlphaCD,naux,0.0E0_realk,Calpha,naux)
        call mem_dealloc(AlphaBeta_minus_sqrt)
        NBA = naux
+       call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
+       call mem_dealloc(AlphaCD) !no longer need this
+       AlphaCDAlloced = .FALSE.      
     ENDIF
     CALL LSTIMER('RIMP2: Calpha ',TS2,TE2,LUPRI,FORCEPRINT)
 
-    IF(wakeslaves)THEN !START BY SENDING MY OWN PACKAGE alphaCD
-#ifdef VAR_MPI
-       IF(MynauxMPI.GT.0)THEN
-          CALL LS_GETTIM(CPU1,WALL1)
-          call MPI_WAIT(request,lsmpi_status,ierr)
-          CALL LS_GETTIM(CPU2,WALL2)
-          CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-          WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-          call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
-          call mem_dealloc(AlphaCD) !no longer need this
-       ENDIF
-#endif
-    ELSE
-       call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
-       call mem_dealloc(AlphaCD) !no longer need this
-    ENDIF
 
     call mem_alloc(EpsOcc,nocc)
     call mem_leaktool_alloc(EpsOcc,LT_Eps)
