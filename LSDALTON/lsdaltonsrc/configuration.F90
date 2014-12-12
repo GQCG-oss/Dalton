@@ -863,11 +863,18 @@ if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
       CAMbeta  = trim(adjustl(CAMbeta))
       CAMmu    = trim(adjustl(CAMmu))
       IF (USEXCFUN) THEN
-         write(Func,'(A28,A11,A,A10,A,A13,A)') 'CAMCOMPX',&
-                      & ' CAM_ALPHA=',CAMalpha,' CAM_BETA=',CAMbeta,&
-                      & ' RANGESEP_MU=',CAMmu
+         !IF (config%integral%DFT%DFTfuncObject().EQ.'CAMB3LYP') THEN
+         write(Func,'(A8)') 'CAMCOMPX'
+         !ELSE
+         !  CALL LSQUIT('Todo: fix admm camcompx for camb3lyp with',-1)
+         !  !Simen fix admm for non default
+         !  write(Func,'(A28,A11,G22.16,A10,G22.16,A13,G22.16)') 'GGAKEY BECKEX=1 BECKECAMX=-1',&
+         !               & ' CAM_ALPHA=',config%integral%CAMalpha,&
+         !               & ' CAM_BETA=',config%integral%CAMbeta,&
+         !               & ' RANGESEP_MU=',config%integral%CAMmu
+         !ENDIF
       ELSE
-         write(Func,'(A15,A,A6,A,A4,A)') 'Camcompx alpha=',CAMalpha,&
+         write(Func,'(A15,A18,A6,A18,A4,A18)') 'Camcompx alpha=',CAMalpha,&
            & ' beta=',CAMbeta,' mu=',CAMmu
       ENDIF
    ELSE
@@ -973,7 +980,7 @@ subroutine read_dft_input(config,lucmd,lupri)
                  CAMalpha = trim(adjustl(CAMalpha))
                  CAMbeta  = trim(adjustl(CAMbeta))
                  CAMmu    = trim(adjustl(CAMmu))
-                 FormatString= "(A18,A11,A,A10,A,A29,A13,A)" 
+                 FormatString= "(A18,A11,A18,A10,A18,A29,A13,A18)" 
                  write(XCfunString,FormatString) 'GGAKEY BECKECAMX=1',&
                       & ' CAM_ALPHA=',CAMalpha,&
                       & ' CAM_BETA=',CAMbeta,&
