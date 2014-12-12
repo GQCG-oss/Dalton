@@ -2244,8 +2244,8 @@ ENDIF
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTSETFU,infpar%master,MPI_COMM_LSDALTON)
   call lsmpi_setmasterToSlaveFunc(Func,hfweight)
-ELSE
-  call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
+!ELSE
+!  call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
 ENDIF
 #endif
 END SUBROUTINE II_DFTsetFunc
@@ -2277,8 +2277,8 @@ ENDIF
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTADDFU,infpar%master,MPI_COMM_LSDALTON)
   call lsmpi_setmasterToSlaveFunc(Func,GGAfactor)
-ELSE
-  call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
+!ELSE
+!  call lsquit('Error in II_DFTaddFunc. Can only be called from the master',-1)
 ENDIF
 #endif
 END SUBROUTINE II_DFTaddFunc

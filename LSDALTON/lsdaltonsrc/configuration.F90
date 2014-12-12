@@ -4057,9 +4057,9 @@ use infpar_module
 use xcfun_host,only: USEXCFUN
 use lsmpi_mod
   implicit none
-  character(len=80)  :: WORD
+  character(len=1024)  :: WORD
   real(realk) :: hfweight
-  call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(WORD,1024,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
 end subroutine lsmpi_setmasterToSlaveFunc
@@ -4071,10 +4071,10 @@ use xcfun_host,only: xcfun_host_init, USEXCFUN
 use IIDFTINT, only: II_DFTsetFunc
 use typedef
   implicit none
-  character(len=80)  :: WORD
+  character(len=1024)  :: WORD
   real(realk) :: hfweight
   integer :: ierror
-  call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(WORD,1024,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
   hfweight = 0.0E0_realk
@@ -4087,13 +4087,13 @@ use lsmpi_mod
 use xcfun_host,only: USEXCFUN
 use typedef
   implicit none
-  character(len=80)  :: WORD
+  character(len=1024)  :: WORD
   real(realk) :: hfweight
-  call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(WORD,1024,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
   IF(.NOT.USEXCFUN)THEN
-     CALL DFTaddFunc(WORD(1:80),hfweight)
+     CALL DFTaddFunc(WORD(1:1024),hfweight)
   ELSE
 #ifdef VAR_XCFUN
      call lsquit('DFTaddFunc not implemented',-1)
