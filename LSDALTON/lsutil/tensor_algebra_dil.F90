@@ -870,13 +870,12 @@
           call dil_subtensor_set(contr_task%right_arg,srank,lb,ub,ierr); if(ierr.ne.0) then; ierr=3; return; endif
           contr_task%task_stat=TASK_SET
          case default
-          if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_contr_task_set_arg): &
-             &invalid argument selector: ",A1)') arg_ch
+          if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_contr_task_set_arg): invalid argument selector: ",'&
+          &//'A1)') arg_ch
           ierr=4
          end select
         else
-         if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_contr_task_set_arg): &
-            &invalid tensor rank: ",i11)') srank
+         if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_contr_task_set_arg): invalid tensor rank: ",i11)') srank
          ierr=5
         endif
         return
@@ -1794,6 +1793,20 @@
         if(present(time_start)) thw=thw-time_start
         return
         end function thread_wtime
+!-----------------------------------------------------
+        function process_wtime(time_start) result(thw) !SERIAL
+!Returns time in seconds.
+        implicit none
+        real(8), intent(in), optional:: time_start !in: clock start time
+        real(8):: thw
+#ifdef VAR_MPI
+        thw=MPI_WTIME()
+#else
+        call cpu_time(thw)
+#endif
+        if(present(time_start)) thw=thw-time_start
+        return
+        end function process_wtime
 !--------------------------------------------------------
 #ifdef USE_MIC
 !DIR$ ATTRIBUTES OFFLOAD:mic:: permutation_invert
@@ -1897,7 +1910,7 @@
          ierr=1 !zero-rank tensor
         endif
 !        write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_slice): kernel time/error code: ",F10.4,1x,i3)')&
-!       &thread_wtime(time_beg),ierr !debug
+!        &thread_wtime(time_beg),ierr !debug
         return
         end subroutine dil_tensor_slice
 !---------------------------------------------------------------------------------------
@@ -1960,8 +1973,8 @@
         else
          ierr=1 !zero-rank tensor
         endif
-!        write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_insert): kernel time/error code: ",F10.4,1x,i3)')&
-!       &thread_wtime(time_beg),ierr !debug
+!         write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_insert): kernel time/error code: ",F10.4,1x,i3)')&
+!         &thread_wtime(time_beg),ierr !debug
         return
         end subroutine dil_tensor_insert
 !--------------------------------------------------------------------------------------------
@@ -2102,9 +2115,9 @@
 !         write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_transpose): extents:",99(1x,i5))') dim_extents(1:dim_num) !debug
 !         write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_transpose): permutation:",99(1x,i2))') dim_transp(1:dim_num) !debug
 !         write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_transpose): minor ",i3,": priority:",99(1x,i2))')&
-!        &kf,ipr(1:dim_num) !debug
-!        write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_transpose): vol_ext ",i11,": segs:",4(1x,i5))')&
-!        &vol_ext,split_in,split_out,seg_in,seg_out !debug
+!         &kf,ipr(1:dim_num) !debug
+!         write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_transpose): vol_ext ",i11,": segs:",4(1x,i5))')&
+!         &vol_ext,split_in,split_out,seg_in,seg_out !debug
  !Transpose:
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,j,m,n,ks,l0,l1,l2,l3,ll,lb,le,ls,l_in,l_out,vol_min,im,dim_beg,dim_end)
 #ifdef VAR_OMP
@@ -4175,6 +4188,7 @@
         if(a%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master) then
          call pdm_tensor_sync(infpar%lg_comm,JOB_tensor_ZERO,a)
         endif
+#endif
  !loop over local tiles and zero them individually
         vlu=0E0_realk; if(present(val)) vlu=val
         do lti=1,a%nlti
@@ -4182,11 +4196,10 @@
          a%ti(lti)%t=vlu
 !$OMP END WORKSHARE
         enddo
-#endif
         return
         end subroutine dil_tensor_init
 !============================================================
-!#ifdef DIL_DEBUG
+#ifdef DIL_DEBUG
 !DEBUGGING:
 !----------------------------------------------
         subroutine dil_debug(dtens,ltens,rtens)
@@ -4269,15 +4282,11 @@
         call lsmpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction started:")') impir
         if(impir.eq.0) write(*,'("Global DDD started ... ")',ADVANCE='NO')
-#ifdef VAR_MPI
-        tmb=MPI_WTIME()
-#endif
+        tmb=process_wtime()
         call dil_tensor_contract(tcr,DIL_TC_ALL,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
         call lsmpi_barrier(infpar%lg_comm)
-#ifdef VAR_MPI
-        tm=MPI_WTIME()-tmb; if(impir.eq.0) write(*,'("Done in ",F10.4," s.")') tm
-#endif
+        tm=process_wtime(tmb); if(impir.eq.0) write(*,'("Done in ",F10.4," s.")') tm
         val0=tensor_tiled_pdm_get_nrm2(dtens)
         call lsmpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm at the end: ",D25.15)') val0
@@ -4485,5 +4494,5 @@
 #endif
         return
         end subroutine dil_debug
-!#endif
+#endif
        end module tensor_algebra_dil
