@@ -27,7 +27,7 @@ module f12_routines_module
        & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D, &
        & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO, & ! atomic_fragment_free_f12, atomic_fragment_init_f12
        & get_4Center_MO_integrals, get_4Center_F12_integrals, free_4Center_F12_integrals, &
-       & get_ES2
+       & get_ES2,get_ES2_from_dec_main,dec_get_RI_orbitals,dec_get_CABS_orbitals
 
   private
 
@@ -127,7 +127,7 @@ contains
     real(realk), intent(inout) :: Fii_real(nocc,nocc)
     real(realk), intent(inout) :: Frm_real(ncabsAO,nocc)   !ONLY HALF TRANSFORMED
     real(realk), intent(inout) :: Fcp_real(ncabsAO,nbasis) !HACK not (ncabsMO,nbasis)
-
+   ! real(realk), intent(inout) :: Fcd_real(ncabsAO,ncabsAO)      
     
     !> Fock matrices for singles correction
     !real(realk), intent(inout), optional :: Fic_real(nocc,ncabsAO) !HACK not (ncabsMO,nbasis)
@@ -140,7 +140,8 @@ contains
     type(matrix) :: Fii
     type(matrix) :: Frm
     type(matrix) :: Fcp
-
+ !   type(matrix) :: Fcd
+    
     !> Temp
     type(matrix) :: HJrc
     type(matrix) :: Kcc
@@ -215,7 +216,7 @@ contains
 !!$    !Fcd
 !!$    call mat_init(Fcc,ncabsAO,ncabsAO)
 !!$    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
-!!$    call mat_init(Fcd,ncabs,ncabs)
+!!$    call mat_init(Fcd,ncabsAO,ncabsAO)
 !!$    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
 !!$         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
 !!$    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
@@ -1645,7 +1646,64 @@ contains
     MAXstepmem = MAX(step1,step2,step3,step4) 
 
   end subroutine get_maxstepmem
+ 
+  subroutine get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
+    type(fullmolecule),intent(inout) :: MyMolecule
+    type(lsitem), intent(inout) :: Mylsitem
+    real(realk), intent(inout) :: ES2
+    type(matrix), intent(in) :: Dmat
+    
+    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
+    
+    !> Singles contribution
+    type(matrix) :: Fic
+    type(matrix) :: Fcd
+    type(matrix) :: Fij
+    
+    type(matrix) :: Fcc
+    type(matrix) :: Frc
 
+    !Need to build Cabs
+    ! Init stuff
+    ! **********
+    nbasis = MyMolecule%nbasis
+    nocc   = MyMolecule%nocc
+    nvirt  = MyMolecule%nunocc
+    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    noccfull = nocc
+    
+    !Fcd
+    call mat_init(Fcc,ncabsAO,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    call mat_init(Fcd,ncabs,ncabs)
+      call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
+    call mat_free(Fcc)
+
+    !Fic
+    call mat_init(Frc,nbasis,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    call mat_init(Fic,nocc,ncabs)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'ic',Frc,Fic)
+    call mat_free(Frc)
+
+    !Fii
+    call mat_init(Fcc,nbasis,nbasis)
+    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
+    call mat_init(Fij,nocc,nocc)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fij)
+    call mat_free(Fcc)
+
+    call get_ES2(ES2,Fic,Fij,Fcd,nocc,ncabs)
+    
+    call mat_free(Fic)
+    call mat_free(Fcd)
+    call mat_free(Fij)
+   
+  end subroutine get_ES2_from_dec_main
+  
   subroutine get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
     type(matrix) :: Fic
     type(matrix) :: Fii
@@ -1731,27 +1789,81 @@ contains
        enddo
     enddo
 
-    !print *, "Delta ES2: ", ES2  
+    !print *, "Singles Contribution: ", ES2
     
     call mem_dealloc(Fcd_real)
     call mem_dealloc(eps_c)
     call mem_dealloc(C_cd)
-   
+
     call mem_dealloc(Fij_real)
     call mem_dealloc(eps_i)
     call mem_dealloc(C_ij)
-    
+
     call mem_dealloc(Fia)
     call mem_dealloc(Fic_real)
-    
+
   end subroutine get_ES2
-  
+
+  subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
+    implicit none
+
+    !> Full molecule structure to be initialized
+    type(fullmolecule), intent(inout) :: molecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+
+    type(matrix) :: CMO_cabs
+    integer :: ncabsAO,ncabs
+    
+    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    molecule%nCabsAO = ncabsAO
+    molecule%nCabsMO = ncabs
+    call mat_init(CMO_cabs,nCabsAO,nCabs)
+
+    call init_cabs(DECinfo%full_molecular_cc)
+    call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
+    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
+
+    ! NB! Memory leak need to be freed somewhere
+    !    call mem_alloc(molecule%Ccabs,ncabsAO,nCabs)
+    !    call mat_to_full(CMO_cabs,1.0E0_realk,molecule%Ccabs)
+    call mat_free(CMO_cabs)
+
+  end subroutine dec_get_CABS_orbitals
+
+  subroutine  dec_get_RI_orbitals(molecule,mylsitem)
+    implicit none
+
+    !> Full molecule structure to be initialized
+    type(fullmolecule), intent(inout) :: molecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+
+    type(matrix) :: CMO_RI
+    integer :: ncabsAO,ncabs
+
+    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    molecule%nCabsAO = ncabsAO
+    molecule%nCabsMO = ncabs
+    call mat_init(CMO_RI,ncabsAO,ncabsAO)
+
+    call init_ri(DECinfo%full_molecular_cc)
+    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
+    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
+
+    ! NB! Memory leak need to be freed somewhere
+    !    call mem_alloc(molecule%Cri,ncabsAO,ncabsAO) 
+    !    call mat_to_full(CMO_RI,1.0E0_realk,molecule%Cri)
+    call mat_free(CMO_RI)
+
+  end subroutine dec_get_RI_orbitals
+
 #else
 
-   subroutine dummy_f12_routines()
-     implicit none
- 
-   end subroutine dummy_f12_routines
+  subroutine dummy_f12_routines()
+    implicit none
+
+  end subroutine dummy_f12_routines
 
 #endif 
 

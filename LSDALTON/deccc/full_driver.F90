@@ -826,7 +826,13 @@ contains
 
        mp2f12_energy = 0.0E0_realk
        mp2f12_energy = mp2_energy+E21+E22
-       
+
+       write(DECinfo%output,*) '----------------------------------------------------------------'
+       write(*,'(1X,a,f20.10)') '----------------------------------------------------------------'
+       write(DECinfo%output,*) '                 TOYCODE MP2-F12 CALCULATION                    '
+       write(*,'(1X,a,f20.10)') '                 TOYCODE MP2-F12 CALCULATION                    '
+       write(DECinfo%output,*) '----------------------------------------------------------------'
+       write(*,'(1X,a,f20.10)') '----------------------------------------------------------------'
        write(DECinfo%output,*)  'TOYCODE: MP2 CORRELATION ENERGY =        ', mp2_energy
        write(*,'(1X,a,f20.10)') 'TOYCODE: MP2 CORRELATION ENERGY =        ', mp2_energy
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E21 CORRECTION TO ENERGY =  ', E21
