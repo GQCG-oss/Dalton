@@ -2290,7 +2290,9 @@
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+#ifdef VAR_MPI
           if(new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
+#endif
           call tensor_get_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
           if(DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i3))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
@@ -2322,7 +2324,9 @@
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+#ifdef VAR_MPI
           if(new_rw) call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+#endif
           if(DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
          elseif(k.gt.0) then
           ierr=-1; return
@@ -2354,7 +2358,9 @@
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+#ifdef VAR_MPI
           if(new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
+#endif
           call tensor_accumulate_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
           if(DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
@@ -2386,7 +2392,9 @@
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+#ifdef VAR_MPI
           if(new_rw) call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+#endif
           if(DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
          elseif(k.gt.0) then
           ierr=-1; return
