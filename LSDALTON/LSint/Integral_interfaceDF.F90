@@ -2456,7 +2456,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
               CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
               ! Transform index delta to diagonal occupied index 
               !(alphaAux;gamma,J) = (alphaAux;gamma,delta)*C(delta,J)
-              M = nAuxShellA*nbast   !rows of Output Matrix
+              M = nAuxA*nbast        !rows of Output Matrix
               N = nocc               !columns of Output Matrix
               K = nbast              !summation dimension
               call mem_alloc(AlphaCD2,nAuxA,nBast,nocc)
