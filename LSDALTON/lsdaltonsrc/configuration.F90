@@ -252,7 +252,7 @@ INTEGER            :: LUPRI
 type(ConfigItem), intent(inout) :: config
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,IPOS3,IPOSMU,COUNTER
-character(len=80)  :: WORD,TMPWORD
+character(len=80)  :: WORD,TMPWORD,camalpha,cambeta,cammu
 character(len=1024):: Func
 character(len=2)   :: PROMPT
 LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,WAVE,exchangescale
@@ -856,14 +856,26 @@ if(config%solver%do_dft.OR.config%integral%ADMM_EXCHANGE)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
    call init_dftfunc(config%integral%DFT)
    IF (config%integral%CAM) THEN
+      write(CAMalpha,'(G23.16)') config%integral%CAMalpha
+      write(CAMbeta,'(G23.16)')  config%integral%CAMbeta
+      write(CAMmu,'(G23.16)')    config%integral%CAMmu
+      CAMalpha = trim(adjustl(CAMalpha))
+      CAMbeta  = trim(adjustl(CAMbeta))
+      CAMmu    = trim(adjustl(CAMmu))
       IF (USEXCFUN) THEN
-         write(Func,'(A28,A11,G22.16,A10,G22.16,A13,G22.16)') 'GGAKEY BECKEX=1 BECKECAMX=-1',&
-                      & ' CAM_ALPHA=',config%integral%CAMalpha,&
-                      & ' CAM_BETA=',config%integral%CAMbeta,&
-                      & ' RANGESEP_MU=',config%integral%CAMmu
+         !IF (config%integral%DFT%DFTfuncObject().EQ.'CAMB3LYP') THEN
+         write(Func,'(A8)') 'CAMCOMPX'
+         !ELSE
+         !  CALL LSQUIT('Todo: fix admm camcompx for camb3lyp with',-1)
+         !  !Simen fix admm for non default
+         !  write(Func,'(A28,A11,G22.16,A10,G22.16,A13,G22.16)') 'GGAKEY BECKEX=1 BECKECAMX=-1',&
+         !               & ' CAM_ALPHA=',config%integral%CAMalpha,&
+         !               & ' CAM_BETA=',config%integral%CAMbeta,&
+         !               & ' RANGESEP_MU=',config%integral%CAMmu
+         !ENDIF
       ELSE
-         write(Func,'(A15,G22.16,A6,G22.16,A4,G22.16)') 'Camcompx alpha=',config%integral%CAMalpha,&
-           & ' beta=',config%integral%CAMbeta,' mu=',config%integral%CAMmu
+         write(Func,'(A15,A18,A6,A18,A4,A18)') 'Camcompx alpha=',CAMalpha,&
+           & ' beta=',CAMbeta,' mu=',CAMmu
       ENDIF
    ELSE
       Func = config%integral%admm_func
@@ -879,12 +891,11 @@ subroutine read_dft_input(config,lucmd,lupri)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
-  character(len=80)  :: WORD,MUWORD,TMPWORD,FormatString
+  character(len=80)  :: WORD,MUWORD,TMPWORD,FormatString,CAMalpha,CAMbeta,CAMmu
   character(len=1024):: XCfunString
   integer,intent(in) :: LUCMD !Logical unit number for the daltoninput
   integer,intent(in) :: LUPRI !Logical unit number for the daltonoutput file
   integer            :: ipos,ipos2,iposmu
-  Real(realk)        :: hfweight 
   
   config%opt%calctype = config%opt%dftcalc !DFT calc
   config%av%CFG_SET_type = config%av%CFG_THR_dft
@@ -963,18 +974,19 @@ subroutine read_dft_input(config,lucmd,lupri)
                  ENDIF
               ENDIF
               if (USEXCFUN) then
-                 TMPWORD=''
-                 write(tmpword,*) config%integral%CAMmu
-                 DO IPOSMU=1,LEN(tmpword)
-                    IF (tmpword(IPOSMU:IPOSMU).NE." ") EXIT
-                 ENDDO
-                 FormatString= "(A18,A11,G22.16,A10,G22.16,A29,A13)" 
+                 write(CAMalpha,'(G23.16)') config%integral%CAMalpha
+                 write(CAMbeta,'(G23.16)')  config%integral%CAMbeta
+                 write(CAMmu,'(G23.16)')    config%integral%CAMmu
+                 CAMalpha = trim(adjustl(CAMalpha))
+                 CAMbeta  = trim(adjustl(CAMbeta))
+                 CAMmu    = trim(adjustl(CAMmu))
+                 FormatString= "(A18,A11,A18,A10,A18,A29,A13,A18)" 
                  write(XCfunString,FormatString) 'GGAKEY BECKECAMX=1',&
-                      & ' CAM_ALPHA=',config%integral%CAMalpha,&
-                      & ' CAM_BETA=',config%integral%CAMbeta,&
+                      & ' CAM_ALPHA=',CAMalpha,&
+                      & ' CAM_BETA=',CAMbeta,&
                       & ' VWN5C=0.19 LYPC=0.81 EXX=1.0',&
-                      & ' RANGESEP_MU='
-                 XCfunString = ( trim(XCfunString) // tmpword(IPOSMU:(IPOSMU+8)) )
+                      & ' RANGESEP_MU=',CAMmu
+                 XCfunString = trim(XCfunString)
               else
                  XCfunString = WORD
               endif
@@ -991,7 +1003,6 @@ subroutine read_dft_input(config,lucmd,lupri)
         ELSE
            XCfunString = WORD
         END IF
-        hfweight=0E0_realk 
         ! Remove starting blancks
         DO IPOS=1,LEN(XCfunString)
            IF (XCfunString(IPOS:IPOS).NE." ") EXIT
@@ -4077,7 +4088,6 @@ use typedef
   call ls_mpibcast(WORD,1024,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  hfweight = 0.0E0_realk
   call II_DFTsetFunc(WORD,hfweight,6)
 end subroutine lsmpi_setSlaveFunc
 
@@ -4085,6 +4095,7 @@ subroutine lsmpi_addSlaveFunc()
 use infpar_module
 use lsmpi_mod
 use xcfun_host,only: USEXCFUN
+use IIDFTINT, only: II_DFTaddFunc
 use typedef
   implicit none
   character(len=1024)  :: WORD
@@ -4092,14 +4103,6 @@ use typedef
   call ls_mpibcast(WORD,1024,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  IF(.NOT.USEXCFUN)THEN
-     CALL DFTaddFunc(WORD(1:1024),hfweight)
-  ELSE
-#ifdef VAR_XCFUN
-     call lsquit('DFTaddFunc not implemented',-1)
-#else
-     call lsquit('XCFUN mismatch ',-1)
-#endif
-  ENDIF
+  call II_DFTaddFunc(WORD,hfweight,6)
 end subroutine lsmpi_addSlaveFunc
 #endif
