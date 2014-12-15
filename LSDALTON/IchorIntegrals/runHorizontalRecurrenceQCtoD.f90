@@ -5,12 +5,12 @@ CONTAINS
   subroutine PASSsub
     IMPLICIT NONE
     INTEGER :: JMAX,nTUV,nTUVprev,ituvP,J,Tp,Up,Vp,N,N2,ntuvP,ituv,C
-    INTEGER :: nTUVQ,nTUVTMPP,nTUVTMPQ,JPQ,JP,JQ,nTUVTMP,nTUVTMPprev
+    INTEGER :: nTUVQ,nTUVTMPP,JP,JQ,nTUVTMP,nTUVTMPprev
     integer :: tq,uq,vq,ituvq,ituvqminus1x,ituvqminus1y,ituvqminus1z
     integer :: iTUVplus1x,iTUVplus1y,iTUVplus1z,nTUVTMPBprev
     integer :: MaxAngmomP, NTUVMAX, AngmomA, AngmomB, NTUVAspec, NTUVBspec
     Integer :: NTUVAstart, NTUVBstart,Jb,Jab,nTUVA,nTUVB,tb,ub,vb
-    Integer :: MaxAngmomQP,nTUVplus,JTMP,ntuvprev2,ntuvprev3
+    Integer :: nTUVplus,JTMP,ntuvprev2,ntuvprev3
     Integer :: nTUVTMPB,nTUVTMPA
     !    logical :: CREATED(-2:8,-2:8,-2:8)
     logical,pointer :: CREATED(:,:,:)
@@ -107,30 +107,14 @@ DO GPUrun = 1,2
           IF(JP.EQ.0)THEN
 !!$             WRITE(LUFILE,'(A)')' '
 !!$             WRITE(LUFILE,'(A)')'!Unnecesarry as this is a simpel copy'
-!!$             WRITE(LUFILE,'(A)')'!Transfer angmom from C to D'
-!!$             WRITE(LUFILE,'(A)')'!subroutine HorizontalRR_RHS_Q0C0D0CtoD(nContPQ,nPasses,nlmP,&'
-!!$             WRITE(LUFILE,'(A)')'!         & Qdistance12,ThetaP2,ThetaP,lupri)'
-!!$             WRITE(LUFILE,'(A)')'!  implicit none'
-!!$             WRITE(LUFILE,'(A)')'!  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri'
-!!$             WRITE(LUFILE,'(A)')'!  real(realk),intent(in) :: Qdistance12(3)'
-!!$             WRITE(LUFILE,'(A)')'!  real(realk),intent(in) :: ThetaP2(nlmP,1,nContPQ*nPasses)'
-!!$             WRITE(LUFILE,'(A)')'!  real(realk),intent(inout) :: ThetaP(nlmP, 1,1,nContPQ*nPasses)'
-!!$             WRITE(LUFILE,'(A)')'!  !Local variables'
-!!$             WRITE(LUFILE,'(A)')'!  integer :: iP,ilmP'
-!!$             WRITE(LUFILE,'(A)')'!  DO iP = 1,nPasses*nContPQ'
-!!$             WRITE(LUFILE,'(A)')'!     DO ilmP = 1,nlmP'
-!!$             WRITE(LUFILE,'(A)')'!        ThetaP(ilmP,1,1,IP) = ThetaP2(ilmP,1,IP)'
-!!$             WRITE(LUFILE,'(A)')'!     ENDDO'
-!!$             WRITE(LUFILE,'(A)')'!  ENDDO'
-!!$             WRITE(LUFILE,'(A)')'!end subroutine HorizontalRR_RHS_Q0C0D0CtoD'
              CYCLE
           ENDIF
           WRITE(LUFILE,'(A)')''
           WRITE(LUFILE,'(A)')'!Transfer angmom from C to D'
           IF(JP.LT.10)THEN
-             WRITE(LUFILE,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_RHS_Q',JP,'C',AngmomA,'D',AngmomB,'CtoD(nContPQ,nPasses,nlmP,&'
+             WRITE(LUFILE,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_RHS_Q',JP,'C',AngmomA,'D',AngmomB,'CtoD(nContQ,nContP,nPasses,nlmP,&'
           ELSE
-             WRITE(LUFILE,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_RHS_Q',JP,'C',AngmomA,'D',AngmomB,'CtoD(nContPQ,nPasses,nlmP,&'
+             WRITE(LUFILE,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_RHS_Q',JP,'C',AngmomA,'D',AngmomB,'CtoD(nContQ,nContP,nPasses,nlmP,&'
           ENDIF
           IF(DoOpenACC)THEN
              WRITE(LUFILE,'(A)')'         & Qdistance12,ThetaP2,ThetaP,lupri,iASync)'
@@ -138,14 +122,14 @@ DO GPUrun = 1,2
              WRITE(LUFILE,'(A)')'         & Qdistance12,ThetaP2,ThetaP,lupri)'
           ENDIF
           WRITE(LUFILE,'(A)')'  implicit none'
-          WRITE(LUFILE,'(A)')'  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri'
+          WRITE(LUFILE,'(A)')'  integer,intent(in) :: nContQ,nContP,nPasses,nlmP,lupri'
           WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Qdistance12(3)'
           IF(nPrimLAST)THEN
-             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: ThetaP2(nlmP,',nTUVP,',nContPQ*nPasses)'
-             WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nlmP,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nContPQ*nPasses)'
+             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: ThetaP2(nlmP,',nTUVP,',nContP*nContQ*nPasses)'
+             WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nlmP,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nContP*nContQ*nPasses)'
           ELSE
-             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: ThetaP2(nContPQ*nPasses,nlmP,',nTUVP,')'
-             WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nContPQ*nPasses,nlmP,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,')'
+             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: ThetaP2(nContP*nContQ*nPasses,nlmP,',nTUVP,')'
+             WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nContP*nContQ*nPasses,nlmP,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,')'
           ENDIF
           IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
           WRITE(LUFILE,'(A)')'  !Local variables'
@@ -184,10 +168,10 @@ DO GPUrun = 1,2
                    endif
                 ENDDO
                 WRITE(LUFILE,'(A)')'!$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) '
-!                WRITE(LUFILE,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)'
+!                WRITE(LUFILE,'(A)')'!$OMP SHARED(nlmP,nContP,nContQ,nPasses,Qdistance12,ThetaP,ThetaP2)'
              ELSE
                 WRITE(LUFILE,'(A)')'!$OMP PRIVATE(iP,iTUVC,ilmP) '
-!                WRITE(LUFILE,'(A)')'!$OMP SHARED(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)'
+!                WRITE(LUFILE,'(A)')'!$OMP SHARED(nlmP,nContP,nContQ,nPasses,ThetaP,ThetaP2)'
              ENDIF
           ENDIF
           IF(DoOpenACC)THEN
@@ -208,7 +192,7 @@ DO GPUrun = 1,2
                 WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,ThetaP,ThetaP2) ASYNC(iASync)'
              ENDIF
           ENDIF
-          WRITE(LUFILE,'(A)')'  DO iP = 1,nContPQ*nPasses'
+          WRITE(LUFILE,'(A)')'  DO iP = 1,nContP*nContQ*nPasses'
           IF(JB.NE.0)THEN
              WRITE(LUFILE,'(A)')'   Xcd = Qdistance12(1)'
              WRITE(LUFILE,'(A)')'   Ycd = Qdistance12(2)'

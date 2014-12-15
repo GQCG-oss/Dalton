@@ -73,7 +73,7 @@ CONTAINS
 !   TMP variables - allocated outside
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
 !   Local variables 
-    integer :: AngmomP,I,J,nContQP,la,lb,lc,ld,nsize,angmomid,IatomAPass(1),IatomBPass(1)
+    integer :: AngmomP,I,J,la,lb,lc,ld,nsize,angmomid,IatomAPass(1),IatomBPass(1)
     
     !Setup combined Angmom info
     AngmomP = AngmomA+AngmomB
@@ -151,7 +151,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContP,1,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -159,7 +159,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,1,3,Pdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContP,1,1,3,Pdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         !no Spherical Transformation RHS needed
         call ExtractGabElmP3Gen(TMParray2(1),LOCALINTS,nContP)
@@ -204,7 +204,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContP,1,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -212,7 +212,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,1,9,Pdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContP,1,1,9,Pdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         !no Spherical Transformation RHS needed
         call ExtractGabElmP9Gen(TMParray2(1),LOCALINTS,nContP)
@@ -257,7 +257,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContP,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContP,1,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*50.GT.TMParray2maxsize)THEN
@@ -271,7 +271,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,1,5,Pdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContP,1,1,5,Pdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*25.GT.TMParray2maxsize)THEN
@@ -322,7 +322,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContP,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContP,1,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*300.GT.TMParray2maxsize)THEN
@@ -336,7 +336,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,1,15,Pdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContP,1,1,15,Pdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*225.GT.TMParray2maxsize)THEN
@@ -387,7 +387,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContP,1,35,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContP,1,1,35,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*875.GT.TMParray2maxsize)THEN
@@ -401,7 +401,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,1,25,Pdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContP,1,1,25,Pdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*625.GT.TMParray2maxsize)THEN
@@ -452,7 +452,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContP,1,1,4,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
 #ifdef VAR_DEBUGICHOR
@@ -460,7 +460,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,1,3,Pdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContP,1,1,3,Pdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         !no Spherical Transformation RHS needed
         call ExtractGabElmP3Gen(TMParray2(1),LOCALINTS,nContP)
@@ -505,7 +505,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContP,1,1,10,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*50.GT.TMParray2maxsize)THEN
@@ -519,7 +519,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,1,5,Pdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContP,1,1,5,Pdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*25.GT.TMParray2maxsize)THEN
@@ -570,7 +570,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContP,1,1,20,Pdistance12,1,1,1,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*300.GT.TMParray2maxsize)THEN
@@ -584,7 +584,7 @@ CONTAINS
           call ichorquit('nContPtoo small',-1)
         ENDIF
 #endif
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,1,15,Pdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContP,1,1,15,Pdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
 #ifdef VAR_DEBUGICHOR
         IF(nContP*225.GT.TMParray2maxsize)THEN

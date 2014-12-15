@@ -10,7 +10,7 @@ CONTAINS
     integer :: iTUVplus1x,iTUVplus1y,iTUVplus1z,nTUVTMPBprev
     integer :: MaxAngmomP, NTUVMAX, AngmomA, AngmomB, NTUVAspec, NTUVBspec
     Integer :: NTUVAstart, NTUVBstart,Jb,Jab,nTUVA,nTUVB,tb,ub,vb
-    Integer :: MaxAngmomQP,nTUVplus,JTMP,ntuvprev2,ntuvprev3
+    Integer :: nTUVplus,JTMP,ntuvprev2,ntuvprev3
     Integer :: nTUVTMPB,nTUVTMPA
     !    logical :: CREATED(-2:8,-2:8,-2:8)
     logical,pointer :: CREATED(:,:,:)
@@ -108,9 +108,9 @@ DO GPUrun = 1,2
           IF(AngmomA.EQ.0.AND.AngmomB.EQ.0)CYCLE
           WRITE(LUFILE,'(A)')''
           IF(JP.LT.10)THEN
-             WRITE(LUFILE,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB(nContQP,nPasses,nTUVQ,&'
+             WRITE(LUFILE,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB(nContQ,nContP,nPasses,nTUVQ,&'
           ELSE
-             WRITE(LUFILE,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB(nContQP,nPasses,nTUVQ,&'
+             WRITE(LUFILE,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB(nContQ,nContP,nPasses,nTUVQ,&'
           ENDIF
           IF(DoOpenACC)THEN
              WRITE(LUFILE,'(A)')'         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri,iASync)'
@@ -118,26 +118,26 @@ DO GPUrun = 1,2
              WRITE(LUFILE,'(A)')'         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)'
           ENDIF
           WRITE(LUFILE,'(A)')'  implicit none'
-          WRITE(LUFILE,'(A)')'  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB'
+          WRITE(LUFILE,'(A)')'  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB'
           WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)'
           IF(nPrimLast)THEN
-             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(',nTUVP,',nTUVQ*nContQP*nPasses)'
+             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(',nTUVP,',nTUVQ*nContQ*nContP*nPasses)'
           ELSE
-             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(nContQP*nPasses,',nTUVP,',nTUVQ)'
+             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(nContQ*nContP*nPasses,',nTUVP,',nTUVQ)'
           ENDIF
           WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
           !             WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',nTUVAspec,',',nTUVBspec,',nTUVQ,nContPasses)'
           IF(nPrimLast)THEN
              IF(nTUVBstart+1.EQ.1.AND.nTUVB.EQ.1)THEN
-                WRITE(LUFILE,'(A,I5,A1,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',1,nTUVQ*nContQP*nPasses)'
+                WRITE(LUFILE,'(A,I5,A1,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',1,nTUVQ*nContQ*nContP*nPasses)'
              ELSE
-                WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ*nContQP*nPasses)'
+                WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ*nContQ*nContP*nPasses)'
              ENDIF
           ELSE
              IF(nTUVBstart+1.EQ.1.AND.nTUVB.EQ.1)THEN
-                WRITE(LUFILE,'(A,I5,A1,I5,A)')'  real(realk),intent(inout) :: ThetaP(nContQP*nPasses,',NTUVAstart+1,':',nTUVA,',1,nTUVQ)'
+                WRITE(LUFILE,'(A,I5,A1,I5,A)')'  real(realk),intent(inout) :: ThetaP(nContQ*nContP*nPasses,',NTUVAstart+1,':',nTUVA,',1,nTUVQ)'
              ELSE
-                WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nContQP*nPasses,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ)'
+                WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nContQ*nContP*nPasses,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ)'
              ENDIF
           ENDIF
           IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
@@ -186,7 +186,7 @@ DO GPUrun = 1,2
              ELSE
                 WRITE(LUFILE,'(A)')'!$OMP         iTUVA) '
              ENDIF
-!             WRITE(LUFILE,'(A)')'!$OMP SHARED(nTUVQ,nContQP,nPasses,&'
+!             WRITE(LUFILE,'(A)')'!$OMP SHARED(nTUVQ,nContQ,nContP,nPasses,&'
 !             IF(JB.NE.0)THEN
 !                WRITE(LUFILE,'(A)')'!$OMP         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
 !             ELSE
@@ -219,26 +219,26 @@ DO GPUrun = 1,2
                 WRITE(LUFILE,'(A)')'!$ACC         AuxCont,ThetaP) ASYNC(iASync)'
              ENDIF
           ENDIF
-             !          WRITE(LUFILE,'(A)')'  DO iP = 1,nContQP*nPasses'
+             !          WRITE(LUFILE,'(A)')'  DO iP = 1,nContQ*nContP*nPasses'
 !          WRITE(LUFILE,'(A)')'   DO iTUVQ = 1,nTUVQ'
-!             WRITE(LUFILE,'(A)')'    iPassP = (iP-1)/nContQP+1'
+!             WRITE(LUFILE,'(A)')'    iPassP = (iP-1)/(nContQ*nContP)+1'
 !DO i123 = 1,n1*n2*n3'
 !i1 = mod(I123-1,n1)+1'
 !i2 = mod((I123-(mod(I123-1,nPrim1)+1))/n1,n2)+1'
 !i3 = (I123-1)/(n1*n2) + 1'
           IF(nPrimLast)THEN
-             WRITE(LUFILE,'(A)')'  DO iP = 1,nTUVQ*nContQP*nPasses'
+             WRITE(LUFILE,'(A)')'  DO iP = 1,nTUVQ*nContQ*nContP*nPasses'
           ELSE
-             WRITE(LUFILE,'(A)')'  DO iP = 1,nContQP*nPasses'
+             WRITE(LUFILE,'(A)')'  DO iP = 1,nContQ*nContP*nPasses'
              WRITE(LUFILE,'(A)')'   DO iTUVQ = 1,nTUVQ'
           ENDIF
           IF(JB.NE.0)THEN
              IF(nPrimLast)THEN
-                WRITE(LUFILE,'(A)')'!    iTUVQ = mod(IP-1,nTUVQ)+1'
-                WRITE(LUFILE,'(A)')'!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1'
-                WRITE(LUFILE,'(A)')'    iPassP = (IP-1)/(nTUVQ*nContQP) + 1'
+!                WRITE(LUFILE,'(A)')'!    iTUVQ = mod(IP-1,nTUVQ)+1'
+!                WRITE(LUFILE,'(A)')'!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,(nContQ*nContP))+1'
+                WRITE(LUFILE,'(A)')'    iPassP = (IP-1)/(nTUVQ*(nContQ*nContP)) + 1'
              ELSE
-                WRITE(LUFILE,'(A)')'    iPassP = (IP-1)/(nContQP) + 1'
+                WRITE(LUFILE,'(A)')'    iPassP = (IP-1)/((nContQ*nContP)) + 1'
              ENDIF
              WRITE(LUFILE,'(A)')'    iAtomA = iAtomApass(iPassP)'
              WRITE(LUFILE,'(A)')'    iAtomB = iAtomBpass(iPassP)'

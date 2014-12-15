@@ -39,7 +39,7 @@ CONTAINS
   
   
   subroutine ICI_CPU_OBS_Seg2(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -53,7 +53,7 @@ CONTAINS
        & IatomAPass,iatomBPass)
     implicit none
     integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD
-    integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri
+    integer,intent(in) :: MaxPasses,IntPrint,lupri
     integer,intent(in) :: nContA,nContB,nContC,nContD,nContP,nContQ,nTABFJW1,nTABFJW2
     integer,intent(in) :: nAtomsA,nAtomsB
     integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
@@ -74,10 +74,10 @@ CONTAINS
     real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
     integer,intent(in) :: localintsmaxsize
     real(realk),intent(inout) :: LOCALINTS(localintsmaxsize)
-    real(realk),intent(in) :: integralPrefactor(nPrimQP)
+    real(realk),intent(in) :: integralPrefactor(nPrimQ*nPrimP)
     logical,intent(in) :: PQorder
     !integralPrefactor(nPrimP,nPrimQ)
-    real(realk),intent(in) :: reducedExponents(nPrimQP)
+    real(realk),intent(in) :: reducedExponents(nPrimQ*nPrimP)
     !reducedExponents(nPrimP,nPrimQ)
     real(realk),intent(in) :: Qdistance12(3) !Ccenter-Dcenter
     !Qdistance12(3)
@@ -89,7 +89,7 @@ CONTAINS
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
     integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
 !   Local variables 
-    integer :: AngmomPQ,AngmomP,AngmomQ,I,J,nContQP,la,lb,lc,ld,nsize,angmomid
+    integer :: AngmomPQ,AngmomP,AngmomQ,I,J,la,lb,lc,ld,nsize,angmomid
     
     !Setup combined Angmom info
     AngmomP = AngmomA+AngmomB
@@ -116,7 +116,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,1,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQ,nContP,nPasses,1,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
@@ -131,7 +131,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,1,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQ,nContP,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(1,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -144,7 +144,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,nPasses,1,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,1,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
@@ -159,7 +159,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,nPasses,1,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,1,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
@@ -174,7 +174,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,1,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQ,nContP,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(1,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -190,7 +190,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,1,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(1,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -206,7 +206,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,1,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(1,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -222,7 +222,7 @@ CONTAINS
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,1,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,1,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(1,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -233,7 +233,7 @@ CONTAINS
                & TMParray2(1))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,1,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQ,nContP,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation LHS needed
@@ -252,11 +252,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
@@ -272,11 +272,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -293,11 +293,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
@@ -313,11 +313,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
@@ -333,11 +333,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -354,11 +354,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -375,11 +375,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -396,11 +396,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A0B1BtoA(1,nPasses,35,&
+        call HorizontalRR_CPU_LHS_P1A0B1BtoA(nContQ,nContP,nPasses,35,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -414,7 +414,7 @@ CONTAINS
                & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,nPasses,1,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQ,nContP,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(1,nPasses,TMParray2(1),&
@@ -434,12 +434,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
@@ -455,12 +455,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -477,12 +477,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(4,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
@@ -498,12 +498,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
@@ -519,12 +519,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(20,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -541,12 +541,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -563,12 +563,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(20,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(5,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -585,12 +585,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A0B2BtoA(1,nPasses,35,&
+        call HorizontalRR_CPU_LHS_P2A0B2BtoA(nContQ,nContP,nPasses,35,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(35,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(5,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -607,11 +607,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A1B0AtoB(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
@@ -627,11 +627,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A1B0AtoB(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -648,11 +648,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A1B0AtoB(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -669,11 +669,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A1B0AtoB(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -690,11 +690,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A1B0AtoB(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -711,11 +711,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P1A1B0AtoB(1,nPasses,35,&
+        call HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,35,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,3,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(3,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -732,11 +732,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A1B1AtoB(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,9,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQ,nContP,nPasses,9,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
@@ -752,11 +752,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A1B1AtoB(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,9,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQ,nContP,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(9,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -773,11 +773,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A1B1AtoB(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,9,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQ,nContP,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(9,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -794,11 +794,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A1B1AtoB(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,9,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(9,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -815,11 +815,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A1B1AtoB(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,9,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(9,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -836,11 +836,11 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A1B1AtoB(1,nPasses,35,&
+        call HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,35,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,9,Qdistance12,TMParray1(1),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,9,Qdistance12,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(9,nPasses,TMParray2(1),&
             & LOCALINTS(1))
@@ -854,7 +854,7 @@ CONTAINS
                & TMParray1(1))
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,nPasses,1,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQ,nContP,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(1,nPasses,TMParray2(1),&
@@ -874,12 +874,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
@@ -895,12 +895,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -917,12 +917,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(4,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
@@ -938,12 +938,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
@@ -959,12 +959,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -981,12 +981,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(10,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(15,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -1003,12 +1003,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -1025,12 +1025,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A1B2BtoA(1,nPasses,35,&
+        call HorizontalRR_CPU_LHS_P3A1B2BtoA(nContQ,nContP,nPasses,35,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(35,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(15,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -1047,12 +1047,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A2B0AtoB(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(4,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
@@ -1068,12 +1068,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A2B0AtoB(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -1090,12 +1090,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P2A2B0AtoB(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(20,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQ,nContP,nPasses,5,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(5,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -1112,12 +1112,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A2B1AtoB(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(4,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
@@ -1133,12 +1133,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A2B1AtoB(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(10,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(15,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -1155,12 +1155,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P3A2B1AtoB(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQ,nContP,nPasses,15,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -1177,12 +1177,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P4A2B2AtoB(1,nPasses,4,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(4,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(1,nPasses,25,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q1C0D1DtoC(nContQ,nContP,nPasses,25,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri)
         !no Spherical Transformation RHS needed
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
@@ -1198,12 +1198,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P4A2B2AtoB(1,nPasses,10,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(10,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(1,nPasses,25,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q2C0D2DtoC(nContQ,nContP,nPasses,25,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(25,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -1220,12 +1220,12 @@ CONTAINS
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1))
         !Primitive Contraction have already been done
-        call HorizontalRR_CPU_LHS_P4A2B2AtoB(1,nPasses,20,&
+        call HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(20,nPasses,TMParray1(1),&
             & TMParray2(1))
-        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(1,nPasses,25,Qdistance12,TMParray2(1),&
+        call HorizontalRR_CPU_RHS_Q3C1D2DtoC(nContQ,nContP,nPasses,25,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri)
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(25,nPasses,TMParray1(1),&
             & LOCALINTS(1))
@@ -1234,7 +1234,7 @@ CONTAINS
         CALL ICHORQUIT('ICI_CPU_McM_general called with OpenACC',-1)
 #endif
         call ICI_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
-           & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+           & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
            & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
            & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
            & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
