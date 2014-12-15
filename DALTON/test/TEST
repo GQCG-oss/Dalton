@@ -11,7 +11,7 @@
 #       If another name than "build" has been chosen for the build directory,
 #       then you should modify the BUILD_DIR defintion to point to that place.
 
-BUILD_DIR="../../build"
+BUILD_DIR="../../dalton"
 
 # radovan: this is to figure out the location of this script
 # http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
