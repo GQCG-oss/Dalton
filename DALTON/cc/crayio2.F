@@ -346,60 +346,58 @@ c            WRITE (LUPRI,*) 'MODE:', MODE
 *=====================================================================*
 
 C /* deck subroutine printgetwaerr */
-      subroutine printgetwaerr(ierr)
+      SUBROUTINE PRINTGETWAERR(IERR)
 C     KEYWORDS: getwa error ierr message getwa2 
 C
-C     This subroutine takes an integer error message from GETWA (a FORTAN extension routine)
-C     and prints the corresponding error to the output file, or rather the LUPRI unit as 
-C     the case may be. 
+C     This subroutine takes an integer error message from GETWA (a FORTRAN extension routine)
+C     and prints the corresponding error to output file (LUPRI)
 C
 C     F.Beyer June. 2014.
 
 #include "priunit.h"
       integer, intent(in) :: ierr
 
-c     
       if(ierr .ge. 0) return
-c     
+c
       if(ierr .eq. -1) then
 c        invalid unit number
          write(lupri,'( ''Invalid unit number in a GETWA call'')')
          return
       endif
-c     
+     
       if(ierr .eq. -2) then
 c        invalid unit number
          write(lupri,'( ''No. of files exceeds memory size  in a 
      $ GETWA call'')')
          return
       endif
-c     
+     
       if(ierr .eq. -3) then
 c        invalid unit number
          write(lupri,'( '' Attempt to read past end of DATA in a 
      $ GETWA call'',/,'' ** returned values may be invalid **'')')
          return
       endif
-c     
+     
       if(ierr .eq. -4) then
 c        invalid file name
          write(lupri,'( ''Word address .LE. 0  in GETWA'')')
          return
       endif
-c     
+     
       if(ierr .eq. -5) then
 c        invalid file name
          write(lupri,'( ''Requested word count greater than max.  in 
      $ GETWA'')')
          return
       endif
-c     
+     
       if(ierr .eq. -6) then
 c        invalid file name
          write(lupri,'( ''Invalid file name in a GETWA call'')')
          return
       endif
-c     
+     
       if(ierr .eq. -7) then
 c        invalid file name
          write(lupri,'( ''User word count less than or equal to zero in 
@@ -411,5 +409,5 @@ c        unknown error code
          write(lupri,'('' Unknown error code in a GETWA call'')')
          return
 
-         end subroutine
+         END SUBROUTINE
 

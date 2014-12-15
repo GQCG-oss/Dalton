@@ -93,6 +93,7 @@ C
 #include "cbieri.h"
 #include "ccroper.h"
 #include "cch2d.h"
+#include "soppinf.h" 
 Cholesky
 #include "cc_cho.h"
 #include "ccdeco.h"
@@ -192,14 +193,19 @@ C
      *          WORD .EQ. '*CC    ')
       IF (NEWDEF) THEN
          IF (PARCAL) THEN
-           WRITE(LUPRI,*) "WARNING: CC is not MPI parallelized!"
-           WRITE(LUPRI,*)
-     &     "For parallelization speedup, e.g. use parallel MKL"
-C Beyer I commented away this quit statement. 
+C Beyer 
 C       SOPPA runs in parallel now and needs Coupled Cluster 
-C       Amplitudes. Hard coding a stop in CC code will break all 
-C       parallel SOPPA routines.
-           !CALL PARQUIT("CC")
+C       Amplitudes. Hard coding a stop in parallel CC code will break all 
+C       parallel SOPPA routines. 
+C
+C       When CC runs in parallel you can remove this check and the #include "soppinf.h"
+C       from the list of COMMON block inclusions.
+           IF (.NOT. (AORPA.OR.AOHRP.OR.AOSOP.OR.DCRPA.OR.AOSOC) ) THEN 
+              WRITE(LUPRI,*) "WARNING: CC is not MPI parallelized!"
+              WRITE(LUPRI,*)
+     &        "For parallelization speedup, e.g. use parallel MKL"
+              CALL PARQUIT("CC")
+           ENDIF
 C End Beyer
          ENDIF
          WORD1 = WORD
