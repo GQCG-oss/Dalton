@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2014/12/10 (started 2014/09/01).
+!REVISION: 2014/12/15 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -104,7 +104,11 @@
         logical, parameter, public:: DIL_TC_EACH=.false.                !each MPI process will have its own tensor contraction
         logical, parameter, public:: DIL_TC_ALL=.true.                  !MPI processes work collectively on a tensor contraction
 !VARIABLES:
+#ifdef VAR_MPI
         integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_MPI           !allocator type for communication buffers
+#else
+        integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_BASIC         !allocator type for communication buffers
+#endif
         integer(INTD), private:: CONS_OUT=6                             !console output device
         logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
         logical, private:: VERBOSE=.true.                               !verbosity (for errors)
@@ -255,6 +259,7 @@
         public dil_set_alloc_type
         private cpu_ptr_alloc
         private cpu_ptr_alloc_r
+        private my_mpi_size
         private my_mpi_rank
         private divide_segment_i8
         public merge_sort_key_int
@@ -1245,7 +1250,7 @@
           val=0E0_realk; mpi_size=int(nelems*sizeof(val),MPI_ADDRESS_KIND); caddr=C_NULL_PTR
           call MPI_ALLOC_MEM(mpi_size,MPI_INFO_NULL,caddr,ierr)
 #else
-          caddr = c_null_ptr
+          caddr = C_NULL_PTR
           ierr=2
 #endif
           if(ierr.ne.0) then
@@ -1262,14 +1267,38 @@
         endif
         return
         end subroutine cpu_ptr_alloc_r
-!-------------------------------------------
-        integer(INTD) function my_mpi_rank() !SERIAL
-!Returns the rank of an MPI process in MPI_COMM_WORLD.
+!--------------------------------------------------
+        integer(INTD) function my_mpi_size(my_comm) !SERIAL
+!Returns the rank of an MPI process.
         implicit none
-        integer(INTD):: i,ierr
+        integer(ls_mpik), intent(in), optional:: my_comm !in: MPI communicator
+        integer(ls_mpik):: i,ierr
+        i=0
+#ifdef VAR_MPI
+        if(present(my_comm)) then !explicit communicator
+         call MPI_COMM_SIZE(my_comm,i,ierr); if(ierr.ne.0) i=-1
+        else !default communicator
+         call MPI_COMM_SIZE(MPI_COMM_WORLD,i,ierr); if(ierr.ne.0) i=-1
+        endif
+#else
+        i=1
+#endif
+        my_mpi_size=i
+        return
+        end function my_mpi_size
+!--------------------------------------------------
+        integer(INTD) function my_mpi_rank(my_comm) !SERIAL
+!Returns the rank of an MPI process.
+        implicit none
+        integer(ls_mpik), intent(in), optional:: my_comm !in: MPI communicator
+        integer(ls_mpik):: i,ierr
         i=-1
 #ifdef VAR_MPI
-        call MPI_COMM_RANK(MPI_COMM_WORLD,i,ierr)
+        if(present(my_comm)) then !explicit communicator
+         call MPI_COMM_RANK(my_comm,i,ierr); if(ierr.ne.0) i=-1
+        else !default communicator
+         call MPI_COMM_RANK(MPI_COMM_WORLD,i,ierr); if(ierr.ne.0) i=-1
+        endif
 #else
         i=0
 #endif
@@ -2912,7 +2941,7 @@
 !        index_host(i)=(abs(i)-1)/MAX_TENSOR_RANK     !index code --> host argument: {0,1,2}={d,l,r}
 !        index_pos(i)=mod(abs(i)-1,MAX_TENSOR_RANK)+1 !index code --> index (dimension) position
 
-        ierr=0; tmb=thread_wtime(); impir=my_mpi_rank()
+        ierr=0; tmb=thread_wtime(); impir=my_mpi_rank(infpar%lg_comm)
         if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Entered ...")') impir !debug
 !Argument check:
         do i=1,3
@@ -3246,7 +3275,7 @@
         real(realk):: val
         real(8):: tmb,tms,tm,tmm,tc_flops,mm_flops
 
-        ierr=0; tmb=thread_wtime(); impir=my_mpi_rank()
+        ierr=0; tmb=thread_wtime(); impir=my_mpi_rank(infpar%lg_comm)
         if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Entered ...")') impir !debug
 !Init:
         val=0E0_realk; size_of_real=sizeof(val)
@@ -4048,10 +4077,8 @@
         integer(INTD):: i,j,k,l,m,n,ngpus,nmics,nd,nl,nr,impis,impir
 
         ierr=0
-#ifdef VAR_MPI
-        call MPI_COMM_SIZE(infpar%lg_comm,impis,i); if(i.ne.0) then; ierr=1; return; endif
-        call MPI_COMM_RANK(infpar%lg_comm,impir,i); if(i.ne.0) then; ierr=2; return; endif
-#endif
+        impis=my_mpi_size(infpar%lg_comm); if(i.le.0) then; ierr=1; return; endif
+        impir=my_mpi_rank(infpar%lg_comm); if(i.lt.0) then; ierr=2; return; endif
         if(present(num_gpus)) then; ngpus=max(num_gpus,0); else; ngpus=0; endif
         if(present(num_mics)) then; nmics=max(num_mics,0); else; nmics=0; endif        
         if(DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Entered Process ",i6," of ",i6,": ",i2," GPUs, ",i2," MICs ...")')&
@@ -4123,11 +4150,35 @@
 #ifdef VAR_MPI
         if(realk.eq.8) then; mpi_dtyp=MPI_REAL8; elseif(realk.eq.4) then; mpi_dtyp=MPI_REAL4; endif
         call MPI_ALLREDUCE(nrm1,dil_tensor_norm1,1_INTD,mpi_dtyp,MPI_SUM,infpar%lg_comm,ierr)
+#else
+        dil_tensor_norm1=nrm1
 #endif
         return
         end function dil_tensor_norm1
+!----------------------------------------
+        subroutine dil_tensor_init(a,val) !SERIAL
+        implicit none
+        type(tensor), intent(inout) :: a
+        real(realk), intent(in), optional:: val
+        integer(INTD):: lti
+        real(realk):: vlu
+#ifdef VAR_MPI
+ !get the slaves here
+        if(a%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master) then
+         call pdm_tensor_sync(infpar%lg_comm,JOB_tensor_ZERO,a)
+        endif
+ !loop over local tiles and zero them individually
+        vlu=0E0_realk; if(present(val)) vlu=val
+        do lti=1,a%nlti
+!$OMP WORKSHARE
+         a%ti(lti)%t=vlu
+!$OMP END WORKSHARE
+        enddo
+#endif
+        return
+        end subroutine dil_tensor_init
 !============================================================
-#ifdef DIL_DEBUG
+!#ifdef DIL_DEBUG
 !DEBUGGING:
 !----------------------------------------------
         subroutine dil_debug(dtens,ltens,rtens)
@@ -4135,7 +4186,7 @@
         type(tensor), intent(inout), target:: dtens
         type(tensor), intent(inout), target:: ltens
         type(tensor), intent(inout), target:: rtens
-        integer(INTD):: i,j,k,l,m,n,impir,drank,lrank,rrank,errc
+        integer(INTD):: i,j,k,l,m,n,impir,impir_world,drank,lrank,rrank,errc
         integer(INTL):: mem_lim,dvol,lvol,rvol
         integer(INTD):: dbas(1:MAX_TENSOR_RANK),lbas(1:MAX_TENSOR_RANK),rbas(1:MAX_TENSOR_RANK)
         integer(INTD):: ddim(1:MAX_TENSOR_RANK),ldim(1:MAX_TENSOR_RANK),rdim(1:MAX_TENSOR_RANK)
@@ -4146,10 +4197,10 @@
         real(realk):: val0,val1,val2
         real(8):: tmb,tm
 
-        errc=0; impir=infpar%mynum
-        deb_fname='dil_debug.'; call int2str(impir,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
+        errc=0; impir=my_mpi_rank(infpar%lg_comm); impir_world=my_mpi_rank()
+        deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
         open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN'); CONS_OUT=DIL_DEBUG_FILE
-        write(CONS_OUT,'("### DEBUG BEGIN: Global Rank ",i7," (Local Rank ",i7,")")') infpar%mynum,infpar%lg_mynum
+        write(CONS_OUT,'("### DEBUG BEGIN: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
 !Check tensor kernels:
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Checking tensor algebra kernels ...")') impir
         drank=5; lrank=5; rrank=5
@@ -4267,7 +4318,7 @@
         if(i.ne.0) then
          write(*,'("MEM ALLOC 1 failed!")')
 #ifdef VAR_MPI
-         call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,errc)
 #else
          stop
 #endif
@@ -4276,7 +4327,7 @@
         if(i.ne.0) then
          write(*,'("MEM ALLOC 2 failed!")')
 #ifdef VAR_MPI
-         call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,errc)
 #else
          stop
 #endif
@@ -4285,7 +4336,7 @@
         if(i.ne.0) then
          write(*,'("MEM ALLOC 3 failed!")')
 #ifdef VAR_MPI
-         call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,errc)
 #else
          stop
 #endif
@@ -4420,11 +4471,11 @@
         if(associated(rarr)) deallocate(rarr)
         call lsmpi_barrier(infpar%lg_comm)
 #ifdef VAR_MPI
-        call MPI_ABORT(infpar%lg_comm,0_INTD,errc)
+        call MPI_ABORT(infpar%lg_comm,0_ls_mpik,errc)
 #else
         stop
 #endif
         return
         end subroutine dil_debug
-#endif
+!#endif
        end module tensor_algebra_dil
