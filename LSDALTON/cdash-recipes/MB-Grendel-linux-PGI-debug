@@ -15,7 +15,7 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 #./setup --fc=pgf90 --cc=pgcc --blas=builtin --lapack=builtin -D BUILDNAME="RB-Grendel-linux-PGI-debug" --type=debug --check
-./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp -D BUILDNAME="MB-Grendel-linux-PGI-debug" --type=debug --check
+./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp -D BUILDNAME="MB-Grendel-linux-PGI-debug" --type=debug --check -D ENABLE_EFS=OFF  
 cd $TMP_DIR/build
 #make clean
 #find . -exec touch {} \;
