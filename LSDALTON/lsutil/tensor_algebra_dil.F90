@@ -4085,8 +4085,8 @@
         integer(INTD):: i,j,k,l,m,n,ngpus,nmics,nd,nl,nr,impis,impir
 
         ierr=0
-        impis=my_mpi_size(infpar%lg_comm); if(i.le.0) then; ierr=1; return; endif
-        impir=my_mpi_rank(infpar%lg_comm); if(i.lt.0) then; ierr=2; return; endif
+        impis=my_mpi_size(infpar%lg_comm); if(impis.le.0) then; ierr=1; return; endif
+        impir=my_mpi_rank(infpar%lg_comm); if(impir.lt.0) then; ierr=2; return; endif
         if(present(num_gpus)) then; ngpus=max(num_gpus,0); else; ngpus=0; endif
         if(present(num_mics)) then; nmics=max(num_mics,0); else; nmics=0; endif        
         if(DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Entered Process ",i6," of ",i6,": ",i2," GPUs, ",i2," MICs ...")')&
