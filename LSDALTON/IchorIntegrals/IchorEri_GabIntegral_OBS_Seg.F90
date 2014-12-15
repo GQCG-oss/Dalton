@@ -234,7 +234,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,1,TMParray1(1),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA2(10,1,1,1,TMParray1(1),&
             & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*30.GT.TMParray1maxsize)THEN
@@ -248,7 +248,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,1,TMParray1(1),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(5,1,1,1,TMParray1(1),&
             & TMParray2(1))
         call ExtractGabElmP5Seg(TMParray2(1),LOCALINTS)
     CASE(  21)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
@@ -291,7 +291,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,1,TMParray1(1),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA2(20,1,1,1,TMParray1(1),&
             & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*270.GT.TMParray1maxsize)THEN
@@ -305,7 +305,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,1,TMParray1(1),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(15,1,1,1,TMParray1(1),&
             & TMParray2(1))
         call ExtractGabElmP15Seg(TMParray2(1),LOCALINTS)
     CASE(  22)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
@@ -348,7 +348,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(35,1,TMParray1(1),&
+        call SphericalContractOBS1_CPU_maxAngP4_maxAngA2(35,1,1,1,TMParray1(1),&
             & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*900.GT.TMParray1maxsize)THEN
@@ -362,7 +362,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(25,1,TMParray1(1),&
+        call SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(25,1,1,1,TMParray1(1),&
             & TMParray2(1))
         call ExtractGabElmP25Seg(TMParray2(1),LOCALINTS)
     CASE(   1)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
@@ -450,7 +450,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,1,TMParray1(1),&
+        call SphericalContractOBS1_CPU_maxAngP2_maxAngA0(10,1,1,1,TMParray1(1),&
             & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*30.GT.TMParray1maxsize)THEN
@@ -464,7 +464,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,1,TMParray1(1),&
+        call SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(5,1,1,1,TMParray1(1),&
             & TMParray2(1))
         call ExtractGabElmP5Seg(TMParray2(1),LOCALINTS)
     CASE(  12)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
@@ -507,7 +507,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,1,TMParray1(1),&
+        call SphericalContractOBS1_CPU_maxAngP3_maxAngA1(20,1,1,1,TMParray1(1),&
             & TMParray2(1))
 #ifdef VAR_DEBUGICHOR
         IF(1*270.GT.TMParray1maxsize)THEN
@@ -521,7 +521,7 @@ CONTAINS
           call ichorquit('1too small',-1)
         ENDIF
 #endif
-        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,1,TMParray1(1),&
+        call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(15,1,1,1,TMParray1(1),&
             & TMParray2(1))
         call ExtractGabElmP15Seg(TMParray2(1),LOCALINTS)
     CASE DEFAULT

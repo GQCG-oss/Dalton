@@ -1245,9 +1245,9 @@ contains
        call AddToString('(')
        call AddToString(nTUVP)
        IF(Gen)THEN
-          call AddToString(',nContP,')
+          call AddToString(',1,nContP,1,')
        ELSE
-          call AddToString(',1,')
+          call AddToString(',1,1,1,')
        ENDIF
        call AddToString(STRINGIN)
 !       IF(Gen)THEN
@@ -1361,9 +1361,9 @@ contains
        call AddToString('(')
        call AddToString(nlmA*nlmB)
        IF(Gen)THEN
-          call AddToString(',nContP,')
+          call AddToString(',1,nContP,1,')
        ELSE
-          call AddToString(',1,')
+          call AddToString(',1,1,1,')
        ENDIF
        call AddToString(STRINGIN)
  !      IF(Gen)THEN

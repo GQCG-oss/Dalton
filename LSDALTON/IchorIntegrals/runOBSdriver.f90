@@ -2161,9 +2161,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('B')
        call AddToString(AngmomB)
        call AddToString(SPEC)
-       call AddToString('(nContQ,nContP,nPasses,')
-       call AddToString(nTUVQ)
-       call AddToString(',&')
+       call AddToString('(nContQ,nContP,nPasses,nTUVQ,&')
        call writeString(LUMOD3)
        call initString(12)
        call AddToString('& Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,')
@@ -2258,16 +2256,9 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('_maxAngA')
        call AddToString(AngmomA)
        call AddToString('(')
-       call AddToString(nTUVQ)
-       IF(Gen)THEN
-          call AddToString(',nContQ*nContP*nPasses,')
-       ELSEIF(SegP)THEN
-          call AddToString(',nContQ*nPasses,')
-       ELSEIF(SegQ)THEN
-          call AddToString(',nContP*nPasses,')
-       ELSE
-          call AddToString(',nPasses,')
-       ENDIF
+!       call AddToString(nTUVQ)
+       call AddToString('nTUVQ')
+       call AddToString(',nContQ,nContP,nPasses,')
        call AddToString(STRINGIN)
 !       IF(Gen)THEN
 !          call AddToString('(1:nContQ*nContP*nPasses*')
@@ -2375,7 +2366,8 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString(AngmomD)
        call AddToString(SPEC)
        call AddToString('(nContQ,nContP,nPasses,')
-       call AddToString(nlmA*nlmB)
+!       call AddToString(nlmA*nlmB)
+       call AddToString('nOrbCompP')
        call AddToString(',Qdistance12,')
        call AddToString(STRINGIN)
 !       IF(Gen)THEN
@@ -2453,16 +2445,9 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('_maxAngC')
        call AddToString(AngmomC)
        call AddToString('(')
-       call AddToString(nlmA*nlmB)
-       IF(Gen)THEN
-          call AddToString(',nContQ*nContP*nPasses,')
-       ELSEIF(SegQ)THEN
-          call AddToString(',nContP*nPasses,')
-       ELSEIF(SegP)THEN
-          call AddToString(',nContQ*nPasses,')
-       ELSE
-          call AddToString(',nPasses,')
-       ENDIF
+!       call AddToString(nlmA*nlmB)
+       call AddToString('nOrbCompP')
+       call AddToString(',nContQ,nContP,nPasses,')
        call AddToString(STRINGIN)
 !       IF(Gen)THEN
 !          call AddToString('(1:nContQ*nContP*nPasses*')
