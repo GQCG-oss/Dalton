@@ -205,11 +205,7 @@ contains
     end if
 
     molecule%nocc = molecule%nelectrons/2
-    if(present(nMO)) then
-       molecule%nunocc = nMO - molecule%nocc
-    else
-       molecule%nunocc = molecule%nbasis - molecule%nocc
-    end if
+    molecule%nunocc = nMOintern - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
     molecule%nCabsAO = 0
