@@ -934,9 +934,12 @@ contains
        MemStep2=4*real(nAux*nocc*nvirt)/numnodes + real(nAux*nAux)
        MemRequired = MAX(MemStep1,MemStep2)
        MemRequired = MemRequired*realk/GB       
-       if(MemRequired .LT. DECinfo%memory) then
+       if(MemRequired .GE. DECinfo%memory) then 
           MemoryReduced = .TRUE.
           WRITE(DECinfo%output,*)'MemoryReduced RIMP2 scheme chosen'
+          WRITE(DECinfo%output,*)'MemRequired Step 1:',MemStep1*realk/GB,' GB'
+          WRITE(DECinfo%output,*)'MemRequired Step 2:',MemStep2*realk/GB,' GB'
+          WRITE(DECinfo%output,*)'DECinfo%memory',DECinfo%memory
        endif
     ENDIF
 
@@ -1186,30 +1189,6 @@ contains
                & Calpha,TMPAlphaBeta_minus_sqrt,naux)
           CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
        ENDIF
-       IF(AlphaCDAlloced)THEN
-          AlphaCD_Deallocate = .FALSE.
-          IF(MemoryReduced)THEN 
-             !Wait for alphaCD have been received and deallocate it 
-             IF(MynauxMPI.GT.0)THEN
-                CALL LS_GETTIM(CPU1,WALL1)
-                call MPI_WAIT(request,lsmpi_status,ierr)
-                CALL LS_GETTIM(CPU2,WALL2)
-                CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-             ENDIF
-             AlphaCD_Deallocate = .TRUE.
-          ELSE
-             IF(MynauxMPI.GT.0)THEN 
-                call MPI_TEST(request,TransferCompleted,lsmpi_status,ierr)
-                AlphaCD_Deallocate = TransferCompleted
-             ENDIF
-          ENDIF
-          IF(AlphaCD_Deallocate)THEN
-             call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
-             call mem_dealloc(AlphaCD) !no longer need this
-             AlphaCDAlloced = .FALSE.      
-          ENDIF
-       ENDIF
        !To complete construction of  c_(nauxMPI,nvirt,nocc) we need all
        !alphaCD(nauxMPI,nvirt,nocc) contributions from all ranks
        !so we do:
@@ -1239,7 +1218,7 @@ contains
           IF(OriginalRanknauxMPI.GT.0)THEN
              call Test_if_64bit_integer_required(OriginalRanknauxMPI,nocc,nvirt)
              !Step 1 : MPI recieve a alphaCD from 'Receiver' 
-             IF(MemoryReduced.OR.nAwaitDealloc.EQ.2)THEN
+             IF(nAwaitDealloc.EQ.2)THEN
                 !all buffers are allocated and await to be deallocated .OR.
                 !Memory Reduced version is used: 
                 !once the memory have been recieved by the reciever the 
@@ -1325,6 +1304,31 @@ contains
                    RoundRobin6 = .FALSE.
                 ENDIF
              ENDIF
+             IF(AlphaCDAlloced)THEN
+                AlphaCD_Deallocate = .FALSE.
+                IF(MemoryReduced)THEN 
+                   !Wait for alphaCD have been received and deallocate it 
+                   !to avoid having 4 (nocc,nvirt,nAuxMPI) - reduce to 3.
+                   IF(MynauxMPI.GT.0)THEN
+                      CALL LS_GETTIM(CPU1,WALL1)
+                      call MPI_WAIT(request,lsmpi_status,ierr)
+                      CALL LS_GETTIM(CPU2,WALL2)
+                      CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                      WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+                   ENDIF
+                   AlphaCD_Deallocate = .TRUE.
+                ELSE
+                   IF(MynauxMPI.GT.0)THEN 
+                      call MPI_TEST(request,TransferCompleted,lsmpi_status,ierr)
+                      AlphaCD_Deallocate = TransferCompleted
+                   ENDIF
+                ENDIF
+                IF(AlphaCD_Deallocate)THEN
+                   call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
+                   call mem_dealloc(AlphaCD) !no longer need this
+                   AlphaCDAlloced = .FALSE.      
+                ENDIF
+             ENDIF
              IF(MynauxMPI.GT.0)THEN
                 !Step 2: Obtain part of Calpha from this contribution
                 CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
@@ -1391,7 +1395,7 @@ contains
              ENDIF
           enddo
        ENDIF
-       IF(.NOT.MemoryReduced)THEN
+       IF(AlphaCDAlloced)THEN
           IF(MynauxMPI.GT.0)THEN
              CALL LS_GETTIM(CPU1,WALL1)
              call MPI_WAIT(request,lsmpi_status,ierr)
