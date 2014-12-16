@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2014/12/15 (started 2014/09/01).
+!REVISION: 2014/12/16 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -293,6 +293,9 @@
         private dil_tens_contr_partition
         private dil_tensor_contract_pipe
         public dil_tensor_contract
+        private dil_tensor_norm1
+        private dil_tensor_init
+        public dil_debug
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -1228,6 +1231,7 @@
         real(realk):: val
 #ifdef VAR_MPI
         integer(MPI_ADDRESS_KIND):: mpi_size
+        integer(ls_mpik):: mpi_err
 #endif
         ierr=0
         if(nelems.gt.0_INTL) then
@@ -1245,18 +1249,20 @@
           !`Write (call C wrapper for cudaMallocHost)
           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
          case(DIL_ALLOC_MPI)
+          caddr=C_NULL_PTR
 #ifdef VAR_MPI
-          val=0E0_realk; mpi_size=int(nelems*sizeof(val),MPI_ADDRESS_KIND); caddr=C_NULL_PTR
-          call MPI_ALLOC_MEM(mpi_size,MPI_INFO_NULL,caddr,ierr)
-#else
-          caddr = C_NULL_PTR
-          ierr=2
-#endif
-          if(ierr.ne.0) then
-           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): MPI memory allocation failed: ",i11)') ierr
-           ierr=3
+          val=0E0_realk; mpi_size=int(nelems*sizeof(val),MPI_ADDRESS_KIND)
+          call MPI_ALLOC_MEM(mpi_size,MPI_INFO_NULL,caddr,mpi_err)
+          if(mpi_err.ne.0) then
+           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): MPI memory allocation failed: ",i11)')&
+           &mpi_err
+           ierr=2
+          else
+           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
           endif
-          call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
+#else
+          ierr=3
+#endif
          case default
           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): invalid allocation attributes: ",i11)') flags
           ierr=4
@@ -1802,7 +1808,11 @@
 #ifdef VAR_MPI
         thw=MPI_WTIME()
 #else
+#ifdef VAR_OMP
+        thw=omp_get_wtime()
+#else
         call cpu_time(thw)
+#endif
 #endif
         if(present(time_start)) thw=thw-time_start
         return
@@ -3489,7 +3499,7 @@
          if(DIL_ALLOC_TYPE.eq.DIL_ALLOC_BASIC) then
           allocate(hbuf(1_INTL:tot_buf_vol),STAT=ierr); if(ierr.ne.0) then; call cleanup(30_INTD); return; endif
          elseif(DIL_ALLOC_TYPE.eq.DIL_ALLOC_MPI) then
-          call mem_alloc(hbuf,hbuf_cp,tot_buf_vol)
+          call mem_alloc(hbuf,hbuf_cp,tot_buf_vol) !This call will abort the program if memory allocation is unsuccessful
          elseif(DIL_ALLOC_TYPE.eq.DIL_ALLOC_PINNED) then
           !`Enable
          else
@@ -4199,7 +4209,7 @@
         return
         end subroutine dil_tensor_init
 !============================================================
-#ifdef DIL_DEBUG
+!#ifdef DIL_DEBUG
 !DEBUGGING:
 !----------------------------------------------
         subroutine dil_debug(dtens,ltens,rtens)
@@ -4209,6 +4219,7 @@
         type(tensor), intent(inout), target:: rtens
         integer(INTD):: i,j,k,l,m,n,impir,impir_world,drank,lrank,rrank,errc
         integer(INTL):: mem_lim,dvol,lvol,rvol
+        integer(ls_mpik):: mpi_err
         integer(INTD):: dbas(1:MAX_TENSOR_RANK),lbas(1:MAX_TENSOR_RANK),rbas(1:MAX_TENSOR_RANK)
         integer(INTD):: ddim(1:MAX_TENSOR_RANK),ldim(1:MAX_TENSOR_RANK),rdim(1:MAX_TENSOR_RANK)
         integer(INTD):: dful(1:MAX_TENSOR_RANK),lful(1:MAX_TENSOR_RANK),rful(1:MAX_TENSOR_RANK)
@@ -4335,7 +4346,7 @@
         if(i.ne.0) then
          write(*,'("MEM ALLOC 1 failed!")')
 #ifdef VAR_MPI
-         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,errc)
+         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
 #else
          stop
 #endif
@@ -4344,7 +4355,7 @@
         if(i.ne.0) then
          write(*,'("MEM ALLOC 2 failed!")')
 #ifdef VAR_MPI
-         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,errc)
+         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
 #else
          stop
 #endif
@@ -4353,7 +4364,7 @@
         if(i.ne.0) then
          write(*,'("MEM ALLOC 3 failed!")')
 #ifdef VAR_MPI
-         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,errc)
+         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
 #else
          stop
 #endif
@@ -4488,11 +4499,11 @@
         if(associated(rarr)) deallocate(rarr)
         call lsmpi_barrier(infpar%lg_comm)
 #ifdef VAR_MPI
-        call MPI_ABORT(infpar%lg_comm,0_ls_mpik,errc)
+        call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
 #else
         stop
 #endif
         return
         end subroutine dil_debug
-#endif
+!#endif
        end module tensor_algebra_dil
