@@ -6,7 +6,7 @@
 MODULE IIDFTINT
 use gridgenerationmodule
 use dft_memory_handling
-use Integralparameters
+use LSparameters
 !use memory_handling
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
@@ -15,8 +15,9 @@ use TYPEDEF
 use dft_type
 use dft_typetype
 use IIDFTKSMWORK
+use LS_UTIL,only: DGEMM_TS
 private
-public :: II_DFTINT, TEST_NELECTRONS, II_DFTDISP, II_DFTsetFunc, II_DFTaddFunc
+public :: II_DFTINT, TEST_NELECTRONS, II_DFTsetFunc, II_DFTaddFunc
 ! Notes 
 ! OLD NOTATION !   NEW NOTATION
 !==========================================================
@@ -195,16 +196,20 @@ IPRUNE = 1
 IF (GridObject%NOPRUN) IPRUNE = 0
 
 CALL LSTIMER('START',TS,TE,LUPRI)
-GridObject%NBUFLEN=1024
-BoxMemRequirement = NBAST*NBAST
-
+GridObject%NBUFLEN= 1024
+BoxMemRequirement = 160000
 CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
      & GridObject%HRDNES,iprune,BAS%natoms,BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,&
      & BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
      & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,&
      & GridObject%nbuflen,GridObject%RADIALGRID,GridObject%ZdependenMaxAng,&
      & GridObject%PARTITIONING,BAS%nstart,MaxNactBast,LUPRI,&
-     & IPRINT,USE_MPI,numnodes,node,GridObject%Id)
+     & IPRINT,USE_MPI,numnodes,node,GridObject%Id,GridObject%numnodes)
+IF(GridObject%numnodes.NE.numnodes)THEN
+   print*,'GridObject%numnodes',GridObject%numnodes
+   print*,'numnodes',numnodes
+   call lsquit('dim mismatch in Number of nodes used to construct/calc grid',-1)
+ENDIF
 IF(PRINTTIM)THEN
 #ifdef VAR_MPI
    IF (infpar%mynum.EQ.infpar%master) THEN
@@ -409,6 +414,7 @@ logical :: grid_exists
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
 LUGRID=-1
+call setNoOMP(noOMP)
 call get_quadfilename(filename,nbast,node,GridId)
 INQUIRE(file=filename,EXIST=grid_exists)
 IF(grid_exists)THEN 
@@ -571,7 +577,7 @@ DO XX=1+tid,IT,nthreads
       ENDIF
       CALL CB(LUPRI,NCURLEN,NSHELLBLOCKS,BLOCKS(:,:),INXACT(:),NactBas,NBAST,NDMAT,ACTIVE_DMAT(:),NTYPSO,GAO(:),&
            &RHOA(:,:),GRADA(:,:,:),TAU(:,:),MXBLLEN,COOR(:,IPT:IPT+NCURLEN-1),WEIGHT(IPT:IPT+NCURLEN-1),&
-           &myDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,maxNactBAST)
+           &myDFTDATA,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,maxNactBAST)
    ENDDO
 ENDDO
 
@@ -863,29 +869,29 @@ END DO
 !call mem_dft_dealloc(NVALUE)
 
 !write (lupri,*) 'integrals from II_BLGETSOS',nvclen,NactBAS
-!call output(gao(1,1,1),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,1),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'x integrals from II_BLGETSOS'
-!call output(gao(1,1,2),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,2),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'y integrals from II_BLGETSOS'
-!call output(gao(1,1,3),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,3),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'z integrals from II_BLGETSOS'
-!call output(gao(1,1,4),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,4),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !if (nder.eq. 2) then
 !   WRITE(lupri,*)'COOR(1,:)',(COOR(1,i),I=1,NVCLEN)
 !   WRITE(lupri,*)'COOR(2,:)',(COOR(2,i),I=1,NVCLEN)
 !   WRITE(lupri,*)'COOR(3,:)',(COOR(3,i),I=1,NVCLEN)
 !   write (lupri,*) ' xx integrals from II_BLGETSOS '
-!   call output(gao(1,1,5),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,5),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' xy integrals from II_BLGETSOS '
-!   call output(gao(1,1,6),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,6),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' xz integrals from II_BLGETSOS '
-!   call output(gao(1,1,7),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,7),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' yy integrals from II_BLGETSOS '
-!   call output(gao(1,1,8),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,8),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' yz integrals from II_BLGETSOS '
-!   call output(gao(1,1,9),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,9),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' zz integrals from II_BLGETSOS '
-!   call output(gao(1,1,10),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,10),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !end if
 call mem_dft_dealloc(PA)
 call mem_dft_dealloc(PA2)
@@ -992,9 +998,13 @@ IF (NRED.GT. 0) THEN
          ENDDO
       ENDDO
       ! First half-contraction of Gaussian AO with density-matrix
-      CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
-           &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
-      !           &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+              &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+              &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
+      ENDIF
       ! Second half-contraction
       DO K = 1, NVCLEN
          RHO(K,IDMAT)= GAORED(K,1)*TMP(K,1)
@@ -1100,8 +1110,13 @@ IF (NRED.GT. 0) THEN
       IF(NRED.EQ.NactBAS)THEN 
          !no screening
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP,NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP,NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP,NVCLEN)
+         ENDIF
       ELSE
          !Set up reduced density-matrix
          DO JRED=1,NRED
@@ -1113,8 +1128,13 @@ IF (NRED.GT. 0) THEN
             ENDDO
          ENDDO
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP,NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP,NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP,NVCLEN)
+         ENDIF
       ENDIF
       !Second half-contraction
       DO K = 1, NVCLEN
@@ -1239,14 +1259,25 @@ IF (NRED.GT. 0) THEN
       IF(NRED.EQ.NactBAS)THEN 
          !no screening
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ENDIF
       ELSE
          !Set up reduced density-matrix
          DO JRED=1,NRED
@@ -1258,14 +1289,25 @@ IF (NRED.GT. 0) THEN
             ENDDO
          ENDDO
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ENDIF
       ENDIF
       !Second half-contraction
       DO K = 1, NVCLEN
@@ -1597,13 +1639,6 @@ DO I = 2,CC%nrow
    END DO
 END DO
 
-IF (Spherical) THEN
-   call mem_dft_alloc(CAO,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOX,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOY,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOZ,NVCLEN,KCKTA)
-END IF
-
 !screening based on the maximum GA value for the batch of points: GMAX
 GMAX = D0
 DO K = 1, NVCLEN
@@ -1672,6 +1707,12 @@ ELSE IF (SHELLANGMOMA .EQ. 2) THEN
 ! d and higher orbitals
 ELSE
    IF (GMAX.GT.DFTHRI) THEN
+      IF (Spherical) THEN
+         call mem_dft_alloc(CAO,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOX,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOY,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOZ,NVCLEN,KCKTA)
+      END IF
       call mem_dft_alloc(GAX,NVCLEN)
       call mem_dft_alloc(GAY,NVCLEN)
       call mem_dft_alloc(GAZ,NVCLEN)
@@ -1799,6 +1840,12 @@ ELSE
       call mem_dft_dealloc(FX)
       call mem_dft_dealloc(FY)
       call mem_dft_dealloc(FZ)
+      IF (Spherical) THEN
+         call mem_dft_dealloc(CAO)
+         call mem_dft_dealloc(CAOX)
+         call mem_dft_dealloc(CAOY)
+         call mem_dft_dealloc(CAOZ)
+      END IF
    ELSE
       IF (.NOT.Spherical) THEN
          DO I = 1, KCKTA
@@ -1843,12 +1890,6 @@ ELSE
    END IF
 END IF
 
-IF (Spherical) THEN
-   call mem_dft_dealloc(CAO)
-   call mem_dft_dealloc(CAOX)
-   call mem_dft_dealloc(CAOY)
-   call mem_dft_dealloc(CAOZ)
-END IF
 call mem_dft_dealloc(GA)
 call mem_dft_dealloc(GU)
 
@@ -2167,340 +2208,77 @@ ENDDO
 ENDDO
 END SUBROUTINE BUILD_PRECALCULATED_SPHMAT
 
-!
-!     DFTDISP calculates the empirical dispersion correction to the energy and the gradient 
-!     as formulated by Grimme in J. Comp. Chem. 2004, 25, 1463. and  J. Comp. Chem. 2006, 27, 1787.
-!
-!     EDISP = -S6 * sum_i^{N-1}sum_{j=i+1}^N(C_6(ij)/R(ij)^6 * f(R_ij))
-!
-!     with the damping function f(R_ij) = 1/(1+exp(-d*[R_ij/Rr-1]))
-!
-!     where N is the number of atoms
-!           R_ij is the interatomic distance
-!           Rr is the sum of the van-der-Waals radii
-!           d is a fixed damping parameter (d=20.0)
-!           C_6(ij) = sqrt(C_6(i)*C_6(j)
-!           C_6 are fixed, atomic C_6 parameters
-!           S_6 is a fixed, functional dependent global scaling factor (defined for BP86, BLYP, PBE, B3LYP, TPSS)
-!
-!     -------------------------------------------------------------
-!     EDISP:  contains the energy correction at output
-!     NDERIV: order of derivative wrt nuclei 
-!             0: energy only
-!             1: first derivative
-!             higher: not defined yet
-!     -------------------------------------------------------------
-!
-!     03.2010 Andreas Krapp 
-!
-SUBROUTINE II_DFTDISP(SETTING,GRAD,DIM1,DIM2,NDERIV,LUPRI,IPRINT)
-use ls_util
-IMPLICIT NONE
-! external integer
-INTEGER, INTENT(IN) :: NDERIV, LUPRI, DIM1, DIM2, IPRINT
-! internal integer
-INTEGER :: SHELL2ATOMA, SHELL2ATOMB, ISCOOA, ISCOOB, ISCOOR, IATOM, IOFF, J, NATOMS
-! external real
-REAL(REALK), INTENT(INOUT) :: GRAD(DIM1,DIM2)
-! internal real
-REAL(REALK) :: R0(54), C6(54)
-REAL(REALK) :: E, EADD, S6
-REAL(REALK) :: CHARGA, CORDAX, CORDAY, CORDAZ, C6A, RvdWA
-REAL(REALK) :: CHARGB, CORDBX, CORDBY, CORDBZ, C6B, RvdWB
-REAL(REALK) :: RX, RY, RZ, R2, R, RR, R6FAC, C6FAC
-REAL(REALK) :: ALPHA, EXPOA, FDMP
-REAL(REALK) :: DFAC, GRADX, GRADY, GRADZ
-REAL(REALK), pointer :: GRDFT(:)
-REAL(realk), PARAMETER ::  CONV1=1.88972612E0_realk   ! convert angstrom to bohr
-REAL(realk), PARAMETER ::  CONV2=17.3452771E0_realk   ! convert Joule*nm^6/mol to Bohr^6*hartree
-                                       !    1 Bohr = 52.9177 * 10^-3 nm
-                                       !    1 Hartree = 2.6255*10^6 Joule/mol
-!  external function
-!EXTERNAL DISP_FUNCFAC
-!  external types
-TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
-!
-! van der Waals radii for the elements H-Xe in Angstrom
-! taken from JCC 2006, 27, 1787
-!
-     DATA &
-!         H                He
-     & R0/1.001E0_realk,1.012E0_realk, &
-!         Li               Be            B              C
-     &    0.825E0_realk,1.408E0_realk,1.485E0_realk,1.452E0_realk,&
-!         N                O             F              Ne
-     &    1.397E0_realk,1.342E0_realk,1.287E0_realk,1.243E0_realk,&
-!         Na               Mg            Al             Si   
-     &    1.144E0_realk,1.364E0_realk,1.639E0_realk,1.716E0_realk,&
-! P     S     Cl    Ar
-     &    1.705E0_realk,1.683E0_realk,1.639E0_realk,1.595E0_realk, &
-!         K     Ca
-     &    1.485E0_realk,1.474E0_realk, &
-!         Sc-Zn,
-     &    1.562E0_realk,1.562E0_realk,1.562E0_realk,1.562E0_realk,&
-     &    1.562E0_realk,1.562E0_realk,1.562E0_realk,1.562E0_realk,1.562E0_realk,1.562E0_realk, &
-!         Ga    Ge    As    Se    Br    Kr
-     &    1.650E0_realk,1.727E0_realk,1.760E0_realk,1.771E0_realk,1.749E0_realk,1.727E0_realk, &
-!         Rb    Sr    
-     &    1.628E0_realk,1.606E0_realk, &
-!         Y-Cd,
-     &    1.639E0_realk,1.639E0_realk,1.639E0_realk,1.639E0_realk,1.639E0_realk,1.639E0_realk, &
-     &    1.639E0_realk,1.639E0_realk,1.639E0_realk,1.639E0_realk, &
-!         In    Sn    Sb    Te    I     Xe
-     &    1.672E0_realk,1.804E0_realk,1.881E0_realk,1.892E0_realk,1.892E0_realk,1.881E0_realk/ 
-
-!
-!     C6 parameters for the elements H-Xe in Joule*nm^6/mol
-!     taken from JCC 2006, 27, 1787
-!
-      DATA &
-!         H     He
-     & C6/0.14E0_realk ,0.08E0_realk , &
-!         Li    Be    B     C     N     O     F     Ne
-     &    1.61E0_realk ,1.61E0_realk ,3.13E0_realk ,1.75E0_realk ,&
-     &    1.23E0_realk ,0.70E0_realk ,0.75E0_realk ,0.63E0_realk ,&
-!         Na    Mg    Al    Si    P     S     Cl    Ar
-     &    5.71E0_realk ,5.71E0_realk ,10.79E0_realk,9.23E0_realk ,&
-     &    7.84E0_realk ,5.57E0_realk ,5.07E0_realk ,4.61E0_realk ,&
-!         K     Ca
-     &    10.80E0_realk,10.80E0_realk, &
-!         Sc-Zn,
-     &    10.80E0_realk,10.80E0_realk,10.80E0_realk,10.80E0_realk,&
-     &    10.80E0_realk,10.80E0_realk,10.80E0_realk,10.80E0_realk,&
-     &    10.80E0_realk,10.80E0_realk, &
-!         Ga    Ge    As    Se    Br    Kr
-     &    16.99E0_realk,17.10E0_realk,16.37E0_realk,12.64E0_realk,&
-     &    12.47E0_realk,12.01E0_realk, &
-!         Rb    Sr    
-     &    24.67E0_realk,24.67E0_realk, &
-!         Y-Cd,
-     &    24.67E0_realk,24.67E0_realk,24.67E0_realk,24.67E0_realk,&
-     &    24.67E0_realk,24.67E0_realk,24.67E0_realk,24.67E0_realk,&
-     &    24.67E0_realk,24.67E0_realk, &
-!         In    Sn    Sb    Te    I     Xe
-     &    37.32E0_realk,38.71E0_realk,38.44E0_realk,31.74E0_realk,&
-     &    31.50E0_realk,29.99E0_realk/
-
-
-      ! only for DFT 
-      IF (.NOT. SETTING%DO_DFT) RETURN
-
-      ! we do not want dispersion correction -> return
-      IF (.NOT. SETTING%SCHEME%DFT%DODISP) RETURN
-
-      IF (NDERIV.EQ. 1) THEN
-         SETTING%SCHEME%DFT%DISPDONE = .FALSE.
-      ELSE
-         ! if we have calculated the dispersion correction we can return
-         IF (SETTING%SCHEME%DFT%DISPDONE) THEN 
-            IF (IPRINT .GE. 1) THEN
-               WRITE(LUPRI,'(1X,A39,F24.10)') 'dispersion correction to the KS-energy: ', SETTING%EDISP
-               WRITE(LUPRI,*)''
-            END IF
-            RETURN
-         ENDIF
-         IF (SETTING%MOLECULE(1)%p%NATOMS.LE. 1) THEN 
-            SETTING%SCHEME%DFT%DISPDONE = .FALSE.
-            SETTING%EDISP = 0.0E0_realk
-            RETURN
-         ELSE
-            SETTING%SCHEME%DFT%DISPDONE = .TRUE.
-         END IF
-      END IF
-
-!     error check
-      IF (NDERIV.GT. 1 .OR. NDERIV .LT. 0) THEN
-         WRITE(LUPRI,'(4X,A62)') &
-     &  ' WARNING: dispersion correction only for energies and gradients'
-         WRITE(*,*) &
-     &  'WARNING: dispersion correction only for energies and gradients'
-      END IF
-
-!     Print section
-      WRITE(LUPRI,*)''
-      WRITE(LUPRI,'(1X,A56)') &
-     &   'Add empirical dispersion corr. to the XC-energy/gradient'
-      WRITE(LUPRI,'(1X,A25)')'  following S. Grimme,   '
-      WRITE(LUPRI,'(1X,A25)')'  JCC 2004, 25, 1463. and'
-      WRITE(LUPRI,'(1X,A25)')'  JCC 2006, 27, 1787.    '
-
-!     initialisations and memory for gradient
-      NATOMS = SETTING%MOLECULE(1)%p%NATOMS
-      E = 0.0E0_realk
-      SETTING%EDISP = 0.0E0_realk
-      IF (NDERIV.EQ. 1) THEN
-         call mem_dft_alloc(GRDFT,DIM1*DIM2)
-         CALL LS_DZERO(GRDFT,DIM1*DIM2)
-      END IF
-
-!     calculate correction
-
-!
-!     Run over nuclei A
-!
-      DO SHELL2ATOMA = 1, NATOMS-1
-         CHARGA = SETTING%MOLECULE(1)%p%ATOM(SHELL2ATOMA)%CHARGE
-         IF (ABS(CHARGA-NINT(CHARGA)).GT. 1E-10_realk) THEN
-            CALL LSQUIT('Error in DFTDISP. Not implemented for&
-                       & non-integer charge!',-1)
-         ENDIF
-         IF (NINT(CHARGA) .LE. 54 .AND. NINT(CHARGA) .GT. 0) THEN
-            ISCOOA = (SHELL2ATOMA-1)*3
-            CORDAX = SETTING%MOLECULE(1)%p%ATOM(SHELL2ATOMA)%CENTER(1)
-            CORDAY = SETTING%MOLECULE(1)%p%ATOM(SHELL2ATOMA)%CENTER(2)
-            CORDAZ = SETTING%MOLECULE(1)%p%ATOM(SHELL2ATOMA)%CENTER(3)
-            C6A    = C6(NINT(CHARGA))*CONV2
-            RvdWA  = R0(NINT(CHARGA))*CONV1
-!
-!           Run over nuclei B
-!
-            DO SHELL2ATOMB =  SHELL2ATOMA+1, NATOMS
-               CHARGB = SETTING%MOLECULE(1)%p%ATOM(SHELL2ATOMB)%CHARGE
-               IF (ABS(CHARGB-NINT(CHARGB)).GT. 1E-10_realk) THEN
-                  CALL LSQUIT('Error in DFTDISP. Not implemented for&
-                             & non-integer charge!',-1)
-               ENDIF
-               IF (NINT(CHARGB).LE. 54 .AND.NINT(CHARGB).GT. 0) THEN
-                  ISCOOB = (SHELL2ATOMB-1)*3
-                  CORDBX = SETTING%MOLECULE(1)%p%ATOM(SHELL2ATOMB)%CENTER(1)
-                  CORDBY = SETTING%MOLECULE(1)%p%ATOM(SHELL2ATOMB)%CENTER(2)
-                  CORDBZ = SETTING%MOLECULE(1)%p%ATOM(SHELL2ATOMB)%CENTER(3)
-                  C6B    = C6(NINT(CHARGB))*CONV2
-                  RvdWB  = R0(NINT(CHARGB))*CONV1
-
-!                 C6 factor for atom pair A-B
-                  C6FAC = SQRT(C6A*C6B)
-
-!                 distance R between atoms A and B
-!                 and R^6 
-                  RX    = CORDAX-CORDBX
-                  RY    = CORDAY-CORDBY
-                  RZ    = CORDAZ-CORDBZ
-                  R2    = RX**2 + RY**2 + RZ**2
-                  R6FAC = R2*R2*R2
-                  R     = SQRT(R2)
-
-!                 sum of the van der Waals radii RR  
-                  RR   = RvdWA + RvdWB
-
-!                 damping function FDMP
-                  ALPHA = -20.0*R/RR+20.0E0_realk
-                  EXPOA = EXP(ALPHA)
-                  FDMP  = 1.0E0_realk/(1.0E0_realk + EXPOA)
-
-!                 dispersion correction contribution
-                  EADD  = C6FAC/R6FAC * FDMP
-                  E = E + EADD
-
-                  IF (NDERIV.EQ. 1) THEN
-!                    derivative wrt to nuclear positions
-                     DFAC = (-6.0/R + 20.0/RR * EXPOA * FDMP)*EADD / R
-                     GRADX = DFAC * RX
-                     GRADY = DFAC * RY
-                     GRADZ = DFAC * RZ
-                     GRDFT(ISCOOA + 1) = GRDFT( ISCOOA + 1) + GRADX
-                     GRDFT(ISCOOA + 2) = GRDFT( ISCOOA + 2) + GRADY
-                     GRDFT(ISCOOA + 3) = GRDFT( ISCOOA + 3) + GRADZ
-                     GRDFT(ISCOOB + 1) = GRDFT( ISCOOB + 1) - GRADX
-                     GRDFT(ISCOOB + 2) = GRDFT( ISCOOB + 2) - GRADY
-                     GRDFT(ISCOOB + 3) = GRDFT( ISCOOB + 3) - GRADZ
-                  END IF
-
-               ELSE
-                  WRITE(LUPRI,'(4X,A42)') 'DISPERSION CORRECTION ONLY FOR ATOMS 1-54.'
-                  WRITE(LUPRI,'(4X,A30,I6,A4,I6)') 'ACTUAL CHARGE FOR NUCLEUS ',SHELL2ATOMB,' IS ',NINT(CHARGB)
-                  CALL LSQUIT('DISPERSION CORRECTION ONLY FOR ATOMS 1-54.',-1)
-               END IF
-            END DO
-         ELSE 
-             WRITE(LUPRI,'(4X,A42)') 'DISPERSION CORRECTION ONLY FOR ATOMS 1-54.'
-             WRITE(LUPRI,'(4X,A30,I6,A4,I6)') 'ACTUAL CHARGE FOR NUCLEUS ',SHELL2ATOMA,' IS ',NINT(CHARGA)
-             CALL LSQUIT('DISPERSION CORRECTION ONLY FOR ATOMS 1-54.',-1)
-         END IF
-      END DO
-
-!     final dispersion correction
-!     S6 factor is functional dependant
-      CALL DISP_FUNCFAC(S6)
-      SETTING%EDISP = -S6 * E
-
-!     Add derivative
-      IF (NDERIV.EQ. 1) THEN
-         IF( (DIM1.NE. 3) .OR. (DIM2.NE.NATOMS)) THEN 
-            CALL LSQUIT('ERROR IN DFTDISP WITH GRADIENT',-1)
-         ENDIF
-         DO IATOM = 1, NATOMS
-            ISCOOR = (IATOM-1)*3 
-            GRAD(1,IATOM) = GRAD(1,IATOM) - GRDFT(ISCOOR+1)*S6
-            GRAD(2,IATOM) = GRAD(2,IATOM) - GRDFT(ISCOOR+2)*S6
-            GRAD(3,IATOM) = GRAD(3,IATOM) - GRDFT(ISCOOR+3)*S6
-         END DO
-         call mem_dft_dealloc(GRDFT)
-      END IF
-
-!     Print section
-      WRITE(LUPRI,'(1X,A13,F7.2)')'    S6 factor',S6
-      WRITE(LUPRI,'(1X,A15)')     '    C6 factors:'
-      DO IATOM = 1, NATOMS
-         WRITE (LUPRI, '(2X,A6,F7.3)') &
-     &          SETTING%MOLECULE(1)%p%ATOM(IATOM)%NAME, C6(NINT(SETTING%MOLECULE(1)%p%ATOM(IATOM)%CHARGE))
-      END DO
-
-      IF (IPRINT .GE. 1) THEN
-         WRITE(LUPRI,'(1X,A39,F24.10)') 'dispersion correction to the KS-energy: ', SETTING%EDISP
-         IF (NDERIV.EQ. 1) THEN
-            CALL LSHEADER(LUPRI,'XC-gradient including empir. disp. corr.')
-            DO IATOM = 1, NATOMS
-               WRITE (LUPRI, '(1X,A6,F17.10,2F24.10)') &
-     &            SETTING%MOLECULE(1)%p%ATOM(IATOM)%NAME, (GRAD(J,IATOM),J=1,3)
-            END DO
-         END IF
-         WRITE(LUPRI,*)''
-      END IF
-
-   RETURN
-END SUBROUTINE II_DFTDISP
-
-SUBROUTINE II_DFTsetFunc(Func,hfweight)
+SUBROUTINE II_DFTsetFunc(Func,hfweight,lupri)
+use xcfun_host,only: USEXCFUN
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
 use lsmpi_type
 #endif
 implicit none
-Character(len=80),intent(IN) :: Func
+Character(*),intent(IN)      :: Func
 Real(realk),intent(INOUT)    :: hfweight
-integer                      :: ierror
-CALL DFTsetFunc(Func,hfweight,ierror)
-IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
+integer                      :: lupri
+integer                      :: ierror,length
+
+!For dft calculations, check whether xcfun is to be used or not and 
+!send the functional string accordingly either to the PS  
+!or to the XCfun interface
+IF(.NOT.USEXCFUN)THEN
+   length = len_trim(Func)
+   if (length.gt.1024) &
+      & call lsquit('Functional string length exceed 80',-1)
+   CALL DFTsetFunc(Func(1:length),hfweight,ierror)
+   IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
+ELSE
+#ifdef VAR_XCFUN
+   call xcfun_host_init(Func,hfweight,lupri)
+#else
+   call lsquit('Error: II_DFTsetFunc with usexcfun_save set to true, but program compiled without XCFUN',-1)
+#endif
+ENDIF
+
+
 #ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTSETFU,infpar%master,MPI_COMM_LSDALTON)
-  call lsmpi_setmasterToSlaveFunc(Func)
-ELSE
-  call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
+  call lsmpi_setmasterToSlaveFunc(Func,hfweight)
+!ELSE
+!  call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
 ENDIF
 #endif
 END SUBROUTINE II_DFTsetFunc
 
-SUBROUTINE II_DFTaddFunc(Func,hfweight)
+SUBROUTINE II_DFTaddFunc(Func,GGAfactor,lupri)
+use xcfun_host,only: USEXCFUN
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
 use lsmpi_type
 #endif
 implicit none
-Character(len=80),intent(IN) :: Func
-Real(realk),intent(INOUT)    :: hfweight
-CALL DFTaddFunc(Func,hfweight)
+Character(*),intent(IN) :: Func
+Real(realk),intent(IN)  :: GGAfactor
+integer,intent(IN)      :: lupri
+!
+IF(.NOT.USEXCFUN)THEN
+  CALL DFTaddFunc(Func,GGAfactor)
+ELSE
+#ifdef VAR_XCFUN
+!  call lsquit('Error: II_DFTaddFunc not yet implemented for XCFUN',-1)
+  call xcfun_host_augment_func(Func,GGAfactor,lupri)
+#else
+  call lsquit('Error: II_DFTaddFunc with usexcfun_save set to true, but program compiled without XCFUN',-1)
+#endif
+ENDIF
 #ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTADDFU,infpar%master,MPI_COMM_LSDALTON)
-  call lsmpi_setmasterToSlaveFunc(Func)
-ELSE
-  call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
+  call lsmpi_setmasterToSlaveFunc(Func,GGAfactor)
+!ELSE
+!  call lsquit('Error in II_DFTaddFunc. Can only be called from the master',-1)
 ENDIF
 #endif
 END SUBROUTINE II_DFTaddFunc

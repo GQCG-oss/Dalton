@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+#    DFT D2 Dispersion Correction  
+#    --------------------------
+#    Molecule:         CH4 Dimer 
+#    Wave Function:    DFT / BLYP / STO-3G (Geom. Opt.)
+#    Test Purpose:     Run a geometry optimization with symm. using the
+#                      DFT-D2 empirical dispersion correction. BLYP 
+#                      uncorrected gives a C-C separation of ~4.6 Ang,
+#                      the corrected version gives ~3.4 Ang. The 
+#                      S22 geometry is ~3.7 Ang  
+#                                                                 
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'E_disp',
+      abs_tolerance = 1.0e-5)
+
+#f.add(from_string = 'Final geometry (xyz format; angstrom)',
+#      num_lines = 16,
+#      abs_tolerance = 1.0e-5)
+
+f.add(string = 'bond distance:',
+      abs_tolerance = 1.0e-4)
+
+f.add(string = 'bond angle:',
+      abs_tolerance = 1.0e-2)
+
+test.run(['dft_disp_d2.dal'], ['CH4-dimer_STO-3G.mol'], f={'out': f})
+
+sys.exit(test.return_code)

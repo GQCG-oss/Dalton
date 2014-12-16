@@ -13,14 +13,17 @@ use memory_handling, only: mem_alloc,mem_dealloc
 use scfloop_module, only: scfloop
 use matrix_operations, only: mat_init, mat_free, mat_diag_f, mat_assign
 use basis_type, only: free_basissetinfo
+use basis_typetype, only: VALBasParam,GCTBasParam
 use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
 use decompMod, only: decomp_shutdown, decomp_init, decomposition
 use initial_guess, only: get_initial_dens
 use dec_typedef_module, only: DECinfo
 use lsdalton_fock_module, only: lsint_fock_data
 use matrix_operations_aux, only: mat_density_from_orbs
+use matrix_util, only: save_fock_matrix_to_file
 use integralinterfaceMod, only: II_get_molecular_gradient,&
-     & II_get_nucpot,II_get_overlap,II_get_h1,II_precalc_ScreenMat
+     & II_get_nucpot,II_get_overlap,II_get_h1,II_precalc_ScreenMat,&
+     & II_get_fock_mat
 use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
 use dec_main_mod
 use ls_util, only: ls_print_gradient
@@ -57,8 +60,10 @@ contains
     Logical :: do_decomp,integraltransformGC
 
 
-       Eerr = 0E0_realk
-       nbast = D(1)%nrow
+
+       Eerr   = 0E0_realk
+       ExcitE = 0E0_realk    !Zeroing to initialize
+       nbast  = D(1)%nrow
        do_decomp =.TRUE. !(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
 !           & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
 !           & config%decomp%cfg_check_converged_solution .or. &
@@ -98,14 +103,14 @@ contains
             &.or.config%decomp%cfg_gcbasis) then
           !     Not working properly for geometry-optimization
           !     config%diag%cfg_restart = .FALSE.
-          IF(ls%input%BASIS%GCtransAlloc)THEN
-             IF(ls%input%BASIS%GCtrans%natomtypes .NE. 0)THEN
-                call free_basissetinfo(ls%input%BASIS%GCtrans)
-             ENDIF
+          IF(ls%input%BASIS%WBASIS(GCTBasParam))THEN
+             call free_basissetinfo(ls%input%BASIS%BINFO(GCTBasParam))
           ENDIF
-          IF(ls%input%BASIS%VALENCE%natomtypes .NE. 0)THEN
-             call free_basissetinfo(ls%input%BASIS%VALENCE)
+          ls%input%BASIS%WBASIS(GCTBasParam) = .FALSE.
+          IF(ls%input%BASIS%WBASIS(VALBasParam))THEN
+             call free_basissetinfo(ls%input%BASIS%BINFO(VALBasParam))
           ENDIF
+          ls%input%BASIS%WBASIS(VALBasParam) = .FALSE.
           if(config%decomp%cfg_gcbasis) call trilevel_basis(config%opt,ls)
        endif
        ls%setting%integraltransformGC = integraltransformGC
@@ -155,6 +160,9 @@ contains
        endif
 
        if (config%av%CFG_averaging == config%av%CFG_AVG_van_lenthe) then !FIXME: put this somewhere else!
+          ! Need to free memory allocated previously in LSDALTON driver
+          call mat_free(config%av%Fprev)
+          call mat_free(config%av%Dprev)
           call mat_init(config%av%Fprev,nbast,nbast)
           call mat_init(config%av%Dprev,nbast,nbast)
        endif

@@ -113,6 +113,7 @@ COMPLEX(complexk)             :: phase
      phase2=kvec(2)*ll%lvec(layer)%std_coord(2)
      phase3=kvec(3)*ll%lvec(layer)%std_coord(3)
      phase=CMPLX(0.,(phase1+phase2+phase3),COMPLEXK)
+     ! write(*,*) 'layer in kspace trans',layer,l1,l2,l3
      Bkmat%Smat%zelms=Bkmat%Smat%zelms+real_mat(layer)%elms*exp(phase)
    endif
  ENDDO

@@ -131,7 +131,7 @@ CONTAINS
       TYPE(scheme_paras), INTENT(IN)  :: scheme
       TYPE(raw_mm_data),  INTENT(IN)  :: LHS_mms
       REAL(REALK),        INTENT(IN)  :: Vff(:,:) 
-      REAL(REALK),        INTENT(OUT) :: energy
+      REAL(REALK),        INTENT(INOUT) :: energy
       CHARACTER(*),       INTENT(OUT) :: text
 
       REAL(REALK)   :: g 

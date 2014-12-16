@@ -131,9 +131,8 @@ subroutine get_initial_dens(H1,S,D,ls,config)
         restart_lun = -1;
         call lsopen(restart_lun,'lcv_basis.restart','unknown','UNFORMATTED')
         call mat_read_from_disk(restart_lun,config%decomp%lcv_Cmo,OnMaster)
-        read (restart_lun) lcv_on_file
+        call mat_read_info_from_disk(restart_lun,lcv_on_file)
         call lsclose(restart_lun,'KEEP')
-
      endif
 
      ! Quit in case orbitals on file are not localized lcv basis and we are
@@ -146,9 +145,11 @@ subroutine get_initial_dens(H1,S,D,ls,config)
 
      if (gcbasis .and. .not. config%decomp%cfg_gcbasis) then
         WRITE(config%lupri,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'
-        WRITE(config%lupri,*) 'while your LSDALTON.INP uses the standard basis. The GC basis is default'
-        WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
-        WRITE(config%lupri,*) 'add .GCBASIS under *LINSCA'
+        WRITE(config%lupri,*) 'while your LSDALTON.INP uses the standard basis.'
+        WRITE(config%lupri,*) 'The GC basis is default unless you use a dunnings basis set,'
+        WRITE(config%lupri,*) 'or you specify .NOGCBASIS under *GENERAL'
+        WRITE(config%lupri,*) 'Either contruct a new dens.restart or '
+        WRITE(config%lupri,*) 'remove .NOGCBASIS or add .FORCEGCBASIS under *GENERAL'
         call lsquit('Calculation in standard basis, dens.restart in GC basis!',config%lupri)
      else if (config%decomp%cfg_gcbasis .and. .not. gcbasis) then
         IF(config%decomp%cfg_transformrestart)THEN
@@ -157,9 +158,10 @@ subroutine get_initial_dens(H1,S,D,ls,config)
            call AO2GCAO_transform_matrixD(D(1),ls%setting,config%lupri)
         ELSE
            WRITE(config%lupri,*) 'Your dens.restart was constructed using the standard basis, while your'
-           WRITE(config%lupri,*) 'LSDALTON.INP uses the grand-canonical (GC) basis. The GC basis is default'
-           WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
-           WRITE(config%lupri,*) 'do not use grand-canonical basis!'
+           WRITE(config%lupri,*) 'LSDALTON.INP uses the grand-canonical (GC) basis.'
+           WRITE(config%lupri,*) 'The GC basis is default unless you use a dunnings basis set,'
+           WRITE(config%lupri,*) 'or you specify .NOGCBASIS under *GENERAL'
+           WRITE(config%lupri,*) 'Either contruct a new dens.restart or use GC basis!'
            WRITE(config%lupri,*) 'Alternativly you can add the keyword '
            WRITE(config%lupri,*) '.TRANSFORMRESTART'
            call lsquit('Calculation in GC basis, dens.restart in standard basis!',config%lupri)
@@ -278,7 +280,7 @@ end subroutine get_initial_dens
        write(*,*) 'Optimize first density for H1 operator'
        write(config%lupri,*) 'Optimize first density for H1 operator'
        write(config%lupri,*)
-       call starting_guess_h1(config,H1,D(1))
+       call starting_guess_h1(config,H1,D(1),S)
     else if (config%opt%cfg_start_guess=='HUCKEL') then
         call lsquit('Huckel guess not implemented',config%lupri)
     !   write(*,*) 'Take first density from Hueckel guess'
@@ -306,7 +308,7 @@ end subroutine get_initial_dens
        write(*,*) 'Optimize first density for H1 operator'
        write(config%lupri,*) 'Optimize first density for H1 operator'
        write(config%lupri,*)
-       call starting_guess_h1(config,H1,D(1))
+       call starting_guess_h1(config,H1,D(1),S)
     !ELSE
     !   ! Option to start from the fitted density. Works only in Coulomb,
     !   ! i.e. the Hartree approximation. Could prove useful for projecting
@@ -368,18 +370,18 @@ end subroutine get_initial_dens
 !> \param lupri Logical unit number for output
 !> \param H1 The one-electron part of the Fock matrix
 !> \param D The AO density matrix
-  subroutine starting_guess_h1(config,H1,D)
+  subroutine starting_guess_h1(config,H1,D,S)
     implicit none
     type(configItem),intent(in) :: config
-    type(matrix), intent(in)    :: H1
+    type(matrix), intent(in)    :: H1,S
     type(matrix),intent(inout)  :: D
     type(Matrix)                :: Cmo
     real(realk), pointer    :: eival(:)
     integer :: cycles
 
-    call mem_alloc(eival,config%decomp%S%nrow*2) ! allow for unrestricted.
-    call mat_init(Cmo,config%decomp%S%nrow,config%decomp%S%nrow)
-    call mat_diag_f(H1,config%decomp%S,eival,Cmo)
+    call mem_alloc(eival,S%nrow*2) ! allow for unrestricted.
+    call mat_init(Cmo,S%nrow,S%nrow)
+    call mat_diag_f(H1,S,eival,Cmo)
 
 !    if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
 !      call asymmetrize_starting_guess (Cmo, config%decomp)

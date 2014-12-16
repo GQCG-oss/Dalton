@@ -49,9 +49,9 @@ subroutine davidson_solver(CFG,grad,x)
   call mat_init(sigma_temp,rowdim,coldim)
   
   initial_stepsize=CFG%stepsize 
-  CFG%start_it = 3 
   ! Find lowest hessian diagonal, use extra start vector if negative 
-  if (.not. CFG%arh_davidson) then
+  CFG%start_it = 3 !default init
+  if ((.not. CFG%arh_davidson)) then
       call mat_min_elm(CFG%P,minel,minel_pos)
       if (minel < 0_realk) CFG%start_it = 4
   else
@@ -59,6 +59,8 @@ subroutine davidson_solver(CFG,grad,x)
       if (CFG%arh_gradnorm .ge. 1E-3_realk) arh_thresh=0.0001_realk
       if (CFG%arh_gradnorm < 1E-3_realk) arh_thresh=0.00001_realk
   end if
+
+  if (grad%ncol .lt. 6) CFG%start_it = 2 ! reduced for few orbs 
 
    call mem_alloc(CFG%Allb,CFG%max_it)
    call mem_alloc(CFG%AllSigma,CFG%max_it)
@@ -68,19 +70,21 @@ subroutine davidson_solver(CFG,grad,x)
    end do
   call FirstTrialVec(grad,CFG,b_current,sigma_temp)
   call InitializeCFG(grad,CFG,b_current,sigma_temp)
-  call SecondTrialVec(grad,CFG,b_current,sigma_temp) 
-  !Construct rest of Ared in 3D starting space
-  call IncreaseDimRedSpace(grad,CFG,b_current,2)
-  if (CFG%start_it ==4) then
-      call ThirdTrialVec(grad,CFG,b_current,sigma_temp,minel_pos,CFG%start_it)
-      ! Check if coupling to b1 and b2 is strong enough
-      if (CFG%singularity) then
-          CFG%start_it = 3
-          call mat_free(CFG%Allb(3))
-          call mat_free(CFG%AllSigma(3))
-          CFG%singularity = .false.
-      endif
-  end if
+  if (CFG%start_it .gt. 2) then 
+     call SecondTrialVec(grad,CFG,b_current,sigma_temp) 
+     !Construct rest of Ared in 3D starting space
+     call IncreaseDimRedSpace(grad,CFG,b_current,2)
+     if (CFG%start_it ==4) then
+         call ThirdTrialVec(grad,CFG,b_current,sigma_temp,minel_pos,CFG%start_it)
+         ! Check if coupling to b1 and b2 is strong enough
+         if (CFG%singularity) then
+             CFG%start_it = 3
+             call mat_free(CFG%Allb(3))
+             call mat_free(CFG%AllSigma(3))
+             CFG%singularity = .false.
+         endif
+     end if
+   endif
   !************************************************************
   !*             Start Reduced Space Loop                     *
   !************************************************************
@@ -110,12 +114,16 @@ subroutine davidson_solver(CFG,grad,x)
         &CFG%mu,  "    ResNorm :",CurrentResNorm,&
         &" Gradient norm",CFG%arh_gradnorm
      elseif (.not. CFG%arh_davidson) then
-        call test_convergence(CFG,grad,resnorm_2d)
-	if (CFG%orb_debug) then
+        if (iter > 3) then
+            call test_convergence(CFG,grad,resnorm_2d)
+        else
+            resnorm_2d = sqrt(mat_sqnorm2(grad))
+        endif
+        if (CFG%orb_debug) then
         write(CFG%lupri,'(a,i3,a,ES13.5,a,ES13.5,a,ES13.5)') "iter :",iter, "    mu :",&
         &CFG%mu,  "    ResNorm :",CurrentResNorm,&
         &"   2D ResNorm",resnorm_2d
-	end if
+        end if
      end if
     
     !TEST CONVERGENCE
@@ -236,7 +244,7 @@ subroutine LinearTransformations(CFG,X,HX,G)
  end if
 
  if (CFG%orbspread) then
-       call orbspread_hesslin(HX,X,0.0_realk,X%nrow,CFG%orbspread_input)
+       call orbspread_hesslin(HX,X,0.0_realk,X%nrow,CFG%orbspread_inp)
        return
  end if
 
@@ -250,8 +258,6 @@ if (CFG%PFM) then
       call PMLowdin_LinTra(G,HX,X,CFG%PM_input)
  elseif (CFG%PM_input%PipekMezeyMull) then
       call PMMull_LinTra(G,HX,X,CFG%PM_input) 
- elseif (CFG%PM_input%ChargeLocMulliken .or. CFG%PM_input%ChargeLocLowdin) then
-      call CLLinearTrans(G,HX,X,CFG%PM_input)
  end if
 
 
@@ -369,7 +375,7 @@ if (CFG%PFM) then
 end if
 
 if (CFG%orbspread) then
-   call orbspread_precond(b_current,res,CFG%mu,CFG%orbspread_input)
+   call orbspread_precond(b_current,res,CFG%mu,CFG%orbspread_inp)
 elseif (CFG%PM) then
    call charge_precond(b_current,res,CFG%mu,CFG%PM_input)
 end if
@@ -571,7 +577,7 @@ subroutine get_levelshift(grad,CFG,X,xred,iter,alpha,Levelshift)
 implicit none
  integer, intent(in) ::iter
  type(RedSpaceItem)  :: CFG
- real(realk)  :: xred(iter-1)
+ real(realk),intent(inout)  :: xred(iter-1)
  type(matrix) :: X
  type(matrix),intent(in) ::grad
  real(realk)  :: alpha1,alpha2,alpha
@@ -604,7 +610,7 @@ subroutine BracketAlpha(CFG,X,xred,iter,alpha1,alpha2,done,Levelshift)
 implicit none
 type(RedSpaceItem)     :: CFG
 integer,intent(in)     :: iter
-real(realk),intent(in) :: xred(iter-1)
+real(realk),intent(inout) :: xred(iter-1)
 real(realk)            :: alpha1,alpha2,alpha
 logical                :: done
 type(matrix)           :: X
@@ -738,7 +744,6 @@ call mem_dealloc(VL)
  
  CFG%mu = minval(EigValues)
  indx= minloc(EigValues)
-
  !Store corresponding eigenvector (eig.vecs is given i A in output)
  mu_Vec(:) = VR(:,indx(1))
 call mem_dealloc(VR)
@@ -767,7 +772,6 @@ call mem_dealloc(VR)
  do i=1,iter-1
     call mat_daxpy(xred(i),CFG%Allb(i),X)
  end do
-
  call mem_dealloc(A)
 
 end subroutine Solve_EigVal_RedSpace

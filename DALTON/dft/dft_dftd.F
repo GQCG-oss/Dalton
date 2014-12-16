@@ -36,7 +36,7 @@ CAMT----------------------------------------------------------------------
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       DIMENSION WORK(LWORK)
 CAMT----------------------------------------------------------------------
 CAMT  Variable info:
@@ -124,7 +124,7 @@ CAMT Perform the memory allocations... (all in one go!)
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       DIMENSION WORK(LWORK)
 !C6AB has dimensions of No. elements x No. elements x Coord No. Refs x Coord No. Refs. x 3
       DIMENSION C6AB(N_ELEM,N_ELEM,MX_CORD,MX_CORD,3)      
@@ -379,25 +379,25 @@ C
 C     Run over nuclei A 
 C 
       DO NCENTA = 1, NATOMS-1 
-         CHARGA = CHARGE2(NCENTA) 
-         IF (CHARGA .LE. N_ELEM_D2 .AND. CHARGA .GT. 0) THEN 
+         ICHARGA = NINT( CHARGE2(NCENTA) )
+         IF (ICHARGA .LE. N_ELEM_D2 .AND. ICHARGA .GT. 0) THEN
             CORDAX = FCOORD2(NCENTA,1) 
             CORDAY = FCOORD2(NCENTA,2) 
             CORDAZ = FCOORD2(NCENTA,3) 
-            C6A    = C6(INT(CHARGA))*c6_conv 
-            RvdWA  = R0(INT(CHARGA))*ang_to_au 
+            C6A    = C6(ICHARGA)*c6_conv
+            RvdWA  = R0(ICHARGA)*ang_to_au
 
 C 
 C           Run over nuclei B 
 C 
             DO NCENTB =  NCENTA+1, NATOMS 
-               CHARGB = CHARGE2(NCENTB) 
-               IF (CHARGB .LE. N_ELEM_D2 .AND. CHARGB .GT. 0) THEN 
+               ICHARGB = NINT( CHARGE2(NCENTB) )
+               IF (ICHARGB .LE. N_ELEM_D2 .AND. ICHARGB .GT. 0) THEN
                   CORDBX = FCOORD2(NCENTB,1) 
                   CORDBY = FCOORD2(NCENTB,2) 
                   CORDBZ = FCOORD2(NCENTB,3) 
-                  C6B    = C6(INT(CHARGB))*c6_conv 
-                  RvdWB  = R0(INT(CHARGB))*ang_to_au 
+                  C6B    = C6(ICHARGB)*c6_conv
+                  RvdWB  = R0(ICHARGB)*ang_to_au
  
 C                 C6 factor for atom pair A-B 
                   C6FAC = SQRT(C6A*C6B) 
@@ -469,27 +469,27 @@ C
 C     Run over nuclei A 
 C 
       DO NCENTA = 1, NATOMS-1
-         CHARGA = CHARGE2(NCENTA)
-         IF (CHARGA .LE. N_ELEM_D2 .AND. CHARGA .GT. 0) THEN
+         ICHARGA = NINT( CHARGE2(NCENTA) )
+         IF (ICHARGA .LE. N_ELEM_D2 .AND. ICHARGA .GT. 0) THEN
             ISCOOA = (NCENTA-1)*3 
             CORDAX = FCOORD2(NCENTA,1)
             CORDAY = FCOORD2(NCENTA,2)
             CORDAZ = FCOORD2(NCENTA,3)
-            C6A    = C6(INT(CHARGA))*c6_conv
-            RvdWA  = R0(INT(CHARGA))*ang_to_au
+            C6A    = C6(ICHARGA)*c6_conv
+            RvdWA  = R0(ICHARGA)*ang_to_au
 
 C 
 C           Run over nuclei B 
 C 
             DO NCENTB =  NCENTA+1, NATOMS 
-               CHARGB = CHARGE2(NCENTB)
-               IF (CHARGB .LE. N_ELEM_D2 .AND. CHARGB .GT. 0) THEN
+               ICHARGB = NINT( CHARGE2(NCENTB) )
+               IF (ICHARGB .LE. N_ELEM_D2 .AND. ICHARGB .GT. 0) THEN
                   ISCOOB = (NCENTB-1)*3 
                   CORDBX = FCOORD2(NCENTB,1)
                   CORDBY = FCOORD2(NCENTB,2)
                   CORDBZ = FCOORD2(NCENTB,3)
-                  C6B    = C6(INT(CHARGB))*c6_conv
-                  RvdWB  = R0(INT(CHARGB))*ang_to_au
+                  C6B    = C6(ICHARGB)*c6_conv
+                  RvdWB  = R0(ICHARGB)*ang_to_au
 
 C                 C6 factor for atom pair A-B 
                   C6FAC = SQRT(C6A*C6B)*S6
@@ -611,8 +611,8 @@ C
 C     Run over nuclei A 
 C 
       DO NCENTA = 1, NATOMS-1 
-         CHARGA = CHARGE2(NCENTA) 
-         IF (CHARGA .LE. N_ELEM .AND. CHARGA .GT. 0) THEN 
+         ICHARGA = NINT( CHARGE2(NCENTA) )
+         IF (ICHARGA .LE. N_ELEM .AND. ICHARGA .GT. 0) THEN
             CORDAX = FCOORD2(NCENTA,1) 
             CORDAY = FCOORD2(NCENTA,2) 
             CORDAZ = FCOORD2(NCENTA,3) 
@@ -620,8 +620,8 @@ C
 C           Run over nuclei B 
 C 
             DO NCENTB =  NCENTA+1, NATOMS 
-               CHARGB = CHARGE2(NCENTB) 
-               IF (CHARGB .LE. N_ELEM .AND. CHARGB .GT. 0) THEN 
+               ICHARGB = NINT( CHARGE2(NCENTB) )
+               IF (ICHARGB .LE. N_ELEM .AND. ICHARGB .GT. 0) THEN
                   CORDBX = FCOORD2(NCENTB,1) 
                   CORDBY = FCOORD2(NCENTB,2) 
                   CORDBZ = FCOORD2(NCENTB,3) 
@@ -640,7 +640,7 @@ C                 and R^6
  
 C                   sum of the van der Waals radii RR   
  
-                    RR = R0AB(INT(CHARGB),INT(CHARGA)) / R
+                    RR = R0AB(ICHARGB,ICHARGA) / R
  
 C                   damping function FDMP 
 C                   c6 part
@@ -652,7 +652,7 @@ C                   get c6 coeffient
                     CALL SET_C6_COEFF(CHARGE2,MXC,C6AB,NCENTA,NCENTB,C6,
      &                                N_ELEM,MX_CORD)
 C                   calculate c8 coefficient
-                    C8 = 3.0d0*C6*R2R4(INT(CHARGA))*R2R4(INT(CHARGB))
+                    C8 = 3.0d0*C6*R2R4(ICHARGA)*R2R4(ICHARGB)
 
 C                   if requested to add 3-body terms store the required parts
                     IF (DO_3BODY) THEN
@@ -684,8 +684,8 @@ C
 C     Run over nuclei A 
 C 
       DO NCENTA = 1, NATOMS-1
-         CHARGA = CHARGE2(NCENTA)
-         IF (CHARGA .LE. N_ELEM .AND. CHARGA .GT. 0) THEN
+         ICHARGA = NINT( CHARGE2(NCENTA) )
+         IF (ICHARGA .LE. N_ELEM .AND. ICHARGA .GT. 0) THEN
             CORDAX = FCOORD2(NCENTA,1)
             CORDAY = FCOORD2(NCENTA,2)
             CORDAZ = FCOORD2(NCENTA,3)
@@ -693,8 +693,8 @@ C
 C           Run over nuclei B 
 C 
             DO NCENTB =  NCENTA+1, NATOMS 
-               CHARGB = CHARGE2(NCENTB)
-               IF (CHARGB .LE. N_ELEM .AND. CHARGB .GT. 0) THEN
+               ICHARGB = NINT( CHARGE2(NCENTB) )
+               IF (ICHARGB .LE. N_ELEM .AND. ICHARGB .GT. 0) THEN
                   CORDBX = FCOORD2(NCENTB,1)
                   CORDBY = FCOORD2(NCENTB,2)
                   CORDBZ = FCOORD2(NCENTB,3)
@@ -813,8 +813,8 @@ C
 C     Run over nuclei A 
 C 
       DO NCENTA = 1, NATOMS 
-         CHARGA = CHARGE2(NCENTA)
-         IF (CHARGA .LE. N_ELEM .AND. CHARGA .GT. 0) THEN
+         ICHARGA = NINT( CHARGE2(NCENTA) )
+         IF (ICHARGA .LE. N_ELEM .AND. ICHARGA .GT. 0) THEN
             CORDAX = FCOORD2(NCENTA,1)
             CORDAY = FCOORD2(NCENTA,2)
             CORDAZ = FCOORD2(NCENTA,3)
@@ -822,8 +822,8 @@ C
 C           Run over nuclei B 
 C 
             DO NCENTB =  1, NCENTA-1
-               CHARGB = CHARGE2(NCENTB)
-               IF (CHARGB .LE. N_ELEM .AND. CHARGB .GT. 0) THEN
+               ICHARGB = NINT( CHARGE2(NCENTB) )
+               IF (ICHARGB .LE. N_ELEM .AND. ICHARGB .GT. 0) THEN
                   CORDBX = FCOORD2(NCENTB,1)
                   CORDBY = FCOORD2(NCENTB,2)
                   CORDBZ = FCOORD2(NCENTB,3)
@@ -842,9 +842,9 @@ C                 and R^6
 
 C                 sum of the van der Waals radii RR   
 
-                  RR     = R0AB(INT(CHARGB),INT(CHARGA)) 
-                  R42    = R2R4(INT(CHARGA))*R2R4(INT(CHARGB))
-                  RCOVIJ = RCOV(INT(CHARGA)) + RCOV(INT(CHARGB)) 
+                  RR     = R0AB(ICHARGB,ICHARGA) 
+                  R42    = R2R4(ICHARGA)*R2R4(ICHARGB)
+                  RCOVIJ = RCOV(ICHARGA) + RCOV(ICHARGB) 
 
                   IF (R2.LT.R2_THR) THEN
                   IJ = GET_INDX(NCENTB,NCENTA)
@@ -853,10 +853,10 @@ C                 sum of the van der Waals radii RR
 C Calculate dC6(i,j)/dCN(i) and dC6(i,j)/dCN(j)
 C results in dC6ij
                   CALL GET_dC6_dCNij(MX_CORD,N_ELEM,C6AB,
-     &                               MXC(INT(CHARGA)),
-     &                               MXC(INT(CHARGB)), CN(NCENTA),
-     &                               CN(NCENTB), INT(CHARGA), 
-     &                               INT(CHARGB), NCENTA, NCENTB,
+     &                               MXC(ICHARGA),
+     &                               MXC(ICHARGB), CN(NCENTA),
+     &                               CN(NCENTB), ICHARGA, 
+     &                               ICHARGB, NCENTA, NCENTB,
      &                               C6, DC6IJ(NCENTA,NCENTB),
      &                               DC6IJ(NCENTB,NCENTA) )
               
@@ -935,16 +935,16 @@ C  Loop to calculate dC6(i,k)/dr_ij, dC6(j,k)/dr_ij, dC6(ij)/dr_ik, dC6(ij)/dr_j
 C All dE/dr_ij calculated. Now calculate dE/dr_ij * dr_ij/dxyz_i
 
       DO NCENTA = 2, NATOMS 
-         CHARGA = CHARGE2(NCENTA)
-         IF (CHARGA .LE. N_ELEM .AND. CHARGA .GT. 0) THEN
+         ICHARGA = NINT( CHARGE2(NCENTA) )
+         IF (ICHARGA .LE. N_ELEM .AND. ICHARGA .GT. 0) THEN
             ISCOOA = (NCENTA-1)*3
             CORDAX = FCOORD2(NCENTA,1)
             CORDAY = FCOORD2(NCENTA,2)
             CORDAZ = FCOORD2(NCENTA,3)
 
             DO NCENTB = 1, NCENTA-1
-               CHARGB = CHARGE2(NCENTB)
-               IF (CHARGB .LE. N_ELEM .AND. CHARGB .GT. 0) THEN
+               ICHARGB = NINT( CHARGE2(NCENTB) )
+               IF (ICHARGB .LE. N_ELEM .AND. ICHARGB .GT. 0) THEN
                   ISCOOB = (NCENTB-1)*3 
                   CORDBX = FCOORD2(NCENTB,1)
                   CORDBY = FCOORD2(NCENTB,2)
@@ -1046,8 +1046,8 @@ C
 C     Run over nuclei A 
 C 
       DO NCENTA = 1, NATOMS 
-         CHARGA = CHARGE2(NCENTA)
-         IF (CHARGA .LE. N_ELEM .AND. CHARGA .GT. 0) THEN
+         ICHARGA = NINT( CHARGE2(NCENTA) )
+         IF (ICHARGA .LE. N_ELEM .AND. ICHARGA .GT. 0) THEN
             CORDAX = FCOORD2(NCENTA,1)
             CORDAY = FCOORD2(NCENTA,2)
             CORDAZ = FCOORD2(NCENTA,3)
@@ -1055,8 +1055,8 @@ C
 C           Run over nuclei B 
 C 
             DO NCENTB =  1, NCENTA-1
-               CHARGB = CHARGE2(NCENTB)
-               IF (CHARGB .LE. N_ELEM .AND. CHARGB .GT. 0) THEN
+               ICHARGB = NINT( CHARGE2(NCENTB) )
+               IF (ICHARGB .LE. N_ELEM .AND. ICHARGB .GT. 0) THEN
                   CORDBX = FCOORD2(NCENTB,1)
                   CORDBY = FCOORD2(NCENTB,2)
                   CORDBZ = FCOORD2(NCENTB,3)
@@ -1076,9 +1076,9 @@ C                 and R^6
 
 C                 sum of the van der Waals radii RR   
 
-                  RR     = R0AB(INT(CHARGB),INT(CHARGA))
-                  R42    = R2R4(INT(CHARGA))*R2R4(INT(CHARGB))
-                  RCOVIJ = RCOV(INT(CHARGA)) + RCOV(INT(CHARGB))
+                  RR     = R0AB(ICHARGB,ICHARGA)
+                  R42    = R2R4(ICHARGA)*R2R4(ICHARGB)
+                  RCOVIJ = RCOV(ICHARGA) + RCOV(ICHARGB)
 
                   IF (R2.LT.R2_THR) THEN
                   IJ = GET_INDX(NCENTB,NCENTA)
@@ -1087,10 +1087,10 @@ C                 sum of the van der Waals radii RR
 C Calculate dC6(i,j)/dCN(i) and dC6(i,j)/dCN(j)
 C results in dC6ij
                   CALL GET_dC6_dCNij(MX_CORD,N_ELEM,C6AB,
-     &                               MXC(INT(CHARGA)),
-     &                               MXC(INT(CHARGB)), CN(NCENTA),
-     &                               CN(NCENTB), INT(CHARGA),
-     &                               INT(CHARGB), NCENTA, NCENTB,
+     &                               MXC(ICHARGA),
+     &                               MXC(ICHARGB), CN(NCENTA),
+     &                               CN(NCENTB), ICHARGA,
+     &                               ICHARGB, NCENTA, NCENTB,
      &                               C6, DC6IJ(NCENTA,NCENTB),
      &                               DC6IJ(NCENTB,NCENTA) )
 C Calculate the damping functions and their derivatives
@@ -1164,16 +1164,16 @@ C Loop to calculate dC6(i,k)/dr_ij, dC6(j,k)/dr_ij, dC6(ij)/dr_ik, dC6(ij)/dr_jk
 C All dE/dr_ij calculated. Now calculate dE/dr_ij * dr_ij/dxyz_i
 
       DO NCENTA = 2, NATOMS 
-         CHARGA = CHARGE2(NCENTA)
-         IF (CHARGA .LE. N_ELEM .AND. CHARGA .GT. 0) THEN
+         ICHARGA = NINT( CHARGE2(NCENTA) )
+         IF (ICHARGA .LE. N_ELEM .AND. ICHARGA .GT. 0) THEN
             ISCOOA = (NCENTA-1)*3
             CORDAX = FCOORD2(NCENTA,1)
             CORDAY = FCOORD2(NCENTA,2)
             CORDAZ = FCOORD2(NCENTA,3)
 
             DO NCENTB = 1, NCENTA-1
-               CHARGB = CHARGE2(NCENTB)
-               IF (CHARGB .LE. N_ELEM .AND. CHARGB .GT. 0) THEN
+               ICHARGB = NINT( CHARGE2(NCENTB) )
+               IF (ICHARGB .LE. N_ELEM .AND. ICHARGB .GT. 0) THEN
                   ISCOOB = (NCENTB-1)*3
                   CORDBX = FCOORD2(NCENTB,1)
                   CORDBY = FCOORD2(NCENTB,2)
@@ -2465,7 +2465,7 @@ C          91          92          93          94
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       DIMENSION FCOORD(NATOMS*3)
       DIMENSION FCOORD2(NATOMS,3)
       DIMENSION CHARGE2(NATOMS)
@@ -2495,15 +2495,15 @@ C
          ELSE
             JATOM = 0
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                   IPCMN = IPCMN + 1
                   JATOM  = JATOM + 1
                   NCENTS = NCENTS + 1
-                  FCOORD(ICRX  ) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
+                  FCOORD(ICRX  ) = PT(IAND(ISYMAX(1,1),ISYMOP))
      &                        *CORD(1,ICENT)
-                  FCOORD(ICRX+1) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
+                  FCOORD(ICRX+1) = PT(IAND(ISYMAX(2,1),ISYMOP))
      &                        *CORD(2,ICENT)
-                  FCOORD(ICRX+2) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  FCOORD(ICRX+2) = PT(IAND(ISYMAX(3,1),ISYMOP))
      &                        *CORD(3,ICENT)
                   CHARGE2(ICNT) = CHARGE(ICENT)
                   FCOORD2(ICNT,1) = FCOORD(ICRX)
@@ -2549,7 +2549,7 @@ C
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       DIMENSION WORK(LWORK)
       DIMENSION TEMPG(NATOMS*3)
       INTEGER NSIGN(8),NBASE(8)

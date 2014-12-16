@@ -186,7 +186,7 @@ def main():
 def produce_files(installdir,lsutildir,args):
    maxr = 4
    minr = 2
-   hack_only_4d_for_utils = True
+   hack_only_4d_for_utils = False
    f=open(installdir+"reorder_frontend.F90",'w')
    utils = []
    reord = []
@@ -232,7 +232,7 @@ def produce_files(installdir,lsutildir,args):
    forutils = ["f2t","t2f"]
 
    # WRITE REORDERINGS FRONTEND FILE
-   write_main_header(f,now,args,lsutildir,minr,maxr)
+   write_main_header(f,now,args,lsutildir,minr,maxr,hack_only_4d_for_utils)
    write_testing_framework(f,minr,maxr)
    f.write("\nend module reorder_frontend_module")
    f.close()
@@ -285,7 +285,6 @@ def produce_files(installdir,lsutildir,args):
            for acc_case in range(6):
              sub_acc = write_subroutine_header_acc(acc_reord[idx][0],idxarr,perm,now,modes,acc_case)
              write_subroutine_body_acc(acc_reord[idx][0],idxarr,perm,modes,args,acc_case)
-             acc_reord[idx][0].write("#endif\n")
              acc_reord[idx][0].write("  end subroutine "+sub_acc+"\n\n")
 
        if(idx+minr!=4 and hack_only_4d_for_utils):
@@ -602,168 +601,187 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
 
 def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
   
-  #get the batched space
-  casecounter = 1
-  fullrange = modes+1
-
-  #FIND THE RESTRICTED INDICES IN THE OLD ORDERING
-  all_thingys = combinations(idxarr,0)
-  #all_thingys = itertools.combinations(idxarr,i)
-  for oldr in all_thingys:
-
-    label1 = "r"+str(casecounter)
-    label1 = ""
-    casecounter += 1
-    #get conditions for the reordering
-    conditions = []
-    oldu  = []
-    newu  = []
-    newr  = []
-    for j in range(modes):
-      oldu.append(idxarr[j])
-      newu.append(perm[j])
-      newr.append(perm[j])
-
-    #modify the conditions accordingly
-    for j in  range(len(oldr)):
-      for k in range(len(oldu)):
-        if oldu[k] == oldr[j]:
-          del oldu[k]
-          break
-      for k in range(len(newu)):
-        if newu[k] == oldr[j]:
-          del newu[k]
-          break
-    for j in  range(len(oldu)):
-      for k in range(len(newr)):
-        if newr[k] == oldu[j]:
-          del newr[k]
-          break
-
-    #ORDER THE LOOPS, this depends on the architecture and may be modified
-    #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used
-    useold = False
-    for j in range(len(oldu)):
-      if(idxarr[oldu[j]]<perm[newu[j]]):
-        useold = True
-        break
-      elif(idxarr[oldu[j]]>perm[newu[j]]):
-        useold =False
-        break
-      
-    #f.write("!"+str(newu)+"    "+str(oldu)+"\n")
-    #f.write("!useold "+str(useold)+"\n")
-    #BUILD THE ORDER OF THE LOOPS ACCORDING TO THE PREVIOUS CONDITIONS
-    outer =[]
-    inner =[]
-    for j in range(len(perm)):
-      if useold:
-        inner.append(idxarr[j])
-      else:
-        inner.append(perm[j])
-    
-    if useold:
+  x = 0
+  while x < 2:
+    x += 1
+    #get the batched space
+    casecounter = 1
+    fullrange = modes+1
+    #FIND THE RESTRICTED INDICES IN THE OLD ORDERING
+    all_thingys = combinations(idxarr,0)
+    for oldr in all_thingys:
+  
+      label1 = "r"+str(casecounter)
+      label1 = ""
+      casecounter += 1
+      #get conditions for the reordering
+      conditions = []
+      oldu  = []
+      newu  = []
+      newr  = []
+      for j in range(modes):
+        oldu.append(idxarr[j])
+        newu.append(perm[j])
+        newr.append(perm[j])
+  
+      #modify the conditions accordingly
+      for j in  range(len(oldr)):
+        for k in range(len(oldu)):
+          if oldu[k] == oldr[j]:
+            del oldu[k]
+            break
+        for k in range(len(newu)):
+          if newu[k] == oldr[j]:
+            del newu[k]
+            break
+      for j in  range(len(oldu)):
+        for k in range(len(newr)):
+          if newr[k] == oldu[j]:
+            del newr[k]
+            break
+  
+      #ORDER THE LOOPS, this depends on the architecture and may be modified
+      #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used
+      useold = False
       for j in range(len(oldu)):
-        outer.append(oldu[j])
-    else:
-      for j in range(len(newu)):
-        outer.append(newu[j])
-    inneri = []
-    outeri = []
-    for j in reversed(inner):
-      inneri.append(j)
-    for j in reversed(outer):
-      outeri.append(j)
-
-    offsetstr="    "
-    offsetstr2 = offsetstr + "  "
-
-    #WRITING OPENACC DIRECTIVES:
-    oaccparallel_init = "!$acc parallel present(array_in,array_out)\n"
-    if(modes == 4):
-      oaccloop_gang = "!$acc loop gang collapse(2)\n"
-      oaccloop_worker = "!$acc loop worker\n"
-      oaccloop_vector = "!$acc loop vector\n"
-    elif(modes == 3):
-      oaccloop_gang = "!$acc loop gang\n"
-      oaccloop_worker = "!$acc loop worker\n"
-      oaccloop_vector = "!$acc loop vector\n"
-    elif(modes == 2):
-      oaccloop_gang = "!$acc loop gang, worker\n"
-      oaccloop_vector = "!$acc loop vector\n"
-
-    #WRITING THE INNER FOR LOOPS HERE:
-    f.write(oaccparallel_init)
-    f.write(oaccloop_gang)
-    for j in range(modes):
-      if (modes == 4 and j == 2):
-        f.write(oaccloop_worker)
-      if (modes == 3 and j == 1):
-        f.write(oaccloop_worker)
-      if (modes == 4 and j == 3):
-        f.write(oaccloop_vector)
-      if (modes == 3 and j == 2):
-        f.write(oaccloop_vector)
-      if (modes == 2 and j == 1):
-        f.write(oaccloop_vector)
-      f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
-      offsetstr2 += "  "
-
-    offsetstr2 = offsetstr2[0:-2]
-    
-    #CENTRAL COPYING AND ADDITION STRING
-    newidx = ""
-    oldidx = ""
-    for j in range(modes):
-      if(perm[j] in newu):
-        newidx += abc[perm[j]]+","
-      elif(perm[j] in newr):
-        newidx += abc[perm[j]]+","
+        if(idxarr[oldu[j]]<perm[newu[j]]):
+          useold = True
+          break
+        elif(idxarr[oldu[j]]>perm[newu[j]]):
+          useold =False
+          break
+        
+      #f.write("!"+str(newu)+"    "+str(oldu)+"\n")
+      #f.write("!useold "+str(useold)+"\n")
+      #BUILD THE ORDER OF THE LOOPS ACCORDING TO THE PREVIOUS CONDITIONS
+      outer =[]
+      inner =[]
+      for j in range(len(perm)):
+        if useold:
+          inner.append(idxarr[j])
+        else:
+          inner.append(perm[j])
+      
+      if useold:
+        for j in range(len(oldu)):
+          outer.append(oldu[j])
       else:
-        print "INVALID STUFF HAPPENING HERE"
-      if(idxarr[j] in newu):
-        oldidx += abc[idxarr[j]]+","
-      elif(idxarr[j] in newr):
-        oldidx += abc[idxarr[j]]+","
-      else:
-        print "INVALID STUFF HAPPENING HERE"
-
-    newidx = newidx[0:-1]
-    oldidx = oldidx[0:-1]
-
-    cpstr=offsetstr2+"  array_out("
-#    if cas == 0:
-    if acc_case == 0:
-      cpstr += newidx+") = array_in("+oldidx+")\n"
-#    elif cas==1:
-    elif acc_case==1:
-      cpstr += newidx+") = pre1*array_in("+oldidx+")\n"
-#    elif cas==2:
-    elif acc_case==2:
-      cpstr += newidx+") = array_out("+newidx+") + array_in("+oldidx+")\n"
-#    elif cas==3:
-    elif acc_case==3:
-      cpstr += newidx+") = array_out("+newidx+") + pre1*array_in("+oldidx+")\n"
-#    elif cas==4:
-    elif acc_case==4:
-      cpstr += newidx+") = pre2*array_out("+newidx+") + array_in("+oldidx+")\n"
-#    elif cas==5:
-    elif acc_case==5:
-      cpstr += newidx+") = pre2*array_out("+newidx+") + pre1*array_in("+oldidx+")\n"
-
-    f.write(cpstr)
-    
-    oaccloop_end = "!$acc end loop\n"
-    oaccparallel_end = "!$acc end parallel\n"
-    for j in  range(modes-1,-1,-1):
-      f.write(offsetstr2+"enddo\n")
-      if (modes == 4 and j == 1):
-        f.write("")
-      else:
-        f.write(oaccloop_end)
+        for j in range(len(newu)):
+          outer.append(newu[j])
+      inneri = []
+      outeri = []
+      for j in reversed(inner):
+        inneri.append(j)
+      for j in reversed(outer):
+        outeri.append(j)
+  
+      offsetstr="    "
+      offsetstr2 = offsetstr + "   "
+  
+      #WRITING OPENACC DIRECTIVES:
+      oaccparallel_init1 = "!$acc parallel present(array_in,array_out)&\n"
+      oaccparallel_init2 = "!$acc parallel present(array_in,array_out)&\n"
+      if(modes == 4):
+        oaccparallel_init1 += "!$acc& firstprivate(pre1,pre2,da,db,dc,dd) private(a,b,c,d) wait(async_id2) async(async_id1)\n"
+        oaccparallel_init2 += "!$acc& firstprivate(pre1,pre2,da,db,dc,dd) private(a,b,c,d) async(async_id1)\n"
+        oaccloop_gang = "!$acc loop gang collapse(2)\n"
+        oaccloop_worker = "!$acc loop worker\n"
+        oaccloop_vector = "!$acc loop vector\n"
+      elif(modes == 3):
+        oaccparallel_init1 += "!$acc& firstprivate(pre1,pre2,da,db,dc) private(a,b,c) wait(async_id2) async(async_id1)\n"
+        oaccparallel_init2 += "!$acc& firstprivate(pre1,pre2,da,db,dc) private(a,b,c) async(async_id1)\n"
+        oaccloop_gang = "!$acc loop gang\n"
+        oaccloop_worker = "!$acc loop worker\n"
+        oaccloop_vector = "!$acc loop vector\n"
+      elif(modes == 2):
+        oaccparallel_init1 += "!$acc& firstprivate(pre1,pre2,da,db) private(a,b) wait(async_id2) async(async_id1)\n"
+        oaccparallel_init2 += "!$acc& firstprivate(pre1,pre2,da,db) private(a,b) async(async_id1)\n"
+        oaccloop_gang = "!$acc loop gang, worker\n"
+        oaccloop_vector = "!$acc loop vector\n"
+  
+      #WRITING THE INNER FOR LOOPS HERE:
+      if (x == 1):
+        f.write(offsetstr+"if (wait_arg) then\n\n")
+        f.write(oaccparallel_init1)
+      elif (x == 2):
+        f.write(offsetstr+"else\n\n")
+        f.write(oaccparallel_init2)
+      f.write(oaccloop_gang)
+      for j in range(modes):
+        if (modes == 4 and j == 2):
+          f.write(oaccloop_worker)
+        if (modes == 3 and j == 1):
+          f.write(oaccloop_worker)
+        if (modes == 4 and j == 3):
+          f.write(oaccloop_vector)
+        if (modes == 3 and j == 2):
+          f.write(oaccloop_vector)
+        if (modes == 2 and j == 1):
+          f.write(oaccloop_vector)
+        f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
+        offsetstr2 += "  "
+  
       offsetstr2 = offsetstr2[0:-2]
-    f.write(oaccparallel_end)
-    f.write("\n")
+      
+      #CENTRAL COPYING AND ADDITION STRING
+      newidx = ""
+      oldidx = ""
+      for j in range(modes):
+        if(perm[j] in newu):
+          newidx += abc[perm[j]]+","
+        elif(perm[j] in newr):
+          newidx += abc[perm[j]]+","
+        else:
+          print "INVALID STUFF HAPPENING HERE"
+        if(idxarr[j] in newu):
+          oldidx += abc[idxarr[j]]+","
+        elif(idxarr[j] in newr):
+          oldidx += abc[idxarr[j]]+","
+        else:
+          print "INVALID STUFF HAPPENING HERE"
+  
+      newidx = newidx[0:-1]
+      oldidx = oldidx[0:-1]
+  
+      cpstr=offsetstr2+"  array_out("
+  #    if cas == 0:
+      if acc_case == 0:
+        cpstr += newidx+") = array_in("+oldidx+")\n"
+  #    elif cas==1:
+      elif acc_case==1:
+        cpstr += newidx+") = pre1*array_in("+oldidx+")\n"
+  #    elif cas==2:
+      elif acc_case==2:
+        cpstr += newidx+") = array_out("+newidx+") + array_in("+oldidx+")\n"
+  #    elif cas==3:
+      elif acc_case==3:
+        cpstr += newidx+") = array_out("+newidx+") + pre1*array_in("+oldidx+")\n"
+  #    elif cas==4:
+      elif acc_case==4:
+        cpstr += newidx+") = pre2*array_out("+newidx+") + array_in("+oldidx+")\n"
+  #    elif cas==5:
+      elif acc_case==5:
+        cpstr += newidx+") = pre2*array_out("+newidx+") + pre1*array_in("+oldidx+")\n"
+  
+      f.write(cpstr)
+      
+      oaccloop_end = "!$acc end loop\n"
+      oaccparallel_end = "!$acc end parallel\n"
+  
+      for j in  range(modes-1,-1,-1):
+        f.write(offsetstr2+"enddo\n")
+        if (modes == 4 and j == 1):
+          f.write("")
+        else:
+          f.write(oaccloop_end)
+        offsetstr2 = offsetstr2[0:-2]
+      f.write(oaccparallel_end)
+      if (x == 1):
+        f.write("\n")
+      elif (x == 2):
+        f.write("\n")
+        f.write(offsetstr+"endif\n")
+        f.write("\n")
 
 #WRITE THE HEADER AND GET THE SUBROUTINE NAME
 def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
@@ -876,7 +894,7 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr+= "  !\> \\author Janus Juul Eriksen & Patrick Ettenhuber\n"
   subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
   subheaderstr+= "  subroutine "+sname+"(dims,"
-  subheaderstr+= "pre1,array_in,pre2,array_out)\n"
+  subheaderstr+= "pre1,array_in,pre2,array_out,async_id1,async_id2,wait_arg)\n"
   subheaderstr+= "    implicit none\n"
   subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
   subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")\n"
@@ -886,6 +904,9 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr+= "    real(realk),intent(in) :: array_in("+reordstr2+")\n"
   subheaderstr+= "    !> reordered array\n"
   subheaderstr+= "    real(realk),intent(inout) :: array_out("+reordstr3+")\n"
+  subheaderstr+= "    integer(acc_handle_kind),intent(in) :: async_id1\n"
+  subheaderstr+= "    integer(acc_handle_kind),intent(in) :: async_id2\n"
+  subheaderstr+= "    logical,intent(in) :: wait_arg\n"
   subheaderstr+= "    integer :: "
   for i in range(modes):
     subheaderstr+= abc[i]+",d"+abc[i]+","
@@ -894,12 +915,10 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr += "\n"
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
+  subheaderstr += "\n"
 
   f.write(subheaderstr)
-  f.write("#ifdef VAR_OPENACC\n")
-  f.write("\n")
   return sname
-
 
 
 def write_simple_module_header(f,idim,idx,now,args,kindof):
@@ -924,6 +943,9 @@ def write_simple_module_header(f,idim,idx,now,args,kindof):
      sys.exit()
 
    f.write("  use precision\n")
+   if(kindof=="acc"):
+     f.write("  use openacc\n")
+   f.write("\n")
    f.write("  contains\n")
 
 def write_simple_module_end_and_close(f,idim,idx,now,args,kindof):
@@ -947,7 +969,7 @@ def write_simple_module_end_and_close(f,idim,idx,now,args,kindof):
 
 
 
-def write_main_header(f,now,args,lsutildir,minr,maxr):
+def write_main_header(f,now,args,lsutildir,minr,maxr,skip):
    f.write("!\> \\brief this autogenerated module is inteded to contain high performance reorderings for\n!mutlidimensional arrays.\n!\> \\author Patrick Ettenhuber & Janus Juul Eriksen\n!\> \\date November 2012, file produced: "+str(now.month)+", "+str(now.year)+"\n")
    #WRITE THE VARIABLES WITH WHICH THE FILE WAS PRODUCED HERE 
    #--> FOR LATER READOUT AND SEE IF IT IS NECESSARY TO PRODUCE A NEW INSTANCE OF IT
@@ -962,16 +984,18 @@ def write_main_header(f,now,args,lsutildir,minr,maxr):
    
    for mode in range(maxr,minr-1,-1):
      for i in range(mode):
-       if (mode == 4):
+       if (mode == 4 or ( mode == 3 or mode == 2 and not skip)):
          f.write("  use reord"+str(mode)+"d_"+str(i+1)+"_utils_t2f_module\n")
          f.write("  use reord"+str(mode)+"d_"+str(i+1)+"_utils_f2t_module\n")
        if(mode==2 and i == 0):
          continue
        f.write("  use ""reord"+str(mode)+"d_"+str(i+1)+"_reord_module\n")
-#   if(args[4]):
-#     f.write("  use reord2d_acc_reord_module\n")
-#     f.write("  use reord3d_acc_reord_module\n")
-#     f.write("  use reord4d_acc_reord_module\n")
+   if(args[4]):
+     f.write("#ifdef VAR_OPENACC\n")
+     f.write("  use reord2d_acc_reord_module\n")
+     f.write("  use reord3d_acc_reord_module\n")
+     f.write("  use reord4d_acc_reord_module\n")
+     f.write("#endif\n")
    f.write("  use LSTIMING\n")
    #f.write("  contains\n")
    #Write the subroutines called by the user
@@ -1006,10 +1030,10 @@ def write_testing_framework(f,minr,maxr):
   for i in range(minr,maxr+1):
     header += "    test"+str(i)+"d_normal=.true.\n"
   for i in range(minr,maxr+1):
-    if i== 4:
-      header += "    test"+str(i)+"d_tiled=.true.\n"
-    else:
-      header += "    test"+str(i)+"d_tiled=.false.\n"
+    #if i== 4:
+    header += "    test"+str(i)+"d_tiled=.true.\n"
+    #else:
+    #  header += "    test"+str(i)+"d_tiled=.false.\n"
 
   header += "    rigorous=.true.\n"
  
@@ -1122,8 +1146,8 @@ def write_testing_framework(f,minr,maxr):
     f.write("    endif\n")
 
 
-  #SPECIAL TESTS FOR TILED REORDERINGS, right now only 4d
-  for mode in range(4,4+1):
+  #SPECIAL TESTS FOR TILED REORDERINGS
+  for mode in range(minr,maxr+1):
     #WRITING THE TESTING FRAMEWORK HERE
 
     words ="\

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCX_GRAD(WORK,LWORK)
@@ -49,7 +48,6 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "energy.h"
-#include "taymol.h"
 #include "ccroper.h"
 #include "ccr1rsp.h"
 #include "cco1rsp.h"
@@ -63,26 +61,21 @@ C
       INTEGER IOTRAN(NXGRST)
       INTEGER IEDOTS(NAXGRO*NXGRST), IODOTS(NAXGRO,NXGRST)
 
-#if defined (SYS_CRAY) 
-      REAL WORK(LWORK) 
-      REAL ECONS(NAXGRO*NXGRST), OCONS(NAXGRO,NXGRST)
-      REAL RDUM, PROPT, PROPE, PROPN, GRDNRM
-#else 
-      DOUBLE PRECISION WORK(LWORK) 
-      DOUBLE PRECISION ECONS(NAXGRO*NXGRST), OCONS(NAXGRO,NXGRST)
-      DOUBLE PRECISION RDUM, PROPT, PROPE, PROPN, GRDNRM
-#endif 
+      REAL*8 WORK(LWORK) 
+      REAL*8 ECONS(NAXGRO*NXGRST), OCONS(NAXGRO,NXGRST)
+      REAL*8 RDUM, PROPT, PROPE, PROPN, GRDNRM
 
       CHARACTER CDUM*1
       INTEGER NXETRAN, IOP, IOPER, IRELAX, IOPTRES, IORDER, IDUM, IX,
      &        IDXO1, ISYST, IEX, ISCOOR
 
       INTEGER IR1TAMP, IRHSR1, ILSTSYM, IDXSYM
-#if defined (SYS_CRAY) 
-      REAL CC_NUCCON, DDOT
-#else 
-      DOUBLE PRECISION CC_NUCCON, DDOT
-#endif 
+      REAL*8 CC_NUCCON, DDOT
+
+! trkoor.h : NCOOR
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable :: GRDMOL(:), HESMOL(:,:)
 
       CALL QENTER('CCX_GRAD')
 
@@ -230,6 +223,7 @@ cch
       WRITE(LUPRI,*) ' '
 
       IF (XGROPT) THEN
+        NCOOR = 3*NUCDEP ! define NCOOR in trkoor.h, used in ABAREAD_TAYMOL
         IF ( IPRINT.GT.1) THEN
           CALL CC_SETDORPS('1DHAM   ',.TRUE.,IPRINT)
           ! calculate nuclear repulsion contribution to gradient
@@ -242,13 +236,16 @@ cch
         CALL ZERGRD
         CALL ADDGRD(GRADNN)
         CALL ADDGRD(GRADEE)
+        allocate ( GRDMOL(NCOOR), HESMOL(NCOOR, NCOOR) )
+        CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 
         CALL HEADER('Molecular gradient',-1)
         CALL PRIGRD(GRDMOL,WORK,WORK(MXCOOR*MXCOOR+1))
 
-        GRDNRM = DDOT(3*NUCDEP,GRDMOL,1,GRDMOL,1)
+        GRDNRM = DDOT(NCOOR,GRDMOL,1,GRDMOL,1)
         WRITE (LUPRI,'(/19X,A,1P,E10.2)')
      *     'Molecular gradient norm:', GRDNRM
+        deallocate ( GRDMOL, HESMOL )
 
       END IF
 

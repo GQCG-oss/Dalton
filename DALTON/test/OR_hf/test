@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# dipole
+f.add(from_string = 'Dipole moment',
+      num_lines = 5,
+      mask = [1],
+      rel_tolerance = 1.0e-5)
+
+# nuc
+f.add(string = 'Nuclear repulsion energy',
+      rel_tolerance = 1.0e-10)
+
+# tes
+f.add(string = 'Total number of tesserae',
+      rel_tolerance = 1.0e-1)
+
+# sym
+f.add(string = 'Point group',
+      rel_tolerance = 1.0e-5)
+
+# cmass
+f.add(string = 'Center-of-mass',
+      rel_tolerance = 1.0e-5)
+
+# or_lon
+f.add(string = 'Optical rotation (',
+      rel_tolerance = 1.0e-5)
+
+# gauge_or
+f.add(string = 'Center of mass gauge origin',
+      rel_tolerance = 1.0e-5)
+
+test.run(['OR_hf.dal'], ['CH3CHFOH_cc-pVDZ.mol'], f={'out': f})
+
+sys.exit(test.return_code)

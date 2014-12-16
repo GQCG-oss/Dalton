@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef OLD_REV_LOG
 !===========================================================================
@@ -270,11 +269,6 @@ C
 
       CALL QENTER('SIRRDI')
 C
-C  ***** Check dimension
-C
-      IF ( LCMO .LT. MXCORB*MXCORB )
-     *   CALL ERRWRK('SIRRDI.cmo',-MXCORB*MXCORB,LCMO)
-C
 C     Skip next section if processed earlier
 C
       IF (INPPRC) THEN
@@ -317,7 +311,7 @@ C
                IOPRHF = 0
             ELSE
                WRITE (LUPRI,'(/A)')
-     &            ' Lowering of symmetry for MCSCF not'//
+     &            ' Lowering of symmetry for MCSCF is not'//
      &            ' implemented in SIRIUS yet, sorry!'
                CALL QUIT('Lowering of symmetry for MCSCF not'//
      &            ' implemented in SIRIUS yet, sorry!')
@@ -972,7 +966,7 @@ C
          CALL ICOPY(8,NFRRHF,1,NFRO,1)
          CALL ICOPY(8,NRHF,1,NISH,1)
          CALL IZERO(NASH,8)
-         IF (IOPRHF .NE. 0) THEN
+         IF (IOPRHF .GT. 0) THEN
             LSYM   = IOPRHF
             ISPIN  = 2
             MS2    = 1
@@ -1512,7 +1506,7 @@ C If (MP2) force canonical Hartree-Fock orbitals
 C hjaaj Aug 04: Also if (CC)
 C
       IF (DOMP2 .OR. DOCCSD) THEN
-        IF (DOCCSD. and. DOSCF .AND. (IOPRHF .NE. 0 .OR. HSROHF)) THEN
+        IF (DOCCSD. and. DOSCF .AND. (IOPRHF .GT. 0 .OR. HSROHF)) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell MP2/CC'//
      &      ' not compatible with open shell RHF'
@@ -1660,6 +1654,12 @@ C
       IF (QMMM .AND. ECP) THEN
          CALL QUIT('QMMM is not compatible with the use of ECPs')
       END IF
+      IF (QMMM .AND. DOCI) THEN
+         CALL QUIT('QMMM is currently not compatible with .CI')
+      END IF
+      IF (PEQM .AND. DOCI) THEN
+         CALL QUIT('PEQM is currently not compatible with .CI')
+      END IF
       EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. PEQM .OR.
      &            QMNPMM
 C
@@ -1707,8 +1707,10 @@ C
 !     END IF
       IF(NOCCT .LT.0 .OR. NOCCT .GT.MAXOCC) THEN
          INPERR = INPERR + 1
-         WRITE(LUPRI,'(/A,I5/A,I5)') 'ERROR: Number of occ. orbitals :',
-     *      NOCCT,' is .lt. 0 or .gt. MAXOCC :',MAXOCC
+         WRITE(LUPRI,'(/A,I5/A,I5/A)') 
+     *      'ERROR: Number of occ. orbitals :',
+     *      NOCCT,' is .lt. 0 or .gt. MAXOCC :',MAXOCC,
+     *      'Increase MAXOCC in DALTON/include/maxorb.h and recompile'
       END IF
       IF(NSSHT .LT.0 .OR.NSSHT .GT.MXCORB) CALL ERRINP(11,INPERR)
 C
@@ -1839,7 +1841,7 @@ C
       END IF
 C
       IF (MCTYPE .GT. 0 .AND. PARCAL) THEN
-         IF (RNRESP) CALL PARQUIT('MCSCF in RESPONSE')
+         ! IF (RNRESP) CALL PARQUIT('MCSCF in RESPONSE')
          IF (RNABAC) CALL PARQUIT('MCSCF in ABACUS')
       END IF
 
@@ -1925,6 +1927,7 @@ C  *END OF (marks end of keyword input)
 C
 C******************************************
 C List of internal control flags for SIRIUS
+C -- saved in FLAG(1:NFLAG) in infinp.h --
 C******************************************
 C
 C Updated: 1-Oct-1987 ha
@@ -2623,8 +2626,6 @@ C
       GO TO 100
 C
  8000 CONTINUE
-!     No QC if PE library is used
-      IF (PEQM) FLAG(21) = .FALSE.
 C     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
@@ -2899,17 +2900,22 @@ C *** Option 12 >RAS3 E<   RAS3 electrons
 C
  2000 CONTINUE
       NASHT = 0
-      DO 2100 I = 1,NSYM
+      DO, I = 1,NSYM
          NASH(I) = NAS1(I) + NAS2(I) + NAS3(I)
          NASHT   = NASHT   + NASH(I)
- 2100 CONTINUE
+      END DO
       IF (NHL1MX .NE. -1 .OR. NHL1MN .NE. -1) THEN
          NAS1T = 0
-         DO 2200 I = 1,NSYM
+         DO, I = 1,NSYM
             NAS1T = NAS1T + NAS1(I)
- 2200    CONTINUE
+         END DO
          NELMN1 = 2*NAS1T - NHL1MX
          NELMX1 = 2*NAS1T - NHL1MN
+      END IF
+      IF (MCTYPE .GT. 0 .AND. NACTEL .EQ. -1) THEN
+         INPERR = INPERR + 1
+         WRITE(LUPRI,'(/A)')
+     &   ' *CONFIG ERROR: .ELECTRONS not specified'
       END IF
       RETURN
 C ----------------------------------------------
@@ -3023,7 +3029,7 @@ C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .ELECTR must not be specified together with .DOUBLY and .OPEN S'
+     &' .DOUBLY must not be specified together with .ELECTRONS'
       END IF
       NRHFEL = 0
       INIOCC = 1
@@ -3065,7 +3071,17 @@ C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .ELECTR must not be specified together with .DOUBLY and .OPEN S'
+     &' .OPEN SHELL must not be specified together with .ELECTRONS'
+      END IF
+      IF (HSROHF) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,*)
+     &' .OPEN SHELL must not be specified together with .SINGLY'
+      END IF
+      IF (IOPRHF .LT. 1 .OR. IOPRHF .GT. NSYM) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,*)
+     &' Illegal symmetry of .OPEN SHELL :',IOPRHF
       END IF
       NRHFEL = 0
       INIOCC = 1
@@ -3133,8 +3149,8 @@ C *** Option 21 >ELECTR< No. of electrons, for automagic det. of occ. orb.s
   121 READ(LUCMD,*) NRHFEL
       IF (INIOCC .EQ. 1) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,*)
-     &' .ELECTR must not be specified together with .DOUBLY and .OPEN S'
+         WRITE (LUPRI,*) ' .ELECTR must not be specified'//
+     &   ' together with any of .DOUBLY, .OPEN S and .SINGLY'
       END IF
       AUTOCC = .TRUE.
       ELECTR = .TRUE.
@@ -3169,24 +3185,17 @@ C *** Option 24 >SINGLY< High spin orbitals input
  124  HSROHF = .TRUE.
       READ(LUCMD,*) (NROHF(I),I=1,NSYM)
 C
-Clf in case there is only one open shell electron we go for the old code
-C
-      INUM = 0
-      DO IHS = 1, NSYM
-         IF (NROHF(IHS) .EQ. 1 ) IOPRHF = IHS
-         INUM = INUM + NROHF(IHS)
-      END DO
-      IF (INUM .EQ. 1) THEN
-         HSROHF = .FALSE.
-      ELSE
-         IOPRHF = 0
-      END IF
       IF (INIOCC .LT. 0) AUTOCC = .FALSE.
 C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR .OR. AUTOCC) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
      &' .SINGLY must not be specified together with .ELECTR or .AUTOCC'
+      END IF
+      IF (IOPRHF .GT. 0) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,*)
+     &' .SINGLY must not be specified together with .OPEN SHELL'
       END IF
       NRHFEL = 0
       INIOCC = 1
@@ -5131,6 +5140,7 @@ C   DFTCOM : DFTRUN, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C   siripc : INPPRC
 C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
+C   pgroup : GROUP, REP
 C   pcmlog : PCM
 C
 #include "priunit.h"
@@ -5139,6 +5149,7 @@ C
 #include "maxorb.h"
 C
 #include "gnrinf.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -5527,16 +5538,19 @@ C     for SIRIUS (not LUCITA) :
       CALL MOLCHR(ICHARG)
 C     ... get total charge
       IF (.NOT. (DOLUCITA .AND. NUMRUN.EQ.1) ) WRITE(IWUNIT,1002)
-     &   TRIM(WFTYPE),NINEL,NACTEL,ICHARG,ISPIN,MS2,NSYM,LSYM
+     &   TRIM(WFTYPE),NINEL,NACTEL,ICHARG,ISPIN,MS2,
+     &   NSYM,GROUP,LSYM,REP(LSYM-1)
  1000 FORMAT(/5X,'Wave function specification'
-     *       /5X,'============================')
- 1002 FORMAT( '@    For the wave function of type :      >>> ',A,' <<<',
-     *       /'@    Number of closed shell electrons',I12,
-     *       /'@    Number of electrons in active shells',I8,
-     *       /'@    Total charge of the molecule',I16,
-     *      //'@    Spin multiplicity and 2 M_S',I17,I10,
-     *       /'     Total number of symmetries',I18,
-     *       /'@    Reference state symmetry',I20)
+     &       /5X,'============================')
+ 1002 FORMAT( '@    Wave function type        >>> ',A,' <<<',
+     &       /'@    Number of closed shell electrons',I12,
+     &       /'@    Number of electrons in active shells',I8,
+     &       /'@    Total charge of the molecule',I16,
+     &      //'@    Spin multiplicity and 2 M_S',I17,I10,
+     &       /'@    Total number of symmetries',I18,
+     &        ' (point group: ',A,')',
+     &       /'@    Reference state symmetry',I20,
+     &        ' (irrep name : ',A,')')
 C
       IF (MCTYPE .EQ. 2) THEN
          WRITE (IWUNIT,1075) NAS1T, NAS2T, NAS3T
@@ -5593,6 +5607,7 @@ C
 C ***** Orbital specifications *****
 C
       WRITE(IWUNIT,1100) (I,       I=1,NSYM)
+      WRITE(IWUNIT,1102) (REP(I-1),I=1,NSYM)
       WRITE(IWUNIT,1110) ('  ---', I=1,NSYM+1)
       IF (MCTYPE .GT. 0) THEN
          WRITE(IWUNIT,1200) NISHT,(NISH(I),I=1,NSYM)
@@ -5646,6 +5661,7 @@ C
  1100 FORMAT(/5X,'Orbital specifications',
      *       /5X,'======================',
      *       /5X,'Abelian symmetry species',T38,'  All |',8I5)
+ 1102 FORMAT(T44,'|',8(2X,A3))
  1110 FORMAT(T38,A5,' |',8A5)
  1200 FORMAT('@    Inactive orbitals',T38,I5,' |',8I5)
  1300 FORMAT('@    Active orbitals',T38,I5,' |',8I5)
@@ -5663,10 +5679,16 @@ C ***** Optimization information *****
 C       FLAG(27) : use determinants
 C
       IF (MCTYPE .GT. 0 .OR. (FLAG(21) .AND. .NOT. AUTOCC)) THEN
+         IF (DOMC .OR. MCTYPE .EQ. 0) THEN
+            NWOPT_print = NWOPT
+         ELSE ! no MCSCF, only CI
+            NWOPT_print = 0
+         END IF
+         NVAR_print = NCONF + NWOPT_print
          IF (FLAG(27)) THEN
-            WRITE (IWUNIT,5010) NCONF,NWOPT,NVAR
+            WRITE (IWUNIT,5010) NCONF,NWOPT_print,NVAR_print
          ELSE
-            WRITE (IWUNIT,5000) NCONF,NWOPT,NVAR
+            WRITE (IWUNIT,5000) NCONF,NWOPT_print,NVAR_print
          END IF
       END IF
  5000 FORMAT (/,5X,'Optimization information',

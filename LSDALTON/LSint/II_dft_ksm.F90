@@ -2,9 +2,8 @@
 MODULE IIDFTKSM
 use precision
 use TYPEDEFTYPE, only: LSSETTING
-!AMT use IIDFTINT, only: II_DFTINT, II_DFTDISP, TEST_NELECTRONS
 use IIDFTINT, only: II_DFTINT, TEST_NELECTRONS
-use IIDFTD, only: DFT_D_LSDAL_IFC
+use IIDFTD, only: II_DFT_DISP
 use dft_type
 use dft_memory_handling
 use IIDFTKSMWORK
@@ -16,7 +15,7 @@ use IIABSVALINT
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_mod
-  use Integralparameters,only: LSMPI_IIDFTKSM,IIDFTGEO,IIDFTLIN,IIDFTQRS,&
+  use LSparameters,only: LSMPI_IIDFTKSM,IIDFTGEO,IIDFTLIN,IIDFTQRS,&
        & IIDFTMAG,IIDFTMAL,IIDFTGKS,IIDFTGLR,LSMPI_IIDFTKSME
 #endif
   use xcfun_host,only: xcfun_type_gga,xcfun_type_lda,xcfun_type_metagga,&
@@ -62,7 +61,7 @@ ELECTRONS = 0E0_realk
 call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 NGEODRV=0
 DOLND=.FALSE.
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 !MPI Specific
@@ -93,14 +92,14 @@ IF(DOGGA) THEN
 !=================MPI Specific================================
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)   
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,setting%comm)   
       DO IDMAT=1,ndmat
          valMPI(IDMAT)=DFTDATA%ENERGY(IDMAT) 
       ENDDO
       DO IDMAT=1,ndmat
          valMPI(IDMAT+NDMAT)=ELECTRONS(IDMAT)
       ENDDO
-      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          DFTDATA%ENERGY(IDMAT) = valMPI(IDMAT)
       ENDDO
@@ -138,14 +137,14 @@ ELSE
 !=================MPI Specific================================
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          valMPI(IDMAT)=DFTDATA%ENERGY(IDMAT) 
       ENDDO
       DO IDMAT=1,ndmat
          valMPI(IDMAT+NDMAT)=ELECTRONS(IDMAT)
       ENDDO
-      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          DFTDATA%ENERGY(IDMAT) = valMPI(IDMAT)
       ENDDO
@@ -223,7 +222,7 @@ END SUBROUTINE II_DFT_KSM
 !!$#ifdef MOD_UNRELEASED
 !!$LOGICAL          :: USE_MPI
 !!$REAL(REALK)      :: DFTHRI
-!!$USE_MPI = .TRUE.
+!!$USE_MPI = SETTING%SCHEME%doMPI
 !!$IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 !!$#ifdef VAR_MPI
 !!$!MPI Specific
@@ -243,7 +242,7 @@ END SUBROUTINE II_DFT_KSM
 !!$!=================MPI Specific================================
 !!$IF(USE_MPI)THEN
 !!$   call lsmpi_barrier(setting%comm)    
-!!$   CALL lsmpi_reduction(ABSVALOVERLAP,NMO,NMO,infpar%master,MPI_COMM_LSDALTON)
+!!$   CALL lsmpi_reduction(ABSVALOVERLAP,NMO,NMO,infpar%master,setting%comm)
 !!$ENDIF
 !!$!=============================================================
 !!$#endif
@@ -291,7 +290,7 @@ call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 NGEODRV=0
 DOLND=.FALSE.
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 !MPI Specific
@@ -325,7 +324,7 @@ IF(DOGGA) THEN
       DO IDMAT=1,ndmat
          valMPI(IDMAT+NDMAT)=ELECTRONS(IDMAT)
       ENDDO
-      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          DFTDATA%ENERGY(IDMAT) = valMPI(IDMAT)
       ENDDO
@@ -357,7 +356,7 @@ ELSE
       DO IDMAT=1,ndmat
          valMPI(IDMAT+NDMAT)=ELECTRONS(IDMAT)
       ENDDO
-      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          DFTDATA%ENERGY(IDMAT) = valMPI(IDMAT)
       ENDDO
@@ -437,7 +436,7 @@ INTEGER          :: GRDONE,NHTYP
 REAL(REALK)      :: SUM,NELE
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -464,23 +463,20 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,setting%comm)
    ENDIF
 #else
 NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+IF(IPRINT.GT. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
      &     'KS electrons:', ELECTRONS(1),' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
 
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
 #endif
-   ! add eventually empirical dispersion correction \Andreas Krapp Only Master
-   !AMT CALL II_DFTDISP(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,1,LUPRI,IPRINT)
-   !AMT
+   ! add eventually empirical dispersion correction
    NDERIV=1
-   CALL DFT_D_LSDAL_IFC(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,NDERIV,LUPRI)
-   !AMT
+   CALL II_DFT_DISP(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,NDERIV,LUPRI)
 #ifdef VAR_MPI
 ENDIF
 #endif
@@ -516,7 +512,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,IBMAT
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -545,7 +541,7 @@ IF(DOGGA) THEN
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,setting%comm)
    ENDIF
 #endif
    DO IBMAT = 1,DFTDATA%NBMAT
@@ -575,13 +571,13 @@ ELSE
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,setting%comm)
    ENDIF
 #endif
 ENDIF
 #ifndef VAR_MPI
 NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+IF(IPRINT.GT. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
      &     'KS electrons:', ELECTRONS(1),&
      &     ' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
@@ -616,7 +612,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,IBMAT
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -644,7 +640,7 @@ IF(DOGGA) THEN
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,setting%comm)
    ENDIF
 #endif
    DO IDMAT = 1,DFTDATA%NDMAT
@@ -672,14 +668,14 @@ ELSE
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,setting%comm)
    ENDIF
 #endif
 ENDIF
 
 #ifndef VAR_MPI
   NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-  IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+  IF(IPRINT.GT. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
        &     'KS electrons:', ELECTRONS(1),&
        &     ' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
@@ -715,7 +711,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -757,7 +753,7 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT*3,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT*3,infpar%master,setting%comm)
    ENDIF
 #endif
 !ANTISYMMETRIZE
@@ -802,7 +798,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,IBMAT,nbmat
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -845,8 +841,8 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NBMAT*3,infpar%master,MPI_COMM_LSDALTON)
-      CALL lsmpi_reduction(DFTDATA%FKSMS,NBAST,NBAST,NBMAT*3,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NBMAT*3,infpar%master,setting%comm)
+      CALL lsmpi_reduction(DFTDATA%FKSMS,NBAST,NBAST,NBMAT*3,infpar%master,setting%comm)
    ENDIF
 #endif
   !ANTISYMMETRIZE FKSM
@@ -872,7 +868,7 @@ ENDIF
   END DO
 #ifndef VAR_MPI
   NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-  IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+  IF(IPRINT.GT. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
        &     'KS electrons:', ELECTRONS(1),&
        &     ' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
@@ -908,7 +904,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,NGEODERIV
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -952,7 +948,7 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,setting%comm)
    ENDIF
 #endif
 
@@ -987,7 +983,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,NGEODERIV
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -1031,7 +1027,7 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,setting%comm)
    ENDIF
 #endif
 
@@ -1072,7 +1068,7 @@ TYPE(DFTDATATYPE) :: DFTDATA
 !REAL(REALK), pointer
 CALL ls_mpi_buffer(DMAT,NBAST,NBAST,NDMAT,infpar%master)
 !SETTING
-CALL mpicopy_setting(setting,comm)
+CALL mpicopy_setting(setting,comm,.FALSE.)
 !DFTDATA
 call mpicopy_dftdata(dftdata,setting%node)
 call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
@@ -1123,7 +1119,7 @@ end subroutine lsmpi_XCgeneric_masterToSlave
 !!$ENDIF
 !!$CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
 !!$!SETTING
-!!$CALL mpicopy_setting(setting,comm)
+!!$CALL mpicopy_setting(setting,comm,.FALSE.)
 !!$call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 !!$end subroutine lsmpi_ABSVAL_masterToSlave
 
@@ -1182,7 +1178,7 @@ end subroutine lsmpi_II_DFT_KSM_Slave
 !!$ENDIF
 !!$call mem_dft_alloc(ABSVALOVERLAP,NMO,NMO)
 !!$CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
-!!$CALL mpicopy_setting(setting,comm)
+!!$CALL mpicopy_setting(setting,comm,.FALSE.)
 !!$call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 !!$
 !!$IF(SameCmat)THEN

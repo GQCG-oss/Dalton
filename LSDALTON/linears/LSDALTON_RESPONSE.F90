@@ -20,7 +20,8 @@ use response_wrapper_module,only: get_dipole_moment, &
      & mcdresponse_driver, free_transition_density_matrices, &
      & alpharesponse_driver, betaresponse_driver, &
      & gammaresponse_driver, dtparesponse_driver, &
-     & nmrshieldresponse_driver, get_excitation_energies
+     & nmrshieldresponse_driver, get_excitation_energies, &
+     & dipolemomentmatrix_driver
 use lstiming,      only: lstimer
 use lsdalton_rsp_contribs,  only: rsp_oneave
 use rspsolver,     only: rsp_molcfg, init_rsp_molcfg
@@ -62,17 +63,29 @@ contains
     !create config struct to be passed to rsp_contribs / rsp_equations
     !    molcfg = rsp_molcfg(0E0_realk*S,ls%setting%MOLECULE(1)%p%Natoms, &
     !         & config%decomp%lupri,config%decomp%luerr, &
-    !         & ls%setting,config%decomp,config%response%rspsolverinput)
-    call init_rsp_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
-         & config%decomp%lupri,config%decomp%luerr, &
-         & ls%setting,config%decomp,config%response%rspsolverinput)
+    !         & ls%setting,config%decomp,config%response%rspsolverinput)    
+    IF(config%response%tasks%doDipole.OR.config%response%tasks%doResponse)THEN
+       call init_rsp_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
+            & config%decomp%lupri,config%decomp%luerr, &
+            & ls%setting,config%decomp,config%response%rspsolverinput)
+    ENDIF
 
-    ! Kasper K, we ALWAYS calculate the permanent electric dipole for LSDALTON -
-    ! also if no response properties have been requested.
-    call Get_dipole_moment(molcfg,F,D,S,.true.,DipoleMoment)
-
+    IF(config%response%tasks%doDipole)THEN
+       call Get_dipole_moment(molcfg,F,D,S,.true.,DipoleMoment)
+    ENDIF
 
     if(config%response%tasks%doResponse)Then
+       ! Molecular gradient
+       ! 29/10/11 Vladimir Rybkin: need Grad as input argument to 
+       ! ii_get_molecular gradient elsewhere, therefore it's declared
+       ! and allocated/deallocated here as well
+       if(config%response%tasks%doGrad)then
+          call mem_alloc(Grad,3,config%Molecule%NAtoms)
+          call ii_get_molecular_gradient(Grad,lu_pri,F,D, &
+               & ls%setting,dodft,.true.)
+          call mem_dealloc(Grad)
+       endif
+    
        !ajt This call generates Cmo/orbe in rsp_util, which rsp_solver needs
        if(config%response%RSPSOLVERinput%rsp_mo_precond) then
           call util_save_MOinfo(F,S,config%decomp%nocc) 
@@ -91,6 +104,11 @@ contains
           call OPAresponse_driver(molcfg,F,D,S)
        endif
 
+
+       IF(config%response%tasks%doDipoleMatrix)THEN
+          call DipoleMomentMatrix_driver(molcfg%lupri,molcfg%setting,&
+               & molcfg%decomp,molcfg%solver,F,D,S)
+       ENDIF
        ! KK: Place all response properties involving excited states here:
        ! ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -130,17 +148,6 @@ contains
           call free_transition_density_matrices(molcfg)
        endif
 
-       ! Molecular gradient
-       ! 29/10/11 Vladimir Rybkin: need Grad as input argument to 
-       ! ii_get_molecular gradient elsewhere, therefore it's declared
-       ! and allocated/deallocated here as well
-       if(config%response%tasks%doGrad)then
-          call mem_alloc(Grad,3,config%Molecule%NAtoms)
-          call ii_get_molecular_gradient(Grad,lu_pri,F,D, &
-               & ls%setting,dodft,.true.)
-          call mem_dealloc(Grad)
-       endif
-    
        ! Polarizability
        if(config%response%tasks%doALPHA)then
           call ALPHAresponse_driver(molcfg,F,D,S,config%response%alphainput)

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 !
 ! FILE: sirius/sirstex.F
 !
@@ -1232,7 +1231,7 @@ C
      &          BUF(LENGTH), IBUF(4,LENGTH)
 #include "stex.h"
       LOGICAL DEBUG
-#include "ibtfun.h"
+
 C
       DEBUG=IPRSTX.GT.10
       IF (DEBUG) THEN
@@ -1297,7 +1296,7 @@ C
 #include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include "ibtfun.h"
+
 C
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)
@@ -2359,7 +2358,7 @@ cvc     END IF
    99 format(5f12.5)
       read(5,*) iflagorb
       WRITE(LUPRI,*) ' iflagorb',iflagorb
-      stop
+      call quit('ERROR in AUGCTL')
  8888 continue
 cvc
       ELSE

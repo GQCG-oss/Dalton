@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -20,7 +20,6 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
-#include "single.h"
 C
 C=========================================================================
 C old log:
@@ -33,7 +32,7 @@ C=========================================================================
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
-      PROGRAM DALTON2013_DALTON
+      PROGRAM DALTON2014_DALTON
 #endif
 C
       use parallel_models_mpi
@@ -70,6 +69,12 @@ C defined parallel calculation types
 
 !     memory-id tags for field 1 and 2+LMWORK in work (allocated in main driver routines)
       DATA WRKDLM/12345678D0/
+
+      ! we use this to read env variables
+      character*8 :: env_value
+
+      ! number of OMP threads
+      integer :: omp_num_threads
 C
 C
 C Start MPI, if parallel, in MPIXINIT; define MYNUM, MASTER, NODTOT
@@ -224,32 +229,33 @@ C
      &' ',
      &'   K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,',
      &'   L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,',
-     &'   P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,',
-     &'   J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,',
-     &'   H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,',
-     &'   H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,',
-     &'   E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,',
-     &'   B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,',
-     &'   J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,',
-     &'   S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,',
-     &'   K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,',
-     &'   K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,',
-     &'   P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,',
-     &'   M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,',
-     &'   S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,',
-     &'   P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,',
-     &'   S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,',
-     &'   A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,',
-     &'   A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,',
-     &'   L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,',
-     &'   M. Ziolkowski and H. Aagren,',
+     &'   J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,',
+     &'   T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,',
+     &'   L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,',
+     &'   C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,',
+     &'   H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,',
+     &'   M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,',
+     &'   P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,',
+     &'   T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,',
+     &'   J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,',
+     &'   O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,',
+     &'   C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,',
+     &'   J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,',
+     &'   T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,',
+     &'   T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,',
+     &'   A. Sanchez de Meras, T. Saue, S. P. A. Sauer,',
+     &'   B. Schimmelpfennig, K. Sneskov, A. H. Steindal,',
+     &'   K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,',
+     &'   E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,',
+     &'   O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski',
+     &'   and H. Agren,',
      &'   "The Dalton quantum chemistry program system",',
      &'   WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)',
      &'',
      &'and',
      &'',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release DALTON2013.2 (2013), see http://daltonprogram.org'
+     &'   Release DALTON2014.0 (2014), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -265,6 +271,8 @@ C
      &  '(DALTON; geometry optimizer, symmetry detection)',
      *'Radovan Bast,','KTH Stockholm,','Sweden',
      &  '(DALTON installation and execution frameworks)',
+     *'Pablo Baudin,','University of Valencia,','Spain',
+     &  '(Cholesky excitation energies)',
      *'Linus Boman,','NTNU,', 'Norway',
      &  '(Cholesky decomposition and subsystems)',
      *'Ove Christiansen,','Aarhus University,','Denmark',
@@ -273,6 +281,8 @@ C
      &  '(NEVPT2)',
      *'Sonia Coriani,','University of Trieste,','Italy',
      &  '(CC module, MCD in RESPONS)',
+     *'Janusz Cukras,','University of Trieste,','Italy',
+     &  '(MChD in RESPONS)',
      *'Paal Dahle,','University of Oslo,','Norway',
      &  '(Parallelization)',
      *'Erik K. Dalskov,','UNI-C,','Denmark',
@@ -280,7 +290,7 @@ C
      *'Thomas Enevoldsen,','Univ. of Southern Denmark,','Denmark',
      &  '(SOPPA)',
      *'Janus J. Eriksen,','Aarhus University,','Denmark',
-     &  '(PE-MP2/SOPPA, TDA)',
+     &  '(Polarizable embedding model, TDA)',
      *'Berta Fernandez,','U. of Santiago de Compostela,','Spain',
      &  '(doublet spin, ESR in RESPONS)',
      *'Lara Ferrighi,','Aarhus University,','Denmark',
@@ -297,6 +307,8 @@ C
      &  '(CC module)',
      *'Asger Halkier,','Aarhus University,','Denmark',
      &  '(CC module)',
+     *'Erik D. Hedegaard,','Univ. of Southern Denmark,','Denmark',
+     & '(Polarizable embedding model, QM/MM)',
      *'Hanne Heiberg,','University of Oslo,','Norway',
      &  '(geometry analysis, selected one-electron integrals)',
      *'Trygve Helgaker,','University of Oslo,','Norway',
@@ -317,6 +329,8 @@ C
      &  '(cubic response in RESPONS module)',
      *'Poul Joergensen,','Aarhus University,','Denmark',
      &  '(RESPONS, ABACUS, and CC modules)',
+     *'Maciej Kaminski,','University of Warsaw,','Poland',
+     &  '(CPPh in RESPONS)',
      *'Joanna Kauczor,','Linkoeping University,','Sweden',
      &  '(Complex polarization propagator (CPP) module)',
      *'Sheela Kirpekar,','Univ. of Southern Denmark,','Denmark',
@@ -330,9 +344,11 @@ C
      *'Henrik Koch,','NTNU,', 'Norway',
      &  '(CC module, Cholesky decomposition)',
      *'Jacob Kongsted,','Univ. of Southern Denmark,','Denmark',
-     &  '(Polarizable embedding, QM/MM)',
+     &  '(Polarizable embedding model, QM/MM)',
      *'Andrea Ligabue,','University of Modena,','Italy',
      &  '(CTOCD, AOSOPPA)',
+     *'Nanna H. List','Univ. of Southern Denmark,','Denmark',
+     &  '(Polarizable embedding model)',
      *'Ola B. Lutnaes,','University of Oslo,','Norway',
      &  '(DFT Hessian)',
      *'Juan I. Melo,','University of Buenos Aires,','Argentina',
@@ -350,13 +366,15 @@ C
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
      *'Jogvan Magnus H. Olsen,','Univ. of Southern Denmark,', 'Denmark',
-     &  '(Polarizable embedding, PE library, QM/MM)',
+     &  '(Polarizable embedding model, QM/MM)',
      *'Anders Osted,','Copenhagen University,','Denmark',
      &  '(QM/MM)',
      *'Martin J. Packer,','University of Sheffield,','UK',
      &  '(SOPPA)',
      *'Filip Pawlowski,','Kazimierz Wielki University,','Poland',
      &  '(CC3)',
+     *'Morten N. Pedersen,','Univ. of Southern Denmark,','Denmark',
+     &  '(Polarizable embedding model)',
      *'Thomas B. Pedersen,','University of Oslo,','Norway',
      &  '(Cholesky decomposition)',
      *'Patricio F. Provasi,','University of Northeastern,','Argentina',
@@ -368,7 +386,7 @@ C
      *'Torgeir A. Ruden,','University of Oslo,','Norway',
      &  '(Numerical derivatives in ABACUS)',
      *'Kenneth Ruud,','UiT The Arctic U. of Norway,','Norway',
-     &  '(DALTON; ABACUS magnetic properties and  much more)',
+     &  '(DALTON; ABACUS magnetic properties and much more)',
      *'Pawel Salek,','KTH Stockholm,','Sweden',
      &  '(DALTON; DFT code)',
      *'Claire C. M. Samson','University of Karlsruhe','Germany',
@@ -382,9 +400,11 @@ C
      *'Bernd Schimmelpfennig,','Forschungszentrum Karlsruhe,',
      &  'Germany','(AMFI module)',
      *'Kristian Sneskov,','Aarhus University,','Denmark',
-     &  '(QM/MM, PE-CC)',
+     &  '(Polarizable embedding model, QM/MM)',
      *'Arnfinn H. Steindal,','UiT The Arctic U. of Norway,',
-     &  'Norway','(parallel QM/MM)',
+     &  'Norway','(parallel QM/MM, Polarizable embedding model)',
+     *'Casper Steinmann,','Univ. of Southern Denmark,','Denmark',
+     &  '(QFIT, Polarizable embedding model)',
      *'K. O. Sylvester-Hvid,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF)',
      *'Peter R. Taylor,','VLSCI/Univ. of Melbourne,','Australia',
@@ -448,19 +468,23 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
 
 #if defined (VAR_MPI)
          IF (NODTOT .GT. 0) THEN
-            WRITE(LUPRI,'(/A,I5,A)')
-     &      " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+            WRITE(LUPRI,'(/A,I0,A)')
+     &      " * MPI run using ", NODTOT+1, " processes."
          ELSE
             WRITE(LUPRI,'(/A,I5,A)')
-     &      " * Sequential calculation using 1 CPU"
+     &      " * Sequential calculation."
          END IF
 #endif
 
 #ifdef VAR_OMP
-         write(lupri,'(/A,I5)')
-     &   ' * openMP activated, number of threads:',
-     &   omp_get_num_procs()
+         call getenv('OMP_NUM_THREADS', env_value)
+         read(env_value, '(i6)') omp_num_threads
+         if (omp_num_threads > 1) then
+            WRITE(LUPRI,'(/A,I0,A)')
+     &      " * OpenMP run using ", omp_num_threads, " threads."
+         end if
 #endif
+
 !        print content of input file to output
          inquire(file = 'DALTON.INP', exist = file_exists,
      &           opened = file_open)
@@ -551,7 +575,7 @@ C ahs only print if number of cores are less than 16
          IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-           WRITE(LUPRI,'(/A)') ' * Release: DALTON2013.2'
+           WRITE(LUPRI,'(/A)') ' * Release: DALTON2014.0'
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN
@@ -677,6 +701,20 @@ C
          CALL PVMXEXIT
       END IF
 #endif
+
+
+      ! radovan: close (hopefully) all open files
+      !          otherwise we run out of units
+      !          if we execute Dalton many times in sequence
+      !          (ChemShell for example)
+      do iunit = 1, 99
+         inquire(iunit, opened=file_open)
+         if (file_open) close(iunit, status='keep')
+      end do
+      ! clear the corresponding table and hope for the best
+      call clear_iuntab()
+
+
       CALL QEXIT('DALTON main')
       END
 

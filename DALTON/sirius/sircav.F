@@ -182,6 +182,9 @@ C
 C     check on the number of spheres
 C
       IF (NE .GT. MXSP) THEN
+        WRITE(LUPRI,'(//A,I10/A)')
+     &  'PEDRA ERROR: Too many PCM spheres, MXSP must be at least',NE,
+     &  'PEDRA ERROR: in .../DALTON/include/pcmdef.h'
         CALL QUIT('PEDRA: TOO MANY SPHERES, -MXSP- MUST BE LARGER.')
       ENDIF
 C
@@ -564,6 +567,9 @@ C
 	    STOT=STOT+SSFE(I)
   520    CONTINUE
 	 WRITE(LUPRI,9040) NTS,STOT,VOL
+              surf_conv =0.2800285205570702
+              vol_conv = 0.14818471148644433 
+         WRITE(LUPRI,9940) (STOT/surf_conv),(VOL/vol_conv)
       END IF
 C
 C     ----- set up for possible gradient calculation -----
@@ -653,6 +659,8 @@ C
  9040 FORMAT(/' Total number of tesserae =',I8
      *       /' Surface area =',F14.8,' (A^2)    Cavity volume =',
      *            F14.8,' (A^3)')
+ 9940 FORMAT(/' Surface area =',F20.14,' (AU^2)    Cavity volume =',
+     *            F20.14,' (AU^3)')
  9050 FORMAT( ' PEDRA: CONFUSION ABOUT SPHERE COUNTS. NESFP,NATM=',2I6)
  9060 FORMAT(/' ADDITIONAL MEMORY NEEDED TO SETUP GRADIENT RUN=',I10)
  9061 FORMAT(/' ADDITIONAL MEMORY NEEDED TO SETUP IEF RUN=',I10)
@@ -676,7 +684,7 @@ C
       DIMENSION XE(*),YE(*),ZE(*),RE(*),V1(3),V2(3)
       DIMENSION NPERM(NUMSPH,*),NEWSPH(NUMSPH,2)
 C
-#include "ibtfun.h"
+
 C
 c  crea la tabella di permutazione delle sfere
 c  e completa per simmetria le sfere aggiunte
@@ -696,7 +704,7 @@ C
         DO J=1,MAXREP
            DO K=1,NESF
               DO L=1,3
-                 V2(L)=PT(IBTAND(ISYMAX(L,1),J))*V1(L)
+                 V2(L)=PT(IAND(ISYMAX(L,1),J))*V1(L)
               ENDDO
 Clf
 C            DIFF1=
@@ -734,7 +742,6 @@ C
             ENDIF 
             NewSph(NESF1,1)=N1
             NewSph(NESF1,2)=N2
-            WRITE(LUPRI,*) 'new!',NESF1,N1,N2
           ENDIF
  10       CONTINUE
         ENDDO
@@ -754,7 +761,7 @@ c  ciclo sulle operazioni di simmetria
         DO J=1,MAXREP
            DO K=1,NESF1
               DO L=1,3
-                 V2(L)=PT(IBTAND(ISYMAX(L,1),J))*V1(L)
+                 V2(L)=PT(IAND(ISYMAX(L,1),J))*V1(L)
               ENDDO
               DIFF1 = DSQRT((XE(K)-V2(1))**2 + (YE(K)-V2(2))**2 +
      $             (ZE(K)-V2(3))**2 + (RE(K)-R1)**2)
@@ -816,7 +823,7 @@ C
 C
 c  Se la sfera non deve essere tassellata ritorna a pedra con 0 tessere
 c
-#include "ibtfun.h"
+
 Clf      IF (NPerm(NSFE,1).EQ.0.or.nsfe.ne.2) THEN      
       IF (NPerm(NSFE,1).EQ.0) THEN
          ITsEff=0
@@ -1070,7 +1077,7 @@ c
             Do I=1,NV
                II=I+NOpPt*NV
                Do K=1,3
-                  CV(II,K) = PT(IBTAND(ISYMAX(K,1),ISYMOP)) * CV(I,K)
+                  CV(II,K) = PT(IAND(ISYMAX(K,1),ISYMOP)) * CV(I,K)
                ENDDO
             ENDDO
 c
@@ -1133,7 +1140,7 @@ c
       DIMENSION NPERM(NUMSPH,*)
       DATA D0/0.0D0/
 C
-#include "ibtfun.h"
+
 C
 c  replication of the cavity
 c
@@ -1153,9 +1160,9 @@ CcheckWRITE(LUPRI,*)'IN REPCAV',NTS
           DO K=1,NVERT(I)
             DO L=1,3
                VERT(II,K,L)  = 
-     $              PT(IBTAND(ISYMAX(L,1),ISYMOP)) * VERT(I,K,L)
+     $              PT(IAND(ISYMAX(L,1),ISYMOP)) * VERT(I,K,L)
                CENTR(II,K,L) = 
-     $              PT(IBTAND(ISYMAX(L,1),ISYMOP)) * CENTR(I,K,L)
+     $              PT(IAND(ISYMAX(L,1),ISYMOP)) * CENTR(I,K,L)
             ENDDO
           ENDDO
         ENDDO
@@ -1175,14 +1182,14 @@ Clf      write(lupri,*) 'see if the pt are correct',nts
       DO ISYMOP=1,MAXREP
          DO I=1,NTSIRR
             II=I+NTSIRR*ISYMOP
-            XTSCOR(II)=PT(IBTAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(I)
-            YTSCOR(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(I)
-            ZTSCOR(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(I)
+            XTSCOR(II)=PT(IAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(I)
+            YTSCOR(II)=PT(IAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(I)
+            ZTSCOR(II)=PT(IAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(I)
 C            II=I+NTS*(ISYMOP+MAXREP+1)
 C            II2=I+NTS
-C            XTSCOR(II)=PT(IBTAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(II2)
-C            YTSCOR(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(II2)
-C            ZTSCOR(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(II2)
+C            XTSCOR(II)=PT(IAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(II2)
+C            YTSCOR(II)=PT(IAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(II2)
+C            ZTSCOR(II)=PT(IAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(II2)
          ENDDO
       ENDDO
 Clf
@@ -2362,7 +2369,7 @@ C
 #include "pgroup.h"
       LOGICAL LSYMOP(0:7)
       DIMENSION JTR(NUMTS,*),CV(NVERT,*)
-#include "ibtfun.h"
+
 C
 C      SYMOP(0) = ' E '
 C      SYMOP(1) = 'Oyz'
@@ -2372,27 +2379,65 @@ C      SYMOP(4) = 'Oxy'
 C      SYMOP(5) = 'C2y'
 C      SYMOP(6) = 'C2x'
 C      SYMOP(7) = ' i '
+! This is the original initial part of the PREREP subroutine.
+! Some tests unveiled problems here, corrected with following "new
+! version" of the code" RDR 120214
+!     DO I = 0, 7
+!        LSYMOP(I) = .FALSE.
+!     END DO
+!     LSYMOP(0) = .TRUE.
+!     IF(GROUP.EQ.'C1 ') THEN
+!        LSYMOP(1) = .TRUE.
+!        LSYMOP(2) = .TRUE.
+!        LSYMOP(4) = .TRUE.
+!     ELSEIF(GROUP.EQ.'Cs '.OR.GROUP.EQ.'Ci ') THEN
+!        LSYMOP(1) = .TRUE.
+!        LSYMOP(2) = .TRUE.
+!     ELSEIF(GROUP.EQ.'C2 ') THEN
+!        LSYMOP(2) = .TRUE.
+!        LSYMOP(4) = .TRUE.
+!     ELSEIF(GROUP.EQ.'D2 '.OR.GROUP.EQ.'C2h') THEN
+!        LSYMOP(1) = .TRUE.
+!     ELSEIF(GROUP.EQ.'C2v') THEN
+!        LSYMOP(2) = .TRUE.
+!     ELSEIF(GROUP.NE.'D2h') THEN
+!        CALL QUIT('INVALID GROUP SPECIFICATION IN PREREP')
+!     ENDIF
       DO I = 0, 7
          LSYMOP(I) = .FALSE.
       END DO
       LSYMOP(0) = .TRUE.
-      IF(GROUP.EQ.'C1 ') THEN
-         LSYMOP(1) = .TRUE.
-         LSYMOP(2) = .TRUE.
-         LSYMOP(4) = .TRUE.
-      ELSEIF(GROUP.EQ.'C2 '.OR.GROUP.EQ.'Ci ') THEN
-         LSYMOP(1) = .TRUE.
-         LSYMOP(2) = .TRUE.
-      ELSEIF(GROUP.EQ.'Cs ') THEN
-         LSYMOP(2) = .TRUE.
-         LSYMOP(4) = .TRUE.
-      ELSEIF(GROUP.EQ.'D2 '.OR.GROUP.EQ.'C2v') THEN
-         LSYMOP(1) = .TRUE.
-      ELSEIF(GROUP.EQ.'C2h') THEN
-         LSYMOP(2) = .TRUE.
-      ELSEIF(GROUP.NE.'D2h') THEN
-         CALL QUIT('INVALID GROUP SPECIFICATION IN PREREP')
-      ENDIF
+      if (group == 'C1 ') then                                                           
+              ! C1 has 0 generators. Use all three planes of reflection 
+              lsymop(1) = .true.
+              lsymop(2) = .true.
+              lsymop(4) = .true.
+      else if (group == 'Cs ') then
+              ! Cs has 1 generator. Use Oxz plane and inversion 
+              lsymop(2) = .true.
+              lsymop(7) = .true.
+      else if (group == 'C2 ') then
+              ! C2 has 1 generator. Use Oxz and inversion 
+              lsymop(2) = .true.
+              lsymop(7) = .true.
+      else if (group == 'Ci ') then
+              ! Ci has 1 generator. Use Oxz and Oxy planes 
+              lsymop(2) = .true.
+              lsymop(4) = .true.
+      else if (group == 'C2h') then
+              ! C2h has 2 generators. Use Oxz plane 
+              lsymop(2) = .true.
+      else if (group == 'D2 ') then
+              ! D2 has 2 generators. Use Oyz plane 
+              lsymop(1) = .true.
+      else if (group == 'C2v') then
+              ! C2v has 2 generators. Use inversion 
+              lsymop(7) = .true.
+      else if (group /= 'D2h') then
+              ! D2h has 3 generators. No need to select other operations for the replication.
+              ! If we get here it  means something went awry before...
+              CALL QUIT('INVALID GROUP SPECIFICATION IN PREREP')
+      end if
       DO ISYMOP = 1,7
          IF(LSYMOP(ISYMOP)) THEN
 c     
@@ -2402,7 +2447,7 @@ c
                II = I + NV
                DO K = 1,3
                   CV(II,K) =
-     $              PT(IBTAND(ISYMOP,2**(K-1))) * CV(I,K)
+     $              PT(IAND(ISYMOP,2**(K-1))) * CV(I,K)
                ENDDO
             ENDDO
 Clf            WRITE(LUPRI,*) 'I,II,JJ,K,JTR(II,K),JTR(I,K)'
@@ -2448,7 +2493,7 @@ C  /* Deck pcmtns */
       DIMENSION IAX(6),NORDER(3)
       LOGICAL PLANAR, LINEAR
       DATA IAX/1,2,3,3,2,1/
-#include "ibtfun.h"      
+      
       JATOM = 1
 C
 C As correctly pointed out by Kenneth, we want two molecules
@@ -2459,10 +2504,10 @@ C
          NATTYP = NINT(CHARGE(IATOM))
 Clf         NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
                DO 120 ICOOR = 1, 3
-                  GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                  GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                               *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120           CONTINUE
 Clf               WRITE(LUPRI,*) 'NATTYP, NUMIS,JATOM,AMASS',
@@ -2534,6 +2579,10 @@ C            write(lupri,*) 'iax',i,Jsop(i),iax(Jsop(i))
       ELSE
          CALL QUIT('BAD CASE IN PCMTNS')
       ENDIF
+      write(lupri, *) "in pcmtns, vmat is"
+      do i = 1, 3
+      write(lupri, *) (vmat(i, j), j = 1, 3)
+      end do
       RETURN
       END
 ClfC/* Deck ANLINT */
@@ -2787,17 +2836,17 @@ C/* Deck UPDCAV*/
 #include "pcmnuclei.h"
 #include "symmet.h"
       DIMENSION COORD(3,*)
-#include "ibtfun.h"
+
       IF (ICESPH .EQ. 0 .OR. ICESPH .EQ. 2) THEN
          JATOM = 0
          DO I = 1, NUCIND
             MULCNT = ISTBNU(I)
             DO ISYM = 0, MAXREP
-               IF(IBTAND(ISYM,MULCNT) .EQ. 0) THEN
+               IF(IAND(ISYM,MULCNT) .EQ. 0) THEN
                   JATOM = JATOM + 1
                   DO JCORD = 1,3
                      PCMCORD(JCORD,JATOM) = 
-     $                    PT(IBTAND(ISYMAX(JCORD,1),ISYM)) 
+     $                    PT(IAND(ISYMAX(JCORD,1),ISYM)) 
      $                    *COORD(JCORD,I)
                   END DO
                END IF

@@ -30,6 +30,8 @@
 ! ...
 ! ICLASS(j) =
 ! ICNTAO(j) =
+! PCM_IGEN(4) : contains the number of generators and the generators of the group 
+!		to be passed to PCMSolver		 
 !
 #include "mxbsets.h"
 !
@@ -40,6 +42,7 @@
 !     but to keep track of common block lengths).
 !     Assuming I1_symmti is a dummy variable, this means you can also get the size in bytes if you call:
 !     call getbytesize(maxrep, symmtilast, SizeInBytes)
+
       INTEGER I1_SYMMTI, MAXREP, MAXOPR, MULT(0:7), ISYMAX(3, 2),       &
      &        ISYMAO(MXQN, MXAQN), NPARSU(8), NAOS(8), NPARNU(8, 8),    &
      &        IPTSYM(MXCORB, 0:7), IPTCNT(3*MXCENT, 0:7, 2),            &
@@ -49,12 +52,18 @@
      &        ICLASS(MXCORB), ICNTAO(MXCORB), IPAR(0:7), JSOP(0:7),     &
      &        NCOS(8,-mxbsets:mxbsets), ICOS(8,-mxbsets:mxbsets),       &
      &        I2COSX(8,8,-mxbsets:mxbsets,-mxbsets:mxbsets),            &
-     &        SYMMTILAST,  SYMMTRLAST
+     &        SYMMTILAST,  SYMMTRLAST,                                  &
+     &        PCM_IGEN(4), I2_SYMMTI 
+
       COMMON /SYMMTI/ I1_SYMMTI, MAXREP, MAXOPR, MULT, ISYMAX, ISYMAO,  &
      &                NPARSU, NAOS,  NPARNU, IPTSYM, IPTCNT, NCRREP,    &
      &                IPTCOR, NAXREP, IPTAX, IPTXYZ, IPTNUC,            &
      &                NROTS,  NINVC,  NREFL, IXVAL,  ICLASS, ICNTAO,    &
-     &                IPAR,   JSOP,   NCOS,  ICOS,   I2COSX 
+     &                IPAR,   JSOP,   NCOS,  ICOS,   I2COSX, PCM_IGEN,  &
+     &                I2_SYMMTI
+!     OBS! ALWAYS add new variables BEFORE the end tag: I2_SYMMTI
+
+
       COMMON /SYMMTI/ SYMMTILAST
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 
@@ -65,8 +74,15 @@
       !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
       !   to get the number of bytes needed to transfer the common block.
       !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+
+
       INTEGER LEN_SYMMTR
-      PARAMETER (LEN_SYMMTR = 16) ! length of SYMMTR, used in MPI calls !Beyersays: Note that this distance is hardcoded. If for whatever reason the length of the block changes you can still use getbytesize(fmult, symmtrlast, SizeInBytes) to get the actual size of the common block.
+      PARAMETER (LEN_SYMMTR = 16) ! length of SYMMTR, used in MPI calls 
+      ! Beyersays: Note that this distance is hardcoded. If for whatever 
+      ! reason the length of the block changes you can still use 
+      ! getbytesize(fmult, symmtrlast, SizeInBytes) to get the actual 
+      ! size of the common block.
+
       REAL*8 FMULT(0:7), PT(0:7)
       COMMON /SYMMTR/ FMULT, PT
       COMMON /SYMMTR/ SYMMTRLAST

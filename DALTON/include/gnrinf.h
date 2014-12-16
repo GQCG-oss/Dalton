@@ -15,7 +15,8 @@ C
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,
-     &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM
+     &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,
+     &        USE_LSLIB
       REAL*8  GRADML, PANAS,  CHIVAL, THR_REDFAC
       INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
       INTEGER GNRINFLAST
@@ -32,8 +33,8 @@ C
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,
-     &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM
-C
+     &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,
+     &        USE_LSLIB
 C
       COMMON /GNRINF/ GNRINFLAST
       !   Very important !!!
@@ -45,8 +46,6 @@ C
       !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
       !   to get the number of bytes needed to transfer the common block.
       !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
-
-
 
 
       INTEGER LBASDIR

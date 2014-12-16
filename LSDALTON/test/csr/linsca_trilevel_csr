@@ -46,6 +46,7 @@ H      0.55168  -0.77340   0.00000
 #######################################################################
 cat > linsca_trilevel_csr.dal <<'%EOF%'
 **GENERAL
+.TESTMPICOPY
 .CSR
 **INTEGRAL
 .DENSFIT

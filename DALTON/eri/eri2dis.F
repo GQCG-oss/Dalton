@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck eridi1 */
       SUBROUTINE ERIDI1(KODCL1,KODCL2,
@@ -181,20 +180,19 @@ C
 C
       IF (LBFINP .EQ. 600) LBFINP = 20 000
 C
-C     Open files
+C     Open files and define NIBUF in eribuf.h
 C
       IF (LUINTR.LT.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
-#ifdef VAR_INT64
-      LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-      LRECL = LBFINP + LBFINP/IRAT + 1
-#else
       IF (NBASIS .LE. 255) THEN
-         LRECL = 2*LBFINP + LBFINP + 1
+         NIBUF = 1
       ELSE
-         LRECL = 2*LBFINP + 2*LBFINP + 1
+         NIBUF = 2
       END IF
+#if defined (SYS_NEC)
+      LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
+#else
+      LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! integer*4 units
 #endif
       NSCOOR = 0
       IF (GDER) NSCOOR = 3*NUCDEP
@@ -222,14 +220,10 @@ C     Transfer information
 C     ====================
 C
       NUMDIS = NDISTR
-!fox
-!fox  25-04-2003
-!fox  CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
       IF (NUMDIS .GT. 0) CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
-!fox
       IF ( IPRINT .GT. 2 ) THEN
          CALL HEADER('Output from ERIDI2',2)
-         WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')
+         WRITE (LUPRI,'(I5,A,8I5/,(40X,8I5))')
      &         NDISTR,' distributions in this ERI call:',
      &         (INDEXA(I),I=1,NDISTR)
       ENDIF
@@ -532,7 +526,7 @@ C
 #include "aobtch.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
       IF (DODIST) THEN
          NCTDST = 0
@@ -586,7 +580,7 @@ C tew: NB// The order of IDIST is not the same as before.
            DO IREP = 0, MAXREP
              IA = 0
              DO ICMP = 1, KHKDST
-               IF(IBTAND(ISTABL,IBTXOR(IREP,ISYMAO(NHKDST,ICMP)))
+               IF(IAND(ISTABL,IEOR(IREP,ISYMAO(NHKDST,ICMP)))
      &          .EQ. 0) THEN
                  IA = IA + 1
                  DO J = 1, NACDST

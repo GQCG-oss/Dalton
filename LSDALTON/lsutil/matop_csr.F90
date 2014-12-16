@@ -105,6 +105,8 @@ contains
         mat_csr_TrAB = mat_csr_dotproduct(a, b_temp)
         call mat_csr_free(b_temp)
      endif
+#else
+     mat_csr_TrAB = 0.0E0_realk
 #endif
   end function mat_csr_TrAB
 
@@ -218,7 +220,7 @@ contains
   subroutine mat_csr_abs_max_elm(a,val)  
     implicit none
     type(matrix),intent(in)  :: a
-    real(realk), intent(out) :: val
+    real(realk), intent(inout) :: val
 #ifdef VAR_CSR
     integer                  :: i
     
@@ -238,7 +240,7 @@ contains
   subroutine mat_csr_max_elm(a,val)  
     implicit none
     type(matrix),intent(in)  :: a
-    real(realk), intent(out) :: val
+    real(realk), intent(inout) :: val
 #ifdef VAR_CSR
     integer                  :: i
     
@@ -563,7 +565,7 @@ contains
      implicit none
      TYPE(Matrix), intent(in) :: a
      real(realk), intent(in) :: alpha
-     real(realk), intent(out):: afull(*)  
+     real(realk), intent(inout):: afull(*)  
 #ifdef VAR_CSR
      integer                 :: i
 
@@ -664,7 +666,7 @@ contains
   subroutine mat_csr_retrieve_block_full(A,fullmat,fullrow,fullcol,insertrow,insertcol)
     implicit none
     integer, intent(in)         :: fullrow,fullcol,insertrow,insertcol
-    real(Realk), intent(out)     :: fullmat(fullrow,fullcol)
+    real(Realk), intent(inout)     :: fullmat(fullrow,fullcol)
     type(Matrix), intent(in) :: A
 #ifdef VAR_CSR
     integer                     :: i, j, k
@@ -685,7 +687,7 @@ contains
   subroutine mat_csr_retrieve_block_csr(A,fullmat,fullrow,fullcol,insertrow,insertcol)
     implicit none
     integer, intent(in)         :: fullrow,fullcol,insertrow,insertcol
-    real(Realk), intent(out)     :: fullmat(fullrow,fullcol)
+    real(Realk), intent(inout)     :: fullmat(fullrow,fullcol)
     type(Matrix), intent(in) :: A
 #ifdef VAR_CSR
     integer                     :: i, j, k
@@ -738,8 +740,12 @@ contains
     type(Matrix), intent(in) :: A
 #ifdef VAR_CSR
     integer :: i
+    integer(kind=long) :: ncol,nrow,nnz 
 
-    WRITE(iunit) A%nnz, A%nrow, A%ncol
+    nnz = A%nnz
+    nrow = A%Nrow
+    ncol = A%Ncol
+    WRITE(iunit) nnz, nrow, ncol
     WRITE(iunit) (A%val(I),I=1,A%nnz)
     WRITE(iunit) (A%col(I),I=1,A%nnz)
     WRITE(iunit) (A%row(I),I=1,A%nrow+1)
@@ -751,7 +757,8 @@ contains
     integer, intent(in) :: iunit
     type(Matrix), intent(inout) :: A
 #ifdef VAR_CSR
-    integer :: i, nnz,ncol,nrow
+    integer :: i
+    integer(kind=long) :: ncol,nrow,nnz 
 
     READ(iunit) nnz, nrow, ncol
     IF(Nrow.EQ.A%Nrow.AND.Ncol.EQ.A%Ncol)THEN
@@ -785,6 +792,8 @@ contains
            mat_csr_get_elem = a%val(column)
         endif
      enddo
+#else
+     mat_csr_get_elem = 0.0
 #endif
   end function mat_csr_get_elem
 
@@ -814,8 +823,8 @@ contains
     afull = 0.0E0_realk
     alpha = 1.0E0_realk
     call mat_csr_to_full(a, alpha, afull)
-    call OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, lu)
-    !call OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, 6)
+    call LS_OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, lu)
+    !call LS_OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, 6)
     deallocate(afull)
 #endif
   end subroutine mat_csr_print
@@ -891,7 +900,7 @@ contains
 !> See mat_inquire_cutoff in mat-operations.f90
   subroutine mat_csr_inquire_cutoff(cutoff)
     implicit none
-    real(realk), intent(out) :: cutoff
+    real(realk), intent(inout) :: cutoff
 
     cutoff = zeroCSR
 

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       Subroutine amfi(IN,LUPROP,BREIT,FINITE,EXP_FIN,
      *                WRK,LFREE)            
@@ -158,7 +157,7 @@ cbs   initialize tables with double facultatives...
 cbs   move some powers of x,y,z to the right place   BEGIN 
 cbs   check if Lpowmax is high enough..
       if (Lpowmax.lt.Lmax) then 
-      CALL QUIT('increase lpowmax and edit ixyzpow')
+      CALL QUIT('AMFI: increase lpowmax and edit ixyzpow')
       endif 
       jrun=1
       do irun=0,Lmax
@@ -7638,3 +7637,4 @@ c     enddo
       endif 
       return 
       end 
+! --- end of amfi/amfi.F ---

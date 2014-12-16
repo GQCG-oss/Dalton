@@ -2,7 +2,7 @@ module lsmpi_mod
   use precision
   use lsmpi_type
   use lsmpi_op
-  use Integralparameters
+  use LSparameters
   use memory_handling
   use typedefType
   use typedef
@@ -301,7 +301,7 @@ DO I=1,task_list%nuniqueLHS
     task_list%taskNode(1,itask) = node_lhs(I)
     task_list%taskNode(2,itask) = node_rhs(J)
     task_list%LHS(itask)%p => lhs_list(I)%p 
-    task_list%RHS(itask)%p => rhs_list(I)%p 
+    task_list%RHS(itask)%p => rhs_list(J)%p 
 !   task_list%taskEstimate(itask) = lhs_list(I)%p%task_part*rhs_list(I)%p%task_part
   ENDDO
 ENDDO
@@ -1063,7 +1063,7 @@ ENDIF
         IF (min_dev.EQ.-1) THEN
           write(lupri,*) 'Error in ls_time_tasks. Deviation too large'
           write(lupri,*) 'timeMatrix',natoms_row,natoms_col,ntasks
-          call output(timeMatrix,1,natoms_row,1,natoms_col,natoms_row,natoms_col,1,lupri)
+          call ls_output(timeMatrix,1,natoms_row,1,natoms_col,natoms_row,natoms_col,1,lupri)
           CALL LSQUIT('Error in ls_time_tasks. Deviation too large',lupri)
         ELSE
 IF (iprint.GT.10) THEN
@@ -1257,15 +1257,17 @@ ENDIF
         nAtoms(iAO) = 1
         noPart(iAO) = .TRUE.
       ELSE IF (AO(iAO).EQ.AOdfAux) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%AUXILIARY
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
       ELSE IF (AO(iAO).EQ.AORegular) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%REGULAR
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
       ELSE IF (AO(iAO).EQ.AOVAL) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%VALENCE
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
       ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%CABS
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
       ELSE IF (AO(iAO).EQ.AOdfJK) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%JK
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
+      ELSE IF (AO(iAO).EQ.AOadmm) THEN
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
       ELSE IF (AO(iAO).EQ.AOpCharge) THEN
         nAtoms(iAO) = mol(iAO)%p%nAtoms
         noPart(iAO) = .TRUE.
@@ -1705,15 +1707,17 @@ DO iAO=1,4
     nAtoms(iAO) = 1
     noPart(iAO) = .TRUE.
   ELSE IF (AO(iAO).EQ.AOdfAux) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%AUXILIARY
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
   ELSE IF (AO(iAO).EQ.AORegular) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%REGULAR
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
   ELSE IF (AO(iAO).EQ.AOVAL) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%VALENCE
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
   ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%CABS
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
   ELSE IF (AO(iAO).EQ.AOdfJK) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%JK
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
+  ELSE IF (AO(iAO).EQ.AOadmm) THEN
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
   ELSE IF (AO(iAO).EQ.AOpCharge) THEN
     nAtoms(iAO) = mol(iAO)%p%nAtoms
     noPart(iAO) = .TRUE.
@@ -2045,7 +2049,7 @@ ELSE
     ALLOCATE(Setting%fragment(aoA)%p)
   ENDIF
   CALL BUILD_FRAGMENT(Setting%molecule(aoA)%p,Setting%fragment(aoA)%p,&
-     &                Setting%basis(aoA)%p,aux,cabs,jk,task%row_atoms,task%nrow,lupri)
+     &                Setting%basis(aoA)%p,task%row_atoms,task%nrow,lupri)
   Setting%fragBuild(aoA) = .TRUE.
 ENDIF
 
@@ -2065,7 +2069,7 @@ ELSE
     ALLOCATE(Setting%fragment(aoB)%p)
   ENDIF
   CALL BUILD_FRAGMENT(Setting%molecule(aoB)%p,Setting%fragment(aoB)%p,&
-     &                Setting%basis(aoB)%p,aux,cabs,jk,task%col_atoms,task%ncol,lupri)
+     &                Setting%basis(aoB)%p,task%col_atoms,task%ncol,lupri)
   Setting%fragBuild(aoB) = .TRUE.
 ENDIF
 
@@ -2125,7 +2129,7 @@ ELSE
       ELSE
         iatomfull = task%row_atoms(iatom)
       ENDIF
-      IF ((AOA.EQ.AOdfAux).OR.(AOA.EQ.AOdfCABS).OR.(AOA.EQ.AOdfJK)) THEN
+      IF ((AOA.EQ.AOdfAux).OR.(AOA.EQ.AOdfCABS).OR.(AOA.EQ.AOdfJK).OR.(AOA.EQ.AOadmm)) THEN
         nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsAux(iatomfull)
       ELSE IF ((AOA.EQ.AORegular).OR.(AOA.EQ.AOVAL)) THEN
         nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsReg(iatomfull)
@@ -2155,7 +2159,7 @@ ELSE
       ENDIF
       IF ((AOB.EQ.AORegular).OR.(AOB.EQ.AOVAL)) THEN
         nBastB = nBastB + orbInfo(iB)%numAtomicOrbitalsReg(iatomfull)
-      ELSE IF ((AOB.EQ.AOdfAux).OR.(AOB.EQ.AOdfCABS).OR.(AOB.EQ.AOdfJK)) THEN
+      ELSE IF ((AOB.EQ.AOdfAux).OR.(AOB.EQ.AOdfCABS).OR.(AOB.EQ.AOdfJK).OR.(AOB.EQ.AOadmm)) THEN
         nBastB = nBastB + orbInfo(iB)%numAtomicOrbitalsAux(iatomfull)
       ELSE IF (AOB.EQ.AOpCharge) THEN
         nbastB = nbastB + 1

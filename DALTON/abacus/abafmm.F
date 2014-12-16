@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck fmminp */
       SUBROUTINE FMMINP(WORD)
@@ -587,7 +586,7 @@ C
 #include "symmet.h"
 #include "inforb.h"
 C
-#include "ibtfun.h"
+
 C
       IORBA = 0
       DO ISHELA = 1,KMAX
@@ -639,18 +638,17 @@ C
 C
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) MSYM, MBAS, LBUF, NIBUF, NBITS
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      READ (LUINTA) MSYM, MBAS, LBUF, NIBUF, NBITS, LENINT4
 C
       KINT  = 1
       KIINT = KINT + LBUF
-      KIIN4 = KINT + LENINT
+      KIIN4 = KINT + LENINT4
       KLAST = KIIN4 + 4*LBUF
       IF (KLAST .GT. LWORK) CALL STOPIT('GETERG','LUINTA',KLAST,LWORK)
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
     1 CONTINUE
-         CALL READI(LUINTA,LENINT,WORK(KINT))
+         CALL READI4(LUINTA,LENINT4,WORK(KINT))
          CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,WORK(KIIN4),NINT)
          IF (NINT .EQ. 0)  GOTO 1
          IF (NINT .EQ. -1) GOTO 2
@@ -674,7 +672,7 @@ C
       INTEGER P, Q, R, S
 #include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST), BUF(LENGTH), IBUF(4,LENGTH)
-#include "ibtfun.h"
+
 C
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)

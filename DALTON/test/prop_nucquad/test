@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+#    prop_nucquad
+#    ------------
+#    Molecule:         ClO2
+#    Wave Function:    MCSCF (CAS) / cc-pVTZ
+#    Test Purpose:     Open shell MP2 start guess
+#                      Nuclear quadrupole coupling constants
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Molecular geometry
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+
+# Symmetry
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+# Energy
+f.add(string = 'Final MCSCF energy:',
+      rel_tolerance = 1.0e-9)
+
+# Open shell MP2
+f.add(string = 'MP2 move ',
+      rel_tolerance = 1.0e-5)
+
+# Quadrupole coupling
+f.add(from_string = 'Nuclear quadrupole moment for Cl',
+      num_lines = 18,
+      rel_tolerance = 1.0e-4)
+f.add(from_string = 'Nuclear quadrupole moment for O',
+      num_lines = 11,
+      rel_tolerance = 1.0e-4)
+
+test.run(['prop_nucquad.dal'], ['ClO2_cc-pVTZ_sym.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

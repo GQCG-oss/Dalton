@@ -1,0 +1,1362 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2013.2
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Mon May 26 22:53:23 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /Users/ast018/dalton/DALTON/test/runtest_rsp_abslrs
+   2) /Users/ast018/dalton/build-master/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | ast018
+ Host                     | rfb-ntf-m0022.bargi.uit.no
+ System                   | Darwin-13.1.0
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /usr/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (MacPorts gcc48 4.8.2_0) 4.8.2
+ C compiler               | /usr/local/bin/mpicc
+ C compiler version       | gcc (MacPorts gcc48 4.8.2_0) 4.8.2
+ C++ compiler             | /usr/local/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /usr/lib/libblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | 0c3e398ca4c78bacad0308b5fa7e055981e33872
+ Configuration time       | 2014-05-26 21:29:21.213348
+
+ * Sequential calculation.
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+.DIRECT                                           
+**INTEGRALS                                       
+.DIPLEN                                           
+**WAVE FUNCTION                                   
+.HF                                               
+**RESPONSE                                        
+*ABSORP                                           
+.ALPHA                                            
+.DAMPING                                          
+ 0.004556                                         
+.FREQ I                                           
+0.4425 0.49 0.0025                                
+.MAXRM                                            
+ 800                                              
+.THCLR                                            
+ 1.0D-5                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+cc-pVDZ                                                                        
+methan                                                                         
+----------                                                                     
+Atomtypes=2 Generators=0  Angstrom                                             
+Charge=6.0 Atoms=1                                                             
+C   -4.37078673  2.07865165  0.00000000                                        
+Charge=1.0 Atoms=4                                                             
+H   -4.01413230  1.06984165  0.00000000                                        
+H   -4.01411389  2.58304984  0.87365150                                        
+H   -4.01411389  2.58304984  -0.87365150                                       
+H   -5.44078673  2.07866484  0.00000000                                        
+FINISH                                                                         
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: methan                                                                  
+ 2: ----------                                                              
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   6 :
+     "/Users/ast018/dalton/build-master/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    4
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/Users/ast018/dalton/build-master/basis/cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C          12.000000
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    16.031300 amu
+                       Natural abundance:  98.841 %
+
+ Center-of-mass coordinates (a.u.):   -8.259590    3.928082    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    5
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  C           1    6.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H           4    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      5   10.0000    54    34
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   15
+  C       :     1  x  -8.2595898705    2  y   3.9280823278    3  z   0.0000000000
+  H       :     4  x  -7.5856106765    5  y   2.0217077156    6  z   0.0000000000
+  H       :     7  x  -7.5855758866    8  y   4.8812567648    9  z   1.6509620637
+  H       :    10  x  -7.5855758866   11  y   4.8812567648   12  z  -1.6509620637
+  H       :    13  x -10.2815968242   14  y   3.9281072533   15  z   0.0000000000
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           H           H           H           H     
+            ------      ------      ------      ------      ------
+ C     :    0.000000
+ H     :    1.070000    0.000000
+ H     :    1.070000    1.747302    0.000000
+ H     :    1.070000    1.747302    1.747303    0.000000
+ H     :    1.070000    1.747303    1.747303    1.747303    0.000000
+
+
+  Max    interatomic separation is    1.7473 Angstrom (    3.3019 Bohr)
+  between atoms    4 and    3, "H     " and "H     ".
+
+  Min HX interatomic separation is    1.0700 Angstrom (    2.0220 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          C            1.070000
+  bond distance:  H          C            1.070000
+  bond distance:  H          C            1.070000
+  bond distance:  H          C            1.070000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       3.076956          0.000000    0.000000    1.000000
+   IB       3.076957          0.914814   -0.403876    0.000000
+   IC       3.076958          0.403876    0.914814    0.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         164246.4015         164246.3854         164246.3273 MHz
+            5.478670            5.478670            5.478668 cm-1
+
+
+@  Nuclear repulsion energy :   13.686518047446 Hartree
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+
+ Center of mass  (bohr):     -8.259589857388      3.928082276682      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    9
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -11.351867      -1.467870      -0.659758      -0.659758      -0.659758
+           -0.119406      -0.117594      -0.117594      -0.117594
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 26 22:53:23 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ Title lines from ".mol" input file:
+     methan                                                                  
+     ----------                                                              
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Hartree-Fock calculation.
+
+@    Time-dependent Hartree-Fock calculation (random phase approximation).
+ Fock matrices are calculated directly without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+     Wave function specification
+     ============================
+@    Wave function type        >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1
+                                           |  A  
+                                       --- |  ---
+@    Occupied SCF orbitals               5 |    5
+     Secondary orbitals                 29 |   29
+     Total number of orbitals           34 |   34
+     Number of basis functions          34 |   34
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations            145
+     ------------------------------------------
+@    Total number of variables              146
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+
+
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    1    T  1.00D-01  1.01D-01
+@  1    -39.9852043355        1.60737D+00   -4.00D+01    1
+      Virial theorem: -V/T =      2.035537
+@      MULPOP C       0.36; H      -0.09; H      -0.09; H      -0.09; H      -0.09; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    T  9.58D-02  9.60D-02
+@  2    -40.1677115846        6.95239D-01   -1.83D-01    2
+      Virial theorem: -V/T =      1.985999
+@      MULPOP C      -0.41; H       0.10; H       0.10; H       0.10; H       0.10; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    T  9.75D-02  9.80D-02
+@  3    -40.1966124670        8.52689D-02   -2.89D-02    3
+      Virial theorem: -V/T =      2.001640
+@      MULPOP C      -0.12; H       0.03; H       0.03; H       0.03; H       0.03; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    4    F  9.46D-02  9.40D-02
+@  4    -40.1974520737        1.71721D-02   -8.40D-04    4
+      Virial theorem: -V/T =      1.999893
+@      MULPOP C      -0.13; H       0.03; H       0.03; H       0.03; H       0.03; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    T  9.71D-02  9.80D-02
+@  5    -40.1974873791        1.55391D-03   -3.53D-05    5
+      Virial theorem: -V/T =      1.999482
+@      MULPOP C      -0.12; H       0.03; H       0.03; H       0.03; H       0.03; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    T  9.73D-02  9.70D-02
+@  6    -40.1974877749        1.57689D-04   -3.96D-07    6
+      Virial theorem: -V/T =      1.999476
+@      MULPOP C      -0.12; H       0.03; H       0.03; H       0.03; H       0.03; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    7    T  9.69D-02  9.70D-02
+@  7    -40.1974877777        9.32607D-06   -2.83D-09    7
+
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -40.197487777680    9.33D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Sym       Hartree-Fock orbital energies
+
+1 A     -11.20694052    -0.95042366    -0.54763037    -0.54763032    -0.54763028
+          0.19541858     0.27705719     0.27705725     0.27705728     0.58836195
+
+    E(LUMO) :     0.19541858 au (symmetry 1)
+  - E(HOMO) :    -0.54763028 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.74304885 au
+
+ NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
+
+ Largest off-diagonal Fock matrix element is  5.64D-02
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.687       0.690
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    0
+
+@    Final HF energy:             -40.197487777680                 
+@    Nuclear repulsion:            13.686518047446
+@    Electronic energy:           -53.884005825127
+
+@    Final gradient norm:           0.000009326065
+
+ 
+     Date and time (Linux)  : Mon May 26 22:53:24 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 C   :1s     1.0018  -0.0326  -0.0000  -0.0000   0.0000  -0.0976   0.0000
+   2 C   :1s     0.0102   0.7279  -0.0000   0.0000   0.0000   0.1393   0.0000
+   3 C   :1s    -0.0113  -0.2002   0.0000   0.0000  -0.0000   2.3271  -0.0000
+   4 C   :2px   -0.0000  -0.0000  -0.2569   0.5829  -0.0000  -0.0000   0.1880
+   5 C   :2py    0.0000   0.0000  -0.5829  -0.2569   0.0000   0.0000   0.3982
+   6 C   :2pz   -0.0000   0.0000   0.0000  -0.0000  -0.6370   0.0000  -0.0000
+   7 C   :2px   -0.0000  -0.0000   0.0424  -0.0962   0.0000  -0.0000   0.5245
+   8 C   :2py    0.0000   0.0000   0.0962   0.0424  -0.0000   0.0000   1.1113
+   9 C   :2pz    0.0000  -0.0000   0.0000   0.0000   0.1051  -0.0000  -0.0000
+  10 C   :3d2-   0.0000  -0.0000  -0.0144  -0.0064   0.0000  -0.0000   0.0127
+  11 C   :3d1-  -0.0000  -0.0000   0.0000  -0.0000  -0.0223   0.0000  -0.0000
+  12 C   :3d0   -0.0000   0.0000  -0.0232   0.0047  -0.0000   0.0000   0.0207
+  13 C   :3d1+  -0.0000  -0.0000   0.0000  -0.0000  -0.0158  -0.0000  -0.0000
+  14 C   :3d2+   0.0000   0.0000  -0.0007  -0.0262   0.0000   0.0000  -0.0000
+  15 H   :1s    -0.0000   0.3215   0.4845   0.4559   0.0000  -0.0131   0.0533
+  16 H   :1s     0.0013  -0.1323  -0.1266  -0.1191  -0.0000  -0.8543   1.6357
+  17 H   :2px    0.0002  -0.0089  -0.0142   0.0041  -0.0000   0.0048  -0.0081
+  18 H   :2py   -0.0004   0.0253   0.0124   0.0178   0.0000  -0.0137   0.0213
+  19 H   :2pz    0.0000  -0.0000   0.0000  -0.0000  -0.0135  -0.0000   0.0000
+  20 H   :1s    -0.0000   0.3215  -0.3764   0.0764  -0.5432  -0.0131  -0.0426
+  21 H   :1s     0.0013  -0.1323   0.0983  -0.0200   0.1419  -0.8543  -1.3093
+  22 H   :2px    0.0002  -0.0089   0.0013   0.0110   0.0098   0.0049   0.0059
+  23 H   :2py    0.0002  -0.0126  -0.0028  -0.0074   0.0139   0.0069   0.0081
+  24 H   :2pz    0.0004  -0.0219   0.0166  -0.0034   0.0105   0.0119   0.0152
+  25 H   :1s    -0.0000   0.3215  -0.3764   0.0764   0.5432  -0.0131  -0.0426
+  26 H   :1s     0.0013  -0.1323   0.0983  -0.0200  -0.1419  -0.8543  -1.3093
+  27 H   :2px    0.0002  -0.0089   0.0013   0.0110  -0.0098   0.0049   0.0059
+  28 H   :2py    0.0002  -0.0126  -0.0028  -0.0074  -0.0139   0.0069   0.0081
+  29 H   :2pz   -0.0004   0.0219  -0.0166   0.0034   0.0105  -0.0119  -0.0152
+  30 H   :1s    -0.0000   0.3215   0.2683  -0.6087  -0.0000  -0.0131   0.0320
+  31 H   :1s     0.0013  -0.1323  -0.0701   0.1590   0.0000  -0.8543   0.9829
+  32 H   :2px   -0.0005   0.0268   0.0091  -0.0206  -0.0000  -0.0145   0.0137
+  33 H   :2py    0.0000  -0.0000  -0.0124  -0.0055  -0.0000   0.0000  -0.0007
+  34 H   :2pz    0.0000  -0.0000   0.0000  -0.0000  -0.0135  -0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.69 seconds
+ >>>> Total wall time used in SIRIUS :      0.70 seconds
+
+ 
+     Date and time (Linux)  : Mon May 26 22:53:24 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+                  +----------------------------------------------+
+                  ! Variable settings for absorption calculation !
+                  +----------------------------------------------+
+
+ Linear polarizability calculation requested:                         ABSLRS_ALPHA =   T
+ Absorption calc over frequency interval  :                           ABSLRS_INTERVAL =   T
+ Number of frequencies              : ABS_NFREQ_INTERVAL=   0
+ Start: 0.44250Stop: 0.49000   Step: 0.00250
+ Damping parameter (a.u. and cm-1)        : ABS_DAMP     = 0.004556   999.9
+ Threshold of convergence in LR solver    : THCLR        = 1.0D-05
+ Maximum iterations in complex LR solver  : MAXIT     = 150
+ Print level in absorption modules        : IPRABSLRS    =   0
+
+
+   SCF energy         :      -40.197487777680493
+ -- inactive part     :      -53.884005825126707
+ -- nuclear repulsion :       13.686518047446212
+
+
+                     ***************************************
+                     *** RHF response calculation (TDHF) ***
+                     ***************************************
+
+
+
+                       +-----------------------------------+
+                       ! Solving Linear Response Equations !
+                       +-----------------------------------+
+
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:     145
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :     145
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator XDIPLEN  of symmetry 1 at frequencies:
+ ABSLRS --  0.44250000  0.44500000  0.44750000  0.45000000
+             0.45250000  0.45500000  0.45750000  0.46000000
+             0.46250000  0.46500000  0.46750000  0.47000000
+             0.47250000  0.47500000  0.47750000  0.48000000
+             0.48250000  0.48500000  0.48750000  0.49000000
+
+ITER, IVEC:   1   1  XDIPLEN   0.4425   RESID, RESID/X:  0.7114381D+00  0.7060550D+00
+ITER, IVEC:   1   2  XDIPLEN   0.4450   RESID, RESID/X:  0.7536232D+00  0.7221513D+00
+ITER, IVEC:   1   3  XDIPLEN   0.4475   RESID, RESID/X:  0.8021694D+00  0.7400840D+00
+ITER, IVEC:   1   4  XDIPLEN   0.4500   RESID, RESID/X:  0.8586078D+00  0.7601925D+00
+ITER, IVEC:   1   5  XDIPLEN   0.4525   RESID, RESID/X:  0.9249924D+00  0.7829081D+00
+ITER, IVEC:   1   6  XDIPLEN   0.4550   RESID, RESID/X:  0.1004138D+01  0.8087875D+00
+ITER, IVEC:   1   7  XDIPLEN   0.4575   RESID, RESID/X:  0.1099999D+01  0.8385641D+00
+ITER, IVEC:   1   8  XDIPLEN   0.4600   RESID, RESID/X:  0.1218289D+01  0.8732250D+00
+ITER, IVEC:   1   9  XDIPLEN   0.4625   RESID, RESID/X:  0.1367530D+01  0.9141361D+00
+ITER, IVEC:   1  10  XDIPLEN   0.4650   RESID, RESID/X:  0.1560910D+01  0.9632501D+00
+ITER, IVEC:   1  11  XDIPLEN   0.4675   RESID, RESID/X:  0.1819650D+01  0.1023473D+01
+ITER, IVEC:   1  12  XDIPLEN   0.4700   RESID, RESID/X:  0.2179157D+01  0.1099358D+01
+ITER, IVEC:   1  13  XDIPLEN   0.4725   RESID, RESID/X:  0.2699111D+01  0.1198533D+01
+ITER, IVEC:   1  14  XDIPLEN   0.4750   RESID, RESID/X:  0.3468519D+01  0.1335012D+01
+ITER, IVEC:   1  15  XDIPLEN   0.4775   RESID, RESID/X:  0.4512548D+01  0.1538125D+01
+ITER, IVEC:   1  16  XDIPLEN   0.4800   RESID, RESID/X:  0.5270144D+01  0.1872936D+01
+ITER, IVEC:   1  17  XDIPLEN   0.4825   RESID, RESID/X:  0.4749982D+01  0.1597145D+01
+ITER, IVEC:   1  18  XDIPLEN   0.4850   RESID, RESID/X:  0.3671034D+01  0.1363932D+01
+ITER, IVEC:   1  19  XDIPLEN   0.4875   RESID, RESID/X:  0.2825009D+01  0.1211181D+01
+ITER, IVEC:   1  20  XDIPLEN   0.4900   RESID, RESID/X:  0.2254997D+01  0.1102586D+01
+ITER, IVEC:   2   1  XDIPLEN   0.4425   RESID, RESID/X:  0.9622478D-01  0.8498929D-01
+ITER, IVEC:   2   2  XDIPLEN   0.4450   RESID, RESID/X:  0.1036844D+00  0.8763662D-01
+ITER, IVEC:   2   3  XDIPLEN   0.4475   RESID, RESID/X:  0.1124879D+00  0.9059334D-01
+ITER, IVEC:   2   4  XDIPLEN   0.4500   RESID, RESID/X:  0.1230354D+00  0.9392883D-01
+ITER, IVEC:   2   5  XDIPLEN   0.4525   RESID, RESID/X:  0.1358991D+00  0.9773640D-01
+ITER, IVEC:   2   6  XDIPLEN   0.4550   RESID, RESID/X:  0.1519235D+00  0.1021448D+00
+ITER, IVEC:   2   7  XDIPLEN   0.4575   RESID, RESID/X:  0.1723993D+00  0.1073371D+00
+ITER, IVEC:   2   8  XDIPLEN   0.4600   RESID, RESID/X:  0.1993768D+00  0.1135842D+00
+ITER, IVEC:   2   9  XDIPLEN   0.4625   RESID, RESID/X:  0.2362377D+00  0.1213062D+00
+ITER, IVEC:   2  10  XDIPLEN   0.4650   RESID, RESID/X:  0.2886785D+00  0.1311957D+00
+ITER, IVEC:   2  11  XDIPLEN   0.4675   RESID, RESID/X:  0.3656977D+00  0.1444941D+00
+ITER, IVEC:   2  12  XDIPLEN   0.4700   RESID, RESID/X:  0.4746771D+00  0.1637029D+00
+ITER, IVEC:   2  13  XDIPLEN   0.4725   RESID, RESID/X:  0.5796424D+00  0.1947107D+00
+ITER, IVEC:   2  14  XDIPLEN   0.4750   RESID, RESID/X:  0.5596976D+00  0.1855580D+00
+ITER, IVEC:   2  15  XDIPLEN   0.4775   RESID, RESID/X:  0.4390859D+00  0.1546066D+00
+ITER, IVEC:   2  16  XDIPLEN   0.4800   RESID, RESID/X:  0.3323586D+00  0.1346643D+00
+ITER, IVEC:   2  17  XDIPLEN   0.4825   RESID, RESID/X:  0.2594078D+00  0.1204853D+00
+ITER, IVEC:   2  18  XDIPLEN   0.4850   RESID, RESID/X:  0.2101868D+00  0.1097914D+00
+ITER, IVEC:   2  19  XDIPLEN   0.4875   RESID, RESID/X:  0.1758780D+00  0.1014370D+00
+ITER, IVEC:   2  20  XDIPLEN   0.4900   RESID, RESID/X:  0.1511472D+00  0.9478868D-01
+ITER, IVEC:   3   1  XDIPLEN   0.4425   RESID, RESID/X:  0.1016776D-01  0.8971529D-02
+ITER, IVEC:   3   2  XDIPLEN   0.4450   RESID, RESID/X:  0.1105531D-01  0.9334062D-02
+ITER, IVEC:   3   3  XDIPLEN   0.4475   RESID, RESID/X:  0.1210377D-01  0.9736317D-02
+ITER, IVEC:   3   4  XDIPLEN   0.4500   RESID, RESID/X:  0.1336100D-01  0.1018684D-01
+ITER, IVEC:   3   5  XDIPLEN   0.4525   RESID, RESID/X:  0.1489556D-01  0.1069709D-01
+ITER, IVEC:   3   6  XDIPLEN   0.4550   RESID, RESID/X:  0.1680869D-01  0.1128280D-01
+ITER, IVEC:   3   7  XDIPLEN   0.4575   RESID, RESID/X:  0.1925531D-01  0.1196632D-01
+ITER, IVEC:   3   8  XDIPLEN   0.4600   RESID, RESID/X:  0.2248196D-01  0.1278063D-01
+ITER, IVEC:   3   9  XDIPLEN   0.4625   RESID, RESID/X:  0.2689620D-01  0.1377681D-01
+ITER, IVEC:   3  10  XDIPLEN   0.4650   RESID, RESID/X:  0.3318672D-01  0.1503904D-01
+ITER, IVEC:   3  11  XDIPLEN   0.4675   RESID, RESID/X:  0.4244577D-01  0.1671833D-01
+ITER, IVEC:   3  12  XDIPLEN   0.4700   RESID, RESID/X:  0.5557396D-01  0.1911951D-01
+ITER, IVEC:   3  13  XDIPLEN   0.4725   RESID, RESID/X:  0.6822044D-01  0.2296166D-01
+ITER, IVEC:   3  14  XDIPLEN   0.4750   RESID, RESID/X:  0.6601838D-01  0.2186538D-01
+ITER, IVEC:   3  15  XDIPLEN   0.4775   RESID, RESID/X:  0.5205692D-01  0.1837435D-01
+ITER, IVEC:   3  16  XDIPLEN   0.4800   RESID, RESID/X:  0.3967526D-01  0.1612069D-01
+ITER, IVEC:   3  17  XDIPLEN   0.4825   RESID, RESID/X:  0.3116289D-01  0.1450973D-01
+ITER, IVEC:   3  18  XDIPLEN   0.4850   RESID, RESID/X:  0.2537410D-01  0.1328159D-01
+ITER, IVEC:   3  19  XDIPLEN   0.4875   RESID, RESID/X:  0.2129732D-01  0.1230430D-01
+ITER, IVEC:   3  20  XDIPLEN   0.4900   RESID, RESID/X:  0.1831727D-01  0.1150381D-01
+ITER, IVEC:   4   1  XDIPLEN   0.4425   RESID, RESID/X:  0.6254414D-03  0.5518562D-03
+ITER, IVEC:   4   2  XDIPLEN   0.4450   RESID, RESID/X:  0.6830971D-03  0.5767398D-03
+ITER, IVEC:   4   3  XDIPLEN   0.4475   RESID, RESID/X:  0.7513162D-03  0.6043584D-03
+ITER, IVEC:   4   4  XDIPLEN   0.4500   RESID, RESID/X:  0.8332492D-03  0.6352914D-03
+ITER, IVEC:   4   5  XDIPLEN   0.4525   RESID, RESID/X:  0.9334067D-03  0.6703118D-03
+ITER, IVEC:   4   6  XDIPLEN   0.4550   RESID, RESID/X:  0.1058453D-02  0.7104790D-03
+ITER, IVEC:   4   7  XDIPLEN   0.4575   RESID, RESID/X:  0.1218590D-02  0.7572930D-03
+ITER, IVEC:   4   8  XDIPLEN   0.4600   RESID, RESID/X:  0.1430064D-02  0.8129606D-03
+ITER, IVEC:   4   9  XDIPLEN   0.4625   RESID, RESID/X:  0.1719767D-02  0.8808919D-03
+ITER, IVEC:   4  10  XDIPLEN   0.4650   RESID, RESID/X:  0.2133243D-02  0.9666977D-03
+ITER, IVEC:   4  11  XDIPLEN   0.4675   RESID, RESID/X:  0.2743099D-02  0.1080423D-02
+ITER, IVEC:   4  12  XDIPLEN   0.4700   RESID, RESID/X:  0.3611044D-02  0.1242320D-02
+ITER, IVEC:   4  13  XDIPLEN   0.4725   RESID, RESID/X:  0.4456944D-02  0.1500133D-02
+ITER, IVEC:   4  14  XDIPLEN   0.4750   RESID, RESID/X:  0.4336500D-02  0.1436249D-02
+ITER, IVEC:   4  15  XDIPLEN   0.4775   RESID, RESID/X:  0.3437825D-02  0.1213451D-02
+ITER, IVEC:   4  16  XDIPLEN   0.4800   RESID, RESID/X:  0.2633915D-02  0.1070215D-02
+ITER, IVEC:   4  17  XDIPLEN   0.4825   RESID, RESID/X:  0.2079198D-02  0.9681048D-03
+ITER, IVEC:   4  18  XDIPLEN   0.4850   RESID, RESID/X:  0.1700859D-02  0.8902904D-03
+ITER, IVEC:   4  19  XDIPLEN   0.4875   RESID, RESID/X:  0.1433485D-02  0.8281870D-03
+ITER, IVEC:   4  20  XDIPLEN   0.4900   RESID, RESID/X:  0.1237079D-02  0.7769289D-03
+ITER, IVEC:   5   1  XDIPLEN   0.4425   RESID, RESID/X:  0.3077743D-04  0.2715637D-04
+ITER, IVEC:   5   2  XDIPLEN   0.4450   RESID, RESID/X:  0.3373232D-04  0.2848024D-04
+ITER, IVEC:   5   3  XDIPLEN   0.4475   RESID, RESID/X:  0.3722949D-04  0.2994738D-04
+ITER, IVEC:   5   4  XDIPLEN   0.4500   RESID, RESID/X:  0.4142892D-04  0.3158651D-04
+ITER, IVEC:   5   5  XDIPLEN   0.4525   RESID, RESID/X:  0.4655905D-04  0.3343567D-04
+ITER, IVEC:   5   6  XDIPLEN   0.4550   RESID, RESID/X:  0.5295646D-04  0.3554665D-04
+ITER, IVEC:   5   7  XDIPLEN   0.4575   RESID, RESID/X:  0.6113485D-04  0.3799227D-04
+ITER, IVEC:   5   8  XDIPLEN   0.4600   RESID, RESID/X:  0.7190974D-04  0.4087914D-04
+ITER, IVEC:   5   9  XDIPLEN   0.4625   RESID, RESID/X:  0.8662759D-04  0.4437201D-04
+ITER, IVEC:   5  10  XDIPLEN   0.4650   RESID, RESID/X:  0.1075672D-03  0.4874500D-04
+ITER, IVEC:   5  11  XDIPLEN   0.4675   RESID, RESID/X:  0.1383900D-03  0.5450762D-04
+ITER, IVEC:   5  12  XDIPLEN   0.4700   RESID, RESID/X:  0.1824913D-03  0.6278311D-04
+ITER, IVEC:   5  13  XDIPLEN   0.4725   RESID, RESID/X:  0.2277246D-03  0.7664835D-04
+ITER, IVEC:   5  14  XDIPLEN   0.4750   RESID, RESID/X:  0.2297554D-03  0.7609499D-04
+ITER, IVEC:   5  15  XDIPLEN   0.4775   RESID, RESID/X:  0.1894455D-03  0.6686867D-04
+ITER, IVEC:   5  16  XDIPLEN   0.4800   RESID, RESID/X:  0.1467552D-03  0.5962974D-04
+ITER, IVEC:   5  17  XDIPLEN   0.4825   RESID, RESID/X:  0.1157877D-03  0.5391244D-04
+ITER, IVEC:   5  18  XDIPLEN   0.4850   RESID, RESID/X:  0.9458283D-04  0.4950802D-04
+ITER, IVEC:   5  19  XDIPLEN   0.4875   RESID, RESID/X:  0.7968116D-04  0.4603528D-04
+ITER, IVEC:   5  20  XDIPLEN   0.4900   RESID, RESID/X:  0.6879829D-04  0.4320773D-04
+ITER, IVEC:   6   1  XDIPLEN   0.4425   RESID, RESID/X:  0.8691857D-05  0.7669232D-05
+ITER, IVEC:   6   2  XDIPLEN   0.4450   RESID, RESID/X:  0.9691160D-05  0.8182258D-05
+ITER, IVEC:   6   3  XDIPLEN   0.4475   RESID, RESID/X:  0.1088475D-04  0.8755684D-05
+ITER, IVEC:   6   4  XDIPLEN   0.4500   RESID, RESID/X:  0.1233137D-04  0.9401769D-05
+ITER, IVEC:   6   5  XDIPLEN   0.4525   RESID, RESID/X:  0.1411533D-04  0.1013671D-04
+ITER, IVEC:   6   6  XDIPLEN   0.4550   RESID, RESID/X:  0.1636138D-04  0.1098247D-04
+ITER, IVEC:   6   7  XDIPLEN   0.4575   RESID, RESID/X:  0.1926112D-04  0.1196983D-04
+ITER, IVEC:   6   8  XDIPLEN   0.4600   RESID, RESID/X:  0.2312074D-04  0.1314365D-04
+ITER, IVEC:   6   9  XDIPLEN   0.4625   RESID, RESID/X:  0.2845015D-04  0.1457261D-04
+ITER, IVEC:   6  10  XDIPLEN   0.4650   RESID, RESID/X:  0.3612200D-04  0.1636899D-04
+ITER, IVEC:   6  11  XDIPLEN   0.4675   RESID, RESID/X:  0.4756266D-04  0.1873348D-04
+ITER, IVEC:   6  12  XDIPLEN   0.4700   RESID, RESID/X:  0.6416350D-04  0.2207439D-04
+ITER, IVEC:   6  13  XDIPLEN   0.4725   RESID, RESID/X:  0.8131099D-04  0.2736793D-04
+ITER, IVEC:   6  14  XDIPLEN   0.4750   RESID, RESID/X:  0.8135840D-04  0.2694590D-04
+ITER, IVEC:   6  15  XDIPLEN   0.4775   RESID, RESID/X:  0.6623566D-04  0.2337924D-04
+ITER, IVEC:   6  16  XDIPLEN   0.4800   RESID, RESID/X:  0.5206572D-04  0.2115540D-04
+ITER, IVEC:   6  17  XDIPLEN   0.4825   RESID, RESID/X:  0.4216958D-04  0.1963477D-04
+ITER, IVEC:   6  18  XDIPLEN   0.4850   RESID, RESID/X:  0.3539972D-04  0.1852948D-04
+ITER, IVEC:   6  19  XDIPLEN   0.4875   RESID, RESID/X:  0.3061753D-04  0.1768908D-04
+ITER, IVEC:   6  20  XDIPLEN   0.4900   RESID, RESID/X:  0.2711028D-04  0.1702620D-04
+ITER, IVEC:  7  1  XDIPLEN   0.4425 RESID, RESID/X:TT
+ITER, IVEC:  7  2  XDIPLEN   0.4450 RESID, RESID/X:TT
+ITER, IVEC:   7   3  XDIPLEN   0.4475   RESID, RESID/X:  0.1299756D-05  0.1045523D-05
+ITER, IVEC:   7   4  XDIPLEN   0.4500   RESID, RESID/X:  0.1487604D-05  0.1134189D-05
+ITER, IVEC:   7   5  XDIPLEN   0.4525   RESID, RESID/X:  0.1721099D-05  0.1235981D-05
+ITER, IVEC:   7   6  XDIPLEN   0.4550   RESID, RESID/X:  0.2017389D-05  0.1354159D-05
+ITER, IVEC:   7   7  XDIPLEN   0.4575   RESID, RESID/X:  0.2402877D-05  0.1493269D-05
+ITER, IVEC:   7   8  XDIPLEN   0.4600   RESID, RESID/X:  0.2919908D-05  0.1659905D-05
+ITER, IVEC:   7   9  XDIPLEN   0.4625   RESID, RESID/X:  0.3639308D-05  0.1864111D-05
+ITER, IVEC:   7  10  XDIPLEN   0.4650   RESID, RESID/X:  0.4683110D-05  0.2122192D-05
+ITER, IVEC:   7  11  XDIPLEN   0.4675   RESID, RESID/X:  0.6253423D-05  0.2463033D-05
+ITER, IVEC:   7  12  XDIPLEN   0.4700   RESID, RESID/X:  0.8558956D-05  0.2944567D-05
+ITER, IVEC:   7  13  XDIPLEN   0.4725   RESID, RESID/X:  0.1100285D-04  0.3703376D-05
+ITER, IVEC:   7  14  XDIPLEN   0.4750   RESID, RESID/X:  0.1116791D-04  0.3698810D-05
+ITER, IVEC:   7  15  XDIPLEN   0.4775   RESID, RESID/X:  0.9238316D-05  0.3260853D-05
+ITER, IVEC:   7  16  XDIPLEN   0.4800   RESID, RESID/X:  0.7389789D-05  0.3002627D-05
+ITER, IVEC:   7  17  XDIPLEN   0.4825   RESID, RESID/X:  0.6096559D-05  0.2838646D-05
+ITER, IVEC:   7  18  XDIPLEN   0.4850   RESID, RESID/X:  0.5217741D-05  0.2731152D-05
+ITER, IVEC:   7  19  XDIPLEN   0.4875   RESID, RESID/X:  0.4605424D-05  0.2660754D-05
+ITER, IVEC:   7  20  XDIPLEN   0.4900   RESID, RESID/X:  0.4165947D-05  0.2616361D-05
+ITER, IVEC:  8  1  XDIPLEN   0.4425 RESID, RESID/X:TT
+ITER, IVEC:  8  2  XDIPLEN   0.4450 RESID, RESID/X:TT
+ITER, IVEC:  8  3  XDIPLEN   0.4475 RESID, RESID/X:TT
+ITER, IVEC:  8  4  XDIPLEN   0.4500 RESID, RESID/X:TT
+ITER, IVEC:  8  5  XDIPLEN   0.4525 RESID, RESID/X:TT
+ITER, IVEC:  8  6  XDIPLEN   0.4550 RESID, RESID/X:TT
+ITER, IVEC:  8  7  XDIPLEN   0.4575 RESID, RESID/X:TT
+ITER, IVEC:  8  8  XDIPLEN   0.4600 RESID, RESID/X:TT
+ITER, IVEC:  8  9  XDIPLEN   0.4625 RESID, RESID/X:TT
+ITER, IVEC:  8 10  XDIPLEN   0.4650 RESID, RESID/X:TT
+ITER, IVEC:  8 11  XDIPLEN   0.4675 RESID, RESID/X:TT
+ITER, IVEC:  8 12  XDIPLEN   0.4700 RESID, RESID/X:TT
+ITER, IVEC:   8  13  XDIPLEN   0.4725   RESID, RESID/X:  0.1729733D-05  0.5821994D-06
+ITER, IVEC:   8  14  XDIPLEN   0.4750   RESID, RESID/X:  0.1781138D-05  0.5899128D-06
+ITER, IVEC:  8 15  XDIPLEN   0.4775 RESID, RESID/X:TT
+ITER, IVEC:  8 16  XDIPLEN   0.4800 RESID, RESID/X:TT
+ITER, IVEC:  8 17  XDIPLEN   0.4825 RESID, RESID/X:TT
+ITER, IVEC:  8 18  XDIPLEN   0.4850 RESID, RESID/X:TT
+ITER, IVEC:  8 19  XDIPLEN   0.4875 RESID, RESID/X:TT
+ITER, IVEC:  8 20  XDIPLEN   0.4900 RESID, RESID/X:TT
+
+ *** ABSCTL: REQUESTED  20 SOLUTION VECTORS CONVERGED IN RED SPACES OF  47  49
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator YDIPLEN  of symmetry 1 at frequencies:
+ ABSLRS --  0.44250000  0.44500000  0.44750000  0.45000000
+             0.45250000  0.45500000  0.45750000  0.46000000
+             0.46250000  0.46500000  0.46750000  0.47000000
+             0.47250000  0.47500000  0.47750000  0.48000000
+             0.48250000  0.48500000  0.48750000  0.49000000
+
+ Use ABS_READIN_RED           47          49
+ITER, IVEC:   1   1  YDIPLEN   0.4425   RESID, RESID/X:  0.2938239D+00  0.2592874D+00
+ITER, IVEC:   1   2  YDIPLEN   0.4450   RESID, RESID/X:  0.2944263D+00  0.2486117D+00
+ITER, IVEC:   1   3  YDIPLEN   0.4475   RESID, RESID/X:  0.2950403D+00  0.2373524D+00
+ITER, IVEC:   1   4  YDIPLEN   0.4500   RESID, RESID/X:  0.2956665D+00  0.2254417D+00
+ITER, IVEC:   1   5  YDIPLEN   0.4525   RESID, RESID/X:  0.2963056D+00  0.2128011D+00
+ITER, IVEC:   1   6  YDIPLEN   0.4550   RESID, RESID/X:  0.2969584D+00  0.1993416D+00
+ITER, IVEC:   1   7  YDIPLEN   0.4575   RESID, RESID/X:  0.2976258D+00  0.1849671D+00
+ITER, IVEC:   1   8  YDIPLEN   0.4600   RESID, RESID/X:  0.2983095D+00  0.1695877D+00
+ITER, IVEC:   1   9  YDIPLEN   0.4625   RESID, RESID/X:  0.2990132D+00  0.1531626D+00
+ITER, IVEC:   1  10  YDIPLEN   0.4650   RESID, RESID/X:  0.2997457D+00  0.1358344D+00
+ITER, IVEC:   1  11  YDIPLEN   0.4675   RESID, RESID/X:  0.3005336D+00  0.1183722D+00
+ITER, IVEC:   1  12  YDIPLEN   0.4700   RESID, RESID/X:  0.3014539D+00  0.1037110D+00
+ITER, IVEC:   1  13  YDIPLEN   0.4725   RESID, RESID/X:  0.3026201D+00  0.1018589D+00
+ITER, IVEC:   1  14  YDIPLEN   0.4750   RESID, RESID/X:  0.3037644D+00  0.1006079D+00
+ITER, IVEC:   1  15  YDIPLEN   0.4775   RESID, RESID/X:  0.3045773D+00  0.1075079D+00
+ITER, IVEC:   1  16  YDIPLEN   0.4800   RESID, RESID/X:  0.3053283D+00  0.1240630D+00
+ITER, IVEC:   1  17  YDIPLEN   0.4825   RESID, RESID/X:  0.3061475D+00  0.1425496D+00
+ITER, IVEC:   1  18  YDIPLEN   0.4850   RESID, RESID/X:  0.3070431D+00  0.1607222D+00
+ITER, IVEC:   1  19  YDIPLEN   0.4875   RESID, RESID/X:  0.3080088D+00  0.1779580D+00
+ITER, IVEC:   1  20  YDIPLEN   0.4900   RESID, RESID/X:  0.3090423D+00  0.1941014D+00
+ITER, IVEC:   2   1  YDIPLEN   0.4425   RESID, RESID/X:  0.2945833D-01  0.2599251D-01
+ITER, IVEC:   2   2  YDIPLEN   0.4450   RESID, RESID/X:  0.2958168D-01  0.2497588D-01
+ITER, IVEC:   2   3  YDIPLEN   0.4475   RESID, RESID/X:  0.2970437D-01  0.2389421D-01
+ITER, IVEC:   2   4  YDIPLEN   0.4500   RESID, RESID/X:  0.2982649D-01  0.2274053D-01
+ITER, IVEC:   2   5  YDIPLEN   0.4525   RESID, RESID/X:  0.2994828D-01  0.2150690D-01
+ITER, IVEC:   2   6  YDIPLEN   0.4550   RESID, RESID/X:  0.3007019D-01  0.2018440D-01
+ITER, IVEC:   2   7  YDIPLEN   0.4575   RESID, RESID/X:  0.3019302D-01  0.1876345D-01
+ITER, IVEC:   2   8  YDIPLEN   0.4600   RESID, RESID/X:  0.3031813D-01  0.1723519D-01
+ITER, IVEC:   2   9  YDIPLEN   0.4625   RESID, RESID/X:  0.3044753D-01  0.1559568D-01
+ITER, IVEC:   2  10  YDIPLEN   0.4650   RESID, RESID/X:  0.3058353D-01  0.1385917D-01
+ITER, IVEC:   2  11  YDIPLEN   0.4675   RESID, RESID/X:  0.3072416D-01  0.1210129D-01
+ITER, IVEC:   2  12  YDIPLEN   0.4700   RESID, RESID/X:  0.3083774D-01  0.1060920D-01
+ITER, IVEC:   2  13  YDIPLEN   0.4725   RESID, RESID/X:  0.3079537D-01  0.1036523D-01
+ITER, IVEC:   2  14  YDIPLEN   0.4750   RESID, RESID/X:  0.3056767D-01  0.1012401D-01
+ITER, IVEC:   2  15  YDIPLEN   0.4775   RESID, RESID/X:  0.3047546D-01  0.1075697D-01
+ITER, IVEC:   2  16  YDIPLEN   0.4800   RESID, RESID/X:  0.3051904D-01  0.1240057D-01
+ITER, IVEC:   2  17  YDIPLEN   0.4825   RESID, RESID/X:  0.3059501D-01  0.1424552D-01
+ITER, IVEC:   2  18  YDIPLEN   0.4850   RESID, RESID/X:  0.3067059D-01  0.1605412D-01
+ITER, IVEC:   2  19  YDIPLEN   0.4875   RESID, RESID/X:  0.3074080D-01  0.1776034D-01
+ITER, IVEC:   2  20  YDIPLEN   0.4900   RESID, RESID/X:  0.3080817D-01  0.1934865D-01
+ITER, IVEC:   3   1  YDIPLEN   0.4425   RESID, RESID/X:  0.3168228D-02  0.2795474D-02
+ITER, IVEC:   3   2  YDIPLEN   0.4450   RESID, RESID/X:  0.3194234D-02  0.2696894D-02
+ITER, IVEC:   3   3  YDIPLEN   0.4475   RESID, RESID/X:  0.3219384D-02  0.2589669D-02
+ITER, IVEC:   3   4  YDIPLEN   0.4500   RESID, RESID/X:  0.3243337D-02  0.2472805D-02
+ITER, IVEC:   3   5  YDIPLEN   0.4525   RESID, RESID/X:  0.3265643D-02  0.2345170D-02
+ITER, IVEC:   3   6  YDIPLEN   0.4550   RESID, RESID/X:  0.3285699D-02  0.2205500D-02
+ITER, IVEC:   3   7  YDIPLEN   0.4575   RESID, RESID/X:  0.3302729D-02  0.2052479D-02
+ITER, IVEC:   3   8  YDIPLEN   0.4600   RESID, RESID/X:  0.3315850D-02  0.1884987D-02
+ITER, IVEC:   3   9  YDIPLEN   0.4625   RESID, RESID/X:  0.3324554D-02  0.1702886D-02
+ITER, IVEC:   3  10  YDIPLEN   0.4650   RESID, RESID/X:  0.3330997D-02  0.1509467D-02
+ITER, IVEC:   3  11  YDIPLEN   0.4675   RESID, RESID/X:  0.3349855D-02  0.1319403D-02
+ITER, IVEC:   3  12  YDIPLEN   0.4700   RESID, RESID/X:  0.3444401D-02  0.1184987D-02
+ITER, IVEC:   3  13  YDIPLEN   0.4725   RESID, RESID/X:  0.3752656D-02  0.1263085D-02
+ITER, IVEC:   3  14  YDIPLEN   0.4750   RESID, RESID/X:  0.4116591D-02  0.1363414D-02
+ITER, IVEC:   3  15  YDIPLEN   0.4775   RESID, RESID/X:  0.4196805D-02  0.1481352D-02
+ITER, IVEC:   3  16  YDIPLEN   0.4800   RESID, RESID/X:  0.4165585D-02  0.1692570D-02
+ITER, IVEC:   3  17  YDIPLEN   0.4825   RESID, RESID/X:  0.4141032D-02  0.1928129D-02
+ITER, IVEC:   3  18  YDIPLEN   0.4850   RESID, RESID/X:  0.4133511D-02  0.2163632D-02
+ITER, IVEC:   3  19  YDIPLEN   0.4875   RESID, RESID/X:  0.4138986D-02  0.2391277D-02
+ITER, IVEC:   3  20  YDIPLEN   0.4900   RESID, RESID/X:  0.4153687D-02  0.2608665D-02
+ITER, IVEC:   4   1  YDIPLEN   0.4425   RESID, RESID/X:  0.6448691D-03  0.5689979D-03
+ITER, IVEC:   4   2  YDIPLEN   0.4450   RESID, RESID/X:  0.6575593D-03  0.5551777D-03
+ITER, IVEC:   4   3  YDIPLEN   0.4475   RESID, RESID/X:  0.6705285D-03  0.5393725D-03
+ITER, IVEC:   4   4  YDIPLEN   0.4500   RESID, RESID/X:  0.6837393D-03  0.5213006D-03
+ITER, IVEC:   4   5  YDIPLEN   0.4525   RESID, RESID/X:  0.6971382D-03  0.5006387D-03
+ITER, IVEC:   4   6  YDIPLEN   0.4550   RESID, RESID/X:  0.7106579D-03  0.4770237D-03
+ITER, IVEC:   4   7  YDIPLEN   0.4575   RESID, RESID/X:  0.7242330D-03  0.4500743D-03
+ITER, IVEC:   4   8  YDIPLEN   0.4600   RESID, RESID/X:  0.7378700D-03  0.4194627D-03
+ITER, IVEC:   4   9  YDIPLEN   0.4625   RESID, RESID/X:  0.7519035D-03  0.3851361D-03
+ITER, IVEC:   4  10  YDIPLEN   0.4650   RESID, RESID/X:  0.7679322D-03  0.3479944D-03
+ITER, IVEC:   4  11  YDIPLEN   0.4675   RESID, RESID/X:  0.7922513D-03  0.3120429D-03
+ITER, IVEC:   4  12  YDIPLEN   0.4700   RESID, RESID/X:  0.8462397D-03  0.2911342D-03
+ITER, IVEC:   4  13  YDIPLEN   0.4725   RESID, RESID/X:  0.9642494D-03  0.3245511D-03
+ITER, IVEC:   4  14  YDIPLEN   0.4750   RESID, RESID/X:  0.1078215D-02  0.3571046D-03
+ITER, IVEC:   4  15  YDIPLEN   0.4775   RESID, RESID/X:  0.1105068D-02  0.3900574D-03
+ITER, IVEC:   4  16  YDIPLEN   0.4800   RESID, RESID/X:  0.1105409D-02  0.4491521D-03
+ITER, IVEC:   4  17  YDIPLEN   0.4825   RESID, RESID/X:  0.1111194D-02  0.5173892D-03
+ITER, IVEC:   4  18  YDIPLEN   0.4850   RESID, RESID/X:  0.1125562D-02  0.5891606D-03
+ITER, IVEC:   4  19  YDIPLEN   0.4875   RESID, RESID/X:  0.1146986D-02  0.6626649D-03
+ITER, IVEC:   4  20  YDIPLEN   0.4900   RESID, RESID/X:  0.1174071D-02  0.7373585D-03
+ITER, IVEC:   5   1  YDIPLEN   0.4425   RESID, RESID/X:  0.7893272D-04  0.6964599D-04
+ITER, IVEC:   5   2  YDIPLEN   0.4450   RESID, RESID/X:  0.8170952D-04  0.6898741D-04
+ITER, IVEC:   5   3  YDIPLEN   0.4475   RESID, RESID/X:  0.8467711D-04  0.6811418D-04
+ITER, IVEC:   5   4  YDIPLEN   0.4500   RESID, RESID/X:  0.8786723D-04  0.6699226D-04
+ITER, IVEC:   5   5  YDIPLEN   0.4525   RESID, RESID/X:  0.9132355D-04  0.6558255D-04
+ITER, IVEC:   5   6  YDIPLEN   0.4550   RESID, RESID/X:  0.9510882D-04  0.6384107D-04
+ITER, IVEC:   5   7  YDIPLEN   0.4575   RESID, RESID/X:  0.9931750D-04  0.6172082D-04
+ITER, IVEC:   5   8  YDIPLEN   0.4600   RESID, RESID/X:  0.1040991D-03  0.5917800D-04
+ITER, IVEC:   5   9  YDIPLEN   0.4625   RESID, RESID/X:  0.1097006D-03  0.5619028D-04
+ITER, IVEC:   5  10  YDIPLEN   0.4650   RESID, RESID/X:  0.1165354D-03  0.5280892D-04
+ITER, IVEC:   5  11  YDIPLEN   0.4675   RESID, RESID/X:  0.1252041D-03  0.4931398D-04
+ITER, IVEC:   5  12  YDIPLEN   0.4700   RESID, RESID/X:  0.1357413D-03  0.4669945D-04
+ITER, IVEC:   5  13  YDIPLEN   0.4725   RESID, RESID/X:  0.1430977D-03  0.4816441D-04
+ITER, IVEC:   5  14  YDIPLEN   0.4750   RESID, RESID/X:  0.1376022D-03  0.4557383D-04
+ITER, IVEC:   5  15  YDIPLEN   0.4775   RESID, RESID/X:  0.1298647D-03  0.4583852D-04
+ITER, IVEC:   5  16  YDIPLEN   0.4800   RESID, RESID/X:  0.1289275D-03  0.5238609D-04
+ITER, IVEC:   5  17  YDIPLEN   0.4825   RESID, RESID/X:  0.1321867D-03  0.6154817D-04
+ITER, IVEC:   5  18  YDIPLEN   0.4850   RESID, RESID/X:  0.1373380D-03  0.7188777D-04
+ITER, IVEC:   5  19  YDIPLEN   0.4875   RESID, RESID/X:  0.1434743D-03  0.8289154D-04
+ITER, IVEC:   5  20  YDIPLEN   0.4900   RESID, RESID/X:  0.1502830D-03  0.9438311D-04
+ITER, IVEC:   6   1  YDIPLEN   0.4425   RESID, RESID/X:  0.2266752D-04  0.2000060D-04
+ITER, IVEC:   6   2  YDIPLEN   0.4450   RESID, RESID/X:  0.2377155D-04  0.2007034D-04
+ITER, IVEC:   6   3  YDIPLEN   0.4475   RESID, RESID/X:  0.2493897D-04  0.2006088D-04
+ITER, IVEC:   6   4  YDIPLEN   0.4500   RESID, RESID/X:  0.2617235D-04  0.1995448D-04
+ITER, IVEC:   6   5  YDIPLEN   0.4525   RESID, RESID/X:  0.2747377D-04  0.1972985D-04
+ITER, IVEC:   6   6  YDIPLEN   0.4550   RESID, RESID/X:  0.2884476D-04  0.1936183D-04
+ITER, IVEC:   6   7  YDIPLEN   0.4575   RESID, RESID/X:  0.3028660D-04  0.1882159D-04
+ITER, IVEC:   6   8  YDIPLEN   0.4600   RESID, RESID/X:  0.3180252D-04  0.1807902D-04
+ITER, IVEC:   6   9  YDIPLEN   0.4625   RESID, RESID/X:  0.3340675D-04  0.1711143D-04
+ITER, IVEC:   6  10  YDIPLEN   0.4650   RESID, RESID/X:  0.3515966D-04  0.1593287D-04
+ITER, IVEC:   6  11  YDIPLEN   0.4675   RESID, RESID/X:  0.3730265D-04  0.1469234D-04
+ITER, IVEC:   6  12  YDIPLEN   0.4700   RESID, RESID/X:  0.4069332D-04  0.1399984D-04
+ITER, IVEC:   6  13  YDIPLEN   0.4725   RESID, RESID/X:  0.4690989D-04  0.1578913D-04
+ITER, IVEC:   6  14  YDIPLEN   0.4750   RESID, RESID/X:  0.5367718D-04  0.1777787D-04
+ITER, IVEC:   6  15  YDIPLEN   0.4775   RESID, RESID/X:  0.5714969D-04  0.2017220D-04
+ITER, IVEC:   6  16  YDIPLEN   0.4800   RESID, RESID/X:  0.5941226D-04  0.2414052D-04
+ITER, IVEC:   6  17  YDIPLEN   0.4825   RESID, RESID/X:  0.6194480D-04  0.2884247D-04
+ITER, IVEC:   6  18  YDIPLEN   0.4850   RESID, RESID/X:  0.6499861D-04  0.3402266D-04
+ITER, IVEC:   6  19  YDIPLEN   0.4875   RESID, RESID/X:  0.6856896D-04  0.3961535D-04
+ITER, IVEC:   6  20  YDIPLEN   0.4900   RESID, RESID/X:  0.7263668D-04  0.4561845D-04
+ITER, IVEC:   7   1  YDIPLEN   0.4425   RESID, RESID/X:  0.3085581D-05  0.2722551D-05
+ITER, IVEC:   7   2  YDIPLEN   0.4450   RESID, RESID/X:  0.3258874D-05  0.2751470D-05
+ITER, IVEC:   7   3  YDIPLEN   0.4475   RESID, RESID/X:  0.3443405D-05  0.2769871D-05
+ITER, IVEC:   7   4  YDIPLEN   0.4500   RESID, RESID/X:  0.3639779D-05  0.2775063D-05
+ITER, IVEC:   7   5  YDIPLEN   0.4525   RESID, RESID/X:  0.3848547D-05  0.2763772D-05
+ITER, IVEC:   7   6  YDIPLEN   0.4550   RESID, RESID/X:  0.4070176D-05  0.2732075D-05
+ITER, IVEC:   7   7  YDIPLEN   0.4575   RESID, RESID/X:  0.4305089D-05  0.2675396D-05
+ITER, IVEC:   7   8  YDIPLEN   0.4600   RESID, RESID/X:  0.4553940D-05  0.2588814D-05
+ITER, IVEC:   7   9  YDIPLEN   0.4625   RESID, RESID/X:  0.4818887D-05  0.2468305D-05
+ITER, IVEC:   7  10  YDIPLEN   0.4650   RESID, RESID/X:  0.5108721D-05  0.2315056D-05
+ITER, IVEC:   7  11  YDIPLEN   0.4675   RESID, RESID/X:  0.5459167D-05  0.2150194D-05
+ITER, IVEC:   7  12  YDIPLEN   0.4700   RESID, RESID/X:  0.6000574D-05  0.2064395D-05
+ITER, IVEC:   7  13  YDIPLEN   0.4725   RESID, RESID/X:  0.6984130D-05  0.2350748D-05
+ITER, IVEC:   7  14  YDIPLEN   0.4750   RESID, RESID/X:  0.8084319D-05  0.2677525D-05
+ITER, IVEC:   7  15  YDIPLEN   0.4775   RESID, RESID/X:  0.8700004D-05  0.3070852D-05
+ITER, IVEC:   7  16  YDIPLEN   0.4800   RESID, RESID/X:  0.9134205D-05  0.3711430D-05
+ITER, IVEC:   7  17  YDIPLEN   0.4825   RESID, RESID/X:  0.9616692D-05  0.4477682D-05
+ITER, IVEC:   7  18  YDIPLEN   0.4850   RESID, RESID/X:  0.1019144D-04  0.5334572D-05
+ITER, IVEC:   7  19  YDIPLEN   0.4875   RESID, RESID/X:  0.1086223D-04  0.6275594D-05
+ITER, IVEC:   7  20  YDIPLEN   0.4900   RESID, RESID/X:  0.1163041D-04  0.7304314D-05
+ITER, IVEC:  8  1  YDIPLEN   0.4425 RESID, RESID/X:TT
+ITER, IVEC:  8  2  YDIPLEN   0.4450 RESID, RESID/X:TT
+ITER, IVEC:  8  3  YDIPLEN   0.4475 RESID, RESID/X:TT
+ITER, IVEC:  8  4  YDIPLEN   0.4500 RESID, RESID/X:TT
+ITER, IVEC:  8  5  YDIPLEN   0.4525 RESID, RESID/X:TT
+ITER, IVEC:  8  6  YDIPLEN   0.4550 RESID, RESID/X:TT
+ITER, IVEC:  8  7  YDIPLEN   0.4575 RESID, RESID/X:TT
+ITER, IVEC:  8  8  YDIPLEN   0.4600 RESID, RESID/X:TT
+ITER, IVEC:  8  9  YDIPLEN   0.4625 RESID, RESID/X:TT
+ITER, IVEC:  8 10  YDIPLEN   0.4650 RESID, RESID/X:TT
+ITER, IVEC:  8 11  YDIPLEN   0.4675 RESID, RESID/X:TT
+ITER, IVEC:  8 12  YDIPLEN   0.4700 RESID, RESID/X:TT
+ITER, IVEC:  8 13  YDIPLEN   0.4725 RESID, RESID/X:TT
+ITER, IVEC:  8 14  YDIPLEN   0.4750 RESID, RESID/X:TT
+ITER, IVEC:  8 15  YDIPLEN   0.4775 RESID, RESID/X:TT
+ITER, IVEC:  8 16  YDIPLEN   0.4800 RESID, RESID/X:TT
+ITER, IVEC:  8 17  YDIPLEN   0.4825 RESID, RESID/X:TT
+ITER, IVEC:   8  18  YDIPLEN   0.4850   RESID, RESID/X:  0.8988507D-06  0.4704915D-06
+ITER, IVEC:   8  19  YDIPLEN   0.4875   RESID, RESID/X:  0.9638950D-06  0.5568852D-06
+ITER, IVEC:   8  20  YDIPLEN   0.4900   RESID, RESID/X:  0.1036671D-05  0.6510665D-06
+
+ *** ABSCTL: REQUESTED  20 SOLUTION VECTORS CONVERGED IN RED SPACES OF  95  97
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator ZDIPLEN  of symmetry 1 at frequencies:
+ ABSLRS --  0.44250000  0.44500000  0.44750000  0.45000000
+             0.45250000  0.45500000  0.45750000  0.46000000
+             0.46250000  0.46500000  0.46750000  0.47000000
+             0.47250000  0.47500000  0.47750000  0.48000000
+             0.48250000  0.48500000  0.48750000  0.49000000
+
+ Use ABS_READIN_RED           95          97
+ITER, IVEC:   1   1  ZDIPLEN   0.4425   RESID, RESID/X:  0.3702351D+00  0.3267543D+00
+ITER, IVEC:   1   2  ZDIPLEN   0.4450   RESID, RESID/X:  0.3710652D+00  0.3133573D+00
+ITER, IVEC:   1   3  ZDIPLEN   0.4475   RESID, RESID/X:  0.3719300D+00  0.2992359D+00
+ITER, IVEC:   1   4  ZDIPLEN   0.4500   RESID, RESID/X:  0.3728381D+00  0.2843075D+00
+ITER, IVEC:   1   5  ZDIPLEN   0.4525   RESID, RESID/X:  0.3738021D+00  0.2684775D+00
+ITER, IVEC:   1   6  ZDIPLEN   0.4550   RESID, RESID/X:  0.3748407D+00  0.2516392D+00
+ITER, IVEC:   1   7  ZDIPLEN   0.4575   RESID, RESID/X:  0.3759832D+00  0.2336786D+00
+ITER, IVEC:   1   8  ZDIPLEN   0.4600   RESID, RESID/X:  0.3772764D+00  0.2144923D+00
+ITER, IVEC:   1   9  ZDIPLEN   0.4625   RESID, RESID/X:  0.3787978D+00  0.1940410D+00
+ITER, IVEC:   1  10  ZDIPLEN   0.4650   RESID, RESID/X:  0.3806722D+00  0.1725168D+00
+ITER, IVEC:   1  11  ZDIPLEN   0.4675   RESID, RESID/X:  0.3830556D+00  0.1508834D+00
+ITER, IVEC:   1  12  ZDIPLEN   0.4700   RESID, RESID/X:  0.3857738D+00  0.1327261D+00
+ITER, IVEC:   1  13  ZDIPLEN   0.4725   RESID, RESID/X:  0.3865950D+00  0.1301255D+00
+ITER, IVEC:   1  14  ZDIPLEN   0.4750   RESID, RESID/X:  0.3827234D+00  0.1267639D+00
+ITER, IVEC:   1  15  ZDIPLEN   0.4775   RESID, RESID/X:  0.3794001D+00  0.1339188D+00
+ITER, IVEC:   1  16  ZDIPLEN   0.4800   RESID, RESID/X:  0.3787454D+00  0.1538947D+00
+ITER, IVEC:   1  17  ZDIPLEN   0.4825   RESID, RESID/X:  0.3792646D+00  0.1765963D+00
+ITER, IVEC:   1  18  ZDIPLEN   0.4850   RESID, RESID/X:  0.3801654D+00  0.1990018D+00
+ITER, IVEC:   1  19  ZDIPLEN   0.4875   RESID, RESID/X:  0.3811883D+00  0.2202450D+00
+ITER, IVEC:   1  20  ZDIPLEN   0.4900   RESID, RESID/X:  0.3822522D+00  0.2400919D+00
+ITER, IVEC:   2   1  ZDIPLEN   0.4425   RESID, RESID/X:  0.2813490D-01  0.2482479D-01
+ITER, IVEC:   2   2  ZDIPLEN   0.4450   RESID, RESID/X:  0.2834853D-01  0.2393474D-01
+ITER, IVEC:   2   3  ZDIPLEN   0.4475   RESID, RESID/X:  0.2856444D-01  0.2297726D-01
+ITER, IVEC:   2   4  ZDIPLEN   0.4500   RESID, RESID/X:  0.2878240D-01  0.2194449D-01
+ITER, IVEC:   2   5  ZDIPLEN   0.4525   RESID, RESID/X:  0.2900207D-01  0.2082741D-01
+ITER, IVEC:   2   6  ZDIPLEN   0.4550   RESID, RESID/X:  0.2922303D-01  0.1961577D-01
+ITER, IVEC:   2   7  ZDIPLEN   0.4575   RESID, RESID/X:  0.2944487D-01  0.1829853D-01
+ITER, IVEC:   2   8  ZDIPLEN   0.4600   RESID, RESID/X:  0.2966749D-01  0.1686533D-01
+ITER, IVEC:   2   9  ZDIPLEN   0.4625   RESID, RESID/X:  0.2989236D-01  0.1531134D-01
+ITER, IVEC:   2  10  ZDIPLEN   0.4650   RESID, RESID/X:  0.3012701D-01  0.1365231D-01
+ITER, IVEC:   2  11  ZDIPLEN   0.4675   RESID, RESID/X:  0.3040146D-01  0.1197421D-01
+ITER, IVEC:   2  12  ZDIPLEN   0.4700   RESID, RESID/X:  0.3082112D-01  0.1060349D-01
+ITER, IVEC:   2  13  ZDIPLEN   0.4725   RESID, RESID/X:  0.3158483D-01  0.1063093D-01
+ITER, IVEC:   2  14  ZDIPLEN   0.4750   RESID, RESID/X:  0.3239206D-01  0.1072825D-01
+ITER, IVEC:   2  15  ZDIPLEN   0.4775   RESID, RESID/X:  0.3271860D-01  0.1154870D-01
+ITER, IVEC:   2  16  ZDIPLEN   0.4800   RESID, RESID/X:  0.3286821D-01  0.1335505D-01
+ITER, IVEC:   2  17  ZDIPLEN   0.4825   RESID, RESID/X:  0.3304001D-01  0.1538391D-01
+ITER, IVEC:   2  18  ZDIPLEN   0.4850   RESID, RESID/X:  0.3325794D-01  0.1740840D-01
+ITER, IVEC:   2  19  ZDIPLEN   0.4875   RESID, RESID/X:  0.3351400D-01  0.1936252D-01
+ITER, IVEC:   2  20  ZDIPLEN   0.4900   RESID, RESID/X:  0.3379995D-01  0.2122758D-01
+ITER, IVEC:   3   1  ZDIPLEN   0.4425   RESID, RESID/X:  0.1793250D-02  0.1582268D-02
+ITER, IVEC:   3   2  ZDIPLEN   0.4450   RESID, RESID/X:  0.1812695D-02  0.1530461D-02
+ITER, IVEC:   3   3  ZDIPLEN   0.4475   RESID, RESID/X:  0.1832563D-02  0.1474112D-02
+ITER, IVEC:   3   4  ZDIPLEN   0.4500   RESID, RESID/X:  0.1852882D-02  0.1412686D-02
+ITER, IVEC:   3   5  ZDIPLEN   0.4525   RESID, RESID/X:  0.1873692D-02  0.1345563D-02
+ITER, IVEC:   3   6  ZDIPLEN   0.4550   RESID, RESID/X:  0.1895049D-02  0.1272038D-02
+ITER, IVEC:   3   7  ZDIPLEN   0.4575   RESID, RESID/X:  0.1917040D-02  0.1191345D-02
+ITER, IVEC:   3   8  ZDIPLEN   0.4600   RESID, RESID/X:  0.1939814D-02  0.1102742D-02
+ITER, IVEC:   3   9  ZDIPLEN   0.4625   RESID, RESID/X:  0.1963645D-02  0.1005810D-02
+ITER, IVEC:   3  10  ZDIPLEN   0.4650   RESID, RESID/X:  0.1989099D-02  0.9013771D-03
+ITER, IVEC:   3  11  ZDIPLEN   0.4675   RESID, RESID/X:  0.2017379D-02  0.7945837D-03
+ITER, IVEC:   3  12  ZDIPLEN   0.4700   RESID, RESID/X:  0.2050566D-02  0.7054628D-03
+ITER, IVEC:   3  13  ZDIPLEN   0.4725   RESID, RESID/X:  0.2087104D-02  0.7024847D-03
+ITER, IVEC:   3  14  ZDIPLEN   0.4750   RESID, RESID/X:  0.2111857D-02  0.6994468D-03
+ITER, IVEC:   3  15  ZDIPLEN   0.4775   RESID, RESID/X:  0.2126832D-02  0.7507090D-03
+ITER, IVEC:   3  16  ZDIPLEN   0.4800   RESID, RESID/X:  0.2145443D-02  0.8717387D-03
+ITER, IVEC:   3  17  ZDIPLEN   0.4825   RESID, RESID/X:  0.2168460D-02  0.1009667D-02
+ITER, IVEC:   3  18  ZDIPLEN   0.4850   RESID, RESID/X:  0.2194275D-02  0.1148562D-02
+ITER, IVEC:   3  19  ZDIPLEN   0.4875   RESID, RESID/X:  0.2221986D-02  0.1283738D-02
+ITER, IVEC:   3  20  ZDIPLEN   0.4900   RESID, RESID/X:  0.2251198D-02  0.1413831D-02
+ITER, IVEC:   4   1  ZDIPLEN   0.4425   RESID, RESID/X:  0.8286507D-04  0.7311571D-04
+ITER, IVEC:   4   2  ZDIPLEN   0.4450   RESID, RESID/X:  0.8400738D-04  0.7092751D-04
+ITER, IVEC:   4   3  ZDIPLEN   0.4475   RESID, RESID/X:  0.8517754D-04  0.6851676D-04
+ITER, IVEC:   4   4  ZDIPLEN   0.4500   RESID, RESID/X:  0.8637779D-04  0.6585671D-04
+ITER, IVEC:   4   5  ZDIPLEN   0.4525   RESID, RESID/X:  0.8761109D-04  0.6291654D-04
+ITER, IVEC:   4   6  ZDIPLEN   0.4550   RESID, RESID/X:  0.8888171D-04  0.5966122D-04
+ITER, IVEC:   4   7  ZDIPLEN   0.4575   RESID, RESID/X:  0.9019626D-04  0.5605247D-04
+ITER, IVEC:   4   8  ZDIPLEN   0.4600   RESID, RESID/X:  0.9156574D-04  0.5205315D-04
+ITER, IVEC:   4   9  ZDIPLEN   0.4625   RESID, RESID/X:  0.9301025D-04  0.4764129D-04
+ITER, IVEC:   4  10  ZDIPLEN   0.4650   RESID, RESID/X:  0.9456920D-04  0.4285483D-04
+ITER, IVEC:   4  11  ZDIPLEN   0.4675   RESID, RESID/X:  0.9632142D-04  0.3793806D-04
+ITER, IVEC:   4  12  ZDIPLEN   0.4700   RESID, RESID/X:  0.9838223D-04  0.3384676D-04
+ITER, IVEC:   4  13  ZDIPLEN   0.4725   RESID, RESID/X:  0.1005560D-03  0.3384548D-04
+ITER, IVEC:   4  14  ZDIPLEN   0.4750   RESID, RESID/X:  0.1018183D-03  0.3372219D-04
+ITER, IVEC:   4  15  ZDIPLEN   0.4775   RESID, RESID/X:  0.1025253D-03  0.3618840D-04
+ITER, IVEC:   4  16  ZDIPLEN   0.4800   RESID, RESID/X:  0.1035701D-03  0.4208270D-04
+ITER, IVEC:   4  17  ZDIPLEN   0.4825   RESID, RESID/X:  0.1049325D-03  0.4885808D-04
+ITER, IVEC:   4  18  ZDIPLEN   0.4850   RESID, RESID/X:  0.1064811D-03  0.5573598D-04
+ITER, IVEC:   4  19  ZDIPLEN   0.4875   RESID, RESID/X:  0.1081503D-03  0.6248315D-04
+ITER, IVEC:   4  20  ZDIPLEN   0.4900   RESID, RESID/X:  0.1099129D-03  0.6902915D-04
+ITER, IVEC:   5   1  ZDIPLEN   0.4425   RESID, RESID/X:  0.4447471D-05  0.3924210D-05
+ITER, IVEC:   5   2  ZDIPLEN   0.4450   RESID, RESID/X:  0.4513001D-05  0.3810331D-05
+ITER, IVEC:   5   3  ZDIPLEN   0.4475   RESID, RESID/X:  0.4579666D-05  0.3683880D-05
+ITER, IVEC:   5   4  ZDIPLEN   0.4500   RESID, RESID/X:  0.4647439D-05  0.3543330D-05
+ITER, IVEC:   5   5  ZDIPLEN   0.4525   RESID, RESID/X:  0.4716276D-05  0.3386921D-05
+ITER, IVEC:   5   6  ZDIPLEN   0.4550   RESID, RESID/X:  0.4786119D-05  0.3212648D-05
+ITER, IVEC:   5   7  ZDIPLEN   0.4575   RESID, RESID/X:  0.4856905D-05  0.3018324D-05
+ITER, IVEC:   5   8  ZDIPLEN   0.4600   RESID, RESID/X:  0.4928643D-05  0.2801827D-05
+ITER, IVEC:   5   9  ZDIPLEN   0.4625   RESID, RESID/X:  0.5001657D-05  0.2561926D-05
+ITER, IVEC:   5  10  ZDIPLEN   0.4650   RESID, RESID/X:  0.5077510D-05  0.2300917D-05
+ITER, IVEC:   5  11  ZDIPLEN   0.4675   RESID, RESID/X:  0.5162386D-05  0.2033306D-05
+ITER, IVEC:   5  12  ZDIPLEN   0.4700   RESID, RESID/X:  0.5277959D-05  0.1815794D-05
+ITER, IVEC:   5  13  ZDIPLEN   0.4725   RESID, RESID/X:  0.5465130D-05  0.1839472D-05
+ITER, IVEC:   5  14  ZDIPLEN   0.4750   RESID, RESID/X:  0.5662522D-05  0.1875427D-05
+ITER, IVEC:   5  15  ZDIPLEN   0.4775   RESID, RESID/X:  0.5762836D-05  0.2034111D-05
+ITER, IVEC:   5  16  ZDIPLEN   0.4800   RESID, RESID/X:  0.5827930D-05  0.2368010D-05
+ITER, IVEC:   5  17  ZDIPLEN   0.4825   RESID, RESID/X:  0.5898616D-05  0.2746481D-05
+ITER, IVEC:   5  18  ZDIPLEN   0.4850   RESID, RESID/X:  0.5979962D-05  0.3130125D-05
+ITER, IVEC:   5  19  ZDIPLEN   0.4875   RESID, RESID/X:  0.6070460D-05  0.3507169D-05
+ITER, IVEC:   5  20  ZDIPLEN   0.4900   RESID, RESID/X:  0.6168531D-05  0.3874053D-05
+
+ *** ABSCTL: REQUESTED  20 SOLUTION VECTORS CONVERGED IN RED SPACES OF 117 119
+
+
+      **********************************************************************
+      ******************** FINAL RESULTS FOR ABSORPTION ********************
+      **********************************************************************
+
+
+
+                          +-----------------------------+
+                          ! Polarizability with damping !
+                          +-----------------------------+
+
+ ------------------------------------------------------------------
+ No    A-oper    B-oper   Frequency       Real part       Imag part
+ ------------------------------------------------------------------
+
+  1   XDIPLEN   XDIPLEN    0.442500       51.727100        5.690989
+  2   YDIPLEN   YDIPLEN    0.442500       51.727092        5.690995
+  3   ZDIPLEN   ZDIPLEN    0.442500       51.727173        5.690999
+  4   XDIPLEN   YDIPLEN    0.442500       -0.000036       -0.000006
+  5   XDIPLEN   ZDIPLEN    0.442500        0.000000        0.000000
+  6   YDIPLEN   ZDIPLEN    0.442500        0.000000        0.000000
+
+      Averaged value       0.442500       51.727122        5.690994
+
+  7   XDIPLEN   XDIPLEN    0.445000       54.958329        6.663680
+  8   YDIPLEN   YDIPLEN    0.445000       54.958325        6.663689
+  9   ZDIPLEN   ZDIPLEN    0.445000       54.958408        6.663693
+ 10   XDIPLEN   YDIPLEN    0.445000       -0.000039       -0.000007
+ 11   XDIPLEN   ZDIPLEN    0.445000        0.000000        0.000000
+ 12   YDIPLEN   ZDIPLEN    0.445000        0.000000        0.000000
+
+      Averaged value       0.445000       54.958354        6.663687
+
+ 13   XDIPLEN   XDIPLEN    0.447500       58.735340        7.915920
+ 14   YDIPLEN   YDIPLEN    0.447500       58.735341        7.915933
+ 15   ZDIPLEN   ZDIPLEN    0.447500       58.735426        7.915935
+ 16   XDIPLEN   YDIPLEN    0.447500       -0.000043       -0.000008
+ 17   XDIPLEN   ZDIPLEN    0.447500        0.000000        0.000000
+ 18   YDIPLEN   ZDIPLEN    0.447500        0.000000        0.000000
+
+      Averaged value       0.447500       58.735369        7.915929
+
+ 19   XDIPLEN   XDIPLEN    0.450000       63.207470        9.565638
+ 20   YDIPLEN   YDIPLEN    0.450000       63.207478        9.565657
+ 21   ZDIPLEN   ZDIPLEN    0.450000       63.207564        9.565657
+ 22   XDIPLEN   YDIPLEN    0.450000       -0.000048       -0.000010
+ 23   XDIPLEN   ZDIPLEN    0.450000        0.000000        0.000000
+ 24   YDIPLEN   ZDIPLEN    0.450000        0.000000        0.000000
+
+      Averaged value       0.450000       63.207504        9.565651
+
+ 25   XDIPLEN   XDIPLEN    0.452500       68.580169       11.799128
+ 26   YDIPLEN   YDIPLEN    0.452500       68.580187       11.799155
+ 27   ZDIPLEN   ZDIPLEN    0.452500       68.580274       11.799151
+ 28   XDIPLEN   YDIPLEN    0.452500       -0.000053       -0.000012
+ 29   XDIPLEN   ZDIPLEN    0.452500        0.000000        0.000000
+ 30   YDIPLEN   ZDIPLEN    0.452500        0.000000        0.000000
+
+      Averaged value       0.452500       68.580210       11.799145
+
+ 31   XDIPLEN   XDIPLEN    0.455000       75.140010       14.923455
+ 32   YDIPLEN   YDIPLEN    0.455000       75.140042       14.923496
+ 33   ZDIPLEN   ZDIPLEN    0.455000       75.140127       14.923485
+ 34   XDIPLEN   YDIPLEN    0.455000       -0.000060       -0.000015
+ 35   XDIPLEN   ZDIPLEN    0.455000        0.000000        0.000000
+ 36   YDIPLEN   ZDIPLEN    0.455000        0.000000        0.000000
+
+      Averaged value       0.455000       75.140060       14.923479
+
+ 37   XDIPLEN   XDIPLEN    0.457500       83.288425       19.470575
+ 38   YDIPLEN   YDIPLEN    0.457500       83.288476       19.470641
+ 39   ZDIPLEN   ZDIPLEN    0.457500       83.288558       19.470614
+ 40   XDIPLEN   YDIPLEN    0.457500       -0.000068       -0.000019
+ 41   XDIPLEN   ZDIPLEN    0.457500        0.000000        0.000000
+ 42   YDIPLEN   ZDIPLEN    0.457500        0.000000        0.000000
+
+      Averaged value       0.457500       83.288486       19.470610
+
+ 43   XDIPLEN   XDIPLEN    0.460000       93.573973       26.416849
+ 44   YDIPLEN   YDIPLEN    0.460000       93.574051       26.416959
+ 45   ZDIPLEN   ZDIPLEN    0.460000       93.574127       26.416905
+ 46   XDIPLEN   YDIPLEN    0.460000       -0.000078       -0.000025
+ 47   XDIPLEN   ZDIPLEN    0.460000        0.000000        0.000000
+ 48   YDIPLEN   ZDIPLEN    0.460000        0.000000        0.000000
+
+      Averaged value       0.460000       93.574050       26.416904
+
+ 49   XDIPLEN   XDIPLEN    0.462500      106.655970       37.674102
+ 50   YDIPLEN   YDIPLEN    0.462500      106.656082       37.674295
+ 51   ZDIPLEN   ZDIPLEN    0.462500      106.656151       37.674184
+ 52   XDIPLEN   YDIPLEN    0.462500       -0.000092       -0.000034
+ 53   XDIPLEN   ZDIPLEN    0.462500        0.000000        0.000000
+ 54   YDIPLEN   ZDIPLEN    0.462500        0.000000        0.000000
+
+      Averaged value       0.462500      106.656068       37.674193
+
+ 55   XDIPLEN   XDIPLEN    0.465000      122.855659       57.228096
+ 56   YDIPLEN   YDIPLEN    0.465000      122.855794       57.228458
+ 57   ZDIPLEN   ZDIPLEN    0.465000      122.855870       57.228225
+ 58   XDIPLEN   YDIPLEN    0.465000       -0.000109       -0.000049
+ 59   XDIPLEN   ZDIPLEN    0.465000        0.000000        0.000000
+ 60   YDIPLEN   ZDIPLEN    0.465000        0.000000        0.000000
+
+      Averaged value       0.465000      122.855774       57.228260
+
+ 61   XDIPLEN   XDIPLEN    0.467500      139.616597       93.540985
+ 62   YDIPLEN   YDIPLEN    0.467500      139.616643       93.541693
+ 63   ZDIPLEN   ZDIPLEN    0.467500      139.616834       93.541203
+ 64   XDIPLEN   YDIPLEN    0.467500       -0.000133       -0.000075
+ 65   XDIPLEN   ZDIPLEN    0.467500        0.000000        0.000000
+ 66   YDIPLEN   ZDIPLEN    0.467500        0.000000        0.000000
+
+      Averaged value       0.467500      139.616691       93.541294
+
+ 67   XDIPLEN   XDIPLEN    0.470000      139.932213      160.481010
+ 68   YDIPLEN   YDIPLEN    0.470000      139.931625      160.482226
+ 69   ZDIPLEN   ZDIPLEN    0.470000      139.932411      160.481385
+ 70   XDIPLEN   YDIPLEN    0.470000       -0.000164       -0.000129
+ 71   XDIPLEN   ZDIPLEN    0.470000        0.000000        0.000000
+ 72   YDIPLEN   ZDIPLEN    0.470000        0.000000        0.000000
+
+      Averaged value       0.470000      139.932083      160.481540
+
+ 73   XDIPLEN   XDIPLEN    0.472500       70.053470      242.444337
+ 74   YDIPLEN   YDIPLEN    0.472500       70.051298      242.444903
+ 75   ZDIPLEN   ZDIPLEN    0.472500       70.053437      242.444825
+ 76   XDIPLEN   YDIPLEN    0.472500       -0.000160       -0.000259
+ 77   XDIPLEN   ZDIPLEN    0.472500       -0.000000        0.000000
+ 78   YDIPLEN   ZDIPLEN    0.472500       -0.000000        0.000000
+
+      Averaged value       0.472500       70.052735      242.444689
+
+ 79   XDIPLEN   XDIPLEN    0.475000      -57.450715      228.054955
+ 80   YDIPLEN   YDIPLEN    0.475000      -57.452318      228.053306
+ 81   ZDIPLEN   ZDIPLEN    0.475000      -57.450950      228.055278
+ 82   XDIPLEN   YDIPLEN    0.475000        0.000021       -0.000353
+ 83   XDIPLEN   ZDIPLEN    0.475000       -0.000000       -0.000000
+ 84   YDIPLEN   ZDIPLEN    0.475000       -0.000000       -0.000000
+
+      Averaged value       0.475000      -57.451328      228.054513
+
+ 85   XDIPLEN   XDIPLEN    0.477500     -106.412959      142.727239
+ 86   YDIPLEN   YDIPLEN    0.477500     -106.412929      142.725684
+ 87   ZDIPLEN   ZDIPLEN    0.477500     -106.413184      142.727408
+ 88   XDIPLEN   YDIPLEN    0.477500        0.000163       -0.000247
+ 89   XDIPLEN   ZDIPLEN    0.477500       -0.000000       -0.000000
+ 90   YDIPLEN   ZDIPLEN    0.477500       -0.000000       -0.000000
+
+      Averaged value       0.477500     -106.413024      142.726777
+
+ 91   XDIPLEN   XDIPLEN    0.480000      -99.229323       83.636718
+ 92   YDIPLEN   YDIPLEN    0.480000      -99.228866       83.635853
+ 93   ZDIPLEN   ZDIPLEN    0.480000      -99.229509       83.636819
+ 94   XDIPLEN   YDIPLEN    0.480000        0.000176       -0.000142
+ 95   XDIPLEN   ZDIPLEN    0.480000       -0.000000       -0.000000
+ 96   YDIPLEN   ZDIPLEN    0.480000       -0.000000       -0.000000
+
+      Averaged value       0.480000      -99.229232       83.636463
+
+ 97   XDIPLEN   XDIPLEN    0.482500      -81.830907       52.172525
+ 98   YDIPLEN   YDIPLEN    0.482500      -81.830458       52.172055
+ 99   ZDIPLEN   ZDIPLEN    0.482500      -81.831061       52.172592
+100   XDIPLEN   YDIPLEN    0.482500        0.000156       -0.000084
+101   XDIPLEN   ZDIPLEN    0.482500       -0.000000       -0.000000
+102   YDIPLEN   ZDIPLEN    0.482500       -0.000000       -0.000000
+
+      Averaged value       0.482500      -81.830809       52.172391
+
+103   XDIPLEN   XDIPLEN    0.485000      -66.092176       35.056940
+104   YDIPLEN   YDIPLEN    0.485000      -66.091803       35.056667
+105   ZDIPLEN   ZDIPLEN    0.485000      -66.092306       35.056988
+106   XDIPLEN   YDIPLEN    0.485000        0.000134       -0.000054
+107   XDIPLEN   ZDIPLEN    0.485000       -0.000000       -0.000000
+108   YDIPLEN   ZDIPLEN    0.485000       -0.000000       -0.000000
+
+      Averaged value       0.485000      -66.092095       35.056865
+
+109   XDIPLEN   XDIPLEN    0.487500      -53.445018       25.087864
+110   YDIPLEN   YDIPLEN    0.487500      -53.444715       25.087693
+111   ZDIPLEN   ZDIPLEN    0.487500      -53.445130       25.087899
+112   XDIPLEN   YDIPLEN    0.487500        0.000117       -0.000037
+113   XDIPLEN   ZDIPLEN    0.487500       -0.000000       -0.000000
+114   YDIPLEN   ZDIPLEN    0.487500       -0.000000       -0.000000
+
+      Averaged value       0.487500      -53.444955       25.087819
+
+115   XDIPLEN   XDIPLEN    0.490000      -43.396647       18.891713
+116   YDIPLEN   YDIPLEN    0.490000      -43.396397       18.891600
+117   ZDIPLEN   ZDIPLEN    0.490000      -43.396744       18.891740
+118   XDIPLEN   YDIPLEN    0.490000        0.000103       -0.000026
+119   XDIPLEN   ZDIPLEN    0.490000       -0.000000       -0.000000
+120   YDIPLEN   ZDIPLEN    0.490000       -0.000000       -0.000000
+
+      Averaged value       0.490000      -43.396596       18.891684
+ 
+ ------------------------------------------------------------------
+ Damping parameter equals  0.004556 au = 0.1240 eV =  999.9 cm-1
+
+ >>>> Total CPU  time used in RESPONSE:   4.87 seconds
+ >>>> Total wall time used in RESPONSE:   4.67 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   5.60 seconds
+ >>>> Total wall time used in DALTON:   5.44 seconds
+
+ 
+     Date and time (Linux)  : Mon May 26 22:53:28 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              

@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_excit1 */
       SUBROUTINE SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,

@@ -1,6 +1,7 @@
 !> @file 
 !> Contains the precision specifications
-MODULE Integralparameters
+MODULE lsparameters
+  use precision
 ! THESE ARE STRING SPECIFIERS FOR THE AOs
   integer,parameter :: AORegular = 1
   integer,parameter :: AOEmpty = 2
@@ -11,6 +12,8 @@ MODULE Integralparameters
   integer,parameter :: AOdfJK = 7
   integer,parameter :: AOVAL = 8
   integer,parameter :: AOelField = 9
+  integer,parameter :: AOadmm = 10  !ADMM basis
+  integer,parameter :: AONuclearSpec = 11 !single Nuclei
 ! THESE ARE STRING SPECIFIERS FOR THE Operator
   integer,parameter :: CoulombOperator = 1
   integer,parameter :: OverlapOperator = 2
@@ -58,6 +61,7 @@ MODULE Integralparameters
   integer,parameter :: GeoDerivCoulombSpec = 10
   integer,parameter :: GeoDerivLHSSpec     = 11
   integer,parameter :: GeoDerivRHSSpec     = 12
+
 ! THESE ARE MPI JOB SPECIFIERS 
   integer,parameter :: MATRIXTY                     =  1
   integer,parameter :: LSGETINT                     =  2
@@ -102,14 +106,30 @@ MODULE Integralparameters
   integer,parameter :: SLAVES_SHUT_DOWN_CHILD       = 39
   integer,parameter :: LSPDM_SLAVES_SHUT_DOWN_CHILD = 40
   integer,parameter :: CHILD_SHUT_DOWN              = 41
-  integer,parameter :: CCSD_COMM_PROC_MASTER        = 42
+  integer,parameter :: CCSD_COMM_PROC_MASTER        = 42 !This one is deprecated and may be replaced PE
   integer,parameter :: CCGETGMO                     = 43
   integer,parameter :: RPAGETRESIDUAL               = 44
   integer,parameter :: MOCCSDDATA                   = 45
-! postprocess specifiers
+  integer,parameter :: MO_INTEGRAL_SIMPLE           = 46
+  integer,parameter :: DEC_SETTING_TO_SLAVES        = 47
+  integer,parameter :: INITSLAVETIME                = 48
+  integer,parameter :: GETSLAVETIME                 = 49
+  integer,parameter :: RIMP2INAMP                   = 50
+  integer,parameter :: SIMPLE_MP2_PAR               = 51
+  integer,parameter :: RPAGETFOCK                   = 52
+  integer,parameter :: SET_SPLIT_MPI_MSG            = 53
+  integer,parameter :: SET_MAX_SIZE_ONE_SIDED       = 54
+  integer,parameter :: RIMP2FULL                    = 55
+  integer,parameter :: SET_GPUMAXMEM                = 56
+  integer,parameter :: SET_TENSOR_BACKEND_TRUE      = 57
+  integer,parameter :: SET_TENSOR_DEBUG_TRUE        = 58
+
+! s
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2
   integer,parameter :: AntiSymmetricPostprocess=3
+
+  real(realk) :: GPUMAXMEM
 save
 INTEGER :: AORdefault
 INTEGER :: AODFdefault
@@ -126,6 +146,13 @@ SUBROUTINE set_default_AOs(newAORegular,newAOdfAux)
   AORdefault = newAORegular
   AODFdefault = newAOdfAux
 END SUBROUTINE set_default_AOs
+
+SUBROUTINE get_default_AOs(oldAORegular,oldAOdfAux)
+  implicit none
+  integer :: oldAORegular,oldAOdfAux
+  oldAORegular = AORdefault 
+  oldAOdfAux = AODFdefault  
+END SUBROUTINE get_default_AOs
 
 subroutine param_oper_paramfromString(Oper,Operparam)
   implicit none
@@ -273,7 +300,6 @@ subroutine param_AO_Stringfromparam(AO1,AO1param)
   implicit none
   Character(len=8),intent(inout)     :: AO1
   integer,intent(in)     :: AO1param
-
   SELECT CASE(AO1param)
   CASE(AORegular) 
      AO1 = 'Regular '
@@ -285,8 +311,16 @@ subroutine param_AO_Stringfromparam(AO1,AO1param)
      AO1 = 'Nuclear '
   CASE(AOpCharge) 
      AO1 = 'pCharge '
+  CASE(AOdfCABS) 
+     AO1 = 'CABS    '
+  CASE(AOdfJK) 
+     AO1 = 'JKAUX   '
+  CASE(AOVAL) 
+     AO1 = 'VALENCE '
   CASE(AOelField) 
      AO1 = 'elField '
+  CASE(AOadmm) 
+     AO1 = 'ADMM    '
   CASE DEFAULT
      WRITE(6,'(1X,2A)') 'Unknown AO string =',AO1param
      CALL LSQUIT('Unknown Operator II_determineOperatorparameter',-1)
@@ -311,5 +345,5 @@ subroutine param_inttype_Stringfromparam(inttype,inttypeparam)
 
 end subroutine Param_inttype_Stringfromparam
 
-END MODULE Integralparameters
+END MODULE Lsparameters
 

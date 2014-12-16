@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck lrsinp */
       SUBROUTINE LRSINP(WORD)
@@ -172,6 +171,7 @@ C
 C     Initialize /LRSRES/
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "gnrinf.h"
 #include "abainf.h"
@@ -395,11 +395,11 @@ C
      &                           IPRCLC,MXRM,MXPHP,WORK,LWORK)
                      IF (NOCONV) THEN
                         WRITE (LUPRI,'(/3A,2F10.5)')
-     &                    ' No convergence for ',
+     &                    '@ WARNING  No convergence for ',
      &                    IMGLAB(IREC),'. Last residual and threshold:',
      &                    FINRES, THRCLC
                      ELSE
-                        WRITE (LUPRI,'(/3A,2F10.5)')
+                        WRITE (LUPRI,'(3A,2F10.5)')
      &                    '    Convergence for ',
      &                    IMGLAB(IREC),'. Last residual and threshold:',
      &                    FINRES, THRCLC
@@ -432,7 +432,7 @@ C
                   CALL WRITDX (LURDI,IREC2,IRAT*NVARPT,
      &                         WORK(NVARPT + 1))
 ckr                  IDORCI(IREC,2) = 2
-                  CALL ABAWRITRS
+                  CALL ABAWRIT_RESTART
                   IF (IPRCLC .GT. 5) THEN
                      CALL HEADER('Response and residuum vectors in '//
      &                   'GETMRH for symmetry '//CHRNOS(ISYM)//':',-1)

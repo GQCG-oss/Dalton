@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-9)
+
+f.add(string = 'Total number of tesserae',
+      rel_tolerance = 1.0e-1)
+
+f.add(string = 'Nuclear repulsion energy',
+      rel_tolerance = 1.0e-10)
+
+f.add(string = 'Surface area',
+      rel_tolerance = 1.0e-7)
+
+f.add(string = 'NUCLEAR APPARENT CHARGE',
+      rel_tolerance = 1.0e-4)
+
+f.add(string = 'B-freq =',
+      rel_tolerance = 1.0e-4)
+
+f.add(string = '@ QRLRVE:  ',
+      rel_tolerance = 1.0e-3)
+
+f.add(string = 'LOOKING UP INTERNALLY STORED DATA FOR SOLVENT',
+      rel_tolerance = 1.0e-5)
+
+test.run(['trp_qr_pcm.dal'], ['CH2O_3-21G.mol'], f={'out': f})
+
+sys.exit(test.return_code)

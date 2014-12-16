@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck maginp */
       SUBROUTINE MAGINP(WORD)
@@ -449,7 +448,7 @@ C
 #include "symmet.h"
 #include "inforb.h"
 C
-#include "ibtfun.h"       
+       
 C
       CALL QENTER('MAGDRV')
 C
@@ -1538,6 +1537,7 @@ C Used from common blocks:
 C gnrinf.h : THR_REDFAC
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "gnrinf.h"
 #include "abainf.h"
@@ -2019,10 +2019,10 @@ C
      &                        MXPHP,WORK,LWORK)
                   IF (NOCONV) THEN
                      WRITE (LUPRI,'(/3A,2F10.5)')
-     &                  ' No convergence for ',TRPLAB(IREC),
+     &                  '@ WARNING No convergence for ',TRPLAB(IREC),
      &                  '. Last residual and threshold:', FINRES, THRTRP
                   ELSE
-                     WRITE (LUPRI,'(/3A,2F10.5)')
+                     WRITE (LUPRI,'(3A,2F10.5)')
      &                  '    Convergence for ',TRPLAB(IREC),
      &                  '. Last residual and threshold:', FINRES, THRTRP
                   END IF
@@ -2048,7 +2048,7 @@ C
                IREC2 = 2*IREC
                CALL WRITDX(LURDT,IREC2,IRAT*NVARPT,WORK(NVARPT+1))
 ckr               IDORCT(IREC) = 1
-               CALL ABAWRITRS
+               CALL ABAWRIT_RESTART
                IF (IPRTRP .GT. 5) THEN
                   CALL HEADER('Response and residual vectors in '//
      &                'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)
@@ -2156,7 +2156,7 @@ C CTOCD
       DIMENSION IPATOM(MXCENT)
 CTOCD
 
-#include "ibtfun.h"
+
 C
 
 C     Get ipatom stuff (if CC some only atoms can be selected)
@@ -2253,7 +2253,7 @@ C
       IATOM = 0
       DO 100 I = 1, NUCINS
          DO 200 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+         IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
             IF (PRTSHI(I))          ! Selected atom if CTOMAG
      &      CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),PMAT(1,1,IATOM),
@@ -2284,7 +2284,7 @@ C
       IATOM = 0
       DO 300 I = 1, NUCINS
          DO 400 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+         IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
             IF (AVETOT(IATOM) .GT. D0) THEN
                DIAPAR = 'paramagnetic'
@@ -2318,7 +2318,7 @@ C
       IATOM = 0
       DO 310 I = 1, NUCINS
          DO 410 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+         IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
             IF (AVETOT(IATOM) .GT. D0) THEN
                DIAPAR = 'paramagnetic'
@@ -2665,7 +2665,7 @@ C  /* Deck spire1 */
      &          SPAR (NUCDEP*(NUCDEP + 1)/2),
      &          APAR (NUCDEP*(NUCDEP + 1)/2),
      &          COUPLM(3,3), CSTRA(*), SCTRA(*)
-#include "ibtfun.h"
+
 C
 C Ordering of the properties in the isotropic matrix:
 C 1: Total spin-spin coupling matrix
@@ -2769,7 +2769,7 @@ C  /* Deck isospn */
      &                SPAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                APAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                COUPLM(3,3)
-#include "ibtfun.h"
+
 C
 C     *** Calculate the various spin parameters. ***
 C
@@ -2849,7 +2849,7 @@ C
       IF (SOLVNT) NUCINS = NUCINS - 1
       DO 80 I1 = 1, NUCINS
          DO 82 ISYM1 = 0, MAXOPR
-            IF (IBTAND(ISTBNU(I1),ISYM1) .EQ. 0) THEN
+            IF (IAND(ISTBNU(I1),ISYM1) .EQ. 0) THEN
                IATOM1 = IATOM1 + 1
                IF (DOPERT(I1,2)) THEN
       IATOM2 = 0
@@ -2860,7 +2860,7 @@ C
             MAXSYM = MAXOPR
          END IF
          DO 87 ISYM2 = 0, MAXSYM
-            IF (IBTAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
+            IF (IAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
                IATOM2 = IATOM2 + 1
                IF (.NOT.(NCSPNI(I1) .OR. NCSPNI(I2))) GOTO 87
                IF (DOPERT(I2,2)) THEN
@@ -2986,7 +2986,7 @@ C  /* Deck fnlspn */
      &                SPAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                APAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                COUPLM(3,3)
-#include "ibtfun.h"
+
 C
 C     *** Calculate the various spin parameters. ***
 C
@@ -3066,7 +3066,7 @@ C
       IF (SOLVNT) NUCINS = NUCINS - 1
       DO 80 I1 = 1, NUCINS
          DO 82 ISYM1 = 0, MAXOPR
-            IF (IBTAND(ISTBNU(I1),ISYM1) .EQ. 0) THEN
+            IF (IAND(ISTBNU(I1),ISYM1) .EQ. 0) THEN
                IATOM1 = IATOM1 + 1
                IF (DOPERT(I1,2)) THEN
       IATOM2 = 0
@@ -3077,7 +3077,7 @@ C
             MAXSYM = MAXOPR
          END IF
          DO 87 ISYM2 = 0, MAXSYM
-            IF (IBTAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
+            IF (IAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
                IATOM2 = IATOM2 + 1
                IF (.NOT.(NCSPNI(I1) .OR. NCSPNI(I2))) GOTO 87
                IF (DOPERT(I2,2)) THEN
@@ -3263,7 +3263,7 @@ C
 #include "symmet.h"
 #include "qm3.h"
 #include "nqcc.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(UCNNQC,9*MXCENT)
 C
@@ -3272,12 +3272,12 @@ C
 C
       DO 10 I = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
                LL = 1
                DO 100 I2 = 1, NUCIND
                   IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
                   DO 110 ISYM = 0, MAXOPR
-                     IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
+                     IF (IAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
                         IF (LL .NE. KK) THEN
                            XCOOR = GEOM(LL) - GEOM(KK)
                            YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
@@ -3337,7 +3337,7 @@ C
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
 #include "symmet.h"
 #include "quadru.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(QDRNUC,9)
 C
@@ -3349,7 +3349,7 @@ C
 C
       DO 10 I = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
                XCOOR = GEOM(KK) - ORIGIN(1)
                YCOOR = GEOM(KK + 1) - ORIGIN(2)
                ZCOOR = GEOM(KK + 2) - ORIGIN(3)
@@ -3394,7 +3394,7 @@ C
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
 #include "symmet.h"
 #include "secmom.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(SCMNUC,9)
       KK = 1
@@ -3404,7 +3404,7 @@ C
       IZ = IPTAX(3,1)
       DO I = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
                XCOOR = GEOM(KK) - ORIGIN(1)
                YCOOR = GEOM(KK + 1) - ORIGIN(2)
                ZCOOR = GEOM(KK + 2) - ORIGIN(3)
@@ -3442,7 +3442,7 @@ C
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
 #include "symmet.h"
 #include "thimom.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(THDNUC,27)
       KK = 1
@@ -3452,7 +3452,7 @@ C
       IZ = IPTAX(3,1)
       DO I = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
                XCOOR = GEOM(KK) - ORIGIN(1)
                YCOOR = GEOM(KK + 1) - ORIGIN(2)
                ZCOOR = GEOM(KK + 2) - ORIGIN(3)
@@ -3516,7 +3516,7 @@ C
       DIMENSION ORIGIN(3), GEOM(3*(NATOMS+NFLOAT))
 #include "symmet.h"
 #include "molgfa.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(GFANUC,9)
       KK = 1
@@ -3526,7 +3526,7 @@ C
       IZ = IPTAX(3,2)
       DO 10 I = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
                XCOOR = GEOM(KK) - ORIGIN(1)
                YCOOR = GEOM(KK + 1) - ORIGIN(2)
                ZCOOR = GEOM(KK + 2) - ORIGIN(3)
@@ -3571,19 +3571,19 @@ C
 #include "abainf.h"
 #include "symmet.h"
 #include "spinro.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(SPRNUC,3*MXCOOR)
       KK = 1
       NATOM1 = 1
       DO 10 IATOM1 = 1, NUCIND
          DO 20 ISYM1 = 0, MAXOPR
-            IF (IBTAND(ISYM1,ISTBNU(IATOM1)) .EQ. 0) THEN
+            IF (IAND(ISYM1,ISTBNU(IATOM1)) .EQ. 0) THEN
                IF (CHARGE(IATOM1) .GT. D0) THEN
                   LL = 1
                   DO 30 IATOM2 = 1, NUCIND
                      DO 40 ISYM2 = 0, MAXOPR
-                        IF (IBTAND(ISYM2,ISTBNU(IATOM2)) .EQ. 0) THEN
+                        IF (IAND(ISYM2,ISTBNU(IATOM2)) .EQ. 0) THEN
                            ZVAL2 = CHARGE(IATOM2)
                            IF (ZVAL2 .GT. D0) THEN
                               IF (KK .NE. LL) THEN
@@ -3651,7 +3651,7 @@ C  /* Deck mgfres */
 #include "molgfa.h"
 #include "orgcom.h"
 #include "dftcom.h"
-#include "ibtfun.h"
+
 C
       D12 = .FALSE.
       D23 = .FALSE.
@@ -3714,10 +3714,10 @@ C
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
                DO 120 ICOOR = 1, 3
-                  GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                  GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                               *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120           CONTINUE
                JATOM = JATOM + 1
@@ -3921,7 +3921,7 @@ C  /* Deck sprres */
 #include "sigma.h"
 #include "spinro.h"
 #include "orgcom.h"
-#include "ibtfun.h"
+
 C
       D12 = .FALSE.
       D23 = .FALSE.
@@ -3967,11 +3967,11 @@ C
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
                GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL')
                DO 120 ICOOR = 1, 3
-                  GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                  GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                               *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120           CONTINUE
                JATOM = JATOM + 1
@@ -4103,7 +4103,7 @@ C
 #include "nuclei.h"
       DIMENSION TEMP(3,3,NUCDEP), EXPVAL(NCOMP)
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       ITYP = 0
 C
@@ -4112,10 +4112,10 @@ C
       DO 100 IATOM = 1, NUCIND
          DO 200 ICOOR1 = 1, 3
             DO 210 ICOOR2 = ICOOR1, 3
-               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+               ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
                DO 300 IREPC = 0, MAXREP
-                  IF (IBTAND(ISTBNU(IATOM),
-     &                 IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IF (IAND(ISTBNU(IATOM),
+     &                 IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                      ITYP = ITYP + 1
                      TEMP(ICOOR1,ICOOR2,IATOM) =
      &                    TEMP(ICOOR1,ICOOR2,IATOM) + EXPVAL(ITYP)
@@ -4130,11 +4130,11 @@ C
 C
       DO 110 IATOM = 1, NUCIND
          DO 310 IREPC = 0, MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+            IF (IAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
                DO 220 I = 1, 3
                   DO 230 J = I, 3
                      ELNQC(I,J,NATOM) = TEMP(I,J,IATOM)*
-     &                    PT(IBTAND(IBTXOR(ISYMAX(I,1),
+     &                    PT(IAND(IEOR(ISYMAX(I,1),
      &                    ISYMAX(J,1)),IREPC))
                      IF (I .NE. J) ELNQC(J,I,NATOM) = ELNQC(I,J,NATOM)
  230              CONTINUE
@@ -4169,7 +4169,7 @@ C
 #include "spinro.h"
 #include "orgcom.h"
 #include "helfey.h"
-#include "ibtfun.h"
+
 C
       CALL DZERO(SPRDNL,3*MXCOOR)
       CALL DZERO(HFGEL,MXCOOR)
@@ -4187,12 +4187,12 @@ C
       NATOM = 1
       DO 10 IATOM = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               COORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               COORX = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
      &               - CMXYZ(1)
-               COORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+               COORY = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
      &               - CMXYZ(2)
-               COORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               COORZ = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
      &               - CMXYZ(3)
                SPRDNL(1,1,NATOM) = (ELFLD(2,NATOM)*COORY
      &                           +  ELFLD(3,NATOM)*COORZ)

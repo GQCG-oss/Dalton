@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+#    dft_stex
+#    ---------
+#    Molecule:         ?
+#    Wave Function:    ?
+#    Test Purpose:     ?
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+a = Filter()
+a.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+b = Filter()
+b.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+b.add(from_string = 'Final results from SIRIUS',
+      num_lines = 8,
+      rel_tolerance = 1.0e-2)
+c = Filter()
+c.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+c.add(string = 'Number of orbitals frozen with',
+      rel_tolerance = 1.0e-2)
+
+
+test.run(['dft_stex_1.dal'], ['OCS_aug-cc-pCVTZ.mol'], f={'out': a}, args='-get SIRIUS.RST')
+
+shutil.move('dft_stex_1_OCS_aug-cc-pCVTZ.SIRIUS.RST','SIRIUS.RST')
+
+test.run(['dft_stex_2.dal'], ['OCS_aug-cc-pCVTZ.mol'], f={'out': b}, args='-put SIRIUS.RST -get SIRIUS.RST')
+
+shutil.move('dft_stex_2_OCS_aug-cc-pCVTZ.SIRIUS.RST','SIRIUS.RST')
+
+test.run(['dft_stex_3.dal'], ['OCS_aug-cc-pCVTZ.mol'], f={'out': c}, args='-put SIRIUS.RST -get SIRIUS.RST')
+
+shutil.move('dft_stex_3_OCS_aug-cc-pCVTZ.SIRIUS.RST','SIRIUS.RST')
+
+test.run(['dft_stex_4.dal'], ['OCS_aug-cc-pCVTZ.mol'], f={'out': c}, args='-put SIRIUS.RST')
+
+os.remove('SIRIUS.RST')
+
+sys.exit(test.return_code)

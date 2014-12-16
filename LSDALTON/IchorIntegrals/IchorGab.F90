@@ -7,18 +7,22 @@
 !> based on the Obara Saika(OS)/Head-Gordon-Pople(HGP)
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorGabmodule
-  use IchorprecisionModule
-  use IchorBatchToolsModule
-  use IchorCommonModule
-  use IchorEriGabintegralOBSGeneralMod, only: IchorGabIntegral_OBS_general, &
-       & IchorGabIntegral_OBS_general_size
+MODULE IchorGabmod
+  use IchorprecisionMod
+  use IchorBatchToolsMod
+  use IchorCommonMod
+  use IchorEriGabintegralOBSGeneralMod, only: IGI_OBS_general, &
+       & IGI_OBS_general_size
+  use IchorEriCoulombintegralCPUMcMGeneralMod, only: TmpArray3,TmpArray4,&
+       & DetermineSizeTmpArray34,precalcichorsphmat,freeichorsphmat,&
+       & nTmpArray3,nTmpArray4
   use IchorMemory
-  use IchorGammaTabulationModule
-  use IchorParametersModule
+  use IchorGammaTabulationMod
+  use IchorParametersMod
 !debugging
-  use IchorEriCoulombintegralCPUOBSGeneralMod, only: IchorCoulombIntegral_CPU_OBS_general
-
+  use IchorEriCoulombintegralCPUOBSGeneralMod, only: ICI_CPU_OBS_general
+  use IchorGaussianGeminalMod, only: set_GGem, free_GGem, GGemOperatorCalc
+  use IchorGabLoopmod, only: GabIntLoop
 public :: IchorGab
 private
 CONTAINS
@@ -29,8 +33,8 @@ subroutine IchorGab(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
      & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
      & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
      & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
@@ -79,6 +83,8 @@ Integer,intent(in) :: SphericalSpec
 Integer,intent(in) :: IchorJobSpec
 !> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
 Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperatorSpec = 1) means Coulomb Operator
+Integer,intent(in) :: IchorOperatorSpec
 !> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
 Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
 !> InputStorage
@@ -126,12 +132,14 @@ integer :: ItypeA,ItypeB,itypeC,itypeD,AngmomA,AngmomB
 integer :: ItypeAnon,ItypeBnon,nDimB
 integer :: nPrimA,nPrimB,nContA,nAtomsA,nAtomsB,nOrbA,nContB,nOrbCompB
 integer :: nDimA,nOrbCompA,iPrimA,iContA,iAtomA,iPrimB,iContB,iAtomB
+integer :: nCartOrbCompA,nCartOrbCompB
 integer :: INTPRINT,nBatchA,nBatchB,nOrbB
 !
 integer :: iBatchB,iBatchA
 real(realk) :: BcenterSpec(3),AcenterSpec(3),Pdistance12(3),CDAB(1)
 !
-integer :: iBatchIndexOfTypeB,iBatchIndexOfTypeA
+integer :: iBatchIndexOfTypeB,iBatchIndexOfTypeA,AngmomP
+integer :: nOrbCompP,nCartOrbCompP,nTUVP,nTUV
 integer,allocatable :: OrderdListA(:),OrderdListB(:)
 integer,allocatable :: BatchIndexOfTypeA(:),BatchIndexOfTypeB(:)
 logical :: Psegmented,Spherical
@@ -147,7 +155,7 @@ integer :: BasisContmaxsize
 real(realk),allocatable :: TmpArray1(:)
 real(realk),allocatable :: TmpArray2(:)
 INTPRINT=IchorDebugSpec
-call set_ichor_memvar(MaxMemAllocated,MemAllocated)
+call set_ichor_memvar(MaxMemAllocated,MemAllocated,MaxMem)
 allocate(OrderdListA(nTypesA))
 call mem_ichor_alloc(OrderdListA)
 call GenerateOrderdListOfTypes(lupri,nTypesA,AngmomOfTypeA,OrderdListA)
@@ -183,25 +191,19 @@ ENDIF
 !call ichorzero2(OutputStorage,OutputDim1*OutputDim2,OutputDim3*OutputDim4*OutputDim5)
 !INTRODUCE iAngmomType Loop Like IchorEri.F90 !!!
 MaxTotalAngmomAB = MAXVAL(AngmomOfTypeA) + MAXVAL(AngmomOfTypeB)
+UseGeneralCode = .FALSE. !Use Specialized code when appropriate. 
+call set_GGem(IchorOperatorSpec,2*MaxTotalAngmomAB)
+IF(GGemOperatorCalc)UseGeneralCode = .TRUE.
 
 Spherical = SphericalSpec.EQ.SphericalParam
 oldmaxangmomABCD = -25
 DO IAngmomTypes = 0,MaxTotalAngmomAB
  DO ItypeBnon=1,nTypesB
-  ItypeB = OrderdListB(ItypeBnon)
-  AngmomB = AngmomOfTypeB(ItypeB)
-  nPrimB = nPrimOfTypeB(ItypeB)
-  nContB = nContOfTypeB(ItypeB)
-  IF (spherical) THEN
-     nOrbCompB = 2*(AngmomB+1)-1
-  ELSE
-     nOrbCompB = (AngmomB+1)*(AngmomB+2)/2
-  ENDIF
-  nAtomsB = nAtomsOfTypeB(ItypeB) 
-  IF(nAtomsB.EQ.0)CALL LSQUIT('Gab cyle atomB',-1)!CYCLE
+    call ObtainTypeInfoGab(nTypesB,ItypeBnon,OrderdListB,nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,&
+         & nContOfTypeB,ItypeB,nAtomsB,AngmomB,nPrimB,nContB,nOrbCompB,&
+         & nOrbB,nDimB,nCartOrbCompB,spherical)
+  IF(nAtomsB.EQ.0)CALL ICHORQUIT('Gab cyle atomB',-1)!CYCLE
   iBatchIndexOfTypeB = BatchIndexOfTypeB(ItypeB)
-  nOrbB = nContB*nOrbCompB
-  nDimB = nOrbB*nAtomsB
 
   allocate(expB(nPrimB))
   call mem_ichor_alloc(expB)
@@ -217,23 +219,14 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
   call mem_ichor_dealloc(startOrbitalB) !do not need it
   deallocate(startOrbitalB)
   DO ItypeAnon=1,nTypesA !non ordered loop
-   ItypeA = OrderdListA(ItypeAnon)  
-   AngmomA = AngmomOfTypeA(ItypeA) 
+   call ObtainTypeInfoGab(nTypesA,ItypeAnon,OrderdListA,nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,&
+        & nContOfTypeA,ItypeA,nAtomsA,AngmomA,nPrimA,nContA,nOrbCompA,&
+        & nOrbA,nDimA,nCartOrbCompA,spherical)
    IF(AngmomA+AngmomB.EQ.IAngmomTypes)THEN
     IF(SameLHSaos .AND. ItypeB.GT.ItypeA)CYCLE
     TriangularLHSAtomLoop = SameLHSaos .AND. ItypeB.EQ.ItypeA
-    nPrimA = nPrimOfTypeA(ItypeA)
-    nContA = nContOfTypeA(ItypeA)
-    IF (spherical) THEN
-       nOrbCompA = 2*(AngmomA+1)-1
-    ELSE
-       nOrbCompA = (AngmomA+1)*(AngmomA+2)/2
-    ENDIF
-    nAtomsA = nAtomsOfTypeA(ItypeA)
-    IF(nAtomsA.EQ.0)CALL LSQUIT('Gab cyle atomA',-1)!CYCLE
+    IF(nAtomsA.EQ.0)CALL ICHORQUIT('Gab cyle atomA',-1)!CYCLE
     iBatchIndexOfTypeA = BatchIndexOfTypeA(ItypeA)
-    nOrbA = nContA*nOrbCompA
-    nDimA = nContA*nOrbCompA*nAtomsA
     allocate(expA(nPrimA))
     call mem_ichor_alloc(expA)
     allocate(ContractCoeffA(nPrimA,nContA))
@@ -248,8 +241,13 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
     call mem_ichor_dealloc(startOrbitalA) !do not need it
     deallocate(startOrbitalA)
     TotalAngmom = AngmomA + AngmomB + AngmomA + AngmomB 
+    AngmomP = AngmomA + AngmomB
     nPrimP = nPrimA*nPrimB
     nContP = nContA*nContB
+    nOrbCompP = nOrbCompA*nOrbCompB
+    nCartOrbCompP = nCartOrbCompA*nCartOrbCompB
+    nTUVP = (AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
+    nTUV = (TotalAngmom+1)*(TotalAngmom+2)*(TotalAngmom+3)/6
     IF (nContP.EQ. 1)THEN
        Psegmented = .TRUE.
     ELSE
@@ -285,19 +283,20 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
     allocate(PpreExpFac(nPrimP))
     call mem_ichor_alloc(PpreExpFac)
     !       call IchorTimer('START',TSTART,TEND,LUPRI)
-    call IchorGabIntegral_OBS_general_size(TMParray1maxsize,&
-        & TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,&
-        & nPrimP,nContP,nPrimB,Psegmented)
+    call IGI_OBS_general_size(TMParray1maxsize,&
+        & TMParray2maxsize,AngmomA,AngmomB,&
+        & nPrimP,nContP,nPrimB,nContA,Psegmented)
     MaxPasses = 1
     !possibly change MaxPasses according to Sizes!
     call GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
      & nAtomsA,nAtomsB,nContB,nContP,nTABFJW1,nTABFJW2,AngmomA,AngmomB,&
      & TMParray1maxsize,TMParray2maxsize,iBatchIndexOfTypeA,&
      & iBatchIndexOfTypeB,OutputDim1,OutputDim2,expB,ContractCoeffB,&
+     & nCartOrbCompA,nCartOrbCompB,nOrbCompA,nOrbCompB,nCartOrbCompP,&
+     & nOrbCompP,nTUVP,nTUV,&
      & Bcenter,expA,ContractCoeffA,Acenter,expP,TABFJW,&
      & reducedExponents,integralPrefactor,pcent,PpreExpFac,&
-     & OutputStorage,Psegmented,PQorder,Spherical,TriangularLHSAtomLoop,&
-     & BasisContmaxsize)
+     & OutputStorage,Psegmented,PQorder,Spherical,TriangularLHSAtomLoop)
     call mem_ichor_dealloc(pcent)
     deallocate(pcent)
     call mem_ichor_dealloc(PpreExpFac)
@@ -328,14 +327,15 @@ ENDDO
 !symmetrize BATCHGAB!
 !output requires to zero first otherwise a floating invalid
 !WRITE(lupri,*)'The BatchGab NON SYMM'
-!call output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+!call ls_output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
 
 IF(SameLHSaos)THEN
    call AddUpperTriAngular(OutputStorage,OutputDim1,lupri)
 !   print*,'SameLHSaos GAB OutputStorage'
-!   call output(OutputStorage,1,OutputDim1,1,OutputDim1,OutputDim1,OutputDim1,1,6)
+!   call ls_output(OutputStorage,1,OutputDim1,1,OutputDim1,OutputDim1,OutputDim1,1,6)
 ENDIF
 
+call free_GGem()
 call mem_ichor_dealloc(TABFJW)
 deallocate(TABFJW)
 call mem_ichor_dealloc(BatchIndexOfTypeA)
@@ -348,126 +348,44 @@ call mem_ichor_dealloc(OrderdListB)
 deallocate(OrderdListB)
 
 !WRITE(lupri,*)'The BatchGab'
-!call output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
-!call output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,6)
+!call ls_output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+!call ls_output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,6)
 call retrieve_ichor_memvar(MaxMemAllocated,MemAllocated)
-!call stats_ichor_mem(lupri)
+IF(INTPRINT.GT.3)THEN
+   call stats_ichor_mem(lupri)
+ENDIF
+
+IF(MemAllocated.NE.0)THEN
+   call stats_ichor_mem(lupri)
+   call ichorquit('MemoryLeak in IchorGab',lupri)
+ENDIF
 end subroutine IchorGab
 
-subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
-     & nAtomsA,nAtomsB,nContB,nContP,nTABFJW1,nTABFJW2,AngmomA,AngmomB,&
-     & TMParray1maxsize,TMParray2maxsize,iBatchIndexOfTypeA,&
-     & iBatchIndexOfTypeB,OutputDim1,OutputDim2,expB,ContractCoeffB,&
-     & Bcenter,expA,ContractCoeffA,Acenter,expP,TABFJW,&
-     & reducedExponents,integralPrefactor,pcent,PpreExpFac,&
-     & OutputStorage,Psegmented,PQorder,Spherical,TriangularLHSAtomLoop,&
-     & BasisContmaxsize)
+subroutine ObtainTypeInfoGab(nTypesD,ItypeDnon,OrderdListD,nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,&
+     & nContOfTypeD,ItypeD,nAtomsD,AngmomD,nPrimD,nContD,nOrbCompD,nOrbD,&
+     & nDimD,nCartOrbCompD,spherical)
   implicit none
-  integer,intent(in) :: nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,nAtomsA
-  integer,intent(in) :: nAtomsB,nContB,nContP,nTABFJW1,nTABFJW2,AngmomA,AngmomB,TMParray1maxsize,TMParray2maxsize
-  integer,intent(in) :: iBatchIndexOfTypeA,iBatchIndexOfTypeB
-  integer,intent(in) :: OutputDim1,OutputDim2,BasisContmaxsize
-  real(realk),intent(in) :: expB(nPrimB),ContractCoeffB(nPrimB,nContB),Bcenter(3,nAtomsB)
-  real(realk),intent(in) :: expA(nPrimA),ContractCoeffA(nPrimA,nContA),Acenter(3,nAtomsA)
-  real(realk),intent(in) :: expP(nPrimP),TABFJW(0:nTABFJW1,0:nTABFJW2)
-  real(realk),intent(in) :: reducedExponents(nPrimP*nPrimP)
-  real(realk),intent(in) :: integralPrefactor(nPrimP*nPrimP)
-  real(realk),intent(inout) :: pcent(3*nPrimP),PpreExpFac(nPrimP)
-!  real(realk),intent(inout) :: TmpArray1(TMParray1maxsize)
-!  real(realk),intent(inout) :: TmpArray2(TMParray2maxsize)
-  real(realk),intent(inout) :: OutputStorage(OutputDim1,OutputDim2)
-  logical,intent(in) :: Psegmented,PQorder,Spherical,TriangularLHSAtomLoop
-  !local variables
-  real(realk) :: CDAB(1),BcenterSpec(3),AcenterSpec(3),Pdistance12(3)
-  integer :: IatomB,iBatchA,IatomA,iBatchB,nPasses,MaxPasses,iPass,nPass
-  real(realk),allocatable :: TmpArray1(:),TmpArray2(:),BasisCont(:)
-  integer,allocatable :: iPassA(:),iPassB(:)
-  IF(TriangularLHSAtomLoop)THEN
-     allocate(iPassA(nAtomsA*nAtomsB+1/2))
-     call mem_ichor_alloc(iPassA)
-     allocate(iPassB(nAtomsA*nAtomsB+1/2))
-     call mem_ichor_alloc(iPassB)
-     iPass = 0
-     DO IatomB = 1,nAtomsB
-        DO IatomA = IatomB,nAtomsA
-           iPass = iPass+1
-           iPassA(iPass) = IatomA
-           iPassB(iPass) = IatomB
-        ENDDO
-     ENDDO
-     nPass = iPass
+  logical,intent(in) :: spherical
+  integer,intent(in) :: nTypesD,ItypeDnon
+  integer,intent(inout) :: nAtomsD,AngmomD,nPrimD,nContD,nCartOrbCompD
+  integer,intent(inout) :: nOrbCompD,nOrbD,nDimD,ItypeD
+  integer,intent(in) :: OrderdListD(nTypesD),nAtomsOfTypeD(nTypesD),AngmomOfTypeD(nTypesD)
+  integer,intent(in) :: nPrimOfTypeD(nTypesD),nContOfTypeD(nTypesD)
+  
+  ItypeD = OrderdListD(ItypeDnon)  
+  nAtomsD = nAtomsOfTypeD(ItypeD)
+  AngmomD = AngmomOfTypeD(ItypeD)
+  nPrimD = nPrimOfTypeD(ItypeD)
+  nContD = nContOfTypeD(ItypeD)
+  nCartOrbCompD = (AngmomD+1)*(AngmomD+2)/2
+  IF (spherical) THEN
+     nOrbCompD = 2*(AngmomD+1)-1
   ELSE
-     nPass = nAtomsA*nAtomsB
+     nOrbCompD = nCartOrbCompD
   ENDIF
-  allocate(TmpArray1(TMParray1maxsize))
-  allocate(TmpArray2(TMParray2maxsize))
-  allocate(BasisCont(BasisContmaxsize))
-  call mem_ichor_alloc(TmpArray1) 
-  call mem_ichor_alloc(TmpArray2) 
-  call mem_ichor_alloc(BasisCont) 
-  MaxPasses = 1
-  nPasses = 1
-!$OMP PARALLEL DEFAULT(none) &
-!$OMP PRIVATE(iPass,iAtomA,iAtomB,iBatchB,BcenterSpec,iBatchA,AcenterSpec) &
-!$OMP SHARED(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,nAtomsA,&
-!$OMP        nAtomsB,nContB,nContP,nTABFJW1,nTABFJW2,AngmomA,AngmomB,&
-!$OMP        TMParray1maxsize,TMParray2maxsize,iBatchIndexOfTypeA,&
-!$OMP        iBatchIndexOfTypeB,OutputDim1,OutputDim2,BasisContmaxsize,&
-!$OMP        expB,ContractCoeffB,Bcenter,expA,ContractCoeffA,Acenter,&
-!$OMP        expP,TABFJW,reducedExponents,integralPrefactor,nPass,&
-!$OMP        pcent,PpreExpFac,OutputStorage,iPassA,iPassB,CDAB,&
-!$OMP        Psegmented,PQorder,Spherical,TriangularLHSAtomLoop,&
-!$OMP        Pdistance12,nPasses,MaxPasses,TmpArray1,TmpArray2,BasisCont)
-  DO IPass = 1,nPass
-     IF(TriangularLHSAtomLoop)THEN
-        IatomA = iPassA(iPass)
-        IatomB = iPassB(iPass)
-     ELSE
-        IatomA = iPass - ((iPass-1)/nAtomsA)*nAtomsA
-        IatomB = (iPass-1)/nAtomsA+1
-     ENDIF
-     iBatchB = iBatchIndexOfTypeB + IatomB
-     BcenterSpec(1) = Bcenter(1,IatomB)
-     BcenterSpec(2) = Bcenter(2,IatomB)
-     BcenterSpec(3) = Bcenter(3,IatomB)
-     iBatchA = iBatchIndexOfTypeA+IatomA
-     AcenterSpec(1) = Acenter(1,IatomA)
-     AcenterSpec(2) = Acenter(2,IatomA)
-     AcenterSpec(3) = Acenter(3,IatomA)
-!$OMP SINGLE
-     CALL Build_qcent_Qdistance12_QpreExpFac(nPrimA,nPrimB,&
-          & nContA,nContB,expA,expB,AcenterSpec,BcenterSpec,ContractCoeffA,&
-          & ContractCoeffB,PSegmented,&
-          & pcent,Pdistance12,PpreExpFac,INTPRINT)
-!$OMP END SINGLE
-!$OMP BARRIER
-     call IchorGabIntegral_OBS_general(nPrimA,nPrimB,nPrimP,&
-          & intprint,lupri,nContA,nContB,nContP,expP,&
-          & ContractCoeffA,ContractCoeffB,&
-          & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-          & expA,expB,Psegmented,reducedExponents,integralPrefactor,&
-          & AngmomA,AngmomB,Pdistance12,PQorder,CDAB,&
-          & AcenterSpec,BcenterSpec,Spherical,&
-          & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-          & BasisContmaxsize,BasisCont)
-!$OMP SINGLE
-     OutputStorage(iBatchA,iBatchB) = CDAB(1)
-!$OMP END SINGLE
-  ENDDO
-!$OMP END PARALLEL
-  call mem_ichor_dealloc(TmpArray1)
-  deallocate(TmpArray1)
-  call mem_ichor_dealloc(TmpArray2)
-  deallocate(TmpArray2)
-  call mem_ichor_dealloc(BasisCont)
-  deallocate(BasisCont)
-  IF(TriangularLHSAtomLoop)THEN
-     call mem_ichor_dealloc(iPassA)
-     deallocate(iPassA)
-     call mem_ichor_dealloc(iPassB)
-     deallocate(iPassB)
-  ENDIF
-end subroutine GabIntLoop
+  nOrbD = nContD*nOrbCompD
+  nDimD = nContD*nOrbCompD*nAtomsD
+end subroutine ObtainTypeInfoGab
 
 subroutine AddUpperTriAngular(MAT,nBatchA,lupri)
 implicit none
@@ -481,4 +399,4 @@ DO IA = 1,nBatchA
    ENDDO
 ENDDO
 end subroutine AddUpperTriAngular
-END MODULE IchorGabmodule
+END MODULE IchorGabmod

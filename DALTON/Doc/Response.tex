@@ -65,7 +65,7 @@ should follow another {\ttfamily{**<something>}} input group
   %integrals are calculated for a given reference density.
 
 \item{\Key{CIS}}
-Request a CI Singles calculation, which is equivalent to invoking the 
+Request a CI Singles calculation, which is equivalent to invoking the
 Tamm-Dancoff approximation to RPA/TDHF (invoked by \Key{TDA}).
 
 \item{\Key{HIRPA}}
@@ -208,6 +208,12 @@ calculations. Note that this keyword requires that \Key{SOPPA} or
 \item{\Key{TDA}}
 Invoke the Tamm-Dancoff approximation to RPA/TDHF or TDDFT. Equivalent to the
 use of \Key{CIS} on a Hartree-Fock calculation.
+
+\item{\Key{TRDQF}}
+Invoke the calculation of transition density fitted charges. Only implemented for
+\Sec{LINEAR} with \Key{SINGLE RESIDUE}. The fitted charges will be calculated for
+all \Key{ROOTS}. It requires that \Key{QFIT} has been specified in
+\Sec{*WAVE FUNCTIONS}.
 
 \item{\Key{TRPFLG}}
 Triplet flag. This option is set whenever triplet
@@ -502,7 +508,7 @@ specified is the same which was used \textit{last} in the previous
 single residue response calculation.
 
 \item{\Key{ROOTS}}\\
-\verb|READ '*',(ROOTS(I) I=1,NSYM)|\\
+\verb|READ *,(ROOTS(I) I=1,NSYM)|\\
 Number of roots.  The line following this option contains the number
 of excited states\index{excited state} per symmetry. Excitation
 energies\index{excitation energy} are calculated for each state and if
@@ -593,8 +599,8 @@ Spin information for quadratic response calculations.
 The line following these options contains the spin
 rank\index{spin rank} of the excitation operators that are coupled with the
 physical operators $A$, $B$, and $C$. This means that excitation spin rank may
-be different from operator spin rank. 
-This is mostly relevant for open-shell singlet response functions 
+be different from operator spin rank.
+This is mostly relevant for open-shell singlet response functions
 where one of physical operators may be triplet.
 Note that the meaning of this keyword is a different from Dalton2011.
 
@@ -740,6 +746,51 @@ frequencies\index{frequency}. Two lines
 following this option must contain 1) The number of frequencies, 2)
 Frequencies.
 
+\item{\Key{CPPHEC}}
+Specifies a circularly polarized phosphorescence\index{circularly polarized phosphorescence} 
+calculation using the effective charge approximation for the spin--orbit operator, {\it i.e.\/}
+the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the
+calculation so that no further response input is required except \Key{ROOTS}; the
+$A$ operator is set to the dipole velocity operators\index{dipole velocity} and
+the $B$ operator is set to the effective charge spin-orbit\index{spin-orbit}
+operators. The set of effective charges is obtained from Koseki et al.
+\cite{skmsgmwsnm99,skmwsmsgjpca102} for atoms with ECP:s and Ref.\cite{skmwsmsgjpc96} for "all-electron" atoms.
+The reference state {\em must} be a singlet spin state. See  also \Key{PHOSPHORESCENCE}, \Key{ECPHOS}, 
+\Key{CPPHMF}, \Key{CPPHOL}, and \Key{CPPHOV}.
+
+\item{\Key{CPPHMF}}
+Specifies a circularly polarized phosphorescence\index{circularly polarized phosphorescence} 
+calculation using the atomic mean-field approximation for the spin--orbit operator, {\it i.e.\/}
+the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the
+calculation so that no further response input is required except \Key{ROOTS}; the
+$A$ operator is set to the dipole velocity operators\index{dipole velocity} and
+the $B$ operator is set to the atomic mean-field spin-orbit\index{spin-orbit}
+operators.
+The reference state {\em must} be a singlet spin state. See also \Key{PHOSPHORESCENCE}, \Key{MNFPHO},
+\Key{CPPHEC}, \Key{CPPHOL}, and \Key{CPPHOV}.
+
+\item{\Key{CPPHOL}}
+Specifies a circularly polarized phosphorescence\index{circularly polarized phosphorescence} 
+calculation, {\it i.e.\/} the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition} in the length gauge.
+This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}; 
+the $A$ operator is set to the dipole length operators\index{dipole length} and
+the $B$ operator is set to the spin-orbit\index{spin-orbit}
+operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27}
+The reference state {\em must} be a singlet spin state. See also \Key{CPPHEC}, \Key{CPPHMF} and \Key{CPPHOV}.
+
+\item{\Key{CPPHOV}}
+Specifies a circularly polarized phosphorescence\index{circularly polarized phosphorescence} 
+calculation, {\it i.e.\/} the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition} in the velocity gauge. 
+This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}; 
+the $A$ operator is set to the dipole velocity operators\index{dipole velocity} and
+the $B$ operator is set to the spin-orbit\index{spin-orbit}
+operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27}
+The reference state {\em must} be a singlet spin state. See also \Key{CPPHEC}, \Key{CPPHMF} and \Key{CPPHOL}.
+
 \item{\Key{DIPLEN}}
 Sets $A$ and $B$ to $x, y, z$ dipole operators\index{dipole length}.
 
@@ -751,6 +802,9 @@ Sets $A$ and $B$ to the $y$ dipole operator\index{dipole length}.
 
 \item{\Key{DIPLNZ}}
 Sets $A$ and $B$ to the $z$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPVEL}}
+Sets $A$ and $B$ to $x, y, z$ dipole velocity operators\index{dipole velocity}.
 
 \item{\Key{E3TEST}}
 Test the contributions to the quadratic response function arising from
@@ -769,7 +823,6 @@ is set to the effective charge spin-orbit\index{spin-orbit}
 operators. The set of effective charges is obtained from Koseki et al.
 \cite{skmsgmwsnm99,skmwsmsgjpca102} for atoms with ECP:s and Ref.\cite{skmwsmsgjpc96} for "all-electron" atoms.
 The reference state {\em must} be a singlet spin state. See  also \Key{PHOSPHORESCENCE}
-
 
 \item{\Key{ISPABC}}\\
 \verb|READ *, ISPINA,ISPINB,ISPINC|\\
@@ -837,9 +890,18 @@ Specifies a phosphorescence\index{phosphorescence} calculation, {\it i.e.\/}
 the spin-orbit\index{spin-orbit}
 induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the
 calculation so that no further response input is required except \Key{ROOTS}; the
-$A$ operator is set to the dipole operators\index{dipole length} and
-the $B$ operator
-is set to the spin-orbit\index{spin-orbit}
+$A$ operator is set to the dipole length operators\index{dipole length} and
+the $B$ operator is set to the spin-orbit\index{spin-orbit}
+operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27}
+The reference state {\em must} be a singlet spin state.
+
+\item{\Key{PHOSPV}}
+Specifies a phosphorescence\index{phosphorescence} calculation, {\it i.e.\/}
+the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition} in the velocity gauge. 
+This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}; 
+the $A$ operator is set to the dipole velocity operators\index{dipole velocity} and
+the $B$ operator is set to the spin-orbit\index{spin-orbit}
 operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27}
 The reference state {\em must} be a singlet spin state.
 
@@ -848,7 +910,7 @@ The reference state {\em must} be a singlet spin state.
 Print level. Default is 2.
 
 \item{\Key{ROOTS}}\\
-\verb|READ '*',(ROOTS(I) I=1,NSYM)|\\
+\verb|READ *,(ROOTS(I) I=1,NSYM)|\\
 Number of roots.  The line following this option contains the number
 of excited states\index{excited state!second order moment} per symmetry. Excitation
 energies\index{excitation energy!second order moment} are calculated for each state and if
@@ -894,8 +956,7 @@ input section.
 \item{\Key{TWO-PHOTON}}
 Sets up the calculation of the two-photon transition strengths. This
 calculates two-photon transition strengths for all the excited states
-requested by the keyword \Key{ROOTS}, calculating the necessary
-quadratic response functions using the half-frequency of the
+requested by the keyword \Key{ROOTS}, calculating the necessary quadratic response functions using the half-frequency of the
 excitation energy to the given state.
 
 \item{\Key{X2TEST}}
@@ -906,12 +967,20 @@ the $X^{\left[2\right]}$ term. Mainly for debugging purposes.
 
 \subsection{Transition moments between excited states: \Sec{QUADRA} with \Key{DOUBLE RESIDUE}}
 
-Calculation of third-order properties as quadratic response
-functions\index{quadratic response}\index{response!quadratic}.
-$A,B$, and $C$-named options refer to the operators in the quadratic
-response function
-$\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
-\cite{ovhapjhjajthjojcp97,hhhjajpjjojcp97,haovhkpjthjcp98}
+Required keywords:
+
+\begin{description}
+
+\item{\Key{DOUBLE RESIDUE}}\\
+Compute double residues\index{quadratic response!double residue} of quadratic
+response functions\index{double residue!quadratic response}\index{response!quadratic, double residue}.
+Double residues of the quadratic response function correspond to transition
+moments between excited states\index{transition moment!between excited states},
+$\langle B \mid A \mid C \rangle$.
+
+\end{description}
+
+\noindent Optional keywords
 
 \begin{description}
 
@@ -932,24 +1001,16 @@ Sets $A$ to the $y$ dipole operator\index{dipole length}.
 Sets $A$ to the $z$ dipole operator\index{dipole length}.
 
 \item{\Key{DIPMAG}}
-Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
+Sets $A$ to angular momentum operators\index{angular momentum}.
 
 \item{\Key{DIPMGX/Y/Z}}
-Sets $A$ and $B$ to the X, Y, or Z component of the angular momentum operators\index{angular momentum}.
-
-\item{\Key{DOUBLE RESIDUE}}
-Computes the double residue\index{quadratic response!double residue}
-of the quadratic
-response function\index{double residue!quadratic response}\index{response!quadratic, double residue}.
-Double residues of the quadratic response function correspond to transition
-moments between excited states\index{transition moment!between excited states},
-$\langle B \mid A \mid C \rangle$.
+Sets $A$ to the $x$, $y$, or $z$ component of the angular momentum operators\index{angular momentum}.
 
 \item{\Key{DIPVEL}}
-Sets $A$ and $B$ to the dipole velocity operators\index{dipole velocity}.
+Sets $A$ to the dipole velocity operators\index{dipole velocity}.
 
 \item{\Key{DIPVLX/Y/Z}}
-Sets $A$ and $B$ to the X, Y, or Z component of the dipole velocity
+Sets $A$ to the $x$, $y$, or $z$ component of the dipole velocity
 operator, respectively\index{dipole velocity}.
 
 \item{\Key{E3TEST}}
@@ -969,10 +1030,10 @@ Print level for special excited state transition moment routines.
 \item{\Key{ISPABC}}\\
 \verb|READ *, ISPINA,ISPINB,ISPINC|\\
 Spin symmetry of excitation operators associated with physical operator $A$ (ISPINA)
-and the left and right excitation operators (ISPINB and ISPINC) defined to 
+and the left and right excitation operators (ISPINB and ISPINC) defined to
 generate excited states defined in  given in by \Key{ROOTS}:
 "0" for singlet and "1" for triplet.
-c.f. the same keyword in section \ref{sec:quadraticrsp}.
+C.f. the same keyword in section \ref{sec:quadraticrsp}.
 Default is "0,0,0", {\it i.e.\/} all of singlet spin symmetry.
 {\bf Note: triplet operators are only implemented for singlet reference states.}
 %hjaaj June 2001: .ASPIN etc. should be defined for .DOUBLE
@@ -988,7 +1049,6 @@ Default is "0,0,0", {\it i.e.\/} all of singlet spin symmetry.
 %In a triplet response calculations two of these operators are of rank one,
 %and the remaining operator of rank zero.
 
-
 \item{\Key{MAX IT}}
 Maximum number of iterations for solving linear response
 eigenvalue equation in this section.
@@ -1003,29 +1063,36 @@ Default is 5.
 \verb|READ *,IPRPP|\\
 Print level for solving linear response eigenvalue equations.
 
-\item[\Key{PROPRT}]
-%hjaaj June 2001, ought to define as well: \item[\Key{APROP}]
-Specify another $A$ operator. The line following this
+\item{\Key{PROPRT}}
+Specify another $A$ operator. \\
+The line following this
 option should be the label of the operator as it appears in the file
 AOPROPER. This option may be repeated for different property operators.
+%hjaaj June 2001, ought to define as well: \item[\Key{APROP}]
 
 \item{\Key{QUADMOM}}
-Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
+Sets $A$ to the quadrupole\index{quadrupole operator} operators.
 
 \item{\Key{QUADXX/XY/XZ/YY/YZ/ZZ}}
-Sets $A$ and $B$ to the XX, XY, XZ, YY, YZ, or ZZ component of the
+Sets $A$ to the XX, XY, XZ, YY, YZ, or ZZ component of the
 quadrupole\index{quadrupole operator} operator, respectively.
 
+\item{\Key{ROOTS}}\\
+\verb|READ (LUCMD,*) (NPPCNV(J),J=1,NSYM)|\\
+Number of roots (excited states) to converge for each spatial symmetry.\\
+Used for $\langle B \mid$ as well as for $ \mid C \rangle$,
+singlet or triplet as specified by \Key{ISPABC}.\\
+Default: one root for each symmetry.
 
 \item{\Key{SPIN-O}}
-Sets $A$ and $B$ to spin-orbit operators\index{spin-orbit}.
+Sets $A$ to spin-orbit operators\index{spin-orbit}.
 Warning: this option implies \Key{TRIPLET} and
 forces the excitations to be of triplet symmetry,
 and all operators---including
 {\it e.g.\/} \Key{DIPLEN}---will be assumed by the program to be of triplet symmetry!!
 
 \item{\Key{SPNORX/Y/Z}}
-Sets $A$ and $B$ to the X, Y, or Z component of the spin--orbit
+Sets $A$ to the X, Y, or Z component of the spin--orbit
 operator, respectively\index{spin-orbit}.
 Warning: this option implies \Key{TRIPLET} and
 forces the excitations to be of triplet symmetry,
@@ -1207,8 +1274,9 @@ out if print flag greater than 5. Response vectors printed out if
 print flag greater than 10.
 
 \item{\Key{ROOTS}}
-Number of roots (excited states) to converge. \\
 \verb|READ (LUCMD,*) (NTMCNV(J),J=1,NSYM)|\\
+Number of roots (excited states) to converge for each spatial symmetry. \\
+Default: one of each symmetry.
 
 \item{\Key{SINGLE}}
 Computes the single residue\index{single residue!cubic response} of the cubic
@@ -1261,7 +1329,7 @@ $\omega_b$. Input as in \Key{FREQUE}.
 Default only zero frequency (static).
 
 \item{\Key{DIPLEN}}
-Sets $A$ and  $B$ to dipole operators\index{dipole length}.
+Sets $A$ and $B$ to all three dipole component operators\index{dipole length}.
 
 \item{\Key{DIPLNX}}
 Sets $A$ and $B$ to the $x$ dipole operator\index{dipole length}.
@@ -1307,15 +1375,16 @@ out if print flag greater than 5. Response vectors printed out if
 print flag greater than 10.
 
 \item{\Key{ROOTS}}
-Number of roots (excited states) to converge for each spatial symmetry. \\
-\verb|READ (LUCMD,*) (NTPCNV(J),J=1,NSYM)|\\
+\verb|READ (LUCMD,*) (NTMCNV(J),J=1,NSYM)|\\
+Number of roots (excited states) to converge for each spatial symmetry.\\
+Used for $<C|$ as well as for $|D>$.\\
 Default: one of each symmetry.
 
 \item{\Key{THCLR}}
-Threshold for convergence of response vectors, default value is $10^{-3}$.
+Threshold for convergence of $A$ response vectors, default value is $10^{-3}$.
 
 \item{\Key{THCPP}}
-Threshold for convergence of eigenvector, default value is $10^{-3}$.
+Threshold for convergence of excitation eigenvectors, default value is $10^{-3}$.
 
 \end{description}
 
@@ -1448,7 +1517,14 @@ with symmetrized trial vectors \cite{kauczor:2011} is used.
 Calculate the linear polarizability.
 
 \item{\Key{MCD}} \\
-Calculate the magnetic circular dichroism (MCD).
+Calculate the magnetic circular dichroism (MCD) and the Magnetic Optical Rotation Dispersion.
+
+\item{\Key{NSCD}} \\
+Calculate the Nuclear Spin Circular Dichroism (NSCD) and the Nuclear Spin Optical Rotation~\cite{vaara2014}.
+It requires specification of the \verb|.PSO| integrals in 
+the \verb|*INTEGRALS| input section.
+Note that at present NSCD calculations only work {\bf{without symmetry}}.
+See \verb|rsp_cpp_nscd| for an example of NSCD calculations.
 
 \item{\Key{BETA}}\\
 Calculate the first-order hyperpolarizability.
@@ -1502,7 +1578,7 @@ Default only zero frequency (static).
 
 \item{\Key{MAXRM}}      \\
 \verb|READ (LUCMD,*),ABS_MAXRM |\\
-   The maximum dimension of the reduced space. 
+   The maximum dimension of the reduced space.
 (Default = 200) The damped response equations are solved in
 a reduced space, which is increased
 in each iteration. MAXRM should be increased, if equations for many
@@ -1535,7 +1611,7 @@ parameter $\gamma = 0$.
    The number of linear transformations performed in one batch. Used in
 calculations for many frequencies on large systems.
 If calculations are performed using DFT, it is recommended to use
-a multiplicity of 4 to obtain full efficiency. 
+a multiplicity of 4 to obtain full efficiency.
 
 \item{\Key{OLDCPP}}\\
  The old complex polarization propagator
@@ -1666,23 +1742,23 @@ Calculation of hyperfine coupling constants using restricted-unrestricted Kohn-S
 
 \begin{description}
 \item{\Key{HFC-FC}} \\
-Calculate the isotropic Fermi-contact contributions to hyperfine coupling tensors of all nuclei in 
-molecule with nonzero nuclear spin. 
+Calculate the isotropic Fermi-contact contributions to hyperfine coupling tensors of all nuclei in
+molecule with nonzero nuclear spin.
 
 \item{\Key{HFC-SD}} \\
-Calculate the spin-dipole contributions to the hyperfine coupling tensor of all nuclei in molecule 
+Calculate the spin-dipole contributions to the hyperfine coupling tensor of all nuclei in molecule
 with nonzero nuclear spin.
 
 \item{\Key{HFC-SO}} \\
-Calculate the spin-orbit contributions to the hyperfine coupling tensor of all nuclei in molecule 
-with nonzero nuclear spin. By default mean field approximation is used for spin-orbit interaction. 
+Calculate the spin-orbit contributions to the hyperfine coupling tensor of all nuclei in molecule
+with nonzero nuclear spin. By default mean field approximation is used for spin-orbit interaction.
 
 \item{\Key{BRT-SO}} \\
-Requests usage of two-electron spin-orbit interaction integrals in computation of spin-orbit contribution 
-to hyperfine coupling tensor. This keyword must be combined with \Key{SPIN-ORBIT} in the \Sec{*INTEGRALS} input module. 
+Requests usage of two-electron spin-orbit interaction integrals in computation of spin-orbit contribution
+to hyperfine coupling tensor. This keyword must be combined with \Key{SPIN-ORBIT} in the \Sec{*INTEGRALS} input module.
 
 \item{\Key{EFF-SO}} \\
-Requests usage of effective scaled charge spin-orbit interaction integrals in computation of spin-orbit contribution 
+Requests usage of effective scaled charge spin-orbit interaction integrals in computation of spin-orbit contribution
 to hyperfine coupling tensor.
 
 \item{\Key{PRINT}}     \\

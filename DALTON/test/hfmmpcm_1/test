@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+#    hfmmpcm_1
+#    -----------
+#    Molecule:         CH2O(HF)/2 H2O(MM)
+#    Wave Function:    RHF / STO-3G  
+#    Test Purpose:     Test of HF/MM/PCM energy, dipole moment and excitation energy
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+#enedft
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-9)
+
+#qm3convergence
+f.add(from_string = 'QM/MM/PCM calculation converged',
+      num_lines = 7,
+      abs_tolerance = 1.0e-8)
+
+#dipole
+f.add(from_string = 'Dipole moment',
+      num_lines = 5,
+      mask = [1],
+      rel_tolerance = 1.0e-5)
+
+#dipcompx
+#dipcompy
+#dipcompz
+f.add(from_string = 'Dipole moment components',
+      num_lines = 8,
+      rel_tolerance = 1.0e-6)
+
+#excita
+f.add(from_string = 'Singlet electronic excitation energies',
+      num_lines = 12,
+      rel_tolerance = 1.0e-6)
+
+test.run(['hfmmpcm_1.dal'], ['CH2O_STO-3G_2H2O_MM.mol'], f={'out': f}, args='-put POTENTIAL.INP')
+
+sys.exit(test.return_code)
+
+
+#

@@ -46,8 +46,8 @@ C
          ISYMLI = MULD2H(ISYML,ISYMI)
          ISDEL  = MULD2H(ISGAM,ISALBE)
          if (isdel .ne. isymdel) then
-            write(*,*) 'Keld: Something is WRONG in SO_SIGDA'
-            stop
+            print*,'Keld: Something is WRONG in SO_SIGDA'
+            call quit('Keld: Something is WRONG in SO_SIGDA')
          end if
 C
          LSCR1  = N2BST(ISALBE)

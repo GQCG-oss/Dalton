@@ -59,8 +59,6 @@ type OptItem
       integer     :: hfcalc
       !> Calctype can be set to HF or dft:
       integer     :: dftcalc
-      !> Request to add a Level 4 using regular integrals - no densfit or increm
-      logical     :: purescf
       !> Use Block-Sparse Matrices:
       logical     :: cfg_prefer_CSR
       !> Use SCALAPACK Matrices:
@@ -112,6 +110,8 @@ type OptItem
       logical     :: opt_quit
       !if Atoms start density should be disregarded for trilevel
       logical     :: add_atoms_start
+      !Perform McWeeny purification on the non idempotent Atoms Density
+      logical     :: MWPURIFYATOMSTART
 end type OptItem
 
 contains
@@ -146,7 +146,6 @@ implicit none
    opt%hfcalc                    = 1
    opt%dftcalc                   = 2
    opt%calctype                  = opt%hfcalc !Default is HF
-   opt%purescf                   = .false.
    opt%cfg_prefer_CSR            = .false.
    opt%cfg_prefer_SCALAPACK      = .false.
    opt%crashcalc                 = .false.
@@ -174,6 +173,7 @@ implicit none
    opt%debug_diag_hessian        = .false.
    opt%opt_quit                  = .true.
    opt%add_atoms_start           = .true.
+   opt%MWPURIFYATOMSTART         = .false.
 end subroutine opt_set_default_config
 
 end module opttype

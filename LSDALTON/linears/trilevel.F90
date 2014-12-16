@@ -16,7 +16,7 @@ use matrix_util
 use scfloop_module!, only : scfloop
 use lsdalton_fock_module
 use BUILDAOBATCH
-use integralparameters
+use lsparameters
 use READMOLEFILE
 use BUILDBASISSET
 use LSTIMING
@@ -49,33 +49,32 @@ contains
 !> \param F full Fock matrix 
 !> \param S full Overlap matrix 
 !> \param nbast full dimensions 
-subroutine trilevel_diag_per_ang(ang,basis_size,bCMO,F,S,nbast)
+subroutine trilevel_diag_per_ang(ang,basis_size,bCMO,F,S,nbast,nb)
 implicit none
-
-integer, intent(in)     :: ang, basis_size(:), nbast
+integer, intent(in)     :: ang, nbast,nb
+integer, intent(in)     :: basis_size(:)
 real(realk), intent(in) :: F(nbast,nbast), S(nbast,nbast)
-real(realk),target      :: bCMO( basis_size(ang+1), basis_size(ang+1))
+real(realk),target      :: bCMO(nb,nb)
 !
 real(realk), pointer    :: bF(:,:), bS(:,:), eig(:), wrk(:)
-integer                 :: i, j, k, istart, info, nb, lwrk,itype
+integer                 :: i, j, k, istart, info, lwrk,itype
 integer,     pointer    :: indexlist(:) 
 #ifdef VAR_LSESSL
-integer :: ifail(basis_size(ang+1)),iwrk(5*basis_size(ang+1)),nfound
+integer :: ifail(nb),iwrk(5*nb),nfound
 real(realk) :: no_ref,tol
-real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
+real(realk) :: Z(nb,nb)
 #endif
  
  info = 0
- nb =  basis_size(ang+1)
  itype=1
  call trilevel_indexlist(ang,basis_size,indexlist)
 
 !create subblock matrix
  call mem_alloc(bS,nb,nb)
- bF => bCMO
+ call mem_alloc(bF,nb,nb)
 
- do i=1, nb
-  do j=1, nb
+ do j=1, nb
+  do i=1, nb
        bF(i,j)=F(indexlist(i),indexlist(j))
        bS(i,j)=S(indexlist(i),indexlist(j))
   enddo
@@ -115,6 +114,7 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 
   call mem_dealloc(eig)
   call mem_dealloc(wrk)
+  bCMO = bF
  else
   bCMO(1,1)=1E0_realk
  endif
@@ -122,6 +122,7 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 !cleanup
 call mem_dealloc(indexlist)
 call mem_dealloc(bS)
+call mem_dealloc(bF)
 
 end subroutine trilevel_diag_per_ang
 
@@ -312,7 +313,7 @@ real(realk),pointer    ::  bCMO(:,:),bD(:,:),occ(:), Fmat(:), Smat(:)
 integer, pointer       ::  perm(:), iperm(:), basis_size(:)
 
 
-  nAngmom = BASIS%REGULAR%ATOMTYPE(itype)%nAngmom
+  nAngmom = BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom
 
   call trilevel_set_basis_size(BASIS,itype,basis_size) !size of basis for a given angmom
 
@@ -333,9 +334,9 @@ integer, pointer       ::  perm(:), iperm(:), basis_size(:)
 
      call mem_alloc(bCMO,nb,nb)
      !diagonal angular block => bCMO
-     call trilevel_diag_per_ang(ang,basis_size,bCMO,F%elms,S%elms,nbast)
+     call trilevel_diag_per_ang(ang,basis_size,bCMO,F%elms,S%elms,nbast,nb)
      !set occupation numbers based on element table in ecdata
-     call trilevel_set_occ(occ(ipos:nbast),ang,BASIS%REGULAR%ATOMTYPE(itype)%Charge)
+     call trilevel_set_occ(occ(ipos:nbast),ang,BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%Charge)
      !Build full MO coefficient matrix from the bCMO blocks
      call trilevel_mdiag(CMO%elms,ipos,nbast,bCMO,nb,kmult)
 
@@ -456,10 +457,10 @@ integer          :: itype
 !
 integer                          :: i
 
-call mem_alloc(basis_size,BASIS%REGULAR%ATOMTYPE(itype)%nAngmom)
+call mem_alloc(basis_size,BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom)
 
-do i=1, BASIS%REGULAR%ATOMTYPE(itype)%nAngmom
-   basis_size(i)= BASIS%REGULAR%ATOMTYPE(itype)%SHELL(i)%norb
+do i=1, BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom
+   basis_size(i)= BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%SHELL(i)%norb
 enddo
 
 end subroutine trilevel_set_basis_size
@@ -592,12 +593,12 @@ type(segment),pointer :: GCtransSegment
 integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
 
   itype = ai%UATOMTYPE(iatom) !type of distinct atom in full
-  nAngmom = ls%input%BASIS%REGULAR%ATOMTYPE(itype)%nAngmom
+  nAngmom = ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom
 
   call trilevel_set_basis_size(ls%setting%BASIS(1)%p,itype,basis_size)
 
  do ang=0, nAngmom-1
-   shell2 => ls%input%BASIS%REGULAR%&
+   shell2 => ls%input%BASIS%BINFO(REGBASPARAM)%&
                 &ATOMTYPE(itype)%SHELL(ang+1)
    nb=basis_size(ang+1)
    if (nb.eq. 0) cycle
@@ -606,32 +607,32 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
 
    call mem_alloc(bCMO,nb,nb)
 
-   do i=1, nb
-    do j=1, nb
+   do j=1, nb
+    do i=1, nb
        bCMO(i,j)=CMO(indexlist(i),indexlist(j))
     enddo
    enddo
 
 !   WRITE(lupri,*)'The transformation matrix itype=',itype,'ang=',ang
-!   call output(bCMO,1,nb,1,nb,nb,nb,1,lupri)
+!   call ls_output(bCMO,1,nb,1,nb,nb,nb,1,lupri)
 !   WRITE(lupri,*)'The Original block:'
-!   call output(shell2%segment(1)%elms,1,shell2%nprim,1,shell2%norb,&
+!   call ls_output(shell2%segment(1)%elms,1,shell2%nprim,1,shell2%norb,&
 !        &shell2%nprim,shell2%norb,1,lupri)
-   IF(.NOT. ls%input%BASIS%GCtransAlloc)THEN
+   IF(.NOT. ls%input%BASIS%wbasis(gctbasparam))THEN
       call lsquit('GCtrans basis not call mem_allocd in trilevel_convert_ao2gcao',lupri)
    ENDIF
    !We always save the transformation matrix in GCtrans
    !so that we transform back and forth between 
    !AO and GCAO in the integral routine
-   GCtransSegment => ls%input%BASIS%GCtrans%&
+   GCtransSegment => ls%input%BASIS%binfo(gctbasparam)%&
         &ATOMTYPE(itype)%SHELL(ang+1)%segment(1)
    call dcopy(nb*nb,bCMO,1,GCtransSegment%elms,1)
 
 
    IF(ls%input%DALTON%NOGCINTEGRALTRANSFORM)THEN
       !we transform the input basis
-      ls%input%basis%REGULAR%GCbasis = .TRUE.
-      IF(ls%input%basis%REGULAR%Gcont)THEN         
+      ls%input%basis%BINFO(REGBASPARAM)%GCbasis = .TRUE.
+      IF(ls%input%basis%BINFO(REGBASPARAM)%Gcont)THEN         
          !General contracted Case or no integraltransform
          !we transform the input basis - so that 
          !we do not need to transform back and forth
@@ -702,7 +703,7 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
          call mem_dealloc(CCtmp) 
       ENDIF
    ELSE
-      IF(ls%input%basis%REGULAR%Gcont)THEN
+      IF(ls%input%basis%BINFO(REGBASPARAM)%Gcont)THEN
          !General contracted Case 
          !we transform the input basis - so that 
          !we do not need to transform back and forth
@@ -714,13 +715,13 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
          shell2%segment(1)%elms = reshape(CCtmp, (/ nprim*norb /))
          call mem_dealloc(CCtmp)
          !      WRITE(6,*)'The transformed block:'
-         !      call output(shell2%segment(1)%UCCelms,1,shell2%nprim,1,shell2%norb,&
+         !      call ls_output(shell2%segment(1)%UCCelms,1,shell2%nprim,1,shell2%norb,&
          !           &shell2%nprim,shell2%norb,1,6)
-         ls%input%basis%REGULAR%GCbasis = .TRUE.
+         ls%input%basis%BINFO(REGBASPARAM)%GCbasis = .TRUE.
       ELSE
          !Segmented contracted Case
          !so we transform back and forth. which means that we do nothing
-         ls%input%basis%REGULAR%GCbasis = .FALSE.
+         ls%input%basis%BINFO(REGBASPARAM)%GCbasis = .FALSE.
       ENDIF
    ENDIF
    call mem_dealloc(bCMO)
@@ -730,18 +731,19 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
  call mem_dealloc(basis_size)
 
 ! print*,'print BASIS  after ao2gcao'
-! call print_basissetinfo(6,ls%input%BASIS%REGULAR)
+! call print_basissetinfo(6,ls%input%BASIS%BINFO(REGBASPARAM))
 
 end subroutine trilevel_convert_ao2gcao
 
 subroutine trilevel_ALLOC_SYNC_VBASIS(VBASISINFO,BASISINFO,GCtrans,integralGCtrans,&
-     & GCtransAlloc,GCbasis,lupri)
+     & GCtransAlloc,GCbasis,MOLECULE,lupri)
 IMPLICIT NONE
 TYPE(BASISSETINFO) :: BASISINFO,VBASISINFO,GCtrans
+TYPE(MOLECULEINFO) :: MOLECULE
 logical            :: integralGCtrans,GCtransAlloc,GCbasis
 INTEGER            :: I,J,K,L,nrow,nsize,icharge,maxcharge,ncol,lupri
 real(realk),pointer:: CCtmp(:,:),Exponents(:),bCMO(:,:) 
-integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
+integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2,R
   IF(integralGCtrans)THEN
      !it is not possible to transform back and forth on level 2 
      call lsquit('VBASIS ALWAYS TRANSFORMED TO GC BASIS no integraltransform',-1)
@@ -752,15 +754,19 @@ integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
   ENDIF
   VBASISINFO%natomtypes = BASISINFO%natomtypes
   CALL MEM_ALLOC(VBASISINFO%ATOMTYPE,BASISINFO%natomtypes)
-  VBASISINFO%ATOMTYPE = BASISINFO%ATOMTYPE  
+!  VBASISINFO%ATOMTYPE = BASISINFO%ATOMTYPE  
   maxcharge = 0
   VBASISINFO%nAtomtypes = BASISINFO%nAtomtypes
   DO J=1,BASISINFO%nAtomtypes
      icharge = BASISINFO%ATOMTYPE(J)%charge
      maxcharge = MAX(maxcharge,icharge)
      !NO need to call mem_alloc SHELL
-     VBASISINFO%ATOMTYPE(J)%nAngmom = &
-          &BASISINFO%ATOMTYPE(J)%nAngmom
+     call nullifyAtomType(VBASISINFO%ATOMTYPE(J))
+     VBASISINFO%ATOMTYPE(J)%nAngmom = BASISINFO%ATOMTYPE(J)%nAngmom
+     VBASISINFO%ATOMTYPE(J)%ToTnorb = BASISINFO%ATOMTYPE(J)%ToTnorb
+     VBASISINFO%ATOMTYPE(J)%ToTnprim = BASISINFO%ATOMTYPE(J)%ToTnprim
+     VBASISINFO%ATOMTYPE(J)%Charge = BASISINFO%ATOMTYPE(J)%Charge
+     VBASISINFO%ATOMTYPE(J)%NAME = BASISINFO%ATOMTYPE(J)%NAME
      DO K=1,BASISINFO%ATOMTYPE(J)%nAngmom
         !NO need to call mem_alloc segments
         !we transform the basis so we need to allocate it as if it is general contracted
@@ -800,7 +806,7 @@ integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
            iCont = iCont + BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(iseg)%ncol
         ENDDO
 !        WRITE(6,*)'VBASIS untransfomed',nrow,ncol
-!        call output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
+!        call ls_output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
         IF(GCtransAlloc)THEN
            !GCbasis requested
            IF(GCbasis)THEN
@@ -809,13 +815,13 @@ integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
            ELSE
               !the input basis have not been transformed so we need to transform valence basis
               !WRITE(6,*)'VBASIS untransfomed',nrow,ncol
-              !call output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
+              !call ls_output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
               nrow2 = GCtrans%ATOMTYPE(J)%SHELL(K)%nprim
               ncol2 = GCtrans%ATOMTYPE(J)%SHELL(K)%norb
               call mem_alloc(bCMO,nrow2,ncol2)
               bCMO = reshape(GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%elms,(/ nrow2,ncol2 /))
               !WRITE(6,*)'transform matrix',nrow2,ncol2
-              !call output(bCMO,1,nrow2,1,ncol2,nrow2,ncol2,1,6)
+              !call ls_output(bCMO,1,nrow2,1,ncol2,nrow2,ncol2,1,6)
               CCtmp = matmul(CCtmp,bCMO) 
               VBASISINFO%ATOMTYPE(J)%SHELL(K)%segment(1)%elms = reshape(CCtmp, (/ nrow*ncol /))
               !print*,'GCtransAlloc true so we transform GC basis and we keep ',VBASISINFO%ATOMTYPE(J)%SHELL(K)%segment(1)%elms
@@ -826,26 +832,33 @@ integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
            VBASISINFO%ATOMTYPE(J)%SHELL(K)%segment(1)%elms = reshape(CCtmp, (/ nrow*ncol /))
         ENDIF
 !        WRITE(6,*)'VBASIS transformed'
-!        call output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
+!        call ls_output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
         call mem_dealloc(CCtmp)
      ENDDO
   ENDDO
-  VBASISINFO%labelindex = BASISINFO%labelindex
   IF(BASISINFO%labelindex.EQ. 0)THEN
+     VBASISINFO%labelindex = 0
      CALL MEM_ALLOC(VBASISINFO%chargeindex,BASISINFO%nchargeindex,.TRUE.)
      VBASISINFO%nchargeindex = BASISINFO%nchargeindex
      VBASISINFO%chargeindex(0:BASISINFO%nchargeindex) = &
           &BASISINFO%chargeindex(0:BASISINFO%nchargeindex)
+  ELSE
+     VBASISINFO%labelindex = VALBasParam
+     R = BASISINFO%labelindex
+     DO J=1,molecule%natoms
+        molecule%atom(J)%idtype(VALBasParam) = molecule%atom(J)%idtype(R)
+     ENDDO
   ENDIF
   VBASISINFO%label = 'VALENCE  '
 
 END SUBROUTINE trilevel_ALLOC_SYNC_VBASIS
 
-subroutine trilevel_ALLOC_SYNC_GCTRANS(GCtrans,REGULAR)
+subroutine trilevel_ALLOC_SYNC_GCTRANS(GCtrans,REGULAR,MOLECULE)
 implicit none
+TYPE(MOLECULEINFO) :: MOLECULE
 TYPE(BASISSETINFO),intent(in) :: REGULAR
 TYPE(BASISSETINFO),intent(inout) :: GCtrans
-INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK
+INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK,R
 
   IF (REGULAR%natomtypes.eq. 0) THEN
      CALL LSQUIT('Try to build GCtrans for natomtypes=0',6)
@@ -854,15 +867,15 @@ INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK
   GCtrans%nChargeindex = 0
   GCtrans%natomtypes = REGULAR%natomtypes
   CALL MEM_ALLOC(GCtrans%ATOMTYPE,REGULAR%natomtypes)
-  GCtrans%ATOMTYPE = REGULAR%ATOMTYPE  
   maxcharge = 0
   GCtrans%nAtomtypes = REGULAR%nAtomtypes
   DO J=1,REGULAR%nAtomtypes
      icharge = REGULAR%ATOMTYPE(J)%charge
      maxcharge = MAX(maxcharge,icharge)
      !NO need to call mem_alloc SHELL
-     GCtrans%ATOMTYPE(J)%nAngmom = &
-          &REGULAR%ATOMTYPE(J)%nAngmom
+     call nullifyAtomType(GCtrans%ATOMTYPE(J))
+     GCtrans%ATOMTYPE(J)%nAngmom = REGULAR%ATOMTYPE(J)%nAngmom
+     GCtrans%ATOMTYPE(J)%Charge  = REGULAR%ATOMTYPE(J)%Charge
      DO K=1,REGULAR%ATOMTYPE(J)%nAngmom
         !NO need to call mem_alloc segments
         GCtrans%ATOMTYPE(J)%SHELL(K)%nsegments = 1
@@ -874,19 +887,29 @@ INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK
         nsize=ncol*ncol
         CALL MEM_ALLOC(GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%elms,nSIZE)
         CALL MEM_ALLOC(GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%UCCelms,nSIZE)
+        do KK=1,nsize
+           GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%UCCelms(KK) = 0E0_realk
+        enddo
         CALL MEM_ALLOC(GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%Exponents,ncol)
         do KK=1,ncol
            GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%Exponents(KK) = 0E0_realk
         enddo
      ENDDO
   ENDDO
-  GCtrans%labelindex = REGULAR%labelindex
   IF(REGULAR%labelindex.EQ. 0)THEN
+     GCtrans%labelindex = 0
      CALL MEM_ALLOC(GCtrans%chargeindex,REGULAR%nchargeindex,.TRUE.)
      GCtrans%nchargeindex = REGULAR%nchargeindex
      GCtrans%chargeindex(0:REGULAR%nchargeindex) = &
           &REGULAR%chargeindex(0:REGULAR%nchargeindex)
+  ELSE
+     GCtrans%labelindex = GCTBasParam 
+     R = REGULAR%labelindex
+     DO J=1,molecule%natoms
+        molecule%atom(J)%idtype(GCTBasParam) = molecule%atom(J)%idtype(R)
+     ENDDO
   ENDIF
+  GCtrans%label = 'GCTRANS  '
 
 end subroutine trilevel_ALLOC_SYNC_GCTRANS
 !> \brief loop over all atoms and construct the grand canonical basis 
@@ -933,26 +956,26 @@ Write(ls%lupri,*)''
 !atomic calc is always done in AO basis and not transformed
 integraltransformGC = ls%setting%integraltransformGC
 ls%setting%integraltransformGC = .FALSE.
-! We call mem_alloc and initiate the ls%input%BASIS%GCtrans in this routine
-! and set ls%input%basis%GCtransAlloc = .TRUE. 
+! We call mem_alloc and initiate the ls%input%BASIS%binfo(gctbasparam) in this routine
 ! This is needed whenever we go from AO to GC baiss and back.
-ls%input%basis%GCtransAlloc = .TRUE.
-CALL trilevel_ALLOC_SYNC_GCTRANS(ls%input%BASIS%GCtrans,ls%input%basis%REGULAR)
+ls%input%basis%WBASIS(GCTBasParam) = .TRUE.
+CALL trilevel_ALLOC_SYNC_GCTRANS(ls%input%BASIS%BINFO(GCTBasParam),&
+     & ls%input%basis%BINFO(RegBasParam),ls%input%molecule)
 do i=1, ai%ND
    itype = ai%UATOMTYPE(i)
    IF(ls%input%molecule%atom(ai%NATOM(i))%pointcharge)CYCLE
    call io_free(ls%setting%IO)
    call io_init(ls%setting%IO)
    !print statements
-   len = len_trim(ls%input%BASIS%REGULAR%ATOMTYPE(itype)%NAME)
+   len = len_trim(ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%NAME)
    write(lupri,*)
    write (lupri,'(1X,A,1X,A,1X,A,1X,I3)') 'Level 1 atomic calculation on', &
-  & ls%input%BASIS%REGULAR%ATOMTYPE(itype)%NAME(1:len), 'Charge', &
-  & ls%input%BASIS%REGULAR%ATOMTYPE(itype)%Charge
+  & ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%NAME(1:len), 'Charge', &
+  & ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%Charge
    write(lupri,*) '================================================'
    write (*,'(1X,A,1X,A,1X,A,1X,I3)') 'Level 1 atomic calculation on', &
-  & ls%input%BASIS%REGULAR%ATOMTYPE(itype)%NAME(1:len), 'Charge', &
-  & ls%input%BASIS%REGULAR%ATOMTYPE(itype)%Charge
+  & ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%NAME(1:len), 'Charge', &
+  & ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%Charge
  
    nbast = ls%input%molecule%atom(ai%NATOM(i))%nContOrbREG
    CALL mat_init(F(1),nbast,nbast)
@@ -970,6 +993,7 @@ do i=1, ai%ND
       atomicSetting%fragment(iAO)%p => atomicmolecule
    enddo
    !deactivate density fitting, FMM and screening - provide no speedup and just complicates things
+   atomicSetting%scheme%admm_exchange = .FALSE.
    atomicSetting%scheme%densfit = .FALSE.
    atomicSetting%scheme%df_k = .FALSE.
    atomicSetting%scheme%PARI_J = .FALSE.
@@ -1025,7 +1049,7 @@ TYPE(lsitem) :: ls
 INTEGER             :: LUPRI,IPRINT,I
 
 ai%LUPRI = LUPRI
-ai%ND = ls%input%BASIS%REGULAR%nAtomtypes
+ai%ND = ls%input%BASIS%BINFO(REGBASPARAM)%nAtomtypes
 ai%NA = ls%input%MOLECULE%Natoms
 CALL MEM_ALLOC(ai%NATOM,ai%ND)
 CALL MEM_ALLOC(ai%UATOMTYPE,ai%ND)
@@ -1058,28 +1082,28 @@ TYPE(BASISINFO) :: lsBASIS
 !
 integer :: I,J,K,L,nangmom1,nAngmom2,nsegments
 
-DO J=1,lsBASIS%VALENCE%natomtypes
-   nangmom1=lsBASIS%VALENCE%ATOMTYPE(J)%nAngmom
-   nangmom2=lsBASIS%REGULAR%ATOMTYPE(J)%nAngmom
+DO J=1,lsBASIS%BINFO(VALBASPARAM)%natomtypes
+   nangmom1=lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%nAngmom
+   nangmom2=lsBASIS%BINFO(REGBASPARAM)%ATOMTYPE(J)%nAngmom
    DO K=nAngmom1+1,nAngmom2
-      nsegments=lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%nsegments
+      nsegments=lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%nsegments
       IF(nsegments .NE. 0)THEN
          DO L=1,nsegments
-            if (.not.ASSOCIATED(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%elms)) then
+            if (.not.ASSOCIATED(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%elms)) then
                print*,'memory previously released!!'
                call lsquit('Error in FREE_BASISSETINFO1 - memory previously released',-1)
             endif
-            CALL MEM_DEALLOC(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%elms)
-            if (.not.ASSOCIATED(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms)) then
+            CALL MEM_DEALLOC(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%elms)
+            if (.not.ASSOCIATED(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms)) then
                print*,'memory previously released!!'
                call lsquit('Error in FREE_BASISSETINFO1 - memory previously released',-1)
             endif
-            CALL MEM_DEALLOC(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms)
-            if (.not.ASSOCIATED(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%Exponents)) then
+            CALL MEM_DEALLOC(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms)
+            if (.not.ASSOCIATED(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%Exponents)) then
                print*,'memory previously released!!'
                call lsquit('Error in FREE_BASISSETINFO2 - memory previously released',-1)
             endif
-            CALL MEM_DEALLOC(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%Exponents)
+            CALL MEM_DEALLOC(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%Exponents)
          ENDDO
       ENDIF
    ENDDO
@@ -1105,25 +1129,37 @@ TYPE(trilevel_atominfo) :: ai
 integer             :: nbast,itype,nAngmom,charge,ang,nb,nocc
 integer             :: icharge,jatom,nsegments,tmpindex,seg,iprim
 integer, pointer    :: basis_size(:)
-integer :: len
-CALL trilevel_ALLOC_SYNC_VBASIS(ls%input%basis%VALENCE,ls%input%basis%REGULAR,&
-     &ls%input%basis%GCtrans,ls%setting%integraltransformGC,ls%input%basis%GCtransAlloc,&
-     &ls%input%basis%REGULAR%GCbasis,lupri)
+integer :: len,R,J
+CALL trilevel_ALLOC_SYNC_VBASIS(ls%input%basis%BINFO(VALBasParam),&
+     & ls%input%basis%BINFO(RegBasParam),ls%input%basis%BINFO(GCTBasParam),&
+     & ls%setting%integraltransformGC,ls%input%basis%wbasis(gctbasparam),&
+     & ls%input%basis%BINFO(RegBasParam)%GCbasis,ls%input%MOLECULE,lupri)
+
+R = ls%input%basis%BINFO(VALBasParam)%labelindex
+IF(R.NE.0)THEN
+   do i=1, ls%setting%nAO   
+      DO J=1,ls%setting%MOLECULE(i)%p%natoms
+         ls%setting%MOLECULE(i)%p%atom(J)%idtype(VALBasParam) = ls%input%MOLECULE%atom(J)%idtype(R)
+      ENDDO
+   enddo
+ENDIF
+
+ls%input%basis%WBASIS(VALBasParam) = .TRUE.
 do i=1, ai%ND
    itype = ai%UATOMTYPE(i)
    !points to function which calculates the size of the basis
    call trilevel_set_basis_size(ls%setting%BASIS(1)%p,itype,basis_size)
    jatom = ai%NATOM(i) !an atom in the full input molecule
-   nAngmom = ls%input%BASIS%REGULAR%ATOMTYPE(itype)%nAngmom
-   charge  = ls%input%BASIS%REGULAR%ATOMTYPE(itype)%Charge
+   nAngmom = ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom
+   charge  = ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%Charge
    
-   ls%input%basis%VALENCE%ATOMTYPE(itype)%ToTnorb = &
+   ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%ToTnorb = &
         & ElementTable(charge)%nocc_s + ElementTable(charge)%nocc_p &
         &+ElementTable(charge)%nocc_d + ElementTable(charge)%nocc_f
-   if (ElementTable(charge)%nocc_s .gt. 0 ) ls%input%basis%VALENCE%ATOMTYPE(itype)%nAngmom = 1
-   if (ElementTable(charge)%nocc_p .gt. 0 ) ls%input%basis%VALENCE%ATOMTYPE(itype)%nAngmom = 2
-   if (ElementTable(charge)%nocc_d .gt. 0 ) ls%input%basis%VALENCE%ATOMTYPE(itype)%nAngmom = 3
-   if (ElementTable(charge)%nocc_f .gt. 0 ) ls%input%basis%VALENCE%ATOMTYPE(itype)%nAngmom = 4
+   if (ElementTable(charge)%nocc_s .gt. 0 ) ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%nAngmom = 1
+   if (ElementTable(charge)%nocc_p .gt. 0 ) ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%nAngmom = 2
+   if (ElementTable(charge)%nocc_d .gt. 0 ) ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%nAngmom = 3
+   if (ElementTable(charge)%nocc_f .gt. 0 ) ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%nAngmom = 4
    
    do ang=0, nAngmom-1
       
@@ -1139,22 +1175,22 @@ do i=1, ai%ND
       end select
       IF(ls%setting%integraltransformGC)CALL LSQUIT('the Valence basis must be transformed to GCbasis',-1)
       !the Valence basis is a GCbasis 
-      ls%input%basis%VALENCE%ATOMTYPE(itype)%SHELL(ang+1)%norb = nocc
-      ls%input%basis%VALENCE%ATOMTYPE(itype)%SHELL(ang+1)%segment(1)%ncol = nocc
+      ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%norb = nocc
+      ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%segment(1)%ncol = nocc
       if (nocc.eq. 0) then
-         ls%input%basis%VALENCE%ATOMTYPE(itype)%SHELL(ang+1)%nprim = 0
-         ls%input%basis%VALENCE%ATOMTYPE(itype)%SHELL(ang+1)%segment(1)%nrow = 0
+         ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%nprim = 0
+         ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%segment(1)%nrow = 0
       endif
    enddo
    call mem_dealloc(basis_size)
 enddo
-call determine_nbast(ls%input%MOLECULE,ls%input%basis%VALENCE,&
+call determine_nbast(ls%input%MOLECULE,ls%input%basis%BINFO(VALBASPARAM),&
       &ls%setting%scheme%DoSpherical,ls%setting%scheme%uncont)
 
 !print*,'trilevel_full2valence vbasis MERGE'
-!call print_basissetinfo(6,ls%input%basis%VALENCE)
-!print*,'trilevel_full2valence REGULAR'
-!call print_basissetinfo(6,ls%input%basis%REGULAR)
+!call print_basissetinfo(6,ls%input%basis%BINFO(VALBASPARAM))
+!print*,'trilevel_full2valence BINFO(REGBASPARAM)'
+!call print_basissetinfo(6,ls%input%basis%BINFO(REGBASPARAM))
 
 END SUBROUTINE trilevel_full2valence
 
@@ -1171,7 +1207,7 @@ TYPE(basissetinfo) :: REGbasis
 Type(Matrix) :: D
 real(realk),pointer  :: occ(:), tmp(:,:)
 integer :: nAtoms, nAngmom, norb, ipos, charge,icharge
-integer :: itype, ang, i, nbast, kmult
+integer :: itype, ang, i, nbast, kmult,R
 
  nbast = REGBASIS%nbast
  call mem_alloc(occ,nbast)
@@ -1179,7 +1215,7 @@ integer :: itype, ang, i, nbast, kmult
  occ = 0E0_realk;
 
  nAtoms = ls%input%MOLECULE%nAtoms
-
+ R = REGBASIS%Labelindex
  ipos = 1
  do i=1, nAtoms
     IF(ls%input%MOLECULE%ATOM(i)%phantom)CYCLE
@@ -1188,7 +1224,7 @@ integer :: itype, ang, i, nbast, kmult
        icharge = INT(ls%input%MOLECULE%ATOM(i)%charge) 
        itype = REGBASIS%chargeindex(icharge)
     ELSE
-       itype = ls%input%MOLECULE%ATOM(i)%IDtype(1)
+       itype = ls%input%MOLECULE%ATOM(i)%IDtype(R)
     ENDIF
     nAngmom = REGBASIS%ATOMTYPE(itype)%nAngmom
     charge  = REGBASIS%ATOMTYPE(itype)%Charge
@@ -1228,6 +1264,7 @@ implicit none
 Type(Matrix) :: D,Dval
 real(realk),pointer  :: tD(:,:), tDval(:,:)
 integer :: i,j,k,len
+integer :: l1,l2,lvi,lvj,vk
 integer, pointer :: vlist(:,:), list(:,:)
 
  call mem_alloc(tD,D%ncol,D%nrow)
@@ -1236,13 +1273,24 @@ integer, pointer :: vlist(:,:), list(:,:)
  call mat_to_full(Dval,1E0_realk,tDval)
  tD = 0E0_realk
 
- do i=1,len
- if (vlist(i,1).gt.vlist(i,2)) cycle
-  do j=1,len
-    if (vlist(j,1).gt.vlist(j,2)) cycle
+ do j=1,len
+ if (vlist(j,1).gt.vlist(j,2)) cycle
+  vk=0
+  do l1 = list(j,1),list(j,2)
+  do i=1,len
+    if (vlist(i,1).gt.vlist(i,2)) cycle
+     lvj=vlist(j,1)+vk
+     k=0
+     do l2 = list(i,1),list(i,2)
+      lvi =vlist(i,1)+k
 
-    tD(list(i,1):list(i,2),list(j,1):list(j,2)) = &
-   & tDval(vlist(i,1):vlist(i,2),vlist(j,1):vlist(j,2))
+      tD(l2,l1) = tDval(lvi,lvj)
+      k=k+1
+    !  tD(list(i,1):list(i,2),list(j,1):list(j,2)) = &
+    !    & tDval(vlist(i,1):vlist(i,2),vlist(j,1):vlist(j,2))
+     enddo
+    enddo
+     vk=vk+1
 
   enddo
  enddo
@@ -1265,7 +1313,7 @@ subroutine trilevel_cmo_valence2full(CMO,vCMO,list,vlist,len)
 implicit none
 Type(Matrix) :: CMO,vCMO
 real(realk),pointer :: tCmo(:,:), tvCMO(:,:)
-integer :: i,j,k,  len
+integer :: i,j,k,lv,vk,len
 integer, pointer :: vlist(:,:), list(:,:)
 
  call mem_alloc(tCMO,CMO%ncol,CMO%nrow)
@@ -1276,10 +1324,21 @@ integer, pointer :: vlist(:,:), list(:,:)
 
  do i=1,len
  if (vlist(i,1).gt.vlist(i,2)) cycle
+ vk = 0
+ do j= list(i,1),list(i,2)
+    lv = vlist(i,1) + vk
+ do k =1,vCMO%ncol
 
-    tCMO(list(i,1):list(i,2),1:vCMO%ncol) = &
-   & tvCMO(vlist(i,1):vlist(i,2),1:vCMO%ncol)
+   
+    tCMO(j,k) = tvCMO(lv,k)
+
+    !tCMO(list(i,1):list(i,2),1:vCMO%ncol) = &
+   !& tvCMO(vlist(i,1):vlist(i,2),1:vCMO%ncol)
  enddo
+ vk=vk+1
+ enddo
+ enddo
+
 
  k = vCMO%ncol + 1;
  do i=1, len-1
@@ -1338,6 +1397,7 @@ end module trilevel_module
 !> \param opt optItem containing info about scf optimization
 !> \param ls lsitem structure containing integral,molecule,basis info
 SUBROUTINE trilevel_basis(opt,ls)
+use basis_typetype
 use trilevel_module
 use typedeftype, only: lsitem
 use io, only: io_free, io_init
@@ -1350,7 +1410,7 @@ use Matrix_Operations, only: matrix_type,mtype_dense,mat_select_type
 use lstiming
 use typedef, only: getNbasis
 use GCtransMod, only: write_GCtransformationmatrix
-use Integralparameters
+use lsparameters
 implicit none
 type(optItem), intent(inout) :: opt
 type(optItem)             :: gcopt
@@ -1359,7 +1419,7 @@ TYPE(trilevel_atominfo) :: ai
 integer                 :: CFG_averaging_sav, matrix_sav,nbast
 logical                 :: unres_sav
 
-  IF(ls%input%basis%REGULAR%GCbasis)THEN
+  IF(ls%input%basis%BINFO(REGBASPARAM)%GCbasis)THEN
      !the atomic calculation
      WRITE(ls%LUPRI,'(A)')' Skipping gcbasis calculation'
      WRITE(ls%LUPRI,'(A)')' This have already been done and input basis transformed.'
@@ -1413,6 +1473,8 @@ END SUBROUTINE trilevel_basis
 !> \param H1 one electron contribution to the fock matrix
 !> \param ls lsitem structure containing all info about integrals,basis,..
 SUBROUTINE atoms_start(config,D,H1,S,ls,ndmatalloc)
+use decompMod
+use basis_typetype
 use configurationType
 use trilevel_module
 use typedeftype, only: lssetting, lsitem
@@ -1431,84 +1493,110 @@ Type(Matrix),target        :: H1
 Type(Matrix),intent(inout) :: D(ndmatalloc),S
 integer,intent(in)         :: ndmatalloc
 !
-Type(Matrix) :: Dval,F(1),Cmo,Dpure
+Type(Matrix) :: Dval,F(1),Cmo,Dpure,Dpure2
 TYPE(trilevel_atominfo) :: ai
 real(realk)         :: E(1),trace
 real(realk),pointer :: eival(:) 
 integer      :: nbast,Nelectrons,sz,ndmat
-logical      :: dalink,DiagFmat,McWeeny,purify_failed,CS00
+logical      :: dalink,DiagFmat,McWeeny,purify_failed,CS00,admm_exchange
 real(realk),parameter :: THRNEL=1E-3_realk
 real(realk),external :: HOMO_energy
 ndmat = 1
 !a diagonal matrix with occupation numbers on the diagonal
-call trilevel_ATOMS_density(D(1),ls,ls%input%basis%regular)
+call trilevel_ATOMS_density(D(1),ls,ls%input%basis%binfo(RegBasParam))
 
-nbast = ls%input%BASIS%REGULAR%nbast
+nbast = ls%input%BASIS%BINFO(REGBASPARAM)%nbast
+
+!The matrix D is not idempotent. We have 2 options: 
+!1. Do McWeeny purification
+!2. Perform a Fock matrix build followed by a diagonalization
+McWeeny = config%opt%MWPURIFYATOMSTART  !Option 1 
+DiagFmat = .FALSE.  !Option 2 
+IF(McWeeny)THEN
+   write(config%lupri,'(A,I3)')'Perform McWeeny purification on the non idempotent Atoms Density',1
+   Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
+   call mat_init(Dpure,D(1)%nrow,D(1)%ncol)
+   call mat_assign(Dpure,D(1))
+   call Robust_McWeeney_purify(S,Dpure,purify_failed,Nelectrons)     
+   DiagFmat = purify_failed !revert to diagonalization if fail
+   if (.not.purify_failed) then
+      trace = mat_dotproduct(Dpure,S)
+      if ( abs(2.0E0_realk*trace-Nelectrons) .le. THRNEL*Nelectrons)then
+         call mat_assign(D(1),Dpure)
+      else
+         write(config%lupri,*)'Warning: Descrepancy between 2.0*Tr(DS) after purification and Nelectrons '
+         write(config%lupri,*)'2.0*Tr(DS) = ',2.0E0_realk*trace,' Nelectrons = ', Nelectrons
+         write(config%lupri,*)'We fall back to a diagonalization'
+         DiagFmat = .TRUE.
+      endif
+   else
+      write(config%lupri,*)'McWeeny purification of atomic density failed. We fall back to a diagonalization'
+   endif
+   call mat_free(Dpure)
+!   call mat_free(Dpure2)
+ELSE
+   DiagFmat = .TRUE. 
+ENDIF
 
 CALL mat_init(F(1),nbast,nbast)
-CALL mat_init(Cmo,nbast,nbast)
 
-!we could do McWeeny purification and avoid a Fock matrix build
-!and a diagonalization, but in most cases the Density is too bad
-!that the McWeeny purification works. A call to McWeeney_purify
-!simply do not converge. But if a better scheme is devised/implemented
-!it could be an option.
-
-!We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
-! => bad starting guess. If DaLink is requested, turn it off and then back on after
-! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
-dalink = .false.
-if (ls%setting%scheme%DALINK) then
+IF(DiagFmat)THEN
+   !We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
+   ! => bad starting guess. If DaLink is requested, turn it off and then back on after
+   ! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
+   dalink = ls%setting%scheme%DALINK
    ls%setting%scheme%DALINK = .FALSE.
-   dalink = .true.
-endif
-CS00 = .false.
-if (ls%setting%scheme%DFT%CS00) then
+   CS00 = ls%setting%scheme%DFT%CS00
    ls%setting%scheme%DFT%CS00 = .FALSE.
-   CS00 = .true.
-endif
-ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
-ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would giv e a wrong number of electrons
-! Iteration 0 : The density matrix is not idempotent; a diagonalization gives a proper 
-! idempotent density matrix  
-call di_get_fock_LSDALTON(D,H1,F,ndmat,E,config%decomp%lupri,config%decomp%luerr,ls)
-write(*,*) ' Iteration 0 energy:', E(1)
-write(config%decomp%lupri,*) ' Iteration 0 energy:', E(1)
+   !turn off ADMM exchange due missing idempotency 
+   ADMM_EXCHANGE = ls%setting%scheme%ADMM_EXCHANGE
+   IF (ls%setting%scheme%ADMM1) ls%setting%scheme%ADMM_EXCHANGE = .FALSE.
+   ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
+   ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would giv e a wrong number of electrons
+   ! Iteration 0 : The density matrix is not idempotent; a diagonalization gives a proper 
+   ! idempotent density matrix  
+   call di_get_fock_LSDALTON(D,H1,F,ndmat,E,config%decomp%lupri,config%decomp%luerr,ls)
+   write(*,*) ' Iteration 0 energy:', E(1)
+   write(config%decomp%lupri,*) ' Iteration 0 energy:', E(1)
+   
+   if (config%decomp%cfg_unres) then
+      call mem_alloc(eival,2*nbast)
+   else
+      call mem_alloc(eival,nbast)
+   endif
+   
+   CALL mat_init(Cmo,nbast,nbast)
+   call mat_diag_f(F(1),config%decomp%S,eival,Cmo)
+   !Commentet out by Thomas Kjaergaard - no testcase - code not testet ...
+   !!Asymetrizing starting guess if .ASYM is in input
+   !! 21.04.2010 C. Nygaard
+   !!Only works if HOMO and LUMO are of different symmetry
+   !if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
+   !   call asymmetrize_starting_guess (Cmo, config%decomp)
+   !endif
+   
+   call mat_density_from_orbs(Cmo,D(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
+   
+   if (config%decomp%cfg_unres) then
+      sz = 2*CMO%nrow
+   else
+      sz = CMO%nrow
+   endif
+   CALL mat_free(Cmo)
 
-if (config%decomp%cfg_unres) then
-   call mem_alloc(eival,2*nbast)
-else
-   call mem_alloc(eival,nbast)
-endif
-
-call mat_diag_f(F(1),config%decomp%S,eival,Cmo)
-!Commentet out by Thomas Kjaergaard - no testcase - code not testet ...
-!!Asymetrizing starting guess if .ASYM is in input
-!! 21.04.2010 C. Nygaard
-!!Only works if HOMO and LUMO are of different symmetry
-!if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
-!   call asymmetrize_starting_guess (Cmo, config%decomp)
-!endif
-
-call mat_density_from_orbs(Cmo,D(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
-
-if (config%decomp%cfg_unres) then
-   sz = 2*CMO%nrow
-else
-   sz = CMO%nrow
-endif
-ls%setting%scheme%DFT%CS00eHOMO = HOMO_energy(config%decomp%cfg_unres,&
-     & config%decomp%nocc,config%decomp%nocca,config%decomp%noccb,eival,sz)
-
-call mem_dealloc(eival)
-
-!Turn DaLink back on, if requested:
-if (dalink) ls%setting%scheme%DALINK = .true.
-if (CS00) ls%setting%scheme%DFT%CS00 = .true.
-ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS      
-
+   ls%setting%scheme%DFT%CS00eHOMO = HOMO_energy(config%decomp%cfg_unres,&
+        & config%decomp%nocc,config%decomp%nocca,config%decomp%noccb,eival,sz)
+   
+   call mem_dealloc(eival)
+   
+   !Turn DaLink back on, if requested:
+   ls%setting%scheme%DALINK = dalink
+   ls%setting%scheme%DFT%CS00 = cs00
+   ls%setting%scheme%ADMM_EXCHANGE = ADMM_EXCHANGE
+   
+   ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS      
+ENDIF
 CALL mat_free(F(1))
-CALL mat_free(Cmo)
 
 END SUBROUTINE ATOMS_START
 
@@ -1519,6 +1607,7 @@ END SUBROUTINE ATOMS_START
 !> \param ls structure containing info about molecule and integral evaluation
 !> \param config structure containing basicly all info
 SUBROUTINE trilevel_start(D,ls,config)
+use decompMod
 use configurationType
 use dal_interface
 use trilevel_module
@@ -1538,7 +1627,7 @@ use daltoninfo
 use matrix_module
 use matrix_operations
 use matrix_util
-use Integralparameters
+use lsparameters
 use IntegralInterfaceMOD
 use diagonalization
 use scfloop_module
@@ -1547,17 +1636,17 @@ use optimlocMOD, only: optimloc
 implicit none
 TYPE(lsitem),target :: ls
 TYPE(trilevel_atominfo) :: ai
-Type(Matrix) :: Dval(1),F(1),D(1),Cmo, fCmo,Dpure
+Type(Matrix) :: Dval(1),F(1),D(1),Cmo, fCmo,Dpure,Dpure2
 Type(Matrix),target :: H1,S
 Type(lsint_fock_data_type) :: lsint_fock_data_sav
-real(realk)         :: E(1), mx, Nelectrons
+real(realk)         :: E(1), mx
 real(realk)         :: maxelm_save, maxstep_save,thr_save,trace
 real(realk),pointer :: eival(:) 
-integer      :: nbast, len, nocc
+integer      :: nbast, len, nocc, Nelectrons
 integer, pointer :: vlist(:,:), list(:,:)
 integer :: lun, idum, ldum,iAO,sz,ndmat
 integer(8) :: fperm, vperm
-logical :: restart_from_dens, no_rhdiis, dalink, vdens_exists
+logical :: restart_from_dens, no_rhdiis, dalink, vdens_exists,admm_exchange
 logical :: OnMaster,DiagFmat,McWeeny,purify_failed,CS00,integraltransformGC
 type(ConfigItem) :: config
 real(realk),parameter :: THRNEL=1E-3_realk
@@ -1583,8 +1672,26 @@ type(LowAccuracyStartType)  :: LAStype
   integraltransformGC = ls%setting%integraltransformGC
   ls%setting%integraltransformGC = .FALSE.
 
+  !turn off ADMM exchange ass it does not make sense 
+  !Warning it turns out this is redundant as it is turned off in 
+  !SolverUtilities/dalton_interface.F90 if config%opt%optlevel .EQ. 2
+  ADMM_EXCHANGE = ls%setting%scheme%ADMM_EXCHANGE
+  ls%setting%scheme%ADMM_EXCHANGE = .FALSE.
+
   !loops over all distinct atoms and build valensbasis
   call trilevel_full2valence(ls,ai,config%LUPRI)
+
+  IF(.NOT.ASSOCIATED(ls%SETTING%BASIS(1)%p,ls%input%basis))THEN
+     DO iAO=1,ls%SETTING%nAO
+        IF(ls%SETTING%BASIS(iAO)%p%BINFO(VALBASPARAM)%nAtomtypes.NE.0)THEN
+           call lsquit('this should not happen setting valence basis non zero',-1)
+           call free_basissetinfo(ls%SETTING%BASIS(iAO)%p%BINFO(VALBASPARAM))
+        ENDIF
+        call copy_basissetinfo(ls%input%basis%binfo(valbasparam),ls%SETTING%BASIS(iAO)%p%BINFO(VALBASPARAM))
+        call determine_nbast(ls%setting%MOLECULE(iAO)%p,ls%SETTING%BASIS(iAO)%p%BINFO(VALBASPARAM),&
+             &ls%setting%scheme%DoSpherical,ls%setting%scheme%uncont)
+     ENDDO
+  ENDIF
   !in the valence basis is built as a GC basis
   !so we do not need to transform when doing integrals
 
@@ -1601,11 +1708,11 @@ type(LowAccuracyStartType)  :: LAStype
   Write(ls%lupri,'(A)')' '
   write(config%lupri,'(A)') '  The 2. Level Basis'
   CALL PRINT_LEVEL2BASIS(config%lupri,&
-       & ls%input%MOLECULE,ls%input%basis%VALENCE)
+       & ls%input%MOLECULE,ls%input%basis%BINFO(VALBASPARAM))
 !  call print_basissetinfo(config%LUPRI,ls%input%basis%VALENCE)
   ls%optlevel = 2
 
-  nbast = ls%input%basis%VALENCE%nbast !nbast for valence basis
+  nbast = ls%input%basis%BINFO(VALBASPARAM)%nbast !nbast for valence basis
   call set_matop_timer_optlevel(2)
   call mat_init(Dval(1),nbast,nbast)
 
@@ -1624,7 +1731,7 @@ type(LowAccuracyStartType)  :: LAStype
      call trilevel_readdens(Dval(1),config%lupri)
   else
      !default option
-     call trilevel_ATOMS_density(Dval(1),ls,ls%input%BASIS%VALENCE)
+     call trilevel_ATOMS_density(Dval(1),ls,ls%input%BASIS%BINFO(VALBASPARAM))
   endif
 
   CALL mat_init(F(1),nbast,nbast)
@@ -1651,53 +1758,74 @@ type(LowAccuracyStartType)  :: LAStype
   !thr_save = cfg_convergence_threshold !We don't need to converge hard on level 2
   config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold*config%opt%cfg_level2_convfactor
 
-
-  !we could do McWeeny purification and avoid a Fock matrix build
-  !and a diagonalization, but in most cases the Density is too bad
-  !that the McWeeny purification works. A call to McWeeney_purify
-  !simply do not converge. But if a better scheme is devised/implemented
-  !it could be an option.
-
-  !We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
-  ! => bad starting guess. If DaLink is requested, turn it off and then back on after
-  ! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
-  dalink = .false.
-  if (ls%setting%scheme%DALINK) then
-     ls%setting%scheme%DALINK = .FALSE.
-     dalink = .true.
-  endif
-  CS00 = .false.
-  if (ls%setting%scheme%DFT%CS00) then
-     ls%setting%scheme%DFT%CS00 = .FALSE.
-     CS00 = .true.
-  endif
-  ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
-  ! Iteration 0
-  ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would give a wrong number of electrons
-  if (.not.restart_from_dens) then
-     call di_get_fock_LSDALTON(Dval,H1,F,ndmat,E,config%lupri,config%decomp%luerr,ls)
-     write(*,*) ' Iteration 0 energy:', E(1)
-     write(config%lupri,*) ' Iteration 0 energy:', E(1)
-     call mem_alloc(eival,nbast)
-     call mat_diag_f(F(1),S,eival,Cmo)
-     call mat_density_from_orbs(Cmo,Dval(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
-     if (config%decomp%cfg_unres) then
-        sz = 2*CMO%nrow
+  !The matrix D is not idempotent. We have 2 options: 
+  !1. Do McWeeny purification
+  !2. Perform a Fock matrix build followed by a diagonalization
+  McWeeny = config%opt%MWPURIFYATOMSTART  !Option 1 
+  DiagFmat = .FALSE.  !option 2
+  IF(McWeeny)THEN
+     write(config%lupri,'(A,I3)')'Perform McWeeny purification on the non idempotent Atoms Density',1
+     Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
+     call mat_init(Dpure,Dval(1)%nrow,Dval(1)%ncol)
+     call mat_assign(Dpure,Dval(1))
+     call Robust_McWeeney_purify(S,Dpure,purify_failed,Nelectrons)
+     DiagFmat = purify_failed !revert to diagonalization if fail
+     if (.not.purify_failed) then
+        trace = mat_dotproduct(Dpure,S)
+        if ( abs(2.0E0_realk*trace) .le. THRNEL*Nelectrons)then
+           call mat_assign(Dval(1),Dpure)
+        else
+           write(config%lupri,*)'Warning: Descrepancy between 2.0*Tr(DS) after purification and Nelectrons '
+           write(config%lupri,*)'2.0*Tr(DS) = ',2.0E0_realk*trace,' Nelectrons = ', Nelectrons
+           write(config%lupri,*)'We fall back to a diagonalization'
+           DiagFmat = .TRUE.
+        endif
      else
-        sz = CMO%nrow
+        write(config%lupri,*)'McWeeny purification of atomic density failed. We fall back to a diagonalization'
      endif
-     ls%setting%scheme%DFT%CS00eHOMO = HOMO_energy(config%decomp%cfg_unres,&
-          & config%decomp%nocc,config%decomp%nocca,config%decomp%noccb,eival,sz)
+     call mat_free(Dpure)
+  ELSE
+     DiagFmat = .TRUE. 
+  ENDIF
+  
+  IF(DiagFmat)THEN
+     !We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
+     ! => bad starting guess. If DaLink is requested, turn it off and then back on after
+     ! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
+     dalink = ls%setting%scheme%DALINK
+     ls%setting%scheme%DALINK = .FALSE.
+     CS00 = ls%setting%scheme%DFT%CS00
+     ls%setting%scheme%DFT%CS00 = .FALSE.
      
-     call mem_dealloc(eival)
-  endif
-  ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS
-  !Turn DaLink back on, if requested:
-  if (dalink) ls%setting%scheme%DALINK = .true.
-  if (CS00) ls%setting%scheme%DFT%CS00 = .true.
+     ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
+     ! Iteration 0
+     ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would give a wrong number of electrons
+     if (.not.restart_from_dens) then
+        call di_get_fock_LSDALTON(Dval,H1,F,ndmat,E,config%lupri,config%decomp%luerr,ls)
+        write(*,*) ' Iteration 0 energy:', E(1)
+        write(config%lupri,*) ' Iteration 0 energy:', E(1)
+        call mem_alloc(eival,nbast)
+        call mat_diag_f(F(1),S,eival,Cmo)
+        call mat_density_from_orbs(Cmo,Dval(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
+        if (config%decomp%cfg_unres) then
+           sz = 2*CMO%nrow
+        else
+           sz = CMO%nrow
+        endif
+        ls%setting%scheme%DFT%CS00eHOMO = HOMO_energy(config%decomp%cfg_unres,&
+             & config%decomp%nocc,config%decomp%nocca,config%decomp%noccb,eival,sz)
+        
+        call mem_dealloc(eival)
+     endif
+     ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS
+     !Turn DaLink back on, if requested:
+     ls%setting%scheme%DALINK = dalink
+     ls%setting%scheme%DFT%CS00 = CS00
+  ENDIF
+
   !initialize incremental scheme
   if (config%opt%cfg_incremental) call ks_init_incremental_fock(nbast)
-  
+     
   !Does optimization method require overlap decomposition?
   no_rhdiis =(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
        & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
@@ -1718,20 +1846,20 @@ type(LowAccuracyStartType)  :: LAStype
   if (config%decomp%cfg_lcv.and.(.not.restart_from_dens).and. no_rhdiis) then
      nocc = config%decomp%nocc
      call leastchange_lcv(config%decomp,Cmo,nocc,ls)
-
+     
      call leastchangeOrbspreadStandalone(mx,ls,Cmo,config%decomp%lupri,config%decomp%luerr)
      write(*,*) 'Orbspread standalone: ', mx
-
+     
      config%decomp%lcv_basis = .true.
      call mat_init(config%decomp%lcv_CMO,nbast,nbast)
      config%decomp%decompMatInit_lcv_CMO = .TRUE.
      call mat_assign(config%decomp%lcv_CMO,Cmo)
-
+     
      call save_decomposition(config%decomp)
      call decomposition(config%decomp)
   endif
 #endif
-
+  
   if (config%av%CFG_averaging == config%av%CFG_AVG_van_lenthe) then !FIXME: put this somewhere else!
      call mat_init(config%av%Fprev,nbast,nbast)
      call mat_init(config%av%Dprev,nbast,nbast)
@@ -1814,7 +1942,11 @@ type(LowAccuracyStartType)  :: LAStype
       ls%setting%integraltransformGC = .false.
       call leastchange_lcv(config%decomp,Cmo,nocc,ls)
       if (config%decomp%cfg_mlo .and. (.not. config%davidOrbLoc%PFM_input%TESTCASE) .and. (.not. config%davidOrbLoc%NOL2OPT)) then
-          write(ls%lupri,'(a)') 'Pred= ***** LEVEL 2 ORBITAL LOCALIZATION ****'
+              write(ls%lupri,'(a)')'  %LOC%   '
+              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+              write(ls%lupri,'(a)')'  %LOC%   *       LEVEL 2 ORBITAL LOCALIZATION       *'
+              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+              write(ls%lupri,'(a)')'  %LOC%   '
           call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
       endif
       ls%setting%integraltransformGC = integraltransformGC
@@ -1827,13 +1959,18 @@ type(LowAccuracyStartType)  :: LAStype
   endif
 
   ! create integer list for conversion to full basis
-  call typedef_setlist_valence2full(list,vlist,len,ls,ls%input%BASIS%VALENCE)
+  call typedef_setlist_valence2full(list,vlist,len,ls,ls%input%BASIS%BINFO(VALBASPARAM))
   !Due to the construction of Vbasis from regular basis we need to free some space
   !that is not used in the valence basis - But we do not actually free the basis
+  IF(.NOT.ASSOCIATED(ls%SETTING%BASIS(1)%p,ls%input%basis))THEN
+     DO iAO=1,ls%SETTING%nAO
+        call freeVbasis(ls%SETTING%BASIS(iAO)%p)
+     ENDDO
+  ENDIF
   call freeVbasis(ls%input%BASIS)
 
   ! initialize decomp%lcv_CMO
-  nbast = ls%input%BASIS%REGULAR%nbast !full basis nbast 
+  nbast = ls%input%BASIS%BINFO(REGBASPARAM)%nbast !full basis nbast 
   !set setting basis to the full basis
   call set_default_AOs(AORegular,AOdfAux)
 
@@ -1848,7 +1985,7 @@ type(LowAccuracyStartType)  :: LAStype
   lun = -1
   call lsopen(lun,'lcv_basis.restart','unknown','UNFORMATTED')
   call mat_write_to_disk(lun,config%decomp%lcv_Cmo,OnMaster)
-  write (lun) config%decomp%cfg_lcv
+  call mat_write_info_to_disk(lun,config%decomp%cfg_lcv)
   call lsclose(lun,'KEEP')
 
   call mat_free(Cmo)
@@ -1862,10 +1999,11 @@ type(LowAccuracyStartType)  :: LAStype
   !we restore the default settings, which sets the GRDONE=0 
   !so that the dft grid is calculated with the full basis 
   !on the next kohn-sham matrix build
-  call typedef_set_default_setting(ls%setting,ls%input)
+!  call typedef_set_default_setting(ls%setting,ls%input)
+  CALL typedef_setIntegralSchemeFromInput(LS%INPUT%DALTON,LS%SETTING%SCHEME)
 
   IF(.NOT.config%decomp%cfg_gcbasis)then
-     IF(.NOT.ls%input%basis%REGULAR%DunningsBasis)THEN
+     IF(.NOT.ls%input%basis%BINFO(REGBASPARAM)%DunningsBasis)THEN
         WRITE(config%lupri,*)'Warning: You use trilevel without a GCbasis. This is not'
         WRITE(config%lupri,*)'         recommended and you may be doing something wrong'
         print*,'Warning: You use trilevel without a GCbasis. This is not'
@@ -1878,14 +2016,14 @@ type(LowAccuracyStartType)  :: LAStype
         !we transform the input basis to GCbasis
         ls%setting%integraltransformGC = .FALSE.              
      ELSE
-        IF(ls%input%basis%REGULAR%Gcont)THEN
+        IF(ls%input%basis%BINFO(REGBASPARAM)%Gcont)THEN
            !we transform the input basis to GCbasis
            ls%setting%integraltransformGC = .FALSE.     
         ELSE
            !Segmented contracted Case
            !so we transform back and forth.
            ls%setting%integraltransformGC = .TRUE.
-           IF(.NOT.ls%input%basis%GCtransAlloc)THEN
+           IF(.NOT.ls%input%basis%wbasis(gctbasparam))THEN
               call lsquit('GCtrans not call mem_allocd in trilevel_start',-1)
            ENDIF
         ENDIF
@@ -1894,7 +2032,7 @@ type(LowAccuracyStartType)  :: LAStype
   IF(ls%setting%integraltransformGC.NEQV.integraltransformGC)&
        & CALL LSQUIT('ERROR in integraltransformGC',-1)  
   !This should be obsolete 
-  call determine_nbast(ls%input%MOLECULE,ls%input%BASIS%REGULAR,&
+  call determine_nbast(ls%input%MOLECULE,ls%input%BASIS%BINFO(REGBASPARAM),&
       &ls%setting%scheme%DoSpherical,ls%setting%scheme%uncont)
 
   call io_free(ls%setting%IO)
@@ -1907,7 +2045,8 @@ type(LowAccuracyStartType)  :: LAStype
   call leastchangeOrbspreadStandalone(mx,ls,config%decomp%lcv_Cmo,config%decomp%lupri,config%decomp%luerr)
   write(*,*) 'Orbspread standalone full CMO: ', mx
 
- call trilevel_atominfo_free(ai)
+  call trilevel_atominfo_free(ai)
+  ls%setting%scheme%ADMM_EXCHANGE = ADMM_EXCHANGE
 
 END SUBROUTINE trilevel_start
 

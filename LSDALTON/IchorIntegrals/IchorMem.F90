@@ -1,17 +1,20 @@
 !Monitor memory NON THREAD SAFE
 MODULE IchorMemory
-  use IchorCommonModule
-  use IchorprecisionModule
+  use IchorCommonMod
+  use IchorprecisionMod
    private
-   public set_ichor_memvar
-   public retrieve_ichor_memvar
+   public set_ichor_memvar, retrieve_ichor_memvar
    public stats_ichor_mem
    public mem_ichor_alloc
    public mem_ichor_dealloc
+   public mem_ichor_alloc_dryrun
+   public mem_ichor_dealloc_dryrun
+   public mem_realsize,mem_intsize
    public ADD_OMP_MEM
    public REMOVE_OMP_MEM
 !GLOBAL VARIABLES
    integer(KIND=long),save :: mem_allocated_ichor, max_mem_used_ichor  !Count all memory
+   integer(KIND=long),save :: maxMemLimit_ichor !maximum allowed memory usage
    !Count 'real' memory, integral code
    integer(KIND=long),save :: mem_allocated_real, max_mem_used_real
    !Count 'integer' memory, integral code
@@ -19,14 +22,25 @@ MODULE IchorMemory
    !Count 'logical' memory, integral code
    integer(KIND=long),save :: mem_allocated_logical, max_mem_used_logical
 ! sizes
-   integer(KIND=long),parameter :: mem_realsize=8
-   integer(KIND=long),parameter :: mem_logicalsize=4
+   integer(KIND=long),parameter :: mem_realsize=8_long
+   integer(KIND=long),parameter :: mem_logicalsize=4_long
 #if VAR_INT64
    integer(KIND=long),parameter :: mem_intsize=8_long
 #else
    integer(KIND=long),parameter :: mem_intsize=4_long
 #endif
 !Interfaces for counting memory 
+INTERFACE mem_ichor_alloc_dryrun
+  MODULE PROCEDURE alloc_dryrun_1dim, alloc_dryrun_2dim, &
+       & alloc_dryrun_3dim, alloc_dryrun_4dim
+
+END INTERFACE
+!
+INTERFACE mem_ichor_dealloc_dryrun
+  MODULE PROCEDURE dealloc_dryrun_1dim, dealloc_dryrun_2dim, &
+       & dealloc_dryrun_3dim, dealloc_dryrun_4dim
+END INTERFACE
+
 INTERFACE mem_ichor_alloc
   MODULE PROCEDURE real_allocate_1dim, real_allocate_2dim, &
        & real_allocate_3dim, real_allocate_4dim, real_allocate_5dim, &
@@ -43,11 +57,16 @@ INTERFACE mem_ichor_dealloc
 END INTERFACE
 !
 CONTAINS
-subroutine set_ichor_memvar(MaxMemAllocated,MemAllocated)
+subroutine set_ichor_memvar(MaxMemAllocated,MemAllocated,MaxMem)
 implicit none
-integer(KIND=long),intent(in) :: MaxMemAllocated,MemAllocated
-mem_allocated_ichor = MemAllocated
+integer(KIND=long),intent(in) :: MaxMemAllocated,MemAllocated,MaxMem
 max_mem_used_ichor = MaxMemAllocated
+mem_allocated_ichor = MemAllocated
+IF(MaxMem.EQ.0)THEN
+   maxMemLimit_ichor = HUGE(MaxMem)
+ELSE
+   maxMemLimit_ichor = MaxMem
+ENDIF
 mem_allocated_real = 0
 max_mem_used_real = 0
 mem_allocated_integer = 0
@@ -112,6 +131,70 @@ subroutine print_ichor_maxmem(lupri,max_mem_used,STRING)
           & max_mem_used/(1000.0E0_realk*1000.0E0_realk*1000.0E0_realk)
   endif
 end subroutine print_ichor_maxmem
+
+SUBROUTINE alloc_dryrun_1dim(n1)
+  implicit none
+  integer :: n1
+  integer (kind=long) :: nsize
+  nsize = n1*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_1DIM
+
+SUBROUTINE alloc_dryrun_2dim(n1,n2)
+  implicit none
+  integer :: n1,n2
+  integer (kind=long) :: nsize
+  nsize = n1*n2*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_2DIM
+
+SUBROUTINE alloc_dryrun_3dim(n1,n2,n3)
+  implicit none
+  integer :: n1,n2,n3
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_3DIM
+
+SUBROUTINE alloc_dryrun_4dim(n1,n2,n3,n4)
+  implicit none
+  integer :: n1,n2,n3,n4
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*n4*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_4DIM
+
+SUBROUTINE dealloc_dryrun_1dim(n1)
+  implicit none
+  integer :: n1
+  integer (kind=long) :: nsize
+  nsize = n1*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_1DIM
+
+SUBROUTINE dealloc_dryrun_2dim(n1,n2)
+  implicit none
+  integer :: n1,n2
+  integer (kind=long) :: nsize
+  nsize = n1*n2*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_2DIM
+
+SUBROUTINE dealloc_dryrun_3dim(n1,n2,n3)
+  implicit none
+  integer :: n1,n2,n3
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_3DIM
+
+SUBROUTINE dealloc_dryrun_4dim(n1,n2,n3,n4)
+  implicit none
+  integer :: n1,n2,n3,n4
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*n4*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_4DIM
 
 SUBROUTINE real_allocate_1dim(A)
   implicit none
@@ -316,6 +399,11 @@ subroutine mem_allocated_ichor_mem_real(nsize)
      call IchorQuit('Error in mem_allocated_ichor_mem_real - probably integer overflow!',-1)
   endif
   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_real - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
 end subroutine mem_allocated_ichor_mem_real
 
 subroutine mem_deallocated_ichor_mem_real(nsize)
@@ -342,6 +430,11 @@ subroutine mem_allocated_ichor_mem_real2(nsize)
   max_mem_used_real = MAX(max_mem_used_real,mem_allocated_real)
   mem_allocated_ichor = mem_allocated_ichor  + nsize
   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_real2 - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
 end subroutine mem_allocated_ichor_mem_real2
 
 subroutine mem_deallocated_ichor_mem_real2(nsize)
@@ -359,6 +452,11 @@ subroutine mem_allocated_ichor_mem_integer(nsize)
   !Count also the total memory:
   mem_allocated_ichor = mem_allocated_ichor  + nsize
   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_integer - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
 end subroutine mem_allocated_ichor_mem_integer
 
 subroutine mem_deallocated_ichor_mem_integer(nsize)
@@ -383,6 +481,11 @@ subroutine mem_allocated_ichor_mem_logical(nsize)
   !Count also the total memory:
   mem_allocated_ichor = mem_allocated_ichor  + nsize
   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_logical - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
 end subroutine mem_allocated_ichor_mem_logical
 
 subroutine mem_deallocated_ichor_mem_logical(nsize)

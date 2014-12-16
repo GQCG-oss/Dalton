@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_trial1 */
       SUBROUTINE SO_TRIAL1(MODEL,NNEWTR,POINT,LPOINT,ISYMTR,NEXCI,

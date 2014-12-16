@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C  /* Deck hsoctl */
       SUBROUTINE HSOCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
 C
@@ -56,8 +55,8 @@ C  TRHSO : ILXYZ, KSYMSO, OLDTRA
 C  INFHSO: IPRHSO, TESTZY, DOSO1, DOSO2
 C  INFHYP: HYPCAL
 C  INFSMO: SOMOM
-C  INFPP: EXMOM
-C  INFRSP: ???,SOPPA
+C  INFPP : EXMOM
+C  INFRSP: IPRRSP,SOPPA,???
 C
 C-- common blocks:
 #include "maxash.h"
@@ -90,7 +89,7 @@ C
       CALL QENTER('HSOCTL')
 C
       IF (SOPPA) CALL QUIT('HSOCTL: SOPPA not implemented yet!')
-      IPRHSO=MAX(IPRRSP,IPRPP,IPRLR,IPRESR)
+      IPRHSO = MAX(IPRHSO,IPRRSP,IPRPP,IPRLR,IPRESR)
       KSYMSO=KSYMOP
       CALL DZERO(GP,KZYVAR)
       HSOFAC=ALPHAC**2/4
@@ -1198,7 +1197,7 @@ C
          DO 220 IW = 1,NASHT
             IX = ISX(NISHT+IW)
             DO 230 JW = 1,NASHT
-               JX = ISX(NISHT+JW)
+               JX  = ISX(NISHT+JW)
                IJW = (IW-1) * NASHT + JW
                WRK(KFCAC-1+IJW) = FC(IX,JX)
  230        CONTINUE
@@ -1224,14 +1223,9 @@ C           WRITE(LUPRI,'(/2(A,I5),/3(A,I5))')
 C    *      ' NUMBER OF REFERENCE DETERMINANTS ,NDREF:',NDREF,
 C    *      ' CALCULATED NUMBER ,NCDET:',NCDET,
 C    *      ' NUMBER OF DETERMINANTS FOR SYMMETRY',KSYMOP,
-C    *      '  IS:',KZCONF,'  CALCULATED NUMBER,NHCDET:',NHCDET
-C        CALL QUIT(' H2XSIG,INCORRECT CALCULATION OF DETERMINANTS')
+C    *      '  IS:',KZCONF,'  CALCULATED NUMBER, NHCDET:',NHCDET
+C        CALL QUIT(' H2XSIG, INCORRECT CALCULATION OF DETERMINANTS')
 C        END IF
-         IF (IREFSY .EQ. KSYMST) THEN
-C           ... remove CREF component of E[2] vector
-            T1 = DDOT(KZCONF,WRK(KREFCO),1,GP(1),1)
-            CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,GP(1),1)
-         END IF
          IF (IPRHSO.GT.IPRLOC) THEN
             WRITE(LUPRI,'(/A)')
      *        ' CSF part of spin-orbit property vector: Z part'
@@ -1277,11 +1271,6 @@ C    *                               WRK(KHSQTR),N2ASHX)
      *               GP(KZVAR+1),
      *               WRK(KFCAC), WRK(KHSQTR), .FALSE., .FALSE.,
      *               XINDX, ISPIN1, ISPIN2, WRK(KFREE), LFREE)
-            IF (IREFSY .EQ. KSYMST) THEN
-C              ... remove CREF component of E[2] vector
-               T1 = DDOT(KZCONF,WRK(KREFCO),1,GP(1+KZVAR),1)
-               CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,GP(1+KZVAR),1)
-            END IF
             CALL DSCAL(KZCONF,DM1,GP(1+KZVAR),1)
             IF (IPRHSO.GT.IPRLOC) THEN
                WRITE(LUPRI,'(/A)')
@@ -1437,8 +1426,8 @@ C
       INTEGER KFREE,LFREE
 C
 C Build HSO inactive fockmatrix from AO integrals
-C If DIRFCK=.TRUE. call TWOINT
-C else read from AO2SOINT
+C    If DIRFCK=.TRUE. call TWOINT
+C  else read from AO2SOINT
 C
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1453,9 +1442,9 @@ C
 #include "dftcom.h"
 #include "symmet.h"
 #ifdef VAR_DEBUG
-#define DEBUG .TRUE.
+#define HSODEBUG .TRUE.
 #else
-#define DEBUG .FALSE.
+#define HSODEBUG .FALSE.
 #endif
       REAL*8 D1
       PARAMETER (D1=1.0D0)
@@ -1488,7 +1477,7 @@ C
             CALL DSWAP(N2BASX,WRK(KDC),1,WRK(KDV),1)
          END IF
       END IF
-      IF (DEBUG) THEN
+      IF (HSODEBUG) THEN
          CALL MAOPRI(WRK(KDC),'HSOFCKAO:Input  D1')
          IF (NASHT.GT.0) THEN
             CALL MAOPRI(WRK(KDC+N2BASX),'HSOFCKAO:Input  D2')
@@ -1543,7 +1532,7 @@ C        Always full exchange for spin-orbit integrals:
      &               .FALSE.,.false.)
          HFXFAC=HFXSAV
          CALL MEMREL('HSOFCKAO.TWOINT',WRK,KFC,KJSTRS,KFREE,LFREE)
-         IF (DEBUG) THEN
+         IF (HSODEBUG) THEN
             CALL MAOPRI(WRK(KFC),':TWOINT:Calculated F1')
             IF (NASHT.GT.0) THEN
                CALL MAOPRI(WRK(KFC+N2BASX),':TWOINT:Calculated F2')
@@ -1559,7 +1548,7 @@ C
      &               .FALSE.,.FALSE.,.FALSE.,.TRUE.,IDUMMY,.TRUE.,NDMAT,
      &               ISYMDM,IFCTYP,IDUMMY,.TRUE.)
 C
-         IF (DEBUG) THEN
+         IF (HSODEBUG) THEN
             CALL MAOPRI(WRK(KFC),':SKLFCK:Calculated F1')
             IF (NASHT.GT.0) THEN
                CALL MAOPRI(WRK(KFC+N2BASX),':SKLFCK:Calculated F2')
@@ -1583,9 +1572,9 @@ C
          TRIPLET(1) = TRPLET
          TRIPLET(2) = .NOT.TRPLET
          CALL DZERO(WRK(KFC),NDMAT*N2BASX)
-         CALL GETFMATX(WORD,TRIPLET,WRK(KFC),WRK(KDC),NDMAT)
+         CALL GET_FSO_AO(WORD,TRIPLET,WRK(KFC),WRK(KDC),NDMAT)
       END IF
-      IF (DEBUG) THEN
+      IF (HSODEBUG) THEN
          CALL MAOPRI(WRK(KFC),'HSOFCKAO:Calculated F1')
          IF (NASHT.GT.0) THEN
             CALL MAOPRI(WRK(KFC+N2BASX),'HSOFCKAO:Calculated F2')
@@ -1607,7 +1596,7 @@ C
          CALL DZERO(FV,N2ORBX)
          CALL AOTOMO(WRK(KFV),FV,CMO,KSYMOP,WRK(KFREE),LFREE)
       END IF
-      IF (DEBUG) THEN
+      IF (HSODEBUG) THEN
          CALL MAOPRI(WRK(KFC),'HSOFCKAO:FC(AO)')
          IF (NASHT.GT.0) CALL MAOPRI(WRK(KFV),'HSOFCKAO:FC-FO(AO)')
          CALL MMOPRI(FC,'HSOFCKAO:FO(MO)')
@@ -2252,38 +2241,35 @@ C
       RETURN
       END
 C
-C /* Deck getfmatx */
+C /* Deck get_FSO_AO */
 C
-      SUBROUTINE GETFMATX(WORD,TRIPLET,F,D,ND)
+      SUBROUTINE GET_FSO_AO(WORD,TRIPLET,F,D,ND)
+C
+C Generalize GETFMAT to handle non-symmetric densities (quadratic
+C response spin-orbit)
+C
 #include "implicit.h"
       CHARACTER*8 WORD
       INTEGER ND
       LOGICAL TRIPLET(ND)
 #include "inforb.h"
       DIMENSION F(NBAST,NBAST,ND), D(NBAST,NBAST,ND)
-C
-C Generalize GETFMAT to handle non-symmetric densities (quadratic
-C response)
-C
+
+#include "infhso.h"
 #include "priunit.h"
 #include "iratdef.h"
 C
 C LOCAL
 C
-#if defined (VAR_SPLITFILES)
-      PARAMETER (LBUF=600*(IRAT+1)+1)
-      PARAMETER (KBUF=1, KIBUF=1 + 600*IRAT)
-      DIMENSION IWRK(LBUF)
-#endif
-      DIMENSION BUF(600)
-      INTEGER IBUF(600)
-      INTEGER IB, LENGTH, I,J,K,L,ICOOR, LUHSOAO, COMPONENT,LABEL,ID
-      DIMENSION LEFT(2), RIGHT(2)
-cF90   REAL(DOUBLE) GIJKL,XIJKL,DIJ,DKL,
-cF90   REAL(DOUBLE) DP5, D1P5, D1, D2, 
+      PARAMETER (LBUF = 600)
+      REAL*8    BUF(2*LBUF+1)
+      INTEGER   IINDX4(4,LBUF), LENGTH
+      INTEGER   IB, I,J,K,L,ICOOR, LUHSOAO, COMPONENT,ID
+      REAL*8    LEFT(2), RIGHT(2)
+      REAL*8    GIJKL,XIJKL,DIJ,DKL, DP5, D1P5, D1, D2 
       PARAMETER(DP5=0.5D0, D1P5=1.5D0, D1=1.0D0, D2=2.0D0)
 C
-      CALL QENTER('GETFMATX')
+      CALL QENTER('GET_FSO_AO')
       IF (ND .GT. 2) THEN
          CALL QUIT('ND .gt. fixed dimension of 2')
       END IF
@@ -2292,51 +2278,49 @@ C READ AND DISTRIBUTE SPIN-ORBIT AO INTEGRALS
 C
       DO ID=1,ND
          IF (TRIPLET(ID)) THEN
-            LEFT(ID)=D1
+            LEFT(ID)= D1
             RIGHT(ID)=D2
          ELSE
-            LEFT(ID)=D2
+            LEFT(ID) =D2
             RIGHT(ID)=D1
          END IF
       END DO
+
       LUHSOAO=-1
       CALL GPOPEN(
      &   LUHSOAO,'AO2SOINT','OLD','SEQUENTIAL','UNFORMATTED',-1,.FALSE.
      &   )
       CALL REWSPL(LUHSOAO)
-#if defined (VAR_SPLITFILES)
-      JRSP = 0
-#endif
+
+      IF (NBAST .GT. 255) THEN
+         NIBUF = 2
+         NBITS = 16
+      ELSE
+         NIBUF = 1
+         NBITS = 8
+      END IF
+      LEN_IBUF4 = 2*LBUF + NIBUF*LBUF + 1 ! BUF(LBUF), IBUF4(NIBUF,LBUF), LENGTH4 in integer*4 units
+
       CALL MOLLAB('AO2SOINT',LUHSOAO,LUPRI)
       IF (WORD(1:1).EQ.'X') COMPONENT = 1
       IF (WORD(1:1).EQ.'Y') COMPONENT = 2
       IF (WORD(1:1).EQ.'Z') COMPONENT = 3
+      
+      IF (IPRHSO .GT. 100) THEN
+         WRITE(LUPRI,*) 'Hello from GET_FSO_AO. WORD: ',WORD,COMPONENT
+         WRITE(LUPRI,*) ' TRIPLET? ',TRIPLET(1:ND)
+      END IF
+
 cF90  READFILE: DO 
  100  CONTINUE
-#if defined (VAR_SPLITFILES)
-         CALL READSI(LUHSOAO,LBUF,IWRK,JRSP,.TRUE.)
-         CALL DCOPY(600,IWRK(KBUF),1,BUF,1)
-         CALL ICOPY(600,IWRK(KIBUF),1,IBUF,1)
-         LENGTH=IWRK(LBUF)
-#else
-         READ(LUHSOAO) BUF, IBUF, LENGTH
-#endif
+         CALL READI4(LUHSOAO, LEN_IBUF4, BUF)
+         CALL AOLAB4(BUF(LBUF+1),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
 cF90     IF (LENGTH.LE.0) EXIT
          IF (LENGTH.LE.0) GO TO 300
 cF90     BUFFER: DO IB=1,LENGTH
          DO IB=1,LENGTH
-            LABEL=IBUF(IB)
-#ifdef VAR_INT64
-            I = IBITS(LABEL,48,16)
-            J = IBITS(LABEL,32,16)
-            K = IBITS(LABEL,16,16)
-            L = IBITS(LABEL, 0,16)
-#else
-            I = IBITS(LABEL,24,8)
-            J = IBITS(LABEL,16,8)
-            K = IBITS(LABEL, 8,8)
-            L = IBITS(LABEL, 0,8)
-#endif
+            K = IINDX4(3,IB)
+            L = IINDX4(4,IB)
             IF (L.EQ.0) THEN
                ICOOR = K
 cF90           CYCLE BUFFER
@@ -2344,6 +2328,8 @@ cF90           CYCLE BUFFER
             END IF
 cF90        IF (ICOOR.NE.COMPONENT) CYCLE BUFFER
             IF (ICOOR.NE.COMPONENT) GO TO 200
+            I = IINDX4(1,IB)
+            J = IINDX4(2,IB)
             GIJKL=BUF(IB)
             IF (I.EQ.J) GIJKL = DP5*GIJKL
             XIJKL=D1P5*GIJKL
@@ -2371,6 +2357,6 @@ cF90  END DO READFILE
   300 CONTINUE
 C
       CALL GPCLOSE(LUHSOAO,'KEEP')
-      CALL QEXIT('GETFMATX')
-cF90  END SUBROUTINE GETFMATX
+      CALL QEXIT('GET_FSO_AO')
+cF90  END SUBROUTINE GET_FSO_AO
       END

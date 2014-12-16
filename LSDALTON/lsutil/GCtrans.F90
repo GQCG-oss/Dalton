@@ -421,23 +421,23 @@ DO JJ=1,nbast
 ENDDO
 
 nbast1 = 0
-R1 = setting%BASIS(1)%p%GCtrans%Labelindex
+R1 = setting%BASIS(1)%p%BINFO(GCTBasParam)%Labelindex
 DO I=1,setting%MOLECULE(1)%p%natoms   
    IF(setting%MOLECULE(1)%p%ATOM(I)%pointcharge)cycle
    IF(R1.EQ.0)THEN
       ICHARGE = INT(setting%MOLECULE(1)%p%ATOM(I)%CHARGE)      
-      type = setting%BASIS(1)%p%GCtrans%CHARGEINDEX(ICHARGE)
+      type = setting%BASIS(1)%p%BINFO(GCTBasParam)%CHARGEINDEX(ICHARGE)
    ELSE
       type = setting%MOLECULE(1)%p%ATOM(I)%IDtype(R1)
    ENDIF
-   do iang = 1,setting%BASIS(1)%p%GCtrans%ATOMTYPE(type)%nAngmom
-      norb = setting%BASIS(1)%p%GCtrans%ATOMTYPE(type)%SHELL(iang)%segment(1)%ncol
+   do iang = 1,setting%BASIS(1)%p%BINFO(GCTBasParam)%ATOMTYPE(type)%nAngmom
+      norb = setting%BASIS(1)%p%BINFO(GCTBasParam)%ATOMTYPE(type)%SHELL(iang)%segment(1)%ncol
       nOrbComp = (2*(iang-1))+1   !not true if cartesian
       call mem_alloc(TMP,norb,norb)
       DO JJ=1,norb
          DO II=1,norb
             TMP(II,JJ)=&
-                 &setting%BASIS(1)%p%GCtrans%ATOMTYPE(type)%SHELL(iang)%segment(1)%elms(II+(JJ-1)*norb)
+                 &setting%BASIS(1)%p%BINFO(GCTBasParam)%ATOMTYPE(type)%SHELL(iang)%segment(1)%elms(II+(JJ-1)*norb)
          ENDDO
       ENDDO
       nOrbComp = (2*(iang-1))+1   !not true if cartesian
@@ -493,7 +493,7 @@ WRITE(GCAOtrans_lun) nbast
 WRITE(GCAOtrans_lun) CCfull
 
 !print*,'write_GCtransformationmatrix nbast',nbast
-!call output(CCfull,1,nbast,1,nbast,nbast,nbast,1,6)
+!call ls_output(CCfull,1,nbast,1,nbast,nbast,nbast,1,6)
 
 call lsclose(GCAOtrans_lun,'KEEP')
 call mem_dealloc(CCfull)
@@ -579,7 +579,7 @@ ELSE
    call build_GCtransformationmatrixfull(CCfull,nbast,setting,lupri)
 ENDIF
 !print*,'read_GCtransformationmatrixfull nbast',nbast
-!call output(CCfull,1,nbast,1,nbast,nbast,nbast,1,6)
+!call ls_output(CCfull,1,nbast,1,nbast,nbast,nbast,1,6)
 end SUBROUTINE read_GCtransformationmatrixfull
 
 SUBROUTINE read_GCtransformationmatrix(CCmatrix,nbast,setting,lupri)

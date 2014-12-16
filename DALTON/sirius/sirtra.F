@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef OLD_REV_OLG
 !===========================================================================
@@ -276,7 +275,8 @@ C....       MEMS --  LENGTH OF SCRATCH SORT AREA
 C....       MEMT --    **   *    **    TRANSFORMATION AREA
 C
 #include "implicit.h"
-      DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*)
+      DIMENSION ISCR(*),SCR(*),RINT(*)
+      INTEGER*4 IINT(*)
       INTEGER   IT(*)
 #include "iratdef.h"
 #include "dummy.h"
@@ -386,10 +386,11 @@ C
       CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,'OLD',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) NSYMAO, (NAOS(I),I=1,8),LBUFAO,NIBUFAO,NBITSAO
+      READ (LUINTA) NSYMAO, NAOS,LBUFAO,NIBUFAO,NBITSAO, LENINT4
 C
-      IF (NIBUFAO .NE. 1) THEN
-         CALL QUIT('Only NIBUF.eq.1 on AOTWOINT has been implemented')
+      IF (NBITSAO .NE. 8) THEN
+         CALL QUIT(
+     &   'Only 8 bit index packing on AOTWOINT has been implemented')
       END IF
 C
       IBITMASK  = 2**NBITSAO - 1
@@ -417,8 +418,10 @@ C
 C
 C....   AO INTEGRAL FILE SPEC; MOLECULE FORMAT
 C
-      LRINT  = IRAT*LBUFAO
-      LENINT = LRINT + LBUFAO + 1
+      LRINT  = 2*LBUFAO ! factor 2 because IINT is always integer*4
+      LENINT = (2+NIBUFAO)*LBUFAO + 1
+      IF (LENINT .NE. LENINT4)
+     &   CALL QUIT('LENINT .ne. LENINT4 from AOTWOINT')
 C
 C....    BEGIN THE LOOP OVER PASSES THROUGH AO INTEGRAL FILE
 C
@@ -454,13 +457,8 @@ C....    REWIND IT FIRST
 C
          CALL REWSPL(LUINTA)
          CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
-         JBUF = 608
 1        CONTINUE
-#if defined (VAR_SPLITFILES)
-         CALL READSI(LUINTA,LENINT,IINT,JBUF)
-#else
-         CALL READI(LUINTA,LENINT,IINT)
-#endif
+         CALL READI4(LUINTA,LENINT,IINT)
          NINT = IINT(LENINT)
          IF(NINT.EQ.0)GOTO 1
          IF(NINT.EQ.-1)GOTO 2
@@ -479,10 +477,10 @@ C
 C....    CHECK INTEGRAL AGAINST THRESHOLD
 C
          IF (ABS(VALUE).LT.THRQ) GOTO 3
-            ISS=IBTAND(IBTSHR(LABEL,IBITSHR_1),IBITMASK)
-            IR =IBTAND(IBTSHR(LABEL,IBITSHR_2),IBITMASK)
-            IQ =IBTAND(IBTSHR(LABEL,IBITSHR_3),IBITMASK)
-            IP =IBTAND(       LABEL           ,IBITMASK)
+            ISS=IAND(ISHFT(LABEL,-IBITSHR_1),IBITMASK)
+            IR =IAND(ISHFT(LABEL,-IBITSHR_2),IBITMASK)
+            IQ =IAND(ISHFT(LABEL,-IBITSHR_3),IBITMASK)
+            IP =IAND(       LABEL           ,IBITMASK)
             IF (IP.GE.IQ) THEN
                IPQ = IT(IP) + IQ
             ELSE
@@ -511,7 +509,7 @@ C
                SCR(IRBAD+LENGTH) = VALUE
 C              ISCR(IBAD+IDABUF+LENGTH) = IPQ*(2**16) + IRS
                ISCR(IBAD+IDABUF+LENGTH) =
-     *            IBTOR( IBTSHL( IPQ , 16 ) , IRS )
+     *            IOR( ISHFT( IPQ , 16 ) , IRS )
                ISCR(IBAD+LBUF) = LENGTH
                IF (LENGTH .EQ. LDABUF) THEN
 C
@@ -541,7 +539,7 @@ C
                SCR(IRBAD+LENGTH) = VALUE
 C              ISCR(IBAD+IDABUF+LENGTH) = IRS*(2**16) + IPQ
                ISCR(IBAD+IDABUF+LENGTH) =
-     *            IBTOR( IBTSHL( IRS , 16 ) , IPQ )
+     *            IOR( ISHFT( IRS , 16 ) , IPQ )
                ISCR(IBAD+LBUF) = LENGTH
                IF (LENGTH .EQ. LDABUF) THEN
 C
@@ -652,7 +650,6 @@ C....    SCRATCH CORE AVAILABILITY
 C
       MEMS = MEMSX
       MEMT = MEMTX
-      JBUF = 0
 C
 C....    NUMBER OF MO PAIRS
 C        MAXD = number of orbitals for full integral transformation
@@ -793,11 +790,7 @@ C
 C....    BEGIN READING THE INTEGRAL FILE
          CALL REWSPL(LUHALF)
     1    CONTINUE
-#if defined (VAR_SPLITFILES)
-         CALL READSI(LUHALF,LENINT,IINT,JBUF)
-#else
          CALL READI(LUHALF,LENINT,IINT)
-#endif
          NINT = IINT(LENINT-1)
          IF(NINT.EQ.0)GOTO 1
          IF(NINT.EQ.-1)GOTO 2
@@ -810,9 +803,9 @@ C....    PICK UP INTEGRAL AND LABEL, UNPACK IPQ, IC, AND ID
 C
             LABEL = IINT(M+LRINT)
             VALUE = RINT(M)
-            IPQ=IBTAND(IBTSHR(LABEL,16),IBT16)
-            IC =IBTAND(IBTSHR(LABEL, 8),IBT08)
-            ID =IBTAND(       LABEL,    IBT08)
+            IPQ=IAND(ISHFT(LABEL,-16),IBT16)
+            IC =IAND(ISHFT(LABEL, -8),IBT08)
+            ID =IAND(       LABEL,    IBT08)
 C
 C....    PACK IC AND ID TO THE INDEX FORM USED IN BUFFER ALLOCATION
 C
@@ -835,7 +828,7 @@ C
             SCR(IRBAD+LENGTH) = VALUE
 C           ISCR(IBAD+IDABUG+LENGTH) = IPQ*2**16 + ICDX
             ISCR(IBAD+IDABUG+LENGTH) =
-     *         IBTOR( IBTSHL( IPQ , 16 ) , ICDX )
+     *         IOR( ISHFT( IPQ , 16 ) , ICDX )
             ISCR(IBAD+LBUF) = LENGTH
             IF (LENGTH.GE.LDABUG) THEN
 C
@@ -966,7 +959,6 @@ C     ***** LPQCD : NUMBER OF INTEGRALS (PQ/CD)
       LDA21  = LDA2   + 1
       LDA22  = LDA21  + 1
       LPQCD  = 0
-      JBUF   = 0
 C
 C     ***** REWIND FILE FOR HALF TRANSFORMED INTEGRALS LUHALF *****
 C
@@ -992,7 +984,7 @@ C     space than was available when SORTA was called (first call).
             ISQ  = ITSAO(NQ)
             ISPQ = MUL(ISP,ISQ)
             IPQ  = IPQ + 1
-            IPQL16 = IBTSHL(IPQ,16)
+            IPQL16 = ISHFT(IPQ,16)
             LPQ  = LPQ + 1
             IF (LPQ .GT. NPQ) THEN
                ICHAIN = ICHAIN + 1
@@ -1011,8 +1003,8 @@ C     ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
                   DO 104 I = 1,LENGTH
                      LDAI = IDABUF + I
                      IBL  = IBUF(LDAI)
-                     MPQ  = IBTAND(IBTSHR(IBL,16),IBT16)
-                     MRS  = IBTAND(       IBL,    IBT16)
+                     MPQ  = IAND(ISHFT(IBL,-16),IBT16)
+                     MRS  = IAND(       IBL,    IBT16)
 C                    ***** FIND ADDRESS AND DISTRIBUTE INTEGRAL *****
                      IPQRS = IPQRS0 + NMBASX*MPQ + MRS
                      TRI(IPQRS) = BUF(I)
@@ -1214,11 +1206,7 @@ C                ( only (ii/ inac-inac distributions needed )
 C                 ***** WRITE THIS BUFFER *****
                   IOUT = 1
                   IOUTB(LOUT21) = LOUT
-#if defined (VAR_SPLITFILES)
-                  CALL WRITSI(LUHALF,LOUT22,IOUTB,JBUF)
-#else
                   CALL WRITI(LUHALF,LOUT22,IOUTB)
-#endif
                   IF (IPRTRA .GE. 100) THEN
                      WRITE(LUPRI,*)
      &               'Writing buffer for NP =',NP,' NQ = ', NQ
@@ -1229,9 +1217,9 @@ C                 ***** WRITE THIS BUFFER *****
                END IF
                OUTB(IOUT) = P
 C              IOUTB(LOUTI+IOUT) = IPQ*2**16 + IC*2**8 + ID
-               ICD               = IBTOR(IBTSHL(IC,  8),ID)
-               IOUTB(LOUTI+IOUT) = IBTOR(IPQL16,ICD)
-C              ... IPQL16 = IBTSHL(IPQ,16)
+               ICD               = IOR(ISHFT(IC,  8),ID)
+               IOUTB(LOUTI+IOUT) = IOR(IPQL16,ICD)
+C              ... IPQL16 = ISHFT(IPQ,16)
   160       CONTINUE
   170    CONTINUE
   100 CONTINUE
@@ -1241,11 +1229,7 @@ C
 C     ***** WRITE LAST BUFFER *****
 C
       IOUTB(LOUT21)=IOUT
-#if defined (VAR_SPLITFILES)
-      CALL WRITSI(LUHALF,LOUT22,IOUTB,JBUF)
-#else
       CALL WRITI(LUHALF,LOUT22,IOUTB)
-#endif
       IF (IPRTRA .GE. 100) THEN
          WRITE(LUPRI,*) 'Writing last buffer in TRACD'
          WRITE(LUPRI,*) 'First 10 integrals, length =',IOUT
@@ -1256,11 +1240,7 @@ C
 C     ***** WRITE END BUFFER *****
 C
       IOUTB(LOUT21)=-1
-#if defined (VAR_SPLITFILES)
-      CALL WRITSI(LUHALF,LOUT22,IOUTB,JBUF)
-#else
       CALL WRITI(LUHALF,LOUT22,IOUTB)
-#endif
       CALL REWSPL(LUHALF)
       IF (JTER.EQ.1) THEN
          WRITE(LUPRI,1000) LUHALF,LPQCD
@@ -1369,7 +1349,6 @@ C ************* LENGTH OF DIRECT ACCESS BUFFER on LUDA2
 C ***** initialize counter for NUMBER OF INTEGRALS (AB/CD)
       LABCD =0
       IOUT  =0
-      JBUF = 2521*IRAT + 256 + NCMOT
 C
 C     LUINTM has been positioned before call of TRAAB (900801-hjaaj)
 C
@@ -1433,8 +1412,8 @@ C           ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
 #include "nosync.h"
                DO 104 I=1,LENGTH
                   IBL=IBUF(IDABUG+I)
-                  MPQ=IBTAND(IBTSHR(IBL,16),IBT16)
-                  MCD=IBTAND(       IBL,    IBT16)
+                  MPQ=IAND(ISHFT(IBL,-16),IBT16)
+                  MCD=IAND(       IBL,    IBT16)
 C                 ***** FIND ADDRESS AND DISTRIBUTE INTEGRAL *****
                   IPQCD=NMBASX*(MCD-MCDOFF)+MPQ
                   TRI(IPQCD)=BUF(I)
@@ -1476,7 +1455,7 @@ C              INDCD = NC*2**24 + ND*2**16
 C              INDCD = ND*2**24 + NC*2**16
                INDCD = ND*2**8  + NC
             END IF
-            INDCD = IBTSHL( INDCD , 16 )
+            INDCD = ISHFT( INDCD , 16 )
 C           ***** SET THE ARRAY ABCD TO ZERO *****
             CALL DZERO(ABCD,MORBT*MORBT)
 C           ***** SET START ADDRESS IN TRI FOR INTEGRALS WITH *****
@@ -1654,7 +1633,7 @@ C     ***** BEEN CREATED. WRITE THEM ON UNIT LUINTM WITH   *****
 C     ***** INDICES A,B,C AND D.                           *****
 CHJ: new index order: C,D; A,B
       DO 170 NA=1,MORBT
-         INDCDA = IBTOR(INDCD , IBTSHL( NA, 8 ) )
+         INDCDA = IOR(INDCD , ISHFT( NA, 8 ) )
          ISA = ITSMO( NA )
          ISB = MUL( ISA, ISCD )
          NBST  = JORB(ISB) + 1
@@ -1674,12 +1653,7 @@ C            because e.g. (ph/ph) integrals do not follow NB .le. NA
                IOUT=1
                IOUTB(LOUT21)=LOUT
 C              ***** WRITE THIS BUFFER *****
-#if defined (VAR_SPLITFILES)
-               CALL WRITSI(LUINTM,LOUTI,IOUTB,JBUF)
-               CALL WRITSI(LUINTM,LOUT+2,IOUTB(LOUTI + 1),JBUF)
-#else
                CALL WRITI(LUINTM,LOUT22,IOUTB)
-#endif
                NRINTM = NRINTM + 1
                IF (IPRTRA .GE. 100 .AND. IPRTRA .LT. 200) THEN
                   WRITE(LUPRI,*)
@@ -1691,17 +1665,12 @@ C              ***** WRITE THIS BUFFER *****
                END IF
             END IF
             OUTB(IOUT) = P
-            IOUTB(LOUTI+IOUT) = IBTOR( INDCDA , NB )
+            IOUTB(LOUTI+IOUT) = IOR( INDCDA , NB )
   160    CONTINUE
   170 CONTINUE
 CHJ 3 *** Going to next (CD), empty this buffer ***
       IOUTB(LOUT21) = IOUT
-#if defined (VAR_SPLITFILES)
-      CALL WRITSI(LUINTM,LOUTI,IOUTB,JBUF)
-      CALL WRITSI(LUINTM,LOUT+2,IOUTB(LOUTI + 1),JBUF)
-#else
       CALL WRITI(LUINTM,LOUT22,IOUTB)
-#endif
       NRINTM = NRINTM + 1
       IF (IPRTRA .GE. 100 .AND. IPRTRA .LT. 200) THEN
          WRITE(LUPRI,*)
@@ -1716,12 +1685,7 @@ CHJ 3 *** Going to next (CD), empty this buffer ***
 C     ***** WRITE LAST BUFFER *****
  8000 CONTINUE
       IOUTB(LOUT21)=-1
-#if defined (VAR_SPLITFILES)
-      CALL WRITSI(LUINTM,LOUTI,IOUTB,JBUF)
-      CALL WRITSI(LUINTM,LOUT+2,IOUTB(LOUTI + 1),JBUF)
-#else
       CALL WRITI(LUINTM,LOUT22,IOUTB)
-#endif
       WRITE(LUINTM)LAB123,TABLE(2)
       CALL REWSPL(LUINTM)
       DFIN=SECOND()
@@ -2699,7 +2663,7 @@ C
 C
 #include "orbtypdef.h"
 C
-      SAVE INDCDN, LENGTH, JBUF
+      SAVE INDCDN, LENGTH
 C
 #include "ibtdef.h"
 C
@@ -2709,17 +2673,10 @@ C     If first read (IDIST .EQ. 0)
 C     then setup for reading MO integrals ...
 C
       IF (IDIST .EQ. 0) THEN
-         JBUF = 2521*IRAT + 256 + NCMOT
          CALL REWSPL(LUINTM)
          CALL MOLLAB('MOLTWOEL',LUINTM,LUPRI)
  100     CONTINUE
-#if defined (VAR_SPLITFILES)
-         CALL READSI(LUINTM,LBINTM*IRAT,BUF,JBUF)
-         CALL READSI(LUINTM,LBINTM + 2,IBUF,JBUF)
-         LENGTH = IBUF(LBINTM + 1)
-#else
          READ (LUINTM) BUF, IBUF, LENGTH
-#endif
          IF (LENGTH.EQ.0) GOTO 100
          IF (LENGTH.EQ.-1) THEN
             WRITE (LUPRI,'(/A)')
@@ -2727,7 +2684,7 @@ C
             CALL QTRACE(LUPRI)
             CALL QUIT('*** ERROR ***(NXTH2M) no mo integrals on LUINTM')
          END IF
-         INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
+         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
       END IF
 C
 C *** Initialize H2CD
@@ -2751,8 +2708,8 @@ C        Last distribution has been read
       END IF
       INDCD = INDCDN
       IDIST = IDIST + 1
-      IC = IBTAND(IBTSHR(INDCD,8),IBT08)
-      ID = IBTAND(       INDCD,   IBT08)
+      IC = IAND(ISHFT(INDCD,-8),IBT08)
+      ID = IAND(       INDCD,   IBT08)
       ITYPC  = IOBTYP(IC)
       ITYPD  = IOBTYP(ID)
       ITYPCD = IDBTYP(ITYPC,ITYPD)
@@ -2765,18 +2722,12 @@ C        ... first buffer is already in BUF,IBUF
 C
  300  CONTINUE
 C
-#if defined (VAR_SPLITFILES)
-      CALL READSI(LUINTM,LBINTM*IRAT,BUF,JBUF)
-      CALL READSI(LUINTM,LBINTM+2,IBUF,JBUF)
-      LENGTH = IBUF(LBINTM + 1)
-#else 
       READ (LUINTM) BUF, IBUF, LENGTH
-#endif
       IF (LENGTH.EQ.0) GO TO 300
       IF (LENGTH.EQ.-1) THEN
          INDCDN = -1
       ELSE
-         INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
+         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
       END IF
       IF (INDCDN.NE.INDCD) THEN
 C        ... finished reading the INDCD distribution
@@ -2791,8 +2742,8 @@ C            new INDCDN distribution
       IF (ITYPCD.EQ.0) GO TO 300
 C
   400 DO 450 I = 1,LENGTH
-         IA = IBTAND(IBTSHR(IBUF(I),8),IBT08)
-         IB = IBTAND(       IBUF(I),   IBT08)
+         IA = IAND(ISHFT(IBUF(I),-8),IBT08)
+         IB = IAND(       IBUF(I),   IBT08)
          H2CD(IA,IB) = BUF(I)
          H2CD(IB,IA) = BUF(I)
   450 CONTINUE
@@ -2983,7 +2934,7 @@ C
             CALL QTRACE(LUPRI)
             CALL QUIT('*** ERROR ***(NXTH2D) no mo integrals on LUINTD')
          END IF
-         INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
+         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
       END IF
 C
 C *** Initialize H2CD
@@ -3007,8 +2958,8 @@ C        Last distribution has been read
       END IF
       INDCD = INDCDN
       IDIST = IDIST + 1
-      IC = IBTAND(IBTSHR(INDCD,8),IBT08)
-      ID = IBTAND(       INDCD,   IBT08)
+      IC = IAND(ISHFT(INDCD,-8),IBT08)
+      ID = IAND(       INDCD,   IBT08)
       ITYPC  = IOBTYP(IC)
       ITYPD  = IOBTYP(ID)
       ITYPCD = IDBTYP(ITYPC,ITYPD)
@@ -3024,7 +2975,7 @@ C
       IF (LENGTH.EQ.-1) THEN
          INDCDN = -1
       ELSE
-         INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
+         INDCDN = IAND(ISHFT(IBUF(1),-16),IBT16)
       END IF
       IF (INDCDN.NE.INDCD) THEN
 C        ... finished reading the INDCD distribution
@@ -3039,8 +2990,8 @@ C            new INDCDN distribution
       IF (ITYPCD.EQ.0) GO TO 300
 C
   400 DO 450 I = 1,LENGTH
-         IA = IBTAND(IBTSHR(IBUF(I),8),IBT08)
-         IB = IBTAND(       IBUF(I),   IBT08)
+         IA = IAND(ISHFT(IBUF(I),-8),IBT08)
+         IB = IAND(       IBUF(I),   IBT08)
          H2CD(IA,IB) = BUF(I)
   450 CONTINUE
       GO TO 300

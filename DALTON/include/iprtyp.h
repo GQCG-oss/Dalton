@@ -51,5 +51,9 @@
 #define PARA_RP_ERES 85
 #define SLAVESLEEP 86
 #define PARA_SO_ERES 87
-
-
+#define QMCMM_WORK 90
+#define efs_add_atomtype_work     128
+#define efs_init_work             129
+#define efs_generate_basis_work   130
+#define efs_init_2efock_work      131
+#define efs_fock_update_work      132

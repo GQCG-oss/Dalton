@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccrhsn */
       SUBROUTINE CCRHSN(OMEGA1,OMEGA2,T1AM,T2AM,WORK,LWORK,APROXR12)
@@ -2868,7 +2867,7 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
 C--------------------------------------
 C     Calculate contribution.
@@ -3026,7 +3025,7 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       ISYINT = MULD2H(ISYMH1,ISYMOP)
       ISYALI = MULD2H(ISYINT,ISYMTR)
@@ -3194,7 +3193,7 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
 C
 C===================================
@@ -5040,7 +5039,7 @@ C
 #include "ccorb.h"
 #include "ccsdsym.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       ISYMKC = ISYMAG
 C
@@ -5706,13 +5705,7 @@ C
         CALL DZERO(XINT,NDISAO(ISYDIS))
       END IF
 C
-      IBIT1 = 2**NBITS     - 1
-      IBIT2 = 2**(2*NBITS) - 1
-C
 C     Buffer allocation
-C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
-      LRINT  = IRAT*LBUF
 C
       KIBUF = KEND1
       KRBUF = KIBUF + (NIBUF*LBUF-1)/IRAT + 1
@@ -5723,7 +5716,7 @@ C
       ENDIF
 C
       CALL CCRDA1(XINT,WORK(KIBUF),WORK(KRBUF),IDELTA,IDEL2,
-     *            WORK(KADR1),WORK(KADR2),IBIT1,IRECNR)
+     *            WORK(KADR1),WORK(KADR2),IRECNR)
 C
  999  CONTINUE
       CALL QEXIT('CCRDAO')
@@ -5731,7 +5724,7 @@ C
       END
 C  /* Deck ccrda1 */
       SUBROUTINE CCRDA1(XINT,IBUF,RBUF,IDELTA,IDEL2,KADR1,KADR2,
-     *                  IBIT1,IRECNR)
+     *                  IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
@@ -5744,7 +5737,9 @@ C
 #include "eribuf.h"
       DIMENSION XINT(*)
       DIMENSION KADR1(NBAST),KADR2(NBAST,NBAST)
-      DIMENSION IBUF(LBUF,NIBUF),RBUF(LBUF)
+      DIMENSION RBUF(LBUF)
+      INTEGER*4 IBUF4(LBUF*NIBUF), LENGTH4
+      INTEGER   INDX4(4,LBUF)
       DIMENSION IRECNR(*)
       CHARACTER*8 FAODER
       LOGICAL OLDDX
@@ -5756,9 +5751,9 @@ C
 #include "chrnos.h"
 #include "r12int.h"
 C
-#include "ibtfun.h"
+
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       IF (NEWDIS) THEN
 C
@@ -5778,16 +5773,10 @@ C
       IF (LUAORC(0) .LE. 0) THEN
             LBFINP = LBUF
 C     
-#if defined (VAR_INT64)
-            LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-            LRECL = LBFINP + LBFINP/IRAT + 1
+#if defined (SYS_NEC)
+            LRECL =   LBFINP + NIBUF*LBFINP/2 + 1    ! in integer*8 units
 #else
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
-            END IF
+            LRECL = 2*LBFINP + NIBUF*LBFINP   + 1    ! in integer*4 units
 #endif
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
@@ -5800,7 +5789,6 @@ C
       ICOUNT = 0
       IDUM = 1
 C
-      IF (NIBUF .EQ. 1) THEN
          DO 100 J = 1,NBUFX(0)
             IRECJ = IRECNR(J)
             IF (NOAUXB.AND..NOT.LOOPDP) THEN
@@ -5811,13 +5799,13 @@ C
             IF (IRECJ .EQ. IDELTA) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
-
+               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
+               LENGTH = LENGTH4
+               CALL AOLAB4_cc(IBUF4,NIBUF,NBITS,INDX4,LENGTH)
                DO 110 I = 1,LENGTH
-                  IP = IBTAND(       IBUF(I,1)         ,IBIT1)
-                  IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
-                  IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
-
+                  IP = INDX4(4,I)
+                  IQ = INDX4(3,I)
+                  IR = INDX4(2,I)
                   IF (NOAUXB) THEN
                      IDUM = 1
                      CALL IJKAUX(IP,IQ,IR,IDUM)
@@ -5828,11 +5816,13 @@ C
   110          CONTINUE
 
                IF (U21INT) THEN
-               READ(LU21INT,ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
+               READ(LU21INT,ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
+               LENGTH = LENGTH4
+               CALL AOLAB4_cc(IBUF4,NIBUF,NBITS,INDX4,LENGTH)
                DO 115 I = 1,LENGTH
-                  IP = IBTAND(       IBUF(I,1)         ,IBIT1)
-                  IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
-                  IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+                  IP = INDX4(4,I)
+                  IQ = INDX4(3,I)
+                  IR = INDX4(2,I)
                   IF (NOAUXB) THEN
                      IDUM = 1
                      CALL IJKAUX(IP,IQ,IR,IDUM)
@@ -5846,51 +5836,6 @@ C
 C
   100    CONTINUE
 C
-      ELSE
-C
-         DO 120 J = 1,NBUFX(0)
-C
-            IRECJ = IRECNR(J)
-            IF (NOAUXB.AND..NOT.LOOPDP) THEN
-               IDUM = 1 
-               CALL IJKAUX(IRECJ,IDUM,IDUM,IDUM)
-            END IF 
-            IF (IRECJ .EQ. IDELTA) THEN
-               ICOUNT = ICOUNT + 1
-               NREC   = J
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
-               DO 130 I = 1,LENGTH
-                  IP = IBTAND(       IBUF(I,2)       ,IBIT1)
-                  IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
-                  IR = IBTAND(       IBUF(I,1)       ,IBIT1)
-                  IF (NOAUXB) THEN
-                     IDUM = 1
-                     CALL IJKAUX(IP,IQ,IR,IDUM)
-                  END IF
-                  IADR = KADR1(IR) + KADR2(IP,IQ) + 1
-                  XINT(IADR) = RBUF(I)
-
-  130          CONTINUE
-               IF (U21INT) THEN
-               READ(LU21INT,ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
-               DO 135 I = 1,LENGTH
-                  IP = IBTAND(       IBUF(I,2)       ,IBIT1)
-                  IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
-                  IR = IBTAND(       IBUF(I,1)       ,IBIT1)
-                  IF (NOAUXB) THEN
-                     IDUM = 1
-                     CALL IJKAUX(IP,IQ,IR,IDUM)
-                  END IF
-                  IADR = KADR1(IR) + KADR2(IP,IQ) + 1
-                  XINT(IADR + IOFFU21) = RBUF(I)
-
-  135          CONTINUE
-               ENDIF
-            ENDIF
-C
-  120    CONTINUE
-C
-      ENDIF
 C
       CALL GPCLOSE(LUAORC(0),'KEEP')
       IF (U21INT) CALL GPCLOSE(LU21INT,'KEEP')
@@ -6214,9 +6159,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (LBUF = 600, LUINT = 51)
       DIMENSION FOCK(*),WORK(*)
-      DIMENSION BUF(LBUF),IBUF(LBUF)
 #include "inftap.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
@@ -6226,22 +6169,7 @@ C
 C
       IF (LWRK .LT. NNBST(ISYMOP))
      *           CALL QUIT('Insufficient space in CCRHS_ONEAO')
-CWMK  
-C     Code below replaced by call to RDONEL
 C
-C     CALL DZERO(WORK,NNBST(ISYMOP))
-C
-C     CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ','UNFORMATTED',IDUMMY,
-C    &            .FALSE.)
-C     REWIND LUONEL
-C     CALL MOLLAB('ONEHAMIL',LUONEL,LUPRI)
-C2100 READ (LUONEL) (BUF(I),I=1,LBUF),(IBUF(I),I=1,LBUF),LENGTH
-C     DO 2200 I = 1,LENGTH
-C        WORK(IBUF(I)) = BUF(I)
-C2200 CONTINUE
-C     IF (LENGTH .GE. 0) GO TO 2100
-C     CALL GPCLOSE(LUONEL,'KEEP')
-CWMK
       CALL RDONEL('ONEHAMIL',.TRUE.,WORK,NNBST(ISYMOP))
       CALL CCSD_SYMSQ(WORK,ISYMOP,FOCK)
 C
@@ -7721,7 +7649,7 @@ C
 #include "maxorb.h"
 #include "ccsdio.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       IF (OMEGSQ) THEN
          WRITE(LUPRI,*)
@@ -8088,7 +8016,7 @@ C
 #include "maxorb.h"
 #include "ccsdio.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       IF (OMEGSQ) THEN
          WRITE(LUPRI,*)

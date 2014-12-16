@@ -845,7 +845,8 @@ C
 #include "maxaqn.h" 
 #include "chrnos.h" 
 #include "ibtpar.h"
-#include "ibtfun.h"
+
+!#include "ibtfun.h"
 
 ! These include files depend on previous include files
 #include "infpar.h" 

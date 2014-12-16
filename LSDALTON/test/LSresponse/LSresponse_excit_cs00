@@ -47,6 +47,8 @@ He   0.0000   0.0000   1.8000
 #  DALTON INPUT
 #######################################################################
 cat > LSresponse_excit_cs00.dal <<'%EOF%'
+**GENERAL
+.PSFUN
 **WAVE FUNCTIONS
 .DFT
 B3LYP

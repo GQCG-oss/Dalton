@@ -770,7 +770,7 @@ SUBROUTINE mm_get_J_matrix(n_el,Fock_matrix,Nfock1,Nfock2,WORK,LWRK)
 !   DEALLOCATE(J_matrix)
    call mem_dealloc_fmm(J_matrix)
    !write(6,*) "J_matrix from MM:"
-   !CALL OUTPUT(J_matrix,1,Nfock1,1,Nfock2,Nfock1,Nfock2,1,6)
+   !CALL LS_OUTPUT(J_matrix,1,Nfock1,1,Nfock2,Nfock1,Nfock2,1,6)
 
    CALL mm_print_stats
    CALL mm_disconnect_interface

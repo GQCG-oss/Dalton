@@ -1,6 +1,8 @@
 PROGRAM TUV
   use math
+  use stringsMODULE
   implicit none
+  logical :: nPrimLast
   integer,pointer :: TUVINDEX(:,:,:),TUVINDEXP(:,:,:)
   integer :: JMAX,J,JMAX1,JMAXP
   logical,pointer :: Enoscreen(:,:),EnoscreenS(:,:),zero(:)
@@ -14,27 +16,19 @@ PROGRAM TUV
   real(realk),pointer :: uniqeparam(:)
   character(len=15),pointer :: uniqeparamNAME(:)
     character(len=3) :: ARCSTRING
-    integer :: GPUrun
+    integer :: GPUrun,nString
     logical :: DoOpenMP,DoOpenACC,CPU
   !buildtuvindex
   sphericalGTO = .TRUE.
   LUMOD3=3
-  open(unit = LUMOD3, file="AutoGenCoderunSphContractOBS1_new.F90",status="unknown")
-  WRITE(LUMOD3,'(A)')'MODULE AGC_OBS_Sphcontract1Mod'
-  WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runSphContractOBS1.f90 in tools directory'
-  WRITE(LUMOD3,'(A)')'use IchorPrecisionModule  '
-
-  WRITE(LUMOD3,'(A)')'  '
-  WRITE(LUMOD3,'(A)')' CONTAINS'
-  WRITE(LUMOD3,'(A)')'  '
   ! 0 1 2 3 4
   ! S P D F 
   !
 DO GPUrun = 1,2
     CPU = .TRUE.
     IF(GPUrun.EQ.2)CPU = .FALSE.
-    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#ifdef VAR_OPENACC'
-    
+    nPrimLAST = .FALSE.
+    IF(CPU)nPrimLAST = .TRUE.
     DoOpenMP = .FALSE.
     DoOpenACC = .FALSE.
     IF(CPU)DoOpenMP = .TRUE.
@@ -44,6 +38,17 @@ DO GPUrun = 1,2
     ELSE
        ARCSTRING = 'GPU'
     ENDIF
+
+  open(unit = LUMOD3, file="AutoGenCoderunSphContractOBS1_"//ARCSTRING//"_new.F90",status="unknown")
+  WRITE(LUMOD3,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_Sphcontract1Mod'
+  WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runSphContractOBS1.f90 in tools directory'
+  WRITE(LUMOD3,'(A)')'use IchorPrecisionMod'
+
+  WRITE(LUMOD3,'(A)')'  '
+  WRITE(LUMOD3,'(A)')' CONTAINS'
+  WRITE(LUMOD3,'(A)')'  '
+!  IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#ifdef VAR_OPENACC'
+
   JMAX1=2
   JMAX2=2
   do JMAXP = 0,JMAX1+JMAX2
@@ -101,18 +106,33 @@ DO GPUrun = 1,2
 !        enddo
 
         IF(SphericalTrans.AND.(l12.LT.5.OR.(l12.EQ.5.AND.l1.EQ.3)) )THEN
-!           IF(l1.GE.l12/2)THEN
-              IF(l12.LT.10)THEN
-                 WRITE(LUMOD3,'(A,I1,A,I1,A)')'subroutine SphericalContractOBS1_'//ARCSTRING//'_maxAngP',l1+l2,'_maxAngA',l1,'(ijkQcart,nContPasses,IN,OUT)'
-              ELSE
-                 WRITE(LUMOD3,'(A,I2,A,I1,A)')'subroutine SphericalContractOBS1_'//ARCSTRING//'_maxAngP',l1+l2,'_maxAngA',l1,'(ijkQcart,nContPasses,IN,OUT)'
-              ENDIF
-              WRITE(LUMOD3,'(A)')'  implicit none'
-              WRITE(LUMOD3,'(A)')'  integer,intent(in)        :: ijkQcart,nContPasses'
-              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(in)    :: IN(',ijkcartP,',ijkQcart*nContPasses)'
-              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(',ijkP,',ijkQcart*nContPasses)'
-              WRITE(LUMOD3,'(A)')'  integer :: iP'
+           call initString(1)
+           call AddToString('subroutine SphericalContractOBS1_')
+           call AddToString(ARCSTRING)
+           call AddToString('_maxAngP')
+           call AddToString(l1+l2)
+           call AddToString('_maxAngA')
+           call AddToString(l1)
+           call AddToString('(ijkQcart,nContPasses,IN,OUT')
+           IF(DoOpenACC)THEN
+              call AddToString(',iASync)')
+           ELSE
+              call AddToString(')')
+           ENDIF
+           call writeString(LUMOD3)
 
+           WRITE(LUMOD3,'(A)')'  implicit none'
+           WRITE(LUMOD3,'(A)')'  integer,intent(in)        :: ijkQcart,nContPasses'
+           IF(nPrimLast)THEN
+              WRITE(LUMOD3,'(A,I3,A)')'  real(realk),intent(in)    :: IN(',ijkcartP,',ijkQcart*nContPasses)'
+              WRITE(LUMOD3,'(A,I3,A)')'  real(realk),intent(inout) :: OUT(',ijkP,',ijkQcart*nContPasses)'
+           ELSE
+              WRITE(LUMOD3,'(A,I3,A)')'  real(realk),intent(in)    :: IN(nContPasses,',ijkcartP,',ijkQcart)'
+              WRITE(LUMOD3,'(A,I3,A)')'  real(realk),intent(inout) :: OUT(nContPasses,',ijkP,',ijkQcart)'
+           ENDIF
+           IF(DoOpenACC)WRITE(LUMOD3,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
+           WRITE(LUMOD3,'(A)')'  integer :: iP,ijkQ'
+           
               iparam = 0
               do ijkP = 1,ijkcart
                  do ilmP=1,ijk
@@ -211,12 +231,22 @@ DO GPUrun = 1,2
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(',ijkP,',ijkQcart,nPasses)'
 
 !              IF(DoOpenMP) WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) PRIVATE(iP) SHARED(nContPasses,ijkQcart,IN,OUT)'
-              IF(DoOpenMP) WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iP)'
-              IF(DoOpenACC) WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,ijkQcart,IN,OUT)'
-!              WRITE(LUMOD3,'(A)')'  DO iPass=1,nContPasses'
-!              WRITE(LUMOD3,'(A)')'   DO ijkQ=1,ijkQcart'
-              WRITE(LUMOD3,'(A)')'  DO iP=1,ijkQcart*nContPasses'
+              IF(nPrimLast)THEN
+                 IF(DoOpenMP) WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iP)'
+                 IF(DoOpenACC) WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(IN,OUT) ASYNC(iASync)'
+              ELSE
+                 IF(DoOpenMP) WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iP,ijkQ)'
+                 IF(DoOpenACC) WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,ijkQ) PRESENT(IN,OUT) ASYNC(iASync)'
+              ENDIF
+              IF(nPrimLast)THEN
+                 WRITE(LUMOD3,'(A)')'  DO iP=1,ijkQcart*nContPasses'
+              ELSE
+                 WRITE(LUMOD3,'(A)')'  DO iP=1,nContPasses'
+                 WRITE(LUMOD3,'(A)')'   DO ijkQ=1,ijkQcart'
+              ENDIF
               do ilmP=1,ijk
+                 call initString(4)
+                 nString = 0 
                  do ijkP = 1,ijkcart
                     IF(ABS(Spherical(ijkP,ilmP)).GT.1.0E-8)THEN
                        IF(zero(ilmP))THEN 
@@ -227,33 +257,104 @@ DO GPUrun = 1,2
                                    iparam = iparam2
                                 ENDIF
                              enddo
-                             WRITE(LUMOD3,'(A,i3,A,i3,A,A15)')&
-                                  &'    OUT(',ilmP,',iP) = IN(',ijkP,',iP)*',uniqeparamNAME(iparam)
+                             IF(nPrimLast)THEN
+                                call AddToString('OUT(')
+                                call AddToString(ilmP)
+                                call AddToString(',iP) = IN(')
+                                call AddToString(ijkP)
+                                call AddToString(',iP)*')
+                             ELSE
+                                call AddToString('OUT(iP,')
+                                call AddToString(ilmP)
+                                call AddToString(',ijkQ) = IN(iP,')
+                                call AddToString(ijkP)
+                                call AddToString(',ijkQ)*')
+                             ENDIF
+                             call AddToString(TRIM(uniqeparamNAME(iparam)))
+                             nString = 4 + 4 + 3 + 10 + 3 + 5 + 12 
+
+!                             WRITE(LUMOD3,'(A,i3,A,i3,A,A15)')&
+!                                  &'    OUT(',ilmP,',iP) = IN(',ijkP,',iP)*',uniqeparamNAME(iparam)
                           ELSE
-                             WRITE(LUMOD3,'(A,i3,A,i3,A)')&
-                                  &'    OUT(',ilmP,',iP) = IN(',ijkP,',iP)'
+                             IF(nPrimLast)THEN
+                                call AddToString('OUT(')
+                                call AddToString(ilmP)
+                                call AddToString(',iP) = IN(')
+                                call AddToString(ijkP)
+                                call AddToString(',iP)')
+                             ELSE
+                                call AddToString('OUT(iP,')
+                                call AddToString(ilmP)
+                                call AddToString(',ijkQ) = IN(iP,')
+                                call AddToString(ijkP)
+                                call AddToString(',ijkQ)')
+                             ENDIF
+                             nString = 4 + 4 + 3 + 10 + 3 + 4
+!                             WRITE(LUMOD3,'(A,i3,A,i3,A)')&
+!                                  &'    OUT(',ilmP,',iP) = IN(',ijkP,',iP)'
                           ENDIF
                           zero(ilmP) = .FALSE.
                        ELSE
                           IF(ABS(Spherical(ijkP,ilmP)-1.0E0_realk).GT.1.0E-10)THEN
+                             IF(nString.GT.104)THEN
+                                call AddToString(' &')
+                                call writeString(LUMOD3)
+                                call initString(15)
+                                call AddToString('&')
+                                nString = 16
+                             ENDIF
                              iparam = 0
                              do iparam2 = 1,nparam
                                 IF(ABS(Spherical(ijkP,ilmP)-uniqeparam(iparam2)).LT.1.0E-13_realk)THEN
                                    iparam = iparam2
                                 ENDIF
                              enddo
-                             WRITE(LUMOD3,'(A,i3,A,i3,A,i3,A,A15)')&
-                                  &'    OUT(',ilmP,',iP) = OUT(',ilmP,',iP) + IN(',ijkP,',iP)*',uniqeparamNAME(iparam)
+                             IF(nPrimLast)THEN
+                                call AddToString(' + IN(')
+                                call AddToString(ijkP)
+                                call AddToString(',iP)*')
+                             ELSE
+                                call AddToString(' + IN(iP,')
+                                call AddToString(ijkP)
+                                call AddToString(',ijkQ)*')
+                             ENDIF
+                             call AddToString(TRIM(uniqeparamNAME(iparam)))
+                             nString = nString + 6 + 3 + 5 + 12
+
+!                             WRITE(LUMOD3,'(A,i3,A,i3,A,i3,A,A15)')&
+!                                  &'    OUT(',ilmP,',iP) = OUT(',ilmP,',iP) + IN(',ijkP,',iP)*',uniqeparamNAME(iparam)
                           ELSE
-                             WRITE(LUMOD3,'(A,i3,A,i3,A,i3,A)')&
-                                  &'    OUT(',ilmP,',iP) = OUT(',ilmP,',iP) + IN(',ijkP,',iP)'
+                             IF(nString.GT.118)THEN
+                                call AddToString(' &')
+                                call writeString(LUMOD3)
+                                call initString(15)
+                                call AddToString('&')
+                                nString = 16
+                             ENDIF
+                             IF(nPrimLast)THEN
+                                call AddToString(' + IN(')
+                                call AddToString(ijkP)
+                                call AddToString(',iP)')
+                             ELSE
+                                call AddToString(' + IN(iP,')
+                                call AddToString(ijkP)
+                                call AddToString(',ijkQ)')
+                             ENDIF
+                             nString = nString + 6 + 3 + 5
+!                             WRITE(LUMOD3,'(A,i3,A,i3,A,i3,A)')&
+!                                  &'    OUT(',ilmP,',iP) = OUT(',ilmP,',iP) + IN(',ijkP,',iP)'
                           ENDIF
                        ENDIF
                     ENDIF
                  enddo
+                 call writeString(LUMOD3)
               enddo
-!              WRITE(LUMOD3,'(A)')'   ENDDO'
-              WRITE(LUMOD3,'(A)')'  ENDDO'
+              IF(nPrimLast)THEN
+                 WRITE(LUMOD3,'(A)')'  ENDDO'
+              ELSE
+                 WRITE(LUMOD3,'(A)')'   ENDDO'
+                 WRITE(LUMOD3,'(A)')'  ENDDO'
+              ENDIF
 !              IF(DoOpenMP) WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
               IF(DoOpenMP) WRITE(LUMOD3,'(A)')'!$OMP END DO'
               IF(l12.LT.10)THEN
@@ -267,12 +368,11 @@ DO GPUrun = 1,2
         ENDIF !SphericalTrans
      enddo
   enddo
-    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#endif'
+!    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#endif'
+  WRITE(LUMOD3,'(A)')'END MODULE AGC_'//ARCSTRING//'_OBS_Sphcontract1Mod'
+  close(unit = LUMOD3)
   enddo
 
-  WRITE(LUMOD3,'(A)')'END MODULE AGC_OBS_Sphcontract1Mod'
-
-close(unit = LUMOD3)
 
 END PROGRAM
 

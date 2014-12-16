@@ -5,27 +5,39 @@ use IchorEriCoulombintegralCPUOBSGeneralModSegQ
 use IchorEriCoulombintegralCPUOBSGeneralModSegP
 use IchorEriCoulombintegralCPUOBSGeneralModSeg
 use IchorEriCoulombintegralCPUOBSGeneralModSeg1Prim
-use IchorprecisionModule
-use IchorCommonModule
+use IchorEriCoulombintegralCPUOBSGeneralModGen2
+use IchorEriCoulombintegralCPUOBSGeneralModSegQ2
+use IchorEriCoulombintegralCPUOBSGeneralModSegP2
+use IchorEriCoulombintegralCPUOBSGeneralModSeg2
+use IchorEriCoulombintegralCPUOBSGeneralModSeg1Prim2
+use IchorEriCoulombintegralCPUOBSGeneralModGenSize
+use IchorEriCoulombintegralCPUOBSGeneralModSegQSize
+use IchorEriCoulombintegralCPUOBSGeneralModSegPSize
+use IchorEriCoulombintegralCPUOBSGeneralModSegSize
+use IchorEriCoulombintegralCPUOBSGeneralModSeg1PrimSize
+use IchorprecisionMod
+use IchorCommonMod
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000ModGen
 use AGC_CPU_OBS_BUILDRJ000ModSeg1Prim
-public :: IchorCoulombIntegral_CPU_OBS_general,IchorCoulombIntegral_CPU_OBS_general_size  
+public :: ICI_CPU_OBS_general
   
 CONTAINS
   
   
-  subroutine IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&
+  subroutine ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
-       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass,UseSP)
     implicit none
     integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD
     integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri
@@ -33,8 +45,11 @@ CONTAINS
     integer,intent(in) :: nAtomsA,nAtomsB
     integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
+    integer,intent(in) :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD
+    integer,intent(in) :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
+    integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
     real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB),Cexp(nPrimC),Dexp(nPrimD)
-    logical,intent(in)     :: Qsegmented,Psegmented
+    logical,intent(in)     :: Qsegmented,Psegmented,UseSP
     real(realk),intent(in) :: pexp(nPrimP),qexp(nPrimQ)
     real(realk),intent(in) :: pcent(3*nPrimP*nAtomsA*nAtomsB)   !pcent(3,nPrimP)
     real(realk),intent(in) :: qcent(3*nPrimQ)           !qcent(3,nPrimQ)
@@ -57,12 +72,8 @@ CONTAINS
     real(realk),intent(in) :: Acenter(3,nAtomsA),Bcenter(3,nAtomsB),Ccenter(3),Dcenter(3)
     logical,intent(in) :: spherical
     integer,intent(in) :: TMParray1maxsize,TMParray2maxsize
-    integer,intent(in) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
 !   TMP variables - allocated outside
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
-    real(realk),intent(inout) :: BasisCont1(BasisCont1maxsize) !nTUVP*nTUVQ*nPrimD*nPrimA*nPrimB
-    real(realk),intent(inout) :: BasisCont2(BasisCont1maxsize) !nTUVP*nTUVQ*nPrimA*nPrimB
-    real(realk),intent(inout) :: BasisCont3(BasisCont1maxsize) !nTUVP*nTUVQ*nPrimB or nTUVP*nTUVQ*nPrimD
     integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   
     IF(PQorder)THEN
@@ -72,113 +83,198 @@ CONTAINS
        call IchorQuit('cartesian not testet',-1)
     ENDIF
     
-   IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
-    call IchorCoulombIntegral_CPU_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&
+   IF(.NOT.UseGeneralCode.AND.(((AngmomA.LE.2).AND.(AngmomA.GE.AngmomB)).AND.&
+       ((AngmomA.GE.AngmomC).AND.(AngmomC.GE.AngmomD))))THEN
+    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
+     call ICI_CPU_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
-       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
-   ELSEIF(Psegmented.AND.Qsegmented)THEN
-    call IchorCoulombIntegral_CPU_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & IatomAPass,iatomBPass)
+    ELSEIF(Psegmented.AND.Qsegmented)THEN
+     call ICI_CPU_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
-       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
-   ELSEIF(Psegmented)THEN
-    call IchorCoulombIntegral_CPU_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & IatomAPass,iatomBPass)
+    ELSEIF(Psegmented)THEN
+     call ICI_CPU_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
-       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
-   ELSEIF(Qsegmented)THEN
-    call IchorCoulombIntegral_CPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & IatomAPass,iatomBPass)
+    ELSEIF(Qsegmented)THEN
+     call ICI_CPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
-       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass)
+    ELSE
+     call ICI_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ENDIF
    ELSE
-    call IchorCoulombIntegral_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
+    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
+     call ICI_CPU_OBS_Seg1Prim2(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
-       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass)
+    ELSEIF(Psegmented.AND.Qsegmented)THEN
+     call ICI_CPU_OBS_Seg2(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ELSEIF(Psegmented)THEN
+     call ICI_CPU_OBS_SegP2(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ELSEIF(Qsegmented)THEN
+     call ICI_CPU_OBS_SegQ2(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ELSE
+     call ICI_CPU_OBS_Gen2(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ENDIF
    ENDIF
-  end subroutine IchorCoulombIntegral_CPU_OBS_general
+  end subroutine ICI_CPU_OBS_general
   
   
-  subroutine IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
-         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+  subroutine ICI_CPU_OBS_general_size(TMParray1maxsize,&
+         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+         & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,&
          & nContP,nContQ,nPrimQP,nContQP,Psegmented,Qsegmented)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
-    integer,intent(inout) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
     integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
+    integer,intent(in) :: nContA,nContB,nContC,nContD
     integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD
     logical,intent(in) :: Psegmented,Qsegmented
     IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
-     call IchorCoulombIntegral_CPU_OBS_general_sizeSeg1Prim(TMParray1maxsize,&
-         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+     call ICI_CPU_OBS_general_sizeSeg1Prim(TMParray1maxsize,&
+         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+         & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSEIF(Psegmented.AND.Qsegmented)THEN
-     call IchorCoulombIntegral_CPU_OBS_general_sizeSeg(TMParray1maxsize,&
-         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+     call ICI_CPU_OBS_general_sizeSeg(TMParray1maxsize,&
+         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+         & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSEIF(Psegmented)THEN
-     call IchorCoulombIntegral_CPU_OBS_general_sizeSegP(TMParray1maxsize,&
-         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+     call ICI_CPU_OBS_general_sizeSegP(TMParray1maxsize,&
+         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+         & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSEIF(Qsegmented)THEN
-     call IchorCoulombIntegral_CPU_OBS_general_sizeSegQ(TMParray1maxsize,&
-         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+     call ICI_CPU_OBS_general_sizeSegQ(TMParray1maxsize,&
+         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+         & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSE
-     call IchorCoulombIntegral_CPU_OBS_general_sizeGen(TMParray1maxsize,&
-         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-         & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+     call ICI_CPU_OBS_general_sizeGen(TMParray1maxsize,&
+         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+         & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ENDIF
-  end subroutine IchorCoulombIntegral_CPU_OBS_general_size
+  end subroutine ICI_CPU_OBS_general_size
   
 END MODULE IchorEriCoulombintegralCPUOBSGeneralMod

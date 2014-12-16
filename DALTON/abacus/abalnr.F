@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck lnrinp */
       SUBROUTINE LNRINP(WORD)
@@ -53,7 +52,7 @@ C
 #include "codata.h"
 #include "pcmlog.h"
 C
-      PARAMETER (NTABLE = 17)
+      PARAMETER (NTABLE = 18)
       LOGICAL NEWDEF, LOCFIN
       CHARACTER*8 DIPLEN(3),DIPLOC(3), ANGMOM(3), LONMAG(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -67,7 +66,7 @@ C
      &            '.MAXRED', '.MAXPHP','.STATIC','.VIBGRE',
      &            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
      &            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE',
-     &            '.OLDCPP'/
+     &            '.NOREBD','.OLDCPP'/
 C
       NEWDEF = (WORD .EQ. '*ABALNR')
       ICHANG = 0
@@ -85,8 +84,8 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),
-     &                      I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,
+     &                      18),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -236,6 +235,9 @@ CSPAS:20/3-2011: allowing for perturbations in only one irrep
                  ABS_REDUCE=.TRUE.
                GO TO 100
    17          CONTINUE
+                 ABS_REBD=.FALSE.
+               GO TO 100
+   18          CONTINUE
                   ABS_OLDCPP = .TRUE.
                   ABSLRS =.FALSE.
                GO TO 100
@@ -902,13 +904,13 @@ C
                      DO 100 IFRVAL = 1,NFRVAL
                         IF (ABSORP) THEN
                           IF (ABSLRS) THEN
-                            OPEN(LUABSVECS,FILE='ABSVECS',
-     &                          STATUS='UNKNOWN',
-     &                          FORM='UNFORMATTED')
+                             LUABSVECS = -1
+                             CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',
+     &                           ' ',IDUMMY,.FALSE.)
                              CALL READ_XVEC(LUABSVECS,4*NVARPT,
      &                            WORK(KSLV),LABEL1,ISYM,
      &                             FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
-                              CLOSE(LUABSVECS,STATUS='KEEP')
+                             CALL GPCLOSE(LUABSVECS,'KEEP')
                           ENDIF
                             CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
      &                           ' ',IDUMMY,.FALSE.)
@@ -2233,7 +2235,7 @@ C     DIMENSION FOVIBG(3*NATOMS,3*NATOMS,NSYM,MXFR)
       DIMENSION FOVIBG(3*NATOMS+3,3*NATOMS+3,NSYM,MXFR)
 CKeinSPASmehr
       DIMENSION WORK(LWORK)
-#include "ibtfun.h"
+
 C
       IF (ALFA .AND. IPRINT .GE. 0) THEN
          CALL TITLER('Frequency dependent polarizabilities','+',118)
@@ -2404,7 +2406,7 @@ cmbh end
          JATOM = 0
          DO IATOM = 1, NUCIND
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   JATOM = JATOM + 1
                   NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN

@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+#    prop_vibvcd
+#    -----------
+#    Molecule:         C2H4O
+#    Wave Function:    SCF / DZ
+#    Test Purpose:     Single-point calculation checking vibrational analysis
+#                      and IR and VCD spectral properties
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Basis set 
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+# Molecular geometry
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+
+
+# Symmetry
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+# Energy
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-9)
+
+# Molecular gradient
+f.add(from_string = 'Molecular gradient (au)',
+       num_lines = 10,
+       abs_tolerance = 1.0e-5)
+
+# Molecular Hessian
+f.add(from_string = 'Molecular Hessian (au)',
+      to_string = 'Dipole moment',
+       abs_tolerance = 1.0e-4)
+
+# Dipole moment
+f.add(from_re = 'Dipole moment\n',
+       num_lines = 6,
+       abs_tolerance = 1.0e-4)
+
+# Dipole moment gradient
+f.add(from_re = 'Dipole moment gradient \(au',
+       num_lines = 33,
+       abs_tolerance = 1.0e-4)
+
+# Cioslowski charges
+f.add(from_re = 'APT Population Analysis',
+       num_lines = 14,
+       abs_tolerance = 1.0e-4)
+
+# Isotopic substitutions
+f.add(from_re = 'Isotopic Masses',
+       num_lines = 11,
+       abs_tolerance = 1.0e-6)
+
+# Vibrational Frequencies
+f.add(from_string = 'Vibrational Frequencies and IR Intensities',
+       num_lines = 28,
+       abs_tolerance = 1.0e-1,
+       mask = [2])
+
+# IR Intensities
+f.add(from_string = 'Vibrational Frequencies and IR Intensities',
+       num_lines = 28,
+       abs_tolerance = 1.0e-2,
+       mask = [4])
+
+# Dipole and rotational strengths
+f.add(from_string = 'Dipole and rotational strengths',
+       num_lines = 24,
+       abs_tolerance = 1.0e-2)
+
+# Vibrational Polarizabilities
+f.add(from_string = 'Vibrational Polarizabilities (au)',
+       num_lines = 9,
+       abs_tolerance = 1.0e-5)
+
+# Molecular Partition Functions
+f.add(from_string = 'Molecular Partition Functions',
+       num_lines = 27,
+       rel_tolerance = 1.0e-5)
+
+test.run(['prop_vibvcd.dal'], ['C2H4O_intglr_sym.mol'], f={'out': f})
+
+sys.exit(test.return_code)

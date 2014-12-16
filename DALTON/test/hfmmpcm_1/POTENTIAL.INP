@@ -1,0 +1,32 @@
+**SYSTP
+.NUMMTP
+ 1
+.TYPE
+ 0
+.MODEL
+ SPC
+.CHARGS
+ 4
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+*******
+.TYPE
+ 1-2
+.MODEL
+ SPC_E01
+.ALPISO
+ 1
+ 9.501
+*******
+**TWOIA (i,j=0,1,2,...,N; if i=0 then j.neq.0)
+.LJ_A
+ 2
+ 0.00000
+ 0.00000
+.LJ_B
+ 2
+ 0.000
+ 0.000
+**END OF

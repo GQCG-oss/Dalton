@@ -565,7 +565,7 @@ C MYID intent(in)    Process ID in MPI_COMM_WORLD.
 #include "maxaqn.h" 
 #include "chrnos.h" 
 #include "ibtpar.h"
-#include "ibtfun.h"
+!#include "ibtfun.h"
 
 ! These include files depend on previous include files
 #include "infpar.h" 

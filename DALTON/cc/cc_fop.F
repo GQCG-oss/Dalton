@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_fop */
        SUBROUTINE CC_FOP(IPDD,WORK,LWORK,APROXR12)
@@ -3576,7 +3575,7 @@ C
 #include "symmet.h"
 #include "chrxyz.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 C
       CALL QENTER('CCELEFG1')
 C
@@ -3592,13 +3591,13 @@ C
          DO 110 ICOOR1 = 1,3
             DO 120 ICOOR2 = ICOOR1,3
 C
-               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+               ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
 C
                IOFF = 0
 
                DO 130 IREPC = 0, MAXREP
 C
-                  IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ))
+                  IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ))
      *                .EQ.0) THEN
 C
 C---------------------------------------------------------------------

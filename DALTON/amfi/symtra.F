@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,27 +21,24 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
-      Subroutine symtrafo(LUPROP,LUPROP2,PROPRI,IPRINT,WRK,LFREE)
+      Subroutine symtrafo(LUPROP,PROPRI,IPRINT,WRK,LFREE)
 cbs   
 cbs   Purpose: combine SO-integrals from amfi to symmetry-addapted   
-cbs   integrals on one file AOPROPER_MF_SYM   
+cbs   integrals on the file AOPROPER.MNF
 cbs   
-cbs   LUPROP has the atomic integrals, LUPROP2 will have the molecular 
-cbs   integrals    
+cbs   LUPROP has the atomic integrals
+c     the symmetry adapted integrals are written to AOPROPER by WRTPRO
 cbs   
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "para.h"
       parameter(maxorbs=700)
-      parameter(maxcent=40)
+      parameter(maxcent=80)
       character*8 xa,ya,za,xa2
       character*3 END                     
-CBS   character*20 filename               
       logical  EX, PROPRI
-CBS   namelist /SYMTRA/ none
       dimension xa(4),ya(4),za(4)
       dimension xa2(4)
       dimension WRK(LFREE)
@@ -68,12 +65,13 @@ c###############################################################################
       ya(4)='Y1MNF-SO'
       ZA(4)='Z1MNF-SO'  
 c
-c     read information from SYMINFO   
+c     read information from AMFI_SYMINFO.TXT
       ISYMUNIT = -1
-      inquire(FILE='SYMINFO',EXIST=EX) 
-      if (.not.EX) CALL QUIT('SYMINFO not present. Sorry')
-      CALL GPOPEN(ISYMUNIT,'SYMINFO','UNKNOWN',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
+      inquire(FILE='AMFI_SYMINFO.TXT',EXIST=EX) 
+      if (.not.EX)
+     &   CALL QUIT('amfi ERROR: AMFI_SYMINFO.TXT not present.')
+      CALL GPOPEN(ISYMUNIT,'AMFI_SYMINFO.TXT','OLD',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
       rewind(isymunit)  
 CBS   write(LUPRI,*) 'Symmetry adapation of the SO-integrals'
       read(isymunit,*)   
@@ -102,17 +100,22 @@ CBS   read(5,SYMTRA,END=4711)
      *,(nphase(I,irun),I=1,nadpt(irun)) 
       numbofcent=max(numbofcent,ncent(irun)) 
 Chj-start
-      IF (LVAL(IRUN) .LT. 0) CALL QUIT('Negative L value on SYMINFO')
+      IF (LVAL(IRUN) .LT. 0)
+     &   CALL QUIT('Negative L value on AMFI_SYMINFO.TXT')
 C     hjaaj nov 2001: I discovered that only s,p,d,f,g orbitals
 C     was programmed in SYMOUT in herrdn.F, thus this consistency test.
 C     Old code gave wrong lval for h orbitals etc.
 C      -- modify SYMOUT if you need orbitals with higher L
 C
 Chj-end
-      if (index.ne.irun) CALL QUIT('weird numbering  on SYMINFO')
+      if (index.ne.irun)
+     &   CALL QUIT('weird numbering  on AMFI_SYMINFO.TXT')
       enddo 
       CALL GPCLOSE(ISYMUNIT,'KEEP')
 CBS   write(LUPRI,*) 'number of unique centres' , numbofcent 
+      if (numbofcent .gt. maxcent) then
+         CALL QUIT('amfi symtra ERROR: numbofcent > maxcent')
+      end if
 c
 c     clean up arrays for new integrals  
       numboffunct3=(numboffunct*numboffunct+numboffunct)/2 
@@ -175,14 +178,14 @@ cbs   determize where the first function of a special type is..
       do Lrun=0,Lhighcent(icent) 
       do Mrun=-Lrun,Lrun 
       ifirstLM(Lrun,Mrun,icent)=ipnt(maxorbs,maxorbs)+1 
-      enddo 
-      enddo 
+      enddo   ! Mrun
+      enddo   ! Lrun
       do iorb=1,numballcart(icent)  
       Lrun=Lcent(iorb,icent) 
       Mrun=Mcent(iorb,icent) 
 c     write(LUPRI,*) 'iorb,Lrun,mrun',iorb,Lrun,mrun 
       ifirstLM(Lrun,Mrun,icent)=min(iorb,ifirstLM(Lrun,Mrun,icent))   
-      enddo 
+      enddo   ! iorb
 cbs   determined..     
 cbs   check if all of them were found 
       do Lrun=0,Lhighcent(icent) 
@@ -191,9 +194,9 @@ cbs   check if all of them were found
       write(LUPRI,*) 'problems for centre,L,M ',icent,Lrun,Mrun  
       CALL QUIT('problems with L- and M-values')
       endif 
-      enddo 
-      enddo 
-      enddo    !end of loop over centres   
+      enddo    ! Mrun
+      enddo    ! Lrun
+      enddo    ! icent - loop over centres
 cbs
 cbs   Finally the transformation!!!! 
 cbs
@@ -258,8 +261,8 @@ CBS
       endif 
       endif 
       endif 
-      enddo   
-      enddo   
+      enddo   ! jrun
+      enddo   ! irun
       if (lauf.ne.numboffunct3) CALL QUIT('error in numbering ')
 *
 COV   IPRINT=5

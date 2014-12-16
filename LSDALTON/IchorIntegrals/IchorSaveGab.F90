@@ -1,6 +1,6 @@
-MODULE IchorSaveGabModule
-  use IchorprecisionModule
-  use IchorCommonModule
+MODULE IchorSaveGabMod
+  use IchorprecisionMod
+  use IchorCommonMod
 !  use IchorMemory
   public :: InitIchorSaveGabModule, AddGabToIchorSaveGabModule,&
        & RetrieveGabFromIchorSaveGabModule,FreeIchorSaveGabModule,&
@@ -35,8 +35,8 @@ end subroutine InitIchorSaveGabModule
 
 subroutine AddGabToIchorSaveGabModule(nBatch1,nBatch2,GabIdentifier,BATCHGAB)
 implicit none
-real(realk) :: BATCHGAB(nBatch1*nBatch2) 
 integer :: nBatch1,nBatch2,GabIdentifier
+real(realk) :: BATCHGAB(nBatch1*nBatch2) 
 ! local variables
 integer :: I,J,K,n
 real(realk),pointer :: elms(:)
@@ -101,8 +101,8 @@ end subroutine AddGabToIchorSaveGabModule
 
 subroutine RetrieveGabFromIchorSaveGabModule(nBatch1,nBatch2,GabIdentifier,BATCHGAB)
 implicit none
-real(realk) :: BATCHGAB(nBatch1*nBatch2) 
 integer :: nBatch1,nBatch2,GabIdentifier
+real(realk) :: BATCHGAB(nBatch1*nBatch2) 
 ! local variables
 integer :: I,J,K
 real(realk),pointer :: elms(:)
@@ -188,4 +188,4 @@ subroutine gabdcopy(n,dx,dy)
   enddo
 end subroutine gabdcopy
 
-END MODULE ICHORSAVEGABMODULE
+END MODULE ICHORSAVEGABMOD
