@@ -2473,7 +2473,7 @@ C
 #include "implicit.h"
 #include "dummy.h"
 C
-      PARAMETER ( MAXVEC = 12, DM1 = -1.0D0 )
+      PARAMETER ( MAXVEC = 120, DM1 = -1.0D0 )
       DIMENSION CMO(*),UDV(NASHDI,*),PV(*),FC(*),FV(*)
       DIMENSION FCAC(*), H2AC(*), GD(*),REDGD(*)
       DIMENSION REDE(*),REDS(*),IBTYP(*),EIVAL(*),RESID(*),EIVEC(*)
