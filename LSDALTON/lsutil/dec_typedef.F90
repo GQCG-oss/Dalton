@@ -69,9 +69,9 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_CCSDf12  = 18  ! CCSD-F12 energy correction
   integer,parameter :: FRAGMODEL_OCCRIMP2 = 19  ! RI-MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTRIMP2= 20  ! RI-MP2 virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCSOS   = 21   ! SOSEX occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTSOS  = 22   ! SOSEX virtual partitioning scheme
-
+  integer,parameter :: FRAGMODEL_OCCSOS   = 21  ! SOSEX occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTSOS  = 22  ! SOSEX virtual partitioning scheme
+  
   !> \author Kasper Kristensen
   !> \date June 2010
   !> \brief Contains settings for DEC calculation, see default settings in dec_set_default_config.

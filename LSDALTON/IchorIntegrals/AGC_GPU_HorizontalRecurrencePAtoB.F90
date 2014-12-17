@@ -3,14 +3,14 @@ MODULE AGC_GPU_OBS_HorizontalRecurrenceLHSModAtoB
   
  CONTAINS
 
-subroutine HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri,iASync)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(nContQP*nPasses,    4,nTUVQ)
+  real(realk),intent(in) :: AuxCont(nContQ*nContP*nPasses,    4,nTUVQ)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(nContQP*nPasses,    2:    4,1,nTUVQ)
+  real(realk),intent(inout) :: ThetaP(nContQ*nContP*nPasses,    2:    4,1,nTUVQ)
   integer(kind=acckind),intent(in) :: iASync
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
@@ -19,7 +19,7 @@ subroutine HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
 !$ACC         iTUVA) &
 !$ACC PRESENT(nPasses,&
 !$ACC         AuxCont,ThetaP) ASYNC(iASync)
-  DO iP = 1,nContQP*nPasses
+  DO iP = 1,nContQ*nContP*nPasses
    DO iTUVQ = 1,nTUVQ
      DO iTUVA=  2,  4
         ThetaP(IP,iTUVA,1,iTUVQ) = AuxCont(IP,iTUVA,iTUVQ)
@@ -28,14 +28,14 @@ subroutine HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
    ENDDO
 end subroutine HorizontalRR_GPU_LHS_P1A1B0AtoB
 
-subroutine HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri,iASync)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(nContQP*nPasses,   10,nTUVQ)
+  real(realk),intent(in) :: AuxCont(nContQ*nContP*nPasses,   10,nTUVQ)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(nContQP*nPasses,    2:    4,    2:    4,nTUVQ)
+  real(realk),intent(inout) :: ThetaP(nContQ*nContP*nPasses,    2:    4,    2:    4,nTUVQ)
   integer(kind=acckind),intent(in) :: iASync
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
@@ -45,9 +45,9 @@ subroutine HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
 !$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
 !$ACC PRESENT(nPasses,&
 !$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP) ASYNC(iASync)
-  DO iP = 1,nContQP*nPasses
+  DO iP = 1,nContQ*nContP*nPasses
    DO iTUVQ = 1,nTUVQ
-    iPassP = (IP-1)/(nContQP) + 1
+    iPassP = (IP-1)/((nContQ*nContP)) + 1
     iAtomA = iAtomApass(iPassP)
     iAtomB = iAtomBpass(iPassP)
     Xab = Pdistance12(1,iAtomA,iAtomB)
@@ -66,14 +66,14 @@ subroutine HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
    ENDDO
 end subroutine HorizontalRR_GPU_LHS_P2A1B1AtoB
 
-subroutine HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri,iASync)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(nContQP*nPasses,   10,nTUVQ)
+  real(realk),intent(in) :: AuxCont(nContQ*nContP*nPasses,   10,nTUVQ)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(nContQP*nPasses,    5:   10,1,nTUVQ)
+  real(realk),intent(inout) :: ThetaP(nContQ*nContP*nPasses,    5:   10,1,nTUVQ)
   integer(kind=acckind),intent(in) :: iASync
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
@@ -82,7 +82,7 @@ subroutine HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
 !$ACC         iTUVA) &
 !$ACC PRESENT(nPasses,&
 !$ACC         AuxCont,ThetaP) ASYNC(iASync)
-  DO iP = 1,nContQP*nPasses
+  DO iP = 1,nContQ*nContP*nPasses
    DO iTUVQ = 1,nTUVQ
      DO iTUVA=  5, 10
         ThetaP(IP,iTUVA,1,iTUVQ) = AuxCont(IP,iTUVA,iTUVQ)
@@ -91,14 +91,14 @@ subroutine HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
    ENDDO
 end subroutine HorizontalRR_GPU_LHS_P2A2B0AtoB
 
-subroutine HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri,iASync)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(nContQP*nPasses,   20,nTUVQ)
+  real(realk),intent(in) :: AuxCont(nContQ*nContP*nPasses,   20,nTUVQ)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(nContQP*nPasses,    5:   10,    2:    4,nTUVQ)
+  real(realk),intent(inout) :: ThetaP(nContQ*nContP*nPasses,    5:   10,    2:    4,nTUVQ)
   integer(kind=acckind),intent(in) :: iASync
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
@@ -108,9 +108,9 @@ subroutine HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
 !$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
 !$ACC PRESENT(nPasses,&
 !$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP) ASYNC(iASync)
-  DO iP = 1,nContQP*nPasses
+  DO iP = 1,nContQ*nContP*nPasses
    DO iTUVQ = 1,nTUVQ
-    iPassP = (IP-1)/(nContQP) + 1
+    iPassP = (IP-1)/((nContQ*nContP)) + 1
     iAtomA = iAtomApass(iPassP)
     iAtomB = iAtomBpass(iPassP)
     Xab = Pdistance12(1,iAtomA,iAtomB)
@@ -138,14 +138,14 @@ subroutine HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
    ENDDO
 end subroutine HorizontalRR_GPU_LHS_P3A2B1AtoB
 
-subroutine HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri,iASync)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(nContQP*nPasses,   35,nTUVQ)
+  real(realk),intent(in) :: AuxCont(nContQ*nContP*nPasses,   35,nTUVQ)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(nContQP*nPasses,    5:   10,    5:   10,nTUVQ)
+  real(realk),intent(inout) :: ThetaP(nContQ*nContP*nPasses,    5:   10,    5:   10,nTUVQ)
   integer(kind=acckind),intent(in) :: iASync
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
@@ -158,9 +158,9 @@ subroutine HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
 !$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &
 !$ACC PRESENT(nPasses,&
 !$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP) ASYNC(iASync)
-  DO iP = 1,nContQP*nPasses
+  DO iP = 1,nContQ*nContP*nPasses
    DO iTUVQ = 1,nTUVQ
-    iPassP = (IP-1)/(nContQP) + 1
+    iPassP = (IP-1)/((nContQ*nContP)) + 1
     iAtomA = iAtomApass(iPassP)
     iAtomB = iAtomBpass(iPassP)
     Xab = Pdistance12(1,iAtomA,iAtomB)

@@ -21,7 +21,9 @@ module dec_main_mod
   use tensor_interface_module
   use Matrix_util!, only: get_AO_gradient
 
-
+  !> F12routines
+  !use f12_routines_module
+  
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use snoop_main_module
@@ -40,7 +42,6 @@ public :: dec_main_prog_input, dec_main_prog_file, &
 private
 
 contains
-
 
   !> Wrapper for main DEC program to use when Fock,density,overlap, and MO coefficient
   !> matrices are available from HF calculation.
@@ -180,9 +181,9 @@ contains
     character(len=10) :: program_version
     character(len=50) :: MyHostname
     integer, dimension(8) :: values
-    real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr
-    real(realk) :: molgrad(3,Molecule%natoms)
-
+    real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr,ES2
+    real(realk) :: molgrad(3,Molecule%natoms)  
+    
     ! Set DEC memory
     call get_memory_for_dec_calculation()
 
@@ -238,13 +239,27 @@ contains
        write(DECinfo%output,*)
        write(DECinfo%output,*)
     end if
+    
+    
+    if(DECinfo%F12) then
+#ifdef MOD_UNRELEASED
+       call get_ES2_from_dec_main(molecule,MyLsitem,D,ES2)  
+       if(DECinfo%F12debug) then
+          print *,   '----------------------------------------------------------------'
+          print *,   '                   F12-SINGLES CORRECTION                       '
+          print *,   '----------------------------------------------------------------'
+          write(*,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
+          print *,   '----------------------------------------------------------------'
+          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
+          write(DECinfo%output,'(1X,a,f20.10)')'                   F12-SINGLES CORRECTION                       '
+          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
+          write(DECinfo%output,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
+          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
+       end if
+#endif
+    endif
 
-    !>
-    !!>
-    !!>> Make Cabs
-    !!>>> F12 Singles
-    !!>>>> 
-
+    
     if(DECinfo%full_molecular_cc) then
        ! -- Call full molecular CC
        write(DECinfo%output,'(/,a,/)') 'Full molecular calculation is carried out...'

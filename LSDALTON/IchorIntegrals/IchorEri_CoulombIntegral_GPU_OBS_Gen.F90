@@ -35,7 +35,7 @@ CONTAINS
   
   
   subroutine ICI_GPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -49,7 +49,7 @@ CONTAINS
        & IatomAPass,iatomBPass,iASync)
     implicit none
     integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD
-    integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri
+    integer,intent(in) :: MaxPasses,IntPrint,lupri
     integer,intent(in) :: nContA,nContB,nContC,nContD,nContP,nContQ,nTABFJW1,nTABFJW2
     integer,intent(in) :: nAtomsA,nAtomsB
     integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
@@ -70,10 +70,10 @@ CONTAINS
     real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
     integer,intent(in) :: localintsmaxsize
     real(realk),intent(inout) :: LOCALINTS(localintsmaxsize)
-    real(realk),intent(in) :: integralPrefactor(nPrimQP)
+    real(realk),intent(in) :: integralPrefactor(nPrimQ*nPrimP)
     logical,intent(in) :: PQorder
     !integralPrefactor(nPrimP,nPrimQ)
-    real(realk),intent(in) :: reducedExponents(nPrimQP)
+    real(realk),intent(in) :: reducedExponents(nPrimQ*nPrimP)
     !reducedExponents(nPrimP,nPrimQ)
     real(realk),intent(in) :: Qdistance12(3) !Ccenter-Dcenter
     !Qdistance12(3)
@@ -86,7 +86,7 @@ CONTAINS
     integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
     integer(kind=acckind),intent(in) :: iASync
 !   Local variables 
-    integer :: AngmomPQ,AngmomP,AngmomQ,I,J,nContQP,la,lb,lc,ld,nsize,angmomid
+    integer :: AngmomPQ,AngmomP,AngmomQ,I,J,la,lb,lc,ld,nsize,angmomid
     
     !Setup combined Angmom info
     AngmomP = AngmomA+AngmomB
@@ -110,7 +110,6 @@ CONTAINS
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
                & PpreExpFac,QpreExpFac,TMParray2(1),iASync)
         !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,1,1,iASync)
@@ -133,7 +132,6 @@ CONTAINS
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray2(1),iASync)
         !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,1,iASync)
@@ -146,7 +144,7 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,1,iASync)
-        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,1,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation LHS needed
@@ -164,7 +162,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,4,iASync)
@@ -177,11 +174,11 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,4,iASync)
-        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,4,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
@@ -196,7 +193,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,10,iASync)
@@ -209,11 +205,11 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,10,iASync)
-        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,10,&
+        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray1(1),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
@@ -225,7 +221,6 @@ CONTAINS
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1(1),iASync)
         !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
@@ -238,7 +233,7 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,1,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation LHS needed
@@ -256,7 +251,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
@@ -269,11 +263,11 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,4,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,9,Qdistance12,TMParray1(1),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
@@ -288,7 +282,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
@@ -301,11 +294,11 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,10,&
+        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
         !no Spherical Transformation LHS needed
-        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,9,Qdistance12,TMParray1(1),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray1(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
@@ -317,7 +310,6 @@ CONTAINS
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1(1),iASync)
         !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
@@ -330,10 +322,10 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,1,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(1,nContQP*nPasses,TMParray2(1),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray2(1),&
             & LOCALINTS(1),iASync)
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -349,7 +341,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
@@ -362,12 +353,12 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,4,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(4,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
@@ -382,7 +373,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
@@ -395,12 +385,12 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,10,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
@@ -415,7 +405,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
@@ -428,14 +417,14 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,10,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(5,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(nOrbCompP,nContQ,nContP,nPasses,TMParray1(1),&
             & LOCALINTS(1),iASync)
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
         call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -449,7 +438,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,20,iASync)
@@ -462,14 +450,14 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,20,iASync)
-        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,20,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(20,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(5,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(nOrbCompP,nContQ,nContP,nPasses,TMParray1(1),&
             & LOCALINTS(1),iASync)
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
         call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -483,7 +471,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,35,iASync)
@@ -496,14 +483,14 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,35,iASync)
-        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,35,&
+        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(35,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,5,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(5,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(nOrbCompP,nContQ,nContP,nPasses,TMParray1(1),&
             & LOCALINTS(1),iASync)
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
         call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -514,7 +501,6 @@ CONTAINS
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1(1),iASync)
         !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,1,iASync)
@@ -527,10 +513,10 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,1,iASync)
-        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,1,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(1,nContQP*nPasses,TMParray2(1),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray2(1),&
             & LOCALINTS(1),iASync)
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -546,7 +532,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,4,iASync)
@@ -559,12 +544,12 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,4,iASync)
-        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,4,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(4,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
@@ -579,7 +564,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
@@ -592,12 +576,12 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,10,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
@@ -612,7 +596,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
@@ -625,14 +608,14 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,10,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(15,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(nOrbCompP,nContQ,nContP,nPasses,TMParray1(1),&
             & LOCALINTS(1),iASync)
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
         call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -646,7 +629,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,20,iASync)
@@ -659,14 +641,14 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,20,iASync)
-        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,20,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(20,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(15,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(nOrbCompP,nContQ,nContP,nPasses,TMParray1(1),&
             & LOCALINTS(1),iASync)
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
         call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -680,7 +662,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,35,iASync)
@@ -693,14 +674,14 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,35,iASync)
-        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,35,&
+        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(35,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,15,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(15,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(nOrbCompP,nContQ,nContP,nPasses,TMParray1(1),&
             & LOCALINTS(1),iASync)
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
         call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -711,7 +692,6 @@ CONTAINS
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1(1),iASync)
         !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,1,iASync)
@@ -724,10 +704,10 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,1,iASync)
-        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,1,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1(1),&
             & TMParray2(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(1,nContQP*nPasses,TMParray2(1),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray2(1),&
             & LOCALINTS(1),iASync)
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -743,7 +723,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,4,iASync)
@@ -756,12 +735,12 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,4,iASync)
-        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,4,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(4,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
@@ -776,7 +755,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
@@ -789,12 +767,12 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,10,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & LOCALINTS(1),lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
@@ -809,7 +787,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
@@ -822,14 +799,14 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,10,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(25,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(nOrbCompP,nContQ,nContP,nPasses,TMParray1(1),&
             & LOCALINTS(1),iASync)
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
         call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -843,7 +820,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,20,iASync)
@@ -856,14 +832,14 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,20,iASync)
-        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,20,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(20,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(25,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(nOrbCompP,nContQ,nContP,nPasses,TMParray1(1),&
             & LOCALINTS(1),iASync)
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
         call BuildRJ000GPUGen8(nPasses,nPrimP,nPrimQ,reducedExponents,&
@@ -877,7 +853,6 @@ CONTAINS
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1(1),TMParray2(1),iASync)
-        nContQP = nContQ*nContP
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,35,iASync)
@@ -890,14 +865,14 @@ CONTAINS
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,35,iASync)
-        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,35,&
+        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,nTUVQ,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(35,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(nTUVQ,nContQ,nContP,nPasses,TMParray1(1),&
             & TMParray2(1),iASync)
-        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,25,Qdistance12,TMParray2(1),&
+        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,nOrbCompP,Qdistance12,TMParray2(1),&
             & TMParray1(1),lupri,iASync)
-        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(25,nContQP*nPasses,TMParray1(1),&
+        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(nOrbCompP,nContQ,nContP,nPasses,TMParray1(1),&
             & LOCALINTS(1),iASync)
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in ICI_GPU_OBS_Gen',-1)

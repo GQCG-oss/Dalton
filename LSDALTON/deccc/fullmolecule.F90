@@ -192,19 +192,20 @@ contains
     molecule%Edisp = 0.0_realk
     molecule%Ect = 0.0_realk
     molecule%Esub = 0.0_realk
-    nMOintern = 0
-    if(present(nMO)) nMOintern = nMO
-
     molecule%natoms = get_num_atoms(mylsitem)
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
     molecule%nauxbasis = get_num_aux_basis_functions(mylsitem)
-    molecule%nocc = molecule%nelectrons/2
+
+    ! Number of MOs can be different from nbasis if specified by input
     if(present(nMO)) then
-       molecule%nunocc = nMO - molecule%nocc
+       nMOintern = nMO
     else
-       molecule%nunocc = molecule%nbasis - molecule%nocc
+       nMOintern = molecule%nbasis
     end if
+
+    molecule%nocc = molecule%nelectrons/2
+    molecule%nunocc = nMOintern - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
     molecule%nCabsAO = 0
@@ -773,9 +774,9 @@ contains
        call mem_dealloc(molecule%Fcp)
     end if
 
-!    if(associated(molecule%Fcd)) then
-!       call mem_dealloc(molecule%Fcd)
-!    end if
+!!$    if(associated(molecule%Fcd)) then
+!!$       call mem_dealloc(molecule%Fcd)
+!!$    end if
 
     ! Delete atomic info
     if(associated(molecule%atom_size)) then
@@ -1119,7 +1120,7 @@ contains
     call mem_alloc(MyMolecule%Frm,ncabsAO,noccfull) !HACK not RI MO orbitals (AO basis)
     call mem_alloc(MyMolecule%Fcp,ncabsAO,nbasis)   !HACK not ncabsMO,nbasis - not CABS MOs
     call mem_alloc(MyMolecule%Fij,nocc,nocc)
-   ! call mem_alloc(MyMolecule%Fcd,ncabsAO,ncabsAO)
+    !call mem_alloc(MyMolecule%Fcd,ncabsAO,ncabsAO)
     
     ! Constructing the F12 MO matrices from F12_routines.F90
     call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&
@@ -1137,7 +1138,7 @@ contains
       print *, "norm2D(Frm)",  norm2D(MyMolecule%Frm)
       print *, "norm2D(Fcp)",  norm2D(MyMolecule%Fcp)
       print *, "norm2D(Fij)",  norm2D(MyMolecule%Fij)
-    !  print *, "norm2D(Fcd)",  norm2D(MyMolecule%Fcd)
+     ! print *, "norm2D(Fcd)",  norm2D(MyMolecule%Fcd)
       print *,'-------------------------------------------' 
     end if
 
@@ -1254,63 +1255,7 @@ contains
     call mem_dealloc(Dfull)
 
   end subroutine dec_get_density_matrix_from_file
-
   
-  subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
-    implicit none
-
-    !> Full molecule structure to be initialized
-    type(fullmolecule), intent(inout) :: molecule
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-
-    type(matrix) :: CMO_cabs
-    integer :: ncabsAO,ncabs
-
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    molecule%nCabsAO = ncabsAO
-    molecule%nCabsMO = ncabs
-    call mat_init(CMO_cabs,nCabsAO,nCabs)
-
-    call init_cabs(DECinfo%full_molecular_cc)
-    call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
-
-    ! NB! Memory leak need to be freed somewhere
-!    call mem_alloc(molecule%Ccabs,ncabsAO,nCabs)
-!    call mat_to_full(CMO_cabs,1.0E0_realk,molecule%Ccabs)
-    call mat_free(CMO_cabs)
-
-  end subroutine dec_get_CABS_orbitals
-
-  subroutine  dec_get_RI_orbitals(molecule,mylsitem)
-    implicit none
-
-    !> Full molecule structure to be initialized
-    type(fullmolecule), intent(inout) :: molecule
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-
-    type(matrix) :: CMO_RI
-    integer :: ncabsAO,ncabs
-
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    molecule%nCabsAO = ncabsAO
-    molecule%nCabsMO = ncabs
-    call mat_init(CMO_RI,ncabsAO,ncabsAO)
-
-    call init_ri(DECinfo%full_molecular_cc)
-    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
-
-    ! NB! Memory leak need to be freed somewhere
-!    call mem_alloc(molecule%Cri,ncabsAO,ncabsAO) 
-!    call mat_to_full(CMO_RI,1.0E0_realk,molecule%Cri)
-
-    call mat_free(CMO_RI)
-
-  end subroutine dec_get_RI_orbitals
-
 
   ! THIS ROUTINE SHOULD BE RECONSIDERED IF WE FIND A GOOD ORBITAL INTERACTION MATRIX TO USE
   ! FOR FRAGMENT EXPANSION:   
