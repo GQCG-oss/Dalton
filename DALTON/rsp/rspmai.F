@@ -69,9 +69,6 @@ C  /* Deck rspdrv */
 C
 C Driver for RESPONSE.
 C
-C We assume that either the SIRIUS module or the SETSIR
-C subroutine has been called before RSPDRV.
-C
 #include "implicit.h"
 C
       DIMENSION WRK(LWRK)
@@ -132,10 +129,15 @@ C     *************************
 C     ***** INPUT SECTION *****
 C     *************************
 C
+C Define wave function variables, also if SIRIUS has not been called
 C
-C DEFINE VARIABLES THAT ARE COMMON FOR ALL SYMMETRIES
+      CALL SETSIR(WRK,LWRK)
+C
+C Define variables that are common for all perturbation symmetries
 C
       CALL RSPSET
+C
+C Read **RESPONS input
 C
       CALL RSPREA
 C
