@@ -64,7 +64,7 @@ module f12_integrals_module
   !       & array4_close_file, array4_write_file_type1, mat_transpose, &
   !     & array4_read_file_type2
 
-  public :: get_f12_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21
+  public :: get_f12_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21, get_f12_fragment_energy_slave
 
   private
 #endif
@@ -2550,9 +2550,16 @@ contains
 
     !> Timings
     real(realk) :: tcpu,twall
+    logical :: Master,Collaborate,DoBasis
+    integer :: n1,n2,n3,n4,Tain1,Tain2
+#ifdef VAR_MPI
+    Master = infpar%lg_mynum .EQ. infpar%master
+    Collaborate = infpar%lg_nodtot .GT. 1
+#else
+    Master = .TRUE.
+    Collaborate = .FALSE.
+#endif
 
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
-    
     ! ***********************************************************
     !   Sanity Check if we do the pair calculation
     ! ***********************************************************
@@ -2566,19 +2573,39 @@ contains
        dopair = .TRUE.
     endif
 
+    IF(Collaborate.And.Master)THEN
+#ifdef VAR_MPI
+       !wake up slaves
+       call ls_mpibcast(F12_INTEGRAL_CALCULATION,infpar%master,infpar%lg_comm)
+       !Broadcast info to slaves
+       DoBasis = .TRUE.
+       IF(dopair)THEN
+          call decmpi_bcast_f12_info(MyFragment, Taibj,Tai,case,dopair,Dobasis,&
+               & Fragment1,Fragment2)
+       ELSE
+          call decmpi_bcast_f12_info(MyFragment, Taibj,Tai,case,dopair,Dobasis)
+       ENDIF
+#endif
+    ENDIF
+
+    IF(Master)THEN
+
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    
+    
     nbasis   = MyFragment%nbasis
     noccEOS  = MyFragment%noccEOS
     nunoccEOS = MyFragment%nunoccEOS
     noccfull = noccEOS
-
+       
     noccAOS = MyFragment%noccAOS
     nunoccAOS = MyFragment%nunoccAOS
     nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
     nvirtAOS = MyFragment%nunoccAOS
-
+    
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
-
+    
     ! ***********************************************************
     !   Printing Input variables 
     ! ***********************************************************
@@ -3133,8 +3160,50 @@ contains
     call mem_dealloc(Ccabs)
     call mem_dealloc(Cri)
     call mem_dealloc(CvirtAOS)
+    ENDIF !if master
 
   end subroutine get_f12_fragment_energy
+
+  !> Brief: Gives the single and pair fragment energy for MP2F12
+  !> Author: Yang M. Wang
+  !> Date: April 2013
+  subroutine get_f12_fragment_energy_slave()
+    implicit none
+    !> Atomic fragment to be determined (Single or Pair fragment)
+    type(decfrag) :: MyFragment
+    !> t2EOS amplitudes stored in the order T(a,i,b,j)
+    real(realk), pointer :: Taibj(:,:,:,:) 
+    !> t1EOS amplitudes stored in the order T(a,i)
+    real(realk), pointer :: Tai(:,:) 
+    !> Case MODEL
+    integer :: case
+    !> Fragment 1 in the pair fragment
+    type(decfrag) :: Fragment1
+    !> Fragment 2 in the pair fragment
+    type(decfrag) :: Fragment2
+    !
+    logical :: DoBasis,PairFrag
+    integer :: n1,n2,n3,n4,Tain1,Tain2
+#ifdef VAR_MPI
+    !Recieve info from master and allocates MyFragment and amplitudes    
+    call decmpi_bcast_f12_info(MyFragment, Taibj, Tai, case,PairFrag,DoBasis,&
+         & Fragment1, Fragment2)
+
+    IF(PairFrag)THEN
+       call get_f12_fragment_energy(MyFragment, Taibj, Tai, case, Fragment1, Fragment2)
+       call atomic_fragment_free(Fragment1)
+       call atomic_fragment_free(Fragment2)
+    ELSE
+       call get_f12_fragment_energy(MyFragment, Taibj, Tai, case)
+    ENDIF
+
+    call atomic_fragment_free(MyFragment)
+    call mem_dealloc(Taibj)
+    IF(case.EQ.MODEL_CCSD)THEN
+       call mem_dealloc(Tai)
+    ENDIF
+#endif
+  end subroutine get_f12_fragment_energy_slave
 
   !> Brief: MP2-F12 correction for the single fragment of term for the energies related to E21
   !> Author: Yang M. Wang

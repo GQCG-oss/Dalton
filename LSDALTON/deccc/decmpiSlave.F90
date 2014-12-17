@@ -8,6 +8,7 @@ subroutine dec_lsmpi_slave(comm)
    use integralinterfaceMod!, only: II_screeninit, &
    !           & II_bcast_screen, II_screenfree
    use dec_driver_slave_module, only: main_fragment_driver_slave
+   use f12_integrals_module 
 
    implicit none
    !> Communicator from which task is to be received
@@ -67,6 +68,8 @@ subroutine dec_lsmpi_slave(comm)
          call RIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+      case(F12_INTEGRAL_CALCULATION);
+         call get_f12_fragment_energy_slave
       case(CCSDDATA);
          call ccsd_data_preparation
       case(MO_INTEGRAL_SIMPLE);
