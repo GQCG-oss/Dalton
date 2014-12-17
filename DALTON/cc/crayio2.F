@@ -197,7 +197,7 @@ C
            WRITE (LUPRI,*) 'LEN :', LEN 
            WRITE (LUPRI,*) 'IERR:', IERR 
            call printgetwaerr(ierr)
-           CALL QUIT('I/O ERROR IN GETWA2.')
+           CALL QUIT('ERROR IN GETWA2.')
          END IF
 C
          IOFF = IOFF + LREAD
