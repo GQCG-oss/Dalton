@@ -1138,6 +1138,10 @@ Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
 Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
+C Request effective dipole integrals using PE library
+         IF (PEQM) THEN
+             CALL PE_IFC_LF
+         END IF
 Classical MEP calculations using PE library
          IF (PEMEP) THEN
             IF (PE_IFC_MEP() == 0) THEN

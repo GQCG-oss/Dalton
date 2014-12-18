@@ -80,6 +80,69 @@
 
 !-----------------------------------------------------------------------------
 
+      subroutine pe_ifc_lf
+
+        use pe_variables, only: effdipole
+        use polarizable_embedding, only: pe_master
+        implicit none
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+        real*8, dimension(nnbasx) :: dip
+        real*8, dimension(3*nnbasx) :: fckmats
+        integer :: i, j, k
+        logical :: lopen
+        character*8 :: lblinf(2)
+
+        if (.not. effdipole) return
+
+        call qenter('pe_ifc_lf')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(8)
+#endif
+        write(lupri,*) 'PEQM: Local field factors are included.'
+        lopen = .false.
+        dip = 0.0d0
+
+        call pe_master(runtype='effdipole',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 fckmats=fckmats)
+        if (luprop <= 0) then
+            call gpopen(luprop, 'AOPROPER', 'OLD', ' ',
+     &                  'UNFORMATTED', 0, .false.)
+            lopen = .true.
+        end if 
+
+!       dipole integrals are stored in triangular form
+        rewind(luprop)
+        CALL MOLLB2('XDIPLEN ',LBLINF,luprop,LUPRI)
+        call readt(luprop, nnbasx, dip)
+        dip(:) = dip(:) + fckmats(1:nnbasx)
+        CALL WRTPRO(dip,nnbasx,'LFDIPLNX',LBLINF,0)
+
+        rewind(luprop)
+        CALL MOLLB2('YDIPLEN ',LBLINF,luprop,LUPRI)
+        call readt(luprop, nnbasx, dip)
+        dip(:) = dip(:) + fckmats(nnbasx+1:2*nnbasx)
+        CALL WRTPRO(dip,nnbasx,'LFDIPLNY',LBLINF,0)
+
+        rewind(luprop)
+        CALL MOLLB2('ZDIPLEN ',LBLINF,luprop,LUPRI)
+        call readt(luprop, nnbasx, dip)
+        dip(:) = dip(:) + fckmats(2*nnbasx+1:3*nnbasx)
+        CALL WRTPRO(dip,nnbasx,'LFDIPLNZ',LBLINF,0)
+
+        rewind(luprop)
+        CALL MOLLB2('LFDIPLNX',LBLINF,luprop,LUPRI)
+        call readt(luprop, nnbasx, dip)
+
+        if (lopen) call gpclose(luprop,'KEEP')
+        call qexit('pe_ifc_lf')
+      end subroutine pe_ifc_lf
+
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_infld
         use polarizable_embedding, only: pe_master
         implicit none
