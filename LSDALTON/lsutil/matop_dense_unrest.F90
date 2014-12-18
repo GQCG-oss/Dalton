@@ -2,7 +2,7 @@
 !> Contains unrestricted dense matrix module.
 
 !> \brief Contains matrix operation routines for type(matrix) = unrestricted dense.
-module matrix_operations_unres_dense
+module matrix_op_unres_dense
   use matrix_module
   use memory_handling
   use precision
@@ -1347,5 +1347,5 @@ end subroutine mat_unres_dense_create_ab_elms
 
   end subroutine unres_dens_stat_deallocated_mem
 
-end module matrix_operations_unres_dense
+end module matrix_op_unres_dense
 

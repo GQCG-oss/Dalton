@@ -1163,7 +1163,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              Aend = V(2,Abat)      ! last index in virtual batch
              dimA = Aend-Astart+1  ! dimension of virtual batch
 
-             CALL LS_GETTIM(CPU1,WALL1)
              ! b1(Abat,B,J,I) = sum_{alpha in alphaB} C^T_{A alpha} tmp4(alpha,B,J,I)
              ! Note: Similarly to the comment above, even though b1 contains only four indices,
              ! behind the curtain it belongs to specific alphaB and gammaB batches, and therefore
@@ -1174,9 +1173,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              ! Avoid passing elements which are non-consecutive in memory
              call dec_simple_dgemm(dimA,dimAlpha,n,CvirtTspecial(Abat,alphaB)%p, &
                 & tmp4%p(1:dim4),b1(num)%p(1:dim1), 'n', 'n',use_thread_safe=ts)
-             CALL LS_GETTIM(CPU2,WALL2)
-             CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
-             WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)
 
 
 !             IF(.NOT.DECinfo%OnlyVirtPart)THEN
