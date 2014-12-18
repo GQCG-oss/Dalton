@@ -2172,7 +2172,7 @@ C
       ELSE
          IF (DEPRED .NE. 0.0D0) THEN
            RATIO = DEACT / DEPRED
-           WRITE(LUW4,1110) DEACT, DEPRED, RATIO
+           WRITE(LUW4,1100) DEACT, DEPRED, RATIO
            WRITE(LUW4,'(A)') ' Close to convergence, ratio set to one.'
          ELSE
            IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
@@ -2181,7 +2181,7 @@ C
          ISTEP = -1
       END IF
  1100 FORMAT (/' (SIRSTP) Energy difference;',
-     *        /' actual, predicted and ratio:',2F15.10,F12.6)
+     *        /' actual, predicted and ratio:',2F20.15,F12.6)
  1110 FORMAT (/' (SIRSTP) Close to convergence, ratio set to one.',
      *        /' Energy difference; actual and predicted:',1P,2D15.5)
 C

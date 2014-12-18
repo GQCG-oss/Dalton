@@ -2344,7 +2344,7 @@ C1010 FORMAT(/5X,'Response configuration operator symmetry =',I2)
      *       /,5X,' ----------                      --------------',
      *            '      --------------')
  1100 FORMAT(I12,20X,2F20.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
+ 1200 FORMAT(/I9,' elements with absolute value less than',
      *       1P,D9.2,' not printed.',
      *       //' The numbers in parenthesis',
      *         ' give the configuration symmetry.')
@@ -2599,7 +2599,7 @@ C
      &           '      --------------      --------------',
      &           '      --------------      --------------')
  1100 FORMAT(I12,I10,'(',I1,')',I4,'(',I1,')',4F20.10)
- 1200 FORMAT(/I9,' elements with absolute value ≤$',
+ 1200 FORMAT(/I9,' elements with absolute value ≤',
      *       1P,D9.2,' not printed.',
      *       //' The numbers in parenthesis give the orbital symmetry.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
@@ -2683,7 +2683,7 @@ C
      *       /,5X,' ----------    -----  -----      --------------',
      *            '      --------------')
  1100 FORMAT(I12,I10,'(',I1,')',I4,'(',I1,')',2F20.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
+ 1200 FORMAT(/I9,' elements with absolute value less than',
      *       1P,D9.2,' not printed.',
      *       //' The numbers in parenthesis give the orbital symmetry.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
