@@ -1011,8 +1011,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
      integer, parameter :: bs = 1
+     logical, parameter:: DIL_LOCK_OUTSIDE=.false. !`DIL: controls Patrick's outside locks in Scheme 1
 !#ifdef DIL_DEBUG
-     logical, parameter :: DIL_DEBUG=.true. !`DIL
+     logical, parameter:: DIL_DEBUG=.true. !`DIL
      integer(ls_mpik):: impir
 !#endif
      !init timing variables
@@ -1134,25 +1135,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, at = time_init_comm)
      endif StartUpSlaves
 
-!{`DIL: Not needed in Scheme 1:
-     if(.not.local)then
-        t2%access_type     = AT_ALL_ACCESS
-        call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
-        call tensor_allocate_dense( t2 )
-        buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
-        call mem_alloc(buf1,buf_size)
-        call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
-        call mem_dealloc(buf1)
-        call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
-     endif
-!}
      call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
 #endif
 
-
      !print*,"HACK:random t"
      !if(master)call random_number(t2%elm1)
-
 
      if(master.and.print_debug)then
         call print_norm(xo,int(nb*no,kind=8)," NORM(xo)    :")
@@ -1224,11 +1211,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      endif
 
+#ifdef VAR_MPI
+     if(.not.local) then
+        t2%access_type = AT_ALL_ACCESS
+        if(scheme/=1) then
+         call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
+         call tensor_allocate_dense( t2 )
+         buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
+         call mem_alloc(buf1,buf_size)
+         call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
+         call mem_dealloc(buf1)
+         call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+        endif
+     endif
 
      !all communication for MPI prior to the loop
-#ifdef VAR_MPI
      call time_start_phase(PHASE_COMM, at = time_init_work )
-        
 
      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
      call ls_mpi_buffer(scheme,infpar%master)
@@ -1255,7 +1253,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      govov%access_type  = AT_ALL_ACCESS
      omega2%access_type = AT_ALL_ACCESS
 
-     if(alloc_in_dummy.and.(scheme==2.or.scheme==1))then !`DIL: This should be accounted for in TCM (no locking for destination omega2)
+     if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then !`DIL
         call tensor_lock_wins(omega2,'s',all_nodes = .true.)
      endif
 #endif
@@ -1422,7 +1420,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !get u2 in pdm or local
      if(scheme==2.or.scheme==1)then
 #ifdef VAR_MPI
-        call tensor_deallocate_dense(t2)
+        if(scheme/=1) call tensor_deallocate_dense(t2)
 
         call time_start_phase(PHASE_COMM, at = time_init_work )
 
@@ -1430,7 +1428,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 
-        if(alloc_in_dummy) call tensor_lock_wins(u2,'s',all_nodes = .true.) !`DIL: Disable locking in TCM for destination u2
+        if(alloc_in_dummy.and.(scheme/=1.or.DIL_LOCK_OUTSIDE)) then
+         call tensor_lock_wins(u2,'s',all_nodes = .true.) !`DIL
+        endif
 
         call time_start_phase(PHASE_WORK, at = time_init_comm )
 #endif
@@ -1484,11 +1484,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef VAR_MPI
         if(alloc_in_dummy)then
-           if(scheme==1.or.scheme==2.or.scheme==3)then !`DIL: Disable locking in TCM for gvvooa and gvoova
+           if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then !`DIL
               call tensor_lock_wins(gvvooa,'s',all_nodes = .true.)
               call tensor_lock_wins(gvoova,'s',all_nodes = .true.)
            endif
-           if(scheme==1.or.scheme==2)then !`DIL: disable locking in TCM for sio4
+           if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then !`DIL
               call tensor_lock_wins(sio4,  's',all_nodes = .true.)
            endif
         endif

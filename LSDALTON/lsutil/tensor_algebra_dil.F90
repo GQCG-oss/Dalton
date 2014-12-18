@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2014/12/16 (started 2014/09/01).
+!REVISION: 2014/12/18 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -274,6 +274,7 @@
         private dil_rank_window_new
         private dil_get_contr_pattern
         public thread_wtime
+        public process_wtime
         public permutation_invert
         public permutation_trivial
         public dil_tensor_slice
