@@ -116,25 +116,25 @@
 
 !       dipole integrals are stored in triangular form
         rewind(luprop)
-        CALL MOLLB2('XDIPLEN ',LBLINF,luprop,LUPRI)
+        call mollb2('XDIPLEN ',lblinf,luprop,LUPRI)
         call readt(luprop, nnbasx, dip)
         dip(:) = dip(:) + fckmats(1:nnbasx)
-        CALL WRTPRO(dip,nnbasx,'LFDIPLNX',LBLINF,0)
+        call WRTPRO(dip,nnbasx,'LFDIPLNX',lblinf,0)
 
         rewind(luprop)
-        CALL MOLLB2('YDIPLEN ',LBLINF,luprop,LUPRI)
+        call mollb2('YDIPLEN ',lblinf,luprop,LUPRI)
         call readt(luprop, nnbasx, dip)
         dip(:) = dip(:) + fckmats(nnbasx+1:2*nnbasx)
-        CALL WRTPRO(dip,nnbasx,'LFDIPLNY',LBLINF,0)
+        call WRTPRO(dip,nnbasx,'LFDIPLNY',lblinf,0)
 
         rewind(luprop)
-        CALL MOLLB2('ZDIPLEN ',LBLINF,luprop,LUPRI)
+        call mollb2('ZDIPLEN ',lblinf,luprop,LUPRI)
         call readt(luprop, nnbasx, dip)
         dip(:) = dip(:) + fckmats(2*nnbasx+1:3*nnbasx)
-        CALL WRTPRO(dip,nnbasx,'LFDIPLNZ',LBLINF,0)
+        call WRTPRO(dip,nnbasx,'LFDIPLNZ',lblinf,0)
 
         rewind(luprop)
-        CALL MOLLB2('LFDIPLNX',LBLINF,luprop,LUPRI)
+        call mollb2('LFDIPLNX',lblinf,luprop,LUPRI)
         call readt(luprop, nnbasx, dip)
 
         if (lopen) call gpclose(luprop,'KEEP')
@@ -1326,8 +1326,8 @@
          call gtzymt(1, vecb, kzyvb, isymb, zymb, mjwop)
          call gtzymt(1, vecc, kzyvc, isymc, zymc, mjwop)
 
-!         CALL GTZYMT(NSIM,VEC1,KZYV1,ISYMV1,ZYM1,MJWOP)
-!         CALL GTZYMT(NSIM,VEC2,KZYV2,ISYMV2,ZYM2,MJWOP)
+!         call GTZYMT(NSIM,VEC1,KZYV1,ISYMV1,ZYM1,MJWOP)
+!         call GTZYMT(NSIM,VEC2,KZYV2,ISYMV2,ZYM2,MJWOP)
 
          !-----------------------------------------------------------
          ! Get Fg = Vmul - R*<0|F|>Fe from file
