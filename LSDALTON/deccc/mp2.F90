@@ -159,7 +159,8 @@ contains
     real(realk) :: TS2,TE2
     logical :: ts,fc,memfound,ForcePrint
     Character            :: intSpec(5)
-
+    real(realk) :: CPU1,CPU2,WALL1,WALL2,CPU_INT,WALL_INT,CPU_AOTOMO,WALL_AOTOMO
+    integer(kind=short) :: CS_THRLOG
 #ifdef VAR_TIME
     FORCEPRINT = .TRUE.
 #else
@@ -168,8 +169,11 @@ contains
     call time_start_phase( PHASE_WORK, swwork=time_mp2work , swcomm=time_mp2comm , swidle=time_mp2idle )
 
     myload = 0
-
-
+    CPU_INT = 0.0E0_realk
+    WALL_INT = 0.0E0_realk
+    CPU_AOTOMO = 0.0E0_realk
+    WALL_AOTOMO = 0.0E0_realk
+    call Obtain_CS_THRLOG(CS_THRLOG,DECinfo%IntegralThreshold)
 ! If MPI is not used, consider the single node to be "master"
     master=.true.
 #ifdef VAR_MPI
@@ -875,7 +879,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           ! Step 1 is the calculation of AO integrals and transformation of three
           ! AO indices to MO indices. For the first-order property integrals
           ! all four indices are transformed in step 1.
-
+          CALL LS_GETTIM(CPU1,WALL1)
           call LSTIMER('START',tcpu1,twall1,DECinfo%output)
           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
           ! ************************************************************************************
@@ -886,14 +890,30 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                   & 1,nAObatches,AOAlphaStart,AOAlphaEnd,AOGammaStart,AOGammaEnd,&
                   & MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
           ELSE
-             IF(doscreen) MyFragment%mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-             IF(doscreen) MyFragment%mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+             IF(doscreen)THEN 
+                MyFragment%mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+                MyFragment%mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+                IF(DECSCREEN%masterGabLHS%maxgabelm+DECSCREEN%batchGab(alphaB,gammaB)%p%maxgabelm .LE. CS_THRLOG)THEN
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+                   call mem_dealloc(tmp1%p)
+                   call mem_dealloc(tmp2%p)
+                   call mem_dealloc(tmp3%p)
+#endif
+                   !The integral block is zero (or less than integral threshold) so
+                   !there is no reason to do the AO to MO transformation and the
+                   !calculation of amplitudes and integrals. 
+                   CYCLE BatchAlpha
+                ENDIF
+             ENDIF
              
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & MyFragment%mylsitem%setting, tmp1%p(1:dim1),batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,FullRHS,&
                   & INTSPEC,DECinfo%IntegralThreshold)
           ENDIF
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_INT = CPU_INT + (CPU2-CPU1)
+          WALL_INT = WALL_INT + (WALL2-WALL1)
 
           call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
@@ -925,6 +945,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              call dec_simple_dgemm(nvirt,nbasis, nocc, CvirtT,mini3,mini2, 'n', 'n')
 
           end do
+          CALL LS_GETTIM(CPU1,WALL1)
+          CPU_AOTOMO = CPU_AOTOMO + (CPU1-CPU2)
+          WALL_AOTOMO = WALL_AOTOMO + (WALL1-WALL2)
 
 
           ! Integrals used for first-order MP2 properties
@@ -1023,6 +1046,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           !       then we only pass elements which are stored consecutively in memory to dgemm.
           !       Note: For frozen core "J" is only valence, while "I" is core+valence
           !
+          CALL LS_GETTIM(CPU1,WALL1)
           m = nvirt*nocc*dimAlpha
           dim3 = i8*nvirt*nocc*dimAlpha*nocctot  ! New dimension for tmp3
           if(fc) then
@@ -1032,6 +1056,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              call dec_simple_dgemm(m,dimGamma, nocctot, tmp2%p(1:dim2), &
                 & CoccT(1:nocctot,GammaStart:GammaEnd), tmp3%p(1:dim3), 'n', 't')
           end if
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
+          WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)
 
           ! Transition from step 1 to step 2 in integral loop
           ! =================================================
@@ -1052,6 +1079,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           tmp4%N     = bat%size2(4)
           tmp4%end   = tmp4%N
 #endif
+          CALL LS_GETTIM(CPU1,WALL1)
           ! Reorder: tmp3(B,J,alphaB,I) --> tmp4(alphaB,B,J,I)
           dim4=i8*dimAlpha*nvirt*nocc*nocctot
           do counter=1,nocctot
@@ -1062,6 +1090,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              mini4 => tmp4%p(idx:idx+siz-1)
              call mat_transpose(nvirt*nocc,dimAlpha,1.0E0_realk,mini3,0.0E0_realk,mini4)
           end do
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
+          WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           MemInGBCollected = MemInGBCollected - size(tmp3%p,kind=long)*8.0E-9_realk
@@ -1132,6 +1163,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              Aend = V(2,Abat)      ! last index in virtual batch
              dimA = Aend-Astart+1  ! dimension of virtual batch
 
+             CALL LS_GETTIM(CPU1,WALL1)
              ! b1(Abat,B,J,I) = sum_{alpha in alphaB} C^T_{A alpha} tmp4(alpha,B,J,I)
              ! Note: Similarly to the comment above, even though b1 contains only four indices,
              ! behind the curtain it belongs to specific alphaB and gammaB batches, and therefore
@@ -1142,6 +1174,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              ! Avoid passing elements which are non-consecutive in memory
              call dec_simple_dgemm(dimA,dimAlpha,n,CvirtTspecial(Abat,alphaB)%p, &
                 & tmp4%p(1:dim4),b1(num)%p(1:dim1), 'n', 'n',use_thread_safe=ts)
+             CALL LS_GETTIM(CPU2,WALL2)
+             CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
+             WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)
 
 
 !             IF(.NOT.DECinfo%OnlyVirtPart)THEN
@@ -1897,6 +1932,10 @@ if(master) then
    call LSTIMER('MP2-INT FIN',tcpu,twall,DECinfo%output)
    call LSTIMER('MP2-INT TOTAL',tcpuTOT,twallTOT,DECinfo%output)
    call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
+   CALL ls_TIMTXT('>>>  WALL Time used in MP2 Integral Calculation',WALL_INT,DECinfo%output)
+   CALL ls_TIMTXT('>>>  CPU Time used in MP2 Integral Calculation',CPU_INT,DECinfo%output)
+   CALL ls_TIMTXT('>>>  WALL Time used in AO to MO transformation',WALL_AOTOMO,DECinfo%output)
+   CALL ls_TIMTXT('>>>  CPU Time used in AO to MO transformation',CPU_AOTOMO,DECinfo%output)
 end if
 CALL LSTIMER('MP2workhorse Finalize: ',TS2,TE2,DECinfo%output,ForcePrint)
 
