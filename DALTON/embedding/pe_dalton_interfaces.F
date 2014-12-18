@@ -82,7 +82,7 @@
 
       subroutine pe_ifc_lf
 
-        use pe_variables, only: effdipole
+        use pe_variables, only: pe_lf
         use polarizable_embedding, only: pe_master
         implicit none
 #include "priunit.h"
@@ -94,7 +94,7 @@
         logical :: lopen
         character*8 :: lblinf(2)
 
-        if (.not. effdipole) return
+        if (.not. pe_lf) return
 
         call qenter('pe_ifc_lf')
 #if defined(VAR_MPI)
@@ -112,7 +112,7 @@
             call gpopen(luprop, 'AOPROPER', 'OLD', ' ',
      &                  'UNFORMATTED', 0, .false.)
             lopen = .true.
-        end if 
+        end if
 
 !       dipole integrals are stored in triangular form
         rewind(luprop)
