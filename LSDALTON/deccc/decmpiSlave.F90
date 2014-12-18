@@ -68,8 +68,10 @@ subroutine dec_lsmpi_slave(comm)
          call RIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+#ifdef MOD_UNRELEASED 
       case(F12_INTEGRAL_CALCULATION);
          call get_f12_fragment_energy_slave
+#endif
       case(CCSDDATA);
          call ccsd_data_preparation
       case(MO_INTEGRAL_SIMPLE);
