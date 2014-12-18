@@ -3685,7 +3685,7 @@
         if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Done in ",F10.4'&
         &//'," s ( ",F15.4," GFlops/s VS MM ",F15.4," GFlops/s). Ok")') impir,tm,tc_flops/(tm*1024d0*1024d0*1024d0),&
         &mm_flops/(tmm*1024d0*1024d0*1024d0) !debug
-        return
+        call cleanup(0_INTD); return
 
         contains
 
@@ -4106,11 +4106,17 @@
         integer(INTD), intent(in), optional:: num_gpus         !in: number of Nvidia GPUs to utilize (0..num_gpus-1)
         integer(INTD), intent(in), optional:: num_mics         !in: number of Intel MICs to utilize (0..num_mics-1)
         type(contr_spec_t):: cspec
-        integer(INTD):: i,j,k,l,m,n,ngpus,nmics,nd,nl,nr,impis,impir
+        integer(INTD):: i,j,k,l,m,n,ngpus,nmics,nd,nl,nr,impis,impir,impir_world,old_cons
+        character(128):: deb_fname
 
         ierr=0
         impis=my_mpi_size(infpar%lg_comm); if(impis.le.0) then; ierr=1; return; endif
         impir=my_mpi_rank(infpar%lg_comm); if(impir.lt.0) then; ierr=2; return; endif
+        impir_world=my_mpi_rank()
+        deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
+        open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN')
+        old_cons=CONS_OUT; CONS_OUT=DIL_DEBUG_FILE
+        write(CONS_OUT,'("### DEBUG BEGIN: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
         if(present(num_gpus)) then; ngpus=max(num_gpus,0); else; ngpus=0; endif
         if(present(num_mics)) then; nmics=max(num_mics,0); else; nmics=0; endif        
         if(DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Entered Process ",i6," of ",i6,": ",i2," GPUs, ",i2," MICs ...")')&
@@ -4157,6 +4163,7 @@
          tcontr%contr_spec%rbase(1:nr)=cspec%rbase(1:nr)
         endif
         if(DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Exited Process ",i6," of ",i6,": Status ",i9)') impir,impis,ierr
+        CONS_OUT=old_cons; close(DIL_DEBUG_FILE)
         return
         end subroutine dil_tensor_contract
 !-------------------------------------------------------

@@ -1011,11 +1011,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
      integer, parameter :: bs = 1
-     logical, parameter:: DIL_LOCK_OUTSIDE=.false. !`DIL: controls Patrick's outside locks in Scheme 1
+!{`DIL:
+     logical, parameter:: DIL_LOCK_OUTSIDE=.false. !controls Patrick's outside locks in Scheme 1
 !#ifdef DIL_DEBUG
      logical, parameter:: DIL_DEBUG=.true. !`DIL
-     integer(ls_mpik):: impir
+     type(dil_tens_contr_t):: tch
+     integer(8):: dil_mem
+     integer(4):: impir,errc,tens_rank,tens_dims(32),tens_bases(32)
+     character(256):: tcs,ddims(32),ldims(32),rdims(32),dbase(32),lbase(32),rbase(32)
 !#endif
+!}
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
      call DetectHeapMemoryInit()
@@ -1245,8 +1250,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
 !#ifdef DIL_DEBUG
      if(DIL_DEBUG) then !`DIL
-      write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"] with free RAM = ",F15.4," sits on ",A32)')&
-      &impir,infpar%mynum,MemFree,hname(1:32)
+      write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"] with free RAM = ",F15.4," sits on ",A32,": lock_outside = ",l1)')&
+      &impir,infpar%mynum,MemFree,hname(1:32),lock_outside
      endif
 !#endif
 
@@ -1701,14 +1706,35 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         lg         = dimGamma
 
         !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
+        scheme=1 !``DIL: remove
+        if(alloc_in_dummy) call tensor_unlock_wins(u2,all_nodes=.true.) !``DIL: remove
+        uigcj%d=0d0
+        call print_norm(uigcj%d,uigcj%n,'#DIL: NORM(uigcj_in):') !``DIL: remove
+        call print_norm(u2,'#DIL: NORM(u2):',print_on_rank=0) !``DIL: remove
         if(scheme==1) then
 #ifdef VAR_MPI
 !#ifdef DIL_DEBUG
-         if(DIL_DEBUG) then
-          write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 1:")') impir,infpar%mynum
+         if(DIL_DEBUG) then !`DIL
+          write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 1:")') impir,infpar%mynum  
          endif
+         tcs='D(i,g,c,j)+=L(g,d)*R(d,c,i,j)'
+         call dil_clean_tens_contr(tch)
+         call dil_set_tens_contr_args(tch,'r',errc,tens_distr=u2); print *,'#DIL: TC1: LA: ',impir,errc
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Left arg set failed!',-1)
+         tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
+         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,yv); print *,'#DIL: TC1: RA: ',impir,errc
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Right arg set failed!',-1)
+         tens_rank=4; tens_dims(1:tens_rank)=(/no,lg,nv,no/)
+         call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,uigcj%d); print *,'#DIL: TC1: DA: ',impir,errc
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Destination arg set failed!',-1)
+         call dil_set_tens_contr_spec(tch,tcs,errc,ldims=(/int(lg,4),int(nv,4)/),lbase=(/int(fg-1,4),0_4/))
+         print *,'#DIL: TC1: CC: ',impir,errc
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Contr spec set failed!',-1)
+         dil_mem=dil_get_min_buf_size(tch,errc); print *,'#DIL: TC1: MB: ',impir,errc,dil_mem
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Buf size set failed!',-1)
+         call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc); print *,'#DIL: TC1: TC: ',impir,errc
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
 !#endif
-         !`DIL: Tensor contraction: uigcj+=yv(fg)*u2
 #endif
         elseif(scheme==2) then
 #ifdef VAR_MPI
@@ -1737,6 +1763,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme/=1) then
          call array_reorder_4d(1.0E0_realk,w1%d,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj%d)
         endif
+        call print_norm(uigcj%d,uigcj%n,'#DIL: NORM(uigcj_out):') !``DIL: remove
+        if(alloc_in_dummy) call tensor_lock_wins(u2,'s',all_nodes=.true.) !``DIL: remove
+        scheme=2 !``DIL: remove
 
         alphaB=0
            
@@ -1819,9 +1848,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
            !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
            if( alloc_in_dummy )then
-              if( scheme==2 )call lsmpi_win_flush(omega2%wi(1),local=.true.)
+              if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) call lsmpi_win_flush(omega2%wi(1),local=.true.)
            else
-              if( lock_outside .and. scheme==2 )call tensor_unlock_wins(omega2,.true.)
+              if( lock_outside .and. scheme==2 )call tensor_unlock_wins(omega2,.true.) !``
            endif
 #endif
            call time_start_phase(PHASE_WORK, at = time_intloop_comm)
