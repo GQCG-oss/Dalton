@@ -390,10 +390,10 @@ contains
        call subsystem_orbitals_sanity_check(Coccsnoop(this),&
             & Cvirtsnoop(this),MyMolecule)
 
-       call rotate_subsystem_orbitals_to_mimic_dimer_orbitals(MyMolecule,&
-            & OccOrbitals,VirtOrbitals,this,Coccsnoop(this), Cvirtsnoop(this))
-
-       stop 'KK hack'
+       if(DECinfo%HACK) then
+          call rotate_subsystem_orbitals_to_mimic_dimer_orbitals(MyMolecule,&
+               & OccOrbitals,VirtOrbitals,this,Coccsnoop(this), Cvirtsnoop(this))
+       end if
 
        ! Correlation energy for subsystem
        if(.not. DECinfo%SNOOPjustHF) then
@@ -947,7 +947,7 @@ contains
     write(DECinfo%output,'(1X,a)') ''
     write(DECinfo%output,'(1X,a)') ''
     write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,'(1X,a)') '            Local interaction energies - summary               '
+    write(DECinfo%output,'(1X,a)') '            SNOOP interaction energies - summary               '
     write(DECinfo%output,'(1X,a)') '***************************************************************'
     write(DECinfo%output,'(1X,a,g22.12)') 'Full system     --- HF   energy : ', EHFfull
     if(.not. DECinfo%SNOOPjustHF) then
