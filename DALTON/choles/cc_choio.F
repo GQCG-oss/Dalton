@@ -1577,7 +1577,8 @@ C     -------------------------
 
       IF (RDE) THEN
          CALL MOLLAB('SIR IPH ',LUSIRG,LUPRI)
-         READ(LUSIRG) POTNUC,EMY,EACTIV,ESCF,ISTATE,ISPIN,NACTEL,LSYM
+         READ(LUSIRG) POTNUC,EMY,EACTIV,ESCF,
+     &      ISTATE,ISPIN,NACTEL,LSYM,MS2
       ENDIF
 
 C     Position file.
