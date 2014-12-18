@@ -98,7 +98,7 @@
 
         call qenter('pe_ifc_lf')
 #if defined(VAR_MPI)
-        call pe_ifc_start_slaves(8)
+        call pe_ifc_start_slaves(7)
 #endif
         write(lupri,*) 'PEQM: Local field factors are included.'
         lopen = .false.
@@ -313,6 +313,8 @@
             call pe_slave('molecular_gradient')
         else if (runtype == 6) then
             call pe_slave('mep')
+        else if (runtype == 7) then
+            call pe_slave('effdipole')
         end if
         call qexit('pe_ifc_slave')
       end subroutine pe_ifc_slave
