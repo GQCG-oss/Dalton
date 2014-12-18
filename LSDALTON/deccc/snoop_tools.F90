@@ -1,6 +1,6 @@
 !> @file
-!> Utils for DEC subroutines
-!> \author Marcin Ziolkowski (modified by Kasper Kristensen)
+!> SNOOP utilities
+!> \author Kasper Kristensen
 module snoop_tools_module
 
   use fundamental
@@ -971,5 +971,313 @@ contains
 
   end subroutine SNOOP_partition_energy
 
+
+  !> \brief Carry out unitary rotation of occupied as well as virtual subsystem orbitals
+  !> such that they mimic the dimer occupied and virtual orbitals as much as possible
+  !> in a least squares sense (defined by the natural connection).
+  subroutine rotate_subsystem_orbitals_to_mimic_dimer_orbitals(MyMolecule,&
+       & OccOrbitals,VirtOrbitals,sub,CoSUBmat,CvSUBmat)
+    implicit none
+    !> Full molecule info for dimer
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> Which subsystem
+    integer,intent(in) :: sub
+    !> Occupied and virtual orbitals in DEC format
+    type(decorbital),intent(in) :: OccOrbitals(MyMolecule%nunocc), &
+         & VirtOrbitals(MyMolecule%nunocc)
+    !> Occupied and virtual orbitals for subsystem to be rotated
+    type(matrix),intent(inout) :: CoSUBmat, CvSUBmat
+    real(realk),pointer :: CoSUB(:,:),CvSUB(:,:),Codimer(:,:),Cvdimer(:,:)
+    integer :: noccSUB,nbasis,nvirt
+
+    noccSUB = CoSUBmat%ncol       ! # occupied subsystem orbitals
+    nvirt = MyMolecule%nunocc  ! #virt orbitals same for SNOOP subsystem and dimer
+    nbasis = MyMolecule%nbasis
+
+    ! For simplicity, we consider everything as fortran arrays now
+
+    ! Initial occupied and virtual subsystem orbitals
+    ! -----------------------------------------------
+    call mem_alloc(CoSUB,nbasis,noccSUB)
+    call mat_to_full(CoSUBmat, 1.0_realk, CoSUB)
+    call mem_alloc(CvSUB,nbasis,nvirt)
+    call mat_to_full(CvSUBmat, 1.0_realk, CvSUB)
+
+
+    ! Dimer occupied and virtual orbitals relevant for subsystem
+    ! ----------------------------------------------------------
+    ! Extract occupied dimer orbitals assigned to subsystem
+    call mem_alloc(Codimer,MyMolecule%nbasis,noccSUB)
+    call extract_subsystem_orbitals_from_dimer(MyMolecule,OccOrbitals,VirtOrbitals,&
+         & sub,.true.,noccSUB,Codimer)
+    ! Simply copy ALL virtual dimer orbitals because virtual dimensions are
+    ! the same for subsystem and dimer
+    call mem_alloc(Cvdimer,MyMolecule%nbasis,nvirt)
+    Cvdimer = MyMolecule%Cv
+    
+    ! Rotate occupied subsystem orbitals to mimic dimer orbitals
+    call get_natural_connection_subsystem_matrix(nbasis,noccSUB,MyMolecule%overlap,&
+         & Codimer,CoSUB)
+
+    ! Rotate virtual subsystem orbitals to mimic dimer orbitals
+    call get_natural_connection_subsystem_matrix(nbasis,nvirt,MyMolecule%overlap,&
+         & Cvdimer,CvSUB)
+
+
+    ! Set output in type(matrix) form
+    call mat_set_from_full(CoSUB,1E0_realk,CoSUBmat)
+    call mat_set_from_full(CvSUB,1E0_realk,CvSUBmat)
+
+    call mem_dealloc(CoSUB)
+    call mem_dealloc(CvSUB)
+    call mem_dealloc(Codimer)
+    call mem_dealloc(Cvdimer)
+
+  end subroutine rotate_subsystem_orbitals_to_mimic_dimer_orbitals
+
+
+  !> \brief Extract orbitals assigned to a given subsystem from
+  !> dimer orbitals stored in MyMolecule.
+  subroutine extract_subsystem_orbitals_from_dimer(MyMolecule,OccOrbitals,VirtOrbitals,&
+       & sub,occ,nMO,C)
+    implicit none
+    !> Full molecule info for dimer
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> Occupied and virtual orbitals in DEC format
+    type(decorbital),intent(in) :: OccOrbitals(MyMolecule%nunocc), &
+         & VirtOrbitals(MyMolecule%nunocc)
+    !> Which subsystem
+    integer,intent(in) :: sub
+    !> Extract occupied (true) or virtual (false) orbitals?
+    logical,intent(in) :: occ
+    !> Number of occupied (occ=true) or virtual (occ=false) orbitals in subsystem
+    integer,intent(in) :: nMO
+    !> Extracted MO coefficients for subsystem
+    real(realk) :: C(MyMolecule%nbasis,nMO)
+    integer :: j,idx,atom
+
+
+    idx=0
+    if(occ) then
+
+       ! Extract occupied orbitals
+       do j=1,MyMolecule%nocc
+          atom = OccOrbitals(j)%centralatom
+          ! Does atom to which orbital "j" is assigned belong to subsystem "sub"
+          if(MyMolecule%SubSystemIndex(atom)==sub) then  
+             idx = idx + 1
+             if(idx>nMO) then
+                print *, '1: idx,nMO',idx,nMO
+                call lsquit('extract_subsystem_orbitals_from_dimer: &
+                     & occ idx exceed orbital dimension! ',-1)
+             end if
+             C(:,idx) = MyMolecule%Co(:,j)
+          end if
+       end do
+
+    else
+
+       ! Extract virtual orbitals
+       do j=1,MyMolecule%nunocc
+          atom = VirtOrbitals(j)%centralatom
+          ! Does atom to which orbital "j" is assigned belong to subsystem "sub"
+          if(MyMolecule%SubSystemIndex(atom)==sub) then  
+             idx = idx + 1
+             if(idx>nMO) then
+                print *, '2: idx,nMO',idx,nMO
+                call lsquit('extract_subsystem_orbitals_from_dimer: &
+                     & virt idx exceed orbital dimension! ',-1)
+             end if
+             C(:,idx) = MyMolecule%Cv(:,j)
+          end if
+       end do
+
+    end if
+
+    if(idx/=nMO) then
+       print *, 'idx,nMO',idx,nMO
+       call lsquit('extract_subsystem_orbitals_from_dimer: idx error!',-1)
+    end if
+
+
+  end subroutine extract_subsystem_orbitals_from_dimer
+
+
+  !> Get natural connection matrix which rotates subsystem orbitals to
+  !> mimic dimer orbitals assigned to that subsystem as much as possible.
+  !> (Theor Chim Acta 90,421 (1995) applied to this problem).
+  subroutine get_natural_connection_subsystem_matrix(nbasis,nMO,S,Cdimer,Csub)
+    implicit none
+    !> Number of atomic basis functions
+    integer,intent(in) :: nbasis
+    !> Number of molecular orbitals (either nocc or nvirt)
+    integer,intent(in) :: nMO
+    !> AO overlap matrix
+    real(realk),intent(in) :: S(nbasis,nbasis)
+    !> Dimer orbitals
+    real(realk),intent(in) :: Cdimer(nbasis,nMO)
+    !> Subsystem orbitals
+    real(realk),intent(inout) :: Csub(nbasis,nMO)
+    real(realk),pointer :: W(:,:),T(:,:),tmp(:,:),tmp2(:,:)  ! KKHACK delete tmp2
+
+    ! KKHACK
+    real(realk) :: funcval
+    integer :: i,j   
+
+
+    ! Strategy
+    ! ********
+    !
+    ! We want to rotate the subsystem orbitals such that they resemble the
+    ! dimer orbitals as much as possible in a least-squares-sense.
+    ! This is done using the natural connection (Theor Chim Acta 90,421 (1995)).
+    ! 
+    ! Effectively we replace the subsystem orbitals:
+    !
+    ! Csub --> Csub T
+    ! 
+    ! where
+    ! 
+    ! T = W^-1 (W W^T)^{1/2}
+    ! W = Cdimer^T S Csub
+
+    ! Calculate W
+    call mem_alloc(W,nMO,nMO)
+    call dec_diff_basis_transform1(nbasis,nMO,nMO,Cdimer,Csub,S,W)
+
+    ! Get T matrix: T = W^-1 (W W^T)^{1/2} 
+    call mem_alloc(T,nMO,nMO)
+    call get_natural_connection_T_matrix(nMO,W,T)
+    ! Value of difference measure function
+    funcval = snoop_natural_orbitals_diff_measure(nbasis,nMO,S,Cdimer,W,T) 
+    print *, 'funcval before ', nMO,funcval
+
+    ! KK HACK
+!!$    print *, 'T matrix: ', nMO
+!!$    do i=1,nMO
+!!$       do j=1,nMO
+!!$          print *,i,j,T(i,j)
+!!$       end do
+!!$    end do
+!!$    call mem_alloc(tmp,nMO,nMO)
+!!$    call mem_alloc(tmp2,nMO,nMO)
+!!$    tmp = T
+!!$    call dec_simple_dgemm(nMO,nMO,nMO,tmp,T,tmp2,'t','n')
+!!$    print *, 'T^T T matrix: ', nMO
+!!$    do i=1,nMO
+!!$       do j=1,nMO
+!!$          print *,i,j,tmp2(i,j)
+!!$       end do
+!!$    end do
+!!$    call dec_simple_dgemm(nMO,nMO,nMO,tmp,T,tmp2,'n','t')
+!!$    print *, 'T T^T matrix: ', nMO
+!!$    do i=1,nMO
+!!$       do j=1,nMO
+!!$          print *,i,j,tmp2(i,j)
+!!$       end do
+!!$    end do
+!!$    call mem_dealloc(tmp)
+!!$    call mem_dealloc(tmp2)
+
+
+
+    ! Csub --> Csub T 
+    call mem_alloc(tmp,nbasis,nMO)
+    tmp = Csub
+    call dec_simple_dgemm(nbasis,nMO,nMO,tmp,T,Csub,'n','n')
+
+
+    ! Value of difference measure function after changing Csub
+    call dec_diff_basis_transform1(nbasis,nMO,nMO,Cdimer,Csub,S,W)
+    call get_natural_connection_T_matrix(nMO,W,T)
+    funcval = snoop_natural_orbitals_diff_measure(nbasis,nMO,S,Cdimer,W,T) 
+    print *, 'funcval after  ', nMO,funcval
+
+    call mem_dealloc(tmp)
+    call mem_dealloc(W)
+    call mem_dealloc(T)
+
+  end subroutine get_natural_connection_subsystem_matrix
+
+
+  
+  !> Get value of function which is minimized by choosing natural connection
+  !> for determining unitary transformation in get_natural_connection_subsystem_matrix.
+  !> (Mainly for debugging).
+  function snoop_natural_orbitals_diff_measure(nbasis,nMO,S,Cdimer,W,T) result(funcval)
+    implicit none
+    !> Number of atomic basis functions
+    integer,intent(in) :: nbasis
+    !> Number of molecular orbitals (either nocc or nvirt)
+    integer,intent(in) :: nMO
+    !> AO overlap matrix
+    real(realk),intent(in) :: S(nbasis,nbasis)
+    !> Dimer orbitals
+    real(realk),intent(in) :: Cdimer(nbasis,nMO)
+    !> W and T matrices defined in get_natural_connection_subsystem_matrix
+    real(realk),dimension(nMO,nMO),intent(in) :: W,T
+    real(realk) :: funcval
+    real(realk),pointer :: SMO(:,:), WT(:,:)
+    integer :: i
+
+    !> Dimer MO overlap (has to be unit matrix but calculate it here to be general)
+    call mem_alloc(SMO,nMO,nMO)
+    call dec_simple_basis_transform1(nbasis,nMO,Cdimer,S,SMO)
+
+    ! WT
+    call mem_alloc(WT,nMO,nMO)
+    call dec_simple_dgemm(nMO,nMO,nMO,W,T,WT,'n','n')
+
+    ! Calculate function value:
+    ! Eq. 9 in Theor Chim Acta 90,421 (1995)
+    funcval = 0.0_realk
+    do i=1,nMO
+       funcval = funcval + SMO(i,i) +1 - 2.0_realk*WT(i,i)
+    end do
+
+
+    call mem_dealloc(SMO)
+    call mem_dealloc(WT)
+
+  end function snoop_natural_orbitals_diff_measure
+
+
+  !> Calculate natural connection T matrix, Eq. 21 in Theor Chim Acta 90,421 (1995):
+  !> T = W^-1 (W W^T)^{1/2} 
+  subroutine get_natural_connection_T_matrix(nMO,W,T)
+    implicit none
+    !> Number of MOs
+    integer,intent(in) :: nMO
+    !> W matrix as defined in get_natural_connection_subsystem_matrix
+    real(realk),dimension(nMO,nMO),intent(in) :: W
+    !> T = W^-1 (W W^T)^{1/2}
+    real(realk),dimension(nMO,nMO),intent(inout) :: T
+    real(realk),pointer :: Winv(:,:),tmp(:,:),tmp2(:,:)
+
+    ! Invert W
+    call mem_alloc(Winv,nMO,nMO)
+    call invert_matrix(W,Winv,nMO)
+
+    ! (W W^T)^{1/2} 
+    ! -------------------
+
+    ! tmp2 = W W^T
+    call mem_alloc(tmp,nMO,nMO)
+    call mem_alloc(tmp2,nMO,nMO)
+    tmp = W
+    call dec_simple_dgemm(nMO,nMO,nMO,W,tmp,tmp2,'n','t')
+
+    ! tmp = (W W^T)^{1/2}
+    call get_power_of_symmetric_matrix(nMO,0.5_realk,tmp2,tmp)
+
+    ! T = W^-1 (W W^T)^{1/2} 
+    call dec_simple_dgemm(nMO,nMO,nMO,Winv,tmp,T,'n','n')
+
+    call mem_dealloc(tmp)
+    call mem_dealloc(tmp2)
+    call mem_dealloc(Winv)
+
+
+  end subroutine get_natural_connection_T_matrix
 
 end module snoop_tools_module

@@ -32,6 +32,7 @@ module snoop_main_module
   use full_molecule
   use full
   use array2_simple_operations
+  use orbital_operations
 
   public :: snoop_driver
   private
@@ -244,7 +245,13 @@ contains
     type(matrix) :: FAOsnoop, FAOiso
     type(lsitem) :: lssnoop,lsiso
     integer :: nocciso,nvirtiso,nbasisiso,neliso
+    type(decorbital),pointer :: OccOrbitals(:), VirtOrbitals(:)
 
+    ! Determine DEC orbital structures
+    call mem_alloc(OccOrbitals,MyMolecule%nocc)
+    call mem_alloc(VirtOrbitals,MyMolecule%nunocc)
+    call GenerateOrbitals_driver(MyMolecule,lsfull,MyMolecule%nocc,MyMolecule%nunocc,&
+         & MyMolecule%natoms, OccOrbitals, VirtOrbitals)
 
     ! Number of subsystems
     nsub = lsfull%input%molecule%nSubSystems
@@ -383,6 +390,11 @@ contains
        call subsystem_orbitals_sanity_check(Coccsnoop(this),&
             & Cvirtsnoop(this),MyMolecule)
 
+       call rotate_subsystem_orbitals_to_mimic_dimer_orbitals(MyMolecule,&
+            & OccOrbitals,VirtOrbitals,this,Coccsnoop(this), Cvirtsnoop(this))
+
+       stop 'KK hack'
+
        ! Correlation energy for subsystem
        if(.not. DECinfo%SNOOPjustHF) then
           call subsystem_correlation_energy(Coccsnoop(this),Cvirtsnoop(this),&
@@ -421,6 +433,15 @@ contains
     call mem_dealloc(Cvirtiso)
     call mem_dealloc(Coccsnoop)
     call mem_dealloc(Cvirtsnoop)
+
+    do i=1,MyMolecule%nocc
+       call orbital_free(OccOrbitals(i))
+    end do
+    do i=1,MyMolecule%nunocc
+       call orbital_free(VirtOrbitals(i))
+    end do
+    call mem_dealloc(OccOrbitals)
+    call mem_dealloc(VirtOrbitals)
 
   end subroutine snoop_driver_simple
 
