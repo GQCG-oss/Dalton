@@ -18,7 +18,7 @@ endmacro()
 macro(add_dalton_runtest _name _labels)
     add_test(
         ${_name}
-        python ${CMAKE_SOURCE_DIR}/DALTON/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
+        python ${CMAKE_SOURCE_DIR}/DALTON/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose --log=${PROJECT_BINARY_DIR}/test/${_name}/runtest.stderr.log)
     if(NOT "${_labels}" STREQUAL "")
         set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
     endif()
