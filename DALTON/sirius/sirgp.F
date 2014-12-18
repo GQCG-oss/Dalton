@@ -650,10 +650,8 @@ C
 #include "inftap.h"
 C
       LOGICAL      NOSTOP
-      CHARACTER*4  LABEL(104), IFLGC, ISTAR, IEVEC
       CHARACTER*8  MOLABL
       CHARACTER*10 PFMT
-      DATA ISTAR/'****'/, IEVEC/'EVEC'/
 C
       CALL QENTER('READMO')
 C
@@ -666,7 +664,7 @@ C
       END IF
       IF (IRDMO.LT.1 .OR. IRDMO.GT.11) THEN
          WRITE (LUPRI,10000) IRDMO
-         WRITE (LUERR ,10000) IRDMO
+         WRITE (LUERR,10000) IRDMO
 10000    FORMAT(/' *** READMO-ERROR *** IRDMO =',I4,' is out of range')
          CALL QTRACE(LUPRI)
          IF (NOSTOP) THEN
