@@ -1118,11 +1118,8 @@ contains
     real(realk),intent(in) :: Cdimer(nbasis,nMO)
     !> Subsystem orbitals
     real(realk),intent(inout) :: Csub(nbasis,nMO)
-    real(realk),pointer :: W(:,:),T(:,:),tmp(:,:),tmp2(:,:)  ! KKHACK delete tmp2
-
-    ! KKHACK
-    real(realk) :: funcval
-    integer :: i,j   
+    real(realk),pointer :: W(:,:),T(:,:),tmp(:,:)
+    real(realk) :: funcval1,funcval2   ! KKHACK delete this when properly tested
 
 print *, 'Remember to fix NC for frozen core!'
 
@@ -1149,71 +1146,21 @@ print *, 'Remember to fix NC for frozen core!'
     ! Get T matrix: T = W^-1 (W W^T)^{1/2} 
     call mem_alloc(T,nMO,nMO)
     call get_natural_connection_T_matrix(nMO,W,T)
-    ! Value of difference measure function
-    funcval = snoop_natural_orbitals_diff_measure(nbasis,nMO,S,Cdimer,W) 
-    print *, 'funcval before ', nMO,funcval
-
-    ! KK HACK
-!!$    print *, 'T matrix: ', nMO
-!!$    do i=1,nMO
-!!$       do j=1,nMO
-!!$          print *,i,j,T(i,j)
-!!$       end do
-!!$    end do
-!!$    call mem_alloc(tmp,nMO,nMO)
-!!$    call mem_alloc(tmp2,nMO,nMO)
-!!$    tmp = T
-!!$    call dec_simple_dgemm(nMO,nMO,nMO,tmp,T,tmp2,'t','n')
-!!$    print *, 'T^T T matrix: ', nMO
-!!$    do i=1,nMO
-!!$       do j=1,nMO
-!!$          print *,i,j,tmp2(i,j)
-!!$       end do
-!!$    end do
-!!$    call dec_simple_dgemm(nMO,nMO,nMO,tmp,T,tmp2,'n','t')
-!!$    print *, 'T T^T matrix: ', nMO
-!!$    do i=1,nMO
-!!$       do j=1,nMO
-!!$          print *,i,j,tmp2(i,j)
-!!$       end do
-!!$    end do
-!!$    call mem_dealloc(tmp)
-!!$    call mem_dealloc(tmp2)
-
-
+    ! Value of difference measure function (m
+    funcval1 = snoop_natural_orbitals_diff_measure(nbasis,nMO,S,Cdimer,W) 
 
     ! Csub --> Csub T 
     call mem_alloc(tmp,nbasis,nMO)
     tmp = Csub
     call dec_simple_dgemm(nbasis,nMO,nMO,tmp,T,Csub,'n','n')
-!!$    do i=1,nbasis
-!!$       do j=1,nMO
-!!$          print '(2i6,3g15.5)',i,j,tmp(i,j),Csub(i,j),tmp(i,j)-Csub(i,j)
-!!$       end do
-!!$    end do ! KKHACK
-
-
-    ! Value of difference measure function after changing Csub KKHACK
     call mem_dealloc(tmp)
-    call mem_alloc(tmp,nMO,nMO)
-    call mem_alloc(tmp2,nMO,nMO)
-    call dec_diff_basis_transform1(nbasis,nMO,nMO,Cdimer,Csub,S,tmp)
-    call get_natural_connection_T_matrix(nMO,tmp,tmp2)
-    funcval = snoop_natural_orbitals_diff_measure(nbasis,nMO,S,Cdimer,tmp) 
-    print *, 'funcval after  ', nMO,funcval
-    do i=1,nMO
-       do j=1,nMO
-          print '(a,2i6,3g15.5)','W ',i,j,W(i,j),tmp(i,j),W(i,j)-tmp(i,j)
-       end do
-    end do
-    do i=1,nMO
-       do j=1,nMO
-          print '(a,2i6,3g15.5)','T ',i,j,T(i,j),tmp2(i,j),T(i,j)-tmp2(i,j)
-       end do
-    end do
-    call mem_dealloc(tmp2)
 
-    call mem_dealloc(tmp)
+    ! Value of difference measure function after changing Csub
+    call dec_diff_basis_transform1(nbasis,nMO,nMO,Cdimer,Csub,S,W)
+    funcval2 = snoop_natural_orbitals_diff_measure(nbasis,nMO,S,Cdimer,W)
+    write(DECinfo%output,'(1X,a,i7,3g15.5)') 'SNOOP funcval ',&
+         & nMO,funcval1,funcval2,funcval2-funcval1
+
     call mem_dealloc(W)
     call mem_dealloc(T)
 
@@ -1245,7 +1192,7 @@ print *, 'Remember to fix NC for frozen core!'
     call dec_simple_basis_transform1(nbasis,nMO,Cdimer,S,SMO)
 
     ! Calculate function value:
-    ! Eq. 9 in Theor Chim Acta 90,421 (1995)
+    ! Eq. 9 in Theor Chim Acta 90,421 (1995) for T=1 since this is point where we are standing
     funcval = 0.0_realk
     do i=1,nMO
        funcval = funcval + SMO(i,i) +1.0_realk - 2.0_realk*W(i,i)
