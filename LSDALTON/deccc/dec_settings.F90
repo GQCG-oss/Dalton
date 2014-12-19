@@ -38,6 +38,7 @@ contains
     DECinfo%SNOOPthr=1e-7_realk
     DECinfo%SNOOPdebug=.false.
     DECinfo%SNOOPort=.false.
+    DECinfo%SNOOPdimerspace=.true.
 
 
     DECinfo%doDEC                  = .false.
@@ -362,6 +363,9 @@ contains
        case('.SNOOP_DEBUG'); DECinfo%SNOOPdebug=.true.
           ! Impose orthogonality constrant for occupied subsystem orbitals in SNOOP 
        case('.SNOOPORT'); DECinfo%SNOOPort=.true.
+          !> Do not use dimer orbital spaces for monomer calculation as defined by natural connection,
+          !> rather simply do independent DEC fragment optimization for monomers.
+       case('.SNOOPNOTDIMERSPACE'); DECinfo%SNOOPdimerspace=.false.
 
 
           ! GENERAL INFO
@@ -745,10 +749,10 @@ contains
     ! SNOOP - currently limited in several ways
     if(DECinfo%SNOOP) then
        
-       ! Only for full calculation
-       if(.not. DECinfo%full_molecular_cc) then
-          call lsquit('Currently SNOOP is only implemented for **CC and not for **DEC!',-1)
-       end if
+!!$       ! Only for full calculation
+!!$       if(.not. DECinfo%full_molecular_cc) then
+!!$          call lsquit('Currently SNOOP is only implemented for **CC and not for **DEC!',-1)
+!!$       end if
 
        ! Only for dense matrices for now
        if(matrix_type/=mtype_dense) then
@@ -1017,6 +1021,7 @@ contains
     write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
     write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
+    write(lupri,*) 'SNOOPdimerspace ', DECinfo%SNOOPdimerspace
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
