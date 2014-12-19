@@ -1082,6 +1082,7 @@ contains
           ! Do independent DEC fragment optimization for monomer
           write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', this, &
                & ' calculation using DEC driver'
+
           call DEC_wrapper(MySubsystem,lssub,D,EHF,Ecorr,dummy,Eerr)
        end if
        call mem_dealloc(dummy)

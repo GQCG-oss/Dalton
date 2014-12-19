@@ -831,14 +831,14 @@ contains
 
     end if REASSIGNING
 
+
     call mem_dealloc(which_hydrogens)
-    call mem_dealloc(lowdin_charge)
     call mem_dealloc(basis_idx)
     call mem_dealloc(atomic_idx)
+    call mem_dealloc(lowdin_charge)
     if(DECinfo%Distance) then
        call mem_dealloc(central_atom2)
     endif
-
     call LSTIMER('GenerateOrb',tcpu,twall,DECinfo%output)
 
   end subroutine GenerateOrbitals_simple
@@ -1243,12 +1243,13 @@ contains
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> S^{1/2} C matrix
-    real(realk), dimension(MyMolecule%nbasis,MyMolecule%nbasis) :: ShalfC
+    real(realk), dimension(MyMolecule%nbasis,MyMolecule%nMO) :: ShalfC
     real(realk), pointer :: Shalf(:,:)
-    integer :: nbasis,i,j,k
+    integer :: nbasis,i,j,k,nMO
     real(realk),pointer :: basis(:,:)
 
     nbasis = MyMolecule%nbasis
+    nMO = MyMolecule%nMO
     call mem_alloc(basis,nbasis,nbasis)
     !basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
     !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
@@ -1268,12 +1269,11 @@ contains
     ! Get S^{1/2} matrix
     ! ******************
     call mem_alloc(Shalf,nbasis,nbasis)
-    call get_power_of_symmetric_matrix(nbasis,0.5E0_realk,MyMolecule%overlap(1:nbasis,1:nbasis),Shalf)
+    call get_power_of_symmetric_matrix(nbasis,0.5E0_realk,MyMolecule%overlap,Shalf)
 
     ! S^{1/2} C
     ! *********
-    call dgemm('n','n',nbasis,nbasis,nbasis,1.0E0_realk,Shalf,nbasis, &
-         & basis(1:nbasis,1:nbasis),nbasis,0.0E0_realk,ShalfC,nbasis)
+    call dec_simple_dgemm(nbasis,nbasis,nMO,Shalf,basis,ShalfC,'n','n')
 
     call mem_dealloc(Shalf)
     call mem_dealloc(basis)
