@@ -2003,10 +2003,14 @@ contains
     if(infpar%mynum/=infpar%master) then
        call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
             & fragment%natoms,fragment%basis_idx,fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
+!       call build_AtomSpecfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
+!            & fragment%natoms,DECinfo%output,DECinfo%output)
     endif
 #else
     call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
          & fragment%natoms,fragment%basis_idx,fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
+!    call build_AtomSpecfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
+!         & fragment%natoms,DECinfo%output,DECinfo%output)
 #endif
 
     !Build F12 Cabs and Ri for a fragment
