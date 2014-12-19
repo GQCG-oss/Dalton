@@ -1690,10 +1690,49 @@ subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,
   !$OMP PRIVATE(J,B,A,I,eps,gmoAIBJ,gmoBIAJ,epsIJB,ALPHA) REDUCTION(+:TMP) &
   !$OMP SHARED(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha)
   do J=1,nocc
-     do B=1,nvirt
-        do I=1,nocc
+     do B=1,nvirt        
+        epsIJB = EpsOcc(J) + EpsOcc(J) - EpsVirt(B)
+        !==================================================================
+        ! I=J AND A=B
+        !==================================================================
+        ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+        eps = epsIJB - EpsVirt(B)
+        gmoAIBJ = 0.0E0_realk
+        DO ALPHA = 1,NBA
+           gmoAIBJ = gmoAIBJ + Calpha(ALPHA,B,J)*Calpha(ALPHA,B,J)
+        ENDDO
+        !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+        Tmp = Tmp + gmoAIBJ*gmoAIBJ/eps
+        !==================================================================
+        ! I=J AND A>B
+        !==================================================================
+        do A=B+1,nvirt
+           ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+           eps = epsIJB - EpsVirt(A)
+           gmoAIBJ = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              gmoAIBJ = gmoAIBJ + Calpha(ALPHA,A,J)*Calpha(ALPHA,B,J)
+           ENDDO
+           !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+           Tmp = Tmp + 2.0E0_realk*gmoAIBJ*gmoAIBJ/eps
+        end do
+        do I=J+1,nocc
            epsIJB = EpsOcc(I) + EpsOcc(J) - EpsVirt(B)
-           do A=1,nvirt
+           !==================================================================
+           ! I>J AND A=B
+           !==================================================================
+           ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+           eps = epsIJB - EpsVirt(B)
+           gmoAIBJ = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              gmoAIBJ = gmoAIBJ + Calpha(ALPHA,B,I)*Calpha(ALPHA,B,J)
+           ENDDO
+           !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+           Tmp = Tmp + 2.0E0_realk*gmoAIBJ*gmoAIBJ/eps
+           !==================================================================
+           ! I>J AND A>B
+           !==================================================================
+           do A=B+1,nvirt
               ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
               eps = epsIJB - EpsVirt(A)
               gmoAIBJ = 0.0E0_realk
@@ -1705,7 +1744,9 @@ subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,
                  gmoBIAJ = gmoBIAJ + Calpha(ALPHA,B,I)*Calpha(ALPHA,A,J)
               ENDDO
               !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
-              Tmp = Tmp + gmoAIBJ*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+!              Tmp = Tmp + 2.0E0_realk*gmoAIBJ*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+!              Tmp = Tmp + 2.0E0_realk*gmoBIAJ*(2E0_realk*gmoBIAJ-gmoAIBJ)/eps
+              Tmp = Tmp + 4.0E0_realk*(gmoAIBJ*gmoAIBJ-gmoAIBJ*gmoBIAJ+gmoBIAJ*gmoBIAJ)/eps
            end do
         end do
      end do
