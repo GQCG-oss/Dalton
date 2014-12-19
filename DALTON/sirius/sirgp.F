@@ -2005,7 +2005,7 @@ C
          IF (.NOT. FNDLAB(LBSIFC,LUSIFC)) GO TO 8888
          ! rec no. 1
 !        WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-!    &               ISTATE,ISPIN,NACTEL,LSYM
+!    &               ISTATE,ISPIN,NACTEL,LSYM,MS2
          READ (LUSIFC) POTNUC_IFC, EMY,EACTIV,EMCSCF ! we need EMY for SIRMP2
          EMY = EMCSCF - POTNUC_IFC  ! and we need EMY to include ESOLT
          IF (POTNUC .NE. POTNUC_IFC)

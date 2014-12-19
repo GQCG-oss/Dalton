@@ -58,7 +58,7 @@ contains
     !> Correlation Energy 
     real(realk),intent(inout) :: Ecorr
     !local variables
-    real(realk) :: Eerr
+    real(realk) :: Eerr,Edft
 
     write(DECinfo%output,'(/,a)') ' ================================================ '
     write(DECinfo%output,'(a)')   '              Full molecular driver               '
@@ -113,10 +113,14 @@ contains
 
        ! Get HF energy
        Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D)
+       !DFT energy
+       if(DECinfo%DFTreference) then
+         Edft = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D,.true.) 
+       endif
 
        ! Print summary
        Eerr = 0.0_realk   ! zero error for full calculation by definition
-       call print_total_energy_summary(EHF,Ecorr,Eerr)
+       call print_total_energy_summary(EHF,Edft,Ecorr,Eerr)
 
     end if DoCorrelatedCalculation
 
@@ -902,7 +906,7 @@ contains
 !    MemRequired = 2*real(nAux*nocc*nvirt/numnodes) + real(nAux*nAux)
     MemRequired = MemRequired*realk/GB
 
-    if(MemRequired > DECinfo%memory) then
+    if(MemRequired > 0.80E0_realk*DECinfo%memory) then
        print *, 'RIMP2 Have 2 memory intensive steps:'
        print *, 'Step1:'
        print *, '2 arrays of size MinAtomicnAux*nbasis*nbasis=',&
@@ -920,6 +924,7 @@ contains
        print *, 'nbasis       =',nbasis
        print *, 'nAux         =',nAux
        print *, 'RIMP2 Mem required (GB) = ', MemRequired
+       print *, 'We restrict ourselves to 80 % of Max memory (GB)'
        print *, 'RIMP2 Max memory (GB)   = ', DECinfo%memory
        call lsquit('full_canonical_rimp2: Memory exceeded! Try to increase memory &
             & using the .MaxMemory (in GB) keyword in the *DEC section.',-1)
@@ -934,7 +939,7 @@ contains
        MemStep2=4*real(nAux*nocc*nvirt)/numnodes + real(nAux*nAux)
        MemRequired = MAX(MemStep1,MemStep2)
        MemRequired = MemRequired*realk/GB       
-       if(MemRequired .GE. DECinfo%memory) then 
+       if(MemRequired .GE. 0.80E0_realk*DECinfo%memory) then 
           MemoryReduced = .TRUE.
           WRITE(DECinfo%output,*)'MemoryReduced RIMP2 scheme chosen'
           WRITE(DECinfo%output,*)'MemRequired Step 1:',MemStep1*realk/GB,' GB'
@@ -1681,14 +1686,53 @@ subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,
   integer :: J,B,A,I,ALPHA
   real(realk) :: eps,gmoAIBJ,gmoBIAJ,TMP,epsIJB
   Tmp = 0.0E0_realk
-  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) &
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
   !$OMP PRIVATE(J,B,A,I,eps,gmoAIBJ,gmoBIAJ,epsIJB,ALPHA) REDUCTION(+:TMP) &
   !$OMP SHARED(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha)
   do J=1,nocc
-     do B=1,nvirt
-        do I=1,nocc
+     do B=1,nvirt        
+        epsIJB = EpsOcc(J) + EpsOcc(J) - EpsVirt(B)
+        !==================================================================
+        ! I=J AND A=B
+        !==================================================================
+        ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+        eps = epsIJB - EpsVirt(B)
+        gmoAIBJ = 0.0E0_realk
+        DO ALPHA = 1,NBA
+           gmoAIBJ = gmoAIBJ + Calpha(ALPHA,B,J)*Calpha(ALPHA,B,J)
+        ENDDO
+        !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+        Tmp = Tmp + gmoAIBJ*gmoAIBJ/eps
+        !==================================================================
+        ! I=J AND A>B
+        !==================================================================
+        do A=B+1,nvirt
+           ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+           eps = epsIJB - EpsVirt(A)
+           gmoAIBJ = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              gmoAIBJ = gmoAIBJ + Calpha(ALPHA,A,J)*Calpha(ALPHA,B,J)
+           ENDDO
+           !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+           Tmp = Tmp + 2.0E0_realk*gmoAIBJ*gmoAIBJ/eps
+        end do
+        do I=J+1,nocc
            epsIJB = EpsOcc(I) + EpsOcc(J) - EpsVirt(B)
-           do A=1,nvirt
+           !==================================================================
+           ! I>J AND A=B
+           !==================================================================
+           ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+           eps = epsIJB - EpsVirt(B)
+           gmoAIBJ = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              gmoAIBJ = gmoAIBJ + Calpha(ALPHA,B,I)*Calpha(ALPHA,B,J)
+           ENDDO
+           !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+           Tmp = Tmp + 2.0E0_realk*gmoAIBJ*gmoAIBJ/eps
+           !==================================================================
+           ! I>J AND A>B
+           !==================================================================
+           do A=B+1,nvirt
               ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
               eps = epsIJB - EpsVirt(A)
               gmoAIBJ = 0.0E0_realk
@@ -1700,7 +1744,9 @@ subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,
                  gmoBIAJ = gmoBIAJ + Calpha(ALPHA,B,I)*Calpha(ALPHA,A,J)
               ENDDO
               !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
-              Tmp = Tmp + gmoAIBJ*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+!              Tmp = Tmp + 2.0E0_realk*gmoAIBJ*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+!              Tmp = Tmp + 2.0E0_realk*gmoBIAJ*(2E0_realk*gmoBIAJ-gmoAIBJ)/eps
+              Tmp = Tmp + 4.0E0_realk*(gmoAIBJ*gmoAIBJ-gmoAIBJ*gmoBIAJ+gmoBIAJ*gmoBIAJ)/eps
            end do
         end do
      end do
@@ -1721,22 +1767,75 @@ subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
   real(realk),intent(inout) :: rimp2_energy
   !
   integer :: J,B,A,I,ALPHA
-  real(realk) :: eps,gmoAIBJ,gmoBIAJ,TMP,epsIJB,gmoAIBJ2
+  real(realk) :: eps,gmoAIBJ,gmoBIAJ,TMP,epsIJB,gmoAIBJ2,gmoBIAJ2
   Tmp = 0.0E0_realk
-  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) &
-  !$OMP PRIVATE(J,B,A,I,eps,gmoAIBJ,gmoBIAJ,epsIJB,gmoAIBJ2,ALPHA) &
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
+  !$OMP PRIVATE(J,B,A,I,eps,gmoAIBJ,gmoBIAJ,epsIJB,gmoAIBJ2,ALPHA,gmoBIAJ2) &
   !$OMP REDUCTION(+:TMP) &
   !$OMP SHARED(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,NBA2,Calpha2)
   do J=1,nocc
      do B=1,nvirt
-        do I=1,nocc
+        epsIJB = EpsOcc(J) + EpsOcc(J) - EpsVirt(B)
+        !================================================================
+        ! I = J, A = B       
+        !================================================================
+        ! Difference in orbital energies: eps(I)+eps(J)-eps(A)-eps(B)
+        eps = epsIJB - EpsVirt(B)
+        gmoAIBJ2 = 0.0E0_realk
+        DO ALPHA = 1,NBA2
+           gmoAIBJ2 = gmoAIBJ2 + Calpha2(ALPHA,B,J)*Calpha2(ALPHA,B,J)
+        ENDDO
+        gmoAIBJ = 0.0E0_realk
+        DO ALPHA = 1,NBA
+           gmoAIBJ = gmoAIBJ + Calpha(ALPHA,B,J)*Calpha(ALPHA,B,J)
+        ENDDO
+        !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+        Tmp = Tmp + gmoAIBJ2*gmoAIBJ/eps
+        !================================================================
+        ! I = J, A > B       
+        !================================================================
+        do A=B+1,nvirt
+           ! Difference in orbital energies: eps(I)+eps(J)-eps(A)-eps(B)
+           eps = epsIJB - EpsVirt(A)
+           gmoAIBJ2 = 0.0E0_realk
+           DO ALPHA = 1,NBA2
+              gmoAIBJ2 = gmoAIBJ2 + Calpha2(ALPHA,A,J)*Calpha2(ALPHA,B,J)
+           ENDDO
+           gmoAIBJ = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              gmoAIBJ = gmoAIBJ + Calpha(ALPHA,A,J)*Calpha(ALPHA,B,J)
+           ENDDO
+           !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+           Tmp = Tmp + 2.0E0_realk*gmoAIBJ2*gmoAIBJ/eps
+        end do
+        !================================================================
+        ! I > J, A = B       
+        !================================================================
+        do I=J+1,nocc
            epsIJB = EpsOcc(I) + EpsOcc(J) - EpsVirt(B)
-           do A=1,nvirt
+           ! Difference in orbital energies: eps(I)+eps(J)-eps(A)-eps(B)
+           eps = epsIJB - EpsVirt(B)
+           gmoAIBJ2 = 0.0E0_realk
+           DO ALPHA = 1,NBA2
+              gmoAIBJ2 = gmoAIBJ2 + Calpha2(ALPHA,B,I)*Calpha2(ALPHA,B,J)
+           ENDDO
+           gmoAIBJ = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              gmoAIBJ = gmoAIBJ + Calpha(ALPHA,B,I)*Calpha(ALPHA,B,J)
+           ENDDO
+           !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+           Tmp = Tmp + 2.0E0_realk*gmoAIBJ2*gmoAIBJ/eps
+           !================================================================
+           ! I > J, A > B       
+           !================================================================
+           do A=B+1,nvirt
               ! Difference in orbital energies: eps(I)+eps(J)-eps(A)-eps(B)
               eps = epsIJB - EpsVirt(A)
               gmoAIBJ2 = 0.0E0_realk
+              gmoBIAJ2 = 0.0E0_realk
               DO ALPHA = 1,NBA2
                  gmoAIBJ2 = gmoAIBJ2 + Calpha2(ALPHA,A,I)*Calpha2(ALPHA,B,J)
+                 gmoBIAJ2 = gmoBIAJ2 + Calpha2(ALPHA,B,I)*Calpha2(ALPHA,A,J)
               ENDDO
               gmoAIBJ = 0.0E0_realk
               gmoBIAJ = 0.0E0_realk                   
@@ -1745,7 +1844,8 @@ subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
                  gmoBIAJ = gmoBIAJ + Calpha(ALPHA,B,I)*Calpha(ALPHA,A,J)
               ENDDO
               !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
-              Tmp = Tmp + gmoAIBJ2*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+              Tmp = Tmp + 2.0E0_realk*gmoAIBJ2*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+              Tmp = Tmp + 2.0E0_realk*gmoBIAJ2*(2E0_realk*gmoBIAJ-gmoAIBJ)/eps
            end do
         end do
      end do
@@ -1753,7 +1853,6 @@ subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
   !$OMP END PARALLEL DO
   rimp2_energy = rimp2_energy + Tmp
 end subroutine RIMP2_CalcEnergyContribution
-
 #ifdef MOD_UNRELEASED
   subroutine submp2f12_EBX(mp2f12_EBX,Bijij,Bjiij,Xijij,Xjiij,Fii,nocc)
     implicit none
