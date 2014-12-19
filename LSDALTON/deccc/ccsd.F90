@@ -1002,9 +1002,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: phase_counters_int_dir(nphases)
      integer :: testmode(4)
      integer(kind=long) :: xyz,zyx1,zyx2,mem_allocated,HeapMemoryUsage
-     logical :: debug,DoJcalc,DoKcalc
+     logical :: debug
      character(tensor_MSG_LEN) :: msg
-     integer(kind=short) :: CS_THRLOG
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef VAR_OMP
@@ -1095,7 +1094,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ELSE
         doscreen = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
      ENDIF
-     call Obtain_CS_THRLOG(CS_THRLOG,DECinfo%IntegralThreshold)
+
      ! Set MPI related info
      ! ********************
      master                   = .true.
@@ -1763,114 +1762,104 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                    & w1%d,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
                    & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
            ELSE
-              IF(doscreen)THEN
-                 Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-                 mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-                 IF(DECSCREEN%masterGabLHS%maxgabelm+DECSCREEN%batchGab(alphaB,gammaB)%p%maxgabelm .LE. CS_THRLOG)THEN
-                    DoJcalc = .FALSE. !Integral block is zero
-                 ELSE
-                    DoJcalc = .TRUE.
-                 ENDIF
-              ENDIF
+              IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+              IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
               ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
               ! ************************************************************************************
-              IF(DoJcalc)THEN
-                 dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array
-                 ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-                 call LSTIMER('START',tcpu1,twall1,DECinfo%output)
-                 !Mylsitem%setting%scheme%intprint=6
-                 call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1%d,batchindexAlpha(alphaB),&
-                      &batchindexGamma(gammaB),&
-                      &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC,DECinfo%IntegralThreshold)
-                 !Mylsitem%setting%scheme%intprint=0
-              ENDIF
+              dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array
+              ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
+              call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+              !Mylsitem%setting%scheme%intprint=6
+              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1%d,batchindexAlpha(alphaB),&
+                   &batchindexGamma(gammaB),&
+                   &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC,DECinfo%IntegralThreshold)
+              !Mylsitem%setting%scheme%intprint=0
            ENDIF
            call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
-           IF(DoJcalc)THEN
-              call time_start_phase(PHASE_COMM, at = time_intloop_int)
+           call time_start_phase(PHASE_COMM, at = time_intloop_int)
 #ifdef VAR_MPI
-              !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
-              if( alloc_in_dummy )then
-                 if( scheme==2 )call lsmpi_win_flush(omega2%wi(1),local=.true.)
-              else
-                 if( lock_outside .and. scheme==2 )call tensor_unlock_wins(omega2,.true.)
-              endif
+           !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
+           if( alloc_in_dummy )then
+              if( scheme==2 )call lsmpi_win_flush(omega2%wi(1),local=.true.)
+           else
+              if( lock_outside .and. scheme==2 )call tensor_unlock_wins(omega2,.true.)
+           endif
 #endif
-              call time_start_phase(PHASE_WORK, at = time_intloop_comm)
-              call array_reorder_4d(1.0E0_realk,w1%d,nb,nb,la,lg,[4,2,3,1],0.0E0_realk,w0%d)
-              call lsmpi_poke()
+           call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 
-              ! I [gamma delta alpha beta] * Lambda^p [beta l] = I[gamma delta alpha l]
-              call dgemm('n','n',lg*la*nb,no,nb,1.0E0_realk,w0%d,lg*nb*la,xo,nb,0.0E0_realk,w2%d,lg*nb*la)
-              call lsmpi_poke()
-              !Transpose I [gamma delta alpha l]^T -> I [alpha l gamma delta]
-              call array_reorder_4d(1.0E0_realk,w2%d,lg,nb,la,no,[3,4,1,2],0.0E0_realk,w1%d)
-              call lsmpi_poke()
+           call array_reorder_4d(1.0E0_realk,w1%d,nb,nb,la,lg,[4,2,3,1],0.0E0_realk,w0%d)
+           call lsmpi_poke()
 
-              !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
-              call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3%d,nv,w1%d,lg*la*no,1.0E0_realk,Had,nv)
-              call lsmpi_poke()
+           ! I [gamma delta alpha beta] * Lambda^p [beta l] = I[gamma delta alpha l]
+           call dgemm('n','n',lg*la*nb,no,nb,1.0E0_realk,w0%d,lg*nb*la,xo,nb,0.0E0_realk,w2%d,lg*nb*la)
+           call lsmpi_poke()
+           !Transpose I [gamma delta alpha l]^T -> I [alpha l gamma delta]
+           call array_reorder_4d(1.0E0_realk,w2%d,lg,nb,la,no,[3,4,1,2],0.0E0_realk,w1%d)
+           call lsmpi_poke()
 
-              !VVOO
-              if ( Ccmodel > MODEL_CC2 ) then
-                 !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
-                 call dgemm('n','n',la*no*lg,no,nb,1.0E0_realk,w1%d,la*no*lg,yo,nb,0.0E0_realk,w3%d,la*no*lg)
-                 call lsmpi_poke()
-                 ! gvvoo = (vv|oo) constructed from w2%d                 = I [alpha i j  gamma]
-                 call array_reorder_4d(1.0E0_realk,w3%d,la,no,lg,no,[1,2,4,3],0.0E0_realk,w2%d)
-                 call lsmpi_poke()
-                 !I [alpha  i j gamma] * Lambda^h [gamma b]            = I [alpha i j b]
-                 call dgemm('n','n',la*no2,nv,lg,1.0E0_realk,w2%d,la*no2,yv(fg),nb,0.0E0_realk,w3%d,la*no2)
-                 call lsmpi_poke()
-                 !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
-                 if(scheme==4)then
-                    call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,1.0E0_realk,gvvooa%elm1,nv)
-                 else if(scheme==3.or.scheme==2)then
+           !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
+           call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3%d,nv,w1%d,lg*la*no,1.0E0_realk,Had,nv)
+           call lsmpi_poke()
+
+           !VVOO
+           if ( Ccmodel > MODEL_CC2 ) then
+              !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
+              call dgemm('n','n',la*no*lg,no,nb,1.0E0_realk,w1%d,la*no*lg,yo,nb,0.0E0_realk,w3%d,la*no*lg)
+              call lsmpi_poke()
+              ! gvvoo = (vv|oo) constructed from w2%d                 = I [alpha i j  gamma]
+              call array_reorder_4d(1.0E0_realk,w3%d,la,no,lg,no,[1,2,4,3],0.0E0_realk,w2%d)
+              call lsmpi_poke()
+              !I [alpha  i j gamma] * Lambda^h [gamma b]            = I [alpha i j b]
+              call dgemm('n','n',la*no2,nv,lg,1.0E0_realk,w2%d,la*no2,yv(fg),nb,0.0E0_realk,w3%d,la*no2)
+              call lsmpi_poke()
+              !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
+              if(scheme==4)then
+                 call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,1.0E0_realk,gvvooa%elm1,nv)
+              else if(scheme==3.or.scheme==2)then
 #if VAR_MPI
-                    if(.not. alloc_in_dummy .and. lock_outside) call tensor_lock_wins(gvvooa,'s',mode)
-                    call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,0.0E0_realk,w2%d,nv)
-                    call time_start_phase(PHASE_COMM, at = time_intloop_work)
-                    call tensor_add(gvvooa,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
-                    call time_start_phase(PHASE_WORK, at = time_intloop_comm)
+                 if(.not. alloc_in_dummy .and. lock_outside) call tensor_lock_wins(gvvooa,'s',mode)
+                 call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,0.0E0_realk,w2%d,nv)
+                 call time_start_phase(PHASE_COMM, at = time_intloop_work)
+                 call tensor_add(gvvooa,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
+                 call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
-                 endif
-                 call lsmpi_poke()
               endif
-              
-              ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
-              call dgemm('n','n',lg*la*no,nv,nb,1.0E0_realk,w1%d,la*no*lg,yv,nb,0.0E0_realk,w3%d,la*no*lg)
               call lsmpi_poke()
-              !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
-              call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3%d,la,uigcj%d,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
+           endif
+
+           ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
+           call dgemm('n','n',lg*la*no,nv,nb,1.0E0_realk,w1%d,la*no*lg,yv,nb,0.0E0_realk,w3%d,la*no*lg)
+           call lsmpi_poke()
+           !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
+           call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3%d,la,uigcj%d,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
+           call lsmpi_poke()
+
+           if ( Ccmodel > MODEL_CC2 ) then
+
+              !Reorder I [alpha j gamma b]                      -> I [alpha j b gamma]
+              call array_reorder_4d(1.0E0_realk,w3%d,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2%d)
+              ! gvoov = (vo|ov) constructed from w2%d               = I [alpha j b  gamma]
+              !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
+              call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2%d,la*no*nv,yo(fg),nb,0.0E0_realk,w1%d,la*no*nv)
               call lsmpi_poke()
 
-              if ( Ccmodel > MODEL_CC2 ) then
-                 
-                 !Reorder I [alpha j gamma b]                      -> I [alpha j b gamma]
-                 call array_reorder_4d(1.0E0_realk,w3%d,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2%d)
-                 ! gvoov = (vo|ov) constructed from w2%d               = I [alpha j b  gamma]
-                 !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
-                 call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2%d,la*no*nv,yo(fg),nb,0.0E0_realk,w1%d,la*no*nv)
-                 call lsmpi_poke()
-                 
-                 !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
-                 if(scheme==4)then
-                    
-                    call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,1.0E0_realk,gvoova%elm1,nv)
-                    
-                 else if(scheme==3.or.scheme==2)then
+              !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
+              if(scheme==4)then
+
+                 call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,1.0E0_realk,gvoova%elm1,nv)
+
+              else if(scheme==3.or.scheme==2)then
 #ifdef VAR_MPI
-                    call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,0.0E0_realk,w2%d,nv)
-                    call time_start_phase(PHASE_COMM, at = time_intloop_work)
-                    if( .not. alloc_in_dummy.and.lock_outside )call tensor_lock_wins(gvoova,'s',mode)
-                    call tensor_add(gvoova,1.0E0_realk,w2%d,wrk = w3%d, iwrk=w3%n)
-                    call time_start_phase(PHASE_WORK, at = time_intloop_comm)
+                 call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,0.0E0_realk,w2%d,nv)
+                 call time_start_phase(PHASE_COMM, at = time_intloop_work)
+                 if( .not. alloc_in_dummy.and.lock_outside )call tensor_lock_wins(gvoova,'s',mode)
+                 call tensor_add(gvoova,1.0E0_realk,w2%d,wrk = w3%d, iwrk=w3%n)
+                 call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
-                 endif
-                 call lsmpi_poke()
-              endif              
-           ENDIF !DoJcalc
+              endif
+              call lsmpi_poke()
+           endif
 
            call time_start_phase(PHASE_WORK, at = time_intloop_work)
            IF(DECinfo%useIchor)THEN
@@ -1879,119 +1868,110 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                    & w1%d,INTSPEC,FULLRHS,AOAlphaStart,AOAlphaEnd,1,nAObatches,AOGammaStart,AOGammaEnd,&
                    & 1,nAObatches,MoTrans,dimAlpha,nb,dimGamma,nb,NoSymmetry,DECinfo%IntegralThreshold)
            ELSE
-              IF(doscreen)THEN
-                 Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
-                 Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
-                 IF(DECSCREEN%batchGabKLHS(alphaB)%p%maxgabelm+DECSCREEN%batchGabKRHS(gammaB)%p%maxgabelm .LE. CS_THRLOG)THEN
-                    DoKcalc = .FALSE. !Integral block is zero
-                 ELSE
-                    DoKcalc = .TRUE.
-                 ENDIF
-              ENDIF              
-              IF(DoKcalc)THEN
-                 call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
-                      & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-                      & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,&
-                      & INTSPEC,fullRHS,DECinfo%IntegralThreshold)
-              ENDIF
+              IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
+              IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
+              
+              call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
+                   & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
+                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,&
+                   & INTSPEC,fullRHS,DECinfo%IntegralThreshold)
            ENDIF
-           IF(DoKcalc)THEN
-              call lsmpi_poke()
+           call lsmpi_poke()
 
-              call time_start_phase(PHASE_COMM, at = time_intloop_int)
+           call time_start_phase(PHASE_COMM, at = time_intloop_int)
 #ifdef VAR_MPI
-              if( Ccmodel>MODEL_CC2 )then
-                 if( alloc_in_dummy )then
-                    if(scheme==2.or.scheme==3)then
-                       call lsmpi_win_flush(gvvooa%wi(1),local=.true.)
-                       call lsmpi_win_flush(gvoova%wi(1),local=.true.)
-                    endif
-                 else
-                    if((scheme==2.or.scheme==3) .and. lock_outside)then
-                       call tensor_unlock_wins(gvvooa,.true.)
-                       call tensor_unlock_wins(gvoova,.true.)
-                    endif
+           if( Ccmodel>MODEL_CC2 )then
+              if( alloc_in_dummy )then
+                 if(scheme==2.or.scheme==3)then
+                    call lsmpi_win_flush(gvvooa%wi(1),local=.true.)
+                    call lsmpi_win_flush(gvoova%wi(1),local=.true.)
                  endif
-              endif
-#endif
-              call time_start_phase(PHASE_WORK, at = time_intloop_comm)
-              
-              if( Ccmodel > MODEL_CC2 )then
-                 if(fa<=fg+lg-1)then
-                    !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
-                    !element in the alpha batch has a smaller index as the last element in
-                    !the gamma batch, chose the trafolength as minimum of alpha batch-length
-                    !and the difference between first element of alpha batch and last element
-                    !of gamma batch
-                    call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
-                         &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
-                         &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
-                    
-                    
-                    !start a new timing phase after these terms
-                    call time_start_phase(PHASE_WORK)
-                    
-                 endif
-              endif
-              
-              
-              !(w0%d):I[ delta gamma alpha beta] <- (w1%d):I[ alpha beta gamma delta ]
-              call array_reorder_4d(1.0E0_realk,w1%d,la,nb,lg,nb,[2,3,1,4],0.0E0_realk,w0%d)
-              call lsmpi_poke()
-              ! (w3%d):I[i gamma alpha beta] = Lambda^h[delta i] I[delta gamma alpha beta]
-              call dgemm('t','n',no,lg*la*nb,nb,1.0E0_realk,yo,nb,w0%d,nb,0.0E0_realk,w2%d,no)
-              call lsmpi_poke()
-              ! (w0%d):I[i gamma alpha j] = (w3%d):I[i gamma alpha beta] Lambda^h[beta j]
-              call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la)
-              call lsmpi_poke()
-              if( Ccmodel > MODEL_CC2 )then
-                 select case(scheme)
-                 case(4,3)
-                    ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
-                    call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%elm1)
-                 case(2)
-#ifdef VAR_MPI
-                    ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
-                    call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d)
-                    ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
-                    call dgemm('t','n',no,no*no*la,lg,1.0E0_realk,xo(fg),nb,w3%d,lg,0.0E0_realk,w2%d,no)
-                    ! (w3):I[ k l i j] <- (w2):Lambda^p [alpha l ]^T I[ l i j , alpha]^T
-                    call dgemm('t','t',no,no*no*no,la,1.0E0_realk,xo(fa),nb,w2%d,no*no*no,0.0E0_realk,w3%d,no)
-                    if(.not.alloc_in_dummy)call tensor_lock_wins(sio4,'s',mode)
-                    call tensor_add(sio4,1.0E0_realk,w3%d,order = [1,2,3,4],wrk=w2%d,iwrk=w2%n)
-                    if( alloc_in_dummy )then
-                       call lsmpi_win_flush(sio4%wi(1),local=.true.)
-                    else
-                       call tensor_unlock_wins(sio4,.true.)
-                    endif
-#endif
-                 end select
-              endif
-              call lsmpi_poke()
-              
-              
-              ! (w2%d):I[gamma i j alpha] <- (w0%d):I[i gamma alpha j]
-              call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w2%d)
-              call lsmpi_poke()
-              ! (w3%d):I[b i j alpha] = Lamda^p[gamma b] (w2%d):I[gamma i j alpha]
-              call dgemm('t','n',nv,no2*la,lg,1.0E0_realk,xv(fg),nb,w2%d,lg,0.0E0_realk,w3%d,nv)
-              call lsmpi_poke()
-              ! Omega += Lambda^p[alpha a]^T (w3%d):I[b i j alpha]^T
-              if(scheme==2)then
-#ifdef VAR_MPI
-                 call time_start_phase(PHASE_COMM, at = time_intloop_work )
-                 if( lock_outside .and. .not. alloc_in_dummy )call tensor_lock_wins(omega2,'s',mode)
-                 call time_start_phase(PHASE_WORK, at = time_intloop_comm )
-                 call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,0.0E0_realk,w2%d,nv)
-                 call time_start_phase(PHASE_COMM, at = time_intloop_work )
-                 call tensor_add(omega2,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
-                 call time_start_phase(PHASE_WORK, at = time_intloop_comm )
-#endif
               else
-                 call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,1.0E0_realk,omega2%elm1,nv)
+                 if((scheme==2.or.scheme==3) .and. lock_outside)then
+                    call tensor_unlock_wins(gvvooa,.true.)
+                    call tensor_unlock_wins(gvoova,.true.)
+                 endif
               endif
-              call lsmpi_poke()
-           ENDIF !DoKcalc
+           endif
+#endif
+           call time_start_phase(PHASE_WORK, at = time_intloop_comm)
+
+           if( Ccmodel > MODEL_CC2 )then
+              if(fa<=fg+lg-1)then
+                 !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
+                 !element in the alpha batch has a smaller index as the last element in
+                 !the gamma batch, chose the trafolength as minimum of alpha batch-length
+                 !and the difference between first element of alpha batch and last element
+                 !of gamma batch
+                 call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
+                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
+                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
+
+
+                 !start a new timing phase after these terms
+                 call time_start_phase(PHASE_WORK)
+
+              endif
+           endif
+
+
+           !(w0%d):I[ delta gamma alpha beta] <- (w1%d):I[ alpha beta gamma delta ]
+           call array_reorder_4d(1.0E0_realk,w1%d,la,nb,lg,nb,[2,3,1,4],0.0E0_realk,w0%d)
+           call lsmpi_poke()
+           ! (w3%d):I[i gamma alpha beta] = Lambda^h[delta i] I[delta gamma alpha beta]
+           call dgemm('t','n',no,lg*la*nb,nb,1.0E0_realk,yo,nb,w0%d,nb,0.0E0_realk,w2%d,no)
+           call lsmpi_poke()
+           ! (w0%d):I[i gamma alpha j] = (w3%d):I[i gamma alpha beta] Lambda^h[beta j]
+           call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la)
+           call lsmpi_poke()
+           if( Ccmodel > MODEL_CC2 )then
+              select case(scheme)
+              case(4,3)
+                 ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
+                 call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%elm1)
+              case(2)
+#ifdef VAR_MPI
+                 ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
+                 call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d)
+                 ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
+                 call dgemm('t','n',no,no*no*la,lg,1.0E0_realk,xo(fg),nb,w3%d,lg,0.0E0_realk,w2%d,no)
+                 ! (w3):I[ k l i j] <- (w2):Lambda^p [alpha l ]^T I[ l i j , alpha]^T
+                 call dgemm('t','t',no,no*no*no,la,1.0E0_realk,xo(fa),nb,w2%d,no*no*no,0.0E0_realk,w3%d,no)
+                 if(.not.alloc_in_dummy)call tensor_lock_wins(sio4,'s',mode)
+                 call tensor_add(sio4,1.0E0_realk,w3%d,order = [1,2,3,4],wrk=w2%d,iwrk=w2%n)
+                 if( alloc_in_dummy )then
+                    call lsmpi_win_flush(sio4%wi(1),local=.true.)
+                 else
+                    call tensor_unlock_wins(sio4,.true.)
+                 endif
+#endif
+              end select
+           endif
+           call lsmpi_poke()
+
+
+           ! (w2%d):I[gamma i j alpha] <- (w0%d):I[i gamma alpha j]
+           call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w2%d)
+           call lsmpi_poke()
+           ! (w3%d):I[b i j alpha] = Lamda^p[gamma b] (w2%d):I[gamma i j alpha]
+           call dgemm('t','n',nv,no2*la,lg,1.0E0_realk,xv(fg),nb,w2%d,lg,0.0E0_realk,w3%d,nv)
+           call lsmpi_poke()
+           ! Omega += Lambda^p[alpha a]^T (w3%d):I[b i j alpha]^T
+           if(scheme==2)then
+#ifdef VAR_MPI
+              call time_start_phase(PHASE_COMM, at = time_intloop_work )
+              if( lock_outside .and. .not. alloc_in_dummy )call tensor_lock_wins(omega2,'s',mode)
+              call time_start_phase(PHASE_WORK, at = time_intloop_comm )
+              call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,0.0E0_realk,w2%d,nv)
+              call time_start_phase(PHASE_COMM, at = time_intloop_work )
+              call tensor_add(omega2,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
+              call time_start_phase(PHASE_WORK, at = time_intloop_comm )
+#endif
+           else
+              call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,1.0E0_realk,omega2%elm1,nv)
+           endif
+           call lsmpi_poke()
+
         end do BatchAlpha
      end do BatchGamma
 
