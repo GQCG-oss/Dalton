@@ -9982,6 +9982,7 @@ contains
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
     integer :: p,pos
+    integer(kind=short) :: CS_THRLOG
     call time_start_phase(PHASE_WORK)
 
     o3v           = nocc*nocc*nocc*nvirt
@@ -10019,6 +10020,7 @@ contains
        ! Integral screening?
        doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
     endif
+    call Obtain_CS_THRLOG(CS_THRLOG,DECinfo%IntegralThreshold)
     ! allocate arrays to update during integral loop 
     ! **********************************************
     
@@ -10265,10 +10267,13 @@ contains
                   & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
                   & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
           else
-             if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-             if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-   
-   
+             if (doscreen)then
+                mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+                mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+                IF(DECSCREEN%masterGabLHS%maxgabelm+DECSCREEN%batchGab(alphaB,gammaB)%p%maxgabelm .LE. CS_THRLOG)THEN
+                   cycle BatchAlpha
+                ENDIF
+             endif
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
@@ -10517,6 +10522,7 @@ contains
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
     integer :: p,pos
+    integer(kind=short) :: CS_THRLOG
     call time_start_phase(PHASE_WORK)
 
     o3v           = nocc*nocc*nocc*nvirt
@@ -10555,6 +10561,7 @@ contains
        ! Integral screening?
        doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
     endif
+    call Obtain_CS_THRLOG(CS_THRLOG,DECinfo%IntegralThreshold)
 
     ! allocate arrays to update during integral loop 
     ! **********************************************
@@ -10802,9 +10809,13 @@ contains
                   & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry,&
                   & DECinfo%IntegralThreshold)
           else
-             if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-             if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-   
+             if (doscreen)then
+                mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+                mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+                IF(DECSCREEN%masterGabLHS%maxgabelm+DECSCREEN%batchGab(alphaB,gammaB)%p%maxgabelm .LE. CS_THRLOG)THEN
+                   cycle BatchAlpha
+                ENDIF
+             endif
    
              ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
              ! ************************************************************************************
