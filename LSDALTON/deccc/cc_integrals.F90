@@ -2240,7 +2240,6 @@ contains
     !E = Long-Range Erf operator
     if (mylsitem%setting%scheme%CAM) then
        INTSPEC = ['R','R','R','R','E'] 
-       print *,'debug: Operator set to erf in cc_integrals'
     else
        INTSPEC = ['R','R','R','R','C'] 
     endif

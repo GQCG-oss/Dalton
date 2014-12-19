@@ -73,8 +73,6 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
          coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
       ENDDO
    ENDIF
- 
-   print *,'debug: INTSPEC(5)',intSpec(5)
 
    ! ***** SELECT OPERATOR TYPE *****
    IF (intSpec(5).EQ.'C') THEN
@@ -103,7 +101,6 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
       call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
    ENDIF
 
-   print*,'debug: Operator set'
    
    ! ***** SELECT AO TYPES *****
    DO i=1,4
