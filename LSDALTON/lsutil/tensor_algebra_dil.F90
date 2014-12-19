@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2014/12/18 (started 2014/09/01).
+!REVISION: 2014/12/19 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -265,6 +265,7 @@
         public merge_sort_key_int
         public merge_sort_key_int4
         public merge_sort_key_int8
+        public merge_sort_real8
         public str2int
         public int2str
         private int2str_i4
@@ -516,7 +517,7 @@
         call dil_tens_arg_clean(tcontr%dest_arg)
         call dil_tens_arg_clean(tcontr%left_arg)
         call dil_tens_arg_clean(tcontr%right_arg)
-        tcontr%alpha=1E0_realk; tcontr%beta=1E0_realk
+        tcontr%alpha=1E0_realk; tcontr%beta=0E0_realk
         if(present(ierr)) ierr=errc
         return
         end subroutine dil_clean_tens_contr
@@ -749,7 +750,7 @@
           endif
  !Other stuff:
           if(present(alpha)) then; tcontr%alpha=alpha; else; tcontr%alpha=1E0_realk; endif
-          if(present(beta)) then; tcontr%beta=beta; else; tcontr%beta=1E0_realk; endif
+          if(present(beta)) then; tcontr%beta=beta; else; tcontr%beta=0E0_realk; endif
           if(present(dest_zero)) then; dz=dest_zero; else; dz=.false.; endif
  !Set up a formal tensor contraction specification:
           call dil_tens_contr_spec_setup(tcontr%contr_spec,nd,nl,nr,dprm,lprm,rprm,ddim,ldim,rdim,ierr,dbas,lbas,rbas,dz)
@@ -1440,6 +1441,61 @@
         endif
         return
         end subroutine merge_sort_key_int8
+!------------------------------------------
+        subroutine merge_sort_real8(ni,trn)
+!This subroutine sorts an array of NI items in a non-descending order.
+!The algorithm is due to Johann von Neumann.
+!INPUT:
+! - ni - number of items;
+! - trn(1:ni) - items (arbitrary real*8 numbers);
+!OUTPUT:
+! - trn(0:ni) - sorted items and sign in trn(0).
+        implicit none
+        integer(INTL), intent(in):: ni
+        real(8), intent(inout):: trn(1:ni)
+        integer(INTL):: i,j,k,l,m,n,k1,k2,k3,k4,kf,ierr
+        real(8), parameter:: ds(0:1)=(/+1d0,-1d0/)
+        real(8), allocatable:: prm(:)
+
+        if(ni.gt.1) then
+         allocate(prm(1:ni))
+         n=1
+         do while(n.lt.ni)
+          m=n*2
+          do i=1,ni,m
+           k1=i; k2=i+n
+           if(k2.gt.ni) then
+            k2=ni+1; k3=0; k4=0 !no right block, only left block
+           else
+            k3=i+n; k4=min(ni+1,i+m) !right block present
+           endif
+           kf=min(ni+1,i+m)-i; l=0
+           do while(l.lt.kf)
+            if(k3.ge.k4) then !right block is over
+             prm(i+l:i+kf-1)=trn(k1:k2-1); l=kf
+            elseif(k1.ge.k2) then !left block is over
+             prm(i+l:i+kf-1)=trn(k3:k4-1); l=kf
+            else
+             if(trn(k1)-trn(k3).gt.0d0) then
+              prm(i+l)=trn(k3); k3=k3+1
+             else
+              prm(i+l)=trn(k1); k1=k1+1
+             endif
+             l=l+1
+            endif
+           enddo
+          enddo
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i) SCHEDULE(GUIDED)
+          do i=1,ni
+           trn(i)=prm(i)
+          enddo
+!$OMP END PARALLEL DO
+          n=m
+         enddo
+         deallocate(prm)
+        endif
+        return
+        end subroutine merge_sort_real8
 !-------------------------------------------------
         function str2int(str,sl,ierr) result(intg) !SERIAL
 !This function converts an integer number given as a string into an integer.
@@ -3293,6 +3349,7 @@
 !-------------------------------------------------
         logical, parameter:: NO_CHECK=.false.     !argument check
         integer(INTL), parameter:: alignment=4096 !buffer alignment in bytes (must be multiple of 16)
+        real(realk), parameter:: beta=0E0_realk   !GEMM beta
 !------------------------------------------------
         integer(INTD):: i,j,k,l,m,n,impir
         type(C_PTR):: hbuf_cp
@@ -3894,7 +3951,7 @@
   !Destination tensor:
          jb=buf_conf(4,jdev); jf=buf_conf(7,jdev); jvol=dil_subtensor_vol(tsk%dest_arg)
          if(.not.triv_d) then !permute (if needed)
-          call dil_tensor_transpose(nd,tsk%dest_arg%dims,prmn(1:,0),&
+          call dil_tensor_transpose(nd,tsk%dest_arg%dims(prmn(1:nd,0)),prmn(1:,0),&
                                    &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
           if(je.ne.0) then; errc=1; return; endif
           je=jb; jb=jf; jf=je
@@ -3957,12 +4014,12 @@
          if(realk.eq.8) then
           call dgemm('T','N',int(lld,BLAS_INT),int(lrd,BLAS_INT),int(lcd,BLAS_INT),alpha,&
                     &buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_ptr,int(lcd,BLAS_INT),&
-                    &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),1E0_realk,&
+                    &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),beta,&
                     &buf(jdev)%arg_buf(buf_conf(4,jdev))%buf_ptr,int(lld,BLAS_INT))
          elseif(realk.eq.4) then
           call sgemm('T','N',int(lld,BLAS_INT),int(lrd,BLAS_INT),int(lcd,BLAS_INT),alpha,&
                     &buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_ptr,int(lcd,BLAS_INT),&
-                    &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),1E0_realk,&
+                    &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),beta,&
                     &buf(jdev)%arg_buf(buf_conf(4,jdev))%buf_ptr,int(lld,BLAS_INT))
          else
           errc=4
