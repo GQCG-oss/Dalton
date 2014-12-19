@@ -2552,6 +2552,7 @@ C
 C
 C Used from common blocks:
 C   INFINP : ABAIPH,ISTATE,ISPIN,NACTEL,FLAG(*),INERSI
+C   SPINFO : MS2
 C   INFOPT : EMY, EACTIV, EMCSCF, ESOLT
 C   INFVAR : NCONF,NWOPT
 C   INFORB : NSYM,NISHT,NASHT,NNASHX,NNASHY,NOCCT,NNOCCX,NCMOT,...
@@ -2571,6 +2572,7 @@ C
 #include "pcm.h"
 #include "pcmlog.h"
 #include "infinp.h"
+#include "spinfo.h"
 #include "infopt.h"
 #include "infvar.h"
 #include "inforb.h"
@@ -2700,7 +2702,7 @@ C
       WRITE (LUSIFC) LAB123,LBSIFC
 C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-     &               ISTATE,ISPIN,NACTEL,LSYM
+     &               ISTATE,ISPIN,NACTEL,LSYM,MS2
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
      &               NSYM,MULD2H, NRHF,NFRO,

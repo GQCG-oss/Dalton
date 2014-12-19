@@ -79,6 +79,7 @@ C
 #include "past.h"
 #include "cbisol.h"
 #include "cbirhs.h"
+#include "spinfo.h"
 C
       CALL QENTER('SETSIR  ')
       DST = SECOND( )
@@ -104,7 +105,8 @@ C
      *      '" not found on SIRIFC, the SIRIUS interface file.'
         CALL QUIT('"'//LBSIFC//'" label not found on SIRIFC file.')
       END IF
-      READ (LUSIFC) EPOT,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,LSYM
+      READ (LUSIFC) EPOT,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,LSYM,MS2
+      MULTS = ISPIN
       POTNUC = EPOT
       READ (LUSIFC) MISHT,MASHT,MOCCT,MORBT,MBAST,NCONF,NWOPT,NWOPH,
      *            NCDETS,NCMOT,MNASHX,MNASHY,MNORBT,M2ORBT,
