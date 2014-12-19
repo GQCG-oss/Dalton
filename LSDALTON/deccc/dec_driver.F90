@@ -38,7 +38,7 @@ module dec_driver_module
   use dec_driver_slave_module
 #endif
 
-public:: DEC_wrapper
+public:: DEC_wrapper,main_fragment_driver
 private
 
 contains

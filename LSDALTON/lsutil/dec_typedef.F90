@@ -597,6 +597,8 @@ module dec_typedef_module
      integer :: natoms
      !> Number of basis functions
      integer :: nbasis
+     !> Number of MOs (usually equal to nbasis but can be different for subsystems in SNOOP)
+     integer :: nMO
      !> Number of auxiliary basis functions
      integer :: nauxbasis
      !> Number of occupied orbitals (core + valence)

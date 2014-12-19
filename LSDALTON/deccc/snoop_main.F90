@@ -91,13 +91,14 @@ contains
     integer :: nocciso,nvirtiso,nbasisiso,neliso
     type(decorbital),pointer :: OccOrbitals(:), VirtOrbitals(:)
     real(realk) :: dummy(3,MyMolecule%natoms)  ! gradient input, just a dummy for now
-
+    real(realk),pointer :: FragEnergiesOcc(:,:)
 
     ! Determine DEC orbital structures
     call mem_alloc(OccOrbitals,MyMolecule%nocc)
     call mem_alloc(VirtOrbitals,MyMolecule%nunocc)
     call GenerateOrbitals_driver(MyMolecule,lsfull,MyMolecule%nocc,MyMolecule%nunocc,&
          & MyMolecule%natoms, OccOrbitals, VirtOrbitals)
+    call mem_alloc(FragEnergiesOcc,MyMolecule%nfrags,MyMolecule%nfrags) ! init frag energy array
 
     ! Number of subsystems
     nsub = lsfull%input%molecule%nSubSystems
@@ -110,7 +111,9 @@ contains
     else
        ! DEC calculation
        write(DECinfo%output,*) 'SNOOP: Starting full system calculation using DEC driver'
-       call DEC_wrapper(MyMolecule,lsfull,D,EHFfull,Ecorrfull,dummy,Eerr)
+       call main_fragment_driver(MyMolecule,lsfull,D,&
+            & OccOrbitals,VirtOrbitals,MyMolecule%natoms,MyMolecule%nocc,MyMolecule%nunocc,&
+            & EHFfull,Ecorrfull,dummy,Eerr,FragEnergiesOcc)
     end if
 
     ! Notation
@@ -298,6 +301,7 @@ contains
     end do
     call mem_dealloc(OccOrbitals)
     call mem_dealloc(VirtOrbitals)
+    call mem_dealloc(FragEnergiesOcc)
 
   end subroutine snoop_driver_simple
 
@@ -1047,7 +1051,7 @@ contains
     ! Collect MO coefficients in one matrix
     call mat_init(C,nbasis,nMO)
     call collect_MO_coeff_in_one_matrix(Cocc,Cvirt,C)
-    
+
     ! Molecule structure for subsystem
     call molecule_init_from_inputs(MySubsystem,lssub,F,S,C,D)
     call mat_free(C)

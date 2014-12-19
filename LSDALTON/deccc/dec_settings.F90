@@ -758,6 +758,11 @@ contains
        if(matrix_type/=mtype_dense) then
           call lsquit('SNOOP is only implemented for dense matrices!',-1)
        end if
+
+       ! Not hydrogen debug
+       if(decinfo%PureHydrogendebug) then
+          call lsquit('SNOOP not implemented for hydrogen debug',-1)
+       end if
        
        ! SimulateFull will destroy subsystem assignment and thus render SNOOP meaningless
        if(DECinfo%simulate_full) then
