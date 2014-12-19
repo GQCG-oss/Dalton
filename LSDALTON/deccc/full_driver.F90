@@ -906,7 +906,7 @@ contains
 !    MemRequired = 2*real(nAux*nocc*nvirt/numnodes) + real(nAux*nAux)
     MemRequired = MemRequired*realk/GB
 
-    if(MemRequired > DECinfo%memory) then
+    if(MemRequired > 0.80E0_realk*DECinfo%memory) then
        print *, 'RIMP2 Have 2 memory intensive steps:'
        print *, 'Step1:'
        print *, '2 arrays of size MinAtomicnAux*nbasis*nbasis=',&
@@ -924,6 +924,7 @@ contains
        print *, 'nbasis       =',nbasis
        print *, 'nAux         =',nAux
        print *, 'RIMP2 Mem required (GB) = ', MemRequired
+       print *, 'We restrict ourselves to 80 % of Max memory (GB)'
        print *, 'RIMP2 Max memory (GB)   = ', DECinfo%memory
        call lsquit('full_canonical_rimp2: Memory exceeded! Try to increase memory &
             & using the .MaxMemory (in GB) keyword in the *DEC section.',-1)
@@ -938,7 +939,7 @@ contains
        MemStep2=4*real(nAux*nocc*nvirt)/numnodes + real(nAux*nAux)
        MemRequired = MAX(MemStep1,MemStep2)
        MemRequired = MemRequired*realk/GB       
-       if(MemRequired .GE. DECinfo%memory) then 
+       if(MemRequired .GE. 0.80E0_realk*DECinfo%memory) then 
           MemoryReduced = .TRUE.
           WRITE(DECinfo%output,*)'MemoryReduced RIMP2 scheme chosen'
           WRITE(DECinfo%output,*)'MemRequired Step 1:',MemStep1*realk/GB,' GB'
