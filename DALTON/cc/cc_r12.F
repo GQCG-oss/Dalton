@@ -441,7 +441,7 @@ c        END DO
          CALL DZERO(GX,NT1AMX)
       ENDIF
 C
-C     Compute SUM_i ( i p' | i k )
+C     !Compute SUM_i ( i p' | i k )
 C
 celena
       IF (R12PRP) THEN

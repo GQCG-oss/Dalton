@@ -195,7 +195,6 @@ C---------------------------------------------------
 C        Calculate RPA-density matrices in AO basis.
 C---------------------------------------------------
 C
-C        SO_AODENS makes use of DGEMM. Insert a call to utilize the slaves for this calculation
          DTIME     = SECOND()
          CALL SO_AODENS(WORK(KDENS),LDENS,WORK(KCMO),LCMO,
      &                  WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,ISYMTR,

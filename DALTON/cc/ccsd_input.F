@@ -203,7 +203,8 @@ C       from the list of COMMON block inclusions.
               WRITE(LUPRI,*) "WARNING: CC is not MPI parallelized!"
               WRITE(LUPRI,*)
      &        "For parallelization speedup, e.g. use parallel MKL"
-              CALL PARQUIT("Unable to employ requested resources.")
+              !CALL PARQUIT("Unable to employ requested resources. 
+       !&                      Coupled Cluster ")
            ENDIF
 C End Beyer
          ENDIF

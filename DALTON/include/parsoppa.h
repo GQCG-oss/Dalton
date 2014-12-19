@@ -16,21 +16,13 @@ C     PARSOPPA = Parallel Second order Polarization Propagator Approximation  (t
      &           LAIJ, LAAB, KTR2E, KTR2D, KRES2E,
      &           KRES2D, KSIGAI1, KSIGAI2, KSIGDA1,
      &           KSIGDA2, KAIJ, KAAB, isyres,
-     &           LT2AMP, parsoppalast
+     &           LT2AMP, parsoppalast,
      &           icdel1, copyldensai, copynit, copyisymtr,
      &           copyinewtr
 
-      logical :: forceupdate, deallocwhendone, densai_was_reduced
+      logical :: forceupdate
+      logical, save :: getdensai
       character*5 :: copymodel 
-
-C    densai_was_reduced is a logical flag that is used to control 
-C    how the slave with PID 1 will behave after completing a parallel 
-C    calculation of the Hessian Matrix in AOSOPPA. More specifically 
-C    the flag is used to regulate when slave 1 will use an mpi_send 
-C    call to transfer the contents of the DENSAI matrix to the master.
-C    The DENSAI matrix is only assembled under certain circumstances
-C    and so the value of this logical flag is regulated by other 
-C    logical flags. The correspondance might not be apparent.
 
       common /parsoppa/
      & NTOT  , NUMDIS, KODCL1, KODCL2, KODBC1, LWORKSV,
@@ -45,8 +37,7 @@ C    logical flags. The correspondance might not be apparent.
      & KRES2E, KRES2D, KSIGAI1,KSIGAI2,KSIGDA1,KSIGDA2,
      & forceupdate,    LT2AMP, KAIJ,   KAAB,  isyres, 
      & LCMO,   icdel1, copymodel, copyldensai , 
-     & copynit,  copyisymtr, deallocwhendone, copyinewtr, 
-     & densai_was_reduced
+     & copynit,  copyisymtr, copyinewtr, getdensai
 
 
       common /parsoppa/ parsoppalast

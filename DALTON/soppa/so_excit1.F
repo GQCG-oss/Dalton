@@ -409,7 +409,7 @@ C
      &            ' p-h variables.            :',2*NT1AM(ISYM),
 CPFP   2009-Jun
      &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-C     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
+c     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
 Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
@@ -498,7 +498,7 @@ C
      &            ' p-h variables.            :',2*NT1AM(ISYM),
 CPFP   2009-Jun
      &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-C     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
+c     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
 Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
@@ -587,7 +587,7 @@ C
      &            ' p-h variables.            :',2*NT1AM(ISYM),
 CPFP   2009-Jun
      &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-C     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
+     &            !' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
 Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)

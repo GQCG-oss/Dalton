@@ -318,9 +318,10 @@ C***********************************************************
       thisinewtr = inewtr
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       parallelsoppa: if (numprocs.gt.1) then
+
          ! make every slave join the parallel calculation 
          call mpixbcast(87, 1, 'INTEGE', 0)
-         call mpixbcast( 0, 1, 'INTEGE', 0) !give the slave print level 0
+         call mpixbcast( 0, 1, 'INTEGE', 0)
 
          ! Ready slaves for massive amount of updates.
          call mpi_bcast(forceupdate,1,mpi_logical,0,mpi_comm_world,ierr)
@@ -345,11 +346,11 @@ C***********************************************************
          call par_so_eres(WORK, LWORK, 0)
 
          ! receive the newly assembled densai array from process 1 before continuing
-
-         IF (  (MODEL.NE.'AOSOC').AND.(NIT.EQ.1) ) THEN
+         if ( getdensai )  then
             call mpi_recv(densai, ldensai, mpi_real8, 1, 0, 
      &      mpi_comm_world, mpistatus, ierr)
-         ENDIF
+            getdensai = .false.
+         endif
 
          goto 888  ! Skips over the do loop that would normally assemble the Fock/density matrix sequentially
 
@@ -510,9 +511,8 @@ C                 Calculate part of the second order density matrix.
 C-------------------------------------------------------------------
 C
                   DTIME      = SECOND()
-                  IF ( (MODEL  .NE.'AOSOC').AND.
-     &                 (NIT    .EQ. 1)    ) THEN
-                     
+                  IF ( (MODEL.NE.'AOSOC') .AND. (NIT.EQ.1) .AND. 
+     &               (  INEWTR.EQ.1) ) THEN
                      CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
      &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
      &                               ISYMD,ISYDIS,WORK(KEND5),
@@ -921,9 +921,9 @@ C     be changed to the correct type.
       real*8, allocatable, dimension(:) :: temp
       real*8, allocatable, dimension(:) :: tempdens
 
-      logical :: aijreduce        !This array is only calculated under special circumstances. This variable regulates when it needs to be transferred back to so_eres
+      logical       :: aijreduce        !This array is only calculated under special circumstances. This variable regulates when it needs to be transferred back to so_eres
       integer, save :: inewtr
-      integer :: allocstatus, deallocstatus, isymtr, ldensai, nit
+      integer       :: allocstatus, deallocstatus, isymtr, ldensai, nit
 
       CHARACTER MODEL*5
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -1165,11 +1165,11 @@ C**************************************************
          call dzero( work(ksigda2), lsigda2)
       endif
 
-      if ( (model.ne.'AOSOC') .and. (nit.eq.1) )  then
-         allocate(densai(ldensai), stat=allocstatus)
-         if (allocstatus.ne.0)  then
-            call quit('Allocation error in par_so_eres densai')
-         endif
+      if  ( (model.ne.'AOSOC') .and. 
+     &      (nit.eq.1)         .and.
+     &      (inewtr.eq.1)    ) then
+         
+         allocate(densai(ldensai))
          call dzero(densai, ldensai)
       endif
 
@@ -1394,9 +1394,8 @@ C-------------------------------------------------------------------
 C                 Calculate part of the second order density matrix.
 C-------------------------------------------------------------------
 C
-                  IF ( (MODEL .NE. 'AOSOC') .AND.
-     &                 (NIT   .EQ. 1)     ) THEN
-
+                  IF ( (MODEL.NE.'AOSOC') .AND. (NIT.EQ.1) .AND. 
+     &               (  INEWTR.EQ.1) ) THEN
                      CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
      &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
      &                               ISYMD,ISYDIS,WORK(KEND5),
@@ -1580,38 +1579,29 @@ C**************************************************C
 C     Assemble the density matrix on process 1.
 C     Process 1 will send this matrix to the master, once the master
 C     has successfully exited PAR_SO_ERES and returned to SO_ERES.
+         IF ( (MODEL.NE.'AOSOC') .AND. 
+     &        (NIT.EQ.1)         .AND. 
+     &        (INEWTR.EQ.1)  )    THEN
 
+            allocate(tempdens(ldensai))
+            tempdens = 0.0000
 
-      IF ( (MODEL.NE.'AOSOC').AND.(NIT.EQ.1) ) THEN
+            call mpi_reduce(densai, tempdens, ldensai, MPI_REAL8,
+     &      MPI_SUM, 1, MPI_COMM_WORLD, ierr)
 
-         allocate(tempdens(ldensai))
-         tempdens = 0.0000
-         call mpi_reduce(densai, tempdens, ldensai, MPI_REAL8,
-     &   MPI_SUM, 1, MPI_COMM_WORLD, ierr)
-
-
-         ! This array is given to SO_ERES as an input parameter. It needs
-         ! to be transferred back from PAR_SO_ERES before process 1 returns.
-         ! The master posts a recv call immediately after returning from PAR_SO ERES
-         if (myid.eq.1) then
-            call mpi_send(tempdens, ldensai, mpi_real8, 0, 0, 
-     &      mpi_comm_world, ierr)
-         endif
-
-         deallocate(tempdens, stat=deallocstatus)
-         if(.not.(allocstatus.eq.0) ) then
-            call quit('Deallocation error in PAR_SO_ERES (tempdens)')
-         endif
-
-         if (allocated(densai) ) then
-            deallocate(densai, stat=deallocstatus)
-            if(.not.(deallocstatus.eq.0) ) then
-              call quit('densai was not deallocated in PAR_SO_ERES')
+            ! This array is given to SO_ERES as an input parameter. It needs
+            ! to be transferred back from PAR_SO_ERES before process 1 returns.
+            ! The master posts a recv call immediately after returning from PAR_SO ERES
+            getdensai = .true. !signals the master that densai will be transferred.
+            if (myid.eq.1) then
+               call mpi_send(tempdens, ldensai, mpi_real8, 0, 0, 
+     &         mpi_comm_world, ierr)
             endif
+
+            deallocate(tempdens, stat=deallocstatus)
+            deallocate(densai, stat=deallocstatus)
+
          endif
-
-
-      ENDIF
 
 
 C************************************************** 
