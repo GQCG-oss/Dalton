@@ -1686,7 +1686,7 @@ subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,
   integer :: J,B,A,I,ALPHA
   real(realk) :: eps,gmoAIBJ,gmoBIAJ,TMP,epsIJB
   Tmp = 0.0E0_realk
-  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) &
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
   !$OMP PRIVATE(J,B,A,I,eps,gmoAIBJ,gmoBIAJ,epsIJB,ALPHA) REDUCTION(+:TMP) &
   !$OMP SHARED(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha)
   do J=1,nocc
