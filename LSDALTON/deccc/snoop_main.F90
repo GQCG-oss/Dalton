@@ -93,6 +93,7 @@ contains
     type(decorbital),pointer :: OccOrbitals(:), VirtOrbitals(:)
     real(realk) :: dummy(3,MyMolecule%natoms)  ! gradient input, just a dummy for now
     real(realk),pointer :: FragEnergiesOcc(:,:)
+    type(decfrag),pointer :: AtomicFragments(:)
 
     ! Determine DEC orbital structures
     call mem_alloc(OccOrbitals,MyMolecule%nocc)
@@ -100,6 +101,7 @@ contains
     call GenerateOrbitals_driver(MyMolecule,lsfull,MyMolecule%nocc,MyMolecule%nunocc,&
          & MyMolecule%natoms, OccOrbitals, VirtOrbitals)
     call mem_alloc(FragEnergiesOcc,MyMolecule%nfrags,MyMolecule%nfrags) ! init frag energy array
+    call mem_alloc(AtomicFragments,MyMolecule%nfrags)
 
     ! Number of subsystems
     nsub = lsfull%input%molecule%nSubSystems
@@ -114,7 +116,7 @@ contains
        write(DECinfo%output,*) 'SNOOP: Starting full system calculation using DEC driver'
        call main_fragment_driver(MyMolecule,lsfull,D,&
             & OccOrbitals,VirtOrbitals,MyMolecule%natoms,MyMolecule%nocc,MyMolecule%nunocc,&
-            & EHFfull,Ecorrfull,dummy,Eerr,FragEnergiesOcc)
+            & EHFfull,Ecorrfull,dummy,Eerr,FragEnergiesOcc,AtomicFragments)
     end if
 
     ! Notation
@@ -303,6 +305,13 @@ contains
     call mem_dealloc(OccOrbitals)
     call mem_dealloc(VirtOrbitals)
     call mem_dealloc(FragEnergiesOcc)
+
+    do i=1,MyMolecule%nfrags
+       if(.not. associated(AtomicFragments(i)%EOSatoms)) cycle
+       call atomic_fragment_free_simple(AtomicFragments(i))
+    end do
+    call mem_dealloc(AtomicFragments)
+
 
   end subroutine snoop_driver_simple
 
@@ -1103,15 +1112,14 @@ contains
     type(lsitem), intent(inout) :: lssub
     !> Subsystem correlation energy
     real(realk),intent(inout) :: Ecorr
-    ! Atomic fragments - KKFIXME - make intent(in)
-    type(decfrag) :: AtomicFragments(MySubsystem%nfrags)
-    logical :: dofrag(MySubsystem%nfrags)
+    type(decfrag),pointer :: AFsub(:)
+    logical :: dofragSUB(MySubsystem%nfrags)
     real(realk) :: EHF,Eerr
     logical :: esti,calcAF
     integer :: i,nfrags
     type(joblist) :: jobs
     real(realk),pointer :: dummy(:,:),FragEnergies(:,:,:)
-    type(decorbital),pointer :: OccOrbitals(:), VirtOrbitals(:)
+    type(decorbital),pointer :: OccOrbitalsSUB(:), VirtOrbitalsSUB(:)
 
 
 
@@ -1125,6 +1133,7 @@ contains
             & ' calculation using DEC dimer space'
        stop 'SNOOP dimerspace not implemented yet!'
 
+
        ! Use "same" orbital spaces for monomers as for dimer
        esti=.false.
 
@@ -1133,34 +1142,53 @@ contains
        FragEnergies=0.0_realk
 
        ! Determine DEC orbital structures
-       call mem_alloc(OccOrbitals,MySubsystem%nocc)
-       call mem_alloc(VirtOrbitals,MySubsystem%nunocc)
+       call mem_alloc(OccOrbitalsSUB,MySubsystem%nocc)
+       call mem_alloc(VirtOrbitalsSUB,MySubsystem%nunocc)
        call GenerateOrbitals_driver(MySubsystem,lssub,MySubsystem%nocc,MySubsystem%nunocc,&
-            & MySubsystem%natoms, OccOrbitals, VirtOrbitals)
+            & MySubsystem%natoms, OccOrbitalsSUB, VirtOrbitalsSUB)
+
+
+       !  List of which fraagments to consider
+       call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
+            & MySubsystem%nfrags,OccOrbitalsSUB,VirtOrbitalsSUB,dofragSUB,MySubsystem%PhantomAtom)
+
+       ! Get atomic fragments for subsystem with one-to-one correspondence to
+       ! dimer atomic fragments
+       call mem_alloc(AFsub,MySubsystem%nfrags)
+
+       ! Missing:
+       ! sub, MyMoleculeFULL, OccOrbitalsFULL, dofragdimer, AFdimer
+       ! 
+       !    call subsystemAOS_equals_dimerAOS(sub,natoms,MyMoleculeFULL,OccOrbitalsFULL,&
+       !         & MySubsystem,lssub,OccOrbitalsSUB,&
+       !         & VirtOrbitalsSUB,dofragdimer,dofragsub,AFdimer,AFsub)
+
 
        ! Make job list
-       ! -------------
        calcAF=.true.
-       call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
-            & MySubsystem%nfrags,OccOrbitals,VirtOrbitals,dofrag,MySubsystem%PhantomAtom)
        call create_dec_joblist_driver(calcAF,MySubsystem,lssub,MySubsystem%nfrags,&
             & MySubsystem%nocc,MySubsystem%nunocc,&
-            &OccOrbitals,VirtOrbitals,AtomicFragments,dofrag,.false.,jobs)
+            &OccOrbitalsSUB,VirtOrbitalsSUB,AFsub,dofragSUB,.false.,jobs)
 
-!       call fragment_jobs(MySubsystem%nocc,MySubsystem%nunocc,MySubsystem%nfrags,&
- !           & MySubsystem,lssub,&
- !           & OccOrbitals,VirtOrbitals,jobs,AtomicFragments,FragEnergies,esti)
+       call fragment_jobs(MySubsystem%nocc,MySubsystem%nunocc,MySubsystem%nfrags,&
+            & MySubsystem,lssub,&
+            & OccOrbitalsSUB,VirtOrbitalsSUB,jobs,AFsub,FragEnergies,esti)
 
        do i=1,MySubsystem%nocc
-          call orbital_free(OccOrbitals(i))
+          call orbital_free(OccOrbitalsSUB(i))
        end do
        do i=1,MySubsystem%nunocc
-          call orbital_free(VirtOrbitals(i))
+          call orbital_free(VirtOrbitalsSUB(i))
        end do
-       call mem_dealloc(OccOrbitals)
-       call mem_dealloc(VirtOrbitals)
+       call mem_dealloc(OccOrbitalsSUB)
+       call mem_dealloc(VirtOrbitalsSUB)
        call mem_dealloc(FragEnergies)
-
+       do i=1,MySubsystem%nfrags
+          if(.not. associated(AFsub(i)%EOSatoms)) cycle
+          call atomic_fragment_free_simple(AFsub(i))
+       end do
+       call mem_dealloc(AFsub)
+    
     else
        ! Do independent DEC fragment optimization for monomer
        write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', this, &

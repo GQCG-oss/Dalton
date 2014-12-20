@@ -67,6 +67,7 @@ contains
     type(decorbital), pointer :: UnoccOrbitals(:)
     real(realk),pointer :: FragEnergiesOcc(:,:)
     integer :: nBasis,nOcc,nUnocc,nAtoms,i
+    type(decfrag),pointer :: AtomicFragments(:)
 
 
     ! Print DEC info
@@ -87,9 +88,10 @@ contains
     ! Optimize all atomic fragments and calculate pairs
     ! *************************************************
     call mem_alloc(FragEnergiesOcc,MyMolecule%nfrags,MyMolecule%nfrags)
+    call mem_alloc(AtomicFragments,MyMolecule%nfrags)
     call main_fragment_driver(MyMolecule,mylsitem,D,&
          &OccOrbitals,UnoccOrbitals, &
-         & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc)
+         & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc,AtomicFragments)
 
 
     ! Delete orbitals
@@ -105,6 +107,12 @@ contains
     call mem_dealloc(OccOrbitals)
     call mem_dealloc(UnoccOrbitals)
     call mem_dealloc(FragEnergiesOcc)
+
+    do i=1,MyMolecule%nfrags
+       if(.not. associated(AtomicFragments(i)%EOSatoms)) cycle
+       call atomic_fragment_free_simple(AtomicFragments(i))
+    end do
+    call mem_dealloc(AtomicFragments)
 
     ! Check that file handling went OK
     if(files_opened /= 0) then
@@ -126,7 +134,7 @@ contains
   !> \date October 2010
   subroutine main_fragment_driver(MyMolecule,mylsitem,D,&
        & OccOrbitals,UnoccOrbitals, &
-       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc)
+       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc,AtomicFragments)
 
     implicit none
     !> Number of occupied orbitals in full molecule (not changed, inout for MPI reasons)
@@ -159,7 +167,7 @@ contains
     ! Fragment energies
     !real(realk) :: FragEnergies(natoms,natoms,ndecenergies)
     real(realk),pointer :: FragEnergies(:,:,:) !(natoms,natoms,ndecenergies)
-    type(decfrag),pointer :: AtomicFragments(:)
+    type(decfrag) :: AtomicFragments(MyMolecule%nfrags)
     integer :: i,j,k,dims(2),nbasis,counter
     real(realk) :: Esos,Eerrs
     !real(realk) :: energies(ndecenergies)
@@ -202,7 +210,6 @@ contains
 
     redo=.false.
     nbasis = MyMolecule%nbasis
-    call mem_alloc(AtomicFragments,nfrags)
     do i=1,nfrags
        call atomic_fragment_nullify(AtomicFragments(i))
     end do
@@ -505,11 +512,6 @@ contains
        call array2_free(t1old)
        call array2_free(t1new)
     end if
-    do i=1,nfrags
-       if(.not. dofrag(i)) cycle
-       call atomic_fragment_free_simple(AtomicFragments(i))
-    end do
-    call mem_dealloc(AtomicFragments)
 
     ! HF energy
     Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D) 

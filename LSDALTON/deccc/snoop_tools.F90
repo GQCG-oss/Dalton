@@ -28,6 +28,7 @@ module snoop_tools_module
   ! DEC dependencies
   use dec_fragment_utils
   use orbital_operations
+  use atomic_fragment_operations
 
 #ifdef VAR_MPI
   use infpar_module
@@ -1240,5 +1241,129 @@ print *, 'Remember to fix NC for frozen core!'
 
 
   end subroutine get_natural_connection_T_matrix
+
+
+  !> Initialize atomic fragments for subsystem to use dimer orbital spaces
+  !> using the one-one mapping defined by the natural connection 
+  !> (see rotate_subsystem_orbitals_to_mimic_dimer_orbitals).
+  subroutine subsystemAOS_equals_dimerAOS(sub,natoms,MyMoleculeFULL,OccOrbitalsFULL,&
+       & MySubsystem,lssub,OccOrbitalsSUB,&
+       & VirtOrbitalsSUB,dofragdimer,dofragsub,AFdimer,AFsub)
+    implicit none
+    !> Which subsystem
+    integer,intent(in) :: sub
+    !> Number of atoms in dimer (KK fixme: this need to be modified to work with DECCO!)
+    integer,intent(in) :: natoms
+    !> Molecule structure for full system
+    type(fullmolecule),intent(in) :: MyMoleculeFULL
+    !> Occupied orbitals for full system in DEC format
+    type(decorbital),intent(in) :: OccOrbitalsFULL(MyMoleculeFULL%nocc)
+    !> Molecule structure for subsystem
+    type(fullmolecule),intent(in) :: MySubsystem
+    !> LSitem for subsystem 
+    type(lsitem), intent(inout) :: lssub
+    !> Occ and virt orbitals for subsystem in DEC format
+    type(decorbital),intent(in) :: OccOrbitalsSUB(MySubsystem%nocc), VirtOrbitalsSUB(MySubsystem%nunocc)
+    !> Which atoms to consider for dimer
+    logical,intent(in) :: dofragdimer(natoms)
+    !> Which atoms to consider for subsystem
+    logical,intent(in) :: dofragsub(natoms)
+    !>  Atomic fragments for dimer
+    type(decfrag),intent(in) :: AFdimer(natoms)
+    !> Atomic fragments for subsystem
+    type(decfrag),intent(inout) :: AFsub(natoms)
+    integer :: i,j,noccAOSsub,idx,counter
+    integer :: fulltosub(MyMoleculeFULL%nocc)
+    integer,pointer :: occAOS(:)
+
+    ! For occupied orbitals, get list which define the one-to-one correspondance from
+    ! full indices to subsystem indices.
+    call get_fulloccAOS_to_suboccAOS(sub,MyMoleculeFULL,OccOrbitalsFULL,fulltosub)
+    ! Note: Since the number of virtual orbitals for full molecule and subsystem
+    ! is the same, the corresponding list for virtual orbitals would just be a 
+    ! trivial 1,2,3...,nvirt list so we do not construct it.
+
+
+    do i=1,natoms
+       DimerFrag: if(dofragsub(i)) then ! atomic fragment considered for subsystem
+          ! Sanity check: If atom is not considered for dimer we are in trouble...
+          if(.not. dofragdimer(i)) then
+             print *, 'Atom = ',i
+             print *, 'dofragsub  ', dofragsub
+             print *, 'dofragdimer', dofragdimer
+             call lsquit('subsystemAOS_equals_dimerAOS: Atom considered for subsystem but not dimer!',-1)
+          end if
+
+          ! Set indices for occupied AOS
+          ! ----------------------------
+          ! Here care must be exercised because the number of occupied orbitals is
+          ! is different for subsystem and full system. We therefore use the fulltosub
+          ! conversion to translate the full occupied AOS index into the
+          ! corresponding subsystem occupied AOS index.
+          ! However, if the full occupied AOS includes orbitals which are not assigned 
+          ! to the subsystem in question, we do not include them. 
+          ! (Full occupied orbitals assigned to subsystem B simply do not have a counterpart
+          !  in the subsystem A calculation etc.).  (*)
+          ! 
+          counter=0
+          call mem_alloc(occAOS,AFdimer(i)%noccAOS)  ! Subsystem occ AOS
+          do j=1,AFdimer(i)%noccAOS  ! loop over dimer occ AOS
+             idx = fulltosub(j)   ! corresponding subsystem index
+
+             ! if idx/=0 --> include occ orbital because it is assigned to subsystem
+             if(idx/=0) then
+                counter=counter+1
+                occAOS(counter) = idx
+             end if
+          end do
+          noccAOSsub=counter   ! occAOS dimension for subsystem
+
+          ! Initialize atomic fragment for subsystem with "same" orbitals as in dimer
+          ! calculation in the sense defined in the subroutine 
+          ! rotate_subsystem_orbitals_to_mimic_dimer_orbitals 
+          ! (although comment (*) above means that there might be a slight difference
+          !  in occupied AOS).
+          call atomic_fragment_init_integer_list(i,MySubsystem%nunocc, MySubsystem%nocc, &
+               & AFdimer(i)%nunoccAOS,noccAOSsub,&
+               & AFdimer(i)%unoccAOSidx,occAOS(1:noccAOSsub),OccOrbitalsSUB,VirtOrbitalsSUB,&
+               & MySubsystem,lssub,AFsub(i),.true.,.false.)
+
+       end if DimerFrag
+
+    end do
+
+  end subroutine subsystemAOS_equals_dimerAOS
+
+
+  !> For each occupied orbital in full molecule, get corresponding index in subsystem.
+  !> If the full occupied index is not included in the subsystem, the corresponding index
+  !> is set to zero.
+  subroutine get_fulloccAOS_to_suboccAOS(sub,MyMolecule,OccOrbitals,fulltosub)
+    implicit none
+    !> Which subsystem
+    integer,intent(in) :: sub
+    !> Molecule structure for full molecule
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> Occ orbitals for full molecule in DEC format
+    type(decorbital),intent(in) :: OccOrbitals(MyMolecule%nocc)
+    !> Index conversion from full system to subsystem
+    integer,intent(inout) :: fulltosub(MyMolecule%nocc)
+    integer :: j,idx,atom
+
+    ! Zero for all indices corresponding to other subsystems
+    fulltosub=0
+
+    idx=0
+    do j=1,MyMolecule%nocc
+       atom = OccOrbitals(j)%centralatom
+       ! Does atom to which orbital "j" is assigned belong to subsystem "sub"
+       if(MyMolecule%SubSystemIndex(atom)==sub) then
+          idx = idx + 1
+          ! Orbital "j" in full system corresponds to orbital "idx" in subsystem
+          fulltosub(j)=idx
+       end if
+    end do
+
+  end subroutine get_fulloccAOS_to_suboccAOS
 
 end module snoop_tools_module
