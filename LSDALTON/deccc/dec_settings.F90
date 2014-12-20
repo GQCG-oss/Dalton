@@ -759,6 +759,14 @@ contains
           call lsquit('SNOOP is only implemented for dense matrices!',-1)
        end if
 
+       ! SNOOP only tested for occupied partitioning scheme
+       if(.not. DECinfo%OnlyOccPart) then
+          write(DECinfo%output,*) 'WARNING: SNOOP ONLY TESTED FOR OCCUPIED PART. SCHEME'
+          write(DECinfo%output,*) 'WARNING: I TURN ON OCCUPIED PART. SCHEME'
+          DECinfo%onlyoccpart=.true.
+       end if
+
+
        ! Not hydrogen debug
        if(decinfo%PureHydrogendebug) then
           call lsquit('SNOOP not implemented for hydrogen debug',-1)

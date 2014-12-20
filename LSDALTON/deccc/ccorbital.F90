@@ -408,7 +408,8 @@ contains
        call real_inv_sort_with_tracking(lowdin_charge(:,i),basis_idx(:,i),nbasis)
        call real_inv_sort_with_tracking(atomic_gross_charge(:),atomic_idx(:,i),natoms)
 
-       IF(MyMolecule%PhantomAtom(atomic_idx(1,i)))THEN
+       ! Reassign central atom for phantom atoms - however not for SNOOP
+       IF(MyMolecule%PhantomAtom(atomic_idx(1,i)) .and. (.not. DECinfo%SNOOP)  ) THEN
           !the first atom in the atomic_gross_charge(:,i) list is a Phantom atom
           !we reorder the atomic_gross_charge(:,i) list to put a non Phantom atom on top
           call mem_alloc(tmplowdin_charge,nAtoms)

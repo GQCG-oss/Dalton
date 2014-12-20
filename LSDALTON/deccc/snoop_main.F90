@@ -249,10 +249,10 @@ contains
 
        ! Rotate subsystem orbitals using natural connection such that they are as
        ! close as possible to the dimer orbitals in a least-squares sense.
-       if(DECinfo%SNOOPdimerspace) then
+!       if(DECinfo%SNOOPdimerspace) then
           call rotate_subsystem_orbitals_to_mimic_dimer_orbitals(MyMolecule,&
                & OccOrbitals,VirtOrbitals,this,Coccsnoop(this), Cvirtsnoop(this))
-       end if
+!       end if
 
        ! Correlation energy for subsystem
        if(.not. DECinfo%SNOOPjustHF) then
@@ -992,9 +992,11 @@ contains
     write(DECinfo%output,'(1X,a)') '---------------------------------------------------------------'
     write(DECinfo%output,'(1X,a,g22.12)') 'HF Interaction energy      = ', EHFint
     if(.not. DECinfo%SNOOPjustHF) then
-       write(DECinfo%output,'(1X,a,g22.12)') 'Corr dispersion            = ', Edisp
-       write(DECinfo%output,'(1X,a,g22.12)') 'Corr charge transfer       = ', Ect
-       write(DECinfo%output,'(1X,a,g22.12)') 'Corr internal subsystem    = ', Esub-sum(Ecorrsub)
+! KK fixme: These contributions are not calculated correctly and I'm not sure we
+! even want to print them at all. For now we comment it out.
+!       write(DECinfo%output,'(1X,a,g22.12)') 'Corr dispersion            = ', Edisp
+!       write(DECinfo%output,'(1X,a,g22.12)') 'Corr charge transfer       = ', Ect
+!       write(DECinfo%output,'(1X,a,g22.12)') 'Corr internal subsystem    = ', Esub-sum(Ecorrsub)
        write(DECinfo%output,'(1X,a,g22.12)') 'Corr Interaction energy    = ', Ecorrint
        write(DECinfo%output,'(1X,a,g22.12)') 'Total Interaction energy   = ', EHFint+Ecorrint
     end if
