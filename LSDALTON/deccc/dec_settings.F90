@@ -749,10 +749,10 @@ contains
     ! SNOOP - currently limited in several ways
     if(DECinfo%SNOOP) then
        
-!!$       ! Only for full calculation
-!!$       if(.not. DECinfo%full_molecular_cc) then
-!!$          call lsquit('Currently SNOOP is only implemented for **CC and not for **DEC!',-1)
-!!$       end if
+       ! SNOOP restart not implemented
+       if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
+          call lsquit('SNOOP restart is not implemented!',-1)
+       end if
 
        ! Only for dense matrices for now
        if(matrix_type/=mtype_dense) then

@@ -1011,7 +1011,7 @@ contains
 
 
 
-  !> Calculate MP2 correlation energy for subsystem
+  !> Calculate correlation energy for subsystem
   !> \author Kasper Kristensen
   !> \date October 2014
   subroutine subsystem_correlation_energy(this,Cocc,Cvirt,F,lssub,Ecorr)
@@ -1031,7 +1031,6 @@ contains
     type(fullmolecule) :: MySubsystem
     real(realk) :: EHF,Eerr
     integer :: nMO,nbasis
-    real(realk),pointer :: dummy(:,:)
 
 
     ! Dimensions
@@ -1072,22 +1071,7 @@ contains
     else
 
        ! DEC calculation
-       ! ---------------
-
-       call mem_alloc(dummy,3,MySubsystem%natoms) ! gradient input, just a dummy for now
-       if(DECinfo%SNOOPdimerspace) then
-          ! Use "same" orbital spaces for monomers as for dimer
-          stop 'SNOOP dimerspace not implemented yet!'
-          write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', this, &
-               & ' calculation using DEC dimer space'
-       else
-          ! Do independent DEC fragment optimization for monomer
-          write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', this, &
-               & ' calculation using DEC driver'
-
-          call DEC_wrapper(MySubsystem,lssub,D,EHF,Ecorr,dummy,Eerr)
-       end if
-       call mem_dealloc(dummy)
+       call DECsubsystem_correlation_energy(this,Cocc,Cvirt,F,D,MySubsystem,lssub,Ecorr)
 
     end if WhichScheme
 
@@ -1096,6 +1080,85 @@ contains
     call molecule_finalize(MySubsystem)
 
   end subroutine subsystem_correlation_energy
+
+
+  !> Calculate DEC correlation energy for subsystem u
+  !> \author Kasper Kristensen
+  !> \date October 2014
+  subroutine DECsubsystem_correlation_energy(this,Cocc,Cvirt,F,D,MySubsystem,lssub,Ecorr)
+    implicit none
+
+    !> Which subsystem
+    integer,intent(in) :: this
+    !> Occupied and virtual MO coefficients for subsystem
+    type(matrix),intent(in) :: Cocc, Cvirt
+    !> Fock matrix in AO basis for subsystem
+    type(matrix),intent(in) :: F
+    !> Density matrix in AO basis for subsystem
+    type(matrix),intent(in) :: D
+    !> Full molecule structure for subsystem
+    type(fullmolecule),intent(inout) :: MySubsystem
+    !> LSitem for subsystem
+    type(lsitem), intent(inout) :: lssub
+    !> Subsystem correlation energy
+    real(realk),intent(inout) :: Ecorr
+    real(realk) :: EHF,Eerr
+    logical :: esti
+    integer :: i,nfrags
+    real(realk),pointer :: dummy(:,:),FragEnergies(:,:,:)
+    type(decorbital),pointer :: OccOrbitals(:), VirtOrbitals(:)
+
+
+
+    ! DEC calculation
+    ! ---------------
+
+    call mem_alloc(dummy,3,MySubsystem%natoms) ! gradient input, just a dummy for now
+    if(DECinfo%SNOOPdimerspace) then
+
+       write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', this, &
+            & ' calculation using DEC dimer space'
+       stop 'SNOOP dimerspace not implemented yet!'
+
+       ! Use "same" orbital spaces for monomers as for dimer
+       esti=.false.
+
+       ! Fragment energies
+       call mem_alloc(FragEnergies,MySubsystem%nfrags,MySubsystem%nfrags,ndecenergies)
+       FragEnergies=0.0_realk
+
+       ! Determine DEC orbital structures
+       call mem_alloc(OccOrbitals,MySubsystem%nocc)
+       call mem_alloc(VirtOrbitals,MySubsystem%nunocc)
+       call GenerateOrbitals_driver(MySubsystem,lssub,MySubsystem%nocc,MySubsystem%nunocc,&
+            & MySubsystem%natoms, OccOrbitals, VirtOrbitals)
+
+       ! MISSING: jobs,AtomicFragments
+!       call fragment_jobs(MySubsystem%nocc,MySubsystem%nunocc,MySubsystem%nfrags,&
+ !           & MySubsystem,lssub,&
+ !           & OccOrbitals,VirtOrbitals,jobs,AtomicFragments,FragEnergies,esti)
+
+       do i=1,MySubsystem%nocc
+          call orbital_free(OccOrbitals(i))
+       end do
+       do i=1,MySubsystem%nunocc
+          call orbital_free(VirtOrbitals(i))
+       end do
+       call mem_dealloc(OccOrbitals)
+       call mem_dealloc(VirtOrbitals)
+       call mem_dealloc(FragEnergies)
+
+    else
+       ! Do independent DEC fragment optimization for monomer
+       write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', this, &
+            & ' calculation using DEC driver'
+       call DEC_wrapper(MySubsystem,lssub,D,EHF,Ecorr,dummy,Eerr)
+    end if
+
+    call mem_dealloc(dummy)
+    call molecule_finalize(MySubsystem)
+
+  end subroutine DECsubsystem_correlation_energy
 
 
 end module snoop_main_module
