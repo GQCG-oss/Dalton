@@ -34,6 +34,7 @@ module snoop_main_module
   use dec_driver_module
   use array2_simple_operations
   use orbital_operations
+  use atomic_fragment_operations
 
   public :: snoop_driver
   private
@@ -1102,9 +1103,13 @@ contains
     type(lsitem), intent(inout) :: lssub
     !> Subsystem correlation energy
     real(realk),intent(inout) :: Ecorr
+    ! Atomic fragments - KKFIXME - make intent(in)
+    type(decfrag) :: AtomicFragments(MySubsystem%nfrags)
+    logical :: dofrag(MySubsystem%nfrags)
     real(realk) :: EHF,Eerr
-    logical :: esti
+    logical :: esti,calcAF
     integer :: i,nfrags
+    type(joblist) :: jobs
     real(realk),pointer :: dummy(:,:),FragEnergies(:,:,:)
     type(decorbital),pointer :: OccOrbitals(:), VirtOrbitals(:)
 
@@ -1133,7 +1138,15 @@ contains
        call GenerateOrbitals_driver(MySubsystem,lssub,MySubsystem%nocc,MySubsystem%nunocc,&
             & MySubsystem%natoms, OccOrbitals, VirtOrbitals)
 
-       ! MISSING: jobs,AtomicFragments
+       ! Make job list
+       ! -------------
+       calcAF=.true.
+       call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
+            & MySubsystem%nfrags,OccOrbitals,VirtOrbitals,dofrag,MySubsystem%PhantomAtom)
+       call create_dec_joblist_driver(calcAF,MySubsystem,lssub,MySubsystem%nfrags,&
+            & MySubsystem%nocc,MySubsystem%nunocc,&
+            &OccOrbitals,VirtOrbitals,AtomicFragments,dofrag,.false.,jobs)
+
 !       call fragment_jobs(MySubsystem%nocc,MySubsystem%nunocc,MySubsystem%nfrags,&
  !           & MySubsystem,lssub,&
  !           & OccOrbitals,VirtOrbitals,jobs,AtomicFragments,FragEnergies,esti)
