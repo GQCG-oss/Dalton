@@ -1152,8 +1152,6 @@ contains
 
        write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', this, &
             & ' calculation using DEC full space'
-       stop 'SNOOP FULLspace not implemented yet!'
-
 
        ! Use "same" orbital spaces for monomers as for FULL
        esti=.false.
