@@ -1141,6 +1141,7 @@ contains
     type(joblist) :: jobs
     real(realk),pointer :: dummy(:,:),FragEnergies(:,:,:)
     type(decorbital),pointer :: OccOrbitalsSUB(:), VirtOrbitalsSUB(:)
+    real(realk) :: energies(ndecenergies)
 
 
 
@@ -1193,9 +1194,25 @@ contains
             & MySubsystem%nocc,MySubsystem%nunocc,&
             &OccOrbitalsSUB,VirtOrbitalsSUB,AFsub,dofragSUB,.false.,jobs)
 
+       ! Run DEC fragment calculations
        call fragment_jobs(MySubsystem%nocc,MySubsystem%nunocc,MySubsystem%nfrags,&
             & MySubsystem,lssub,&
             & OccOrbitalsSUB,VirtOrbitalsSUB,jobs,AFsub,FragEnergies,esti)
+
+       ! Add fragment energies
+       do i=1,ndecenergies
+          call add_dec_energies(nfrags,FragEnergies(:,:,i),dofragSUB,energies(i))
+       end do
+
+       ! Print all fragment energies
+       write(DECinfo%output,*) '*********************************************************************'
+       write(DECinfo%output,*) 'Printing fragment energies for subsystem ', this
+       write(DECinfo%output,*) '*********************************************************************'
+       call print_all_fragment_energies(MySubsystem%nfrags,FragEnergies,dofragSUB,&
+            & MySubsystem%DistanceTable,energies)
+
+       ! Obtain The Correlation Energy from the list energies
+       call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Ecorr)
 
        ! Free stuff
        do i=1,MySubsystem%nocc
@@ -1209,7 +1226,7 @@ contains
        call mem_dealloc(FragEnergies)
        do i=1,MySubsystem%nfrags
           if(.not. associated(AFsub(i)%EOSatoms)) cycle
-          call atomic_fragment_free(AFsub(i))
+          call atomic_fragment_free_simple(AFsub(i))
        end do
        call mem_dealloc(AFsub)
 

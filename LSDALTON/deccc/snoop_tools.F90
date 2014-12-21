@@ -1273,6 +1273,7 @@ print *, 'Remember to fix NC for frozen core!'
     integer :: i,j,noccAOSsub,fullidx,counter,subidx,natoms
     integer :: fulltosub(MyMoleculeFULL%nocc)
     integer,pointer :: occAOS(:)
+    logical :: DoBasis,pairfrag
 
     ! Number of atoms (KK fixme: Needs to be modified for DECCO)
     natoms = MyMoleculeFULL%natoms
@@ -1324,10 +1325,12 @@ print *, 'Remember to fix NC for frozen core!'
           ! rotate_subsystem_orbitals_to_mimic_FULL_orbitals 
           ! (although comment (*) above means that there might be a slight difference
           !  in occupied AOS).
+          DoBasis=.false.
+          pairfrag=.false.
           call atomic_fragment_init_integer_list(i,MySubsystem%nunocc, MySubsystem%nocc, &
                & AFfull(i)%nunoccAOS,noccAOSsub,&
                & AFfull(i)%unoccAOSidx,occAOS(1:noccAOSsub),OccOrbitalsSUB,VirtOrbitalsSUB,&
-               & MySubsystem,lssub,AFsub(i),.true.,.false.)
+               & MySubsystem,lssub,AFsub(i),DoBasis,pairfrag)
 
        end if SubsystemFragment
 
