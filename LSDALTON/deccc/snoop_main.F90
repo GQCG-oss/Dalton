@@ -1137,12 +1137,11 @@ contains
     logical :: dofragSUB(MySubsystem%nfrags), dofragFULL(MyMoleculeFULL%nfrags)
     real(realk) :: EHF,Eerr
     logical :: esti,calcAF
-    integer :: i,nfrags
+    integer :: i
     type(joblist) :: jobs
     real(realk),pointer :: dummy(:,:),FragEnergies(:,:,:)
     type(decorbital),pointer :: OccOrbitalsSUB(:), VirtOrbitalsSUB(:)
     real(realk) :: energies(ndecenergies)
-
 
 
     ! DEC calculation
@@ -1201,7 +1200,7 @@ contains
 
        ! Add fragment energies
        do i=1,ndecenergies
-          call add_dec_energies(nfrags,FragEnergies(:,:,i),dofragSUB,energies(i))
+          call add_dec_energies(MySubsystem%nfrags,FragEnergies(:,:,i),dofragSUB,energies(i))
        end do
 
        ! Print all fragment energies
