@@ -100,8 +100,8 @@ module dec_typedef_module
      logical :: SNOOPdebug
      !> Impose orthogonality constrant for occupied subsystem orbitals in SNOOP
      logical :: SNOOPort
-     !> Use dimer orbital spaces for monomer calculation as defined by natural connection
-     logical :: SNOOPdimerspace
+     !> Use FULL orbital spaces for monomer calculation as defined by natural connection
+     logical :: SNOOPFULLspace
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION

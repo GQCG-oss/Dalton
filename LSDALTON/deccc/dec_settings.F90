@@ -38,7 +38,7 @@ contains
     DECinfo%SNOOPthr=1e-7_realk
     DECinfo%SNOOPdebug=.false.
     DECinfo%SNOOPort=.false.
-    DECinfo%SNOOPdimerspace=.true.
+    DECinfo%SNOOPfullspace=.true.
 
 
     DECinfo%doDEC                  = .false.
@@ -363,9 +363,9 @@ contains
        case('.SNOOP_DEBUG'); DECinfo%SNOOPdebug=.true.
           ! Impose orthogonality constrant for occupied subsystem orbitals in SNOOP 
        case('.SNOOPORT'); DECinfo%SNOOPort=.true.
-          !> Do not use dimer orbital spaces for monomer calculation as defined by natural connection,
+          !> Do not use full orbital spaces for monomer calculation as defined by natural connection,
           !> rather simply do independent DEC fragment optimization for monomers.
-       case('.SNOOPNOTDIMERSPACE'); DECinfo%SNOOPdimerspace=.false.
+       case('.SNOOPNOTFULLSPACE'); DECinfo%SNOOPfullspace=.false.
 
 
           ! GENERAL INFO
@@ -1034,7 +1034,7 @@ contains
     write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
     write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
-    write(lupri,*) 'SNOOPdimerspace ', DECinfo%SNOOPdimerspace
+    write(lupri,*) 'SNOOPfullspace ', DECinfo%SNOOPfullspace
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
