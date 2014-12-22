@@ -1259,7 +1259,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      omega2%access_type = AT_ALL_ACCESS
 
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then !`DIL
-        call tensor_lock_wins(omega2,'s',all_nodes = .true.)
+      call tensor_lock_wins(omega2,'s',all_nodes = .true.)
      endif
 #endif
 
@@ -1433,8 +1433,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 
-        if(alloc_in_dummy.and.(scheme/=1.or.DIL_LOCK_OUTSIDE)) then
-         call tensor_lock_wins(u2,'s',all_nodes = .true.) !`DIL
+        if(alloc_in_dummy.and.(scheme/=1.or.DIL_LOCK_OUTSIDE)) then !`DIL
+         call tensor_lock_wins(u2,'s',all_nodes = .true.)
         endif
 
         call time_start_phase(PHASE_WORK, at = time_init_comm )
@@ -1511,24 +1511,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !call get_currently_available_memory(MemFree2)
      !call get_available_memory(DECinfo%output,MemFree4,memfound,suppress_print=.true.)
 
-!{`DIL: Not sure yet if I need w0,w1,w2,w3 in scheme 1:
      ! allocate working arrays depending on the batch sizes
-     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
+     if(scheme/=1) then !`DIL
+      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-     call mem_alloc( w0, w0size , simple = .false. )
+      call mem_alloc( w0, w0size , simple = .false. )
 
-     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
+      w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-     call mem_alloc( w1, w1size , simple = .false.)
+      call mem_alloc( w1, w1size , simple = .false.)
 
-     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
+      w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-     call mem_alloc( w2, w2size , simple = .false. )
+      call mem_alloc( w2, w2size , simple = .false. )
 
-     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
+      w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-     call mem_alloc( w3, w3size , simple = .false. )
-!}
+      call mem_alloc( w3, w3size , simple = .false. )
+     endif
 
      !call get_currently_available_memory(MemFree3)
 
@@ -1707,7 +1707,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
         scheme=1 !``DIL: remove
-        if(alloc_in_dummy) call tensor_unlock_wins(u2,all_nodes=.true.) !``DIL: remove
+!        if(alloc_in_dummy) call tensor_unlock_wins(u2,all_nodes=.true.) !``DIL: remove
 !$OMP WORKSHARE
         uigcj%d=0E0_realk
 !$OMP END WORKSHARE
@@ -1746,7 +1746,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Contr spec set failed!',-1)
          dil_mem=dil_get_min_buf_size(tch,errc); print *,'#DIL: TC1: BS: ',impir,errc,dil_mem
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Buf size set failed!',-1)
-         call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc); print *,'#DIL: TC1: TC: ',impir,errc
+         call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
+         print *,'#DIL: TC1: TC: ',impir,errc
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
 !#endif
 #endif
@@ -1770,13 +1771,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,w2%d,nv,0.0E0_realk,w1%d,lg)
 #endif 
-        else
+        else !scheme={3,4}
            call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,u2%elm1,nv,0.0E0_realk,w1%d,lg)
         endif
         !u [gamma c i j ] -> u [i gamma c j]
         if(scheme/=1) call array_reorder_4d(1.0E0_realk,w1%d,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj%d)
         call print_norm(uigcj%d,uigcj%n,'#DIL: NORM(uigcj_out):') !``DIL: remove
-        if(alloc_in_dummy) call tensor_lock_wins(u2,'s',all_nodes=.true.) !``DIL: remove
+!        if(alloc_in_dummy) call tensor_lock_wins(u2,'s',all_nodes=.true.) !``DIL: remove
         scheme=2 !``DIL: remove
 
 
@@ -1862,7 +1863,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if( alloc_in_dummy )then
               if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) call lsmpi_win_flush(omega2%wi(1),local=.true.)
            else
-              if( lock_outside .and. scheme==2 )call tensor_unlock_wins(omega2,.true.) !``
+              if( lock_outside .and. scheme==2 )call tensor_unlock_wins(omega2,.true.)
            endif
 #endif
            call time_start_phase(PHASE_WORK, at = time_intloop_comm)

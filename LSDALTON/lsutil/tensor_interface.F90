@@ -15,6 +15,19 @@ module tensor_interface_module
   use matrix_module
   use dec_workarounds_module
   use tensor_algebra_dil
+!#ifdef DIL_DEBUG
+  public dil_tens_contr_t
+  public DIL_TC_EACH
+  public DIL_TC_ALL
+  public dil_clean_tens_contr
+  public dil_set_tens_contr_args
+  public dil_get_min_buf_size
+  public dil_set_tens_contr_spec
+  public dil_tensor_contract
+  public thread_wtime
+  public process_wtime
+  public merge_sort_real8
+!#endif
 
   !This defines the public interface to the tensors
   !The tensor type itself
