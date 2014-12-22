@@ -632,6 +632,7 @@
 !-------------------------------------------------------------------------------------------------------------------
         subroutine dil_set_tens_contr_spec(tcontr,tcs,ierr,ddims,ldims,rdims,dbase,lbase,rbase,alpha,beta,dest_zero) !SERIAL
 !This user-level subroutine sets up a formal tensor contraction specification.
+!Note that the tensor arguments must have been set already (prior to this call)!
         implicit none
         type(dil_tens_contr_t), intent(inout):: tcontr   !inout: full tensor contraction specification
         character(*), intent(inout):: tcs                !inout: tensor contraction specification string (spaces will be removed)
@@ -752,7 +753,15 @@
           endif
  !Other stuff:
           if(present(alpha)) then; tcontr%alpha=alpha; else; tcontr%alpha=1E0_realk; endif
-          if(present(beta)) then; tcontr%beta=beta; else; tcontr%beta=0E0_realk; endif
+          if(present(beta)) then
+           tcontr%beta=beta
+          else
+           if(tcontr%dest_arg%store_type.eq.'l'.or.tcontr%dest_arg%store_type.eq.'L') then
+            tcontr%beta=1E0_realk
+           else
+            tcontr%beta=0E0_realk
+           endif
+          endif
           if(present(dest_zero)) then; dz=dest_zero; else; dz=.false.; endif
  !Set up a formal tensor contraction specification:
           call dil_tens_contr_spec_setup(tcontr%contr_spec,nd,nl,nr,dprm,lprm,rprm,ddim,ldim,rdim,ierr,dbas,lbas,rbas,dz)
@@ -3342,8 +3351,8 @@
          end function get_next_mlndx
 
         end subroutine dil_tens_contr_partition
-!-----------------------------------------------------------------------------------------------------------------
-        subroutine dil_tensor_contract_pipe(cspec,darg,larg,rarg,alpha,mem_lim,ierr,ebuf,locked,num_gpus,num_mics) !PARALLEL (MPI+OMP+CUDA+MIC)
+!----------------------------------------------------------------------------------------------------------------------
+        subroutine dil_tensor_contract_pipe(cspec,darg,larg,rarg,alpha,beta,mem_lim,ierr,ebuf,locked,num_gpus,num_mics) !PARALLEL (MPI+OMP+CUDA+MIC)
 !This subroutine implements pipelined tensor contractions for CPU/GPU/MIC.
 !Details:
 ! * Each Device is assigned several buffers:
@@ -3364,7 +3373,8 @@
         type(tens_arg_t), intent(inout):: darg                          !inout: destination tensor argument
         type(tens_arg_t), intent(in):: larg                             !in: left tensor argument
         type(tens_arg_t), intent(in):: rarg                             !in: right tensor argument
-        real(realk), intent(in):: alpha                                 !in: tensor contraction prefactor
+        real(realk), intent(in):: alpha                                 !in: tensor contraction prefactor (GEMM alpha)
+        real(realk), intent(in):: beta                                  !in: GEMM beta
         integer(INTL), intent(in):: mem_lim                             !in: local memory limit (bytes): buffer space
         integer(INTD), intent(inout):: ierr                             !out: error code (0:success)
         real(realk), intent(inout), target, optional:: ebuf(1:mem_lim)  !inout: existing external buffer (to avoid mem allocations)
@@ -3374,7 +3384,6 @@
 !-------------------------------------------------
         logical, parameter:: NO_CHECK=.false.     !argument check
         integer(INTL), parameter:: alignment=4096 !buffer alignment in bytes (must be multiple of 16)
-        real(realk), parameter:: beta=0E0_realk   !GEMM beta
 !------------------------------------------------
         integer(INTD):: i,j,k,l,m,n,impir
         type(C_PTR):: hbuf_cp
@@ -4233,11 +4242,11 @@
 !Execute tensor contraction:
         if(ierr.eq.0) then
          if(present(ext_buffer)) then
-          call dil_tensor_contract_pipe(tcontr%contr_spec,tcontr%dest_arg,tcontr%left_arg,tcontr%right_arg,tcontr%alpha,mem_lim,&
-          &ierr,ebuf=ext_buffer,locked=win_lck,num_gpus=ngpus,num_mics=nmics)
+          call dil_tensor_contract_pipe(tcontr%contr_spec,tcontr%dest_arg,tcontr%left_arg,tcontr%right_arg,&
+          &tcontr%alpha,tcontr%beta,mem_lim,ierr,ebuf=ext_buffer,locked=win_lck,num_gpus=ngpus,num_mics=nmics)
          else
-          call dil_tensor_contract_pipe(tcontr%contr_spec,tcontr%dest_arg,tcontr%left_arg,tcontr%right_arg,tcontr%alpha,mem_lim,&
-          &ierr,locked=win_lck,num_gpus=ngpus,num_mics=nmics)
+          call dil_tensor_contract_pipe(tcontr%contr_spec,tcontr%dest_arg,tcontr%left_arg,tcontr%right_arg,&
+          &tcontr%alpha,tcontr%beta,mem_lim,ierr,locked=win_lck,num_gpus=ngpus,num_mics=nmics)
          endif
         elseif(ierr.lt.0) then !no work for this MPI process: Ok
          ierr=0
