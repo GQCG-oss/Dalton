@@ -855,9 +855,21 @@ contains
 
     !MinAlphaBatchSize = AlphaBatchSize
     !MinGammaBatchSize = GammaBatchSize
+
+    if(DECinfo%F12DEBUG) then
+       print *, "call get_max_batchsize..."
+    endif
     
     call get_max_batchsize(MaxdimAlpha,MaxdimGamma,MinAlphaBatchSize,MinGammaBatchSize,n11,n12,n21,n22,n31,n32,n41,n42)
 
+    if(DECinfo%F12DEBUG) then
+       print *, "exit get_max_batchsize..."
+       print *, "----------------------------"
+       print *, "MaxdimAlpha: ", MaxdimAlpha
+       print *, "MaxdimGamma: ", MaxdimGamma
+       print *, "----------------------------"
+    endif
+        
     GammaBatchSize = MaxdimGamma
     AlphaBatchSize = MaxdimAlpha
 
@@ -2067,6 +2079,7 @@ contains
 
     subroutine sub4(tmp,gMO,elms,ndim2,ndim1)
       implicit none
+      
       integer :: ndim1(4),ndim2(4)
       real(realk),intent(in) :: elms(ndim1(4),ndim2(4))
       real(realk),intent(in) :: tmp(ndim2(1),ndim2(2),ndim2(3),ndim1(4))
@@ -2100,24 +2113,19 @@ contains
   
     !> Batching routine initializations
     real(realk) :: MemAvailable, step1, step2, step3, step4, MAXstepmem   
-    real(realk) :: dim1,dim2,dim3,dim4,dim5,Ngamma,Nalpha,frac
+    real(realk) :: dim1,dim2,dim3,dim4,dim5,Ngamma,Nalpha,frac,GB,MB,KB,UNIT
 
     integer :: i,j,k
 
     !   dimAlpha = n11 !Full nbasis
     !   dimGamma = n31 !Full nbasis
 
+    GB = 1.0E-9_realk
+    MB = 1.0E-6_realk
+    KB = 1.0E-3_realk
     frac = 0.9E0_realk   
     Maxstepmem = 0.0E0_realk
-
-!!$    print *, "--------------- MEMORY STATS ---------------"
-!!$    print *, "step1: ", step1
-!!$    print *, "step2: ", step2
-!!$    print *, "step3: ", step3
-!!$    print *, "step4: ", step4
-!!$    print *, "Maxst: ", Maxstepmem
-!!$    print *, "MemAv: ", MemAvailable
-!!$    print *, "MemIn: ", mem_allocated_global   
+    UNIT = KB
 
     dimAlpha = n11
     dimGamma = n31
@@ -2125,8 +2133,37 @@ contains
     MemAvailable = 0.0E0_realk   
     call get_currently_available_memory(MemAvailable)
     MemAvailable = MemAvailable*1.0E9_realk !In bytes
+   
+    if(DECinfo%F12DEBUG) then
+       print *, "----------------------------------"
+       print *, " Inside get_max_batchsize summary "
+       print *, "----------------------------------"
+       print *, "MemAvailable: ", MemAvailable*UNIT
+       print *, "n11: ", n11
+       print *, "n21: ", n21
+       print *, "n31: ", n31
+       print *, "n41: ", n41
+       print *, "----------------------------------"
+       print *, "n12: ", n12
+       print *, "n22: ", n22
+       print *, "n32: ", n32
+       print *, "n42: ", n42
+       print *, "----------------------------------"
+    endif
 
-    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
+    
+    if(DECinfo%F12DEBUG) then
+       print *, "call get_maxstepmem..."
+       print *, "dimAlpha: ", dimAlpha
+       print *, "dimGamma: ", dimGamma
+    endif
+    
+    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
+    
+    if(DECinfo%F12DEBUG) then
+       print *, "exit get_maxstepmem..."
+       print *, "Maxstepmem", Maxstepmem*UNIT
+    endif
 
     if(MAXstepmem .LT. frac*MemAvailable) THEN
        dimAlpha = n11
@@ -2134,47 +2171,73 @@ contains
     else 
 
        gamma: do k = n31,minGamma,-1
-          call get_maxstepmem(MAXstepmem,dimAlpha,k,n11,n12,n21,n22,n31,n32,n41,n42)
+          call get_maxstepmem(MAXstepmem,dimAlpha,k,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
 
           if(Maxstepmem < frac*MemAvailable) then
              dimGamma = k
+             if(DECinfo%F12DEBUG) then
+                print *, "inside gamma loop: "
+                print *, "dimGamma:", dimGamma
+             endif
              exit gamma   
           endif
        enddo gamma
 
        alpha: do k = minAlpha, n11
-          
-          call get_maxstepmem(MAXstepmem,k,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
-        
+
+          call get_maxstepmem(MAXstepmem,k,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
+
           if(Maxstepmem < frac*MemAvailable) then
              dimAlpha = k
+             if(DECinfo%F12DEBUG) then
+                print *, "inside alpha loop: "
+                print *, "dimAlpha:", dimAlpha
+             endif
              exit alpha   
           endif
-          
-       enddo alpha      
+
+       enddo alpha
     endif
 
   end subroutine get_max_batchsize
 
-  subroutine get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42)
+  subroutine get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
+    implicit none
+
     integer, intent(in) :: n11, n12, n21, n22, n31, n32, n41, n42
     integer, intent(in) :: dimAlpha, dimGamma
     real(realk), intent(inout) :: MAXstepmem
+    real(realk), intent(in) :: UNIT  
 
+    integer(8) :: dim1,dim2,dim3,dim4
+    real(realk) :: step1,step2,step3,step4
+    
     dim1 = i8*n21*n41*dimAlpha*dimGamma   ! dim of tmp1
     dim2 = i8*n41*dimAlpha*dimGamma*n22   ! dim of tmp2 
     dim3 = i8*n42*dimAlpha*dimGamma*n22   ! dim of tmp1     
     dim4 = i8*n42*dimAlpha*n32*n22        ! dim of tmp1 
 
-    step1 = dim1 + dim2 
-    step2 = dim2 + dim3
+    step1 = (dim1 + dim2)*8 
+    step2 = (dim2 + dim3)*8
     step3 = step2
-    step4 = dim3 + dim4
-    MAXstepmem = MAX(step1,step2,step3,step4) 
+    step4 = (dim3 + dim4)*8
 
+    MAXstepmem = MAX(step1,step2,step3,step4) 
+    
+    if(DECinfo%F12DEBUG) then
+       print *, "inside get_maxstepmem..."
+       print *, "step1: ", step1*UNIT
+       print *, "step2: ", step2*UNIT 
+       print *, "step3: ", step3*UNIT
+       print *, "step4: ", step4*UNIT
+       print *, "MAXstepmem: ", Maxstepmem*UNIT
+    endif
+    
   end subroutine get_maxstepmem
  
   subroutine get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
+    implicit none
+    
     type(fullmolecule),intent(inout) :: MyMolecule
     type(lsitem), intent(inout) :: Mylsitem
     real(realk), intent(inout) :: ES2

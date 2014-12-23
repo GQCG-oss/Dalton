@@ -77,13 +77,10 @@ opt_cpexe=0
 opt_nobackup=0
 opt_noarch=0
 opt_noappend=0
-if [ $opt_lsdalton -eq 1 ] ; then #LSDALTON only
-  opt_lslib_test=0
-  opt_restart=0
-  optdens=0
-else #DALTON only
-  optx=0 
-fi
+opt_lslib_test=0
+opt_restart=0
+optdens=0
+optx=0 
 #
 # Define usage message
 #
