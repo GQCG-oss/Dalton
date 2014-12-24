@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2014/12/22 (started 2014/09/01).
+!REVISION: 2014/12/23 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -114,11 +114,11 @@
         integer(INTD), private:: CONS_OUT=6                             !console output device
         logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
         logical, private:: VERBOSE=.true.                               !verbosity (for errors)
-        logical, private:: DEBUG=.true.                                 !debugging
-        integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
+        logical, public:: DIL_DEBUG=.true.                              !debugging
+        integer(INTD), public:: DIL_DEBUG_FILE=666                      !debug file handle
 #ifdef USE_MIC
-!DIR$ ATTRIBUTES OFFLOAD:mic:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
-!DIR$ ATTRIBUTES ALIGN:128:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
+!DIR$ ATTRIBUTES OFFLOAD:mic:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
+!DIR$ ATTRIBUTES ALIGN:128:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
 #endif
 !TYPES:
  !Tensor contraction specification:
@@ -412,7 +412,7 @@
         if(nd.gt.0) call permutation_invert(nd,cspec%dprmn,prm0,i)
         if(nl.gt.0) call permutation_invert(nl,cspec%lprmn,prm1,i)
         if(nr.gt.0) call permutation_invert(nr,cspec%rprmn,prm2,i)
-        if(DEBUG) then
+        if(DIL_DEBUG) then
          write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): ddims:",64(1x,i4))') cspec%ddims(1:nd)
          write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): ldims:",64(1x,i4))') cspec%ldims(1:nl)
          write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): rdims:",64(1x,i4))') cspec%rdims(1:nr)
@@ -1728,7 +1728,7 @@
         integer(INTD):: trn(0:MAX_TENSOR_RANK),key(1:MAX_TENSOR_RANK),pos(1:MAX_TENSOR_RANK)
 
         ierr=0
-        if(DEBUG) call printf('#DEBUG(DIL): Tensor contraction pattern: '//tcs(1:tcl))
+        if(DIL_DEBUG) call printf('#DEBUG(DIL): Tensor contraction pattern: '//tcs(1:tcl))
         if(tcl.gt.0) then
          l=1
  !Destination tensor argument:
@@ -1823,7 +1823,7 @@
         else
          ierr=22; return
         endif
-        if(DEBUG) then
+        if(DIL_DEBUG) then
          write(CONS_OUT,'("#DEBUG(DIL): Destination matricization permutation:",32(1x,i2))') dprm(1:nd)
          write(CONS_OUT,'("#DEBUG(DIL): Left matricization permutation:",32(1x,i2))') lprm(1:nl)
          write(CONS_OUT,'("#DEBUG(DIL): Right matricization permutation:",32(1x,i2))') rprm(1:nr)
@@ -2086,7 +2086,7 @@
 !DIR$ ATTRIBUTES ALIGN:128:: im,n2o,ipr,dim_beg,dim_end,bases_in,bases_out,bases_pri,segs
 #endif
         ierr=0
-        if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Transposing ... ")',ADVANCE='NO')
+        if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Transposing ... ")',ADVANCE='NO')
         time_beg=thread_wtime() !debug
         if(dim_num.lt.0) then; ierr=1; return; elseif(dim_num.eq.0) then; tens_out(0)=tens_in(0); return; endif
 !Check the index permutation:
@@ -2281,7 +2281,7 @@
 !$OMP END PARALLEL
         endif !trivial or not
         tm=thread_wtime(time_beg) !debug
-        if(DEBUG) write(CONS_OUT,'("Done: ",F10.4," s, ",F10.4," GB/s: stat ",i9)')&
+        if(DIL_DEBUG) write(CONS_OUT,'("Done: ",F10.4," s, ",F10.4," GB/s: stat ",i9)')&
         &tm,dble(2_INTL*bs*real_kind)/(tm*1048576d0*1024d0),ierr !debug
 !        write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_transpose): Done: ",F10.4," sec, ",F10.4," GB/s, error ",i3)')&
 !        &tm,dble(2_INTL*bs*real_kind)/(tm*1024d0*1024d0*1024d0),ierr !debug
@@ -2367,7 +2367,7 @@
 
         ierr=0; call dil_rank_window_clean(rwc)
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
-        if(DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Prefetching (",4(1x,i3,":",i3,","),")")')&
+        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Prefetching (",4(1x,i3,":",i3,","),")")')&
         &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,4)/) !debug
         buf_end=0_INTL; k=DIL_FIRST_CALL
         do while(k.ge.0) !k<0: iterations are over
@@ -2376,13 +2376,13 @@
           call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
-          if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
 #ifdef VAR_MPI
           if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
 #endif
           call tensor_get_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
-          if(DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i3))') signa(1:tens_arr%mode)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i3))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
           ierr=-1; return
@@ -2412,7 +2412,7 @@
          if(k.eq.0) then
           call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
-          if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
 #ifdef VAR_MPI
           if(new_rw) then
@@ -2423,7 +2423,7 @@
            endif
           endif
 #endif
-          if(DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
          elseif(k.gt.0) then
           ierr=-1; return
          endif
@@ -2454,13 +2454,13 @@
           call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
-          if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
 #ifdef VAR_MPI
           if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
 #endif
           call tensor_accumulate_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
-          if(DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
           ierr=-1; return
@@ -2490,7 +2490,7 @@
          if(k.eq.0) then
           call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
-          if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
 #ifdef VAR_MPI
           if(new_rw) then
@@ -2501,7 +2501,7 @@
            endif
           endif
 #endif
-          if(DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
          elseif(k.gt.0) then
           ierr=-1; return
          endif
@@ -2527,11 +2527,11 @@
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
-          if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",4(1x,i3))',ADVANCE='NO') signa(1:n)
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",4(1x,i3))',ADVANCE='NO') signa(1:n)
           call dil_tensor_insert(n,bufo%buf_ptr,tens_part%dims,bufi%buf_ptr(buf_end+1_INTL:),tile_dims,&
                                 &signa(1:n)-tens_part%lbnd(1:n),i)
           if(i.ne.0) then; ierr=1; return; endif
-          if(DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
+          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
           ierr=2; return
@@ -2558,11 +2558,11 @@
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
-          if(DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Packing:",4(1x,i3))',ADVANCE='NO') signa(1:n)
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Packing:",4(1x,i3))',ADVANCE='NO') signa(1:n)
           call dil_tensor_slice(n,bufi%buf_ptr,tens_part%dims,bufo%buf_ptr(buf_end+1_INTL:),tile_dims,&
                                &signa(1:n)-tens_part%lbnd(1:n),i)
           if(i.ne.0) then; ierr=1; return; endif
-          if(DEBUG) write(CONS_OUT,'(": Packed: Status ",i9)') i
+          if(DIL_DEBUG) write(CONS_OUT,'(": Packed: Status ",i9)') i
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
           ierr=2; return
@@ -2709,7 +2709,7 @@
 
         ierr=0
         tmb=thread_wtime()
-        if(DEBUG) write(CONS_OUT,'("#DEBUG(dil_tens_contr_distribute) [",i5,"]: Entered ...")') impir
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tens_contr_distribute) [",i5,"]: Entered ...")') impir
         if(impis.gt.0.and.impir.ge.0.and.impir.lt.impis) then
 !Compute tensor ranks:
          nd=tcontr%contr_spec%ndims_left+tcontr%contr_spec%ndims_right
@@ -2798,7 +2798,7 @@
            endif
           endif
          enddo
-         if(DEBUG) then
+         if(DIL_DEBUG) then
           write(CONS_OUT,'(1x,"#DEBUG(DIL): markers:",64(5x,A1))') (/('c',i=1,tcontr%contr_spec%ndims_contr)/),&
           &(/('l',i=1,tcontr%contr_spec%ndims_left)/),(/('r',i=1,tcontr%contr_spec%ndims_right)/) !markers
           write(CONS_OUT,'(1x,"#DEBUG(DIL): dims   :",64(1x,i5))') tcc(1:ni)
@@ -2822,7 +2822,8 @@
          endif
          if(impir.lt.n) then !this MPI process will have work to do
           call dil_divide_space_int(3_INTD,mdim,sbvol,mseg,i); if(i.ne.0) then; ierr=14; return; endif
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: 3d subblock dims:",3(1x,i7))') impir,mseg(1:3)
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: 3d subblock dims:",3(1x,i7))')&
+          &impir,mseg(1:3)
 !Divide the space encapsulated in each matricized dimension:
  !Contracted:
           k=tcontr%contr_spec%ndims_contr
@@ -2844,10 +2845,12 @@
           endif
           sbvol=1_INTL; do i=1,ni; sbvol=sbvol*tcs(i); enddo !subblock volume
           npieces=1_INTL; do i=1,ni; npieces=npieces*((tcc(i)-1_INTD)/tcs(i)+1_INTD); enddo !number of work pieces
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: initial subblock segs:",64(1x,i5))')&
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: initial subblock segs:",64(1x,i5))')&
           &impir,tcs(1:ni)
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: initial subblock volume = ",i12)') impir,sbvol
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: initial work pieces = ",i12)') impir,npieces
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: initial subblock volume = ",i12)')&
+          &impir,sbvol
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: initial work pieces = ",i12)')&
+          &impir,npieces
 !Adjust the initial work distribution (cover all space):
           if(npieces.lt.n) then !subblock size may need to be decreased
            trn(0:ni)=(/+1_INTD,(i,i=1_INTD,ni)/)
@@ -2871,11 +2874,11 @@
             endif
            enddo
            sbvol=1_INTL; do i=1,ni; sbvol=sbvol*tcs(i); enddo !subblock volume
-           if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock segs:",64(1x,i5))')&
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock segs:",64(1x,i5))')&
            &impir,tcs(1:ni)
-           if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock volume = ",i12)')&
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock volume = ",i12)')&
            &impir,sbvol
-           if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted work pieces = ",i12)')&
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted work pieces = ",i12)')&
            &impir,npieces
           endif
           l=0
@@ -2905,19 +2908,19 @@
            enddo
           enddo
           sbvol=1_INTL; do i=1,ni; sbvol=sbvol*tcs(i); enddo !subblock volume
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock segs:",64(1x,i5))')&
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock segs:",64(1x,i5))')&
           &impir,tcs(1:ni)
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock volume = ",i12)')&
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock volume = ",i12)')&
           &impir,sbvol
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted work pieces = ",i12)')&
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted work pieces = ",i12)')&
           &impir,npieces
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: work starving ratio (>=1) = ",F10.4)')&
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: work starving ratio (>=1) = ",F10.4)')&
           &impir,dble(n)/dble(npieces)
 !Distribute the work subspaces among MPI processes:
  !Compute the starting point in the tensor contraction space for each MPI process:
           do i=1,ni; trn(i)=(tcc(i)-1_INTD)/tcs(i)+1_INTD; enddo !number of work segments per dimension
           trn(0)=1_INTD; do i=1,ni; trn(i)=trn(i)*trn(i-1); enddo !division bases: trn(ni)=npieces
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: ",i12," work pieces for ",i6," procs.")')&
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: ",i12," work pieces for ",i6," procs.")')&
           &impir,trn(ni),n
           if(trn(ni).eq.npieces) then !number of work pieces <= number of active MPI processes
   !Coarse-grain setup:
@@ -3002,7 +3005,8 @@
             else
              tcontr%contr_spec%ddims(1:nd)=0; tcontr%contr_spec%ldims(1:nl)=0; tcontr%contr_spec%rdims(1:nr)=0
              ierr=DIL_NO_WORK !flag: NO WORK for this MPI process (#impir)
-             if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: 3d subblock dims:",3(1x,i7))') impir,0,0,0
+             if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: 3d subblock dims:",3(1x,i7))')&
+             &impir,0,0,0
             endif
            endif
           else
@@ -3013,13 +3017,14 @@
          else !this MPI process will have no work
           tcontr%contr_spec%ddims(1:nd)=0; tcontr%contr_spec%ldims(1:nl)=0; tcontr%contr_spec%rdims(1:nr)=0
           ierr=DIL_NO_WORK !flag: NO WORK for this MPI process (#impir)
-          if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: 3d subblock dims:",3(1x,i7))') impir,0,0,0
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: 3d subblock dims:",3(1x,i7))')&
+          &impir,0,0,0
          endif
         else
          ierr=20
         endif
         tm=thread_wtime(tmb)
-        if(DEBUG) write(CONS_OUT,'("#DEBUG(dil_tens_contr_distribute) [",i5,"]: Exited with status ",i9," ( ",F10.4," s)")')&
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tens_contr_distribute) [",i5,"]: Exited with status ",i9," ( ",F10.4," s)")')&
         &impir,ierr,tm
         return
         end subroutine dil_tens_contr_distribute
@@ -3056,7 +3061,7 @@
 !        index_pos(i)=mod(abs(i)-1,MAX_TENSOR_RANK)+1 !index code --> index (dimension) position
 
         ierr=0; tmb=thread_wtime(); impir=my_mpi_rank(infpar%lg_comm)
-        if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Entered ...")') impir !debug
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Entered ...")') impir !debug
 !Argument check:
         do i=1,3
          if(contr_case(i:i).eq.'l'.or.contr_case(i:i).eq.'L') then
@@ -3193,7 +3198,7 @@
           endif
          endif
         endif
-        if(DEBUG) then
+        if(DIL_DEBUG) then
          write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Max Vol/Dims: ",i11,3(1x,i9))')&
          &impir,max_arg_vol,ll,lr,lc !debug
          if(lc.le.0_INTL.or.ll.le.0_INTL.or.lr.le.0_INTL) then; ierr=11; return; endif
@@ -3219,7 +3224,7 @@
          &impir,i
          ierr=16; return
         endif
-        if(DEBUG) then
+        if(DIL_DEBUG) then
          write(CONS_OUT,'(1x,"#DEBUG(DIL): XX:",64(4x,A1))') (/('c',i=1,cspec%ndims_contr)/),&
          &(/('l',i=1,cspec%ndims_left)/),(/('r',i=1,cspec%ndims_right)/) !markers
          write(CONS_OUT,'(1x,"#DEBUG(DIL): LB:",64(1x,i4))') lb(1:ni) !index lower bounds
@@ -3265,7 +3270,7 @@
          call dil_contr_task_set_arg(task_list%contr_tasks(n),'r',nr,cl,cu,i); if(i.ne.0) then; ierr=23; return; endif
   !Count task Flops:
          call dil_contr_task_set_flops(cspec,task_list%contr_tasks(n),i); if(i.ne.0) then; ierr=24; return; endif
-         if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition): generated task # ",i9)') n !debug
+         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition): generated task # ",i9)') n !debug
          call dil_contr_task_print(cspec,task_list%contr_tasks(n)) !debug
          more_tasks=get_next_mlndx(n) !next task
         enddo
@@ -3275,7 +3280,7 @@
          ierr=25; return
         endif
         tm=thread_wtime(tmb)
-        if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Done in ",F10.4," s.")')&
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Done in ",F10.4," s.")')&
         &impir,tm !debug
         return
 
@@ -3395,7 +3400,7 @@
         real(realk):: val
 
         ierr=0; tmb=thread_wtime(); impir=my_mpi_rank(infpar%lg_comm)
-        if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Entered ...")') impir !debug
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Entered ...")') impir !debug
 !Init:
         val=0E0_realk; size_of_real=sizeof(val)
         tc_flops=0d0; mm_flops=0d0; tmm=0d0
@@ -3451,7 +3456,7 @@
          call cleanup(9_INTD); return
         endif
 !Check dimension range consistency:
-        if(DEBUG) then
+        if(DIL_DEBUG) then
          select case(darg%store_type)
          case('l','L')
           write(CONS_OUT,'("#DEBUG(DIL): LOC DEST STORED LBND:",16(1x,i4))') darg%tens_loc%base(1:nd)+IND_NUM_START
@@ -3629,7 +3634,7 @@
          enddo
         endif
         if(i0.gt.tot_buf_vol) then; call cleanup(33_INTD); return; endif
-        if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe): Buffer volumes (W):",3(1x,i12))')&
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe): Buffer volumes (W):",3(1x,i12))')&
         &tot_buf_vol,dev_buf_vol,arg_buf_vol !debug
 !Partition tensor contraction into smaller parts (tasks) if argument(s) do not fit into local buffers:
         select case(contr_case)
@@ -3653,7 +3658,7 @@
          if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_tensor_contract_pipe): Partitioning failed: ",i9)') i
          call cleanup(35_INTD); return
         endif
-        if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Case: ",'//&
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Case: ",'//&
         &'A3,": Task amount: ",i9)') impir,contr_case,task_list%num_tasks !debug
 !Perform partitioned tensor contraction via pipelining:
         if(task_list%num_tasks.gt.0) then
@@ -3667,7 +3672,7 @@
          next_load=.false.; prev_store=.false.; args_here=.false.; err_curr=.false.; err_prev=.false.; err_next=.false.
          tloop: do while(task_prev(dev).ge.0_INTD) !loop over the tensor contraction tasks
           task_next(dev)=dil_get_next_task(DEV_HOST_CPU,0_INTD,task_curr(dev))
-          if(DEBUG) then !debug begin
+          if(DIL_DEBUG) then !debug begin
            write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe): DEVICE: ",i2,": Tasks(c,p,n):",3(1x,l1,1x,i7))')&
            &dev,(.not.err_curr),task_curr(dev),(.not.err_prev),task_prev(dev),(.not.err_next),task_next(dev) !debug
            if(task_curr(dev).ge.1.and.task_curr(dev).le.task_list%num_tasks)&
@@ -3675,16 +3680,16 @@
           endif !debug end
           arg_reuse=dil_mark_arg_reuse(task_curr(dev),task_prev(dev))
           if(first_task) then
-           if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): First task arg load initiation started ... ")')
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): First task arg load initiation started ... ")')
            tms=thread_wtime()
            call dil_args_load_start(task_list%contr_tasks(task_curr(dev)),i) !non-blocking
            if(i.ne.0) then; task_list%contr_tasks(task_curr(dev))%task_stat=TASK_ERR_LDS; err_curr=.true.; endif
            next_load=.true.; first_task=.false.
            tm=thread_wtime(tms)
-           if(DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
           endif
           if(next_load) then
-           if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task arg load completion started ... ")')
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task arg load completion started ... ")')
            tms=thread_wtime()
            if(.not.err_curr) then
             call dil_args_load_complete(task_list%contr_tasks(task_curr(dev)),i) !blocking
@@ -3692,39 +3697,39 @@
            endif
            next_load=.false.; args_here=.true.
            tm=thread_wtime(tms)
-           if(DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
           endif
           if(args_here) then
-           if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task input prepare started ... ")')
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task input prepare started ... ")')
            tms=thread_wtime()
            if(.not.err_curr) then
             call dil_args_prepare_input(task_list%contr_tasks(task_curr(dev)),i) !blocking
             if(i.ne.0) then; task_list%contr_tasks(task_curr(dev))%task_stat=TASK_ERR_PRI; err_curr=.true.; endif
            endif
            tm=thread_wtime(tms)
-           if(DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
           endif
           if(task_next(dev).gt.0) then
-           if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Next task arg load initiation started ... ")')
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Next task arg load initiation started ... ")')
            tms=thread_wtime()
            call dil_args_load_start(task_list%contr_tasks(task_next(dev)),i) !non-blocking
            if(i.ne.0) then; task_list%contr_tasks(task_next(dev))%task_stat=TASK_ERR_LDS; err_next=.true.; endif
            next_load=.true.
            tm=thread_wtime(tms)
-           if(DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_next),tm
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_next),tm
           endif
           if(args_here) then
-           if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task computation started ... ")')
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task computation started ... ")')
            tms=thread_wtime()
            if(.not.err_curr) then
             call dil_mm_compute(task_list%contr_tasks(task_curr(dev)),i) !blocking
             if(i.ne.0) then; task_list%contr_tasks(task_curr(dev))%task_stat=TASK_ERR_CMT; err_curr=.true.; endif
            endif
            tm=thread_wtime(tms); tmm=tmm+tm
-           if(DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
           endif
           if(prev_store) then
-           if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Previous task arg store completion started ... ")')
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Previous task arg store completion started ... ")')
            tms=thread_wtime()
            if(.not.err_prev) then
             call dil_args_store_complete(task_list%contr_tasks(task_prev(dev)),i) !blocking
@@ -3737,25 +3742,25 @@
            endif
            prev_store=.false.
            tm=thread_wtime(tms)
-           if(DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_prev),tm
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_prev),tm
           endif
           if(args_here) then
            if(.not.err_curr) then
-            if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task output prepare started ... ")')
+            if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task output prepare started ... ")')
             tms=thread_wtime()
             call dil_args_prepare_output(task_list%contr_tasks(task_curr(dev)),i) !blocking
             tm=thread_wtime(tms)
             if(i.eq.0) then
-             if(DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
-             if(DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task arg store initiation started ... ")')
+             if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
+             if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task arg store initiation started ... ")')
              tms=thread_wtime()
              call dil_args_store_start(task_list%contr_tasks(task_curr(dev)),i) !non-blocking
              if(i.ne.0) then; task_list%contr_tasks(task_curr(dev))%task_stat=TASK_ERR_STS; err_curr=.true.; endif
              tm=thread_wtime(tms)
-             if(DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
+             if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
             else
              task_list%contr_tasks(task_curr(dev))%task_stat=TASK_ERR_PRO; err_curr=.true.
-             if(DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
+             if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
             endif
            endif
            prev_store=.true.; args_here=.false.
@@ -3767,10 +3772,10 @@
           err_prev=err_curr; err_curr=err_next; err_next=.false.
          enddo tloop
         else
-         if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: No tasks!")') impir !debug
+         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: No tasks!")') impir !debug
         endif
         tm=thread_wtime(tmb)
-        if(DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Done in ",F10.4'&
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Done in ",F10.4'&
         &//'," s ( ",F15.4," GFlops/s VS MM ",F15.4," GFlops/s). Ok")') impir,tm,tc_flops/(tm*1024d0*1024d0*1024d0),&
         &mm_flops/(tmm*1024d0*1024d0*1024d0) !debug
         call cleanup(0_INTD); return
@@ -4034,7 +4039,7 @@
           jp=prmn(j0,1) !original position
           lcd=lcd*tsk%left_arg%dims(jp)
          enddo
-         if(DEBUG) then
+         if(DIL_DEBUG) then
           write(CONS_OUT,'(2x,"#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe:dil_mm_compute)[",'//&
           &'i2,"]: Matrix dims:",3(1x,i11))') impir,lld,lrd,lcd
          endif
@@ -4203,7 +4208,7 @@
         impis=my_mpi_size(infpar%lg_comm); if(impis.le.0) then; ierr=1; return; endif
         impir=my_mpi_rank(infpar%lg_comm); if(impir.lt.0) then; ierr=2; return; endif
         impir_world=my_mpi_rank()
-        if(DEBUG) then
+        if(DIL_DEBUG) then
          deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
          open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN')
          old_cons=CONS_OUT; CONS_OUT=DIL_DEBUG_FILE
@@ -4212,7 +4217,8 @@
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         if(present(num_gpus)) then; ngpus=max(num_gpus,0); else; ngpus=0; endif
         if(present(num_mics)) then; nmics=max(num_mics,0); else; nmics=0; endif        
-        if(DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Entered Process ",i6," of ",i6,": ",i2," GPUs, ",i2," MICs ...")')&
+        if(DIL_DEBUG)&
+        &write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Entered Process ",i6," of ",i6,": ",i2," GPUs, ",i2," MICs ...")')&
         &impir,impis,ngpus,nmics
 !Global tensor contractions require work splitting:
         if(globality) then
@@ -4255,7 +4261,7 @@
          tcontr%contr_spec%lbase(1:nl)=cspec%lbase(1:nl)
          tcontr%contr_spec%rbase(1:nr)=cspec%rbase(1:nr)
         endif
-        if(DEBUG) then
+        if(DIL_DEBUG) then
          write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Exited Process ",i6," of ",i6,": Status ",i9)') impir,impis,ierr
          CONS_OUT=old_cons; close(DIL_DEBUG_FILE)
         endif
@@ -4314,8 +4320,8 @@
 !============================================================
 !#ifdef DIL_DEBUG
 !DEBUGGING:
-!----------------------------------------------
-        subroutine dil_debug(dtens,ltens,rtens)
+!---------------------------------------------
+        subroutine dil_test(dtens,ltens,rtens)
         implicit none
         type(tensor), intent(inout), target:: dtens
         type(tensor), intent(inout), target:: ltens
@@ -4607,6 +4613,6 @@
         stop
 #endif
         return
-        end subroutine dil_debug
+        end subroutine dil_test
 !#endif
        end module tensor_algebra_dil

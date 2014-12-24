@@ -1014,11 +1014,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !{`DIL:
      logical, parameter:: DIL_LOCK_OUTSIDE=.true. !controls Patrick's outside locks in Scheme 1
 !#ifdef DIL_DEBUG
-     logical, parameter:: DIL_DEBUG=.false. !`DIL
+     character(256):: tcs
      type(dil_tens_contr_t):: tch
-     integer(8):: dil_mem,adr1,adr2
+     integer(8):: dil_mem
      integer(4):: i0,i1,i2,i3,errc,tens_rank,tens_dims(32),tens_bases(32)
-     character(256):: tcs,ddims(32),ldims(32),rdims(32),dbase(32),lbase(32),rbase(32)
+     integer(4):: ddims(32),ldims(32),rdims(32),dbase(32),lbase(32),rbase(32)
 !#endif
 !}
      !init timing variables
