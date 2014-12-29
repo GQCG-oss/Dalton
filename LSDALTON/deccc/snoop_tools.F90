@@ -1394,6 +1394,12 @@ print *, 'Remember to fix NC for frozen core!'
     type(decorbital),intent(inout) :: OccOrbitalsSUB(MySubsystem%nocc), VirtOrbitalsSUB(MySubsystem%nunocc)
     integer :: fulltosub(MyMoleculeFULL%nocc)
     integer :: i,subidx,subatom,fullatom
+    logical :: dofragSUB1(MySubsystem%nfrags), dofragSUB2(MySubsystem%nfrags)
+
+    !  List of which fragments to consider for subsystem (for extra check)
+    call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
+         & MySubsystem%nfrags,OccOrbitalsSUB,VirtOrbitalsSUB,&
+         & dofragSUB1,MySubsystem%PhantomAtom)
 
     ! Get list taking us FROM full occupied index TO subsystem occupied index
     call get_fulloccAOS_to_suboccAOS(sub,MyMoleculeFULL,OccOrbitalsFULL,fulltosub)
@@ -1401,15 +1407,19 @@ print *, 'Remember to fix NC for frozen core!'
     do i=1,MyMoleculeFULL%nocc
        subidx = fulltosub(i)
 
-       ! Atom to which orbital "i" is assigned for full system and subsystem
-       fullatom = OccOrbitalsFULL(i)%centralatom
-       subatom = OccOrbitalsSUB(subidx)%centralatom
+       OrbitalInSubsystem: if(subidx/=0) then  ! "orbital i is included for subsystem"
 
-       if(fullatom /= subatom) then
-          ! This occupied orbital is assigned differently for subsystem,
-          ! reassign such that it is assigned to same atom as for full system.
-          OccOrbitalsSUB(subidx)%centralatom = fullatom
-       end if
+          ! Atom to which orbital "i" is assigned for full system and subsystem
+          fullatom = OccOrbitalsFULL(i)%centralatom
+          subatom = OccOrbitalsSUB(subidx)%centralatom
+
+          if(fullatom /= subatom) then
+             ! This occupied orbital is assigned differently for subsystem,
+             ! reassign such that it is assigned to same atom as for full system.
+             OccOrbitalsSUB(subidx)%centralatom = fullatom
+          end if
+
+       end if OrbitalInSubsystem
 
     end do
 
@@ -1429,6 +1439,20 @@ print *, 'Remember to fix NC for frozen core!'
 
     end do
 
+
+    !  List of which fragments to consider for subsystem after reassigning
+    call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
+         & MySubsystem%nfrags,OccOrbitalsSUB,VirtOrbitalsSUB,&
+         & dofragSUB2,MySubsystem%PhantomAtom)
+
+    do i=1,MySubsystem%nfrags
+       if(dofragSUB1(i) .neqv. dofragSUB2(i)) then
+          print *, 'Fragment ',i
+          print *, 'dofragSUB1 ', dofragSUB1(i)
+          print *, 'dofragSUB2 ', dofragSUB2(i)
+          call lsquit('Orbitals_subsystem_vs_FULL_sanity_check: Final check failed!')
+       end if
+    end do
 
   end subroutine Orbitals_subsystem_vs_FULL_sanity_check
 

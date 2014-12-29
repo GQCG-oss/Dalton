@@ -1203,9 +1203,6 @@ contains
        ! Get atomic fragments for subsystem with one-to-one correspondence to
        ! full atomic fragments
        call mem_alloc(AFsub,MySubsystem%nfrags)
-
-       ! Missing:
-       ! MyMoleculeFULL, OccOrbitalsFULL, dofragFULL, AFfull
        call subsystemAOS_equals_FULLAOS(sub,MyMoleculeFULL,&
             & OccOrbitalsFULL,MySubsystem,lssub,OccOrbitalsSUB,&
             & VirtOrbitalsSUB,dofragFULL,dofragsub,AFfull,AFsub)
