@@ -271,8 +271,8 @@ contains
        else
           ! Rotate subsystem orbitals using natural connection such that they are as
           ! close as possible to the full orbitals in a least-squares sense.
-          call rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,&
-               & OccOrbitals,VirtOrbitals,this,Coccsnoop(this), Cvirtsnoop(this))
+          call rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,this,&
+               & OccOrbitals,VirtOrbitals,lssnoop,Coccsnoop(this), Cvirtsnoop(this))
        end if
 
        ! Correlation energy for subsystem

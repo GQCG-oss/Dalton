@@ -7,6 +7,7 @@ module snoop_tools_module
   use precision
   use lstiming
   use ls_util!,only: dgemm_ts
+  use TYPEDEF
   use typedeftype!,only: lsitem
   use molecule_module!, only: get_geometry
   use files!,only:lsopen,lsclose
@@ -976,8 +977,8 @@ contains
   !> \brief Carry out unitary rotation of occupied as well as virtual subsystem orbitals
   !> such that they mimic the FULL occupied and virtual orbitals as much as possible
   !> in a least squares sense (defined by the natural connection).
-  subroutine rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,&
-       & OccOrbitals,VirtOrbitals,sub,CoSUBmat,CvSUBmat)
+  subroutine rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,sub,&
+       & OccOrbitals,VirtOrbitals,lssub,CoccSUBmat,CvirtSUBmat)
     implicit none
     !> Full molecule info for FULL
     type(fullmolecule),intent(in) :: MyMoleculeFULL
@@ -986,122 +987,167 @@ contains
     !> Occupied and virtual orbitals in DEC format
     type(decorbital),intent(in) :: OccOrbitals(MyMoleculeFULL%nunocc), &
          & VirtOrbitals(MyMoleculeFULL%nunocc)
+    !> LSitem for subsystem 
+    type(lsitem), intent(inout) :: lssub
     !> Occupied and virtual orbitals for subsystem to be rotated
-    type(matrix),intent(inout) :: CoSUBmat, CvSUBmat
-    real(realk),pointer :: CoSUB(:,:),CvSUB(:,:),CoFULL(:,:),CvFULL(:,:)
-    integer :: noccSUB,nbasis,nvirt
+    type(matrix),intent(inout) :: CoccSUBmat, CvirtSUBmat
+    real(realk),pointer :: CcoreSUB(:,:),CvalSUB(:,:),CvirtSUB(:,:),CoccSUB(:,:)
+    real(realk),pointer :: CcoreFULL(:,:),CvalFULL(:,:),CvirtFULL(:,:)
+    integer :: noccSUB,nbasis,nvirt,ncoreFULL,ncoreSUB,nvalSUB,nvalFULL,noccFULL
+    integer :: i
 
-    noccSUB = CoSUBmat%ncol       ! # occupied subsystem orbitals
+
     nvirt = MyMoleculeFULL%nunocc  ! #virt orbitals same for SNOOP subsystem and FULL
     nbasis = MyMoleculeFULL%nbasis
+    noccFULL = MyMoleculeFULL%nocc    ! Occupied full molecule
+    ncoreFULL = MyMoleculeFULL%ncore
+    nvalFULL = noccFULL - ncoreFULL
+    noccSUB = CoccSUBmat%ncol       ! # occupied subsystem orbitals
+    ncoreSUB = count_ncore(lssub)
+    nvalSUB = noccSUB-ncoreSUB
 
     ! For simplicity, we consider everything as fortran arrays now
 
     ! Initial occupied and virtual subsystem orbitals
     ! -----------------------------------------------
-    call mem_alloc(CoSUB,nbasis,noccSUB)
-    call mat_to_full(CoSUBmat, 1.0_realk, CoSUB)
-    call mem_alloc(CvSUB,nbasis,nvirt)
-    call mat_to_full(CvSUBmat, 1.0_realk, CvSUB)
+    call mem_alloc(CoccSUB,nbasis,noccSUB)
+    call mat_to_full(CoccSUBmat, 1.0_realk, CoccSUB)  ! Occupied subsystem orbitals
+    call mem_alloc(CcoreSUB,nbasis,ncoreSUB)
+    call mem_alloc(CvalSUB,nbasis,nvalSUB)
+    ! Partition into core and valence orbitals
+    do i=1,ncoreSUB
+       CcoreSUB(:,i) = CoccSUB(:,i)
+    end do
+    do i=1,nvalSUB
+       CvalSUB(:,i) = CoccSUB(:,i+ncoreSUB)
+    end do
+
+    ! Virtual orbitals
+    call mem_alloc(CvirtSUB,nbasis,nvirt)
+    call mat_to_full(CvirtSUBmat, 1.0_realk, CvirtSUB)
+
 
 
     ! FULL occupied and virtual orbitals relevant for subsystem
     ! ----------------------------------------------------------
-    ! Extract occupied FULL orbitals assigned to subsystem
-    call mem_alloc(CoFULL,MyMoleculeFULL%nbasis,noccSUB)
-    call extract_subsystem_orbitals_from_FULL(MyMoleculeFULL,OccOrbitals,VirtOrbitals,&
-         & sub,.true.,noccSUB,CoFULL)
+    ! Extract occupied (core+valence) orbitals assigned to subsystem
+    call mem_alloc(CcoreFULL,nbasis,ncoreSUB)
+    call mem_alloc(CvalFULL,nbasis,nvalSUB)
+    call extract_subsystem_occorbitals_from_FULL(MyMoleculeFULL,OccOrbitals,&
+         & sub,ncoreSUB,nvalSUB,CcoreFULL,CvalFULL)
+
     ! Simply copy ALL virtual FULL orbitals because virtual dimensions are
     ! the same for subsystem and FULL
-    call mem_alloc(CvFULL,MyMoleculeFULL%nbasis,nvirt)
-    CvFULL = MyMoleculeFULL%Cv
+    call mem_alloc(CvirtFULL,nbasis,nvirt)
+    CvirtFULL = MyMoleculeFULL%Cv
+
     
-    ! Rotate occupied subsystem orbitals to mimic FULL orbitals
-    call get_natural_connection_subsystem_matrix(nbasis,noccSUB,MyMoleculeFULL%overlap,&
-         & CoFULL,CoSUB)
+    ! Rotate core subsystem orbitals to mimic FULL orbitals
+    call get_natural_connection_subsystem_matrix(nbasis,ncoreSUB,MyMoleculeFULL%overlap,&
+         & CcoreFULL,CcoreSUB)
+
+    ! Rotate valence subsystem orbitals to mimic FULL orbitals
+    call get_natural_connection_subsystem_matrix(nbasis,nvalSUB,MyMoleculeFULL%overlap,&
+         & CvalFULL,CvalSUB)
 
     ! Rotate virtual subsystem orbitals to mimic FULL orbitals
     call get_natural_connection_subsystem_matrix(nbasis,nvirt,MyMoleculeFULL%overlap,&
-         & CvFULL,CvSUB)
+         & CvirtFULL,CvirtSUB)
 
+    ! Collect occupied orbitals in one matrix with core before valence
+    do i=1,ncoreSUB
+       CoccSUB(:,i) = CcoreSUB(:,i)
+    end do
+    do i=1,nvalSUB
+       CoccSUB(:,i+ncoreSUB) = CvalSUB(:,i)
+    end do
 
     ! Set output in type(matrix) form
-    call mat_set_from_full(CoSUB,1E0_realk,CoSUBmat)
-    call mat_set_from_full(CvSUB,1E0_realk,CvSUBmat)
+    call mat_set_from_full(CoccSUB,1E0_realk,CoccSUBmat)
+    call mat_set_from_full(CvirtSUB,1E0_realk,CvirtSUBmat)
 
-    call mem_dealloc(CoSUB)
-    call mem_dealloc(CvSUB)
-    call mem_dealloc(CoFULL)
-    call mem_dealloc(CvFULL)
+
+    call mem_dealloc(CoccSUB)
+    call mem_dealloc(CcoreSUB)
+    call mem_dealloc(CvalSUB)
+    call mem_dealloc(CvirtSUB)
+    call mem_dealloc(CcoreFULL)
+    call mem_dealloc(CvalFULL)
+    call mem_dealloc(CvirtFULL)
 
   end subroutine rotate_subsystem_orbitals_to_mimic_FULL_orbitals
 
 
-  !> \brief Extract orbitals assigned to a given subsystem from
-  !> FULL orbitals stored in MyMoleculeFULL.
-  subroutine extract_subsystem_orbitals_from_FULL(MyMoleculeFULL,OccOrbitals,VirtOrbitals,&
-       & sub,occ,nMO,C)
+
+  !> \brief Extract occupied (partitioned into core and valence) orbitals 
+  !> assigned to a given subsystem from orbitals for full system stored in MyMoleculeFULL.
+  subroutine extract_subsystem_occorbitals_from_FULL(MyMoleculeFULL,OccOrbitals,&
+       & sub,ncoreSUB,nvalSUB,Ccore,Cval)
     implicit none
     !> Full molecule info for FULL
     type(fullmolecule),intent(in) :: MyMoleculeFULL
-    !> Occupied and virtual orbitals in DEC format
-    type(decorbital),intent(in) :: OccOrbitals(MyMoleculeFULL%nunocc), &
-         & VirtOrbitals(MyMoleculeFULL%nunocc)
+    !> Occupied  orbitals in DEC format
+    type(decorbital),intent(in) :: OccOrbitals(MyMoleculeFULL%nunocc)
     !> Which subsystem
     integer,intent(in) :: sub
-    !> Extract occupied (true) or virtual (false) orbitals?
-    logical,intent(in) :: occ
-    !> Number of occupied (occ=true) or virtual (occ=false) orbitals in subsystem
-    integer,intent(in) :: nMO
-    !> Extracted MO coefficients for subsystem
-    real(realk) :: C(MyMoleculeFULL%nbasis,nMO)
+    !> Number of core and valence orbitals for subsystem
+    integer,intent(in) :: ncoreSUB,nvalSUB
+    !> Extracted core and valence MO coefficients corresponding to orbitals
+    !> assigned to subsystem
+    real(realk) :: Ccore(MyMoleculeFULL%nbasis,ncoreSUB), &
+         & Cval(MyMoleculeFULL%nbasis,nvalSUB)
     integer :: j,idx,atom
 
 
+
+    ! Extract core orbitals
+    ! *********************
     idx=0
-    if(occ) then
-
-       ! Extract occupied orbitals
-       do j=1,MyMoleculeFULL%nocc
-          atom = OccOrbitals(j)%centralatom
-          ! Does atom to which orbital "j" is assigned belong to subsystem "sub"
-          if(MyMoleculeFULL%SubSystemIndex(atom)==sub) then  
-             idx = idx + 1
-             if(idx>nMO) then
-                print *, '1: idx,nMO',idx,nMO
-                call lsquit('extract_subsystem_orbitals_from_FULL: &
-                     & occ idx exceed orbital dimension! ',-1)
-             end if
-             C(:,idx) = MyMoleculeFULL%Co(:,j)
+    do j=1,MyMoleculeFULL%ncore
+       atom = OccOrbitals(j)%centralatom
+       ! Does atom to which orbital "j" belong to subsystem "sub"
+       if(MyMoleculeFULL%SubSystemIndex(atom)==sub) then  
+          idx = idx + 1
+          if(idx>ncoreSUB) then
+             print *, 'Core error: idx,nMO',idx,ncoreSUB
+             call lsquit('extract_subsystem_occorbitals_from_FULL: &
+                  & Core idx is too large',-1)
           end if
-       end do
+          Ccore(:,idx) = MyMoleculeFULL%Co(:,j)
+       end if
+    end do
 
-    else
-
-       ! Extract virtual orbitals
-       do j=1,MyMoleculeFULL%nunocc
-          atom = VirtOrbitals(j)%centralatom
-          ! Does atom to which orbital "j" is assigned belong to subsystem "sub"
-          if(MyMoleculeFULL%SubSystemIndex(atom)==sub) then  
-             idx = idx + 1
-             if(idx>nMO) then
-                print *, '2: idx,nMO',idx,nMO
-                call lsquit('extract_subsystem_orbitals_from_FULL: &
-                     & virt idx exceed orbital dimension! ',-1)
-             end if
-             C(:,idx) = MyMoleculeFULL%Cv(:,j)
-          end if
-       end do
-
-    end if
-
-    if(idx/=nMO) then
-       print *, 'idx,nMO',idx,nMO
-       call lsquit('extract_subsystem_orbitals_from_FULL: idx error!',-1)
+    if(idx/=ncoreSUB) then
+       print *, 'Core: idx,ncoreSUB',idx,ncoreSUB
+       call lsquit('extract_subsystem_occorbitals_from_FULL: core idx error!',-1)
     end if
 
 
-  end subroutine extract_subsystem_orbitals_from_FULL
+
+    ! Extract valence orbitals
+    ! ************************
+    idx=0
+    do j=MyMoleculeFULL%ncore+1,MyMoleculeFULL%nocc
+       atom = OccOrbitals(j)%centralatom
+       ! Does atom to which orbital "j" belong to subsystem "sub"
+       if(MyMoleculeFULL%SubSystemIndex(atom)==sub) then  
+          idx = idx + 1
+          if(idx>nvalSUB) then
+             print *, 'Valecne error: idx,nvalSUB',idx,nvalSUB
+             call lsquit('extract_subsystem_occorbitals_from_FULL: &
+                  & Valence idx is too large',-1)
+          end if
+          Cval(:,idx) = MyMoleculeFULL%Co(:,j)
+       end if
+    end do
+
+    if(idx/=nvalSUB) then
+       print *, 'Valence: idx,nvalSUB',idx,nvalSUB
+       call lsquit('extract_subsystem_occorbitals_from_FULL: valence idx error!',-1)
+    end if
+
+
+  end subroutine extract_subsystem_occorbitals_from_FULL
 
 
   !> Get natural connection matrix which rotates subsystem orbitals to
@@ -1122,7 +1168,6 @@ contains
     real(realk),pointer :: W(:,:),T(:,:),tmp(:,:)
     real(realk) :: funcval1,funcval2   ! KKHACK delete this when properly tested
 
-print *, 'Remember to fix NC for frozen core!'
 
     ! Strategy
     ! ********
