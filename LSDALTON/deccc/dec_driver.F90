@@ -190,6 +190,7 @@ contains
     !> (:,:,5): Occupied E[5] contribution;  (:,:,6): Virtual E[5] contribution
     logical :: calcAF,ForcePrintTime
     integer(kind=ls_mpik) :: master,IERR,comm,sender
+    real(realk) :: Edft
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
 #endif
@@ -515,6 +516,11 @@ contains
 
     ! HF energy
     Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D) 
+    Edft =0.0_realk
+    !DFT energy
+    if(DECinfo%DFTreference) then
+      Edft = get_dft_energy_fullmolecule(MyMolecule,Mylsitem,D) 
+    endif
 
     ! If requested, calculate MP2 gradient and MP2 density (or just density) for
     ! full molecule from fragment contributions
@@ -543,9 +549,9 @@ contains
     call mem_dealloc(energies)
 
     ! Print short summary
-    call print_total_energy_summary(EHF,Ecorr,Eerr)
+    call print_total_energy_summary(EHF,Edft,Ecorr,Eerr)
     if(DECinfo%ccmodel == MODEL_RPA) then
-      call print_total_energy_summary(EHF,Esos,Eerrs,.true.)
+      call print_total_energy_summary(EHF,Edft,Esos,Eerrs,.true.)
     endif
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 

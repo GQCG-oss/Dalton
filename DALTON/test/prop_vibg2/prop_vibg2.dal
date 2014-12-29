@@ -35,7 +35,18 @@
 *EXCITA
 .FNAC
 .NEXCITA
-   13    6    6    2   10    6    6    1
+   20    6    6    2   10    6    6    1
 .THRESH
  1.0D-9
 **END OF DALTON INPUT
+
+
+   prop_vibg2
+   ----------
+   Molecule:         H2
+   Wave Function:    Full CI / 6-31G**
+   Test Purpose:     Calculation of vibrational g-factor as sum
+                     over all first order non-adiabatic coupling elements.
+                     Also test that .NEXCITA value > dimension works
+                     (there are only 15 excitations in symmetry 1).
+
