@@ -1297,7 +1297,7 @@ print *, 'Remember to fix NC for frozen core!'
 
           ! Set indices for occupied AOS
           ! ----------------------------
-          ! Here care must be exercised because the number of occupied orbitals is
+          ! Here care must be exercised because the number of occupied orbitals
           ! is different for subsystem and full system. We therefore use the fulltosub
           ! conversion to translate the full occupied AOS index into the
           ! corresponding subsystem occupied AOS index.
@@ -1331,10 +1331,14 @@ print *, 'Remember to fix NC for frozen core!'
                & AFfull(i)%nunoccAOS,noccAOSsub,&
                & AFfull(i)%unoccAOSidx,occAOS(1:noccAOSsub),OccOrbitalsSUB,VirtOrbitalsSUB,&
                & MySubsystem,lssub,AFsub(i),DoBasis,pairfrag)
+          call mem_dealloc(occAOS)
 
        end if SubsystemFragment
 
     end do
+
+    ! Sanity check that orbital spaces have the correct sizes
+    call SUBatomic_fragments_sanity_check(sub,natoms,AFfull,AFsub,dofragsub)
 
   end subroutine subsystemAOS_equals_FULLAOS
 
@@ -1369,5 +1373,119 @@ print *, 'Remember to fix NC for frozen core!'
     end do
 
   end subroutine get_fulloccAOS_to_suboccAOS
+
+
+  !> Check that central atom for all subsystem orbitals are the same as for full system.
+  !> If necessary, reassign orbitals to ensure that this is the case.
+  subroutine Orbitals_subsystem_vs_FULL_sanity_check(sub,MyMoleculeFULL,MySubsystem,&
+       & OccOrbitalsFULL,VirtOrbitalsFULL,OccOrbitalsSUB,VirtOrbitalsSUB)
+    implicit none
+    !> Which subsystem
+    integer,intent(in) :: sub
+    !> Molecule structure for full system
+    type(fullmolecule),intent(in) :: MyMoleculeFULL
+    !> Molecule structure for subsystem
+    type(fullmolecule),intent(in) :: MySubsystem
+    !> Occupied orbitals for full system in DEC format
+    type(decorbital),intent(in) :: OccOrbitalsFULL(MyMoleculeFULL%nocc)
+    !> Virtual orbitals for full system in DEC format
+    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nunocc)
+    !> Occ and virt orbitals for subsystem in DEC format
+    type(decorbital),intent(inout) :: OccOrbitalsSUB(MySubsystem%nocc), VirtOrbitalsSUB(MySubsystem%nunocc)
+    integer :: fulltosub(MyMoleculeFULL%nocc)
+    integer :: i,subidx,subatom,fullatom
+
+    ! Get list taking us FROM full occupied index TO subsystem occupied index
+    call get_fulloccAOS_to_suboccAOS(sub,MyMoleculeFULL,OccOrbitalsFULL,fulltosub)
+
+    do i=1,MyMoleculeFULL%nocc
+       subidx = fulltosub(i)
+
+       ! Atom to which orbital "i" is assigned for full system and subsystem
+       fullatom = OccOrbitalsFULL(i)%centralatom
+       subatom = OccOrbitalsSUB(subidx)%centralatom
+
+       if(fullatom /= subatom) then
+          ! This occupied orbital is assigned differently for subsystem,
+          ! reassign such that it is assigned to same atom as for full system.
+          OccOrbitalsSUB(subidx)%centralatom = fullatom
+       end if
+
+    end do
+
+
+    ! Same for virtual - except now we do not need a "fulltosub" list because
+    ! there is a one-to-one correspondence between the orbitals.
+    ! (The number of virtual orbitals is the same for full system and subsystem).
+    do i=1,MyMoleculeFULL%nunocc
+
+       ! Atom to which orbital "i" is assigned for full system and subsystem
+       fullatom = VirtOrbitalsFULL(i)%centralatom
+       subatom = VirtOrbitalsSUB(i)%centralatom
+
+       if(fullatom /= subatom) then
+          VirtOrbitalsSUB(i)%centralatom = fullatom
+       end if
+
+    end do
+
+
+  end subroutine Orbitals_subsystem_vs_FULL_sanity_check
+
+
+
+  !> Check that occupied and virtual EOS as well as virtual AOS are the same
+  !> for subsystem and full system.
+  !> (Occupied AOS is not checked because we cannot guarantee that they are identical,
+  !   see subsystemAOS_equals_FULLAOS).
+  subroutine SUBatomic_fragments_sanity_check(sub,natoms,AFfull,AFsub,dofragsub)
+    implicit none
+    !> Which subsystem?
+    integer,intent(in) :: sub
+    !> Number of atoms in FULL molecule
+    integer,intent(in) :: natoms
+    !>  Atomic fragments for FULL
+    type(decfrag),intent(in) :: AFfull(natoms)
+    !> Atomic fragments for subsystem
+    type(decfrag),intent(in) :: AFsub(natoms)
+    !> Which atoms to consider for subsystem
+    logical,intent(in) :: dofragsub(natoms)
+    integer :: atom
+    logical :: something_wrong
+
+    do atom=1,natoms
+       if(dofragsub(atom)) then
+
+          something_wrong=.false.
+
+          ! Occupied EOS
+          if(AFfull(atom)%noccEOS /= AFsub(atom)%noccEOS) then
+             something_wrong=.true.
+          end if
+
+          ! Virtual EOS
+          if(AFfull(atom)%nunoccEOS /= AFsub(atom)%nunoccEOS) then
+             something_wrong=.true.
+          end if
+
+          ! Virtual AOS
+          if(AFfull(atom)%nunoccAOS /= AFsub(atom)%nunoccAOS) then
+             something_wrong=.true.
+          end if
+
+          if(something_wrong) then
+             print *, 'Subsystem: ',sub
+             print *, 'Atom: ', atom
+             print *, 'Occ  EOS: Full/sub', AFfull(atom)%noccEOS,AFsub(atom)%noccEOS
+             print *, 'Virt EOS: Full/sub', AFfull(atom)%nunoccEOS,AFsub(atom)%nunoccEOS
+             print *, 'Virt AOS: Full/sub', AFfull(atom)%nunoccAOS,AFsub(atom)%nunoccAOS
+             call lsquit('SUBatomic_fragments_sanity_check: Orbital mismatch!',-1)
+          end if
+
+       end if
+    end do
+
+  end subroutine SUBatomic_fragments_sanity_check
+
 
 end module snoop_tools_module

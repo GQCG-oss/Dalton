@@ -20,6 +20,7 @@ module dec_main_mod
   use reorder_frontend_module 
   use tensor_interface_module
   use Matrix_util!, only: get_AO_gradient
+  use configurationType
 
   !> F12routines
   !use f12_routines_module
@@ -47,11 +48,13 @@ contains
   !> matrices are available from HF calculation.
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine dec_main_prog_input(mylsitem,F,D,S,C,E)
+  subroutine dec_main_prog_input(mylsitem,config,F,D,S,C,E)
     implicit none
 
     !> Integral info
     type(lsitem), intent(inout) :: mylsitem
+    !> Config info
+    type(configItem),intent(in)  :: config
     !> Fock matrix 
     type(matrix),intent(inout) :: F
     !> HF density matrix 
@@ -88,7 +91,7 @@ contains
     call mat_free(S)
     call mat_free(C)
     
-    call dec_main_prog(MyLsitem,molecule,D,E)
+    call dec_main_prog(MyLsitem,config,molecule,D,E)
 
     ! Restore input matrices
     call molecule_copyback_FSC_matrices(Molecule,F,S,C)
@@ -114,12 +117,13 @@ contains
   !> be read in from previous HF calculation.
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine dec_main_prog_file(mylsitem)
+  subroutine dec_main_prog_file(mylsitem,config)
 
     implicit none
     !> Integral info
     type(lsitem), intent(inout) :: mylsitem
-
+    !> Config info
+    type(configItem),intent(in)  :: config
     type(matrix) :: D
     type(fullmolecule) :: Molecule
     integer :: nbasis
@@ -154,7 +158,7 @@ contains
     !call molecule_init_f12(molecule,mylsitem,D)
        
     ! Main DEC program
-    call dec_main_prog(MyLsitem,molecule,D,E)
+    call dec_main_prog(MyLsitem,config,molecule,D,E)
      
     ! Delete molecule structure and density
     call molecule_finalize(molecule)
@@ -167,11 +171,13 @@ contains
   !> \brief Main DEC program.
   !> \author Marcin Ziolkowski (modified for Dalton by Kasper Kristensen)
   !> \date September 2010
-  subroutine dec_main_prog(MyLsitem,molecule,D,E)
+  subroutine dec_main_prog(MyLsitem,config,molecule,D,E)
 
     implicit none
     !> Integral info
     type(lsitem), intent(inout) :: mylsitem
+    !> Config info
+    type(configItem),intent(in)  :: config
     !> Molecule info
     type(fullmolecule),intent(inout) :: molecule
     !> HF density matrix
@@ -193,7 +199,7 @@ contains
        write(DECinfo%output,*) '***********************************************************'
        write(DECinfo%output,*) '      Performing SNOOP interaction energy calculation...'
        write(DECinfo%output,*) '***********************************************************'
-       call snoop_driver(mylsitem,Molecule,D)
+       call snoop_driver(mylsitem,config,Molecule,D)
        return
     end if
 

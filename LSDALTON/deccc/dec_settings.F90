@@ -38,7 +38,8 @@ contains
     DECinfo%SNOOPthr=1e-7_realk
     DECinfo%SNOOPdebug=.false.
     DECinfo%SNOOPort=.false.
-    DECinfo%SNOOPfullspace=.true.
+    DECinfo%SNOOPsamespace=.true.
+    DECinfo%SNOOPlocalize=.false.
 
 
     DECinfo%doDEC                  = .false.
@@ -365,7 +366,8 @@ contains
        case('.SNOOPORT'); DECinfo%SNOOPort=.true.
           !> Do not use full orbital spaces for monomer calculation as defined by natural connection,
           !> rather simply do independent DEC fragment optimization for monomers.
-       case('.SNOOPNOTFULLSPACE'); DECinfo%SNOOPfullspace=.false.
+       case('.SNOOPNOTSAMESPACE'); DECinfo%SNOOPsamespace=.false.
+       case('.SNOOPLOCALIZE'); DECinfo%SNOOPlocalize=.true.
 
 
           ! GENERAL INFO
@@ -748,6 +750,11 @@ contains
     
     ! SNOOP - currently limited in several ways
     if(DECinfo%SNOOP) then
+
+       if(DECinfo%SNOOPlocalize .and. DECinfo%SNOOPsamespace) then
+          call lsquit('SNOOP: Monomer orbitals cannot localized when subsystems &
+               & use same orbital spaces as full system!',-1)
+       end if
        
        ! SNOOP restart not implemented
        if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
@@ -1034,7 +1041,8 @@ contains
     write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
     write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
-    write(lupri,*) 'SNOOPfullspace ', DECinfo%SNOOPfullspace
+    write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
+    write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
