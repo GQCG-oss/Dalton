@@ -1489,7 +1489,8 @@ contains
     call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
          & MySubsystem%nfrags,OccOrbitalsSUB,VirtOrbitalsSUB,&
          & dofragSUB2,MySubsystem%PhantomAtom)
-
+    
+    ! Check that reassign did not modify list of which fragments to consider
     do i=1,MySubsystem%nfrags
        if(dofragSUB1(i) .neqv. dofragSUB2(i)) then
           print *, 'Fragment ',i
