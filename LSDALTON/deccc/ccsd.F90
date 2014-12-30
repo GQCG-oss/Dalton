@@ -1727,24 +1727,28 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          endif
          tcs='D(i,g,c,j)+=L(g,d)*R(d,c,i,j)'
          call dil_clean_tens_contr(tch)
-         call dil_set_tens_contr_args(tch,'r',errc,tens_distr=u2); print *,'#DIL: TC1: LA: ',infpar%lg_mynum,errc
-         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Left arg set failed!',-1)
-         tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
-         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,yv); print *,'#DIL: TC1: RA: ',infpar%lg_mynum,errc
+         call dil_set_tens_contr_args(tch,'r',errc,tens_distr=u2)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: LA: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Right arg set failed!',-1)
-         tens_rank=4; tens_dims(1:tens_rank)=(/no,lg,nv,no/); tens_bases(1:tens_rank)=(/0_4,int(fg-1,4),0_4,0_4/)
+         tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
+         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,yv)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: RA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Left arg set failed!',-1)
+         tens_rank=4; tens_dims(1:tens_rank)=(/no,lg,nv,no/); tens_bases(1:tens_rank)=(/0,fg-1_INTD,0,0/)
          call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,uigcj%d,tens_bases)
-         print *,'#DIL: TC1: DA: ',infpar%lg_mynum,errc
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: DA: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Destination arg set failed!',-1)
-         call dil_set_tens_contr_spec(tch,tcs,errc,ldims=(/int(lg,4),int(nv,4)/),lbase=(/int(fg-1,4),0_4/),&
-                                     &ddims=(/int(no,4),int(lg,4),int(nv,4),int(no,4)/),dbase=(/0_4,int(fg-1,4),0_4,0_4/),&
-                                     &dest_zero=.true.)
-         print *,'#DIL: TC1: CC: ',infpar%lg_mynum,errc
+         call dil_set_tens_contr_spec(tch,tcs,errc,&
+               &ldims=(/int(lg,INTD),int(nv,INTD)/),lbase=(/int(fg-1,INTD),0_INTD/),&
+               &ddims=(/int(no,INTD),int(lg,INTD),int(nv,INTD),int(no,INTD)/),dbase=(/0_INTD,int(fg-1,INTD),0_INTD,0_INTD/),&
+               &dest_zero=.true.)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: CC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Contr spec set failed!',-1)
-         dil_mem=dil_get_min_buf_size(tch,errc); print *,'#DIL: TC1: BS: ',infpar%lg_mynum,errc,dil_mem
+         dil_mem=dil_get_min_buf_size(tch,errc)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: BS: ',infpar%lg_mynum,errc,dil_mem
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Buf size set failed!',-1)
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
-         print *,'#DIL: TC1: TC: ',infpar%lg_mynum,errc
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
 #endif
         elseif(scheme==2) then
@@ -1772,7 +1776,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
         !u [gamma c i j ] -> u [i gamma c j]
         if(scheme/=1) call array_reorder_4d(1.0E0_realk,w1%d,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj%d)
-        call print_norm(uigcj%d,uigcj%n,'#DIL: NORM(uigcj_out):') !``DIL: remove
         call dil_debug_to_file_finish() !``DIL remove
         scheme=2 !``DIL: remove
 
