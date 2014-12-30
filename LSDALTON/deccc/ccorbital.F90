@@ -359,41 +359,42 @@ contains
     logical,pointer ::which_hydrogens(:), dofrag(:)
     real(realk),pointer :: tmplowdin_charge(:),atomic_gross_charge(:)
     integer,pointer :: tmpatomic_idx(:)
-    integer :: nunoccperatom,II,IDX,nu,k,kk,endidx
+    integer :: nunoccperatom,II,IDX,nu,k,kk,endidx,nMO
     logical,pointer :: WhichAOs(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Init stuff
     nbasis = MyMolecule%nbasis
+    nMO = MyMolecule%nMO
 
     ! For orbital assignment bookkeeping, only consider valence orbitals
     offset = MyMolecule%ncore  
 
-    call mem_alloc(lowdin_charge,nbasis,nbasis)
-    call mem_alloc(ShalfC,nbasis,nbasis)
-    call mem_alloc(basis_idx,nbasis,nbasis)
-    call mem_alloc(atomic_idx,natoms,nbasis)
+    call mem_alloc(lowdin_charge,nbasis,nMO)
+    call mem_alloc(ShalfC,nbasis,nMO)
+    call mem_alloc(basis_idx,nbasis,nMO)
+    call mem_alloc(atomic_idx,natoms,nMO)
     if(DECinfo%Distance) then
-       call mem_alloc(central_atom2,nbasis)
+       call mem_alloc(central_atom2,nMO)
     endif
 
     ! Get Lowdin matrix S^{1/2} C
     call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
 
 
-    ! ***********************************
-    ! Get Lowdin charges for all orbitals
-    ! ***********************************
-    GetLowdinCharges: do i=1,nbasis
+    ! *********************************************
+    ! Get Lowdin charges for all molecular orbitals
+    ! *********************************************
+    GetLowdinCharges: do i=1,nMO
 
        if(DECinfo%Distance) then
           ! Use Distance criteria to determine central atom for orbital "i"  
-          call GetDistanceCentralAtom(i,nbasis,natoms,MyMolecule,central_atom2(i))
+          call GetDistanceCentralAtom(i,natoms,MyMolecule,central_atom2(i))
        endif
 
        ! Get vector with Lowdin charges for all atoms for orbital "i"
-       call GetLowdinVector(i,nbasis,ShalfC,lowdin_charge(:,i) )
+       call GetLowdinVector(i,nbasis,nMO,ShalfC,lowdin_charge(:,i) )
 
        call mem_alloc(atomic_gross_charge,natoms)
        atomic_gross_charge = 0.0E0_realk
@@ -407,7 +408,8 @@ contains
        call real_inv_sort_with_tracking(lowdin_charge(:,i),basis_idx(:,i),nbasis)
        call real_inv_sort_with_tracking(atomic_gross_charge(:),atomic_idx(:,i),natoms)
 
-       IF(MyMolecule%PhantomAtom(atomic_idx(1,i)))THEN
+       ! Reassign central atom for phantom atoms - however not for SNOOP
+       IF(MyMolecule%PhantomAtom(atomic_idx(1,i)) .and. (.not. DECinfo%SNOOP)  ) THEN
           !the first atom in the atomic_gross_charge(:,i) list is a Phantom atom
           !we reorder the atomic_gross_charge(:,i) list to put a non Phantom atom on top
           call mem_alloc(tmplowdin_charge,nAtoms)
@@ -450,7 +452,7 @@ contains
     ! Initial orbital assignment and orbital extent
     ! *********************************************
     call mem_alloc(WhichAOs,nbasis)
-    OrbitalLoop: do i=1,nbasis
+    OrbitalLoop: do i=1,nMO
 
        ! Central atom is the one with largest Lowdin charge (although this may be modified below)
        if(DECinfo%Distance) then
@@ -751,7 +753,7 @@ contains
                 maxlowdin = 0.0_realk
                 maxidx = 0
                 changedatom=0
-                do j=nocc+1,nbasis
+                do j=nocc+1,nMO
                    if(atomic_idx(2,j)==atom .and. lowdin_charge(2,j) > maxlowdin ) then
                       maxlowdin = lowdin_charge(2,j)
                       maxidx = j-nocc   ! unoccupied index in list of unoccupied orbitals
@@ -830,14 +832,14 @@ contains
 
     end if REASSIGNING
 
+
     call mem_dealloc(which_hydrogens)
-    call mem_dealloc(lowdin_charge)
     call mem_dealloc(basis_idx)
     call mem_dealloc(atomic_idx)
+    call mem_dealloc(lowdin_charge)
     if(DECinfo%Distance) then
        call mem_dealloc(central_atom2)
     endif
-
     call LSTIMER('GenerateOrb',tcpu,twall,DECinfo%output)
 
   end subroutine GenerateOrbitals_simple
@@ -876,7 +878,7 @@ contains
     real(realk), pointer :: ShalfC(:,:)
     real(realk), pointer :: lowdin_charge(:,:)
     integer, pointer :: basis_idx(:,:)
-    integer :: offset,II,IDX,k,nu
+    integer :: offset,II,IDX,k,nu,nMO
     real(realk),pointer :: DistoccUnocc(:,:),DistOccOcc(:,:),sorted_dists(:)
     integer :: sorted_orbitals(nocc)
     logical,pointer :: WhichAOs(:)
@@ -885,12 +887,13 @@ contains
 
     ! Init stuff
     nbasis = MyMolecule%nbasis
+    nMO = MyMolecule%nMO
 
     offset = MyMolecule%ncore  
 
-    call mem_alloc(lowdin_charge,nbasis,nbasis)
-    call mem_alloc(ShalfC,nbasis,nbasis)
-    call mem_alloc(basis_idx,nbasis,nbasis)
+    call mem_alloc(lowdin_charge,nbasis,nMO)
+    call mem_alloc(ShalfC,nbasis,nMO)
+    call mem_alloc(basis_idx,nbasis,nMO)
 
     ! Get Lowdin matrix S^{1/2} C
     call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
@@ -902,7 +905,7 @@ contains
     GetLowdinCharges: do i=1,nbasis
 
        ! Get vector with Lowdin charges for all atoms for orbital "i"
-       call GetLowdinVector(i,nbasis,ShalfC,lowdin_charge(:,i) )
+       call GetLowdinVector(i,nbasis,nMO,ShalfC,lowdin_charge(:,i) )
 
        ! Sort Lowdin charges
        call real_inv_sort_with_tracking(lowdin_charge(:,i),basis_idx(:,i),nbasis)
@@ -922,7 +925,7 @@ contains
     ! *************************************
     ! Orbital assignment and orbital extent
     ! *************************************
-    OrbitalLoop: do i=1,nbasis
+    OrbitalLoop: do i=1,nMO
 
        charge = 0E0_realk
 
@@ -1241,12 +1244,13 @@ contains
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> S^{1/2} C matrix
-    real(realk), dimension(MyMolecule%nbasis,MyMolecule%nbasis) :: ShalfC
+    real(realk), dimension(MyMolecule%nbasis,MyMolecule%nMO) :: ShalfC
     real(realk), pointer :: Shalf(:,:)
-    integer :: nbasis,i,j,k
+    integer :: nbasis,i,j,k,nMO
     real(realk),pointer :: basis(:,:)
 
     nbasis = MyMolecule%nbasis
+    nMO = MyMolecule%nMO
     call mem_alloc(basis,nbasis,nbasis)
     !basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
     !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
@@ -1266,12 +1270,11 @@ contains
     ! Get S^{1/2} matrix
     ! ******************
     call mem_alloc(Shalf,nbasis,nbasis)
-    call get_power_of_symmetric_matrix(nbasis,0.5E0_realk,MyMolecule%overlap(1:nbasis,1:nbasis),Shalf)
+    call get_power_of_symmetric_matrix(nbasis,0.5E0_realk,MyMolecule%overlap,Shalf)
 
     ! S^{1/2} C
     ! *********
-    call dgemm('n','n',nbasis,nbasis,nbasis,1.0E0_realk,Shalf,nbasis, &
-         & basis(1:nbasis,1:nbasis),nbasis,0.0E0_realk,ShalfC,nbasis)
+    call dec_simple_dgemm(nbasis,nbasis,nMO,Shalf,basis,ShalfC,'n','n')
 
     call mem_dealloc(Shalf)
     call mem_dealloc(basis)
@@ -1321,11 +1324,10 @@ contains
   end subroutine GetMullikenVector
 
   !> \brief Get Mulliken gross charges for a given orbital on all atoms
-  subroutine GetDistanceCentralAtom(orbI,nbasis,natoms,MyMolecule,central_atom)
+  subroutine GetDistanceCentralAtom(orbI,natoms,MyMolecule,central_atom)
     implicit none
     integer, intent(in) :: orbI ! orbital number
     integer, intent(in) :: natoms ! number of atoms
-    integer, intent(in) :: nbasis ! Number of basis functions
     type(fullmolecule), intent(in) :: MyMolecule
     integer, intent(inout) :: central_atom
     !
@@ -1372,7 +1374,7 @@ contains
   !> \brief Lowdin population analysis: Get Lowdin charges on all atoms for a given orbital
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine GetLowdinVector(orb_idx,nbasis,ShalfC,charges)
+  subroutine GetLowdinVector(orb_idx,nbasis,nMO,ShalfC,charges)
 
     implicit none
     !> Orbital number
@@ -1381,10 +1383,12 @@ contains
 !    integer, intent(in) :: natoms
     !> Number of basis functions
     integer, intent(in) :: nbasis
+    !> Number of MOs (usually equal to nbasis but can be different)
+    integer,intent(in) :: nMO
 !    !> Full molecule info
 !    type(fullmolecule), intent(in) :: MyMolecule
     !> Overlap matrix to power 1/2 multiplied by MO coefficients: S^{1/2} C
-    real(realk), dimension(nbasis,nbasis), intent(in) :: ShalfC
+    real(realk), dimension(nbasis,nMO), intent(in) :: ShalfC
     !> Lowdin charges
     real(realk), dimension(nbasis), intent(inout) :: charges
 !    integer, pointer :: atom_start(:) => null()

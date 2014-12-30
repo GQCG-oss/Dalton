@@ -38,6 +38,8 @@ contains
     DECinfo%SNOOPthr=1e-7_realk
     DECinfo%SNOOPdebug=.false.
     DECinfo%SNOOPort=.false.
+    DECinfo%SNOOPsamespace=.true.
+    DECinfo%SNOOPlocalize=.false.
 
 
     DECinfo%doDEC                  = .false.
@@ -362,6 +364,10 @@ contains
        case('.SNOOP_DEBUG'); DECinfo%SNOOPdebug=.true.
           ! Impose orthogonality constrant for occupied subsystem orbitals in SNOOP 
        case('.SNOOPORT'); DECinfo%SNOOPort=.true.
+          !> Do not use full orbital spaces for monomer calculation as defined by natural connection,
+          !> rather simply do independent DEC fragment optimization for monomers.
+       case('.SNOOPNOTSAMESPACE'); DECinfo%SNOOPsamespace=.false.
+       case('.SNOOPLOCALIZE'); DECinfo%SNOOPlocalize=.true.
 
 
           ! GENERAL INFO
@@ -744,15 +750,41 @@ contains
     
     ! SNOOP - currently limited in several ways
     if(DECinfo%SNOOP) then
+
+       ! For DEC, we currently include all pairs for SNOOP
+       write(DECinfo%output,*) 'WARNING: SNOOP currently requires all pairs to be calculated!'
+       write(DECinfo%output,*) '--> ignoring pair estimates and setting pair distance threshold to be huge!'
+       DECinfo%pair_distance_threshold = huge(1.0_realk)
+       DECinfo%PairEstimate=.false.
+       DECinfo%PairEstimateIgnore = .true.
        
-       ! Only for full calculation
-       if(.not. DECinfo%full_molecular_cc) then
-          call lsquit('Currently SNOOP is only implemented for **CC and not for **DEC!',-1)
+
+       if(DECinfo%SNOOPlocalize .and. DECinfo%SNOOPsamespace) then
+          call lsquit('SNOOP: Monomer orbitals cannot localized when subsystems &
+               & use same orbital spaces as full system!',-1)
+       end if
+       
+       ! SNOOP restart not implemented
+       if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
+          call lsquit('SNOOP restart is not implemented!',-1)
        end if
 
        ! Only for dense matrices for now
        if(matrix_type/=mtype_dense) then
           call lsquit('SNOOP is only implemented for dense matrices!',-1)
+       end if
+
+       ! SNOOP only tested for occupied partitioning scheme
+       if(.not. DECinfo%OnlyOccPart) then
+          write(DECinfo%output,*) 'WARNING: SNOOP ONLY TESTED FOR OCCUPIED PART. SCHEME'
+          write(DECinfo%output,*) 'WARNING: I TURN ON OCCUPIED PART. SCHEME'
+          DECinfo%onlyoccpart=.true.
+       end if
+
+
+       ! Not hydrogen debug
+       if(decinfo%PureHydrogendebug) then
+          call lsquit('SNOOP not implemented for hydrogen debug',-1)
        end if
        
        ! SimulateFull will destroy subsystem assignment and thus render SNOOP meaningless
@@ -1017,6 +1049,8 @@ contains
     write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
     write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
+    write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
+    write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc

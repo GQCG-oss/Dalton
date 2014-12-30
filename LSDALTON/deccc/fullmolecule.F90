@@ -185,7 +185,6 @@ contains
     !> can be the case for subsystems)
     integer,intent(in),optional :: nMO
     real(realk) :: memory_use, tcpu, twall
-    integer :: nMOintern
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -199,13 +198,13 @@ contains
 
     ! Number of MOs can be different from nbasis if specified by input
     if(present(nMO)) then
-       nMOintern = nMO
+       molecule%nMO=nMO
     else
-       nMOintern = molecule%nbasis
+       molecule%nMO = molecule%nbasis
     end if
 
     molecule%nocc = molecule%nelectrons/2
-    molecule%nunocc = nMOintern - molecule%nocc
+    molecule%nunocc = molecule%nMO - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
     molecule%nCabsAO = 0
@@ -244,7 +243,7 @@ contains
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    if(nMOintern /= molecule%nbasis) then ! subsystem
+    if(molecule%nMO /= molecule%nbasis) then ! subsystem
 
        write(DECinfo%output,'(/,a)') '-- Subsystem info --'
        write(DECinfo%output,'(/,a,i6)') 'SUB: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
