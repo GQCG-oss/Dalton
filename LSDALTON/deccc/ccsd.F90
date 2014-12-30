@@ -854,6 +854,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   subroutine get_ccsd_residual_integral_driven(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
         ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
      implicit none
+!`DIL:
+#define DIL_DEBUG_ON
 
      !> CC model
      integer,intent(in) :: ccmodel
@@ -1013,13 +1015,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer, parameter :: bs = 1
 !{`DIL:
      logical, parameter:: DIL_LOCK_OUTSIDE=.true. !controls Patrick's outside locks in Scheme 1
-!#ifdef DIL_DEBUG
      character(256):: tcs
      type(dil_tens_contr_t):: tch
-     integer(8):: dil_mem
-     integer(4):: i0,i1,i2,i3,errc,tens_rank,tens_dims(32),tens_bases(32)
-     integer(4):: ddims(32),ldims(32),rdims(32),dbase(32),lbase(32),rbase(32)
-!#endif
+     integer(INTL):: dil_mem
+     integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
+     integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
+     integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
 !}
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
@@ -1085,11 +1086,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ***********
      call get_currently_available_memory(MemFree)
 
-!#ifdef DIL_DEBUG
+#ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
-      write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4)') infpar%lg_mynum,infpar%mynum,MemFree
+      call dil_debug_to_file_start()
+      write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4)')&
+      &infpar%lg_mynum,infpar%mynum,MemFree
      endif
-!#endif
+#endif
 
      ! Set integral info
      ! *****************
@@ -1247,17 +1250,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      hstatus = 80
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
-!#ifdef DIL_DEBUG
+#ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
-      write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"] with free RAM = ",F15.4," sits on ",A32,": lock_outside = ",l1)')&
+      write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] with free RAM = ",F15.4," sits on ",A32,": lock_outside = ",l1)')&
       &infpar%lg_mynum,infpar%mynum,MemFree,hname(1:32),lock_outside
      endif
-!#endif
+#endif
 
      govov%access_type  = AT_ALL_ACCESS
      omega2%access_type = AT_ALL_ACCESS
 
-     if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then !`DIL
+     if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
       call tensor_lock_wins(omega2,'s',all_nodes = .true.)
      endif
 #endif
@@ -1432,7 +1435,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 
-        if(alloc_in_dummy.and.(scheme/=1.or.DIL_LOCK_OUTSIDE)) then !`DIL
+        if(alloc_in_dummy.and.(scheme/=1.or.DIL_LOCK_OUTSIDE)) then
          call tensor_lock_wins(u2,'s',all_nodes = .true.)
         endif
 
@@ -1488,11 +1491,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef VAR_MPI
         if(alloc_in_dummy)then
-           if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then !`DIL
+           if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
               call tensor_lock_wins(gvvooa,'s',all_nodes = .true.)
               call tensor_lock_wins(gvoova,'s',all_nodes = .true.)
            endif
-           if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then !`DIL
+           if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
               call tensor_lock_wins(sio4,  's',all_nodes = .true.)
            endif
         endif
@@ -1705,10 +1708,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         lg         = dimGamma
 
         !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
-!        scheme=1 !``DIL: remove
+        scheme=1 !``DIL: remove
         if(scheme==1) then
 #ifdef VAR_MPI
-!#ifdef DIL_DEBUG
          call time_start_phase(PHASE_COMM, at = time_intloop_work )
          if(gammaB/=1)then
           if(alloc_in_dummy) then
@@ -1719,8 +1721,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          endif
          call time_start_phase(PHASE_WORK, at = time_intloop_comm)
          if(DIL_DEBUG) then !`DIL
-          write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 1:")') infpar%lg_mynum,infpar%mynum
-          write(*,'("#DEBUG(DIL): Gamma range [",i4,":",i4,"]")') fg,fg+lg-1
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 1:")')&
+          &infpar%lg_mynum,infpar%mynum
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Gamma range [",i4,":",i4,"]")') fg,fg+lg-1
          endif
          tcs='D(i,g,c,j)+=L(g,d)*R(d,c,i,j)'
          call dil_clean_tens_contr(tch)
@@ -1743,7 +1746,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
          print *,'#DIL: TC1: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
-!#endif
 #endif
         elseif(scheme==2) then
 #ifdef VAR_MPI
@@ -1770,8 +1772,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
         !u [gamma c i j ] -> u [i gamma c j]
         if(scheme/=1) call array_reorder_4d(1.0E0_realk,w1%d,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj%d)
-!       call print_norm(uigcj%d,uigcj%n,'#DIL: NORM(uigcj_out):') !``DIL: remove
-!       scheme=2 !``DIL: remove
+        call print_norm(uigcj%d,uigcj%n,'#DIL: NORM(uigcj_out):') !``DIL: remove
+        call dil_debug_to_file_finish() !``DIL remove
+        scheme=2 !``DIL: remove
 
 
         alphaB=0

@@ -16,25 +16,28 @@ module tensor_interface_module
   use dec_workarounds_module
   use tensor_algebra_dil
 
-!Tensor algebra (DIL backend):
+!Tensor algebra (`DIL backend):
+  public INTD,INTL        !integer sizes for DIL tensor algebra (default, long)
+  public MAX_TENSOR_RANK  !max allowed tensor rank for DIL tensor algebra
   public DIL_TC_EACH      !parameter for <tensor_contract>: Each MPI process performs its own tensor contraction
   public DIL_TC_ALL       !parameter for <tensor_contract>: All MPI processes work on the same tensor contraction
   public DIL_ALLOC_BASIC  !Fortran allocate will be used for buffer allocation in <tensor_algebra_dil>
   public DIL_ALLOC_PINNED !cudaMallocHost will be used for buffer allocation in <tensor_algebra_dil>
   public DIL_ALLOC_MPI    !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
-  public dil_set_alloc_type
-!#ifdef DIL_DEBUG
+  public DIL_CONS_OUT     !output for DIL messages
   public DIL_DEBUG
+  public dil_set_alloc_type
   public dil_tens_contr_t
   public dil_clean_tens_contr
   public dil_set_tens_contr_args
   public dil_get_min_buf_size
   public dil_set_tens_contr_spec
   public dil_tensor_contract
+  public dil_debug_to_file_start
+  public dil_debug_to_file_finish
   public thread_wtime
   public process_wtime
 ! public merge_sort_real8 !`DIL: remove
-!#endif
 
   !This defines the public interface to the tensors
   !The tensor type itself

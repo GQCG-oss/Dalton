@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2014/12/23 (started 2014/09/01).
+!REVISION: 2014/12/30 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -111,11 +111,12 @@
 #else
         integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_BASIC         !allocator type for communication buffers
 #endif
-        integer(INTD), private:: CONS_OUT=6                             !console output device
-        logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
+        integer(INTD), private:: CONS_OUT=6,CONS_OUT_SAVED=0            !console output device (defaults to screen)
+        integer(INTD), public:: DIL_CONS_OUT=6                          !console output device for external use (defaults to screen)
         logical, private:: VERBOSE=.true.                               !verbosity (for errors)
         logical, public:: DIL_DEBUG=.true.                              !debugging
-        integer(INTD), public:: DIL_DEBUG_FILE=666                      !debug file handle
+        integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
+        logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
 #ifdef USE_MIC
 !DIR$ ATTRIBUTES OFFLOAD:mic:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
 !DIR$ ATTRIBUTES ALIGN:128:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
@@ -299,7 +300,9 @@
         public dil_tensor_contract
         private dil_tensor_norm1
         private dil_tensor_init
-        public dil_debug
+        public dil_debug_to_file_start
+        public dil_debug_to_file_finish
+        public dil_test
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -4200,23 +4203,16 @@
         integer(INTD), intent(in), optional:: num_gpus         !in: number of Nvidia GPUs to utilize (0..num_gpus-1)
         integer(INTD), intent(in), optional:: num_mics         !in: number of Intel MICs to utilize (0..num_mics-1)
         type(contr_spec_t):: cspec
-        integer(INTD):: i,j,k,l,m,n,ngpus,nmics,nd,nl,nr,impis,impir,impir_world,old_cons
-        character(128):: deb_fname
+        integer(INTD):: i,j,k,l,m,n,ngpus,nmics,nd,nl,nr,impis,impir,impir_world
         logical:: win_lck
 
         ierr=0
         impis=my_mpi_size(infpar%lg_comm); if(impis.le.0) then; ierr=1; return; endif
         impir=my_mpi_rank(infpar%lg_comm); if(impir.lt.0) then; ierr=2; return; endif
         impir_world=my_mpi_rank()
-        if(DIL_DEBUG) then
-         deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
-         open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN')
-         old_cons=CONS_OUT; CONS_OUT=DIL_DEBUG_FILE
-         write(CONS_OUT,'("### DEBUG BEGIN: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
-        endif
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         if(present(num_gpus)) then; ngpus=max(num_gpus,0); else; ngpus=0; endif
-        if(present(num_mics)) then; nmics=max(num_mics,0); else; nmics=0; endif        
+        if(present(num_mics)) then; nmics=max(num_mics,0); else; nmics=0; endif
         if(DIL_DEBUG)&
         &write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Entered Process ",i6," of ",i6,": ",i2," GPUs, ",i2," MICs ...")')&
         &impir,impis,ngpus,nmics
@@ -4261,10 +4257,8 @@
          tcontr%contr_spec%lbase(1:nl)=cspec%lbase(1:nl)
          tcontr%contr_spec%rbase(1:nr)=cspec%rbase(1:nr)
         endif
-        if(DIL_DEBUG) then
-         write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Exited Process ",i6," of ",i6,": Status ",i9)') impir,impis,ierr
-         CONS_OUT=old_cons; close(DIL_DEBUG_FILE)
-        endif
+        if(DIL_DEBUG)&
+        &write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Exited Process ",i6," of ",i6,": Status ",i9)') impir,impis,ierr
         return
         end subroutine dil_tensor_contract
 !-------------------------------------------------------
@@ -4317,10 +4311,44 @@
         enddo
         return
         end subroutine dil_tensor_init
-!============================================================
-!#ifdef DIL_DEBUG
-!DEBUGGING:
+!-------------------------------------
+        subroutine dil_debug_to_file_start(ierr)
+!This subroutine starts redirecting process's output to file.
+        implicit none
+        integer(INTD), intent(out), optional:: ierr
+        character(128):: deb_fname
+        integer(INTD):: i,impir_world,impir
+
+        if(present(ierr)) ierr=0
+        if(CONS_OUT_SAVED.le.0) then
+         impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
+         deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
+         open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN')
+         CONS_OUT_SAVED=CONS_OUT; CONS_OUT=DIL_DEBUG_FILE; DIL_CONS_OUT=DIL_DEBUG_FILE
+         write(CONS_OUT,'("### DEBUG BEGIN: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
+        else
+         if(present(ierr)) ierr=1 !debug file is already opened
+        endif
+        return
+        end subroutine dil_debug_to_file_start
 !---------------------------------------------
+        subroutine dil_debug_to_file_finish(ierr)
+!This subroutine starts redirecting process's output to file.
+        implicit none
+        integer(INTD), intent(out), optional:: ierr
+        integer(INTD):: impir_world,impir
+
+        if(present(ierr)) ierr=0
+        if(CONS_OUT_SAVED.gt.0) then
+         impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
+         write(CONS_OUT,'("### DEBUG END: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
+         CONS_OUT=CONS_OUT_SAVED; DIL_CONS_OUT=CONS_OUT_SAVED; CONS_OUT_SAVED=0; close(DIL_DEBUG_FILE)
+        else
+         if(present(ierr)) ierr=1 !debug file has not been opened
+        endif
+        return
+        end subroutine dil_debug_to_file_finish
+!==============================================
         subroutine dil_test(dtens,ltens,rtens)
         implicit none
         type(tensor), intent(inout), target:: dtens
@@ -4334,14 +4362,12 @@
         integer(INTD):: dful(1:MAX_TENSOR_RANK),lful(1:MAX_TENSOR_RANK),rful(1:MAX_TENSOR_RANK)
         real(realk), pointer, contiguous:: darr(:),larr(:),rarr(:),barr(:)
         type(dil_tens_contr_t):: tcr
-        character(128):: deb_fname,tcs
+        character(128):: tcs
         real(realk):: val0,val1,val2
         real(8):: tmb,tm
 
         errc=0; impir=my_mpi_rank(infpar%lg_comm); impir_world=my_mpi_rank()
-        deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
-        open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN'); CONS_OUT=DIL_DEBUG_FILE
-        write(CONS_OUT,'("### DEBUG BEGIN: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
+        call dil_debug_to_file_start()
 !Check tensor kernels:
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Checking tensor algebra kernels ...")') impir
         drank=5; lrank=5; rrank=5
@@ -4601,8 +4627,7 @@
         val0=dil_tensor_norm1(dtens,errc); print *,'NORM1 ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm1: ",D25.15)') val0
 !Exit:
-999     write(CONS_OUT,'("### DEBUG END: Global Rank ",i7)') impir
-        close(DIL_DEBUG_FILE)
+999     call dil_debug_to_file_finish()
         if(associated(darr)) deallocate(darr)
         if(associated(larr)) deallocate(larr)
         if(associated(rarr)) deallocate(rarr)
@@ -4614,5 +4639,5 @@
 #endif
         return
         end subroutine dil_test
-!#endif
+
        end module tensor_algebra_dil
