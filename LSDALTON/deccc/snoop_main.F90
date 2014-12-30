@@ -123,7 +123,7 @@ contains
        write(DECinfo%output,*) 'SNOOP: Starting full system calculation using DEC driver'
        call main_fragment_driver(MyMoleculeFULL,lsfull,D,&
             & OccOrbitals,VirtOrbitals,MyMoleculeFULL%natoms,MyMoleculeFULL%nocc,MyMoleculeFULL%nunocc,&
-            & EHFfull,Ecorrfull,dummy,Eerr,FragEnergiesOcc,AFfull)
+            & EHFfull,Ecorrfull,dummy,Eerr,FragEnergiesOcc,AFfull,.false.)
     end if
 
     ! Notation
@@ -1154,10 +1154,8 @@ contains
     type(decfrag),pointer :: AFsub(:)
     logical :: dofragSUB(MySubsystem%nfrags), dofragFULL(MyMoleculeFULL%nfrags)
     real(realk) :: EHF,Eerr
-    logical :: esti,calcAF
     integer :: i
-    type(joblist) :: jobs
-    real(realk),pointer :: dummy(:,:),FragEnergies(:,:,:)
+    real(realk),pointer :: dummy(:,:),FragEnergiesOcc(:,:)
     type(decorbital),pointer :: OccOrbitalsSUB(:), VirtOrbitalsSUB(:)
     real(realk) :: energies(ndecenergies)
 
@@ -1174,12 +1172,9 @@ contains
        write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', sub, &
             & ' calculation using full DEC space'
 
-       ! Use "same" orbital spaces for monomers as for FULL
-       esti=.false.
-
        ! Fragment energies
-       call mem_alloc(FragEnergies,MySubsystem%nfrags,MySubsystem%nfrags,ndecenergies)
-       FragEnergies=0.0_realk
+       call mem_alloc(FragEnergiesOcc,MySubsystem%nfrags,MySubsystem%nfrags)
+       FragEnergiesOcc=0.0_realk
 
        ! Determine DEC orbital structures
        call mem_alloc(OccOrbitalsSUB,MySubsystem%nocc)
@@ -1203,36 +1198,18 @@ contains
        ! Get atomic fragments for subsystem with one-to-one correspondence to
        ! full atomic fragments
        call mem_alloc(AFsub,MySubsystem%nfrags)
+       do i=1,MySubsystem%nfrags
+          call atomic_fragment_nullify(AFsub(i))
+       end do
        call subsystemAOS_equals_FULLAOS(sub,MyMoleculeFULL,&
             & OccOrbitalsFULL,MySubsystem,lssub,OccOrbitalsSUB,&
             & VirtOrbitalsSUB,dofragFULL,dofragsub,AFfull,AFsub)
 
+       ! Run DEC fragment calculations with atomic fragment defined above
+        call main_fragment_driver(MySubsystem,lssub,D,OccOrbitalsSUB,&
+            & VirtOrbitalsSUB,MySubsystem%natoms,MySubsystem%nocc,&
+            & MySubsystem%nunocc,EHF,Ecorr,dummy,Eerr,FragEnergiesOcc,AFsub,.true.)
 
-       ! Make job list
-       calcAF=.true.
-       call create_dec_joblist_driver(calcAF,MySubsystem,lssub,MySubsystem%nfrags,&
-            & MySubsystem%nocc,MySubsystem%nunocc,&
-            &OccOrbitalsSUB,VirtOrbitalsSUB,AFsub,dofragSUB,.false.,jobs)
-
-       ! Run DEC fragment calculations
-       call fragment_jobs(MySubsystem%nocc,MySubsystem%nunocc,MySubsystem%nfrags,&
-            & MySubsystem,lssub,&
-            & OccOrbitalsSUB,VirtOrbitalsSUB,jobs,AFsub,FragEnergies,esti)
-
-       ! Add fragment energies
-       do i=1,ndecenergies
-          call add_dec_energies(MySubsystem%nfrags,FragEnergies(:,:,i),dofragSUB,energies(i))
-       end do
-
-       ! Print all fragment energies
-       write(DECinfo%output,*) '*********************************************************************'
-       write(DECinfo%output,*) 'Printing fragment energies for subsystem ', sub
-       write(DECinfo%output,*) '*********************************************************************'
-       call print_all_fragment_energies(MySubsystem%nfrags,FragEnergies,dofragSUB,&
-            & MySubsystem%DistanceTable,energies)
-
-       ! Obtain The Correlation Energy from the list energies
-       call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Ecorr)
 
        ! Free stuff
        do i=1,MySubsystem%nocc
@@ -1243,13 +1220,12 @@ contains
        end do
        call mem_dealloc(OccOrbitalsSUB)
        call mem_dealloc(VirtOrbitalsSUB)
-       call mem_dealloc(FragEnergies)
+       call mem_dealloc(FragEnergiesOcc)
        do i=1,MySubsystem%nfrags
           if(.not. associated(AFsub(i)%EOSatoms)) cycle
           call atomic_fragment_free_simple(AFsub(i))
        end do
        call mem_dealloc(AFsub)
-       call free_joblist(jobs)
 
     else
 

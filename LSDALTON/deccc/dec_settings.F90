@@ -751,6 +751,14 @@ contains
     ! SNOOP - currently limited in several ways
     if(DECinfo%SNOOP) then
 
+       ! For DEC, we currently include all pairs for SNOOP
+       write(DECinfo%output,*) 'WARNING: SNOOP currently requires all pairs to be calculated!'
+       write(DECinfo%output,*) '--> ignoring pair estimates and setting pair distance threshold to be huge!'
+       DECinfo%pair_distance_threshold = huge(1.0_realk)
+       DECinfo%PairEstimate=.false.
+       DECinfo%PairEstimateIgnore = .true.
+       
+
        if(DECinfo%SNOOPlocalize .and. DECinfo%SNOOPsamespace) then
           call lsquit('SNOOP: Monomer orbitals cannot localized when subsystems &
                & use same orbital spaces as full system!',-1)
