@@ -296,10 +296,8 @@ contains
 
     ! FRAGMENT OPTIMIZATION AND (POSSIBLY) ESTIMATED FRAGMENTS
     ! ********************************************************
-    if(.not. AFset) then
-       call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-            & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
-    end if
+    call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+         & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset)
 
     ! Send CC models and pair FOTs to use for all pairs based on estimates
     if(esti) then
@@ -1242,7 +1240,7 @@ subroutine print_dec_info()
   !> \author Kasper Kristensen
   !> \date November 2013
   subroutine fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-       & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
+       & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset)
 
     implicit none
     !> Full molecule info (CC model for each pair fragment resulting from estimate analysis is stored 
@@ -1267,6 +1265,10 @@ subroutine print_dec_info()
     type(decfrag), intent(inout),dimension(MyMolecule%nfrags) :: AtomicFragments
     !> Fragment energies 
     real(realk),intent(inout) :: FragEnergies(MyMolecule%nfrags,MyMolecule%nfrags,ndecenergies)
+    !> Have atomic fragments already been set by input (true) 
+    !> or do they need to be optimized (false)
+    !> NOTE: If AFset=false, nothing (except some MPI communication) is effectively done here.
+    logical,intent(in) :: AFset
     real(realk),pointer :: FragEnergiesPart(:,:)
     type(decfrag),pointer :: EstAtomicFragments(:)
     logical :: DoBasis,calcAF
@@ -1286,6 +1288,15 @@ subroutine print_dec_info()
     ! Initialize job list for atomic fragment optimizations
     call create_dec_joblist_fragopt(nfrags,nocc,nunocc,MyMolecule%ncore,MyMolecule%DistanceTable,&
          & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
+
+    ! If atomic fragments have already been set, we do not carry out fragment optimization
+    ! We therefore say that the job has already been done
+    ! KK fixme - this could be done more elegantly...
+    if(AFset) then
+       do i=1,fragoptjobs%njobs
+          fragoptjobs%jobsdone(i)=.true.
+       end do
+    end if
 
     if(DECinfo%DECrestart) then
        write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
