@@ -2494,7 +2494,7 @@ C
 C  The following records are written:
 C
 C    0) label LBSIFC ("SIR IPH ")
-C    1) POTNUC,EMY,EACTIV,EMCSCF
+C    1) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,LSYM,MS2
 C    2) NISHT,NASHT,...
 C    3) CMO
 C    4) CREF
