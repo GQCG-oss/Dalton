@@ -973,8 +973,8 @@ contains
     real(realk),pointer :: AlphaCD(:,:,:),AlphaCD5(:,:,:),AlphaCD6(:,:,:)
     real(realk),pointer :: Calpha(:,:,:),Calpha2(:,:,:),Calpha3(:,:,:)
     real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:),EpsOcc(:),EpsVirt(:)
-    integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2,comm,TAG1,TAG2
-    integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
+    integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,COUNT2,comm,TAG1,TAG2
+    integer :: J,CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
     integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri,MinAtomicnAux
     logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
     logical :: RoundRobin2,RoundRobin3,useCalpha2,useCalpha3,FORCEPRINT
