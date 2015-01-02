@@ -2779,11 +2779,14 @@ end function max_batch_dimension
     type(matrix) :: F,h
     type(matrix) :: Dtmp(1)
     real(realk)  :: exchangeFactor,enuc,edft(1)
-
+    logical :: dft2
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
 
-    if(present(dft) .and. dft ) then
+    dft2 = .FALSE.
+    if(present(dft)) dft2 = dft 
+
+    if(dft2) then
       call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
       call mat_init(Dtmp(1),MyMolecule%nbasis,MyMolecule%nbasis)
       call mat_copy(1.0_realk,D,Dtmp(1))
