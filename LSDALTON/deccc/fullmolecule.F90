@@ -531,7 +531,11 @@ contains
 
     ! Get orbitals
     call mem_alloc(C,nbasis,nbasis)
-    call dec_read_mat_from_file('lcm_orbitals.u',nbasis,nbasis,C)
+    IF(DECinfo%use_canonical)THEN
+       call dec_read_mat_from_file('cmo_orbitals.u',nbasis,nbasis,C)       
+    ELSE
+       call dec_read_mat_from_file('lcm_orbitals.u',nbasis,nbasis,C)
+    ENDIF
     call molecule_generate_basis(molecule,C)
     call mem_dealloc(C)
 

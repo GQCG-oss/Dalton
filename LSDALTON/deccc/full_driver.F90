@@ -975,7 +975,8 @@ contains
     real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:),EpsOcc(:),EpsVirt(:)
     integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,COUNT2,comm,TAG1,TAG2
     integer :: J,CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
-    integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri,MinAtomicnAux
+    integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri,MinAtomicnAux,restart_lun
+    integer :: noccJstart
     logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
     logical :: RoundRobin2,RoundRobin3,useCalpha2,useCalpha3,FORCEPRINT
     integer(kind=ls_mpik)  :: request1,request2,request5,request6,request7,request8
@@ -984,7 +985,7 @@ contains
     real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPU1,CPU2,WALL1,WALL2,CPU_MPICOMM,WALL_MPICOMM
     real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT,MemInGBCollected,epsIJ
     logical :: MemoryReduced,AlphaCDAlloced,TransferCompleted,AlphaCD_Deallocate
-    logical :: NotMatSet
+    logical :: NotMatSet,file_exists
     real(realk),pointer :: Amat(:,:),Bmat(:,:)
     MemoryReduced = MyLsitem%setting%scheme%ForceRIMP2memReduced
 #ifdef VAR_TIME    
@@ -1441,14 +1442,39 @@ contains
        EpsVirt(A) = MyMolecule%qqfock(A,A)
     enddo
 
-    rimp2_energy = 0.0E0_realk
+    IF(DECinfo%DECrestart)THEN
+       !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
+       INQUIRE(FILE='FULLRIMP2.restart',EXIST=file_exists)
+       IF(file_exists)THEN
+          WRITE(DECinfo%output,*)'Restart of Full molecular RIMP2 calculation:'
+          restart_lun = -1  !initialization
+          call lsopen(restart_lun,'FULLRIMP2.restart','OLD','FORMATTED')
+          rewind restart_lun
+          read(restart_lun,'(I9)') noccJstart
+          IF(noccJstart.EQ.nocc)THEN
+             WRITE(DECinfo%output,*)'All energies is on file'
+             noccJstart = -1
+          ELSEIF(noccJstart.GT.nocc.OR.noccJstart.LT.1)THEN
+             WRITE(DECinfo%output,*)'RIMP2 restart error first integer is wrong. Read:',noccJstart
+             call lsquit('RIMP2 restart error first integer is wrong')             
+          ELSE
+             noccJstart = noccJstart + 1
+             read(restart_lun,'(F28.16)') rimp2_energy
+          ENDIF
+          call lsclose(restart_lun,'KEEP')
+       ENDIF
+    ELSE
+       noccJstart=1
+       rimp2_energy = 0.0E0_realk
+    ENDIF
+
     IF(Wakeslaves)THEN
 #ifdef VAR_MPI
        NotMatSet = .TRUE.
        call mem_alloc(Amat,nvirt,nvirt)
        call mem_alloc(Bmat,nvirt,nvirt)
-       do J=1,nocc
-          do I=1,nocc             
+       do J=noccJstart,nocc
+          do I=1,nocc
              epsIJ = EpsOcc(I) + EpsOcc(J)
              IF(MynauxMPI.GT.0)THEN 
                 !A(nvirt,nvirt)
@@ -1478,6 +1504,13 @@ contains
                 call RIMP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
              ENDIF
           enddo
+          !Restart 
+          restart_lun = -1  !initialization
+          call lsopen(restart_lun,'FULLRIMP2.restart','UNKNOWN','FORMATTED')
+          rewind restart_lun
+          write(restart_lun,'(I9)') J
+          write(restart_lun,'(F28.16)') rimp2_energy
+          call lsclose(restart_lun,'KEEP')
        enddo
        call mem_dealloc(Amat)
        call mem_dealloc(Bmat)
