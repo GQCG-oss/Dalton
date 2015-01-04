@@ -865,7 +865,7 @@ contains
     type(fullmolecule), intent(inout) :: molecule
     type(lsitem), intent(inout) :: mylsitem
     integer :: natoms,r,i,iset,itype,basis,icharge,nbasis,iOrbitalIndex
-    integer :: kmult,nAngmom,ang,norb,j,k
+    integer :: kmult,nAngmom,ang,norb,j,k,nCont,iOrbitalIndexSave
     logical :: status_info
 
     natoms = molecule%natoms
@@ -924,13 +924,20 @@ contains
 
        nAngmom = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%nAngmom
        kmult = 1
+       iOrbitalIndexSave = iOrbitalIndex
+       nCont = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%ToTnorb
        do ang = 0,nAngmom-1
           norb = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%SHELL(ang+1)%norb
           IF(kmult.EQ.1)THEN
              !Include all S orbitals if one S orbital is included  
              do j = 1, norb
-                molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndex+1
-                molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndex+norb
+                if(DECinfo%AtomicExtent)then
+                   molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndexSave+1
+                   molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndexSave+nCont
+                else
+                   molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndex+1
+                   molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndex+norb
+                endif
              enddo
              iOrbitalIndex = iOrbitalIndex + norb
              kmult = kmult + 2
@@ -938,8 +945,13 @@ contains
              do j = 1, norb
                 !Include all Orbital Components of a given function (For P include Px,Py,Pz)
                 do k=1,kmult
-                   molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndex+1
-                   molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndex+kmult
+                   if(DECinfo%AtomicExtent)then
+                      molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndexSave+1
+                      molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndexSave+nCont
+                   else
+                      molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndex+1
+                      molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndex+kmult
+                   endif
                 enddo
                 iOrbitalIndex = iOrbitalIndex + kmult
              enddo

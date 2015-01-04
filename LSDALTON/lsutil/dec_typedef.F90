@@ -302,6 +302,9 @@ module dec_typedef_module
      !> Kohn-Sham Reference
      logical :: DFTreference
 
+     !> Atomic Extent - include all atomic orbitals of atoms included
+     logical :: AtomicExtent
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split

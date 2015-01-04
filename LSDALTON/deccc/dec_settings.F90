@@ -192,6 +192,8 @@ contains
     DECinfo%SOS                      = .false.
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
+    DECinfo%AtomicExtent             = .false.
+
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-5_realk
     DECinfo%CCthrSpecified           = .false.
@@ -552,6 +554,9 @@ contains
        case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
        case('.FRAG_INIT_SIZE');     read(input,*) DECinfo%Frag_Init_Size
        case('.FRAG_EXP_SIZE');      read(input,*) DECinfo%Frag_Exp_Size
+       case('.ATOMICEXTENT')
+          !Include all atomic orbitals on atoms in the fragment 
+          DECinfo%AtomicExtent  = .true.
        case('.PRINTFRAGS')
           ! Print fragment energies for full molecular cc calculation
           DECinfo%print_frags = .true.
