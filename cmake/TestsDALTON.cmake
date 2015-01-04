@@ -221,9 +221,11 @@ add_dalton_test(cc3r12_n2_sym_exc_lhtr        "dalton;ccr12;cc3;longccr12")
 
 add_dalton_runtest(prop_exci_ao       "dalton;runtest;prop;aosoppa;medium")
 add_dalton_runtest(prop_exci_aorpa    "dalton;runtest;prop;aosoppa;short")
+add_dalton_runtest(prop_exci_aorpa_direct    "dalton;runtest;prop;aosoppa;parallel")
 add_dalton_runtest(prop_exci_aorpad   "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aosoppa  "dalton;runtest;prop;aosoppa;medium")
 add_dalton_runtest(prop_exci_aosoppcc "dalton;runtest;prop;aosoppa;medium")
+add_dalton_runtest(prop_exci_aosoppcc_direct "dalton;runtest;prop;aosoppa;medium;parallel")
 
 add_dalton_test(cc2_r12_aux_ch4_cbs2a         "dalton;ccr12;longccr12")
 
