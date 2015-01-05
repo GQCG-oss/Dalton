@@ -228,7 +228,6 @@ REAL(REALK) :: VX(5),DFTENEUNRES
 REAL(REALK),pointer :: VXC(:,:)
 REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
 EXTERNAL DFTENEUNRES
-#ifdef MOD_UNRELEASED
 call mem_dft_alloc(VXC,NBLEN,NDMAT)
 
 ! LDA Exchange-correlation contribution to Kohn-Sham energy
@@ -289,9 +288,6 @@ DO IDMAT = 1, NDMAT
 !        & WORK(W5:W6),WORK(W7:W8))
 ENDDO
 call mem_dft_dealloc(VXC)
-#else
-call lsquit('II_DFT_KSMLDAUNRES not implemented',-1)
-#endif
 END SUBROUTINE II_DFT_KSMLDAUNRES
 
 !> \brief main closed shell GGA kohn-sham matrix driver
