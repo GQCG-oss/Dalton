@@ -171,6 +171,7 @@ set(LSDALTON_EXTERNAL_LIBS
 
 add_dependencies(ls-matrix-defop matrixmlib)
 add_dependencies(ls-matrix-defop matrixolib)
+add_dependencies(ls-matrix-defop matrixulib)
 endif()
 
 add_library(
