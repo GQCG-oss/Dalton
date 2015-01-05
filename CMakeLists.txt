@@ -182,12 +182,14 @@ endif()
 # configure INSTALL_WRKMEM and INSTALL_MMWORK
 include(ConfigWORKMEM)
 
+set(opt_lsdalton "0") #FALSE, ie. dalton
 configure_script(
-    ${CMAKE_SOURCE_DIR}/DALTON/dalton.in
+    ${CMAKE_SOURCE_DIR}/dalton.in
     ${CMAKE_BINARY_DIR}/dalton
     )
+set(opt_lsdalton "1") #TRUE, ie. lsdalton
 configure_script(
-    ${CMAKE_SOURCE_DIR}/LSDALTON/lsdalton.in
+    ${CMAKE_SOURCE_DIR}/dalton.in
     ${CMAKE_BINARY_DIR}/lsdalton
     )
 configure_script(

@@ -496,7 +496,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
            ! Single point DEC calculation using current HF files
            DECcalculation: IF(DECinfo%doDEC) then
-              call dec_main_prog_input(ls,F(1),D(1),S,CMO,E(1))
+              call dec_main_prog_input(ls,config,F(1),D(1),S,CMO,E(1))
            endif DECcalculation
            ! free Cmo
            IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
@@ -705,7 +705,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Single point DEC calculation using HF restart files
   DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%HFrestart) ) then
      CALL Print_Memory_info(lupri,'before dec_main_prog_file')
-     call dec_main_prog_file(ls)
+     call dec_main_prog_file(ls,config)
      CALL Print_Memory_info(lupri,'after dec_main_prog_file')
   endif DECcalculationHFrestart
 
@@ -779,9 +779,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
-#ifdef VAR_ICHOR
   use IchorSaveGabMod
-#endif
   use lsmpi_type,only: NullifyMPIbuffers
   implicit none
   logical, intent(inout)     :: OnMaster
@@ -802,9 +800,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call lstmem_init
   call setPrintDFTmem(.FALSE.)
   call init_IIDF_matrix
-#ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
-#endif
   call init_AO2GCAO_GCAO2AO()
   call init_persistent_array
   ! MPI initialization
@@ -833,9 +829,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
-#ifdef VAR_ICHOR
   use IchorSaveGabMod
-#endif
 #ifdef VAR_SCALAPACK
 use matrix_operations_scalapack
 #endif
@@ -852,9 +846,7 @@ implicit none
      call free_AO2GCAO_GCAO2AO()
   ENDIF
   call lstmem_free
-#ifdef VAR_ICHOR
   if(OnMaster)call FreeIchorSaveGabModule()
-#endif
   
 
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL

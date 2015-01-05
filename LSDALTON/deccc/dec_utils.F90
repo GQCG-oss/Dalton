@@ -21,6 +21,7 @@ module dec_fragment_utils
   use array4_simple_operations
   use IntegralInterfaceMOD!, only: ii_get_h1, ii_get_nucpot
   use BUILDAOBATCH
+  use II_XC_interfaceModule,only:II_get_xc_energy
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_op
@@ -2762,7 +2763,7 @@ end function max_batch_dimension
   !> Assumes closed-shell system
   !> \author Kasper Kristensen
   !> \date December 2012
-  function get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D) result(Ehf)
+  function get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D,dft) result(Ehf)
 
     implicit none
     !> HF energy
@@ -2773,42 +2774,118 @@ end function max_batch_dimension
     type(lsitem), intent(inout) :: MyLsitem
     !> HF Density matrix
     type(matrix),intent(in) :: D
+    !> get E_DFT
+    logical,optional,intent(in) :: dft
     type(matrix) :: F,h
-    real(realk)  :: exchangeFactor
+    type(matrix) :: Dtmp(1)
+    real(realk)  :: exchangeFactor,enuc,edft(1)
+    logical :: dft2
+    ! Init Fock matrix in matrix form
+    call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
+
+    dft2 = .FALSE.
+    if(present(dft)) dft2 = dft 
+
+    if(dft2) then
+      call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
+      call mat_init(Dtmp(1),MyMolecule%nbasis,MyMolecule%nbasis)
+      call mat_copy(1.0_realk,D,Dtmp(1))
+      call mat_zero(h)
+      call mat_zero(F)
+
+      call II_get_xc_energy(DECinfo%output,DECinfo%output,&
+        & mylsitem%setting,MyMolecule%nbasis,Dtmp,Edft,1)
+      call mat_free(Dtmp(1))
+      call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
+
+      call II_get_coulomb_mat(DECinfo%output, &
+        & DECinfo%output,mylsitem%setting,D,F,1)
+      call mat_daxpy(2.0_realk,h,F)
+      CALL II_get_nucpot(DECinfo%output, DECinfo%output,mylsitem%setting,Enuc)
+      Ehf =Edft(1) + mat_dotproduct(D,F) + Enuc
+
+      call mat_free(h)
+
+    else
+
+      if(DECinfo%DFTreference) then
+        !Needs the fock matrix from the KS density
+        exchangeFactor = mylsitem%SETTING%SCHEME%exchangeFactor
+        mylsitem%SETTING%SCHEME%exchangeFactor=1.0_realk
+        !This was from the beginning set to zero, has
+        !to be 1.0 for evaluation of exact exchange.
+
+        call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
+        call mat_zero(h)
+        call mat_zero(F)
+
+        call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
+        call II_get_coulomb_and_exchange_mat(DECinfo%output, &
+          & DECinfo%output,mylsitem%setting,D,F,1)
+        !adds one-particle part
+        call mat_daxpy(1.0_realk,h,F)
+        !reset exchangeFactor for future use
+        mylsitem%SETTING%SCHEME%exchangeFactor=exchangeFactor 
+
+        call mat_free(h)
+      else
+        call mat_set_from_full(MyMolecule%fock, 1E0_realk, F)
+      endif
+
+      ! Get HF energy
+      Ehf = get_HF_energy(D,F,Mylsitem) 
+
+    endif
+    call mat_free(F)
+
+  end function get_HF_energy_fullmolecule
+
+  !> \brief Get HF energy from full molecule structure.
+  !> Assumes closed-shell system
+  !> \author J. Rekkedal
+  !> \date December 2012
+  function get_dft_energy_fullmolecule(MyMolecule,Mylsitem,D) result(Ehf)
+
+    implicit none
+    !> HF energy
+    real(realk) :: Ehf
+    !> Full molecule structure
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> LSDALTON INFO
+    type(lsitem), intent(inout) :: MyLsitem
+    !> HF Density matrix
+    type(matrix),intent(in) :: D
+    !> get E_DFT
+    type(matrix) :: F,h
+    type(matrix) :: Dtmp(1)
+    real(realk)  :: exchangeFactor,enuc,edft(1)
 
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
 
-    if(DECinfo%DFTreference) then
-      !Needs the fock matrix from the KS density
-      exchangeFactor = mylsitem%SETTING%SCHEME%exchangeFactor
-      mylsitem%SETTING%SCHEME%exchangeFactor=1.0_realk
-      !This was from the beginning set to zero, has
-      !to be 1.0 for evaluation of exact exchange.
+    call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
+    call mat_init(Dtmp(1),MyMolecule%nbasis,MyMolecule%nbasis)
+    call mat_copy(1.0_realk,D,Dtmp(1))
+    call mat_zero(h)
+    call mat_zero(F)
 
-      call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
-      call mat_zero(h)
-      call mat_zero(F)
+    call II_get_xc_energy(DECinfo%output,DECinfo%output,&
+      & mylsitem%setting,MyMolecule%nbasis,Dtmp,Edft,1)
+    call mat_free(Dtmp(1))
+    call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
 
-      call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
-      call II_get_coulomb_and_exchange_mat(DECinfo%output, &
-        & DECinfo%output,mylsitem%setting,D,F,1)
-      !adds one-particle part
-      call mat_daxpy(1.0_realk,h,F)
-      !reset exchangeFactor for future use
-      mylsitem%SETTING%SCHEME%exchangeFactor=exchangeFactor 
+    call II_get_coulomb_mat(DECinfo%output, &
+      & DECinfo%output,mylsitem%setting,D,F,1)
+    call mat_daxpy(2.0_realk,h,F)
+    CALL II_get_nucpot(DECinfo%output, DECinfo%output,mylsitem%setting,Enuc)
+    Ehf =Edft(1) + mat_dotproduct(D,F) + Enuc
 
-      call mat_free(h)
-    else
-      call mat_set_from_full(MyMolecule%fock, 1E0_realk, F)
-    endif
+    call mat_free(h)
 
-    ! Get HF energy
-    Ehf = get_HF_energy(D,F,Mylsitem) 
 
-    call mat_free(F)
+  end function get_dft_energy_fullmolecule
 
-  end function get_HF_energy_fullmolecule
+
 
 
   !> Check whether fragment restart file exist.
@@ -4168,10 +4245,10 @@ end function max_batch_dimension
   end subroutine orthogonalize_MOs
 
   !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
-  subroutine print_total_energy_summary(EHF,Ecorr,Eerr,doSOS)
+  subroutine print_total_energy_summary(EHF,Edft,Ecorr,Eerr,doSOS)
     implicit none
     !> HF energy
-    real(realk),intent(in) :: EHF
+    real(realk),intent(in) :: EHF,Edft
     !> Correlation energy
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
@@ -4181,16 +4258,16 @@ end function max_batch_dimension
 
     lupri=6
     if(present(doSOS))then
-      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri,doSOS)
     else
-      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri)
     endif
 
     lupri=DECinfo%output
     if(present(doSOS))then
-      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri,doSOS)
     else
-      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri)
     endif
 
 
@@ -4200,10 +4277,10 @@ end function max_batch_dimension
   !> (Necessary to place here because it is used both for DEC and for full calculation).
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+  subroutine print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri,doSOS)
     implicit none
     !> HF energy
-    real(realk),intent(in) :: EHF
+    real(realk),intent(in) :: EHF,Edft
     !> Correlation energy
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
@@ -4237,7 +4314,8 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)') 'G: DFT energy :', Ehf
+          write(lupri,'(15X,a,f20.10)') 'G: HF energy (KS orb)  :', Ehf
+          write(lupri,'(15X,a,f20.10)') 'G: DFT energy          :', Edft
        ENDIF
        write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
@@ -4264,9 +4342,17 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')  'G: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
          if(.not. SOS) then
-           write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy   :', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)') 'G: HF + dRPA energy    :', Ehf+Ecorr
+           IF(DECinfo%DFTreference) then
+             write(lupri,'(15X,a,f20.10)') 'G: KS + dRPA energy    :',&
+              & Edft+Ecorr
+           endif
          else
-           write(lupri,'(15X,a,f20.10)') 'G: Total SOSEX energy  :', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy   :', Ehf+Ecorr
+           IF(DECinfo%DFTreference) then
+             write(lupri,'(15X,a,f20.10)') 'G: KS + SOSEX energy   :',&
+              & Edft+Ecorr
+           endif
          endif
        else
           write(lupri,'(15X,A,I4,A,I4)') 'G: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel
@@ -4276,7 +4362,8 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)  :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Edft
        ENDIF
        if(SOS) then
          write(lupri,'(15X,a,f20.10)')       'E: SOSEX energy        :', Ecorr
@@ -4310,9 +4397,17 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')    'E: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
           if(.not. SOS) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy   :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: HF + dRPA energy    :', Ehf+Ecorr
+           IF(DECinfo%DFTreference) then
+             write(lupri,'(15X,a,f20.10)') 'E: KS + dRPA energy    :',&
+              & Edft+Ecorr
+           endif
           else
-             write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy  :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: HF + SOSEX energy   :', Ehf+Ecorr
+           IF(DECinfo%DFTreference) then
+             write(lupri,'(15X,a,f20.10)') 'E: KS + SOSEX energy   :',&
+              & Edft+Ecorr
+           endif
           endif
        else
           write(lupri,'(15X,A,I4)') 'G: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel

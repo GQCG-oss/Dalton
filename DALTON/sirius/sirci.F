@@ -2644,11 +2644,11 @@ C  Revised 13-Jun-1991 hjaaj : also calculate and write DV
 C
 C Purpose:
 C  Interface to RESPONSE for CI response calculations:
-C  write information to LUSIFC needed for response calculation.
+C  write information to LUSIFC ("SIRIFC") needed for response calculation.
 C
 C  The following records are written:
 C
-C    1) POTNUC,EMY,EACTIV,ECIREF
+C    1) POTNUC,EMY,EACTIV,ECIREF,ISTACI,ISPIN,NACTEL,LSYM,MS2
 C    2) NISHT,NASHT,...
 C    3) CMO
 C    4) CREF
@@ -2673,6 +2673,7 @@ C   INFORB : NSYM,NISHT,NASHT,NNASHX,NNASHY,NOCCT,NNOCCX,NCMOT,...
 C   INFVAR : NCONF
 C   INFTAP : LUIT1, LUSIFC
 C   CBGETD : IADH2
+C   SPINFO : MS2
 C
 #include "maxorb.h"
 #include "infinp.h"
@@ -2681,6 +2682,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 #include "cbgetdis.h"
+#include "spinfo.h"
 C
       CHARACTER*8 LAB123(3), TABLE(5)
       DATA LAB123/'********','********','********'/
@@ -2713,11 +2715,12 @@ C
 C
       CALL MAKDV(WRK(KCREF),WRK(KDV),INDXCI,WRK(KWRK1),LWRK1)
 C
-C     Write LUSIFC
+C     Write SIRIFC
 C
       WRITE (LUSIFC) LAB123,TABLE(2)
       ECACTV = ECIREF - EMY
-      WRITE (LUSIFC) POTNUC,EMY,ECACTV,ECIREF,ISTACI,ISPIN,NACTEL,LSYM
+      WRITE (LUSIFC) POTNUC,EMY,ECACTV,ECIREF,ISTACI,ISPIN,NACTEL,
+     &               LSYM,MS2
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      *               NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
      &               NSYM, MULD2H, NRHF, NFRO,

@@ -1,12 +1,13 @@
 
 """
-   runtest - Numerically tolerant test library.
+   runtest - Numerically tolerant test library
 
    Author:
-      Radovan Bast (lastname at kth.se).
+      Radovan Bast (lastname at kth.se)
 
    License:
-      GNU Lesser General Public License.
+      GNU Lesser General Public License Version 3
+      https://github.com/rbast/runtest/blob/master/LICENSE
 
    Documentation:
       http://runtest.readthedocs.org
@@ -16,7 +17,7 @@
 """
 
 # since version 1.0.0 we follow http://semver.org/
-__version__ = '1.1.0-beta'
+__version__ = '1.2.0-beta'
 
 import re
 import os
@@ -67,6 +68,7 @@ class TestRun:
         self.verbose    = options.verbose
         self.skip_run   = options.skip_run
         self.debug      = options.debug
+        self.log        = options.log
 
         if self.work_dir != self.input_dir:
             self._safe_copy(self.input_dir, self.work_dir)
@@ -156,6 +158,11 @@ class TestRun:
                           action='store_true',
                           default=False,
                           help='print verbose debug information [default: %default]')
+        parser.add_option('--log',
+                          '-l',
+                          action='store',
+                          default=None,
+                          help='log file [default: no logging]')
         (options, args) = parser.parse_args(args=argv[1:])
 
         if sys.platform == "win32":

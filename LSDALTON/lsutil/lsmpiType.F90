@@ -4213,6 +4213,18 @@ contains
        ! Master is assigned its own group.
        call MPI_GROUP_INCL(worldgroup, gmsize, gmranks, localgroup, ierr)
     end if
+
+    if(infpar%mynum .EQ. infpar%master) then
+       !Master writes info concerning groups and groupsizes
+       WRITE(lupri,'(A)')' MPI Group Information'
+       IF(ngroups.EQ.1)THEN
+          WRITE(lupri,'(A,I6)')' Only 1 MPI group of GROUPSIZE: ',lg(1)%groupsize
+       ELSE
+          WRITE(lupri,'(A,I6,A,I6)')' Number of Groups with MPI GROUPSIZE of ',groupsize,':',ngroups-1
+          WRITE(lupri,'(A,I6,A,I6)')' Number of Groups with MPI GROUPSIZE of ',lg(ngroups)%groupsize,':',1
+       ENDIF
+    endif
+
     call mem_dealloc(gmranks)
 
     ! Create local MPI communicator

@@ -100,6 +100,11 @@ module dec_typedef_module
      logical :: SNOOPdebug
      !> Impose orthogonality constrant for occupied subsystem orbitals in SNOOP
      logical :: SNOOPort
+     !> Use "same" orbital spaces for monomer calculation as for full calculation,
+     !> as defined by natural connection
+     logical :: SNOOPsamespace
+     !> Localize SNOOP subsystem orbitals (cannot be used in connection with SNOOPsamespace)
+     logical :: SNOOPlocalize
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
@@ -296,6 +301,9 @@ module dec_typedef_module
      logical :: StressTest
      !> Kohn-Sham Reference
      logical :: DFTreference
+
+     !> Atomic Extent - include all atomic orbitals of atoms included
+     logical :: AtomicExtent
 
      !> MPI settings
      !> ************
@@ -595,6 +603,8 @@ module dec_typedef_module
      integer :: natoms
      !> Number of basis functions
      integer :: nbasis
+     !> Number of MOs (usually equal to nbasis but can be different for subsystems in SNOOP)
+     integer :: nMO
      !> Number of auxiliary basis functions
      integer :: nauxbasis
      !> Number of occupied orbitals (core + valence)
