@@ -3516,7 +3516,6 @@ Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
 INTEGER     :: IPNT,I,J,IDMAT,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT1,IDMAT2
 REAL(REALK) :: VX(5),DFTENEUNRES
 EXTERNAL DFTENEUNRES
-#ifdef MOD_UNRELEASED
 ! LDA Exchange-correlation contribution to Kohn-Sham energy
 DO IDMAT = 1, NDMAT/2
  IDMAT1 = 1 + (IDMAT-1)*2
@@ -3539,9 +3538,6 @@ DO IDMAT = 1, NDMAT/2
    ENDIF
  END DO
 ENDDO
-#else
-call lsquit('II_DFT_KSMELDAUNRES not implemented',-1)
-#endif
 
 END SUBROUTINE II_DFT_KSMELDAUNRES
 
@@ -3889,7 +3885,6 @@ INTEGER     :: IRED,JRED,NRED,offset
 REAL(REALK) :: GAOMAX
 !REAL(REALK),pointer :: EXCRED(:,:)
 !REAL(REALK) :: EXCRED(NactBast*NactBast)
-#ifdef MOD_UNRELEASED
 NRED = 0
 GAOMAX = 0.0E0_realk
 ! Set up maximum Gaussian AO elements
@@ -3956,9 +3951,6 @@ IF (NRED.GT. 0) THEN
    ENDDO
 !   CALL MEM_DFT_DEALLOC(EXCRED)
 ENDIF
-#else
-call lsquit('II_DISTGGABUNRES not implemented',-1)
-#endif
 
 END SUBROUTINE II_DISTGGABUNRES
 
