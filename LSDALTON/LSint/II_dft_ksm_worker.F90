@@ -3889,7 +3889,6 @@ INTEGER     :: IRED,JRED,NRED,offset
 REAL(REALK) :: GAOMAX
 !REAL(REALK),pointer :: EXCRED(:,:)
 !REAL(REALK) :: EXCRED(NactBast*NactBast)
-#ifdef MOD_UNRELEASED
 NRED = 0
 GAOMAX = 0.0E0_realk
 ! Set up maximum Gaussian AO elements
@@ -3956,9 +3955,6 @@ IF (NRED.GT. 0) THEN
    ENDDO
 !   CALL MEM_DFT_DEALLOC(EXCRED)
 ENDIF
-#else
-call lsquit('II_DISTGGABUNRES not implemented',-1)
-#endif
 
 END SUBROUTINE II_DISTGGABUNRES
 
