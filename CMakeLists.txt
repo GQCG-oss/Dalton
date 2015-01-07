@@ -232,6 +232,7 @@ execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
 execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest.py        ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_dalton.py ${CMAKE_BINARY_DIR}/test)
+execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/LSDALTON/test/runtest_lsdalton.py ${CMAKE_BINARY_DIR}/test)
 
 # this controlls "make install" target
 include(ConfigMakeInstall)

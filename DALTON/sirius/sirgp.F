@@ -1921,7 +1921,7 @@ C    *) (LFIELD(I),I=1,NFIEL4)
 C   end if
 C   If (solvent) then
 C    *) label "SOLVINFO"
-C    *) EPSOL,EPSTAT,RSOL(1:3),LSOLMX
+C    *) EPSOL,EPSTAT,EPPN,RSOL(1:3),LSOLMX,INERSI,INERSF
 C    *) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C    *) ERLM(LM,1), LM = 1,NLMSOL)
 C    *) (TRLM(LM), LM = 1,NLMSOL)    where TRLM(i) = ERLM(i,2)
