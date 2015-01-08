@@ -2238,9 +2238,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   IF(master)THEN
      !=====================================================================================
-     ! Major Step 1: Master Obtains Overlap (alpha|beta) in Auxiliary Basis 
+     ! Major Step 1: Master Obtains (alpha|beta) ERI in Auxiliary Basis 
      !=====================================================================================
-     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full overlap
+     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full 2 center ERI
      !this should naturally be changed      
      call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
