@@ -1220,7 +1220,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          if(.not.alloc_in_dummy) call lsquit("ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3",-1)
          DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
         else
-         DIL_LOCK_OUTSIDE=.false. !`DIL: meaningless for scheme/=1
+         DIL_LOCK_OUTSIDE=.true. !`DIL: meaningless for scheme/=1
         endif
      endif
 
@@ -1714,7 +1714,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         lg         = dimGamma
 
         !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
-!        scheme=1 !``DIL: remove
+        !scheme=1 !``DIL: remove
         if(scheme==1) then !`DIL
 #ifdef VAR_MPI
          call time_start_phase(PHASE_COMM, at = time_intloop_work )
@@ -1782,7 +1782,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
         !u [gamma c i j ] -> u [i gamma c j]
         if(scheme/=1) call array_reorder_4d(1.0E0_realk,w1%d,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj%d)
-!        scheme=2 !``DIL: remove
+        !scheme=2 !``DIL: remove
 
 
         alphaB=0
@@ -1931,7 +1931,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Right arg set failed!',-1)
                call dil_set_tens_contr_spec(tch,tcs,errc,&
                      &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
-                     &rdims=(/int(la,INTD),int(no,INTD),int(no,INTD),int(nv,INTD)/),dbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/),&
+                     &rdims=(/int(la,INTD),int(no,INTD),int(no,INTD),int(nv,INTD)/),rbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/),&
                      &dest_zero=.false.)
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: CC: ',infpar%lg_mynum,errc
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Contr spec set failed!',-1)
@@ -1943,7 +1943,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Tens contr failed!',-1)
 #endif
               endif
-              call lsmpi_poke()
+              if(scheme/=1) call lsmpi_poke()
               !scheme=2 !``DIL: remove
            endif
 
