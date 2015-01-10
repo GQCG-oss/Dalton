@@ -3054,7 +3054,7 @@ C
  1800       FORMAT(/' GP * SOLUTION vector at frequency',F12.5,' a.u.',
      *             /' after',I5,' linear transformations is',1P,D20.8,
      *             /' INERTIA (POS,ZER,NEG) of reduced matrix is',3I5,
-     *             /' Determinant of reduced matrix is',F6.2,
+     *             /' Determinant of reduced matrix is',0P,F6.2,
      *              ' * 10 **',F5.1)
 C
             IF (IPRRSP .GE. 9) THEN
