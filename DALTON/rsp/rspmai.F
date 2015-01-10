@@ -728,14 +728,14 @@ C     end of this input module
          END DO
 C
          WRITE (LUPRI,'(/,3A,/)')
-     *        ' Keyword ',WORD,' not recognized in RSPREA.'
+     *        ' Keyword ',WORD,' not recognized under **RESPONS'
          CALL PRTAB(NTABLE,TABLE,WORD//' input keywords',LUPRI)
 
-         CALL QUIT(' ILLEGAL "*" OPTION IN RSPREA')
+         CALL QUIT(' ILLEGAL "*" OPTION UNDER **RESPONS')
       ELSE
-         WRITE (LUPRI,'(/,3A,/)')
-     *      '@PROMPT "',PROMPT,'" ILLEGAL OR OUT OF ORDER.'
-         CALL QUIT(' PROGRAM STOPPED IN RSPREA, ERROR IN PROMPT')
+         WRITE (LUPRI,'(/,3A,/)') '@ PROMPT "',PROMPT,
+     *      '" ILLEGAL OR OUT OF ORDER UNDER **RESPONS'
+         CALL QUIT('ERROR IN A **RESPONS PROMPT')
       END IF
  2    CALL RSPINP(WORD)
       GO TO 200
@@ -886,9 +886,9 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/4A/)') '@KEYWORD "',WORD,
+               WRITE (LUPRI,'(/4A/)') '@ KEYWORD "',WORD,
      *            '" NOT RECOGNIZED FOR ',WORD1
-               CALL QUIT(' ILLEGAL KEYWORD IN RSPINP ')
+               CALL QUIT('ILLEGAL KEYWORD FOR **RESPONS ')
     1          CONTINUE
                   INPTES = .TRUE.
                GO TO 100
@@ -942,10 +942,10 @@ cjje: change this if full solvent soppa is ever implemented
                   N1AVTOT = N1AVTOT + 1
                   IF ( N1AVTOT .GT. MAX1AV ) THEN
                      WRITE(LUPRI,'(/,2A,I5)')
-     *               '@rspinp: NUMBER OF OPERATORS FOR .PROPAV'
+     *               '@ **RESPONS: NUMBER OF OPERATORS FOR .PROPAV'
      *               ,'CALCULATION EXCEEDS THE ALLOWED NUMBER :'
      *               ,MAX1AV
-                   CALL QUIT('RSPINP, TOO MANY AVE OPERATORS SPECIFIED')
+                   CALL QUIT('RSPINP, TOO MANY .PROPAV OPERATORS')
                   END IF
                   READ(LUCMD,'(A)') LBL1AV(N1AVTOT)
                GO TO 100
@@ -999,12 +999,13 @@ C              .PROP2Average
                  IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
                   WRITE (LUPRI,'(/A)') '**RESPONSE INPUT ERROR: '//
      &             'Vacuum calculation - use .SOPPA instead of .SOPRPA'
-                  CALL QUIT('RSPINP: Vacuum calc. - use .SOPPA instead')
+                  CALL QUIT(
+     &               '**RESPONS: Vacuum calc. - use .SOPPA instead')
                  END IF
                GO TO 100
  25            CONTINUE
                  IF(.NOT. QFIT) THEN
-                   CALL QUIT('RSPINP: Charge fitting requires .QFIT')
+                   CALL QUIT('**RESPONS: Charge fitting requires .QFIT')
                  ENDIF
                  TRDQF = .TRUE.
                GO TO 100
@@ -1013,7 +1014,7 @@ C              .PROP2Average
             ELSE
                WRITE (LUPRI,'(/4A/)') '@PROMPT "',WORD,
      &            '" NOT RECOGNIZED FOR ',WORD1
-               CALL QUIT(' ILLEGAL PROMPT IN RSPINP ')
+               CALL QUIT(' ILLEGAL PROMPT UNDER **RESPONS ')
             END IF
       END IF
   300 CONTINUE
@@ -1748,7 +1749,7 @@ C
      &      ' QM/NP/MM response calculation'
 
 C
-         IF (QM3 .OR. QMMM .OR. QMNPMM .OR. PCM .OR. PEQM
+         IF ( (QM3 .OR. QMMM .OR. QMNPMM .OR. PCM .OR. PEQM)
      &       .AND. (SOPPA .AND. .NOT. SOPRPA)) THEN
                WRITE (LUPRI,'(//A/A/A)') 'RSPPP-ERROR: Full '//
      &     'embedding model SOPPA response is not implemented.',
