@@ -213,6 +213,7 @@ INTEGER     :: molcharge
 
 ! TESTING FUNCTIONALITIES FOR DEC
 LOGICAL     :: run_dec_gradient_test
+LOGICAL     :: ForceRIMP2memReduced
 END TYPE integralconfig
 
 ! WARNING WARNING  WARNING WARNING 
@@ -370,6 +371,7 @@ LOGICAL :: INCREMENTAL !Use incremental scheme (density-difference KS-matrix bui
   
 logical   :: DO_PROP
 integer   :: PropOper
+logical   :: ForceRIMP2memReduced
 END TYPE LSINTSCHEME
 
 !*****************************************

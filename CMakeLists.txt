@@ -183,12 +183,14 @@ endif()
 # configure INSTALL_WRKMEM and INSTALL_MMWORK
 include(ConfigWORKMEM)
 
+set(opt_lsdalton "0") #FALSE, ie. dalton
 configure_script(
-    ${CMAKE_SOURCE_DIR}/DALTON/dalton.in
+    ${CMAKE_SOURCE_DIR}/dalton.in
     ${CMAKE_BINARY_DIR}/dalton
     )
+set(opt_lsdalton "1") #TRUE, ie. lsdalton
 configure_script(
-    ${CMAKE_SOURCE_DIR}/LSDALTON/lsdalton.in
+    ${CMAKE_SOURCE_DIR}/dalton.in
     ${CMAKE_BINARY_DIR}/lsdalton
     )
 configure_script(
@@ -231,6 +233,7 @@ execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
 execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest.py        ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_dalton.py ${CMAKE_BINARY_DIR}/test)
+execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/LSDALTON/test/runtest_lsdalton.py ${CMAKE_BINARY_DIR}/test)
 
 # this controlls "make install" target
 include(ConfigMakeInstall)

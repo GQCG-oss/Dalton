@@ -167,6 +167,12 @@ C
 #endif
       CALL QENTER('RSPOLI')
 C
+      IF (IPRRSP .GT. 5) THEN
+         write(lupri,'(//A,2I10/A,3L10/A,L10,I10)')
+     &   'Output from "RSPOLI". NCSIM,NOSIM=',NCSIM,NOSIM,
+     &   'TRPLET,HSROHF,DFTADD',TRPLET,HSROHF,DFTADD,
+     &   'TDHF,NASHT',TDHF,NASHT
+      END IF
 C
       NEEDMU(-4:6) = 0
       NEEDDI(-4:6) = 0
@@ -1018,11 +1024,19 @@ C Manu debug2
 C
 C The following would comply for a call from LAGRAN in HF
 C
+      if (IPRRSP .gt. 10) then
+         write(lupri,*) 'LAGRAN? NCSIM,TDHF,TRPLET,HSROHF,DFTADD:',
+     &                           NCSIM,TDHF,TRPLET,HSROHF,DFTADD
+      end if
       IF (NCSIM.EQ.1 .AND. TDHF  .AND. TRPLET) THEN
 C
 C For high spin - dft we just unpack FC and FV
 C
          IF (HSROHF.OR.DFTADD) THEN
+            if (IPRRSP .gt. 10) then
+               write(lupri,*) 'HSROHF .or. DFTADD, FV='
+               CALL OUTPKB(FV,NORB,NSYM,-1,LUPRI)
+            end if
             CALL MEMGET('REAL',KFC,N2ORBX,WRK,KFREE,LFREE)
             CALL MEMGET('REAL',KTMP,NNORBX,WRK,KFREE,LFREE)
             CALL PKSYM1(WRK(KTMP),FV,NORB,NSYM,-1)

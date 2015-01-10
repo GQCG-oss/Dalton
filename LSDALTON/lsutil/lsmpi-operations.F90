@@ -1391,6 +1391,8 @@ call LS_MPI_BUFFER(dalton%nelectrons,Master)
 call LS_MPI_BUFFER(dalton%molcharge,Master)
 call LS_MPI_BUFFER(dalton%run_dec_gradient_test,Master)
 
+call LS_MPI_BUFFER(dalton%ForceRIMP2memReduced,Master)
+
 END SUBROUTINE MPICOPY_INTEGRALCONFIG
 #endif
 
@@ -1540,7 +1542,9 @@ call mpicopy_DFTparam(scheme%DFT,master)
 call LS_MPI_BUFFER(scheme%INCREMENTAL,Master)
 call LS_MPI_BUFFER(scheme%DO_PROP,Master)
 call LS_MPI_BUFFER(scheme%PropOper,Master)
-  
+
+call LS_MPI_BUFFER(scheme%ForceRIMP2memReduced,Master)
+
 END SUBROUTINE mpicopy_scheme
 
 #ifdef VAR_MPI

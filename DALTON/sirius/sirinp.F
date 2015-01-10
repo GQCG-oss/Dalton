@@ -1216,9 +1216,9 @@ C               Find out if any orbitals deleted
             IF (FNDLAB(LBSIFC,LUSIFC)) THEN
                NERROR = -1
                READ (LUSIFC) XPOTNC,EMY,EACTIV,EMCSCF,
-     &               JSTATE,JSPIN,MACTEL,LXSYM,KXAVER
+     &               JSTATE,JSPIN,MACTEL,LXSYM,MS2X
 C              READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-C    *               ISTATE,ISPIN,NACTEL,LSYM
+C    *               ISTATE,ISPIN,NACTEL,LSYM,MS2
              IF (INIOCC .EQ. 0 .AND. MACTEL .LE. 1) THEN
 C              ... 081205 hjaaj: not for INIOCC .lt. 0, because we
 C                  may restart with old orbitals, but new charge.

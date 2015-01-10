@@ -2496,7 +2496,7 @@ C
 #include "implicit.h"
 #include "dummy.h"
 C
-      PARAMETER ( MAXVEC = 12, DM1 = -1.0D0 )
+      PARAMETER ( MAXVEC = 120, DM1 = -1.0D0 )
       DIMENSION CMO(*),UDV(NASHDI,*),PV(*),FC(*),FV(*)
       DIMENSION FCAC(*), H2AC(*), GD(*),REDGD(*)
       DIMENSION REDE(*),REDS(*),IBTYP(*),EIVAL(*),RESID(*),EIVEC(*)
@@ -6234,17 +6234,17 @@ C     Memory allocation
         CALL DZERO(WRK(KDVAO),N2BASX) 
       ENDIF 
 
+      IF (LOCDEB) THEN
+          WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Full'
+          CALL OUTPUT(WRK(KDCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
       CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDVAO))
       CALL PKSYM1(WRK(KDVAO),WRK(KDENS),NBAS,NSYM,1)
 
       IF (LOCDEB)  THEN
-         WRITE (LUPRI,'(/A)') ' Transition Density Matrix'
+         WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Packed'
          CALL OUTPAK(WRK(KDENS),NBAST,1,LUPRI)
       ENDIF
-
-      !write(*,*) "rsp:", cord
-      !write(*,*) "rsp:", charge
-      !call qfit_initialize(cord(:,1:natoms),charge(1:natoms))
 
       LU=-1
       CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
@@ -6280,14 +6280,14 @@ C     Memory allocation
       WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
       WRITE(LUPRI,'(5x,3F12.6)') TRDIP
 
-      allocate( dens( nnbasx ) )
-      CALL DCOPY(NNBASX,WRK(KDENS),1,dens,1)
+      allocate( dens( N2BASX ) )
+      call dcopy(n2basx,wrk(kdcao),1,dens,1)
 #ifdef BUILD_QFITLIB
       call qfit_set_transition_dipole( TRDIP )
-      call qfit_fit(dens)
-#endif
+      call qfit_fit( dens )
       deallocate( dens )
       CALL QFITRES
+#endif
       RETURN
       END
 ! -- end of rspe2c.F --

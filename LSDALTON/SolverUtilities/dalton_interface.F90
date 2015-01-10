@@ -48,9 +48,7 @@ MODULE dal_interface
    ! debug cgto_diff_eri_host
    use cgto_diff_eri_host_interface, only: cgto_diff_eri_DGD_Econt
 #endif
-#ifdef VAR_ICHOR
    use IchorErimoduleHost
-#endif
 
 INTERFACE di_GET_GbDs
 	MODULE PROCEDURE di_GET_GbDsSingle, di_GET_GbDsArray
@@ -2702,7 +2700,7 @@ CONTAINS
                 ! X3(B)- X2(b): XC-correction
                 !****Calculation of Level 2 XC gradient
                 !     from level 2 Density matrix starts here
-                call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
+                call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight,lupri)
                 !choose the ADMM Level 2 grid
                 setting%scheme%dft%igrid = Grid_ADMML2
                      
@@ -2750,7 +2748,7 @@ CONTAINS
                 call mat_daxpy(1E0_realk,Gx3(ibmat),K(ibmat))
                                 
                 IF (setting%do_dft) &
-      &           call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
+      &           call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight,lupri)
             ENDDO
 !            ! ---------------------------------------------------------------
 
@@ -3143,7 +3141,6 @@ CONTAINS
 
     END SUBROUTINE DI_DECPACKED
 #endif
-#ifdef VAR_ICHOR 
     SUBROUTINE di_decpackedJ(lupri,luerr,ls,nbast,D)
       IMPLICIT NONE
       TYPE(Matrix),intent(in) :: D
@@ -3463,8 +3460,6 @@ CONTAINS
       call screen_init()
       call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
     END SUBROUTINE DI_DECPACKEDJOLD
-
-#endif
 
     SUBROUTINE di_decbatchpacked(lupri,luerr,ls,nbast,Dmat)
       IMPLICIT NONE

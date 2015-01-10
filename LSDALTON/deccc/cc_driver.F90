@@ -1756,6 +1756,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       use_singles = .false.
       atype = 'REAR'
 
+   case( MODEL_RIMP2 )
+
+      use_singles = .false.
+      atype = 'REAR'
+
    case( MODEL_CC2, MODEL_CCSD )
 
       if(.not.present(p2))then
@@ -1967,7 +1972,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call Get_AOt1Fock(mylsitem,p2,ifock,no,nv,nb,Co,Co,Cv)
       else
          ! Fock matrix for fragment from density made from input MOs
-         write(*,*) 'Johannes ao basis',nb
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
       end if
 
@@ -1979,7 +1983,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_add(delta_fock,-1.0E0_realk,ifock)
 
    else 
-      write(*,*) 'Johannes ao basis full molecule',nb
       ! Full molecule: deltaF = F(Dcore) for frozen core (0 otherwise)
       if(DECinfo%frozencore) then
          ! Fock matrix from input MOs
@@ -2311,6 +2314,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
                ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
 
+            case( MODEL_RIMP2 )
+
+               ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
+
             case( MODEL_CC2, MODEL_CCSD )
 
                ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
@@ -2427,9 +2434,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
 
+      !MODIFY FOR NEW MODEL
+
       if( JOB == SOLVE_AMPLITUDES.or.JOB == SOLVE_AMPLITUDES_PNO )then
          EnergyForCCmodelRestart: select case(CCmodel)
          case( MODEL_MP2 )
+            ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
+         case( MODEL_RIMP2 )
             ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
             ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
@@ -2687,7 +2698,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
          call tensor_cp_data(m4,ml4)
 
          call get_ccsd_multipliers_simple(omega1(use_i)%elm2,o2%elm4,m2%elm2&
-            &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
+            &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,delta_fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
             &,no,nv,nb,MyLsItem)
 
          call tensor_cp_data(o2,omega2(use_i),order=[1,3,2,4])
@@ -2744,7 +2755,8 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
             B(j,i) = B(i,j)
          end do
       end do
-
+   case( MODEL_RIMP2 ) 
+      call lsquit('RIMP2 not implemented in ccsolver_calculate_crop_matrix',-1)
    case( MODEL_CC2, MODEL_CCSD ) 
 
       do i=1,nSS
@@ -2990,6 +3002,8 @@ subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,
    ! set model specifics here
    select case(ccmodel)
    case(MODEL_MP2)
+      use_singles = .false.
+   case(MODEL_RIMP2)
       use_singles = .false.
    case(MODEL_CC2)
       use_singles = .true.

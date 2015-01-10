@@ -19,7 +19,7 @@ f.add(string = 'Total RIMP2 energy',
       rel_tolerance = 1.0e-8)
 
 f.add(from_string = 'RI-MP2 occupied single energies',
-      to_string   = 'RI-MP2 virtual    correlation energy',
+      to_string   = 'RI-MP2 Lagrangian correlation energy',
       rel_tolerance = 1.0e-6)
 
 f.add(string = 'Allocated memory (TOTAL)')

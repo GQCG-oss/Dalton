@@ -66,8 +66,6 @@ contains
           
           call GenerateOrbitals_simple(nocc,nunocc,natoms, &
                & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
-          if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
-          if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
 
        end if OrbitalGeneration
 
@@ -360,42 +358,42 @@ contains
     integer :: maxidx,offset,changedatom,nreass
     logical,pointer ::which_hydrogens(:), dofrag(:)
     real(realk),pointer :: tmplowdin_charge(:),atomic_gross_charge(:)
-    integer,pointer :: tmpatomic_idx(:)
-    integer :: nunoccperatom,II,IDX,nu,k,kk
+    integer,pointer :: tmpatomic_idx(:),basToatom(:)
+    integer :: nunoccperatom,II,IDX,nu,k,kk,endidx,nMO
     logical,pointer :: WhichAOs(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Init stuff
     nbasis = MyMolecule%nbasis
+    nMO = MyMolecule%nMO
 
     ! For orbital assignment bookkeeping, only consider valence orbitals
     offset = MyMolecule%ncore  
 
-    call mem_alloc(lowdin_charge,nbasis,nbasis)
-    call mem_alloc(ShalfC,nbasis,nbasis)
-    call mem_alloc(basis_idx,nbasis,nbasis)
-    call mem_alloc(atomic_idx,natoms,nbasis)
+    call mem_alloc(lowdin_charge,nbasis,nMO)
+    call mem_alloc(ShalfC,nbasis,nMO)
+    call mem_alloc(basis_idx,nbasis,nMO)
+    call mem_alloc(atomic_idx,natoms,nMO)
     if(DECinfo%Distance) then
-       call mem_alloc(central_atom2,nbasis)
+       call mem_alloc(central_atom2,nMO)
     endif
 
     ! Get Lowdin matrix S^{1/2} C
     call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
-
-
-    ! ***********************************
-    ! Get Lowdin charges for all orbitals
-    ! ***********************************
-    GetLowdinCharges: do i=1,nbasis
+    
+    ! *********************************************
+    ! Get Lowdin charges for all molecular orbitals
+    ! *********************************************
+    GetLowdinCharges: do i=1,nMO
 
        if(DECinfo%Distance) then
           ! Use Distance criteria to determine central atom for orbital "i"  
-          call GetDistanceCentralAtom(i,nbasis,natoms,MyMolecule,central_atom2(i))
+          call GetDistanceCentralAtom(i,natoms,MyMolecule,central_atom2(i))
        endif
 
        ! Get vector with Lowdin charges for all atoms for orbital "i"
-       call GetLowdinVector(i,nbasis,ShalfC,lowdin_charge(:,i) )
+       call GetLowdinVector(i,nbasis,nMO,ShalfC,lowdin_charge(:,i) )
 
        call mem_alloc(atomic_gross_charge,natoms)
        atomic_gross_charge = 0.0E0_realk
@@ -409,7 +407,8 @@ contains
        call real_inv_sort_with_tracking(lowdin_charge(:,i),basis_idx(:,i),nbasis)
        call real_inv_sort_with_tracking(atomic_gross_charge(:),atomic_idx(:,i),natoms)
 
-       IF(MyMolecule%PhantomAtom(atomic_idx(1,i)))THEN
+       ! Reassign central atom for phantom atoms - however not for SNOOP
+       IF(MyMolecule%PhantomAtom(atomic_idx(1,i)) .and. (.not. DECinfo%SNOOP)  ) THEN
           !the first atom in the atomic_gross_charge(:,i) list is a Phantom atom
           !we reorder the atomic_gross_charge(:,i) list to put a non Phantom atom on top
           call mem_alloc(tmplowdin_charge,nAtoms)
@@ -446,14 +445,17 @@ contains
     end do GetLowdinCharges
     call mem_dealloc(ShalfC)
 
-
-
     ! *********************************************
     ! Initial orbital assignment and orbital extent
     ! *********************************************
+    call mem_alloc(basToatom,nbasis)
+    do atom=1,natoms
+       do nu=MyMolecule%atom_start(atom),MyMolecule%atom_end(atom) ! nu \in atom
+          basToatom(nu)=atom
+       enddo
+    enddo
     call mem_alloc(WhichAOs,nbasis)
-    OrbitalLoop: do i=1,nbasis
-
+    OrbitalLoop: do i=1,nMO
        ! Central atom is the one with largest Lowdin charge (although this may be modified below)
        if(DECinfo%Distance) then
           !central atom determined from shortest distance from MO
@@ -468,97 +470,91 @@ contains
           central_atom = atomic_idx(1,i)
        ENDIF
 
-       IF(.TRUE.)THEN
-          !Do not require that all basis functions on the central atom are included
-          charge = 0E0_realk
-          LowdinAddLoop: do n=1,nbasis
-             charge = charge + lowdin_charge(n,i)
-             error = 1E0_realk - charge
-             if(error < approximated_norm_threshold .or. n==nbasis ) then 
-                ! atom list converged for orbital i
-                
-                ! Set list of aos to consider for orbital and exit loop
-                norbital_extent = n
-                call mem_alloc(list_of_aos_to_consider,norbital_extent)
-                do k=1,norbital_extent
-                   list_of_aos_to_consider(k) = basis_idx(k,i)
-                enddo
-                exit LowdinAddLoop                
-             end if
-          end do LowdinAddLoop
-       ELSE
-          !include all basis functions attached to new central atom
-          charge = 0E0_realk
-          WhichAOs = .FALSE.
+       !include all basis functions attached to new central atom
+       charge = 0E0_realk
+       WhichAOs = .FALSE.
+       bas = 0
+       do nu=MyMolecule%atom_start(central_atom),MyMolecule%atom_end(central_atom)
+          WhichAOs(nu) = .TRUE.          
+          bas = bas + 1
+          kloop22: do k=1,nbasis
+             IF(basis_idx(k,i).EQ.nu)THEN 
+                charge = charge + lowdin_charge(k,i)                
+                exit kloop22
+             ENDIF
+          enddo kloop22
+       enddo
+       IF(bas.NE.COUNT(WhichAOs))THEN
+          call lsquit('AO dim mismatch in GenerateOrbitals_simple',-1)
+       ENDIF
+       error = 1E0_realk - charge
+       norbital_extent = 0
+          
+       if(error < approximated_norm_threshold .or. COUNT(WhichAOs)==nbasis ) then 
+          ! ao list converged for orbital i
+          ! Set list of aos to consider for orbital and exit loop
+          norbital_extent = bas
+          call mem_alloc(list_of_aos_to_consider,norbital_extent)
+          !include all basis functions attached to central atom
           bas = 0
           do nu=MyMolecule%atom_start(central_atom),MyMolecule%atom_end(central_atom)
-             WhichAOs(nu) = .TRUE.          
              bas = bas + 1
-             kloop22: do k=1,nbasis
-                IF(basis_idx(k,i).EQ.nu)THEN 
-                   charge = charge + lowdin_charge(k,i)                
-                   exit kloop22
-                ENDIF
-             enddo kloop22
+             list_of_aos_to_consider(bas) = nu
           enddo
-          error = 1E0_realk - charge
-          norbital_extent = 0
-          
-          if(error < approximated_norm_threshold .or. bas==nbasis ) then 
-             ! ao list converged for orbital i
-             ! Set list of aos to consider for orbital and exit loop
-             norbital_extent = bas
-             call mem_alloc(list_of_aos_to_consider,norbital_extent)
-             !include all basis functions attached to central atom
-             bas = 0
-             do nu=MyMolecule%atom_start(central_atom),MyMolecule%atom_end(central_atom)
-                bas = bas + 1
-                list_of_aos_to_consider(bas) = nu
-             enddo
-          else
-             ! Add basis functions until sum of Lowdin charges is close enough to 1
-             k=0
-             LowdinAddLoop3: do n=1,nbasis
-                IF(.NOT.WhichAOs(basis_idx(n,i)))THEN
-                   WhichAOs(basis_idx(n,i)) = .TRUE.
-                   charge = charge + lowdin_charge(n,i)
-                   !also include all components of this shell
-                   IDX = basis_idx(n,i)
-                   DO J=MyMolecule%bas_Start(IDX),MyMolecule%bas_End(IDX)
-                      IF(.NOT.WhichAOs(J))THEN !if not already included 
-                         WhichAOs(J) = .TRUE.
-                         kloop23: do k=1,nbasis
-                            IF(basis_idx(k,i).EQ.J)THEN 
-                               charge = charge + lowdin_charge(k,i)
-                               exit kloop23
-                            ENDIF
-                         enddo kloop23
-                      ENDIF
-                   ENDDO
-                   
-                   error = 1E0_realk - charge
-                   if(error < approximated_norm_threshold .or. n==nbasis ) then 
-                      ! atom list converged for orbital i
-                      
-                      ! Set list of aos to consider for orbital and exit loop
-                      norbital_extent = COUNT(WhichAOs)
-                      call mem_alloc(list_of_aos_to_consider,norbital_extent)
-                      !include all basis functions attached to central atom
-                      bas = 0
-                      do k=1,nbasis
-                         IF(WhichAOs(k))THEN
-                            bas = bas + 1
-                            list_of_aos_to_consider(bas) = k
+       else
+          ! Add basis functions until sum of Lowdin charges is close enough to 1
+          k=0
+          LowdinAddLoop3: do n=1,nbasis
+             !ensure the AO is not already included 
+             IF(.NOT.WhichAOs(basis_idx(n,i)))THEN
+                WhichAOs(basis_idx(n,i)) = .TRUE.
+                charge = charge + lowdin_charge(n,i)
+                !also include all components of this shell
+                IDX = basis_idx(n,i)
+                DO J=MyMolecule%bas_Start(IDX),MyMolecule%bas_End(IDX)
+                   IF(.NOT.WhichAOs(J))THEN !if not already included 
+                      WhichAOs(J) = .TRUE.
+                      kloop23: do k=1,nbasis
+                         IF(basis_idx(k,i).EQ.J)THEN 
+                            charge = charge + lowdin_charge(k,i)
+                            exit kloop23
                          ENDIF
-                      enddo
-                      exit LowdinAddLoop3
-                   end if
-                endif
-             end do LowdinAddLoop3
-          endif
-       ENDIF
+                      enddo kloop23
+                   ENDIF
+                ENDDO
+                error = 1E0_realk - charge
+                if(error < approximated_norm_threshold .or. COUNT(WhichAOs)==nbasis) then 
+                   ! atom list converged for orbital i
+                   exit LowdinAddLoop3
+                elseif(error .GT. 6.0E0_realk*approximated_norm_threshold) then 
+                   !include all basis functions attached to this atom
+                   atom = basToatom(basis_idx(n,i))
+                   do nu=MyMolecule%atom_start(atom),MyMolecule%atom_end(atom)
+                      IF(.NOT.WhichAOs(nu))THEN !if not already included 
+                         WhichAOs(nu) = .TRUE.
+                         kloop24: do k=1,nbasis
+                            IF(basis_idx(k,i).EQ.nu)THEN 
+                               charge = charge + lowdin_charge(k,i)
+                               exit kloop24
+                            ENDIF
+                         enddo kloop24
+                      ENDIF
+                   enddo
+                end if
+             endif
+          end do LowdinAddLoop3                   
+          ! Set list of aos to consider for orbital and exit loop
+          norbital_extent = COUNT(WhichAOs)
+          call mem_alloc(list_of_aos_to_consider,norbital_extent)
+          bas = 0
+          do k=1,nbasis
+             IF(WhichAOs(k))THEN
+                bas = bas + 1
+                list_of_aos_to_consider(bas) = k
+             ENDIF
+          enddo
+       endif
        !SANITY CHECK Include full Shell (all 3 P x,y,z components) if one part of shell have been included
-       WhichAOs = .FALSE.
        DO II=1,norbital_extent
           IDX = list_of_aos_to_consider(II)
           WhichAOs(IDX) = .TRUE.
@@ -597,8 +593,10 @@ contains
           write(DECinfo%output,'(1X,a,i10)') 'ORBITAL: ', i
           write(DECinfo%output,*) '-------------------------------------'
           write(DECinfo%output,'(1X,a,1i5)')        '#AOS   : ', norbital_extent
-          write(DECinfo%output,'(1X,a,100i5)')      'AOS    : ', list_of_aos_to_consider
-          
+          do j=1,norbital_extent,10
+             endidx=min(j+9,norbital_extent)
+             write(DECinfo%output,'(1X,10i7)') list_of_aos_to_consider(j:endidx)
+          end do
 
 !          write(DECinfo%output,'(1X,a,100f10.3)')   'LOWDIN : ', lowdin_charge(1:norbital_extent,i) !not true anymore
           write(DECinfo%output,'(1X,a,f12.5)')      'TOTAL LOWDIN : ', charge 
@@ -622,6 +620,7 @@ contains
 
     end do OrbitalLoop
     call mem_dealloc(WhichAOs)
+    call mem_dealloc(basToatom)
 
 
     ! Which atoms are hydrogens?
@@ -751,7 +750,7 @@ contains
                 maxlowdin = 0.0_realk
                 maxidx = 0
                 changedatom=0
-                do j=nocc+1,nbasis
+                do j=nocc+1,nMO
                    if(atomic_idx(2,j)==atom .and. lowdin_charge(2,j) > maxlowdin ) then
                       maxlowdin = lowdin_charge(2,j)
                       maxidx = j-nocc   ! unoccupied index in list of unoccupied orbitals
@@ -830,14 +829,14 @@ contains
 
     end if REASSIGNING
 
+
     call mem_dealloc(which_hydrogens)
-    call mem_dealloc(lowdin_charge)
     call mem_dealloc(basis_idx)
     call mem_dealloc(atomic_idx)
+    call mem_dealloc(lowdin_charge)
     if(DECinfo%Distance) then
        call mem_dealloc(central_atom2)
     endif
-
     call LSTIMER('GenerateOrb',tcpu,twall,DECinfo%output)
 
   end subroutine GenerateOrbitals_simple
@@ -875,8 +874,8 @@ contains
     real(realk) :: error,charge,twall,tcpu
     real(realk), pointer :: ShalfC(:,:)
     real(realk), pointer :: lowdin_charge(:,:)
-    integer, pointer :: basis_idx(:,:)
-    integer :: offset,II,IDX,k,nu
+    integer, pointer :: basis_idx(:,:),basToatom(:)
+    integer :: offset,II,IDX,k,nu,nMO
     real(realk),pointer :: DistoccUnocc(:,:),DistOccOcc(:,:),sorted_dists(:)
     integer :: sorted_orbitals(nocc)
     logical,pointer :: WhichAOs(:)
@@ -885,12 +884,13 @@ contains
 
     ! Init stuff
     nbasis = MyMolecule%nbasis
+    nMO = MyMolecule%nMO
 
     offset = MyMolecule%ncore  
 
-    call mem_alloc(lowdin_charge,nbasis,nbasis)
-    call mem_alloc(ShalfC,nbasis,nbasis)
-    call mem_alloc(basis_idx,nbasis,nbasis)
+    call mem_alloc(lowdin_charge,nbasis,nMO)
+    call mem_alloc(ShalfC,nbasis,nMO)
+    call mem_alloc(basis_idx,nbasis,nMO)
 
     ! Get Lowdin matrix S^{1/2} C
     call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
@@ -902,7 +902,7 @@ contains
     GetLowdinCharges: do i=1,nbasis
 
        ! Get vector with Lowdin charges for all atoms for orbital "i"
-       call GetLowdinVector(i,nbasis,ShalfC,lowdin_charge(:,i) )
+       call GetLowdinVector(i,nbasis,nMO,ShalfC,lowdin_charge(:,i) )
 
        ! Sort Lowdin charges
        call real_inv_sort_with_tracking(lowdin_charge(:,i),basis_idx(:,i),nbasis)
@@ -922,53 +922,66 @@ contains
     ! *************************************
     ! Orbital assignment and orbital extent
     ! *************************************
-    OrbitalLoop: do i=1,nbasis
+    OrbitalLoop: do i=1,nMO
 
        charge = 0E0_realk
 
        ! Add basis functions until sum of Lowdin charges is close enough to 1
-       LowdinAddLoop: do n=1,nbasis
-          charge = charge + lowdin_charge(n,i)
-          error = 1E0_realk - charge
-             
-          if(error < approximated_norm_threshold .or. n==nbasis ) then 
-             ! atom list converged for orbital i             
-             ! Set list of aos to consider for orbital and exit loop
-             norbital_extent = n
-             call mem_alloc(list_of_aos_to_consider,norbital_extent)
-             !include all basis functions attached to central atom
-             do k=1,norbital_extent
-                list_of_aos_to_consider(k) = basis_idx(k,i)
-             end do
-             exit LowdinAddLoop
-          end if
-       end do LowdinAddLoop
-
-       !SANITY CHECK Include full Shell (all 3 P x,y,z components) if one part of shell have been included
+       call mem_alloc(basToatom,nbasis)
+       do atom=1,natoms
+          do nu=MyMolecule%atom_start(atom),MyMolecule%atom_end(atom) ! nu \in atom
+             basToatom(nu)=atom
+          enddo
+       enddo
        call mem_alloc(WhichAOs,nbasis)
        WhichAOs = .FALSE.
-       DO II=1,norbital_extent
-          IDX = list_of_aos_to_consider(II)
-          WhichAOs(IDX) = .TRUE.
-          DO J=MyMolecule%bas_Start(IDX),MyMolecule%bas_End(IDX)
-             WhichAOs(J) = .TRUE.
-          ENDDO
-       ENDDO
-       IF(norbital_extent.NE.COUNT(WhichAOs))THEN
-          !add functions
-          call mem_dealloc(list_of_aos_to_consider)
-          norbital_extent = COUNT(WhichAOs)
-          call mem_alloc(list_of_aos_to_consider,norbital_extent)
-          II = 1
-          do IDX=1,nbasis
-             IF(WhichAOs(IDX))THEN
-                list_of_aos_to_consider(II) = IDX
-                II = II + 1
-             ENDIF
-          enddo
-          IF(II-1.NE.norbital_extent)call lsquit('DEC error in AO shell sanitycheck',-1)
-       ENDIF
+       LowdinAddLoop: do n=1,nbasis
+          IF(.NOT.WhichAOs(basis_idx(n,i)))THEN !if not already included
+             charge = charge + lowdin_charge(n,i)
+             error = 1E0_realk - charge
+             WhichAOs(basis_idx(n,i)) = .TRUE.
+             if(error < approximated_norm_threshold .or. COUNT(WhichAOs)==nbasis ) then 
+                ! atom list converged for orbital i
+                exit LowdinAddLoop
+             elseif(error .GT. 6.0E0_realk*approximated_norm_threshold) then 
+                !include all basis functions attached to this atom
+                atom = basToatom(basis_idx(n,i))
+                do nu=MyMolecule%atom_start(atom),MyMolecule%atom_end(atom)
+                   IF(.NOT.WhichAOs(nu))THEN !if not already included 
+                      WhichAOs(nu) = .TRUE.
+                      !modify the charge accordingly
+                      kloop25: do k=1,nbasis
+                         IF(basis_idx(k,i).EQ.nu)THEN 
+                            charge = charge + lowdin_charge(k,i)
+                            exit kloop25
+                         ENDIF
+                      enddo kloop25
+                   ENDIF
+                enddo
+             end if
+          ENDIF
+       end do LowdinAddLoop
+       !SANITY CHECK Include full Shell (all 3 P x,y,z components) if one part of shell have been included
+       do bas=1,nbasis
+          IF(WhichAOs(basis_idx(bas,i)))THEN
+             DO J=MyMolecule%bas_Start(basis_idx(bas,i)),MyMolecule%bas_End(basis_idx(bas,i))
+                WhichAOs(J) = .TRUE.
+             ENDDO
+          ENDIF
+       enddo
+       ! Set list of aos to consider
+       norbital_extent = COUNT(WhichAOs)
+       call mem_alloc(list_of_aos_to_consider,norbital_extent)
+       II = 1
+       do IDX=1,nbasis
+          IF(WhichAOs(IDX))THEN
+             list_of_aos_to_consider(II) = IDX
+             II = II + 1
+          ENDIF
+       enddo
+       IF(II-1.NE.norbital_extent)call lsquit('DEC error in AO shell sanitycheck',-1)
        call mem_dealloc(WhichAOs)
+       call mem_dealloc(basToatom)
 
        ! Print orbital info for high print levels
        ! ****************************************
@@ -1241,12 +1254,13 @@ contains
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> S^{1/2} C matrix
-    real(realk), dimension(MyMolecule%nbasis,MyMolecule%nbasis) :: ShalfC
+    real(realk), dimension(MyMolecule%nbasis,MyMolecule%nMO) :: ShalfC
     real(realk), pointer :: Shalf(:,:)
-    integer :: nbasis,i,j,k
+    integer :: nbasis,i,j,k,nMO
     real(realk),pointer :: basis(:,:)
 
     nbasis = MyMolecule%nbasis
+    nMO = MyMolecule%nMO
     call mem_alloc(basis,nbasis,nbasis)
     !basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
     !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
@@ -1266,12 +1280,11 @@ contains
     ! Get S^{1/2} matrix
     ! ******************
     call mem_alloc(Shalf,nbasis,nbasis)
-    call get_power_of_symmetric_matrix(nbasis,0.5E0_realk,MyMolecule%overlap(1:nbasis,1:nbasis),Shalf)
+    call get_power_of_symmetric_matrix(nbasis,0.5E0_realk,MyMolecule%overlap,Shalf)
 
     ! S^{1/2} C
     ! *********
-    call dgemm('n','n',nbasis,nbasis,nbasis,1.0E0_realk,Shalf,nbasis, &
-         & basis(1:nbasis,1:nbasis),nbasis,0.0E0_realk,ShalfC,nbasis)
+    call dec_simple_dgemm(nbasis,nbasis,nMO,Shalf,basis,ShalfC,'n','n')
 
     call mem_dealloc(Shalf)
     call mem_dealloc(basis)
@@ -1321,11 +1334,10 @@ contains
   end subroutine GetMullikenVector
 
   !> \brief Get Mulliken gross charges for a given orbital on all atoms
-  subroutine GetDistanceCentralAtom(orbI,nbasis,natoms,MyMolecule,central_atom)
+  subroutine GetDistanceCentralAtom(orbI,natoms,MyMolecule,central_atom)
     implicit none
     integer, intent(in) :: orbI ! orbital number
     integer, intent(in) :: natoms ! number of atoms
-    integer, intent(in) :: nbasis ! Number of basis functions
     type(fullmolecule), intent(in) :: MyMolecule
     integer, intent(inout) :: central_atom
     !
@@ -1372,7 +1384,7 @@ contains
   !> \brief Lowdin population analysis: Get Lowdin charges on all atoms for a given orbital
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine GetLowdinVector(orb_idx,nbasis,ShalfC,charges)
+  subroutine GetLowdinVector(orb_idx,nbasis,nMO,ShalfC,charges)
 
     implicit none
     !> Orbital number
@@ -1381,10 +1393,12 @@ contains
 !    integer, intent(in) :: natoms
     !> Number of basis functions
     integer, intent(in) :: nbasis
+    !> Number of MOs (usually equal to nbasis but can be different)
+    integer,intent(in) :: nMO
 !    !> Full molecule info
 !    type(fullmolecule), intent(in) :: MyMolecule
     !> Overlap matrix to power 1/2 multiplied by MO coefficients: S^{1/2} C
-    real(realk), dimension(nbasis,nbasis), intent(in) :: ShalfC
+    real(realk), dimension(nbasis,nMO), intent(in) :: ShalfC
     !> Lowdin charges
     real(realk), dimension(nbasis), intent(inout) :: charges
 !    integer, pointer :: atom_start(:) => null()
@@ -1487,27 +1501,6 @@ contains
 !!$    call mem_dealloc(C)
 !!$
 !!$  end subroutine GetOrbitalAtomicNorm
-
-  !> \brief Print some info about orbitals
-  subroutine PrintOrbitalsInfo(orbitals,num_orbitals,lu_output)
-
-    implicit none
-    integer, intent(in) :: num_orbitals,lu_output
-    type(decorbital), dimension(num_orbitals), intent(in) :: orbitals
-    integer :: i,j
-
-    write(lu_output,'(/,a)') 'Orbital Atom #AOs List of AOs'
-    do i=1,num_orbitals
-       write(lu_output,*) orbitals(i)%orbitalnumber, &
-            orbitals(i)%centralatom, orbitals(i)%numberofaos, ' -> '
-       do j=1,orbitals(i)%numberofaos
-          write(lu_output,*) orbitals(i)%aos(j)
-       end do
-       write(lu_output,'(a)') ''
-    end do
-
-    return
-  end subroutine PrintOrbitalsInfo
 
 
   !> \brief Write orbital to file

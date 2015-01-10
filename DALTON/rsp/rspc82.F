@@ -166,7 +166,9 @@ C        ... no CREF needed for TDHF and for "OPTORB" /HJAaJ
          NDREF = 0
       ELSE IF (IREFSY .EQ. KSYMST) THEN
          NDREF = KZCONF
-C        ... if KZCONF .ne. NCREF, we need CREF in determinants
+C        ... either KZCONF .eq. NCREF or 
+C            KZCONF .gt. NCREF and then we need CREF in KZCONF determinants
+C            instead of in NCREF CSFs.
       ELSE
          NDREF = NCREF
       END IF
@@ -177,7 +179,7 @@ C        ... if KZCONF .ne. NCREF, we need CREF in determinants
       KFREE  = KUFCAC + N2ASHX
       LFREE  = LWRK   - KFREE
       IF (LFREE.LT.0) CALL ERRWRK('RSPSLI',KFREE-1,LWRK)
-      IF(NDREF.GT.0) CALL GETREF(WRK(KCREF),NDREF)
+      IF (NDREF.GT.0) CALL GETREF(WRK(KCREF),NDREF)
       KSTRT  = 1
 C
 C CONSTRUCT CONFIGURATION PART OF LINEAR TRANSFORMED
@@ -1995,7 +1997,7 @@ C
       NCNEW = 0
       NONEW = 0
       DO 1400 IRX = 1,NBNEW
-         JLDP(IRX) = 1
+         JLDP(IRX) = 1 ! initialize to not linear dependent
          IF (IBTYP(NBPREV+IRX) .EQ. JBCNDX) THEN
             NCNEW = NCNEW + 1
             IBVEC = IBVEC + KZCONF
@@ -2131,19 +2133,19 @@ C
          IF (JLDP(IRX) .NE. 0) THEN
             TT = DDOT(LBZY,BVECS(IBVEC),1,BVECS(IBVEC),1)
             IF (TT .LE. THRLDP) THEN
-               IF (IPRRSP.GT.2) WRITE (LUPRI,3250) IRX,JLDP(IRX),TT
+               IF (IPRRSP.GT.2) WRITE (LUPRI,3250) IRX,TT
                JLDP(IRX) = 0
             ELSE IF (TT .LT. THRRND) THEN
                IF (ITURN .EQ. 1) THEN
                   IROUND = IROUND + 1
                ELSE
-                  IF (IPRRSP.GT.5) WRITE (LUPRI,3255) IRX,JLDP(IRX),TT
+                  IF (IPRRSP.GT.5) WRITE (LUPRI,3255) IRX,TT
                   JLDP(IRX) = 0
                END IF
             END IF
             IF (JLDP(IRX) .NE. 0) THEN
-               IF (IPRRSP .GE. 8) WRITE (LUPRI,'(/A,2I6,1P,D12.5)')
-     &          ' RSPORT: b-vector, root no., norm**2:',IRX,JLDP(IRX),TT
+               IF (IPRRSP .GE. 8) WRITE (LUPRI,'(/A,I6,1P,D12.5)')
+     &          ' RSPORT: b-vector, norm**2:',IRX,TT
                IF (TT .LT. T1MIN) THEN
                   TT = D1 / SQRT(TT)
                   CALL DSCAL(LBZY,TT,BVECS(IBVEC),1)
@@ -2173,7 +2175,7 @@ C
             END IF
             X2 = ABS(OVLPI)
             IF (ABS(D1-X2) .LT. OVLMIN) THEN
-               IF (IPRRSP.GT.5) WRITE (LUPRI,3260) IRX,JLDP(IRX),OVLPI
+               IF (IPRRSP.GT.5) WRITE (LUPRI,3260) IRX,OVLPI
                JLDP(IRX) = 0
                GO TO 2390
             END IF
@@ -2211,15 +2213,14 @@ C
 C     ^-------------------------------
             CALL QUIT('RSPORT sw-error; IROUND .gt. 0 and ITURN .gt. 1')
          END IF
- 3250 FORMAT(/' (RSPORT) b-vector no.',I3,' corresponding to ',
-     *        'root no.',I3/,14X,'is removed because of linear ',
-     *        'dependence; ',1P,D12.5)
- 3255 FORMAT(/' (RSPORT) b-vector no.',I3,' corresponding to root ',
-     *        'no.',I3,' is removed',/,14X,'because of small',
-     *        'norm**2 in 2. Gram-Schmidt orthonormalization:',1P,D12.5)
- 3260 FORMAT(/' (RSPORT) b-vector no.',I3,' corresponding to ',
-     *        'root no.',I3,' is removed',/,14X,'because of lin.dep.,',
-     *        '<Z Y|Y Z> overlap =',1P,D14.6)
+ 3250 FORMAT(/' (RSPORT) b-vector no.',I3,
+     &        ' is removed because of linear dependence;',1P,D12.5)
+ 3255 FORMAT(/' (RSPORT) b-vector no.',I3,' is removed because of small'
+     &        ' norm**2 in 2. Gram-Schmidt orthonormalization:',
+     &        1P,D12.5)
+ 3260 FORMAT(/' (RSPORT) b-vector no.',I3,' is removed because of'
+     &        ' linear dependence, <Z Y|Y Z> overlap =',
+     &        1P,D14.6)
 C
 C Save new b-vectors after the old ones on LU3
 C
@@ -2344,7 +2345,7 @@ C1010 FORMAT(/5X,'Response configuration operator symmetry =',I2)
      *       /,5X,' ----------                      --------------',
      *            '      --------------')
  1100 FORMAT(I12,20X,2F20.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
+ 1200 FORMAT(/I9,' elements with absolute value less than',
      *       1P,D9.2,' not printed.',
      *       //' The numbers in parenthesis',
      *         ' give the configuration symmetry.')
@@ -2599,7 +2600,7 @@ C
      &           '      --------------      --------------',
      &           '      --------------      --------------')
  1100 FORMAT(I12,I10,'(',I1,')',I4,'(',I1,')',4F20.10)
- 1200 FORMAT(/I9,' elements with absolute value ≤$',
+ 1200 FORMAT(/I9,' elements with absolute value ≤',
      *       1P,D9.2,' not printed.',
      *       //' The numbers in parenthesis give the orbital symmetry.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
@@ -2683,7 +2684,7 @@ C
      *       /,5X,' ----------    -----  -----      --------------',
      *            '      --------------')
  1100 FORMAT(I12,I10,'(',I1,')',I4,'(',I1,')',2F20.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
+ 1200 FORMAT(/I9,' elements with absolute value less than',
      *       1P,D9.2,' not printed.',
      *       //' The numbers in parenthesis give the orbital symmetry.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
@@ -3078,7 +3079,7 @@ C
  1800       FORMAT(/' GP * SOLUTION vector at frequency',F12.5,' a.u.',
      *             /' after',I5,' linear transformations is',1P,D20.8,
      *             /' INERTIA (POS,ZER,NEG) of reduced matrix is',3I5,
-     *             /' Determinant of reduced matrix is',F6.2,
+     *             /' Determinant of reduced matrix is',0P,F6.2,
      *              ' * 10 **',F5.1)
 C
             IF (IPRRSP .GE. 9) THEN
@@ -3210,16 +3211,20 @@ C
       PARAMETER ( TOLEQL=1.0D-6 )
       PARAMETER ( D0=0.0D0 , D1=1.0D0 , DM1 = -1.0D0 )
 C
+C wrkrsp.h : DETERM, ?
+C spinfo.h : MS2
+C
 #include "priunit.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "inftap.h"
 #include "infdim.h"
 #include "infpri.h"
+#include "spinfo.h"
 #include "infopt.h"
 #include "phpinf.h"
 #include "thrldp.h"
-      LOGICAL DOEVEC
+      LOGICAL DO_PHPVEC
 C
 C WORK SPACE ALLOCATION
 C
@@ -3242,19 +3247,12 @@ C
       END IF
       CALL RSPSOD(WRK(KDIASO))
       NCSIM = 0
-      KEXSTV = KEXSTV + KOFFTY
+      KEXSTV = MIN(KEXSTV+KOFFTY,KZVAR)
       IF (KEXSTV.GT.MAXST ) THEN
          WRITE (LUPRI,90) KEXSTV,MAXST
  90      FORMAT(/' ** PPST ** NUMBER OF START VECTORS',I5,
      *          /'   EXCEED THE MAXIMUM ALLOWED NUMBER',I5)
          CALL QUIT('PPST: TOO MANY START VECTORS')
-      END IF
-      IF (KEXSTV.GT.KZVAR ) THEN
-         WRITE (LUPRI,91) KEXSTV,KZVAR
- 91      FORMAT(/' ** PPST ** NUMBER OF START VECTORS',I5,
-     *   /'   EXCEED THE MAXIMUM  NUMBER OF VARIABLE',I5,
-     *   /'   NUMBER OF START VECTORS RESET TO NUMBER OF VARIABLES')
-         KEXSTV = KZVAR
       END IF
       KEXST2 = MIN(5*KEXSTV+8,KZVAR)
       KEXST2 = MIN(KEXST2,  MAXST)
@@ -3311,7 +3309,17 @@ C        ^--------------
 C
 C 19. Feb. 1988: Find number of degenerate diagonal elements
 C 19. Jun. 1995-hjaaj: not for orbital trial vectors
+C 16. Dec. 2014-hjaaj: not for CSFs
+C                      (for determinants plus combinations of degenerate elements are used
+C                       to avoid triplet CI states in a singlet excitation calculation)
 C
+      IF (.NOT.DETERM .AND. KSYMOP.EQ.1         ! CSFs, thus do not use plus combinations of any equal diagonal elements
+     &    .OR. MS2.NE.0 ) THEN                  ! M_S .ne. 0, thus different number of alpha and beta electrons
+         DO JEXST2 = 1, KEXST2
+            IEQUAL(JEXST2) = 1
+         END DO
+         GO TO 2000
+      END IF
       JEXSTV = 0
       JEXST2 = 0
   160 CONTINUE
@@ -3357,13 +3365,14 @@ C
 C
 C     Can we use PHP vectors for CI start vectors ?
 C
-      IF ( KEXSTV.GT.NPCVAR ) THEN
-         DOEVEC = .FALSE.
+ 2000 CONTINUE
+      IF ( KEXSTV .GT. NPCVAR .OR. KEXSTV .GE. KZCONF) THEN
+         DO_PHPVEC = .FALSE.
       ELSE
-         DOEVEC = .TRUE.
+         DO_PHPVEC = .TRUE.
       END IF
 
-      NOVLMX = 0
+      NOVLMX = 0 ! to become index of CI start vector with max overlap with reference vector
       CALL REWSPL(LURSP3)
       CALL REWSPL(LURSP5)
       IF (KOFFTY.EQ.1) THEN
@@ -3388,7 +3397,7 @@ Chj      KTOT   = MAX(KCRFRE + MAXPHP, KCREF + KZYVAR)
          IRX   = 0
          ISIMX = 1
          OVLPMX = D0
-         IF (DOEVEC) THEN
+         IF (DO_PHPVEC) THEN
             CALL GATVEC(WRK(KCRFRE),WRK(KCREF), WRK(KPNTR),NPCVAR)
 Chj         ... PHP pointer in KPNTR is also based on KZCONF
             IF (IPRRSP.GT.80) THEN
@@ -3398,7 +3407,7 @@ Chj         ... PHP pointer in KPNTR is also based on KZCONF
          END IF
          DO  80 ISIM = 1,KEXSTV
             IF (ISTART(ISIMX) .LE. KZCONF) THEN
-               IF (DOEVEC) THEN
+               IF (DO_PHPVEC) THEN
                   NCNUM  = NCNUM + 1
                   KRDVEC = KPEVEC + (NCNUM-1)*NPCVAR
                   OVLPRF = DDOT(NPCVAR,WRK(KCRFRE),1,WRK(KRDVEC),1)
@@ -3421,7 +3430,7 @@ Chj         ... PHP pointer in KPNTR is also based on KZCONF
  80      CONTINUE
          IF (IPRRSP.GT.6) THEN
             WRITE(LUPRI,*)' REFERENCE VECTOR HAS LARGEST OVERLAP WITH'
-            IF (DOEVEC) THEN
+            IF (DO_PHPVEC) THEN
                WRITE(LUPRI,*)'EIGENVECTOR NO',NOVLMX,' OF PHP'
             ELSE
                WRITE(LUPRI,*)'SORTED VECTOR NO',NOVLMX
@@ -3451,14 +3460,14 @@ Chj      ... record 1 on LURSP5 should never be read when KOFFTY.eq.1 !
          DO 200 IR = 1,NBX
             IF (ISTART(ISIMX+IRX) .LE. KZCONF) THEN
                NCNUM = NCNUM + 1
-               IF(  DOEVEC .AND. (NCNUM.EQ.NOVLMX) ) THEN
+               IF(  DO_PHPVEC .AND. (NCNUM.EQ.NOVLMX) ) THEN
                   IRJUMP = IR
                ELSE
-                  NCSIM = NCSIM+1
+                  NCSIM = NCSIM + 1
                   IBTYP(NTSIM+IR) = JBCNDX
                END IF
             ELSE
-               NOSIM = NOSIM+1
+               NOSIM = NOSIM + 1
                IBTYP(NTSIM+IR) = JBONDX
             ENDIF
             IRX = IRX + IEQUAL(ISIM-1+IR)
@@ -3479,7 +3488,7 @@ Chj      ... record 1 on LURSP5 should never be read when KOFFTY.eq.1 !
                NCCOUN = NCCOUN + 1
             ELSE
                IF (IBTYP(NTSIM+IR) .EQ. JBCNDX) THEN
-                  IF (DOEVEC) THEN
+                  IF (DO_PHPVEC) THEN
                      NCCOUN = NCCOUN + 1
                      KEVSC = KPEVEC + (NCCOUN-1)*NPCVAR
                      IF (IPRRSP.GT.85) THEN
@@ -3574,7 +3583,7 @@ C           CALL DCOPY(NTOT,WRK(KDIASO),1,WRK,1)
          BINMEM = .FALSE.
       ENDIF
       IF (IPRRSP.GT.3) THEN
-         IF (DOEVEC) THEN
+         IF (DO_PHPVEC) THEN
             WRITE(LUPRI,*)NCTOT,' START configuration VECTORS USING'//
      &         ' LOWEST EIGENVALUES OF PHP'
          ELSE

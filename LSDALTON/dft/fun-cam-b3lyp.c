@@ -175,7 +175,7 @@ camb3lyp_read(const char *conf_line, real *hfweight)
     if(weights[2]<=0) weights[2] = 1e-30;
     CamMuFactor = weights[2]; CamBeta = weights[1];
     CamAlpha = weights[0];
-    *hfweight = CamAlpha;
+    *hfweight = 1.0;
     return 1;
 }
 
