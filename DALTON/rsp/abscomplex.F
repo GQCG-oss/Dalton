@@ -636,15 +636,7 @@ C
         CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',' ',IDUMMY,.FALSE.)
       END IF
 C
-      CALL GPINQ('ABSVECS','EXIST',EX)
-      IF (.NOT.EX) THEN
-        OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
-        WRITE(LUABSVECS) 'EOFLABEL'
-      ELSE
-        OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
-      END IF
-c
-      CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
+      CALL MEMGET2('REAL','MJWOP',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
      &     KFREE,LFREE)
 C
       IF (ABSLRS_BETA .OR. ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD)
@@ -729,19 +721,6 @@ C
             KXSOL = KGD + 2*KZVAR
             KFREE = KXSOL + 4*ABS_NFREQ_INTERVAL*KZVAR
             LFREE = LWRK - KFREE 
-c
-            ABS_KLRED(1)=0
-            ABS_KLRED(2)=0
-C
-c      LUSB = 80
-c      LUAB = 81
-c      LUSS = 82
-c      LUAS = 83
-C
-       OPEN(LUSB,file='file_LUSB',status='new',form='unformatted')
-       OPEN(LUAB,file='file_LUAB',status='new',form='unformatted')
-       OPEN(LUSS,file='file_LUSS',status='new',form='unformatted')
-       OPEN(LUAS,file='file_LUAS',status='new',form='unformatted')
 C
             ABS_KLRED(1)=0
             ABS_KLRED(2)=0
