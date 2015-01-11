@@ -48,7 +48,7 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
-option(ENABLE_QFITLIB        "Enable charge fittling library (QFITLIB)"         ON)
+option(ENABLE_QFITLIB        "Enable charge fitting library (QFITLIB)"          ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
@@ -63,9 +63,7 @@ option(ENABLE_RSP            "Enable Response code in LSDALTON"                 
 option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
 option(ENABLE_OPENRSP        "Enable OpenRSP"                                   OFF)
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
-
 option(ENABLE_EFS            "Enable Echidna Fock Solver"                       OFF)
-
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
@@ -183,6 +181,7 @@ execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
 execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest.py        ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_dalton.py ${CMAKE_BINARY_DIR}/test)
+execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/LSDALTON/test/runtest_lsdalton.py ${CMAKE_BINARY_DIR}/test)
 
 # this controlls "make install" target
 include(ConfigMakeInstall)

@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import runtest_dalton
+
+output_filter = runtest_dalton.Filter()
+output_filter.add(re="Final MCSCF energy", abs_tolerance=1e-8)
+output_filter.add(re="@G OZ-SO1", rel_tolerance=1e-5)
+output_filter.add(re="@G OZ-SO2", rel_tolerance=1e-5)
+output_filter.add(re="@G Total", rel_tolerance=1e-5)
+
+
+output_test = runtest_dalton.TestRun(__file__, sys.argv)
+output_test.run(
+    ['rsp_g_cas.dal'], ['rsp_g_cas.mol'], f={'out': output_filter},
+    accepted_errors=['not implemented for parallel calculations'],
+    )
+
+

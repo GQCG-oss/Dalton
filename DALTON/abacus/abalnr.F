@@ -52,7 +52,7 @@ C
 #include "codata.h"
 #include "pcmlog.h"
 C
-      PARAMETER (NTABLE = 17)
+      PARAMETER (NTABLE = 18)
       LOGICAL NEWDEF, LOCFIN
       CHARACTER*8 DIPLEN(3),DIPLOC(3), ANGMOM(3), LONMAG(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -66,7 +66,7 @@ C
      &            '.MAXRED', '.MAXPHP','.STATIC','.VIBGRE',
      &            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
      &            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE',
-     &            '.OLDCPP'/
+     &            '.NOREBD','.OLDCPP'/
 C
       NEWDEF = (WORD .EQ. '*ABALNR')
       ICHANG = 0
@@ -84,8 +84,8 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),
-     &                      I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,
+     &                      18),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -235,6 +235,9 @@ CSPAS:20/3-2011: allowing for perturbations in only one irrep
                  ABS_REDUCE=.TRUE.
                GO TO 100
    17          CONTINUE
+                 ABS_REBD=.FALSE.
+               GO TO 100
+   18          CONTINUE
                   ABS_OLDCPP = .TRUE.
                   ABSLRS =.FALSE.
                GO TO 100

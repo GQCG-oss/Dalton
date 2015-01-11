@@ -41,10 +41,6 @@ f.add(string = 'MP2 second order energy',
 
 f.add(string = 'Nuclear spin-spin coupling constants',
       rel_tolerance = 1.0e-2)
-f.add(string = 'No Darwin correction calculated',
-      rel_tolerance = 1.0e-2)
-f.add(string = 'No mass-velocity correction calculated',
-      rel_tolerance = 1.0e-2)
 f.add(string = 'Spin-spin couplings printed for atoms',
       rel_tolerance = 1.0e-2)
 
@@ -52,7 +48,7 @@ f.add(from_string = 'Isotropic coupling',
       num_lines = 10,
       abs_tolerance = 1.0e-4)
 
-test.run(['prop_spinspin4.dal'], ['H2O_intgrl_sym.mol'], {'out': f},
+test.run(['prop_spinspin4.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

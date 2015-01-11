@@ -362,7 +362,7 @@ C
          FIRST1 = .FALSE.
       ENDIF
       IF (PEQM) THEN
-#ifdef BUILD_PELIB
+#if defined (BUILD_PELIB)
         CALL PE_RSPLIN(NCSIM, NOSIM, BCVECS, BOVECS, WRK(KCREF), CMO,
      &                 INDXCI, UDV, WRK(KDV), WRK(KUDVTR), WRK(KDVTR),
      &                 WRK(KDVT), WRK(KDVTTR), EVECS,

@@ -1612,7 +1612,7 @@ ELSE
          SEGMENTCOLID(j,Nsegments) = .TRUE.
          do k=j+1,nOrbital
             IF(.NOT.merged(k))THEN
-               PerfomMerge = TrueSubset(Prim(:,j),Prim(:,k),nrow)
+               PerfomMerge = TrueSubset(MergedPrim(:,Nsegments),Prim(:,k),nrow)
                IF(PerfomMerge)THEN
                   !merge k into j 
                   merged(k) = .TRUE.

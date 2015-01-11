@@ -37,7 +37,7 @@ f.add(from_string = 'Dipole moment',
       rel_tolerance = 1.0e-5)
 
 # Relativistic corrections
-f.add(from_string = 'Relativistic corrections',
+f.add(from_string = 'Breit-Pauli relativistic corrections',
       num_lines = 5,
       rel_tolerance = 1.0e-8)
 
@@ -57,6 +57,6 @@ f.add(from_re = 'Indirect spin-spin coupling between ',
       num_lines = 16,
       abs_tolerance = 1.0e-3)
 
-test.run(['dft_properties_nosym.dal'], ['H2O_cc-pVDZ.mol'], {'out': f})
+test.run(['dft_properties_nosym.dal'], ['H2O_cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

@@ -888,7 +888,7 @@ C
      &    /' Largest molecular orbital coefficient/sym',1P,D20.6,3I5,
      &    /' This number is larger than accepted limit',D20.6)
  3020 FORMAT(
-     &    /' Significant loss of accuaracy is probable ',
+     &    /' Significant loss of accuracy is probable',
      &    /' in transformation of two-electron integrals,'
      &   //'*** Program stops here. ***   Your options:',
      &    /' 1) modify basis set,',
@@ -1476,14 +1476,11 @@ C
 C           print all occupied and 2 lowest unoccupied this symmetry
                IEND = 0
             ELSE
-C           print 5 highest occupied and 2 lowest unoccupied this symmetry
+C           print 5 highest doubley occupied, all active, and 2 lowest unoccupied this symmetry
 C           (output becomes too big otherwise ... /hjaaj Dec08)
-C           Oct12 hjaaj: do print all active orbitals if MCSCF
-               IEND  = MIN(NISH(ISYM),NOCC(ISYM)-5)
-               IEND  = MAX(0,IEND)
+               IEND  = MAX(NISH(ISYM)-5, 0)
             END IF
-            NENDI = NOCC(ISYM)
-     &            + MIN(2,NORB(ISYM)-NOCC(ISYM) - NRXR12(ISYM))
+            NENDI = MIN(NOCC(ISYM)+2, NORB(ISYM))
          ELSE
             IEND  = 0
             NENDI = NORB(ISYM)

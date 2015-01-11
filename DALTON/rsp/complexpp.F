@@ -32,7 +32,7 @@ C        response equations",
 C        J. Chem. Theory Comput. 7 (2011) 1610.
 C ============================================================================
 C
-      SUBROUTINE ABS_CTL(LABEL,KZVAR,GD,XSOL,FREQS,
+      SUBROUTINE ABS_CTL(LABEL,KZVAR,GD,XSOL,FREQS,NFREQS,
      &                   MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &                   RESLRF,WRK,LWRK)
 C
@@ -49,16 +49,16 @@ C
 C     using the new rsp solver with symmetrized trial vectors
 C
       CHARACTER LABEL*8
-      DIMENSION XSOL(2*KZVAR,2,ABS_NFREQ_INTERVAL),GD(2*KZVAR)
+      DIMENSION XSOL(2*KZVAR,2,NFREQS),GD(2*KZVAR)
       DIMENSION MJWOP(*),XINDX(*)
       DIMENSION CMO(*),UDV(*),FC(*),FCAC(*),FV(*),PV(*)
-      DIMENSION FREQS(ABS_NFREQ_INTERVAL)
-      DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2),WRK(LWRK)
+      DIMENSION FREQS(NFREQS)
+      DIMENSION RESLRF(2,NFREQS,3,3,3),WRK(LWRK)
       DIMENSION KLRED(2),KNVEC(2)
-      LOGICAL CONV(ABS_NFREQ_INTERVAL),CONVERGED,EX1,EX2,EX3
+      LOGICAL CONV(NFREQS),CONVERGED,EX1,EX2,EX3
 C
 C
-      NEQ2S=ABS_NFREQ_INTERVAL
+      NEQ2S=NFREQS
       KZYVAR=2*KZVAR
       KGD    = 1
       KXTRL  = KGD   + 4*KZVAR
@@ -90,7 +90,7 @@ c
         CONV(I)=.FALSE.
       ENDDO
 C
-      IF (MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0) THEN
+      IF ((MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0).AND. ABS_REBD) THEN
 c        write(luabspri,*) 'ABS_KLRED >0, restart'
         DO I=1,KZVAR
           WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
@@ -132,6 +132,13 @@ c
         NNLT=4*NEQ2S
         KLRED(1)=0
         KLRED(2)=0
+        IF (.NOT. ABS_REBD) THEN
+          REWIND(LUSB)
+          REWIND(LUAB)
+          REWIND(LUSS)
+          REWIND(LUAS)
+        ENDIF
+        
         CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
      &               WRK(KRESD),KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
 c
@@ -217,7 +224,7 @@ C
  900  CONTINUE
       IF (IPRABSLRS.GE.0) THEN
          WRITE(LUABSPRI,'(/,1X,A,I4,A,I4,I4)')
-     &        '*** ABSCTL: REQUESTED',ABS_NFREQ_INTERVAL,
+     &        '*** ABSCTL: REQUESTED',NFREQS,
      &        ' SOLUTION VECTORS CONVERGED IN RED SPACES OF',KLRED(1),
      &        KLRED(2)
       END IF
@@ -225,7 +232,7 @@ C
  910  CONTINUE
       IF (IPRABSLRS.GE.0) THEN
          WRITE(LUABSPRI,'(/,1X,A,I4,A,I4,I4)')
-     &        '*** ABSCTL: REQUESTED',ABS_NFREQ_INTERVAL,
+     &        '*** ABSCTL: REQUESTED',NFREQS,
      &        ' SOLUTION VECTORS NOT CONVERGED IN RED SPACES OF',
      &        KLRED(1),KLRED(2)
          WRITE(LUABSPRI,'(/,1X,A)')
@@ -235,26 +242,31 @@ C
 C
  777  CONTINUE
 C
-      ABS_KLRED(1)=KLRED(1)
-      ABS_KLRED(2)=KLRED(2)
+      IF (ABS_REBD) THEN 
+        ABS_KLRED(1)=KLRED(1)
+        ABS_KLRED(2)=KLRED(2)
 C
-      CALL GPINQ('ABS_E1RED','EXIST',EX1)
-      CALL GPINQ('ABS_E2RED','EXIST',EX2)
-      CALL GPINQ('ABS_SRED','EXIST',EX3)
+        CALL GPINQ('ABS_E1RED','EXIST',EX1)
+        CALL GPINQ('ABS_E2RED','EXIST',EX2)
+        CALL GPINQ('ABS_SRED','EXIST',EX3)
 c
-      IF (EX1.AND.EX2.AND.EX3) THEN
-        REWIND(LUE1RED)
-        REWIND(LUE2RED)
-        REWIND(LUSRED)
-        DO I=1,KLRED(1)
-          CALL WRITE_VEC(LUE1RED,KLRED(1),WRK(KREDE+(I-1)*ABS_MAXRM))
-        ENDDO
-        DO I=1,KLRED(2)
-          CALL WRITE_VEC(LUE2RED,KLRED(2),WRK(KREDE+(I-1)*ABS_MAXRM+
-     &                                         ABS_MAXRM*ABS_MAXRM))
-          CALL WRITE_VEC(LUSRED,KLRED(1),WRK(KREDS+(I-1)*ABS_MAXRM))
-        ENDDO
-      ENDIF
+        IF (EX1.AND.EX2.AND.EX3) THEN
+          REWIND(LUE1RED)
+          REWIND(LUE2RED)
+          REWIND(LUSRED)
+          DO I=1,KLRED(1)
+            CALL WRITE_VEC(LUE1RED,KLRED(1),WRK(KREDE+(I-1)*ABS_MAXRM))
+          ENDDO
+          DO I=1,KLRED(2)
+            CALL WRITE_VEC(LUE2RED,KLRED(2),WRK(KREDE+(I-1)*ABS_MAXRM+
+     &                                           ABS_MAXRM*ABS_MAXRM))
+            CALL WRITE_VEC(LUSRED,KLRED(1),WRK(KREDS+(I-1)*ABS_MAXRM))
+          ENDDO
+        ENDIF
+       ELSE
+         ABS_KLRED(1)=0
+         ABS_KLRED(2)=0
+       ENDIF
 C
       END
       SUBROUTINE ABS_SOLV(FREQS,NFREQS,REDE,REDS,REDGD,RDX,KLRED,
@@ -1053,6 +1065,10 @@ C
       LFREE = LWRK - KFREE
       IF (LFREE.LT.0) STOP 'ABS_RED: out of memory'
 c
+      IF (((KLRED(1)+KNVEC(1)).GT.ABS_MAXRM).OR.
+     &     ((KLRED(2)+KNVEC(2)).GT.ABS_MAXRM)) THEN 
+          CALL QUIT('Error in ABS_RED, Increase ABS_MAXRM!')
+      ENDIF
       IF (NNLT.GT.0) THEN
 c
 C       perform linear transformations
@@ -1169,9 +1185,6 @@ c          CALL WRITT(LUAS,KZVAR,WRK(KE2XF+(NNS+I-1)*KZVAR))
 C
         KLRED(1)=KLRED(1)+KNVEC(1)
         KLRED(2)=KLRED(2)+KNVEC(2)
-        IF ((KLRED(1).GT.ABS_MAXRM).OR.(KLRED(2).GT.ABS_MAXRM)) THEN 
-          CALL QUIT('Error in ABS_RED, Increase ABS_MAXRM!')
-        ENDIF
       ELSE
         REWIND(LUSB) 
         REWIND(LUAB)

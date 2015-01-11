@@ -35,6 +35,6 @@ f.add(string = '@ QRLRVE:  ',
 f.add(string = 'LOOKING UP INTERNALLY STORED DATA FOR SOLVENT',
       rel_tolerance = 1.0e-5)
 
-test.run(['trp_qr_pcm.dal'], ['CH2O_3-21G.mol'], {'out': f})
+test.run(['trp_qr_pcm.dal'], ['CH2O_3-21G.mol'], f={'out': f})
 
 sys.exit(test.return_code)

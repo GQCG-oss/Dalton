@@ -29,6 +29,6 @@ f.add(from_string = 'QM/MM "QM3" calculation converged',
 f.add(re = '[XYZ]DIPLEN  \; [XYZ]DIPLEN',
       rel_tolerance = 1.0e-9)
 
-test.run(['dftmm_7.dal'], ['CH2O_STO-3G_2H2O_MM.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['dftmm_7.dal'], ['CH2O_STO-3G_2H2O_MM.mol'], f={'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)

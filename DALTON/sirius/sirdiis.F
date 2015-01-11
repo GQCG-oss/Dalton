@@ -596,7 +596,7 @@ C
      &          WRK(KDFROZ),NBAST,
      &      D1, WRK(KPFROZ),NBAST
      &      )
-C        IF (IPRDIS.GT.10) THEN
+         IF (IPR_DIIS.GT.20) THEN
             CALL HEADER('Start orbitals',-1)
             CALL PRORB(CMO,.FALSE.,LUPRI)
             CALL HEADER('Frozen orbital density',-1)
@@ -607,7 +607,7 @@ C        IF (IPRDIS.GT.10) THEN
             CALL OUTPUT(
      &         WRK(KPFROZ),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI
      &         )
-C        END IF
+         END IF
       END IF
 
       ITDIIS = 0
@@ -993,7 +993,11 @@ C            Now the PCM part ...
          END IF
 C
          IF (PEQM) THEN
-#ifdef BUILD_PELIB
+#if defined (BUILD_PELIB)
+           IF (FLAG(16) .OR. PCM .OR. QMMM .OR. QMNPMM .OR. QM3) THEN
+             CALL QUIT(
+     &             'PEQM is not compatible with other embedding models')
+           END IF
            CALL MEMGET2('REAL','fpe', KFPE, NNBASX, WRK, KFREE, LFREE)
            CALL MEMGET2('REAL','epe', KEPE, 1, WRK, KFREE, LFREE)
            IF (NASHT == 0 .OR. HSFOCK) THEN
@@ -1565,8 +1569,10 @@ C
          RHFWOP = .TRUE.
       END IF
 C
-      IF (ICONV .NE. 0. .AND. (IPR_DIIS .GT. 0 .OR.
-     &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC)) ) THEN
+      IF ( ICONV .NE. 0. .AND.
+     &     ( IPR_DIIS .GT. 0 .OR.
+     &       CMOPRI .OR.
+     &       .NOT.(DOMP2 .OR. DOCI .OR. DOMC)) ) THEN
          IPRENR = 1
       ELSE
          IPRENR = 0
@@ -1595,8 +1601,8 @@ C
      &              NSYM,NBAS,NORB)
       END IF
 C
-C      if qm3 .or. pcm then also mmpcm automatically
-       IF (IPRENR .GT. 0) THEN
+C     if qm3 .or. pcm then also mmpcm automatically
+      IF (IPRENR .GT. 0) THEN
 C
          IF (CMOPRI) THEN
             IPR4SA = IPRI4
@@ -1627,10 +1633,16 @@ C
             IPRI4 = IPR4SA
             IPRI6 = IPR6SA
          END IF
+
+         IF (IPR_DIIS .GT. 10) THEN
+            WRITE(LUPRI,'(/A)')
+     &      'Final SCF orbitals after DIIS iterations:'
+            CALL PRORB(CMO,(IPR_DIIS .LT. 20),LUPRI)
+         END IF
 C
       END IF
       IF (PEQM) THEN
-#ifdef BUILD_PELIB
+#if defined (BUILD_PELIB)
         IF (NASHT == 0 .OR. HSFOCK) THEN
             CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
         ELSE
@@ -1703,7 +1715,9 @@ C           1. put FV in DCAO:
                DCAO(1:N2BASX) = -DCAO(1:N2BASX)
                CALL FCK2AO(.TRUE.,FCAO(1+N2BASX),DCAO,WRK,KFREE,LFREE) ! calculate FVAO in FCAO(1+N2BASX)
                ! ( first parameter .TRUE. tells FCK2AO only one density matrix )
-               CALL UTHUB(FCAO(1+N2BASX),DCAO,CMO,WRK(KFREE),          ! and now FV in DCAO
+               CALL DGETSP(NBAST,FCAO(1+N2BASX),WRK(KFREE))
+               CALL PKSYM1(WRK(KFREE),FCAO(1+N2BASX),NBAS,NSYM,1)
+               CALL UTHUB(FCAO(1+N2BASX),DCAO,CMO,WRK(KFREE),          ! and now FV is in DCAO
      &                    NSYM,NBAS,NORB)
 
                HSFOCK = HSFOCK_SAVE
@@ -1718,7 +1732,7 @@ C           2. form FC' = FD - FV' in FCAO, both for standard FV'=FV and for HSR
 
 C           3. FQ matrix is zero matrix for open shell RHF
             CALL DZERO(WRK(KFQ),NASHT*NORBT)
-         END IF
+         END IF  ! (NASHT.GT.0)
 C
 C *** LOCALIZATION
 C

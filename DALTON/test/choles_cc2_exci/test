@@ -24,13 +24,13 @@ f.add(string = 'Number of t2 amplitudes')
 
 f.add(from_string = 'CCS        Excitation energies',
       num_lines = 11,
-      rel_tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-5)
 
 f.add(from_string = 'CC2        Excitation energies',
       num_lines = 11,
-      rel_tolerance = 1.0e-6)
-      
-test.run(['choles_cc2_exci.dal'], ['H2O_cc-pVDZ.mol'], {'out': f},
+      rel_tolerance = 1.0e-5)
+
+test.run(['choles_cc2_exci.dal'], ['H2O_cc-pVDZ.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations'])
 
 sys.exit(test.return_code)

@@ -56,6 +56,6 @@ f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
       num_lines = 14,
       abs_tolerance = 1.0e-2)
 
-test.run(['ECD.dal'], ['CH3CHFOH_cc-pVDZ.mol'], {'out': f})
+test.run(['ECD.dal'], ['CH3CHFOH_cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)

@@ -38,7 +38,7 @@ f.add(from_string = 'Singlet electronic excitation energies',
       num_lines = 10,
       rel_tolerance = 1.0e-6)
 
-test.run(['qmmm1_short.dal'], ['CH2O_STO-3G.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['qmmm1_short.dal'], ['CH2O_STO-3G.mol'], f={'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)
 

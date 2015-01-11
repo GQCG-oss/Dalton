@@ -24,14 +24,14 @@ f.add(from_string = 'Cartesian Coordinates',
 f.add(string = 'Final HF energy:',
       rel_tolerance = 1.0e-9)
 
-test.run(['energy_stex__1.dal'], ['energy_stex.mol'], {'out': f}, args = '-get SIRIUS.RST')
+test.run(['energy_stex__1.dal'], ['energy_stex.mol'], f={'out': f}, args = '-get SIRIUS.RST')
 shutil.move('energy_stex__1_energy_stex.SIRIUS.RST', 'SIRIUS.RST')
 
-test.run(['energy_stex__2.dal'], ['energy_stex.mol'], {'out': f}, args = '-put SIRIUS.RST -get "SIRIUS.RST SIRIFC"')
+test.run(['energy_stex__2.dal'], ['energy_stex.mol'], f={'out': f}, args = '-put SIRIUS.RST -get "SIRIUS.RST SIRIFC"')
 shutil.move('energy_stex__2_energy_stex.SIRIUS.RST', 'SIRIUS.RST')
 shutil.move('energy_stex__2_energy_stex.SIRIFC', 'SIRIFC1')
 
-test.run(['energy_stex__3.dal'], ['energy_stex.mol'], {'out': f}, args = '-put SIRIUS.RST -get "SIRIUS.RST SIRIFC"')
+test.run(['energy_stex__3.dal'], ['energy_stex.mol'], f={'out': f}, args = '-put SIRIUS.RST -get "SIRIUS.RST SIRIFC"')
 shutil.move('energy_stex__3_energy_stex.SIRIUS.RST', 'SIRIUS.RST')
 shutil.move('energy_stex__3_energy_stex.SIRIFC', 'SIRIFC2')
 
@@ -49,7 +49,7 @@ f_stex.add(from_string = 'Two-electron STEX fock matrix',
       num_lines = 6,
       rel_tolerance = 1.0e-9)
 
-test.run(['energy_stex__4.dal'], ['energy_stex__4.mol'], {'out': f_stex}, args = '-put "SIRIFC1 SIRIFC2"')
+test.run(['energy_stex__4.dal'], ['energy_stex__4.mol'], f={'out': f_stex}, args = '-put "SIRIFC1 SIRIFC2"')
 
 os.remove('SIRIUS.RST')
 os.remove('SIRIFC1')

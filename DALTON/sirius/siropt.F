@@ -131,6 +131,9 @@ C
             WF_TYPE = 'HF-srDFT'
             len_WF_TYPE = 8
          ELSE IF (DODFT) THEN
+            ! radovan: added block 2014-12-09
+            !          my information is that this is not fully implemented
+            call quit('QC-SCF not implemented/tested for DFT')
             WF_TYPE = 'QC-DFT'
             len_WF_TYPE = 6
          ELSE IF (HSROHF) THEN
@@ -1111,7 +1114,7 @@ C CBN+JK 03.01.06
         KFDTAO = KDVAO + N2BASX
         KWRKG = KFDTAO + NNBASX
         LWRKG = LFREE - (KWRKG - 1)
-        CALL PE_FCKMO(WRK(KCMO), WRK(KFCSOL), WRK(KENR), WRK(KDV),
+        CALL PE_FCKMO(WRK(KCMO), WRK(KDV), WRK(KFCSOL), WRK(KENR),
      &                WRK(KWRKG), LWRKG)
         CALL DAXPY(NNORBX, 1.0D0, WRK(KFC), 1, WRK(KFCSOL), 1)
         CALL FCKDEN((NISHT>0), (NASHT>0), WRK(KDCAO), WRK(KDVAO),
@@ -2169,7 +2172,7 @@ C
       ELSE
          IF (DEPRED .NE. 0.0D0) THEN
            RATIO = DEACT / DEPRED
-           WRITE(LUW4,1110) DEACT, DEPRED, RATIO
+           WRITE(LUW4,1100) DEACT, DEPRED, RATIO
            WRITE(LUW4,'(A)') ' Close to convergence, ratio set to one.'
          ELSE
            IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
@@ -2178,7 +2181,7 @@ C
          ISTEP = -1
       END IF
  1100 FORMAT (/' (SIRSTP) Energy difference;',
-     *        /' actual, predicted and ratio:',2F15.10,F12.6)
+     *        /' actual, predicted and ratio:',2F20.15,F12.6)
  1110 FORMAT (/' (SIRSTP) Close to convergence, ratio set to one.',
      *        /' Energy difference; actual and predicted:',1P,2D15.5)
 C
@@ -2491,7 +2494,7 @@ C
 C  The following records are written:
 C
 C    0) label LBSIFC ("SIR IPH ")
-C    1) POTNUC,EMY,EACTIV,EMCSCF
+C    1) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,LSYM,MS2
 C    2) NISHT,NASHT,...
 C    3) CMO
 C    4) CREF
@@ -2523,7 +2526,7 @@ C    *) (LFIELD(I),I=1,NFIEL4)
 C   end if
 C   If (solvent) then
 C    *) label "SOLVINFO"
-C    *) EPSOL,EPSTAT,RSOL(1:3),LSOLMX
+C    *) EPSOL,EPSTAT,EPPN,RSOL(1:3),LSOLMX,INERSI,INERSF
 C    *) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C    *) ERLM(LM,1), LM = 1,NLMSOL)
 C    *) (TRLM(LM), LM = 1,NLMSOL)    where TRLM(i) = ERLM(i,2)
@@ -2549,6 +2552,7 @@ C
 C
 C Used from common blocks:
 C   INFINP : ABAIPH,ISTATE,ISPIN,NACTEL,FLAG(*),INERSI
+C   SPINFO : MS2
 C   INFOPT : EMY, EACTIV, EMCSCF, ESOLT
 C   INFVAR : NCONF,NWOPT
 C   INFORB : NSYM,NISHT,NASHT,NNASHX,NNASHY,NOCCT,NNOCCX,NCMOT,...
@@ -2568,6 +2572,7 @@ C
 #include "pcm.h"
 #include "pcmlog.h"
 #include "infinp.h"
+#include "spinfo.h"
 #include "infopt.h"
 #include "infvar.h"
 #include "inforb.h"
@@ -2583,12 +2588,12 @@ C
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
-      CHARACTER*8 LAB123(3), TABLE(11), LABEOD, LABCC, LABABA
+      CHARACTER*8 LAB123(3), TABLE(12), LABEOD, LABCC, LABABA
       CHARACTER*8 LABAUX, LABUNI
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
-     *            'PCMINFO ','PCMJXMAT','PETMAT  '/
+     *            'PCMINFO ','PCMJXMAT','QMMMTMAT','PEFMAT  '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
@@ -2697,7 +2702,7 @@ C
       WRITE (LUSIFC) LAB123,LBSIFC
 C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-     &               ISTATE,ISPIN,NACTEL,LSYM
+     &               ISTATE,ISPIN,NACTEL,LSYM,MS2
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
      &               NSYM,MULD2H, NRHF,NFRO,
@@ -2798,7 +2803,7 @@ C     Write Solvent information, if Solvent calculation.
          IF (KWRK2 .GT. LFREE)
      &      CALL ERRWRK('WR_SIRIFC-SOLVENT',KWRK2,LFREE)
          WRITE (LUSIFC) LAB123,TABLE(6)
-         WRITE (LUSIFC) EPSOL,EPSTAT,RSOL,LSOLMX
+         WRITE (LUSIFC) EPSOL,EPSTAT,EPPN,RSOL,LSOLMX,INERSI,INERSF
          WRITE (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
          NLMSO4 = MAX(4,NLMSOL)
          CALL WRITT (LUSIFC,NLMSO4,ERLM(1,1))
@@ -2936,15 +2941,21 @@ C Write qm/mm solvent part of the Fock matrix to interface file
 
       IF (PEQM) THEN
 #if defined (BUILD_PELIB)
-         KPEFCK  = KWRK1
-         KEPE  = KPEFCK + NNORBX
-         KWRK2 = KEPE + 1
-         LWRK2  = LFREE - KWRK2 + 1
-         IF (LWRK2 .LT. 0) CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
-         CALL PE_FCKMO(CMO, WRK(KPEFCK), WRK(KEPE), DV,
-     &                 WRK(KWRK2), LWRK2)
-         WRITE (LUSIFC) LAB123, TABLE(11)
-         CALL WRITT(LUSIFC, NNORBX, WRK(KPEFCK))
+         ! Calculate ground-state PE contribution which is subtracted from
+         ! the full Fock matrix in response for MCSCF wavefunction
+         IF (NCONF > 1) THEN
+            KPEFCK = KWRK1
+            KEPE   = KPEFCK + NNORBX
+            KWRK2  = KEPE + 1
+            LWRK2  = LFREE - KWRK2 + 1
+            IF (LWRK2 < 0) THEN
+               CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
+            END IF
+            CALL PE_FCKMO(CMO, DV, WRK(KPEFCK), WRK(KEPE),
+     &                    WRK(KWRK2), LWRK2)
+            WRITE (LUSIFC) LAB123, TABLE(12)
+            CALL WRITT(LUSIFC, NNORBX, WRK(KPEFCK))
+         END IF
 #endif
       END IF
 C

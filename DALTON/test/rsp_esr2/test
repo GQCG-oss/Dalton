@@ -36,6 +36,6 @@ f.add(string = 'Final MCSCF energy:',
 f.add(string = 'TRIPLET OPERATOR:',
       abs_tolerance = 1.0e-4)
 
-test.run(['rsp_esr2.dal'], ['rsp_esr2.mol'], {'out': f})
+test.run(['rsp_esr2.dal'], ['rsp_esr2.mol'], f={'out': f})
 
 sys.exit(test.return_code)
