@@ -383,16 +383,6 @@ C
          CALL GPOPEN(LURSP,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
      &        .FALSE.)
       END IF
-      IF (ABSLRS) THEN
-        CALL GPINQ('ABSVECS','EXIST',EX)
-        IF (.NOT.EX) THEN
-          OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
-          WRITE(LUABSVECS) 'EOFLABEL'
-        ELSE
-          OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
-        END IF
-      ENDIF
-
 C
       IF (ABSLRS) THEN
         LUABSVECS = -1
