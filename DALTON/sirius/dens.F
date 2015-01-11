@@ -1200,6 +1200,7 @@ C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
 C
+      CALL QENTER('MAKDV')
       RHOTYP = 1
       ISPIN1 = 0
       ISPIN2 = 0
@@ -1234,6 +1235,7 @@ C       ... pack RHO1 as triangular matrix
         call dcopy(nnashx,work(krho1),1,rho1,1)
       end if
 C
+      CALL QEXIT('MAKDV')
       RETURN
 C
 C     ... end of MAKDV
@@ -1269,6 +1271,7 @@ C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
 C
+      CALL QENTER('MAKDSV')
       RHOTYP = 1
       ISPIN1 = 1
       ISPIN2 = 0
@@ -1303,6 +1306,7 @@ C       ... pack RHO1S as triangular matrix
         call dcopy(nnashx,work(krho1s),1,rho1s,1)
       end if
 C
+      CALL QEXIT('MAKDSV')
       RETURN
 C
 C     ... end of MAKDSV
@@ -1315,6 +1319,7 @@ C  /* Deck maktdm */
       DIMENSION BCVECS(*),CREF(*),RHO1(*)
       DIMENSION RHO2(NNASHY,*), XNDXCI(*),WORK(*)
 #include "inforb.h"
+      CALL QENTER('MAKTDM')
       KRHO2 = 1
       KWRKD = KRHO2 + NCSIM*NNASHX*NNASHX
       LWRKD = LWRK + 1 - KWRK
@@ -1325,6 +1330,7 @@ C  /* Deck maktdm */
   100 CONTINUE
       CALL DSCAL(NCSIM*NNASHY,0.5D0,RHO2,1)
 C     ... old routines used PV = 0.5 * <| Eij Ekl - DELjk Eil |>
+      CALL QEXIT('MAKTDM')
       RETURN
       END
       SUBROUTINE MAKTD2(NCSIM,BCVECS,CREF,RHO1,RHO2,XNDXCI,WORK,LWRK)
@@ -1371,6 +1377,8 @@ C
 C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
+C
+      CALL QENTER('MAKTD2')
 C
       RHOTYP = 3
       ISPIN1 = 0
@@ -1420,7 +1428,7 @@ C          ... pack RHO1 as triangular matrix
 #undef LUCI_DEBUG
 #endif
          IF (IPRDNS .GE. 6) WRITE (LUPRI,'(/5X,A,2I5,2I10)')
-     *      'MAKTDM : ICSIM, NCSIM, KFREE, LWRK =',
+     *      'MAKTD2 : ICSIM, NCSIM, KFREE, LWRK =',
      *      ICSIM,NCSIM,KFREED,LWRK
       END DO ! ICSIM = 1,NCSIM
 C
@@ -1449,8 +1457,9 @@ C            ... pack RHO1 as triangular matrix
       END IF
 C
 C
+      CALL QENTER('MAKTD2')
       RETURN
-C     ... end of MAKTDM
+C     ... end of MAKTD2
       END
 C  /* Deck densid */
       SUBROUTINE DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,
