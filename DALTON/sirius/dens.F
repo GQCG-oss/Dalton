@@ -1457,7 +1457,7 @@ C            ... pack RHO1 as triangular matrix
       END IF
 C
 C
-      CALL QENTER('MAKTD2')
+      CALL QEXIT('MAKTD2')
       RETURN
 C     ... end of MAKTD2
       END
