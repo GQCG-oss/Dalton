@@ -41,10 +41,6 @@ f.add(string = 'MP2 second order energy',
 
 f.add(string = 'Nuclear spin-spin coupling constants',
       rel_tolerance = 1.0e-2)
-f.add(string = 'No Darwin correction calculated',
-      rel_tolerance = 1.0e-2)
-f.add(string = 'No mass-velocity correction calculated',
-      rel_tolerance = 1.0e-2)
 f.add(string = 'Spin-spin couplings printed for atoms',
       rel_tolerance = 1.0e-2)
 

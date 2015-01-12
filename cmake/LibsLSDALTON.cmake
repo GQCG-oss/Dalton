@@ -171,6 +171,7 @@ set(LSDALTON_EXTERNAL_LIBS
 
 add_dependencies(ls-matrix-defop matrixmlib)
 add_dependencies(ls-matrix-defop matrixolib)
+add_dependencies(ls-matrix-defop matrixulib)
 endif()
 
 add_library(
@@ -298,14 +299,6 @@ add_library(
 target_link_libraries(ddynamlib lsintlib)
 
 add_library(
-    declib
-    ${DEC_SOURCES}
-    ${DEC_C_SOURCES}
-    )
-
-target_link_libraries(declib lsintlib)
-
-add_library(
     solverutillib
     ${SOLVERUTIL_SOURCES}
     )
@@ -348,6 +341,15 @@ if(ENABLE_RSP)
 add_dependencies(linearslib ls-openrsp)
 add_dependencies(linearslib ls-matrix-defop)
 endif()
+
+add_library(
+    declib
+    ${DEC_SOURCES}
+    ${DEC_C_SOURCES}
+    )
+
+target_link_libraries(declib lsintlib)
+target_link_libraries(declib linearslib)
 
 add_library(
     rsp_propertieslib

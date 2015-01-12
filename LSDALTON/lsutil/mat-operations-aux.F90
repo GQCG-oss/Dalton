@@ -29,7 +29,7 @@ MODULE matrix_operations_aux
    use matrix_operations_scalapack
    use matrix_operations_csr
 !   Use matrix_operations_unres_symm_dense
-   use matrix_operations_unres_dense
+   use matrix_op_unres_dense
    
    private
    public :: mat_density_from_orbs, mat_eigenvalues_to_aux, &

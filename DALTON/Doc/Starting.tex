@@ -17,10 +17,10 @@ questions and get support.
 \section{The \molinp\ input file}
 
 We will not go into great detail here of the input format of the \molinp\ \index{MOLECULE.INP} file, as it is treated thoroughly in a separate chapter,
-Chapter~\ref{ch:molinp}. Here we only present two inputs for
-water; one
+Chapter~\ref{ch:molinp}.
+Here we only present two inputs for water; one
 using Cartesian coordinate\index{Cartesian coordinates} input and
-automatic symmetry detection\index{symmetry!automatic detection} and
+automatic symmetry detection\index{symmetry!automatic detection}, and
 the other using Cartesian coordinates and where we explicitly give the
 symmetry elements. Finally we show the input for H$_{2}$O$^{2+}$
 using Z-matrix input\index{Z-matrix input}. In
@@ -34,15 +34,16 @@ in \bohr{}, and the very popular 6-31G** basis set.
 \begin{verbatim}
 BASIS
 6-31G**
-Water
-using the 6-31G** basis
+ Water using the 6-31G** basis
+ Using automatic symmetry detection.
 Atomtypes=2
 Charge=8.0 Atoms=1
 O      .0000000000        -.2249058930         .0000000000
 Charge=1.0 Atoms=2
-H     1.4523499293         .8996235720         .0000000000
-H    -1.4523499293         .8996235720         .0000000000
+H_a   1.4523499293         .8996235720         .0000000000
+H_b  -1.4523499293         .8996235720         .0000000000
 \end{verbatim}
+
 
 On the fifth line the number of different atom types or more correctly,
 the number of  blocks of atoms,
@@ -54,26 +55,25 @@ input files.
 
 We may also add the symmetry elements\index{symmetry!element} of the
 symmetry group\index{symmetry!group} ourselves. We must
-then remove any symmetry-dependent centers\index{symmetry-dependent center}. For the above input this
-will result in, if we use the yz- (the x axis changes sign during the
-symmetry operation) and xy- (the $z$ axis changes sign) -planes as
-symmetry elements: 
+then remove all symmetry-dependent centers\index{symmetry-dependent center}. For the above input this
+will result in, if we use reflections in the yz-plane (the $x$ axis changes sign during this
+symmetry operation) and the xz-plane (the $y$ axis changes sign) as the symmetry generators: 
 
 \begin{verbatim}
 ATOMBASIS
-Water
-using ANOs specified for each atomtype
+ Water using ANOs specified for each atomtype
+ Standard orientation: C2-rotation along z-axis, molecule in yz-plane
 Atomtypes=2 Generators=2 X Y
 Charge=8.0 Atoms=1 Basis=ano-1 5 4 3 1
-O      .0000000000        -.2249058930         .0000000000
+O      .0000000000         .0000000000        -.2249058930
 Charge=1.0 Atoms=1 Basis=ano-1 4 3 2
-H     1.4523499293         .8996235720         .0000000000
+H_a    .0000000000        1.4523499293         .8996235720
 \end{verbatim}
 
 In the above calculation we used the ANO set\index{ANO basis set} of
 Widmark and
-coworkers~\cite{powpambortca77,powbjpbortca79}. We
-use the contraction
+coworkers~\cite{powpambortca77,powbjpbortca79}.
+We use the contractions
 [5s4p3d1f/4s3p2d] for the oxygen and the hydrogens respectively. We
 also note the keyword \verb|ATOMBASIS|\index{ATOMBASIS} which allows
 different basis functions to be used on different atoms.
@@ -84,8 +84,8 @@ Z-matrix input\index{Z-matrix input}. This will then look like:
 \begin{verbatim}
 BASIS
 Sadlej-pVTZ
-Water - geometry optimization with Sadlej's basis set
-Project - Raman
+ Water - geometry optimization with Sadlej's basis set
+ Project - Raman
 Atomtypes=3 Charge=2 Nosymmetry
 ZMAT
 O   1 8.0

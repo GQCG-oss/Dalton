@@ -572,7 +572,7 @@ module cc_debug_routines_module
               endif
 
               call get_ccsd_multipliers_simple(omega1(iter)%val,omega2(iter)%val,t1_final%val&
-              &,t2_final%val,t1(iter)%val,t2(iter)%val,xocc%val,yocc%val,xvirt%val,yvirt%val&
+              &,t2_final%val,t1(iter)%val,t2(iter)%val,delta_fock%val,xocc%val,yocc%val,xvirt%val,yvirt%val&
               &,nocc,nvirt,nbasis,MyLsItem,gao_ex=gao)
            
            else if(u_pnos.and..not.DECinfo%hack2)then
@@ -1453,12 +1453,12 @@ module cc_debug_routines_module
    !of occupied orbitals no, the number of virtual orbitals nv and the number of
    !basis functions nb, MyLsItem is required to calculate the Fock matrix in
    !here
-   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,xo,yo,xv,yv,no,nv,nb,MyLsItem,gao_ex)
+   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,df,xo,yo,xv,yv,no,nv,nb,MyLsItem,gao_ex)
      implicit none
 
      type(lsitem), intent(inout) :: MyLsItem
      real(realk),intent(inout) :: rho1(:,:),rho2(:,:,:,:)
-     real(realk),intent(inout) :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:)
+     real(realk),intent(inout) :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:),df(:,:)
      real(realk),intent(in)    :: xo(:,:),yo(:,:),xv(:,:),yv(:,:)
      integer, intent(in)       :: no,nv,nb
      type(array4),intent(inout),optional:: gao_ex
@@ -1623,6 +1623,7 @@ module cc_debug_routines_module
           & Dens%elms,nb,nb,AORdefault,AORdefault)
      ! Add one- and two-electron contributions to Fock matrix
      call daxpy(b2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
+     call daxpy(b2,1.0E0_realk,df,1,iFock%elms,1)
      !Free the density matrix
      call mat_free(Dens)
 

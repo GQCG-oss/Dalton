@@ -79,6 +79,7 @@ C
 #include "past.h"
 #include "cbisol.h"
 #include "cbirhs.h"
+#include "spinfo.h"
 C
       CALL QENTER('SETSIR  ')
       DST = SECOND( )
@@ -104,8 +105,8 @@ C
      *      '" not found on SIRIFC, the SIRIUS interface file.'
         CALL QUIT('"'//LBSIFC//'" label not found on SIRIFC file.')
       END IF
-      READ (LUSIFC) EPOT,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,LSYM,
-     &              GRDNRM
+      READ (LUSIFC) EPOT,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,LSYM,MS2
+      MULTS = ISPIN
       POTNUC = EPOT
       READ (LUSIFC) MISHT,MASHT,MOCCT,MORBT,MBAST,NCONF,NWOPT,NWOPH,
      *            NCDETS,NCMOT,MNASHX,MNASHY,MNORBT,M2ORBT,
@@ -181,7 +182,7 @@ C   Read information if so. From WRSIFC in SIRIUS:
 C
 C     If (solvent) then
 C      *) label "SOLVINFO"
-C      *) EPSOL,EPSTAT,RSOL(3),LSOLMX
+C      *) EPSOL,EPSTAT,EPPN,RSOL(1:3),LSOLMX,INERSI,INERSF
 C      *) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C      *) ERLM(LM,1), LM = 1,NLMSOL)
 C      *) (TRLM(LM), LM = 1,NLMSOL)    where TRLM(i) = ERLM(i,2)
@@ -192,7 +193,7 @@ C
       IF (FNDLAB('SOLVINFO',LUSIFC)) THEN
          IF (.NOT.FLAG(16)) CALL QUIT(
      &      'ABACUS.SETSIR error - "SOLVINFO" but FLAG(16) false.')
-         READ (LUSIFC) EPSOL,EPSTAT,RSOL,LSOLMX
+         READ (LUSIFC) EPSOL,EPSTAT,EPPN,RSOL,LSOLMX,INERSI,INERSF
          READ (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C        CALL READT (LUSIFC,NLMSOL,ERLM(1,1))
 C        CALL READT (LUSIFC,NLMSOL,ERLM(1,2))

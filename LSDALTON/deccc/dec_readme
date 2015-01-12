@@ -84,8 +84,11 @@ Anyone not obeying these simple rules will get executed by the Jonas Kramer warr
 Dependency list:
 ****************
 
-Level 9
+Level 10
 dec_main
+
+Level 9
+snoop_main, snoop_tools
 
 Level 8
 full_driver, dec_driver,decmpiSlave

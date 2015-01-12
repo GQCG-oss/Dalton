@@ -41,9 +41,9 @@ f.add(string = 'Magnetic susceptibilities',
       rel_tolerance = 1.0e-2)
 f.add(string = 'London orbitals are NOT used',
       rel_tolerance = 1.0e-2)
-f.add(string = 'No mass-velocity correction calculated',
+f.add(string = 'No mass-velocity energy correction calculated',
       rel_tolerance = 1.0e-2)
-f.add(string = 'No Darwin correction calculated',
+f.add(string = 'No Darwin energy correction calculated',
       rel_tolerance = 1.0e-2)
 
 f.add(from_string = 'Magnetizabilities',
