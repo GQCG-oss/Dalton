@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2014/12/30 (started 2014/09/01).
+!REVISION: 2015/01/13 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -3143,7 +3143,7 @@
 !Proceed:
         lsm=int(dsqrt(real(max_arg_vol,8)),INTL) !dimension of the largest square matrix fitting in the buffer
  !Decide on splitting matrix dimensions:
-        lc=0_INTL; ll=0_INTL; lr=0_INTL
+        lc=lcd; ll=lld; lr=lrd
         if(lcd.le.lld) then !lcd<=lld
          if(lld.le.lrd) then !*lcd<=lld<=lrd*
           if(lld*lrd.gt.lsm*lsm) then
