@@ -2052,6 +2052,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call get_default_AOs(oldAORegular,oldAOdfAux) !the current values for Regular and Aux Basis 
      call set_default_AOs(oldAORegular,oldAORegular) !change to use Regular for Aux 
      call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
+     if(master) then
+        WRITE(*,'(A,7I5)')'RIMP2: DIM(nocc,noccEOS,nvirt,nvirtEOS,nbasis,nBasisAux,natoms)=',&
+             & nocc,noccEOS,nvirt,nvirtEOS,nbasis,nBasisAux,natoms
+     endif
   ENDIF
 
 !#ifndef VAR_MPI
@@ -2234,9 +2238,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   IF(master)THEN
      !=====================================================================================
-     ! Major Step 1: Master Obtains Overlap (alpha|beta) in Auxiliary Basis 
+     ! Major Step 1: Master Obtains (alpha|beta) ERI in Auxiliary Basis 
      !=====================================================================================
-     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full overlap
+     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full 2 center ERI
      !this should naturally be changed      
      call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)

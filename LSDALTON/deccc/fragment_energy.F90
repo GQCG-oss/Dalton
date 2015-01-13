@@ -624,11 +624,11 @@ contains
     integer :: i,j,k,a,b,c
     real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
     real(realk) :: e1, e2, e3, e4,tmp,multaibj
-    logical ::  something_wrong,SOS! ,doOccPart, doVirtPart
+    logical ::  something_wrong,SOS,PerformLag! ,doOccPart, doVirtPart
     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
     real(realk) :: prefac_coul,prefac_k
-    
+    PerformLag = MyFragment%ccmodel==MODEL_MP2 .OR. MyFragment%ccmodel==MODEL_RIMP2
     ! Lagrangian energy can be split into four contributions:
     ! The first two (e1 and e2) use occupied EOS orbitals and virtual AOS orbitals.
     ! The last two (e3 and e4) use virtual EOS orbitals and occupied AOS orbitals.
@@ -758,8 +758,8 @@ contains
                 ! Contribution 2
                 ! --------------
 
-                ! Skip contribution 2 for anything but MP2
-                if(MyFragment%ccmodel==MODEL_MP2) then
+                ! Skip contribution 2 for anything but MP2 and RIMP2
+                if(PerformLag) then
                    ! Multiplier (multiplied by one half)
                    multaibj = prefac_coul*t2occ%elm4(a,i,b,j) - prefac_k*t2occ%elm4(b,i,a,j)
 
@@ -848,8 +848,8 @@ contains
                 ! Contribution 4
                 ! --------------
 
-                ! Skip contribution 4 for anything but MP2
-                if(MyFragment%ccmodel==MODEL_MP2) then
+                ! Skip contribution 4 for anything but MP2 and RIMP2
+                if(PerformLag) then
 
                    do k=1,noccAOS
 
@@ -896,9 +896,11 @@ contains
 
     ! Total atomic fragment energy
     ! ****************************
+    ! Lagrangian energy only implemented for MP2 and RIMP2 so it gets special treatment
     if(MyFragment%ccmodel==MODEL_MP2) then
-       ! Lagrangian energy only implemented for MP2 so it gets special treatment
        MyFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
+    elseif(MyFragment%ccmodel==MODEL_RIMP2) then
+       MyFragment%energies(FRAGMODEL_LAGRIMP2) = Eocc + lag_occ + Evirt + lag_virt
     end if
     ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
     if(SOS) then
@@ -1060,10 +1062,10 @@ contains
      real(realk) :: tcpu1,tcpu2,twall1,twall2
      logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
      real(realk) :: Eocc, lag_occ,Evirt,lag_virt
-     logical :: something_wrong, do_non_pdm,SOS
+     logical :: something_wrong, do_non_pdm,SOS,PerformLag
      real(realk) :: prefac_coul,prefac_k
 
-
+     PerformLag = pairfragment%ccmodel==MODEL_MP2 .OR. pairfragment%ccmodel==MODEL_RIMP2
      ! Pair interaction Lagrangian energy can be split into four contributions:
      ! The first two (e1 and e2) use occupied EOS orbitals and virtual AOS orbitals.
      ! The last two (e3 and e4) use virtual EOS orbitals and occupied AOS orbitals.
@@ -1195,8 +1197,8 @@ contains
                           e1 = e1 + t2occ%elm4(a,i,b,j)*(prefac_coul*gocc%elm4(a,i,b,j) -prefac_k*gocc%elm4(b,i,a,j))
 
 
-                          ! Skip contribution 2 for anything but MP2
-                          if(pairfragment%ccmodel==MODEL_MP2) then
+                          ! Skip contribution 2 for anything but MP2 and RIMP2
+                          if(PerformLag) then
 
                              ! Multiplier (multiplied by one half)
                              multaibj = prefac_coul*t2occ%elm4(a,i,b,j) - prefac_k*t2occ%elm4(b,i,a,j)
@@ -1265,8 +1267,8 @@ contains
                           e3 = e3 + multaibj*gvirt%elm4(a,i,b,j)
 
 
-                          ! Skip contribution 4 for anything but MP2
-                          if(pairfragment%ccmodel==MODEL_MP2) then
+                          ! Skip contribution 4 for anything but MP2 and RIMP2
+                          if(PerformLag) then
 
                              tmp=0E0_realk
                              do k=1,noccAOS
@@ -1308,9 +1310,11 @@ contains
 
      ! Total pair interaction energy
      ! *****************************
+     ! Lagrangian energy only implemented for MP2 so it gets special treatment
      if(PairFragment%ccmodel==MODEL_MP2) then
-        ! Lagrangian energy only implemented for MP2 so it gets special treatment
         PairFragment%energies(FRAGMODEL_LAGMP2) = Eocc + lag_occ + Evirt + lag_virt
+     elseif(PairFragment%ccmodel==MODEL_RIMP2) then
+        PairFragment%energies(FRAGMODEL_LAGRIMP2) = Eocc + lag_occ + Evirt + lag_virt
      end if
      ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
      if(SOS) then
@@ -4561,9 +4565,9 @@ contains
 #endif
     case(MODEL_RIMP2)
        ! RI-MP2
+       fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRIMP2)
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRIMP2)
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRIMP2)
-
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', fragment%ccmodel
@@ -4629,6 +4633,7 @@ contains
 #endif
     case(MODEL_RIMP2)
        ! RI-MP2
+       fragment%energies(FRAGMODEL_LAGRIMP2) = fragment%LagFOP 
        fragment%energies(FRAGMODEL_OCCRIMP2) = fragment%EoccFOP
        fragment%energies(FRAGMODEL_VIRTRIMP2) = fragment%EvirtFOP 
 

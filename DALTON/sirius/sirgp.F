@@ -650,10 +650,8 @@ C
 #include "inftap.h"
 C
       LOGICAL      NOSTOP
-      CHARACTER*4  LABEL(104), IFLGC, ISTAR, IEVEC
       CHARACTER*8  MOLABL
       CHARACTER*10 PFMT
-      DATA ISTAR/'****'/, IEVEC/'EVEC'/
 C
       CALL QENTER('READMO')
 C
@@ -666,7 +664,7 @@ C
       END IF
       IF (IRDMO.LT.1 .OR. IRDMO.GT.11) THEN
          WRITE (LUPRI,10000) IRDMO
-         WRITE (LUERR ,10000) IRDMO
+         WRITE (LUERR,10000) IRDMO
 10000    FORMAT(/' *** READMO-ERROR *** IRDMO =',I4,' is out of range')
          CALL QTRACE(LUPRI)
          IF (NOSTOP) THEN
@@ -1891,7 +1889,7 @@ C
 C The following records have been written by WR_SIRIFC:
 C
 C    0) label LBSIFC ("SIR IPH ")
-C    1) POTNUC,EMY,EACTIV,EMCSCF
+C    1) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,LSYM,MS2
 C    2) NISHT,NASHT,...
 C    3) CMO
 C    4) CREF
@@ -1923,7 +1921,7 @@ C    *) (LFIELD(I),I=1,NFIEL4)
 C   end if
 C   If (solvent) then
 C    *) label "SOLVINFO"
-C    *) EPSOL,EPSTAT,RSOL(1:3),LSOLMX
+C    *) EPSOL,EPSTAT,EPPN,RSOL(1:3),LSOLMX,INERSI,INERSF
 C    *) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C    *) ERLM(LM,1), LM = 1,NLMSOL)
 C    *) (TRLM(LM), LM = 1,NLMSOL)    where TRLM(i) = ERLM(i,2)

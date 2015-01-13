@@ -4127,6 +4127,8 @@ C
 C        ... call setsir to reset Sirius common blocks to determinants
          CALL SETSIR(WRK,LWRK)
       END IF
+      NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock
+                             ! in RSP - especially for RSPESR - we want NCREF=1 for HSROHF
 C
 C     ====================================================
 C     Read and check information on LUSIFC
@@ -4137,11 +4139,12 @@ C
       ELSE
          CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
       END IF
-      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF
+      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
+     &              ISTATE,ISPIN,NACTEL,LSYM,MS2
       READ (LUSIFC) MISHT,MASHT, MOCCT, MORBT, MBAST, MCONF,MWOPT,MWOPH,
-     *            NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT
+     &              NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT
 C     READ (LUSIFC) NISHT,NASHT, NOCCT, NORBT, NBAST, NCONF,NWOPT,NWOPH,
-C    *            NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
+C    &              NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
 C
 C     Transfer information
 C
@@ -4238,15 +4241,13 @@ C
      *   '@ TOTAL NUMBER OF ATOMIC ORBITALS FROM SIRINP:',NBAST,
      *   '@ FROM SIRIFC ',MBAST
       END IF
-      IF ( MCONRF .NE. MCONF .OR. (TDHF .AND. MCONF .GT. 1)) THEN
-      IF (.NOT.TDHF .OR. MCONF .GT. 1 .OR. MCONRF .GT. 1) THEN
-C     ... abacus sets NCONRF=0 when "ABAHF" true.
+      IF ( MCONRF .NE. MCONF .AND. MCONF .GT. 1 .AND. MCONRF .GT. 1 )
+     &   THEN
          NUMERR = NUMERR + 1
          WRITE(LUPRI,'(A/A,I5/A,I5,A,L5)')
      *  '@ *** FATAL ERROR IN RSPMC ***',
      *  '@ TOTAL NUMBER OF REFERENCE CONFIGURATIONS FROM SIRINP:',
      *  MCONRF,'@ AND FROM SIRIFC',MCONF,';  TDHF flag is',TDHF
-      END IF
       END IF
 C     NWOPT test disabled because RSPMC may be called from ABACUS
 C     with NCONF,NWOPT not of symmetry 1 /25-Nov-1992 PJ+HJAaJ

@@ -973,17 +973,20 @@ contains
     real(realk),pointer :: AlphaCD(:,:,:),AlphaCD5(:,:,:),AlphaCD6(:,:,:)
     real(realk),pointer :: Calpha(:,:,:),Calpha2(:,:,:),Calpha3(:,:,:)
     real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:),EpsOcc(:),EpsVirt(:)
-    integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2,comm,TAG1,TAG2
-    integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
-    integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri,MinAtomicnAux
+    integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,COUNT2,comm,TAG1,TAG2
+    integer :: J,CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
+    integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri,MinAtomicnAux,restart_lun
+    integer :: noccJstart
     logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
     logical :: RoundRobin2,RoundRobin3,useCalpha2,useCalpha3,FORCEPRINT
     integer(kind=ls_mpik)  :: request1,request2,request5,request6,request7,request8
     integer,pointer :: nbasisauxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
     integer(KIND=long) :: MaxMemAllocated,MemAllocated
     real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPU1,CPU2,WALL1,WALL2,CPU_MPICOMM,WALL_MPICOMM
-    real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT,MemInGBCollected
+    real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT,MemInGBCollected,epsIJ
     logical :: MemoryReduced,AlphaCDAlloced,TransferCompleted,AlphaCD_Deallocate
+    logical :: NotMatSet,file_exists
+    real(realk),pointer :: Amat(:,:),Bmat(:,:)
     MemoryReduced = MyLsitem%setting%scheme%ForceRIMP2memReduced
 #ifdef VAR_TIME    
     FORCEPRINT = .TRUE.
@@ -1439,197 +1442,86 @@ contains
        EpsVirt(A) = MyMolecule%qqfock(A,A)
     enddo
 
-    rimp2_energy = 0.0E0_realk
+    IF(DECinfo%DECrestart)THEN
+       !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
+       INQUIRE(FILE='FULLRIMP2.restart',EXIST=file_exists)
+       IF(file_exists)THEN
+          WRITE(DECinfo%output,*)'Restart of Full molecular RIMP2 calculation:'
+          restart_lun = -1  !initialization
+          call lsopen(restart_lun,'FULLRIMP2.restart','OLD','FORMATTED')
+          rewind restart_lun
+          read(restart_lun,'(I9)') noccJstart
+          IF(noccJstart.EQ.nocc)THEN
+             WRITE(DECinfo%output,*)'All energies is on file'
+             noccJstart = -1
+          ELSEIF(noccJstart.GT.nocc.OR.noccJstart.LT.1)THEN
+             WRITE(DECinfo%output,*)'RIMP2 restart error first integer is wrong. Read:',noccJstart
+             call lsquit('RIMP2 restart error first integer is wrong')             
+          ELSE
+             noccJstart = noccJstart + 1
+             read(restart_lun,'(F28.16)') rimp2_energy
+          ENDIF
+          call lsclose(restart_lun,'KEEP')
+       ENDIF
+    ELSE
+       noccJstart=1
+       rimp2_energy = 0.0E0_realk
+    ENDIF
 
-    nullify(Calpha2)
-    nullify(Calpha3)
-
-    useCalpha2 = .TRUE. 
-    useCalpha3 = .FALSE.
-    CurrentWait(1) = 0
-    CurrentWait(2) = 0
-    nAwaitDealloc = 0
-    RoundRobin2 = .FALSE.
-    RoundRobin3 = .FALSE.
-    CALL LSTIMER('RIMP2: EpsOcc ',TS2,TE2,LUPRI,FORCEPRINT)
     IF(Wakeslaves)THEN
 #ifdef VAR_MPI
-       IF(MynauxMPI.GT.0)THEN 
-          !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
-          CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-          call RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
-               & NBA,Calpha,rimp2_energy)
-          CALL LSTIMER('RIMP2: EcontOwn ',TS3,TE3,LUPRI,FORCEPRINT)
-          !Energy = sum_{AIBJ} (AI|BJ)_K*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
-          COUNT = NBA*nocc*nvirt
-          CALL LS_GETTIM(CPU1,WALL1)
-          call MPI_ISEND(Calpha,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG1,comm,request2,ierr)
-          CALL LS_GETTIM(CPU2,WALL2)
-          CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-          WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-       ENDIF
-       DO node=1,numnodes-1 !should recieve numnodes-1 packages 
-          myOriginalRank = MOD(mynum+node,numnodes)         
-          OriginalRanknauxMPI = nBasisauxMPI(myOriginalRank+1) !dim1 of recieved package
-          IF(OriginalRanknauxMPI.GT.0)THEN
-             IF(nAwaitDealloc.EQ.2)THEN
-                !all buffers are allocated and await to be deallocated once the memory
-                !have been recieved by the reciever.
-                !DEALLOCATE BLOCK IF NEEDED
-                IF(CurrentWait(1).EQ.2)THEN
-                   !I need to wait for Calpha2 to be received before I can deallocate
-                   CALL LS_GETTIM(CPU1,WALL1)
-                   call MPI_WAIT(request6,lsmpi_status,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-                   call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
-                   call mem_dealloc(Calpha2)
-                   nullify(Calpha2)                
-                ELSEIF(CurrentWait(1).EQ.3)THEN
-                   CALL LS_GETTIM(CPU1,WALL1)
-                   call MPI_WAIT(request8,lsmpi_status,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-                   call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
-                   call mem_dealloc(Calpha3)
-                   nullify(Calpha3)                
-                ENDIF
-                nAwaitDealloc = 1
-                CurrentWait(1) = CurrentWait(2)
-                CurrentWait(2) = 0 
-             ENDIF
-             !ALLOCATE BLOCK
-             IF(useCalpha2)THEN
-                call mem_alloc(Calpha2,OriginalRanknauxMPI,nvirt,nocc)
-                call mem_leaktool_alloc(Calpha2,LT_Calpha2)
+       NotMatSet = .TRUE.
+       call mem_alloc(Amat,nvirt,nvirt)
+       call mem_alloc(Bmat,nvirt,nvirt)
+       do J=noccJstart,nocc
+          do I=1,nocc
+             epsIJ = EpsOcc(I) + EpsOcc(J)
+             IF(MynauxMPI.GT.0)THEN 
+                !A(nvirt,nvirt)
+                CALL CalcAmat(nocc,nvirt,NBA,Calpha,Amat,I,J)
+                CALL CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
              ELSE
-                call mem_alloc(Calpha3,OriginalRanknauxMPI,nvirt,nocc)
-                call mem_leaktool_alloc(Calpha3,LT_Calpha2)
-             ENDIF
-             COUNT = OriginalRanknauxMPI*nvirt*nocc
-             !RECV BLOCK ONWARDS
-             IF(node.EQ.1)THEN
-                !recieve from the ISEND above 
-                CALL LS_GETTIM(CPU1,WALL1)
-                call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG1,comm,lsmpi_status,ierr)
-                CALL LS_GETTIM(CPU2,WALL2)
-                CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-                WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-             ELSE
-                CALL LS_GETTIM(CPU1,WALL1)
-                IF(useCalpha2)THEN
-                   call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,lsmpi_status,ierr)
-                ELSE
-                   call MPI_RECV(Calpha3,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,lsmpi_status,ierr)
-                ENDIF
-                CALL LS_GETTIM(CPU2,WALL2)
-                CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-                WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-             ENDIF
-             !SEND BLOCK ONWARDS
-             IF(useCalpha2)THEN
-                IF(node.NE.numnodes-1)THEN
-                   RoundRobin2 = .TRUE.
-                   CALL LS_GETTIM(CPU1,WALL1)
-                   call MPI_ISEND(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request6,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-                   WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-                ELSE
-                   !No need to ISEND because the sender is the original owner of the block
-                   RoundRobin2 = .FALSE.
-                ENDIF
-             ELSE
-                IF(node.NE.numnodes-1)THEN
-                   RoundRobin3 = .TRUE.
-                   CALL LS_GETTIM(CPU1,WALL1)
-                   call MPI_ISEND(Calpha3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request8,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-                   WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-                ELSE
-                   !No need to ISEND because the sender is the original owner of the block
-                   RoundRobin3 = .FALSE.
+                IF(NotMatSet)THEN
+                   NotMatSet = .FALSE.
+                   call ls_dzero(Amat,nvirt*nvirt) 
+                   call ls_dzero(Bmat,nvirt*nvirt) 
                 ENDIF
              ENDIF
-             !CALCULATE ENERGY CONTRIBUTION
-             IF(MynauxMPI.GT.0)THEN
-                CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-                IF(useCalpha2)THEN
-                   call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
-                        & NBA,Calpha,Calpha2,OriginalRanknauxMPI,rimp2_energy)
-                ELSE
-                   call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
-                        & NBA,Calpha,Calpha3,OriginalRanknauxMPI,rimp2_energy)
-                ENDIF
-                CALL LSTIMER('RIMP2: EcontOther ',TS3,TE3,LUPRI,FORCEPRINT)
-             ENDIF
-             IF(node.NE.numnodes-1)THEN
-                IF(useCalpha2)THEN
-                   useCalpha2 = .FALSE.; useCalpha3=.TRUE.
-                   nAwaitDealloc = nAwaitDealloc + 1
-                   CurrentWait(nAwaitDealloc) = 2
-                ELSE
-                   useCalpha3 = .FALSE.; useCalpha2=.TRUE.
-                   nAwaitDealloc = nAwaitDealloc + 1
-                   CurrentWait(nAwaitDealloc) = 3
-                ENDIF
-             ELSE
-                !I can deallocate directly since I did not ISEND these 
-                IF(useCalpha2)THEN                
-                   call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
-                   call mem_dealloc(Calpha2)              
-                   nullify(Calpha2)  
-                ELSE
-                   call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
-                   call mem_dealloc(Calpha3)
-                   nullify(Calpha3)
-                ENDIF
-             ENDIF
-          ENDIF
-       ENDDO
-       IF(nAwaitDealloc.NE.0)THEN
-          do iAwaitDealloc=1,nAwaitDealloc
-             IF(CurrentWait(iAwaitDealloc).EQ.2)THEN
-                IF(RoundRobin2)THEN       
-                   CALL LS_GETTIM(CPU1,WALL1)
-                   call MPI_WAIT(request6,lsmpi_status,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-                ENDIF
-                call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
-                call mem_dealloc(Calpha2)
-                nullify(Calpha2)                
-             ELSEIF(CurrentWait(iAwaitDealloc).EQ.3)THEN
-                IF(RoundRobin3)THEN       
-                   CALL LS_GETTIM(CPU1,WALL1)
-                   call MPI_WAIT(request8,lsmpi_status,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-                ENDIF
-                call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
-                call mem_dealloc(Calpha3)
-                nullify(Calpha3)                
+             !The barrier is mostly here to detect the time spent 
+             !waiting vs the time spent in communication. 
+             CALL LS_GETTIM(CPU1,WALL1)
+             call lsmpi_barrier(comm)
+             CALL LS_GETTIM(CPU2,WALL2)
+             CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+             WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+             !Reduce A,B
+             call lsmpi_reduction(Amat,nvirt,nvirt,infpar%master,comm)
+             call lsmpi_reduction(Bmat,nvirt,nvirt,infpar%master,comm)
+             CALL LS_GETTIM(CPU1,WALL1)
+             CPU_MPICOMM = CPU_MPICOMM + (CPU1-CPU2)
+             WALL_MPICOMM = WALL_MPICOMM + (WALL1-WALL2)             
+             IF(master)THEN
+                call RIMP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
              ENDIF
           enddo
-       ENDIF
-       IF(MynauxMPI.GT.0)THEN
-          CALL LS_GETTIM(CPU1,WALL1)
-          call MPI_WAIT(request2,lsmpi_status,ierr)
-          CALL LS_GETTIM(CPU2,WALL2)
-          CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-          WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-          call mem_leaktool_dealloc(Calpha,LT_Calpha)
-          call mem_dealloc(Calpha)              
-       ENDIF
+          !Restart 
+          restart_lun = -1  !initialization
+          call lsopen(restart_lun,'FULLRIMP2.restart','UNKNOWN','FORMATTED')
+          rewind restart_lun
+          write(restart_lun,'(I9)') J
+          write(restart_lun,'(F28.16)') rimp2_energy
+          call lsclose(restart_lun,'KEEP')
+       enddo
+       call mem_dealloc(Amat)
+       call mem_dealloc(Bmat)
        call mem_dealloc(nbasisauxMPI)
        call mem_dealloc(startAuxMPI)
        call mem_dealloc(nAtomsMPI)
        call mem_dealloc(nAuxMPI)
+       IF(MynauxMPI.GT.0)THEN 
+          call mem_leaktool_dealloc(Calpha,LT_Calpha)
+          call mem_dealloc(Calpha)              
+       ENDIF
 #endif
     ELSE
        !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
@@ -1639,20 +1531,6 @@ contains
        call mem_dealloc(Calpha)              
     ENDIF
     CALL LSTIMER('RIMP2: EnergyCont ',TS2,TE2,LUPRI,FORCEPRINT)
-#ifdef VAR_MPI
-    !The barrier is mostly here to detect the time spent waiting vs the 
-    !time spent in communication. 
-    CALL LS_GETTIM(CPU1,WALL1)
-    call lsmpi_barrier(comm)
-    CALL LS_GETTIM(CPU2,WALL2)
-    CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-    WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-    CALL LS_GETTIM(CPU1,WALL1)
-    call lsmpi_reduction(rimp2_energy,infpar%master,comm)
-    CALL LS_GETTIM(CPU2,WALL2)
-    CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-    WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-#endif    
     call mem_leaktool_dealloc(EpsOcc,LT_Eps)
     call mem_dealloc(EpsOcc)
     call mem_leaktool_dealloc(EpsVirt,LT_Eps)
@@ -1674,6 +1552,66 @@ contains
 #endif    
     write(lupri,*) ' '
   end subroutine full_canonical_rimp2
+
+  subroutine CalcAmat(nocc,nvirt,NBA,Calpha,Amat,I,J)
+    implicit none
+    integer,intent(in) :: nocc,nvirt,NBA,I,J
+    real(realk),intent(in) :: Calpha(NBA,nvirt,nocc)
+    real(realk),intent(inout) :: Amat(nvirt,nvirt)
+    !
+    integer :: A,B,ALPHA
+    real(realk) :: TMP
+    !permutational symmetry
+    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
+    !$OMP PRIVATE(B,A,ALPHA,TMP) SHARED(nocc,nvirt,NBA,Calpha,Amat,I,J)
+    do B=1,nvirt        
+       do A=1,nvirt      
+          TMP = 0.0E0_realk
+          DO ALPHA = 1,NBA
+             TMP = TMP + Calpha(ALPHA,A,I)*Calpha(ALPHA,B,J)
+          ENDDO
+          Amat(A,B) = TMP
+       enddo
+    enddo
+    !$OMP END PARALLEL DO
+  end subroutine CalcAmat
+
+  subroutine CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
+    implicit none
+    integer,intent(in) :: nvirt
+    real(realk),intent(in) :: EpsIJ,Amat(nvirt,nvirt),EpsVirt(nvirt)
+    real(realk),intent(inout) :: Bmat(nvirt,nvirt)
+    !
+    integer :: A,B
+    !permutational symmetry ?
+    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
+    !$OMP PRIVATE(B,A) SHARED(nvirt,Amat,Bmat,epsIJ,EpsVirt)
+    do B=1,nvirt        
+       do A=1,nvirt
+          Bmat(A,B) = (2.0E0_realk*Amat(A,B) - Amat(B,A))/(epsIJ-EpsVirt(A)-EpsVirt(B))
+       enddo
+    enddo
+    !$OMP END PARALLEL DO
+  end subroutine CalcBmat
+
+  subroutine RIMP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
+    implicit none
+    integer,intent(in) :: nvirt
+    real(realk),intent(in) :: Amat(nvirt*nvirt),Bmat(nvirt*nvirt)
+    real(realk),intent(inout) :: rimp2_energy
+    !
+    integer :: A
+    real(realk) :: TMP
+
+    TMP = 0.0E0_realk
+    !$OMP PARALLEL DO DEFAULT(NONE) &
+    !$OMP PRIVATE(A) REDUCTION(+:TMP) SHARED(nvirt,Amat,Bmat)
+    DO A=1,nvirt*nvirt
+       TMP = TMP + Amat(A)*Bmat(A)      
+    ENDDO
+    !$OMP END PARALLEL DO
+    rimp2_energy = rimp2_energy + TMP
+  end subroutine RIMP2_EnergyContribution
 
 ! Calculate canonical MP2 energy
 subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,rimp2_energy)
@@ -1767,22 +1705,75 @@ subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
   real(realk),intent(inout) :: rimp2_energy
   !
   integer :: J,B,A,I,ALPHA
-  real(realk) :: eps,gmoAIBJ,gmoBIAJ,TMP,epsIJB,gmoAIBJ2
+  real(realk) :: eps,gmoAIBJ,gmoBIAJ,TMP,epsIJB,gmoAIBJ2,gmoBIAJ2
   Tmp = 0.0E0_realk
-  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) &
-  !$OMP PRIVATE(J,B,A,I,eps,gmoAIBJ,gmoBIAJ,epsIJB,gmoAIBJ2,ALPHA) &
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
+  !$OMP PRIVATE(J,B,A,I,eps,gmoAIBJ,gmoBIAJ,epsIJB,gmoAIBJ2,ALPHA,gmoBIAJ2) &
   !$OMP REDUCTION(+:TMP) &
   !$OMP SHARED(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,NBA2,Calpha2)
   do J=1,nocc
      do B=1,nvirt
-        do I=1,nocc
+        epsIJB = EpsOcc(J) + EpsOcc(J) - EpsVirt(B)
+        !================================================================
+        ! I = J, A = B       
+        !================================================================
+        ! Difference in orbital energies: eps(I)+eps(J)-eps(A)-eps(B)
+        eps = epsIJB - EpsVirt(B)
+        gmoAIBJ2 = 0.0E0_realk
+        DO ALPHA = 1,NBA2
+           gmoAIBJ2 = gmoAIBJ2 + Calpha2(ALPHA,B,J)*Calpha2(ALPHA,B,J)
+        ENDDO
+        gmoAIBJ = 0.0E0_realk
+        DO ALPHA = 1,NBA
+           gmoAIBJ = gmoAIBJ + Calpha(ALPHA,B,J)*Calpha(ALPHA,B,J)
+        ENDDO
+        !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+        Tmp = Tmp + gmoAIBJ2*gmoAIBJ/eps
+        !================================================================
+        ! I = J, A > B       
+        !================================================================
+        do A=B+1,nvirt
+           ! Difference in orbital energies: eps(I)+eps(J)-eps(A)-eps(B)
+           eps = epsIJB - EpsVirt(A)
+           gmoAIBJ2 = 0.0E0_realk
+           DO ALPHA = 1,NBA2
+              gmoAIBJ2 = gmoAIBJ2 + Calpha2(ALPHA,A,J)*Calpha2(ALPHA,B,J)
+           ENDDO
+           gmoAIBJ = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              gmoAIBJ = gmoAIBJ + Calpha(ALPHA,A,J)*Calpha(ALPHA,B,J)
+           ENDDO
+           !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+           Tmp = Tmp + 2.0E0_realk*gmoAIBJ2*gmoAIBJ/eps
+        end do
+        !================================================================
+        ! I > J, A = B       
+        !================================================================
+        do I=J+1,nocc
            epsIJB = EpsOcc(I) + EpsOcc(J) - EpsVirt(B)
-           do A=1,nvirt
+           ! Difference in orbital energies: eps(I)+eps(J)-eps(A)-eps(B)
+           eps = epsIJB - EpsVirt(B)
+           gmoAIBJ2 = 0.0E0_realk
+           DO ALPHA = 1,NBA2
+              gmoAIBJ2 = gmoAIBJ2 + Calpha2(ALPHA,B,I)*Calpha2(ALPHA,B,J)
+           ENDDO
+           gmoAIBJ = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              gmoAIBJ = gmoAIBJ + Calpha(ALPHA,B,I)*Calpha(ALPHA,B,J)
+           ENDDO
+           !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+           Tmp = Tmp + 2.0E0_realk*gmoAIBJ2*gmoAIBJ/eps
+           !================================================================
+           ! I > J, A > B       
+           !================================================================
+           do A=B+1,nvirt
               ! Difference in orbital energies: eps(I)+eps(J)-eps(A)-eps(B)
               eps = epsIJB - EpsVirt(A)
               gmoAIBJ2 = 0.0E0_realk
+              gmoBIAJ2 = 0.0E0_realk
               DO ALPHA = 1,NBA2
                  gmoAIBJ2 = gmoAIBJ2 + Calpha2(ALPHA,A,I)*Calpha2(ALPHA,B,J)
+                 gmoBIAJ2 = gmoBIAJ2 + Calpha2(ALPHA,B,I)*Calpha2(ALPHA,A,J)
               ENDDO
               gmoAIBJ = 0.0E0_realk
               gmoBIAJ = 0.0E0_realk                   
@@ -1791,7 +1782,8 @@ subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
                  gmoBIAJ = gmoBIAJ + Calpha(ALPHA,B,I)*Calpha(ALPHA,A,J)
               ENDDO
               !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
-              Tmp = Tmp + gmoAIBJ2*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+              Tmp = Tmp + 2.0E0_realk*gmoAIBJ2*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+              Tmp = Tmp + 2.0E0_realk*gmoBIAJ2*(2E0_realk*gmoBIAJ-gmoAIBJ)/eps
            end do
         end do
      end do
@@ -1799,7 +1791,6 @@ subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
   !$OMP END PARALLEL DO
   rimp2_energy = rimp2_energy + Tmp
 end subroutine RIMP2_CalcEnergyContribution
-
 #ifdef MOD_UNRELEASED
   subroutine submp2f12_EBX(mp2f12_EBX,Bijij,Bjiij,Xijij,Xjiij,Fii,nocc)
     implicit none

@@ -12,7 +12,7 @@ all: libIchorIntegrals.a
 #FMMDIR      = mm
 ##
 ##
-#CPPFLAGS      = -DVAR_ICHOR -DVAR_OPENACC -DVAR_CRAY
+#CPPFLAGS      = -DVAR_OPENACC -DVAR_CRAY
 #F90            = ftn
 #FLNK           = ftn
 #RM             = rm -f
@@ -29,7 +29,7 @@ all: libIchorIntegrals.a
 #FMMDIR      = mm
 #
 #
-#CPPFLAGS      = -DVAR_ICHOR
+#CPPFLAGS      = 
 #F90            = ifort
 #FLNK           = ifort
 #RM             = rm -f
@@ -46,7 +46,7 @@ all: libIchorIntegrals.a
 #FMMDIR      = mm
 #
 #
-#CPPFLAGS      = -DVAR_ICHOR -DVAR_OMP -DVAR_OPENACC -DVAR_PGF90
+#CPPFLAGS      = -DVAR_OMP -DVAR_OPENACC -DVAR_PGF90
 #F90            = pgf90
 #FLNK           = pgf90
 #RM             = rm -f

@@ -185,7 +185,6 @@ contains
     !> can be the case for subsystems)
     integer,intent(in),optional :: nMO
     real(realk) :: memory_use, tcpu, twall
-    integer :: nMOintern
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -199,13 +198,13 @@ contains
 
     ! Number of MOs can be different from nbasis if specified by input
     if(present(nMO)) then
-       nMOintern = nMO
+       molecule%nMO=nMO
     else
-       nMOintern = molecule%nbasis
+       molecule%nMO = molecule%nbasis
     end if
 
     molecule%nocc = molecule%nelectrons/2
-    molecule%nunocc = nMOintern - molecule%nocc
+    molecule%nunocc = molecule%nMO - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
     molecule%nCabsAO = 0
@@ -244,7 +243,7 @@ contains
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    if(nMOintern /= molecule%nbasis) then ! subsystem
+    if(molecule%nMO /= molecule%nbasis) then ! subsystem
 
        write(DECinfo%output,'(/,a)') '-- Subsystem info --'
        write(DECinfo%output,'(/,a,i6)') 'SUB: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
@@ -532,7 +531,11 @@ contains
 
     ! Get orbitals
     call mem_alloc(C,nbasis,nbasis)
-    call dec_read_mat_from_file('lcm_orbitals.u',nbasis,nbasis,C)
+    IF(DECinfo%use_canonical)THEN
+       call dec_read_mat_from_file('cmo_orbitals.u',nbasis,nbasis,C)       
+    ELSE
+       call dec_read_mat_from_file('lcm_orbitals.u',nbasis,nbasis,C)
+    ENDIF
     call molecule_generate_basis(molecule,C)
     call mem_dealloc(C)
 
@@ -862,7 +865,7 @@ contains
     type(fullmolecule), intent(inout) :: molecule
     type(lsitem), intent(inout) :: mylsitem
     integer :: natoms,r,i,iset,itype,basis,icharge,nbasis,iOrbitalIndex
-    integer :: kmult,nAngmom,ang,norb,j,k
+    integer :: kmult,nAngmom,ang,norb,j,k,nCont,iOrbitalIndexSave
     logical :: status_info
 
     natoms = molecule%natoms
@@ -921,13 +924,20 @@ contains
 
        nAngmom = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%nAngmom
        kmult = 1
+       iOrbitalIndexSave = iOrbitalIndex
+       nCont = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%ToTnorb
        do ang = 0,nAngmom-1
           norb = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%SHELL(ang+1)%norb
           IF(kmult.EQ.1)THEN
              !Include all S orbitals if one S orbital is included  
              do j = 1, norb
-                molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndex+1
-                molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndex+norb
+                if(DECinfo%AtomicExtent)then
+                   molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndexSave+1
+                   molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndexSave+nCont
+                else
+                   molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndex+1
+                   molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndex+norb
+                endif
              enddo
              iOrbitalIndex = iOrbitalIndex + norb
              kmult = kmult + 2
@@ -935,8 +945,13 @@ contains
              do j = 1, norb
                 !Include all Orbital Components of a given function (For P include Px,Py,Pz)
                 do k=1,kmult
-                   molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndex+1
-                   molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndex+kmult
+                   if(DECinfo%AtomicExtent)then
+                      molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndexSave+1
+                      molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndexSave+nCont
+                   else
+                      molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndex+1
+                      molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndex+kmult
+                   endif
                 enddo
                 iOrbitalIndex = iOrbitalIndex + kmult
              enddo

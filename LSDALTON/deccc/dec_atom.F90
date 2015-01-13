@@ -2001,12 +2001,24 @@ contains
     ! Quick fix such that lsitem is never constructed for global master
     ! as this will destroy the overall MPI framework.
     if(infpar%mynum/=infpar%master) then
-       call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
-            & fragment%natoms,fragment%basis_idx,fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
+       IF(DECinfo%AtomicExtent)THEN
+          call build_AtomSpecfragmentlsitem(mylsitem,fragment%mylsitem,&
+               & fragment%atoms_idx,fragment%natoms,DECinfo%output,DECinfo%output)
+       ELSE
+          call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,&
+               & fragment%atoms_idx,fragment%natoms,fragment%basis_idx,&
+               & fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
+       ENDIF
     endif
 #else
-    call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,fragment%atoms_idx,&
-         & fragment%natoms,fragment%basis_idx,fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
+    IF(DECinfo%AtomicExtent)THEN
+       call build_AtomSpecfragmentlsitem(mylsitem,fragment%mylsitem,&
+            & fragment%atoms_idx,fragment%natoms,DECinfo%output,DECinfo%output)
+    ELSE
+       call build_ccfragmentlsitem(mylsitem,fragment%mylsitem,&
+            & fragment%atoms_idx,fragment%natoms,fragment%basis_idx,&
+            & fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
+    ENDIF
 #endif
 
     !Build F12 Cabs and Ri for a fragment
