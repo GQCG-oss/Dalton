@@ -288,6 +288,16 @@ MODULE scf_stats
             WRITE(opt%LUPRI,'("      SCF has failed to converge in ",i3," iterations")') stat_current_iteration
          ELSE
             WRITE(opt%LUPRI,'("      SCF has failed to converge in ",i3," iterations")') stat_current_iteration
+            IF(opt%optlevel.EQ.2)THEN
+               ! The SCF failed to converge at the second level in the Trilevel scheme. 
+               ! move dens.restart file to vdens.restart, otherwise the restart option 
+               ! will not work
+#ifdef SYS_AIX
+               call rename('dens.restart\0','vdens.restart\0')
+#else
+               call rename('dens.restart','vdens.restart')
+#endif
+            ENDIF
             CALL lsQUIT('Computation terminated - convergence NOT obtained!!!!',opt%lupri)
          ENDIF
       endif
