@@ -2289,7 +2289,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   integer(kind=long),intent(in) :: maxsize
   !
   integer(kind=long)         :: nsize
-  Integer                    :: nAtoms,nBastAux,nBast,N,K,M,ialpha,v,a
+  Integer                    :: nAtoms,nAtomsAux,nBastAux,nBast,N,K,M,ialpha,v,a
   Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
   Integer                    :: ALPHA,BETA,I
   Real(realk) :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp,TMP1
@@ -2298,7 +2298,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   TYPE(MoleculeInfo),pointer      :: ATOMS(:)
   TYPE(MOLECULARORBITALINFO) :: orbitalInfo
   Integer :: iAtomA,nAuxA,B
-  integer :: J,mynum2,startF,iatomampi,MynbasisAuxMPI
+  integer :: J,mynum2,startF,iatomampi,MynbasisAuxMPI,nBastAuxT
   logical :: doMPI,MasterWakeSlaves
   integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
   !
@@ -2323,7 +2323,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   IF((numnodes.EQ.1.AND.maxsize.GT.nsize).AND.&
        & (.NOT.setting%scheme%ForceRIMP2memReduced))THEN     
      !serial version
-     call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
+     call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtomsAux,nBast,nBastAux) !Aux
+     call getMolecularDimensions(SETTING%MOLECULE(3)%p,nAtoms,nBast,nBastAuxT)!Reg 
      IF(nbasis.NE.nBast)THEN
         print*,'nbasis',nbasis
         print*,'nbast',nbast
@@ -2391,17 +2392,18 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      !     print*,'MEMORY OPTIMIZED VERSION'
      !     WRITE(lupri,*)'MEMORY OPTIMIZED VERSION'
      !MEMORY OPTIMIZED VERSION
-     call getMolecularDimensions(molecule1,nAtoms,nBast,nBastAux)
-     allocate(ATOMS(nAtoms))
-     CALL pari_set_atomic_fragments(molecule1,ATOMS,nAtoms,lupri)
+     call getMolecularDimensions(molecule1,nAtomsAux,nBast,nBastAux) !Aux
+     call getMolecularDimensions(molecule3,nAtoms,nBast,nBastAuxT)!Reg 
+     allocate(ATOMS(nAtomsAux))
+     CALL pari_set_atomic_fragments(molecule1,ATOMS,nAtomsAux,lupri)
 
      ! Split only on of the atomic loops over nodes
      call mem_alloc(nbasisAuxMPI,numnodes)
      call mem_alloc(nAtomsMPI,numnodes)    
-     call mem_alloc(startAuxMPI,nAtoms,numnodes)
-     call mem_alloc(AtomsMPI,nAtoms,numnodes)
-     call mem_alloc(nAuxMPI,nAtoms,numnodes)
-     call getRIbasisMPI(molecule1,nAtoms,numnodes,nbasisAuxMPI,startAuxMPI,&
+     call mem_alloc(startAuxMPI,nAtomsAux,numnodes)
+     call mem_alloc(AtomsMPI,nAtomsAux,numnodes)
+     call mem_alloc(nAuxMPI,nAtomsAux,numnodes)
+     call getRIbasisMPI(molecule1,nAtomsAux,numnodes,nbasisAuxMPI,startAuxMPI,&
           & AtomsMPI,nAtomsMPI,nAuxMPI)
      call mem_dealloc(startAuxMPI)
      MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
@@ -2472,7 +2474,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
            ENDIF
         ENDDO
         call typedef_setMolecules(setting,molecule1,1,2,3,4)
-        call pari_free_atomic_fragments(ATOMS,nAtoms)
+        call pari_free_atomic_fragments(ATOMS,nAtomsAux)
         deallocate(ATOMS)
      ENDIF
      call mem_dealloc(AtomsMPI)

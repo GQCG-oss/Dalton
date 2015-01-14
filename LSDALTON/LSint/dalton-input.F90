@@ -164,8 +164,10 @@ LUCME=-1
 intinp%nfock = 0 !number of fock matrices calculated
 
 NULLIFY(intinp%MOLECULE)
+NULLIFY(intinp%AUXMOLECULE)
 NULLIFY(intinp%BASIS)
 ALLOCATE(intinp%MOLECULE)
+ALLOCATE(intinp%AUXMOLECULE)
 ALLOCATE(intinp%BASIS)
 call nullifyMainBasis(intinp%BASIS)
 
@@ -317,6 +319,7 @@ DO ibas=1,nBasisBasParam
    ENDIF
 ENDDO
 DEALLOCATE(intinp%MOLECULE)
+DEALLOCATE(intinp%AUXMOLECULE)
 DEALLOCATE(intinp%BASIS)
 call io_free(intinp%io)
 
@@ -714,7 +717,7 @@ logical :: WhichAos(NBASISFULL),ContainOrb,WhichAtoms(nAtomsFull)
 integer :: iB,r,iOrbitalIndex,i,icharge,itype,MaxnOrb,nangmom,kmult,iAngNew,ang
 integer :: nOrb,iOrbNew,nBASINFOARRAY,itypeOld,iOrb,iK,unique,iAtom,ik1,ik2
 integer :: iOrbitalIndexSS
-integer,pointer :: newType(:)
+integer,pointer :: newType(:),FullAtomList(:)
 call mem_alloc(newType,natoms)
 WhichAos = .FALSE.
 DO I=1,NBASIS
@@ -824,14 +827,32 @@ ALLOCATE(FRAGMENT%INPUT%MOLECULE)
 CALL BUILD_FRAGMENT2(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
      & fragment%input%BASIS,ATOMS,nATOMS,LUPRI)
 
+call mem_alloc(FullAtomList,natomsfull)
+do I=1,natomsfull
+   FullAtomList(I) = I
+enddo
+NULLIFY(FRAGMENT%INPUT%AUXMOLECULE)
+ALLOCATE(FRAGMENT%INPUT%AUXMOLECULE)
+CALL BUILD_FRAGMENT2(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
+     & fragment%input%BASIS,FullAtomList,natomsfull,LUPRI)
+call mem_dealloc(FullAtomList)
+
 DO i=1,natoms
    fragment%input%molecule%atom(i)%idtype(RegBasParam) = newType(i)
 ENDDO
 call mem_dealloc(newType)
 
+call DETERMINE_FRAGMENTNBAST(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
+     & fragment%input%BASIS,LUPRI)
 call DETERMINE_FRAGMENTNBAST(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
      & fragment%input%BASIS,LUPRI)
 
+do iB=nBasisBasParam,1,-1
+   IF(lsfull%INPUT%BASIS%WBASIS(IB))THEN
+      CALL DETERMINE_NBAST(FRAGMENT%INPUT%AUXMOLECULE,FRAGMENT%INPUT%BASIS%BINFO(iB),&
+           & FRAGMENT%input%dalton%DoSpherical,.FALSE.)
+   ENDIF
+enddo
 do iB=nBasisBasParam,1,-1
    IF(lsfull%INPUT%BASIS%WBASIS(IB))THEN
       CALL DETERMINE_NBAST(FRAGMENT%INPUT%MOLECULE,FRAGMENT%INPUT%BASIS%BINFO(iB),&

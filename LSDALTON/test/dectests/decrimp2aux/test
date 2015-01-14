@@ -27,6 +27,6 @@ f.add(string = 'Allocated memory (TOTAL)')
 f.add(string = 'Memory in use for array4',
       rel_tolerance = 1.0e-9)
 
-test.run(['decmp2_RI.dal'], ['CO2H2.mol'], {'out': f})
+test.run(['decrimp2aux.dal'], ['StrangeString.mol'], {'out': f})
 
 sys.exit(test.return_code)
