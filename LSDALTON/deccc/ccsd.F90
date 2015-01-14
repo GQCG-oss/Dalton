@@ -1714,7 +1714,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         lg         = dimGamma
 
         !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
-        scheme=1 !``DIL: remove
+        !scheme=1 !``DIL: remove
         if(scheme==1) then !`DIL: Tensor contraction 1
 #ifdef VAR_MPI
          call time_start_phase(PHASE_COMM, at = time_intloop_work )
@@ -1782,7 +1782,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
         !u [gamma c i j ] -> u [i gamma c j]
         if(scheme/=1) call array_reorder_4d(1.0E0_realk,w1%d,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj%d)
-        scheme=2 !``DIL: remove
+        !scheme=2 !``DIL: remove
 
 
         alphaB=0
@@ -1898,7 +1898,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call dgemm('n','n',la*no2,nv,lg,1.0E0_realk,w2%d,la*no2,yv(fg),nb,0.0E0_realk,w3%d,la*no2) !`DIL: w2,w3 in use
               call lsmpi_poke()
               !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
-              scheme=1 !``DIL: remove
+              !scheme=1 !``DIL: remove
               if(scheme==4)then
                  call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,1.0E0_realk,gvvooa%elm1,nv)
               elseif(scheme==3.or.scheme==2)then
@@ -1944,7 +1944,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
               endif
               if(scheme/=1) call lsmpi_poke()
-              scheme=2 !``DIL: remove
+              !scheme=2 !``DIL: remove
            endif
 
            ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
@@ -1964,7 +1964,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call lsmpi_poke()
 
               !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
-              scheme=1 !``DIL: remove
+              !scheme=1 !``DIL: remove
               if(scheme==4)then
 
                  call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,1.0E0_realk,gvoova%elm1,nv)
@@ -2011,7 +2011,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
               endif
               if(scheme/=1) call lsmpi_poke()
-              scheme=2 !``DIL: remove
+              !scheme=2 !``DIL: remove
            endif
 
            call time_start_phase(PHASE_WORK, at = time_intloop_work)
@@ -2078,7 +2078,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la) !`DIL: w2,w0 in use
            call lsmpi_poke()
            if( Ccmodel > MODEL_CC2 )then
-              scheme=1 !``DIL: remove
+              !scheme=1 !``DIL: remove
               select case(scheme)
               case(4,3)
                  ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
@@ -2137,7 +2137,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Tens contr failed!',-1)
 #endif
               end select
-              scheme=2 !``DIL: remove
+              !scheme=2 !``DIL: remove
            endif
            if(scheme/=1) call lsmpi_poke()
 
@@ -2150,7 +2150,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call lsmpi_poke()
 
            ! Omega += Lambda^p[alpha a]^T (w3%d):I[b i j alpha]^T
-           scheme=1 !``DIL: remove
+           !scheme=1 !``DIL: remove
            if(scheme==2)then
 #ifdef VAR_MPI
               call time_start_phase(PHASE_COMM, at = time_intloop_work )
@@ -2196,8 +2196,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            else !scheme 3,4,0
               call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,1.0E0_realk,omega2%elm1,nv)
            endif
-           flush(DIL_CONS_OUT) !``DIL: remove
-           scheme=2 !``DIL: remove
+           !flush(DIL_CONS_OUT) !``DIL: remove
+           !scheme=2 !``DIL: remove
            if(scheme/=1) call lsmpi_poke()
 
 
@@ -2793,7 +2793,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
 
 #ifdef DIL_DEBUG_ON
-!     if(DIL_DEBUG) call dil_debug_to_file_finish() !`DIL
+     if(DIL_DEBUG) call dil_debug_to_file_finish() !`DIL
 #endif
 
      if(print_debug)then
