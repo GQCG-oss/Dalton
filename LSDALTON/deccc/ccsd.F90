@@ -2025,7 +2025,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
               
               call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
-                   & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
+                   & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),& !`DIL: w1 in use
                    & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,&
                    & INTSPEC,fullRHS,DECinfo%IntegralThreshold)
            ENDIF
