@@ -877,7 +877,7 @@ contains
 
     MP2gradientCalculation: if(DECinfo%first_order) then
 
-       if(DECinfo%full_molecular_cc) then
+       if(DECinfo%full_molecular_cc.and.DECinfo%ccmodel==MODEL_MP2) then
           call lsquit('Full calculation for MP2 gradient is implemented via the &
                & .SimulateFull keyword', DECinfo%output)
        end if

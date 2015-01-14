@@ -432,16 +432,17 @@ contains
           iMOL=MyFragment%occEOSidx(iEOS) 
           aMOL=MyFragment%unoccEOSidx(aEOS) 
 
-          dai%val(aMOL,iMOL) = m1%elm2(aAOS,iAOS)
+          !dai%val(aMOL,iMOL) = m1%elm2(aAOS,iAOS)
           !print*, iEOS, 'iEOS'
           !print*, aEOS, 'aEOS'
           !print*, m1%elm2(aAOS,iAOS), 'aEOS'
+          grad%dens%Phivo(aAOS,iAOS) = m1%elm2(aAOS,iAOS)
 
        end do
     end do
 
     !fill in the grad structure 
-    grad%dens%rho((noAOS+1):grad%dens%nbasis,1:noAOS) = dai%val(1:nvAOS,1:noAOS)
+    !grad%dens%rho((noAOS+1):grad%dens%nbasis,1:noAOS) = dai%val(1:nvAOS,1:noAOS)
  
     print *, "Debug print 2 "
     !print debug info if needed
@@ -452,7 +453,7 @@ contains
        print *,no,nv
        call print_matrix(dai)
        print *,
-       call print_matrix_real(grad%dens%rho,no+nv,no+nv)
+       call print_matrix_real(grad%dens%Phivo,nv,no)
        print *,
     endif
 
@@ -481,9 +482,13 @@ contains
            !do bEOS=1,nvEOS
            !   bAOS=MyFragment%idxu(bEOS)
 
-              grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no) + m1%elm2(bAOS,jAOS)*&
+              grad%dens%Phiov(iAOS,aAOS) = grad%dens%Phiov(iAOS,aAOS) + m1%elm2(bAOS,jAOS)*&
                                     &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
                                     & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
+ 
+              !grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no) + m1%elm2(bAOS,jAOS)*&
+              !                      &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
+              !                      & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
 
              !dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bAOS,jAOS)*&
              !                       &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
@@ -493,40 +498,74 @@ contains
       end do
     end do 
 
-!    do iEOS=1,noEOS
-!       iMOL=MyFragment%occEOSidx(iEOS)
-!       
-!      do aEOS=1,noEOS
-!         aMOL=MyFragment%unoccEOSidx(aEOS)
-!         aAOS=MyFragment%idxu(aEOS)
-!            
-!         do jEOS=1,noEOS
-!            jAOS=MyFragment%idxo(jEOS)
-!            
-!           do bAOS=1,noAOS
-!             
-!             dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bAOS,jAOS)*&
-!                                    &(2.0*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
-!                                    & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
-!           end do
-!         end do
-!      end do
-!    end do 
+ !   do iEOS=1,noEOS
+ !      iMOL=MyFragment%occEOSidx(iEOS)
+ !      iAOS=MyFragment%idxo(iEOS)
+ !
+ !     do aEOS=1,nvEOS
+ !        aMOL=MyFragment%unoccEOSidx(aEOS)
+ !        aAOS=MyFragment%idxu(aEOS)
+ !
+ !        do jEOS=1,noEOS
+ !           jAOS=MyFragment%idxo(jEOS)
+ !
+ !          !do bAOS=1,nvAOS
+ !          do bEOS=1,nvEOS
+ !             bAOS=MyFragment%idxu(bEOS)
+ !
+ !             grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no) + m1%elm2(bAOS,jAOS)*&
+ !                                   &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
+ !                                   & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
+ !            
+ !            !dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bAOS,jAOS)*&
+ !            !                       &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
+ !            !                       & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
+ !          end do
+ !        end do
+ !     end do
+ !   end do
 
-!    do iEOS=1,noEOS
-!      iMOL=MyFragment%occEOSidx(iEOS)
-!      do jEOS=1,noEOS
-!        jAOS=MyFragment%idxo(jEOS)
-!        do aEOS=1,noAOS
-!          aMOL=MyFragment%unoccEOSidx(aEOS)
-!          do bEOS=1,noAOS
-!            dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bEOS,jAOS)*&
-!                                    &(2.0*t2virt%elm4(aEOS,iEOS,bEOS,jEOS)&
-!                                    & - t2virt%elm4(bEOS,iEOS,aEOS,jEOS))
-!            end do
-!         end do
-!      end do
-!    end do
+ !   do iEOS=1,noEOS
+ !      iMOL=MyFragment%occEOSidx(iEOS)
+ !      
+ !     do aEOS=1,noEOS
+ !        aMOL=MyFragment%unoccEOSidx(aEOS)
+ !        aAOS=MyFragment%idxu(aEOS)
+ !           
+ !        do jEOS=1,noEOS
+ !           jAOS=MyFragment%idxo(jEOS)
+ !           
+ !          do bAOS=1,noAOS
+ !
+ !             grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no) + m1%elm2(bAOS,jAOS)*&
+ !                                   &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
+ !                                   & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
+ !            
+!!             dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bAOS,jAOS)*&
+!!                                    &(2.0*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
+!!                                    & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
+ !          end do
+ !        end do
+ !     end do
+ !   end do 
+ 
+ !   do iEOS=1,noEOS
+ !     iMOL=MyFragment%occEOSidx(iEOS)
+ !     do jEOS=1,noEOS
+ !       jAOS=MyFragment%idxo(jEOS)
+ !       do aEOS=1,noAOS
+ !         aMOL=MyFragment%unoccEOSidx(aEOS)
+ !         do bEOS=1,noAOS
+ !             grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no) + m1%elm2(bEOS,jAOS)*&
+ !                                   &(2E0_realk*t2virt%elm4(aEOS,iEOS,bEOS,jEOS)&
+ !                                   & - t2virt%elm4(bEOS,iEOS,aEOS,jEOS))
+!!            dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bEOS,jAOS)*&
+!!                                    &(2.0*t2virt%elm4(aEOS,iEOS,bEOS,jEOS)&
+!!                                    & - t2virt%elm4(bEOS,iEOS,aEOS,jEOS))
+ !           end do
+ !        end do
+ !     end do
+ !   end do
 
     !transform into AO
     !call dec_diff_basis_transform2(grad%dens%nbasis,grad%dens%nocc,grad%dens%nunocc,MyFragment%Co,&
@@ -541,7 +580,7 @@ contains
        print *, "Debug print Dia occ-virt block: "
        call print_matrix(dia)
        print *,
-       call print_matrix_real(grad%dens%rho,no+nv,no+nv)
+       call print_matrix_real(grad%dens%Phiov,no,nv)
        print *,
     endif
 
@@ -1003,7 +1042,8 @@ contains
           iMOL=PairFragment%occEOSidx(iEOS) 
           aMOL=PairFragment%unoccEOSidx(aEOS) 
 
-          dai%val(aMOL,iMOL) = m1%elm2(aAOS,iAOS)
+          !dai%val(aMOL,iMOL) = m1%elm2(aAOS,iAOS)
+          grad%dens%Phivo(aAOS,iAOS) = m1%elm2(aAOS,iAOS)
 
         end if
 
@@ -1011,7 +1051,7 @@ contains
     end do
 
     !fill in the grad structure 
-    grad%dens%rho((noAOS+1):grad%dens%nbasis,1:noAOS) = dai%val(1:nvAOS,1:noAOS)
+    !grad%dens%rho((noAOS+1):grad%dens%nbasis,1:noAOS) = dai%val(1:nvAOS,1:noAOS)
  
     print *, "Debug print 2 "
     !print debug info if needed
@@ -1022,7 +1062,7 @@ contains
        print *,no,nv
        call print_matrix(dai)
        print *,
-       call print_matrix_real(grad%dens%rho,no+nv,no+nv)
+       call print_matrix_real(grad%dens%Phivo,nv,no)
        print *,
     endif
 
@@ -1056,9 +1096,16 @@ contains
                 if(dopair_occ(iEOS,jEOS)) then 
           
                 !print*, iMOL, aMOL, 'iMOL, aMOL'
-                grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no)  + m1%elm2(bAOS,jAOS)*&
+                grad%dens%Phiov(iAOS,aAOS) = grad%dens%Phiov(iAOS,aAOS)  + m1%elm2(bAOS,jAOS)*&
                                     &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
                                     & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
+
+                !grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no)  + m1%elm2(bAOS,jAOS)*&
+                !                    &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
+                !                    & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
+
+
+
                 !print*,grad%dens%rho(iMOL,aMOL+no) , 'rho'
                 !print*, bAOS, jAOS, 'bAOS, jAOS'
                 !print*,m1%elm2(bAOS,jAOS), 'm1'
@@ -4269,6 +4316,17 @@ print*, "ready to calculate the dipole moment"
   !     & Cvirt%val,dab%val,dabao%val) 
   call dec_simple_basis_transform2(nbasis,nvirt,&
        & MyMolecule%Cv,dab%val,dabao%val) 
+  
+  write(*, *) ''
+  write(*, *) 'Co basis'
+  k=1
+  do i=1,nocc
+    do j=1,nbasis
+      write(*,'(f16.10)',advance='no') MyMolecule%Co(j,i)
+      k=k+1
+    end do
+    write(*, *) ''
+  end do
 
   !call dec_diff_basis_transform2(nbasis,nocc,nvirt,Cocc%val,&
   !     & Cvirt%val,dia%val,diaao%val) 
@@ -4277,7 +4335,7 @@ print*, "ready to calculate the dipole moment"
 
   !call dec_diff_basis_transform2(nbasis,nocc,nvirt,Cvirt%val,&
   !     & Cocc%val,dai%val,daiao%val) 
-  call dec_diff_basis_transform2(nbasis,nocc,nvirt,MyMolecule%Cv,&
+  call dec_diff_basis_transform2(nbasis,nvirt,nocc,MyMolecule%Cv,&
        & MyMolecule%Co,dai%val,daiao%val) 
 
   DMP2AO = dijao+diaao+daiao+dabao
@@ -4313,7 +4371,8 @@ print*, "ready to calculate the dipole moment"
   ! *****************************************************************
   ! DMP2 = 2*DHF + rho  (the factor two is due to double occupation -> only for closed-shell)
   call mat_init(DMP2,nbasis,nbasis)
-  call mat_add(2E0_realk,DHF,1E0_realk,rho,DMP2)
+  DMP2 = rho
+  !call mat_add(2E0_realk,DHF,1E0_realk,rho,DMP2)
 
   ! Also calculate and print HF and MP2 electric dipole moments
   ! ***********************************************************
@@ -4466,7 +4525,19 @@ end subroutine get_CCSDgradient_main
     do i=1,3
        MP2dipole(i) = -MP2_el_dipole(i) + NucDipole(i)
     end do
-
+   
+    !print*, "dipole HF"
+    !do i=1,3
+    !   print*, HFdipole(i)
+    !end do
+    !print*, "dipole MP2"
+    !do i=1,3
+    !   print*, MP2dipole(i)
+    !end do
+    !print*, "dipole NUC"
+    !do i=1,3
+    !   print*, NucDipole(i)
+    !end do
 
 
     ! Free stuff
@@ -4731,15 +4802,37 @@ end subroutine get_CCSDgradient_main
     if( DECinfo%PL>2 )then
        print *,
        print *, "Ready to update off-diagonal terms:"
-       call print_matrix_real(fraggrad%dens%rho,fraggrad%dens%nbasis,fraggrad%dens%nbasis)
+       call print_matrix_real(fraggrad%dens%Phivo,fraggrad%dens%nunocc,fraggrad%dens%nocc)
+       print *,
+       call print_matrix_real(fraggrad%dens%Phiov,fraggrad%dens%nocc,fraggrad%dens%nunocc)
        print *,
     endif
 
-    do i=1,fraggrad%dens%nbasis
-      do j=1,fraggrad%dens%nbasis
-        fullgrad%rho(i,j) = fullgrad%rho(i,j)+fraggrad%dens%rho(i,j)
+    do i=1,fraggrad%dens%nocc
+      iFull = fragment%OccAOSidx(i)
+      do j=1,fraggrad%dens%nunocc
+        jFull = fragment%UnOccAOSidx(j)
+        fullgrad%rho(iFull,fullgrad%nocc+jFull) = &
+        fullgrad%rho(iFull,fullgrad%nocc+jFull) + &
+                                    &fraggrad%dens%Phiov(i,j)
       end do
     end do
+    do i=1,fraggrad%dens%nocc
+      iFull = fragment%OccAOSidx(i)
+      do j=1,fraggrad%dens%nunocc
+        jFull = fragment%UnOccAOSidx(j)
+        fullgrad%rho(fullgrad%nocc+jFull,iFull) = &
+        fullgrad%rho(fullgrad%nocc+jFull,iFull) + &
+                                    &fraggrad%dens%Phivo(j,i)
+      end do
+    end do
+
+    !do i=1,fraggrad%dens%nbasis
+    !  iFull = fragment%OccAOSidx(i)
+    !  do j=1,fraggrad%dens%nbasis
+    !    fullgrad%rho(i,j) = fullgrad%rho(i,j)+fraggrad%dens%rho(i,j)
+    !  end do
+    !end do
 
     !print debug info if needed
     if( DECinfo%PL>2 )then

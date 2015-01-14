@@ -352,7 +352,6 @@ contains
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
-       print*, "I AM HERE 111"
           !call z_vec_rhs_ccsd(MyFragment,eta,m1_arr=m1,m2_arr=m2,t1_arr=t1,t2_arr=t2)
           !call tensor_free(m2)
           !call tensor_free(m1)
