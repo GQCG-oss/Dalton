@@ -28,7 +28,7 @@
 !
 C /* Deck gdrv */
       SUBROUTINE GDRV(WORK,LWORK)
-#include "implicit.h"
+      IMPLICIT NONE
       INTEGER LWORK
       REAL*8 WORK(LWORK)
 #include "infdim.h"
@@ -45,7 +45,7 @@ C /* Deck gdrv */
 #include "gtensor.h"
       INTEGER KFREE, LFREE, LWRK1, KWRK1
       INTEGER KINDX, KCMO, KUDV, KPVX, KFOCK, KFC, KFV, KFCAC, KH2AC
-      INTEGER ISYM
+      INTEGER ISYM, KCREF, KTMP
 C
       CALL QENTER('GDRV')
 C
@@ -81,6 +81,9 @@ C
      *           WORK(KFV),WORK(KFCAC),WORK(KH2AC),WORK(KINDX),
      *           WORK(KWRK1),LWRK1)
 C
+      IF ( .NOT.TDHF ) THEN
+         CALL GETCIX(WORK(KINDX),IREFSY,IREFSY,WORK(KFREE),LFREE,0)
+      END IF
       IF (.NOT.TDHF .AND. .NOT.RSPCI) THEN
          CALL GETREF(WORK(KCREF),NCREF)
          CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WORK(KCREF),WORK(KCREF),

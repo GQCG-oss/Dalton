@@ -31,9 +31,9 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   TYPE(lsitem) , intent(inout) :: ls
   integer,       intent(in)    :: nocc
   integer,       intent(in)    :: m(2)
-  integer                      :: nvirt, nbas, ncore, nval
+  integer                      :: nvirt, nbas, ncore, nval, nMO
   real(realk) :: TIMSTR,TIMEND
-  type(matrix) :: SC,CSC,S
+  type(matrix) :: SC,CSC,S,unitmat
   logical :: ForcePrint
   
   ForcePrint =  .TRUE.
@@ -45,6 +45,7 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   nvirt=CMO%ncol - nocc
   nbas =CMO%nrow
   CFG%lupri = ls%lupri
+  nMO = CMO%ncol     ! make it possible to have nMO/=nbas for SNOOP
 
   !Compute OrbLoc%SU needed for localization
   if (CFG%PM) then
@@ -89,16 +90,18 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
 
   ! SANITY CHECK
   call mat_init(S,nbas,nbas)
-  call mat_init(SC,nbas,nbas)
-  call mat_init(CSC,nbas,nbas)
+  call mat_init(SC,nbas,nMO)
+  call mat_init(CSC,nMO,nMO)
+  call mat_init(unitmat,nMO,nMO)
   CALL II_get_overlap(ls%lupri,ls%luerr,ls%setting,S)
   call mat_mul(S,CMO,'n','n',1E0_realk,0E0_realk,SC)
   call mat_mul(CMO,SC,'T','n',1E0_realk,0E0_realk,CSC)
-  call mat_identity(SC)
-  call mat_daxpy(-1E0_realk,SC,CSC)
+  call mat_identity(unitmat)
+  call mat_daxpy(-1E0_realk,unitmat,CSC)
   IF(ABS(mat_sqnorm2(CSC)/CSC%nrow).GT.1.0E-15_realk)THEN
      write(ls%lupri,*) '  %LOC% WARNING: ORBITALS NOT ORTHONORMAL!!!' 
   ENDIF
+  call mat_free(unitmat)
   call mat_free(S)
   call mat_free(SC)
   call mat_free(CSC)

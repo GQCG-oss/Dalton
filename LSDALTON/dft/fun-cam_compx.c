@@ -152,7 +152,7 @@ cam_compx_read(const char *conf_line, real *hfweight)
     weights[0] = CamAlpha;
     weights[1] = CamBeta;
     weights[2] = CamMuFactor;
-    if(!parse_table("CAM-COMPX", conf_line,
+    if(!parse_table("CAMCOMPX", conf_line,
                     ELEMENTS(cam_keywords), cam_keywords, weights))
         return 0;
     if(weights[2]<=0) weights[2] = 1e-30;

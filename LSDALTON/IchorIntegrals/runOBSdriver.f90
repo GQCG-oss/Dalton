@@ -20,7 +20,8 @@ PROGRAM TUV
   integer :: nlmA,nlmB,nlmC,nlmD,angmomID,iseg,ILUMOD,I,nUniquenTUVs
   real(realk),pointer :: uniqeparam(:)
   character(len=15),pointer :: uniqeparamNAME(:)
-  character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=9) :: STRINGIN2,STRINGOUT2,TMPSTRING2
   character(len=4) :: SPEC
   character(len=3) :: ARCSTRING
   logical :: BUILD(0:2,0:2,0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE,CPU
@@ -340,7 +341,7 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'  '
   ENDDO
   WRITE(LUMOD2,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -358,7 +359,7 @@ DO GPUrun=1,2
   ENDIF
   WRITE(LUMOD2,'(A)')'    implicit none'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD'
-  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: MaxPasses,IntPrint,lupri'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nContA,nContB,nContC,nContD,nContP,nContQ,nTABFJW1,nTABFJW2'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nAtomsA,nAtomsB'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)'
@@ -379,10 +380,10 @@ DO GPUrun=1,2
   WRITE(LUMOD2,'(A)')'    real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: localintsmaxsize'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(inout) :: LOCALINTS(localintsmaxsize)'
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: integralPrefactor(nPrimQP)'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: integralPrefactor(nPrimQ*nPrimP)'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: PQorder'
   WRITE(LUMOD2,'(A)')'    !integralPrefactor(nPrimP,nPrimQ)'
-  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: reducedExponents(nPrimQP)'
+  WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: reducedExponents(nPrimQ*nPrimP)'
   WRITE(LUMOD2,'(A)')'    !reducedExponents(nPrimP,nPrimQ)'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Qdistance12(3) !Ccenter-Dcenter'
   WRITE(LUMOD2,'(A)')'    !Qdistance12(3)'
@@ -408,7 +409,7 @@ DO GPUrun=1,2
 
   !  WRITE(LUMOD2,'(A)')'!   Local variables '  
   !  WRITE(LUMOD2,'(A)')'    real(realk),pointer :: squaredDistance(:)'!,Rpq(:)'!,Rqc(:),Rpa(:)
-  !  WRITE(LUMOD2,'(A)')'    integer :: AngmomPQ,AngmomP,AngmomQ,I,J,nContQP,la,lb,lc,ld,nsize,angmomid'
+  !  WRITE(LUMOD2,'(A)')'    integer :: AngmomPQ,AngmomP,AngmomQ,I,J,la,lb,lc,ld,nsize,angmomid'
   !  WRITE(LUMOD2,'(A)')'    real(realk),pointer :: RJ000(:),OUTPUTinterest(:)'
 
 
@@ -420,7 +421,7 @@ DO GPUrun=1,2
 !!$  WRITE(LUMOD2,'(A)')'!'
 !!$  WRITE(LUMOD2,'(A)')'!    nsize = size(LOCALINTS)*10'
 !!$  WRITE(LUMOD2,'(A)')'!    call mem_ichor_alloc(OUTPUTinterest,nsize)'
-!!$  WRITE(LUMOD2,'(A)')'!    nsize = nPrimQP'
+!!$  WRITE(LUMOD2,'(A)')'!    nsize = nPrimQ*nPrimP'
 !!$  WRITE(LUMOD2,'(A)')'!    '
 !!$  WRITE(LUMOD2,'(A)')'!    '
 !!$  WRITE(LUMOD2,'(A)')'!    la = AngmomA+1'
@@ -453,8 +454,8 @@ DO GPUrun=1,2
   WRITE(LUMOD2,'(A)')'       call IchorQuit(''cartesian not testet'',-1)'
   WRITE(LUMOD2,'(A)')'    ENDIF'
   WRITE(LUMOD2,'(A)')'    '
-  !  WRITE(LUMOD2,'(A)')'    call mem_ichor_alloc(squaredDistance,nPasses*nPrimQP)'
-  !  WRITE(LUMOD2,'(A)')'    call mem_ichor_alloc(Rpq,3*nPrimQP*nPasses)'
+  !  WRITE(LUMOD2,'(A)')'    call mem_ichor_alloc(squaredDistance,nPasses*nPrimQ*nPrimP)'
+  !  WRITE(LUMOD2,'(A)')'    call mem_ichor_alloc(Rpq,3*nPrimQ*nPrimP*nPasses)'
   !  WRITE(LUMOD2,'(A)')'    !builds squaredDistance between center P and Q. Order(nPrimQ,nPrimP,nPassQ)'
   !  WRITE(LUMOD2,'(A)')'    !builds Distance between center P and Q in Rpq. Order(3,nPrimQ,nPrimP,nPassQ)'
   !  WRITE(LUMOD2,'(A)')'    call build_QP_squaredDistance_and_Rpq(nPrimQ,nPasses,nPrimP,Qcent,Pcent,&'
@@ -462,9 +463,9 @@ DO GPUrun=1,2
 !  WRITE(LUMOD2,'(A)')'  IF(.NOT.UseSP)THEN'
   WRITE(LUMOD2,'(A,I1,A)')'   IF(.NOT.UseGeneralCode.AND.(((AngmomA.LE.',MaxAngmomSpecial,').AND.(AngmomA.GE.AngmomB)).AND.&'
   WRITE(LUMOD2,'(A)')'       ((AngmomA.GE.AngmomC).AND.(AngmomC.GE.AngmomD))))THEN'
-  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
+  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQ*nPrimP.EQ.1))THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -482,7 +483,7 @@ DO GPUrun=1,2
   ENDIF
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented.AND.Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -500,7 +501,7 @@ DO GPUrun=1,2
   ENDIF
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -518,7 +519,7 @@ DO GPUrun=1,2
   ENDIF
   WRITE(LUMOD2,'(A)')'    ELSEIF(Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -537,7 +538,7 @@ DO GPUrun=1,2
 
   WRITE(LUMOD2,'(A)')'    ELSE'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -556,9 +557,9 @@ DO GPUrun=1,2
 
   WRITE(LUMOD2,'(A)')'    ENDIF'
   WRITE(LUMOD2,'(A)')'   ELSE' !OTHER OPTIONS
-  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
+  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQ*nPrimP.EQ.1))THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_Seg1Prim2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -576,7 +577,7 @@ DO GPUrun=1,2
   ENDIF
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented.AND.Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_Seg2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -594,7 +595,7 @@ DO GPUrun=1,2
   ENDIF
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_SegP2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -612,7 +613,7 @@ DO GPUrun=1,2
   ENDIF
   WRITE(LUMOD2,'(A)')'    ELSEIF(Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_SegQ2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -631,7 +632,7 @@ DO GPUrun=1,2
 
   WRITE(LUMOD2,'(A)')'    ELSE'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_Gen2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
   WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
   WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -700,9 +701,9 @@ DO GPUrun=1,2
 !!$  WRITE(LUMOD2,'(A)')'  Dcenter_SP = Real(Dcenter,kind=reals)'
 !!$  WRITE(LUMOD2,'(A,I1,A)')'   IF(.NOT.UseGeneralCode.AND.(((AngmomA.LE.',MaxAngmomSpecial,').AND.(AngmomA.GE.AngmomB)).AND.&'
 !!$  WRITE(LUMOD2,'(A)')'       ((AngmomA.GE.AngmomC).AND.(AngmomC.GE.AngmomD))))THEN'
-!!$  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
+!!$  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQ*nPrimP.EQ.1))THEN'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -722,7 +723,7 @@ DO GPUrun=1,2
 !!$  ENDIF
 !!$  WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented.AND.Qsegmented)THEN'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -742,7 +743,7 @@ DO GPUrun=1,2
 !!$  ENDIF
 !!$  WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented)THEN'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -762,7 +763,7 @@ DO GPUrun=1,2
 !!$  ENDIF
 !!$  WRITE(LUMOD2,'(A)')'    ELSEIF(Qsegmented)THEN'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -783,7 +784,7 @@ DO GPUrun=1,2
 !!$
 !!$  WRITE(LUMOD2,'(A)')'    ELSE'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -804,9 +805,9 @@ DO GPUrun=1,2
 !!$
 !!$  WRITE(LUMOD2,'(A)')'    ENDIF'
 !!$  WRITE(LUMOD2,'(A)')'   ELSE' !OTHER OPTIONS
-!!$  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
+!!$  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQ*nPrimP.EQ.1))THEN'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_Seg1Prim2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -826,7 +827,7 @@ DO GPUrun=1,2
 !!$  ENDIF
 !!$  WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented.AND.Qsegmented)THEN'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_Seg2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -846,7 +847,7 @@ DO GPUrun=1,2
 !!$  ENDIF
 !!$  WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented)THEN'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_SegP2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -866,7 +867,7 @@ DO GPUrun=1,2
 !!$  ENDIF
 !!$  WRITE(LUMOD2,'(A)')'    ELSEIF(Qsegmented)THEN'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_SegQ2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -887,7 +888,7 @@ DO GPUrun=1,2
 !!$
 !!$  WRITE(LUMOD2,'(A)')'    ELSE'
 !!$  WRITE(LUMOD2,'(A)')'     call SPICI_'//ARCSTRING//'_OBS_Gen2(nPrimA,nPrimB,nPrimC,nPrimD,&'
-!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+!!$  WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp_SP,qexp_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & ACC_SP,BCC_SP,CCC_SP,DCC_SP,&'
 !!$  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
@@ -987,7 +988,7 @@ DO GPUrun=1,2
            ILUMOD = 12
         ENDIF
      ENDIF
-     WRITE(ILUMOD,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+     WRITE(ILUMOD,'(A)')'       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
      WRITE(ILUMOD,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
      WRITE(ILUMOD,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
      WRITE(ILUMOD,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -1005,7 +1006,7 @@ DO GPUrun=1,2
      ENDIF
      WRITE(ILUMOD,'(A)')'    implicit none'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD'
-     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: MaxPasses,IntPrint,lupri'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nContA,nContB,nContC,nContD,nContP,nContQ,nTABFJW1,nTABFJW2'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nAtomsA,nAtomsB'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)'
@@ -1026,10 +1027,10 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'    real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: localintsmaxsize'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(inout) :: LOCALINTS(localintsmaxsize)'
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: integralPrefactor(nPrimQP)'
+     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: integralPrefactor(nPrimQ*nPrimP)'
      WRITE(ILUMOD,'(A)')'    logical,intent(in) :: PQorder'
      WRITE(ILUMOD,'(A)')'    !integralPrefactor(nPrimP,nPrimQ)'
-     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: reducedExponents(nPrimQP)'
+     WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: reducedExponents(nPrimQ*nPrimP)'
      WRITE(ILUMOD,'(A)')'    !reducedExponents(nPrimP,nPrimQ)'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Qdistance12(3) !Ccenter-Dcenter'
      WRITE(ILUMOD,'(A)')'    !Qdistance12(3)'
@@ -1043,7 +1044,7 @@ DO GPUrun=1,2
      IF(.NOT.CPU)WRITE(ILUMOD,'(A)')'    integer(kind=acckind),intent(in) :: iASync'
      WRITE(ILUMOD,'(A)')'!   Local variables '  
      !  WRITE(ILUMOD,'(A)')'    real(realk),pointer :: squaredDistance(:)'!,Rpq(:)'!,Rqc(:),Rpa(:)
-     WRITE(ILUMOD,'(A)')'    integer :: AngmomPQ,AngmomP,AngmomQ,I,J,nContQP,la,lb,lc,ld,nsize,angmomid'
+     WRITE(ILUMOD,'(A)')'    integer :: AngmomPQ,AngmomP,AngmomQ,I,J,la,lb,lc,ld,nsize,angmomid'
 
 
      WRITE(ILUMOD,'(A)')'    '
@@ -1053,7 +1054,7 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'    AngmomPQ  = AngmomP + AngmomQ'
      !  WRITE(ILUMOD,'(A)')'    !Build the Boys Functions for argument squaredDistance*reducedExponents'
      !  WRITE(ILUMOD,'(A)')'    !save in RJ000 ordering (AngmomPQ+1),nPrimQ,nPrimP,nPasses'
-     !  WRITE(ILUMOD,'(A)')'    call mem_ichor_alloc(RJ000,(AngmomPQ+1)*nPasses*nPrimQP)'
+     !  WRITE(ILUMOD,'(A)')'    call mem_ichor_alloc(RJ000,(AngmomPQ+1)*nPasses*nPrimQ*nPrimP)'
      !  WRITE(ILUMOD,'(A)')'    call buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&'
      !  WRITE(ILUMOD,'(A)')'         & TABFJW,RJ000,AngmomPQ,Pcent,Qcent)'
      !  WRITE(ILUMOD,'(A)')'    IF (INTPRINT .GE. 10) THEN'
@@ -1120,9 +1121,9 @@ DO GPUrun=1,2
                     nlmB = 2*AngmomB+1
                     nlmC = 2*AngmomC+1
                     nlmD = 2*AngmomD+1
-                    STRINGIN(1:9)  = 'TMParray1'
-                    STRINGOUT(1:9) = 'TMParray2'                                      
-                    TMPSTRING(1:9) = '         '
+                    STRINGIN(1:12)  = 'TMParray1(1)'
+                    STRINGOUT(1:12) = 'TMParray2(1)'                                      
+                    TMPSTRING(1:12) = '            '
                     !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                     call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                          & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
@@ -1144,9 +1145,9 @@ DO GPUrun=1,2
                     nlmB = 2*AngmomB+1
                     nlmC = 2*AngmomC+1
                     nlmD = 2*AngmomD+1
-                    STRINGIN(1:9)  = 'TMParray1'
-                    STRINGOUT(1:9) = 'TMParray2'
-                    TMPSTRING(1:9) = '         '
+                    STRINGIN(1:12)  = 'TMParray1(1)'
+                    STRINGOUT(1:12) = 'TMParray2(1)'
+                    TMPSTRING(1:12) = '            '
                     call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                          & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                  ENDIF
@@ -1192,9 +1193,9 @@ DO GPUrun=1,2
                        nlmB = 2*AngmomB+1
                        nlmC = 2*AngmomC+1
                        nlmD = 2*AngmomD+1
-                       STRINGIN(1:9)  = 'TMParray1'
-                       STRINGOUT(1:9) = 'TMParray2'
-                       TMPSTRING(1:9) = '         '
+                       STRINGIN(1:12)  = 'TMParray1(1)'
+                       STRINGOUT(1:12) = 'TMParray2(1)'
+                       TMPSTRING(1:12) = '            '
                        !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                        call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                             & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
@@ -1216,9 +1217,9 @@ DO GPUrun=1,2
                        nlmB = 2*AngmomB+1
                        nlmC = 2*AngmomC+1
                        nlmD = 2*AngmomD+1
-                       STRINGIN(1:9)  = 'TMParray1'
-                       STRINGOUT(1:9) = 'TMParray2'
-                       TMPSTRING(1:9) = '         '
+                       STRINGIN(1:12)  = 'TMParray1(1)'
+                       STRINGOUT(1:12) = 'TMParray2(1)'
+                       TMPSTRING(1:12) = '            '
                        call subroutineMAIN(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
                             & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
                     ENDIF
@@ -1236,7 +1237,7 @@ DO GPUrun=1,2
         WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''ICI_CPU_McM_general called with OpenACC'',-1)'
         WRITE(ILUMOD,'(A)')'#endif'
         WRITE(ILUMOD,'(A)')'        call ICI_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
-        WRITE(ILUMOD,'(A)')'           & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+        WRITE(ILUMOD,'(A)')'           & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&'
         WRITE(ILUMOD,'(A)')'           & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
         WRITE(ILUMOD,'(A)')'           & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
         WRITE(ILUMOD,'(A)')'           & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
@@ -1296,44 +1297,44 @@ DO GPUrun=1,2
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,&'
-  WRITE(LUMOD2,'(A)')'         & nContP,nContQ,nPrimQP,nContQP,Psegmented,Qsegmented)'
+  WRITE(LUMOD2,'(A)')'         & nContP,nContQ,Psegmented,Qsegmented)'
   WRITE(LUMOD2,'(A)')'    implicit none'
   WRITE(LUMOD2,'(A)')'    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD'
-  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nContA,nContB,nContC,nContD'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: Psegmented,Qsegmented'
-  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
+  WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQ*nPrimP.EQ.1))THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented.AND.Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeSeg(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeSegP(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Qsegmented)THEN'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeSegQ(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ)'
   WRITE(LUMOD2,'(A)')'    ELSE'
   WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeGen(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
-  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+  WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ)'
   WRITE(LUMOD2,'(A)')'    ENDIF'
   WRITE(LUMOD2,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_general_size'
   WRITE(LUMOD2,'(A)')'  '
@@ -1442,11 +1443,11 @@ DO GPUrun=1,2
         ILUMOD = LUMOD7
      ENDIF
      WRITE(ILUMOD,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&'
-     WRITE(ILUMOD,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
+     WRITE(ILUMOD,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ)'
      WRITE(ILUMOD,'(A)')'    implicit none'
      WRITE(ILUMOD,'(A)')'    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD'
-     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nContA,nContB,nContC,nContD'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD'
      WRITE(ILUMOD,'(A)')'    ! local variables'
@@ -1487,10 +1488,10 @@ DO GPUrun=1,2
                  nlmB = 2*AngmomB+1
                  nlmC = 2*AngmomC+1
                  nlmD = 2*AngmomD+1
-                 STRINGIN(1:9)  = 'TMParray1'
-                 STRINGOUT(1:9) = 'TMParray2'
-                 TMPSTRING(1:9) = '         '
-                 call determineSizes(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN,STRINGOUT,TMPSTRING,nTUV,AngmomP,AngmomQ,&
+                 STRINGIN2(1:9)  = 'TMParray1'
+                 STRINGOUT2(1:9) = 'TMParray2'
+                 TMPSTRING2(1:9) = '         '
+                 call determineSizes(ILUMOD,AngmomA,AngmomB,AngmomC,AngmomD,STRINGIN2,STRINGOUT2,TMPSTRING2,nTUV,AngmomP,AngmomQ,&
                       & AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec,nlmA,nlmB,nlmC,nlmD,spherical,Gen,SegQ,SegP,Seg,Seg1Prim)
               ENDDO
            ENDDO
@@ -1501,7 +1502,7 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
      WRITE(ILUMOD,'(A)')'         & nContA,nContB,nContC,nContD,&'
      WRITE(ILUMOD,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
-     WRITE(ILUMOD,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,&'
+     WRITE(ILUMOD,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,&'
      IF(Gen)THEN
         WRITE(ILUMOD,'(A)')'         & .FALSE.,.FALSE.)'
      ELSEIF(SegQ)THEN
@@ -1657,7 +1658,7 @@ contains
     integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomC,AngmomD,nTUV,AngmomP,AngmomQ
     integer,intent(in) :: nlmA,nlmB,nlmC,nlmD
     integer,intent(in) :: AngmomPQ,nTUVP,nTUVQ,nTUVAspec,nTUVBspec,nTUVCspec,nTUVDspec
-    character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+    character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
     logical :: spherical,OutputSet,Gen,SegQ,SegP,Seg,Seg1Prim,Contracted,noTransfer
     character(len=8) :: BASISSPEC
     integer :: iBasisSpec
@@ -1704,7 +1705,7 @@ contains
           !       call AddToString(nTUV)
           !       call AddToString(')')                
        ELSEIF(Seg)THEN
-          call AddToString('LOCALINTS')
+          call AddToString('LOCALINTS(1)')
           OutputSet = .TRUE.
           !          call AddToString('(1:nPasses*')
           !       call AddToString(nTUV)
@@ -1720,7 +1721,7 @@ contains
           call AddToString(STRINGOUT)
 !          Contracted = .TRUE.
        ELSEIF(Seg1Prim)THEN
-          call AddToString('LOCALINTS')
+          call AddToString('LOCALINTS(1)')
           OutputSet = .TRUE.
           Contracted = .TRUE.
        ENDIF
@@ -1992,17 +1993,14 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        ENDIF
     ENDIF
     !================= DONE WITH VERTICAL AND TRANSFER ================================================================
-    IF(Gen)THEN
-       WRITE(LUMOD3,'(A)')'        nContQP = nContQ*nContP'
-    ENDIF
     IF(nTUVP*nTUVQ.LT.10)THEN
-       !       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
+       !       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQ*nContP*nPasses)'
     ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-       !       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
+       !       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQ*nContP*nPasses)'
     ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-       !       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
+       !       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQ*nContP*nPasses)'
     ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-       !       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQP*nPasses)'
+       !       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nContQ*nContP*nPasses)'
     ENDIF
 
     IF(Contracted)THEN
@@ -2014,7 +2012,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
              IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
                 !no subsequent Horizontal or spherical transformations 
                 IF(.NOT.OutputSet)THEN
-                   STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                   STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
                 ELSE
                    STOP 'LOCALINTS already set MAJOER PROBLEM A2'
                 ENDIF
@@ -2029,7 +2027,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
              IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
                 !no subsequent Horizontal or spherical transformations 
                 IF(.NOT.OutputSet)THEN
-                   STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                   STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
                 ELSE
                    STOP 'LOCALINTS already set MAJOER PROBLEM A2'
                 ENDIF
@@ -2050,7 +2048,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
              !no subsequent Horizontal or spherical transformations 
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
@@ -2066,7 +2064,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
              !no subsequent Horizontal or spherical transformations 
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
@@ -2087,7 +2085,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomP.EQ.0.AND.AngmomQ.EQ.0)THEN
              !no subsequent Horizontal or spherical transformations 
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     ';OutputSet = .TRUE.
+                STRINGOUT  = 'LOCALINTS(1)     ';OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
              ENDIF
@@ -2122,7 +2120,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           IF(AngmomQ.EQ.0)THEN
              !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
              IF(.NOT.OutputSet)THEN
-                STRINGOUT  = 'LOCALINTS     '
+                STRINGOUT  = 'LOCALINTS(1)     '
                 OutputSet = .TRUE.
              ELSE
                 STOP 'LOCALINTS already set MAJOER PROBLEM A2'
@@ -2133,13 +2131,13 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        ENDIF
        !     WRITE(LUMOD3,'(A)')'        !LHS Horizontal recurrence relations '
        IF(nTUVAspec*nTUVBspec*nTUVQ.LT.10)THEN
-          !       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
+          !       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQ*nContP*nPasses)'
        ELSEIF(nTUVAspec*nTUVBspec*nTUVQ.LT.100)THEN
-          !       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
+          !       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQ*nContP*nPasses)'
        ELSEIF(nTUVAspec*nTUVBspec*nTUVQ.LT.1000)THEN
-          !       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
+          !       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQ*nContP*nPasses)'
        ELSEIF(nTUVAspec*nTUVBspec*nTUVQ.LT.10000)THEN
-          !       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQP*nPasses)'
+          !       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVAspec*nTUVBspec*nTUVQ,'*nContQ*nContP*nPasses)'
        ENDIF
        IF(AngmomA.GE.AngmomB)THEN
           SPEC = 'AtoB'
@@ -2147,7 +2145,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           SPEC = 'BtoA'
        ENDIF
        IF(Gen)THEN
-          call DebugMemoryTest(STRINGOUT,'nContQP*nPasses',nTUVAspec*nTUVBspec*nTUVQ,LUMOD3)
+          call DebugMemoryTest(STRINGOUT,'nContQ*nContP*nPasses',nTUVAspec*nTUVBspec*nTUVQ,LUMOD3)
        ELSEIF(SegQ)THEN
           call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nTUVAspec*nTUVBspec*nTUVQ,LUMOD3)
        ELSEIF(SegP)THEN
@@ -2163,23 +2161,13 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('B')
        call AddToString(AngmomB)
        call AddToString(SPEC)
-       IF(Gen)THEN
-          call AddToString('(nContQP,nPasses,')
-       ELSEIF(SegQ)THEN
-          call AddToString('(nContP,nPasses,')
-       ELSEIF(SegP)THEN
-          call AddToString('(nContQ,nPasses,')
-       ELSE
-          call AddToString('(1,nPasses,')
-       ENDIF
-       call AddToString(nTUVQ)
-       call AddToString(',&')
+       call AddToString('(nContQ,nContP,nPasses,nTUVQ,&')
        call writeString(LUMOD3)
        call initString(12)
        call AddToString('& Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,')
        call AddToString(STRINGIN)
 !!$       IF(Gen)THEN
-!!$          call AddToString('(1:nContQP*nPasses*')
+!!$          call AddToString('(1:nContQ*nContP*nPasses*')
 !!$          call AddToString(nTUVP*nTUVQ)
 !!$          call AddToString(')')
 !!$       ELSEIF(SegQ)THEN
@@ -2201,7 +2189,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('& ')
        call AddToString(STRINGOUT)
 !!$       IF(Gen)THEN
-!!$          call AddToString('(1:nContQP*nPasses*')
+!!$          call AddToString('(1:nContQ*nContP*nPasses*')
 !!$          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
 !!$          call AddToString(')')
 !!$       ELSEIF(SegQ)THEN
@@ -2235,7 +2223,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           !no need for RHS horizontal transfer nor spherical transformation
           IF(.NOT.OutputSet)THEN
              !there will not be need for RHS Horizontal recurrence relations nor Spherical Transformation'
-             STRINGOUT  = 'LOCALINTS     '
+             STRINGOUT  = 'LOCALINTS(1)     '
              OutputSet = .TRUE.
           ELSE
              STOP 'LOCALINTS already set MAJOER PROBLEM B1'
@@ -2245,16 +2233,16 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        ENDIF
        !       WRITE(LUMOD3,'(A)')'        !Spherical Transformation LHS'         
        IF(nlmA*nlmB*nTUVQ.LT.10)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
+          !          WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQ*nContP*nPasses)'
        ELSEIF(nlmA*nlmB*nTUVQ.LT.100)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
+          !          WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQ*nContP*nPasses)'
        ELSEIF(nlmA*nlmB*nTUVQ.LT.1000)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
+          !          WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQ*nContP*nPasses)'
        ELSEIF(nlmA*nlmB*nTUVQ.LT.10000)THEN
-          !          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQP*nPasses)'
+          !          WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nlmA*nlmB*nTUVQ,'*nContQ*nContP*nPasses)'
        ENDIF
        IF(Gen)THEN
-          call DebugMemoryTest(STRINGOUT,'nContQP*nPasses',nlmA*nlmB*nTUVQ,LUMOD3)
+          call DebugMemoryTest(STRINGOUT,'nContQ*nContP*nPasses',nlmA*nlmB*nTUVQ,LUMOD3)
        ELSEIF(SegQ)THEN
           call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nlmA*nlmB*nTUVQ,LUMOD3)
        ELSEIF(SegP)THEN
@@ -2268,19 +2256,12 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('_maxAngA')
        call AddToString(AngmomA)
        call AddToString('(')
-       call AddToString(nTUVQ)
-       IF(Gen)THEN
-          call AddToString(',nContQP*nPasses,')
-       ELSEIF(SegP)THEN
-          call AddToString(',nContQ*nPasses,')
-       ELSEIF(SegQ)THEN
-          call AddToString(',nContP*nPasses,')
-       ELSE
-          call AddToString(',nPasses,')
-       ENDIF
+!       call AddToString(nTUVQ)
+       call AddToString('nTUVQ')
+       call AddToString(',nContQ,nContP,nPasses,')
        call AddToString(STRINGIN)
 !       IF(Gen)THEN
-!          call AddToString('(1:nContQP*nPasses*')
+!          call AddToString('(1:nContQ*nContP*nPasses*')
 !          call AddToString(nTUVAspec*nTUVBspec*nTUVQ)
 !          call AddToString(')')
 !       ELSEIF(SegQ)THEN
@@ -2302,7 +2283,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('& ')
        call AddToString(STRINGOUT)
 !       IF(Gen)THEN
-!          call AddToString('(1:nContQP*nPasses*')
+!          call AddToString('(1:nContQ*nContP*nPasses*')
 !          call AddToString(nlmA*nlmB*nTUVQ)
 !          call AddToString(')')
 !       ELSEIF(SegQ)THEN
@@ -2356,7 +2337,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        IF(.NOT.OutputSet)THEN
           IF(.NOT.(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1)))THEN
              !no Spherical afterwards which means we can 
-             STRINGOUT  = 'LOCALINTS     '
+             STRINGOUT  = 'LOCALINTS(1)     '
              OutputSet = .TRUE.
           ENDIF
        ELSE
@@ -2368,7 +2349,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           SPEC = 'DtoC'
        ENDIF
        IF(Gen)THEN
-          call DebugMemoryTest(STRINGOUT,'nContQP*nPasses',nlmA*nlmB*nTUVCspec*nTUVDspec,LUMOD3)
+          call DebugMemoryTest(STRINGOUT,'nContQ*nContP*nPasses',nlmA*nlmB*nTUVCspec*nTUVDspec,LUMOD3)
        ELSEIF(SegQ)THEN
           call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nlmA*nlmB*nTUVCspec*nTUVDspec,LUMOD3)
        ELSEIF(SegP)THEN
@@ -2384,20 +2365,13 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('D')
        call AddToString(AngmomD)
        call AddToString(SPEC)
-       IF(Gen)THEN
-          call AddToString('(nContQP,nPasses,')
-       ELSEIF(SegP)THEN
-          call AddToString('(nContQ,nPasses,')
-       ELSEIF(SegQ)THEN
-          call AddToString('(nContP,nPasses,')
-       ELSE
-          call AddToString('(1,nPasses,')
-       ENDIF
-       call AddToString(nlmA*nlmB)
+       call AddToString('(nContQ,nContP,nPasses,')
+!       call AddToString(nlmA*nlmB)
+       call AddToString('nOrbCompP')
        call AddToString(',Qdistance12,')
        call AddToString(STRINGIN)
 !       IF(Gen)THEN
-!          call AddToString('(1:nContQP*nPasses*')
+!          call AddToString('(1:nContQ*nContP*nPasses*')
 !          call AddToString(nlmA*nlmB*nTUVQ)
 !          call AddToString(')')
 !       ELSEIF(SegQ)THEN
@@ -2419,7 +2393,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('& ')
        call AddToString(STRINGOUT)
 !       IF(Gen)THEN
-!          call AddToString('(1:nContQP*nPasses*')
+!          call AddToString('(1:nContQ*nContP*nPasses*')
 !          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
 !          call AddToString(')')
 !       ELSEIF(SegQ)THEN
@@ -2452,12 +2426,12 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
     IF(Spherical.AND.(AngmomC.GT.1.OR.AngmomD.GT.1))THEN
        !       WRITE(LUMOD3,'(A)')'        !Spherical Transformation RHS'
        IF(.NOT.OutputSet)THEN
-          STRINGOUT  = 'LOCALINTS     '
+          STRINGOUT  = 'LOCALINTS(1)     '
        ELSE
           STOP 'MAJOR ERROR OUTPUT SET BUT RHS HORIZONTAL NEEDED D1'
        ENDIF
        IF(Gen)THEN
-          call DebugMemoryTest(STRINGOUT,'nContQP*nPasses',nlmA*nlmB*nlmC*nlmD,LUMOD3)
+          call DebugMemoryTest(STRINGOUT,'nContQ*nContP*nPasses',nlmA*nlmB*nlmC*nlmD,LUMOD3)
        ELSEIF(SegQ)THEN
           call DebugMemoryTest(STRINGOUT,'nContP*nPasses',nlmA*nlmB*nlmC*nlmD,LUMOD3)
        ELSEIF(SegP)THEN
@@ -2471,19 +2445,12 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('_maxAngC')
        call AddToString(AngmomC)
        call AddToString('(')
-       call AddToString(nlmA*nlmB)
-       IF(Gen)THEN
-          call AddToString(',nContQP*nPasses,')
-       ELSEIF(SegQ)THEN
-          call AddToString(',nContP*nPasses,')
-       ELSEIF(SegP)THEN
-          call AddToString(',nContQ*nPasses,')
-       ELSE
-          call AddToString(',nPasses,')
-       ENDIF
+!       call AddToString(nlmA*nlmB)
+       call AddToString('nOrbCompP')
+       call AddToString(',nContQ,nContP,nPasses,')
        call AddToString(STRINGIN)
 !       IF(Gen)THEN
-!          call AddToString('(1:nContQP*nPasses*')
+!          call AddToString('(1:nContQ*nContP*nPasses*')
 !          call AddToString(nlmA*nlmB*nTUVCspec*nTUVDspec)
 !          call AddToString(')')
 !       ELSEIF(SegQ)THEN
@@ -2505,7 +2472,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('& ')
        call AddToString(STRINGOUT)
  !      IF(Gen)THEN
- !         call AddToString('(1:nContQP*nPasses*')
+ !         call AddToString('(1:nContQ*nContP*nPasses*')
  !         call AddToString(nlmA*nlmB*nlmC*nlmD)
  !         call AddToString(')')
  !      ELSEIF(SegQ)THEN
@@ -2573,13 +2540,13 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
     integer :: nTUVP,nTUVQ,LUMOD3
     character(len=9) :: STRINGOUT                  
     IF(nTUVP*nTUVQ.LT.10)THEN
-       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
+       WRITE(LUMOD3,'(A,A,A,I1,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQ*nPrimP*nPasses)'
     ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
+       WRITE(LUMOD3,'(A,A,A,I2,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQ*nPrimP*nPasses)'
     ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
+       WRITE(LUMOD3,'(A,A,A,I3,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQ*nPrimP*nPasses)'
     ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQP*nPasses)'
+       WRITE(LUMOD3,'(A,A,A,I4,A)')'        call mem_ichor_alloc(',STRINGOUT,',',nTUVP*nTUVQ,'*nPrimQ*nPrimP*nPasses)'
     ENDIF
   end subroutine sub_alloc1
 
@@ -2588,13 +2555,13 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
     integer :: nTUVP,nTUVQ,LUMOD3
     character(len=9) :: STRINGOUT                  
     IF(nTUVP*nTUVQ.LT.10)THEN
-       WRITE(LUMOD3,'(A7,A9,A,A9,A,I1,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQP)'
+       WRITE(LUMOD3,'(A7,A9,A,A9,A,I1,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQ*nPrimP)'
     ELSEIF(nTUVP*nTUVQ.LT.100)THEN
-       WRITE(LUMOD3,'(A7,A9,A,A9,A,I2,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQP)'
+       WRITE(LUMOD3,'(A7,A9,A,A9,A,I2,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQ*nPrimP)'
     ELSEIF(nTUVP*nTUVQ.LT.1000)THEN
-       WRITE(LUMOD3,'(A7,A9,A,A9,A,I3,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQP)'
+       WRITE(LUMOD3,'(A7,A9,A,A9,A,I3,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQ*nPrimP)'
     ELSEIF(nTUVP*nTUVQ.LT.10000)THEN
-       WRITE(LUMOD3,'(A7,A9,A,A9,A,I4,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQP)'
+       WRITE(LUMOD3,'(A7,A9,A,A9,A,I4,A)')'       ',STRINGOUT,'maxSize = MAX(',STRINGOUT,'maxSize,',nTUVP*nTUVQ,'*nPrimQ*nPrimP)'
     ENDIF
   end subroutine sub_maxalloc1
 
@@ -2769,10 +2736,10 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           call AddToString('maxSize,')
           call AddToString(nTUV)       
           !          IF(PerformTranserAndPlaceInTmp)THEN
-          !             call AddToString('*nPrimQP)')
+          !             call AddToString('*nPrimQ*nPrimP)')
           !          ELSE 
           IF(Gen)THEN
-             call AddToString('*nPrimQP)')
+             call AddToString('*nPrimQ*nPrimP)')
           ELSEIF(SegQ)THEN
              call AddToString('*nPrimP)')
           ELSEIF(SegP)THEN
@@ -2797,12 +2764,12 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
              call AddToString('maxSize,')
              call AddToString(AngmomPQ+1)       
              IF(PerformTranserAndPlaceInTmp)THEN
-                call AddToString('*nPrimQP)')
+                call AddToString('*nPrimQ*nPrimP)')
              ELSE 
                 IF(Seg1Prim)THEN
                    call AddToString(')')
                 ELSE
-                   call AddToString('*nPrimQP)')
+                   call AddToString('*nPrimQ*nPrimP)')
                 ENDIF
              ENDIF
              call writeString(LUMOD3)                
@@ -2818,10 +2785,10 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
           call AddToString('maxSize,')
           call AddToString(nTUV)
           IF(PerformTranserAndPlaceInTmp)THEN
-             call AddToString('*nPrimQP)')
+             call AddToString('*nPrimQ*nPrimP)')
           ELSE 
              IF(Gen)THEN
-                call AddToString('*nPrimQP)')
+                call AddToString('*nPrimQ*nPrimP)')
              ELSEIF(SegQ)THEN
                 call AddToString('*nPrimP)')
              ELSEIF(SegP)THEN
@@ -2848,7 +2815,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('maxSize,')
        call AddToString(nTUVQ*nTUVP)       
        IF(Gen)THEN
-          call AddToString('*nPrimQP)')
+          call AddToString('*nPrimQ*nPrimP)')
        ELSEIF(SegQ)THEN
           call AddToString('*nPrimP)')
        ELSEIF(SegP)THEN
@@ -2945,7 +2912,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('maxSize,')
        call AddToString(nTUVQ*nTUVAspec*nTUVBspec)       
        IF(Gen)THEN
-          call AddToString('*nContQP)')
+          call AddToString('*nContQ*nPrimP)')
        ELSEIF(SegQ)THEN
           call AddToString('*nContP)')
        ELSEIF(SegP)THEN
@@ -2968,7 +2935,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('maxSize,')
        call AddToString(nTUVQ*nlmA*nlmB)       
        IF(Gen)THEN
-          call AddToString('*nContQP)')
+          call AddToString('*nContQ*nPrimP)')
        ELSEIF(SegQ)THEN
           call AddToString('*nContP)')
        ELSEIF(SegP)THEN
@@ -2991,7 +2958,7 @@ FromLabel = 'B'; ToLabel = 'C'; FromExpLabel = 'A'; ToExpLabel = 'D'
        call AddToString('maxSize,')
        call AddToString(nTUVCspec*nTUVDspec*nlmA*nlmB)       
        IF(Gen)THEN
-          call AddToString('*nContQP)')
+          call AddToString('*nContQ*nContP)')
        ELSEIF(SegQ)THEN
           call AddToString('*nContP)')
        ELSEIF(SegP)THEN

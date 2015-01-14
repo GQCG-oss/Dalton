@@ -17,10 +17,10 @@ questions and get support.
 \section{The \molinp\ input file}
 
 We will not go into great detail here of the input format of the \molinp\ \index{MOLECULE.INP} file, as it is treated thoroughly in a separate chapter,
-Chapter~\ref{ch:molinp}. Here we only present two inputs for
-water; one
+Chapter~\ref{ch:molinp}.
+Here we only present two inputs for water; one
 using Cartesian coordinate\index{Cartesian coordinates} input and
-automatic symmetry detection\index{symmetry!automatic detection} and
+automatic symmetry detection\index{symmetry!automatic detection}, and
 the other using Cartesian coordinates and where we explicitly give the
 symmetry elements. Finally we show the input for H$_{2}$O$^{2+}$
 using Z-matrix input\index{Z-matrix input}. In
@@ -34,15 +34,16 @@ in \bohr{}, and the very popular 6-31G** basis set.
 \begin{verbatim}
 BASIS
 6-31G**
-Water
-using the 6-31G** basis
+ Water using the 6-31G** basis
+ Using automatic symmetry detection.
 Atomtypes=2
 Charge=8.0 Atoms=1
 O      .0000000000        -.2249058930         .0000000000
 Charge=1.0 Atoms=2
-H     1.4523499293         .8996235720         .0000000000
-H    -1.4523499293         .8996235720         .0000000000
+H_a   1.4523499293         .8996235720         .0000000000
+H_b  -1.4523499293         .8996235720         .0000000000
 \end{verbatim}
+
 
 On the fifth line the number of different atom types or more correctly,
 the number of  blocks of atoms,
@@ -54,26 +55,25 @@ input files.
 
 We may also add the symmetry elements\index{symmetry!element} of the
 symmetry group\index{symmetry!group} ourselves. We must
-then remove any symmetry-dependent centers\index{symmetry-dependent center}. For the above input this
-will result in, if we use the yz- (the x axis changes sign during the
-symmetry operation) and xy- (the $z$ axis changes sign) -planes as
-symmetry elements: 
+then remove all symmetry-dependent centers\index{symmetry-dependent center}. For the above input this
+will result in, if we use reflections in the yz-plane (the $x$ axis changes sign during this
+symmetry operation) and the xz-plane (the $y$ axis changes sign) as the symmetry generators: 
 
 \begin{verbatim}
 ATOMBASIS
-Water
-using ANOs specified for each atomtype
+ Water using ANOs specified for each atomtype
+ Standard orientation: C2-rotation along z-axis, molecule in yz-plane
 Atomtypes=2 Generators=2 X Y
 Charge=8.0 Atoms=1 Basis=ano-1 5 4 3 1
-O      .0000000000        -.2249058930         .0000000000
+O      .0000000000         .0000000000        -.2249058930
 Charge=1.0 Atoms=1 Basis=ano-1 4 3 2
-H     1.4523499293         .8996235720         .0000000000
+H_a    .0000000000        1.4523499293         .8996235720
 \end{verbatim}
 
 In the above calculation we used the ANO set\index{ANO basis set} of
 Widmark and
-coworkers~\cite{powpambortca77,powbjpbortca79}. We
-use the contraction
+coworkers~\cite{powpambortca77,powbjpbortca79}.
+We use the contractions
 [5s4p3d1f/4s3p2d] for the oxygen and the hydrogens respectively. We
 also note the keyword \verb|ATOMBASIS|\index{ATOMBASIS} which allows
 different basis functions to be used on different atoms.
@@ -84,8 +84,8 @@ Z-matrix input\index{Z-matrix input}. This will then look like:
 \begin{verbatim}
 BASIS
 Sadlej-pVTZ
-Water - geometry optimization with Sadlej's basis set
-Project - Raman
+ Water - geometry optimization with Sadlej's basis set
+ Project - Raman
 Atomtypes=3 Charge=2 Nosymmetry
 ZMAT
 O   1 8.0
@@ -563,13 +563,17 @@ These options include:
   directory. On a computer system with distributed scratch disk but a
   commonly mounted home directory, this allows you to follow the
   calculation without having to log into the compute nodes.
+\item[-ow \hfill] \hfill \\
+  Redirect the output normally printed in the
+  DALTON.OUT file in the temporary directory
+  to the working directory with standard file name.
 \item[-ext log \hfill] \hfill \\
   Change the extension of the output file from .out to .log.
 \item[-nobackup \hfill] \hfill \\
   Do not backup files. This option prevents backup of existing files in the working
   directory. Normally, existing files will be backed up and the filenames appended with
   .0, .1 and so on.
-\item[-f dal\_mol \hfill] \hfill \\
+\item[-f dal\_mol(\_pot) \hfill] \hfill \\
   Copy and extract the tar.gz archive file containing a variety of useful
   interface files from your home directory to the scratch directory
   before a calculation starts. This is needed in order to be able to
@@ -579,9 +583,9 @@ These options include:
   Do not create the tar.gz archive file.
 \item[-t tmpdir \hfill] \hfill \\
   Change the temporary/scratch directory (\verb|DALTON_TMPDIR|) to 'tmpdir' from the default scratch directory
-  determined at runtime. This script will append '/DALTON\_scratch\_\$USER'
-  to the path unless the path contains 'DALTON\_scratch' or you explicitly set
-  -noappend.
+  determined at runtime. This script will append \\
+  '/DALTON\_scratch\_\$USER' to the path unless the path contains
+  'DALTON\_scratch' or you use the -noappend option.
 \item[-d \hfill] \hfill \\
   Removes the contents of the scratch directory before a
   calculation starts in order to avoid inconsistencies between files.
@@ -593,9 +597,9 @@ These options include:
 \item[-noappend \hfill] \hfill \\
   Do not append anything to the scratch directory; be careful with
   this since by default scratch is wiped after calculation stops.
-\item[-get "file1 file2" \hfill] \hfill \\
+\item[-get "file1 file2 ..." \hfill] \hfill \\
   Get files from \verb|DALTON_TMPDIR| after calculation stops.
-\item[-put "file1 file2" \hfill] \hfill \\
+\item[-put "file1 file2 ..." \hfill] \hfill \\
   Put files to \verb|DALTON_TMPDIR| before calculation starts.
 \item[-mb mb \hfill] \hfill \\
   Change the default size of the work memory\index{work memory}
@@ -609,19 +613,40 @@ These options include:
 \item[-nw mem \hfill] \hfill \\
   Change the default size of the node work memory\index{work memory}
   \index{scratch memory} to \verb|mem| double precision words.
+\item[-omp num\hfill] \hfill \\
+  Set the number of OpenMP threads to \verb|num|. Note that \dalton\ is not OpenMP
+  parallelized, however, this option can be used with e.g.\ the
+  threaded MKL libraries.
 \item[-N num \hfill] \hfill \\
   Number of MPI processes to be used in a parallel MPI calculation
   controlled by running mpirun/mpiexec.
+\item[-cpexe \hfill] \hfill \\
+  Copy dalton.x to DALTON\_TMPDIR before execution, either to
+  global scratch (if DALTON\_USE\_GLOBAL\_SCRATCH is set) or to
+  local scratch on all nodes.
 \item[-rsh \hfill] \hfill \\
   Use rsh/rcp for communications between nodes (default ssh/scp)
-\item[-nocpex \hfill] \hfill \\
-  Do not copy executable from master node to slave nodes. Only use if the scratch directory is global.
-\item[-omp num\hfill] \hfill \\
-  Set the number of OpenMP threads to \verb|num|. Note that \dalton\ is not OpenMP
-  parallelized, however, this option can be used in conjunction with e.g.\ the
-  threaded MKL libraries.
-\item[-valgrind \hfill] \hfill \\
-  Run with valgrind.
+\item[-nodelist "node1 node2 ..." \hfill] \hfill \\
+  Set nodelist DALTON\_NODELIST, dalton.x will be copied to
+  DALTON\_TMPDIR on each node unless DALTON\_USE\_GLOBAL\_SCRATCH
+  is defined. The script uses PBS\_NODEFILE or SLURM\_NODELIST
+  if available.
+\item[-x dalmol1 dalmol2 \hfill] \hfill \\
+  Calculate NEXAFS spectrum from ground and core hole states
+\end{list}
+
+Furthermore, the \verb|dalton| script uses the following environment
+variables:
+
+\begin{list}{--}{}
+\item[DALTON\_TMPDIR \hfill] \hfill \\
+ Scratch directory.
+\item[DALTON\_USE\_GLOBAL\_SCRATCH \hfill] \hfill \\
+ Use global scratch directory, do not copy any files to worker nodes.
+\item[DALTON\_NODELIST \hfill] \hfill \\
+ List of nodes, dalton.x will be copied to DALTON\_TMPDIR on each node unless DALTON\_USE\_GLOBAL\_SCRATCH is defined.
+\item[DALTON\_LAUNCHER \hfill] \hfill \\
+ Launcher for the dalton.x binary
 \end{list}
 
 In most cases, the \verb|DALTON.OUT| file will contain all the

@@ -103,7 +103,6 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      CALL mat_free(H1)
      CALL mat_free(S)
   endif
-#ifdef VAR_ICHOR
   print*,'config%prof%IchorDEC',config%prof%IchorDEC
   IF(config%prof%IchorDEC)THEN
      print*,'call di_decpackedJ'
@@ -112,7 +111,6 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      call di_decpackedJOLD(LUPRI,LUPRI,ls,D(1)%nrow,D(1))
      RETURN
   ENDIF
-#endif
      
 !#ifdef VAR_OMP
 !  DO I = 1,2

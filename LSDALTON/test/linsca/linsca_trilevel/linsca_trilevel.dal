@@ -4,7 +4,7 @@
 .DENSFIT
 **WAVE FUNCTIONS
 .DFT
-GGAKey slater=1 becke=1 vwn5=1 p86c=1
+GGAKey slater=1 becke=1 vwn5=1 p86corrc=1
 *DFT INPUT
 .GRID3
 .GRID TYPE

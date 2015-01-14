@@ -171,6 +171,7 @@ set(LSDALTON_EXTERNAL_LIBS
 
 add_dependencies(ls-matrix-defop matrixmlib)
 add_dependencies(ls-matrix-defop matrixolib)
+add_dependencies(ls-matrix-defop matrixulib)
 endif()
 
 add_library(
@@ -216,6 +217,7 @@ if(ENABLE_XCFUN)
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/include
         -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
         -DPARENT_DEFINITIONS="-DVAR_LSDALTON"
         )
     add_external(xcfun)
@@ -235,9 +237,7 @@ if(ENABLE_INTEREST)
         interestlib
         ${INTERESTLIB_SOURCES}
         )
-    if(ENABLE_XCFUN)
-        target_link_libraries(interestlib xcfun_interface)
-    endif()
+    target_link_libraries(interestlib xcfun_interface)
 endif()
 
 add_library(
@@ -246,9 +246,6 @@ add_library(
     ${FMM_C_SOURCES}
     )
 
-if(ENABLE_XCFUN)
-    target_link_libraries(fmmlib xcfun_interface)
-endif()
 
 add_dependencies(fmmlib lsutillib_precision)
 add_dependencies(fmmlib lsutillib_common)
@@ -279,6 +276,7 @@ add_library(
     )
 
 target_link_libraries(lsintlib dftfunclib)
+add_dependencies(lsintlib xcfun_interface)
 add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
@@ -299,14 +297,6 @@ add_library(
     )
 
 target_link_libraries(ddynamlib lsintlib)
-
-add_library(
-    declib
-    ${DEC_SOURCES}
-    ${DEC_C_SOURCES}
-    )
-
-target_link_libraries(declib lsintlib)
 
 add_library(
     solverutillib
@@ -351,6 +341,15 @@ if(ENABLE_RSP)
 add_dependencies(linearslib ls-openrsp)
 add_dependencies(linearslib ls-matrix-defop)
 endif()
+
+add_library(
+    declib
+    ${DEC_SOURCES}
+    ${DEC_C_SOURCES}
+    )
+
+target_link_libraries(declib lsintlib)
+target_link_libraries(declib linearslib)
 
 add_library(
     rsp_propertieslib

@@ -18,11 +18,11 @@ f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-8)
 
 f.add(from_string = 'Singles amplitudes norm',
-      to_string   = 'Number of CC iterations',
+      to_string   = 'Total amplitudes norm',
       rel_tolerance = 1.0e-7)
 
 f.add(from_string = 'Singles multiplier norm',
-      to_string   = 'Number of CC iterations',
+      to_string   = 'Total multiplier norm',
       rel_tolerance = 1.0e-7)
 
 # to ignore sign set                      ignore_sign = True   

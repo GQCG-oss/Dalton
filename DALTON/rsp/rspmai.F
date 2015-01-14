@@ -69,9 +69,6 @@ C  /* Deck rspdrv */
 C
 C Driver for RESPONSE.
 C
-C We assume that either the SIRIUS module or the SETSIR
-C subroutine has been called before RSPDRV.
-C
 #include "implicit.h"
 C
       DIMENSION WRK(LWRK)
@@ -132,10 +129,15 @@ C     *************************
 C     ***** INPUT SECTION *****
 C     *************************
 C
+C Define wave function variables, also if SIRIUS has not been called
 C
-C DEFINE VARIABLES THAT ARE COMMON FOR ALL SYMMETRIES
+      CALL SETSIR(WRK,LWRK)
+C
+C Define variables that are common for all perturbation symmetries
 C
       CALL RSPSET
+C
+C Read **RESPONS input
 C
       CALL RSPREA
 C
@@ -2912,14 +2914,12 @@ C
       NTRLBL = 0
       NEXLBL = 0
       DO 100 ISYM = 1,NSYM
-         IF ( NPPCNV(ISYM) .GT. 0 ) THEN
-            NPPSIM(ISYM) = MAX(NPPSIM(ISYM),NPPCNV(ISYM))
-            NPPSTV(ISYM) = MAX(NPPSTV(ISYM),NPPSIM(ISYM))
-         ENDIF
-         NGPPP(ISYM) = 0
-         NGPLR(ISYM) = 0
-         NGPC6(ISYM) = 0
-         NGPS0(ISYM) = 0
+         NPPSIM(ISYM) = MAX(NPPSIM(ISYM),NPPCNV(ISYM))
+         NPPSTV(ISYM) = MAX(NPPSTV(ISYM),NPPSIM(ISYM))
+         NGPPP(ISYM)  = 0
+         NGPLR(ISYM)  = 0
+         NGPC6(ISYM)  = 0
+         NGPS0(ISYM)  = 0
          NAQROP(ISYM) = 0
          NBQROP(ISYM) = 0
          NCQROP(ISYM) = 0
@@ -3866,10 +3866,10 @@ C
             KZYCON = 0
          ENDIF
       ELSE
-         CALL SETCI2(NDETX,KSYMST,TRPFLG,0)
+         CALL SETCI2(NCONFX,KSYMST,TRPFLG,0)
 C...     TRPFLG and not TRPLET because we must use determinants
 C        in qr and cr if any operator is triplet ! /hjaaj-may2000
-         KZCONF = NDETX
+         KZCONF = NCONFX
          KZYCON = 2*KZCONF
       END IF
 C
@@ -3920,9 +3920,16 @@ Chj  *    ( DETERM .OR. .NOT.TRPLET) .AND. (.NOT.SOPPA)) THEN
 C
 C DEFINE NUMBER OF START ,SIMULTANEOUS AND CONVERGED VECTORS
 C
+      IF (NPPCNV(KSYMOP) .GT. KZVAR-KOFFTY) THEN
+         WRITE (LUPRI,91) NPPCNV(KSYMOP),KZVAR-KOFFTY
+ 91      FORMAT(/' ** RSPVAR ** Number of PP start vectors',I5,
+     &   /'   exceeds the maximum number of variables',I5,
+     &   /'   Number of start vectors reset to number of variables')
+         NPPCNV(KSYMOP) = KZVAR-KOFFTY
+      END IF
       KEXCNV = NPPCNV(KSYMOP)
-      KEXSIM = NPPSIM(KSYMOP)
-      KEXSTV = NPPSTV(KSYMOP)
+      KEXSIM = MIN(NPPSIM(KSYMOP), KZVAR)
+      KEXSTV = MIN(NPPSTV(KSYMOP), KZVAR)
 C
 C CALCULATE DIAGONAL CONFIGURATION PART OF E[2]
 C
@@ -4120,6 +4127,8 @@ C
 C        ... call setsir to reset Sirius common blocks to determinants
          CALL SETSIR(WRK,LWRK)
       END IF
+      NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock
+                             ! in RSP - especially for RSPESR - we want NCREF=1 for HSROHF
 C
 C     ====================================================
 C     Read and check information on LUSIFC
@@ -4130,11 +4139,12 @@ C
       ELSE
          CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
       END IF
-      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF
+      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
+     &              ISTATE,ISPIN,NACTEL,LSYM,MS2
       READ (LUSIFC) MISHT,MASHT, MOCCT, MORBT, MBAST, MCONF,MWOPT,MWOPH,
-     *            NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT
+     &              NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT
 C     READ (LUSIFC) NISHT,NASHT, NOCCT, NORBT, NBAST, NCONF,NWOPT,NWOPH,
-C    *            NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
+C    &              NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
 C
 C     Transfer information
 C
@@ -4231,15 +4241,13 @@ C
      *   '@ TOTAL NUMBER OF ATOMIC ORBITALS FROM SIRINP:',NBAST,
      *   '@ FROM SIRIFC ',MBAST
       END IF
-      IF ( MCONRF .NE. MCONF .OR. (TDHF .AND. MCONF .GT. 1)) THEN
-      IF (.NOT.TDHF .OR. MCONF .GT. 1 .OR. MCONRF .GT. 1) THEN
-C     ... abacus sets NCONRF=0 when "ABAHF" true.
+      IF ( MCONRF .NE. MCONF .AND. MCONF .GT. 1 .AND. MCONRF .GT. 1 )
+     &   THEN
          NUMERR = NUMERR + 1
          WRITE(LUPRI,'(A/A,I5/A,I5,A,L5)')
      *  '@ *** FATAL ERROR IN RSPMC ***',
      *  '@ TOTAL NUMBER OF REFERENCE CONFIGURATIONS FROM SIRINP:',
      *  MCONRF,'@ AND FROM SIRIFC',MCONF,';  TDHF flag is',TDHF
-      END IF
       END IF
 C     NWOPT test disabled because RSPMC may be called from ABACUS
 C     with NCONF,NWOPT not of symmetry 1 /25-Nov-1992 PJ+HJAaJ

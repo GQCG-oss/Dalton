@@ -624,7 +624,19 @@ C
 C
          CALL ABAVAR(ISYM,EXCTRP,IPREXC,WORK(KWORK2),LWORK2)
 C
-         NEXVAL = MIN(NEXCIT(ISYM),NVARPT)
+         IF (ISYM .EQ. 1) THEN
+            KOFFTY = MIN(NCONST,1) ! skip CREF if MCSCF
+         ELSE
+            KOFFTY = 0
+         END IF
+         NEXVAL = MIN(NEXCIT(ISYM),NVARPT-KOFFTY)
+         IF (NEXVAL .NE. NEXCIT(ISYM)) THEN
+            WRITE(LUPRI,'(//A,I5,A,I5,A,I3)')
+     &         '@ INFO: Requested number of excitations',NEXCIT(ISYM),
+     &         ' is reduced to number of variables',NEXVAL,
+     &         ' in symmetry',ISYM
+            NEXCIT(ISYM) = NEXVAL
+         END IF
 C
          IF (NEXVAL.GT.0) THEN
 C

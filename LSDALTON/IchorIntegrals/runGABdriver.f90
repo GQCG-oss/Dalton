@@ -19,7 +19,8 @@ PROGRAM TUV
   integer :: nlmA,nlmB,nlmC,nlmD,angmomID,iseg,ILUMOD,I,nUniquenTUVs
   real(realk),pointer :: uniqeparam(:)
   character(len=15),pointer :: uniqeparamNAME(:)
-  character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
+  character(len=9) :: STRINGIN2,STRINGOUT2,TMPSTRING2
   character(len=4) :: SPEC
   character(len=3) :: ARCSTRING
   logical :: BUILD(0:2,0:2),Gen,Seg,SegP,segQ,Seg1Prim,UNIQUE
@@ -249,7 +250,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'    real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)'
      WRITE(ILUMOD,'(A)')'!   Local variables '  
      !  WRITE(ILUMOD,'(A)')'    real(realk),pointer :: squaredDistance(:)'!,Rpq(:)'!,Rqc(:),Rpa(:)
-     WRITE(ILUMOD,'(A)')'    integer :: AngmomP,I,J,nContQP,la,lb,lc,ld,nsize,angmomid,IatomAPass(1),IatomBPass(1)'
+     WRITE(ILUMOD,'(A)')'    integer :: AngmomP,I,J,la,lb,lc,ld,nsize,angmomid,IatomAPass(1),IatomBPass(1)'
      WRITE(ILUMOD,'(A)')'    '
      WRITE(ILUMOD,'(A)')'    !Setup combined Angmom info'
      WRITE(ILUMOD,'(A)')'    AngmomP = AngmomA+AngmomB'
@@ -295,9 +296,9 @@ PROGRAM TUV
               nlmB = 2*AngmomB+1
               nlmC = nlmA
               nlmD = nlmB
-              STRINGIN(1:9)  = 'TMParray1'
-              STRINGOUT(1:9) = 'TMParray2'
-              TMPSTRING(1:9) = '         '
+              STRINGIN(1:12)  = 'TMParray1(1)'
+              STRINGOUT(1:12) = 'TMParray2(1)'
+              TMPSTRING(1:12) = '            '
               !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
               call subroutineMAIN(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
                    & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
@@ -307,9 +308,9 @@ PROGRAM TUV
               nlmB = 2*AngmomB+1
               nlmC = nlmA
               nlmD = nlmB
-              STRINGIN(1:9)  = 'TMParray1'
-              STRINGOUT(1:9) = 'TMParray2'
-              TMPSTRING(1:9) = '         '
+              STRINGIN(1:12)  = 'TMParray1(1)'
+              STRINGOUT(1:12) = 'TMParray2(1)'
+              TMPSTRING(1:12) = '            '
               call subroutineMAIN(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
                    & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
            ENDIF
@@ -333,9 +334,9 @@ PROGRAM TUV
                  spherical = .TRUE.
                  nlmA = 2*AngmomA+1
                  nlmB = 2*AngmomB+1
-                 STRINGIN(1:9)  = 'TMParray1'
-                 STRINGOUT(1:9) = 'TMParray2'
-                 TMPSTRING(1:9) = '         '
+                 STRINGIN(1:12)  = 'TMParray1(1)'
+                 STRINGOUT(1:12) = 'TMParray2(1)'
+                 TMPSTRING(1:12) = '            '
                  !         WRITE(ILUMOD,'(A)')'      IF(spherical)THEN'
                  call subroutineMAIN(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
                       & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
@@ -343,9 +344,9 @@ PROGRAM TUV
                  spherical = .TRUE.
                  nlmA = 2*AngmomA+1
                  nlmB = 2*AngmomB+1
-                 STRINGIN(1:9)  = 'TMParray1'
-                 STRINGOUT(1:9) = 'TMParray2'
-                 TMPSTRING(1:9) = '         '
+                 STRINGIN(1:12)  = 'TMParray1(1)'
+                 STRINGOUT(1:12) = 'TMParray2(1)'
+                 TMPSTRING(1:12) = '            '
                  call subroutineMAIN(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
                       & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
               ENDIF
@@ -440,10 +441,10 @@ PROGRAM TUV
            spherical = .TRUE.
            nlmA = 2*AngmomA+1
            nlmB = 2*AngmomB+1
-           STRINGIN(1:9)  = 'TMParray1'
-           STRINGOUT(1:9) = 'TMParray2'
-           TMPSTRING(1:9) = '         '
-           call determineSizes(ILUMOD,AngmomA,AngmomB,STRINGIN,STRINGOUT,TMPSTRING,AngmomP,&
+           STRINGIN2(1:9)  = 'TMParray1(1)'
+           STRINGOUT2(1:9) = 'TMParray2(1)'
+           TMPSTRING2(1:9) = '         '
+           call determineSizes(ILUMOD,AngmomA,AngmomB,STRINGIN2,STRINGOUT2,TMPSTRING2,AngmomP,&
                       & nTUV,nTUVP,nTUVAspec,nTUVBspec,spherical,Gen,Seg)
         ENDDO
      ENDDO
@@ -474,27 +475,25 @@ PROGRAM TUV
   WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
   WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA)'
   WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPrimA,nPrimB)'
-  WRITE(LUMOD9,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nPrimB,nPrimB,nContA)'
+  WRITE(LUMOD9,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nPrimB*nPrimB*nContA)'
   WRITE(LUMOD9,'(A)')'    !'
-  WRITE(LUMOD9,'(A)')'    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
+  WRITE(LUMOD9,'(A)')'    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iP'
   WRITE(LUMOD9,'(A)')'    real(realk) :: TMP,TMPACC'
-  WRITE(LUMOD9,'(A)')'    !$OMP DO COLLAPSE(3) &'
-  WRITE(LUMOD9,'(A)')'    !$OMP PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,TMPACC) '
-  WRITE(LUMOD9,'(A)')'     do iContC=1,nContA'
-  WRITE(LUMOD9,'(A)')'      do iPrimB=1,nPrimB'
-  WRITE(LUMOD9,'(A)')'       do iPrimD=1,nPrimB'
-  WRITE(LUMOD9,'(A)')'        TMP = 0.0E0_realk'
-  WRITE(LUMOD9,'(A)')'        do iPrimA=1,nPrimA'
-  WRITE(LUMOD9,'(A)')'         TMPACC = ACC(iPrimA,iContC)'
-  WRITE(LUMOD9,'(A)')'         do iPrimC=1,nPrimA'
-  WRITE(LUMOD9,'(A)')'          TMP = TMP + TMPACC*ACC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB)'
-  WRITE(LUMOD9,'(A)')'         enddo'
-  WRITE(LUMOD9,'(A)')'        enddo'
-  WRITE(LUMOD9,'(A)')'        AUXarrayCont(iPrimD,iPrimB,iContC) = TMP'
-  WRITE(LUMOD9,'(A)')'       enddo'
+  WRITE(LUMOD9,'(A)')'    !$OMP DO PRIVATE(iPrimC,iPrimD,iPrimA,iPrimB,iContD,TMP,TMPACC,iP) '
+  WRITE(LUMOD9,'(A)')'    do iP=1,nPrimB*nPrimB*nContA'! iPrimB,iPrimD,iContC 
+  WRITE(LUMOD9,'(A)')'     iPrimD = mod(IP-1,nPrimB)+1'
+  WRITE(LUMOD9,'(A)')'     iPrimB = mod((IP-(mod(IP-1,nPrimB)+1))/nPrimB,nPrimB)+1'
+  WRITE(LUMOD9,'(A)')'     iContC = (IP-1)/(nPrimB*nPrimB) + 1'
+  WRITE(LUMOD9,'(A)')'     TMP = 0.0E0_realk'
+  WRITE(LUMOD9,'(A)')'     do iPrimA=1,nPrimA'
+  WRITE(LUMOD9,'(A)')'      TMPACC = ACC(iPrimA,iContC)'
+  WRITE(LUMOD9,'(A)')'      do iPrimC=1,nPrimA'
+  WRITE(LUMOD9,'(A)')'       TMP = TMP + TMPACC*ACC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB)'
   WRITE(LUMOD9,'(A)')'      enddo'
   WRITE(LUMOD9,'(A)')'     enddo'
-  WRITE(LUMOD9,'(A)')'     !$OMP ENDDO '
+  WRITE(LUMOD9,'(A)')'     AUXarrayCont(iP) = TMP'
+  WRITE(LUMOD9,'(A)')'    enddo'
+  WRITE(LUMOD9,'(A)')'    !$OMP ENDDO '
   WRITE(LUMOD9,'(A)')'  end subroutine GabPrimitiveContractionGen1A'
   WRITE(LUMOD9,'(A)')''
   WRITE(LUMOD9,'(A)')'  subroutine GabPrimitiveContractionGen1B(AUXarray2,AUXarrayCont,nPrimP,&'
@@ -505,24 +504,24 @@ PROGRAM TUV
   WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
   WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: BCC(nPrimB,nContB)'
   WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: AUXarray2(nPrimB,nPrimB,nContA)'
-  WRITE(LUMOD9,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB)'
+  WRITE(LUMOD9,'(A)')'    real(realk),intent(inout) :: AUXarrayCont(nContA*nContB)'
   WRITE(LUMOD9,'(A)')'    !'
-  WRITE(LUMOD9,'(A)')'    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
+  WRITE(LUMOD9,'(A)')'    integer :: iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iP'
   WRITE(LUMOD9,'(A)')'    real(realk) :: TMP,TMPBCC'
-  WRITE(LUMOD9,'(A)')'    !$OMP DO COLLAPSE(2) PRIVATE(iContC,iPrimD,iPrimB,iContD,TMP,TMPBCC) '
-  WRITE(LUMOD9,'(A)')'     do iContC=1,nContA'
-  WRITE(LUMOD9,'(A)')'      do iContD=1,nContB'
-  WRITE(LUMOD9,'(A)')'       TMP = 0.0E0_realk'
-  WRITE(LUMOD9,'(A)')'       do iPrimB=1,nPrimB'
-  WRITE(LUMOD9,'(A)')'        TMPBCC = BCC(iPrimB,iContD)'
-  WRITE(LUMOD9,'(A)')'        do iPrimD=1,nPrimB'
-  WRITE(LUMOD9,'(A)')'         TMP = TMP + TMPBCC*BCC(iPrimD,iContD)*AUXarray2(iPrimD,iPrimB,iContC)'
-  WRITE(LUMOD9,'(A)')'        enddo'
-  WRITE(LUMOD9,'(A)')'       enddo'
-  WRITE(LUMOD9,'(A)')'       AUXarrayCont(iContC,iContD) = TMP'
+  WRITE(LUMOD9,'(A)')'    !$OMP DO PRIVATE(iContC,iPrimD,iPrimB,iContD,TMP,TMPBCC,iP) '
+  WRITE(LUMOD9,'(A)')'    do iP=1,nContA*nContB'
+  WRITE(LUMOD9,'(A)')'     iContC = mod(IP-1,nContA)+1'
+  WRITE(LUMOD9,'(A)')'     iContD = (IP-1)/(nContA) + 1'
+  WRITE(LUMOD9,'(A)')'     TMP = 0.0E0_realk'
+  WRITE(LUMOD9,'(A)')'     do iPrimB=1,nPrimB'
+  WRITE(LUMOD9,'(A)')'      TMPBCC = BCC(iPrimB,iContD)'
+  WRITE(LUMOD9,'(A)')'      do iPrimD=1,nPrimB'
+  WRITE(LUMOD9,'(A)')'       TMP = TMP + TMPBCC*BCC(iPrimD,iContD)*AUXarray2(iPrimD,iPrimB,iContC)'
   WRITE(LUMOD9,'(A)')'      enddo'
   WRITE(LUMOD9,'(A)')'     enddo'
-  WRITE(LUMOD9,'(A)')'     !$OMP END DO'
+  WRITE(LUMOD9,'(A)')'     AUXarrayCont(iP) = TMP'
+  WRITE(LUMOD9,'(A)')'    enddo'
+  WRITE(LUMOD9,'(A)')'    !$OMP END DO'
   WRITE(LUMOD9,'(A)')'  end subroutine GabPrimitiveContractionGen1B'
 
   allocate(UniquenTUVs(3*3*3*3))
@@ -563,28 +562,26 @@ PROGRAM TUV
          WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
          WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA)'
          WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVP,',nPrimA,nPrimB,nPrimA,nPrimB)'
-         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVP,',nPrimB,nPrimB,nContA)'
+         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVP,',nContA*nPrimB*nPrimB)'
          WRITE(LUMOD9,'(A)')'    !'
-         WRITE(LUMOD9,'(A)')'    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV'
+         WRITE(LUMOD9,'(A)')'    integer :: iContC,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP'
          WRITE(LUMOD9,'(A)')'    real(realk) :: TMP,ACCTMP'
-         WRITE(LUMOD9,'(A)')'!$OMP DO COLLAPSE(4) &     '
-         WRITE(LUMOD9,'(A)')'!$OMP PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContD,iContC,TMP,ACCTMP)'
-         WRITE(LUMOD9,'(A)')'     do iContC=1,nContA'
-         WRITE(LUMOD9,'(A)')'      do iPrimB=1,nPrimB'
-         WRITE(LUMOD9,'(A)')'       do iPrimD=1,nPrimB'
-      WRITE(LUMOD9,'(A,I5)')'        do iTUV=1,',nTUVP*nTUVP
-         WRITE(LUMOD9,'(A)')'         TMP = 0.0E0_realk'
-         WRITE(LUMOD9,'(A)')'         do iPrimA=1,nPrimA'
-         WRITE(LUMOD9,'(A)')'          ACCTMP = ACC(iPrimA,iContC)'
-         WRITE(LUMOD9,'(A)')'          do iPrimC=1,nPrimA'
-         WRITE(LUMOD9,'(A)')'           TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)'
-         WRITE(LUMOD9,'(A)')'          enddo'
-         WRITE(LUMOD9,'(A)')'         enddo'
-         WRITE(LUMOD9,'(A)')'         AUXarrayCont(iTUV,iPrimD,iPrimB,iContC) = TMP'
-         WRITE(LUMOD9,'(A)')'        enddo'
+         WRITE(LUMOD9,'(A)')'!$OMP DO PRIVATE(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iContC,TMP,ACCTMP,iP)'
+         WRITE(LUMOD9,'(A)')'    do iP=1,nContA*nPrimB*nPrimB'
+         WRITE(LUMOD9,'(A)')'     iContC= mod(IP-1,nContA)+1'
+         WRITE(LUMOD9,'(A)')'     iPrimB= mod((IP-(mod(IP-1,nContA)+1))/nContA,nPrimB)+1'
+         WRITE(LUMOD9,'(A)')'     iPrimD= (IP-1)/(nContA*nPrimB) + 1'
+      WRITE(LUMOD9,'(A,I5)')'     do iTUV=1,',nTUVP*nTUVP
+         WRITE(LUMOD9,'(A)')'      TMP = 0.0E0_realk'
+         WRITE(LUMOD9,'(A)')'      do iPrimA=1,nPrimA'
+         WRITE(LUMOD9,'(A)')'       ACCTMP = ACC(iPrimA,iContC)'
+         WRITE(LUMOD9,'(A)')'       do iPrimC=1,nPrimA'
+         WRITE(LUMOD9,'(A)')'        TMP = TMP + ACC(iPrimC,iContC)*ACCTMP*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB)'
          WRITE(LUMOD9,'(A)')'       enddo'
          WRITE(LUMOD9,'(A)')'      enddo'
+         WRITE(LUMOD9,'(A)')'      AUXarrayCont(iTUV,iP) = TMP'
          WRITE(LUMOD9,'(A)')'     enddo'
+         WRITE(LUMOD9,'(A)')'    enddo'
          WRITE(LUMOD9,'(A)')'!$OMP END DO'
          IF(nTUVP*nTUVP.LT.10)THEN
             WRITE(LUMOD9,'(A,I1,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'A'
@@ -620,27 +617,42 @@ PROGRAM TUV
          WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimP,nContP'
          WRITE(LUMOD9,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
          WRITE(LUMOD9,'(A)')'    real(realk),intent(in) :: BCC(nPrimB,nContB)'
-         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVP,',nPrimB,nPrimB,nContA)'
-         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVP,',nContA,nContB)'
+         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVP,',nContA,nPrimB,nPrimB)'
+         WRITE(LUMOD9,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVP,'*nContA*nContB)'
          WRITE(LUMOD9,'(A)')'    !'
-         WRITE(LUMOD9,'(A)')'    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV'
+         WRITE(LUMOD9,'(A)')'    integer :: iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD,iTUV,iP'
          WRITE(LUMOD9,'(A)')'    real(realk) :: TMP,BCCTMP'
-         WRITE(LUMOD9,'(A)')'!$OMP DO COLLAPSE(3) &'
-         WRITE(LUMOD9,'(A)')'!$OMP PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP) '
-         WRITE(LUMOD9,'(A)')'     do iContC=1,nContA'
-         WRITE(LUMOD9,'(A)')'      do iContD=1,nContB'
-      WRITE(LUMOD9,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVP
-         WRITE(LUMOD9,'(A)')'        TMP = 0.0E0_realk'
-         WRITE(LUMOD9,'(A)')'        do iPrimB=1,nPrimB'
-         WRITE(LUMOD9,'(A)')'         BCCTMP = BCC(iPrimB,iContD)'         
-         WRITE(LUMOD9,'(A)')'         do iPrimD=1,nPrimB'
-         WRITE(LUMOD9,'(A)')'          TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iPrimD,iPrimB,iContC)'
-         WRITE(LUMOD9,'(A)')'         enddo'
-         WRITE(LUMOD9,'(A)')'        enddo'
-         WRITE(LUMOD9,'(A)')'        AUXarrayCont(iTUV,iContC,iContD) = TMP'
-         WRITE(LUMOD9,'(A)')'       enddo'
+         WRITE(LUMOD9,'(A)')'!$OMP DO PRIVATE(iTUV,iPrimD,iPrimB,iContD,iContC,TMP,BCCTMP,iP) '
+ IF(nTUVP*nTUVP.LT.100)THEN !16
+    WRITE(LUMOD9,'(A,I2,A)')'    do iP=1,nContA*nContB*',nTUVP*nTUVP,' ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)'
+    WRITE(LUMOD9,'(A,I2,A)')'     iTUV=mod(IP-1,',nTUVP*nTUVP,')+1'
+    WRITE(LUMOD9,'(A,I2,A,I2,A)')'     iContC=mod((IP-(mod(IP-1,',nTUVP*nTUVP,')+1))/',nTUVP*nTUVP,',nContA)+1'
+    WRITE(LUMOD9,'(A,I2,A)')'     iContD=(IP-1)/(',nTUVP*nTUVP,'*nContA) + 1'
+ ELSEIF(nTUVP*nTUVP.LT.1000)THEN !100,1400
+    WRITE(LUMOD9,'(A,I3,A)')'    do iP=1,nContA*nContB*',nTUVP*nTUVP,' ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)'
+    WRITE(LUMOD9,'(A,I3,A)')'     iTUV=mod(IP-1,',nTUVP*nTUVP,')+1'
+    WRITE(LUMOD9,'(A,I3,A,I3,A)')'     iContC=mod((IP-(mod(IP-1,',nTUVP*nTUVP,')+1))/',nTUVP*nTUVP,',nContA)+1'
+    WRITE(LUMOD9,'(A,I3,A)')'     iContD=(IP-1)/(',nTUVP*nTUVP,'*nContA) + 1'
+ ELSEIF(nTUVP*nTUVP.LT.10000)THEN !1225
+    WRITE(LUMOD9,'(A,I4,A)')'    do iP=1,nContA*nContB*',nTUVP*nTUVP,' ! Ordering nTUV*nContA*nContB (iTUV,iContC,iContD)'
+    WRITE(LUMOD9,'(A,I4,A)')'     iTUV=mod(IP-1,',nTUVP*nTUVP,')+1'
+    WRITE(LUMOD9,'(A,I4,A,I4,A)')'     iContC=mod((IP-(mod(IP-1,',nTUVP*nTUVP,')+1))/',nTUVP*nTUVP,',nContA)+1'
+    WRITE(LUMOD9,'(A,I4,A)')'     iContD=(IP-1)/(',nTUVP*nTUVP,'*nContA) + 1'
+ ELSE
+    STOP 'Primitive contraction1225AB'
+ ENDIF
+!         WRITE(LUMOD9,'(A)')'        iContC=mod(IP-1,nContA)+1'
+!         WRITE(LUMOD9,'(A)')'        iContD=mod((IP-(mod(IP-1,nContA)+1))/nContA,nContB)+1'
+!         WRITE(LUMOD9,'(A)')'        iTUV=(IP-1)/(nContA*nContB) + 1'
+         WRITE(LUMOD9,'(A)')'     TMP = 0.0E0_realk'
+         WRITE(LUMOD9,'(A)')'     do iPrimB=1,nPrimB'
+         WRITE(LUMOD9,'(A)')'      BCCTMP = BCC(iPrimB,iContD)'         
+         WRITE(LUMOD9,'(A)')'      do iPrimD=1,nPrimB'
+         WRITE(LUMOD9,'(A)')'       TMP = TMP + BCC(iPrimD,iContD)*BCCTMP*AUXarray2(iTUV,iContC,iPrimD,iPrimB)'
          WRITE(LUMOD9,'(A)')'      enddo'
          WRITE(LUMOD9,'(A)')'     enddo'
+         WRITE(LUMOD9,'(A)')'     AUXarrayCont(iP) = TMP'
+         WRITE(LUMOD9,'(A)')'    enddo'
          WRITE(LUMOD9,'(A)')'!$OMP END DO'
          IF(nTUVP*nTUVP.LT.10)THEN
             WRITE(LUMOD9,'(A,I1,A)')'  end subroutine GabPrimitiveContractionGen',nTUVP*nTUVP,'B'
@@ -829,7 +841,7 @@ contains
     implicit none
     integer,intent(in) :: LUMOD3,AngmomA,AngmomB,AngmomP
     integer,intent(in) :: nTUVP,nTUVAspec,nTUVBspec,nTUV
-    character(len=9) :: STRINGIN,STRINGOUT,TMPSTRING
+    character(len=12) :: STRINGIN,STRINGOUT,TMPSTRING
     logical :: spherical,OutputSet,Gen,Seg,Contracted
     character(len=8) :: BASISSPEC
     integer :: iBasisSpec
@@ -1076,9 +1088,6 @@ contains
        ENDIF
     ENDIF
     !================= DONE WITH VERTICAL AND TRANSFER ================================================================
-!    IF(Gen)THEN
-!       WRITE(LUMOD3,'(A)')'        nContQP = nContP*nContP'
-!    ENDIF
     IF(Contracted)THEN
        WRITE(LUMOD3,'(A)')'        !Primitive Contraction have already been done'
     ELSE
@@ -1182,9 +1191,9 @@ contains
        call AddToString(AngmomB)
        call AddToString(SPEC)
        IF(Gen)THEN
-          call AddToString('(nContP,1,')
+          call AddToString('(nContP,1,1,')
        ELSE
-          call AddToString('(1,1,')
+          call AddToString('(1,1,1,')
        ENDIF
        call AddToString(nTUVP)
        call AddToString(',Pdistance12,1,1,1,IatomApass,IatomBpass,')
@@ -1236,9 +1245,9 @@ contains
        call AddToString('(')
        call AddToString(nTUVP)
        IF(Gen)THEN
-          call AddToString(',nContP,')
+          call AddToString(',1,nContP,1,')
        ELSE
-          call AddToString(',1,')
+          call AddToString(',1,1,1,')
        ENDIF
        call AddToString(STRINGIN)
 !       IF(Gen)THEN
@@ -1298,9 +1307,9 @@ contains
        call AddToString(AngmomB)
        call AddToString(SPEC)
        IF(Gen)THEN
-          call AddToString('(nContP,1,')
+          call AddToString('(nContP,1,1,')
        ELSE
-          call AddToString('(1,1,')
+          call AddToString('(1,1,1,')
        ENDIF
        call AddToString(nlmA*nlmB)
        call AddToString(',Pdistance12,')
@@ -1352,9 +1361,9 @@ contains
        call AddToString('(')
        call AddToString(nlmA*nlmB)
        IF(Gen)THEN
-          call AddToString(',nContP,')
+          call AddToString(',1,nContP,1,')
        ELSE
-          call AddToString(',1,')
+          call AddToString(',1,1,1,')
        ENDIF
        call AddToString(STRINGIN)
  !      IF(Gen)THEN

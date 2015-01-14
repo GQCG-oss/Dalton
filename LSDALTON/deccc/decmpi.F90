@@ -379,6 +379,94 @@ contains
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_mp2_int_and_amp
 
+  !> \brief MPI communcation where the information in the decfrag type
+  !> is send (for local master) or received (for local slaves).
+  !> In addition, other information required for calculating F12 integrals
+  !> and amplitudes is communicated.
+  !> \author Yang Min Wang
+  !> \date 2014
+  subroutine decmpi_bcast_f12_info(MyFragment, Taibj, Tai, case,PairFrag,DoBasis, Fragment1, Fragment2)
+    implicit none
+    !> Atomic fragment to be determined (Single or Pair fragment)
+    type(decfrag) :: MyFragment
+    !> t2EOS amplitudes stored in the order T(a,i,b,j)
+    real(realk),pointer :: Taibj(:,:,:,:) 
+    !> t1EOS amplitudes stored in the order T(a,i)
+    real(realk),pointer :: Tai(:,:) 
+    !> Case MODEL
+    integer :: case
+    !> Pair or Atomic Calc
+    logical :: PairFrag
+    !> Bcast the Expensive Box
+    logical :: DoBasis
+    !> Fragment 1 in the pair fragment
+    type(decfrag),optional :: Fragment1
+    !> Fragment 2 in the pair fragment
+    type(decfrag),optional :: Fragment2
+    !local variables
+    integer(kind=ls_mpik) :: master
+    logical :: Slave,DoBasisPair
+    integer :: Tain1,Tain2,n1,n2,n3,n4
+    master = 0
+    Slave = infpar%lg_mynum .NE. master
+    call time_start_phase( PHASE_COMM )
+    ! Init MPI buffer which eventually will contain all fragment info
+    ! ***************************************************************
+    ! MASTER: Prepare for writing to buffer
+    ! SLAVE: Receive buffer
+    call ls_mpiInitBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    ! Buffer handling
+    ! ***************
+    ! MASTER: Put information info buffer
+    ! SLAVE: Put buffer information into decfrag structure
+
+    ! Fragment information
+    call ls_mpi_buffer(DoBasis,master)
+    call mpicopy_fragment(MyFragment,infpar%lg_comm,DoBasis)
+
+    call ls_mpi_buffer(PairFrag,master)
+    IF(PairFrag)THEN
+       DoBasisPair = .FALSE. !this info is not needed for these fragments
+       call mpicopy_fragment(Fragment1,infpar%lg_comm,DoBasisPair)
+       call mpicopy_fragment(Fragment2,infpar%lg_comm,DoBasisPair)
+    ENDIF
+    call ls_mpi_buffer(case,master)
+
+    ! Finalize MPI buffer
+    ! *******************
+    ! MASTER: Send stuff to slaves and deallocate temp. buffers
+    ! SLAVE: Deallocate buffer etc.
+    IF(.NOT.Slave)THEN
+       n1 = size(Taibj,1)
+       n2 = size(Taibj,2)
+       n3 = size(Taibj,3)
+       n4 = size(Taibj,4)
+       IF(case.EQ.MODEL_CCSD)THEN
+          Tain1 = size(Tai,1)
+          Tain2 = size(Tai,2)
+       ENDIF
+    ENDIF
+    call ls_mpi_buffer(n1,master)
+    call ls_mpi_buffer(n2,master)
+    call ls_mpi_buffer(n3,master)
+    call ls_mpi_buffer(n4,master)
+    IF(case.EQ.MODEL_CCSD)THEN
+       call ls_mpi_buffer(Tain1,master)
+       call ls_mpi_buffer(Tain2,master)
+    ENDIF
+    call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    IF(Slave)call mem_alloc(Taibj,n1,n2,n3,n4)
+    call ls_mpibcast(Taibj,n1,n2,n3,n4,master,infpar%lg_comm)
+    IF(case.EQ.MODEL_CCSD)THEN
+       IF(Slave)call mem_alloc(Tai,Tain1,Tain2)
+       call ls_mpibcast(Tai,Tain1,Tain2,master,infpar%lg_comm)
+    ENDIF
+
+    call time_start_phase( PHASE_WORK )
+  end subroutine decmpi_bcast_f12_info
+
 
   !> \brief MPI communcation of full molecular information required by slaves
   !> to start fragment calculation.
@@ -524,6 +612,7 @@ contains
     call ls_mpibcast(MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nMO,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nauxbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ncore,master,MPI_COMM_LSDALTON)
@@ -2169,6 +2258,8 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPmaxdiis,Master)
     call ls_mpi_buffer(DECitem%SNOOPdebug,Master)
     call ls_mpi_buffer(DECitem%SNOOPort,Master)
+    call ls_mpi_buffer(DECitem%SNOOPsamespace,Master)
+    call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
     call ls_mpi_buffer(DECitem%frozencore,Master)
@@ -2241,6 +2332,7 @@ contains
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
+    call ls_mpi_buffer(DECitem%AtomicExtent,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)

@@ -4,7 +4,17 @@ module xcfun_host
   use xcfun
 #endif
   implicit none
-  integer :: XCFunFunctional
+  type xc_functional
+    character(len=1024)         :: DFTfuncString
+    integer                     :: XCFUNfunctional
+    integer                     :: len
+    logical                     :: gga
+    logical                     :: meta
+    real(realk)                 :: hfweight
+    type(xc_functional),pointer :: next
+  end type xc_functional
+
+  integer,save :: XCFunFunctional
   logical :: USEXCFUN,XCFUN_DOGGA,XCFUN_DOMETA
   integer,parameter :: xcfun_type_lda=1
   integer,parameter :: xcfun_type_gga=2
@@ -14,54 +24,163 @@ module xcfun_host
        & xcfun_lda_xc_single_eval, xcfun_gga_unres_xc_single_eval, &
        & xcfun_lda_unres_xc_single_eval, xcfun3_gga_xc_single_eval,&
        & xcfun_meta_xc_single_eval, xcfun2_lda_xc_single_eval,&
+       & xcfun3_lda_xc_single_eval,&
        & xcfun_host_set_order,xcfun_type_lda,xcfun_type_gga,&
        & xcfun_type_metagga, xcfun_gga_components_xc_single_eval,&
-       & xcfun_host_type, xcfundftreport
+       & xcfun_host_type, xcfundftreport, xcfun_host_augment_func
   private
+  integer,save                     :: num_xc_functionals = 0
+  type(xc_functional),pointer,save :: xcfun_host_first
+  type(xc_functional),pointer,save :: xcfun_host_last
+  type(xc_functional),pointer,save :: xcfun_host_current
   contains
   subroutine xcfun_host_init(DFTfuncString,hfweight,lupri)
     implicit none
-    integer :: lupri
-    character(len=80),intent(in)  :: DFTfuncString
+    integer                 :: lupri
+    character(*),intent(in) :: DFTfuncString
     real(realk),intent(inout) :: hfweight
     !
 #ifdef VAR_XCFUN
-    character(len=80),pointer  :: DFTfuncStringSingle(:)
-    integer :: Ipos,nStrings,ierr,I,ierrLDA,ierrGGA,ierrMETA,ierrHF
-    logical :: GGAkeyString
-    real(realk),pointer :: WeightSingle(:)
-    GGAkeyString = .FALSE.
-    IPOS = INDEX(DFTfuncString,'GGAKEY')
-    IF(IPOS.NE.0)GGAkeyString = .TRUE.
-    IPOS = INDEX(DFTfuncString,'GGAkey')
-    IF(IPOS.NE.0)GGAkeyString = .TRUE.
-    IPOS = INDEX(DFTfuncString,'GGAKey')
-    IF(IPOS.NE.0)GGAkeyString = .TRUE.
+    character(len=80),pointer     :: DFTfuncStringSingle(:)
+    integer                       :: Ipos,nStrings,ierr,I,ierrLDA,ierrGGA,ierrMETA,ierrHF
+    !logical                       :: GGAkeyString,ErfString           deprecated
+    real(realk),pointer           :: WeightSingle(:)
+    logical                       :: new_func
 
-    IF(GGAkeyString)THEN
-       IPOS = INDEX(DFTfuncString,'GGAKey')
-       call determine_nStrings(DFTfuncString(IPOS+7:80),nStrings)
+    !Initialization
+    !GGAkeyString = .FALSE.
+    !ErfString = .false.
+
+    XCFUNfunctional = xcfun_host_get_func(DFTfuncString,hfweight)
+
+    !Generate a new functional if it does not already exist
+    IF (XCFUNfunctional.EQ.-1) THEN
+       CALL xcfun_host_add_functional(DFTfuncString,hfweight,lupri)
+    ENDIF
+#else
+    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+#endif
+
+  end subroutine xcfun_host_init
+
+#ifdef VAR_XCFUN
+  FUNCTION xcfun_host_get_func(DFTfuncString,hfweight)
+  implicit none
+  character(*) :: DFTfuncString
+  real(realk)  :: hfweight
+  integer      :: xcfun_host_get_func
+  !
+  integer :: ifunc,lenght
+  type(xc_functional),pointer   :: current
+
+  lenght = len(DFTfuncString)
+  xcfun_host_get_func = -1
+  current => xcfun_host_first
+  DO ifunc=1,num_xc_functionals
+    IF (DFTfuncString(1:lenght) == current%DFTfuncString(1:lenght)) THEN
+      xcfun_host_get_func = current%XCFUNfunctional
+      hfweight            = current%hfweight
+      XCFUN_DOGGA         = current%gga
+      XCFUN_DOMETA        = current%meta
+      xcfun_host_current => current
+      exit
+    ENDIF
+    current => current%next
+  ENDDO
+  END FUNCTION xcfun_host_get_func
+
+  subroutine xcfun_host_add_functional(DFTfuncString,hfweight,lupri)
+    implicit none
+    integer                       :: lupri
+    character(*),intent(in)       :: DFTfuncString
+    real(realk),intent(inout)     :: hfweight
+    !
+    character(len=80),pointer     :: DFTfuncStringSingle(:)
+    integer                       :: Ipos,nStrings,ierr,I,ierrLDA,ierrGGA,ierrMETA,ierrHF
+    !logical                       :: GGAkeyString,ErfString           deprecated
+    real(realk),pointer           :: WeightSingle(:)
+    logical                       :: new_func,admm_ggacorr_single,admm_ggacorr
+    type(xc_functional),pointer   :: current
+
+    nullify(current)
+    allocate(current)
+    IF (num_xc_functionals.EQ.0) THEN
+      xcfun_host_first => current
+      xcfun_host_last => current
+    ELSE
+      xcfun_host_last%next => current
+      xcfun_host_last => current
+    ENDIF
+
+    XCFUNfunctional = xc_new_functional()
+
+    IF (XCFUNfunctional.EQ.-1) &
+     &CALL LSQUIT('Error in xcfun_host_add_functional, xcfun internal maximum number of functionals reached',lupri)
+
+    admm_ggacorr = .FALSE.
+    IPOS = INDEX(DFTfuncString,'GGAKEY')
+    if (IPOS.NE.0) then
+       !GGAkeyString = .TRUE.
+       call determine_nStrings(DFTfuncString(IPOS+7:),nStrings)
+       
        allocate(DFTfuncStringSingle(nStrings))
        allocate(WeightSingle(nStrings))
-       call trim_strings(DFTfuncString(IPOS+7:80),nStrings,&
+       call trim_strings(DFTfuncString(IPOS+7:),nStrings,&
             & DFTfuncStringSingle,WeightSingle)
-    ELSE
-       nStrings = 1
+       
+    else if ((INDEX(DFTfuncString,'LDAERF')).NE.0) then
+       nStrings = 3
+       !ErfString = .true.
        allocate(DFTfuncStringSingle(nStrings))
        allocate(WeightSingle(nStrings))
        call trim_strings(DFTfuncString,nStrings,&
             & DFTfuncStringSingle,WeightSingle)
        WeightSingle(1) = 1.0E0_realk
+!!$    else if ((INDEX(DFTfuncString,'CAM')).NE.0) then
+!!$       !FIX ME: ALPHA; BETA; MU
+!!$       call determine_nStrings(DFTfuncString,nStrings)
+!!$       allocate(DFTfuncStringSingle(nStrings))
+!!$       allocate(WeightSingle(nStrings))
+!!$       if (nStrings==1) then
+!!$          call trim_strings(DFTfuncString,nStrings,&
+!!$               & DFTfuncStringSingle,WeightSingle)
+!!$          WeightSingle(1) = 1.0E0_realk
+!!$       else
+!!$          call lsquit('It is not possible to tune CAMB3LYP with XCFUN yet',lupri)
+!!$       endif
+    else
+       call determine_nStrings(DFTfuncString,nStrings)
+       
+       allocate(DFTfuncStringSingle(nStrings))
+       allocate(WeightSingle(nStrings))
+       call trim_strings(DFTfuncString,nStrings,DFTfuncStringSingle,WeightSingle)
+       do I=1,nStrings
+          admm_ggacorr_single = ( (INDEX(DFTfuncStringSingle(I),'B88X')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'LDAX')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'PBEX')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'KT3X')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'OPTX')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'CAMCOMPX')).NE.0 )
+          IF (admm_ggacorr_single) THEN
+            WeightSingle(I) = hfweight
+            admm_ggacorr = .TRUE.
+          ELSE
+            WeightSingle(I) = 1.0E0_realk
+          ENDIF
+       enddo
     ENDIF
-    XCFUNfunctional = xc_new_functional()
+
+    
+
+    !XCFUNfunctional = xc_new_functional()
     do I=1,nStrings
        ierr = xc_set(XCFUNfunctional,DFTfuncStringSingle(I),WeightSingle(I))
        IF(ierr.NE.0)THEN
-          print*,'The functional name:',DFTfuncStringSingle(I),'was not recognized'
+          print*,'The functional or parameter name:',DFTfuncStringSingle(I),'was not recognized'
           print*,' by the XCFUN program '
-          write(lupri,*)'The functional name:',DFTfuncStringSingle(I),'was not recognized'
+          write(lupri,*)'The functional or parameter name:',DFTfuncStringSingle(I),'was not recognized'
           write(lupri,*)' by the XCFUN program '
-          call lsquit('xcfun_host_init: error',lupri)
+          call lsquit('xcfun_host_add_functional: error',lupri)
        ENDIF
     enddo   
     !Test for the different types of functional (LDA,GGA,META)
@@ -102,23 +221,64 @@ module xcfun_host
        XCFUN_DOGGA = .FALSE.
        XCFUN_DOMETA = .FALSE.
     ENDIF
-    ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
-    IF(ierrHF.NE.0)THEN
-       call lsquit('Error determining exact (HF) exchange weight.',lupri)
-    ENDIF
-    IF(ABS(hfweight).GT.1.0E-16_realk)THEN
-       WRITE(lupri,*)'The Functional chosen contains a exact exchange contribution'
-       WRITE(lupri,*)'with the weight:', hfweight
+    IF (admm_ggacorr) THEN
+      !hfweight is an input, not an output
     ELSE
-       WRITE(lupri,*)'The Functional chosen contains no exact exchange contribution'
+      ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
+      IF(ierrHF.NE.0)THEN
+         call lsquit('Error determining exact (HF) exchange weight.',lupri)
+      ENDIF
+      IF(ABS(hfweight).GT.1.0E-16_realk)THEN
+         WRITE(lupri,*)'The Functional chosen contains an exact exchange contribution'
+         WRITE(lupri,*)'with the weight:', hfweight
+      ELSE
+         WRITE(lupri,*)'The Functional chosen contains no exact exchange contribution'
+      ENDIF
     ENDIF
     deallocate(DFTfuncStringSingle)
     deallocate(WeightSingle)
-#else
-    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+
+    num_xc_functionals      = num_xc_functionals + 1
+    current%DFTfuncString   = DFTfuncString
+    current%XCFUNfunctional = XCFUNfunctional
+    current%hfweight        = hfweight
+    current%gga             = XCFUN_DOGGA
+    current%meta            = XCFUN_DOMETA
+    current%len             = len_trim(DFTfuncString)
+    xcfun_host_current     => current
+    nullify(current%next)
+
+  end subroutine xcfun_host_add_functional
 #endif
 
-  end subroutine xcfun_host_init
+  subroutine xcfun_host_augment_func(DFTfuncString,hfweight,lupri)
+    implicit none
+    integer                     :: lupri
+    character(*),intent(in)     :: DFTfuncString
+    real(realk),intent(in)      :: hfweight
+#ifdef VAR_XCFUN
+    !
+    type(xc_functional),pointer :: current
+    character(len=1024)         :: augmentedFunc
+    integer                     :: l1,l2
+    real(realk)                 :: weight
+
+    IF (.NOT.associated(xcfun_host_current)) CALL LSQUIT('Error in xcfun_host_augment_func. Current functional not set',-1)
+    current => xcfun_host_current
+    l1=current%len
+    l2=LEN_TRIM(DFTfuncString)
+    write(augmentedFunc,'(1024X)')
+    augmentedFunc(1:l1) = current%DFTfuncString(1:l1)
+    augmentedFunc(l1+1:l1+1) = ' '
+    augmentedFunc(l1+2:l1+1+l2) = DFTfuncString(1:l2)
+
+    weight = hfweight
+
+    call xcfun_host_init(augmentedFunc,weight,lupri)
+
+#endif
+  end subroutine xcfun_host_augment_func
+
 
   subroutine xcfundftreport(lupri)
     implicit none
@@ -958,10 +1118,10 @@ module xcfun_host
     integer :: ierr
 #ifdef VAR_XCFUN
 !    ierr = xc_eval_setup(XCFUNfunctional,XC_A_B_AX_AY_AZ_BX_BY_BZ_TAUA_TAUB,XC_PARTIAL_DERIVATIVES,order)
-    IF(ierr.NE.0) then
-       print*,'ierr from xcfun',ierr
-       call lsquit('Unexpected error from xcfun',-1)
-    endif
+!    IF(ierr.NE.0) then
+!       print*,'ierr from xcfun',ierr
+!       call lsquit('Unexpected error from xcfun',-1)
+!    endif
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
@@ -1043,10 +1203,10 @@ module xcfun_host
     integer :: ierr
 #ifdef VAR_XCFUN
 !    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ_TAUN,XC_PARTIAL_DERIVATIVES,order)
-    IF(ierr.NE.0) then
-       print*,'ierr from xcfun',ierr
-       call lsquit('Unexpected error from xcfun',-1)
-    endif
+!    IF(ierr.NE.0) then
+!       print*,'ierr from xcfun',ierr
+!       call lsquit('Unexpected error from xcfun',-1)
+!    endif
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
@@ -1182,7 +1342,7 @@ module xcfun_host
                 call lsquit('Finished searching the string number mismatch',-1)
              endif
              if (string(i:i) == ' ') then
-                TMPweight(1:nweight) = string(i-nweight+1:i)
+                TMPweight(1:nweight) = string(i-nweight:i-1)
                 READ(TMPweight,*) WeightSingle(j)
                 print*,'found weight =',WeightSingle(j)
                 if (j == n) then
@@ -1216,6 +1376,7 @@ module xcfun_host
     enddo MAJOR
 
   END SUBROUTINE TRIM_STRINGS
+
 #endif
 
 end module xcfun_host

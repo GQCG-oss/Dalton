@@ -26,7 +26,7 @@ CONTAINS
   
   
   subroutine ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -40,7 +40,7 @@ CONTAINS
        & IatomAPass,iatomBPass,UseSP)
     implicit none
     integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD
-    integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri
+    integer,intent(in) :: MaxPasses,IntPrint,lupri
     integer,intent(in) :: nContA,nContB,nContC,nContD,nContP,nContQ,nTABFJW1,nTABFJW2
     integer,intent(in) :: nAtomsA,nAtomsB
     integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
@@ -61,10 +61,10 @@ CONTAINS
     real(realk) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
     integer,intent(in) :: localintsmaxsize
     real(realk),intent(inout) :: LOCALINTS(localintsmaxsize)
-    real(realk),intent(in) :: integralPrefactor(nPrimQP)
+    real(realk),intent(in) :: integralPrefactor(nPrimQ*nPrimP)
     logical,intent(in) :: PQorder
     !integralPrefactor(nPrimP,nPrimQ)
-    real(realk),intent(in) :: reducedExponents(nPrimQP)
+    real(realk),intent(in) :: reducedExponents(nPrimQ*nPrimP)
     !reducedExponents(nPrimP,nPrimQ)
     real(realk),intent(in) :: Qdistance12(3) !Ccenter-Dcenter
     !Qdistance12(3)
@@ -85,9 +85,9 @@ CONTAINS
     
    IF(.NOT.UseGeneralCode.AND.(((AngmomA.LE.2).AND.(AngmomA.GE.AngmomB)).AND.&
        ((AngmomA.GE.AngmomC).AND.(AngmomC.GE.AngmomD))))THEN
-    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
+    IF((Psegmented.AND.Qsegmented).AND.(nPrimQ*nPrimP.EQ.1))THEN
      call ICI_CPU_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -101,7 +101,7 @@ CONTAINS
        & IatomAPass,iatomBPass)
     ELSEIF(Psegmented.AND.Qsegmented)THEN
      call ICI_CPU_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -115,7 +115,7 @@ CONTAINS
        & IatomAPass,iatomBPass)
     ELSEIF(Psegmented)THEN
      call ICI_CPU_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -129,7 +129,7 @@ CONTAINS
        & IatomAPass,iatomBPass)
     ELSEIF(Qsegmented)THEN
      call ICI_CPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -143,7 +143,7 @@ CONTAINS
        & IatomAPass,iatomBPass)
     ELSE
      call ICI_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -157,9 +157,9 @@ CONTAINS
        & IatomAPass,iatomBPass)
     ENDIF
    ELSE
-    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
+    IF((Psegmented.AND.Qsegmented).AND.(nPrimQ*nPrimP.EQ.1))THEN
      call ICI_CPU_OBS_Seg1Prim2(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -173,7 +173,7 @@ CONTAINS
        & IatomAPass,iatomBPass)
     ELSEIF(Psegmented.AND.Qsegmented)THEN
      call ICI_CPU_OBS_Seg2(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -187,7 +187,7 @@ CONTAINS
        & IatomAPass,iatomBPass)
     ELSEIF(Psegmented)THEN
      call ICI_CPU_OBS_SegP2(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -201,7 +201,7 @@ CONTAINS
        & IatomAPass,iatomBPass)
     ELSEIF(Qsegmented)THEN
      call ICI_CPU_OBS_SegQ2(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -215,7 +215,7 @@ CONTAINS
        & IatomAPass,iatomBPass)
     ELSE
      call ICI_CPU_OBS_Gen2(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -236,44 +236,44 @@ CONTAINS
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,&
-         & nContP,nContQ,nPrimQP,nContQP,Psegmented,Qsegmented)
+         & nContP,nContQ,Psegmented,Qsegmented)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
-    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
+    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ
     integer,intent(in) :: nContA,nContB,nContC,nContD
     integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD
     logical,intent(in) :: Psegmented,Qsegmented
-    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
+    IF((Psegmented.AND.Qsegmented).AND.(nPrimQ*nPrimP.EQ.1))THEN
      call ICI_CPU_OBS_general_sizeSeg1Prim(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
-         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
+         & nPrimP,nPrimQ,nContP,nContQ)
     ELSEIF(Psegmented.AND.Qsegmented)THEN
      call ICI_CPU_OBS_general_sizeSeg(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
-         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
+         & nPrimP,nPrimQ,nContP,nContQ)
     ELSEIF(Psegmented)THEN
      call ICI_CPU_OBS_general_sizeSegP(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
-         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
+         & nPrimP,nPrimQ,nContP,nContQ)
     ELSEIF(Qsegmented)THEN
      call ICI_CPU_OBS_general_sizeSegQ(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
-         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
+         & nPrimP,nPrimQ,nContP,nContQ)
     ELSE
      call ICI_CPU_OBS_general_sizeGen(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
-         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
+         & nPrimP,nPrimQ,nContP,nContQ)
     ENDIF
   end subroutine ICI_CPU_OBS_general_size
   

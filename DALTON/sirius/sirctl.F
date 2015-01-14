@@ -425,6 +425,14 @@ C
          FLAG(34)   = FLAGSV(34)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
+
+!#define AO_DENSITIES_ON_FILE
+#ifdef AO_DENSITIES_ON_FILE
+         KDV   = 1
+         call write_aodens(work(kdv),nisht,nasht,nbast,nnashx,
+     &                     ncmot,nsym,nbas,ibas,lupri,hsrohf,"HF")
+#undef AO_DENSITIES_ON_FILE
+#endif
       END IF
 C
 C ***************************************************
@@ -830,10 +838,6 @@ C
       IF (DOSTEX) THEN
          CALL STXCTL(WORK,LWORK)
       END IF
-
-      IF (QFIT) THEN
-         CALL QFITRES
-      ENDIF
 
 #if defined(BUILD_GEN1INT)
 C... added by Bin Gao, to generate cube files

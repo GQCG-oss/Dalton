@@ -3,20 +3,20 @@ MODULE AGC_CPU_OBS_HorizontalRecurrenceLHSModAtoB
   
  CONTAINS
 
-subroutine HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(    4,nTUVQ*nContQP*nPasses)
+  real(realk),intent(in) :: AuxCont(    4,nTUVQ*nContQ*nContP*nPasses)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(    2:    4,1,nTUVQ*nContQP*nPasses)
+  real(realk),intent(inout) :: ThetaP(    2:    4,1,nTUVQ*nContQ*nContP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
 !$OMP DO &
 !$OMP PRIVATE(iP,&
 !$OMP         iTUVA) 
-  DO iP = 1,nTUVQ*nContQP*nPasses
+  DO iP = 1,nTUVQ*nContQ*nContP*nPasses
      DO iTUVA=  2,  4
         ThetaP(iTUVA,1,IP) = AuxCont(iTUVA,IP)
      ENDDO
@@ -24,24 +24,22 @@ subroutine HorizontalRR_CPU_LHS_P1A1B0AtoB(nContQP,nPasses,nTUVQ,&
 !$OMP END DO
 end subroutine HorizontalRR_CPU_LHS_P1A1B0AtoB
 
-subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(   10,nTUVQ*nContQP*nPasses)
+  real(realk),intent(in) :: AuxCont(   10,nTUVQ*nContQ*nContP*nPasses)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(    2:    4,    2:    4,nTUVQ*nContQP*nPasses)
+  real(realk),intent(inout) :: ThetaP(    2:    4,    2:    4,nTUVQ*nContQ*nContP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
   real(realk) :: Xab,Yab,Zab
 !$OMP DO &
 !$OMP PRIVATE(iP,&
 !$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) 
-  DO iP = 1,nTUVQ*nContQP*nPasses
-!    iTUVQ = mod(IP-1,nTUVQ)+1
-!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
-    iPassP = (IP-1)/(nTUVQ*nContQP) + 1
+  DO iP = 1,nTUVQ*nContQ*nContP*nPasses
+    iPassP = (IP-1)/(nTUVQ*(nContQ*nContP)) + 1
     iAtomA = iAtomApass(iPassP)
     iAtomB = iAtomBpass(iPassP)
     Xab = Pdistance12(1,iAtomA,iAtomB)
@@ -60,20 +58,20 @@ subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB(nContQP,nPasses,nTUVQ,&
 !$OMP END DO
 end subroutine HorizontalRR_CPU_LHS_P2A1B1AtoB
 
-subroutine HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(   10,nTUVQ*nContQP*nPasses)
+  real(realk),intent(in) :: AuxCont(   10,nTUVQ*nContQ*nContP*nPasses)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(    5:   10,1,nTUVQ*nContQP*nPasses)
+  real(realk),intent(inout) :: ThetaP(    5:   10,1,nTUVQ*nContQ*nContP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
 !$OMP DO &
 !$OMP PRIVATE(iP,&
 !$OMP         iTUVA) 
-  DO iP = 1,nTUVQ*nContQP*nPasses
+  DO iP = 1,nTUVQ*nContQ*nContP*nPasses
      DO iTUVA=  5, 10
         ThetaP(iTUVA,1,IP) = AuxCont(iTUVA,IP)
      ENDDO
@@ -81,24 +79,22 @@ subroutine HorizontalRR_CPU_LHS_P2A2B0AtoB(nContQP,nPasses,nTUVQ,&
 !$OMP END DO
 end subroutine HorizontalRR_CPU_LHS_P2A2B0AtoB
 
-subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(   20,nTUVQ*nContQP*nPasses)
+  real(realk),intent(in) :: AuxCont(   20,nTUVQ*nContQ*nContP*nPasses)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(    5:   10,    2:    4,nTUVQ*nContQP*nPasses)
+  real(realk),intent(inout) :: ThetaP(    5:   10,    2:    4,nTUVQ*nContQ*nContP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
   real(realk) :: Xab,Yab,Zab
 !$OMP DO &
 !$OMP PRIVATE(iP,&
 !$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) 
-  DO iP = 1,nTUVQ*nContQP*nPasses
-!    iTUVQ = mod(IP-1,nTUVQ)+1
-!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
-    iPassP = (IP-1)/(nTUVQ*nContQP) + 1
+  DO iP = 1,nTUVQ*nContQ*nContP*nPasses
+    iPassP = (IP-1)/(nTUVQ*(nContQ*nContP)) + 1
     iAtomA = iAtomApass(iPassP)
     iAtomB = iAtomBpass(iPassP)
     Xab = Pdistance12(1,iAtomA,iAtomB)
@@ -126,14 +122,14 @@ subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB(nContQP,nPasses,nTUVQ,&
 !$OMP END DO
 end subroutine HorizontalRR_CPU_LHS_P3A2B1AtoB
 
-subroutine HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
+subroutine HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQ,nContP,nPasses,nTUVQ,&
          & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
+  integer,intent(in) :: nContQ,nContP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)
-  real(realk),intent(in) :: AuxCont(   35,nTUVQ*nContQP*nPasses)
+  real(realk),intent(in) :: AuxCont(   35,nTUVQ*nContQ*nContP*nPasses)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  real(realk),intent(inout) :: ThetaP(    5:   10,    5:   10,nTUVQ*nContQP*nPasses)
+  real(realk),intent(inout) :: ThetaP(    5:   10,    5:   10,nTUVQ*nContQ*nContP*nPasses)
   !Local variables
   integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB
   real(realk) :: Xab,Yab,Zab
@@ -143,10 +139,8 @@ subroutine HorizontalRR_CPU_LHS_P4A2B2AtoB(nContQP,nPasses,nTUVQ,&
 !$OMP PRIVATE(iP,&
 !$OMP         Tmp1,&
 !$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) 
-  DO iP = 1,nTUVQ*nContQP*nPasses
-!    iTUVQ = mod(IP-1,nTUVQ)+1
-!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1
-    iPassP = (IP-1)/(nTUVQ*nContQP) + 1
+  DO iP = 1,nTUVQ*nContQ*nContP*nPasses
+    iPassP = (IP-1)/(nTUVQ*(nContQ*nContP)) + 1
     iAtomA = iAtomApass(iPassP)
     iAtomB = iAtomBpass(iPassP)
     Xab = Pdistance12(1,iAtomA,iAtomB)

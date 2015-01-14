@@ -45,7 +45,8 @@ H    -1.452350000   0.899623000   0.00000000
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_dftfunc_lb94.dal <<'%EOF%'
-**INTEGRALS
+**GENERAL
+.PSFUN
 **WAVE FUNCTIONS
 .DFT
  LB94

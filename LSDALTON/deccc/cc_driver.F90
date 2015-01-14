@@ -33,6 +33,7 @@ use mp2_module!,only: get_VOVO_integrals
 use atomic_fragment_operations
 use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
+use ccsd_lhtr_module
 use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & getDoublesResidualCCSD_simple,getDoublesResidualCCSD_simple2, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
@@ -1756,6 +1757,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       use_singles = .false.
       atype = 'REAR'
 
+   case( MODEL_RIMP2 )
+
+      use_singles = .false.
+      atype = 'REAR'
+
    case( MODEL_CC2, MODEL_CCSD )
 
       if(.not.present(p2))then
@@ -1803,7 +1809,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       use_pnos        = .false.
       get_multipliers = .true.
-      prec_in_b       = .false.
+      prec_in_b       = .true.
 
       if(.not.present(m4)) then
          call lsquit('ccsolver: When solving for the multipliers, make sure the&
@@ -2309,6 +2315,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
                ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
 
+            case( MODEL_RIMP2 )
+
+               ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
+
             case( MODEL_CC2, MODEL_CCSD )
 
                ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
@@ -2425,9 +2435,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
 
+      !MODIFY FOR NEW MODEL
+
       if( JOB == SOLVE_AMPLITUDES.or.JOB == SOLVE_AMPLITUDES_PNO )then
          EnergyForCCmodelRestart: select case(CCmodel)
          case( MODEL_MP2 )
+            ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
+         case( MODEL_RIMP2 )
             ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
             ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
@@ -2685,7 +2699,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
          call tensor_cp_data(m4,ml4)
 
          call get_ccsd_multipliers_simple(omega1(use_i)%elm2,o2%elm4,m2%elm2&
-            &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
+            &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,delta_fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
             &,no,nv,nb,MyLsItem)
 
          call tensor_cp_data(o2,omega2(use_i),order=[1,3,2,4])
@@ -2742,7 +2756,8 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
             B(j,i) = B(i,j)
          end do
       end do
-
+   case( MODEL_RIMP2 ) 
+      call lsquit('RIMP2 not implemented in ccsolver_calculate_crop_matrix',-1)
    case( MODEL_CC2, MODEL_CCSD ) 
 
       do i=1,nSS
@@ -2811,7 +2826,7 @@ subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv
    ! Check if there is enough memory to performed an MO-CCSD calculation.
    !   YES: get full set of t1 free gmo and pack them
    !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
-   if (mo_ccsd.or.(ccmodel == MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
+   if (mo_ccsd.and.(.not.ccmodel==MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
       if(DECinfo%PL>1)call time_start_phase( PHASE_work, twall = time_mo_ints ) 
 
       call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,pgmo_diag,pgmo_up, &
@@ -2988,6 +3003,8 @@ subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,
    ! set model specifics here
    select case(ccmodel)
    case(MODEL_MP2)
+      use_singles = .false.
+   case(MODEL_RIMP2)
       use_singles = .false.
    case(MODEL_CC2)
       use_singles = .true.
