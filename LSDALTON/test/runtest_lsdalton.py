@@ -4,6 +4,17 @@ import sys
 import runtest
 
 
+def write_stderr(log_file, s):
+    """
+    Writes s to stderr and to file log_file
+    unless log_file is None.
+    """
+    if log_file != None:
+        with open(log_file, 'w') as f:
+            f.write(s)
+    sys.stderr.write(s)
+
+
 class Filter(runtest.Filter):
 
     def __init__(self):
@@ -13,7 +24,7 @@ class Filter(runtest.Filter):
         try:
             runtest.Filter.add(self, *args, **kwargs)
         except runtest.FilterKeywordError, e:
-            sys.stderr.write(str(e))
+            sys.stderr.write(str(e)) # FIXME currently not written to any log file
             sys.exit(-1)
 
 
@@ -35,7 +46,8 @@ class TestRun(runtest.TestRun):
                 sys.stderr.write('       try also --help\n')
                 sys.exit(-1)
 
-        launcher = '%s -noarch -nobackup %s' % (launch_script, args)
+#        launcher = '%s -noarch -nobackup %s' % (launch_script, args)
+        launcher = '%s -noarch %s' % (launch_script, args)
 
         for inp in inp_files:
             inp_no_suffix = os.path.splitext(inp)[0]
@@ -60,19 +72,19 @@ class TestRun(runtest.TestRun):
                                 f[suffix].check(self.work_dir, '%s' % out, 'result/%s' % out, self.verbose)
                             sys.stdout.write('passed\n')
                         except IOError, e:
-                            sys.stderr.write('ERROR: could not open file %s\n' % e.filename)
+                            write_stderr(self.log, 'ERROR: could not open file %s\n' % e.filename)
                             sys.exit(-1)
                         except runtest.TestFailedError, e:
-                            sys.stderr.write(str(e))
+                            write_stderr(self.log, str(e))
                             self.return_code += 1
                         except runtest.BadFilterError, e:
-                            sys.stderr.write(str(e))
+                            write_stderr(self.log, str(e))
                             sys.exit(-1)
                         except runtest.FilterKeywordError, e:
-                            sys.stderr.write(str(e))
+                            write_stderr(self.log, str(e))
                             sys.exit(-1)
                 except runtest.AcceptedError, e:
                     sys.stdout.write(str(e))
                 except runtest.SubprocessError, e:
-                    sys.stderr.write(str(e))
+                    write_stderr(self.log, str(e))
                     sys.exit(-1)

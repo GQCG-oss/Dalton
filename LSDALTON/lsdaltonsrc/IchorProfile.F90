@@ -37,7 +37,6 @@ IMPLICIT NONE
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR
 type(configItem)    :: config
-#ifdef VAR_ICHOR
 !
 real(realk),pointer   :: integralsII(:,:,:,:),integralsIchor(:,:,:,:)
 integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
@@ -215,12 +214,8 @@ IF(config%prof%IchorProfInputBasis)THEN
 ENDIF
 WRITE(lupri,*)'Done IchorUnitTest'
 !call debug_mem_stats(LUPRI)
-#else
-call lsquit('Profile_Ichor requires VAR_ICHOR',-1)
-#endif
 END SUBROUTINE Profile_Ichor
 
-#ifdef VAR_ICHOR
 subroutine determine_norm(Integrals,norm,dim1,dim2,dim3,dim4)
 implicit none
 integer :: dim1,dim2,dim3,dim4
@@ -239,7 +234,6 @@ DO D=1,dim4
    ENDDO
 ENDDO
 end subroutine determine_norm
-#endif
 
 End MODULE ProfileIchorMod
 

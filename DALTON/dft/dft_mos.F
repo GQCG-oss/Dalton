@@ -66,7 +66,7 @@ C
          CMO2(I,I,2) = D1
       END DO 
 C
-      IF (IPRINT.GT.3) THEN
+      IF (IPRINT.GE.15) THEN
          CALL HEADER('Matrix < abs(phi_p) abs(phi_q) >',-1)
          CALL OUTPUT(CMO2,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
          CALL HEADER('Matrix < phi_p^2 phi_q^2 >',-1)

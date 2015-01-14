@@ -47,7 +47,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 22
+  integer, parameter :: ndecenergies = 23
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -67,11 +67,12 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
   integer,parameter :: FRAGMODEL_CCSDf12  = 18  ! CCSD-F12 energy correction
-  integer,parameter :: FRAGMODEL_OCCRIMP2 = 19  ! RI-MP2 occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTRIMP2= 20  ! RI-MP2 virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCSOS   = 21   ! SOSEX occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTSOS  = 22   ! SOSEX virtual partitioning scheme
-
+  integer,parameter :: FRAGMODEL_LAGRIMP2 = 19  ! RI-MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCRIMP2 = 20  ! RI-MP2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTRIMP2= 21  ! RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCSOS   = 22  ! SOSEX occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTSOS  = 23  ! SOSEX virtual partitioning scheme
+  
   !> \author Kasper Kristensen
   !> \date June 2010
   !> \brief Contains settings for DEC calculation, see default settings in dec_set_default_config.
@@ -100,6 +101,11 @@ module dec_typedef_module
      logical :: SNOOPdebug
      !> Impose orthogonality constrant for occupied subsystem orbitals in SNOOP
      logical :: SNOOPort
+     !> Use "same" orbital spaces for monomer calculation as for full calculation,
+     !> as defined by natural connection
+     logical :: SNOOPsamespace
+     !> Localize SNOOP subsystem orbitals (cannot be used in connection with SNOOPsamespace)
+     logical :: SNOOPlocalize
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
@@ -296,6 +302,9 @@ module dec_typedef_module
      logical :: StressTest
      !> Kohn-Sham Reference
      logical :: DFTreference
+
+     !> Atomic Extent - include all atomic orbitals of atoms included
+     logical :: AtomicExtent
 
      !> MPI settings
      !> ************
@@ -595,6 +604,8 @@ module dec_typedef_module
      integer :: natoms
      !> Number of basis functions
      integer :: nbasis
+     !> Number of MOs (usually equal to nbasis but can be different for subsystems in SNOOP)
+     integer :: nMO
      !> Number of auxiliary basis functions
      integer :: nauxbasis
      !> Number of occupied orbitals (core + valence)
@@ -660,7 +671,7 @@ module dec_typedef_module
      Logical, pointer :: PhantomAtom(:) => null()
 
 
-     !> Occ-Occ Fock matrix in MO basis
+     !> Occ-Occ Fock matrix in MO basis (change)
      real(realk), pointer :: Fij(:,:) => null()
 
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
@@ -675,7 +686,9 @@ module dec_typedef_module
      real(realk), pointer :: Frm(:,:) => null()
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
-
+     !> Cabs-Cabs  Fock matrix in MO basis
+     !real(realk), pointer :: Fcd(:,:) => null()
+     
      integer,pointer :: SubSystemIndex(:) => null()
 
      !> Pair distance table giving interatomic distances
@@ -864,7 +877,7 @@ module dec_typedef_module
      real(realk), pointer :: Frm(:,:) => null()
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
-
+    
      ! Information for local orbitals
      ! ******************************
      !> Local occupied MO coefficients

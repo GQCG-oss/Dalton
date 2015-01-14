@@ -2,6 +2,7 @@
 #
 # Declare variables
 #
+RELEASE_VERSION=`cat ../../VERSION`
 HTMLDIR="HTMLmanual"
 export HTMLDIR
 if [ -d "$HTMLDIR" ]; then
@@ -14,7 +15,7 @@ fi
 # Run latex2html
 #
 latex2html -transparent -font_size 11pt -no_antialias -local_icons \
-    -address "Dalton Manual - Release DALTON2014" -dir $HTMLDIR Master.tex
+    -address "Dalton Manual - Release DALTON${RELEASE_VERSION}" -dir $HTMLDIR Master.tex
 #
 # Post-processing from release 1.2.1
 #

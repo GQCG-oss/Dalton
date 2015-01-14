@@ -286,6 +286,7 @@ CALL DFT_set_default_config(DALTON%DFT)
 
 ! DEC TEST PARAMETERS
 DALTON%run_dec_gradient_test=.false.
+DALTON%ForceRIMP2memReduced = .FALSE.
 END SUBROUTINE integral_set_default_config
 
 !!$!> \brief attach dmat to integral input structure
@@ -991,6 +992,7 @@ WRITE(LUPRI,'(2X,A35,F16.8)') 'CAMmu',DALTON%CAMmu
 call WRITE_FORMATTET_DFT_param(LUPRI,DALTON%DFT)
 !EXCHANGE FACTOR
 WRITE(LUPRI,'(2X,A35,F16.8)') 'exchangeFactor',DALTON%exchangeFactor
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ForceRIMP2memReduced ',DALTON%ForceRIMP2memReduced
 
 END SUBROUTINE PRINT_DALTONITEM
 
@@ -2802,6 +2804,7 @@ scheme%CAMalpha              = dalton_inp%CAMalpha
 scheme%CAMbeta               = dalton_inp%CAMbeta
 scheme%CAMmu                 = dalton_inp%CAMmu
 scheme%exchangeFactor        = dalton_inp%exchangeFactor
+scheme%ForceRIMP2memReduced  = dalton_inp%ForceRIMP2memReduced
 
 !DFT parameters 
 call dft_setIntegralSchemeFromInput(scheme%DFT,dalton_inp%DFT)
@@ -2932,6 +2935,8 @@ call WRITE_FORMATTET_DFT_PARAM(IUNIT,scheme%DFT)
 WRITE(IUNIT,'(3X,A22,L7)')'INCREMENTAL           ', scheme%INCREMENTAL
 WRITE(IUNIT,'(3X,A22,L7)')'DO_PROP               ', scheme%DO_PROP
 WRITE(IUNIT,'(3X,A22,I7)')'PropOper              ', scheme%PropOper
+WRITE(IUNIT,'(3X,A22,I7)')'ForceRIMP2memReduced  ', scheme%ForceRIMP2memReduced
+
 END SUBROUTINE typedef_printScheme
 
 !> \brief copy ls to newls 

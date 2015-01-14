@@ -185,26 +185,26 @@ contains
     !> can be the case for subsystems)
     integer,intent(in),optional :: nMO
     real(realk) :: memory_use, tcpu, twall
-    integer :: nMOintern
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     molecule%Edisp = 0.0_realk
     molecule%Ect = 0.0_realk
     molecule%Esub = 0.0_realk
-    nMOintern = 0
-    if(present(nMO)) nMOintern = nMO
-
     molecule%natoms = get_num_atoms(mylsitem)
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
     molecule%nauxbasis = get_num_aux_basis_functions(mylsitem)
-    molecule%nocc = molecule%nelectrons/2
+
+    ! Number of MOs can be different from nbasis if specified by input
     if(present(nMO)) then
-       molecule%nunocc = nMO - molecule%nocc
+       molecule%nMO=nMO
     else
-       molecule%nunocc = molecule%nbasis - molecule%nocc
+       molecule%nMO = molecule%nbasis
     end if
+
+    molecule%nocc = molecule%nelectrons/2
+    molecule%nunocc = molecule%nMO - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
     molecule%nCabsAO = 0
@@ -243,7 +243,7 @@ contains
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    if(nMOintern /= molecule%nbasis) then ! subsystem
+    if(molecule%nMO /= molecule%nbasis) then ! subsystem
 
        write(DECinfo%output,'(/,a)') '-- Subsystem info --'
        write(DECinfo%output,'(/,a,i6)') 'SUB: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
@@ -531,7 +531,11 @@ contains
 
     ! Get orbitals
     call mem_alloc(C,nbasis,nbasis)
-    call dec_read_mat_from_file('lcm_orbitals.u',nbasis,nbasis,C)
+    IF(DECinfo%use_canonical)THEN
+       call dec_read_mat_from_file('cmo_orbitals.u',nbasis,nbasis,C)       
+    ELSE
+       call dec_read_mat_from_file('lcm_orbitals.u',nbasis,nbasis,C)
+    ENDIF
     call molecule_generate_basis(molecule,C)
     call mem_dealloc(C)
 
@@ -773,6 +777,10 @@ contains
        call mem_dealloc(molecule%Fcp)
     end if
 
+!!$    if(associated(molecule%Fcd)) then
+!!$       call mem_dealloc(molecule%Fcd)
+!!$    end if
+
     ! Delete atomic info
     if(associated(molecule%atom_size)) then
        call mem_dealloc(molecule%atom_size)
@@ -857,7 +865,7 @@ contains
     type(fullmolecule), intent(inout) :: molecule
     type(lsitem), intent(inout) :: mylsitem
     integer :: natoms,r,i,iset,itype,basis,icharge,nbasis,iOrbitalIndex
-    integer :: kmult,nAngmom,ang,norb,j,k
+    integer :: kmult,nAngmom,ang,norb,j,k,nCont,iOrbitalIndexSave
     logical :: status_info
 
     natoms = molecule%natoms
@@ -916,13 +924,20 @@ contains
 
        nAngmom = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%nAngmom
        kmult = 1
+       iOrbitalIndexSave = iOrbitalIndex
+       nCont = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%ToTnorb
        do ang = 0,nAngmom-1
           norb = mylsitem%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%SHELL(ang+1)%norb
           IF(kmult.EQ.1)THEN
              !Include all S orbitals if one S orbital is included  
              do j = 1, norb
-                molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndex+1
-                molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndex+norb
+                if(DECinfo%AtomicExtent)then
+                   molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndexSave+1
+                   molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndexSave+nCont
+                else
+                   molecule%bas_start(iOrbitalIndex+j) = iOrbitalIndex+1
+                   molecule%bas_end(iOrbitalIndex+j) = iOrbitalIndex+norb
+                endif
              enddo
              iOrbitalIndex = iOrbitalIndex + norb
              kmult = kmult + 2
@@ -930,8 +945,13 @@ contains
              do j = 1, norb
                 !Include all Orbital Components of a given function (For P include Px,Py,Pz)
                 do k=1,kmult
-                   molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndex+1
-                   molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndex+kmult
+                   if(DECinfo%AtomicExtent)then
+                      molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndexSave+1
+                      molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndexSave+nCont
+                   else
+                      molecule%bas_start(iOrbitalIndex+k) = iOrbitalIndex+1
+                      molecule%bas_end(iOrbitalIndex+k) = iOrbitalIndex+kmult
+                   endif
                 enddo
                 iOrbitalIndex = iOrbitalIndex + kmult
              enddo
@@ -1115,7 +1135,8 @@ contains
     call mem_alloc(MyMolecule%Frm,ncabsAO,noccfull) !HACK not RI MO orbitals (AO basis)
     call mem_alloc(MyMolecule%Fcp,ncabsAO,nbasis)   !HACK not ncabsMO,nbasis - not CABS MOs
     call mem_alloc(MyMolecule%Fij,nocc,nocc)
-
+    !call mem_alloc(MyMolecule%Fcd,ncabsAO,ncabsAO)
+    
     ! Constructing the F12 MO matrices from F12_routines.F90
     call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&
          & nocc,noccfull,nvirt,MyMolecule%hJir,MyMolecule%Krs,MyMolecule%Frs,&
@@ -1132,6 +1153,7 @@ contains
       print *, "norm2D(Frm)",  norm2D(MyMolecule%Frm)
       print *, "norm2D(Fcp)",  norm2D(MyMolecule%Fcp)
       print *, "norm2D(Fij)",  norm2D(MyMolecule%Fij)
+     ! print *, "norm2D(Fcd)",  norm2D(MyMolecule%Fcd)
       print *,'-------------------------------------------' 
     end if
 
@@ -1248,63 +1270,7 @@ contains
     call mem_dealloc(Dfull)
 
   end subroutine dec_get_density_matrix_from_file
-
   
-  subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
-    implicit none
-
-    !> Full molecule structure to be initialized
-    type(fullmolecule), intent(inout) :: molecule
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-
-    type(matrix) :: CMO_cabs
-    integer :: ncabsAO,ncabs
-
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    molecule%nCabsAO = ncabsAO
-    molecule%nCabsMO = ncabs
-    call mat_init(CMO_cabs,nCabsAO,nCabs)
-
-    call init_cabs(DECinfo%full_molecular_cc)
-    call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
-
-    ! NB! Memory leak need to be freed somewhere
-!    call mem_alloc(molecule%Ccabs,ncabsAO,nCabs)
-!    call mat_to_full(CMO_cabs,1.0E0_realk,molecule%Ccabs)
-    call mat_free(CMO_cabs)
-
-  end subroutine dec_get_CABS_orbitals
-
-  subroutine  dec_get_RI_orbitals(molecule,mylsitem)
-    implicit none
-
-    !> Full molecule structure to be initialized
-    type(fullmolecule), intent(inout) :: molecule
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-
-    type(matrix) :: CMO_RI
-    integer :: ncabsAO,ncabs
-
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    molecule%nCabsAO = ncabsAO
-    molecule%nCabsMO = ncabs
-    call mat_init(CMO_RI,ncabsAO,ncabsAO)
-
-    call init_ri(DECinfo%full_molecular_cc)
-    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
-
-    ! NB! Memory leak need to be freed somewhere
-!    call mem_alloc(molecule%Cri,ncabsAO,ncabsAO) 
-!    call mat_to_full(CMO_RI,1.0E0_realk,molecule%Cri)
-
-    call mat_free(CMO_RI)
-
-  end subroutine dec_get_RI_orbitals
-
 
   ! THIS ROUTINE SHOULD BE RECONSIDERED IF WE FIND A GOOD ORBITAL INTERACTION MATRIX TO USE
   ! FOR FRAGMENT EXPANSION:   

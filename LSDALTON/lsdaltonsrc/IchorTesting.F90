@@ -46,7 +46,6 @@ CONTAINS
     INTEGER               :: LUPRI,LUERR,DebugIchorOption
     logical :: dolink
     !
-#ifdef VAR_ICHOR
     real(realk),pointer   :: integralsII(:,:,:,:),integralsIchor(:,:,:,:)
     real(realk),pointer   :: KmatII(:,:,:),KmatIchor(:,:,:)
     integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
@@ -919,7 +918,6 @@ CONTAINS
     !WRITE(lupri,*)'After IchorUnitTest'
     !call debug_mem_stats(LUPRI)
     
-#endif
   END SUBROUTINE II_unittest_Ichor
   
 !!$!> \brief Calculates overlap integral matrix
@@ -934,7 +932,7 @@ CONTAINS
 !!$TYPE(LSSETTING)       :: SETTING
 !!$INTEGER               :: LUPRI,LUERR,DebugIchorOption
 !!$!
-!!$#ifdef VAR_ICHOR
+!!$
 !!$real(realk),pointer   :: integralsIchor(:,:,:,:),IntFromFile(:,:,:,:)
 !!$integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
 !!$integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest
@@ -1236,7 +1234,7 @@ CONTAINS
 !!$WRITE(lupri,*)'After IchorUnitTest2'
 !!$call debug_mem_stats(LUPRI)
 !!$
-!!$#endif
+!!$
 !!$END SUBROUTINE II_unittest_Ichor2
 
 SUBROUTINE II_Ichor_LinK_test(LUPRI,LUERR,SETTING,D)
@@ -1344,7 +1342,6 @@ implicit none
 type(moleculeinfo) :: atomicmolecule
 real(realk)        :: Rxyz(3)
 integer,intent(in) :: ICHARGE,lupri,nAtoms
-#ifdef VAR_ICHOR
 character(len=22) :: label
 character(len=4) :: Name
 integer :: I
@@ -1424,7 +1421,6 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%SubSystemIndex =0 
 ENDDO
 
-#endif
 end subroutine build_unittest_atomicmolecule
 
 End MODULE IntegralInterfaceIchorMod

@@ -727,13 +727,13 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                  & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
                  & nContA,nContB,nContC,nContD,&
                  & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
-                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+                 & nContQ,Psegmented,Qsegmented)
          ELSE !use GPU code
             call ICI_GPU_OBS_general_size(TMParray1maxsize,&
                  & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
                  & nContA,nContB,nContC,nContD,&
                  & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
-                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+                 & nContQ,Psegmented,Qsegmented)
          ENDIF
          nLocalInt = nOrbA*nOrbB*nOrbC*nOrbD
       ENDIF
@@ -2165,7 +2165,7 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      !IatomAPass,iatomBPass changes and 
 !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
      call ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-          & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+          & nPrimQ,nPasses,MaxPasses,intprint,lupri,&
           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
           & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -2447,7 +2447,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
           & Qcent(:,:,iCAH),Qdistance12(:,iCAH),QpreExpFac(:,iCAH),INTPRINT)
 
      call ICI_GPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-          & nPrimQ,nPrimP*nPrimQ,nPasses(iCAH),MaxPasses,intprint,lupri,&
+          & nPrimQ,nPasses(iCAH),MaxPasses,intprint,lupri,&
           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
           & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&

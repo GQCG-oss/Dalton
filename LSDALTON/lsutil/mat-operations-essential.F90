@@ -28,7 +28,7 @@ MODULE matrix_operations
    use lsmpi_type, only: MATRIXTY
 #endif
    use matrix_operations_csr
-   use matrix_operations_unres_dense
+   use matrix_op_unres_dense
 
    private
    public ::  matrixfiletype2, matrixfiletype, &

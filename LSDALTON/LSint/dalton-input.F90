@@ -26,7 +26,8 @@ use molecule_type, only: free_moleculeinfo
 use READMOLEFILE, only: read_molfile_and_build_molecule,Geometry_analysis  
 use BuildBasisSet, only: Build_BASIS
 use lstiming, only: lstimer
-use molecule_module, only: build_fragment,determine_nbast
+use molecule_module, only: build_fragment,build_fragment2,&
+     & DETERMINE_FRAGMENTNBAST,determine_nbast
 use screen_mod, only: screen_init, screen_free
 private
 public ::  ls_init, ls_free, build_ccfragmentlsitem, dalton_finalize,&
@@ -626,6 +627,7 @@ integer            :: IPRINT
 integer            :: IAO,I,NATOMSFULL
 CHARACTER(len=9)   :: BASISLABEL
 logical            :: WhichAos(NBASISFULL)
+
 NATOMSFULL = lsfull%input%MOLECULE%nAtoms
 FRAGMENT%lupri = lsfull%lupri
 FRAGMENT%luerr = lsfull%luerr
@@ -641,7 +643,6 @@ NULLIFY(FRAGMENT%INPUT%BASIS)
 ALLOCATE(FRAGMENT%INPUT%BASIS)
 call nullifyMainBasis(FRAGMENT%INPUT%BASIS)
 FRAGMENT%INPUT%BASIS%WBASIS = lsfull%INPUT%BASIS%WBASIS
-
 Call BuildNewBasInfoStructure(LSFULL,FRAGMENT,ATOMS,NATOMS,NATOMSFULL,BASIS,NBASIS,NBASISFULL,LUPRI,IPRINT)
 
 IF(.NOT.lsfull%input%DALTON%NOGCINTEGRALTRANSFORM)THEN
@@ -681,6 +682,7 @@ fragment%setting%comm = 0
 fragment%setting%node = 0
 fragment%setting%numnodes = 1
 #endif
+
 END SUBROUTINE build_ccfragmentlsitem
 
 SUBROUTINE BuildNewBasInfoStructure(LSFULL,FRAGMENT,ATOMS,NATOMS,NATOMSFULL,BASIS,NBASIS,NBASISFULL,LUPRI,IPRINT)
@@ -819,14 +821,17 @@ do iB=2,nBasisBasParam
 enddo
 NULLIFY(FRAGMENT%INPUT%MOLECULE)
 ALLOCATE(FRAGMENT%INPUT%MOLECULE)
-CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
+CALL BUILD_FRAGMENT2(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
      & fragment%input%BASIS,ATOMS,nATOMS,LUPRI)
 
 DO i=1,natoms
    fragment%input%molecule%atom(i)%idtype(RegBasParam) = newType(i)
 ENDDO
-
 call mem_dealloc(newType)
+
+call DETERMINE_FRAGMENTNBAST(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
+     & fragment%input%BASIS,LUPRI)
+
 do iB=nBasisBasParam,1,-1
    IF(lsfull%INPUT%BASIS%WBASIS(IB))THEN
       CALL DETERMINE_NBAST(FRAGMENT%INPUT%MOLECULE,FRAGMENT%INPUT%BASIS%BINFO(iB),&

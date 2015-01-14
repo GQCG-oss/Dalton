@@ -9,7 +9,7 @@ git checkout Dalton2014
 export OMP_NUM_THREADS=2
 export MATH_ROOT=/lib64/ATLAS
 export DALTON_TMPDIR=$SCRATCH_DIR
-export DALTON_NUM_MPI_PROCS=6
+export DALTON_NUM_MPI_PROCS=3
 export CTEST_PROJECT_NAME=LSDALTON
 module load mpi/mpich-$(uname -i)
 #The module load command does not seem to work when called using a crontab script. 

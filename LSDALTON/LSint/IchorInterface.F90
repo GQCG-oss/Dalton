@@ -30,7 +30,6 @@ character(len=1),intent(in) :: AOspec
 TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: iAO
 integer,intent(inout)     :: MinimumAllowedAObatchSize
-#ifdef VAR_ICHOR
 !
 TYPE(BASISSETINFO),pointer :: AObasis
 integer :: nAOBatches
@@ -52,7 +51,6 @@ call Determine_OrbSizeOfBatches(setting%MOLECULE(iAO)%p,AObasis,&
      & nAOBatches,OrbSizeOfAOBatches,Spherical)
 MinimumAllowedAObatchSize = MAXVAL(OrbSizeOfAOBatches)
 call mem_dealloc(OrbSizeOfAOBatches)
-#endif
 end SUBROUTINE determine_MinimumAllowedAObatchSize
 
 SUBROUTINE determine_Ichor_nbatchesofAOS(setting,iAO,AOSPEC,&
@@ -64,7 +62,6 @@ integer,intent(in)        :: iAO,lupri
 integer,intent(inout)     :: nbatchesofAOS
 integer,intent(inout)     :: RequestedOrbitalDimOfAObatch
 !
-#ifdef VAR_ICHOR
 TYPE(BASISSETINFO),pointer :: AObasis
 integer     :: MaxOrbitalDimOfAObatch,nBatches,MinimumAllowedAObatchSize
 integer     :: MinOrbitalDimOfAObatch,J,n,k
@@ -139,7 +136,6 @@ call loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
 call mem_dealloc(ratio2)
 call mem_dealloc(MaxOrbitalDimOfAObatch2)
 call mem_dealloc(OrbSizeOfBatches)
-#endif
 end SUBROUTINE determine_Ichor_nbatchesofAOS
 
 SUBROUTINE determine_Ichor_nAObatches(setting,iAO,AOSPEC,nAObatches,lupri)
@@ -149,7 +145,6 @@ TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: iAO,lupri
 integer,intent(inout)     :: nAObatches
 !
-#ifdef VAR_ICHOR
 TYPE(BASISSETINFO),pointer :: AObasis
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
@@ -161,7 +156,6 @@ ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 call Determine_nBatches(setting%MOLECULE(iAO)%p,AObasis,nAOBatches)
-#endif
 end SUBROUTINE determine_Ichor_nAObatches
 
 subroutine loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
@@ -173,7 +167,6 @@ integer,intent(inout) :: nbatchesofAOS,MaxOrbitalDimOfAObatch
 integer,intent(inout) :: MinOrbitalDimOfAObatch 
 integer,intent(in) :: OrbSizeOfBatches(nBatches)
 !local
-#ifdef VAR_ICHOR
 integer :: I,DIM
 nbatchesofAOS=1
 DIM = 0
@@ -192,7 +185,6 @@ DO I=1,nBatches
 ENDDO
 MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
 MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
-#endif
 end subroutine loop1
 
 SUBROUTINE determine_Ichor_batchesofAOS(setting,iAO,AOSPEC,&
@@ -206,7 +198,6 @@ type(DecAObatchinfo)      :: AObatchinfo(nbatchesofAOS)
 integer,intent(in)        :: RequestedOrbitalDimOfAObatch
 integer,intent(inout)     :: MaxOrbitalDimOfAObatch
 !
-#ifdef VAR_ICHOR
 TYPE(BASISSETINFO),pointer :: AObasis
 integer,pointer :: OrbSizeOfBatches(:)
 integer :: nBatches,MinimumAllowedAObatchSize,ibatchesofAOS
@@ -287,7 +278,6 @@ MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
 MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
 call mem_dealloc(OrbSizeOfBatches)
 
-#endif
 end SUBROUTINE determine_Ichor_batchesofAOS
 
 !dim1,dim2,dim3,dim4 are the AO dimensions 
@@ -305,7 +295,6 @@ real(realk),intent(in)    :: Cocc(dim2,nOcc),intThreshold
 real(realk),intent(inout) :: integrals(nVirt,nOcc,nVirt,nOcc)
 Character,intent(IN)      :: intSpec(5)
 !
-#ifdef VAR_ICHOR
 logical :: MoTrans,NoSymmetry
 integer :: A,I,B,J
 !DO J=1,nOcc
@@ -327,7 +316,6 @@ CALL MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,int
      & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,&
      & nbatchDend,MoTrans,nVirt,nOcc,nVirt,nOcc,NoSymmetry,intThreshold)
 call FreeIchorInputInfo()
-#endif
 END SUBROUTINE MAIN_ICHORERI_MOTRANS_DRIVER
 
 SUBROUTINE MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
@@ -345,7 +333,6 @@ integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
 real(realk),intent(inout) :: integrals(OutDim1,OutDim2,OutDim3,OutDim4)
 real(realk),intent(in)    :: intThreshold
 Character,intent(IN)      :: intSpec(5)
-#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -538,17 +525,12 @@ call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
 call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
            & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
            & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
-
 END SUBROUTINE MAIN_ICHORERI_DRIVER
 
 subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
   implicit none
   character :: intspec 
   integer,intent(inout) :: IchorOperatorSpec
-#ifdef VAR_ICHOR
   IF (intSpec.EQ.'C') THEN
      ! Regular Coulomb operator 1/r12
      call GetIchorOpererator('Coulomb',IchorOperatorSpec)
@@ -567,9 +549,6 @@ subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
   ELSE
      call lsquit('Error in specification of operator in GetIchorOpereratorIntSpec',-1)
   ENDIF
-#else
-call lsquit('GetIchorOpereratorIntSpec requires -DVAR_ICHOR',-1)
-#endif
 end subroutine GetIchorOpereratorIntSpec
 
 SUBROUTINE MAIN_ICHORERIMEM_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
@@ -588,7 +567,6 @@ real(realk),intent(inout) :: integrals(OutDim1,OutDim2,OutDim3,OutDim4)
 Character,intent(IN)      :: intSpec(5)
 integer(kind=long),intent(inout) :: MaxMemoryUsage !only actual output  
 real(realk),intent(in) :: intThreshold
-#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -795,10 +773,6 @@ call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
 call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
            & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
            & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
-
 END SUBROUTINE MAIN_ICHORERIMEM_DRIVER
 
 Subroutine BuildCenterAndTypeInfo(Center,intSpecA,setting,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
@@ -884,7 +858,6 @@ TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: LUPRI,IPRINT
 Character,intent(IN)      :: intSpec(5)
 logical,intent(IN) :: SameMOL
-#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -1083,9 +1056,6 @@ ELSE
    IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
 ENDIF
 CALL SET_IchorGabIDinterface(IchorGabID1,IchorGabID2)
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
 
 END SUBROUTINE SCREEN_ICHORERI_DRIVER
 
@@ -1101,7 +1071,6 @@ integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
 real(realk),intent(in)    :: Dmat(dim2,dim4,nDmat),intThreshold
 real(realk),intent(inout) :: Kmat(dim1,dim3,nDmat)
 Character,intent(IN)      :: intSpec(5)
-#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -1276,9 +1245,6 @@ call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
 call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
            & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
            & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
 
 END SUBROUTINE MAIN_LINK_ICHORERI_DRIVER
 
@@ -1290,7 +1256,6 @@ logical,intent(IN) :: LHS
 integer,intent(inout) :: nBatchA,nBatchB
 ! local variables
 integer :: IchorGabID1,IchorGabID2
-#ifdef VAR_ICHOR
 CALL GET_IchorGabIDinterface(IchorGabID1,IchorGabID2)
 IF(LHS)THEN
    call RetrieveGabDIMFromIchorSaveGabModuleInterface(&
@@ -1299,9 +1264,6 @@ ELSE
    call RetrieveGabDIMFromIchorSaveGabModuleInterface(&
         & nBatchA,nBatchB,IchorGabID2)   
 ENDIF
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
 END SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GABDIM
 
 SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GAB(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS,BATCHGAB)
@@ -1313,26 +1275,18 @@ integer,intent(IN) :: nBatchA,nBatchB
 real(realk),intent(inout) :: BATCHGAB(nBatchA*nBatchB)
 ! local variables
 integer :: IchorGabID1,IchorGabID2
-#ifdef VAR_ICHOR
 CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
 IF(LHS)THEN
    call RetrieveGabFromIchorSaveGabModuleInterface(nBatchA,nBatchB,IchorGabID1,BATCHGAB)
 ELSE
    call RetrieveGabFromIchorSaveGabModuleInterface(nBatchA,nBatchB,IchorGabID2,BATCHGAB)
 ENDIF
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
 END SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GAB
 
 SUBROUTINE FREE_SCREEN_ICHORERI()
 implicit none
-#ifdef VAR_ICHOR
 CALL SET_IchorGabIDInterface(0,0)
 call FreeIchorSaveGabModuleInterface
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
 END SUBROUTINE FREE_SCREEN_ICHORERI
 
 SUBROUTINE GenerateIdentifier(INTSPEC,GabIdentifier)
@@ -1340,7 +1294,6 @@ SUBROUTINE GenerateIdentifier(INTSPEC,GabIdentifier)
   Character,intent(IN)      :: intSpec(5)
   integer,intent(inout) :: GabIdentifier
   !
-#ifdef VAR_ICHOR 
   Integer :: I
   GabIdentifier = 0 
   DO I = 1,4
@@ -1366,7 +1319,6 @@ SUBROUTINE GenerateIdentifier(INTSPEC,GabIdentifier)
   ELSE
      call lsquit('unknown spec in GENERATEIDENTIFIER',-1)
   ENDIF
-#endif
 END SUBROUTINE GENERATEIDENTIFIER
 
 Subroutine Determine_nTypesForBatch(BASISINFO,ntypes)
@@ -1376,7 +1328,6 @@ TYPE(BASISSETINFO),intent(in):: BASISINFO
 !> the number of different types of batches
 INTEGER,intent(inout)        :: ntypes
 !
-#ifdef VAR_ICHOR 
 INTEGER                   :: SUM1,I,K
 IF(BASISINFO%natomtypes.EQ. 0)&
      & CALL LSQUIT('Error Determine_nTypesForBatch called with empty basis',-1)
@@ -1388,7 +1339,6 @@ DO I=1,BASISINFO%natomtypes
    ENDDO
    ntypes=ntypes + SUM1
 ENDDO
-#endif
 END Subroutine DETERMINE_NTYPESFORBATCH
 
 Subroutine Determine_nBatches(MOLECULE,BASISINFO,nBatches)
@@ -1399,7 +1349,6 @@ TYPE(MOLECULEINFO),intent(in) :: MOLECULE
 TYPE(BASISSETINFO),intent(in):: BASISINFO
 !> the number of Batches
 integer,intent(inout)    :: nBatches
-#ifdef VAR_ICHOR 
 !local variables
 integer :: R,I,ICHARGE,TYPE,K,iseg
 !build nAtomsOfType
@@ -1420,7 +1369,6 @@ DO I=1,MOLECULE%natoms
   ENDDO
  ENDDO
 ENDDO
-#endif
 END Subroutine DETERMINE_NBATCHES
 
 Subroutine Determine_OrbSizeOfBatches(MOLECULE,BASISINFO,nBatches,OrbSizeOfBatches,Spherical)
@@ -1436,7 +1384,6 @@ integer,intent(in)    :: nBatches
 !> the orbital size of Batches
 integer,intent(inout) :: OrbSizeOfBatches(nBatches)
 
-#ifdef VAR_ICHOR 
 !local variables
 integer :: R,I,ICHARGE,TYPE,K,iseg,ncol,nOrbComp,iBatches
 !build nAtomsOfType
@@ -1465,7 +1412,6 @@ DO I=1,MOLECULE%natoms
   ENDDO
  ENDDO
 ENDDO
-#endif
 END Subroutine DETERMINE_ORBSIZEOFBATCHES
 
 Subroutine build_TypeInfo1(MOLECULE,BASISINFO,nTypes,nAtomsOfType,&
@@ -1496,7 +1442,6 @@ integer,intent(in)      :: iBatchStart
 !> the end Batch index (normally nBatches else not the full set is used)
 integer,intent(in)      :: iBatchEnd
 
-#ifdef VAR_ICHOR 
 !
 INTEGER,pointer          :: MODELTYPES(:),MODELBATCHTYPES(:,:,:)
 INTEGER                  :: maxseg,maxang,I,K,L,iBatchType,R,icharge,type,iseg
@@ -1580,7 +1525,6 @@ do iBatchType=1,nBatchType
    MaxnCont = MAX(MaxnCont,nContOfType(iBatchType))
 enddo
 
-#endif
 end Subroutine Build_TypeInfo1
 
 Subroutine Build_TypeInfo2(MOLECULE,BASISINFO,nTypes,spherical,MaxnAtoms,MaxnPrim,&
@@ -1612,7 +1556,6 @@ real(realk),intent(inout) :: CentersOfType(3,MaxnAtoms,nTypes)
 integer,intent(in)      :: iBatchStart
 !> the end Batch index (normally nBatches else not the full set is used)
 integer,intent(in)      :: iBatchEnd
-#ifdef VAR_ICHOR 
 !
 INTEGER,pointer          :: MODELTYPES(:),MODELBATCHTYPES(:,:,:)
 INTEGER                  :: maxseg,maxang,I,K,L,iBatchType,R,icharge,type,iseg
@@ -1698,7 +1641,6 @@ ENDDO
 call mem_dealloc(MODELTYPES)
 call mem_dealloc(MODELBATCHTYPES)
 
-#endif
 end Subroutine Build_TypeInfo2
 
 SUBROUTINE WRITE_ICHORERI_INFO(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,profile,LUOUTPUT)
@@ -1708,7 +1650,6 @@ integer,intent(in)        :: LUPRI,IPRINT,LUOUTPUT
 integer,intent(in)        :: dim1,dim2,dim3,dim4 
 real(realk),intent(inout) :: integrals(dim1,dim2,dim3,dim4)
 logical,intent(in)        :: profile
-#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -1822,10 +1763,6 @@ ELSE
     ENDDO
    ENDDO
 ENDIF
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
-
 END SUBROUTINE WRITE_ICHORERI_INFO
 
 SUBROUTINE MAIN_ICHORERI_READDRIVER(LUPRI,IPRINT,LUOUTPUT,CS_SCREEN,OD_SCREEN,integrals,&
@@ -1835,7 +1772,6 @@ integer,intent(in)        :: LUPRI,IPRINT,LUOUTPUT
 logical,intent(in)        :: CS_SCREEN,OD_SCREEN
 real(realk),pointer       :: integrals(:,:,:,:)
 integer,intent(inout)     :: dim1,dim2,dim3,dim4
-#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -2034,10 +1970,6 @@ call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
 call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
            & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
            & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
-
 END SUBROUTINE MAIN_ICHORERI_READDRIVER
 
 END MODULE IchorErimoduleHost
