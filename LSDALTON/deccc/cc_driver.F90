@@ -33,6 +33,7 @@ use mp2_module!,only: get_VOVO_integrals
 use atomic_fragment_operations
 use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
+use ccsd_lhtr_module
 use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & getDoublesResidualCCSD_simple,getDoublesResidualCCSD_simple2, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
@@ -1808,7 +1809,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       use_pnos        = .false.
       get_multipliers = .true.
-      prec_in_b       = .false.
+      prec_in_b       = .true.
 
       if(.not.present(m4)) then
          call lsquit('ccsolver: When solving for the multipliers, make sure the&
