@@ -2763,7 +2763,7 @@ end function max_batch_dimension
   !> Assumes closed-shell system
   !> \author Kasper Kristensen
   !> \date December 2012
-  function get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D,dft) result(Ehf)
+  function get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D) result(Ehf)
 
     implicit none
     !> HF energy
@@ -2775,72 +2775,46 @@ end function max_batch_dimension
     !> HF Density matrix
     type(matrix),intent(in) :: D
     !> get E_DFT
-    logical,optional,intent(in) :: dft
     type(matrix) :: F,h
     type(matrix) :: Dtmp(1)
     real(realk)  :: exchangeFactor,enuc,edft(1)
-    logical :: dft2
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
 
-    dft2 = .FALSE.
-    if(present(dft)) dft2 = dft 
 
-    if(dft2) then
+
+    if(DECinfo%DFTreference) then
+      !Needs the fock matrix from the KS density
+      exchangeFactor = mylsitem%SETTING%SCHEME%exchangeFactor
+      mylsitem%SETTING%SCHEME%exchangeFactor=1.0_realk
+      !This was from the beginning set to zero, has
+      !to be 1.0 for evaluation of exact exchange.
+
       call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
-      call mat_init(Dtmp(1),MyMolecule%nbasis,MyMolecule%nbasis)
-      call mat_copy(1.0_realk,D,Dtmp(1))
       call mat_zero(h)
       call mat_zero(F)
 
-      call II_get_xc_energy(DECinfo%output,DECinfo%output,&
-        & mylsitem%setting,MyMolecule%nbasis,Dtmp,Edft,1)
-      call mat_free(Dtmp(1))
       call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
-
-      call II_get_coulomb_mat(DECinfo%output, &
+      call II_get_coulomb_and_exchange_mat(DECinfo%output, &
         & DECinfo%output,mylsitem%setting,D,F,1)
-      call mat_daxpy(2.0_realk,h,F)
-      CALL II_get_nucpot(DECinfo%output, DECinfo%output,mylsitem%setting,Enuc)
-      Ehf =Edft(1) + mat_dotproduct(D,F) + Enuc
+      !adds one-particle part
+      call mat_daxpy(1.0_realk,h,F)
+      !reset exchangeFactor for future use
+      mylsitem%SETTING%SCHEME%exchangeFactor=exchangeFactor 
 
       call mat_free(h)
-
     else
-
-      if(DECinfo%DFTreference) then
-        !Needs the fock matrix from the KS density
-        exchangeFactor = mylsitem%SETTING%SCHEME%exchangeFactor
-        mylsitem%SETTING%SCHEME%exchangeFactor=1.0_realk
-        !This was from the beginning set to zero, has
-        !to be 1.0 for evaluation of exact exchange.
-
-        call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
-        call mat_zero(h)
-        call mat_zero(F)
-
-        call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
-        call II_get_coulomb_and_exchange_mat(DECinfo%output, &
-          & DECinfo%output,mylsitem%setting,D,F,1)
-        !adds one-particle part
-        call mat_daxpy(1.0_realk,h,F)
-        !reset exchangeFactor for future use
-        mylsitem%SETTING%SCHEME%exchangeFactor=exchangeFactor 
-
-        call mat_free(h)
-      else
-        call mat_set_from_full(MyMolecule%fock, 1E0_realk, F)
-      endif
-
-      ! Get HF energy
-      Ehf = get_HF_energy(D,F,Mylsitem) 
-
+      call mat_set_from_full(MyMolecule%fock, 1E0_realk, F)
     endif
+
+    ! Get HF energy
+    Ehf = get_HF_energy(D,F,Mylsitem) 
+
     call mat_free(F)
 
   end function get_HF_energy_fullmolecule
 
-  !> \brief Get HF energy from full molecule structure.
+  !> \brief Get KS energy from full molecule structure.
   !> Assumes closed-shell system
   !> \author J. Rekkedal
   !> \date December 2012
@@ -2873,6 +2847,7 @@ end function max_batch_dimension
       & mylsitem%setting,MyMolecule%nbasis,Dtmp,Edft,1)
     call mat_free(Dtmp(1))
     call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
+    call mat_free(Dtmp(1))
 
     call II_get_coulomb_mat(DECinfo%output, &
       & DECinfo%output,mylsitem%setting,D,F,1)
@@ -4750,15 +4725,23 @@ end function max_batch_dimension
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRIMP2),dofrag,&
                & 'RI-MP2 virtual single energies','AF_RI_MP2_VIR')
        endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGRIMP2),dofrag,&
+               & 'RI-MP2 Lagrangian single energies','AF_RI_MP2_LAG')
+       end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRIMP2),dofrag,&
                & DistanceTable, 'RI-MP2 occupied pair energies','PF_RI_MP2_OCC')
        endif
-       if(.not. DECinfo%onlyoccpart) then  
+       if((.not. DECinfo%onlyoccpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRIMP2),dofrag,&
                & DistanceTable, 'RI-MP2 virtual pair energies','PF_RI_MP2_VIR')          
        endif
+       if((.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGRIMP2),dofrag,&
+               & DistanceTable, 'RI-MP2 Lagrangian pair energies','PF_RI_MP2_LAG')
+       end if
 
        write(DECinfo%output,*)
        if(.not.DECinfo%onlyvirtpart) then  
@@ -4767,9 +4750,14 @@ end function max_batch_dimension
        endif
        if(.not.DECinfo%onlyoccpart) then
           write(DECinfo%output,'(1X,a,a,a,g20.10)') &
-               &'RI-MP2 virtual    ',CorrEnergyString(1:iCorrLen),' : ',energies(FRAGMODEL_VIRTRIMP2)
+               & 'RI-MP2 virtual    ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_VIRTRIMP2)
        endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') &
+               &'RI-MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_LAGRIMP2)
+       end if
        write(DECinfo%output,*)
+
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
@@ -5343,8 +5331,8 @@ end function max_batch_dimension
 
     case(MODEL_RIMP2)
        ! Energy error = difference between occ and virt energies
-       Eerr = abs(energies(FRAGMODEL_OCCRIMP2) - energies(FRAGMODEL_VIRTRIMP2))
-
+       Eerr = max(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2)) &
+            & - min(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2))
     case default
        print *, 'Model is: ', DECinfo%ccmodel
        call lsquit('get_estimated_energy_error: Model needs implementation!',-1)

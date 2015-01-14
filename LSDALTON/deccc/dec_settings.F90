@@ -408,6 +408,7 @@ contains
        case('.RPA')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.
+          DECinfo%solver_par=.true.
 
 
           ! CC SOLVER INFO
@@ -752,7 +753,6 @@ contains
        end if
     end if
 
-    
     ! SNOOP - currently limited in several ways
     if(DECinfo%SNOOP) then
 
@@ -859,6 +859,14 @@ contains
 
     end if ArraysOnFile
 
+
+    IF(DECinfo%full_molecular_cc)THEN
+       IF(DECinfo%print_frags.AND.DECinfo%ccModel .EQ. MODEL_RIMP2)THEN
+          call lsquit('A full molecular RIMP2 calculation do not construct the amplitudes and integrals. &
+               & It is therefore not possible to print the fragment energies. &
+               & Suggestion: Remove .PRINTFRAGS keyword!', DECinfo%output)
+       ENDIF
+    ENDIF
 
     FirstOrderModel: if(DECinfo%ccModel /= MODEL_MP2.and.DECinfo%ccModel /= MODEL_CCSD) then
 

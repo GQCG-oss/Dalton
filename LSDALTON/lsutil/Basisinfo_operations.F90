@@ -747,6 +747,7 @@ subroutine buildbasisfrombrakebasinf(BB,NATOMS,nBB,oldBAS,newBAS,labelindex)
   NEWBAS%Gcbasis = OLDBAS%GCbasis
   NEWBAS%Spherical = OLDBAS%Spherical
   !The labelindex cannot be 0 and nChargeindex must be zero
+  IF(labelindex.EQ.0)call lsquit('labelindex cannot be 0 in buildbasisfrombrakebasinf',-1)
   NEWBAS%labelindex = labelindex
   NEWBAS%nChargeindex = 0 !OLDBAS%nChargeindex
   NEWBAS%label = OLDBAS%label

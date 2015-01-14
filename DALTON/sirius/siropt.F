@@ -1230,6 +1230,17 @@ C
 C ***********************************************************
 C
   890 CONTINUE
+
+      !> store 1-particle density matrix in AO-basis on file
+!#define AO_DENSITIES_ON_FILE
+#ifdef AO_DENSITIES_ON_FILE
+      call rdcref(wrk(kcref))
+      call makdv(wrk(kcref),wrk(kdv),wrk(kcindx),wrk(kwrkg),lwrkg)
+      call write_aodens(wrk(kdv),nisht,nasht,nbast,nnashx,
+     &                  ncmot,nsym,nbas,ibas,lupri,.false.,"MC")
+#undef AO_DENSITIES_ON_FILE
+#endif
+
 C     restore control variables
       FLAG(39) = NRALW
       IFTHRS = IFTHSV
