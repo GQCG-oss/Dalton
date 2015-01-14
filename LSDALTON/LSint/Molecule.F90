@@ -343,11 +343,54 @@ END SUBROUTINE DETERMINE_NELECTRONS
 !> \param DALMOL The original molecule
 !> \param FRAGMOL The fragment molecule
 !> \param FRAGBASIS the basisinfo 
-!> \param AUXBASIS logical = true if AUXBASIS is given
 !> \param ATOMS List of atoms to be included in the fragment
 !> \param nATOMS The number of atoms to be included
 !> \param lupri Default output unit
 SUBROUTINE BUILD_FRAGMENT(DALMOL,FRAGMOL,FRAGBASIS,ATOMS,nATOMS,lupri)
+implicit none
+INTEGER,intent(IN)                    :: NATOMS,lupri
+INTEGER,intent(IN)                    :: ATOMS(NATOMS)
+TYPE(MOLECULEINFO),intent(IN)         :: DALMOL
+TYPE(MOLECULEINFO),intent(INOUT)      :: FRAGMOL
+TYPE(BASISINFO),intent(INOUT)         :: FRAGBASIS
+call BUILD_FRAGMENT2(DALMOL,FRAGMOL,FRAGBASIS,ATOMS,nATOMS,lupri)
+call DETERMINE_FRAGMENTNBAST(DALMOL,FRAGMOL,FRAGBASIS,lupri)
+END SUBROUTINE BUILD_FRAGMENT
+
+!> \brief Sets info about nbast
+!> \author S. Reine and T. Kjaergaard
+!> \date 2010-02-21
+!> \param DALMOL The original molecule
+!> \param FRAGMOL The fragment molecule
+!> \param FRAGBASIS the basisinfo 
+!> \param lupri Default output unit
+subroutine DETERMINE_FRAGMENTNBAST(DALMOL,FRAGMOL,FRAGBASIS,lupri)
+implicit none
+INTEGER,intent(IN)                    :: lupri
+TYPE(MOLECULEINFO),intent(IN)         :: DALMOL
+TYPE(MOLECULEINFO),intent(INOUT)      :: FRAGMOL
+TYPE(BASISINFO),intent(INOUT)         :: FRAGBASIS
+!
+INTEGER            :: I
+
+do I=1,nBasisBasParam
+   IF(FRAGBASIS%WBASIS(I))THEN
+      CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%BINFO(I))
+   ENDIF
+enddo
+CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%BINFO(RegBasParam))
+end subroutine DETERMINE_FRAGMENTNBAST
+
+!> \brief Builds a molecular fragment from a subset of the atoms in the original molecule
+!> \author S. Reine and T. Kjaergaard
+!> \date 2010-02-21
+!> \param DALMOL The original molecule
+!> \param FRAGMOL The fragment molecule
+!> \param FRAGBASIS the basisinfo 
+!> \param ATOMS List of atoms to be included in the fragment
+!> \param nATOMS The number of atoms to be included
+!> \param lupri Default output unit
+SUBROUTINE BUILD_FRAGMENT2(DALMOL,FRAGMOL,FRAGBASIS,ATOMS,nATOMS,lupri)
 implicit none
 INTEGER,intent(IN)                    :: NATOMS,lupri
 INTEGER,intent(IN)                    :: ATOMS(NATOMS)
@@ -392,13 +435,7 @@ ELSE
    NULLIFY(FRAGMOL%SubSystemLabel)
 ENDIF
 
-do I=1,nBasisBasParam
-   IF(FRAGBASIS%WBASIS(I))THEN
-      CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%BINFO(I))
-   ENDIF
-enddo
-CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%BINFO(RegBasParam))
-END SUBROUTINE BUILD_FRAGMENT
+END SUBROUTINE BUILD_FRAGMENT2
 
 !!$!> \brief 
 !!$!> \author
