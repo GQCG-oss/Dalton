@@ -1711,13 +1711,6 @@ C
 C     if qm3 .or. pcm then also mmpcm automatically
       IF (IPRENR .GT. 0) THEN
 C
-         IF (CMOPRI) THEN
-            IPR4SA = IPRI4
-            IPR6SA = IPRI6
-            IPRI4  = MAX(IPRI4,11)
-            IPRI6  = MAX(IPRI6,11)
-         END IF
-C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
@@ -1736,11 +1729,6 @@ C-------------------
 C-------------------
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
 C
-         IF (CMOPRI) THEN
-            IPRI4 = IPR4SA
-            IPRI6 = IPR6SA
-         END IF
-
          IF (IPR_DIIS .GT. 10) THEN
             WRITE(LUPRI,'(/A)')
      &      'Final SCF orbitals after DIIS iterations:'

@@ -1311,7 +1311,8 @@ C    *      ' Orbital energy analysis skipped for open-shell systems'
 C        GO TO 9999
 C hjaaj TODO:   EKT orbital energies may be defined later.
       END IF
-      IF (IPRINT .LT. 10) WRITE (LUPRI,'(/A)') ' Only the five'//
+      IF (IPRINT .LT. 10 .AND. NSSHT .GT. 20)
+     &   WRITE (LUPRI,'(/A)') ' Only the 20'//
      &   ' lowest virtual orbital energies printed in each symmetry.'
       IF (IPRINT .GE. 2) WRITE (LUPRI,'(/A,I5/A,8I5)')
      &   ' Number of electrons :',2*NISHT,
@@ -1400,7 +1401,7 @@ C                     because the Fock matrix is not zero for these
          IF (IPRINT .GE. 10) THEN
             NLAST = NORBI
          ELSE
-            NLAST = MIN(NORBI,NOCC(ISYM)+5)
+            NLAST = MIN(NORBI,NOCC(ISYM)+20)
          END IF
          IF (NFRHFI .GT. 0) WRITE (LUPRI,'(A,I3,A)')
      &' Note: the first',NFRHFI,' orbitals in next symmetry are frozen'
