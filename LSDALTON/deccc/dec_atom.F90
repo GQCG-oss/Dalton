@@ -704,6 +704,7 @@ contains
     nfrags = MyMolecule%nfrags
 
     FragLoop: do i=1,nfrags
+
        if(.not. dofrag(i)) cycle FragLoop
 
        MyAtom=i
@@ -748,7 +749,9 @@ contains
           call atomic_fragment_init_within_distance(MyAtom,&
                & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
                & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
+
        end if
+
     end do FragLoop
 
   end subroutine init_estimated_atomic_fragments
@@ -1127,8 +1130,8 @@ contains
       real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
 
       ! Get nred_occ and nred_vir (5% of the expanded spaces)
-      nred_occ = max( ceiling(5.0E0_realk*MyFragment%noccAOS/100), 1)
-      nred_vir = max( ceiling(5.0E0_realk*MyFragment%nunoccAOS/100), 1)
+      nred_occ = max( ceiling(DECinfo%FracOfOrbSpace_red*MyFragment%noccAOS/100), 1)
+      nred_vir = max( ceiling(DECinfo%FracOfOrbSpace_red*MyFragment%nunoccAOS/100), 1)
 
 
       ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:
@@ -2226,10 +2229,30 @@ contains
     logical, intent(in) :: DoBasis
     logical, dimension(nunocc) :: Unocc_list
     logical, dimension(nocc) :: Occ_list
+    integer :: orb_idx
 
     ! All orbitals included in fragment
-    unocc_list=.true.
-    occ_list=.true.
+    if(DECinfo%all_init_radius<=.0.0E0_realk)then
+
+       unocc_list = .true.
+       occ_list   = .true.
+
+    else
+
+       unocc_list = .false.
+       occ_list   = .false.
+
+       !loop over all valence orbitals and include them if within radius
+       do orb_idx=1, MyMolecule%nocc
+          occ_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomOcc(orb_idx,MyAtom)<=DECinfo%all_init_radius)
+       enddo
+       !loop over all virtual orbitals and include them if within radius
+       do orb_idx=1, MyMolecule%nunocc
+          occ_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomVirt(orb_idx,MyAtom)<=DECinfo%all_init_radius)
+       enddo
+
+    endif
+
     if(DECinfo%frozencore) then  ! never include core orbitals for frozen core
        occ_list(1:MyMolecule%ncore)=.false.
     end if
