@@ -255,7 +255,7 @@ C
      &'and',
      &'',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release DALTON2014.0 (2014), see http://daltonprogram.org'
+     &'   Release DALTON2014.0 (2015), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
