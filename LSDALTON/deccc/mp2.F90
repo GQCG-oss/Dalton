@@ -2001,6 +2001,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases)
   integer(kind=long) :: nSize
+  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
@@ -2038,6 +2039,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call start_flop_counter()
   end if
   ! Initialize stuff
+
   natoms = MyFragment%natoms
   nbasis = MyFragment%nbasis
   nocc = MyFragment%noccAOS        ! occupied AOS (only valence for frozen core)
@@ -2254,6 +2256,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => MyFragment%mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => MyFragment%mylsitem%SETTING%MOLECULE(2)%p
+        molecule3 => MyFragment%mylsitem%SETTING%MOLECULE(3)%p
+        molecule4 => MyFragment%mylsitem%SETTING%MOLECULE(4)%p
         MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
         MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
         MyFragment%mylsitem%SETTING%MOLECULE(3)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
@@ -2262,10 +2268,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
           & AlphaBeta,MyFragment%mylsitem%setting,nbasisAux)
      IF(DECinfo%AuxAtomicExtent)THEN
-        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%MOLECULE
-        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%MOLECULE
-        MyFragment%mylsitem%SETTING%MOLECULE(3)%p => MyFragment%mylsitem%INPUT%MOLECULE
-        MyFragment%mylsitem%SETTING%MOLECULE(4)%p => MyFragment%mylsitem%INPUT%MOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => molecule2
+        MyFragment%mylsitem%SETTING%MOLECULE(3)%p => molecule3
+        MyFragment%mylsitem%SETTING%MOLECULE(4)%p => molecule4
      ENDIF
 
      CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
@@ -2322,6 +2328,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly 
      !nbasisAuxMPI = nbasisAux/numnodes
      IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => MyFragment%mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => MyFragment%mylsitem%SETTING%MOLECULE(2)%p
         MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
         MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
      ENDIF
@@ -2329,8 +2337,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
           & AlphaCD3,MyFragment%mylsitem%setting,nbasisAux,nbasis,&
           & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
      IF(DECinfo%AuxAtomicExtent)THEN
-        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%MOLECULE
-        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%MOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => molecule2
      ENDIF
   ENDIF
   CALL LSTIMER('DECRIMP2: AlphaCD ',TS2,TE2,LUPRI,FORCEPRINT)

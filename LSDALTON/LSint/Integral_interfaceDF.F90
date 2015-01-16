@@ -2415,7 +2415,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
         DO iAtomAMPI=1,nAtomsMPI(mynum+1)
            iAtomA = AtomsMPI(iAtomAMPI,mynum+1)
            nAuxA = nAuxMPI(iAtomAMPI,mynum+1)
-           call typedef_setMolecules(setting,molecule1,3,4,ATOMS(iAtomA),1)             
+           call typedef_setMolecules(setting,molecule3,3,4,ATOMS(iAtomA),1)             
            nsize = (MynbasisAuxMPI*nvirt*nocc+2*nAuxA*nBast*nBast)*mem_realsize
            IF(nsize.GT.maxsize.OR.setting%scheme%ForceRIMP2memReduced)THEN     
               !Memory reduced version:   We split up the atom into batches
@@ -2473,7 +2473,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
               startF = startF + nAUXA
            ENDIF
         ENDDO
-        call typedef_setMolecules(setting,molecule1,1,2,3,4)
+        !restore 
+        call typedef_setMolecules(setting,molecule1,1,molecule2,2,&
+             & molecule3,3,molecule4,4)
         call pari_free_atomic_fragments(ATOMS,nAtomsAux)
         deallocate(ATOMS)
      ENDIF
@@ -2483,6 +2485,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      SETTING%SCHEME%doMPI = doMPI
      SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
   ENDIF
+  !restore 
   SETTING%MOLECULE(1)%p => molecule1
   SETTING%MOLECULE(2)%p => molecule2
   SETTING%MOLECULE(3)%p => molecule3

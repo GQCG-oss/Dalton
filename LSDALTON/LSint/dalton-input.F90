@@ -168,6 +168,8 @@ NULLIFY(intinp%AUXMOLECULE)
 NULLIFY(intinp%BASIS)
 ALLOCATE(intinp%MOLECULE)
 ALLOCATE(intinp%AUXMOLECULE)
+intinp%AUXMOLECULE%nAtoms=0
+intinp%AUXMOLECULE%nSubSystems=0
 ALLOCATE(intinp%BASIS)
 call nullifyMainBasis(intinp%BASIS)
 
@@ -309,6 +311,7 @@ integer   :: LUERR
 integer :: ibas
 
 call free_Moleculeinfo(intinp%MOLECULE)
+call free_Moleculeinfo(intinp%AUXMOLECULE)
 DO ibas=1,nBasisBasParam
    IF(intinp%BASIS%WBASIS(ibas))THEN
       IF(intinp%BASIS%BINFO(ibas)%natomtypes .NE. 0)THEN
@@ -538,6 +541,7 @@ integer            :: IPRINT
 !
 integer            :: IAO,I
 CHARACTER(len=9)   :: BASISLABEL
+integer,pointer :: FullAtomList(:)
 
 FRAGMENT%lupri = lsfull%lupri
 FRAGMENT%luerr = lsfull%luerr
@@ -571,6 +575,15 @@ NULLIFY(FRAGMENT%INPUT%MOLECULE)
 ALLOCATE(FRAGMENT%INPUT%MOLECULE)
 CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
      & fragment%input%BASIS,ATOMS,nATOMS,LUPRI)
+NULLIFY(FRAGMENT%INPUT%AUXMOLECULE)
+ALLOCATE(FRAGMENT%INPUT%AUXMOLECULE)
+call mem_alloc(FullAtomList,lsfull%input%MOLECULE%natoms)
+do I=1,lsfull%input%MOLECULE%natoms
+   FullAtomList(I) = I
+enddo
+CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
+     & fragment%input%BASIS,FullAtomList,lsfull%input%MOLECULE%natoms,LUPRI)
+call mem_dealloc(FullAtomList)
 
 IF(IPRINT .GT. 0)THEN
    CALL PRINT_MOLECULEINFO(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS,IPRINT)
