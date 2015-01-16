@@ -3063,7 +3063,10 @@
 !        index_host(i)=(abs(i)-1)/MAX_TENSOR_RANK     !index code --> host argument: {0,1,2}={d,l,r}
 !        index_pos(i)=mod(abs(i)-1,MAX_TENSOR_RANK)+1 !index code --> index (dimension) position
 
-        ierr=0; tmb=thread_wtime(); impir=my_mpi_rank(infpar%lg_comm)
+        ierr=0; tmb=thread_wtime(); impir=0
+#ifdef VAR_MPI
+        impir=my_mpi_rank(infpar%lg_comm)
+#endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Entered ...")') impir !debug
 !Argument check:
         do i=1,3
@@ -3430,7 +3433,10 @@
         real(8):: tmb,tms,tm,tmm,tc_flops,mm_flops
         real(realk):: val
 
-        ierr=0; tmb=thread_wtime(); impir=my_mpi_rank(infpar%lg_comm)
+        ierr=0; tmb=thread_wtime(); impir=0
+#ifdef VAR_MPI
+        impir=my_mpi_rank(infpar%lg_comm)
+#endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Entered ...")') impir !debug
 !Init:
         val=0E0_realk; size_of_real=sizeof(val)
@@ -4235,8 +4241,10 @@
         logical:: win_lck
 
         ierr=0
+#ifdef VAR_MPI
         impis=my_mpi_size(infpar%lg_comm); if(impis.le.0) then; ierr=1; return; endif
         impir=my_mpi_rank(infpar%lg_comm); if(impir.lt.0) then; ierr=2; return; endif
+#endif
         impir_world=my_mpi_rank()
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         if(present(num_gpus)) then; ngpus=max(num_gpus,0); else; ngpus=0; endif
@@ -4394,7 +4402,9 @@
         real(realk):: val0,val1,val2
         real(8):: tmb,tm
 
-        errc=0; impir=my_mpi_rank(infpar%lg_comm); impir_world=my_mpi_rank()
+        errc=0
+#ifdef VAR_MPI
+        impir=my_mpi_rank(infpar%lg_comm); impir_world=my_mpi_rank()
         call dil_debug_to_file_start()
 !Check tensor kernels:
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Checking tensor algebra kernels ...")') impir
@@ -4508,29 +4518,17 @@
         allocate(darr(1:dvol),STAT=i)
         if(i.ne.0) then
          write(*,'("MEM ALLOC 1 failed!")')
-#ifdef VAR_MPI
          call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
-#else
-         stop
-#endif
         endif
         allocate(larr(1:lvol),STAT=i)
         if(i.ne.0) then
          write(*,'("MEM ALLOC 2 failed!")')
-#ifdef VAR_MPI
          call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
-#else
-         stop
-#endif
         endif
         allocate(rarr(1:rvol),STAT=i)
         if(i.ne.0) then
          write(*,'("MEM ALLOC 3 failed!")')
-#ifdef VAR_MPI
          call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
-#else
-         stop
-#endif
         endif
         do i=1,lvol; larr(i)=1d-2; enddo
         do i=1,rvol; rarr(i)=1d-3; enddo
@@ -4660,10 +4658,7 @@
         if(associated(larr)) deallocate(larr)
         if(associated(rarr)) deallocate(rarr)
         call lsmpi_barrier(infpar%lg_comm)
-#ifdef VAR_MPI
         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
-#else
-        stop
 #endif
         return
         end subroutine dil_test

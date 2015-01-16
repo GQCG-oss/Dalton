@@ -1087,12 +1087,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ***********
      call get_currently_available_memory(MemFree)
 
+#ifdef VAR_MPI
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
       call dil_debug_to_file_start()
       write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4)')&
       &infpar%lg_mynum,infpar%mynum,MemFree
      endif
+#endif
 #endif
 
      ! Set integral info
@@ -1257,11 +1259,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      hstatus = 80
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
+#ifdef VAR_MPI
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
       write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] with free RAM = ",F15.4," sits on ",'//&
       &'A32,": outside locks = ",l1,1x,l1)') infpar%lg_mynum,infpar%mynum,MemFree,hname(1:32),lock_outside,DIL_LOCK_OUTSIDE
      endif
+#endif
 #endif
 
      govov%access_type  = AT_ALL_ACCESS
