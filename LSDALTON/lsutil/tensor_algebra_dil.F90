@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/01/13 (started 2014/09/01).
+!REVISION: 2015/01/16 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -48,8 +48,8 @@
 !   terminating segment may have a different length). Distinct dimensions of a tensor
 !   may have different segment lengths. The tensor tiles are enumerated in Fortran style
 !   (1st dimenstion, 2nd dimension, and so on), flat (global) tile numeration starts from 1.
-!WARNINGS:
-! * The code is written in Fortran 2003/2008.
+!NOTES:
+! * The code is written in Fortran 2003/2008 + OpenMP (optional).
 ! * The code assumes MPI-3 standard at least (RMA specification), that is,
 !   if MPI is used it must be MPI-3 (for RMA). If MPI is not used, it is fine.
 ! * The number of OMP threads spawned on CPU or MIC must not exceed the MAX_THREADS parameter!
@@ -62,7 +62,7 @@
         implicit none
 #else
         implicit none
-        integer, external, private:: omp_get_max_threads,omp_get_num_threads,omp_get_thread_num
+        integer(4), external, private:: omp_get_max_threads,omp_get_num_threads,omp_get_thread_num
         real(8), external, private:: omp_get_wtime
 #endif
 #else
@@ -114,7 +114,7 @@
         integer(INTD), private:: CONS_OUT=6,CONS_OUT_SAVED=0            !console output device (defaults to screen)
         integer(INTD), public:: DIL_CONS_OUT=6                          !console output device for external use (defaults to screen)
         logical, private:: VERBOSE=.true.                               !verbosity (for errors)
-        logical, public:: DIL_DEBUG=.true.                              !debugging
+        logical, public:: DIL_DEBUG=.false.                             !debugging
         integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
         logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
 #ifdef USE_MIC
@@ -2049,8 +2049,8 @@
         else
          ierr=1 !zero-rank tensor
         endif
-!         write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_insert): kernel time/error code: ",F10.4,1x,i3)')&
-!         &thread_wtime(time_beg),ierr !debug
+!        write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_insert): kernel time/error code: ",F10.4,1x,i3)')&
+!        &thread_wtime(time_beg),ierr !debug
         return
         end subroutine dil_tensor_insert
 !--------------------------------------------------------------------------------------------
@@ -3055,7 +3055,7 @@
         integer(INTD):: prmn(1:MAX_TENSOR_RANK,0:2),lb(1:MAX_TENSOR_RANK*3),ub(1:MAX_TENSOR_RANK*3),sb(1:MAX_TENSOR_RANK*3)
         integer(INTD):: ip(1:MAX_TENSOR_RANK*3),im(1:MAX_TENSOR_RANK*3),ts(1:MAX_TENSOR_RANK*3),ns(1:MAX_TENSOR_RANK*3)
         integer(INTD):: cl(1:MAX_TENSOR_RANK),cu(1:MAX_TENSOR_RANK)
-        integer(INTL):: lld,lrd,lcd,lsm,ll,lr,lc
+        integer(INTL):: lld,lrd,lcd,lsm,ll,lr,lc,ml,mr,mc
         logical:: more_tasks,arg_loc(0:2)
         real(8):: tmb,tm
 
@@ -3094,18 +3094,21 @@
 !Init the global index sequence:
         ni=cspec%ndims_contr+cspec%ndims_left+cspec%ndims_right !total number of unique dimensions in the tensor contraction
         if(ni.le.0) then; ierr=10; return; endif !tensor contraction arguments must not be all scalars
-        lld=1_INTL; lrd=1_INTL; lcd=1_INTL; l=0
+        lld=1_INTL; lrd=1_INTL; lcd=1_INTL; ml=1_INTL; mr=1_INTL; mc=1_INTL; l=0
         do i=nl,1,-1 !old number in left tensor
          j=cspec%lprmn(i)
          if(j.le.cspec%ndims_contr) then !contracted multi-index
           l=l+1; lb(l)=IND_NUM_START+cspec%lbase(i); ub(l)=lb(l)+cspec%ldims(i)-1; ip(l)=j
           if(.not.arg_loc(1)) then
            sb(l)=larr%tdim(i) !segmented dim
+           mc=mc*sb(l)
           else
            if(.not.arg_loc(2)) then
             sb(l)=rarr%tdim(prmn(j,2)) !segmented dim
+            mc=mc*sb(l)
            else
             sb(l)=-cspec%ldims(i) !non-segmented dim (mark it negative)
+            mc=mc*MIN_LOC_DIM_EXT
            endif
           endif
           lcd=lcd*cspec%ldims(i)
@@ -3118,11 +3121,14 @@
           k=k+1; lb(k)=IND_NUM_START+cspec%dbase(i); ub(k)=lb(k)+cspec%ddims(i)-1; ip(k)=j
           if(.not.arg_loc(0)) then
            sb(k)=darr%tdim(i) !segmented dim
+           ml=ml*sb(k)
           else
            if(.not.arg_loc(1)) then
             sb(k)=larr%tdim(prmn(cspec%ndims_contr+ip(k),1)) !segmented dim
+            ml=ml*sb(k)
            else
             sb(k)=-cspec%ddims(i) !non-segmented dim (mark it negative)
+            ml=ml*MIN_LOC_DIM_EXT
            endif
           endif
           lld=lld*cspec%ddims(i)
@@ -3130,11 +3136,14 @@
           l=l+1; lb(l)=IND_NUM_START+cspec%dbase(i); ub(l)=lb(l)+cspec%ddims(i)-1; ip(l)=j-cspec%ndims_left
           if(.not.arg_loc(0)) then
            sb(l)=darr%tdim(i) !segmented dim
+           mr=mr*sb(l)
           else
            if(.not.arg_loc(2)) then
             sb(l)=rarr%tdim(prmn(cspec%ndims_contr+ip(l),2)) !segmented dim
+            mr=mr*sb(l)
            else
             sb(l)=-cspec%ddims(i) !non-segmented dim (mark it negative)
+            mr=mr*MIN_LOC_DIM_EXT
            endif
           endif
           lrd=lrd*cspec%ddims(i)
@@ -3201,12 +3210,31 @@
           endif
          endif
         endif
+        if(lr.lt.mr.and.lrd.ge.mr) then !minimal possible part volume for right dims
+         lr=mr
+         if(lr*ll.gt.max_arg_vol) ll=int(dble(max_arg_vol)/dble(lr))
+         if(lr*lc.gt.max_arg_vol) lc=int(dble(max_arg_vol)/dble(lr))
+        endif
+        if(ll.lt.ml.and.lld.ge.ml) then !minimal possible part volume for left dims
+         ll=ml
+         if(ll*lr.gt.max_arg_vol) lr=int(dble(max_arg_vol)/dble(ll))
+         if(ll*lc.gt.max_arg_vol) lc=int(dble(max_arg_vol)/dble(ll))
+        endif
+        if(lc.lt.mc.and.lcd.ge.mc) then !minimal possible part volume for contracted dims
+         lc=mc
+         if(lc*lr.gt.max_arg_vol) lr=int(dble(max_arg_vol)/dble(lc))
+         if(lc*ll.gt.max_arg_vol) ll=int(dble(max_arg_vol)/dble(lc))
+        endif
         if(DIL_DEBUG) then
-         write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Max Vol/Dims: ",i11,3(1x,i9))')&
+         write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Max Vol/Dims: ",i11,3(1x,i8))')&
          &impir,max_arg_vol,ll,lr,lc !debug
-         if(lc.le.0_INTL.or.ll.le.0_INTL.or.lr.le.0_INTL) then; ierr=11; return; endif
-         if(lc.gt.lcd.or.ll.gt.lld.or.lr.gt.lrd) then; ierr=12; return; endif
-         if(ll*lr.gt.max_arg_vol.or.lc*ll.gt.max_arg_vol.or.lc*lr.gt.max_arg_vol) then; ierr=13; return; endif
+        endif
+        if(lc.le.0_INTL.or.ll.le.0_INTL.or.lr.le.0_INTL) then; ierr=11; return; endif
+        if(lc.gt.lcd.or.ll.gt.lld.or.lr.gt.lrd) then; ierr=12; return; endif
+        if(ll*lr.gt.max_arg_vol.or.lc*ll.gt.max_arg_vol.or.lc*lr.gt.max_arg_vol) then
+         if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_tens_contr_partition)[",i2'//&
+         &',"]: partitioning logic failed, contact Dmitry Lyakh!")') impir
+         ierr=13; return
         endif
  !Split (sub)tensor dimensions:
         i=split_argument(1_INTD,cspec%ndims_contr,lc) !contracted dims

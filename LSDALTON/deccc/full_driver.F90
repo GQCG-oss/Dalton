@@ -984,8 +984,9 @@ contains
     integer(KIND=long) :: MaxMemAllocated,MemAllocated
     real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPU1,CPU2,WALL1,WALL2,CPU_MPICOMM,WALL_MPICOMM
     real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT,MemInGBCollected,epsIJ
-    logical :: MemoryReduced,AlphaCDAlloced,TransferCompleted,AlphaCD_Deallocate
+    logical :: MemoryReduced,AlphaCDAlloced,AlphaCD_Deallocate
     logical :: NotMatSet,file_exists
+    logical(ls_mpik):: TransferCompleted
     real(realk),pointer :: Amat(:,:),Bmat(:,:)
     MemoryReduced = MyLsitem%setting%scheme%ForceRIMP2memReduced
 #ifdef VAR_TIME    
