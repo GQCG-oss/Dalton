@@ -1416,7 +1416,7 @@ C  Print molecular orbital coefficients on unit IOUT.
 C
 C Input:
 C  CMO:    MO orbital coefficients (symmetry blocked)
-C  PROCC:  print only occupied orbitals
+C  PROCC:  print only occupied orbitals (unless CMOPRI true)
 C  IOUT:   output file unit
 C
 #include "implicit.h"
@@ -1428,7 +1428,9 @@ C   pgroup : REP
 C   INFINP : CENT,TYPE,SUPSYM,?
 C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
+C   INFPRI : CMOPRI
 C   CBIREA : LMULBS
+C   R12INT : MBAS1(:)
 C
 #include "maxorb.h"
 #include "maxash.h"
@@ -1436,6 +1438,7 @@ C
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
+#include "infpri.h"
 #include "cbirea.h"
 #include "r12int.h"
 C
@@ -1449,7 +1452,7 @@ C
 C
 C *** Print molecular orbitals
 C
-      IF (PROCC) THEN
+      IF (PROCC .AND. .NOT. CMOPRI) THEN
          THRPRI = 1.0D-2
          WRITE(IOUT,'(/A,F6.4,A)')
      &   ' (Only coefficients >',THRPRI,' are printed.)'
@@ -1463,16 +1466,16 @@ C
          MBASI = NBAS(ISYM)
          IF (LMULBS) MBASI = MBAS1(ISYM)
 C
-         IF (PROCC) THEN
-            IF (NBAST .LE. 25) THEN
-C           print all occupied and 2 lowest unoccupied this symmetry
+         IF (PROCC .AND. .NOT. CMOPRI) THEN
+            IF (NBAST .LE. 50) THEN
+C           print all occupied and 10 lowest unoccupied this symmetry
                IEND = 0
             ELSE
-C           print 5 highest doubley occupied, all active, and 2 lowest unoccupied this symmetry
+C           print 10 highest doubly occupied, all active, and 10 lowest unoccupied this symmetry
 C           (output becomes too big otherwise ... /hjaaj Dec08)
-               IEND  = MAX(NISH(ISYM)-5, 0)
+               IEND  = MAX(NISH(ISYM)-10, 0)
             END IF
-            NENDI = MIN(NOCC(ISYM)+2, NORB(ISYM))
+            NENDI = MIN(NOCC(ISYM)+10, NORB(ISYM))
          ELSE
             IEND  = 0
             NENDI = NORB(ISYM)
@@ -1482,11 +1485,10 @@ C           (output becomes too big otherwise ... /hjaaj Dec08)
 C
          ICMOI = ICMO(ISYM)
          ISTORB = IORB(ISYM)
-  100       IST =IEND+1
-            ISTMO=IEND*NBASI+ICMOI
-            IEND=IEND+7
-            IF(IEND.GT.NENDI) IEND=NENDI
-            IEMO=NBASI*(IEND-1)+ICMOI
+  100       IST   =IEND+1
+            ISTMO =IEND*NBASI+ICMOI
+            IEND  =MIN(IEND+7,NENDI)
+            IEMO  =NBASI*(IEND-1)+ICMOI
             WRITE(IOUT,2600) (I,I=IST,IEND)
             IF (SUPSYM) WRITE(IOUT,2620) (ISSMO(ISTORB+I),I=IST,IEND)
             DO 200 I=1,MBASI

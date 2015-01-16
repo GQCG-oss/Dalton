@@ -2776,7 +2776,6 @@ end function max_batch_dimension
     type(matrix),intent(in) :: D
     !> get E_DFT
     type(matrix) :: F,h
-    type(matrix) :: Dtmp(1)
     real(realk)  :: exchangeFactor,enuc,edft(1)
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
@@ -2832,7 +2831,8 @@ end function max_batch_dimension
     !> get E_DFT
     type(matrix) :: F,h
     type(matrix) :: Dtmp(1)
-    real(realk)  :: exchangeFactor,enuc,edft(1)
+    integer :: igrid
+    real(realk)  :: DFTELS,enuc,edft(1)
 
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
@@ -2843,11 +2843,20 @@ end function max_batch_dimension
     call mat_zero(h)
     call mat_zero(F)
 
+
+    MyLsitem%setting%scheme%DFT%griddone = 0
+    igrid = MyLsitem%setting%scheme%DFT%igrid
+    MyLsitem%setting%scheme%DFT%GridObject(igrid)%GRIDDONE = 0
+    DFTELS = MyLsItem%setting%scheme%DFT%DFTELS
+    MyLsItem%setting%scheme%DFT%DFTELS = 100.0E0_realk
+
     call II_get_xc_energy(DECinfo%output,DECinfo%output,&
       & mylsitem%setting,MyMolecule%nbasis,Dtmp,Edft,1)
+
+    MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
+
     call mat_free(Dtmp(1))
     call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
-    call mat_free(Dtmp(1))
 
     call II_get_coulomb_mat(DECinfo%output, &
       & DECinfo%output,mylsitem%setting,D,F,1)
@@ -2856,6 +2865,7 @@ end function max_batch_dimension
     Ehf =Edft(1) + mat_dotproduct(D,F) + Enuc
 
     call mat_free(h)
+    call mat_free(F)
 
 
   end function get_dft_energy_fullmolecule
