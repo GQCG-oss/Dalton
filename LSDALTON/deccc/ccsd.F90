@@ -1085,11 +1085,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ***********
      call get_currently_available_memory(MemFree)
 
-!#ifdef DIL_DEBUG
+#ifdef VAR_MPI
      if(DIL_DEBUG) then !`DIL
       write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4)') infpar%lg_mynum,infpar%mynum,MemFree
      endif
-!#endif
+#endif
 
      ! Set integral info
      ! *****************
