@@ -2248,7 +2248,7 @@ contains
        enddo
        !loop over all virtual orbitals and include them if within radius
        do orb_idx=1, MyMolecule%nunocc
-          occ_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomVirt(orb_idx,MyAtom)<=DECinfo%all_init_radius)
+          unocc_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomVirt(orb_idx,MyAtom)<=DECinfo%all_init_radius)
        enddo
 
     endif
