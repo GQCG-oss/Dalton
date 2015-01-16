@@ -568,9 +568,11 @@ contains
           DECinfo%print_frags   = .true.
 
           ! set the fraction of the fully extended orbital space that is used as tolerance in an incomplete binary search
-       case('.FRACOFORBSPACE_RED');      read(input,*) DECinfo%FracOfOrbSpace_red
+       case('.FRACOFORBSPACE_RED'); read(input,*) DECinfo%FracOfOrbSpace_red
           ! include all orbitals for a fragment within a given radius and calculate the fragment energies in Angstrom
-       case('.FRAG_INIT_RADIUS_NO_OPT'); read(input,*) DECinfo%all_init_radius; DECinfo%all_init_radius/bohr_to_angstrom
+       case('.FRAG_INIT_RADIUS_NO_OPT')
+          read(input,*) DECinfo%all_init_radius
+          DECinfo%all_init_radius = DECinfo%all_init_radius/bohr_to_angstrom
 
 
        !KEYWORDS FOR INTEGRAL INFO

@@ -2232,7 +2232,7 @@ contains
     integer :: orb_idx
 
     ! All orbitals included in fragment
-    if(DECinfo%all_init_radius<=.0.0E0_realk)then
+    if(DECinfo%all_init_radius<=0.0E0_realk)then
 
        unocc_list = .true.
        occ_list   = .true.
