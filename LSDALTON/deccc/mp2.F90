@@ -1964,7 +1964,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk), pointer :: EVocc(:), EVvirt(:)
   integer :: nbasis,nocc,nvirt, noccEOS, nvirtEOS,nocctot,ncore
   integer :: alpha,gamma,beta,delta,info,mynum,numnodes,MynbasisAuxMPI,nb
-  integer :: IDIAG,JDIAG,ADIAG,BDIAG,ALPHAAUX,myload,nb2
+  integer :: IDIAG,JDIAG,ADIAG,BDIAG,ALPHAAUX,myload,nb2,natomsAux
   integer :: ILOC,JLOC,ALOC,BLOC,M,N,K,nAtoms,nbasis2,nbasisAux
   logical :: fc,ForcePrint,first_order_integrals,master,wakeslave,MessageRecieved
   logical :: CollaborateWithSlaves
@@ -2001,6 +2001,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases)
   integer(kind=long) :: nSize
+  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
@@ -2038,6 +2039,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call start_flop_counter()
   end if
   ! Initialize stuff
+
+  natoms = MyFragment%natoms
   nbasis = MyFragment%nbasis
   nocc = MyFragment%noccAOS        ! occupied AOS (only valence for frozen core)
   nvirt = MyFragment%nunoccAOS     ! virtual AOS
@@ -2045,7 +2048,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
-  call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
+  IF(DECinfo%AuxAtomicExtent)THEN
+     call getMolecularDimensions(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,nBasis2,nBasisAux)
+  ELSE
+     call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,nBasis2,nBasisAux)
+     if(natoms.NE.natomsAux)call lsquit('Error in RIMP2 natoms dim mismatch',-1)
+  ENDIF
   IF(nBasisAux.EQ.0)THEN
      WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: Warning no Aux basis have been chosen for RIMP2, Using Regular'
      ChangedDefault = .TRUE.
@@ -2159,9 +2167,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   call array2_free(Uvirt)
 
   CALL LSTIMER('DECRIMP2: TransMats ',TS2,TE2,LUPRI,FORCEPRINT)
-  !memory usage : UoccT(nocc,nocc), UvirtEOST(nvirt,nvirtEOS),UvirtT(nvirt,nvirt)
-  !             : UoccEOST(nocc,noccEOS),Cocc(nbasis,nocc),Cvirt(nbasis,nvirt) 
-  !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + nbasis*(nvirt+nocc)
 
   ! *************************************************************
   ! *                    Start up MPI slaves                    *
@@ -2221,13 +2226,19 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   IF(CollaborateWithSlaves)then 
      !all nodes have info about all nodes 
-     call mem_alloc(nbasisAuxMPI,numnodes)        !number of Aux basis func assigned to rank
-     call mem_alloc(nAtomsMPI,numnodes)           !atoms assign to rank
-     call mem_alloc(startAuxMPI,nAtoms,numnodes)  !startindex in full (nbasisAux)
-     call mem_alloc(AtomsMPI,nAtoms,numnodes)     !identity of atoms in full molecule
-     call mem_alloc(nAuxMPI,nAtoms,numnodes)      !nauxBasis functions for each of the nAtomsMPI
-     call getRIbasisMPI(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,numnodes,&
-          & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     call mem_alloc(nbasisAuxMPI,numnodes)           !number of Aux basis func assigned to rank
+     call mem_alloc(nAtomsMPI,numnodes)              !atoms assign to rank
+     call mem_alloc(startAuxMPI,nAtomsAux,numnodes)  !startindex in full (nbasisAux)
+     call mem_alloc(AtomsMPI,nAtomsAux,numnodes)     !identity of atoms in full molecule
+     call mem_alloc(nAuxMPI,nAtomsAux,numnodes)      !nauxBasis functions for each of the nAtomsMPI
+
+     IF(DECinfo%AuxAtomicExtent)THEN   
+        call getRIbasisMPI(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,numnodes,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ELSE
+        call getRIbasisMPI(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,numnodes,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ENDIF
      MynAtomsMPI = nAtomsMPI(mynum+1)
      MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
      call mem_dealloc(AtomsMPI) !not used in this subroutine 
@@ -2244,8 +2255,25 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !this should naturally be changed      
      call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => MyFragment%mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => MyFragment%mylsitem%SETTING%MOLECULE(2)%p
+        molecule3 => MyFragment%mylsitem%SETTING%MOLECULE(3)%p
+        molecule4 => MyFragment%mylsitem%SETTING%MOLECULE(4)%p
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(3)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(4)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+     ENDIF
      call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
           & AlphaBeta,MyFragment%mylsitem%setting,nbasisAux)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => molecule2
+        MyFragment%mylsitem%SETTING%MOLECULE(3)%p => molecule3
+        MyFragment%mylsitem%SETTING%MOLECULE(4)%p => molecule4
+     ENDIF
+
      CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
      !=====================================================================================
      ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
@@ -2279,17 +2307,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(MynbasisAuxMPI.GT.0)THEN
         call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux)
         call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux,&
-             & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,numnodes,natoms)
+             & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,numnodes,natomsAux)
         call mem_dealloc(AlphaBeta_minus_sqrt)
      ENDIF
   ENDIF
   CALL LSTIMER('DECRIMP2: MPI AlphaBetaTmp ',TS2,TE2,LUPRI,FORCEPRINT)
-
-  !memory usage : UoccT(nocc,nocc), UvirtEOST(nvirt,nvirtEOS),UvirtT(nvirt,nvirt),UoccEOST(nocc,noccEOS)
-  !             : nbasisAuxMPI(numnodes),nAtomsMPI(numnodes),startAuxMPI(nAtoms,numnodes)
-  !             : nAuxMPI(nAtoms,numnodes), TMPAlphaBeta_minus_sqrt(MynbasisAuxMPI,nbasisAux),Cocc(nbasis,nocc),Cvirt(nbasis,nvirt)
-  !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + 2*nAtoms*numnodes + 2*numnodes +
-  !               MynbasisAuxMPI*nbasisAux+ nbasis*(nvirt+nocc)
 
   !=====================================================================================
   ! Major Step 3: Obtain 3 center RI integrals (alpha,a,i) 
@@ -2305,20 +2327,23 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !will have the dimensions (MynbasisAuxMPI,nvirt,nocc) 
      !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly 
      !nbasisAuxMPI = nbasisAux/numnodes
+     IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => MyFragment%mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => MyFragment%mylsitem%SETTING%MOLECULE(2)%p
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+     ENDIF
      call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
           & AlphaCD3,MyFragment%mylsitem%setting,nbasisAux,nbasis,&
           & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => molecule2
+     ENDIF
   ENDIF
   CALL LSTIMER('DECRIMP2: AlphaCD ',TS2,TE2,LUPRI,FORCEPRINT)
   call mem_dealloc(Cocc)
   call mem_dealloc(Cvirt)
-
-  !memory usage : UoccT(nocc,nocc), UvirtEOST(nvirt,nvirtEOS),UvirtT(nvirt,nvirt),UoccEOST(nocc,noccEOS)
-  !             : nbasisAuxMPI(numnodes),nAtomsMPI(numnodes),startAuxMPI(nAtoms,numnodes)
-  !             : nAuxMPI(nAtoms,numnodes), TMPAlphaBeta_minus_sqrt(MynbasisAuxMPI,nbasisAux)
-  !             : AlphaCD3(MynbasisAuxMPI,nvirt,nocc) 
-  !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + 2*nAtoms*numnodes + 2*numnodes +
-  !               MynbasisAuxMPI*nbasisAux + MynbasisAuxMPI*nvirt*nocc
 
 #ifdef VAR_MPI
   if(CollaborateWithSlaves) then !START BY SENDING MY OWN PACKAGE alphaCD3
@@ -2353,7 +2378,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
         !Use own AlphaCD3 to obtain part of Calpha
         CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-        call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
+        call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natomsAux,&
              & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
         CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
      ENDIF
@@ -2428,11 +2453,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               !Step 2: Obtain part of Calpha from this contribution
               CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
               IF(useAlphaCD5)THEN
-                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
                       & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
                       & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
               ELSEIF(useAlphaCD6)THEN
-                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
                       & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD6,&
                       & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
               ENDIF
@@ -2783,7 +2808,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   end if MPIcollect
 
   ! Number of MPI tasks (Could change to nAuxBasis)
-  MyFragment%ntasks = nAtoms
+  MyFragment%ntasks = nAtomsAux
 #endif
 
   if(DECinfo%PL>0)THEN

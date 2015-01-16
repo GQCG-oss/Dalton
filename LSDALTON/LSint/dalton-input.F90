@@ -164,8 +164,12 @@ LUCME=-1
 intinp%nfock = 0 !number of fock matrices calculated
 
 NULLIFY(intinp%MOLECULE)
+NULLIFY(intinp%AUXMOLECULE)
 NULLIFY(intinp%BASIS)
 ALLOCATE(intinp%MOLECULE)
+ALLOCATE(intinp%AUXMOLECULE)
+intinp%AUXMOLECULE%nAtoms=0
+intinp%AUXMOLECULE%nSubSystems=0
 ALLOCATE(intinp%BASIS)
 call nullifyMainBasis(intinp%BASIS)
 
@@ -307,6 +311,7 @@ integer   :: LUERR
 integer :: ibas
 
 call free_Moleculeinfo(intinp%MOLECULE)
+call free_Moleculeinfo(intinp%AUXMOLECULE)
 DO ibas=1,nBasisBasParam
    IF(intinp%BASIS%WBASIS(ibas))THEN
       IF(intinp%BASIS%BINFO(ibas)%natomtypes .NE. 0)THEN
@@ -317,6 +322,7 @@ DO ibas=1,nBasisBasParam
    ENDIF
 ENDDO
 DEALLOCATE(intinp%MOLECULE)
+DEALLOCATE(intinp%AUXMOLECULE)
 DEALLOCATE(intinp%BASIS)
 call io_free(intinp%io)
 
@@ -535,6 +541,7 @@ integer            :: IPRINT
 !
 integer            :: IAO,I
 CHARACTER(len=9)   :: BASISLABEL
+integer,pointer :: FullAtomList(:)
 
 FRAGMENT%lupri = lsfull%lupri
 FRAGMENT%luerr = lsfull%luerr
@@ -568,6 +575,15 @@ NULLIFY(FRAGMENT%INPUT%MOLECULE)
 ALLOCATE(FRAGMENT%INPUT%MOLECULE)
 CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
      & fragment%input%BASIS,ATOMS,nATOMS,LUPRI)
+NULLIFY(FRAGMENT%INPUT%AUXMOLECULE)
+ALLOCATE(FRAGMENT%INPUT%AUXMOLECULE)
+call mem_alloc(FullAtomList,lsfull%input%MOLECULE%natoms)
+do I=1,lsfull%input%MOLECULE%natoms
+   FullAtomList(I) = I
+enddo
+CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
+     & fragment%input%BASIS,FullAtomList,lsfull%input%MOLECULE%natoms,LUPRI)
+call mem_dealloc(FullAtomList)
 
 IF(IPRINT .GT. 0)THEN
    CALL PRINT_MOLECULEINFO(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS,IPRINT)
@@ -714,7 +730,7 @@ logical :: WhichAos(NBASISFULL),ContainOrb,WhichAtoms(nAtomsFull)
 integer :: iB,r,iOrbitalIndex,i,icharge,itype,MaxnOrb,nangmom,kmult,iAngNew,ang
 integer :: nOrb,iOrbNew,nBASINFOARRAY,itypeOld,iOrb,iK,unique,iAtom,ik1,ik2
 integer :: iOrbitalIndexSS
-integer,pointer :: newType(:)
+integer,pointer :: newType(:),FullAtomList(:)
 call mem_alloc(newType,natoms)
 WhichAos = .FALSE.
 DO I=1,NBASIS
@@ -824,14 +840,32 @@ ALLOCATE(FRAGMENT%INPUT%MOLECULE)
 CALL BUILD_FRAGMENT2(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
      & fragment%input%BASIS,ATOMS,nATOMS,LUPRI)
 
+call mem_alloc(FullAtomList,natomsfull)
+do I=1,natomsfull
+   FullAtomList(I) = I
+enddo
+NULLIFY(FRAGMENT%INPUT%AUXMOLECULE)
+ALLOCATE(FRAGMENT%INPUT%AUXMOLECULE)
+CALL BUILD_FRAGMENT2(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
+     & fragment%input%BASIS,FullAtomList,natomsfull,LUPRI)
+call mem_dealloc(FullAtomList)
+
 DO i=1,natoms
    fragment%input%molecule%atom(i)%idtype(RegBasParam) = newType(i)
 ENDDO
 call mem_dealloc(newType)
 
+call DETERMINE_FRAGMENTNBAST(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
+     & fragment%input%BASIS,LUPRI)
 call DETERMINE_FRAGMENTNBAST(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
      & fragment%input%BASIS,LUPRI)
 
+do iB=nBasisBasParam,1,-1
+   IF(lsfull%INPUT%BASIS%WBASIS(IB))THEN
+      CALL DETERMINE_NBAST(FRAGMENT%INPUT%AUXMOLECULE,FRAGMENT%INPUT%BASIS%BINFO(iB),&
+           & FRAGMENT%input%dalton%DoSpherical,.FALSE.)
+   ENDIF
+enddo
 do iB=nBasisBasParam,1,-1
    IF(lsfull%INPUT%BASIS%WBASIS(IB))THEN
       CALL DETERMINE_NBAST(FRAGMENT%INPUT%MOLECULE,FRAGMENT%INPUT%BASIS%BINFO(iB),&
