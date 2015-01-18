@@ -6,6 +6,18 @@ C...   These routines are in the public domain and can be
 C...   used freely in other programs.
 C...
 C
+C FILE: printpkg.F
+C
+C ====================================================================================
+C For all OUT* routines, the NCTL parameter is used to select different output formats.
+C ------------------------------------------------------------------------------------
+C     NCTL > 0: fit in 80 columns
+C     NCTL < 0: fit in 132 columns
+C     abs(NCTL) .ge. 10: also print zero rows
+C     abs(NCTL) =2 or =3: write old obsolete line printer carriage control characters
+C               for double or triple space between lines
+C ====================================================================================
+C
 C  /* Deck outpak */
       SUBROUTINE OUTPAK (AMATRX,NROW,NCTL,LUPRI)
 C.......................................................................
@@ -75,7 +87,6 @@ C
       CMAX = ZERO
       N_NAN = 0
       DO I = 1,J
-!        IF (AMATRX(I) .ne. AMATRX(I)) THEN
          IF (IS_NAN(AMATRX(I),AMATRX(I))) THEN
             N_NAN = N_NAN + 1
          ELSE
@@ -110,6 +121,7 @@ C.....BEGIN NON STANDARD DO LOOP.
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
          DO 40 K = BEGIN,NROW
             KTOTAL = (K*(K-1))/2 + BEGIN - 1
+            IF (MCTL .GE. 10) GO TO 20 ! also print zero rows
             DO 10 I = 1,NCOL
                IF (AMATRX(KTOTAL+I) .NE. ZERO) GO TO 20
    10       CONTINUE
@@ -247,6 +259,7 @@ C.....BEGIN NON STANDARD DO LOOP.
             WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
             KTOTAL = IOFF + BEGIN*(BEGIN+1)/2 - 1
             DO 40 K = BEGIN,IDIM
+               IF (MCTL .GE. 10) GO TO 20 ! also print zero rows
                DO 10 I = 1,NCOL
                   IF (AMATRX(KTOTAL+I) .NE. ZERO) GO TO 20
    10          CONTINUE
@@ -403,6 +416,7 @@ C.....BEGIN NON STANDARD DO LOOP.
             WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
             KTOTAL = IOFF + BEGIN*(BEGIN+1)/2 - 1
             DO 40 K = BEGIN,IDIM
+               IF (MCTL .GE. 10) GO TO 20 ! also print zero rows
                DO 10 I = 1,NCOL
                   IF (AMATRX(KTOTAL+I) .NE. D0) GO TO 20
    10          CONTINUE
@@ -527,6 +541,7 @@ C
           WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
             DO 1 K = 1,IDIM
             IOFFK = IOFF + K
+            IF (MCTL .GE. 10) GO TO 5 ! also print zero rows
               DO 4 I=BEGIN,LAST
               IF (AMATRX(IOFFK+(I-1)*IDIM).NE.ZERO) GO TO 5
     4         CONTINUE
@@ -642,6 +657,7 @@ C
       DO 2 BEGIN = COLLOW,COLHI,KCOL
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
          DO 1 K = ROWLOW,ROWHI
+            IF (MCTL .GE. 10) GO TO 5 ! also print zero rows
             DO 4 I = BEGIN,LAST
                IF (abs(AMATRX(K,I)).gt.thrpri) GO TO 5
     4       CONTINUE
@@ -1142,6 +1158,7 @@ C
       DO 2 BEGIN = COLLOW,COLHI,KCOL
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
          DO 1 K = ROWLOW,ROWHI
+            IF (MCTL .GE. 10) GO TO 5 ! also print zero rows
             DO 4 I = BEGIN,LAST
                C4_test = AMATRX(K,I)   ! hjaaj: all this because no intrinsic routine to
                R4_test = cabs(C4_test) !        calculate absolute value of double complex number
