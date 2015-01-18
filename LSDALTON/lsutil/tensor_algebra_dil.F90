@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/01/16 (started 2014/09/01).
+!REVISION: 2015/01/18 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -3305,7 +3305,7 @@
   !Count task Flops:
          call dil_contr_task_set_flops(cspec,task_list%contr_tasks(n),i); if(i.ne.0) then; ierr=24; return; endif
          if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition): generated task # ",i9)') n !debug
-         call dil_contr_task_print(cspec,task_list%contr_tasks(n)) !debug
+         if(DIL_DEBUG) call dil_contr_task_print(cspec,task_list%contr_tasks(n)) !debug
          more_tasks=get_next_mlndx(n) !next task
         enddo
         if(n.ne.ntasks) then
@@ -4268,7 +4268,7 @@
  !Partition the global tensor contraction space:
          call dil_tens_contr_distribute(tcontr,impis,impir,ierr)
          if(ierr.gt.0) then !ierr=-1 is OK, meaning NO WORK
-          write(CONS_OUT,'("#ERROR(dil_tensor_contract): Tensor contraction distribution failed: ",i9)') ierr
+          if(VERBOSE) write(CONS_OUT,'("#ERROR(dil_tensor_contract): Tensor contraction distribution failed: ",i9)') ierr
           ierr=3
          endif
         endif
