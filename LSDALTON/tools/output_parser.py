@@ -70,7 +70,7 @@ class lsoutput:
 
       for i in range(len(self.lines)):
          line = self.lines[i].strip().upper()
-       
+
          #SAVE THE MOLECULE.INP from the outputfile
          if("PRINTING THE MOLECULE.INP FILE" in line):
            found_molinp = True
@@ -107,8 +107,11 @@ class lsoutput:
                  if(".MP2" == lineparser2):
                    self.calctype[1] = "MP2"
                    found = True
+                 elif(".RIMP2" == lineparser2):
+                   self.calctype[1] = "RIMP2"
+                   found = True
                  elif(".RPA" == lineparser2):
-                   self.calctype.append("RPA")
+                   self.calctype[1] = "RPA"
                    found = True
                  elif(".CCSD(T)" == lineparser2):
                    self.calctype[1] = "CCSD(T)"
@@ -133,15 +136,13 @@ class lsoutput:
                  lineparser2=self.lines[k].strip().upper()
                  if(".FOT" in lineparser2):
                    self.calctype.append(" FOT="+self.lines[k+1].strip().upper())
-                   self.decinfo.fotint   = int(self.lines[k+1].strip())
+                   self.decinfo.fotfloat  = float(self.lines[k+1].strip().replace("d","e").replace("D","e"))
                    found = True
                  k+=1
                if(not found):
                  #SET THE DEFAULTS
                  self.calctype.append("FOT=4")
-                 self.decinfo.fotint   = 4
-               #USE THE INT TO CALCULATE THE 
-               self.decinfo.fotfloat = 10**(-self.decinfo.fotint)
+                 self.decinfo.fotfloat = float(self.lines[k+1].strip().replace("d","e").replace("D","e"))
 
              #SET CC SPECIFIC CALCULTION INFO FROM INPUT FILE 
              if("**CC" in lineparser):
@@ -156,6 +157,9 @@ class lsoutput:
                    found = True
                  elif(".MP2" in lineparser2):
                    self.calctype[1] = "MP2"
+                   found = True
+                 elif(".RIMP2" in lineparser2):
+                   self.calctype[1] = "RIMP2"
                    found = True
                  elif(".CCSD(T)" == lineparser2):
                    self.calctype[1] = "CCSD(T)"
@@ -186,8 +190,14 @@ class lsoutput:
          if("NUMBER OF OCCUPIED ORBITALS:" in line):
            self.no = int(line.strip().split()[-1])
            found_no = True
+         if("FULL: NUMBER OF OCC. ORBITALS    :" in line):
+           self.no = int(line.strip().split()[-1])
+           found_no = True
 
          if("NUMBER OF VIRTUAL ORBITALS:" in line):
+           self.nv = int(line.strip().split()[-1])
+           found_nv = True
+         if("FULL: NUMBER OF VIRT. ORBITALS   :" in line):
            self.nv = int(line.strip().split()[-1])
            found_nv = True
          

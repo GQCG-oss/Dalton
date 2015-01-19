@@ -1408,6 +1408,143 @@ C
 
       END
 
+      subroutine write_aodens(dv,nisht,nasht,nbast,nnashx,ncmot,nsym,
+     &                        nbas,ibas,lupri,hsrohf,density)
+!     
+!     !> purpose: write MCSCF and HF densities in AO basis to disk (and print them to screen)
+
+!     !> input: active 1p-density matrix in MO basis (from MCSCF)
+
+!     !> notes:
+!     !> the    active part of the density matrix is stored in dvao
+!     !> the in-active part of the density matrix is stored in dcao
+!     !> in case of open-shell HF (hsrohf == .true.) we add the active part of the density matrix to the inactive part and save the final result
+
+!     \author> Stefan Knecht, January 2015
+!     ------------------------------------------------------------------
+      implicit none
+!     ------------------------------------------------------------------
+      real*8 , intent(inout)         :: dv(nnashx)
+      integer, intent(in)            :: nisht
+      integer, intent(in)            :: nasht
+      integer, intent(in)            :: nbast
+      integer, intent(in)            :: nnashx
+      integer, intent(in)            :: ncmot
+      integer, intent(in)            :: nsym
+      integer, intent(in)            :: nbas(nsym)
+      integer, intent(in)            :: ibas(nsym)
+      integer, intent(in)            :: lupri
+      logical, intent(in)            :: hsrohf
+      character(len=2), intent(in)   :: density
+!     ------------------------------------------------------------------
+      integer                        :: i, j
+      integer                        :: lscr
+      integer                        :: idummy
+      real*8                         :: dummy
+      real*8, allocatable            :: cmo(:)
+      real*8, allocatable            :: dvao(:,:,:)
+      real*8, allocatable            :: dcao(:,:,:)
+      real*8, allocatable            :: scratch(:)
+      logical                        :: print_to_screen = .true.
+      logical                        :: ex              = .false.
+!     ------------------------------------------------------------------
+
+      call qenter('aodens')
+
+      !> open the unformatted file AO-densities
+      inquire(FILE='AO-densities',exist=ex)
+      if(ex)then
+        open(1234,file='AO-densities',status='old',
+     &       form='unformatted',access='sequential',
+     &       action='readwrite',position='append')
+      else
+        open(1234,file='AO-densities',status='replace',
+     &       form='unformatted',access='sequential',
+     &       action='readwrite',position='rewind')
+      end if
+
+      !> write AO basis information to file
+      write(1234) nsym, nbast
+      write(1234) nbas(1:nsym)
+      write(1234) ibas(1:nsym)
+
+      !> allocate scratch space
+      lscr = nasht*nbast + nasht*nasht + 20 ! the 20 is for the mem-markers
+      allocate(cmo(ncmot));          cmo     = 0
+      allocate(dcao(nbast,nbast,1)); dcao    = 0 ! quadratic matrix of dimension nbast * nbast with nbast == total number of AO-basis functions
+      allocate(dvao(nbast,nbast,1)); dvao    = 0 ! quadratic matrix of dimension nbast * nbast with nbast == total number of AO-basis functions
+      allocate(scratch(lscr));       scratch = 0
+
+      !> read MOs from SIRIUS.RST 
+      !> a. if HF these are the final HF orbitals
+      !> b. if MC these are the final MCSCF orbitals
+      call readmo(cmo,9,dummy,idummy)
+
+      select case(trim(density))
+
+      case("HF")
+
+         !> construct active part (high-spin open-shell HF) of density matrix
+         if(hsrohf)then
+           call dzero(dv,nnashx)
+           do i = 1, nasht
+              j = i*(i+1)/2
+              dv(j) = 1.0d0
+           end do
+         end if
+
+         call fckden((nisht>0),(nasht>0),dcao,dvao,cmo,dv,scratch,lscr)
+
+         if(hsrohf)then
+           call daxpy(nbast**2,1.0d0,dvao,1,dcao,1)
+         end if
+
+         !> write the combined (inactive + open-shell) AO-density to file
+         write(1234) dcao
+
+      case("MC")
+
+          !> input: active part of 1-particle density matrix in dv (MO-basis)
+
+          !> note: change ".false." to ".true" below to get 
+          !        the inactive part of the density matrix in dcao
+          call fckden(.false.,(nasht>0),dcao,dvao,cmo,dv,scratch,lscr)
+
+          !> write the AO-density (active part only) to file
+          write(1234) dvao
+
+          if(.false.)then
+            !> write the AO-density (inactive part only) to file
+            write(1234) dcao
+          end if
+
+      case default
+        call quit("write_aodens: unknown density type")
+      end select
+
+      !> print AO-density matrices to screen
+      if(print_to_screen)then
+        if(nisht > 0 .and. trim(density)== "HF")then
+          write(lupri,'(/A)')
+     &  ' write_aodens: dcao = density matrix, inactive part (AO-basis)'
+          call output(dcao,1,nbast,1,nbast,nbast,nbast,1,lupri)
+        end if
+        if(nasht > 0) then
+          write(lupri,'(/a)')
+     &  ' write_aodens: dvao = density matrix,   active part (AO-basis)'
+          call output(dvao,1,nbast,1,nbast,nbast,nbast,1,lupri)
+        end if
+      end if
+
+      deallocate(cmo,dvao,dcao,scratch)
+
+      !> close the file "AO-densities"
+      close(1234, status="keep")
+
+      call qexit('aodens')
+
+      end subroutine write_aodens
+
 C  /* Deck ijkaux */
       SUBROUTINE IJKAUX(II,JJ,KK,LL)
 #include "implicit.h"
