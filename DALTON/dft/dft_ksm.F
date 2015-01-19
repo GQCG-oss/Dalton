@@ -577,6 +577,7 @@ c
 #include "mpif.h"
 #include "priunit.h"
 #include "inforb.h"
+      REAL*8 DMAT(NBAST,NBAST)
       CALL MPI_Bcast(DMAT,NBAST*NBAST,MPI_DOUBLE_PRECISION,
      &               0, MPI_COMM_WORLD,ierr)
       END

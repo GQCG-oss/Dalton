@@ -15,6 +15,7 @@ ompi_info -a | grep 'Fort integer size'
 source /com/intel/composer_xe_2013.1.117/bin/ifortvars.sh intel64
 source /com/intel/composer_xe_2013.1.117/bin/compilervars.sh intel64
 source /com/intel/composer_xe_2013.1.117/mkl/bin/mklvars.sh intel64
+source /com/OpenMPI/1.4.5/intel/load.sh
 
 
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR

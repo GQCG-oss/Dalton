@@ -115,7 +115,7 @@ contains
        Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D)
        !DFT energy
        if(DECinfo%DFTreference) then
-         Edft = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D,.true.) 
+         Edft = get_dft_energy_fullmolecule(MyMolecule,Mylsitem,D) 
        endif
 
        ! Print summary

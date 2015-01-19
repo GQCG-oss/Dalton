@@ -14,7 +14,6 @@ module response_noOpenRSP_module
   use matrix_util
   use rspsolver
   use decompMod, only: decompItem
-  use RSPsolver
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
   use dal_interface
@@ -497,8 +496,7 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
 
   do icoor = 1,3 
      call mat_scal(-1.0d0,RHS(icoor))
-     !factor 1/2 outside is taken care of in util_get...
-     call util_get_symm_part(RHS(icoor))
+     call util_get_symm_part(RHS(icoor)) !Eq. 60 in the paper
   enddo
 
   !#############################################################################

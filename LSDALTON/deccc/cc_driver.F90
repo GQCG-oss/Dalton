@@ -33,6 +33,7 @@ use mp2_module!,only: get_VOVO_integrals
 use atomic_fragment_operations
 use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
+use ccsd_lhtr_module
 use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & getDoublesResidualCCSD_simple,getDoublesResidualCCSD_simple2, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
@@ -1808,7 +1809,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       use_pnos        = .false.
       get_multipliers = .true.
-      prec_in_b       = .false.
+      prec_in_b       = .true.
 
       if(.not.present(m4)) then
          call lsquit('ccsolver: When solving for the multipliers, make sure the&
@@ -2825,7 +2826,7 @@ subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv
    ! Check if there is enough memory to performed an MO-CCSD calculation.
    !   YES: get full set of t1 free gmo and pack them
    !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
-   if (mo_ccsd.or.(ccmodel == MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
+   if (mo_ccsd.and.(.not.ccmodel==MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
       if(DECinfo%PL>1)call time_start_phase( PHASE_work, twall = time_mo_ints ) 
 
       call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,pgmo_diag,pgmo_up, &

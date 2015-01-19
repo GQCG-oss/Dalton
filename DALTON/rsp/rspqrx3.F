@@ -1285,7 +1285,7 @@ C
      *            PVDEN,H2,H2X,WRKO,KFREE,LFREE,
      *            LCON,LORB,IPRRSP,IGRSPI,ISPIN1,ISPIN2,
      *            IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2)
-         ELSE IF (DIRFCK) THEN
+         ELSE IF (DIRFCK .AND. NASHT.EQ.0) THEN
             DFTSAV = DFTADD
             DFTADD = .FALSE.
 c

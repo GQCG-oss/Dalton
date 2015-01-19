@@ -329,7 +329,7 @@ contains
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
        ! calculate also MP2 density integrals
 #ifdef MOD_UNRELEASED
-       if(DECinfo%first_order) then  
+       if(DECinfo%first_order.or.DECinfo%CCSDmultipliers) then  
           call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
        else
 #endif
