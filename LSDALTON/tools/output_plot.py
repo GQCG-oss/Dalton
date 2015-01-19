@@ -20,10 +20,10 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
    #DEFINING WHICH KIND OF DATA TO USE
    ov  = "o"
    ect = 0
-   if ecorrtype=="oCCSD" or ecorrtype=="oMP2":
+   if ecorrtype=="oCCSD" or ecorrtype=="oMP2" or ecorrtype=="oRIMP2":
       ov  = "o"
       ect = 0
-   elif ecorrtype=="vCCSD" or ecorrtype=="vMP2":
+   elif ecorrtype=="vCCSD" or ecorrtype=="vMP2" or ecorrtype=="vRIMP2":
       ov  = "v"
       ect = 0
    elif ecorrtype=="o(T)":
@@ -120,10 +120,10 @@ def plot_SF_energy_errors(self, info, fig, ecorrtype="oMP2", title="AF energy er
    # DEFINING WHICH KIND OF DATA TO USE:
    ov  = "o"
    ect = 0
-   if ecorrtype=="oCCSD" or ecorrtype=="oMP2":
+   if ecorrtype=="oCCSD" or ecorrtype=="oMP2" or ecorrtype=="oRIMP2":
       ov  = "o"
       ect = 0
-   elif ecorrtype=="vCCSD" or ecorrtype=="vMP2":
+   elif ecorrtype=="vCCSD" or ecorrtype=="vMP2" or ecorrtype=="vRIMP2":
       ov  = "v"
       ect = 0
    elif ecorrtype=="o(T)":
