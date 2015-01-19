@@ -215,7 +215,7 @@ class decinfo_class:
           if(" (T) correlation energy  :"  in line):
             self.ecorrocc[1]  = float(line.split()[-1])
             found_Ec = True
-          if("CCSD(T) correlation energy  :"  in line):
+          if("CCSD(T) correlation energy :"  in line):
             self.ecorrocc[2]  = float(line.split()[-1])
             found_Ec = True
 
