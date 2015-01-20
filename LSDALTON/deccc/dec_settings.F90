@@ -199,7 +199,7 @@ contains
     DECinfo%AtomicExtent             = .false.
 
     DECinfo%DFTreference             = .false.
-    DECinfo%ccConvergenceThreshold   = 1e-5_realk
+    DECinfo%ccConvergenceThreshold   = 1e-9_realk
     DECinfo%CCthrSpecified           = .false.
     DECinfo%use_singles              = .false.
     DECinfo%use_preconditioner       = .true.
