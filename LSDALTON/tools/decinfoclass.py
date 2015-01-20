@@ -22,12 +22,11 @@ class decinfo_class:
    """A class used for storing all DEC related info"""
    #JUST INIT THE EMPTY CLASS AND FILL IT VIA OUTPUT
    def __init__(self):
-      self.fotint     = 0
       self.fotfloat   = 0
       self.nfragjobs  = 0
       self.sfragjobs  = 0
       self.pfragjobs  = 0
-      self.nesti       = 0
+      self.nesti      = 0
       self.sfrags     = []
       self.pfrags     = []
       self.esti       = []
@@ -58,6 +57,11 @@ class decinfo_class:
         self.ecorrlag.append(0.0)
       elif(fragtype=="MP2"):
         self.ecorrtype.append("MP2")
+        self.ecorrocc.append(0.0)
+        self.ecorrvirt.append(0.0)
+        self.ecorrlag.append(0.0)
+      elif(fragtype=="RIMP2"):
+        self.ecorrtype.append("RI-MP2")
         self.ecorrocc.append(0.0)
         self.ecorrvirt.append(0.0)
         self.ecorrlag.append(0.0)
@@ -142,6 +146,16 @@ class decinfo_class:
           if("MP2 Lagrangian correlation energy :"  in line):
             self.ecorrlag[0] = float(line.split()[-1])
             found_Ec = True
+          # RIMP2
+          if("RI-MP2 occupied   correlation energy :"  in line):
+            self.ecorrocc[0]  = float(line.split()[-1])
+            found_Ec = True
+          if("RI-MP2 virtual    correlation energy :"  in line):
+            self.ecorrvirt[0] = float(line.split()[-1])
+            found_Ec = True
+          if("RI-MP2 Lagrangian correlation energy :"  in line):
+            self.ecorrlag[0] = float(line.split()[-1])
+            found_Ec = True
           # CCSD
           if("CCSD occupied correlation energy :"  in line):
             self.ecorrocc[0]  = float(line.split()[-1])
@@ -201,6 +215,9 @@ class decinfo_class:
             self.ecorrocc[0]  = float(line.split()[-1])
             found_Ec = True
           if("MP2 correlation energy :"  in line):
+            self.ecorrocc[0]  = float(line.split()[-1])
+            found_Ec = True
+          if("RI-MP2 correlation energy :"  in line):
             self.ecorrocc[0]  = float(line.split()[-1])
             found_Ec = True
           if("CC2 correlation energy :"  in line):
@@ -292,6 +309,7 @@ class decinfo_class:
               self.jobs[j].fragpid = int(filelines[i+o+j].split()[eljobid2])
 
         for k in range(len(self.ecorrtype)):
+          if("pair energies" in filelines[i]):
           if(self.ecorrtype[k]+" Lagrangian single energies" in filelines[i]):
             foundlags = True
             for j in range(self.sfragjobs):
