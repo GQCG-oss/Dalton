@@ -408,6 +408,7 @@ contains
        case('.RPA')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.
+          DECinfo%solver_par=.true.
 
 
           ! CC SOLVER INFO
