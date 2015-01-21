@@ -17,14 +17,14 @@ use lattice_type, only: lvec_list_t
 use basis_type, only: copy_basissetinfo, free_basissetinfo,&
      & freeBrakebasinfo,initBrakebasinfo,&
      & copybrakebasinfo,buildbasisfrombrakebasinf,print_basissetinfo,&
-     & print_brakebas
+     & print_brakebas, add_basissetinfo
 use basis_typetype,only: nullifyBasisset,nullifyMainBasis,&
      & BasParamLABEL,nBasisBasParam,GCTBasParam,BRAKEBASINFO,&
-     & RegBasParam
+     & RegBasParam,CABBasParam,CAPBasParam
 use io, only: io_init, io_free
 use molecule_type, only: free_moleculeinfo
 use READMOLEFILE, only: read_molfile_and_build_molecule,Geometry_analysis  
-use BuildBasisSet, only: Build_BASIS
+use BuildBasisSet, only: Build_BASIS,copy_Molecule_IDTYPE
 use lstiming, only: lstimer
 use molecule_module, only: build_fragment,build_fragment2,&
      & DETERMINE_FRAGMENTNBAST,determine_nbast
@@ -267,8 +267,25 @@ do i=1,nBasisBasParam
            & intinp%MOLECULE,intinp%BASIS%BINFO(I),LIBRARY,&
            & BasParamLABEL(I),intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
            & doprint,intinp%DALTON%DOSPHERICAL,I)
-      IF(i.EQ.1)THEN
-         !regular basis
+      IF(i.EQ.CAPBasParam)THEN
+         !Add the CABSP basis to REGULAR basis and store in CABS basis!
+         IF(intinp%BASIS%WBASIS(CABBasParam))THEN
+            call lsquit('CABS and CABSP basis set supplied, not compatibel',-1)
+         ENDIF
+         CALL Add_basissetinfo(LUPRI,intinp%DALTON%BASPRINT,&
+              & intinp%BASIS%BINFO(RegBasParam),intinp%BASIS%BINFO(CAPBasParam),&
+              & intinp%BASIS%BINFO(CABBasParam),CABBasParam)
+         IF(intinp%BASIS%BINFO(RegBasParam)%labelindex .NE. 0)THEN
+            call copy_Molecule_IDTYPE(intinp%MOLECULE,RegBasParam,CABBasParam)
+         ENDIF
+         CALL DETERMINE_NBAST(intinp%MOLECULE,intinp%BASIS%BINFO(CABBasParam),&
+              & intinp%DALTON%DOSPHERICAL,.FALSE.)
+         intinp%BASIS%WBASIS(CABBasParam) = .TRUE.
+         intinp%dalton%basis(CABBasParam) = .TRUE.
+         IF(intinp%DALTON%BASPRINT .GT. 5) CALL PRINT_BASISSETINFO(LUPRI,&
+              & intinp%BASIS%BINFO(CABBasParam))
+      ENDIF
+      IF(i.EQ.RegBasParam)THEN !regular basis
          nbast = getNbasis(AORdefault,Contractedinttype,intinp%MOLECULE,LUPRI)
       ENDIF
       IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD '//BasParamLABEL(I),TIM1,TIM2,LUPRI)
