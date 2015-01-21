@@ -88,7 +88,7 @@ C     ***** Reorthonormalization contribution *****
 C     *********************************************
 C
       IF (DIPDER .OR. QPGRAD) THEN
-         CALL OPGORT(CMO,FOCKMO,ORTOPG,WORK,LWORK,NODC,NODV,
+         CALL OPGORT(CMO,FOCKMO,ORTOPG,WORK,LWORK,
      &            IREP,IPRINT)
       END IF
 C
@@ -181,8 +181,7 @@ C
       RETURN
       END
 C  /* Deck opgort */
-      SUBROUTINE OPGORT(CMO,FOCKMO,ORTOPG,WORK,LWORK,
-     &                  NODC,NODV,IREP,IPRINT)
+      SUBROUTINE OPGORT(CMO,FOCKMO,ORTOPG,WORK,LWORK,IREP,IPRINT)
 C
 C     Dec 89, tuh
 C

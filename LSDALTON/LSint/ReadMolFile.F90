@@ -401,7 +401,9 @@ DO I=1,80
    ENDIF
 ENDDO
 
+IPOS2 = INDEX(WORD,'AUX')
 IPOS = INDEX(WORD,'Aux')
+IF (IPOS .NE. 0) IPOS = IPOS2
 IF (IPOS .NE. 0) THEN
    BASIS(AUXBasParam)=.TRUE.
    IPOS2 = INDEX(WORD(IPOS:80),'=')
@@ -415,9 +417,9 @@ IF (IPOS .NE. 0) THEN
    BASISSET(AUXBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
 ENDIF
 
-IPOS = INDEX(WORD,'CABS')
+IPOS = INDEX(WORD,'CABSP')
 IF (IPOS .NE. 0) THEN
-   BASIS(CABBasParam)=.TRUE.
+   BASIS(CAPBasParam)=.TRUE.
    IPOS2 = INDEX(WORD(IPOS:80),'=')
    DO I=IPOS+IPOS2,80
       IF(WORD(I:I).EQ.' ')THEN
@@ -426,7 +428,21 @@ IF (IPOS .NE. 0) THEN
       ENDIF
    ENDDO
    LEN = IPOS3-(IPOS+IPOS2)
-   BASISSET(CABBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
+   BASISSET(CAPBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
+ELSE
+   IPOS = INDEX(WORD,'CABS')
+   IF (IPOS .NE. 0) THEN
+      BASIS(CABBasParam)=.TRUE.
+      IPOS2 = INDEX(WORD(IPOS:80),'=')
+      DO I=IPOS+IPOS2,80
+         IF(WORD(I:I).EQ.' ')THEN
+            IPOS3=I
+            EXIT
+         ENDIF
+      ENDDO
+      LEN = IPOS3-(IPOS+IPOS2)
+      BASISSET(CABBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
+   ENDIF
 ENDIF
 
 IPOS = INDEX(WORD,'JK')
@@ -443,7 +459,9 @@ IF (IPOS .NE. 0) THEN
    BASISSET(JKBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
 ENDIF
 
+IPOS2 = INDEX(WORD,'admm')
 IPOS = INDEX(WORD,'ADMM')
+IF (IPOS .NE. 0) IPOS = IPOS2
 IF (IPOS .NE. 0) THEN
    BASIS(ADMBasParam)=.TRUE.
    IPOS2 = INDEX(WORD(IPOS:80),'=')
@@ -1395,7 +1413,9 @@ IF (ATOMBASIS) THEN
    ENDIF
 
    !Auxiliary basisset
+   IPOS2 = INDEX(TEMPLINE,'AUX')
    IPOS = INDEX(TEMPLINE,'Aux')
+   IF (IPOS .NE. 0) IPOS=IPOS2
    IF (IPOS .NE. 0) THEN
       BASIS(AuxBasParam)=.TRUE.
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
@@ -1416,14 +1436,14 @@ IF (ATOMBASIS) THEN
       ENDIF
    ENDIF
 
-   !CABS basisset - Complementary Auxiliary basis set
-   IPOS = INDEX(TEMPLINE,'CABS')
+   !CABSP basisset - Complementary Auxiliary basis set PLUS regular
+   IPOS = INDEX(TEMPLINE,'CABSP')
    IF (IPOS .NE. 0) THEN
-      BASIS(CABBasParam)=.TRUE.
+      BASIS(CAPBasParam)=.TRUE.
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
-      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
+      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
          WRITE (LUPRI,*) 'Incorrect input for choice of Complementary auxiliary atomic basis set'
-         WRITE (LUPRI,*) ' Format is "CABS=? ? ?"'
+         WRITE (LUPRI,*) ' Format is "CABSP=? ? ?"'
          CALL LSQUIT('Incorrect input for choice of Complementary auxiliary atomic basis set',lupri)
       ELSE
          IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
@@ -1432,13 +1452,36 @@ IF (ATOMBASIS) THEN
 !         ELSE
 !            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
 !         ENDIF
-!         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CABBasParam)
-         call StringInit80(AtomicBasisset(CABBasParam))
-         AtomicBasisset(CABBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
+!         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CAPBasParam)
+         call StringInit80(AtomicBasisset(CAPBasParam))
+         AtomicBasisset(CAPBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
 
       ENDIF
+   ELSE
+      !CABS basisset - Complementary Auxiliary basis set
+      IPOS = INDEX(TEMPLINE,'CABS')
+      IF (IPOS .NE. 0) THEN
+         BASIS(CABBasParam)=.TRUE.
+         IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
+         IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
+            WRITE (LUPRI,*) 'Incorrect input for choice of Complementary auxiliary atomic basis set'
+            WRITE (LUPRI,*) ' Format is "CABS=? ? ?"'
+            CALL LSQUIT('Incorrect input for choice of Complementary auxiliary atomic basis set',lupri)
+         ELSE
+            IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
+            !         IF (IPOS3 .LT. 10) THEN
+            !            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
+            !         ELSE
+            !            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
+            !         ENDIF
+            !         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CABBasParam)
+            call StringInit80(AtomicBasisset(CABBasParam))
+            AtomicBasisset(CABBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
+            
+         ENDIF
+      ENDIF
    ENDIF
-   
+
    !JK basisset
    IPOS = INDEX(TEMPLINE,'JK')
    IF (IPOS .NE. 0) THEN

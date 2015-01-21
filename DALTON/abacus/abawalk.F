@@ -7228,23 +7228,23 @@ C
          CALL HEADER('Polarizability tensor at reference geometry',1)
          DO 300 F = 1, NFRVAL
             WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-            CALL OUTPUT(ROAAFU(1,1,F),1,3,1,3,3,3,1,LUPRI)
+            CALL OUTPUT(ROAAFU(1,1,F),1,3,1,3,3,3,11,LUPRI)
   300    CONTINUE
          IF (VROA) THEN
             CALL HEADER('Non-London G tensor at reference geometry',1)
             DO 310 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAGNU(1,1,F),1,3,1,3,3,3,1,LUPRI)
+               CALL OUTPUT(ROAGNU(1,1,F),1,3,1,3,3,3,11,LUPRI)
   310       CONTINUE
             CALL HEADER('London G tensor at reference geometry',1)
             DO 320 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAGLU(1,1,F),1,3,1,3,3,3,1,LUPRI)
+               CALL OUTPUT(ROAGLU(1,1,F),1,3,1,3,3,3,11,LUPRI)
   320       CONTINUE
             CALL HEADER('A tensor at reference geometry',1)
             DO 330 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAAU(1,1,1,F),1,3,1,9,3,9,1,LUPRI)
+               CALL OUTPUT(ROAAU(1,1,1,F),1,3,1,9,3,9,11,LUPRI)
   330       CONTINUE
          END IF
 C

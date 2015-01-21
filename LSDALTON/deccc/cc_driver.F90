@@ -2826,7 +2826,7 @@ subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv
    ! Check if there is enough memory to performed an MO-CCSD calculation.
    !   YES: get full set of t1 free gmo and pack them
    !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
-   if (mo_ccsd.and.(.not.ccmodel == MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
+   if (mo_ccsd.and.(.not.ccmodel==MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
       if(DECinfo%PL>1)call time_start_phase( PHASE_work, twall = time_mo_ints ) 
 
       call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,pgmo_diag,pgmo_up, &

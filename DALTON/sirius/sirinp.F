@@ -741,6 +741,7 @@ C     LUW*     Output units for print output (now defined in SIRSET)
       IPRSOL = IPRUSR + 4
       IPRCNO = IPRUSR + 1
       IPRFCK = IPRUSR
+      CMOPRI = .FALSE.
 C     set limit for POPPRI in each DIIS/QCHF/MCSCF iter to 30 nuclei
       LIM_POPPRI = 30
 C
@@ -4776,8 +4777,6 @@ C
 C
 C     ***** PROCESS INPUT FOR PRIINP *****
 C
-      CMOPRI = .FALSE.
-C
       IF (WORD .NE. '*PRINT ') THEN
          WRITE(LUPRI,*) 'ERROR, PRIINP call with ',WORD,
      *   ' instead of "*PRINT "'
@@ -4816,7 +4815,7 @@ C
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal keyword for "*PRINT "')
 C
-C *** Option 1 >      < 
+C *** Option 1 >CMOPRI<  Print all MO coefficients
 C
   101 CONTINUE
       CMOPRI = .TRUE.
