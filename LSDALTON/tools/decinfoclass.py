@@ -238,8 +238,8 @@ class decinfo_class:
 
           allfound = (found_sf and found_pf and found_nf and found_Ec)
 
-      if (allfound):
-        print "All basic DEC/CC information has been found\n"
+      if (not allfound):
+        print "WARNING: Some basic DEC/CC information has not been found\n"
 
 
       if (esti):
@@ -309,7 +309,7 @@ class decinfo_class:
               self.jobs[j].fragpid = int(filelines[i+o+j].split()[eljobid2])
 
         for k in range(len(self.ecorrtype)):
-          if("pair energies" in filelines[i]):
+          #if("pair energies" in filelines[i]):
           if(self.ecorrtype[k]+" Lagrangian single energies" in filelines[i]):
             foundlags = True
             for j in range(self.sfragjobs):
@@ -356,8 +356,8 @@ class decinfo_class:
 
       found_s = (foundlags or foundoccs or foundvirts)
       found_p = (foundlagp or foundoccp or foundvirtp)
-      if (found_s and found_p):
-         print "Single and pair fragment energies have been found\n"
+      if (not (found_s or found_p)):
+          print "WARNING: Single and/or pair fragment energies have not been found\n"
 
       #OUTSIDE SECOND LOOP    
         
