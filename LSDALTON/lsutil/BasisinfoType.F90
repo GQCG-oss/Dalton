@@ -9,8 +9,8 @@ MODULE basis_typetype
  INTEGER, PARAMETER      :: maxBASISsegment=25
  INTEGER, PARAMETER      :: maxBasisSetInLIB=10
  INTEGER, PARAMETER      :: maxNumberOfChargesinLIB=10
-
- Integer,parameter :: nBasisBasParam=7
+!Remember to modify nBasisBasParam if you add a basis set to the list. 
+ Integer,parameter :: nBasisBasParam=8
  Integer,parameter :: RegBasParam=1
  Integer,parameter :: AUXBasParam=2
  Integer,parameter :: CABBasParam=3
@@ -18,10 +18,11 @@ MODULE basis_typetype
  Integer,parameter :: VALBasParam=5
  Integer,parameter :: GCTBasParam=6
  Integer,parameter :: ADMBasParam=7
+ Integer,parameter :: CAPBasParam=8
 
  character(len=9),parameter :: BasParamLABEL(nBasisBasParam) = &
       & (/'REGULAR  ','AUXILIARY','CABS     ','JKAUX    ',&
-      & 'VALENCE  ','GCTRANS  ','ADMM     '/)
+      & 'VALENCE  ','GCTRANS  ','ADMM     ','CABSP    '/)
 
 TYPE segment
 INTEGER                 :: nrow
