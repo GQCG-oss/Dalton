@@ -2349,7 +2349,21 @@ contains
     call mat_to_full(Fic,1.0E0_realk,Fic_real)
 
     !print *, "norm2(Fic):",  norm2(Fic_real)  
-
+    !F12DEBUG
+!!$    if(DECinfo%F12debug) then
+!!$       print *, "------------ Fic(AO) ----------- "
+!!$       print *, "-------------------------------- "
+!!$       
+!!$       do i=1,nocc
+!!$          do c=1, ncabs
+!!$             if(abs(Fic_real(i,c)) > 1E-010) then
+!!$                print *, "i c Fic_real(i,c):  " , i, c, Fic_real(i,c)
+!!$             endif
+!!$          enddo
+!!$       enddo
+!!$    endif
+!!$    
+    
     ! Transform to ortoghonal basis Fia'
     call mem_alloc(Fia,nocc,ncabs)
     do i=1,nocc
@@ -2370,6 +2384,22 @@ contains
     !dec_diff_basis_transform1(nA,nB1,nB2,C1,C2,matA,matB)
     !call dec_diff_basis_transform1(nocc*ncabs,nocc,ncabs,C_ij,C_cd,Fic_real,Fia)
     !print *, "norm2(Fia) 2:", norm2(Fia)
+
+
+    !print *, "norm2(Fic):",  norm2(Fic_real)  
+    !F12DEBUG
+!!$    if(DECinfo%F12debug) then
+!!$       print *, "------------ Fia(MO) ----------- "
+!!$       print *, "-------------------------------- "
+!!$       
+!!$       do i=1,nocc
+!!$          do a=1, ncabs
+!!$             if(abs(Fia(i,a)) > 1E-010) then
+!!$                print *, "i a Fia(i,a):  " , i, a, Fia(i,a)
+!!$             endif
+!!$          enddo
+!!$       enddo
+!!$    endif
     
     !Singles energy correction
     ES2 = 0.0E0_realk

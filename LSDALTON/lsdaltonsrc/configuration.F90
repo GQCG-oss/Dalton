@@ -3093,7 +3093,7 @@ implicit none
 !
    integer                         :: i
 !   integer                         :: omp_get_num_threads
-   logical                         :: file_exists
+   logical                         :: file_exists,CABS_BASIS_PRESENT
    real(realk)                     :: conv_factor, potnuc, cutoff,inverse_std_conv_factor
    CHARACTER*24, PARAMETER :: AVG_NAMES(5) = &
         &  (/ 'None                    ', &
@@ -3638,7 +3638,10 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
            &     'Warning: You have specified .RIMP2 in the dalton input but not supplied a fitting basis set'
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
-   if(config%doF12 .AND. (.NOT. config%integral%basis(CABBasParam)))then
+
+   CABS_BASIS_PRESENT = config%integral%basis(CABBasParam) .OR. config%integral%basis(CAPBasParam)
+
+   if(config%doF12 .AND. (.NOT. CABS_BASIS_PRESENT))then
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
       CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)

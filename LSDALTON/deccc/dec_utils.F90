@@ -2829,19 +2829,20 @@ end function max_batch_dimension
     !> HF Density matrix
     type(matrix),intent(in) :: D
     !> get E_DFT
-    type(matrix) :: F,h
+    type(matrix) :: F,K,h
     type(matrix) :: Dtmp(1)
     integer :: igrid
     real(realk)  :: DFTELS,enuc,edft(1)
 
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
-
+    call mat_init(K,MyMolecule%nbasis,MyMolecule%nbasis)
     call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
     call mat_init(Dtmp(1),MyMolecule%nbasis,MyMolecule%nbasis)
     call mat_copy(1.0_realk,D,Dtmp(1))
     call mat_zero(h)
     call mat_zero(F)
+    call mat_zero(K)
 
 
     MyLsitem%setting%scheme%DFT%griddone = 0
@@ -2856,15 +2857,21 @@ end function max_batch_dimension
     MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
 
     call mat_free(Dtmp(1))
+    !Get one-electron part of the Fock Matrix
     call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
-
+    !Get the Coulomb matrix
     call II_get_coulomb_mat(DECinfo%output, &
       & DECinfo%output,mylsitem%setting,D,F,1)
+    !Get the long-range exchange matrix for the range-separated case
+    call II_get_exchange_mat(DECinfo%output, &
+      & DECinfo%output,mylsitem%setting,D,1,.true.,K)
+    
     call mat_daxpy(2.0_realk,h,F)
     CALL II_get_nucpot(DECinfo%output, DECinfo%output,mylsitem%setting,Enuc)
-    Ehf =Edft(1) + mat_dotproduct(D,F) + Enuc
-
+    Ehf =Edft(1) + mat_dotproduct(D,F) + Enuc + mat_dotproduct(D,K)
+    
     call mat_free(h)
+    call mat_free(K)
     call mat_free(F)
 
 
@@ -4333,7 +4340,7 @@ end function max_batch_dimension
     !local variables 
     character(len=30) :: CorrEnergyString
     integer :: iCorrLen
-    logical :: print_pair, print_4pT_5pT
+    logical :: print_pair
 
     ! Print Header:
     write(DECinfo%output,*)
@@ -4346,7 +4353,6 @@ end function max_batch_dimension
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
     print_pair = count(dofrag)>1
-    print_4pT_5pT = DECinfo%PL>0
     
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
@@ -4563,20 +4569,20 @@ end function max_batch_dimension
                & '(T) virtual single energies','AF_ParT_VIR_BOTH')
        end if
 
-       if((.not.DECinfo%onlyvirtpart).and.print_4pT_5pT) then  
+       if((.not.DECinfo%onlyvirtpart)) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
                & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
        endif
-       if((.not.DECinfo%onlyoccpart).and.print_4pT_5pT) then
+       if((.not.DECinfo%onlyoccpart)) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & '(T) virtual single energies (fourth order)','AF_ParT_VIR4')
        end if
 
-       if((.not.DECinfo%onlyvirtpart).and.print_4pT_5pT) then  
+       if((.not.DECinfo%onlyvirtpart)) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
                & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
        endif
-       if((.not.DECinfo%onlyoccpart).and.print_4pT_5pT) then
+       if((.not.DECinfo%onlyoccpart)) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
                & '(T) virtual single energies (fifth order)','AF_ParT_VIR5')
        end if
@@ -4590,20 +4596,20 @@ end function max_batch_dimension
                & DistanceTable, '(T) virtual pair energies','PF_ParT_VIR_BOTH')
        end if
 
-       if((.not.DECinfo%onlyvirtpart).and.print_pair.and.print_4pT_5pT) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
                & DistanceTable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
        endif
-       if((.not.DECinfo%onlyoccpart).and.print_pair.and.print_4pT_5pT) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & DistanceTable, '(T) virtual pair energies (fourth order)','PF_ParT_VIR4')
        end if
 
-       if((.not.DECinfo%onlyvirtpart).and.print_pair.and.print_4pT_5pT) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
                & DistanceTable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
        endif
-       if((.not.DECinfo%onlyoccpart).and.print_pair.and.print_4pT_5pT) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
                & DistanceTable, '(T) virtual pair energies (fifth order)','PF_ParT_VIR5')
        end if
@@ -4775,10 +4781,9 @@ end function max_batch_dimension
     !> local variables 
     character(len=30) :: CorrEnergyString
     integer :: iCorrLen, cc_sol, pT_full, pT_4, pT_5
-    logical :: print_pair, print_4pT_5pT
+    logical :: print_pair
 
     print_pair = count(dofrag)>1
-    print_4pT_5pT = DECinfo%PL>0
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
     cc_sol  = 1
@@ -4855,16 +4860,14 @@ end function max_batch_dimension
 
           call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_full),dofrag,&
              & '(T) occupied single energies','AF_ParT_OCC_BOTH')
-          if (print_4pT_5pT) then
-             call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_4),dofrag,&
-                & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
-             call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_5),dofrag,&
-                & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
-          end if
-          
-          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_full),&
-             & dofrag,Distancetable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
-          if (print_4pT_5pT.and.print_pair) then
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_4),dofrag,&
+             & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_5),dofrag,&
+             & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
+
+          if (print_pair) then
+             call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_full),&
+                & dofrag,Distancetable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
              call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_4),&
                 & dofrag,Distancetable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
              call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_5),&

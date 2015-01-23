@@ -2333,6 +2333,7 @@ contains
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
+    call ls_mpi_buffer(DECitem%AuxAtomicExtent,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)

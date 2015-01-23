@@ -2232,8 +2232,18 @@ contains
 
     ! Set integral info
     ! *****************
-    INTSPEC = ['R','R','R','R','C'] !R = Regular Basis set on the 1th center !R = Regular Basis set on the 2th center 
-                                    !R = Regular Basis set on the 3th center !R = Regular Basis set on the 4th center !C = Coulomb operator
+    !R = Regular Basis set on the 1th center 
+    !R = Regular Basis set on the 2th center 
+    !R = Regular Basis set on the 3th center 
+    !R = Regular Basis set on the 4th center 
+    !C = Coulomb operator
+    !E = Long-Range Erf operator
+    if (mylsitem%setting%scheme%CAM) then
+       INTSPEC = ['R','R','R','R','E'] 
+    else
+       INTSPEC = ['R','R','R','R','C'] 
+    endif
+    
 
     IF(DECinfo%useIchor)THEN
        iprint     = 0       !print level for Ichor Integral code
