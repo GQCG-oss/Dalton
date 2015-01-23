@@ -463,56 +463,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Number of pair jobs   = ', npair
       write(DECinfo%output,'(1X,a,i10,//)') 'FULL JOB SUMMARY: Total number of jobs  = ', njobs
    
-      !DO NOT COMMIT THIS -- IF SOMEONE READS THIS, PLEASE MAKE ME (PETT) AWARE OF THIS ERROR
-      !--------------------------------------------------------------------------------------
-      if( DECinfo%Hack2 )then
-         do job_n = 1, DECinfo%only_n_frag_jobs
-            job = DECinfo%frag_job_nr(job_n)
-
-            do atom=1,MyMolecule%natoms
-
-               if(atom == job)then
-
-                  print*,"AMPLITUDE PRINT FOR ATOM",atom
-
-                  if( DECinfo%use_singles )then
-                     print*,""
-                     print*,"SINGLES:"
-                     do i = 1, nocc
-                        if( occ_orbitals(i)%centralatom == atom )then
-                           do a = 1, nvirt
-                              print *,MyMolecule%DistanceTableOrbAtomVirt(a,atom),t1_final%elm2(a,i)
-                           enddo
-                        endif
-                     enddo
-                  endif
-
-                  print*,""
-                  print*,"DOUBLES:"
-                  do i = 1, nocc
-                     if( occ_orbitals(i)%centralatom == atom )then
-                        do j = 1, nocc
-                           if( occ_orbitals(j)%centralatom == atom )then
-                              do a = 1, nvirt
-                                 dist_a = MyMolecule%DistanceTableOrbAtomVirt(a,atom)
-                                 max_amp = 0.0E0_realk
-                                 do b = 1, nvirt
-                                    dist_b = MyMolecule%DistanceTableOrbAtomVirt(b,atom)
-                                    if( dist_b<=dist_a )then
-                                       max_amp = max(max_amp, abs(t2f_local%elm4(a,b,i,j) ))
-                                    endif
-                                 enddo
-                                 print *,dist_a,max_amp
-                              enddo
-                           endif
-                        enddo
-                     endif
-                  enddo
-               endif
-            enddo
-         enddo
-      endif
-      !--------------------------------------------------------------------------------------
 
       ! Calculate single and pair fragments energies:
       call mem_alloc(FragEnergies,nfrags,nfrags,nenergies)
