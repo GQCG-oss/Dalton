@@ -30,6 +30,7 @@ MODULE IntegralInterfaceDEC
 !       & II_GET_DECPACKED4CENTER_J_ERI2
   PRIVATE
 CONTAINS
+
 !> \brief Calculates and stores the screening integrals
 !> \author T. Kjaergaard
 !> \date 2010
@@ -56,7 +57,7 @@ real(realk)         :: GGem
 dummy=1
 IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
    !set geminal
-   IF (intSpec(5).NE.'C') THEN
+   IF (intSpec(5).NE.'C'.AND.intSpec(5).NE.'E') THEN
       nGaussian = 6
       nG2 = nGaussian*(nGaussian+1)/2
       GGem = 0E0_realk
@@ -72,11 +73,14 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
          coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
       ENDDO
    ENDIF
- 
+
    ! ***** SELECT OPERATOR TYPE *****
    IF (intSpec(5).EQ.'C') THEN
       ! Regular Coulomb operator 1/r12
       oper = CoulombOperator
+   ELSE IF (intSpec(5).EQ.'E') THEN
+      ! Long-Range operator erf/r12
+      oper = ErfOperator
    ELSE IF (intSpec(5).EQ.'G') THEN
      ! The Gaussian geminal operator g
       oper = GGemOperator
@@ -97,6 +101,7 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
       call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
    ENDIF
 
+   
    ! ***** SELECT AO TYPES *****
    DO i=1,4
       IF (intSpec(i).EQ.'R') THEN
@@ -523,6 +528,9 @@ ENDIF
 IF (intSpec(5).EQ.'C') THEN
    ! Regular Coulomb operator 1/r12
    oper = CoulombOperator
+ELSE IF (intSpec(5).eq.'E') then
+   ! Long-Range Erf operator erf(mu r_12)/r_12
+   oper = ErfOperator
 ELSE IF (intSpec(5).EQ.'G') THEN
    ! The Gaussian geminal operator g
    oper = GGemOperator
@@ -706,6 +714,9 @@ ENDIF
 IF (intSpec(5).EQ.'C') THEN
    ! Regular Coulomb operator 1/r12
    oper = CoulombOperator
+ELSE IF (intSpec(5).eq.'E') then
+   ! Long-Range Erf operator erf(mu r_12)/r_12
+   oper = ErfOperator
 ELSE IF (intSpec(5).EQ.'G') THEN
    ! The Gaussian geminal operator g
    oper = GGemOperator
@@ -1094,6 +1105,9 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
      IF (intSpec(5).EQ.'C') THEN
         ! Regular Coulomb operator 1/r12
         oper = CoulombOperator
+     ELSE IF (intSpec(5).eq.'E') then
+        ! Long-Range Erf operator erf(mu r_12)/r_12
+        oper = ErfOperator
      ELSE IF (intSpec(5).EQ.'G') THEN
         ! The Gaussian geminal operator g
         oper = GGemOperator
