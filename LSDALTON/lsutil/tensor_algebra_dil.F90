@@ -125,7 +125,7 @@
 !TYPES:
  !Tensor contraction specification:
         type, private:: contr_spec_t
-         logical, private:: dest_zero                      !if .true., the initial state of the destination (sub)tensor is assumed zero
+         logical, private:: dest_zero                      !if .true., the destination (sub)tensor will be set to zero before contraction
          integer(INTD), private:: ndims_left               !number of uncontracted dimensions coming from the left tensor
          integer(INTD), private:: ndims_right              !number of uncontracted dimensions coming from the right tensor
          integer(INTD), private:: ndims_contr              !number of contracted dimensions
@@ -159,8 +159,8 @@
          type(tens_arg_t), private:: dest_arg      !destination tensor argument
          type(tens_arg_t), private:: left_arg      !left tensor argument
          type(tens_arg_t), private:: right_arg     !right tensor argument
-         real(realk), private:: alpha              !multiplication prefactor
-         real(realk), private:: beta               !scaling factor for the destination tensor
+         real(realk), private:: alpha              !multiplication prefactor (can be explicit)
+         real(realk), private:: beta               !scaling factor for the destination tensor (always implicit)
         end type dil_tens_contr_t
  !Subtensor part specification:
         type, private:: subtens_t
@@ -299,8 +299,8 @@
         private dil_tens_contr_partition
         private dil_tensor_contract_pipe
         public dil_tensor_contract
-        private dil_tensor_norm1
-        private dil_tensor_init
+        public dil_tensor_norm1
+        public dil_tensor_init
         public dil_debug_to_file_start
         public dil_debug_to_file_finish
         public dil_test
@@ -3918,34 +3918,29 @@
   !Destination tensor:
          jb=buf_conf(1,jdev); jf=buf_conf(4,jdev); jvol=dil_subtensor_vol(tsk%dest_arg)
          if(darg%store_type.eq.'l'.or.darg%store_type.eq.'L') then !local tensor
-          if(cspec%dest_zero) then !destination is assumed zero
-           call dil_arg_buf_clean(buf(jdev)%arg_buf(jb),je,jvol) !zero out buffer
+          if(nd.gt.0) then !slice
+           call dil_tensor_slice(nd,darg%tens_loc%elems,darg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%dest_arg%dims,&
+                                &tsk%dest_arg%lbnd(1:nd)-(darg%tens_loc%base(1:nd)+IND_NUM_START),je)
            if(je.ne.0) then; errc=1; return; endif
-          else !destination is non-zero
-           if(nd.gt.0) then !slice
-            call dil_tensor_slice(nd,darg%tens_loc%elems,darg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%dest_arg%dims,&
-                                 &tsk%dest_arg%lbnd(1:nd)-(darg%tens_loc%base(1:nd)+IND_NUM_START),je)
-            if(je.ne.0) then; errc=2; return; endif
-           elseif(nd.eq.0) then !scalar
-            buf(jdev)%arg_buf(jb)%buf_ptr(1)=darg%tens_loc%elems(1)
-           endif
-           if(.not.triv_d) then !permute (if needed)
-            call dil_tensor_transpose(nd,tsk%dest_arg%dims,cspec%dprmn,&
-                                     &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
-            if(je.ne.0) then; errc=3; return; endif
-            je=jb; jb=jf; jf=je
-           endif
+          elseif(nd.eq.0) then !scalar
+           buf(jdev)%arg_buf(jb)%buf_ptr(1)=darg%tens_loc%elems(1)
+          endif
+          if(.not.triv_d) then !permute (if needed)
+           call dil_tensor_transpose(nd,tsk%dest_arg%dims,cspec%dprmn,&
+                                    &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
+           if(je.ne.0) then; errc=2; return; endif
+           je=jb; jb=jf; jf=je
           endif
          elseif(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensor
 !         call dil_arg_buf_clean(buf(jdev)%arg_buf(jb),je,jvol) !zero out buffer
-!         if(je.ne.0) then; errc=4; return; endif
+!         if(je.ne.0) then; errc=3; return; endif
 !         if(nd.gt.0) then
 !          call dil_tens_unpack_from_tiles(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tile(s) `One tile case?
-!          if(je.ne.0) then; errc=5; return; endif
+!          if(je.ne.0) then; errc=4; return; endif
 !          je=jb; jb=jf; jf=je
 !         endif
          else
-          errc=6; return
+          errc=5; return
          endif
          buf_conf(4,jdev)=jb; buf_conf(1,jdev)=jf
   !Left tensor:
@@ -3954,27 +3949,27 @@
           if(nl.gt.0) then
            if(jvol.gt.larg%tens_distr_p%tsize) then !more than one tile
             call dil_tens_unpack_from_tiles(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tile(s)
-            if(je.ne.0) then; errc=7; return; endif
+            if(je.ne.0) then; errc=6; return; endif
             je=jb; jb=jf; jf=je
            endif
           else
-           errc=8; return
+           errc=7; return
           endif
          elseif(larg%store_type.eq.'l'.or.larg%store_type.eq.'L') then !local tensor
           if(nl.gt.0) then !slice
            call dil_tensor_slice(nl,larg%tens_loc%elems,larg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%left_arg%dims,&
                                 &tsk%left_arg%lbnd(1:nl)-(larg%tens_loc%base(1:nl)+IND_NUM_START),je)
-           if(je.ne.0) then; errc=9; return; endif
+           if(je.ne.0) then; errc=8; return; endif
           elseif(nl.eq.0) then !scalar
            buf(jdev)%arg_buf(jb)%buf_ptr(1)=larg%tens_loc%elems(1)
           endif
          else
-          errc=10; return
+          errc=9; return
          endif
          if(.not.triv_l) then !permute (if needed)
           call dil_tensor_transpose(nl,tsk%left_arg%dims,cspec%lprmn,&
                                    &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
-          if(je.ne.0) then; errc=11; return; endif
+          if(je.ne.0) then; errc=10; return; endif
           je=jb; jb=jf; jf=je
          endif
          buf_conf(5,jdev)=jb; buf_conf(2,jdev)=jf
@@ -3984,27 +3979,27 @@
           if(nr.gt.0) then
            if(jvol.gt.rarg%tens_distr_p%tsize) then !more than one tile
             call dil_tens_unpack_from_tiles(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tile(s)
-            if(je.ne.0) then; errc=12; return; endif
+            if(je.ne.0) then; errc=11; return; endif
             je=jb; jb=jf; jf=je
            endif
           else
-           errc=13; return
+           errc=12; return
           endif
          elseif(rarg%store_type.eq.'l'.or.rarg%store_type.eq.'L') then !local tensor
           if(nr.gt.0) then !slice
            call dil_tensor_slice(nr,rarg%tens_loc%elems,rarg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%right_arg%dims,&
                                 &tsk%right_arg%lbnd(1:nr)-(rarg%tens_loc%base(1:nr)+IND_NUM_START),je)
-           if(je.ne.0) then; errc=14; return; endif
+           if(je.ne.0) then; errc=13; return; endif
           elseif(nr.eq.0) then !scalar
            buf(jdev)%arg_buf(jb)%buf_ptr(1)=rarg%tens_loc%elems(1)
           endif
          else
-          errc=15; return
+          errc=14; return
          endif
          if(.not.triv_r) then !permute (if needed)
           call dil_tensor_transpose(nr,tsk%right_arg%dims,cspec%rprmn,&
                                    &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
-          if(je.ne.0) then; errc=16; return; endif
+          if(je.ne.0) then; errc=15; return; endif
           je=jb; jb=jf; jf=je
          endif
          buf_conf(6,jdev)=jb; buf_conf(3,jdev)=jf
