@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/01/18 (started 2014/09/01).
+!REVISION: 2015/01/23 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -53,6 +53,7 @@
 ! * The code assumes MPI-3 standard at least (RMA specification), that is,
 !   if MPI is used it must be MPI-3 (for RMA). If MPI is not used, it is fine.
 ! * The number of OMP threads spawned on CPU or MIC must not exceed the MAX_THREADS parameter!
+! * In order to activate debugging mode, set global variable DIL_DEBUG to true.
        module tensor_algebra_dil
         use, intrinsic:: ISO_C_BINDING
         use lspdm_tensor_operations_module
@@ -114,7 +115,7 @@
         integer(INTD), private:: CONS_OUT=6,CONS_OUT_SAVED=0            !console output device (defaults to screen)
         integer(INTD), public:: DIL_CONS_OUT=6                          !console output device for external use (defaults to screen)
         logical, private:: VERBOSE=.true.                               !verbosity (for errors)
-        logical, public:: DIL_DEBUG=.false.                             !debugging
+        logical, public:: DIL_DEBUG=.true.                             !debugging
         integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
         logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
 #ifdef USE_MIC
@@ -3918,14 +3919,14 @@
          jb=buf_conf(1,jdev); jf=buf_conf(4,jdev); jvol=dil_subtensor_vol(tsk%dest_arg)
          if(darg%store_type.eq.'l'.or.darg%store_type.eq.'L') then !local tensor
           if(cspec%dest_zero) then !destination is assumed zero
-           call dil_arg_buf_clean(buf(jdev)%arg_buf(jb),je,jvol) !zero out buffer
+           call dil_arg_buf_clean(buf(jdev)%arg_buf(jb),je,jvol) !zero out buffer `This is not needed (DGEMM will have beta=0)
            if(je.ne.0) then; errc=1; return; endif
           else !destination is non-zero
            if(nd.gt.0) then !slice
             call dil_tensor_slice(nd,darg%tens_loc%elems,darg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%dest_arg%dims,&
                                  &tsk%dest_arg%lbnd(1:nd)-(darg%tens_loc%base(1:nd)+IND_NUM_START),je)
             if(je.ne.0) then; errc=2; return; endif
-           elseif(nd.eq.0) then
+           elseif(nd.eq.0) then !scalar
             buf(jdev)%arg_buf(jb)%buf_ptr(1)=darg%tens_loc%elems(1)
            endif
            if(.not.triv_d) then !permute (if needed)
@@ -3951,7 +3952,7 @@
          jb=buf_conf(2,jdev); jf=buf_conf(5,jdev); jvol=dil_subtensor_vol(tsk%left_arg)
          if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then !distributed tensor
           if(nl.gt.0) then
-           if(dil_subtensor_vol(tsk%left_arg).gt.larg%tens_distr_p%tsize) then !more than one tile
+           if(jvol.gt.larg%tens_distr_p%tsize) then !more than one tile
             call dil_tens_unpack_from_tiles(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tile(s)
             if(je.ne.0) then; errc=7; return; endif
             je=jb; jb=jf; jf=je
@@ -3964,7 +3965,7 @@
            call dil_tensor_slice(nl,larg%tens_loc%elems,larg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%left_arg%dims,&
                                 &tsk%left_arg%lbnd(1:nl)-(larg%tens_loc%base(1:nl)+IND_NUM_START),je)
            if(je.ne.0) then; errc=9; return; endif
-          elseif(nl.eq.0) then
+          elseif(nl.eq.0) then !scalar
            buf(jdev)%arg_buf(jb)%buf_ptr(1)=larg%tens_loc%elems(1)
           endif
          else
@@ -3981,7 +3982,7 @@
          jb=buf_conf(3,jdev); jf=buf_conf(6,jdev); jvol=dil_subtensor_vol(tsk%right_arg)
          if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then !distributed tensor
           if(nr.gt.0) then
-           if(dil_subtensor_vol(tsk%right_arg).gt.rarg%tens_distr_p%tsize) then !more than one tile
+           if(jvol.gt.rarg%tens_distr_p%tsize) then !more than one tile
             call dil_tens_unpack_from_tiles(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tile(s)
             if(je.ne.0) then; errc=12; return; endif
             je=jb; jb=jf; jf=je
@@ -3994,7 +3995,7 @@
            call dil_tensor_slice(nr,rarg%tens_loc%elems,rarg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%right_arg%dims,&
                                 &tsk%right_arg%lbnd(1:nr)-(rarg%tens_loc%base(1:nr)+IND_NUM_START),je)
            if(je.ne.0) then; errc=14; return; endif
-          elseif(nr.eq.0) then
+          elseif(nr.eq.0) then !scalar
            buf(jdev)%arg_buf(jb)%buf_ptr(1)=rarg%tens_loc%elems(1)
           endif
          else
@@ -4031,7 +4032,7 @@
          endif
          if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensor
           if(nd.gt.0) then
-           if(dil_subtensor_vol(tsk%dest_arg).gt.darg%tens_distr_p%tsize) then !more than one tile
+           if(jvol.gt.darg%tens_distr_p%tsize) then !more than one tile
             call dil_tens_pack_into_tiles(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !pack tile(s)
             if(je.ne.0) then; errc=2; return; endif
             je=jb; jb=jf; jf=je

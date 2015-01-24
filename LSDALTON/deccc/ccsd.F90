@@ -855,8 +855,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
      implicit none
 !`DIL:
-!#define DIL_DEBUG_ON
-!#define DIL_ACTIVE
+#define DIL_DEBUG_ON
+#define DIL_ACTIVE
 
      !> CC model
      integer,intent(in) :: ccmodel
@@ -1022,6 +1022,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+     real(realk):: r0
 !}
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
@@ -1722,6 +1723,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
         scheme=1 !``DIL: remove
 #endif
+        do i0=1,no*lg*nv*no; uigcj%d(i0)=0d0; enddo !``DIL: remove
+        r0=0d0; do i0=1,no*lg*nv*no; r0=r0+abs(uigcj%d(i0)); enddo; print *,'#DIL: uigcj norm(i) = ',r0 !``DIL: remove
         if(scheme==1) then !`DIL: Tensor contraction 1
 #ifdef VAR_MPI
          call time_start_phase(PHASE_COMM, at = time_intloop_work )
@@ -1763,6 +1766,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
+         r0=0d0; do i0=1,no*lg*nv*no; r0=r0+abs(uigcj%d(i0)); enddo; print *,'#DIL: uigcj norm(o) = ',r0
 #endif
         elseif(scheme==2) then
 #ifdef VAR_MPI
@@ -1792,7 +1796,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
         scheme=2 !``DIL: remove
 #endif
-
+        r0=0d0; do i0=1,no*lg*nv*no; r0=r0+abs(uigcj%d(i0)); enddo; print *,'#DIL: uigcj norm(o) = ',r0 !``DIL: remove
 
         alphaB=0
 
