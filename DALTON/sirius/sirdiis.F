@@ -1788,7 +1788,7 @@ Chj      ... set orbital gradient to zero (i.e. completely converged!)
          CALL MEMGET2('REAL','FQ',KFQ,LFQ,WRK,KFREE,LFREE)
          IF (NASHT.GT.0) THEN
 C           1. put FV in DCAO:
-            IF (HSFOCK .AND. .NOT.HSFOCK_SAVE) THEN
+            IF (HSFOCK .AND. NASHT.EQ.1) THEN
             !  calculate correct FV for interface SIRIFC
             !  (full FV has not been calculated  before when HSFOCK,
             !  FAOSAV(:,INDEVC,2) contains minus the exchange part of FVAO)
@@ -1804,6 +1804,10 @@ C           1. put FV in DCAO:
                   CALL DUNFLD(NBAST,DAOSAV(1,2),DCAO)
                ENDIF
                DCAO(1:N2BASX) = -DCAO(1:N2BASX)
+               HSFOCK = .FALSE. ! must be .false., or it will still not be the real FVAO after FCK2AO 
+               HSROHF = .FALSE.
+               HSFOCK_save = .FALSE.
+               HSROHF_save = .FALSE.
                CALL FCK2AO(.TRUE.,FCAO(1+N2BASX),DCAO,WRK,KFREE,LFREE) ! calculate FVAO in FCAO(1+N2BASX)
                ! ( first parameter .TRUE. tells FCK2AO only one density matrix )
                CALL DGETSP(NBAST,FCAO(1+N2BASX),WRK(KFREE))
@@ -1811,8 +1815,6 @@ C           1. put FV in DCAO:
                CALL UTHUB(FCAO(1+N2BASX),DCAO,CMO,WRK(KFREE),          ! and now FV is in DCAO
      &                    NSYM,NBAS,NORB)
 
-               HSFOCK = HSFOCK_SAVE
-               HSROHF = HSROHF_SAVE
             ELSE
                CALL UTHUB(FAOSAV(1,INDEVC,2),DCAO,CMO,WRK(KFREE),
      &                    NSYM,NBAS,NORB)

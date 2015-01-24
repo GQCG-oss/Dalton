@@ -5611,16 +5611,14 @@ C
       IF (MCTYPE .GT. 0) THEN
          WRITE(IWUNIT,1200) NISHT,(NISH(I),I=1,NSYM)
          IF (NASHT .GT. 0) THEN
-            IF (MCTYPE .LE. 1) THEN
-               WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)
-            ELSE
+            WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)
+            IF (MCTYPE .GT. 1) THEN
                IF (NAS1T .GT. 0)
      &            WRITE(IWUNIT,1320) NAS1T,(NAS1(I),I=1,NSYM)
                IF (NAS2T .GT. 0)
      &            WRITE(IWUNIT,1330) NAS2T,(NAS2(I),I=1,NSYM)
                IF (NAS3T .GT. 0)
      &            WRITE(IWUNIT,1340) NAS3T,(NAS3(I),I=1,NSYM)
-               WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)
             END IF
          END IF
          WRITE(IWUNIT,1400) NSSHT,(NSSH(I),I=1,NSYM)
@@ -5659,17 +5657,17 @@ C
      %   ' will be performed after RHF/DFT/MCSCF'
  1100 FORMAT(/5X,'Orbital specifications',
      *       /5X,'======================',
-     *       /5X,'Abelian symmetry species',T38,'  All |',8I5)
- 1102 FORMAT(T44,'|',8(2X,A3))
+     *       /'@    Abelian symmetry species',T38,'  All |',8I5)
+ 1102 FORMAT('@',T44,'|',8(2X,A3))
  1110 FORMAT(T38,A5,' |',8A5)
  1200 FORMAT('@    Inactive orbitals',T38,I5,' |',8I5)
  1300 FORMAT('@    Active orbitals',T38,I5,' |',8I5)
- 1320 FORMAT('@    Active orbitals in RAS1',T38,I5,' |',8I5)
- 1330 FORMAT('@    Active orbitals in RAS2',T38,I5,' |',8I5)
- 1340 FORMAT('@    Active orbitals in RAS3',T38,I5,' |',8I5)
- 1400 FORMAT(5X,'Secondary orbitals',T38,I5,' |',8I5)
- 1450 FORMAT(5X,'Total number of orbitals',T38,I5,' |',8I5)
- 1500 FORMAT(5X,'Number of basis functions',T38,I5,' |',8I5)
+ 1320 FORMAT('@    - Active orbitals in RAS1',T38,I5,' |',8I5)
+ 1330 FORMAT('@    - Active orbitals in RAS2',T38,I5,' |',8I5)
+ 1340 FORMAT('@    - Active orbitals in RAS3',T38,I5,' |',8I5)
+ 1400 FORMAT('@    Secondary orbitals',T38,I5,' |',8I5)
+ 1450 FORMAT('@    Total number of orbitals',T38,I5,' |',8I5)
+ 1500 FORMAT('@    Number of basis functions',T38,I5,' |',8I5)
  1550 FORMAT('@    Occupied SCF orbitals',T38,I5,' |',8I5)
  1555 FORMAT('@    Open shell SCF orbitals',T38,I5,' |',8I5)
  1560 FORMAT(/'@    plus one open shell SCF orbital of symmetry',I4)
@@ -5771,7 +5769,7 @@ C
  2560 FORMAT(/5X,'Dimension of CI PHP subspace' :,I6)
  2570 FORMAT(/5X,
      &   ' CI PHP subspace selected from size of residual elements.')
- 2600 FORMAT(/5X,'Reference state in CI response calculation :',I8)
+ 2600 FORMAT(/'@    Reference state in CI response calculation :',I8)
 C
 C ***
 C
