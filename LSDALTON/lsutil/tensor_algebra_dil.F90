@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/01/23 (started 2014/09/01).
+!REVISION: 2015/01/24 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -3919,7 +3919,7 @@
          jb=buf_conf(1,jdev); jf=buf_conf(4,jdev); jvol=dil_subtensor_vol(tsk%dest_arg)
          if(darg%store_type.eq.'l'.or.darg%store_type.eq.'L') then !local tensor
           if(cspec%dest_zero) then !destination is assumed zero
-           call dil_arg_buf_clean(buf(jdev)%arg_buf(jb),je,jvol) !zero out buffer `This is not needed (DGEMM will have beta=0)
+           call dil_arg_buf_clean(buf(jdev)%arg_buf(jb),je,jvol) !zero out buffer
            if(je.ne.0) then; errc=1; return; endif
           else !destination is non-zero
            if(nd.gt.0) then !slice
