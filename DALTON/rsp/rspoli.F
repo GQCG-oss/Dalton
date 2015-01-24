@@ -64,7 +64,7 @@ C Use this hack to correctly pass the arrays to c++
       REAL*8 FMAT, DMAT
       INTEGER NMAT
 
-      write (*,*) "nmat in sirprnt ", nmat
+!     write (*,*) "nmat in sirprnt ", nmat
 
       call efs_print_matrices(FMAT, DMAT, NBAST, NMAT)
       END
@@ -675,8 +675,13 @@ C        ... for DtotAO, DXtotAO for SRDFT:SRDFTLTR
 C
       CALL MEMGET('REAL',KFXCAO,NFMAT*N2BASX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KDXCAO,NDMAT*N2BASX,WRK,KFREE,LFREE)
-      KFXVAO = KFXCAO + NOSIM*N2BASX
-      KDXVAO = KDXCAO + NOSIM*N2BASX
+      IF (DOFXC) THEN
+         KFXVAO = KFXCAO + NOSIM*N2BASX
+         KDXVAO = KDXCAO + NOSIM*N2BASX
+      ELSE
+         KFXVAO = KFXCAO
+         KDXVAO = KDXCAO
+      END IF
       IF (DOFXV) THEN
          KFTCAO  = KFXVAO + NOSIM*N2BASX
          KDTCAO  = KDXVAO + NOSIM*N2BASX
@@ -704,9 +709,9 @@ C
      &   dohfsrdft,domcsrdft,soppa
       write(lupri,*) 'rspoli: dofxc,dofxv,doftc,doftv',
      &                        dofxc,dofxv,doftc,doftv
-      write(lupri,*) 'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,
-     &                        KDTOTAO,kfree',
-     &                KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
+      write(lupri,*)
+     &  'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,kfree',
+     &           KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
 #endif
 
 #ifdef MOD_SRDFT

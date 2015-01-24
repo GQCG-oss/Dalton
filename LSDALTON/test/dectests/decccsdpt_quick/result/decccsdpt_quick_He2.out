@@ -5,7 +5,7 @@
      ******************************************************************    
   
   
-      This is output from LSDALTON 2014.0
+      This is output from LSDALTON 2015.alpha
   
   
       IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
@@ -87,32 +87,27 @@
      for further information.
   
   
-   This is an MPI run using       4 processes.
- Who compiled             | janusje
- Host                     | Valhalla.local
- System                   | Darwin-14.0.0
+ Who compiled             | pablo
+ Host                     | pablo-AU
+ System                   | Linux-3.13.0-37-generic
  CMake generator          | Unix Makefiles
- Processor                | i386
+ Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /usr/local/bin/mpif90
- Fortran compiler version | GNU Fortran (Homebrew gcc49 4.9.1 --enable-all-lan
-                          | guages) 4.9.1
- C compiler               | /usr/local/bin/mpicc
- C compiler version       | gcc (Homebrew gcc49 4.9.1 --enable-all-languages) 
-                          | 4.9.1
- C++ compiler             | /usr/local/bin/mpic++
- C++ compiler version     | unknown
- BLAS                     | /usr/lib/libblas.dylib
- LAPACK                   | /usr/lib/liblapack.dylib
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
  Static linking           | OFF
- Last Git revision        | 4ea5c5d6569f02a02c2f1f8911b0d578ef4aef15
- Git branch               | PE_titan_branch
- Configuration time       | 2014-11-13 11:57:38.881161
+ Last Git revision        | 3c905fc0344f6c8bfec66db3d66cc7fc4745c63d
+ Git branch               | master
+ Configuration time       | 2015-01-22 11:48:41.259273
 
 Start simulation
-     Date and time (Linux)  : Thu Nov 13 12:06:47 2014
-     Host name              : Valhalla.local                          
+     Date and time (Linux)  : Thu Jan 22 12:04:33 2015
+     Host name              : pablo-AU                                
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -179,7 +174,6 @@ Start simulation
    6            z     -0.3428530125
  
  
- Integrals calculated using            2  fragments
  BASISSETLIBRARY  : REGULAR  
    
 BASISSETLIBRARY
@@ -192,8 +186,9 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/janusje/programs/dalton/build_ls_gcc49_mpich_omp_debug/basis/3-21G
- OPENING FILE/Users/janusje/programs/dalton/build_ls_gcc49_mpich_omp_debug/basis/6-31G**
+ OPENING FILE/home/pablo/Work/dalton/build_serial/basis/3-21G
+ OPENING FILE/home/pablo/Work/dalton/build_serial/basis/6-31G**
+ PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
  --------------------------------------------------------------------
@@ -231,8 +226,8 @@ total          4                               10        7
                       
  Configuration:
  ==============
-    This is an OpenMP calculation using   3 threads.
-    This is an MPI calculation using   4 processors
+    This is a Single core calculation. (no OpenMP)
+    This is a serial calculation (no MPI)
 
 Density subspace min. method    : None                    
 Density optimization : Augmented RH optimization          
@@ -261,6 +256,7 @@ basis and perform integral evaluation using this basis
   is requested. For more efficient orbital localization (particularly for large) 
   system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   
 
+ Warning **DEC and **CC enforces the use of the .LCM keyword
 
  End of configuration!
 
@@ -290,8 +286,8 @@ Matrix type: mtype_dense
  >>> wall Time used in Kinetic is   0.00 seconds
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.2156543971648730     
- The Fock energy contribution   -1.2156543971648730     
+ The J+K energy contribution   -1.2156543971648732     
+ The Fock energy contribution   -1.2156543971648732     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -301,8 +297,8 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.0396461556152021     
- The Fock energy contribution   -1.0396461556152021     
+ The J+K energy contribution   -1.0396461556152026     
+ The Fock energy contribution   -1.0396461556152026     
   2     -2.8352629695   -0.10015306504    0.00      0.00000    0.00    1.10E-01  ###
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
@@ -320,8 +316,8 @@ Matrix type: mtype_dense
  >>> wall Time used in Kinetic is   0.00 seconds
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.2453287480865378     
- The Fock energy contribution   -1.2453287480865378     
+ The J+K energy contribution   -1.2453287480865383     
+ The Fock energy contribution   -1.2453287480865383     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -336,18 +332,18 @@ Matrix type: mtype_dense
   2     -2.8544117280   -0.11250492449    0.00      0.00000    0.00    1.24E-01  ###
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.0267992229038632     
- The Fock energy contribution   -1.0267992229038632     
+ The J+K energy contribution   -1.0267992229038623     
+ The Fock energy contribution   -1.0267992229038623     
   3     -2.8551603951   -0.00074866708   -1.00      0.00000    0.00    7.98E-04  ###
  >>>  CPU Time used in Joint-JK is   0.00 seconds
  >>> wall Time used in Joint-JK is   0.00 seconds
- The J+K energy contribution   -1.0269070825346718     
- The Fock energy contribution   -1.0269070825346718     
-  4     -2.8551604262   -0.00000003110   -1.00      0.00000    0.00    6.38E-07  ###
+ The J+K energy contribution   -1.0269078551215729     
+ The Fock energy contribution   -1.0269078551215729     
+  4     -2.8551604262   -0.00000003110   -1.00      0.00000    0.00    5.07E-06  ###
  
 Matrix type: mtype_dense
- >>>  CPU Time used in *ATOM is   0.03 seconds
- >>> wall Time used in *ATOM is   0.02 seconds
+ >>>  CPU Time used in *ATOM is   0.01 seconds
+ >>> wall Time used in *ATOM is   0.01 seconds
  >>>  CPU Time used in II_precalc_ScreenMat is   0.00 seconds
  >>> wall Time used in II_precalc_ScreenMat is   0.00 seconds
  >>>  CPU Time used in OVERLAP is   0.00 seconds
@@ -367,15 +363,15 @@ Matrix type: mtype_dense
  >>> wall Time used in reg-J is   0.00 seconds
  >>>  CPU Time used in reg-Jbuild is   0.00 seconds
  >>> wall Time used in reg-Jbuild is   0.00 seconds
- The Coulomb energy contribution    5.4739879895189816     
+ The Coulomb energy contribution    5.4739895436362422     
  >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
  >>> wall Time used in LINK-Kbuild is   0.00 seconds
- The Exchange energy contribution    2.0733970201936525     
- The Fock energy contribution   -3.4005909693253291     
-  Iteration 0 energy:  -5.7123173717134375     
+ The Exchange energy contribution    2.0733977608257090     
+ The Fock energy contribution   -3.4005917828105332     
+  Iteration 0 energy:  -5.7123173322423284     
 
 Max no. of matrices allocated in Level 2 / get_initial_dens:         17
- >>>  CPU Time used in *START is   0.01 seconds
+ >>>  CPU Time used in *START is   0.00 seconds
  >>> wall Time used in *START is   0.00 seconds
  Preparing to do S^1/2 decomposition...
  >>>  CPU Time used in LWDIAG is   0.00 seconds
@@ -391,19 +387,19 @@ Matrix AO D  has nnz=        49 sparsity:    100.000 %
  >>> wall Time used in reg-J is   0.00 seconds
  >>>  CPU Time used in reg-Jbuild is   0.00 seconds
  >>> wall Time used in reg-Jbuild is   0.00 seconds
- The Coulomb energy contribution    5.4852567322374703     
+ The Coulomb energy contribution    5.4852568545902578     
  >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
  >>> wall Time used in LINK-Kbuild is   0.00 seconds
- The Exchange energy contribution    2.0712349320373420     
- The Fock energy contribution   -3.4140218002001279     
- >>>  CPU Time used in FCK_FO is   0.01 seconds
+ The Exchange energy contribution    2.0712349931264309     
+ The Fock energy contribution   -3.4140218614638229     
+ >>>  CPU Time used in FCK_FO is   0.00 seconds
  >>> wall Time used in FCK_FO is   0.00 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
-  1     -5.6754998045    0.00000000000    0.00      0.00000    0.00    6.95E-03  ###
+  1     -5.6754998048    0.00000000000    0.00      0.00000    0.00    6.95E-03  ###
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
@@ -415,7 +411,7 @@ Matrix OAO F has nnz=        49 sparsity:    100.000 %
  >>>  CPU Time used in AVERAG is   0.00 seconds
  >>> wall Time used in AVERAG is   0.00 seconds
 ** Get new density 
- OAO gradnorm   6.9484478340784755E-003
+ OAO gradnorm   6.9483951743596582E-003
  >>>  CPU Time used in DAVID. SOLVER is   0.00 seconds
  >>> wall Time used in DAVID. SOLVER is   0.00 seconds
  >>>  CPU Time used in NEW D is   0.00 seconds
@@ -427,22 +423,22 @@ No. of matmuls in get_density:    27
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
  >>>  CPU Time used in SCF iteration is   0.01 seconds
- >>> wall Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.00 seconds
 ** Get Fock matrix number   2
  >>>  CPU Time used in reg-J is   0.00 seconds
  >>> wall Time used in reg-J is   0.00 seconds
  >>>  CPU Time used in reg-Jbuild is   0.00 seconds
  >>> wall Time used in reg-Jbuild is   0.00 seconds
- The Coulomb energy contribution    5.4866286195442395     
+ The Coulomb energy contribution    5.4866286295889388     
  >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
  >>> wall Time used in LINK-Kbuild is   0.00 seconds
- The Exchange energy contribution    2.0720859943833392     
- The Fock energy contribution   -3.4145426251608995     
- >>>  CPU Time used in FCK_FO is   0.01 seconds
- >>> wall Time used in FCK_FO is   0.01 seconds
+ The Exchange energy contribution    2.0720859995100041     
+ The Fock energy contribution   -3.4145426300789352     
+ >>>  CPU Time used in FCK_FO is   0.00 seconds
+ >>> wall Time used in FCK_FO is   0.00 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
-  2     -5.6755175837   -0.00001777916    0.00      0.00000   -0.00    7.87E-04  ###
+  2     -5.6755175837   -0.00001777886    0.00      0.00000   -0.00    7.87E-04  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=        49 sparsity:    100.000 %
 Matrix AO F  has nnz=        49 sparsity:    100.000 %
@@ -451,7 +447,7 @@ Matrix OAO F has nnz=        49 sparsity:    100.000 %
  >>>  CPU Time used in AVERAG is   0.00 seconds
  >>> wall Time used in AVERAG is   0.00 seconds
 ** Get new density 
- OAO gradnorm   7.8699429435530896E-004
+ OAO gradnorm   7.8698559862733079E-004
  >>>  CPU Time used in DAVID. SOLVER is   0.00 seconds
  >>> wall Time used in DAVID. SOLVER is   0.00 seconds
  >>>  CPU Time used in NEW D is   0.00 seconds
@@ -462,26 +458,26 @@ Matrix OAO F has nnz=        49 sparsity:    100.000 %
 No. of matmuls in get_density:    51
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.01 seconds
- >>> wall Time used in SCF iteration is   0.01 seconds
+ >>>  CPU Time used in SCF iteration is   0.00 seconds
+ >>> wall Time used in SCF iteration is   0.00 seconds
 ** Get Fock matrix number   3
  >>>  CPU Time used in reg-J is   0.00 seconds
  >>> wall Time used in reg-J is   0.00 seconds
  >>>  CPU Time used in reg-Jbuild is   0.00 seconds
  >>> wall Time used in reg-Jbuild is   0.00 seconds
- The Coulomb energy contribution    5.4868174578763584     
+ The Coulomb energy contribution    5.4868174574844835     
  >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
  >>> wall Time used in LINK-Kbuild is   0.00 seconds
- The Exchange energy contribution    2.0722004387474504     
- The Fock energy contribution   -3.4146170191289071     
- >>>  CPU Time used in FCK_FO is   0.01 seconds
+ The Exchange energy contribution    2.0722004385490549     
+ The Fock energy contribution   -3.4146170189354237     
+ >>>  CPU Time used in FCK_FO is   0.00 seconds
  >>> wall Time used in FCK_FO is   0.00 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   3     -5.6755178154   -0.00000023174    0.00      0.00000   -0.00    1.02E-05  ###
 SCF converged in      3 iterations
- >>>  CPU Time used in **ITER is   0.02 seconds
- >>> wall Time used in **ITER is   0.02 seconds
+ >>>  CPU Time used in **ITER is   0.01 seconds
+ >>> wall Time used in **ITER is   0.01 seconds
 
 Total no. of matmuls in SCF optimization:        148
 
@@ -496,16 +492,16 @@ Total no. of matmuls in SCF optimization:        148
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.00001777916    0.0000   -0.0000    0.0000000
+  2   -0.00001777886    0.0000   -0.0000    0.0000000
   3   -0.00000023174    0.0000   -0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1            -5.67549980451664204395      0.694844783407848D-02
-    2            -5.67551758367971359576      0.786994294355309D-03
-    3            -5.67551781542147004700      0.102346183090441D-04
+    1            -5.67549980482832516770      0.694839517435966D-02
+    2            -5.67551758368529668530      0.786985598627331D-03
+    3            -5.67551781542145938886      0.102347264318068D-04
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -614,7 +610,7 @@ Linesearch done, we choose previous point
  >>>  CPU Time used in OVERLAP is   0.00 seconds
  >>> wall Time used in OVERLAP is   0.00 seconds
  >>>  CPU Time used in Orbital Localization is   0.08 seconds
- >>> wall Time used in Orbital Localization is   0.09 seconds
+ >>> wall Time used in Orbital Localization is   0.08 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -662,10 +658,11 @@ Pair distance cutoff threshold (Angstrom)           =       0.100E+04
 Use Pair Estimate initialisation radius (Angstrom)  =       0.200E+01
 Pair estimate model                                 =     MP2     
 Simple orbital thr.                                 =       0.500E-01
-Expansion step size                                 =              10
+Expansion step size                                 =               5
 Print level                                         =               0
 Fragment-adapted orbitals                           =           FALSE
 Fit Molecular Orbitals                              =            TRUE
+The Integral Screening threshold                    =             1.0000E-10
  
 DEC orbitals will be generated using  simple Lowdin charge analysis
 Assignment of Molecular Orbitals to Atoms will be based Distance criteria
@@ -719,10 +716,10 @@ Use F12 correction           =           FALSE
  ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
  **********************************************************************
 
- Maximum occ orbital extent   =      1   -- Orbital index     1
- Maximum unocc orbital extent =      1   -- Orbital index     1
- Average occ orbital extent   =       1.0000
- Average unocc orbital extent =       1.0000
+ Maximum occ orbital extent (#AOs) =      5   -- Orbital index     2
+ Maximum unocc orbital extent (#AOs) =      5   -- Orbital index     2
+ Average occ orbital extent (#AOs)  =       3.5000
+ Average unocc orbital extent (#AOs) =       4.4000
 
 
  >>>  CPU Time used in DEC INIT is   0.00 seconds
@@ -786,24 +783,148 @@ Use F12 correction           =           FALSE
  DEC JOB SUMMARY: Total number of jobs  =          1
 
 
- *** MPI GROUPSIZE SET TO            3
-Master received job       1 from        1 -- missing #jobs:        2
-Master received job       2 from        1 -- missing #jobs:        1
-Master received job       3 from        1 -- missing #jobs:        0
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   2
+ FOP ===============================================
+ FOP
+ FOP Fragment includes all orbitals and fragment optimization is skipped
+ >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   1
+ FOP ===============================================
+ FOP
+ FOP Fragment includes all orbitals and fragment optimization is skipped
+ >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
+ >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
+#PAIRDIMS# basis,occ,virt        7       2       5
+ >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Init: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =       7
+ Number of occupied orbitals AOS/EOS     =       2       2
+ Number of virtual  orbitals AOS/EOS     =       5       5
+ Maximum alpha batch dimension           =       3
+ Maximum gamma batch dimension           =       3
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.526E-05
+ Memory required for tmp array 1 (GB)    = 0.353E-05
+ Memory required for tmp array 2 (GB)    = 0.720E-06
+ Memory required for tmp array 3 (GB)    = 0.101E-05
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.288E-05
+ Memory required for tmp array 1 (GB)    = 0.800E-06
+ Memory required for tmp array 2 (GB)    = 0.800E-06
+ Memory required for tmp array 3 (GB)    = 0.800E-06
+ Memory required for tmp array 4 (GB)    = 0.480E-06
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.160E-05
+ Memory required for tmp array 1 (GB)    = 0.800E-06
+ Memory required for tmp array 2 (GB)    = 0.800E-06
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.526E-05
+ Big Array Memory required       (GB)    = 0.216E-04
+
+ >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.00 seconds
+ >>> wall Time used in INIT MP2-INT is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.01 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.01 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.01 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.01 seconds
+ >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse toccEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirt: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse gvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>> wall Time used in MP2workhorse tvirtEOS: is   0.00 seconds
+ >>>  CPU Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
+ >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
+ >>> wall Time used in MP2-INT FIN is   0.00 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.01 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.01 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.01 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.01 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
+ >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       1      2
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       1.5481       -0.1881295343E-03
+ Distance(Ang), pair virt energy =       1.5481       -0.2833736229E-03
+ Distance(Ang), pair lagr. occ term  =       1.5481        0.1460978869E-03
+ Distance(Ang), pair lagr. virt term =       1.5481        0.1384483971E-03
+
+
+ >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.01 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.01 seconds
+ WARNING: Including one pair to avoid empty job list!
 
 
  ******************************************************************
  *            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *
  ******************************************************************
 
-
  Total number of pairs:                         1
- Pairs to be treated at input CC level          1
+ Number of pairs to calculate:                  1
  Pairs to be skipped from calculation           0
+
+ Pairs to be treated using input FOT            1
 
  Estimated pair correlation energy:            -0.1881295343E-03
  Estimated contribution from skipped pairs:      0.000000000    
-
 
 
 
@@ -826,47 +947,8 @@ Master received job       3 from        1 -- missing #jobs:        0
 
 
   ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** 
-
-
- *********************************************************************
-  MPI fragment statistics: FRAGMENT OPT. + ESTIM.
- *********************************************************************
-
-
- Printed information
- -------------------
- Job    : Fragment job number
- #occ   : Number of occupied AOS orbitals in fragment
- #virt  : Number of virtual AOS orbitals in fragment
- #basis : Number of basis functions in fragment
- slotsiz: Number of slaves used for fragment incl. local master (slot size)
- #tasks : Number of integral tasks for fragment (nalpha*ngamma)
- GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)
- Time(s): Time (in seconds) used by local master (NOT local slaves)
- Load   : Load distribution measure (ideally 1.0, smaller in practice): 
-            (Sum of effective work times for ALL MPI processes in slot)
-          / (slotsiz * [Local master time] )
-
- Note: Load print is currently only implemented for MP2 calculations
-       and not for atomic fragment optimizations.
-       The Load given below is set to -1 for cases where it is not implemented
-       Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library
-
-
-     Job    #occ   #virt  #basis slotsiz  #tasks     GFLOPS     Time(s)    Load1      Load2
-       3       2       5       7       1       9     -1.00      0.260E-01   1.00       1.00    STAT
- -----------------------------------------------------------------------------
- Number of jobs done     =        3
- Time-to-solution (s)    =    0.290E-01
- TOTAL time(s) all nodes =    0.290E-01
- Global MPI loss (%)     =     66.7    
- Local MPI loss (%)      =     2.30    
- Total MPI loss (%)      =     69.0    
- -----------------------------------------------------------------------------
-
-
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.03 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   0.03 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.01 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   0.01 seconds
  Preparing job list...
 
 
@@ -909,53 +991,514 @@ Master received job       3 from        1 -- missing #jobs:        0
 
  *** Calculating single and pair interaction energies ***
 
- *** MPI GROUPSIZE SET TO            3
-Master received job       1 from        1 -- missing #jobs:        2
-Master received job       3 from        2 -- missing #jobs:        1
-Master received job       2 from        3 -- missing #jobs:        0
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   0.06 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is   0.07 seconds
+ >>>  CPU Time used in reg-J is   0.00 seconds
+ >>> wall Time used in reg-J is   0.00 seconds
+ >>>  CPU Time used in reg-Jbuild is   0.00 seconds
+ >>> wall Time used in reg-Jbuild is   0.00 seconds
+ The Coulomb energy contribution    5.4868193225437611     
+ >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
+ >>> wall Time used in LINK-Kbuild is   0.00 seconds
+ The Exchange energy contribution    2.0722013106141945     
+ The Fock energy contribution   -3.4146180119295675     
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ Using MO-CCSD: non-MPI scheme
+ >>>  CPU Time used in get_t1_free_gmo is   0.00 seconds
+ >>> wall Time used in get_t1_free_gmo is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ CCSOL: MAIN LOOP      : 0.167    s
+ 
+ 
+ =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+         Inside the CCSD(T) driver routine.        
+ *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
+ 
+
+-----------------------------
+      CCSD(T) information    
+-----------------------------
+
+Print frag. energies   =    T
+IJK partitioning       =    T
+# IJK buffers          =    6
+ABC partitioning       =    F
+Free CPU memory (GB)   =   1.933    
+Are we using GPUs?     =    F
 
 
- *********************************************************************
-  MPI fragment statistics: ALL FRAGMENTS
- *********************************************************************
+ Gamma batch size was set manually, use that value instead!
+ Alpha batch size was set manually, use that value instead!
+ =======================================================================
+                      CCSD(T) INTEGRALS: MEMORY SUMMARY                 
+                              IJK partitioning                          
+ =======================================================================
+
+ To be on the safe side we use only 95% of the estimated available memory
+
+ 95% of available memory (GB)            =  1.84    
+
+ Number of atomic basis functions        =       7
+ Number of occupied orbitals             =       2
+ Number of virtual  orbitals             =       5
+ Maximum alpha batch dimension           =       3
+ Maximum gamma batch dimension           =       3
+ Size of tmp array 1                     =     0.353E-05
+ Size of tmp array 2                     =     0.252E-05
+ Size of tmp array 3                     =     0.300E-05
 
 
- Printed information
- -------------------
- Job    : Fragment job number
- #occ   : Number of occupied AOS orbitals in fragment
- #virt  : Number of virtual AOS orbitals in fragment
- #basis : Number of basis functions in fragment
- slotsiz: Number of slaves used for fragment incl. local master (slot size)
- #tasks : Number of integral tasks for fragment (nalpha*ngamma)
- GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)
- Time(s): Time (in seconds) used by local master (NOT local slaves)
- Load   : Load distribution measure (ideally 1.0, smaller in practice): 
-            (Sum of effective work times for ALL MPI processes in slot)
-          / (slotsiz * [Local master time] )
-
- Note: Load print is currently only implemented for MP2 calculations
-       and not for atomic fragment optimizations.
-       The Load given below is set to -1 for cases where it is not implemented
-       Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library
+ >>>  CPU Time used in CCSD(T) INT (IJK) is   0.01 seconds
+ >>> wall Time used in CCSD(T) INT (IJK) is   0.01 seconds
+ 
+ 
+ =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
+         Done with CCSD(T) integrals        
+ *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in IJK_LOOP_SER is   0.00 seconds
+ >>> wall Time used in IJK_LOOP_SER is   0.00 seconds
+ >>>  CPU Time used in CCSDPT_DRIVER (TOTAL) is   0.01 seconds
+ >>> wall Time used in CCSDPT_DRIVER (TOTAL) is   0.01 seconds
 
 
-     Job    #occ   #virt  #basis slotsiz  #tasks     GFLOPS     Time(s)    Load1      Load2
-       1       2       5       7       1       0     -1.00      0.650E-01   1.00       1.00    STAT
-       2       2       5       7       1       0     -1.00      0.650E-01   1.00       1.00    STAT
-       3       2       5       7       1       0     -1.00      0.650E-01   1.00      0.985    STAT
- -----------------------------------------------------------------------------
- Number of jobs done     =        3
- Time-to-solution (s)    =    0.660E-01
- TOTAL time(s) all nodes =    0.195    
- Global MPI loss (%)     =     1.52    
- Local MPI loss (%)      =     0.00    
- Total MPI loss (%)      =     1.52    
- -----------------------------------------------------------------------------
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.1470724987E-01
+ Single virtual  energy =    -0.1442490365E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
 
 
+ >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.04 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.04 seconds
+ >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.00 seconds
+ >>>  CPU Time used in reg-J is   0.00 seconds
+ >>> wall Time used in reg-J is   0.00 seconds
+ >>>  CPU Time used in reg-Jbuild is   0.00 seconds
+ >>> wall Time used in reg-Jbuild is   0.00 seconds
+ The Coulomb energy contribution    5.4868193225437611     
+ >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
+ >>> wall Time used in LINK-Kbuild is   0.00 seconds
+ The Exchange energy contribution    2.0722013106141945     
+ The Fock energy contribution   -3.4146180119295675     
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ Using MO-CCSD: non-MPI scheme
+ >>>  CPU Time used in get_t1_free_gmo is   0.00 seconds
+ >>> wall Time used in get_t1_free_gmo is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.01 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ CCSOL: MAIN LOOP      : 0.207    s
+ 
+ 
+ =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+         Inside the CCSD(T) driver routine.        
+ *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
+ 
+
+-----------------------------
+      CCSD(T) information    
+-----------------------------
+
+Print frag. energies   =    T
+IJK partitioning       =    T
+# IJK buffers          =    6
+ABC partitioning       =    F
+Free CPU memory (GB)   =   1.933    
+Are we using GPUs?     =    F
+
+
+ Gamma batch size was set manually, use that value instead!
+ Alpha batch size was set manually, use that value instead!
+ =======================================================================
+                      CCSD(T) INTEGRALS: MEMORY SUMMARY                 
+                              IJK partitioning                          
+ =======================================================================
+
+ To be on the safe side we use only 95% of the estimated available memory
+
+ 95% of available memory (GB)            =  1.84    
+
+ Number of atomic basis functions        =       7
+ Number of occupied orbitals             =       2
+ Number of virtual  orbitals             =       5
+ Maximum alpha batch dimension           =       3
+ Maximum gamma batch dimension           =       3
+ Size of tmp array 1                     =     0.353E-05
+ Size of tmp array 2                     =     0.252E-05
+ Size of tmp array 3                     =     0.300E-05
+
+
+ >>>  CPU Time used in CCSD(T) INT (IJK) is   0.01 seconds
+ >>> wall Time used in CCSD(T) INT (IJK) is   0.01 seconds
+ 
+ 
+ =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
+         Done with CCSD(T) integrals        
+ *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in IJK_LOOP_SER is   0.00 seconds
+ >>> wall Time used in IJK_LOOP_SER is   0.00 seconds
+ >>>  CPU Time used in CCSDPT_DRIVER (TOTAL) is   0.01 seconds
+ >>> wall Time used in CCSDPT_DRIVER (TOTAL) is   0.01 seconds
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       1      2
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       1.5481       -0.2248930846E-03
+ Distance(Ang), pair virt energy =       1.5481       -0.3825404667E-03
+ Distance(Ang), pair lagr. occ term  =       1.5481         0.000000000    
+ Distance(Ang), pair lagr. virt term =       1.5481         0.000000000    
+
+
+ >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.04 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.04 seconds
+ >>>  CPU Time used in reg-J is   0.00 seconds
+ >>> wall Time used in reg-J is   0.00 seconds
+ >>>  CPU Time used in reg-Jbuild is   0.00 seconds
+ >>> wall Time used in reg-Jbuild is   0.00 seconds
+ The Coulomb energy contribution    5.4868193225437647     
+ >>>  CPU Time used in LINK-Kbuild is   0.00 seconds
+ >>> wall Time used in LINK-Kbuild is   0.00 seconds
+ The Exchange energy contribution    2.0722013106141959     
+ The Fock energy contribution   -3.4146180119295693     
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ Using MO-CCSD: non-MPI scheme
+ >>>  CPU Time used in get_t1_free_gmo is   0.00 seconds
+ >>> wall Time used in get_t1_free_gmo is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD init calc. is   0.00 seconds
+ >>> wall Time used in MO-CCSD init calc. is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD INIT is   0.00 seconds
+ >>> wall Time used in MO-CCSD INIT is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD main loop is   0.00 seconds
+ >>> wall Time used in MO-CCSD main loop is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>> wall Time used in MO-CCSD A2 B2 + comm is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.00 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in Kinetic is   0.00 seconds
+ >>> wall Time used in Kinetic is   0.00 seconds
+ >>>  CPU Time used in MO-CCSD residual is   0.00 seconds
+ >>> wall Time used in MO-CCSD residual is   0.00 seconds
+ CCSOL: MAIN LOOP      : 0.247    s
+ 
+ 
+ =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+         Inside the CCSD(T) driver routine.        
+ *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
+ 
+
+-----------------------------
+      CCSD(T) information    
+-----------------------------
+
+Print frag. energies   =    T
+IJK partitioning       =    T
+# IJK buffers          =    6
+ABC partitioning       =    F
+Free CPU memory (GB)   =   1.933    
+Are we using GPUs?     =    F
+
+
+ Gamma batch size was set manually, use that value instead!
+ Alpha batch size was set manually, use that value instead!
+ =======================================================================
+                      CCSD(T) INTEGRALS: MEMORY SUMMARY                 
+                              IJK partitioning                          
+ =======================================================================
+
+ To be on the safe side we use only 95% of the estimated available memory
+
+ 95% of available memory (GB)            =  1.84    
+
+ Number of atomic basis functions        =       7
+ Number of occupied orbitals             =       2
+ Number of virtual  orbitals             =       5
+ Maximum alpha batch dimension           =       3
+ Maximum gamma batch dimension           =       3
+ Size of tmp array 1                     =     0.353E-05
+ Size of tmp array 2                     =     0.252E-05
+ Size of tmp array 3                     =     0.300E-05
+
+
+ >>>  CPU Time used in CCSD(T) INT (IJK) is   0.01 seconds
+ >>> wall Time used in CCSD(T) INT (IJK) is   0.01 seconds
+ 
+ 
+ =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
+         Done with CCSD(T) integrals        
+ *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in IJK_LOOP_SER is   0.00 seconds
+ >>> wall Time used in IJK_LOOP_SER is   0.00 seconds
+ >>>  CPU Time used in CCSDPT_DRIVER (TOTAL) is   0.01 seconds
+ >>> wall Time used in CCSDPT_DRIVER (TOTAL) is   0.01 seconds
+
+
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.3197075082E-01
+ Single virtual  energy =    -0.3209544966E-01
+ Single Lagrangian occ term  =      0.000000000    
+ Single Lagrangian virt term =      0.000000000    
+
+
+ >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.04 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.04 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   0.12 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is   0.12 seconds
 
 
               ===============================================
@@ -995,7 +1538,7 @@ Master received job       2 from        3 -- missing #jobs:        0
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.5481         -0.3825404666E-03    PF_CCSD_VIR
+     1       2      1.5481         -0.3825404667E-03    PF_CCSD_VIR
 
 
  =================================================================
@@ -1017,6 +1560,42 @@ Master received job       2 from        3 -- missing #jobs:        0
 
 
  =================================================================
+ (T) occupied single energies (fourth order)
+ =================================================================
+
+ Fragment       Energy
+     1      -0.2511171280E-05    AF_ParT_OCC4
+     2      -0.1940219306E-05    AF_ParT_OCC4
+
+
+ =================================================================
+ (T) virtual single energies (fourth order)
+ =================================================================
+
+ Fragment       Energy
+     1      -0.1537413411E-05    AF_ParT_VIR4
+     2      -0.2654444723E-05    AF_ParT_VIR4
+
+
+ =================================================================
+ (T) occupied single energies (fifth order)
+ =================================================================
+
+ Fragment       Energy
+     1      -0.2427609219E-08    AF_ParT_OCC5
+     2      -0.1457837870E-07    AF_ParT_OCC5
+
+
+ =================================================================
+ (T) virtual single energies (fifth order)
+ =================================================================
+
+ Fragment       Energy
+     1      -0.2427609219E-08    AF_ParT_VIR5
+     2      -0.1457837870E-07    AF_ParT_VIR5
+
+
+ =================================================================
  (T) occupied pair energies
  =================================================================
 
@@ -1032,13 +1611,45 @@ Master received job       2 from        3 -- missing #jobs:        0
      1       2      1.5481         -0.2371465036E-05    PF_ParT_VIR_BOTH
 
 
+ =================================================================
+ (T) occupied pair energies (fourth order)
+ =================================================================
+
+  Frag1  Frag2     Dist(Ang)        Energy
+     1       2      1.5481         -0.2099950568E-05    PF_ParT_OCC4
+
+
+ =================================================================
+ (T) virtual pair energies (fourth order)
+ =================================================================
+
+  Frag1  Frag2     Dist(Ang)        Energy
+     1       2      1.5481         -0.2359483020E-05    PF_ParT_VIR4
+
+
+ =================================================================
+ (T) occupied pair energies (fifth order)
+ =================================================================
+
+  Frag1  Frag2     Dist(Ang)        Energy
+     1       2      1.5481         -0.1198201638E-07    PF_ParT_OCC5
+
+
+ =================================================================
+ (T) virtual pair energies (fifth order)
+ =================================================================
+
+  Frag1  Frag2     Dist(Ang)        Energy
+     1       2      1.5481         -0.1198201638E-07    PF_ParT_VIR5
+
+
 
  CCSD occupied correlation energy :    -0.4690289377E-01
- (T) occupied correlation energy  :    -0.6580329157E-05
+ (T) occupied correlation energy  :    -0.6580329158E-05
  (T) occupied 4th order energy    :    -0.6551341153E-05
  (T) occupied 5th order energy    :    -0.2898800430E-07
  CCSD virtual  correlation energy :    -0.4690289377E-01
- (T) virtual  correlation energy  :    -0.6580329157E-05
+ (T) virtual  correlation energy  :    -0.6580329158E-05
  (T) virtual  4th order energy    :    -0.6551341153E-05
  (T) virtual  5th order energy    :    -0.2898800430E-07
 
@@ -1071,9 +1682,9 @@ Master received job       2 from        3 -- missing #jobs:        0
 
  CC Memory summary
  -----------------
- Allocated memory for array4   :   0.000     GB
+ Allocated memory for array4   :  0.3200E-05 GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :   0.000     GB
+ Max memory in use for array4  :  0.3200E-05 GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
@@ -1082,13 +1693,13 @@ Master received job       2 from        3 -- missing #jobs:        0
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :        0.940170E-01 s
-Total Wall time used in DEC          :        0.980000E-01 s
+Total CPU  time used in DEC          :        0.133265     s
+Total Wall time used in DEC          :        0.133000     s
 ------------------------------------------------------
 
 
-Hostname       : Valhalla.local                                    
-Job finished   : Date: 13/11/2014   Time: 12:06:47
+Hostname       : pablo-AU                                          
+Job finished   : Date: 22/01/2015   Time: 12:04:33
 
 
 
@@ -1098,8 +1709,8 @@ Job finished   : Date: 13/11/2014   Time: 12:06:47
 
 
 
- >>>  CPU Time used in *SCF is   0.20 seconds
- >>> wall Time used in *SCF is   0.20 seconds
+ >>>  CPU Time used in *SCF is   0.22 seconds
+ >>> wall Time used in *SCF is   0.22 seconds
 
 Total no. of matmuls used:                       964
 Total no. of Fock/KS matrix evaluations:           4
@@ -1129,6 +1740,7 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (fragmentAOS):               0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
@@ -1150,315 +1762,42 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         66.897 MB
+  Max allocated memory, TOTAL                         67.448 MB
   Max allocated memory, type(matrix)                  34.864 kB
-  Max allocated memory, real(realk)                  110.408 kB
+  Max allocated memory, real(realk)                  790.880 kB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       14.612 kB
-  Max allocated memory, logical                      204.704 kB
-  Max allocated memory, character                     74.880 kB
-  Max allocated memory, AOBATCH                        4.536 kB
-  Max allocated memory, DECORBITAL                     2.240 kB
-  Max allocated memory, DECFRAG                       42.176 kB
-  Max allocated memory, BATCHTOORB                     0.000 Byte
+  Max allocated memory, integer                        5.714 kB
+  Max allocated memory, logical                      201.500 kB
+  Max allocated memory, character                      3.296 kB
+  Max allocated memory, AOBATCH                        5.040 kB
+  Max allocated memory, DECORBITAL                     2.688 kB
+  Max allocated memory, DECFRAG                       61.824 kB
+  Max allocated memory, BATCHTOORB                     0.336 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.000 Byte
+  Max allocated memory, MYPOINTER                      0.432 kB
+  Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.400 MB
+  Max allocated memory, ARRAY                         66.674 MB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        0.528 kB
-  Max allocated memory, LSAOTENSOR                     2.496 kB
+  Max allocated memory, ODBATCH                        0.704 kB
+  Max allocated memory, LSAOTENSOR                     2.432 kB
   Max allocated memory, SLSAOTENSOR                    0.000 Byte
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 153.056 kB
-  Max allocated memory, ATOMITEM                       1.536 kB
-  Max allocated memory, LSMATRIX                       1.120 kB
-  Max allocated memory, OverlapT                      81.792 kB
-  Max allocated memory, linkshell                      0.252 kB
-  Max allocated memory, integrand                     33.152 kB
-  Max allocated memory, integralitem                  28.160 kB
-  Max allocated memory, IntWork                       12.432 kB
-  Max allocated memory, Overlap                       14.580 kB
-  Max allocated memory, ODitem                         0.384 kB
-  Max allocated memory, LStensor                       2.065 kB
-  Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                             0.000 Byte
-  Max allocated memory, Lvec_data                      0.000 Byte
-  Max allocated memory, Lattice_cell                   0.000 Byte
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
-  The total memory used across all MPI nodes
-  Max allocated memory, TOTAL                        272.057 MB
-time spent in unlock:        0.0003188209
-  Largest memory allocated on a single MPI slave node (including Master)
-  Max allocated memory, TOTAL                         68.387 MB
-  Largest memory allocated on a single MPI slave node (exclusing Master)
-  Max allocated memory, TOTAL                         68.387 MB
-  Memory statistics for MPI node number         1 
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (TOTAL):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (type(matrix)):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MPI):                     0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (complex):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (character):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (AOBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMITEM):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECORBITAL):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECFRAG):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlapType):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (BATCHTOORB):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECAOBATCHINFO):          0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MYPOINTER):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY2):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY4):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (PNOSpaceInfo):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2DENS):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (TRACEBACK):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2GRAD):                 0 byte  - Should be zero - otherwise a leakage is present
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Additional Memory information          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (linkshell):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integrand):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integralitem):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (IntWork):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlap):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODitem):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lstensor):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (FMM   ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         68.386 MB
-  Max allocated memory, type(matrix)                   3.120 kB
-  Max allocated memory, real(realk)                    1.774 MB
-  Max allocated memory, MPI                            2.008 kB
-  Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       15.715 kB
-  Max allocated memory, logical                      203.372 kB
-  Max allocated memory, character                     75.680 kB
-  Max allocated memory, AOBATCH                        6.552 kB
-  Max allocated memory, DECORBITAL                     1.792 kB
-  Max allocated memory, DECFRAG                       42.176 kB
-  Max allocated memory, BATCHTOORB                     0.336 kB
-  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      1.296 kB
-  Max allocated memory, ARRAY2                         0.000 Byte
-  Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.931 MB
-  Max allocated memory, PNOSpaceInfo                   0.000 Byte
-  Max allocated memory, MP2DENS                        0.000 Byte
-  Max allocated memory, TRACEBACK                      0.108 kB
-  Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        0.968 kB
-  Max allocated memory, LSAOTENSOR                     2.496 kB
-  Max allocated memory, SLSAOTENSOR                    0.000 Byte
-  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 918.336 kB
-  Max allocated memory, ATOMITEM                       3.072 kB
-  Max allocated memory, LSMATRIX                       1.904 kB
-  Max allocated memory, OverlapType                   81.792 kB
-  Max allocated memory, linkshell                      0.252 kB
-  Max allocated memory, integrand                     43.008 kB
-  Max allocated memory, integralitem                   1.764 MB
-  Max allocated memory, IntWork                        0.000 Byte
-  Max allocated memory, Overlap                       14.580 kB
-  Max allocated memory, ODitem                         0.704 kB
-  Max allocated memory, LStensor                       4.122 kB
-  Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                             0.000 Byte
-  Max allocated memory, Lvec_data                      0.000 Byte
-  Max allocated memory, Lattice_cell                   0.000 Byte
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
-  Memory statistics for MPI node number         2 
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (TOTAL):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (type(matrix)):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MPI):                     0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (complex):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (character):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (AOBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMITEM):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECORBITAL):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECFRAG):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlapType):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (BATCHTOORB):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECAOBATCHINFO):          0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MYPOINTER):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY2):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY4):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (PNOSpaceInfo):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2DENS):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (TRACEBACK):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2GRAD):                 0 byte  - Should be zero - otherwise a leakage is present
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Additional Memory information          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (linkshell):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integrand):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integralitem):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (IntWork):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlap):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODitem):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lstensor):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (FMM   ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         68.386 MB
-  Max allocated memory, type(matrix)                   3.120 kB
-  Max allocated memory, real(realk)                    2.372 MB
-  Max allocated memory, MPI                            2.008 kB
-  Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       15.715 kB
-  Max allocated memory, logical                      203.372 kB
-  Max allocated memory, character                     75.680 kB
-  Max allocated memory, AOBATCH                        6.552 kB
-  Max allocated memory, DECORBITAL                     1.344 kB
-  Max allocated memory, DECFRAG                       42.176 kB
-  Max allocated memory, BATCHTOORB                     0.336 kB
-  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.000 Byte
-  Max allocated memory, ARRAY2                         0.000 Byte
-  Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.931 MB
-  Max allocated memory, PNOSpaceInfo                   0.000 Byte
-  Max allocated memory, MP2DENS                        0.000 Byte
-  Max allocated memory, TRACEBACK                      0.108 kB
-  Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        0.968 kB
-  Max allocated memory, LSAOTENSOR                     2.496 kB
-  Max allocated memory, SLSAOTENSOR                    0.000 Byte
-  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 918.336 kB
-  Max allocated memory, ATOMITEM                       3.072 kB
+  Max allocated memory, ATOMTYPEITEM                 306.112 kB
+  Max allocated memory, ATOMITEM                       2.176 kB
   Max allocated memory, LSMATRIX                       1.456 kB
-  Max allocated memory, OverlapType                   81.792 kB
+  Max allocated memory, OverlapT                      27.264 kB
   Max allocated memory, linkshell                      0.252 kB
-  Max allocated memory, integrand                     43.008 kB
-  Max allocated memory, integralitem                   2.352 MB
-  Max allocated memory, IntWork                        0.000 Byte
-  Max allocated memory, Overlap                       14.580 kB
-  Max allocated memory, ODitem                         0.704 kB
-  Max allocated memory, LStensor                       4.122 kB
-  Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                             0.000 Byte
-  Max allocated memory, Lvec_data                      0.000 Byte
-  Max allocated memory, Lattice_cell                   0.000 Byte
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
-  Memory statistics for MPI node number         3 
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (TOTAL):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (type(matrix)):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MPI):                     0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (complex):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (character):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (AOBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ATOMITEM):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECORBITAL):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECFRAG):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlapType):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (BATCHTOORB):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (DECAOBATCHINFO):          0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MYPOINTER):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY2):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY4):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ARRAY):                   0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (PNOSpaceInfo):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2DENS):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (TRACEBACK):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (MP2GRAD):                 0 byte  - Should be zero - otherwise a leakage is present
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Additional Memory information          
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated MPI memory (linkshell):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integrand):           0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (integralitem):        0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (IntWork):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (overlap):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (ODitem):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lstensor):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (FMM   ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (XC    ):              0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lvec_data):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated MPI memory (lattice_cell):            0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         68.387 MB
-  Max allocated memory, type(matrix)                   3.120 kB
-  Max allocated memory, real(realk)                  285.208 kB
-  Max allocated memory, MPI                            2.008 kB
-  Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       15.871 kB
-  Max allocated memory, logical                      203.372 kB
-  Max allocated memory, character                     75.680 kB
-  Max allocated memory, AOBATCH                        6.552 kB
-  Max allocated memory, DECORBITAL                     1.792 kB
-  Max allocated memory, DECFRAG                       42.176 kB
-  Max allocated memory, BATCHTOORB                     0.336 kB
-  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.000 Byte
-  Max allocated memory, ARRAY2                         0.000 Byte
-  Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.931 MB
-  Max allocated memory, PNOSpaceInfo                   0.000 Byte
-  Max allocated memory, MP2DENS                        0.000 Byte
-  Max allocated memory, TRACEBACK                      0.108 kB
-  Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        0.968 kB
-  Max allocated memory, LSAOTENSOR                     2.496 kB
-  Max allocated memory, SLSAOTENSOR                    0.000 Byte
-  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 918.336 kB
-  Max allocated memory, ATOMITEM                       3.072 kB
-  Max allocated memory, LSMATRIX                       1.456 kB
-  Max allocated memory, OverlapType                   81.792 kB
-  Max allocated memory, linkshell                      0.252 kB
-  Max allocated memory, integrand                     43.008 kB
-  Max allocated memory, integralitem                  30.720 kB
-  Max allocated memory, IntWork                        0.000 Byte
-  Max allocated memory, Overlap                       14.580 kB
-  Max allocated memory, ODitem                         0.704 kB
+  Max allocated memory, integrand                     14.336 kB
+  Max allocated memory, integralitem                 784.000 kB
+  Max allocated memory, IntWork                        4.144 kB
+  Max allocated memory, Overlap                        4.860 kB
+  Max allocated memory, ODitem                         0.512 kB
   Max allocated memory, LStensor                       2.065 kB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
@@ -1467,9 +1806,10 @@ time spent in unlock:        0.0003188209
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
- >>>  CPU Time used in LSDALTON is   0.27 seconds
- >>> wall Time used in LSDALTON is   0.28 seconds
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+ >>>  CPU Time used in LSDALTON is   0.25 seconds
+ >>> wall Time used in LSDALTON is   0.25 seconds
 
 End simulation
-     Date and time (Linux)  : Thu Nov 13 12:06:47 2014
-     Host name              : Valhalla.local                          
+     Date and time (Linux)  : Thu Jan 22 12:04:33 2015
+     Host name              : pablo-AU                                
