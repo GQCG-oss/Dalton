@@ -291,6 +291,7 @@ C
       !IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
       IF (HSFOCK.OR.DODFT) GO TO 1000
       ! ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
+      IF (DIRFCK .AND. TDHF .AND. NASHT.EQ.1) GO TO 1000 ! .OPEN SHELL HF
       IF (DIRFCK .AND. KZCONF.EQ.0 .AND. NASHT.EQ.0) GO TO 1000
       ! new test Dec. 2011, also valid for SOPPA .and. DIRFCK
       ! where TDHF true (KZCONF > 0 and NASHT == 0 for SOPPA) /hjaaj
@@ -642,7 +643,7 @@ C
       GO TO 2000
  1000 CONTINUE
 C
-C end up here if DIRFCK
+C end up here if DIRFCK or HSROHF or DODFT or NASHT.eq.1
 C
 C       Allocate work memory:
 C       FXCAO,FXVAO,FTCAO,FTVAO must be stored consecutively
