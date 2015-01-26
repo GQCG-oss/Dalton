@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/01/24 (started 2014/09/01).
+!REVISION: 2015/01/26 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -607,20 +607,22 @@
         if(present(ierr)) ierr=errc
         return
         end function dil_get_arg_tile_vol
-!---------------------------------------------------------------
-        integer(INTL) function dil_get_min_buf_size(tcontr,ierr) !SERIAL
+!---------------------------------------------------------------------
+        integer(INTL) function dil_get_min_buf_size(tcontr,ierr,scale) !SERIAL
 !This function returns the minimal size of the local buffer space in bytes
 !required for executing a given tensor contraction (per device).
         implicit none
         type(dil_tens_contr_t), intent(in):: tcontr !in: full tensor contraction specification
         integer(INTD), intent(inout):: ierr         !out: error code (0:success)
+        integer(INTD), intent(in), optional:: scale !in: scaling factor
 !--------------------------------------------------
-        integer(INTL), parameter:: scale_for_sure=2 !overestimate the min buf size to be sure
+        integer(INTD), parameter:: scale_for_sure=2 !overestimate the min buf size to be sure
 !--------------------------------------------------
         integer(INTD):: i
-        integer(INTL):: sz
+        integer(INTL):: sz,scl
 
         ierr=0; dil_get_min_buf_size=0_INTL
+        if(present(scale)) then; scl=max(scale,scale_for_sure); else; scl=scale_for_sure; endif
         sz=dil_get_arg_tile_vol(tcontr%dest_arg,i); if(i.ne.0) then; ierr=1; return; endif
         sz=sz*BUFS_PER_DEV*realk
         dil_get_min_buf_size=max(dil_get_min_buf_size,sz)
@@ -630,7 +632,7 @@
         sz=dil_get_arg_tile_vol(tcontr%right_arg,i); if(i.ne.0) then; ierr=3; return; endif
         sz=sz*BUFS_PER_DEV*realk
         dil_get_min_buf_size=max(dil_get_min_buf_size,sz)
-        dil_get_min_buf_size=max(dil_get_min_buf_size*scale_for_sure,MIN_BUF_MEM)
+        dil_get_min_buf_size=max(dil_get_min_buf_size*scl,MIN_BUF_MEM)
         return
         end function dil_get_min_buf_size
 !--------------------------------------------------------------------------------------------------------------
