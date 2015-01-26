@@ -115,7 +115,7 @@
         integer(INTD), private:: CONS_OUT=6,CONS_OUT_SAVED=0            !console output device (defaults to screen)
         integer(INTD), public:: DIL_CONS_OUT=6                          !console output device for external use (defaults to screen)
         logical, private:: VERBOSE=.true.                               !verbosity (for errors)
-        logical, public:: DIL_DEBUG=.true.                             !debugging
+        logical, public:: DIL_DEBUG=.false.                             !debugging
         integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
         logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
 #ifdef USE_MIC

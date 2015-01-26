@@ -855,8 +855,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
      implicit none
 !`DIL:
-#define DIL_DEBUG_ON
-#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
+!#define DIL_ACTIVE
 
      !> CC model
      integer,intent(in) :: ccmodel
