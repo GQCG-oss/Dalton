@@ -474,7 +474,8 @@ TYPE(IOITEM)               :: IO
 INTEGER                    :: numFragments !Number of fragments to partition molecule into
 Integer                    :: numNodes     !Number of MPI nodes
 Integer                    :: node         !Integer value defining the node number
-!if you add a structure to this type remember to add it to MPI_ALLOC_DALTONINPUT
+TYPE(MOLECULEINFO),pointer :: AUXMOLECULE  !secondary Molecule (used in DEC for RI/CABS)
+!if you add a structure to this type remember to add it to LSMPI_ALLOC_DALTONINPUT and mpicopy_daltoninput
 END TYPE DALTONINPUT
 
 #ifdef VAR_MPI

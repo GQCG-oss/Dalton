@@ -280,6 +280,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    character(len=30) :: CorrEnergyString
    integer :: iCorrLen, nsingle, npair, njobs
 
+   integer :: atom, i,j,a,b,job, job_n
+   real(realk) :: max_amp, dist_a, dist_b
+
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
 
@@ -460,6 +463,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Number of pair jobs   = ', npair
       write(DECinfo%output,'(1X,a,i10,//)') 'FULL JOB SUMMARY: Total number of jobs  = ', njobs
    
+
       ! Calculate single and pair fragments energies:
       call mem_alloc(FragEnergies,nfrags,nfrags,nenergies)
       call mem_alloc(FragEnergies_tmp,nfrags,nfrags)

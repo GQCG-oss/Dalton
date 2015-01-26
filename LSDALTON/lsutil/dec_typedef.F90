@@ -305,6 +305,8 @@ module dec_typedef_module
 
      !> Atomic Extent - include all atomic orbitals of atoms included
      logical :: AtomicExtent
+     !> Auxiliary Atomic Extent - for now include ALL atomic orbitals in RI
+     logical :: AuxAtomicExtent
 
      !> MPI settings
      !> ************

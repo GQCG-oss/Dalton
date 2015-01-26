@@ -521,11 +521,18 @@ MERGE_STATIC_LIBS(
     ${LIBS_TO_MERGE}
     )
 
+#DO NOT ALWAYS USE stdc++ SINCE THIS IS ONLY!!!! THE GNU STDC++ LIB
+if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
+   set(USE_GNU_STDCXX_LIB "")
+else()
+   set(USE_GNU_STDCXX_LIB "stdc++")
+endif()
+
 target_link_libraries(
     lsdalton
     ${EXTERNAL_LIBS}
     ${LSDALTON_EXTERNAL_LIBS}
-    stdc++
+    ${USE_GNU_STDCXX_LIB}
     )
 
 if(NOT ENABLE_CHEMSHELL)

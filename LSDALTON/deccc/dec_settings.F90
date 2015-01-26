@@ -197,9 +197,9 @@ contains
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
     DECinfo%AtomicExtent             = .false.
-
+    DECinfo%AuxAtomicExtent          = .false.
     DECinfo%DFTreference             = .false.
-    DECinfo%ccConvergenceThreshold   = 1e-5_realk
+    DECinfo%ccConvergenceThreshold   = 1e-9_realk
     DECinfo%CCthrSpecified           = .false.
     DECinfo%use_singles              = .false.
     DECinfo%use_preconditioner       = .true.
@@ -563,6 +563,10 @@ contains
        case('.ATOMICEXTENT')
           !Include all atomic orbitals on atoms in the fragment 
           DECinfo%AtomicExtent  = .true.
+       case('.AUXATOMICEXTENT')
+          !Include all atomic orbitals on all atoms in the molecule (not just fragment) 
+          !maybe need to have a procedure to optimize this set of atoms
+          DECinfo%AuxAtomicExtent  = .true.
        case('.PRINTFRAGS')
           ! Print fragment energies for full molecular cc calculation
           DECinfo%print_frags   = .true.

@@ -121,6 +121,9 @@ integer :: I
 ! THE MOLECULE
 NULLIFY(DALTON%MOLECULE%ATOM)
 call mem_alloc(DALTON%MOLECULE%ATOM,DALTON%MOLECULE%nAtoms)
+! THE Secondary MOLECULE  (used in DEC for RI/CABS)
+NULLIFY(DALTON%AUXMOLECULE%ATOM)
+call mem_alloc(DALTON%AUXMOLECULE%ATOM,DALTON%AUXMOLECULE%nAtoms)
 !THE BASISSET
 do I=1,nBasisBasParam
    CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%BINFO(I))
@@ -177,7 +180,9 @@ CALL LS_MPI_BUFFER(input%numfragments,Master)
 
 IF(SLAVE)THEN
    NULLIFY(input%MOLECULE)
+   NULLIFY(input%AUXMOLECULE)
    NULLIFY(input%BASIS)
+   ALLOCATE(input%AuxMolecule)
    ALLOCATE(input%Molecule)
    ALLOCATE(input%Basis)
    call nullifyMainBasis(input%Basis)
@@ -186,6 +191,7 @@ IF(SLAVE)THEN
 ENDIF
 call mpicopy_integralconfig(input%dalton,Slave,Master)
 call mpicopy_molecule(input%Molecule,Slave,Master)
+call mpicopy_molecule(input%AuxMolecule,Slave,Master)
 call LS_MPI_BUFFER(input%basis%WBASIS,nBasisBasParam,Master)
 do I=1,nBasisBasParam
    IF(input%basis%WBASIS(I))THEN

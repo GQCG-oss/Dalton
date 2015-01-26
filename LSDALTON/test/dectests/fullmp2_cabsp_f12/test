@@ -11,22 +11,18 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
-
-f.add(string = 'Correlation energy',
+f.add(string = 'Nuclear repulsion',
+      rel_tolerance = 1.0e-8)
+f.add(string = 'TOYCODE',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'Total RIMP2 energy',
+f.add(from_string = 'E: Hartree-Fock energy',
+      to_string   = 'E: Total MP2-F12 energy',
       rel_tolerance = 1.0e-8)
 
-f.add(from_string = 'RI-MP2 occupied single energies',
-      to_string   = 'RI-MP2 Lagrangian correlation energy',
-      rel_tolerance = 1.0e-6)
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-f.add(string = 'Memory in use for array4',
-      rel_tolerance = 1.0e-9)
-
-test.run(['decmp2_RI.dal'], ['CO2H2.mol'], {'out': f})
+test.run(['fullmp2_cabsp_f12.dal'], ['water.mol'], {'out': f})
 
 sys.exit(test.return_code)
