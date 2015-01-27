@@ -124,7 +124,7 @@ C
 #include "cbihr2.h"
 C
 C  INFDIM : NASHDI
-C  INFINP : DIRFCK
+C  INFINP : DIRFCK, HSROHF, DODFT, ?
 C  INFRSP : ?
 C  INFSOP : A2EXIST,KABSAD,KABTAD,...
 C
@@ -144,7 +144,6 @@ C
 #include "wrkrsp.h"
 #include "infsop.h"
 #include "dftcom.h"
-#include "scbrhf.h"
 
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
 #include "grdccpt.h"
@@ -287,7 +286,7 @@ C If also single determinant, then nothing to do in MO part
 C
       !IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
       !IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
-      IF (HSFOCK.OR.DODFT) GO TO 1000
+      IF (HSROHF.OR.DODFT) GO TO 1000
       ! ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
       IF (DIRFCK .AND. TDHF .AND. NASHT.EQ.1) GO TO 1000 ! .OPEN SHELL HF
       IF (DIRFCK .AND. KZCONF.EQ.0 .AND. NASHT.EQ.0) GO TO 1000
@@ -777,7 +776,7 @@ C
       allocate(ifctyp(nfmat))
 
       JDXCAO = KDXCAO
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
          CALL DAXPY(NOSIM*N2BASX,D1,WRK(KDXVAO),1,WRK(KDXCAO),1)
          CALL DSCAL(NOSIM*N2BASX,-D1,WRK(KDXVAO),1)
       END IF
@@ -860,7 +859,7 @@ C
 #endif
 C
 C
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
 C     Change IFCTYP for all Fa matrices
         DO I=1,NOSIM
           IF (TRPLET) THEN
@@ -958,7 +957,7 @@ C     Change IFCTYP for all Fa matrices
       END IF
 #endif
 
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
 C
 C Calculated matrices are (FC+FV,-FV(exch)=FV-Q)
 C Input fock matrices (from SIRIFC) are of the form

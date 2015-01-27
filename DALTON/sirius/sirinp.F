@@ -757,7 +757,7 @@ C NUMRUN = number of wave functions (e.g. RHF + MP2 + MCSCF: NUMRUN=3)
 C
       INPERR = 0
       NUMRUN = 0
-      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
+      CALL SIR_NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
 
       IF (.NOT.DOSCF) MAXFCK = 0
       IF (.NOT.DOCI ) THEN
@@ -1025,7 +1025,7 @@ C
       END IF
 C
 C930406-hjaaj: if (IREST.ne.0) then reset options here and not in
-C     geninp as before, where something may not be defined yet
+C     sir_geninp as before, where something may not be defined yet
 C---------------
       IF (IREST .NE. 0) THEN
          FLAG(13) = .TRUE.
@@ -1878,8 +1878,8 @@ C
 C     END OF SIRRDI.
 C
       END
-C  /* Deck newinp */
-      SUBROUTINE NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
+C  /* Deck sir_newinp */
+      SUBROUTINE SIR_NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
 C
 C Revisions
 C    1-OCT-1987 HA     Keyword directed input for all parameters
@@ -2040,7 +2040,7 @@ C
 #include "priunit.h"
 #include "gnrinf.h"
 C
-      CALL QENTER('NEWINP')
+      CALL QENTER('SIR_NEWINP')
 C
       DATA TABMOD/'XXXXXXX','*CONFIG','*OPTIMI','*CI INP','*ORBITA',
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
@@ -2093,7 +2093,7 @@ C
          CALL QUIT('ILLEGAL PROMPT IN SIRIUS INPUT')
       END IF
 C
- 1100  CALL QUIT('Program ERROR in NEWINP reading SIRIUS input.')
+ 1100  CALL QUIT('Program ERROR in SIR_NEWINP reading SIRIUS input.')
  1200  CALL WAVINP(WORD,INPERR,ALLOPT)
        GO TO 910
  1300  CALL OPTINP(WORD,INPERR,ALLOPT)
@@ -2198,10 +2198,10 @@ C
       JREST = 0
       CALL CC_INPUT('**WAVE F',JREST,NSYM)
 C
-      CALL QEXIT('NEWINP')
+      CALL QEXIT('SIR_NEWINP')
       RETURN
 C
-C     END OF NEWINP.
+C     END OF SIR_NEWINP.
 C
       END
 C  /* Deck sir_geninp */
