@@ -2381,6 +2381,8 @@ contains
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%OnlyVirtPart,Master)
     call ls_mpi_buffer(DECitem%all_init_radius,Master)
+    call ls_mpi_buffer(DECitem%occ_init_radius,Master)
+    call ls_mpi_buffer(DECitem%vir_init_radius,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
     call ls_mpi_buffer(DECitem%pairestimateignore,Master)

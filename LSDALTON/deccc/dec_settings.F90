@@ -170,6 +170,8 @@ contains
     DECinfo%FracOfOrbSpace_red     = 5.0E0_realk
     ! If this is set larger than 0. atomic fragments are initialized with this,
     DECinfo%all_init_radius        = -1.0E0_realk/bohr_to_angstrom 
+    DECinfo%occ_init_radius        = -1.0E0_realk/bohr_to_angstrom 
+    DECinfo%vir_init_radius        = -1.0E0_realk/bohr_to_angstrom 
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
@@ -574,9 +576,20 @@ contains
           ! set the fraction of the fully extended orbital space that is used as tolerance in an incomplete binary search
        case('.FRACOFORBSPACE_RED'); read(input,*) DECinfo%FracOfOrbSpace_red
           ! include all orbitals for a fragment within a given radius and calculate the fragment energies in Angstrom
-       case('.FRAG_INIT_RADIUS_NO_OPT')
+       case('.FRAG_INIT_RADIUS_NO_OPT_ALL')
           read(input,*) DECinfo%all_init_radius
           DECinfo%all_init_radius = DECinfo%all_init_radius/bohr_to_angstrom
+          DECinfo%occ_init_radius = DECinfo%all_init_radius
+          DECinfo%vir_init_radius = DECinfo%all_init_radius
+       case('.FRAG_INIT_RADIUS_NO_OPT_OCC')
+          read(input,*) DECinfo%occ_init_radius
+          DECinfo%occ_init_radius = DECinfo%occ_init_radius/bohr_to_angstrom
+          DECinfo%all_init_radius = 0.0E0_realk
+       case('.FRAG_INIT_RADIUS_NO_OPT_VIR')
+          read(input,*) DECinfo%vir_init_radius
+          DECinfo%vir_init_radius = DECinfo%vir_init_radius/bohr_to_angstrom
+          DECinfo%all_init_radius = 0.0E0_realk
+
 
 
        !KEYWORDS FOR INTEGRAL INFO

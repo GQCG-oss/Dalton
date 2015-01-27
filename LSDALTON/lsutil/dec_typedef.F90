@@ -419,6 +419,8 @@ module dec_typedef_module
      logical :: OnlyVirtPart
      !> Fragment initialization radius WITHOUT OPTIMIZING THE FRAGMENT AFTERWARDS
      real(realk) :: all_init_radius
+     real(realk) :: vir_init_radius
+     real(realk) :: occ_init_radius
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
