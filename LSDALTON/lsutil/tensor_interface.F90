@@ -37,6 +37,8 @@ module tensor_interface_module
   public dil_debug_to_file_finish
   public thread_wtime
   public process_wtime
+  public dil_tensor_init
+  public dil_tensor_norm1
 ! public merge_sort_real8 !`DIL: remove
 
   !This defines the public interface to the tensors

@@ -1018,10 +1018,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      logical:: DIL_LOCK_OUTSIDE !controls Patrick's outside locks in Scheme 1
      character(256):: tcs
      type(dil_tens_contr_t):: tch
-     integer(INTL):: dil_mem
+     integer(INTL):: dil_mem,l0
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+     real(realk):: r0
 !}
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
@@ -1738,6 +1739,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           &infpar%lg_mynum,infpar%mynum
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Gamma range [",i4,":",i4,"]")') fg,fg+lg-1
          endif
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(l0) SCHEDULE(GUIDED)
+         do l0=1,no*lg*nv*no
+          uigcj%d(l0)=0E0_realk !zero out the local destination tensor
+         enddo
+!$OMP END PARALLEL DO
          tcs='D(i,g,c,j)+=L(g,d)*R(d,c,i,j)'
          call dil_clean_tens_contr(tch)
          call dil_set_tens_contr_args(tch,'r',errc,tens_distr=u2)
@@ -1753,8 +1759,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Destination arg set failed!',-1)
          call dil_set_tens_contr_spec(tch,tcs,errc,&
                &ldims=(/int(lg,INTD),int(nv,INTD)/),lbase=(/int(fg-1,INTD),0_INTD/),&
-               &ddims=(/int(no,INTD),int(lg,INTD),int(nv,INTD),int(no,INTD)/),dbase=(/0_INTD,int(fg-1,INTD),0_INTD,0_INTD/),&
-               &dest_zero=.true.)
+               &ddims=(/int(no,INTD),int(lg,INTD),int(nv,INTD),int(no,INTD)/),dbase=(/0_INTD,int(fg-1,INTD),0_INTD,0_INTD/))
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: CC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Contr spec set failed!',-1)
          dil_mem=dil_get_min_buf_size(tch,errc)
@@ -1942,8 +1947,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Right arg set failed!',-1)
                call dil_set_tens_contr_spec(tch,tcs,errc,&
                      &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
-                     &rdims=(/int(la,INTD),int(no,INTD),int(no,INTD),int(nv,INTD)/),rbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/),&
-                     &dest_zero=.false.)
+                     &rdims=(/int(la,INTD),int(no,INTD),int(no,INTD),int(nv,INTD)/),rbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/))
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: CC: ',infpar%lg_mynum,errc
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Contr spec set failed!',-1)
                dil_mem=dil_get_min_buf_size(tch,errc)
@@ -2013,8 +2017,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Right arg set failed!',-1)
                call dil_set_tens_contr_spec(tch,tcs,errc,&
                      &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
-                     &rdims=(/int(la,INTD),int(no,INTD),int(nv,INTD),int(no,INTD)/),rbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/),&
-                     &dest_zero=.false.)
+                     &rdims=(/int(la,INTD),int(no,INTD),int(nv,INTD),int(no,INTD)/),rbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/))
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: CC: ',infpar%lg_mynum,errc
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Contr spec set failed!',-1)
                dil_mem=dil_get_min_buf_size(tch,errc)
@@ -2144,8 +2147,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Right arg set failed!',-1)
                call dil_set_tens_contr_spec(tch,tcs,errc,&
                      &ldims=(/int(la,INTD),int(no,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
-                     &rdims=(/int(no,INTD),int(no,INTD),int(no,INTD),int(la,INTD)/),rbase=(/0_INTD,0_INTD,0_INTD,int(fa-1,INTD)/),&
-                     &dest_zero=.false.)
+                     &rdims=(/int(no,INTD),int(no,INTD),int(no,INTD),int(la,INTD)/),rbase=(/0_INTD,0_INTD,0_INTD,int(fa-1,INTD)/))
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: CC: ',infpar%lg_mynum,errc
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Contr spec set failed!',-1)
                dil_mem=dil_get_min_buf_size(tch,errc)
@@ -2206,7 +2208,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
             call dil_set_tens_contr_spec(tch,tcs,errc,&
                   &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
                   &rdims=(/int(nv,INTD),int(no,INTD),int(no,INTD),int(la,INTD)/),rbase=(/0_INTD,0_INTD,0_INTD,int(fa-1,INTD)/),&
-                  &alpha=0.5E0_realk,dest_zero=.false.)
+                  &alpha=0.5E0_realk)
             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: CC: ',infpar%lg_mynum,errc
             if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Contr spec set failed!',-1)
             dil_mem=dil_get_min_buf_size(tch,errc)
