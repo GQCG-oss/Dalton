@@ -1127,8 +1127,8 @@ contains
       real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
 
       ! Get nred_occ and nred_vir (5% of the expanded spaces)
-      nred_occ = max( ceiling(5.0E0_realk*MyFragment%noccAOS/100), 1)
-      nred_vir = max( ceiling(5.0E0_realk*MyFragment%nunoccAOS/100), 1)
+      nred_occ = max( ceiling(5.0E-2_realk*MyFragment%noccAOS), 1)
+      nred_vir = max( ceiling(5.0E-2_realk*MyFragment%nunoccAOS), 1)
 
 
       ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:

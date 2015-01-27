@@ -16,10 +16,11 @@ f.add(string = 'Nuclear repulsion',
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-8)
 
-#f.add(string = 'Number of CC iterations')
-#f.add(from_string = 'Doubles amplitudes norm',
-#      to_string   = 'Total amplitudes norm',
-#      rel_tolerance = 1.0e-8)
+f.add(string = 'Number of CC iterations')
+
+f.add(from_string = 'Doubles amplitudes norm',
+      to_string   = 'Total amplitudes norm',
+      rel_tolerance = 1.0e-8)
 
 f.add(from_string = 'E: Hartree-Fock energy',
       to_string   = 'G: Total MP2 energy',
@@ -28,6 +29,6 @@ f.add(from_string = 'E: Hartree-Fock energy',
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-test.run(['fullmp2_energy.dal'], ['acetylene.mol'], {'out': f})
+test.run(['fullmp2_energyCC.dal'], ['acetylene.mol'], {'out': f})
 
 sys.exit(test.return_code)

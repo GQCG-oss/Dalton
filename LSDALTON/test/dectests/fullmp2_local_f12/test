@@ -13,21 +13,16 @@ f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-8)
-f.add(string = 'Correlation energy',
+f.add(string = 'TOYCODE',
       rel_tolerance = 1.0e-8)
 
-#f.add(string = 'Number of CC iterations')
-#f.add(from_string = 'Doubles amplitudes norm',
-#      to_string   = 'Total amplitudes norm',
-#      rel_tolerance = 1.0e-8)
-
 f.add(from_string = 'E: Hartree-Fock energy',
-      to_string   = 'G: Total MP2 energy',
+      to_string   = 'E: Total MP2-F12 energy',
       rel_tolerance = 1.0e-8)
 
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-test.run(['fullmp2_energy.dal'], ['acetylene.mol'], {'out': f})
+test.run(['fullmp2_local_f12.dal'], ['water.mol'], {'out': f})
 
 sys.exit(test.return_code)

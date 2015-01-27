@@ -262,7 +262,7 @@ real(realk),allocatable :: DmatBD(:,:,:),DmatAD(:,:,:),DmatBC(:,:,:),DmatAC(:,:,
 real(realk),allocatable :: KmatBD(:,:,:),KmatAD(:,:,:),KmatBC(:,:,:),KmatAC(:,:,:)
 integer,allocatable :: nKetList(:),KetList(:,:),nBraList(:),BraList(:,:)
 integer,allocatable :: nBraketList(:),BraketList(:,:)
-logical :: doMoTrans
+logical :: doMoTrans,UseSameGab
 !MOtrans specific stuff
 integer :: nCMO1,nCMO2,nCMO3,nCMO4
 integer :: nStaticParamIfac
@@ -398,7 +398,13 @@ IF(CSScreen)THEN
    call mem_ichor_alloc(BatchIndexOfTypeD)
    allocate(MaxGabForTypeCD(nTypesC,nTypesD))
    call mem_ichor_alloc(MaxGabForTypeCD)
-   IF(IchorGabID1.EQ.IchorGabID2)THEN
+
+   UseSameGab = IchorGabID1.EQ.IchorGabID2
+   UseSameGab = UseSameGab .AND. startBatchA.EQ.startBatchC
+   UseSameGab = UseSameGab .AND. endBatchA.EQ.endBatchC
+   UseSameGab = UseSameGab .AND. startBatchB.EQ.startBatchD
+   UseSameGab = UseSameGab .AND. endBatchB.EQ.endBatchD
+   IF(UseSameGab)THEN
       BATCHGCD => BATCHGAB
       MaxGabForTypeCD = MaxGabForTypeAB
       MaxGabRHS = MaxGabLHS
@@ -1210,7 +1216,7 @@ IF(CSScreen)THEN
    deallocate(BatchIndexOfTypeD)
    call mem_ichor_dealloc(MaxGabForTypeCD)
    deallocate(MaxGabForTypeCD)
-   IF(IchorGabID1.EQ.IchorGabID2)THEN
+   IF(UseSameGab)THEN
       !nothing
    ELSE
       call mem_ichor_dealloc(BATCHGCD)
