@@ -954,7 +954,6 @@ contains
     logical :: MemoryReduced,AlphaCDAlloced,AlphaCD_Deallocate
     logical(kind=ls_mpik) :: TransferCompleted
     logical :: NotMatSet,file_exists
-    logical(ls_mpik):: TransferCompleted
     real(realk),pointer :: Amat(:,:),Bmat(:,:)
     MemoryReduced = MyLsitem%setting%scheme%ForceRIMP2memReduced
 #ifdef VAR_TIME    
