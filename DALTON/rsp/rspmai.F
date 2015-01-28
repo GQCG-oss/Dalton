@@ -4122,7 +4122,7 @@ C
       TDHF = NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1) .OR. HSROHF
       ! Closed-shell HF or DFT, or one open shell (.OPEN SHELL keyword in SIRIUS)
       ! or high-spin ROHF (.SINGLY OCCUPIED keyword in SIRIUS)
-      HSFOCK = HSFOCK .OR. (DIRFCK .AND. TDHF)
+      HSFOCK = HSFOCK .OR. (DIRFCK .AND. TDHF .AND. NASHT .GT. 0)
       ! Some of the open-shell direct response only works with HSROHF code
 C
 C     If any triplet operators, then we must use determinants
