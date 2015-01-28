@@ -376,7 +376,7 @@ C
 C
       CALL QENTER('FCKMAT')
       NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
-      LSRHYBR = SRHYBR .AND. .NOT. MCTYPE.EQ.0
+      LSRHYBR = SRHYBR .AND. MCTYPE.GT.0
 C
       IF (DFT_SPINDNS .AND. LSRHYBR) THEN
          CALL QUIT('SRHYBR and non-singlet not implemented')
