@@ -80,6 +80,9 @@ contains
     DECinfo%manual_batchsizes    = .false.
     DECinfo%ccsdAbatch           = 0
     DECinfo%ccsdGbatch           = 0
+    DECinfo%manual_occbatchsizes = .false.
+    DECinfo%batchOccI            = 0
+    DECinfo%batchOccJ            = 0 
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
