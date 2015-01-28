@@ -214,7 +214,8 @@ C        DC, DV or DXC, DXV
 C     ...PREHF: Find out if this is a HF calculation preceding
 C        a Multiconfigurational SR-DFT calculation.
       PREHF = DOSCF.AND.(DOMCSRDFT.OR.DOCISRDFT).AND.
-     &                  (.NOT.DOHFSRDFT).AND.(MCTYPE.EQ.0)
+     &                  (.NOT.DOHFSRDFT).AND.
+     &                  (MCTYPE.EQ.0.OR.MCTYPE.EQ.-1)
       LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT .AND. .NOT.PREHF
 C
 #ifdef SIRFCK_DEBUG
