@@ -324,6 +324,12 @@ module dec_typedef_module
      !> test integral scheme, fully distributed, get_mo_integrals
      logical :: test_fully_distributed_integrals
 
+     !> MP2 occupied batching
+     !> *****************
+     !> Set batch sizes manually
+     logical :: manual_occbatchsizes
+     !> Sizes of I and J occupied batches defined manually
+     integer :: batchOccI,batchOccJ
 
      !> General debug and simple tests
      !> ******************************

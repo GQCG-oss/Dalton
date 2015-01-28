@@ -64,7 +64,7 @@ C     Get total density
             CALL PKSYM1(WRK(KDTAO),DCAO,NBAS,NSYM,-1)
       ELSE
             DO I = 1,NNBAST
-               IF (HSFOCK) THEN
+               IF (HSROHF) THEN
                   WRK(KTAO-1+I) = DCAO(I)
                ELSE
                   WRK(KTAO-1+I) = DCAO(I) + DVAO(I)

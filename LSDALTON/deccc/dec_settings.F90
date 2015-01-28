@@ -535,6 +535,9 @@ contains
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
+       case('.MANUAL_OCCBATCHSIZES') 
+          DECinfo%manual_occbatchsizes=.true.
+          read(input,*) DECinfo%batchOccI, DECinfo%batchOccJ
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize

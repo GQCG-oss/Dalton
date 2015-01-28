@@ -62,7 +62,7 @@ C Use this hack to correctly pass the arrays to c++
       REAL*8 FMAT, DMAT
       INTEGER NMAT
 
-      write (*,*) "nmat in sirprnt ", nmat
+!     write (*,*) "nmat in sirprnt ", nmat
 
       call efs_print_matrices(FMAT, DMAT, NBAST, NMAT)
       END
@@ -124,7 +124,7 @@ C
 #include "cbihr2.h"
 C
 C  INFDIM : NASHDI
-C  INFINP : DIRFCK
+C  INFINP : DIRFCK, HSROHF, DODFT, ?
 C  INFRSP : ?
 C  INFSOP : A2EXIST,KABSAD,KABTAD,...
 C
@@ -144,7 +144,6 @@ C
 #include "wrkrsp.h"
 #include "infsop.h"
 #include "dftcom.h"
-#include "scbrhf.h"
 
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
 #include "grdccpt.h"
@@ -287,8 +286,9 @@ C If also single determinant, then nothing to do in MO part
 C
       !IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
       !IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
-      IF (HSFOCK.OR.DODFT) GO TO 1000
+      IF (HSROHF.OR.DODFT) GO TO 1000
       ! ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
+      IF (DIRFCK .AND. TDHF .AND. NASHT.EQ.1) GO TO 1000 ! .OPEN SHELL HF
       IF (DIRFCK .AND. KZCONF.EQ.0 .AND. NASHT.EQ.0) GO TO 1000
       ! new test Dec. 2011, also valid for SOPPA .and. DIRFCK
       ! where TDHF true (KZCONF > 0 and NASHT == 0 for SOPPA) /hjaaj
@@ -640,7 +640,7 @@ C
       GO TO 2000
  1000 CONTINUE
 C
-C end up here if DIRFCK
+C end up here if DIRFCK or HSROHF or DODFT or NASHT.eq.1
 C
 C       Allocate work memory:
 C       FXCAO,FXVAO,FTCAO,FTVAO must be stored consecutively
@@ -663,8 +663,13 @@ C     ... for DtotAO, DXtotAO for SRDFT:SRDFTLTR
 C
       CALL MEMGET('REAL',KFXCAO,NFMAT*N2BASX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KDXCAO,NDMAT*N2BASX,WRK,KFREE,LFREE)
-      KFXVAO = KFXCAO + NOSIM*N2BASX
-      KDXVAO = KDXCAO + NOSIM*N2BASX
+      IF (DOFXC) THEN
+         KFXVAO = KFXCAO + NOSIM*N2BASX
+         KDXVAO = KDXCAO + NOSIM*N2BASX
+      ELSE
+         KFXVAO = KFXCAO
+         KDXVAO = KDXCAO
+      END IF
       IF (DOFXV) THEN
          KFTCAO  = KFXVAO + NOSIM*N2BASX
          KDTCAO  = KDXVAO + NOSIM*N2BASX
@@ -684,9 +689,9 @@ C
 #ifdef DEBUG_RSPOLI
       write(lupri,*) 'rspoli: ncsim,nosim',ncsim,nosim
       write(lupri,*) 'rspoli: nfmat,ndmat',nfmat,ndmat
-      write(lupri,*) 'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,
-     &                        KDTOTAO,kfree',
-     &                KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
+      write(lupri,*)
+     &  'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,kfree',
+     &           KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
 #endif
 
 #ifdef MOD_SRDFT
@@ -771,7 +776,7 @@ C
       allocate(ifctyp(nfmat))
 
       JDXCAO = KDXCAO
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
          CALL DAXPY(NOSIM*N2BASX,D1,WRK(KDXVAO),1,WRK(KDXCAO),1)
          CALL DSCAL(NOSIM*N2BASX,-D1,WRK(KDXVAO),1)
       END IF
@@ -854,7 +859,7 @@ C
 #endif
 C
 C
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
 C     Change IFCTYP for all Fa matrices
         DO I=1,NOSIM
           IF (TRPLET) THEN
@@ -952,7 +957,7 @@ C     Change IFCTYP for all Fa matrices
       END IF
 #endif
 
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
 C
 C Calculated matrices are (FC+FV,-FV(exch)=FV-Q)
 C Input fock matrices (from SIRIFC) are of the form

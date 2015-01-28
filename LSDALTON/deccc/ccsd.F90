@@ -3513,7 +3513,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
                  & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d,&
-                 & DECinfo%IntegralThreshold)
+                 & DECinfo%IntegralThreshold,DECinfo%useIchor)
 
            enddo
            call time_start_phase(PHASE_WORK, ttot = time_int1 )
@@ -3680,7 +3680,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
                  & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d,&
-                 & DECinfo%IntegralThreshold)
+                 & DECinfo%IntegralThreshold,DECinfo%useIchor)
            enddo
 
            call time_start_phase(PHASE_WORK, ttot = time_int2 )
