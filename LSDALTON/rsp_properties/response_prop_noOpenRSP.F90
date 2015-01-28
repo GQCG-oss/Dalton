@@ -563,18 +563,95 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
 
   ! now all 3 DX is known and lies in Dx(1),Dx(2) and Dx(3) 
 
+!  ##################################################
+!  Edit by Chandan Kumar
+!  Calculations of Nuclei Selected Shielding Tensor
+!  Date - Jan 2015 
+!  
+!  ##################################################
+
+!  ###################################################   
+!  Solving RHS of Eq. 70. JCP, 115, page -10349
+!  K([D0,Xk]_s = -P_anti[hkDS]
+!
+!  ##################################################
+ 
+  ! Generation of hkDS   
+
+   call II_get_prop(LUPRI,LUERR,molcfg%SETTING,GbDs,3*NTAMOS,'PSO ')
+   call mat_init(tempm1,nbast,nbast) 
+   call mat_mul(D(1),S,'n','n',1.0E0_realk,0.0E0_realk,tempm1)
+   do icoor = 1,3*NATOMS
+     call mat_init(RHSk(icoor),nbast,nbast)
+     call mat_mul(GbDs(icoor),tempm1,'n','n',1.0E0_realk,1.0E0_realk,RHSk(icoor))
+   enddo
+   call mat_free(tempm1)
+!  #########################################################
+!  Solve K([D,Xk]s) = RHS is now ready                                
+!  Solve to get Dk=[D,Xk]_S + D0^k --> Xk (Eq. 70)                    
+!  We can use the RSP solver, since K([D,Xk]s) = sigma = -1/2 * E[2]Xk
+!
+!  ########################################################
+
+   do icoor = 1,3
+
+     eival(1)=0.0E0_realk
+     write(lupri,*)'Calling rsp solver for Xk  '
+     call mat_init(Xk(1),nbast,nbast)                            !# Matrices
+     Allocated 7 (DXk,RHSk,Xk)
+     if ( mat_dotproduct(RHSk(icoor),RHSk(icoor))>1.0d-10) then
+        call util_scriptPx('T',D(1),S,RHSk(icoor))
+
+        ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
+        nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
+        nsol = 1   !# of solution (output) vectors
+        nomega = 1 !If lineq_x, number of laser freqs (input)
+                   !Otherwise number of excitation energies (output) 
+        nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
+        !ntrial and nstart seem to be obsolete 
+        call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+        call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk(icoor:icoor),EIVAL,Xk)
+     else
+        write(lupri,*) 'WARNING: RHSk norm is less than threshold'
+        write(lupri,*) 'LIN RSP equations NOT solved for this RHS    '
+        call mat_zero(Xk(1))
+     end if
+     call mat_free(RHSk(icoor))
+
+!############################################################################!##      
+!           STEP 2: Make D^k=[D_0,X^k]_s
+!     
+!     !############################################################################   
+!     !Generate [D_0,X^k]_s
+!######################################################
+
+     call mat_init(DXk,nbast,nbast)
+     call ABCcommutator(nbast,D(1),Xk(1),S,DXk(icoor))         
   !############################################################################
-  !##      STEP 3: Make NMST = Tr D^b*h^k + Tr D*h^kb                        ## 
+  !##      STEP 3: Make NMST = Tr D^b*h^k + Tr D*h^kb + Tr D^k*h^b           ## 
   !############################################################################
 
   write(lupri,*) '---------------------------------------------------------'
   write(lupri,*) 'NUCLEA MAGNETIC TENSOR                                   '
   write(lupri,*) '---------------------------------------------------------'
 
-  !Now compute the nuclear magnetic shield tensor (ACCORDING TO EQ 83.)
-  !NMST = tr D* h^kb + tr D^b*h^k
 
-  !#############################################################################
+  !Now compute the nuclear magnetic shield tensor (ACCORDING TO EQ 83.)
+  !NMST = tr D* h^kb + tr D^b*h^k +Tr D*h^bk
+ 
+!#######################################################################
+!      STEP for new terms Tr D^k*h^b 
+!
+!
+!##############################################################
+    call mem_alloc(NMST1,3*NATOMS,3)
+      
+    call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,NMST1,DXk,3,3*NATOMS,'MAGMOM')
+      
+    do icoor =1, 3*NATOM 
+          call mat_free(DXk(icoor))
+    enddo
+ !#############################################################################
   !##     Tr D^b*h^k
   !#############################################################################
 
@@ -599,7 +676,7 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
      do jcoor=1,3*natoms  ! magnetic moment koordinate
 !        WRITE(lupri,*)'NMST:',- 2*factor*NMST(jcoor,icoor), 2*factor*expval(icoor,jcoor),'=',&
 !             & 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor))
-        NMST(jcoor,icoor) = 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor))
+        NMST(jcoor,icoor) = 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor)+NMST1(jcoor,icoor))
      enddo
   enddo
   call mem_dealloc(expval)
