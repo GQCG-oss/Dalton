@@ -122,7 +122,7 @@ C
 C *** WF_TYPE
 C
       RHF_CALC = (NASHT .LE. 1 .OR. HSROHF)
-      IF ( (MCTYPE.EQ.0) .NEQV. RHF_CALC ) THEN
+      IF ( (MCTYPE.LE.0) .NEQV. RHF_CALC ) THEN
          WRITE (LUPRI,'(//A,I5)')
      &  'WARNING siropt: RHF_CALC neqv MCTYPE =',MCTYPE
       END IF
@@ -237,7 +237,7 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
          KSRHYB = KFS
       END IF
 !HJJ - FRAN END
-      IF (SRHYBR .AND. MCTYPE.NE.0) THEN
+      IF (SRHYBR .AND. MCTYPE.GT.0) THEN
          KFQ = KSRHYB + NNORBT
       ELSE
          KFQ = KSRHYB
