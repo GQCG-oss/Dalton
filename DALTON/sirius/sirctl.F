@@ -175,6 +175,7 @@ C        *** set RHF parameters for RHF and MP2 ***
 C
       IF (DORHF .OR. DOMP2) THEN
          MCTYPE   = 0
+         IF (HSROHF) MCTYPE = -1
          IF (DOMP2 ) THEN
             FLAG(25) = .TRUE. ! SIRIFC from RHF needed for MP2 if embedding
          END IF
