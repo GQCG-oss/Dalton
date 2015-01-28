@@ -2621,11 +2621,13 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvir
       MaxAllowedDimAlpha = DECinfo%ccsdAbatch
       MaxAllowedDimGamma = DECinfo%ccsdGbatch
    ELSE
+    iB = nOccBatchDimI
+    jB = nOccBatchDimJ
     BatchAlpha3: do AB = 1,nbasis
      dimAlpha = MAX(MinAObatch,CEILING(nbasisTMP/AB)) !(nbasis/1,nbasis/2,..)
      BatchGamma3: do iGB = 1,nbasis
       dimGamma = MAX(MinAObatch,CEILING(nbasisTMP/iGB)) !(nbasis/1,nbasis/2,..)
-      call memestimateCANONMP2(iB,nOcc,dimAlpha,dimGamma,nb,nvirt,maxsize)
+      call memestimateCANONMP2(iB,jB,dimAlpha,dimGamma,nb,nvirt,maxsize)
       MaxAllowedDimAlpha = dimAlpha
       MaxAllowedDimGamma = dimGamma
       IF(maxsize.LT.MemoryAvailable)THEN
@@ -2633,7 +2635,9 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvir
          WRITE(DECinfo%output,*)'Estimated Memory usage is ',maxsize,' GB'
          exit BatchAlpha3
       ENDIF
+      IF(dimGamma.EQ.MinAObatch)exit BatchGamma3
      enddo BatchGamma3
+     IF(dimAlpha.EQ.MinAObatch)exit BatchAlpha3
     enddo BatchAlpha3
    ENDIF
   else
@@ -2649,6 +2653,7 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvir
    ELSE
     WRITE(DECinfo%output,*)'Full scheme would require',maxsize,' GB'
     IF(numnodes.GT.1)THEN
+     WRITE(DECinfo%output,*)'Test scheme reducing the size of the nOccBatchDimI'
      !reduce the size of the nOccBatchDimI
      iB = CEILING(nOccTMP/numnodes)
      !assume minimum AO batches dimGamma = MinAObatch, dimAlpha = MinAObatch
@@ -2672,7 +2677,9 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvir
             WRITE(DECinfo%output,*)'Estimated Memory usage is ',maxsize,' GB'
             exit BatchAlpha
          ENDIF
+         IF(dimGamma.EQ.MinAObatch)exit BatchGamma
         enddo BatchGamma
+        IF(dimAlpha.EQ.MinAObatch)exit BatchAlpha
        enddo BatchAlpha
       ENDIF
       BOTH = .FALSE.
@@ -2688,9 +2695,13 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvir
       iB = nOcc/iiB !(nOcc/2,nOcc/3)
       jB = iB
       nTasks = iiB*iiB 
-      IF(nTasks.LT.numnodes)CYCLE
+      IF(nTasks.LT.numnodes)THEN
+         print*,'nTasks=',ntasks,'.LT.numnodes=',numnodes,' CYCLE '
+         CYCLE OccLoopI
+      ENDIF
       WRITE(DECinfo%output,*)'Test Reduction in OccI,OccJ : nOccBatchDimI',IB,'nOccBatchDimJ',JB
       call memestimateCANONMP2(iB,jB,MinAObatch,MinAObatch,nb,nvirt,maxsize)
+      WRITE(DECinfo%output,*)'mem for MinAObatch,MinAObatch:',maxsize,'GB'
       IF(maxsize.LT.MemoryAvailable)THEN
        nOccBatchDimI = iB
        nOccBatchDimJ = jB
@@ -2711,7 +2722,9 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvir
              WRITE(DECinfo%output,*)'Estimated Memory usage is ',maxsize,' GB'
              exit BatchAlpha2
           ENDIF
+          IF(dimGamma.EQ.MinAObatch)exit BatchGamma2
          enddo BatchGamma2
+         IF(dimAlpha.EQ.MinAObatch)exit BatchAlpha2
         enddo BatchAlpha2
        ENDIF
        EXIT OccLoopI
