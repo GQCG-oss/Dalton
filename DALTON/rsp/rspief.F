@@ -85,7 +85,7 @@ C
 C
 C
 C  Used from common blocks:
-C    INFINP : NLMSOL, LSOLMX, INERSI
+C    INFINP : ?
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFTAP : LUSOL, LBSYMB
 C
@@ -373,7 +373,7 @@ C
 C
 C
 C  Used from common blocks:
-C    INFINP : NLMSOL, LSOLMX, INERSI
+C    INFINP : ?
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : JWOP
 C    INFRSP :

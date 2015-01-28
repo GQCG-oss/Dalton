@@ -123,6 +123,8 @@ MODULE lsparameters
   integer,parameter :: SET_GPUMAXMEM                = 56
   integer,parameter :: SET_TENSOR_BACKEND_TRUE      = 57
   integer,parameter :: SET_TENSOR_DEBUG_TRUE        = 58
+  integer,parameter :: F12_INTEGRAL_CALCULATION     = 59
+  integer,parameter :: CANONMP2FULL                 = 60
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1

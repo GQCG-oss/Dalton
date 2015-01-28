@@ -14,7 +14,6 @@ module response_noOpenRSP_module
   use matrix_util
   use rspsolver
   use decompMod, only: decompItem
-  use RSPsolver
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
   use dal_interface
@@ -398,7 +397,7 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   call mat_mul(F(1),D(1),'n','n',1.0E0_realk,0.0E0_realk,tempm1)
   do icoor = 1,3 
      call mat_init(RHS(icoor),nbast,nbast)
-     call mat_mul(tempm1,SX(icoor),'n','n',1.0E0_realk,0.0E0_realk,RHS(icoor))
+     call mat_mul(tempm1,SX(icoor),'n','n',1.0E0_realk,0.0E0_realk,RHS(icoor))  !RHS = FDSx
   enddo                                                                !# Matrices Allocated 7
 
   !Generate D0X = -D*SX*D
@@ -408,7 +407,13 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
      call mat_init(DX(icoor),nbast,nbast)        
      call mat_mul(D(1),tempm1,'n','n',-1.0E0_realk,0.E0_realk,DX(icoor))  !DX = -D*SX*D
   enddo
-  call mat_free(tempm1)                                                !# Matrices Allocated 6 (DX,RHS)
+
+  do icoor = 1,3 
+     call mat_mul(F(1),Dx(icoor),'n','n',1.0E0_realk,0.0E0_realk,tempm1)
+     call mat_mul(tempm1,S,'n','n',1.0E0_realk,1.E0_realk,RHS(icoor))    !RHS = FDSx + FD0xS
+  enddo
+  call mat_free(tempm1) 
+
 
 !  INFO
 !  call mem_alloc(NMST,3*NATOMS,3)
@@ -497,8 +502,7 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
 
   do icoor = 1,3 
      call mat_scal(-1.0d0,RHS(icoor))
-     !factor 1/2 outside is taken care of in util_get...
-     call util_get_symm_part(RHS(icoor))
+     call util_get_symm_part(RHS(icoor)) !Eq. 60 in the paper
   enddo
 
   !#############################################################################

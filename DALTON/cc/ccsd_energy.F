@@ -330,7 +330,7 @@ C
          REWIND LUSIFC
          CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
          READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,
-     *              LSYM
+     *              LSYM,MS2
          ESCF   = EMCSCF
          ECCGRS = EMCSCF
          CALL GPCLOSE(LUSIFC,'KEEP')
@@ -367,7 +367,7 @@ C     ---------------------
          REWIND LUSIFC
          CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
          READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,
-     &              LSYM
+     &              LSYM,MS2
          ESCF = EMCSCF
          CALL GPCLOSE(LUSIFC,'KEEP')
          
@@ -514,7 +514,7 @@ C
 C
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
       READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,
-     *              LSYM
+     *              LSYM,MS2
 C
       ESCF = EMCSCF
 C

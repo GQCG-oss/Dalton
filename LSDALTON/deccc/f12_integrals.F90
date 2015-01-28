@@ -64,7 +64,7 @@ module f12_integrals_module
   !       & array4_close_file, array4_write_file_type1, mat_transpose, &
   !     & array4_read_file_type2
 
-  public :: get_f12_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21
+  public :: get_f12_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21, get_f12_fragment_energy_slave
 
   private
 #endif
@@ -569,7 +569,8 @@ contains
     real(realk), pointer :: X3ijkn(:,:,:,:) ! sum_pq <ij|f12|mc> * <mc|f12|kn> 
     real(realk), pointer :: X3ijnk(:,:,:,:)  
  
-    real(realk), pointer :: Rijmc(:,:,:,:)  ! <ij|f12|ma'>
+!    real(realk), pointer :: Rijmc(:,:,:,:)  ! <ij|f12|ma'>
+    type(tensor) :: Rijmc  ! <ij|f12|ma'>
     real(realk), pointer :: Rmckn(:,:,:,:)  
     real(realk), pointer :: Rmcnk(:,:,:,:)  
        
@@ -577,37 +578,45 @@ contains
     integer :: noccAOS
     integer :: ncabsMO
     integer :: m,k,n,i,j,c,l
+    integer :: dims(4)
   
     noccEOS = MyFragment%noccEOS
     noccAOS = MyFragment%noccAOS 
     ncabsMO = size(MyFragment%Ccabs,2) 
-   
-    call mem_alloc(X3ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
 
-    call mem_alloc(X3ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
-    call mem_alloc(X3ijnk, noccEOS, noccEOS, noccAOS, noccEOS)
-
-    call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOS, ncabsMO)
+    dims = [noccEOS, noccEOS, noccAOS, ncabsMO]
+    call tensor_init(Rijmc,dims,4)
+!    call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOS, ncabsMO)
     call mem_alloc(Rmckn,  noccAOS, ncabsMO, noccEOS, noccAOS)
-    call mem_alloc(Rmcnk,  noccAOS, ncabsMO, noccAOS, noccEOS)
+    call mem_alloc(X3ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
 
     !(Note INTSPEC is always stored as (2,4,1,3) )    
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
+    call get_mp2f12_MO_PDM(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'mcim','CRRRG',Rmckn)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'mcmi','CRRRG',Rmcnk)
      
     !> Creating the X3ijkn
     m = noccEOS*noccEOS   ! <ij R mc> <mc R kn> = <m X3 n>
     k = noccAOS*ncabsMO
     n = noccEOS*noccAOS
-    call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc,m,Rmckn,k,0.0E0_realk,X3ijkn,m)
+    call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc%elm1,m,Rmckn,k,0.0E0_realk,X3ijkn,m)
+
+    call mem_dealloc(Rmckn)
+    call mem_alloc(Rmcnk,  noccAOS, ncabsMO, noccAOS, noccEOS)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'mcmi','CRRRG',Rmcnk)
+
+    call mem_alloc(X3ijnk, noccEOS, noccEOS, noccAOS, noccEOS)
 
     !> Creating the X3ijnk
-       m = noccEOS*noccEOS   ! <ij R mc> <mc R nk> = <m X3 n>
+    m = noccEOS*noccEOS   ! <ij R mc> <mc R nk> = <m X3 n>
     k = noccAOS*ncabsMO
     n = noccEOS*noccAOS
-    call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc,m,Rmcnk,k,0.0E0_realk,X3ijnk,m)
+    call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc%elm1,m,Rmcnk,k,0.0E0_realk,X3ijnk,m)
 
+    call tensor_free(Rijmc)
+!    call mem_dealloc(Rijmc)
+    call mem_dealloc(Rmcnk)
+
+    call mem_alloc(X3ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     !> Creating the X3ijkl
     do i=1,noccEOS
        do j=1,noccEOS
@@ -621,6 +630,8 @@ contains
           X3ijkl(i,j,i,j) =  tmp1
        enddo
     enddo
+    call mem_dealloc(X3ijkn)
+    call mem_dealloc(X3ijnk)
 
     X3energy = 0.0E0_realk
 
@@ -633,12 +644,7 @@ contains
     Xenergy(3) = X3energy
 
     call mem_dealloc(X3ijkl)
-    call mem_dealloc(X3ijkn)
-    call mem_dealloc(X3ijnk)
 
-    call mem_dealloc(Rijmc)
-    call mem_dealloc(Rmckn)
-    call mem_dealloc(Rmcnk)
 
   end subroutine get_EX3
 
@@ -2544,9 +2550,16 @@ contains
 
     !> Timings
     real(realk) :: tcpu,twall
+    logical :: Master,Collaborate,DoBasis
+    integer :: n1,n2,n3,n4,Tain1,Tain2
+#ifdef VAR_MPI
+    Master = infpar%lg_mynum .EQ. infpar%master
+    Collaborate = infpar%lg_nodtot .GT. 1
+#else
+    Master = .TRUE.
+    Collaborate = .FALSE.
+#endif
 
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
-    
     ! ***********************************************************
     !   Sanity Check if we do the pair calculation
     ! ***********************************************************
@@ -2560,19 +2573,39 @@ contains
        dopair = .TRUE.
     endif
 
+    IF(Collaborate.And.Master)THEN
+#ifdef VAR_MPI
+       !wake up slaves
+       call ls_mpibcast(F12_INTEGRAL_CALCULATION,infpar%master,infpar%lg_comm)
+       !Broadcast info to slaves
+       DoBasis = .TRUE.
+       IF(dopair)THEN
+          call decmpi_bcast_f12_info(MyFragment, Taibj,Tai,case,dopair,Dobasis,&
+               & Fragment1,Fragment2)
+       ELSE
+          call decmpi_bcast_f12_info(MyFragment, Taibj,Tai,case,dopair,Dobasis)
+       ENDIF
+#endif
+    ENDIF
+
+    IF(Master)THEN
+
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    
+    
     nbasis   = MyFragment%nbasis
     noccEOS  = MyFragment%noccEOS
     nunoccEOS = MyFragment%nunoccEOS
     noccfull = noccEOS
-
+       
     noccAOS = MyFragment%noccAOS
     nunoccAOS = MyFragment%nunoccAOS
     nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
     nvirtAOS = MyFragment%nunoccAOS
-
+    
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
-
+    
     ! ***********************************************************
     !   Printing Input variables 
     ! ***********************************************************
@@ -3127,8 +3160,50 @@ contains
     call mem_dealloc(Ccabs)
     call mem_dealloc(Cri)
     call mem_dealloc(CvirtAOS)
+    ENDIF !if master
 
   end subroutine get_f12_fragment_energy
+
+  !> Brief: Gives the single and pair fragment energy for MP2F12
+  !> Author: Yang M. Wang
+  !> Date: April 2013
+  subroutine get_f12_fragment_energy_slave()
+    implicit none
+    !> Atomic fragment to be determined (Single or Pair fragment)
+    type(decfrag) :: MyFragment
+    !> t2EOS amplitudes stored in the order T(a,i,b,j)
+    real(realk), pointer :: Taibj(:,:,:,:) 
+    !> t1EOS amplitudes stored in the order T(a,i)
+    real(realk), pointer :: Tai(:,:) 
+    !> Case MODEL
+    integer :: case
+    !> Fragment 1 in the pair fragment
+    type(decfrag) :: Fragment1
+    !> Fragment 2 in the pair fragment
+    type(decfrag) :: Fragment2
+    !
+    logical :: DoBasis,PairFrag
+    integer :: n1,n2,n3,n4,Tain1,Tain2
+#ifdef VAR_MPI
+    !Recieve info from master and allocates MyFragment and amplitudes    
+    call decmpi_bcast_f12_info(MyFragment, Taibj, Tai, case,PairFrag,DoBasis,&
+         & Fragment1, Fragment2)
+
+    IF(PairFrag)THEN
+       call get_f12_fragment_energy(MyFragment, Taibj, Tai, case, Fragment1, Fragment2)
+       call atomic_fragment_free(Fragment1)
+       call atomic_fragment_free(Fragment2)
+    ELSE
+       call get_f12_fragment_energy(MyFragment, Taibj, Tai, case)
+    ENDIF
+
+    call atomic_fragment_free(MyFragment)
+    call mem_dealloc(Taibj)
+    IF(case.EQ.MODEL_CCSD)THEN
+       call mem_dealloc(Tai)
+    ENDIF
+#endif
+  end subroutine get_f12_fragment_energy_slave
 
   !> Brief: MP2-F12 correction for the single fragment of term for the energies related to E21
   !> Author: Yang M. Wang

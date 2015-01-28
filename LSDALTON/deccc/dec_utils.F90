@@ -21,6 +21,7 @@ module dec_fragment_utils
   use array4_simple_operations
   use IntegralInterfaceMOD!, only: ii_get_h1, ii_get_nucpot
   use BUILDAOBATCH
+  use II_XC_interfaceModule,only:II_get_xc_energy
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_op
@@ -2773,11 +2774,13 @@ end function max_batch_dimension
     type(lsitem), intent(inout) :: MyLsitem
     !> HF Density matrix
     type(matrix),intent(in) :: D
+    !> get E_DFT
     type(matrix) :: F,h
-    real(realk)  :: exchangeFactor
-
+    real(realk)  :: exchangeFactor,enuc,edft(1)
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
+
+
 
     if(DECinfo%DFTreference) then
       !Needs the fock matrix from the KS density
@@ -2809,6 +2812,72 @@ end function max_batch_dimension
     call mat_free(F)
 
   end function get_HF_energy_fullmolecule
+
+  !> \brief Get KS energy from full molecule structure.
+  !> Assumes closed-shell system
+  !> \author J. Rekkedal
+  !> \date December 2012
+  function get_dft_energy_fullmolecule(MyMolecule,Mylsitem,D) result(Ehf)
+
+    implicit none
+    !> HF energy
+    real(realk) :: Ehf
+    !> Full molecule structure
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> LSDALTON INFO
+    type(lsitem), intent(inout) :: MyLsitem
+    !> HF Density matrix
+    type(matrix),intent(in) :: D
+    !> get E_DFT
+    type(matrix) :: F,K,h
+    type(matrix) :: Dtmp(1)
+    integer :: igrid
+    real(realk)  :: DFTELS,enuc,edft(1)
+
+    ! Init Fock matrix in matrix form
+    call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
+    call mat_init(K,MyMolecule%nbasis,MyMolecule%nbasis)
+    call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
+    call mat_init(Dtmp(1),MyMolecule%nbasis,MyMolecule%nbasis)
+    call mat_copy(1.0_realk,D,Dtmp(1))
+    call mat_zero(h)
+    call mat_zero(F)
+    call mat_zero(K)
+
+
+    MyLsitem%setting%scheme%DFT%griddone = 0
+    igrid = MyLsitem%setting%scheme%DFT%igrid
+    MyLsitem%setting%scheme%DFT%GridObject(igrid)%GRIDDONE = 0
+    DFTELS = MyLsItem%setting%scheme%DFT%DFTELS
+    MyLsItem%setting%scheme%DFT%DFTELS = 100.0E0_realk
+
+    call II_get_xc_energy(DECinfo%output,DECinfo%output,&
+      & mylsitem%setting,MyMolecule%nbasis,Dtmp,Edft,1)
+
+    MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
+
+    call mat_free(Dtmp(1))
+    !Get one-electron part of the Fock Matrix
+    call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
+    !Get the Coulomb matrix
+    call II_get_coulomb_mat(DECinfo%output, &
+      & DECinfo%output,mylsitem%setting,D,F,1)
+    !Get the long-range exchange matrix for the range-separated case
+    call II_get_exchange_mat(DECinfo%output, &
+      & DECinfo%output,mylsitem%setting,D,1,.true.,K)
+    
+    call mat_daxpy(2.0_realk,h,F)
+    CALL II_get_nucpot(DECinfo%output, DECinfo%output,mylsitem%setting,Enuc)
+    Ehf =Edft(1) + mat_dotproduct(D,F) + Enuc + mat_dotproduct(D,K)
+    
+    call mat_free(h)
+    call mat_free(K)
+    call mat_free(F)
+
+
+  end function get_dft_energy_fullmolecule
+
+
 
 
   !> Check whether fragment restart file exist.
@@ -4078,10 +4147,10 @@ end function max_batch_dimension
   end subroutine orthogonalize_MOs
 
   !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
-  subroutine print_total_energy_summary(EHF,Ecorr,Eerr,doSOS)
+  subroutine print_total_energy_summary(EHF,Edft,Ecorr,Eerr,doSOS)
     implicit none
     !> HF energy
-    real(realk),intent(in) :: EHF
+    real(realk),intent(in) :: EHF,Edft
     !> Correlation energy
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
@@ -4091,16 +4160,16 @@ end function max_batch_dimension
 
     lupri=6
     if(present(doSOS))then
-      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri,doSOS)
     else
-      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri)
     endif
 
     lupri=DECinfo%output
     if(present(doSOS))then
-      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri,doSOS)
     else
-      call print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri)
+      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri)
     endif
 
 
@@ -4110,10 +4179,10 @@ end function max_batch_dimension
   !> (Necessary to place here because it is used both for DEC and for full calculation).
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine print_total_energy_summary_lupri(EHF,Ecorr,Eerr,lupri,doSOS)
+  subroutine print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri,doSOS)
     implicit none
     !> HF energy
-    real(realk),intent(in) :: EHF
+    real(realk),intent(in) :: EHF,Edft
     !> Correlation energy
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
@@ -4147,7 +4216,8 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)') 'G: DFT energy :', Ehf
+          write(lupri,'(15X,a,f20.10)') 'G: HF energy (KS orb)  :', Ehf
+          write(lupri,'(15X,a,f20.10)') 'G: DFT energy          :', Edft
        ENDIF
        write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
@@ -4174,9 +4244,17 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')  'G: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
          if(.not. SOS) then
-           write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy   :', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)') 'G: HF + dRPA energy    :', Ehf+Ecorr
+           IF(DECinfo%DFTreference) then
+             write(lupri,'(15X,a,f20.10)') 'G: KS + dRPA energy    :',&
+              & Edft+Ecorr
+           endif
          else
-           write(lupri,'(15X,a,f20.10)') 'G: Total SOSEX energy  :', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy   :', Ehf+Ecorr
+           IF(DECinfo%DFTreference) then
+             write(lupri,'(15X,a,f20.10)') 'G: KS + SOSEX energy   :',&
+              & Edft+Ecorr
+           endif
          endif
        else
           write(lupri,'(15X,A,I4,A,I4)') 'G: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel
@@ -4186,7 +4264,8 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)  :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Edft
        ENDIF
        if(SOS) then
          write(lupri,'(15X,a,f20.10)')       'E: SOSEX energy        :', Ecorr
@@ -4220,9 +4299,17 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')    'E: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
           if(.not. SOS) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy   :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: HF + dRPA energy    :', Ehf+Ecorr
+           IF(DECinfo%DFTreference) then
+             write(lupri,'(15X,a,f20.10)') 'E: KS + dRPA energy    :',&
+              & Edft+Ecorr
+           endif
           else
-             write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy  :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: HF + SOSEX energy   :', Ehf+Ecorr
+           IF(DECinfo%DFTreference) then
+             write(lupri,'(15X,a,f20.10)') 'E: KS + SOSEX energy   :',&
+              & Edft+Ecorr
+           endif
           endif
        else
           write(lupri,'(15X,A,I4)') 'G: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel
@@ -4253,7 +4340,7 @@ end function max_batch_dimension
     !local variables 
     character(len=30) :: CorrEnergyString
     integer :: iCorrLen
-    logical :: print_pair, print_4pT_5pT
+    logical :: print_pair
 
     ! Print Header:
     write(DECinfo%output,*)
@@ -4266,7 +4353,6 @@ end function max_batch_dimension
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
     print_pair = count(dofrag)>1
-    print_4pT_5pT = DECinfo%PL>0
     
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
@@ -4483,20 +4569,20 @@ end function max_batch_dimension
                & '(T) virtual single energies','AF_ParT_VIR_BOTH')
        end if
 
-       if((.not.DECinfo%onlyvirtpart).and.print_4pT_5pT) then  
+       if((.not.DECinfo%onlyvirtpart)) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
                & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
        endif
-       if((.not.DECinfo%onlyoccpart).and.print_4pT_5pT) then
+       if((.not.DECinfo%onlyoccpart)) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & '(T) virtual single energies (fourth order)','AF_ParT_VIR4')
        end if
 
-       if((.not.DECinfo%onlyvirtpart).and.print_4pT_5pT) then  
+       if((.not.DECinfo%onlyvirtpart)) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
                & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
        endif
-       if((.not.DECinfo%onlyoccpart).and.print_4pT_5pT) then
+       if((.not.DECinfo%onlyoccpart)) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
                & '(T) virtual single energies (fifth order)','AF_ParT_VIR5')
        end if
@@ -4510,20 +4596,20 @@ end function max_batch_dimension
                & DistanceTable, '(T) virtual pair energies','PF_ParT_VIR_BOTH')
        end if
 
-       if((.not.DECinfo%onlyvirtpart).and.print_pair.and.print_4pT_5pT) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
                & DistanceTable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
        endif
-       if((.not.DECinfo%onlyoccpart).and.print_pair.and.print_4pT_5pT) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & DistanceTable, '(T) virtual pair energies (fourth order)','PF_ParT_VIR4')
        end if
 
-       if((.not.DECinfo%onlyvirtpart).and.print_pair.and.print_4pT_5pT) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
                & DistanceTable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
        endif
-       if((.not.DECinfo%onlyoccpart).and.print_pair.and.print_4pT_5pT) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
                & DistanceTable, '(T) virtual pair energies (fifth order)','PF_ParT_VIR5')
        end if
@@ -4565,15 +4651,23 @@ end function max_batch_dimension
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRIMP2),dofrag,&
                & 'RI-MP2 virtual single energies','AF_RI_MP2_VIR')
        endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGRIMP2),dofrag,&
+               & 'RI-MP2 Lagrangian single energies','AF_RI_MP2_LAG')
+       end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRIMP2),dofrag,&
                & DistanceTable, 'RI-MP2 occupied pair energies','PF_RI_MP2_OCC')
        endif
-       if(.not. DECinfo%onlyoccpart) then  
+       if((.not. DECinfo%onlyoccpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRIMP2),dofrag,&
                & DistanceTable, 'RI-MP2 virtual pair energies','PF_RI_MP2_VIR')          
        endif
+       if((.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGRIMP2),dofrag,&
+               & DistanceTable, 'RI-MP2 Lagrangian pair energies','PF_RI_MP2_LAG')
+       end if
 
        write(DECinfo%output,*)
        if(.not.DECinfo%onlyvirtpart) then  
@@ -4582,9 +4676,14 @@ end function max_batch_dimension
        endif
        if(.not.DECinfo%onlyoccpart) then
           write(DECinfo%output,'(1X,a,a,a,g20.10)') &
-               &'RI-MP2 virtual    ',CorrEnergyString(1:iCorrLen),' : ',energies(FRAGMODEL_VIRTRIMP2)
+               & 'RI-MP2 virtual    ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_VIRTRIMP2)
        endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') &
+               &'RI-MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_LAGRIMP2)
+       end if
        write(DECinfo%output,*)
+
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
@@ -4682,10 +4781,9 @@ end function max_batch_dimension
     !> local variables 
     character(len=30) :: CorrEnergyString
     integer :: iCorrLen, cc_sol, pT_full, pT_4, pT_5
-    logical :: print_pair, print_4pT_5pT
+    logical :: print_pair
 
     print_pair = count(dofrag)>1
-    print_4pT_5pT = DECinfo%PL>0
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
     cc_sol  = 1
@@ -4762,16 +4860,14 @@ end function max_batch_dimension
 
           call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_full),dofrag,&
              & '(T) occupied single energies','AF_ParT_OCC_BOTH')
-          if (print_4pT_5pT) then
-             call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_4),dofrag,&
-                & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
-             call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_5),dofrag,&
-                & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
-          end if
-          
-          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_full),&
-             & dofrag,Distancetable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
-          if (print_4pT_5pT.and.print_pair) then
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_4),dofrag,&
+             & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,pT_5),dofrag,&
+             & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
+
+          if (print_pair) then
+             call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_full),&
+                & dofrag,Distancetable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
              call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_4),&
                 & dofrag,Distancetable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
              call print_pair_fragment_energies(nfrags,FragEnergies(:,:,pT_5),&
@@ -5158,8 +5254,8 @@ end function max_batch_dimension
 
     case(MODEL_RIMP2)
        ! Energy error = difference between occ and virt energies
-       Eerr = abs(energies(FRAGMODEL_OCCRIMP2) - energies(FRAGMODEL_VIRTRIMP2))
-
+       Eerr = max(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2)) &
+            & - min(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2))
     case default
        print *, 'Model is: ', DECinfo%ccmodel
        call lsquit('get_estimated_energy_error: Model needs implementation!',-1)

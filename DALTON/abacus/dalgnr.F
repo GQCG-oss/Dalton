@@ -1078,8 +1078,6 @@ C
      &         'Starting in Dynamic Property Section (RESPONS)',' ',200)
                REWIND (LUCMD)
                RNRESP = .TRUE.
-               CALL SETSIR(WORK(1),LMWORK)
-               IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
                CALL GPCLOSE(LUCMD,'KEEP')
                CALL RSPDRV(WORK(1),LMWORK)
                CALL TITLER(
@@ -1183,10 +1181,6 @@ C
          IF (RNRESP) THEN
             CALL TITLER(
      &         'Starting in Dynamic Property Section (RESPONS)',' ',200)
-            IF (.NOT. RNSIRI) THEN
-               CALL SETSIR(WORK(1),LMWORK)
-               IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
-            END IF
             CALL RSPDRV(WORK(1),LMWORK)
             CALL TITLER(
      &         'End of Dynamic Property Section (RESPONS)',' ',200)

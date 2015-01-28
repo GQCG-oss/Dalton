@@ -97,8 +97,8 @@ C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
       LDXAO1 = MAX(NASHT,NISHT)*NBAST
-      CALL MEMGET('REAL',KDXAO1,LDXAO1,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDXAO2,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DXAO1',KDXAO1,LDXAO1,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DXAO2',KDXAO2,N2BASX,WRK,KFREE,LFREE)
 C
 C     First DXVAO, if nasht.gt.0:
 C
@@ -109,7 +109,7 @@ C     D_I and D_II:  D = D_I - D_II   Active matrices
 C     *************************************************
 C     DXVAO-I: loop over symmetries then put result in DXVAO
 C
-         CALL MEMGET('REAL',KDXV ,NASHT*NORBT,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','DXV',KDXV ,NASHT*NORBT,WRK,KFREE,LFREE)
          CALL DZERO(WRK(KDXAO2),N2BASX)
       DO 2000 ISYM = 1,NSYM
          NASHI = NASH(ISYM)

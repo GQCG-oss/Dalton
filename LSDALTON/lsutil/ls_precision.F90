@@ -122,4 +122,28 @@ subroutine Test_if_64bit_integer_required_4d(n1,n2,n3,n4)
 #endif
  end subroutine Test_if_64bit_integer_required_4d
 
+ subroutine Obtain_CS_THRLOG(CS_THRLOG,IntegralThreshold)
+   implicit none
+   integer(kind=short),intent(inout) :: CS_THRLOG
+   real(realk),intent(in) :: IntegralThreshold
+   !local variables
+   integer :: IP
+   real(realk) :: TMP
+   !Beware when converting from double precision to short integer 
+   !If double precision is less than 10^-33 then you can run into
+   !problems with short integer overflow
+   IF(IntegralThreshold.GT.shortintCrit)then
+      TMP=log10(IntegralThreshold)
+      IP=NINT(TMP) !IP used as temp
+      IF (ABS(TMP-IP).LT. 1.0E-15_realk) THEN
+         !this means that the threshold is 1EX_realk X=-1,..,-19,..
+         CS_THRLOG=IP
+      ELSE
+         CS_THRLOG=FLOOR(log10(IntegralThreshold))
+      ENDIF
+   ELSE
+      CS_THRLOG=shortzero
+   ENDIF
+ end subroutine Obtain_CS_THRLOG
+ 
 END MODULE precision

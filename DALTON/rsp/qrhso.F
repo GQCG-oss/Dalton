@@ -106,10 +106,7 @@ C
       ACALL = .FALSE.
       DATA HSOLBL/'X SPNORB','Y SPNORB','Z SPNORB'/
 
-      write (lupri,*) 'Hello from X2HSO, IPRRSP, IPRHSO',IPRRSP,IPRHSO
       IPRHSO = MAX(IPRRSP, IPRHSO)
-      write (lupri,*) 'Final IPRHSO:',IPRHSO
-      write (lupri,*) 'OPLBL = ',OPLBL
 C
 C If expicit one-electron part go normal way
 C
@@ -1252,7 +1249,6 @@ C
      &   CALL QUIT('X2HSOAO not implemented for open shells')
 
       CALL QENTER('X2HSOAO')
-      write (lupri,*) 'Hello from X2HSOAO',IPRINT,IPRRSP,IPRHSO,DIRFCK
       KFREE=1
       LFREE=LWORK
       CALL MEMGET('REAL',KAO,N2BASX,WORK,KFREE,LFREE)

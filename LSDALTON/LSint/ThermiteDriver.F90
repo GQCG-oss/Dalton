@@ -1694,21 +1694,7 @@ nDMAT_RHS = INPUT%nDMAT_RHS
 nDMAT_LHS = INPUT%nDMAT_LHS
 CS_THRESHOLD = INPUT%CS_THRESHOLD/INPUT%exchangeFactor
 sameLHSaos = INPUT%sameLHSaos
-!Beware when converting from double precision to short integer 
-!If double precision is less than 10^-33 then you can run into
-!problems with short integer overflow
-IF(INPUT%CS_THRESHOLD/INPUT%exchangeFactor.GT.shortintCrit)then
-   TMP=log10(INPUT%CS_THRESHOLD/INPUT%exchangeFactor)
-   IP=NINT(TMP) !IP used as temp
-   IF (ABS(TMP-IP).LT. 1.0E-15_realk) THEN
-      !this means that the threshold is 1EX_realk X=-1,..,-19,..
-      CS_THRLOG=IP
-   ELSE
-      CS_THRLOG=FLOOR(log10(INPUT%CS_THRESHOLD/INPUT%exchangeFactor))
-   ENDIF
-ELSE
-   CS_THRLOG=shortzero
-ENDIF
+call Obtain_CS_THRLOG(CS_THRLOG,INPUT%CS_THRESHOLD/INPUT%exchangeFactor)
 DALINK_THRLOG = CS_THRLOG-INPUT%DASCREEN_THRLOG
 sameODs = INPUT%sameODs
 MBIE_SCREEN = INPUT%MBIE_SCREEN
@@ -2939,10 +2925,10 @@ ELSE
           CALL Explicit4centerDEC(OUTPUT%resultMat,output%ndim(1),&
                & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
                & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
-!         ELSEIF (output%decpacked2)then
-!            CALL Explicit4centerDEC2(OUTPUT%resultMat,output%ndim(1),&
-!                 & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
-!                 & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
+         ELSEIF (output%decpacked2)then
+            CALL Explicit4centerDEC2(OUTPUT%resultMat,output%ndim(1),&
+                 & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
+                 & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
          ELSEIF (output%decpackedK)then
             CALL Explicit4centerDECK(OUTPUT%resultMat,output%ndim(1),&
                  & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&

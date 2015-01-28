@@ -46,6 +46,7 @@ f.add(from_string = 'Cubic Response single residue calculation',
       rel_tolerance = 1.0e-5)
 
 f.add(string = "@ < 0 | ABC | f >  =",
+      ignore_sign = True,
       abs_tolerance = 1.0e-0)
 
 
