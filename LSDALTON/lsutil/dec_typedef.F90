@@ -352,6 +352,8 @@ module dec_typedef_module
      integer :: PL
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
+     !> set fraction of extended orbital space to reduce to in the binary search
+     real(realk) :: FracOfOrbSpace_red
      ! --
 
      !> Output options 
@@ -421,6 +423,8 @@ module dec_typedef_module
      logical :: OnlyOccPart
      !> Only consider virtual partitioning
      logical :: OnlyVirtPart
+     !> Fragment initialization radius WITHOUT OPTIMIZING THE FRAGMENT AFTERWARDS
+     real(realk) :: all_init_radius
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF

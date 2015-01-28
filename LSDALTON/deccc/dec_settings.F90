@@ -53,22 +53,22 @@ contains
     DECinfo%use_system_memory_info = .false.
 
     ! -- Type of calculation
-    DECinfo%full_molecular_cc = .false. ! full molecular cc
-    DECinfo%print_frags = .false.
-    DECinfo%simulate_full     = .false.
-    DECinfo%simulate_natoms   = 1
-    DECinfo%SkipReadIn        = .false.
-    DECinfo%SinglesPolari     = .false.
-    DECinfo%SinglesThr        = 0.2E0_realk   ! this is completely random, currently under investigation
-    DECinfo%convert64to32     = .false.
-    DECinfo%convert32to64     = .false.
-    DECinfo%HFrestart         = .false.
-    DECinfo%DECrestart        = .false.
-    DECinfo%TimeBackup        = 300.0E0_realk   ! backup every 5th minute
-    DECinfo%read_dec_orbitals = .false.
-    DECinfo%CheckPairs        = .false.
-    DECinfo%frozencore        = .false.
-    DECinfo%ncalc             = 0
+    DECinfo%full_molecular_cc  = .false. ! full molecular cc
+    DECinfo%print_frags        = .false.
+    DECinfo%simulate_full      = .false.
+    DECinfo%simulate_natoms    = 1
+    DECinfo%SkipReadIn         = .false.
+    DECinfo%SinglesPolari      = .false.
+    DECinfo%SinglesThr         = 0.2E0_realk   ! this is completely random, currently under investigation
+    DECinfo%convert64to32      = .false.
+    DECinfo%convert32to64      = .false.
+    DECinfo%HFrestart          = .false.
+    DECinfo%DECrestart         = .false.
+    DECinfo%TimeBackup         = 300.0E0_realk   ! backup every 5th minute
+    DECinfo%read_dec_orbitals  = .false.
+    DECinfo%CheckPairs         = .false.
+    DECinfo%frozencore         = .false.
+    DECinfo%ncalc              = 0
     call dec_set_model_names(DECinfo)
 
 
@@ -80,6 +80,9 @@ contains
     DECinfo%manual_batchsizes    = .false.
     DECinfo%ccsdAbatch           = 0
     DECinfo%ccsdGbatch           = 0
+    DECinfo%manual_occbatchsizes = .false.
+    DECinfo%batchOccI            = 0
+    DECinfo%batchOccJ            = 0 
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
@@ -163,9 +166,13 @@ contains
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
     DECinfo%CorrDensScheme         = 1
     ! Number of reduced fragments to consider
-    DECinfo%nFRAGSred = 0
+    DECinfo%nFRAGSred              = 0
     ! Factor to scale FOT by for reduced fragments
-    DECinfo%FOTscaling = 10.0_realk
+    DECinfo%FOTscaling             = 10.0_realk
+    ! Fraction of biggest extent of fragment to reduce to  in the fragment reduction in %
+    DECinfo%FracOfOrbSpace_red     = 5.0E0_realk
+    ! If this is set larger than 0. atomic fragments are initialized with this,
+    DECinfo%all_init_radius        = -1.0E0_realk/bohr_to_angstrom 
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
@@ -195,7 +202,7 @@ contains
     DECinfo%AtomicExtent             = .false.
     DECinfo%AuxAtomicExtent          = .false.
     DECinfo%DFTreference             = .false.
-    DECinfo%ccConvergenceThreshold   = 1e-5_realk
+    DECinfo%ccConvergenceThreshold   = 1e-9_realk
     DECinfo%CCthrSpecified           = .false.
     DECinfo%use_singles              = .false.
     DECinfo%use_preconditioner       = .true.
@@ -558,6 +565,7 @@ contains
        case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
        case('.FRAG_INIT_SIZE');     read(input,*) DECinfo%Frag_Init_Size
        case('.FRAG_EXP_SIZE');      read(input,*) DECinfo%Frag_Exp_Size
+
        case('.ATOMICEXTENT')
           !Include all atomic orbitals on atoms in the fragment 
           DECinfo%AtomicExtent  = .true.
@@ -567,7 +575,14 @@ contains
           DECinfo%AuxAtomicExtent  = .true.
        case('.PRINTFRAGS')
           ! Print fragment energies for full molecular cc calculation
-          DECinfo%print_frags = .true.
+          DECinfo%print_frags   = .true.
+
+          ! set the fraction of the fully extended orbital space that is used as tolerance in an incomplete binary search
+       case('.FRACOFORBSPACE_RED'); read(input,*) DECinfo%FracOfOrbSpace_red
+          ! include all orbitals for a fragment within a given radius and calculate the fragment energies in Angstrom
+       case('.FRAG_INIT_RADIUS_NO_OPT')
+          read(input,*) DECinfo%all_init_radius
+          DECinfo%all_init_radius = DECinfo%all_init_radius/bohr_to_angstrom
 
 
        !KEYWORDS FOR INTEGRAL INFO
