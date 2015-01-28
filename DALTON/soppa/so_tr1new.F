@@ -32,17 +32,6 @@ C
       INTEGER   POINT(LPOINT)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION WORK(LWORK)
-
-C TODO keywords call parallel MPI beyer howto 
-C TODO beyer fucking around with parallel job calling
-C #include "iprtyp.h"
-C
-C      IPRTYP = 83
-C      call mpixbcast(BEYER, 1, 'INTEGE', 0)
-C      call mpixbcast(IPRTYP, 1, 'INTEGE', 0)
-C      call mpixbcast(83, 1, 'INTEGE', 0)
-C TODO ... beyer
-
 C
 C------------------
 C     Add to trace.
@@ -142,9 +131,6 @@ C     Create initial new trial vectors and write to files.
 C---------------------------------------------------------
 C
       DO 200 INEWTR = 1, NNEWTR
-C TODO beyer
-         write(lupri, *) "number of new trial vectors", nnewtr
-C todo ...beyer
 C
          CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
