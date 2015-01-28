@@ -782,7 +782,7 @@ C        (except for RO-DFT and srDFT we need FCAO for VxcAO)
 C           ... off-set to FVAO,DVAO in FCAO,DCAO
          END IF
       END IF
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
 C
 C This gives the exchange part of the active Fock matrix;
 C we need only the difference between Fa and Q which is
@@ -794,7 +794,7 @@ C
 C     ... note: NDMAT = # of FCAO matrices; NFMAT = # of non-zero FCAO matrices
       IF (NFMAT .GT. 0) THEN
       IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSFOCK .OR. DODFT .OR.
+     &   .NOT. (HSROHF .OR. DODFT .OR.
      &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE

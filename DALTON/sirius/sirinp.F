@@ -766,7 +766,7 @@ C NUMRUN = number of wave functions (e.g. RHF + MP2 + MCSCF: NUMRUN=3)
 C
       INPERR = 0
       NUMRUN = 0
-      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
+      CALL SIR_NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
 
       IF (.NOT.DOSCF) MAXFCK = 0
       IF (.NOT.DOCI ) THEN
@@ -1034,7 +1034,7 @@ C
       END IF
 C
 C930406-hjaaj: if (IREST.ne.0) then reset options here and not in
-C     geninp as before, where something may not be defined yet
+C     sir_geninp as before, where something may not be defined yet
 C---------------
       IF (IREST .NE. 0) THEN
          FLAG(13) = .TRUE.
@@ -1887,8 +1887,8 @@ C
 C     END OF SIRRDI.
 C
       END
-C  /* Deck newinp */
-      SUBROUTINE NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
+C  /* Deck sir_newinp */
+      SUBROUTINE SIR_NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
 C
 C Revisions
 C    1-OCT-1987 HA     Keyword directed input for all parameters
@@ -2050,7 +2050,7 @@ C
 #include "priunit.h"
 #include "gnrinf.h"
 C
-      CALL QENTER('NEWINP')
+      CALL QENTER('SIR_NEWINP')
 C
       DATA TABMOD/'*END OF','*CONFIG','*OPTIMI','*CI INP','*ORBITA',   !  1: 5
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',   !  6:10
@@ -2206,10 +2206,10 @@ C
       JREST = 0
       CALL CC_INPUT('**WAVE F',JREST,NSYM)
 C
-      CALL QEXIT('NEWINP')
+      CALL QEXIT('SIR_NEWINP')
       RETURN
 C
-C     END OF NEWINP.
+C     END OF SIR_NEWINP.
 C
       END
 C  /* Deck sir_geninp */

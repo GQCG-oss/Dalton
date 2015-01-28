@@ -110,6 +110,7 @@ C
      *            NISH,NASH,NORB,NBAS,
      *            NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
      *            NAS1, NAS2, NAS3
+      HSROHF = (MCTYPE .EQ. -1)
 C
       REWIND LUSIFC
       IF (FNDLAB('SIRFLAGS',LUSIFC)) THEN
