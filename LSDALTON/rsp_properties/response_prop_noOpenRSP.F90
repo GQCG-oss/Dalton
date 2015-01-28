@@ -74,6 +74,11 @@ subroutine lsdalton_response_noOpenRSP(ls,config,F,D,S)
         call NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
         call LSTIMER('NMRshield',t1,t2,config%LUPRI)
      endif
+     if(config%response%tasks%doNMRshield) then
+        call LSTIMER('START',t1,t2,config%LUPRI)     
+        call NucleiSelectedShieldingTensor(molcfg,F,D,S)
+        call LSTIMER('NMRshield',t1,t2,config%LUPRI)
+     endif
      if(config%response%tasks%doALPHA)then
         call alpha_driver(molcfg,F,D,S,config%response%alphainput)
      endif
@@ -362,6 +367,7 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   Character(len=4),allocatable :: atomName(:)
   real(realk)                  :: TS,TE
   type(Matrix)                 :: Dx(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1)
+  type(Matrix),pointer :: ChandanMat(:)
   integer              :: ntrial,nrhs,nsol,nomega,nstart
   character(len=1)        :: CHRXYZ(-3:3)
   DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
@@ -581,14 +587,18 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
 !  ##################################################
  
   ! Generation of hkDS   
-
-   call II_get_prop(LUPRI,LUERR,molcfg%SETTING,GbDs,3*NTAMOS,'PSO ')
-   call mat_init(tempm1,nbast,nbast) 
-   call mat_mul(D(1),S,'n','n',1.0E0_realk,0.0E0_realk,tempm1)
-   do icoor = 1,3*NATOMS
+   
+  allocate(ChandanMat(3*natoms))
+  do icoor = 1,3*NATOMS
+     call mat_init(ChandanMat,nbast,nbast)
+  enddo
+  call II_get_prop(LUPRI,LUERR,molcfg%SETTING,ChandanMat,3*NTAMOS,'PSO ')
+  call mat_init(tempm1,nbast,nbast) 
+  call mat_mul(D(1),S,'n','n',1.0E0_realk,0.0E0_realk,tempm1)
+  do icoor = 1,3*NATOMS
      call mat_init(RHSk(icoor),nbast,nbast)
      call mat_mul(GbDs(icoor),tempm1,'n','n',1.0E0_realk,1.0E0_realk,RHSk(icoor))
-   enddo
+  enddo
    call mat_free(tempm1)
 !  #########################################################
 !  Solve K([D,Xk]s) = RHS is now ready                                
