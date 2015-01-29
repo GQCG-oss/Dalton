@@ -757,7 +757,7 @@ C NUMRUN = number of wave functions (e.g. RHF + MP2 + MCSCF: NUMRUN=3)
 C
       INPERR = 0
       NUMRUN = 0
-      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
+      CALL SIR_NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
 
       IF (.NOT.DOSCF) MAXFCK = 0
       IF (.NOT.DOCI ) THEN
@@ -766,7 +766,10 @@ C     .. ignore .CINO if no CI calculation
          DOFCI  = .FALSE.
          DOCISD = .FALSE.
       END IF
-      IF (.NOT.DOMC .AND. .NOT.DOCI) MCTYPE = 0
+      IF (.NOT.DOMC .AND. .NOT.DOCI) THEN
+         MCTYPE = 0
+         IF (HSROHF) MCTYPE = -1
+      END IF
 C     ... ignore any *CONFIGURATION input
 C         if neither DOMC nor DOCI /hjaaj aug 2005
 C
@@ -910,7 +913,7 @@ C
             THRPWF = 0.1D0
          END IF
       END IF
-      IF (MCTYPE .EQ. 0 .AND. (DOMC .OR. DOCI)) THEN
+      IF (MCTYPE .LE. 0 .AND. (DOMC .OR. DOCI)) THEN
          WRITE (LUPRI,'(/A)')
      &      'INPUT ERROR: MCSCF or CI requested,'//
      &      ' but neither CAS nor RAS space defined.'
@@ -963,7 +966,7 @@ C     910723-hjaaj: define wave function for Hartree-Fock,
 C     even if DOSCF false and DOMP2 false; JWOP information
 C     may be needed for RESPONSE
 C
-      IF (MCTYPE .EQ. 0) THEN
+      IF (MCTYPE .LE. 0) THEN
          CALL ICOPY(8,NFRRHF,1,NFRO,1)
          CALL ICOPY(8,NRHF,1,NISH,1)
          CALL IZERO(NASH,8)
@@ -1025,7 +1028,7 @@ C
       END IF
 C
 C930406-hjaaj: if (IREST.ne.0) then reset options here and not in
-C     geninp as before, where something may not be defined yet
+C     sir_geninp as before, where something may not be defined yet
 C---------------
       IF (IREST .NE. 0) THEN
          FLAG(13) = .TRUE.
@@ -1445,12 +1448,12 @@ C
       END IF
 C
 C       
-C     If INIOCC .ge. 2 and RHF/MP2 highest level (i.e. MCTYPE .eq. 0),
+C     If INIOCC .ge. 2 and RHF/MP2 highest level (i.e. MCTYPE .LE. 0),
 C     we need to retransfer SCF occupation to MCSCF parameters as
 C     NRHF(*),IOPRHF may have changed since previous RHF setting above.
 C     (INIOCC .ge. 2: NRHF(*) from LUIT1, LUSIFC, H1OCC, or HUCDRV)
 C
-      IF (INIOCC .GE. 2 .AND. MCTYPE.EQ.0) THEN
+      IF (INIOCC .GE. 2 .AND. MCTYPE.LE.0) THEN
          CALL ICOPY(8,NRHF,1,NISH,1)
          CALL IZERO(NASH,8)
          IF (IOPRHF .NE. 0) THEN
@@ -1878,8 +1881,8 @@ C
 C     END OF SIRRDI.
 C
       END
-C  /* Deck newinp */
-      SUBROUTINE NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
+C  /* Deck sir_newinp */
+      SUBROUTINE SIR_NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
 C
 C Revisions
 C    1-OCT-1987 HA     Keyword directed input for all parameters
@@ -2040,7 +2043,7 @@ C
 #include "priunit.h"
 #include "gnrinf.h"
 C
-      CALL QENTER('NEWINP')
+      CALL QENTER('SIR_NEWINP')
 C
       DATA TABMOD/'XXXXXXX','*CONFIG','*OPTIMI','*CI INP','*ORBITA',
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
@@ -2093,7 +2096,7 @@ C
          CALL QUIT('ILLEGAL PROMPT IN SIRIUS INPUT')
       END IF
 C
- 1100  CALL QUIT('Program ERROR in NEWINP reading SIRIUS input.')
+ 1100  CALL QUIT('Program ERROR in SIR_NEWINP reading SIRIUS input.')
  1200  CALL WAVINP(WORD,INPERR,ALLOPT)
        GO TO 910
  1300  CALL OPTINP(WORD,INPERR,ALLOPT)
@@ -2198,10 +2201,10 @@ C
       JREST = 0
       CALL CC_INPUT('**WAVE F',JREST,NSYM)
 C
-      CALL QEXIT('NEWINP')
+      CALL QEXIT('SIR_NEWINP')
       RETURN
 C
-C     END OF NEWINP.
+C     END OF SIR_NEWINP.
 C
       END
 C  /* Deck sir_geninp */
@@ -5611,16 +5614,14 @@ C
       IF (MCTYPE .GT. 0) THEN
          WRITE(IWUNIT,1200) NISHT,(NISH(I),I=1,NSYM)
          IF (NASHT .GT. 0) THEN
-            IF (MCTYPE .LE. 1) THEN
-               WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)
-            ELSE
+            WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)
+            IF (MCTYPE .GT. 1) THEN
                IF (NAS1T .GT. 0)
      &            WRITE(IWUNIT,1320) NAS1T,(NAS1(I),I=1,NSYM)
                IF (NAS2T .GT. 0)
      &            WRITE(IWUNIT,1330) NAS2T,(NAS2(I),I=1,NSYM)
                IF (NAS3T .GT. 0)
      &            WRITE(IWUNIT,1340) NAS3T,(NAS3(I),I=1,NSYM)
-               WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)
             END IF
          END IF
          WRITE(IWUNIT,1400) NSSHT,(NSSH(I),I=1,NSYM)
@@ -5659,17 +5660,17 @@ C
      %   ' will be performed after RHF/DFT/MCSCF'
  1100 FORMAT(/5X,'Orbital specifications',
      *       /5X,'======================',
-     *       /5X,'Abelian symmetry species',T38,'  All |',8I5)
- 1102 FORMAT(T44,'|',8(2X,A3))
+     *       /'@    Abelian symmetry species',T38,'  All |',8I5)
+ 1102 FORMAT('@',T44,'|',8(2X,A3))
  1110 FORMAT(T38,A5,' |',8A5)
  1200 FORMAT('@    Inactive orbitals',T38,I5,' |',8I5)
  1300 FORMAT('@    Active orbitals',T38,I5,' |',8I5)
- 1320 FORMAT('@    Active orbitals in RAS1',T38,I5,' |',8I5)
- 1330 FORMAT('@    Active orbitals in RAS2',T38,I5,' |',8I5)
- 1340 FORMAT('@    Active orbitals in RAS3',T38,I5,' |',8I5)
- 1400 FORMAT(5X,'Secondary orbitals',T38,I5,' |',8I5)
- 1450 FORMAT(5X,'Total number of orbitals',T38,I5,' |',8I5)
- 1500 FORMAT(5X,'Number of basis functions',T38,I5,' |',8I5)
+ 1320 FORMAT('@    - Active orbitals in RAS1',T38,I5,' |',8I5)
+ 1330 FORMAT('@    - Active orbitals in RAS2',T38,I5,' |',8I5)
+ 1340 FORMAT('@    - Active orbitals in RAS3',T38,I5,' |',8I5)
+ 1400 FORMAT('@    Secondary orbitals',T38,I5,' |',8I5)
+ 1450 FORMAT('@    Total number of orbitals',T38,I5,' |',8I5)
+ 1500 FORMAT('@    Number of basis functions',T38,I5,' |',8I5)
  1550 FORMAT('@    Occupied SCF orbitals',T38,I5,' |',8I5)
  1555 FORMAT('@    Open shell SCF orbitals',T38,I5,' |',8I5)
  1560 FORMAT(/'@    plus one open shell SCF orbital of symmetry',I4)
@@ -5678,7 +5679,7 @@ C ***** Optimization information *****
 C       FLAG(27) : use determinants
 C
       IF (MCTYPE .GT. 0 .OR. (FLAG(21) .AND. .NOT. AUTOCC)) THEN
-         IF (DOMC .OR. MCTYPE .EQ. 0) THEN
+         IF (DOMC .OR. MCTYPE .LE. 0) THEN
             NWOPT_print = NWOPT
          ELSE ! no MCSCF, only CI
             NWOPT_print = 0
@@ -5771,7 +5772,7 @@ C
  2560 FORMAT(/5X,'Dimension of CI PHP subspace' :,I6)
  2570 FORMAT(/5X,
      &   ' CI PHP subspace selected from size of residual elements.')
- 2600 FORMAT(/5X,'Reference state in CI response calculation :',I8)
+ 2600 FORMAT(/'@    Reference state in CI response calculation :',I8)
 C
 C ***
 C

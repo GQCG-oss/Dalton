@@ -122,7 +122,7 @@ C
 C *** WF_TYPE
 C
       RHF_CALC = (NASHT .LE. 1 .OR. HSROHF)
-      IF ( (MCTYPE.EQ.0) .NEQV. RHF_CALC ) THEN
+      IF ( (MCTYPE.LE.0) .NEQV. RHF_CALC ) THEN
          WRITE (LUPRI,'(//A,I5)')
      &  'WARNING siropt: RHF_CALC neqv MCTYPE =',MCTYPE
       END IF
@@ -237,7 +237,7 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
          KSRHYB = KFS
       END IF
 !HJJ - FRAN END
-      IF (SRHYBR .AND. MCTYPE.NE.0) THEN
+      IF (SRHYBR .AND. MCTYPE.GT.0) THEN
          KFQ = KSRHYB + NNORBT
       ELSE
          KFQ = KSRHYB
@@ -2715,11 +2715,16 @@ C
 C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
      &               ISTATE,ISPIN,NACTEL,LSYM,MS2
+      IF (MCTYPE .EQ. 0 .AND. HSROHF) THEN
+         MCTYPE_IFC = -1
+      ELSE
+         MCTYPE_IFC = MCTYPE
+      END IF
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
      &               NSYM,MULD2H, NRHF,NFRO,
      &               NISH,NASH,NORB,NBAS,
-     &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
+     &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE_IFC,
      &               NAS1, NAS2, NAS3
 C
 C 880920-hjaaj: later write label here for orbitals

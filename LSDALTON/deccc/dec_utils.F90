@@ -2829,19 +2829,20 @@ end function max_batch_dimension
     !> HF Density matrix
     type(matrix),intent(in) :: D
     !> get E_DFT
-    type(matrix) :: F,h
+    type(matrix) :: F,K,h
     type(matrix) :: Dtmp(1)
     integer :: igrid
     real(realk)  :: DFTELS,enuc,edft(1)
 
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
-
+    call mat_init(K,MyMolecule%nbasis,MyMolecule%nbasis)
     call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
     call mat_init(Dtmp(1),MyMolecule%nbasis,MyMolecule%nbasis)
     call mat_copy(1.0_realk,D,Dtmp(1))
     call mat_zero(h)
     call mat_zero(F)
+    call mat_zero(K)
 
 
     MyLsitem%setting%scheme%DFT%griddone = 0
@@ -2856,15 +2857,21 @@ end function max_batch_dimension
     MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
 
     call mat_free(Dtmp(1))
+    !Get one-electron part of the Fock Matrix
     call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
-
+    !Get the Coulomb matrix
     call II_get_coulomb_mat(DECinfo%output, &
       & DECinfo%output,mylsitem%setting,D,F,1)
+    !Get the long-range exchange matrix for the range-separated case
+    call II_get_exchange_mat(DECinfo%output, &
+      & DECinfo%output,mylsitem%setting,D,1,.true.,K)
+    
     call mat_daxpy(2.0_realk,h,F)
     CALL II_get_nucpot(DECinfo%output, DECinfo%output,mylsitem%setting,Enuc)
-    Ehf =Edft(1) + mat_dotproduct(D,F) + Enuc
-
+    Ehf =Edft(1) + mat_dotproduct(D,F) + Enuc + mat_dotproduct(D,K)
+    
     call mat_free(h)
+    call mat_free(K)
     call mat_free(F)
 
 

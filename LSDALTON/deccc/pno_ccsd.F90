@@ -2719,9 +2719,9 @@ module pno_ccsd_module
                     call array_reorder_4d(p10,w3,nb,lg,la,nb,[3,4,2,1],nul,w1)
                  endif
 
-                 call get_I_plusminus_le(w4,w1,w3,'p',fa,fg,la,lg,nb,tlen,tred,goffs,&
+                 call get_I_plusminus_le(w4,w1,w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,&
                     &qu = this_is_query, quarry = var_inp(1:3))
-                 call get_I_plusminus_le(w5,w1,w3,'m',fa,fg,la,lg,nb,tlen,tred,goffs,&
+                 call get_I_plusminus_le(w5,w1,w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,&
                     &qu = this_is_query, quarry = var_inp(1:3))
 
 

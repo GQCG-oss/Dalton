@@ -14,7 +14,32 @@ module tensor_interface_module
   use lspdm_tensor_operations_module
   use matrix_module
   use dec_workarounds_module
+  use tensor_algebra_dil
 
+!Tensor algebra (`DIL backend):
+  public INTD,INTL        !integer sizes for DIL tensor algebra (default, long)
+  public MAX_TENSOR_RANK  !max allowed tensor rank for DIL tensor algebra
+  public DIL_TC_EACH      !parameter for <tensor_contract>: Each MPI process performs its own tensor contraction
+  public DIL_TC_ALL       !parameter for <tensor_contract>: All MPI processes work on the same tensor contraction
+  public DIL_ALLOC_BASIC  !Fortran allocate will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_PINNED !cudaMallocHost will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_MPI    !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
+  public DIL_CONS_OUT     !output for DIL messages
+  public DIL_DEBUG
+  public dil_set_alloc_type
+  public dil_tens_contr_t
+  public dil_clean_tens_contr
+  public dil_set_tens_contr_args
+  public dil_get_min_buf_size
+  public dil_set_tens_contr_spec
+  public dil_tensor_contract
+  public dil_debug_to_file_start
+  public dil_debug_to_file_finish
+  public thread_wtime
+  public process_wtime
+  public dil_tensor_init
+  public dil_tensor_norm1
+! public merge_sort_real8 !`DIL: remove
 
   !This defines the public interface to the tensors
   !The tensor type itself
@@ -65,7 +90,7 @@ module tensor_interface_module
   ! Auxiliary functions on the user level
   public get_symm_tensor_segmenting_simple
   public tensor_get_ntpm, get_tile_dim
-  public tensor_set_debug_mode_true, tensor_set_dil_backend_true
+  public tensor_set_debug_mode_true, tensor_set_dil_backend_true, tensor_set_dil_backend
   public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
   public assoc_ptr_to_buf
 
@@ -131,10 +156,18 @@ contains
      implicit none
      tensor_debug_mode = .true.
   end subroutine tensor_set_debug_mode_true
+
   subroutine tensor_set_dil_backend_true()
      implicit none
-     tensor_contract_dil_backend = .true.
+     tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3
   end subroutine tensor_set_dil_backend_true
+
+  subroutine tensor_set_dil_backend(lv)
+   implicit none
+   logical, intent(in):: lv
+   tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !works only with MPI-3
+   return
+  end subroutine tensor_set_dil_backend
 
   subroutine tensor_allocate_dense(T)
      implicit none
@@ -438,26 +471,37 @@ contains
 
 
   !> \brief simple general tensor conraction of the type C = pre1 * A * B + pre2 * C
-  !> \author Patrick Ettenhuber
+  !> \author Patrick Ettenhuber, Dmitry I. Lyakh (MPI-3 DIL backend)
   subroutine tensor_contract(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk,force_sync)
      implicit none
-     real(realk), intent(in)    :: pre1,pre2
-     type(tensor), intent(in)    :: A,B
-     integer, intent(in)        :: nmodes2c
-     integer, intent(in)        :: m2cA(nmodes2c), m2cB(nmodes2c)
-     type(tensor), intent(inout) :: C
-     integer, intent(inout)     :: order(C%mode)
-     real(realk), intent(in),    optional :: mem
-     real(realk), intent(inout), optional :: wrk(:)
-     integer(kind=long), intent(in), optional :: iwrk
-     logical, intent(in),        optional :: force_sync
-     !internal variables
-     integer :: i,j,k
-     logical :: contraction_mode
-     integer :: rorder(C%mode)
+     real(realk), intent(in):: pre1,pre2                  !prefactors
+     type(tensor), intent(in):: A,B                       !left and right tensors
+     integer, intent(in):: nmodes2c                       !number of contracted dims
+     integer, intent(in):: m2cA(nmodes2c), m2cB(nmodes2c) !contracted dims in left and right tensors
+     type(tensor), intent(inout):: C                      !destination tensor
+     integer, intent(inout):: order(C%mode)               !C dim x maps onto (A*B) dim order(x)
+     real(realk), intent(in), optional:: mem              !???
+     real(realk), intent(inout), optional:: wrk(:)        !external buffer
+     integer(kind=long), intent(in), optional:: iwrk      !???
+     logical, intent(in), optional:: force_sync           !???
+     !internal variables (PETT)
+     integer:: i,j,k
+     logical:: contraction_mode
+     integer:: rorder(C%mode)
+     !internal variables (DIL)
+     character(256):: tcs
+     type(dil_tens_contr_t):: tch
+     integer(INTL):: dil_mem
+     integer(INTD):: i0,i1,i2,i3,tcl,errc,tcm(MAX_TENSOR_RANK*2)
+     integer(INTD):: tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
+     integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
+     integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+     character(26), parameter:: elett='abcdefghijklmnopqrstuvwxyz'
+
      call time_start_phase( PHASE_WORK )
 
-     if( (A%mode-nmodes2c) + (B%mode-nmodes2c) /= C%mode)then
+!Argument check:
+     if( (A%mode-nmodes2c) + (B%mode-nmodes2c) /= C%mode) then
         call lsquit("ERROR(tensor_contract): invalid contraction pattern",-1)
      endif
 
@@ -466,42 +510,68 @@ contains
      enddo
 
      do i = 1,nmodes2c
-        if(A%dims(m2cA(i))/=B%dims(m2cB(i)))then
+        if(A%dims(m2cA(i))/=B%dims(m2cB(i))) then
            call lsquit("ERROR(tensor_contract): Contracted modes in A and B incompatible",-1)
         endif
      enddo
+
+     i0 = 0
+     i1 = 0
      k = 1
      do i = 1, A%mode
+        i0 = i0 + 1
         contraction_mode=.false.
         do j=1,nmodes2c
-           contraction_mode = contraction_mode.or.(m2cA(j) == i)
+!           contraction_mode = contraction_mode.or.(m2cA(j) == i)
+           if(m2cA(j) == i) then
+            contraction_mode = .true.
+            i2=j
+            exit
+           endif
         enddo
-        if(.not.contraction_mode)then
-           if(A%dims(i) /= C%dims(rorder(k)))then
+        if(.not.contraction_mode) then
+           i1 = i1 + 1
+           tcm(i0) = i1
+           if(A%dims(i) /= C%dims(rorder(k))) then
               call lsquit("ERROR(tensor_contract): Uncontracted modes in A and C incompatible",-1)
            endif
            k=k+1
+        else
+           tcm(i0) = -i2
         endif
      enddo
      do i = 1, B%mode
+        i0 = i0 + 1
         contraction_mode=.false.
         do j=1,nmodes2c
-           contraction_mode = contraction_mode.or.(m2cB(j) == i)
+!           contraction_mode = contraction_mode.or.(m2cB(j) == i)
+           if(m2cB(j) == i) then
+            contraction_mode = .true.
+            i2=j
+            exit
+           endif
         enddo
-        if(.not.contraction_mode)then
-           if(B%dims(i) /= C%dims(rorder(k)))then
+        if(.not.contraction_mode) then
+           i1 = i1 + 1
+           tcm(i0) = i1
+           if(B%dims(i) /= C%dims(rorder(k))) then
               call lsquit("ERROR(tensor_contract): Uncontracted modes in B and C incompatible",-1)
            endif
            k=k+1
+        else
+           tcm(i0) = -i2
         endif
      enddo
 
-     if(k-1/=C%mode)then
-        call lsquit("ERROR(tensor_contract): this should have resulted in a seg fault earlier",-1)  
-     end if
+     if(k-1/=C%mode) then
+        call lsquit("ERROR(tensor_contract): this should have resulted in a seg fault earlier",-1)
+     endif
 
-     select case(A%itype)
-     case(TT_DENSE,TT_REPLICATED)
+!Execute tensor contraction:
+     if(.not.tensor_contract_dil_backend) then !PETT backend
+
+      select case(A%itype)
+      case(TT_DENSE,TT_REPLICATED)
         select case(B%itype)
         case(TT_DENSE,TT_REPLICATED)
            select case(C%itype)
@@ -515,7 +585,7 @@ contains
         case default
            call lsquit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
         end select
-     case(TT_TILED_DIST)
+      case(TT_TILED_DIST)
 
         select case(B%itype)
 
@@ -541,13 +611,47 @@ contains
         case default
            call lsquit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
         end select
-     case default
+      case default
         call lsquit("ERROR(tensor_contract_simple): A%itype not implemented",-1)
-     end select
+      end select
 
-     if( tensor_contract_dil_backend )then
-        print *,"DIL BACKEND NOT YET IMPLEMENTED IN THIS BRANCH"
-        stop 0
+     else !DIL backend (MPI-3 only)
+ !Get the symbolic tensor contraction pattern:
+      tcs(1:2)='D('; tcl=2; i1=C%mode
+      do i0=1,i1; tcs(tcl+1:tcl+2)=elett(i0:i0)//','; tcl=tcl+2; enddo
+      if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+      tcs(tcl+1:tcl+4)='+=L('; tcl=tcl+4; i2=0
+      do i0=1,A%mode
+       i2=i2+1; i3=iabs(tcm(i2))
+       if(tcm(i2).gt.0) then !uncontracted index
+        tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
+       elseif(tcm(i2).lt.0) then !contracted index
+        tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
+       else
+        call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (A)!',-1)
+       endif
+      enddo
+      if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+      tcs(tcl+1:tcl+3)='*R('; tcl=tcl+3
+      do i0=1,B%mode
+       i2=i2+1; i3=iabs(tcm(i2))
+       if(tcm(i2).gt.0) then !uncontracted index
+        tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
+       elseif(tcm(i2).lt.0) then !contracted index
+        tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
+       else
+        call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (B)!',-1)
+       endif
+      enddo
+      if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+      if(DIL_DEBUG) write(*,*) '#DEBUG(DIL): symbolic: '//tcs(1:tcl)
+ !Set tensor arguments:
+      call dil_clean_tens_contr(tch)
+      
+ !Set the formal tensor contraction specification:
+      
+ !Perform the tensor contraction:
+      
      endif
 
      call time_start_phase( PHASE_WORK )
