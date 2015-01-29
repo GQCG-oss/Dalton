@@ -45,7 +45,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use matrix_operations, only: set_matrix_default,max_no_of_matrices, no_of_matrices, &
        & no_of_matmuls, mat_init, mat_free, mat_assign,mat_scal, &
        & mat_mul, mat_no_of_matmuls, mat_write_to_disk, mat_read_from_disk, mat_diag_f,&
-       & mat_TrAB, mat_print
+       & mat_TrAB, mat_print, mat_tr
   use configuration, only: config_shutdown, config_free
   use files, only: lsopen,lsclose
   use lsdalton_fock_module, only: lsint_fock_data
@@ -98,6 +98,8 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter,&
        & II_get_Fock_mat
+  use II_XC_interfaceModule, only: II_get_AbsoluteValue_overlap, &
+       & II_get_AbsoluteValue_overlapSame
   use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
@@ -134,6 +136,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #ifdef MOD_UNRELEASED
   Real(realk),pointer   ::      geomHessian(:,:)
 #endif
+  type(matrix) :: tempm1,tempm2
 
   type(LowAccuracyStartType)  :: LAStype
 
@@ -427,15 +430,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
         !END SOEO
 
-        !debug
-!        call mat_init(Cmo,nbast,nbast)
-!        allocate(eival(nbast))
-!        call mat_diag_f(F,S,eival,Cmo)
-!        deallocate(eival)
-!        call II_get_AbsoluteValue_overlap(LUPRI,LUERR,ls%SETTING,nbast,CMO,S)
-!        call mat_print(S,1,S%nrow,1,S%ncol,lupri)
-!        call lsquit('test done',-1)
-
         IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
            ! get orbitals
            call mat_init(Cmo,nbast,nbast)
@@ -469,6 +463,26 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
               call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
            end if
            CALL Print_Memory_info(lupri,'after ORBITAL LOCALIZATION')
+
+           IF(config%decomp%debugAbsOverlap)THEN
+              call mat_init(tempm1,nbast,nbast)
+              call mat_init(tempm2,nbast,nbast)
+!              This only works for NOGCBASIS               
+!              call mat_mul(S,CMO,'n','n',1E0_realk,0E0_realk,tempm1)
+!              call mat_mul(CMO,tempm1,'t','n',1E0_realk,0E0_realk,tempm2)
+!              call mat_free(tempm1)
+!              WRITE(lupri,*)'Overlap in MO basis '
+!              call mat_print(tempm2,1,nbast,1,nbast,lupri)
+              call II_get_AbsoluteValue_overlapSame(LUPRI,LUERR,ls%SETTING,nbast,nbast,CMO%elms,tempm2%elms)
+              WRITE(lupri,*)'absolute Overlap in MO basis'
+              call mat_print(tempm2,1,nbast,1,nbast,lupri)
+              WRITE(lupri,*)'Trace of Absolute nummerical overlap:',mat_tr(tempm2)
+              call II_get_AbsoluteValue_overlap(LUPRI,LUERR,ls%SETTING,nbast,nbast,nbast,CMO%elms,CMO%elms,tempm2%elms)
+              WRITE(lupri,*)'absolute Overlap in MO basis(test2)  '
+              call mat_print(tempm2,1,nbast,1,nbast,lupri)
+              WRITE(lupri,*)'Trace of Absolute nummerical overlap(test2):',mat_tr(tempm2)
+              call mat_free(tempm2)
+           ENDIF
         endif
 
         if (config%decomp%cfg_lcm .or. config%decomp%cfg_mlo) then
