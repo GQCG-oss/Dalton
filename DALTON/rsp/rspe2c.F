@@ -6247,7 +6247,7 @@ C     Memory allocation
 #ifdef BUILD_PELIB
       if (pe_savden) then
           write(lupri,*) "Saving transition density."
-          call save_tr_density( dens, IDX )
+          call save_tr_density( dens, NBAST, IDX, WRK(KWRK2:LWRK) )
       endif
 #endif
 #ifdef BUILD_QFITLIB
