@@ -1766,9 +1766,9 @@ C
         if (nsym > 1) then
             call quit('PEQM cannot be combined with symmetry.')
         end if
-        call pe_save_density(daosav(:,1), fcao(1:norbt*(norbt+1)/2),
-     &                       cmo(1:nbast*norbt), nbast, nisht, norbt,
-     &                       wrk(kfree:lfree))
+        call pe_save_density(daosav(:,1), nbast, nisht, norbt,
+     &                      wrk(kfree:lfree), fcao(1:norbt*(norbt+1)/2),
+     &                      cmo(1:nbast*norbt))
       end if
 #endif
 C
