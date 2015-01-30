@@ -3612,8 +3612,8 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
             IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
-     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
-     &                             WRK(KWRK2),LWRK2)
+     &                             KZYVAR,KZVAR,CMO,UDV,ISIM-1+INUM,
+     &                             LUPRI,WRK(KWRK2),LWRK2)
      
 
             IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
@@ -6134,12 +6134,15 @@ C Take out the diagonal elements
       RETURN
       END
 C  /* Deck TRCHAR */
-      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
-c
+      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,IDX,LUPRI,WRK,LWRK)
+C
 #ifdef BUILD_QFITLIB
       use qfit
 #endif
-C
+#ifdef BUILD_PELIB
+      use pe_variables, only: pe_savden
+      use pe_trdens_tools, only: save_tr_density
+#endif
 C
 C     NDIM2 = KZYVAR
 C     NDIM1 = KZVAR
@@ -6241,6 +6244,12 @@ C     Memory allocation
 
       allocate( dens( N2BASX ) )
       call dcopy(n2basx,wrk(kdcao),1,dens,1)
+#ifdef BUILD_PELIB
+      if (pe_savden) then
+          write(lupri,*) "Saving transition density."
+          call save_tr_density( dens, IDX )
+      endif
+#endif
 #ifdef BUILD_QFITLIB
       call qfit_set_transition_dipole( TRDIP )
       call qfit_fit( dens )
