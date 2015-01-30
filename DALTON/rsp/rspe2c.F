@@ -6246,7 +6246,7 @@ C     Memory allocation
       call dcopy(n2basx,wrk(kdcao),1,dens,1)
 #ifdef BUILD_PELIB
       if (pe_savden) then
-          write(lupri,*) "Saving transition density."
+          write(lupri,'(/A)') "Saving transition density."
           call save_tr_density( dens, NBAST, IDX, WRK(KWRK2:LWRK) )
       endif
 #endif
