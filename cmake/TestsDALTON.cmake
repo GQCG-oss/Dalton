@@ -393,6 +393,7 @@ add_dalton_test(pemcscf_1             "dalton;peqm;parallel;short")
 add_dalton_test(pemcscf_2             "dalton;peqm;parallel;short")
 add_dalton_test(pemcscf_3             "dalton;peqm;parallel;short")
 add_dalton_test(pesoppa_excit         "dalton;peqm;soppa;short")
+add_dalton_runtest(pdehf              "dalton;peqm;runtest;short")
 endif()
 
 if(ENABLE_QFITLIB)
