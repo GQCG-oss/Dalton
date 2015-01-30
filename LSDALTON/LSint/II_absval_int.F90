@@ -285,8 +285,6 @@ logical :: grid_exists
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
 
-print*,'ABSVALOVERLAP on input',ABSVALOVERLAP(1,3),ABSVALOVERLAP(3,1)
-
 LUGRID=-1
 call get_quadfilename(filename,nbast,node,GridId)
 INQUIRE(file=filename,EXIST=grid_exists)
@@ -326,7 +324,6 @@ call mem_dft_alloc(TMP,ABSVAL_MXBLLEN*NMO1)
 call mem_dft_alloc(TMP2,ABSVAL_MXBLLEN*NMO2) 
 call mem_dft_alloc(myABSVALOVERLAP,NMO1,NMO2)
 call ls_dzero(myABSVALOVERLAP,NMO1*NMO2)
-print*,'myABSVALOVERLAP after dzero',myABSVALOVERLAP(1,3),myABSVALOVERLAP(3,1)
 !$OMP END CRITICAL (initdftDATAblock)
 
 DO XX=1+tid,IT,nthreads
@@ -381,10 +378,7 @@ ENDIF
 call mem_dft_dealloc(GAO) 
 call mem_dft_dealloc(SHELLBLOCKS)
 call mem_dft_dealloc(BLOCKS)
-print*,'BEFORE DAXPY myABSVALOVERLAP',myABSVALOVERLAP(1,3),myABSVALOVERLAP(3,1)
-print*,'BEFORE DAXPY ABSVALOVERLAP',ABSVALOVERLAP(1,3),ABSVALOVERLAP(3,1)
 CALL DAXPY(nmo1*nmo2,1E0_realk,myABSVALOVERLAP,1,ABSVALOVERLAP,1)
-print*,'AFTER DAXPY ABSVALOVERLAP',ABSVALOVERLAP(1,3),ABSVALOVERLAP(3,1)
 call mem_dft_dealloc(myABSVALOVERLAP)
 !$OMP END CRITICAL (freeDFTdatablock)
 IF(.NOT.noOMP) call collect_thread_dft_memory()

@@ -263,7 +263,6 @@ IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
 call init_dftmemvar
 CALL LSTIMER('START',TS,TE,LUPRI)
 CALL LS_DZERO(S,nmo1*nmo2)
-print*,'S after DZERO:',S
 
 !chose ABSVAL grid
 SETTING%scheme%DFT%igrid = Grid_ABSVAL
@@ -285,12 +284,10 @@ IF(setting%IntegralTransformGC)THEN
    CALL DCOPY(nbast*nMO2,Cmat2,1,Cmat2AO,1)
    !Cmat1AO(nbast,nmo1) = CAO2GCAO(nbast,nbast)*Cmat1AO(nbast,nmo1)
    call GCAO2AO_half_transform_matrixFull(Cmat2AO,nbast,nmo2,setting,lupri,1)
-   print*,'S before call to II_DFT_ABSVAL_OVERLAP:',S
    CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nmo1,nmo2,CMAT1AO,CMAT2AO,S,SameCmat)
    call mem_dft_dealloc(Cmat1AO)
    call mem_dft_dealloc(Cmat2AO)
 ELSE
-   print*,'S before call to II_DFT_ABSVAL_OVERLAP:',S
    CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nmo1,nmo2,CMAT1,CMAT2,S,SameCmat)
 ENDIF
 
@@ -330,7 +327,6 @@ IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
 call init_dftmemvar
 CALL LSTIMER('START',TS,TE,LUPRI)
 CALL LS_DZERO(S,nmo*nmo)
-print*,'S after DZERO:',S
 
 !chose ABSVAL grid
 SETTING%scheme%DFT%igrid = Grid_ABSVAL
@@ -347,11 +343,9 @@ IF(setting%IntegralTransformGC)THEN
    CALL DCOPY(nbast*nMO,Cmat,1,Cmat1AO,1)
    !Cmat1AO(nbast,nmo1) = CAO2GCAO(nbast,nbast)*Cmat1AO(nbast,nmo1)
    call GCAO2AO_half_transform_matrixFull(Cmat1AO,nbast,nmo,setting,lupri,1)
-   print*,'S before call to II_DFT_ABSVAL_OVERLAP:',S
    CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nmo,nmo,CMAT1AO,CMAT1AO,S,SameCmat)
    call mem_dft_dealloc(Cmat1AO)
 ELSE
-   print*,'S before call to II_DFT_ABSVAL_OVERLAP:',S
    CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nmo,nmo,CMAT,CMAT,S,SameCmat)
 ENDIF
 
