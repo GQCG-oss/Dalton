@@ -13,11 +13,13 @@ f = Filter()
 f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'Max. sigma_4 and orb.number: ',
-      rel_tolerance = 1.0e-2)
+f.add(string = 'Max. sigma',
+      rel_tolerance = 1.0e-2,
+      mask = [1])
 
-f.add(string = 'LOC',
-      rel_tolerance = 1.0e-2)
+f.add(string = 'Min. sigma',
+      rel_tolerance = 1.0e-2,
+      mask = [1])
 
 f.add(string = 'HOMO-LUMO Gap',
       rel_tolerance = 1.0e-5)

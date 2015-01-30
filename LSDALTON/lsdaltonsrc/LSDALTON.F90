@@ -442,6 +442,26 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            CALL LSOPEN(lun,'cmo_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
            call LSclose(LUN,'KEEP')
+
+           IF(config%decomp%debugAbsOverlap)THEN
+              call mat_init(tempm1,nbast,nbast)
+              call mat_init(tempm2,nbast,nbast)
+!              This only works for NOGCBASIS               
+!              call mat_mul(S,CMO,'n','n',1E0_realk,0E0_realk,tempm1)
+!              call mat_mul(CMO,tempm1,'t','n',1E0_realk,0E0_realk,tempm2)
+!              WRITE(lupri,*)'Overlap in MO basis '
+!              call mat_print(tempm2,1,nbast,1,nbast,lupri)
+              call mat_free(tempm1)
+              call II_get_AbsoluteValue_overlapSame(LUPRI,LUERR,ls%SETTING,nbast,nbast,CMO%elms,tempm2%elms)
+              WRITE(lupri,*)'absolute Overlap in MO basis'
+              call mat_print(tempm2,1,nbast,1,nbast,lupri)
+              WRITE(lupri,*)'Trace of Absolute nummerical overlap:',mat_tr(tempm2)
+              call II_get_AbsoluteValue_overlap(LUPRI,LUERR,ls%SETTING,nbast,nbast,nbast,CMO%elms,CMO%elms,tempm2%elms)
+              WRITE(lupri,*)'absolute Overlap in MO basis(test2)  '
+              call mat_print(tempm2,1,nbast,1,nbast,lupri)
+              WRITE(lupri,*)'Trace of Absolute nummerical overlap(test2):',mat_tr(tempm2)
+              call mat_free(tempm2)
+           ENDIF
         endif
 
         !lcm basis: localize orbitals
@@ -463,26 +483,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
               call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
            end if
            CALL Print_Memory_info(lupri,'after ORBITAL LOCALIZATION')
-
-           IF(config%decomp%debugAbsOverlap)THEN
-              call mat_init(tempm1,nbast,nbast)
-              call mat_init(tempm2,nbast,nbast)
-!              This only works for NOGCBASIS               
-!              call mat_mul(S,CMO,'n','n',1E0_realk,0E0_realk,tempm1)
-!              call mat_mul(CMO,tempm1,'t','n',1E0_realk,0E0_realk,tempm2)
-!              call mat_free(tempm1)
-!              WRITE(lupri,*)'Overlap in MO basis '
-!              call mat_print(tempm2,1,nbast,1,nbast,lupri)
-              call II_get_AbsoluteValue_overlapSame(LUPRI,LUERR,ls%SETTING,nbast,nbast,CMO%elms,tempm2%elms)
-              WRITE(lupri,*)'absolute Overlap in MO basis'
-              call mat_print(tempm2,1,nbast,1,nbast,lupri)
-              WRITE(lupri,*)'Trace of Absolute nummerical overlap:',mat_tr(tempm2)
-              call II_get_AbsoluteValue_overlap(LUPRI,LUERR,ls%SETTING,nbast,nbast,nbast,CMO%elms,CMO%elms,tempm2%elms)
-              WRITE(lupri,*)'absolute Overlap in MO basis(test2)  '
-              call mat_print(tempm2,1,nbast,1,nbast,lupri)
-              WRITE(lupri,*)'Trace of Absolute nummerical overlap(test2):',mat_tr(tempm2)
-              call mat_free(tempm2)
-           ENDIF
         endif
 
         if (config%decomp%cfg_lcm .or. config%decomp%cfg_mlo) then
