@@ -99,7 +99,7 @@ C
       LOGICAL   DFT_SPINDNS_save, DFT_LOCALSPIN_save
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
       real(8), allocatable :: tmp_space(:)
- 
+
 #include "sirbkd.h"
 #include "center.h"
 C
@@ -175,6 +175,7 @@ C        *** set RHF parameters for RHF and MP2 ***
 C
       IF (DORHF .OR. DOMP2) THEN
          MCTYPE   = 0
+         IF (HSROHF) MCTYPE = -1
          IF (DOMP2 ) THEN
             FLAG(25) = .TRUE. ! SIRIFC from RHF needed for MP2 if embedding
          END IF
@@ -286,12 +287,10 @@ C        Use always NEO for RHF (920221-hjaaj)
 C        unless .NR ALWAYS (FLAG(39)) is set, e.g. for core relax calc.
          IF (.NOT.FLAG(39)) FLAG(38) = .TRUE.
 C
-C        High-spin Fock matrices for all open-shell calcs with dft or direct
-         HSFOCK=(((DODFT.OR.DIRCAL).AND. NASHT .GE. 1) .OR. HSROHF)
-         IF (CORHOL.OR.CORRLX) HSFOCK = .FALSE.
-         IF (HSFOCK) HSROHF = .TRUE.
+C        Also high-spin Fock matrices for all open-shell calcs with dft
+         HSROHF = HSROHF .OR. (DODFT .AND. NASHT .GE. 1)
 C
-C
+Ck
          CALL GETTIM(TSTART,WSTART)
 
 #ifdef ENABLE_EFS
@@ -313,7 +312,7 @@ C        Call FCMO to perform MAXFCK Roothaan Fock iterations
 C
          IF (MAXFCK .GT. 0) THEN
             FLAG(5) = .FALSE.
-C              we don't call SIROUT when no 2:nd order optimization
+C           we do not call SIROUT when no 2:nd order optimization
             JRDMO = 9
             KCMO  = 1
             KFC   = KCMO + NCMOT
@@ -348,7 +347,7 @@ C
             END IF
 C           ... REWIT1 false: do not destroy any GEOWALK information
 C           QCSCF currently needed for solvent and for writing SIRIFC
-C           QCSCF for writing SIRIFC no longer needed, except for SOPPA 
+C           QCSCF for writing SIRIFC no longer needed, except for SOPPA
 C           calculations, K.Ruud May-97
 C           QCSCF no longer needed for solvent calculations, kr Feb-99
 C           QCSCF no longer needed !!! hjaaj may 2000
@@ -360,7 +359,7 @@ C
 C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
-         IF (HSFOCK .AND. ICONV .LE. 0) THEN
+         IF (HSROHF .AND. ICONV .LE. 0) THEN
             NINFO = NINFO + 1
             WRITE(LUPRI,'(//A/)') 'INFO: Second order QC-SCF skipped'//
      &      ' because it is not implemented for open-shell SCF'
@@ -421,6 +420,14 @@ C
          FLAG(34)   = FLAGSV(34)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
+
+!#define AO_DENSITIES_ON_FILE
+#ifdef AO_DENSITIES_ON_FILE
+         KDV   = 1
+         call write_aodens(work(kdv),nisht,nasht,nbast,nnashx,
+     &                     ncmot,nsym,nbas,ibas,lupri,hsrohf,"HF")
+#undef AO_DENSITIES_ON_FILE
+#endif
       END IF
 C
 C ***************************************************
@@ -494,7 +501,6 @@ C
       IF ( (DORHF .OR. DOMP2) .AND.
      &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB .OR. DOLUCITA) ) THEN
          HSROHF = .FALSE.
-         HSFOCK = .FALSE.
 C        ... otherwise error in some MCSCF routines
 C            where HSROHF specifications erroneously will be used
          IOPRHF  = -1

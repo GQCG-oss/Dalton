@@ -376,7 +376,7 @@ C
 C
       CALL QENTER('FCKMAT')
       NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
-      LSRHYBR = SRHYBR .AND. .NOT. MCTYPE.EQ.0
+      LSRHYBR = SRHYBR .AND. MCTYPE.GT.0
 C
       IF (DFT_SPINDNS .AND. LSRHYBR) THEN
          CALL QUIT('SRHYBR and non-singlet not implemented')
@@ -742,7 +742,7 @@ C        (except for RO-DFT and srDFT we need FCAO for VxcAO)
 C           ... off-set to FVAO,DVAO in FCAO,DCAO
          END IF
       END IF
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
 C
 C This gives the exchange part of the active Fock matrix;
 C we need only the difference between Fa and Q which is
@@ -754,7 +754,7 @@ C
 C     ... note: NDMAT = # of FCAO matrices; NFMAT = # of non-zero FCAO matrices
       IF (NFMAT .GT. 0) THEN
       IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSFOCK .OR.
+     &   .NOT. (HSROHF .OR. DODFT .OR.
      &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
          write(lupri,*) 'RDSUPM called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),ISYMDM,

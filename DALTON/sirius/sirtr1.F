@@ -1041,7 +1041,7 @@ c         CALL DFTATR(FXC(1,1),CMO,UBO(1,1),.false.,
 c                     JWOPSY,WRK(KFREE),LFREE)
       END IF      
 #endif
-       IF (SRHYBR .AND. MCTYPE.NE.0) THEN
+       IF (SRHYBR .AND. MCTYPE.GT.0) THEN
 C hjaaj TODO
           WRITE(LUPRI,*) 'WARNING> SRHYBR_XV matrix missing!'
        END IF

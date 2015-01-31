@@ -1247,13 +1247,19 @@ c
       CALL DCOPY(2*KZVAR*NNMAX,XTMP,1,XTEMP,1)
 c
       IF (ABS_BATCH) THEN
-         KINT=INT(NNMAX/ABS_NBATCHMAX)
-         KMOD=MOD(NNMAX,ABS_NBATCHMAX) 
-         KTOT=KINT
-         KNMAX=ABS_NBATCHMAX
-         IF (KMOD.NE.0) THEN
-           KTOT=KINT+1
-         ENDIF
+        if (nnmax .gt. abs_nbatchmax) then
+          KINT=INT(NNMAX/ABS_NBATCHMAX)
+          KMOD=MOD(NNMAX,ABS_NBATCHMAX) 
+          KTOT=KINT
+          KNMAX=ABS_NBATCHMAX
+          IF (KMOD.NE.0) THEN
+            KTOT=KINT+1
+          ENDIF
+        else
+          kint = 1
+          ktot = 1
+          knmax = nnmax
+        endif
       ELSE
          KINT=1
          KTOT=1

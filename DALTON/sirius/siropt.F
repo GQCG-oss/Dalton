@@ -122,7 +122,7 @@ C
 C *** WF_TYPE
 C
       RHF_CALC = (NASHT .LE. 1 .OR. HSROHF)
-      IF ( (MCTYPE.EQ.0) .NEQV. RHF_CALC ) THEN
+      IF ( (MCTYPE.LE.0) .NEQV. RHF_CALC ) THEN
          WRITE (LUPRI,'(//A,I5)')
      &  'WARNING siropt: RHF_CALC neqv MCTYPE =',MCTYPE
       END IF
@@ -237,7 +237,7 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
          KSRHYB = KFS
       END IF
 !HJJ - FRAN END
-      IF (SRHYBR .AND. MCTYPE.NE.0) THEN
+      IF (SRHYBR .AND. MCTYPE.GT.0) THEN
          KFQ = KSRHYB + NNORBT
       ELSE
          KFQ = KSRHYB
@@ -1230,6 +1230,17 @@ C
 C ***********************************************************
 C
   890 CONTINUE
+
+      !> store 1-particle density matrix in AO-basis on file
+!#define AO_DENSITIES_ON_FILE
+#ifdef AO_DENSITIES_ON_FILE
+      call rdcref(wrk(kcref))
+      call makdv(wrk(kcref),wrk(kdv),wrk(kcindx),wrk(kwrkg),lwrkg)
+      call write_aodens(wrk(kdv),nisht,nasht,nbast,nnashx,
+     &                  ncmot,nsym,nbas,ibas,lupri,.false.,"MC")
+#undef AO_DENSITIES_ON_FILE
+#endif
+
 C     restore control variables
       FLAG(39) = NRALW
       IFTHRS = IFTHSV
@@ -1300,7 +1311,8 @@ C    *      ' Orbital energy analysis skipped for open-shell systems'
 C        GO TO 9999
 C hjaaj TODO:   EKT orbital energies may be defined later.
       END IF
-      IF (IPRINT .LT. 10) WRITE (LUPRI,'(/A)') ' Only the five'//
+      IF (IPRINT .LT. 10 .AND. NSSHT .GT. 20)
+     &   WRITE (LUPRI,'(/A)') ' Only the 20'//
      &   ' lowest virtual orbital energies printed in each symmetry.'
       IF (IPRINT .GE. 2) WRITE (LUPRI,'(/A,I5/A,8I5)')
      &   ' Number of electrons :',2*NISHT,
@@ -1389,7 +1401,7 @@ C                     because the Fock matrix is not zero for these
          IF (IPRINT .GE. 10) THEN
             NLAST = NORBI
          ELSE
-            NLAST = MIN(NORBI,NOCC(ISYM)+5)
+            NLAST = MIN(NORBI,NOCC(ISYM)+20)
          END IF
          IF (NFRHFI .GT. 0) WRITE (LUPRI,'(A,I3,A)')
      &' Note: the first',NFRHFI,' orbitals in next symmetry are frozen'
@@ -2703,11 +2715,16 @@ C
 C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
      &               ISTATE,ISPIN,NACTEL,LSYM,MS2
+      IF (MCTYPE .EQ. 0 .AND. HSROHF) THEN
+         MCTYPE_IFC = -1
+      ELSE
+         MCTYPE_IFC = MCTYPE
+      END IF
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
      &               NSYM,MULD2H, NRHF,NFRO,
      &               NISH,NASH,NORB,NBAS,
-     &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
+     &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE_IFC,
      &               NAS1, NAS2, NAS3
 C
 C 880920-hjaaj: later write label here for orbitals

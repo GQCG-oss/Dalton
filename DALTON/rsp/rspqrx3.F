@@ -245,12 +245,16 @@ C
 C
 C
 #include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( D1 = 1.0D0 )
+C
+C infinp.h : HSROHF, DODFT, ?
 C
 #include "infdim.h"
 #include "maxorb.h"
 #include "maxash.h"
+#include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "infrsp.h"
@@ -258,9 +262,7 @@ C
 #include "infcr.h"
 #include "inftpa.h"
 #include "inftmo.h"
-#include "infinp.h"
 #include "pcmlog.h"
-#include "priunit.h"
 #include "infpp.h"
 #include "infsmo.h"
 #include "infhyp.h"
@@ -270,7 +272,6 @@ C
 #include "abslrs.h"
 #include "gnrinf.h"
 #include "infpar.h"
-#include "scbrhf.h"
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -306,17 +307,7 @@ C
 C
 C Fock matrices
 C
-C hj start TODO Mar 2004
-C TODO  hjaaj Mar 2004: calling Q3FOCK gives wrong result in
-C       test rsp_solvhyper, thus it has been disabled until
-C       the error has been found ...
-C     IF (TDHF .AND.  (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) ) THEN
-C hj end TODO Mar 2004
-C
-C ov rsp_solvhyper passes with Q3FOCK  Sep 2004
-C
-
-      IF (TDHF.AND.NASHT.EQ.0.OR.HSFOCK) THEN
+      IF (TDHF.AND.(NASHT.EQ.0.OR.HSROHF)) THEN ! excluding single open shell RHF with .OPEN SHELL
          IF (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) THEN
             CALL C3FOCK(IBEQC,WRK(KFC),VECB,VECC,
      &                 WRK(KZYMB),WRK(KZYMC),
@@ -324,18 +315,16 @@ C
      &                 ISYMA,ISYMB,ISYMC,
      &                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
          ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA
-     &             .OR.ABS_MCD.OR.ABSLRS_MCD.OR.ABSLRS_MCHD 
-     &             .OR. ABSLRS_NSCD) THEN
+     &        .OR.ABS_MCD.OR.ABSLRS_MCD.OR.ABSLRS_MCHD 
+     &        .OR.ABSLRS_NSCD) THEN
 
             DFTSAV=DODFT
             DODFT=.FALSE.
-            CALL Q3FOCK(
-     &         VECB,VECC,
+            CALL Q3FOCK( VECB,VECC,
      &         KZYVB,KZYVC, ISYMB,ISYMC, ISPINB,ISPINC,
      &         CMO, MJWOP, FC, FV,
      &         WRK(KFC),WRK(KFO),
-     &         WRK(KFREE),LFREE
-     &         )
+     &         WRK(KFREE),LFREE )
             DODFT=DFTSAV
          ELSE
             CALL QUIT('ERROR in E3INIT for HF or DFT')
@@ -1278,7 +1267,7 @@ C
      *            PVDEN,H2,H2X,WRKO,KFREE,LFREE,
      *            LCON,LORB,IPRRSP,IGRSPI,ISPIN1,ISPIN2,
      *            IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2)
-         ELSE IF (DIRFCK) THEN
+         ELSE IF (DIRFCK .AND. NASHT.EQ.0) THEN
             DFTSAV = DFTADD
             DFTADD = .FALSE.
 c
