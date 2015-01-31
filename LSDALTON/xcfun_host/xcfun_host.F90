@@ -21,7 +21,7 @@ module xcfun_host
   integer,parameter :: xcfun_type_metagga=3
   public :: xcfun_host_init, xcfun_host_free, USEXCFUN, &
        & xcfun_gga_xc_single_eval, xcfun2_gga_xc_single_eval, &
-       & xcfun_lda_xc_single_eval, xcfun_gga_unres_xc_single_eval, &
+       & xcfun_lda_xc_eval, xcfun_gga_unres_xc_single_eval, &
        & xcfun_lda_unres_xc_single_eval, xcfun3_gga_xc_single_eval,&
        & xcfun_meta_xc_single_eval, xcfun2_lda_xc_single_eval,&
        & xcfun3_lda_xc_single_eval,&
@@ -99,7 +99,7 @@ module xcfun_host
     integer                       :: Ipos,nStrings,ierr,I,ierrLDA,ierrGGA,ierrMETA,ierrHF
     !logical                       :: GGAkeyString,ErfString           deprecated
     real(realk),pointer           :: WeightSingle(:)
-    logical                       :: new_func,admm_ggacorr
+    logical                       :: new_func,admm_ggacorr_single,admm_ggacorr
     type(xc_functional),pointer   :: current
 
     nullify(current)
@@ -117,6 +117,7 @@ module xcfun_host
     IF (XCFUNfunctional.EQ.-1) &
      &CALL LSQUIT('Error in xcfun_host_add_functional, xcfun internal maximum number of functionals reached',lupri)
 
+    admm_ggacorr = .FALSE.
     IPOS = INDEX(DFTfuncString,'GGAKEY')
     if (IPOS.NE.0) then
        !GGAkeyString = .TRUE.
@@ -154,14 +155,15 @@ module xcfun_host
        allocate(WeightSingle(nStrings))
        call trim_strings(DFTfuncString,nStrings,DFTfuncStringSingle,WeightSingle)
        do I=1,nStrings
-          admm_ggacorr = ( (INDEX(DFTfuncStringSingle(I),'B88X')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'LDAX')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'PBEX')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'KT3X')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'OPTX')).NE.0 ) .OR. &
-         &               ( (INDEX(DFTfuncStringSingle(I),'CAMX')).NE.0 )
-          IF (admm_ggacorr) THEN
+          admm_ggacorr_single = ( (INDEX(DFTfuncStringSingle(I),'B88X')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'LDAX')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'PBEX')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'KT3X')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'OPTX')).NE.0 ) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'CAMCOMPX')).NE.0 )
+          IF (admm_ggacorr_single) THEN
             WeightSingle(I) = hfweight
+            admm_ggacorr = .TRUE.
           ELSE
             WeightSingle(I) = 1.0E0_realk
           ENDIF
@@ -219,15 +221,19 @@ module xcfun_host
        XCFUN_DOGGA = .FALSE.
        XCFUN_DOMETA = .FALSE.
     ENDIF
-    ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
-    IF(ierrHF.NE.0)THEN
-       call lsquit('Error determining exact (HF) exchange weight.',lupri)
-    ENDIF
-    IF(ABS(hfweight).GT.1.0E-16_realk)THEN
-       WRITE(lupri,*)'The Functional chosen contains an exact exchange contribution'
-       WRITE(lupri,*)'with the weight:', hfweight
+    IF (admm_ggacorr) THEN
+      !hfweight is an input, not an output
     ELSE
-       WRITE(lupri,*)'The Functional chosen contains no exact exchange contribution'
+      ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
+      IF(ierrHF.NE.0)THEN
+         call lsquit('Error determining exact (HF) exchange weight.',lupri)
+      ENDIF
+      IF(ABS(hfweight).GT.1.0E-16_realk)THEN
+         WRITE(lupri,*)'The Functional chosen contains an exact exchange contribution'
+         WRITE(lupri,*)'with the weight:', hfweight
+      ELSE
+         WRITE(lupri,*)'The Functional chosen contains no exact exchange contribution'
+      ENDIF
     ENDIF
     deallocate(DFTfuncStringSingle)
     deallocate(WeightSingle)
@@ -388,19 +394,20 @@ module xcfun_host
   
 !LDA PART
 
-  subroutine xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+  subroutine xcfun_lda_xc_eval(XCFUNINPUT,XCFUNOUTPUT,NPNT)
     implicit none
-    REAL(REALK),intent(in) :: XCFUNINPUT(1,1)
-    REAL(REALK),intent(inout) :: XCFUNOUTPUT(2,1)
+    INTEGER,intent(IN)        :: NPNT
+    REAL(REALK),intent(in)    :: XCFUNINPUT(1,NPNT)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(2,NPNT)
 #ifdef VAR_XCFUN
     !rho = XCFUNINPUT(1,1) 
-    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    call xc_eval(XCFUNfunctional,NPNT,XCFUNINPUT,XCFUNOUTPUT)
     ! XCFUNOUTPUT(1,1) - Exc
     ! XCFUNOUTPUT(2,1) - d Exc/d rho
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
-  end subroutine xcfun_lda_xc_single_eval
+  end subroutine xcfun_lda_xc_eval
 
   subroutine xcfun_lda_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
     implicit none

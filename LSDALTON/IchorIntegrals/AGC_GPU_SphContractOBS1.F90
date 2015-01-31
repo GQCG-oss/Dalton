@@ -4,11 +4,11 @@ use IchorPrecisionMod
   
  CONTAINS
   
- subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,OUT,iASync)
+ subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA2(ijkQcart,nContQ,nContP,nPasses,IN,OUT,iASync)
   implicit none
-  integer,intent(in)        :: ijkQcart,nContPasses
-  real(realk),intent(in)    :: IN(nContPasses,  6,ijkQcart)
-  real(realk),intent(inout) :: OUT(nContPasses,  5,ijkQcart)
+  integer,intent(in)        :: ijkQcart,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nContQ*nContP*nPasses,  6,ijkQcart)
+  real(realk),intent(inout) :: OUT(nContQ*nContP*nPasses,  5,ijkQcart)
   integer(kind=acckind),intent(in) :: iASync
   integer :: iP,ijkQ
   real(realk),parameter :: SPHMAT1_3      =   -2.8867513459481292E-01_realk
@@ -17,7 +17,7 @@ use IchorPrecisionMod
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
 !$ACC PARALLEL LOOP PRIVATE(iP,ijkQ) PRESENT(IN,OUT) ASYNC(iASync)
-  DO iP=1,nContPasses
+  DO iP=1,nContQ*nContP*nPasses
    DO ijkQ=1,ijkQcart
     OUT(iP,1,ijkQ) = IN(iP,2,ijkQ)
     OUT(iP,2,ijkQ) = IN(iP,5,ijkQ)
@@ -29,11 +29,11 @@ use IchorPrecisionMod
 end subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA2 
   
   
- subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,OUT,iASync)
+ subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA0(ijkQcart,nContQ,nContP,nPasses,IN,OUT,iASync)
   implicit none
-  integer,intent(in)        :: ijkQcart,nContPasses
-  real(realk),intent(in)    :: IN(nContPasses,  6,ijkQcart)
-  real(realk),intent(inout) :: OUT(nContPasses,  5,ijkQcart)
+  integer,intent(in)        :: ijkQcart,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nContQ*nContP*nPasses,  6,ijkQcart)
+  real(realk),intent(inout) :: OUT(nContQ*nContP*nPasses,  5,ijkQcart)
   integer(kind=acckind),intent(in) :: iASync
   integer :: iP,ijkQ
   real(realk),parameter :: SPHMAT1_3      =   -2.8867513459481292E-01_realk
@@ -42,7 +42,7 @@ end subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA2
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
 !$ACC PARALLEL LOOP PRIVATE(iP,ijkQ) PRESENT(IN,OUT) ASYNC(iASync)
-  DO iP=1,nContPasses
+  DO iP=1,nContQ*nContP*nPasses
    DO ijkQ=1,ijkQcart
     OUT(iP,1,ijkQ) = IN(iP,2,ijkQ)
     OUT(iP,2,ijkQ) = IN(iP,5,ijkQ)
@@ -54,11 +54,11 @@ end subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA2
 end subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA0 
   
   
- subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,OUT,iASync)
+ subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA2(ijkQcart,nContQ,nContP,nPasses,IN,OUT,iASync)
   implicit none
-  integer,intent(in)        :: ijkQcart,nContPasses
-  real(realk),intent(in)    :: IN(nContPasses, 18,ijkQcart)
-  real(realk),intent(inout) :: OUT(nContPasses, 15,ijkQcart)
+  integer,intent(in)        :: ijkQcart,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nContQ*nContP*nPasses, 18,ijkQcart)
+  real(realk),intent(inout) :: OUT(nContQ*nContP*nPasses, 15,ijkQcart)
   integer(kind=acckind),intent(in) :: iASync
   integer :: iP,ijkQ
   real(realk),parameter :: SPHMAT1_3      =   -2.8867513459481292E-01_realk
@@ -67,7 +67,7 @@ end subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA0
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
 !$ACC PARALLEL LOOP PRIVATE(iP,ijkQ) PRESENT(IN,OUT) ASYNC(iASync)
-  DO iP=1,nContPasses
+  DO iP=1,nContQ*nContP*nPasses
    DO ijkQ=1,ijkQcart
     OUT(iP,1,ijkQ) = IN(iP,2,ijkQ)
     OUT(iP,2,ijkQ) = IN(iP,5,ijkQ)
@@ -89,11 +89,11 @@ end subroutine SphericalContractOBS1_GPU_maxAngP2_maxAngA0
 end subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA2 
   
   
- subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,OUT,iASync)
+ subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA1(ijkQcart,nContQ,nContP,nPasses,IN,OUT,iASync)
   implicit none
-  integer,intent(in)        :: ijkQcart,nContPasses
-  real(realk),intent(in)    :: IN(nContPasses, 18,ijkQcart)
-  real(realk),intent(inout) :: OUT(nContPasses, 15,ijkQcart)
+  integer,intent(in)        :: ijkQcart,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nContQ*nContP*nPasses, 18,ijkQcart)
+  real(realk),intent(inout) :: OUT(nContQ*nContP*nPasses, 15,ijkQcart)
   integer(kind=acckind),intent(in) :: iASync
   integer :: iP,ijkQ
   real(realk),parameter :: SPHMAT1_7      =   -2.8867513459481292E-01_realk
@@ -102,7 +102,7 @@ end subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA2
   real(realk),parameter :: SPHMAT10_13    =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT16_7     =    5.7735026918962584E-01_realk
 !$ACC PARALLEL LOOP PRIVATE(iP,ijkQ) PRESENT(IN,OUT) ASYNC(iASync)
-  DO iP=1,nContPasses
+  DO iP=1,nContQ*nContP*nPasses
    DO ijkQ=1,ijkQcart
     OUT(iP,1,ijkQ) = IN(iP,4,ijkQ)
     OUT(iP,2,ijkQ) = IN(iP,5,ijkQ)
@@ -124,11 +124,11 @@ end subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA2
 end subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA1 
   
   
- subroutine SphericalContractOBS1_GPU_maxAngP4_maxAngA2(ijkQcart,nContPasses,IN,OUT,iASync)
+ subroutine SphericalContractOBS1_GPU_maxAngP4_maxAngA2(ijkQcart,nContQ,nContP,nPasses,IN,OUT,iASync)
   implicit none
-  integer,intent(in)        :: ijkQcart,nContPasses
-  real(realk),intent(in)    :: IN(nContPasses, 36,ijkQcart)
-  real(realk),intent(inout) :: OUT(nContPasses, 25,ijkQcart)
+  integer,intent(in)        :: ijkQcart,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nContQ*nContP*nPasses, 36,ijkQcart)
+  real(realk),intent(inout) :: OUT(nContQ*nContP*nPasses, 25,ijkQcart)
   integer(kind=acckind),intent(in) :: iASync
   integer :: iP,ijkQ
   real(realk),parameter :: SPHMAT1_13     =    8.3333333333333356E-02_realk
@@ -145,7 +145,7 @@ end subroutine SphericalContractOBS1_GPU_maxAngP3_maxAngA1
   real(realk),parameter :: SPHMAT12_3     =    5.7735026918962584E-01_realk
   real(realk),parameter :: SPHMAT36_13    =    3.3333333333333343E-01_realk
 !$ACC PARALLEL LOOP PRIVATE(iP,ijkQ) PRESENT(IN,OUT) ASYNC(iASync)
-  DO iP=1,nContPasses
+  DO iP=1,nContQ*nContP*nPasses
    DO ijkQ=1,ijkQcart
     OUT(iP,1,ijkQ) = IN(iP,8,ijkQ)
     OUT(iP,2,ijkQ) = IN(iP,11,ijkQ)

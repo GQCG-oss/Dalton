@@ -1694,21 +1694,7 @@ nDMAT_RHS = INPUT%nDMAT_RHS
 nDMAT_LHS = INPUT%nDMAT_LHS
 CS_THRESHOLD = INPUT%CS_THRESHOLD/INPUT%exchangeFactor
 sameLHSaos = INPUT%sameLHSaos
-!Beware when converting from double precision to short integer 
-!If double precision is less than 10^-33 then you can run into
-!problems with short integer overflow
-IF(INPUT%CS_THRESHOLD/INPUT%exchangeFactor.GT.shortintCrit)then
-   TMP=log10(INPUT%CS_THRESHOLD/INPUT%exchangeFactor)
-   IP=NINT(TMP) !IP used as temp
-   IF (ABS(TMP-IP).LT. 1.0E-15_realk) THEN
-      !this means that the threshold is 1EX_realk X=-1,..,-19,..
-      CS_THRLOG=IP
-   ELSE
-      CS_THRLOG=FLOOR(log10(INPUT%CS_THRESHOLD/INPUT%exchangeFactor))
-   ENDIF
-ELSE
-   CS_THRLOG=shortzero
-ENDIF
+call Obtain_CS_THRLOG(CS_THRLOG,INPUT%CS_THRESHOLD/INPUT%exchangeFactor)
 DALINK_THRLOG = CS_THRLOG-INPUT%DASCREEN_THRLOG
 sameODs = INPUT%sameODs
 MBIE_SCREEN = INPUT%MBIE_SCREEN
@@ -2939,10 +2925,10 @@ ELSE
           CALL Explicit4centerDEC(OUTPUT%resultMat,output%ndim(1),&
                & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
                & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
-!         ELSEIF (output%decpacked2)then
-!            CALL Explicit4centerDEC2(OUTPUT%resultMat,output%ndim(1),&
-!                 & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
-!                 & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
+         ELSEIF (output%decpacked2)then
+            CALL Explicit4centerDEC2(OUTPUT%resultMat,output%ndim(1),&
+                 & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
+                 & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
          ELSEIF (output%decpackedK)then
             CALL Explicit4centerDECK(OUTPUT%resultMat,output%ndim(1),&
                  & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
@@ -3560,6 +3546,10 @@ nCompB  = P%orbital2%nOrbComp(angB)
 nPassP  = P%nPasses
 permute = P%sameAO.AND.(startA.NE.startB)
 
+IF (IPRINT.GT.20) THEN
+  CALL print_addPQ(Integral%IN,nC*nD,nPassQ*ndim5Q,ndim5P,nAng,nCont,permute,contAng,lupri,iprint)
+ENDIF
+
 IF (.NOT.contAng) THEN !Default AO ordering: angular,contracted
   IF (nQ.EQ. 1) THEN
 #ifdef VAR_LSDEBUGINT
@@ -3621,6 +3611,35 @@ IF (IPRINT.GT. 10) THEN
   CALL PrintPQ(Integral%integralsABCD,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,nDer,LUPRI,IPRINT)
 ENDIF
 
+CONTAINS
+  SUBROUTINE print_addPQ(AddPQ,nQ,n5Q,nAng,nCont,n5P,permute,contang,LUPRI,IPRINT)
+  implicit none
+  INTEGER,intent(IN)     :: nQ,n5Q,nAng,nCont,n5P,LUPRI,IPRINT
+  LOGICAL,intent(IN)     :: permute,contang
+  Real(realk),intent(IN) :: AddPQ(nCont,nQ,n5Q,n5P,nAng)
+  !
+  Integer :: iCont,iQ,i5Q,i5P,iAng
+  
+  write(lupri,'(1X,A)')    'Printing AddPQ entering AddToPQ'
+  write(lupri,'(3X,A10,I5)') 'n5Q    =',n5Q
+  write(lupri,'(3X,A10,I5)') 'n5P    =',n5P
+  write(lupri,'(3X,A10,I5)') 'nQ     =',nQ
+  write(lupri,'(3X,A10,I5)') 'nAngP  =',nAng
+  write(lupri,'(3X,A10,I5)') 'nContP =',nCont
+  write(lupri,'(3X,A10,L5)') 'permute =',permute
+  write(lupri,'(3X,A10,L5)') 'contang =',contang
+  
+  write(lupri,'(5X,A)') '  iQ5  iP5   iQ  iAng   iCont=1,...,nCont'
+  DO i5Q = 1,n5Q
+  DO i5P = 1,n5P
+  DO iQ  = 1,nQ
+  DO iAng = 1,nAng
+    write(lupri,'(5X,4I5,10F15.9/25X,10F15.9)') i5Q,i5P,iQ,iAng,(AddPQ(iCont,iQ,i5Q,i5P,iAng),iCont=1,nCont)
+  ENDDO
+  ENDDO
+  ENDDO
+  ENDDO
+  END SUBROUTINE print_addPQ
 END SUBROUTINE AddToPQ
 
  

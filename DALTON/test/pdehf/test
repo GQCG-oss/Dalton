@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(from_string = 'Polarizable embedding energy contributions:',
+      num_lines = 13,
+      abs_tolerance = 1.0e-6)
+
+f.add(from_string = 'Final results from SIRIUS',
+      num_lines = 12,
+      abs_tolerance = 1.0e-6)
+
+test.run(['savden.dal'], ['fragment.mol'], ['fragment.pot'], args='-put "core.dat" -get "pe_density.bin"')
+
+os.rename('savden_fragment_fragment.pe_density.bin', 'pe_density.bin')
+
+test.run(['twoint.dal'], ['fragment_core.mol'], args='-put "pe_density.bin" -get "pe_fock.bin"')
+
+os.rename('twoint_fragment_core.pe_fock.bin', 'pe_fock_1.bin')
+
+test.run(['pde.dal'], ['core.mol'], ['fragment.pot'], f={'out': f}, args='-put "pe_fock_1.bin"')
+
+sys.exit(test.return_code)

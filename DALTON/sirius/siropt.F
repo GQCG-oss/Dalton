@@ -122,7 +122,7 @@ C
 C *** WF_TYPE
 C
       RHF_CALC = (NASHT .LE. 1 .OR. HSROHF)
-      IF ( (MCTYPE.EQ.0) .NEQV. RHF_CALC ) THEN
+      IF ( (MCTYPE.LE.0) .NEQV. RHF_CALC ) THEN
          WRITE (LUPRI,'(//A,I5)')
      &  'WARNING siropt: RHF_CALC neqv MCTYPE =',MCTYPE
       END IF
@@ -237,7 +237,7 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
          KSRHYB = KFS
       END IF
 !HJJ - FRAN END
-      IF (SRHYBR .AND. MCTYPE.NE.0) THEN
+      IF (SRHYBR .AND. MCTYPE.GT.0) THEN
          KFQ = KSRHYB + NNORBT
       ELSE
          KFQ = KSRHYB
@@ -1230,6 +1230,17 @@ C
 C ***********************************************************
 C
   890 CONTINUE
+
+      !> store 1-particle density matrix in AO-basis on file
+!#define AO_DENSITIES_ON_FILE
+#ifdef AO_DENSITIES_ON_FILE
+      call rdcref(wrk(kcref))
+      call makdv(wrk(kcref),wrk(kdv),wrk(kcindx),wrk(kwrkg),lwrkg)
+      call write_aodens(wrk(kdv),nisht,nasht,nbast,nnashx,
+     &                  ncmot,nsym,nbas,ibas,lupri,.false.,"MC")
+#undef AO_DENSITIES_ON_FILE
+#endif
+
 C     restore control variables
       FLAG(39) = NRALW
       IFTHRS = IFTHSV
@@ -1300,7 +1311,8 @@ C    *      ' Orbital energy analysis skipped for open-shell systems'
 C        GO TO 9999
 C hjaaj TODO:   EKT orbital energies may be defined later.
       END IF
-      IF (IPRINT .LT. 10) WRITE (LUPRI,'(/A)') ' Only the five'//
+      IF (IPRINT .LT. 10 .AND. NSSHT .GT. 20)
+     &   WRITE (LUPRI,'(/A)') ' Only the 20'//
      &   ' lowest virtual orbital energies printed in each symmetry.'
       IF (IPRINT .GE. 2) WRITE (LUPRI,'(/A,I5/A,8I5)')
      &   ' Number of electrons :',2*NISHT,
@@ -1389,7 +1401,7 @@ C                     because the Fock matrix is not zero for these
          IF (IPRINT .GE. 10) THEN
             NLAST = NORBI
          ELSE
-            NLAST = MIN(NORBI,NOCC(ISYM)+5)
+            NLAST = MIN(NORBI,NOCC(ISYM)+20)
          END IF
          IF (NFRHFI .GT. 0) WRITE (LUPRI,'(A,I3,A)')
      &' Note: the first',NFRHFI,' orbitals in next symmetry are frozen'
@@ -2172,7 +2184,7 @@ C
       ELSE
          IF (DEPRED .NE. 0.0D0) THEN
            RATIO = DEACT / DEPRED
-           WRITE(LUW4,1110) DEACT, DEPRED, RATIO
+           WRITE(LUW4,1100) DEACT, DEPRED, RATIO
            WRITE(LUW4,'(A)') ' Close to convergence, ratio set to one.'
          ELSE
            IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
@@ -2181,7 +2193,7 @@ C
          ISTEP = -1
       END IF
  1100 FORMAT (/' (SIRSTP) Energy difference;',
-     *        /' actual, predicted and ratio:',2F15.10,F12.6)
+     *        /' actual, predicted and ratio:',2F20.15,F12.6)
  1110 FORMAT (/' (SIRSTP) Close to convergence, ratio set to one.',
      *        /' Energy difference; actual and predicted:',1P,2D15.5)
 C
@@ -2494,7 +2506,7 @@ C
 C  The following records are written:
 C
 C    0) label LBSIFC ("SIR IPH ")
-C    1) POTNUC,EMY,EACTIV,EMCSCF
+C    1) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,LSYM,MS2
 C    2) NISHT,NASHT,...
 C    3) CMO
 C    4) CREF
@@ -2526,7 +2538,7 @@ C    *) (LFIELD(I),I=1,NFIEL4)
 C   end if
 C   If (solvent) then
 C    *) label "SOLVINFO"
-C    *) EPSOL,EPSTAT,RSOL(1:3),LSOLMX
+C    *) EPSOL,EPSTAT,EPPN,RSOL(1:3),LSOLMX,INERSI,INERSF
 C    *) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C    *) ERLM(LM,1), LM = 1,NLMSOL)
 C    *) (TRLM(LM), LM = 1,NLMSOL)    where TRLM(i) = ERLM(i,2)
@@ -2552,6 +2564,7 @@ C
 C
 C Used from common blocks:
 C   INFINP : ABAIPH,ISTATE,ISPIN,NACTEL,FLAG(*),INERSI
+C   SPINFO : MS2
 C   INFOPT : EMY, EACTIV, EMCSCF, ESOLT
 C   INFVAR : NCONF,NWOPT
 C   INFORB : NSYM,NISHT,NASHT,NNASHX,NNASHY,NOCCT,NNOCCX,NCMOT,...
@@ -2571,6 +2584,7 @@ C
 #include "pcm.h"
 #include "pcmlog.h"
 #include "infinp.h"
+#include "spinfo.h"
 #include "infopt.h"
 #include "infvar.h"
 #include "inforb.h"
@@ -2700,12 +2714,17 @@ C
       WRITE (LUSIFC) LAB123,LBSIFC
 C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-     &               ISTATE,ISPIN,NACTEL,LSYM,GRDNRM
+     &               ISTATE,ISPIN,NACTEL,LSYM,MS2
+      IF (MCTYPE .EQ. 0 .AND. HSROHF) THEN
+         MCTYPE_IFC = -1
+      ELSE
+         MCTYPE_IFC = MCTYPE
+      END IF
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
      &               NSYM,MULD2H, NRHF,NFRO,
      &               NISH,NASH,NORB,NBAS,
-     &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
+     &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE_IFC,
      &               NAS1, NAS2, NAS3
 C
 C 880920-hjaaj: later write label here for orbitals
@@ -2801,7 +2820,7 @@ C     Write Solvent information, if Solvent calculation.
          IF (KWRK2 .GT. LFREE)
      &      CALL ERRWRK('WR_SIRIFC-SOLVENT',KWRK2,LFREE)
          WRITE (LUSIFC) LAB123,TABLE(6)
-         WRITE (LUSIFC) EPSOL,EPSTAT,RSOL,LSOLMX
+         WRITE (LUSIFC) EPSOL,EPSTAT,EPPN,RSOL,LSOLMX,INERSI,INERSF
          WRITE (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
          NLMSO4 = MAX(4,NLMSOL)
          CALL WRITT (LUSIFC,NLMSO4,ERLM(1,1))

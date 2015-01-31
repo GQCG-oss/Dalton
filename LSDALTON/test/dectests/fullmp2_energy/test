@@ -16,11 +16,10 @@ f.add(string = 'Nuclear repulsion',
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'Number of CC iterations')
-
-f.add(from_string = 'Doubles amplitudes norm',
-      to_string   = 'Total amplitudes norm',
-      rel_tolerance = 1.0e-8)
+#f.add(string = 'Number of CC iterations')
+#f.add(from_string = 'Doubles amplitudes norm',
+#      to_string   = 'Total amplitudes norm',
+#      rel_tolerance = 1.0e-8)
 
 f.add(from_string = 'E: Hartree-Fock energy',
       to_string   = 'G: Total MP2 energy',

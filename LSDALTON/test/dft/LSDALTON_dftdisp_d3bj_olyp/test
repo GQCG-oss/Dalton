@@ -14,7 +14,7 @@ f.add(string = 'Final DFT energy',
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-test.run(['olyp.dal'], ['h2o.mol'], {'out': f})
+test.run(['dftdisp_d3bj_olyp.dal'], ['h2o.mol'], {'out': f})
 
 sys.exit(test.return_code)
 

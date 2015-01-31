@@ -4,11 +4,11 @@ use IchorPrecisionMod
   
  CONTAINS
   
- subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC2(nlmP,nContQ,nContP,nPasses,IN,OUT)
   implicit none
-  integer,intent(in)        :: nlmP,nContPasses
-  real(realk),intent(in)    :: IN(nlmP,  6,nContPasses)
-  real(realk),intent(inout) :: OUT(nlmP,  5,nContPasses)
+  integer,intent(in)        :: nlmP,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nlmP,  6,nContQ*nContP*nPasses)
+  real(realk),intent(inout) :: OUT(nlmP,  5,nContQ*nContP*nPasses)
   integer :: iPass,ijkP,iP
   real(realk),parameter :: SPHMAT1_3      =   -2.8867513459481292E-01_realk
   real(realk),parameter :: SPHMAT1_5      =    5.0000000000000000E-01_realk
@@ -16,7 +16,7 @@ use IchorPrecisionMod
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
 !$OMP DO PRIVATE(iPass,ijkP)
-  DO iPass=1,nContPasses
+  DO iPass=1,nContQ*nContP*nPasses
    DO ijkP=1,nlmP
     OUT(ijkP,1,iPass) = IN(ijkP,2,iPass)
     OUT(ijkP,2,iPass) = IN(ijkP,5,iPass)
@@ -29,11 +29,11 @@ use IchorPrecisionMod
 end subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC2 
   
   
- subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC0(nlmP,nContQ,nContP,nPasses,IN,OUT)
   implicit none
-  integer,intent(in)        :: nlmP,nContPasses
-  real(realk),intent(in)    :: IN(nlmP,  6,nContPasses)
-  real(realk),intent(inout) :: OUT(nlmP,  5,nContPasses)
+  integer,intent(in)        :: nlmP,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nlmP,  6,nContQ*nContP*nPasses)
+  real(realk),intent(inout) :: OUT(nlmP,  5,nContQ*nContP*nPasses)
   integer :: iPass,ijkP,iP
   real(realk),parameter :: SPHMAT1_3      =   -2.8867513459481292E-01_realk
   real(realk),parameter :: SPHMAT1_5      =    5.0000000000000000E-01_realk
@@ -41,7 +41,7 @@ end subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC2
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
 !$OMP DO PRIVATE(iPass,ijkP)
-  DO iPass=1,nContPasses
+  DO iPass=1,nContQ*nContP*nPasses
    DO ijkP=1,nlmP
     OUT(ijkP,1,iPass) = IN(ijkP,2,iPass)
     OUT(ijkP,2,iPass) = IN(ijkP,5,iPass)
@@ -54,11 +54,11 @@ end subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC2
 end subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC0 
   
   
- subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC2(nlmP,nContQ,nContP,nPasses,IN,OUT)
   implicit none
-  integer,intent(in)        :: nlmP,nContPasses
-  real(realk),intent(in)    :: IN(nlmP, 18,nContPasses)
-  real(realk),intent(inout) :: OUT(nlmP, 15,nContPasses)
+  integer,intent(in)        :: nlmP,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nlmP, 18,nContQ*nContP*nPasses)
+  real(realk),intent(inout) :: OUT(nlmP, 15,nContQ*nContP*nPasses)
   integer :: iPass,ijkP,iP
   real(realk),parameter :: SPHMAT1_3      =   -2.8867513459481292E-01_realk
   real(realk),parameter :: SPHMAT1_5      =    5.0000000000000000E-01_realk
@@ -66,7 +66,7 @@ end subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC0
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
 !$OMP DO PRIVATE(iPass,ijkP)
-  DO iPass=1,nContPasses
+  DO iPass=1,nContQ*nContP*nPasses
    DO ijkP=1,nlmP
     OUT(ijkP,1,iPass) = IN(ijkP,2,iPass)
     OUT(ijkP,2,iPass) = IN(ijkP,5,iPass)
@@ -89,11 +89,11 @@ end subroutine SphericalContractOBS2_CPU_maxAngQ2_maxAngC0
 end subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC2 
   
   
- subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(nlmP,nContQ,nContP,nPasses,IN,OUT)
   implicit none
-  integer,intent(in)        :: nlmP,nContPasses
-  real(realk),intent(in)    :: IN(nlmP, 18,nContPasses)
-  real(realk),intent(inout) :: OUT(nlmP, 15,nContPasses)
+  integer,intent(in)        :: nlmP,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nlmP, 18,nContQ*nContP*nPasses)
+  real(realk),intent(inout) :: OUT(nlmP, 15,nContQ*nContP*nPasses)
   integer :: iPass,ijkP,iP
   real(realk),parameter :: SPHMAT1_7      =   -2.8867513459481292E-01_realk
   real(realk),parameter :: SPHMAT1_13     =    5.0000000000000000E-01_realk
@@ -101,7 +101,7 @@ end subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC2
   real(realk),parameter :: SPHMAT10_13    =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT16_7     =    5.7735026918962584E-01_realk
 !$OMP DO PRIVATE(iPass,ijkP)
-  DO iPass=1,nContPasses
+  DO iPass=1,nContQ*nContP*nPasses
    DO ijkP=1,nlmP
     OUT(ijkP,1,iPass) = IN(ijkP,4,iPass)
     OUT(ijkP,2,iPass) = IN(ijkP,5,iPass)
@@ -124,11 +124,11 @@ end subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC2
 end subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC1 
   
   
- subroutine SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(nlmP,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS2_CPU_maxAngQ4_maxAngC2(nlmP,nContQ,nContP,nPasses,IN,OUT)
   implicit none
-  integer,intent(in)        :: nlmP,nContPasses
-  real(realk),intent(in)    :: IN(nlmP, 36,nContPasses)
-  real(realk),intent(inout) :: OUT(nlmP, 25,nContPasses)
+  integer,intent(in)        :: nlmP,nContQ,nContP,nPasses
+  real(realk),intent(in)    :: IN(nlmP, 36,nContQ*nContP*nPasses)
+  real(realk),intent(inout) :: OUT(nlmP, 25,nContQ*nContP*nPasses)
   integer :: iPass,ijkP,iP
   real(realk),parameter :: SPHMAT1_13     =    8.3333333333333356E-02_realk
   real(realk),parameter :: SPHMAT1_15     =   -1.4433756729740646E-01_realk
@@ -144,7 +144,7 @@ end subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC1
   real(realk),parameter :: SPHMAT12_3     =    5.7735026918962584E-01_realk
   real(realk),parameter :: SPHMAT36_13    =    3.3333333333333343E-01_realk
 !$OMP DO PRIVATE(iPass,ijkP)
-  DO iPass=1,nContPasses
+  DO iPass=1,nContQ*nContP*nPasses
    DO ijkP=1,nlmP
     OUT(ijkP,1,iPass) = IN(ijkP,8,iPass)
     OUT(ijkP,2,iPass) = IN(ijkP,11,iPass)

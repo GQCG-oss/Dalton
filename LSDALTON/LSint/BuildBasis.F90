@@ -128,6 +128,8 @@ ELSE
  CASE('GCTRANS  ')!identical to BasParamLABEL(GCTBasParam)
     !build as a transformation basis in trilevel algorithm
     call LSQUIT('GCTRANS no legal keyword in Build_Basis.',lupri)  
+ CASE('CABSP    ') !identical to BasParamLABEL(CAPBasParam)
+    BASINFO%Labelindex = CAPBasParam
  CASE DEFAULT
     WRITE (LUPRI,'(A5,2X,A9)') 'LABEL',BASISLABEL
     WRITE (LUPRI,'(a80)') ' not recognized in Build_basis.'
@@ -491,6 +493,21 @@ ELSE
 ENDIF
 
 END SUBROUTINE ATTACH_CHARGEINDEX_IDTYPE
+
+SUBROUTINE COPY_MOLECULE_IDTYPE(MOLECULE,iR,iC)
+implicit none
+!> contains all info about the molecule (atoms, charge,...)
+TYPE(MOLECULEINFO)        :: MOLECULE
+!> labelindexes
+INTEGER,intent(in)        :: iR,iC
+!
+INTEGER                   :: I
+
+DO I=1,MOLECULE%natoms
+   MOLECULE%ATOM(I)%IDtype(iC) = MOLECULE%ATOM(I)%IDtype(iR)
+ENDDO
+
+END SUBROUTINE COPY_MOLECULE_IDTYPE
 
 !> \brief get the path to the basisset library
 !> \author T. Kjaergaard

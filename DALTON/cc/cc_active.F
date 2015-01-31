@@ -95,18 +95,19 @@ C
 C     Information from Sirius to CC code
 C     ----------------------------------
 C
-      IFSI = -1
-      CALL GPOPEN(IFSI,'SIRIFC  ','UNKNOWN',' ','UNFORMATTED',
+      IF (LUSIFC .GT. 0) CALL GPCLOSE(LUSIFC,'KEEP')
+
+      CALL GPOPEN(LUSIFC,FNSIFC,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
-      REWIND(IFSI)
+      REWIND(LUSIFC)
 C
-      CALL MOLLAB(LABCC,IFSI,LUPRI)
-      READ(IFSI) NSYM, NORBT, NBAST, NLAM, (NOCC(I),I=1,NSYM),
+      CALL MOLLAB(LABCC,LUSIFC,LUPRI)
+      READ(LUSIFC) NSYM, NORBT, NBAST, NLAM, (NOCC(I),I=1,NSYM),
      &           (NORB(I),I=1,NSYM), (NBAS(I),I=1,NSYM), POTNUC, ESCF
-      READ(IFSI) (WORK(I), I =1,NORBT)
-      READ(IFSI) (WORK(I), I=NORBT+1,NLAM+NORBT)
+      READ(LUSIFC) (WORK(I), I =1,NORBT)
+      READ(LUSIFC) (WORK(I), I=NORBT+1,NLAM+NORBT)
 C
-      CALL GPCLOSE(IFSI,'KEEP')
+      CALL GPCLOSE(LUSIFC,'KEEP')
 C
 C     Print RHF orbitals
 C
@@ -156,7 +157,7 @@ C
       N2BASX = NBAST*NBAST
 C
       IF (NLAMDA .NE. NLAM) 
-     &   STOP 'Something is rotten in the state of Norway.1'
+     &   CALL QUIT('Something is rotten in the state of Norway.1')
 C
       IF (DBGPRT) THEN
 C
@@ -213,7 +214,7 @@ C
       KVICHO = KOCCHO + LOCCHO
       KEND1  = KVICHO + LVICHO
       LWRK1  = LWORK  - KEND1
-      IF (LWRK1. LT. 0) STOP 'Not enough space in CC_SELACT.1'
+      IF (LWRK1. LT. 0) CALL QUIT('Not enough space in CC_SELACT.1')
 C
       KVICHL = KEND1
 c
@@ -241,7 +242,7 @@ C
          KTMP  = KEND1
          KEND2 = KEND1 + NBAST*NBAST
          LWRK2 = LWORK - KEND2
-         IF (LWRK2 .LT. 0) STOP 'Not enough space for spread'
+         IF (LWRK2 .LT. 0) CALL QUIT('Not enough space for spread')
          CALL DZERO(WORK(KTMP),NBAST*NBAST)
          DO I = 1,NBAST
             II = NBAST*(I-1) + I
@@ -276,7 +277,7 @@ C
          KSCR   = KFCKSQ + NBAST*NBAST
          KEND2  = KSCR   + NBAST*NBAST
          LWRK2  = LWORK  - KEND2
-         IF (LWRK2 .LT. 0) STOP 'Not enough space in CC_SELACT.2a'
+         IF (LWRK2 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.2a')
 C
          CALL DZERO(WORK(KSCR),NBAST*NBAST)
          CALL CHO_DENUPK(WORK(KOCDEN),WORK(KSCR),IOFDEN)
@@ -371,7 +372,7 @@ C
          KSCR2 = KSCR1 + NBAS(ISYM)*NORB(ISYM)
          KEND2 = KSCR2 + NORB(ISYM)*NORB(ISYM)
          LWRK2 = LWORK - KEND2
-         IF (LWRK2 .LT. 0) STOP 'Not enough memory in CC_SELACT'
+         IF (LWRK2 .LT. 0) CALL QUIT('Not enough memory in CC_SELACT')
 C
          NBASI = MAX(NBAS(ISYM),1)
          NORBI = MAX(NORB(ISYM),1)
@@ -419,7 +420,7 @@ C
 C
          IF (IOVER .NE. 0) THEN
             WRITE(LUPRI,*) 'Program stops because of previous errors'
-            CALL QUIT('Hartree-Fock MOs non orthonormal')
+            CALL QUIT('Hartree-Fock MOs not orthonormal')
          END IF
 C
       END DO
@@ -477,7 +478,7 @@ C
          KSCR1 = KEND1
          KEND2 = KSCR1 + NBAS(ISYM)*NRHF(ISYM)
          LWRK2 = LWORK - KEND2
-         IF (LWRK2 .LT. 0) STOP 'Not enough space in CC_SELACT.2b'
+         IF (LWRK2 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.2b')
 C        
          IF (NRED .EQ. 0) GOTO 9120
 C
@@ -540,7 +541,7 @@ C
          KSCR1 = KEND1
          KEND2 = KSCR1 + NBAS(ISYM)*NVIR(ISYM)
          LWRK2 = LWORK - KEND2
-         IF (LWRK2 .LT. 0) STOP 'Not enough space in CC_SELACT.2c'
+         IF (LWRK2 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.2c')
 C
          NRED = NACBSV(ISYM)
          IF (NRED .EQ. 0) GOTO 9140
@@ -675,7 +676,7 @@ C
   100    CONTINUE
 C
          IF (NACTOC(ISYM) .NE. NRHF(ISYM)) 
-     &       STOP 'Something is rotten in the state of Norway.3b'
+     &       CALL QUIT('Something is rotten in the state of Norway.3b')
 C
       END DO                            !! Symmetry loop
 C
@@ -702,7 +703,7 @@ C
 C
       KEND2 = KEND1 + LEN
       LWRK2 = LWORK - KEND2
-      IF (LWRK2 .LT. 0) STOP 'Not enough space to resort occupieds'
+      IF (LWRK2 .LT. 0) CALL QUIT('Not enough space to resort occupied')
 C
       IF (LEN .NE. LOCCHO) THEN
          WRITE(LUPRI,*) 'Error checking lenght of occupied orbitals'
@@ -772,7 +773,7 @@ C
   200    CONTINUE
 C
          IF (NACTVI(ISYM) .NE. NVIR(ISYM)) 
-     &       STOP 'Something is rotten in the state of Norway.4b'
+     &       CALL QUIT('Something is rotten in the state of Norway.4b')
       END DO                !! Symmetry loop
 C
       WRITE(LUPRI,'(//,A,/)')'Number of occupied orbitals in each atom'
@@ -807,7 +808,7 @@ C
 C
       KEND2 = KEND1 + LEN
       LWRK2 = LWORK - KEND2
-      IF (LWRK2 .LT. 0) STOP 'Not enough space to resort virtuals'
+      IF (LWRK2 .LT. 0) CALL QUIT('Not enough space to resort virtuals')
 C
       IF (LEN .NE. LVICHO) THEN
          WRITE(LUPRI,*) 'Error checking lenght of virtual orbitals'
@@ -926,7 +927,7 @@ C
          KSCR2 = KSCR1 + NBAS(ISYM)*NORB(ISYM)
          KEND2 = KSCR2 + NORB(ISYM)*NORB(ISYM)
          LWRK2 = LWORK - KEND2
-         IF (LWRK2 .LT. 0) STOP 'Not enough memory in CC_SELACT.2'
+         IF (LWRK2 .LT. 0) CALL QUIT('Not enough memory in CC_SELACT.2')
 C
          NBASI = MAX(NBAS(ISYM),1)
          NORBI = MAX(NORB(ISYM),1)
@@ -982,7 +983,7 @@ C
 C
          IF (IOVER .NE. 0) THEN
             WRITE(LUPRI,*) 'Program stops because of previous errors'
-            CALL QUIT('Cholesky MOs non orthonormal')
+            CALL QUIT('Cholesky MOs not orthonormal')
          ELSE
            WRITE(LUPRI,'(A,I2)') 'Symmetry block',ISYM
            WRITE(LUPRI,'(2A,D12.6)') 'Maximum deviation from one ',
@@ -1065,7 +1066,7 @@ C
       KFKDIA = KEND1
       KEND2  = KFKDIA + NORBT
       LWRK2 = LWORK - KEND2
-      IF (LWRK2 .LT. 0) STOP 'Not enough space in CC_SELACT.2d'
+      IF (LWRK2 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.2d')
 C
       DO ISYM = 1,NSYM
 C
@@ -1075,7 +1076,7 @@ C
          KSCRIQ = KFCKIJ + NINAOC(ISYM)*NINAOC(ISYM)
          KEND3  = KSCRIQ + NINAOC(ISYM)*NBAS(ISYM)
          LWRK3  = LWORK  - KEND3
-         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3a'
+         IF (LWRK3 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.3a')
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NINAOC(ISYM),1)
@@ -1109,20 +1110,20 @@ C
          KTMP2 = KTMP1 + NINAOC(ISYM)
          KEND4 = KTMP2 + NINAOC(ISYM)
          LWRK4 = LWORK - KEND4
-         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4a'
+         IF (LWRK4 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.4a')
 C
          NACTI = NINAOC(ISYM)
          MATZ  = 1
          CALL RS(NACTI,NACTI,WORK(KFCKIJ),WORK(KEVAL),MATZ,
      &           WORK(KEVEC),WORK(KTMP1),WORK(KTMP2),IERR)
-         IF (IERR .NE. 0) STOP 'Error diagonalizing occupied part'
+         IF (IERR .NE. 0) CALL QUIT('Error diagonalizing occupied part')
 C
 C        Transform back and save
 C
          KTRAN = KTMP1
          KEND5 = KTRAN + NINAOC(ISYM)*NBAS(ISYM)
          LWRK5 = LWORK - KEND5
-         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5a'
+         IF (LWRK5 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.5a')
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NINAOC(ISYM),1)
@@ -1148,7 +1149,7 @@ C
          KSCRIQ = KFCKIJ + NACTOC(ISYM)*NACTOC(ISYM)
          KEND3  = KSCRIQ + NACTOC(ISYM)*NBAS(ISYM)
          LWRK3  = LWORK  - KEND3
-         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3b'
+         IF (LWRK3 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.3b')
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NACTOC(ISYM),1)
@@ -1182,20 +1183,20 @@ C
          KTMP2 = KTMP1 + NACTOC(ISYM)
          KEND4 = KTMP2 + NACTOC(ISYM)
          LWRK4 = LWORK - KEND4
-         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4b'
+         IF (LWRK4 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.4b')
 C
          NACTI = NACTOC(ISYM)
          MATZ  = 1
          CALL RS(NACTI,NACTI,WORK(KFCKIJ),WORK(KEVAL),MATZ,
      &           WORK(KEVEC),WORK(KTMP1),WORK(KTMP2),IERR)
-         IF (IERR .NE. 0) STOP 'Error diagonalizing occupied part'
+         IF (IERR .NE. 0) CALL QUIT('Error diagonalizing occupied part')
 C
 C        Transform back and save
 C
          KTRAN = KTMP1
          KEND5 = KTRAN + NACTOC(ISYM)*NBAS(ISYM)
          LWRK5 = LWORK - KEND5
-         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5b' 
+         IF (LWRK5 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.5b')
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NACTOC(ISYM),1)
@@ -1227,7 +1228,7 @@ C
          KSCRAQ = KFCKAB + NACTVI(ISYM)*NACTVI(ISYM)
          KEND3  = KSCRAQ + NACTVI(ISYM)*NBAS(ISYM)
          LWRK3  = LWORK  - KEND3
-         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3c'
+         IF (LWRK3 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.3c')
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NACTVI(ISYM),1)
@@ -1254,20 +1255,20 @@ C
          KTMP2 = KTMP1 + NACTVI(ISYM)
          KEND4 = KTMP2 + NACTVI(ISYM)
          LWRK4 = LWORK - KEND4
-         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4c'
+         IF (LWRK4 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.4c')
 C
          NACTI = NACTVI(ISYM)
          MATZ  = 1
          CALL RS(NACTI,NACTI,WORK(KFCKAB),WORK(KEVAL),MATZ,
      &           WORK(KEVEC),WORK(KTMP1),WORK(KTMP2),IERR)
-         IF (IERR .NE. 0) STOP 'Error diagonalizing virtual part'
+         IF (IERR .NE. 0) CALL QUIT('Error diagonalizing virtual part')
 C
 C        Transform back and save
 C
          KTRAN = KTMP1
          KEND5 = KTRAN + NACTVI(ISYM)*NBAS(ISYM)
          LWRK5 = LWORK - KEND5
-         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5c'
+         IF (LWRK5 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.5c')
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NACTVI(ISYM),1)
@@ -1293,7 +1294,7 @@ C
          KSCRAQ = KFCKAB + NINAVI(ISYM)*NINAVI(ISYM)
          KEND3  = KSCRAQ + NINAVI(ISYM)*NBAS(ISYM)
          LWRK3  = LWORK  - KEND3
-         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3d'
+         IF (LWRK3 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.3d')
 c
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NINAVI(ISYM),1)
@@ -1322,20 +1323,20 @@ C
          KTMP2 = KTMP1 + NINAVI(ISYM)
          KEND4 = KTMP2 + NINAVI(ISYM)
          LWRK4 = LWORK - KEND4
-         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4d'
+         IF (LWRK4 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.4d')
 
          NACTI = NINAVI(ISYM)
          MATZ  = 1
          CALL RS(NACTI,NACTI,WORK(KFCKAB),WORK(KEVAL),MATZ,
      &           WORK(KEVEC),WORK(KTMP1),WORK(KTMP2),IERR)
-         IF (IERR .NE. 0) STOP 'Error diagonalizing virtual part'
+         IF (IERR .NE. 0) CALL QUIT('Error diagonalizing virtual part')
 c
 c        Transform back and save
 c
          KTRAN = KTMP1
          KEND5 = KTRAN + NINAVI(ISYM)*NBAS(ISYM)
          LWRK5 = LWORK - KEND5
-         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5d'
+         IF (LWRK5 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.5d')
 
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NINAVI(ISYM),1)
@@ -1455,7 +1456,7 @@ C
       KOVEC = KUNPK + NORBT*NBAST
       KEND6 = KOVEC + NBAST
       LWRK6 = LWORK - KEND6
-      IF (LWRK6 .LT. 0) STOP 'Not enough space in CC_SELACT.6'
+      IF (LWRK6 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.6')
 C
       CALL DZERO(WORK(KOCCU),NORBT)
       DO I = 1,NRHFT
@@ -1488,25 +1489,27 @@ C
       IONE = 1
       IZER = 0
 C
-      IFSI = -1
-      CALL GPOPEN(IFSI,'SIRIFC  ','UNKNOWN',' ','UNFORMATTED',
+      CALL GPOPEN(LUSIFC,FNSIFC,'UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
-      REWIND(IFSI)
+      REWIND(LUSIFC)
 C
-      WRITE(IFSI) STARS,LABIP
-      WRITE(IFSI) POTNUC, DUMMY, DUMMY, ESCF, IONE, IONE, IZER, NSYM
+      WRITE(LUSIFC) STARS,LABIP
+      WRITE(LUSIFC) POTNUC, ESCF, ZERO, ESCF,
+     &              IONE, IONE, IZER, IONE, IZER
+!     WRITE(LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
+!    &              ISTATE,ISPIN,NACTEL,LSYM,MS2
 C
-      WRITE(IFSI) STARS, LABCC
-      WRITE(IFSI) NSYM, NORBT, NBAST, NLAMDA, (NRHF(I),I=1,NSYM),
+      WRITE(LUSIFC) STARS, LABCC
+      WRITE(LUSIFC) NSYM, NORBT, NBAST, NLAMDA, (NRHF(I),I=1,NSYM),
      &            (NORB(I),I=1,NSYM), (NBAS(I),I=1,NSYM), POTNUC, ESCF
-      WRITE(IFSI) (WORK(KFKDIA+I-1), I=1,NORBT), (ISMO(I), I=1,NORBT),
+      WRITE(LUSIFC) (WORK(KFKDIA+I-1), I=1,NORBT), (ISMO(I), I=1,NORBT),
      &            DUMMY, DUMMY, DUMMY
-      WRITE(IFSI) (WORK(KCMO+I-1), I=1,NLAMDA)
+      WRITE(LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDA)
 C
       CALL GETDAT(STARS(2),STARS(3))
-      WRITE(IFSI) STARS, LABEN
+      WRITE(LUSIFC) STARS, LABEN
 C
-      CALL GPCLOSE(IFSI,'KEEP')
+      CALL GPCLOSE(LUSIFC,'KEEP')
 C
 C     Freeze inactive
 C
@@ -1533,7 +1536,7 @@ C
       KFOSYM = KFODI2 + NTOTAC
       KEND3  = KFOSYM + (NTOTAC - 1) / IRAT + 1
       LWRK3  = LWORK  - KEND3
-      IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.7'
+      IF (LWRK3 .LT. 0) CALL QUIT('Not enough space in CC_SELACT.7')
 C
       IF (ACTFRE) THEN
          IF (NSYM .EQ. 1) THEN
@@ -1662,7 +1665,7 @@ C
 C
       MSYM = MAXREP + 1
       IF (MSYM .NE.NSYM) 
-     &    STOP 'Something is rotten in the state of Norway.2'
+     &    CALL QUIT('Something is rotten in the state of Norway.2')
 C
       IF (DIALST) THEN
          DO ISYM = 1,NSYM
@@ -1849,7 +1852,8 @@ C
             KCMO = 1
             KEND = KCMO + NDIM*NDIM
             LWRK = LWORK - KEND
-            IF (LWRK .LT. 0) STOP 'Not enough memory in CHO_DENDECO'
+            IF (LWRK .LT. 0)
+     &         CALL QUIT('Not enough memory in CHO_DENDECO')
             DO J = 1,NDIM
                XDIAG = SQRT(XMAT(J,J))
                IF (XDIAG .GT. THRS) THEN
@@ -1996,7 +2000,7 @@ C
       DIMENSION CMO(*), WORK(LWORK)
 C
 C
-      IF (NSYM .GT. 1) STOP 'No symmetry implemented yet'
+      IF (NSYM .GT. 1) CALL QUIT('No symmetry implemented yet')
 C
       VIROCC = .FALSE.
       IF (IOCVI .GT. 0) VIROCC = .TRUE.
@@ -2011,7 +2015,7 @@ C
       KREAD = KINZZ + NBAST*NBAST
       KEND1 = KREAD + NBAST*(NBAST+1)/2
       LWRK1 = LWORK - KEND1
-      IF (LWRK1 .LT. 0) STOP 'Not enough space in CHO_SPREAD.1'
+      IF (LWRK1 .LT. 0) CALL QUIT('Not enough space in CHO_SPREAD.1')
 C
 C     Read integrals
 C
@@ -2170,7 +2174,7 @@ C
       KSCR  = KREAD
       KEND2 = KSCR  + NBAST
       LWRK2 = LWORK - KEND2
-      IF (LWRK2 .LT. 0) STOP 'Not enough space in CHO_SPREAD.2'
+      IF (LWRK2 .LT. 0) CALL QUIT('Not enough space in CHO_SPREAD.2')
 C
       XMAX = 0.0D0
       XSUM = 0.0D0

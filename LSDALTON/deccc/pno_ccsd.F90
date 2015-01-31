@@ -1119,20 +1119,6 @@ module pno_ccsd_module
   end subroutine get_pno_trafo_matrices
 
 
-  subroutine successive_4ao_mo_trafo(ao,WXYZ,WW,w,XX,x,YY,y,ZZ,z,WRKWXYZ)
-     implicit none
-     integer, intent(in) :: ao,w,x,y,z
-     real(realk), intent(inout) :: WXYZ(ao*ao*ao*ao),WRKWXYZ(w*ao*ao*ao)
-     real(realk), intent(in) :: WW(ao,w),XX(ao,x),YY(ao,y),ZZ(ao,z)
-     !WXYZ(ao,ao ao ao)^T WW(ao,w)   -> WRKWXYZ (ao ao ao,w)
-     call dgemm('t','n',ao*ao*ao,w,ao,1.0E0_realk,WXYZ,ao,WW,ao,0.0E0_realk,WRKWXYZ,ao*ao*ao)
-     ! WRKWXYZ(ao,ao ao w)^T XX(ao,x)   -> WXYZ (ao ao w, x)
-     call dgemm('t','n',ao*ao*w,x,ao,1.0E0_realk,WRKWXYZ,ao,XX,ao,0.0E0_realk,WXYZ,ao*ao*w)
-     ! WXYZ(ao, ao w x)^T YY(ao,y)   -> WRKYXYX (ao w x,y)
-     call dgemm('t','n',ao*w*x,y,ao,1.0E0_realk,WXYZ,ao,YY,ao,0.0E0_realk,WRKWXYZ,ao*w*x)
-     ! WRKWXYZ(ao, w x y)^T ZZ(ao,z)^T   -> WXYZ (wxyz)
-     call dgemm('t','n',w*x*y,z,ao,1.0E0_realk,WRKWXYZ,ao,ZZ,ao,0.0E0_realk,WXYZ,w*x*y)
-  end subroutine successive_4ao_mo_trafo
 
   subroutine free_PNOSpaceInfo(SPINFO)
      implicit none
@@ -2733,9 +2719,9 @@ module pno_ccsd_module
                     call array_reorder_4d(p10,w3,nb,lg,la,nb,[3,4,2,1],nul,w1)
                  endif
 
-                 call get_I_plusminus_le(w4,w1,w3,'p',fa,fg,la,lg,nb,tlen,tred,goffs,&
+                 call get_I_plusminus_le(w4,w1,w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,&
                     &qu = this_is_query, quarry = var_inp(1:3))
-                 call get_I_plusminus_le(w5,w1,w3,'m',fa,fg,la,lg,nb,tlen,tred,goffs,&
+                 call get_I_plusminus_le(w5,w1,w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,&
                     &qu = this_is_query, quarry = var_inp(1:3))
 
 

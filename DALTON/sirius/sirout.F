@@ -103,7 +103,7 @@ C
       PARAMETER (D0 = 0.0D0)
 C
       CHARACTER   CONV_text*17
-      CHARACTER*8 TABLE(4), RTNLBL(2), LAPRPC
+      CHARACTER*8 TABLE(4), CMO_RTNLBL(2), RTNLBL(2), LAPRPC
       DATA TABLE/'********','OLDORB  ','NEWORB  ','STARTVEC'/
 C
       CALL QENTER('SIROUT')
@@ -280,11 +280,12 @@ C     (if label 'NATOCC  ' not found, then we assume any occupation numbers
 C      already in WRK(KOCCNO) are OK)
 C
       REWIND LUIT1
-      CALL READMO(WRK(KCMO),9,WRK(KFREE),LFREE)
+      CALL MOLLB2('NEWORB  ',CMO_RTNLBL,LUIT1,LUPRI)
+      CALL READT(LUIT1,NCMOT,WRK(KCMO))
       REWIND LUIT1
       IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
          CALL READT(LUIT1,NORBT,WRK(KOCCNO))
-      ELSE IF (MCTYPE .EQ. 0) THEN
+      ELSE IF (MCTYPE .LE. 0) THEN
          DO, ISYM = 1,NSYM
             JOCC1  = KOCCNO -1 + IORB(ISYM)
             NISHI  = NISH(ISYM)
@@ -465,7 +466,7 @@ C       stamp date, time, and hostname to LUPRI
 C
 C     Natural orbital analysis of MCSCF, also when orbitals are not natural orbitals
 C
-      IF (MCTYPE .EQ. 0) THEN
+      IF (MCTYPE .LE. 0) THEN
          MOISNO = .TRUE.
       ELSE IF (.NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
      &         .NOT.(CICALC  .AND. DOCINO) ) THEN
@@ -515,10 +516,12 @@ C ***  Print final MCSCF orbitals ***
 C
       IF (IPRI4 .GE. 5) P4FLAG(5) = .TRUE.
       IF (P4FLAG(5)) THEN
+         WRITE(LUPRI,'(/A,2X,A,2X,A)') 'File label for MO orbitals:',
+     &      CMO_RTNLBL
          IF ((IPRI4 .GT. 10) .OR. CMOPRI) THEN
             CALL PRORB(WRK(KCMO), .FALSE., LUPRI)
          ELSE
-            CALL PRORB(WRK(KCMO),  .TRUE., LUPRI)
+            CALL PRORB(WRK(KCMO), .TRUE.,  LUPRI)
          END IF
 C        CALL PRORB(CMO, PROCC, IOUT [,THRPRI_in])
       END IF

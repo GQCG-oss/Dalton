@@ -37,7 +37,7 @@ f.add(from_string = 'Dipole moment',
       rel_tolerance = 1.0e-5)
 
 # Relativistic corrections
-f.add(from_string = 'Relativistic corrections',
+f.add(from_string = 'Breit-Pauli relativistic corrections',
       num_lines = 5,
       rel_tolerance = 1.0e-8)
 

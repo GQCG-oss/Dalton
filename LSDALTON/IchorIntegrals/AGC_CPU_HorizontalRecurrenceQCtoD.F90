@@ -4,19 +4,19 @@ MODULE AGC_CPU_OBS_HorizontalRecurrenceRHSModCtoD
  CONTAINS
 
 !Transfer angmom from C to D
-subroutine HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContQ,nContP,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  integer,intent(in) :: nContQ,nContP,nPasses,nlmP,lupri
   real(realk),intent(in) :: Qdistance12(3)
-  real(realk),intent(in) :: ThetaP2(nlmP,    4,nContPQ*nPasses)
-  real(realk),intent(inout) :: ThetaP(nlmP,    2:    4,    1:    1,nContPQ*nPasses)
+  real(realk),intent(in) :: ThetaP2(nlmP,    4,nContP*nContQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    2:    4,    1:    1,nContP*nContQ*nPasses)
   !Local variables
   integer :: iP,ilmP,iTUVC
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
 !$OMP DO &
 !$OMP PRIVATE(iP,iTUVC,ilmP) 
-  DO iP = 1,nContPQ*nPasses
+  DO iP = 1,nContP*nContQ*nPasses
     DO iTUVC=  2,  4
      DO ilmP = 1,nlmP
         ThetaP(ilmP,iTUVC,1,IP) = ThetaP2(ilmP,iTUVC,IP)
@@ -27,13 +27,13 @@ subroutine HorizontalRR_CPU_RHS_Q1C1D0CtoD(nContPQ,nPasses,nlmP,&
 end subroutine HorizontalRR_CPU_RHS_Q1C1D0CtoD
 
 !Transfer angmom from C to D
-subroutine HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContQ,nContP,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  integer,intent(in) :: nContQ,nContP,nPasses,nlmP,lupri
   real(realk),intent(in) :: Qdistance12(3)
-  real(realk),intent(in) :: ThetaP2(nlmP,   10,nContPQ*nPasses)
-  real(realk),intent(inout) :: ThetaP(nlmP,    2:    4,    2:    4,nContPQ*nPasses)
+  real(realk),intent(in) :: ThetaP2(nlmP,   10,nContP*nContQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    2:    4,    2:    4,nContP*nContQ*nPasses)
   !Local variables
   integer :: iP,iC,iPassQ,ilmP,iTUVC
   real(realk) :: Xcd,Ycd,Zcd
@@ -41,7 +41,7 @@ subroutine HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContPQ,nPasses,nlmP,&
 !$OMP DO &
 !$OMP PRIVATE(iP,&
 !$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) 
-  DO iP = 1,nContPQ*nPasses
+  DO iP = 1,nContP*nContQ*nPasses
    Xcd = Qdistance12(1)
    Ycd = Qdistance12(2)
    Zcd = Qdistance12(3)
@@ -61,19 +61,19 @@ subroutine HorizontalRR_CPU_RHS_Q2C1D1CtoD(nContPQ,nPasses,nlmP,&
 end subroutine HorizontalRR_CPU_RHS_Q2C1D1CtoD
 
 !Transfer angmom from C to D
-subroutine HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContQ,nContP,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  integer,intent(in) :: nContQ,nContP,nPasses,nlmP,lupri
   real(realk),intent(in) :: Qdistance12(3)
-  real(realk),intent(in) :: ThetaP2(nlmP,   10,nContPQ*nPasses)
-  real(realk),intent(inout) :: ThetaP(nlmP,    5:   10,    1:    1,nContPQ*nPasses)
+  real(realk),intent(in) :: ThetaP2(nlmP,   10,nContP*nContQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    5:   10,    1:    1,nContP*nContQ*nPasses)
   !Local variables
   integer :: iP,ilmP,iTUVC
 !  real(realk) :: Tmp(nTUVA,nTUVB) ordering
 !$OMP DO &
 !$OMP PRIVATE(iP,iTUVC,ilmP) 
-  DO iP = 1,nContPQ*nPasses
+  DO iP = 1,nContP*nContQ*nPasses
     DO iTUVC=  5, 10
      DO ilmP = 1,nlmP
         ThetaP(ilmP,iTUVC,1,IP) = ThetaP2(ilmP,iTUVC,IP)
@@ -84,13 +84,13 @@ subroutine HorizontalRR_CPU_RHS_Q2C2D0CtoD(nContPQ,nPasses,nlmP,&
 end subroutine HorizontalRR_CPU_RHS_Q2C2D0CtoD
 
 !Transfer angmom from C to D
-subroutine HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContQ,nContP,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  integer,intent(in) :: nContQ,nContP,nPasses,nlmP,lupri
   real(realk),intent(in) :: Qdistance12(3)
-  real(realk),intent(in) :: ThetaP2(nlmP,   20,nContPQ*nPasses)
-  real(realk),intent(inout) :: ThetaP(nlmP,    5:   10,    2:    4,nContPQ*nPasses)
+  real(realk),intent(in) :: ThetaP2(nlmP,   20,nContP*nContQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    5:   10,    2:    4,nContP*nContQ*nPasses)
   !Local variables
   integer :: iP,iC,iPassQ,ilmP,iTUVC
   real(realk) :: Xcd,Ycd,Zcd
@@ -98,7 +98,7 @@ subroutine HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContPQ,nPasses,nlmP,&
 !$OMP DO &
 !$OMP PRIVATE(iP,&
 !$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) 
-  DO iP = 1,nContPQ*nPasses
+  DO iP = 1,nContP*nContQ*nPasses
    Xcd = Qdistance12(1)
    Ycd = Qdistance12(2)
    Zcd = Qdistance12(3)
@@ -127,13 +127,13 @@ subroutine HorizontalRR_CPU_RHS_Q3C2D1CtoD(nContPQ,nPasses,nlmP,&
 end subroutine HorizontalRR_CPU_RHS_Q3C2D1CtoD
 
 !Transfer angmom from C to D
-subroutine HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContPQ,nPasses,nlmP,&
+subroutine HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContQ,nContP,nPasses,nlmP,&
          & Qdistance12,ThetaP2,ThetaP,lupri)
   implicit none
-  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri
+  integer,intent(in) :: nContQ,nContP,nPasses,nlmP,lupri
   real(realk),intent(in) :: Qdistance12(3)
-  real(realk),intent(in) :: ThetaP2(nlmP,   35,nContPQ*nPasses)
-  real(realk),intent(inout) :: ThetaP(nlmP,    5:   10,    5:   10,nContPQ*nPasses)
+  real(realk),intent(in) :: ThetaP2(nlmP,   35,nContP*nContQ*nPasses)
+  real(realk),intent(inout) :: ThetaP(nlmP,    5:   10,    5:   10,nContP*nContQ*nPasses)
   !Local variables
   integer :: iP,iC,iPassQ,ilmP,iTUVC
   real(realk) :: Xcd,Ycd,Zcd
@@ -143,7 +143,7 @@ subroutine HorizontalRR_CPU_RHS_Q4C2D2CtoD(nContPQ,nPasses,nlmP,&
 !$OMP PRIVATE(iP,&
 !$OMP         Tmp1,&
 !$OMP         iTUVC,ilmP,Xcd,Ycd,Zcd) 
-  DO iP = 1,nContPQ*nPasses
+  DO iP = 1,nContP*nContQ*nPasses
    Xcd = Qdistance12(1)
    Ycd = Qdistance12(2)
    Zcd = Qdistance12(3)

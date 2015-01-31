@@ -2473,7 +2473,7 @@ C
 #include "implicit.h"
 #include "dummy.h"
 C
-      PARAMETER ( MAXVEC = 12, DM1 = -1.0D0 )
+      PARAMETER ( MAXVEC = 120, DM1 = -1.0D0 )
       DIMENSION CMO(*),UDV(NASHDI,*),PV(*),FC(*),FV(*)
       DIMENSION FCAC(*), H2AC(*), GD(*),REDGD(*)
       DIMENSION REDE(*),REDS(*),IBTYP(*),EIVAL(*),RESID(*),EIVEC(*)
@@ -3612,8 +3612,8 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
             IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
-     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
-     &                             WRK(KWRK2),LWRK2)
+     &                             KZYVAR,KZVAR,CMO,UDV,ISIM-1+INUM,
+     &                             LUPRI,WRK(KWRK2),LWRK2)
      
 
             IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
@@ -6134,12 +6134,15 @@ C Take out the diagonal elements
       RETURN
       END
 C  /* Deck TRCHAR */
-      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
-c
+      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,IDX,LUPRI,WRK,LWRK)
+C
 #ifdef BUILD_QFITLIB
       use qfit
 #endif
-C
+#ifdef BUILD_PELIB
+      use pe_variables, only: pe_savden
+      use pe_trdens_tools, only: save_tr_density
+#endif
 C
 C     NDIM2 = KZYVAR
 C     NDIM1 = KZVAR
@@ -6193,17 +6196,17 @@ C     Memory allocation
         CALL DZERO(WRK(KDVAO),N2BASX) 
       ENDIF 
 
+      IF (LOCDEB) THEN
+          WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Full'
+          CALL OUTPUT(WRK(KDCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
       CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDVAO))
       CALL PKSYM1(WRK(KDVAO),WRK(KDENS),NBAS,NSYM,1)
 
       IF (LOCDEB)  THEN
-         WRITE (LUPRI,'(/A)') ' Transition Density Matrix'
+         WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Packed'
          CALL OUTPAK(WRK(KDENS),NBAST,1,LUPRI)
       ENDIF
-
-      !write(*,*) "rsp:", cord
-      !write(*,*) "rsp:", charge
-      !call qfit_initialize(cord(:,1:natoms),charge(1:natoms))
 
       LU=-1
       CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
@@ -6239,14 +6242,20 @@ C     Memory allocation
       WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
       WRITE(LUPRI,'(5x,3F12.6)') TRDIP
 
-      allocate( dens( nnbasx ) )
-      CALL DCOPY(NNBASX,WRK(KDENS),1,dens,1)
+      allocate( dens( N2BASX ) )
+      call dcopy(n2basx,wrk(kdcao),1,dens,1)
+#ifdef BUILD_PELIB
+      if (pe_savden) then
+          write(lupri,'(/A)') "Saving transition density."
+          call save_tr_density( dens, NBAST, IDX, WRK(KWRK2:LWRK) )
+      endif
+#endif
 #ifdef BUILD_QFITLIB
       call qfit_set_transition_dipole( TRDIP )
-      call qfit_fit(dens)
-#endif
+      call qfit_fit( dens )
       deallocate( dens )
       CALL QFITRES
+#endif
       RETURN
       END
 ! -- end of rspe2c.F --

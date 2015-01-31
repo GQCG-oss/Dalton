@@ -108,36 +108,43 @@ REAL(REALK),intent(in) :: GAOMAX
 REAL(REALK) :: VX(5),DFTENE
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
+#ifdef VAR_XCFUN
 REAL(REALK),pointer :: VXC(:,:)
-REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
+REAL(REALK),pointer :: XCFUNINPUT(:,:),XCFUNOUTPUT(:,:)
+INTEGER,pointer     :: IFULL(:)
+INTEGER             :: NPNT
+#endif
 EXTERNAL DFTENE
 call mem_dft_alloc(VXC,NBLEN,NDMAT)
 ! LDA Exchange-correlation contribution to Kohn-Sham energy
 DO IDMAT = 1, NDMAT
+#ifdef VAR_XCFUN
+IF(.NOT.USEXCFUN)THEN
+#endif
  DO IPNT = 1, NBLEN
    IF(RHO(IPNT,IDMAT) .GT. RHOTHR)THEN
-#ifdef VAR_XCFUN
-      IF(.NOT.USEXCFUN)THEN
-#endif
          !get the functional derivatives 
          !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}}
          CALL dft_funcderiv1(RHO(IPNT,IDMAT),DUMMY,WGHT(IPNT),VX)
          DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
          !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
          VXC(IPNT,IDMAT) = D2*VX(1) 
-#ifdef VAR_XCFUN
-      ELSE
-         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
-         call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
-         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
-         !XCFUNOUTPUT(2,1) = d Exc/d rho
-         VXC(IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
-      ENDIF
-#endif
    ELSE
       VXC(IPNT,IDMAT) = 0.0E0_realk
    ENDIF
  END DO
+#ifdef VAR_XCFUN
+ELSE
+  CALL xcfun_lda_init(RHO,VXC,MXBLLEN,NBLEN,NPNT,IDMAT,NDMAT,RHOTHR,IFULL,XCFUNINPUT,XCFUNOUTPUT)
+  call xcfun_lda_xc_eval(XCFUNINPUT,XCFUNOUTPUT,NPNT)
+  DO IPNT=1,NPNT
+    DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,IPNT)*WGHT(IFULL(IPNT))
+    !XCFUNOUTPUT(2,1) = d Exc/d rho
+    VXC(IFULL(IPNT),IDMAT) = D2*XCFUNOUTPUT(2,IPNT)*WGHT(IFULL(IPNT))
+  ENDDO
+  CALL xcfun_lda_free(XCFUNINPUT,XCFUNOUTPUT,IFULL)
+ENDIF
+#endif
 ENDDO
 W1 = 1
 W2 = NBLEN*Nactbast                        !W1 - 1 + NBLEN*Nactbast    -> GAORED
@@ -228,7 +235,6 @@ REAL(REALK) :: VX(5),DFTENEUNRES
 REAL(REALK),pointer :: VXC(:,:)
 REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
 EXTERNAL DFTENEUNRES
-#ifdef MOD_UNRELEASED
 call mem_dft_alloc(VXC,NBLEN,NDMAT)
 
 ! LDA Exchange-correlation contribution to Kohn-Sham energy
@@ -289,9 +295,6 @@ DO IDMAT = 1, NDMAT
 !        & WORK(W5:W6),WORK(W7:W8))
 ENDDO
 call mem_dft_dealloc(VXC)
-#else
-call lsquit('II_DFT_KSMLDAUNRES not implemented',-1)
-#endif
 END SUBROUTINE II_DFT_KSMLDAUNRES
 
 !> \brief main closed shell GGA kohn-sham matrix driver
@@ -635,7 +638,6 @@ INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT,IDMAT1,IDMAT2
 REAL(REALK) :: VXC(NBLEN,2,2),VXM(NBLEN),VX(5),DFTENEUNRES,GRDA,GRDB
 REAL(REALK) :: XCFUNINPUT(5,1),XCFUNOUTPUT(6,1)
 EXTERNAL DFTENEUNRES
-#ifdef MOD_UNRELEASED
 !     GGA Exchange-correlation contribution to Kohn-Sham matrix
 DO IDMAT = 1,NDMAT/2
  IDMAT1 = 1 + (IDMAT-1)*2
@@ -725,9 +727,6 @@ DO IDMAT = 1,NDMAT/2
       &  VXC(:,1,2),VXM,VXC(:,2,2),GAO(:,:,1:4),GRAD(:,:,1),GRAD(:,:,2),SHAREDDFTDATA%FKSM(:,:,IDMAT2),&
       &DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
 ENDDO
-#else
-call lsquit('II_DFT_KSMGGAUNRES not implemented',-1)
-#endif
 
 END SUBROUTINE II_DFT_KSMGGAUNRES
 
@@ -792,7 +791,7 @@ REAL(REALK),intent(in) :: GAOMAX
 !
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
 Real(realk), parameter :: D8 = 8.0E0_realk, D4 = 4E0_realk
-REAL(REALK) :: VXC(2,NBLEN),VX(5),GRDA,GRD,DMAX
+REAL(REALK) :: VXC(NBLEN,1),VX(5),GRDA,GRD,DMAX
 INTEGER  :: IPNT,I,J,JBL,IBL,K
 LOGICAL,EXTERNAL :: DFT_ISGGA
 LOGICAL :: DOGGA
@@ -801,38 +800,49 @@ REAL(REALK),pointer :: GAORED(:,:,:),GDRED(:,:,:)
 REAL(REALK),pointer :: DRED(:,:)
 INTEGER     :: INXRED(NACTBAST),IRED,JRED,NRED,orb2atom(nbast)
 INTEGER     :: atom(NACTBAST),iatom,IX,K1,K2,K3,KA,ik,jk
-REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
+REAL(REALK) :: FRC,GA,GA2,GFS
+#ifdef VAR_XCFUN
+REAL(REALK),pointer :: XCFUNINPUT(:,:),XCFUNOUTPUT(:,:)
+INTEGER,pointer     :: IFULL(:)
+INTEGER             :: NPNT
+#endif
+
+
 
 orb2atom = DFTDATA%orb2atom
 KVALS(1:3,1) = (/1, 2, 3/)
 KVALS(1:3,2) = (/2, 4, 5/)
 KVALS(1:3,3) = (/3, 5, 6/)
+#ifdef VAR_XCFUN
+IF(.NOT.USEXCFUN)THEN
+#endif
 GRD = 0.D0
 DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1).GT.RHOTHR) THEN
       !get the functional derivatives 
       !vx(1) = drvs.df1000 = \frac{\partial f}{\partial \rho_{\alpha}}        
-#ifdef VAR_XCFUN
-      IF(.NOT.USEXCFUN)THEN
-#endif
          CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-         VXC(1,IPNT) = D2*VX(1) 
-#ifdef VAR_XCFUN
-      ELSE
-         XCFUNINPUT(1,1) = RHO(IPNT,1)
-         call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
-         IF(DFTDATA%LB94)THEN
-            call lsquit('error lb94 not implemented for xcfun',-1)
-         ELSEIF(DFTDATA%CS00)THEN
-            call lsquit('error cs00 not implemented for xcfun',-1)
-         ENDIF
-         VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
-      ENDIF
-#endif
+         VXC(IPNT,1) = D2*VX(1) 
    ELSE
-      VXC(1,IPNT) = 0E0_realk
+      VXC(IPNT,1) = 0E0_realk
    END IF
 END DO
+#ifdef VAR_XCFUN
+ELSE
+  CALL xcfun_lda_init(RHO,VXC,MXBLLEN,NBLEN,NPNT,1,1,RHOTHR,IFULL,XCFUNINPUT,XCFUNOUTPUT)
+  call xcfun_lda_xc_eval(XCFUNINPUT,XCFUNOUTPUT,NPNT)
+  IF(DFTDATA%LB94)THEN
+     call lsquit('error lb94 not implemented for xcfun',-1)
+  ELSEIF(DFTDATA%CS00)THEN
+     call lsquit('error cs00 not implemented for xcfun',-1)
+  ENDIF
+  DO IPNT=1,NPNT
+    !XCFUNOUTPUT(2,1) = d Exc/d rho
+    VXC(IFULL(IPNT),1) = D2*XCFUNOUTPUT(2,IPNT)*WGHT(IFULL(IPNT))
+  ENDDO
+  CALL xcfun_lda_free(XCFUNINPUT,XCFUNOUTPUT,IFULL)
+ENDIF
+#endif
 
 ! Set up maximum density-matrix elements
 DMAX = 0.0E0_realk
@@ -902,7 +912,7 @@ IF (NRED.GT. 0) THEN
       DO IX=1,3
          FRC = 0E0_realk
          DO I = 1, NBLEN
-            FRC = FRC + VXC(1,I)*GDRED(I,IRED,1)*GAOS(I,KA,IX+1)
+            FRC = FRC + VXC(I,1)*GDRED(I,IRED,1)*GAOS(I,KA,IX+1)
          END DO
          DFTDATA%GRAD(IX,iatom) = DFTDATA%GRAD(IX,iatom) - FRC
       ENDDO ! IX
@@ -2141,7 +2151,7 @@ DO IPNT = 1, NBLEN
    ELSE
       call lsquit('xcfun version of II_DFT_MAGDERIV_KOHNSHAMLDA not implemented',-1)
       XCFUNINPUT(1,1) = RHO(IPNT,1)
-      call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+      call xcfun_lda_xc_eval(XCFUNINPUT,XCFUNOUTPUT,1)
       !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
       VXC(IPNT) = D4*XCFUNOUTPUT(2,1)*WGHT(IPNT)
       call lsquit('xcfun inconsistency',-1)
@@ -3447,7 +3457,7 @@ DO IDMAT = 1, NDMAT
 #ifdef VAR_XCFUN        
      ELSE
         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
-        call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+        call xcfun_lda_xc_eval(XCFUNINPUT,XCFUNOUTPUT,1)
         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
      ENDIF
 #endif
@@ -3524,7 +3534,6 @@ Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
 INTEGER     :: IPNT,I,J,IDMAT,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT1,IDMAT2
 REAL(REALK) :: VX(5),DFTENEUNRES
 EXTERNAL DFTENEUNRES
-#ifdef MOD_UNRELEASED
 ! LDA Exchange-correlation contribution to Kohn-Sham energy
 DO IDMAT = 1, NDMAT/2
  IDMAT1 = 1 + (IDMAT-1)*2
@@ -3547,9 +3556,6 @@ DO IDMAT = 1, NDMAT/2
    ENDIF
  END DO
 ENDDO
-#else
-call lsquit('II_DFT_KSMELDAUNRES not implemented',-1)
-#endif
 
 END SUBROUTINE II_DFT_KSMELDAUNRES
 
@@ -3897,7 +3903,6 @@ INTEGER     :: IRED,JRED,NRED,offset
 REAL(REALK) :: GAOMAX
 !REAL(REALK),pointer :: EXCRED(:,:)
 !REAL(REALK) :: EXCRED(NactBast*NactBast)
-#ifdef MOD_UNRELEASED
 NRED = 0
 GAOMAX = 0.0E0_realk
 ! Set up maximum Gaussian AO elements
@@ -3964,9 +3969,6 @@ IF (NRED.GT. 0) THEN
    ENDDO
 !   CALL MEM_DFT_DEALLOC(EXCRED)
 ENDIF
-#else
-call lsquit('II_DISTGGABUNRES not implemented',-1)
-#endif
 
 END SUBROUTINE II_DISTGGABUNRES
 
@@ -6460,6 +6462,54 @@ call mem_dft_dealloc(TMPBZ)
 call mem_dft_dealloc(GAORED)
 
 END SUBROUTINE II_DFT_DISTGEODERIV2_GGA
+
+SUBROUTINE xcfun_lda_init(RHO,VXC,MXBLLEN,NBLEN,NPNT,IDMAT,NDMAT,RHOTHR,IFULL,&
+     &                    XCFUNINPUT,XCFUNOUTPUT)
+implicit none
+!> the number of gridpoints
+INTEGER,intent(in)  :: NBLEN
+!> max number of gridpoints
+INTEGER,intent(in)  :: MXBLLEN
+!> numer of points with rho greater then threshold§
+INTEGER,intent(OUT) :: NPNT
+!> index of current density matrix
+INTEGER,intent(IN)  :: IDMAT
+!> numer of density matrices
+INTEGER,intent(IN)  :: NDMAT
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+REAL(REALK),intent(inout) :: VXC(NBLEN,NDMAT)
+REAL(REALK),pointer       :: XCFUNINPUT(:,:),XCFUNOUTPUT(:,:)
+INTEGER,pointer           :: IFULL(:)
+!
+INTEGER     :: IPNT
+  CALL mem_dft_alloc(IFULL,NBLEN)
+  NPNT = 0
+  DO IPNT = 1, NBLEN
+    IF(RHO(IPNT,IDMAT) .GT. RHOTHR) THEN
+      NPNT = NPNT + 1
+      IFULL(NPNT) = IPNT
+    ELSE
+      VXC(IPNT,IDMAT) = 0.0E0_realk
+    ENDIF
+  ENDDO
+  call mem_dft_alloc(XCFUNINPUT,1,NPNT)
+  call mem_dft_alloc(XCFUNOUTPUT,2,NPNT)
+  DO IPNT=1,NPNT
+    XCFUNINPUT(1,IPNT) = RHO(IFULL(IPNT),IDMAT)
+  ENDDO
+END SUBROUTINE xcfun_lda_init
+
+SUBROUTINE xcfun_lda_free(XCFUNINPUT,XCFUNOUTPUT,IFULL)
+implicit none
+Real(realk),pointer :: XCFUNINPUT(:,:),XCFUNOUTPUT(:,:)
+Integer,pointer     :: IFULL(:)
+  call mem_dft_dealloc(IFULL)
+  call mem_dft_dealloc(XCFUNINPUT)
+  call mem_dft_dealloc(XCFUNOUTPUT)
+END SUBROUTINE xcfun_lda_free
 
 END MODULE IIDFTKSMWORK
 

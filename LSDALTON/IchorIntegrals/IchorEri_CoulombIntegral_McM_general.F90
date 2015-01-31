@@ -41,7 +41,7 @@ CONTAINS
   end subroutine DetermineSizeTmpArray34
 
   subroutine ICI_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
-       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nPrimP,nPrimQ,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
        & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
@@ -56,7 +56,7 @@ CONTAINS
     implicit none
     integer,intent(in) :: TMParray1maxsize,TMParray2maxsize
     integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD
-    integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri,nLocalIntPass
+    integer,intent(in) :: MaxPasses,IntPrint,lupri,nLocalIntPass
     integer,intent(in) :: nContA,nContB,nContC,nContD,nContP,nContQ,nTABFJW1,nTABFJW2
     integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD,nAtomsA,nAtomsB
@@ -76,8 +76,8 @@ CONTAINS
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
     real(realk),intent(inout) :: CDAB(nLocalIntPass)    
-    real(realk),intent(in) :: integralPrefactor(nPrimQP)!integralPrefactor(nPrimQ,nPrimP)    
-    real(realk),intent(in) :: reducedExponents(nPrimQP) !reducedExponents(nPrimQ,nPrimP)
+    real(realk),intent(in) :: integralPrefactor(nPrimQ*nPrimP)!integralPrefactor(nPrimQ,nPrimP)    
+    real(realk),intent(in) :: reducedExponents(nPrimQ*nPrimP) !reducedExponents(nPrimQ,nPrimP)
     real(realk),intent(in) :: Qdistance12(3)
     real(realk),intent(in) :: Pdistance12(3*nAtomsA*nAtomsB) !full set nAtomsA*nAtomsB
     !local variables
@@ -138,31 +138,31 @@ CONTAINS
     TMP1 = .TRUE.
     IF (AngmomPQ.EQ. 0) THEN
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3A',-1)
+       IF(TMParray1maxsize.LT.nPrimQ*nPrimP*nPasses*ntuv)call ichorquit('IchorTmp1G3A',-1)
 #endif
-       call IchorwtuvRecurrenceJMIN0JMAX0(TmpArray4,TmpArray1,nPrimQP*nPasses)
+       call IchorwtuvRecurrenceJMIN0JMAX0(TmpArray4,TmpArray1,nPrimQ*nPrimP*nPasses)
     ELSEIF (AngmomPQ.EQ. 1) THEN
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3B',-1)
+       IF(TMParray1maxsize.LT.nPrimQ*nPrimP*nPasses*ntuv)call ichorquit('IchorTmp1G3B',-1)
 #endif
-       call IchorwtuvRecurrenceJMIN0JMAX1(TmpArray4,TmpArray1,TmpArray3,nPrimQP*nPasses)
+       call IchorwtuvRecurrenceJMIN0JMAX1(TmpArray4,TmpArray1,TmpArray3,nPrimQ*nPrimP*nPasses)
     ELSEIF (AngmomPQ.EQ. 2) THEN
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3C',-1)
+       IF(TMParray1maxsize.LT.nPrimQ*nPrimP*nPasses*ntuv)call ichorquit('IchorTmp1G3C',-1)
 #endif
-       call IchorwtuvRecurrenceJMIN0JMAX2(TmpArray4,TmpArray1,TmpArray3,nPrimQP*nPasses)
+       call IchorwtuvRecurrenceJMIN0JMAX2(TmpArray4,TmpArray1,TmpArray3,nPrimQ*nPrimP*nPasses)
     ELSEIF (AngmomPQ.EQ. 3) THEN
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3D',-1)
+       IF(TMParray1maxsize.LT.nPrimQ*nPrimP*nPasses*ntuv)call ichorquit('IchorTmp1G3D',-1)
 #endif
-       call IchorwtuvRecurrenceJMIN0JMAX3(TmpArray4,TmpArray1,TmpArray3,nPrimQP*nPasses)
+       call IchorwtuvRecurrenceJMIN0JMAX3(TmpArray4,TmpArray1,TmpArray3,nPrimQ*nPrimP*nPasses)
     ELSE !AngmomPQ > 3
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3a',-1)
-       IF(TMParray2maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3b',-1)
+       IF(TMParray1maxsize.LT.nPrimQ*nPrimP*nPasses*ntuv)call ichorquit('IchorTmp1G3a',-1)
+       IF(TMParray2maxsize.LT.nPrimQ*nPrimP*nPasses*ntuv)call ichorquit('IchorTmp1G3b',-1)
 #endif
        J = AngmomPQ-3
-       call IchorwtuvRecurrenceJMIN0JMAX3J(TmpArray4,TmpArray1,TmpArray3,nPrimQP*nPasses,AngmomPQ,J)
+       call IchorwtuvRecurrenceJMIN0JMAX3J(TmpArray4,TmpArray1,TmpArray3,nPrimQ*nPrimP*nPasses,AngmomPQ,J)
        TMP1 = .TRUE.
        !J minimum goes from 0 to 0. For  AngmomPQ=6 J takes the values 2,1,0 
        DO j=AngmomPQ-4,0,-1 
@@ -178,9 +178,9 @@ CONTAINS
     ENDIF    
     IF (IntPrint .GE. 25)THEN
        IF(TMP1)THEN
-          call PrintWTUV(TmpArray1,AngmomPQ,nPrimQP,nPasses,nTUV,lupri)
+          call PrintWTUV(TmpArray1,AngmomPQ,nPrimQ*nPrimP,nPasses,nTUV,lupri)
        ELSE
-          call PrintWTUV(TmpArray2,AngmomPQ,nPrimQP,nPasses,nTUV,lupri)
+          call PrintWTUV(TmpArray2,AngmomPQ,nPrimQ*nPrimP,nPasses,nTUV,lupri)
        ENDIF
     ENDIF
 
@@ -208,18 +208,18 @@ CONTAINS
 
     IF(TMP1)THEN !current intermediate WTUV reside in TmpArray1
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray2maxsize.LT.nPrimQP*nPasses*ntuvP*nCartOrbCompQ)call ichorquit('IchorTmp1G3Q1',-1)
+       IF(TMParray2maxsize.LT.nPrimQ*nPrimP*nPasses*ntuvP*nCartOrbCompQ)call ichorquit('IchorTmp1G3Q1',-1)
 #endif
        !builds RE(nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ)
-       call DirectcontractEQgen(TmpArray1,TmpArray2,nPrimQP,nPrimP*nPasses,nPrimQ,nTUV,ntuvP,ntuvQ,&
+       call DirectcontractEQgen(TmpArray1,TmpArray2,nPrimQ*nPrimP,nPrimP*nPasses,nPrimQ,nTUV,ntuvP,ntuvQ,&
             & TmpArray3,nCartOrbCompQ,AngmomA,AngmomB,AngmomC,AngmomD,AngmomPQ)
        IF (IntPrint .GE. 25)call PrintIchorTensorRE(TmpArray2,nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ,lupri)
     ELSE !current intermediate WTUV reside in TmpArray2
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuvP*nCartOrbCompQ)call ichorquit('IchorTmp1G3Q2',-1)
+       IF(TMParray1maxsize.LT.nPrimQ*nPrimP*nPasses*ntuvP*nCartOrbCompQ)call ichorquit('IchorTmp1G3Q2',-1)
 #endif
        !builds RE(nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ)
-       call DirectcontractEQgen(TmpArray2,TmpArray1,nPrimQP,nPrimP*nPasses,nPrimQ,nTUV,ntuvP,ntuvQ,&
+       call DirectcontractEQgen(TmpArray2,TmpArray1,nPrimQ*nPrimP,nPrimP*nPasses,nPrimQ,nTUV,ntuvP,ntuvQ,&
             & TmpArray3,nCartOrbCompQ,AngmomA,AngmomB,AngmomC,AngmomD,AngmomPQ)
        IF (IntPrint .GE. 25)call PrintIchorTensorRE(TmpArray1,nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ,lupri)
     ENDIF
@@ -409,11 +409,11 @@ CONTAINS
 
   subroutine ICI_CPU_McM_general_size(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&
-         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,Psegmented,Qsegmented)
+         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ,Psegmented,Qsegmented)
     implicit none
     integer,intent(in) :: nPrimQ,nPrimP
     integer,intent(in) :: nContP,nContQ,nContA,nContB,nContC,nContD
-    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD,nPrimQP,nContQP
+    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
     logical,intent(in) :: Qsegmented,Psegmented
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
@@ -458,23 +458,23 @@ CONTAINS
 
     TMP1 = .TRUE.
     IF (AngmomPQ.EQ. 0) THEN
-       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuv)
+       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQ*nPrimP*ntuv)
     ELSEIF (AngmomPQ.EQ. 1) THEN
-       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuv)
+       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQ*nPrimP*ntuv)
     ELSEIF (AngmomPQ.EQ. 2) THEN
-       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuv)
+       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQ*nPrimP*ntuv)
     ELSEIF (AngmomPQ.EQ. 3) THEN
-       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuv)
+       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQ*nPrimP*ntuv)
     ELSE !AngmomPQ > 3
-       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuv)
+       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQ*nPrimP*ntuv)
        TMP1 = .TRUE.
        !J minimum goes from 0 to 0. For  AngmomPQ=6 J takes the values 2,1,0 
        DO j=AngmomPQ-4,0,-1 
           IF(TMP1)THEN
-             TMParray2maxsize = MAX(TMParray2maxsize,nPrimQP*ntuv)
+             TMParray2maxsize = MAX(TMParray2maxsize,nPrimQ*nPrimP*ntuv)
              TMP1 = .FALSE.
           ELSE
-             TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuv)
+             TMParray1maxsize = MAX(TMParray1maxsize,nPrimQ*nPrimP*ntuv)
              TMP1 = .TRUE.
           ENDIF
        ENDDO
@@ -489,9 +489,9 @@ CONTAINS
 
     !DirectContractEcoeff
     IF(TMP1)THEN 
-       TMParray2maxsize = MAX(TMParray2maxsize,nPrimQP*ntuvP*nCartOrbCompQ)
+       TMParray2maxsize = MAX(TMParray2maxsize,nPrimQ*nPrimP*ntuvP*nCartOrbCompQ)
     ELSE 
-       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuvP*nCartOrbCompQ)
+       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQ*nPrimP*ntuvP*nCartOrbCompQ)
     ENDIF
     TMP1 = .NOT.TMP1
 
