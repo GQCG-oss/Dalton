@@ -6140,8 +6140,8 @@ C
       use qfit
 #endif
 #ifdef BUILD_PELIB
-      use pe_variables, only: pe_savden
-      use pe_trdens_tools, only: save_tr_density
+      use pe_variables, only: pe_savden, pe_fd
+      use pe_trdens_tools, only: save_tr_density, tr_density_coupling
 #endif
 C
 C     NDIM2 = KZYVAR
@@ -6248,6 +6248,10 @@ C     Memory allocation
       if (pe_savden) then
           write(lupri,'(/A)') "Saving transition density."
           call save_tr_density( dens, NBAST, IDX, WRK(KWRK2:LWRK) )
+      endif
+      if (pe_fd) then
+          write(lupri,'(/A)') "Calculating coupling."
+          call tr_density_coupling( dens )
       endif
 #endif
 #ifdef BUILD_QFITLIB
