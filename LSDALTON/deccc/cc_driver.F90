@@ -594,6 +594,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Number of pair jobs   = ', npair
       write(DECinfo%output,'(1X,a,i10,//)') 'FULL JOB SUMMARY: Total number of jobs  = ', njobs
    
+
       ! Calculate single and pair fragments energies:
       call mem_alloc(FragEnergies,nfrags,nfrags,nenergies)
       call mem_alloc(FragEnergies_tmp,nfrags,nfrags)

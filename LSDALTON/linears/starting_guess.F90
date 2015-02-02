@@ -227,6 +227,9 @@ subroutine get_initial_dens(H1,S,D,ls,config)
       call debug_convert_density(config%opt,D(1))
    endif
 
+   IF (ls%setting%scheme%intprint.GE.2) write(config%lupri,'(A46,F18.8)') &
+     & 'Initial-density-matrix dot product:',mat_dotproduct(D(1),D(1))
+
 end subroutine get_initial_dens
 
 !> \brief Branches out and chooses the proper initial guess (as requested by default or input)

@@ -1279,6 +1279,54 @@ enddo
 
 end subroutine build_batchesOfAOs
 
+subroutine determine_ActualDim(lupri,setting,maxallowedorbitals,nbast,&
+     &MaxOrbitals,AOspec)
+implicit none
+integer,intent(in)         :: lupri,maxallowedorbitals,nbast
+type(lssetting) :: setting
+integer,intent(inout) :: MaxOrbitals
+character(len=1),intent(in) :: AOspec
+!
+integer :: I,A,norbitals,nbatLoc,iOrb,tmporb,allocnbatches
+logical :: uncont,intnrm
+type(AOITEM) :: AO
+TYPE(BASISSETINFO),pointer :: AObasis
+uncont=.FALSE.
+intnrm = .false.
+IF(AOspec.EQ.'R')THEN
+   !   The regular AO-basis
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+ELSEIF(AOspec.EQ.'D')THEN
+   !   The Aux AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
+ELSEIF(AOspec.EQ.'C')THEN
+   !   The CABS AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
+call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+norbitals = 0
+MaxOrbitals = 0
+do I=1,AO%nbatches
+   tmporb = 0
+   DO A=1,AO%BATCH(I)%nAngmom
+      tmporb = tmporb + AO%BATCH(I)%norbitals(A)
+   ENDDO
+   IF(norbitals + tmporb.GT.maxallowedorbitals)THEN      
+      MaxOrbitals = MAX(MaxOrbitals,norbitals)
+      norbitals = tmporb
+   ELSE
+      norbitals = norbitals + tmporb
+   ENDIF
+enddo
+IF(norbitals.GT.0)THEN
+   MaxOrbitals = MAX(MaxOrbitals,norbitals)
+ENDIF
+call free_aoitem(lupri,AO)
+end subroutine determine_ActualDim
+
 subroutine DetermineBatchIndexAndSize(lupri,setting,startA,startB,startC,startD,&
      & ndimA,ndimB,ndimC,ndimD,batchsizeA,batchsizeB,batchsizeC,batchsizeD,&
      & batchindexA,batchindexB,batchindexC,batchindexD,&

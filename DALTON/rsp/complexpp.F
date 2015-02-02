@@ -1,10 +1,10 @@
 C
-C...   Copyright (c) 2014 by the authors of Dalton (see below).
+C...   Copyright (c) 2015 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program,
-C...    Release DALTON2014 (2014), see http://daltonprogram.org"
+C...    Release DALTON2015 (2015), see http://daltonprogram.org"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
