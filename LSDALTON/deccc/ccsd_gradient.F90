@@ -82,33 +82,8 @@ contains
     !the off-diagonal blocks dia and dai
     call single_dai_dia_formation(MyFragment,grad,t2occ,t2virt,m1)
 
-    !fill in the grad structure 
-    !the occ-occ part
-    !grad%dens%rho(1:noAOS,1:noAOS) = grad%dens%X(1:noAOS,1:noAOS)
-    !the virt-virt part
-    !grad%dens%rho((noAOS+1):(noAOS+nvAOS),(noAOS+1):(noAOS+nvAOS)) = grad%dens%Y(1:nvAOS,1:nvAOS)
- 
-    !print debug info if needed
-    if( DECinfo%PL>2 )then
-       print *,
-       print *, "SINGLES: unrel. one-el. dens. MO: "
-       print *,
-       call print_matrix_real(grad%dens%rho,(noAOS+nvAOS),(noAOS+nvAOS))
-       print *,
-    endif
+    !clean up if needed
 
-    !transform to AO and collect into rho
-    !call dec_diff_basis_transform2(grad%dens%nbasis,grad%dens%nocc,grad%dens%nunocc,MyFragment%Co,&
-    !     & MyFragment%Cv,grad%dens%rho,grad%dens%rho)
-
-    !print debug info if needed
-    !if( DECinfo%PL>2 )then
-    !   print *,
-    !   print *, "SINGLES: unrel. one-el. dens. AO: "
-    !   print *,
-    !   call print_matrix_real(grad%dens%rho,(noAOS+nvAOS),(noAOS+nvAOS))
-    !   print *,
-    !endif
 
   end subroutine single_calculate_CCSDgradient_driver
 
@@ -137,7 +112,7 @@ contains
     type(tensor),intent(inout)    :: m2virt
     type(tensor),intent(inout)    :: t2occ
     type(tensor),intent(inout)    :: t2virt
-    !DEBUG try to use MP2 gradient structure
+    !DEBUG use MP2 gradient structure for now
     type(mp2grad),intent(inout) :: grad
 
     !OUTPUT
@@ -227,16 +202,6 @@ contains
     !fill in the grad structure 
     grad%dens%Y(1:nvAOS,1:nvAOS) = dab%val(1:nvAOS,1:nvAOS)
  
-    !DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
-    !do i=1, MyFragment%NUnOccAOS !nvAOS
-    !  iFull = MyFragment%UnOccAOSidx(i)
-    !  do j=1,MyFragment%NUnOccAOS !nvAOS
-    !    jFull = MyFragment%UnOccAOSidx(j)
-    !    grad%dens%rho(iFull,jFull) = dab%val(i,j)
-    !  end do
-    !end do
-    !DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
-
     !clean up!
     call array4_free(temp1)
     call array4_free(temp2)
@@ -278,27 +243,11 @@ contains
 
           dij%val(i,j) = dij%val(i,j) - Xij%val(i,j)
 
-          !if(i==j)then
-          !   dij%val(i,j) = dij%val(i,j) + 2.0/numFragments - Xij%val(i,j)
-          !else
-          !   dij%val(i,j) = dij%val(i,j) - Xij%val(i,j)
-          !endif
-
        end do
     end do
 
     !fill in the grad structure 
     grad%dens%X(1:noAOS,1:noAOS) = dij%val(1:noAOS,1:noAOS)
-
-    !DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
-    !do i=1, MyFragment%NOccAOS !noAOS
-    !  iFull = MyFragment%OccAOSidx(i)
-    !  do j=1,MyFragment%NOccAOS !noAOS
-    !    jFull = MyFragment%OccAOSidx(j)
-    !    grad%dens%rho(iFull,jFull) = dij%val(i,j)
-    !  end do
-    !end do
-    !DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
@@ -345,7 +294,7 @@ contains
     type(tensor),intent(inout)    :: t2occ
     type(tensor),intent(inout)    :: t2virt
     type(tensor),intent(inout)    :: m1 
-    !DEBUG try to use MP2 gradient structure
+    !DEBUG use MP2 gradient structure for now
     type(mp2grad),intent(inout) :: grad
 
     !OUTPUT
@@ -365,7 +314,7 @@ contains
     real(realk)    :: tcpu,twall
 
     nb    = MyFragment%nbasis
-    !DEBUG - works only for simulate full mol
+    !DEBUG 
     no    = MyFragment%noccAOS
     nv    = MyFragment%nunoccAOS
     !DEBUG
@@ -432,26 +381,17 @@ contains
           iMOL=MyFragment%occEOSidx(iEOS) 
           aMOL=MyFragment%unoccEOSidx(aEOS) 
 
-          !dai%val(aMOL,iMOL) = m1%elm2(aAOS,iAOS)
-          !print*, iEOS, 'iEOS'
-          !print*, aEOS, 'aEOS'
-          !print*, m1%elm2(aAOS,iAOS), 'aEOS'
           grad%dens%Phivo(aAOS,iAOS) = m1%elm2(aAOS,iAOS)
 
        end do
     end do
 
-    !fill in the grad structure 
-    !grad%dens%rho((noAOS+1):grad%dens%nbasis,1:noAOS) = dai%val(1:nvAOS,1:noAOS)
- 
-    print *, "Debug print 2 "
     !print debug info if needed
     if( DECinfo%PL>2 )then
        print *,
-       print *, "Debug print Dsd virt-occ block: "
+       print *, "DEC SINGLES: virt-occ block of unrel. one-el. dens."
        print *,
        print *,no,nv
-       call print_matrix(dai)
        print *,
        call print_matrix_real(grad%dens%Phivo,nv,no)
        print *,
@@ -473,111 +413,24 @@ contains
        
       do aAOS=1,nvAOS
          aMOL=MyFragment%unoccAOSidx(aAOS)
-         !aAOS=MyFragment%idxu(aEOS)
             
          do jEOS=1,noEOS
             jAOS=MyFragment%idxo(jEOS)
             
            do bAOS=1,nvAOS
-           !do bEOS=1,nvEOS
-           !   bAOS=MyFragment%idxu(bEOS)
 
               grad%dens%Phiov(iAOS,aAOS) = grad%dens%Phiov(iAOS,aAOS) + m1%elm2(bAOS,jAOS)*&
                                     &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
                                     & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
  
-              !grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no) + m1%elm2(bAOS,jAOS)*&
-              !                      &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
-              !                      & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
-
-             !dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bAOS,jAOS)*&
-             !                       &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
-             !                       & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
            end do
          end do
       end do
     end do 
 
- !   do iEOS=1,noEOS
- !      iMOL=MyFragment%occEOSidx(iEOS)
- !      iAOS=MyFragment%idxo(iEOS)
- !
- !     do aEOS=1,nvEOS
- !        aMOL=MyFragment%unoccEOSidx(aEOS)
- !        aAOS=MyFragment%idxu(aEOS)
- !
- !        do jEOS=1,noEOS
- !           jAOS=MyFragment%idxo(jEOS)
- !
- !          !do bAOS=1,nvAOS
- !          do bEOS=1,nvEOS
- !             bAOS=MyFragment%idxu(bEOS)
- !
- !             grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no) + m1%elm2(bAOS,jAOS)*&
- !                                   &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
- !                                   & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
- !            
- !            !dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bAOS,jAOS)*&
- !            !                       &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
- !            !                       & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
- !          end do
- !        end do
- !     end do
- !   end do
-
- !   do iEOS=1,noEOS
- !      iMOL=MyFragment%occEOSidx(iEOS)
- !      
- !     do aEOS=1,noEOS
- !        aMOL=MyFragment%unoccEOSidx(aEOS)
- !        aAOS=MyFragment%idxu(aEOS)
- !           
- !        do jEOS=1,noEOS
- !           jAOS=MyFragment%idxo(jEOS)
- !           
- !          do bAOS=1,noAOS
- !
- !             grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no) + m1%elm2(bAOS,jAOS)*&
- !                                   &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
- !                                   & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
- !            
-!!             dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bAOS,jAOS)*&
-!!                                    &(2.0*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
-!!                                    & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
- !          end do
- !        end do
- !     end do
- !   end do 
- 
- !   do iEOS=1,noEOS
- !     iMOL=MyFragment%occEOSidx(iEOS)
- !     do jEOS=1,noEOS
- !       jAOS=MyFragment%idxo(jEOS)
- !       do aEOS=1,noAOS
- !         aMOL=MyFragment%unoccEOSidx(aEOS)
- !         do bEOS=1,noAOS
- !             grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no) + m1%elm2(bEOS,jAOS)*&
- !                                   &(2E0_realk*t2virt%elm4(aEOS,iEOS,bEOS,jEOS)&
- !                                   & - t2virt%elm4(bEOS,iEOS,aEOS,jEOS))
-!!            dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bEOS,jAOS)*&
-!!                                    &(2.0*t2virt%elm4(aEOS,iEOS,bEOS,jEOS)&
-!!                                    & - t2virt%elm4(bEOS,iEOS,aEOS,jEOS))
- !           end do
- !        end do
- !     end do
- !   end do
-
-    !transform into AO
-    !call dec_diff_basis_transform2(grad%dens%nbasis,grad%dens%nocc,grad%dens%nunocc,MyFragment%Co,&
-    !     & MyFragment%Cv,dia%val,tmp2%val)
-
-    !fill in the grad structure 
-    !grad%dens%rho(1:noAOS,(noAOS+1):grad%dens%nbasis) = dia%val(1:noAOS,1:nvAOS)
-    !call daxpy(grad%dens%nbasis*grad%dens%nbasis,1.0_realk,tmp2%val,1,grad%dens%rho,1)
- 
     if( DECinfo%PL>2 )then
        print *,
-       print *, "Debug print Dia occ-virt block: "
+       print *, "DEC SINGLES: occ-virt block of unrel. one-el. dens. "
        call print_matrix(dia)
        print *,
        call print_matrix_real(grad%dens%Phiov,no,nv)
@@ -648,7 +501,6 @@ contains
     call init_mp2grad(PairFragment,grad)
 
     !DEBUG DEBUG DEBUG
-    print *, "I AM HERE 1 "
     !call pair_calculate_DEBUG(Fragment1,Fragment2,PairFragment,t2occ,t2virt,&
     !   & m2occ, m2virt, VOOO,VOVV,grad%dens)
 
@@ -660,33 +512,7 @@ contains
     !the off-diagonal blocks dia and dai
     call pair_dai_dia_formation(Fragment1,Fragment2,PairFragment,grad,t2occ,t2virt,m1)
     
-    !fill in the grad structure 
-    !the occ-occ part
-    !grad%dens%rho(1:noAOS,1:noAOS) = grad%dens%X(1:noAOS,1:noAOS)
-    !the virt-virt part
-    !grad%dens%rho((noAOS+1):(noAOS+nvAOS),(noAOS+1):(noAOS+nvAOS)) = grad%dens%Y(1:nvAOS,1:nvAOS)
- 
-    !print debug info if needed
-    if( DECinfo%PL>2 )then
-       print *,
-       print *, "Pairs: Debug print one-el density MO: "
-       print *,
-       call print_matrix_real(grad%dens%rho,(noAOS+nvAOS),(noAOS+nvAOS))
-       print *,
-    endif
-
-    !transform to AO and collect into rho
-    !call dec_diff_basis_transform2(grad%dens%nbasis,grad%dens%nocc,grad%dens%nunocc,PairFragment%Co,&
-    !     & PairFragment%Cv,grad%dens%rho,grad%dens%rho)
-
-    !print debug info if needed
-    !if( DECinfo%PL>2 )then
-    !   print *,
-    !   print *, "Pairs: Debug print one-el density AO: "
-    !   print *,
-    !   call print_matrix_real(grad%dens%rho,(noAOS+nvAOS),(noAOS+nvAOS))
-    !   print *,
-    !endif
+    !clean up if needed
 
   end subroutine pair_calculate_CCSDgradient_driver
 
@@ -1053,14 +879,12 @@ contains
     !fill in the grad structure 
     !grad%dens%rho((noAOS+1):grad%dens%nbasis,1:noAOS) = dai%val(1:nvAOS,1:noAOS)
  
-    print *, "Debug print 2 "
     !print debug info if needed
     if( DECinfo%PL>2 )then
        print *,
-       print *, "Debug print Dsd virt-occ block: "
+       print *, "DEC PAIR: virt-occ block of unrel. one-el. dens. "
        print *,
        print *,no,nv
-       call print_matrix(dai)
        print *,
        call print_matrix_real(grad%dens%Phivo,nv,no)
        print *,
@@ -1081,39 +905,19 @@ contains
 
       do aAOS=1,nvAOS
          aMOL=PairFragment%unoccAOSidx(aAOS)
-         !aAOS=PairFragment%idxu(aEOS)
 
            do jEOS=1,noEOS
               jAOS=PairFragment%idxo(jEOS)
 
              do bAOS=1,nvAOS
-             !do bEOS=1,nvEOS
-             !   bAOS=PairFragment%idxu(bEOS)
          
                 ! Only update for "interaction orbital pairs":
                 ! see which_pairs_occ_unocc
-                !if(dopair_virt_occ(bEOS,jEOS)) then 
                 if(dopair_occ(iEOS,jEOS)) then 
           
-                !print*, iMOL, aMOL, 'iMOL, aMOL'
                 grad%dens%Phiov(iAOS,aAOS) = grad%dens%Phiov(iAOS,aAOS)  + m1%elm2(bAOS,jAOS)*&
                                     &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
                                     & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
-
-                !grad%dens%rho(iMOL,aMOL+no) = grad%dens%rho(iMOL,aMOL+no)  + m1%elm2(bAOS,jAOS)*&
-                !                    &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
-                !                    & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
-
-
-
-                !print*,grad%dens%rho(iMOL,aMOL+no) , 'rho'
-                !print*, bAOS, jAOS, 'bAOS, jAOS'
-                !print*,m1%elm2(bAOS,jAOS), 'm1'
-                !write (*,'(i5,i5,F12.8)') bAOS,jAOS, m1%elm2(bAOS,jAOS)
-
-                  !dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bAOS,jAOS)*&
-                  !                  &(2E0_realk*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
-                  !                  & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
 
                 end if
              end do
@@ -1121,43 +925,9 @@ contains
       end do
     end do
  
-!    do iEOS=1,noEOS
-!       iMOL=PairFragment%occEOSidx(iEOS)
-!
-!      do aEOS=1,noEOS
-!         aMOL=PairFragment%unoccEOSidx(aEOS)
-!         aAOS=PairFragment%idxu(aEOS)
-!            
-!        do jEOS=1,noEOS
-!           jAOS=PairFragment%idxo(jEOS)
-!
-!          do bAOS=1,noAOS
-!          
-!            ! Only update for "interaction orbital pairs":
-!            ! see which_pairs_occ_unocc
-!            if(dopair_virt_occ_aos(bAOS,jAOS)) then 
-!
-!               dia%val(iMOL,aMOL) = dia%val(iMOL,aMOL) + m1%elm2(bAOS,jAOS)*&
-!                                    &(2.0*t2occ%elm4(aAOS,iEOS,bAOS,jEOS)&
-!                                    & - t2occ%elm4(bAOS,iEOS,aAOS,jEOS))
-!            end if
-!          end do
-!        end do
-!      end do
-!    end do
-
-    !transform into AO
-    !call dec_diff_basis_transform2(grad%dens%nbasis,grad%dens%nocc,grad%dens%nunocc,MyFragment%Co,&
-    !     & MyFragment%Cv,dia%val,tmp2%val)
-
-    !fill in the grad structure 
-    !grad%dens%rho(1:noAOS,(noAOS+1):grad%dens%nbasis) = dia%val(1:noAOS,1:nvAOS)
-    !call daxpy(grad%dens%nbasis*grad%dens%nbasis,1.0_realk,tmp2%val,1,grad%dens%rho,1)
- 
     if( DECinfo%PL>2 )then
        print *,
-       print *, "Debug print Dia occ-virt block: "
-       call print_matrix(dia)
+       print *, "DEC PAIR: occ-virt block of unrel. one-el. dens. "
        print *,
        call print_matrix_real(grad%dens%rho,no+nv,no+nv)
        print *,
@@ -4256,30 +4026,6 @@ print*, "ready to calculate the dipole moment"
   call mat_set_from_full(MyMolecule%Co(1:nbasis,1:nocc), 1E0_realk, Cocc)
   call mat_set_from_full(MyMolecule%Cv(1:nbasis,1:nvirt), 1E0_realk, Cvirt)
 
-  ! Transform the DMP2 into AO basis
-  ! **********************************
-  !write(*, *) ''
-  !write(*, *) 'DHF in matrix form'
-  !k=1
-  !do i=1,DHF%ncol
-  !  do j=1,DHF%nrow
-  !    write(*,'(f16.10)',advance='no') DHF%elms(k)
-  !    k=k+1
-  !  end do
-  !  write(*, *) ''
-  !end do
-
-  !write(*, *) ''
-  !write(*, *) 'Cocc in matrix form'
-  !k=1
-  !do i=1,Cocc%ncol
-  !  do j=1,Cocc%nrow
-  !    write(*,'(f16.10)',advance='no') Cocc%elms(k)
-  !    k=k+1
-  !  end do
-  !  write(*, *) ''
-  !end do
-
   DMP2AO = array2_init([nbasis,nbasis])
 
   dij    = array2_init([nocc,nocc])
@@ -4307,13 +4053,9 @@ print*, "ready to calculate the dipole moment"
   print *,'dij after diagonal' 
   call print_matrix_real(dij%val,nocc,nocc)
 
-  !call dec_simple_basis_transform2(nbasis,nocc,&
-  !     & Cocc%val,dij%val,dijao%val) 
   call dec_simple_basis_transform2(nbasis,nocc,&
        & MyMolecule%Co,dij%val,dijao%val) 
 
-  !call dec_simple_basis_transform2(nbasis,nvirt,&
-  !     & Cvirt%val,dab%val,dabao%val) 
   call dec_simple_basis_transform2(nbasis,nvirt,&
        & MyMolecule%Cv,dab%val,dabao%val) 
   
@@ -4328,24 +4070,14 @@ print*, "ready to calculate the dipole moment"
     write(*, *) ''
   end do
 
-  !call dec_diff_basis_transform2(nbasis,nocc,nvirt,Cocc%val,&
-  !     & Cvirt%val,dia%val,diaao%val) 
   call dec_diff_basis_transform2(nbasis,nocc,nvirt,MyMolecule%Co,&
        & MyMolecule%Cv,dia%val,diaao%val) 
 
-  !call dec_diff_basis_transform2(nbasis,nocc,nvirt,Cvirt%val,&
-  !     & Cocc%val,dai%val,daiao%val) 
   call dec_diff_basis_transform2(nbasis,nvirt,nocc,MyMolecule%Cv,&
        & MyMolecule%Co,dai%val,daiao%val) 
 
   DMP2AO = dijao+diaao+daiao+dabao
 
-  !DMP2AO%val(1:nocc,1:nocc)                 = dijao%val(1:nocc,1:nocc)                  
-  !DMP2AO%val(1:nocc,(nocc+1):nvirt)         = diaao%val(1:nocc,(nocc+1):nvirt)          
-  !DMP2AO%val((nocc+1):nvirt,1:nocc)         = daiao%val((nocc+1):nvirt,1:nocc)          
-  !DMP2AO%val((nocc+1):nvirt,(nocc+1):nvirt) = dabao%val((nocc+1):nvirt,(nocc+1):nvirt)  
-
-  !call mat_set_from_full(DMP2AO%val, 1.0_realk, rho)
   call mat_init(rho,nbasis,nbasis)
   k=1
   do i=1,rho%ncol
@@ -4367,45 +4099,19 @@ print*, "ready to calculate the dipole moment"
   end do
 
 
-  ! Full MP2 density matrix = Hartree-Fock + correlation contribution
+  ! Full density matrix = Hartree-Fock + correlation contribution
   ! *****************************************************************
-  ! DMP2 = 2*DHF + rho  (the factor two is due to double occupation -> only for closed-shell)
   call mat_init(DMP2,nbasis,nbasis)
   DMP2 = rho
-  !call mat_add(2E0_realk,DHF,1E0_realk,rho,DMP2)
 
   ! Also calculate and print HF and MP2 electric dipole moments
   ! ***********************************************************
   call get_HF_and_CCSD_dipole_moments(mylsitem,DHF,DMP2,HFdipole,MP2dipole)
   call print_HF_and_CCSD_dipoles(HFdipole, MP2dipole)
 
-
-
-  ! Get MP2 gradient matrices in type(matrix) form
-!  if(DECinfo%frozencore) then
-!     call convert_mp2gradient_matrices_to_typematrix(MyMolecule,fullgrad,&
-!          & rho,Phi,Phivo, Phiov,Phioo=Phioo)
-!  else
-!     call convert_mp2gradient_matrices_to_typematrix(MyMolecule,fullgrad,&
-!          & rho,Phi,Phivo, Phiov)
-!  end if
-
-  ! Get MP2 density
-!  if(DECinfo%frozencore) then
-!     call get_full_mp2density(MyMolecule,mylsitem,D,&
-!          & Phivo, Phiov, DMP2,rho,Phioo=Phioo)
-!  else
-!     call get_full_mp2density(MyMolecule,mylsitem,D,&
-!          & Phivo, Phiov, DMP2,rho)
-!  end if
-!  call mat_free(Phivo)
-!  call mat_free(Phiov)
-!  if(DECinfo%frozencore) call mat_free(Phioo)
-
-
   ! Save MP2 density matrices to file
   ! *********************************
-!  call save_mp2density_matrices_to_file(DMP2,rho)
+  !call save_mp2density_matrices_to_file(DMP2,rho)
 
 
   GradientCalc: if(DECinfo%gradient) then ! only for gradient, simple MP2 density
@@ -4439,7 +4145,7 @@ print*, "ready to calculate the dipole moment"
 !     call mat_free(W)
 
   else
-     write(DECinfo%output,*) 'Only MP2 density requested, skipping MP2 gradient part'
+     write(DECinfo%output,*) 'Only CCSD density requested, skipping CCSD gradient part'
 
   end if GradientCalc
 
@@ -4463,9 +4169,9 @@ end subroutine get_CCSDgradient_main
 
     !> LS setting info
     type(lsitem), intent(inout) :: mylsitem
-    !> HF density matrix, (corresponds to dens.restart, thus there is NO factor 2)
+    !> HF density matrix
     type(matrix),intent(in) :: DHF
-    !> MP2 density matrix (incl HF contribution, which is multiplied by two)
+    !> CCSD density matrix 
     type(matrix),intent(in) :: DMP2
     type(matrix),target :: DipoleIntegral(3)
     real(realk), intent(inout) :: HFdipole(3)
@@ -4474,13 +4180,9 @@ end subroutine get_CCSDgradient_main
     integer :: nbasis,i
     character(len=7) :: string
 
-
-
-
     ! Calculate pure nuclear contribution to dipole (of course the same for HF and MP2)
     ! *********************************************************************************
     call II_get_nucdip(mylsitem%setting,NucDipole)
-
 
     ! Calculate electronic dipole matrices
     ! ************************************
@@ -4500,7 +4202,7 @@ end subroutine get_CCSDgradient_main
     end do
 
 
-    ! Electronic contribution to MP2 dipole
+    ! Electronic contribution to CCSD dipole
     ! ************************************
     ! Dot product of dipole integrals and MP2 density
     do i=1,3
@@ -4526,20 +4228,6 @@ end subroutine get_CCSDgradient_main
        MP2dipole(i) = -MP2_el_dipole(i) + NucDipole(i)
     end do
    
-    !print*, "dipole HF"
-    !do i=1,3
-    !   print*, HFdipole(i)
-    !end do
-    !print*, "dipole MP2"
-    !do i=1,3
-    !   print*, MP2dipole(i)
-    !end do
-    !print*, "dipole NUC"
-    !do i=1,3
-    !   print*, NucDipole(i)
-    !end do
-
-
     ! Free stuff
     ! **********
     do i=1,3
@@ -4576,7 +4264,7 @@ end subroutine get_CCSDgradient_main
     au_to_SI=8.47835
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,*) '    DIPOLE MOMENTS AT THE HARTREE-FOCK AND MP2 LEVELS OF THEORY '
+    write(DECinfo%output,*) '    DIPOLE MOMENTS AT THE HARTREE-FOCK AND CCSD LEVELS OF THEORY '
     write(DECinfo%output,*) '    =========================================================== '
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -4601,14 +4289,14 @@ end subroutine get_CCSDgradient_main
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
-    write(DECinfo%output,'(6X,A)') '                 MP2: Permanent dipole moment'
-    write(DECinfo%output,'(6X,A)') '                 ----------------------------'
+    write(DECinfo%output,'(6X,A)') '                 CCSD: Permanent dipole moment'
+    write(DECinfo%output,'(6X,A)') '                 -----------------------------'
     write(DECinfo%output,'(12X,A)') '   au              Debye           10**-30 C m'
     write(DECinfo%output,'(5X,3g18.6)') normMP2Dipole, au_to_debye*normMP2Dipole, au_to_SI*normMP2Dipole
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,'(6X,A)') '                 MP2: Dipole moment components'
-    write(DECinfo%output,'(6X,A)') '                 -----------------------------'
+    write(DECinfo%output,'(6X,A)') '                 CCSD: Dipole moment components'
+    write(DECinfo%output,'(6X,A)') '                 ------------------------------'
     write(DECinfo%output,'(12X,A)') '   au              Debye           10**-30 C m'
     write(DECinfo%output,'(1X,A,3X,3g18.6)') 'x', MP2dipole(1), &
          & au_to_debye*MP2dipole(1), au_to_SI*MP2dipole(1)
@@ -4749,14 +4437,6 @@ end subroutine get_CCSDgradient_main
        print *,
     endif
 
-    !DEBUG DEBUG DEBUG
-    !do i=1, fragment%nunoccAOS
-    ! iFull = fragment%unoccAOSidx(i)
-    ! print *,i ,'i'
-    ! print *,iFull ,'iFull'
-    !end do
-    !DEBUG DEBUG DEBUG
-
     do i=1,fragment%nunoccAOS !fraggrad%dens%nunocc 
       iFull = fragment%UnOccAOSidx(i)
       do j=1,fragment%nunoccAOS !fraggrad%dens%nunocc 
@@ -4826,13 +4506,6 @@ end subroutine get_CCSDgradient_main
                                     &fraggrad%dens%Phivo(j,i)
       end do
     end do
-
-    !do i=1,fraggrad%dens%nbasis
-    !  iFull = fragment%OccAOSidx(i)
-    !  do j=1,fraggrad%dens%nbasis
-    !    fullgrad%rho(i,j) = fullgrad%rho(i,j)+fraggrad%dens%rho(i,j)
-    !  end do
-    !end do
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
