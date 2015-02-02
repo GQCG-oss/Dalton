@@ -6166,7 +6166,7 @@ C
 
       LOCDEB = .FALSE.
 
-      CALL HEADER('Calculation of Transition Density charges',-1)
+      CALL HEADER('Calculation of Transition Density Properties',-1)
 
 C     Memory allocation
       KUBOVE  = 1
@@ -6239,19 +6239,18 @@ C     Memory allocation
       TRDIP(2) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+NNBASX),1)
       TRDIP(3) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+2*NNBASX),1) 
 
-      WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
+      CALL HEADER("Transition Dipole (x,y,z)",-1)
       WRITE(LUPRI,'(5x,3F12.6)') TRDIP
 
       allocate( dens( N2BASX ) )
       call dcopy(n2basx,wrk(kdcao),1,dens,1)
 #ifdef BUILD_PELIB
       if (pe_savden) then
-          write(lupri,'(/A)') "Saving transition density."
           call save_tr_density( dens, NBAST, IDX, WRK(KWRK2:LWRK) )
       endif
       if (pe_fd) then
-          write(lupri,'(/A)') "Calculating coupling."
-          call tr_density_coupling( dens )
+          CALL HEADER("Excited state couplings",-1)
+          call tr_density_coupling( dens, lupri )
       endif
 #endif
 #ifdef BUILD_QFITLIB
