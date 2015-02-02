@@ -395,7 +395,7 @@ add_dalton_test(pemcscf_3             "dalton;peqm;parallel;short")
 add_dalton_test(pesoppa_excit         "dalton;peqm;soppa;short")
 add_dalton_runtest(pdehf              "dalton;peqm;runtest;short")
 if(ENABLE_QFITLIB)
-    add_dalton_runtest(pdehf_couplings_top "dalton;peqm;runtest;short")
+    add_dalton_runtest(pdehf_couplings_top "dalton;peqm;qfit;runtest;short")
 endif()
 endif()
 
