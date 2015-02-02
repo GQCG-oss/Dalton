@@ -20,9 +20,9 @@ C in infinp.h:
 C HSROHF: High spin open-shell RHF
 C
       REAL*8  THRRHF
-      LOGICAL RHFCAN, AUTOCC, BCKSTP, HSFOCK
+      LOGICAL RHFCAN, AUTOCC, BCKSTP
       COMMON /SCBRHF/ THRRHF,
      &                NFRRHF(8),NMVO(8),NMVOT,IOPRHF,MXHFMA,MXHFMI,
      &                MAXFCK, MXDIIS, MAXEVC, NRHFEL,INIOCC,
-     &                RHFCAN, AUTOCC, BCKSTP, HSFOCK
+     &                RHFCAN, AUTOCC, BCKSTP
 C .. end of scbrhf.h ...

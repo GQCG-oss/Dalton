@@ -4363,7 +4363,10 @@
 
         if(present(ierr)) ierr=0
         if(CONS_OUT_SAVED.le.0) then
+           !PETT 2 DIL: FIXME: PLEASE CHECK PRECOMPILER FLAGS
+#ifdef VAR_MPI
          impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
+#endif
          deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
          open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN')
          CONS_OUT_SAVED=CONS_OUT; CONS_OUT=DIL_DEBUG_FILE; DIL_CONS_OUT=DIL_DEBUG_FILE
@@ -4382,7 +4385,10 @@
 
         if(present(ierr)) ierr=0
         if(CONS_OUT_SAVED.gt.0) then
+           !PETT 2 DIL: FIXME: PLEASE CHECK PRECOMPILER FLAGS
+#ifdef VAR_MPI
          impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
+#endif
          write(CONS_OUT,'("### DEBUG END: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
          CONS_OUT=CONS_OUT_SAVED; DIL_CONS_OUT=CONS_OUT_SAVED; CONS_OUT_SAVED=0; close(DIL_DEBUG_FILE)
         else

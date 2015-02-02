@@ -80,6 +80,9 @@ contains
     DECinfo%manual_batchsizes    = .false.
     DECinfo%ccsdAbatch           = 0
     DECinfo%ccsdGbatch           = 0
+    DECinfo%manual_occbatchsizes = .false.
+    DECinfo%batchOccI            = 0
+    DECinfo%batchOccJ            = 0 
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
@@ -535,6 +538,9 @@ contains
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
+       case('.MANUAL_OCCBATCHSIZES') 
+          DECinfo%manual_occbatchsizes=.true.
+          read(input,*) DECinfo%batchOccI, DECinfo%batchOccJ
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize

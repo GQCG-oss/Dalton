@@ -280,9 +280,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    character(len=30) :: CorrEnergyString
    integer :: iCorrLen, nsingle, npair, njobs
 
-   integer :: atom, i,j,a,b,job, job_n
-   real(realk) :: max_amp, dist_a, dist_b
-
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
 

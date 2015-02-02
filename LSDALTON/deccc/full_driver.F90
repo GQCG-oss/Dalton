@@ -38,7 +38,7 @@ module full
   use ccdriver!,only: ccsolver_justenergy, ccsolver
   !  use fragment_energy_module,only : Full_DECMP2_calculation
 
-  public :: full_driver, full_canonical_rimp2
+  public :: full_driver, full_canonical_rimp2, full_canonical_mp2
   private
 
 contains
@@ -95,20 +95,22 @@ contains
           !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
           call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
        else
-          !if(DECinfo%ccModel==MODEL_MP2) then
-
-          !   if(DECinfo%use_canonical ) then
-          !      ! simple conventional MP2 calculation, only works for canonical orbitals
-          !      call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
-          !   else
-          !      ! Call routine which calculates individual fragment contributions and prints them,
-          !      ! works both for canonical and local orbitals
-          !      call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
-          !   end if
-
-          !else
-          call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
-          !end if
+          if(DECinfo%ccModel==MODEL_MP2) then
+             if(DECinfo%use_canonical ) then
+                !simple conventional MP2 calculation
+                !only works for canonical orbitals
+                !no amplitudes stored. 
+                call full_canonical_mp2(MyMolecule,MyLsitem,Ecorr)       
+             else
+                !Call routine which calculates individual fragment 
+                !contributions and prints them,
+                !works both for canonical and local orbitals
+                !call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
+                call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
+             end if
+          else
+             call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
+          end if
        end if
 
        ! Get HF energy
@@ -351,10 +353,6 @@ contains
     nvirt  = MyMolecule%nunocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
-
-    ! Memory check!
-    ! ********************
-    call full_canonical_mp2_memory_check(nbasis,nocc,nvirt)
 
     ! Get all F12 Fock Matrices
     ! ********************
@@ -857,37 +855,6 @@ contains
   end subroutine full_canonical_mp2_f12
 #endif
 
-  !> \brief Memory check for full_canonical_mp2 subroutine
-  !> \author Kasper Kristensen
-  !> \date May 2012
-  subroutine full_canonical_mp2_memory_check(nbasis,nocc,nvirt)
-    implicit none
-    integer,intent(in) :: nbasis
-    integer,intent(in) :: nocc
-    integer,intent(in) :: nvirt
-    real(realk) :: MemRequired,GB
-
-    GB = 1.0E9_realk
-
-    ! Check for integer overflow
-    if(nbasis**4 < 1) then
-       call lsquit('full_canonical_mp2: Possible integer overflow! &
-            & Try to compile with 64 bit integers.',-1)
-    end if
-
-    ! Check that arrays fit in memory (hard-coded)
-    MemRequired = real(nbasis**4) + real(nocc*(nbasis**3)) &
-         & + real(nocc*nvirt*(nbasis**2)) + real(nvirt*nocc*nvirt*nocc)
-    MemRequired = MemRequired*realk/GB
-    if(MemRequired > DECinfo%memory) then
-       print *, 'Mem required (GB) = ', MemRequired
-       print *, 'Max memory (GB)   = ', DECinfo%memory
-       call lsquit('full_canonical_mp2: Memory exceeded! Try to increase memory &
-            & using the .MaxMemory (in GB) keyword in the *DEC section.',-1)
-    end if
-
-  end subroutine full_canonical_mp2_memory_check
-
   !> \brief Memory check for full_canonical_rimp2 subroutine
   !> \author Thomas Kjaergaard
   !> \date October 2014
@@ -987,7 +954,6 @@ contains
     logical :: MemoryReduced,AlphaCDAlloced,AlphaCD_Deallocate
     logical(kind=ls_mpik) :: TransferCompleted
     logical :: NotMatSet,file_exists
-    logical(ls_mpik):: TransferCompleted
     real(realk),pointer :: Amat(:,:),Bmat(:,:)
     MemoryReduced = MyLsitem%setting%scheme%ForceRIMP2memReduced
 #ifdef VAR_TIME    
@@ -1445,29 +1411,37 @@ contains
     enddo
 
     IF(DECinfo%DECrestart)THEN
-       !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
-       INQUIRE(FILE='FULLRIMP2.restart',EXIST=file_exists)
-       IF(file_exists)THEN
-          WRITE(DECinfo%output,*)'Restart of Full molecular RIMP2 calculation:'
-          restart_lun = -1  !initialization
-          call lsopen(restart_lun,'FULLRIMP2.restart','OLD','FORMATTED')
-          rewind restart_lun
-          read(restart_lun,'(I9)') noccJstart
-          IF(noccJstart.EQ.nocc)THEN
-             WRITE(DECinfo%output,*)'All energies is on file'
-             noccJstart = -1
-          ELSEIF(noccJstart.GT.nocc.OR.noccJstart.LT.1)THEN
-             WRITE(DECinfo%output,*)'RIMP2 restart error first integer is wrong. Read:',noccJstart
-             call lsquit('RIMP2 restart error first integer is wrong')             
-          ELSE
-             noccJstart = noccJstart + 1
-             read(restart_lun,'(F28.16)') rimp2_energy
-          ENDIF
-          call lsclose(restart_lun,'KEEP')
+     !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
+     INQUIRE(FILE='FULLRIMP2.restart',EXIST=file_exists)
+     IF(file_exists)THEN
+      IF(master)THEN
+       WRITE(DECinfo%output,*)'Restart of Full molecular RIMP2 calculation:'
+      ENDIF
+      restart_lun = -1  !initialization
+      call lsopen(restart_lun,'FULLRIMP2.restart','OLD','FORMATTED')
+      rewind restart_lun
+      read(restart_lun,'(I9)') noccJstart
+      IF(noccJstart.EQ.nocc)THEN
+         IF(master)WRITE(DECinfo%output,*)'All energies is on file'
+         noccJstart = nocc+1
+         read(restart_lun,'(F28.16)') rimp2_energy
+      ELSEIF(noccJstart.GT.nocc.OR.noccJstart.LT.1)THEN
+       IF(master)THEN
+        WRITE(DECinfo%output,*)'RIMP2 restart error first integer is wrong. Read:',noccJstart
        ENDIF
+       call lsquit('RIMP2 restart error first integer is wrong')             
+      ELSE
+       noccJstart = noccJstart + 1
+       read(restart_lun,'(F28.16)') rimp2_energy
+      ENDIF
+      call lsclose(restart_lun,'KEEP')
+     ELSE
+      noccJstart=1
+      rimp2_energy = 0.0E0_realk
+     ENDIF
     ELSE
-       noccJstart=1
-       rimp2_energy = 0.0E0_realk
+     noccJstart=1
+     rimp2_energy = 0.0E0_realk
     ENDIF
 
     IF(Wakeslaves)THEN
@@ -1596,6 +1570,7 @@ contains
     !$OMP END PARALLEL DO
   end subroutine CalcBmat
 
+  !FIXME USE A DOT - is that faster?
   subroutine RIMP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
     implicit none
     integer,intent(in) :: nvirt
@@ -1793,6 +1768,1052 @@ subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
   !$OMP END PARALLEL DO
   rimp2_energy = rimp2_energy + Tmp
 end subroutine RIMP2_CalcEnergyContribution
+
+!> \brief Memory check for full_canonical_mp2 subroutine
+!> \author Thomas Kjaergaard
+!> \date October 2014
+subroutine full_canonical_mp2_memory_check(nbasis,nvirt,MinAtomic)
+  implicit none
+  integer,intent(in) :: nbasis,nvirt,MinAtomic
+  real(realk) :: MemRequired,GB,MemStep1,MemStep2
+  GB = 1.0E-9_realk
+  ! Check that arrays fit in memory (hard-coded)
+  MemRequired = real(MinAtomic*MinAtomic*nbasis*(nbasis+nvirt))
+  MemRequired = MemRequired*realk*GB  
+  if(MemRequired > 0.80E0_realk*DECinfo%memory) then
+     call lsquit('full_canonical_mp2: Memory exceeded! ',-1)
+  end if
+end subroutine full_canonical_mp2_memory_check
+
+!> \brief Calculate canonical MP2 energy for full molecular system
+!> \author Thomas Kjaergaard
+!> \date October 2014
+subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
+  implicit none
+  !> Full molecule info
+  type(fullmolecule), intent(inout) :: MyMolecule
+  !> Lsitem structure
+  type(lsitem), intent(inout) :: mylsitem
+  !> Canonical MP2 correlation energy
+  real(realk),intent(inout) :: mp2_energy    
+  !
+  integer :: nbasis,nocc,nvirt,naux,noccfull,mynum,numnodes
+  logical :: master,wakeslaves
+  real(realk),pointer :: EpsOcc(:),EpsVirt(:)
+  integer :: J,I,node,natoms,A,lupri,restart_lun
+  logical :: MessageRecieved,MessageRecievedW,FORCEPRINT,file_exists
+  real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPU1,CPU2,WALL1,WALL2,CPU_MPICOMM,WALL_MPICOMM
+  real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT,MemInGBCollected,epsIJ,tmp_mp2_energy
+  real(realk) :: CPU3,CPU4,WALL3,WALL4,CPU_AOINT,WALL_AOINT,tmp_mp2_energy2
+  real(realk) :: CPU_AOTOMO,WALL_AOTOMO,CPU_ECONT,WALL_ECONT
+  real(realk),pointer :: Amat(:,:),Bmat(:,:),tmp1(:,:),tmp2(:,:),tmp3(:,:),tmp4(:,:)
+  real(realk),pointer :: tmp5(:,:),tmp6(:,:),tmp7(:,:),CoBatchA(:,:),CoBatchB(:,:)
+  real(realk),pointer :: CoBI(:,:),CoBJ(:,:),tmp62(:,:),tmp72(:,:),CoI(:,:),CoJ(:,:)
+  real(realk),pointer :: VOVO(:,:),VGVO(:,:),CvA(:,:),CoIG(:,:)
+!
+  type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
+  type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
+  type(batchtoorb), pointer :: batch2orbAlpha(:)
+  type(batchtoorb), pointer :: batch2orbGamma(:)
+  integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+  integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
+  integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
+  integer :: MaxAllowedDimAlpha,MaxAllowedDimGamma,MaxActualDimAlpha,MaxActualDimGamma
+  integer :: nOccBatchDimImax,nOccBatchDimJmax,K,iorb,idx,nbatchesAlpha,nbatchesGamma,nb
+  integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint,M,N,iB
+  integer :: MinAObatch,gammaB,alphaB,nOccBatchesI,nOccBatchesJ,jB,nOccBatchDimI,nOccBatchDimJ
+  integer :: nbatchesGammaRestart,nbatchesAlphaRestart,dimGamma,GammaStart,GammaEnd,dimAlpha
+  integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB 
+  logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
+  logical :: PermutationalSymmetryIJ
+  logical,pointer :: JobsCompleted(:,:)
+  integer(kind=8) :: maxsize
+  TYPE(DECscreenITEM)   :: DecScreen
+  Character            :: intSpec(5)
+  integer(kind=ls_mpik)  :: nMPI,TAG,IERR,request,Receiver,sender,comm,TAG1,TAG2
+  integer(kind=ls_mpik)  :: request1,request2,masterrank,senderID
+#ifdef VAR_MPI
+  integer(kind=ls_mpik)  :: mpistatus(MPI_STATUS_SIZE) 
+#endif
+  integer(kind=4) :: JobInfo1(2)
+!  Character(80)        :: FilenameCS,FilenamePS
+
+#ifdef VAR_TIME    
+    FORCEPRINT = .TRUE.
+#endif
+
+  CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
+  mp2_energy = 0.0E0_realk
+  
+  CPU_AOINT = 0.0E0_realk
+  WALL_AOINT = 0.0E0_realk
+  CPU_AOTOMO = 0.0E0_realk
+  WALL_AOTOMO = 0.0E0_realk
+  CPU_ECONT = 0.0E0_realk
+  WALL_ECONT = 0.0E0_realk
+
+  CPU_MPICOMM = 0.0E0_realk
+  WALL_MPICOMM = 0.0E0_realk
+  CPU_MPIWAIT = 0.0E0_realk
+  WALL_MPIWAIT = 0.0E0_realk
+  TAG = 1411; TAG1 = 1412; TAG2 = 1413
+  
+  !sanity check
+  if(.NOT.DECinfo%use_canonical) then
+     call lsquit('Error: full_canonical_mp2 require canonical Orbitals',-1)
+  endif
+  ! Init stuff
+  ! **********
+  nbasis = MyMolecule%nbasis
+  nb = nbasis
+  nocc   = MyMolecule%nocc
+  nvirt  = MyMolecule%nunocc
+  noccfull = nocc
+  nAtoms = MyMolecule%nAtoms
+  LUPRI = DECinfo%output
+
+#ifdef VAR_MPI
+  comm = MPI_COMM_LSDALTON
+  master= (infpar%mynum == infpar%master)
+  mynum = infpar%mynum
+  numnodes = infpar%nodtot
+  wakeslaves = infpar%nodtot.GT.1
+  IF(.NOT.master)LUPRI = 6 !standard Output
+#else
+  ! If MPI is not used, consider the single node to be "master"
+  master=.true.
+  mynum = 0
+  numnodes = 1
+  wakeslaves = .false.
+#endif
+
+  ! Set integral info
+  ! *****************
+  INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
+  INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
+  INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
+  INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
+  INTSPEC(5)='C' !C = Coulomb operator
+
+  !determine MinAObatch: the minimum allowed AObatch size + number of AO batches
+  IF(DECinfo%useIchor)THEN
+     !Determine the minimum allowed AObatch size MinAObatch
+     !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
+     !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch=6 (the 2*(Px,Py,Pz))
+     !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
+     !'R'  !Specifies that it is the Regular AO basis that should be batched
+     iAO = 4 !the center that the batching should occur on (they are all the same in this case)  
+     call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
+     iprint = 0           !print level for Ichor Integral code
+     MoTrans = .FALSE.    !Do not transform to MO basis! 
+     NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+     SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+     !Determine the full number of AO batches - not to be confused with the batches of AOs
+     !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+     iAO = 1
+     call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+     nullify(AOGammabatchinfo)
+     nullify(AOalphabatchinfo)    
+  ELSE
+     ! The smallest possible AO batch depends on the basis set
+     ! (More precisely, if all batches are made as small as possible, then the
+     !  call below determines the largest of these small batches).
+     call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
+     nullify(orb2batchAlpha)
+     nullify(batchdimAlpha)
+     nullify(batchsizeAlpha)
+     nullify(batch2orbAlpha)
+     nullify(batchindexAlpha)
+     nullify(orb2batchGamma)
+     nullify(batchdimGamma)
+     nullify(batchsizeGamma)
+     nullify(batch2orbGamma)
+     nullify(batchindexGamma)
+  ENDIF
+
+  doscreen = mylsitem%setting%scheme%cs_screen.OR.&
+       & mylsitem%setting%scheme%ps_screen
+  
+  ! ***************************************************************************************
+  !Get optimal values of: MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax
+  ! ***************************************************************************************
+
+  call get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvirt,&
+       & MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax,&
+       & numnodes,DECinfo%output)
+
+  write(DECinfo%output,*)'nbasis',nbasis
+  write(DECinfo%output,*)'nocc  ',nocc
+  write(DECinfo%output,*)'nvirt ',nvirt
+  write(DECinfo%output,*)'nOccBatchDimImax  ',nOccBatchDimImax
+  write(DECinfo%output,*)'nOccBatchDimJmax  ',nOccBatchDimJmax
+  write(DECinfo%output,*)'MinAObatch        ',MinAObatch
+  write(DECinfo%output,*)'MaxAllowedDimAlpha',MaxAllowedDimAlpha
+  write(DECinfo%output,*)'MaxAllowedDimGamma',MaxAllowedDimGamma
+  
+  nOccBatchesI = nOcc/nOccBatchDimImax
+  IF(MOD(nOcc,nOccBatchDimImax).NE.0)nOccBatchesI = nOccBatchesI + 1  
+  nOccBatchesJ = nOcc/nOccBatchDimJmax
+  IF(MOD(nOcc,nOccBatchDimJmax).NE.0)nOccBatchesJ = nOccBatchesJ + 1
+
+  PermutationalSymmetryIJ = .FALSE.
+  IF(nOccbatchesI.EQ.nOccbatchesJ)THEN
+     PermutationalSymmetryIJ = .TRUE.
+     WRITE(DECinfo%output,*)'Permutational Symmetry exploited'
+  ENDIF
+  write(DECinfo%output,*)'nOccBatchesI',nOccBatchesI
+  write(DECinfo%output,*)'nOccBatchesJ',nOccBatchesJ
+
+#ifdef VAR_MPI 
+  ! Master starts up slave
+  StartUpSlaves: if(wakeslaves .and. master) then
+     ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
+     ! and call full_canonical_rimp2_slave which communicate info 
+     ! then calls full_canonical_rimp2.
+     CALL LS_GETTIM(CPU1,WALL1)
+     call ls_mpibcast(CANONMP2FULL,infpar%master,comm)
+     ! Communicate fragment information to slaves
+     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
+     call mpicopy_lsitem(MyLsitem,comm)
+     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
+     call mpi_bcast_fullmolecule(MyMolecule)    
+     CALL LS_GETTIM(CPU2,WALL2)
+     CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+     WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
+  endif StartUpSlaves
+#endif
+
+  ! ************************************************
+  ! * Restart Option                               *
+  ! ************************************************
+  call mem_alloc(JobsCompleted,nOccBatchesI,nOccBatchesJ)
+  JobDone = .FALSE.           
+  IF(master)THEN
+     IF(DECinfo%DECrestart)THEN
+        !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
+        INQUIRE(FILE='FULLMP2.restart',EXIST=file_exists)
+        IF(file_exists)THEN
+           WRITE(DECinfo%output,*)'Restart of Full canonical molecular MP2 calculation:'
+           restart_lun = -1  !initialization
+           call lsopen(restart_lun,'FULLMP2.restart','OLD','UNFORMATTED')
+           rewind restart_lun
+           read(restart_lun) noccRestartI,noccRestartJ
+           IF(noccRestartI.NE.nOccBatchesI)THEN
+              print*,'noccRestartI,nOccBatchesI',noccRestartI,nOccBatchesI
+              call lsquit('nOccBatchesI must be same in Restart for MP2',-1)
+           ENDIF
+           IF(noccRestartJ.NE.nOccBatchesJ)THEN
+              print*,'noccRestartJ,nOccBatchesJ',noccRestartJ,nOccBatchesJ
+              call lsquit('nOccBatchesJ must be same in Restart for MP2',-1)
+           ENDIF
+           read(restart_lun) JobsCompleted
+           IF(COUNT(JobsCompleted).EQ.nOccBatchesI*nOccBatchesJ)THEN
+              WRITE(DECinfo%output,*)'All MP2 energies is on file JobsCompleted=',JobsCompleted
+              JobDone = .TRUE.
+           ELSE
+              WRITE(DECinfo%output,*)'Restarting from file '
+              WRITE(DECinfo%output,*) COUNT(JobsCompleted),' jobs completed out of ',nOccBatchesI*nOccBatchesJ
+              JobDone = .FALSE.           
+           ENDIF
+           read(restart_lun) mp2_energy
+           WRITE(DECinfo%output,*)'MP2 Energy Read From File: ',mp2_energy
+           call lsclose(restart_lun,'KEEP')
+        ELSE
+           JobsCompleted = .FALSE.
+        ENDIF
+     ELSE
+        JobDone = .FALSE.           
+        JobsCompleted = .FALSE.
+     ENDIF
+  ELSE
+     JobsCompleted = .FALSE.
+     JobDone = .FALSE.
+  ENDIF
+
+#ifdef VAR_MPI
+  IF(DECinfo%DECrestart)THEN
+     CALL LS_GETTIM(CPU1,WALL1)
+     call ls_mpibcast(JobsCompleted,nOccBatchesI,nOccBatchesJ,infpar%master,comm)
+     CALL LS_GETTIM(CPU2,WALL2)
+     CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+     WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
+     IF(COUNT(JobsCompleted).EQ.nOccBatchesI*nOccBatchesJ)JobDone = .TRUE.
+  ENDIF
+#endif
+
+  IF(JobDone)THEN
+     !do nothing
+  ELSE
+     call mem_alloc(EpsOcc,nocc)
+     !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
+     !$OMP SHARED(nocc,MyMolecule,EpsOcc)
+     do I=1,nocc
+        EpsOcc(I) = MyMolecule%ppfock(I,I)
+     enddo
+     !$OMP END PARALLEL DO
+     call mem_alloc(EpsVirt,nvirt)
+     !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
+     !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
+     do A=1,nvirt
+        EpsVirt(A) = MyMolecule%qqfock(A,A)
+     enddo
+     !$OMP END PARALLEL DO
+     
+     ! ************************************************
+     ! * Determine batch information for Gamma batch  *
+     ! * And 
+     ! * Determine batch information for Alpha batch  *
+     ! ************************************************
+     
+     IF(DECinfo%useIchor)THEN
+        iAO = 2 !Gamma is the 2. Center of the 4 center two electron coulomb integral
+        !Determine how many batches of AOS based on the bat%MaxAllowedDimGamma, the requested
+        !size of the AO batches. iAO is the center that the batching should occur on. 
+        !'R'  !Specifies that it is the Regular AO basis that should be batched 
+        call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+             & nbatchesGamma,DECinfo%output)
+        call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+        !Construct the batches of AOS based on the bat%MaxAllowedDimGamma, the requested
+        !size of the AO batches - bat%MaxAllowedDimGamma must be unchanged since the call 
+        !to determine_Ichor_nbatchesofAOS
+        !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+        !So MaxActualDimGamma must be less og equal to bat%MaxAllowedDimGamma
+        call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+             & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+        
+        iAO = 1 !Alpha is the 1. Center of the 4 center two electron coulomb integral
+        !Determine how many batches of AOS based on the bat%MaxAllowedDimAlpha, the requested
+        !size of the AO batches. iAO is the center that the batching should occur on. 
+        !'R'  !Specifies that it is the Regular AO basis that should be batched 
+        call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+             & nbatchesAlpha,DECinfo%output)
+        call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+        !Construct the batches of AOS based on the bat%MaxAllowedDimAlpha, the requested
+        !size of the AO batches - bat%MaxAllowedDimAlpha must be unchanged since the call 
+        !to determine_Ichor_nbatchesofAOS
+        !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+        !So MaxActualDimAlpha must be less og equal to bat%MaxAllowedDimAlpha
+        call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+             & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+     ELSE
+        ! Orbital to batch information
+        ! ----------------------------
+        call mem_alloc(orb2batchGamma,nbasis)
+        call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
+             & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,&
+             & orb2BatchGamma,'R')
+        ! Translate batchindex to orbital index
+        ! -------------------------------------
+        call mem_alloc(batch2orbGamma,nbatchesGamma)
+        do idx=1,nbatchesGamma
+           call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
+           batch2orbGamma(idx)%orbindex = 0
+           batch2orbGamma(idx)%norbindex = 0
+        end do
+        do iorb=1,nbasis
+           idx = orb2batchGamma(iorb)
+           batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+           K = batch2orbGamma(idx)%norbindex
+           batch2orbGamma(idx)%orbindex(K) = iorb
+        end do
+        ! Orbital to batch information
+        ! ----------------------------
+        call mem_alloc(orb2batchAlpha,nbasis)
+        call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
+             & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,&
+             & orb2BatchAlpha,'R')
+        ! Translate batchindex to orbital index
+        ! -------------------------------------
+        call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+        do idx=1,nbatchesAlpha
+           call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+           batch2orbAlpha(idx)%orbindex = 0
+           batch2orbAlpha(idx)%norbindex = 0
+        end do
+        do iorb=1,nbasis
+           idx = orb2batchAlpha(iorb)
+           batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+           K = batch2orbAlpha(idx)%norbindex
+           batch2orbAlpha(idx)%orbindex(K) = iorb
+        end do
+     ENDIF
+     
+     CALL LS_GETTIM(CPU4,WALL4)
+     
+     ! ************************************************
+     ! * Screening                                    *
+     ! ************************************************
+     IF(DECinfo%useIchor)THEN
+        !Calculate Screening integrals 
+        SameMOL = .TRUE. !Specifies same molecule on all centers 
+        call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+     ELSE
+        ! This subroutine builds the full screening matrix.
+        call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
+             & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
+        IF(doscreen)THEN
+           call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+                & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
+                & batchindexAlpha,batchindexGamma,&
+                & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+        ENDIF
+     ENDIF
+     
+     CALL LS_GETTIM(CPU3,WALL3)
+     CPU_AOINT = CPU_AOINT + (CPU3-CPU4)
+     WALL_AOINT = WALL_AOINT + (WALL3-WALL4)
+
+     ! ************************************************
+     ! * Main Loop                                    *
+     ! ************************************************
+     JobInfo1Free = .FALSE.
+     FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
+     
+     nJobs = 0 
+     BatchOccI: do iB = 1,nOccbatchesI
+        nOccBatchDimI = nOccBatchDimImax
+        IF(MOD(nOcc,nOccBatchDimI).NE.0.AND.iB.EQ.nOccBatchesI)THEN
+           !the remainder
+           nOccBatchDimI = MOD(nOcc,nOccBatchDimImax)
+        ENDIF
+        
+        !construct CoI(nb,nOccBatchDimI)
+        call mem_alloc(CoI,nb,nOccBatchDimI)       
+        !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
+        !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax)
+        do I=1,nOccBatchDimI
+           CoI(:,I) = Mymolecule%Co(:,I+(iB-1)*nOccBatchDimImax) 
+        enddo
+        !$OMP END PARALLEL DO
+
+        startjB = 1
+        IF(PermutationalSymmetryIJ) startjB = iB
+        BatchOccJ: do jB = startjB,nOccbatchesJ
+           nOccBatchDimJ = nOccBatchDimJmax
+           IF(MOD(nOcc,nOccBatchDimJ).NE.0.AND.jB.EQ.nOccBatchesJ)THEN
+              !the remainder
+              nOccBatchDimJ = MOD(nOcc,nOccBatchDimJmax)
+           ENDIF
+           IF(JobsCompleted(iB,jB))CYCLE
+           
+           nJobs = nJobs + 1 
+#ifdef VAR_MPI
+           ! MPI: Only do this Job if this is a task for this particular rank
+           if(MOD(nJobs,numnodes) .NE. mynum) cycle
+#endif
+           !construct CoJ(nb,nOccBatchDimJ)
+           call mem_alloc(CoJ,nb,nOccBatchDimJ)       
+           !TODO: OMP Workshare/Loop
+           !$OMP PARALLEL DO DEFAULT(none) PRIVATE(J) &
+           !$OMP SHARED(nOccBatchDimJ,MyMolecule,CoJ,jB,nOccBatchDimJmax)
+           do J=1,nOccBatchDimJ
+              CoJ(:,J) = Mymolecule%Co(:,J+(jB-1)*nOccBatchDimJmax) 
+           enddo
+           !$OMP END PARALLEL DO
+           IF(.NOT.FullRHS)THEN
+              call mem_alloc(VOVO,nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
+           ENDIF
+           BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+              IF(DECinfo%useIchor)THEN
+                 dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+                 GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+                 GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+                 AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+                 AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+              ELSE
+                 dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
+                 GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+                 GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+              ENDIF
+              IF(nbatchesAlpha.GT.1)THEN
+                 call mem_alloc(VGVO,nvirt*dimGamma,nvirt*nOccBatchDimJ)
+              ENDIF
+              BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
+                 IF(DECinfo%useIchor)THEN
+                    dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+                    AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+                    AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+                    AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+                    AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+                 ELSE
+                    dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+                    AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+                    AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+                 ENDIF
+                 
+                 
+                 CALL LS_GETTIM(CPU4,WALL4)
+                 IF(DECinfo%useIchor)THEN
+                    call mem_alloc(tmp1,dimAlpha*dimGamma,nb*nb)                    
+                    !(dimAlpha,dimGamma,nb,nb)
+                    call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,dimAlpha,dimGamma,nb,nb,&
+                         & tmp1,INTSPEC,FULLRHS,AOAlphaStart,AOAlphaEnd,AOGammaStart,AOGammaEnd,&
+                         & 1,nAObatches,1,nAObatches,MoTrans,dimAlpha,dimGamma,nb,nb,NoSymmetry,DECinfo%IntegralThreshold)
+                    CALL LS_GETTIM(CPU3,WALL3)
+                    CPU_AOINT = CPU_AOINT + (CPU3-CPU4)
+                    WALL_AOINT = WALL_AOINT + (WALL3-WALL4)
+                 ELSE
+                    call mem_alloc(tmp1,nb*nb,dimAlpha*dimGamma)
+                    IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabRHS
+                    IF(doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+                    call II_GET_DECPACKED4CENTER_J_ERI2(DECinfo%output,DECinfo%output, &
+                         & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
+                         & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,&
+                         & dimGamma,nbasis,nbasis,FullRHS,INTSPEC,DECinfo%IntegralThreshold)
+                    CALL LS_GETTIM(CPU3,WALL3)
+                    CPU_AOINT = CPU_AOINT + (CPU3-CPU4)
+                    WALL_AOINT = WALL_AOINT + (WALL3-WALL4)
+                 ENDIF
+
+                 !tmp2(dimAlpha,dimGamma,nb,nOccBatchDimJ) = tmp1(dimAlpha,dimGamma,nb,nb)*CoJ(nb,nOccBatchDimJ)
+                 call mem_alloc(tmp2,dimAlpha*dimGamma,nb*nOccBatchDimJ)
+                 M = dimAlpha*dimGamma*nb     !rows of Output Matrix
+                 N = nOccBatchDimJ            !columns of Output Matrix
+                 K = nb                       !summation dimension
+                 call dgemm('N','N',M,N,K,1.0E0_realk,tmp1,M,CoJ,K,0.0E0_realk,tmp2,M)
+                 call mem_dealloc(tmp1)
+                 
+                 !reorder: tmp3(nb,nOccBatchDimJ,dimAlpha,dimGamma) = tmp2(dimAlpha,dimGamma,nb,nOccBatchDimJ)
+                 call mem_alloc(tmp3,nb*nOccBatchDimJ,dimAlpha*dimGamma)
+                 M = dimAlpha*dimGamma   !row of Input Matrix
+                 N = nb*nOccBatchDimJ    !columns of Input Matrix
+                 call mat_transpose(M,N,1.0E0_realk,tmp2,0.0E0_realk,tmp3)
+                 call mem_dealloc(tmp2)
+
+                 !tmp4(nvirt,nOccBatchDimJ,dimAlpha,dimGamma) = Cv(nb,nvirt)*tmp3(nb,nOccBatchDimJ,dimAlpha,dimGamma)
+                 call mem_alloc(tmp4,nvirt*nOccBatchDimJ,dimAlpha*dimGamma)
+                 M = nvirt                            !rows of Output Matrix
+                 N = nOccBatchDimJ*dimAlpha*dimGamma  !columns of Output Matrix
+                 K = nb                               !summation dimension
+                 call dgemm('T','N',M,N,K,1.0E0_realk,MyMolecule%Cv,K,tmp3,K,0.0E0_realk,tmp4,M)
+                 call mem_dealloc(tmp3)
+                 
+                 !reorder: tmp5(dimAlpha,dimGamma,nvirt,nOccBatchDimJ) <= tmp4(nvirt,nOccBatchDimJ,dimAlpha,dimGamma)
+                 call mem_alloc(tmp5,dimAlpha*dimGamma,nvirt*nOccBatchDimJ)
+                 M = nvirt*nOccBatchDimJ   !row of Input Matrix
+                 N = dimAlpha*dimGamma     !columns of Input Matrix
+                 call mat_transpose(M,N,1.0E0_realk,tmp4,0.0E0_realk,tmp5)
+                 call mem_dealloc(tmp4)
+                 
+                 call mem_alloc(CvA,dimAlpha,nvirt)
+                 do B=1,nvirt
+                    CvA(1:dimAlpha,B) = Mymolecule%Cv(AlphaStart:AlphaEnd,B)
+                 enddo
+                 !VGVO(nvirt,dimGamma,nvirt,nOccBatchDimJ) = CvA(dimAlpha,nvirt)*tmp5(dimAlpha,dimGamma,nvirt,nOccBatchDimJ)
+                 IF(nbatchesAlpha.EQ.1)THEN
+                    call mem_alloc(VGVO,nvirt*dimGamma,nvirt*nOccBatchDimJ)
+                 ENDIF
+                 M = nvirt                         !rows of Output Matrix
+                 N = dimGamma*nvirt*nOccBatchDimJ  !columns of Output Matrix
+                 K = dimAlpha                      !summation dimension
+                 IF(alphaB.EQ.1)THEN
+                    call dgemm('T','N',M,N,K,1.0E0_realk,CvA,K,tmp5,K,0.0E0_realk,VGVO,M) 
+                 ELSE
+                    call dgemm('T','N',M,N,K,1.0E0_realk,CvA,K,tmp5,K,1.0E0_realk,VGVO,M) !ADD
+                 ENDIF
+                 call mem_dealloc(tmp5)
+                 call mem_dealloc(CvA)
+
+                 CALL LS_GETTIM(CPU4,WALL4)
+                 CPU_AOTOMO = CPU_AOTOMO + (CPU4-CPU3)
+                 WALL_AOTOMO = WALL_AOTOMO + (WALL4-WALL3)
+              ENDDO BatchAlpha
+              CALL LS_GETTIM(CPU3,WALL3)
+              
+              !reorder: tmp7(nvirt,nOccBatchDimJ,nvirt,dimGamma) <= VGVO(nvirt,dimGamma,nvirt,nOccBatchDimJ)
+              call mem_alloc(tmp7,nvirt*nOccBatchDimJ,nvirt*dimGamma)
+              M = nvirt*dimGamma          !row of Input Matrix
+              N = nvirt*nOccBatchDimJ     !columns of Input Matrix
+              call mat_transpose(M,N,1.0E0_realk,VGVO,0.0E0_realk,tmp7)
+              call mem_dealloc(VGVO)
+              
+              call mem_alloc(CoIG,dimGamma,nOccBatchDimI)
+              !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) SHARED(nOccBatchDimI,CoI,CoIG,dimGamma,GammaStart,GammaEnd)              
+              do I=1,nOccBatchDimI
+                 CoIG(1:dimGamma,I) = CoI(GammaStart:GammaEnd,I)
+              enddo
+              !$OMP END PARALLEL DO
+              !VOVO(nvirt,nOccBatchDimJ,nvirt,nOccBatchDimI) = tmp7(nvirt,nOccBatchDimJ,nvirt,dimGamma)*CoIG(dimGamma,nOccBatchDimI)
+              IF(FullRHS)THEN
+                 call mem_alloc(VOVO,nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
+              ENDIF
+              M = nvirt*nOccBatchDimJ*nvirt     !rows of Output Matrix
+              N = nOccBatchDimI                 !columns of Output Matrix
+              K = dimGamma                      !summation dimension
+              IF(gammaB.EQ.1)THEN
+                 call dgemm('N','N',M,N,K,1.0E0_realk,tmp7,M,CoIG,K,0.0E0_realk,VOVO,M) 
+              ELSE
+                 call dgemm('N','N',M,N,K,1.0E0_realk,tmp7,M,CoIG,K,1.0E0_realk,VOVO,M) !ADD TO VOVO
+              ENDIF
+              call mem_dealloc(tmp7)     
+              
+              call mem_dealloc(CoIG)
+
+              CALL LS_GETTIM(CPU4,WALL4)
+              CPU_AOTOMO = CPU_AOTOMO + (CPU4-CPU3)
+              WALL_AOTOMO = WALL_AOTOMO + (WALL4-WALL3)
+           ENDDO BatchGamma
+           CALL LS_GETTIM(CPU3,WALL3)
+           call mem_dealloc(CoJ)
+           call mem_alloc(Amat,nvirt,nvirt)
+           call mem_alloc(Bmat,nvirt,nvirt)
+           IF(PermutationalSymmetryIJ)THEN
+              WRITE(DECinfo%output,*)'Occ Contribution iB=',iB,', jB=',jB
+              IF(iB.NE.jB)THEN 
+                 tmp_mp2_energy = 0.0E0_realk
+                 do I=1,nOccBatchDimI
+                    do J=1,nOccBatchDimJ
+                       epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
+                       CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
+                       call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
+                       tmp_mp2_energy2 = 0.0E0_realk
+                       call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                       WRITE(DECinfo%output,*)'E1(',iB,',',jB,')=',tmp_mp2_energy2
+                       tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
+                    enddo
+                 enddo
+                 !all these contributions appear twice due to permutational symmetry ( I <-> J )
+                 tmp_mp2_energy = 2.0E0_realk*tmp_mp2_energy
+                 WRITE(DECinfo%output,*)'PermutationalSymmetryIJ E(Triangular)',tmp_mp2_energy
+              ELSE !iB = jB same block 
+                 tmp_mp2_energy = 0.0E0_realk
+                 do I=1,nOccBatchDimI
+                    do J=I+1,nOccBatchDimJ
+                       epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
+                       CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
+                       call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
+                       tmp_mp2_energy2 = 0.0E0_realk
+                       call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                       WRITE(DECinfo%output,*)'E2(',iB,',',jB,')=',tmp_mp2_energy2
+                       tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
+                    enddo
+                 enddo
+                 !all these contributions appear twice due to permutational symmetry ( I <-> J )
+                 tmp_mp2_energy = 2.0E0_realk*tmp_mp2_energy
+                 WRITE(DECinfo%output,*)'PermutationalSymmetryIJ E(Triangular)',tmp_mp2_energy
+                 !all these contributions only appear once since I=J in diagonal (iB,iB) block
+                 do I=1,nOccBatchDimI
+                    epsIJ = 2.0E0_realk*EpsOcc(I+(iB-1)*nOccBatchDimImax)
+                    CALL CalcAmat2(nOccBatchDimI,nOccBatchDimI,nvirt,VOVO,Amat,I,I)
+                    call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
+                    tmp_mp2_energy2 = 0.0E0_realk
+                    call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                    WRITE(DECinfo%output,*)'E3(',iB,',',jB,')=',tmp_mp2_energy2
+                    tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
+                 enddo
+                 WRITE(DECinfo%output,*)'PermutationalSymmetryIJ E(Triangular+diagonal)',tmp_mp2_energy
+              ENDIF
+              WRITE(DECinfo%output,*)'canon MP2 energy contribution =',tmp_mp2_energy
+           ELSE
+              tmp_mp2_energy = 0.0E0_realk
+              do I=1,nOccBatchDimI
+                 do J=1,nOccBatchDimJ
+                    epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
+                    CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
+                    call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
+                    tmp_mp2_energy2 = 0.0E0_realk
+                    call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                    WRITE(DECinfo%output,*)'E4(',iB,',',jB,')=',tmp_mp2_energy2
+                    tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
+                 enddo
+              enddo
+              WRITE(DECinfo%output,*)'canon MP2 energy contribution =',tmp_mp2_energy
+           ENDIF
+           call mem_dealloc(Amat)
+           call mem_dealloc(Bmat)
+           call mem_dealloc(VOVO)
+           CALL LS_GETTIM(CPU4,WALL4)
+           CPU_ECONT = CPU_ECONT + (CPU4-CPU3)
+           WALL_ECONT = WALL_ECONT + (WALL4-WALL3)           
+#ifdef VAR_MPI
+           IF(master)THEN
+              mp2_energy = mp2_energy + tmp_mp2_energy
+              JobsCompleted(iB,jB) = .TRUE.       
+              IF(PermutationalSymmetryIJ) JobsCompleted(jB,iB) = .TRUE.       
+              !test to see if job info have been recieved from slaves
+              MessageRecieved = .TRUE.
+              MessageRecievedW = .TRUE.
+              CALL LS_GETTIM(CPU1,WALL1)
+              DO WHILE(MessageRecievedW)
+                 call lsmpi_iprobe(comm,MessageRecieved,mpistatus)
+                 MessageRecievedW = MessageRecieved
+                 IF(MessageRecievedW)THEN
+                    !get the sender ID
+                    senderID = mpistatus(MPI_SOURCE)
+                    nMPI = 2
+                    call lsmpi_recv(JobInfo1,nMPI,senderID,TAG1,comm)
+                    call lsmpi_recv(tmp_mp2_energy,senderID,TAG2,comm)
+                    mp2_energy = mp2_energy + tmp_mp2_energy
+                    JobsCompleted(JobInfo1(1),JobInfo1(2)) = .TRUE.
+                    IF(PermutationalSymmetryIJ) JobsCompleted(JobInfo1(2),JobInfo1(1)) = .TRUE.
+                 ENDIF
+              ENDDO
+              CALL LS_GETTIM(CPU2,WALL2)
+              CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+              WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
+           ELSE
+              masterrank = 0
+              !send info to master
+              IF(JobInfo1Free)THEN
+                 !wait for master to recieve the first mp2_energy
+                 CALL LS_GETTIM(CPU1,WALL1)
+                 call lsmpi_wait(request1)
+                 call lsmpi_wait(request2)
+                 CALL LS_GETTIM(CPU2,WALL2)
+                 CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                 WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+              ENDIF
+              nMPI = 2
+              JobInfo1(1) = iB
+              JobInfo1(2) = jB
+              call lsmpi_Isend(JobInfo1,nMPI,masterrank,TAG1,comm,request1)
+              mp2_energy = tmp_mp2_energy
+              call lsmpi_Isend(mp2_energy,masterrank,TAG2,comm,request2)
+              JobInfo1Free = .TRUE.
+           ENDIF
+#else
+           mp2_energy = mp2_energy + tmp_mp2_energy
+           JobsCompleted(iB,jB) = .TRUE.
+           IF(PermutationalSymmetryIJ) JobsCompleted(jB,iB) = .TRUE.
+#endif
+           IF(master)THEN
+              !Restart File 
+              restart_lun = -1  !initialization
+              call lsopen(restart_lun,'FULLMP2.restart','UNKNOWN','UNFORMATTED')
+              rewind restart_lun
+              write(restart_lun) nOccbatchesI,nOccbatchesJ
+              write(restart_lun) JobsCompleted
+              write(restart_lun) mp2_energy
+              call lsclose(restart_lun,'KEEP')
+           ENDIF
+        enddo BatchOccJ !Batched Occupied J
+        call mem_dealloc(CoI)       
+     enddo BatchOccI !Batched Occupied I
+
+#ifdef VAR_MPI
+     !Wait for all slaves to be finished
+     IF(master)THEN
+        NotAllMessagesRecieved = COUNT(JobsCompleted).NE.nOccbatchesI*nOccbatchesJ
+        DO WHILE(NotAllMessagesRecieved)
+           call lsmpi_probe(comm,mpistatus)
+           senderID = mpistatus(MPI_SOURCE)
+           nMPI = 2
+           CALL LS_GETTIM(CPU1,WALL1)
+           call lsmpi_recv(JobInfo1,nMPI,senderID,TAG1,comm)
+           CALL LS_GETTIM(CPU2,WALL2)
+           CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+           WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+           call lsmpi_recv(tmp_mp2_energy,senderID,TAG2,comm)
+           CALL LS_GETTIM(CPU1,WALL1)
+           CPU_MPICOMM = CPU_MPICOMM + (CPU1-CPU2)
+           WALL_MPICOMM = WALL_MPICOMM + (WALL1-WALL2)
+           mp2_energy = mp2_energy + tmp_mp2_energy
+           IF(JobInfo1(1).NE.JobInfo1(2))mp2_energy = mp2_energy + tmp_mp2_energy
+           JobsCompleted(JobInfo1(1),JobInfo1(2)) = .TRUE.
+           IF(PermutationalSymmetryIJ) JobsCompleted(JobInfo1(2),JobInfo1(1)) = .TRUE.
+           NotAllMessagesRecieved = COUNT(JobsCompleted).NE.nOccbatchesI*nOccbatchesJ
+        ENDDO
+        !Restart File 
+        restart_lun = -1  !initialization
+        call lsopen(restart_lun,'FULLMP2.restart','UNKNOWN','UNFORMATTED')
+        rewind restart_lun
+        write(restart_lun) nOccbatchesI,nOccbatchesJ
+        write(restart_lun) JobsCompleted
+        write(restart_lun) mp2_energy
+        call lsclose(restart_lun,'KEEP')
+     ENDIF
+#endif
+     
+     IF(DECinfo%useIchor)THEN
+        call FREE_SCREEN_ICHORERI()
+        call mem_dealloc(AOGammabatchinfo)
+        call mem_dealloc(AOAlphabatchinfo)
+     ELSE
+        nullify(mylsitem%setting%LST_GAB_LHS)
+        nullify(mylsitem%setting%LST_GAB_RHS)
+        call free_decscreen(DECSCREEN)
+        ! Free gamma batch stuff
+        call mem_dealloc(orb2batchGamma)
+        call mem_dealloc(batchdimGamma)
+        call mem_dealloc(batchsizeGamma)
+        call mem_dealloc(batchindexGamma)
+        orb2batchGamma => null()
+        batchdimGamma => null()
+        batchsizeGamma => null()
+        batchindexGamma => null()
+        do idx=1,nbatchesGamma
+           call mem_dealloc(batch2orbGamma(idx)%orbindex)
+           batch2orbGamma(idx)%orbindex => null()
+        end do
+        
+        call mem_dealloc(batch2orbGamma)
+        batch2orbGamma => null()
+        
+        ! Free alpha batch stuff
+        call mem_dealloc(orb2batchAlpha)
+        call mem_dealloc(batchdimAlpha)
+        call mem_dealloc(batchsizeAlpha)
+        call mem_dealloc(batchindexAlpha)
+        orb2batchAlpha => null()
+        batchdimAlpha => null()
+        batchsizeAlpha => null()
+        batchindexAlpha => null()
+        do idx=1,nbatchesAlpha
+           call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+           batch2orbAlpha(idx)%orbindex => null()
+        end do
+        call mem_dealloc(batch2orbAlpha)
+        batch2orbAlpha => null()
+     ENDIF
+     call mem_dealloc(EpsOcc)
+     call mem_dealloc(EpsVirt)
+  ENDIF
+  call mem_dealloc(JobsCompleted)
+
+  IF(MASTER)THEN
+     write(lupri,*)  ''
+     write(lupri,*)  'MP2 CORRELATION ENERGY = ', mp2_energy
+     write(*,'(1X,a,f20.10)') 'MP2 CORRELATION ENERGY = ', mp2_energy
+     write(lupri,*)  ''
+  ENDIF
+  CALL LSTIMER('FULL CANONICAL MP2 ',TS,TE,DECINFO%OUTPUT,FORCEPRINT)
+  CALL ls_TIMTXT('>>>  WALL Time used in MP2 AO integral evaluation ',WALL_AOINT,lupri)
+  CALL ls_TIMTXT('>>>  CPU Time used in MP2 AO integral evaluation  ',CPU_AOINT,lupri)
+  CALL ls_TIMTXT('>>>  WALL Time used in MP2 AO to MO transformation',WALL_AOTOMO,lupri)
+  CALL ls_TIMTXT('>>>  CPU Time used in MP2 AO to MO transformation ',CPU_AOTOMO,lupri)
+  CALL ls_TIMTXT('>>>  WALL Time used in MP2 Energy evaluation      ',WALL_ECONT,lupri)
+  CALL ls_TIMTXT('>>>  CPU Time used in MP2 Energy evaluation       ',CPU_ECONT,lupri)
+#ifdef VAR_MPI
+  write(lupri,*)'Overall Time spent in MPI Communication and MPI Wait for rank=',infpar%mynum
+  CALL ls_TIMTXT('>>>  WALL Time used MPI Communication inc. some Wait',WALL_MPICOMM,lupri)
+  CALL ls_TIMTXT('>>>  CPU Time used MPI Communication inc. some Wait',CPU_MPICOMM,lupri)
+  CALL ls_TIMTXT('>>>  WALL Time used in MPI Wait',WALL_MPIWAIT,lupri)
+  CALL ls_TIMTXT('>>>  CPU Time used in MPI Wait',CPU_MPIWAIT,lupri)
+#endif    
+  write(lupri,*) ' '
+end subroutine full_canonical_mp2
+
+subroutine get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvirt,&
+     & MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimI,nOccBatchDimJ,numnodes,lupri)
+  implicit none
+  integer,intent(in) :: MinAObatch,nbasis,nocc,nvirt,lupri,numnodes
+  integer,intent(inout) :: MaxAllowedDimAlpha,MaxAllowedDimGamma
+  integer,intent(inout) :: nOccBatchDimI,nOccBatchDimJ
+  !local variables
+  real(realk) :: MemoryAvailable,GB,AG,maxsize
+  integer :: iB,jB,iiB,jjB,nb,dimGamma,dimAlpha,AB,iGB,nTasks
+  real(realk) :: nOccTMP,nbasisTMP
+  logical :: BOTH
+  ! Memory currently available
+  ! **************************
+  call get_currently_available_memory(MemoryAvailable)
+  ! Note: We multiply by 85 % to be on the safe side!
+  MemoryAvailable = 0.85E0_realk*MemoryAvailable
+  GB = 1.000E-9_realk 
+  nb = nbasis
+  nOccTMP = nocc
+  nbasisTMP = nbasis
+  !test if full is possible
+  if(DECinfo%manual_occbatchsizes)then
+   nOccBatchDimI = DECinfo%batchOccI
+   nOccBatchDimJ = DECinfo%batchOccJ
+   IF(DECinfo%manual_batchsizes)THEN
+      MaxAllowedDimAlpha = DECinfo%ccsdAbatch
+      MaxAllowedDimGamma = DECinfo%ccsdGbatch
+   ELSE
+    BatchAlpha3: do AB = 1,nbasis
+     dimAlpha = MAX(MinAObatch,CEILING(nbasisTMP/AB)) !(nbasis/1,nbasis/2,..)
+     BatchGamma3: do iGB = 1,nbasis
+      dimGamma = MAX(MinAObatch,CEILING(nbasisTMP/iGB)) !(nbasis/1,nbasis/2,..)
+      call memestimateCANONMP2(iB,nOcc,dimAlpha,dimGamma,nb,nvirt,maxsize)
+      MaxAllowedDimAlpha = dimAlpha
+      MaxAllowedDimGamma = dimGamma
+      IF(maxsize.LT.MemoryAvailable)THEN
+         WRITE(DECinfo%output,*)'CANONMP2MEM: mem estimate means a batching of Occupied Index I'
+         WRITE(DECinfo%output,*)'Estimated Memory usage is ',maxsize,' GB'
+         exit BatchAlpha3
+      ENDIF
+     enddo BatchGamma3
+    enddo BatchAlpha3
+   ENDIF
+  else
+   WRITE(DECinfo%output,*)'Test Full N**4 possible'
+   call memestimateCANONMP2(nOcc,nOcc,nb,nb,nb,nvirt,maxsize)
+   IF(maxsize.LT.MemoryAvailable)THEN
+    MaxAllowedDimAlpha = nb
+    MaxAllowedDimGamma = nb
+    nOccBatchDimI = nocc
+    nOccBatchDimJ = nocc
+    WRITE(DECinfo%output,*)'CANONMP2MEM: mem estimate means full N**4 dim are used'
+    WRITE(DECinfo%output,*)'Estimated Memory is ',maxsize,' GB'
+   ELSE
+    WRITE(DECinfo%output,*)'Full scheme would require',maxsize,' GB'
+    IF(numnodes.GT.1)THEN
+     !reduce the size of the nOccBatchDimI
+     iB = CEILING(nOccTMP/numnodes)
+     !assume minimum AO batches dimGamma = MinAObatch, dimAlpha = MinAObatch
+     call memestimateCANONMP2(iB,nOcc,MinAObatch,MinAObatch,nb,nvirt,maxsize)
+     IF(maxsize.LT.MemoryAvailable)THEN
+      nOccBatchDimI = iB
+      nOccBatchDimJ = nocc
+      IF(DECinfo%manual_batchsizes)THEN
+       MaxAllowedDimAlpha = DECinfo%ccsdAbatch
+       MaxAllowedDimGamma = DECinfo%ccsdGbatch
+      ELSE
+       BatchAlpha: do AB = 1,nbasis
+        dimAlpha = MAX(MinAObatch,CEILING(nbasisTMP/AB)) !(nbasis/1,nbasis/2,..)
+        BatchGamma: do iGB = 1,nbasis
+         dimGamma = MAX(MinAObatch,CEILING(nbasisTMP/iGB)) !(nbasis/1,nbasis/2,..)
+         call memestimateCANONMP2(iB,nOcc,dimAlpha,dimGamma,nb,nvirt,maxsize)
+         MaxAllowedDimAlpha = dimAlpha
+         MaxAllowedDimGamma = dimGamma
+         IF(maxsize.LT.MemoryAvailable)THEN
+            WRITE(DECinfo%output,*)'CANONMP2MEM: mem estimate means a batching of Occupied Index I'
+            WRITE(DECinfo%output,*)'Estimated Memory usage is ',maxsize,' GB'
+            exit BatchAlpha
+         ENDIF
+        enddo BatchGamma
+       enddo BatchAlpha
+      ENDIF
+      BOTH = .FALSE.
+     ELSE
+      BOTH = .TRUE.
+     ENDIF
+    ELSE
+     BOTH = .TRUE.
+    ENDIF
+    IF(BOTH)THEN
+     !reduce the size of the nOccBatchDimI and nOccBatchDimJ
+     OccLoopI: do iiB = 1,nOcc
+      iB = nOcc/iiB !(nOcc/2,nOcc/3)
+      jB = iB
+      nTasks = iiB*iiB 
+      IF(nTasks.LT.numnodes)CYCLE
+      WRITE(DECinfo%output,*)'Test Reduction in OccI,OccJ : nOccBatchDimI',IB,'nOccBatchDimJ',JB
+      call memestimateCANONMP2(iB,jB,MinAObatch,MinAObatch,nb,nvirt,maxsize)
+      IF(maxsize.LT.MemoryAvailable)THEN
+       nOccBatchDimI = iB
+       nOccBatchDimJ = jB
+       IF(DECinfo%manual_batchsizes)THEN
+        MaxAllowedDimAlpha = DECinfo%ccsdAbatch
+        MaxAllowedDimGamma = DECinfo%ccsdGbatch
+       ELSE
+        BatchAlpha2: do AB = 1,nbasis
+         dimAlpha = MAX(MinAObatch,CEILING(nbasisTMP/AB)) !(nbasis/1,nbasis/2,..)
+         BatchGamma2: do iGB = 1,nbasis
+          dimGamma = MAX(MinAObatch,CEILING(nbasisTMP/iGB)) !(nbasis/1,nbasis/2,..)
+          WRITE(DECinfo%output,*)'Obtain Alpha Gamma',dimAlpha,dimGamma
+          call memestimateCANONMP2(iB,jB,dimAlpha,dimGamma,nb,nvirt,maxsize)
+          MaxAllowedDimAlpha = dimAlpha
+          MaxAllowedDimGamma = dimGamma
+          IF(maxsize.LT.MemoryAvailable)THEN
+             WRITE(DECinfo%output,*)'CANONMP2MEM: mem estimate means a batching of Occupied Index I and J'
+             WRITE(DECinfo%output,*)'Estimated Memory usage is ',maxsize,' GB'
+             exit BatchAlpha2
+          ENDIF
+         enddo BatchGamma2
+        enddo BatchAlpha2
+       ENDIF
+       EXIT OccLoopI
+      ENDIF
+      IF(iiB.EQ.nOcc*nOcc)THEN
+         WRITE(DECinfo%output,*)
+         nOccBatchDimI = 1
+         nOccBatchDimJ = 1
+         MaxAllowedDimAlpha = MinAObatch
+         MaxAllowedDimGamma = MinAObatch
+      ENDIF
+     enddo OccLoopI
+    ENDIF
+   ENDIF
+  ENDIF
+end subroutine get_optimal_batch_sizes_for_canonical_mp2
+
+subroutine memestimateCANONMP2(iB,jB,dimAlpha,dimGamma,nbasis,nvirt,maxsize)
+  implicit none
+  integer,intent(in) :: iB,jB,dimAlpha,dimGamma,nvirt,nbasis
+  real(realk),intent(inout) :: maxsize
+  !
+  real(realk) :: step1,step2,step3,step4,step5,step6,step7,step8,step9
+  real(realk) :: step10,step11,step12,GB,nb
+  nb=nbasis
+  GB = 1.000E-9_realk 
+  !construct Co(nb,nOccBatchDimI)
+  step1 = nbasis*iB
+  !CoJ(nb,nOccBatchDimJ)       
+  step2 = nbasis*iB + nbasis*jB
+
+  IF(dimGamma.EQ.nbasis.AND.dimAlpha.EQ.nbasis)THEN
+     step3 = nbasis*iB + nbasis*jB !noallocation of VOVO
+  ELSE
+     !VOVO(nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
+     step3 = nbasis*iB + nbasis*jB + nvirt*nvirt*iB*jB
+  ENDIF
+  IF(dimAlpha.NE.nbasis)THEN
+     !VGVO(nvirt*dimGamma,nvirt*nOccBatchDimJ)
+     step4 = step3 + jB*nvirt*nvirt*dimGamma
+  ELSE
+     step4 = step3 !noallocation of VGVO
+  ENDIF
+  !tmp1(dimAlpha*dimGamma,nb*nb)
+  step5 = step4 + dimAlpha*dimGamma*nb*nb
+  !tmp2(dimAlpha,dimGamma,nb,nOccBatchDimJ)
+  step6 = step4 + dimAlpha*dimGamma*nb*nb + dimAlpha*dimGamma*nb*jB
+  !call mem_alloc(tmp3,nb*nOccBatchDimJ,dimAlpha*dimGamma)
+  step7 = step4 + dimAlpha*dimGamma*nb*jB + nb*jB*dimAlpha*dimGamma
+  !call mem_alloc(tmp4,nvirt*nOccBatchDimJ,dimAlpha*dimGamma)
+  step8 = step4 + nb*jB*dimAlpha*dimGamma + nvirt*jB*dimAlpha*dimGamma
+  !call mem_alloc(tmp5,dimAlpha*dimGamma,nvirt*nOccBatchDimJ)
+  step9 = step4 + nvirt*jB*dimAlpha*dimGamma + dimAlpha*dimGamma*nvirt*jB
+  IF(dimAlpha.EQ.nbasis)THEN
+     !call mem_alloc(CvA,dimAlpha,nvirt)+VGVO(nvirt*dimGamma,nvirt*nOccBatchDimJ)
+     step10 = step4 + dimAlpha*dimGamma*nvirt*jB + dimAlpha*nvirt + jB*nvirt*nvirt*dimGamma
+  ELSE
+     !call mem_alloc(CvA,dimAlpha,nvirt)
+     step10 = step4 + dimAlpha*dimGamma*nvirt*jB + dimAlpha*nvirt
+  ENDIF
+  !call mem_alloc(tmp7,nvirt*nOccBatchDimJ,nvirt*dimGamma)
+  step11 = step3 + nvirt*jB*nvirt*dimGamma 
+  IF(dimGamma.EQ.nbasis.AND.dimAlpha.NE.nbasis)THEN
+     !call mem_alloc(CoIG,dimGamma,nOccBatchDimI)
+     step12 = step3 + nvirt*jB*nvirt*dimGamma + dimGamma*iB
+  ELSE
+     !alloc VOVO(nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI) + CoIG
+     step12 = step3 + nvirt*jB*nvirt*dimGamma + dimGamma*iB + nvirt*nvirt*iB*jB
+  ENDIF
+  maxsize = MAX(step1,step2,step3,step4,step5,step6,step7,step8,step9,step10,step11,step12)*realk*GB
+!  WRITE(DECinfo%output,*)'MemRequired Step  1:',Step1*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step  2:',Step2*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step  3:',Step3*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step  4:',Step4*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step  5:',Step5*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step  6:',Step6*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step  7:',Step7*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step  8:',Step8*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step  9:',Step9*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step 10:',Step10*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step 11:',Step11*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'MemRequired Step 12:',Step12*realk*GB,' GB'
+!  WRITE(DECinfo%output,*)'DECinfo%memory',DECinfo%memory
+end subroutine memestimateCANONMP2
+
+subroutine CalcAmat2(nOccBatchDimI,nOccBatchDimJ,nvirt,tmp7,Amat,I,J)
+  implicit none
+  integer,intent(in) :: nOccBatchDimI,nOccBatchDimJ,nvirt,I,J
+  real(realk),intent(in) :: tmp7(nvirt,nOccBatchDimI,nvirt,nOccBatchDimJ)
+  real(realk),intent(inout) :: Amat(nvirt,nvirt)
+  !local variables
+  integer :: A,B
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
+  !$OMP PRIVATE(B,A) SHARED(nvirt,tmp7,Amat,I,J)
+  do B=1,nvirt
+     do A=1,nvirt
+        Amat(A,B) = tmp7(A,I,B,J) 
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine CalcAmat2
+
 #ifdef MOD_UNRELEASED
   subroutine submp2f12_EBX(mp2f12_EBX,Bijij,Bjiij,Xijij,Xjiij,Fii,nocc)
     implicit none
@@ -2966,5 +3987,55 @@ subroutine full_canonical_rimp2_slave
   call molecule_finalize(MyMolecule)
   
 end subroutine full_canonical_rimp2_slave
+
+subroutine full_canonical_mp2_slave
+  use full,only: full_canonical_mp2
+  use infpar_module !infpar
+  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
+       & LSMPIBROADCAST,MPI_COMM_LSDALTON 
+  use lsmpi_op,only: mpicopy_lsitem
+  use precision
+  use typedeftype,only:lsitem
+  use lsparameters
+  use decmpi_module, only: mpi_bcast_fullmolecule
+  use DALTONINFO, only: ls_free
+!  use typedef
+!  use dec_typedef_module
+  ! DEC DEPENDENCIES (within deccc directory)   
+  ! *****************************************
+!  use dec_fragment_utils
+  use full_molecule, only:fullmolecule, molecule_finalize
+  implicit none
+  !> Full molecule info
+  type(fullmolecule) :: MyMolecule
+  !> Lsitem structure
+  type(lsitem) :: mylsitem
+  !> Canonical MP2 correlation energy
+  real(realk) :: mp2_energy    
+  
+  ! Init MPI buffer
+  ! ***************
+  ! Main master:  Prepare for writing to buffer
+  ! Local master: Receive buffer
+  call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,MPI_COMM_LSDALTON)
+  ! Integral lsitem
+  ! ---------------
+  call mpicopy_lsitem(MyLsitem,MPI_COMM_LSDALTON)
+  
+  call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,MPI_COMM_LSDALTON)
+  ! Full molecule bcasting
+  ! **********************
+  call mpi_bcast_fullmolecule(MyMolecule)
+  
+  ! Finalize MPI buffer
+  ! *******************
+  ! Main master:  Send stuff to local masters and deallocate temp. buffers
+  ! Local master: Deallocate buffer etc.
+  call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
+
+  call ls_free(MyLsitem)
+  call molecule_finalize(MyMolecule)
+  
+end subroutine full_canonical_mp2_slave
 #endif
 
