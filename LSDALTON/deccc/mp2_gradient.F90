@@ -2879,11 +2879,13 @@ end if UNRELAXED2
 
     ! Get RHS matrix for kappabar orbital rotation multiplier equation (dimension nvirt,nocc)
     ! ***************************************************************************************
-    if(DECinfo%frozencore) then
-       call get_kappabar_RHS(MyLsitem,rho,Phivo_MO,Phiov_MO,Cocc,Cvirt,RHS,kappabarVC=kappabarVC)
-    else
-       call get_kappabar_RHS(MyLsitem,rho,Phivo_MO,Phiov_MO,Cocc,Cvirt,RHS)
-    end if
+    UNRELAXED1: if(.not. DECinfo%unrelaxed) then
+       if(DECinfo%frozencore) then
+          call get_kappabar_RHS(MyLsitem,rho,Phivo_MO,Phiov_MO,Cocc,Cvirt,RHS,kappabarVC=kappabarVC)
+       else
+          call get_kappabar_RHS(MyLsitem,rho,Phivo_MO,Phiov_MO,Cocc,Cvirt,RHS)
+       end if
+    end if UNRELAXED1
 
 
     ! Solve kappabar (orbital-rotation) multiplier equation
@@ -2893,20 +2895,21 @@ end if UNRELAXED2
     full_equation = .false.
     call mat_init(kappabarUO,nvirt,nocc)
     call mat_zero(kappabarUO)
-    call dec_solve_kappabar_equation(RHS,full_equation,&
-         &MyLsitem,MyMolecule,Cocc,Cvirt,kappabarUO,.false.)
+    UNRELAXED2: if(.not. DECinfo%unrelaxed) then
+       call dec_solve_kappabar_equation(RHS,full_equation,&
+            &MyLsitem,MyMolecule,Cocc,Cvirt,kappabarUO,.false.)
 
-    ! 2. Solve full kappabar multiplier equation using solution from simplified
-    !    equation as starting guess.
-    full_equation = .true.
-    call dec_solve_kappabar_equation(RHS,full_equation,&
-         &MyLsitem,MyMolecule,Cocc,Cvirt,kappabarUO,.false.)
-    call mat_free(RHS)
-
+       ! 2. Solve full kappabar multiplier equation using solution from simplified
+       !    equation as starting guess.
+       full_equation = .true.
+       call dec_solve_kappabar_equation(RHS,full_equation,&
+            &MyLsitem,MyMolecule,Cocc,Cvirt,kappabarUO,.false.)
+       call mat_free(RHS)
+    end if UNRELAXED2
 
     ! Construct correlation density matrix (rho) in AO basis
     ! ******************************************************
-    if(DECinfo%frozencore) then
+    if(DECinfo%frozencore .and. (.not. DECinfo%unrelaxed) ) then
        call dec_get_rho_matrix_in_AO_basis(kappabarUO,MyMolecule,rho,&
             & kappabarVCmat=kappabarVC)
     else
@@ -3000,8 +3003,13 @@ end if UNRELAXED2
     au_to_SI=8.47835
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,*) '    DIPOLE MOMENTS AT THE HARTREE-FOCK AND MP2 LEVELS OF THEORY '
-    write(DECinfo%output,*) '    =========================================================== '
+    if(DECinfo%unrelaxed) then
+       write(DECinfo%output,*) '    UNRELAXED DIPOLE MOMENTS FOR HARTREE-FOCK AND MP2 '
+       write(DECinfo%output,*) '    ================================================= '
+    else
+       write(DECinfo%output,*) '    DIPOLE MOMENTS AT THE HARTREE-FOCK AND MP2 LEVELS OF THEORY '
+       write(DECinfo%output,*) '    =========================================================== '
+    end if
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,'(6X,A)') '                 HF: Permanent dipole moment'
