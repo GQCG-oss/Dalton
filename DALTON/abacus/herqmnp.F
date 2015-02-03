@@ -1288,36 +1288,31 @@ C
       deallocate(rqvec)
 C
       END
-      SUBROUTINE SET_DAMPARAM(RDVEC, RQVEC)
-C
-C Purpose:
-C     Sets damping parameters vectors for dipoles and charges.
-C
-C Input:
-C  FMAT   - Inverted Relay matrix
-C
-C Last updated: 16/08/2013 by Z. Rinkevicius.
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "qmnpmm.h"
-#include "dummy.h"
-#include "pi.h"
-C
-      DIMENSION RDVEC(*), RQVEC(*)
-C
-      PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
-      PARAMETER (D13 = 1.0D0/3.0D0)
-C
-      RDIM = SQRT(D2)/SQRTPI
-      DO I=1,TNPATM
-         RIPOL = NPFPOL(NPFTYP(I))/D3
-         RDVEC(I) = (RDIM*RIPOL)**D13
-      END DO
-C
-      DO I=1,TNPATM
-         RQVEC(I) = RDIM*NPFCAP(NPFTYP(I))
-      END DO
-C
-      END
 
+      pure subroutine set_damparam(rdvec, rqvec)
+      ! sets damping parameters vectors for dipoles and charges
+      ! see Eqs 14 and 15 in J. Phys. Chem. C 112, 40 (2008)
+
+      implicit none
+
+      real(8), intent(inout) :: rdvec(*)
+      real(8), intent(inout) :: rqvec(*)
+
+! tnpatm, npfpol, npfcap
+#include "qmnpmm.h"
+
+! sqrtpi
+#include "pi.h"
+
+      real(8) :: rdim
+      real(8) :: ripol
+      integer :: i
+
+      rdim = sqrt(2.0d0)/sqrtpi
+      do i = 1, tnpatm
+         ripol = npfpol(npftyp(i))/3.0d0
+         rdvec(i) = (rdim*ripol)**(1.0d0/3.0d0)
+         rqvec(i) = rdim*npfcap(npftyp(i))
+      end do
+
+      end
