@@ -347,7 +347,9 @@ contains
    
         ! Calculate remaining contributions to gradient (not used for MP2 density)
         ! ************************************************************************
-        call single_calculate_mp2gradient(MyFragment,ThetaOCC,ThetaVIRT,VOVOocc_arr4,VOVOvirt_arr4,grad)
+        if(DECinfo%gradient) then
+           call single_calculate_mp2gradient(MyFragment,ThetaOCC,ThetaVIRT,VOVOocc_arr4,VOVOvirt_arr4,grad)
+        end if
    
         ! Free stuff
         call array4_free(ThetaOCC)
@@ -717,8 +719,10 @@ contains
 
         ! Calculate remaining contributions to gradient (not used for MP2 density)
         ! ************************************************************************
-        call pair_calculate_mp2gradient(fragment1,fragment2,pairfragment,&
-           & ThetaOCC,ThetaVIRT,VOVOocc_arr4,VOVOvirt_arr4,grad)
+        if(DECinfo%gradient) then
+           call pair_calculate_mp2gradient(fragment1,fragment2,pairfragment,&
+                & ThetaOCC,ThetaVIRT,VOVOocc_arr4,VOVOvirt_arr4,grad)
+        end if
 
         ! Free stuff
         call array4_free(ThetaOCC)
@@ -2368,6 +2372,12 @@ contains
          & MyFragment%Cv,dens%X,dens%Y,dens%rho)
 
 
+    UNRELAXED: if(DECinfo%unrelaxed) then
+       ! Skip Phi matrix
+       dens%Phivo=0.0E0_realk
+       dens%Phiov=0.0E0_realk
+
+    else
 
     ! ****************************************************************************************
     !                  Calculate contribution to virt-occ block of Phi matrix                *
@@ -2400,6 +2410,7 @@ contains
 
     call LSTIMER('PHIOV MATRIX',tcpu,twall,DECinfo%output)
 
+ end if UNRELAXED
 
 
   end subroutine single_calculate_mp2density
@@ -2597,6 +2608,11 @@ call mem_TurnOffThread_Memory()
     ! Phivo(d,l) = sum_{cij} Theta(c,i,d,j) g(c,i,j,l)        [see the mp2dens structure]
     ! -- where we only include the contributions if I and J belong to different fragments!
 
+! Skip for unrelaxed density
+UNRELAXED1: if(DECinfo%unrelaxed) then
+dens%Phivo = 0.0E0_realk
+
+else
 
 call mem_TurnONThread_Memory()
 !$OMP PARALLEL DEFAULT(shared) PRIVATE(Phivo_tmp,i,j,c,l,d)
@@ -2638,7 +2654,7 @@ call mem_TurnOffThread_Memory()
 
     call LSTIMER('PHIVO MATRIX',tcpu,twall,DECinfo%output)
 
-
+end if UNRELAXED1
 
 
 
@@ -2649,6 +2665,11 @@ call mem_TurnOffThread_Memory()
     ! Phiov(l,c) = sum_{abk} Theta(b,k,a,l) g(b,k,a,c)      [see the mp2dens structure])
     ! -- where we only include the contributions if A and B belong to different fragments!
 
+! Skip for unrelaxed density
+UNRELAXED2: if(DECinfo%unrelaxed) then
+dens%Phiov = 0.0E0_realk
+
+else
 
 call mem_TurnONThread_Memory()
 !$OMP PARALLEL DEFAULT(shared) PRIVATE(Phiov_tmp,a,b,c,k,l)
@@ -2686,6 +2707,8 @@ dens%Phiov = dens%Phiov + Phiov_tmp
 call collect_thread_memory()
 !$OMP END PARALLEL
 call mem_TurnOffThread_Memory()
+
+end if UNRELAXED2
 
     call mem_dealloc(dopair_occ)
     call mem_dealloc(dopair_virt)

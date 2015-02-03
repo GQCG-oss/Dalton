@@ -475,6 +475,8 @@ module dec_typedef_module
      logical :: first_order
      !> density matrix (and not gradient)
      logical :: density    
+     !> Unrelaxed density matrix
+     logical :: unrelaxed
      !> Calculate MP2 gradient  (density is then also calculated as a subset of the calculation)
      logical :: gradient
      !> Use preconditioner for kappa multiplier equation

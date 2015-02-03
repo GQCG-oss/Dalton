@@ -223,6 +223,7 @@ contains
 
     !> MP2 density matrix   
     DECinfo%density = .false.
+    DECinfo%unrelaxed = .false.
     DECinfo%SkipFull = .false.
 
     !-- MP2 gradient
@@ -717,6 +718,12 @@ contains
           read(input,*)DECinfo%frag_job_nr(1:DECinfo%only_n_frag_jobs)
        case('.ONLY_PAIR_FRAG_JOBS'); DECinfo%only_pair_frag_jobs = .true.
 
+          ! Calculate unrelaxed density
+       case('.UNRELAXDENSITY') 
+          DECinfo%unrelaxed =.true.
+          DECinfo%density =.true.
+          DECinfo%first_order=.true.
+
           ! kappabar multiplier equation
        case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 
        case('.KAPPAMAXDIIS'); read(input,*) DECinfo%kappaMaxDIIS
@@ -1177,6 +1184,7 @@ contains
     write(lupri,*) 'PairEstimate ', DECitem%PairEstimate
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'density ', DECitem%density
+    write(lupri,*) 'unrelaxed ', DECitem%unrelaxed
     write(lupri,*) 'gradient ', DECitem%gradient
     write(lupri,*) 'kappa_use_preconditioner ', DECitem%kappa_use_preconditioner
     write(lupri,*) 'kappa_use_preconditioner_in_b ', DECitem%kappa_use_preconditioner_in_b
