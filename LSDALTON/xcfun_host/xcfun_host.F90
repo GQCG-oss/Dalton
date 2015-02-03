@@ -21,7 +21,7 @@ module xcfun_host
   integer,parameter :: xcfun_type_metagga=3
   public :: xcfun_host_init, xcfun_host_free, USEXCFUN, &
        & xcfun_gga_xc_single_eval, xcfun2_gga_xc_single_eval, &
-       & xcfun_lda_xc_single_eval, xcfun_gga_unres_xc_single_eval, &
+       & xcfun_lda_xc_eval, xcfun_gga_unres_xc_single_eval, &
        & xcfun_lda_unres_xc_single_eval, xcfun3_gga_xc_single_eval,&
        & xcfun_meta_xc_single_eval, xcfun2_lda_xc_single_eval,&
        & xcfun3_lda_xc_single_eval,&
@@ -394,19 +394,20 @@ module xcfun_host
   
 !LDA PART
 
-  subroutine xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+  subroutine xcfun_lda_xc_eval(XCFUNINPUT,XCFUNOUTPUT,NPNT)
     implicit none
-    REAL(REALK),intent(in) :: XCFUNINPUT(1,1)
-    REAL(REALK),intent(inout) :: XCFUNOUTPUT(2,1)
+    INTEGER,intent(IN)        :: NPNT
+    REAL(REALK),intent(in)    :: XCFUNINPUT(1,NPNT)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(2,NPNT)
 #ifdef VAR_XCFUN
     !rho = XCFUNINPUT(1,1) 
-    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    call xc_eval(XCFUNfunctional,NPNT,XCFUNINPUT,XCFUNOUTPUT)
     ! XCFUNOUTPUT(1,1) - Exc
     ! XCFUNOUTPUT(2,1) - d Exc/d rho
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
-  end subroutine xcfun_lda_xc_single_eval
+  end subroutine xcfun_lda_xc_eval
 
   subroutine xcfun_lda_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
     implicit none

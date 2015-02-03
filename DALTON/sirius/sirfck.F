@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -207,7 +207,8 @@ C        DC, DV or DXC, DXV
 C     ...PREHF: Find out if this is a HF calculation preceding
 C        a Multiconfigurational SR-DFT calculation.
       PREHF = DOSCF.AND.(DOMCSRDFT.OR.DOCISRDFT).AND.
-     &                  (.NOT.DOHFSRDFT).AND.(MCTYPE.EQ.0)
+     &                  (.NOT.DOHFSRDFT).AND.
+     &                  (MCTYPE.EQ.0.OR.MCTYPE.EQ.-1)
       LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT .AND. .NOT.PREHF
 C
 #ifdef SIRFCK_DEBUG
