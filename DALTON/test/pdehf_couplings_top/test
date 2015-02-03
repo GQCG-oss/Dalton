@@ -12,7 +12,8 @@ f = Filter()
 
 f.add(from_string = 'Excited state couplings',
       num_lines = 4,
-      abs_tolerance = 1.0e-4)
+      ignore_sign = True,
+      rel_tolerance = 1.0e-4)
 
 test.run(['fd-1.dal'], ['top.mol'], ['dummy.pot'], args='-put "core.dat" -get "pe_density_1.bin"')
 
