@@ -1008,7 +1008,7 @@ C     Set diagonal components
 C        Fix me: MM shift
          DO I=1,TNPATM
             IOFF = ISTART+I
-            FMAT(IOFF,IOFF) = D1/NPFCAP(NPFTYP(I))
+            FMAT(IOFF,IOFF) = -D1/NPFCAP(NPFTYP(I))
          END DO
       END IF
 C     Set off-diagonal components
