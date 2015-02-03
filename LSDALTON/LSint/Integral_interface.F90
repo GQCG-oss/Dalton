@@ -5567,7 +5567,7 @@ type(lssetting),intent(inout) :: setting
 logical,intent(in)            :: dsym,ADMMBASISFILE
 !
 logical             :: GC3
-TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33
+TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33,Ftmp(1)
 TYPE(Matrix)        :: S22
 real(realk)         :: var
 logical             :: ADMMexchange,testNelectrons,unres,grid_done
@@ -5575,9 +5575,9 @@ real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AORold,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
-real(realk)         :: constrain_factor, largeLambda
+real(realk)         :: constrain_factor, largeLambda,smallK,largeK,mixK
 logical             :: isADMMQ,separateX,DODISP
-logical             :: isADMMS, isADMMP,PRINT_EK3,saveDF
+logical             :: isADMMS, isADMMP,PRINT_EK3,saveDF,printExchangeMetric
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
 isADMMQ = setting%scheme%ADMMQ
@@ -5587,6 +5587,7 @@ PRINT_EK3 = setting%scheme%PRINT_EK3
 separateX = setting%scheme%admm_separateX
 separateX = separateX.OR.(.NOT.setting%do_dft) !Hack for HF - for now SR
 separateX = separateX.OR.setting%scheme%cam    !Hack for camb3lyp - for now SR
+printExchangeMetric = setting%scheme%ADMMexchangeMetric
 
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
@@ -5647,12 +5648,33 @@ CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(k2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,k2)
 
+
 call Transformed_F2_to_F3(TMPF,k2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AOadmm,AO3,.FALSE.,GC3,constrain_factor)
 fac = 1E0_realk
 IF (isADMMP) fac = constrain_factor**(4.E0_realk)
 call mat_daxpy(fac,TMPF,F)
 IF(ADMMBASISFILE)Econt(3) = mat_dotproduct(TMPF,D)
+
+!Prints the exchange-metric error between the regular and ADMM density
+!   int (rho(1,2)-fit(1,2))^2/r_12 dr_1 dr_2
+IF (printExchangeMetric) THEN
+  smallK = fac*mat_trAB(k2(1),d2(1))
+  write(*,*) 'debug:smallK',smallK
+  call mat_init(Ftmp(1),nbast,nbast)
+  call mat_zero(Ftmp(1))
+  call set_default_AOs(AO3,AODFdefault)
+  call II_get_exchange_mat(lupri,luerr,setting,(/D/),1,Dsym,Ftmp)
+  call set_default_AOs(AOadmm,AODFdefault)
+  largeK = mat_trAB(Ftmp(1),D)
+  write(*,*) 'debug:largeK',largeK
+  call mat_zero(Ftmp(1))
+  call II_get_exchange_mat_mixed(lupri,luerr,setting,D2,1,Dsym,Ftmp,AO3,AOadmm,AO3,AOadmm,coulombOperator)
+  mixK   = sqrt(fac)*2.d0*mat_trAB(Ftmp(1),D)
+  write(*,*) 'debug:mixK',mixK/2.d0
+  write(lupri,'(A,F18.12)') 'Exchange-metric error:',largeK+smallK-mixK
+  call mat_free(Ftmp(1))
+ENDIF
 
 !Subtract XC-correction
 CALL lstimer('AUX-EX',ts,te,lupri)
