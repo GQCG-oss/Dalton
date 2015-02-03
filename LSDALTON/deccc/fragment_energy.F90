@@ -2104,13 +2104,13 @@ contains
      write(DECinfo%output,'(a)')    ' FOP ==============================================='
      write(DECinfo%output,'(a)')    ' FOP'
 
-     BinarySearch = .FALSE.      !Use Binary Search in Reduction Scheme
-     SeperateExpansion = .FALSE. !Expansion for Occ and Virt is done seperately 
-     OrbDistanceSpec = .FALSE.   !Orbital Specific expansion
-     DistanceRemoval = .FALSE.   !Use Distance to remove orbitals when no Energy Contribs 
-     TestOcc = .FALSE.           !converge Occ first 
-     BruteForce = .FALSE.        !BruteForce 
-     FockMatrixOrdering = .FALSE.!Fock BruteForce 
+     BinarySearch       = .FALSE. !Use Binary Search in Reduction Scheme
+     SeperateExpansion  = .FALSE. !Expansion for Occ and Virt is done seperately 
+     OrbDistanceSpec    = .FALSE. !Orbital Specific expansion
+     DistanceRemoval    = .FALSE. !Use Distance to remove orbitals when no Energy Contribs 
+     TestOcc            = .FALSE. !converge Occ first 
+     BruteForce         = .FALSE. !BruteForce 
+     FockMatrixOrdering = .FALSE. !Fock BruteForce 
      write(DECinfo%output,'(a)') ' FOP  Fragment optimization scheme '
      IF(DECinfo%Frag_Exp_Scheme.EQ.1)THEN
         write(DECinfo%output,'(a)') ' FOP  Standard Fragment optimization scheme is used'
@@ -2241,7 +2241,7 @@ contains
 
      ! Debug case: Full molecule included in fragment
      ! --> we then skip energy calculation here and just init fragment
-     if(DECinfo%InclFullMolecule .or. DECinfo%simulate_full) then
+     if(DECinfo%InclFullMolecule .or.  DECinfo%simulate_full.or.DECinfo%all_init_radius>0.0E0_realk) then
         call fragopt_include_fullmolecule(MyAtom,AtomicFragment, &
            &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
            &MyMolecule,mylsitem,freebasisinfo,t1full)

@@ -164,6 +164,7 @@ CALL retrieve_Output(lupri,setting,S,setting%IntegralTransformGC)
 IF(sameMolecule)THEN
    call util_get_symm_part(S)
 ENDIF
+IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Overlap-matrix dot product:',mat_dotproduct(S,S)
 CALL LSTIMER('OVERLAP',TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_overlap)
 END SUBROUTINE II_get_overlap
@@ -252,12 +253,18 @@ TYPE(MATRIX),target :: tmp
 Real(realk)         :: OLDTHRESH
 
 CALL II_get_nucel_mat(LUPRI,LUERR,SETTING,h)
-!write(lupri,*) 'QQQ New  h:',mat_dotproduct(h,h)
+IF (setting%scheme%intprint.GE.2) THEN
+  write(lupri,'(A46,F18.8)') 'Nuclear-electron-attraction-matrix dot product::',mat_dotproduct(h,h)
+  IF (setting%scheme%intprint.GE.10) THEN
+    write(lupri,'(A46)') 'Nuclear-electron-attraction matrix'
+    call mat_print(h,1,h%nrow,1,h%ncol,lupri)
+  ENDIF
+ENDIF
 
 nbast = h%nrow
 CALL mat_init(tmp,nbast,nbast)
 CALL II_get_kinetic(LUPRI,LUERR,SETTING,tmp)
-!write(lupri,*) 'QQQ New  K:',mat_dotproduct(tmp,tmp)
+IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Kinetic-energy-matrix dot product:',mat_dotproduct(tmp,tmp)
 
 call mat_daxpy(1E0_realk,tmp,h)
 CALL mat_free(tmp)
@@ -6266,6 +6273,14 @@ ELSE
    IntegralTransformGC =.FALSE.
 ENDIF
 
+IF (setting%scheme%intprint.GT.10) THEN
+  write(lupri,'(A)') 'DMAT in II_get_coulomb_mat_mixed'
+  DO I=1,ndmat
+    write(lupri,'(1X,A,I3)')  'IDMAT',I
+    CALL mat_print(Dmat(I),1,Dmat(1)%ncol,1,Dmat(1)%nrow,lupri)
+  ENDDO
+ENDIF
+
 IF (SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J) THEN
   !Consistency testing
   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.(AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)&
@@ -6287,6 +6302,13 @@ IF(IntegralTransformGC)THEN
    setting%IntegralTransformGC = .TRUE. 
 ENDIF
 
+IF (setting%scheme%intprint.GT.10) THEN
+  write(lupri,'(A)') 'Fmat in II_get_coulomb_mat_mixed'
+  DO I=1,ndmat
+    write(lupri,'(1X,A,I3)')  'IDMAT',I
+    CALL mat_print(F(I),1,F(1)%ncol,1,F(1)%nrow,lupri)
+  ENDDO
+ENDIF
 
 IF (SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J) THEN
    IF (SETTING%SCHEME%PARI_J) THEN

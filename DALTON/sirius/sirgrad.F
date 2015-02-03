@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -376,7 +376,7 @@ C
 C
       CALL QENTER('FCKMAT')
       NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
-      LSRHYBR = SRHYBR .AND. .NOT. MCTYPE.EQ.0
+      LSRHYBR = SRHYBR .AND. MCTYPE.GT.0
 C
       IF (DFT_SPINDNS .AND. LSRHYBR) THEN
          CALL QUIT('SRHYBR and non-singlet not implemented')
@@ -742,7 +742,7 @@ C        (except for RO-DFT and srDFT we need FCAO for VxcAO)
 C           ... off-set to FVAO,DVAO in FCAO,DCAO
          END IF
       END IF
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
 C
 C This gives the exchange part of the active Fock matrix;
 C we need only the difference between Fa and Q which is
@@ -754,7 +754,7 @@ C
 C     ... note: NDMAT = # of FCAO matrices; NFMAT = # of non-zero FCAO matrices
       IF (NFMAT .GT. 0) THEN
       IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSFOCK .OR. DODFT .OR.
+     &   .NOT. (HSROHF .OR. DODFT .OR.
      &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE

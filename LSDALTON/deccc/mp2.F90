@@ -2008,15 +2008,16 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   TAG = 131124879
 #endif  
 
-  call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
-  LUPRI = DECinfo%output
-  CALL LSTIMER('START ',TS2,TE2,LUPRI)
-  ChangedDefault = .FALSE.
 #ifdef VAR_TIME
   ForcePrint = .TRUE.
 #else
   ForcePrint = .FALSE.
 #endif
+
+  call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
+  LUPRI = DECinfo%output
+  CALL LSTIMER('START ',TS2,TE2,LUPRI)
+  ChangedDefault = .FALSE.
   !The 3 Options 
 !  call time_start_phase(PHASE_WORK)   
 !  call time_start_phase( PHASE_COMM )

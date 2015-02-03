@@ -21,7 +21,8 @@ public:: MAIN_ICHORERI_DRIVER, SCREEN_ICHORERI_DRIVER, &
      & determine_Ichor_nAObatches, FREE_SCREEN_ICHORERI,&
      & screen_ichoreri_retrieve_gabdim,screen_ichoreri_retrieve_gab,&
      & MAIN_LINK_ICHORERI_DRIVER, MAIN_ICHORERI_MOTRANS_DRIVER, &
-     & write_ichoreri_info, main_ichoreri_readdriver
+     & write_ichoreri_info, main_ichoreri_readdriver,&
+     & determine_Ichor_ActualDim
 private
 CONTAINS
 SUBROUTINE determine_MinimumAllowedAObatchSize(setting,iAO,AOSPEC,MinimumAllowedAObatchSize)
@@ -280,6 +281,68 @@ call mem_dealloc(OrbSizeOfBatches)
 
 end SUBROUTINE determine_Ichor_batchesofAOS
 
+SUBROUTINE determine_Ichor_ActualDim(setting,iAO,AOSPEC,&
+     & RequestedOrbitalDimOfAObatch,MaxOrbitalDimOfAObatch,lupri)
+implicit none
+character(len=1),intent(in) :: AOspec
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: iAO,lupri
+integer,intent(in)        :: RequestedOrbitalDimOfAObatch
+integer,intent(inout)     :: MaxOrbitalDimOfAObatch
+!
+TYPE(BASISSETINFO),pointer :: AObasis
+integer,pointer :: OrbSizeOfBatches(:)
+integer :: nBatches,MinimumAllowedAObatchSize,ibatchesofAOS
+integer :: I,DIM,ORBINDEX,MinOrbitalDimOfAObatch
+logical   :: spherical
+spherical = .TRUE.
+IF(AOspec.EQ.'R')THEN
+   !   The regular AO-basis
+   AObasis => setting%basis(iAO)%p%BINFO(RegBasParam)
+ELSEIF(AOspec.EQ.'C')THEN
+   !   The CABS AO-type basis
+   AObasis => setting%basis(iAO)%p%BINFO(CABBasParam)   
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
+call Determine_nBatches(setting%MOLECULE(iAO)%p,AObasis,nBatches)
+call mem_alloc(OrbSizeOfBatches,nBatches)
+call Determine_OrbSizeOfBatches(setting%MOLECULE(iAO)%p,AObasis,&
+     & nBatches,OrbSizeOfBatches,Spherical)
+MinimumAllowedAObatchSize = MAXVAL(OrbSizeOfBatches)
+IF(RequestedOrbitalDimOfAObatch.LT.MAXVAL(OrbSizeOfBatches))THEN
+   WRITE(lupri,'(A)')'Error In Determine_Ichor_batchesofAOS RequestedMaximumOrbitalDimOfAObatch too small'
+   WRITE(lupri,'(A,I6)')'RequestedMaximumOrbitalDimOfAObatch have to be at least',MAXVAL(OrbSizeOfBatches)
+   WRITE(lupri,'(A)')'You can call determine_MinimumAllowedAObatchSize(setting,spherical,iAO)'
+   WRITE(lupri,'(A)')'to determine this size before this call'
+   call LSQUIT('Error In Determine_Ichor_batchesofAOS RequestedMaximumOrbitalDimOfAObatch too small',-1)
+ENDIF
+ibatchesofAOS=1
+DIM = 0 
+MaxOrbitalDimOfAObatch = 0
+DO I=1,nBatches-1
+   IF(DIM+OrbSizeOfBatches(I).LE.RequestedOrbitalDimOfAObatch)THEN
+      DIM = DIM + OrbSizeOfBatches(I)
+   ELSE
+      MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
+      DIM = OrbSizeOfBatches(I)
+   ENDIF
+ENDDO
+I=nBatches
+IF(DIM+OrbSizeOfBatches(I).LE.RequestedOrbitalDimOfAObatch)THEN
+   !BatchOrbitaldimension smaller than allowed
+   !we add to final batch to current ibatchesofAOS
+   DIM = DIM + OrbSizeOfBatches(I)
+ELSE
+   !we start a new batch of just this final batch
+   ibatchesofAOS=ibatchesofAOS+1
+   DIM = OrbSizeOfBatches(I)
+ENDIF
+MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
+call mem_dealloc(OrbSizeOfBatches)
+
+end SUBROUTINE determine_Ichor_ActualDim
+
 !dim1,dim2,dim3,dim4 are the AO dimensions 
 SUBROUTINE MAIN_ICHORERI_MOTRANS_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
      & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,&
@@ -415,6 +478,7 @@ call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
 call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
 call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
 call SetIchorGPUMaxMem(setting%GPUMAXMEM)
+
 IF(FullBatch)THEN
    SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.Setting%sameBas(1,2)
    SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.Setting%sameBas(3,4)
@@ -441,6 +505,7 @@ ELSE
    CRIT4 = (nbatchBstart2.EQ.nbatchDstart2).AND.(nbatchBend2.EQ.nbatchDend2)
    CRIT5 = Setting%sameBas(1,3).AND.Setting%sameBas(2,4)
    SameODs = ((CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)).AND.CRIT5
+
 ENDIF
 IF(NoSymmetry)THEN
    SameLHSaos = .FALSE. 
