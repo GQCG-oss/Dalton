@@ -617,7 +617,7 @@ C
 C     Induced dipole moment in NP region interaction (damped) with QM region 
       IF (DONPPOL.AND.(.NOT.NOVDAMP)) THEN
          CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
-         CALL COMP_DAMPVMAT(WORK(KINTAO), MQVEC, WORK(KFREE), LFREE)
+         CALL COMP_DAMPVMAT(WORK(KINTAO), MQVEC)
          IF (NISHT.GT.0) THEN
             EESOLQNP = EESOLQNP+DDOT(NNBASX,DCAO,1,WORK(KINTAO),1)    
          END IF 

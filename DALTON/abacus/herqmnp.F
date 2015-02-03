@@ -699,6 +699,7 @@ C
 #include "qmnpmm.h"
 C
       DIMENSION FMAT(*), WORK(LWORK)
+      integer, allocatable :: ipiv(:)
 C
       KFREE = 1
       LFREE = LWORK
@@ -728,17 +729,17 @@ C     Print Relay matrix
       END IF
 C     Invert Relay matrix
       IF (.NOT.MQITER) THEN
-         CALL MEMGET('INTE',KIPIV,IDIM,WORK,KFREE,LFREE)
-         CALL DGETRF(IDIM,IDIM,FMAT,IDIM,WORK(KIPIV),IERROR)
+         allocate(ipiv(idim))
+         CALL DGETRF(IDIM,IDIM,FMAT,IDIM,IPIV,IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('LU factorization failed in COMP_RELMAT')
          END IF
-         CALL DGETRI(IDIM,FMAT,IDIM,WORK(KIPIV),WORK(KFREE),LFREE,
+         CALL DGETRI(IDIM,FMAT,IDIM,IPIV,WORK(KFREE),LFREE,
      &               IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('Inversion failed in COMP_RELMAT')
          END IF
-         CALL MEMREL('COMP_RELMAT',WORK,1,1,KFREE,LFREE)
+         deallocate(ipiv)
          IF (IPRTLVL.GE.15) THEN
             WRITE(LUPRI,'(/,2X,A)') '*** Inverted Relay matrix ***'
             CALL OUTPUT(FMAT,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
@@ -771,6 +772,7 @@ C
 #include "qmnpmm.h"
 C
       DIMENSION FMAT(*), WORK(LWORK)
+      integer, allocatable :: ipiv(:)
 C
       KFREE = 1
       LFREE = LWORK
@@ -792,17 +794,17 @@ C     Print Relay matrix
       END IF
 C     Invert Relay matrix
       IF (.NOT.MQITER) THEN
-         CALL MEMGET('INTE',KIPIV,IDIM,WORK,KFREE,LFREE)
-         CALL DGETRF(IDIM,IDIM,FMAT,IDIM,WORK(KIPIV),IERROR)
+         allocate(ipiv(idim))
+         CALL DGETRF(IDIM,IDIM,FMAT,IDIM,IPIV,IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('LU factorization failed in COMP_MMRELMAT')
          END IF
-         CALL DGETRI(IDIM,FMAT,IDIM,WORK(KIPIV),WORK(KFREE),LFREE,
+         CALL DGETRI(IDIM,FMAT,IDIM,IPIV,WORK(KFREE),LFREE,
      &               IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('Inversion failed in COMP_MMRELMAT')
          END IF
-         CALL MEMREL('COMP_MMRELMAT',WORK,1,1,KFREE,LFREE)
+         deallocate(ipiv)
          IF (IPRTLVL.GE.15) THEN
             WRITE(LUPRI,'(/,2X,A)') '*** Inverted Relay(MM) matrix ***'
             CALL OUTPUT(FMAT,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
@@ -1264,7 +1266,7 @@ C
       RETURN
       END
 C  /* Deck comp_dampvmat */
-      SUBROUTINE COMP_DAMPVMAT(FCAO, MQVEC, WORK, LWORK)
+      SUBROUTINE COMP_DAMPVMAT(FCAO, MQVEC)
 C
 C Purpose:
 C     Computes damped potential matrix in AO basis.
@@ -1283,9 +1285,11 @@ C
 #include "shells.h"
 #include "primit.h"
 C
+      real(8), allocatable :: rdvec(:)
+      real(8), allocatable :: rqvec(:)
       DOUBLE PRECISION MQVEC 
 C
-      DIMENSION FCAO(*), MQVEC(*), WORK(LWORK)
+      DIMENSION FCAO(*), MQVEC(*)
 C
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0)
       PARAMETER (D13 = 1.0D0/3.0D0)
@@ -1293,12 +1297,11 @@ C
 C     determine dimensions
       CALL GETDIM_RELMAT(IDIM,.FALSE.)
 C
-      KFREE = 1
-      LFREE = LWORK
 C     allocate and set gaussian broadening paramenters
-      CALL MEMGET('REAL',KRDVEC,TNPATM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRQVEC,TNPATM,WORK,KFREE,LFREE)
-      CALL SET_DAMPARAM(WORK(KRDVEC),WORK(KRQVEC))
+
+      allocate(rdvec(tnpatm))
+      allocate(rqvec(tnpatm))
+      CALL SET_DAMPARAM(RDVEC,RQVEC)
       IF (IPRTLVL.GE.15) THEN 
          WRITE(LUPRI,'(/,2X,A)') '*** Computed MQ vector ***'
          CALL OUTPUT(MQVEC,1,IDIM,1,1,IDIM,1,1,LUPRI)
@@ -1314,14 +1317,14 @@ C
            call vpotdamped(kmax,nhkt,nuco,nrco,jstrt,cent,priccf,priexp,
      &                fcao,
      &                npcord,
-     &                mqvec(3*tnpatm+1), work(krqvec),
-     &                mqvec            , work(krdvec),
+     &                mqvec(3*tnpatm+1), rqvec,
+     &                mqvec            , rdvec,
      &                tnpatm)
 #else
             call quit('VPOTDAMP not compiled in this version')
 #endif
-
-      CALL MEMREL('COMP_DAMPVMAT',WORK,1,1,KFREE,LFREE)
+      deallocate(rdvec)
+      deallocate(rqvec)
 C
       RETURN
       END
