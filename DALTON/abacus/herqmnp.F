@@ -20,7 +20,6 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
-C  /* Deck qmnpinp */
       SUBROUTINE QMNPINP(WORD)
 C
 C Purpose:
@@ -173,9 +172,7 @@ C
   300 CONTINUE
 C
       CALL QEXIT('QMNPINP')
-      RETURN
       END
-C  /* Deck set_qmnpmm */
       SUBROUTINE SET_QMNPMM()
 C
 C Purpose:
@@ -238,9 +235,7 @@ C
       ENSOLMMM = 0.0D0
       EESOLMMM = 0.0D0
 C
-      RETURN
       END
-C  /* Deck read_pot_qmnpmm */
       SUBROUTINE READ_POT_QMNPMM()
 C
 C Purpose:
@@ -455,9 +450,7 @@ C     Close POTENTIAL.INP file
 C
       CALL QEXIT('READ_POT_QMNPMM')
 C
-      RETURN
       END
-C  /* Deck print_npregion */
       SUBROUTINE PRINT_NPREGION(ATMLBL)
 C
 C Purpose:
@@ -541,9 +534,7 @@ C
      &      '===================================================',
      &      '======'
 C
-      RETURN
       END
-C  /* Deck print_mmregion */
       SUBROUTINE PRINT_MMREGION(ATMLBL)
 C
 C Purpose:
@@ -606,9 +597,7 @@ C
          END DO
          WRITE(LUPRI, '(2X,A)') '================================'
       END IF
-      RETURN
       END
-C  /* Deck getdim_relmat */
       SUBROUTINE GETDIM_RELMAT(IMATDIM, SQFLAG)
 C
 C Purpose:
@@ -643,9 +632,7 @@ C     Get requested dimmension
          IMATDIM = IMATDIM*IMATDIM
       END IF
 C
-      RETURN
       END
-C  /* Deck getdim_relmat */
       SUBROUTINE GETDIM_MMMAT(IMATDIM, SQFLAG)
 C
 C Purpose:
@@ -673,9 +660,7 @@ C     Get requested dimmension
          IMATDIM = IMATDIM*IMATDIM
       END IF
 C
-      RETURN
       END
-C  /* Deck getdim_relmat */
       SUBROUTINE COMP_RELMAT(FMAT,WORK,LWORK)
 C
 C Purpose:
@@ -746,9 +731,7 @@ C     Invert Relay matrix
          END IF
       END IF
 C
-      RETURN
       END
-C  /* Deck getdim_mmrelmat */
       SUBROUTINE COMP_MMRELMAT(FMAT,WORK,LWORK)
 C
 C Purpose:
@@ -811,9 +794,7 @@ C     Invert Relay matrix
          END IF
       END IF
 C
-      RETURN
       END
-C  /* Deck get_amat */
       SUBROUTINE GET_AMAT(FMAT,IDIM)
 C
 C Purpose:
@@ -875,9 +856,7 @@ C              Distribute interaction tensor
             END DO
          END DO
       END IF
-      RETURN
       END
-C  /* Deck get_amat */
       SUBROUTINE GET_MM_AMAT(FMAT,IDIM)
 C
 C Purpose:
@@ -940,9 +919,7 @@ C           Distribute interaction tensor
          IOFF = IOFF+1
       END DO
 C
-      RETURN
       END
-C  /* Deck get_gg_afact */
       SUBROUTINE GET_GG_AFACT(FACTA,FACTB,IATM,JATM,RAD)
 C
 C Purpose:
@@ -979,9 +956,7 @@ C     Compute factors
       FACTB = D4*DEXP(-RVAL*RVAL)
       FACTB = FACTB/(RAD*RAD*RIJM*RIJM*RIJM*SQRTPI)
 C
-      RETURN
       END
-C  /* Deck get_cmat */
       SUBROUTINE GET_CMAT(FMAT,IDIM)
 C
 C Purpose:
@@ -1037,9 +1012,7 @@ C              Compute distance dependent parameters
             END DO
          END DO
       END IF
-      RETURN
       END
-C  /* Deck get_gg_cfact */
       SUBROUTINE GET_GG_CFACT(FACT,IATM,JATM,RAD)
 C
 C Purpose:
@@ -1068,9 +1041,7 @@ C     Get damping radius & scalling factor
       RIJM = SQRT(RICAP*RICAP+RJCAP*RJCAP)
       FACT = DERF(RAD/RIJM)
 C
-      RETURN
       END
-C  /* Deck get_mmat */
       SUBROUTINE GET_MMAT(FMAT,IDIM)
 C
 C Purpose:
@@ -1119,9 +1090,7 @@ C              Distribute contributions
             END DO
          END DO
       END IF
-      RETURN
       END
-C  /* Deck get_gg_mfact */
       SUBROUTINE GET_GG_MFACT(FACT,IATM,JATM,RAD)
 C
 C Purpose:
@@ -1157,9 +1126,7 @@ C     Get damping radius & scalling factor
       RADX = RAD/RIJM
       FACT = DERF(RADX)-D2*RADX*DEXP(-RADX*RADX)/SQRTPI
 C
-      RETURN
       END
-C  /* Deck get_qlag */
       SUBROUTINE GET_QLAG(FMAT,IDIM)
 C
 C Purpose:
@@ -1193,9 +1160,7 @@ C        Fix me: MM shift
          END IF
       END IF
 C
-      RETURN
       END
-C  /* Deck write_relmat */
       SUBROUTINE WRITE_RELMAT(FMAT)
 C
 C Purpose:
@@ -1225,9 +1190,7 @@ C     write inverted Relay matrix
       CALL WRTIEF(FMAT, IDIM, 'QQMNPMAT', LUQMNP)
       CALL GPCLOSE(LUQMNP,'KEEP')
 C
-      RETURN
       END
-C  /* Deck read_relmat */
       SUBROUTINE READ_RELMAT(FMAT)
 C
 C Purpose:
@@ -1263,9 +1226,7 @@ C     read inverted Relay matrix
       ENDIF
       CALL GPCLOSE(LUQMNP,'KEEP')
 C
-      RETURN
       END
-C  /* Deck comp_dampvmat */
       SUBROUTINE COMP_DAMPVMAT(FCAO, MQVEC)
 C
 C Purpose:
@@ -1326,9 +1287,7 @@ C
       deallocate(rdvec)
       deallocate(rqvec)
 C
-      RETURN
       END
-C  /* Deck set_damparam */
       SUBROUTINE SET_DAMPARAM(RDVEC, RQVEC)
 C
 C Purpose:
@@ -1360,6 +1319,5 @@ C
          RQVEC(I) = RDIM*NPFCAP(NPFTYP(I))
       END DO
 C
-      RETURN
       END
 
