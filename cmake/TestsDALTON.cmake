@@ -77,6 +77,7 @@ add_dalton_runtest(qmmm4                         "dalton;runtest;qmmm;parallel;s
 add_dalton_runtest(qmmm5                         "dalton;runtest;qmmm;parallel;medium")
 add_dalton_runtest(qmmm6                         "dalton;runtest;qmmm;medium;parallel")
 add_dalton_runtest(walk_solvmag                  "dalton;runtest;long")
+add_dalton_runtest(qmcmm                         "dalton;runtest;qmcmm;short;parallel")
 
 if(ENABLE_PCMSOLVER)
 	add_dalton_runtest(extpcm "dalton;runtest;short")
