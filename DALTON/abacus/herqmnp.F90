@@ -188,7 +188,7 @@ contains
   300 CONTINUE
 !
       CALL QEXIT('QMNPINP')
-      END
+   end subroutine
       SUBROUTINE SET_QMNPMM()
 !
 ! Purpose:
@@ -251,7 +251,7 @@ contains
       ENSOLMMM = 0.0D0
       EESOLMMM = 0.0D0
 !
-      END
+   end subroutine
       SUBROUTINE READ_POT_QMNPMM()
 !
 ! Purpose:
@@ -466,7 +466,7 @@ contains
 !
       CALL QEXIT('READ_POT_QMNPMM')
 !
-      END
+   end subroutine
       SUBROUTINE PRINT_NPREGION(ATMLBL)
 !
 ! Purpose:
@@ -550,7 +550,7 @@ contains
        '===================================================',           &
        '======'
 !
-      END
+   end subroutine
       SUBROUTINE PRINT_MMREGION(ATMLBL)
 !
 ! Purpose:
@@ -613,7 +613,7 @@ contains
          END DO
          WRITE(LUPRI, '(2X,A)') '================================'
       END IF
-      END
+   end subroutine
       SUBROUTINE GETDIM_RELMAT(IMATDIM, SQFLAG)
 !
 ! Purpose:
@@ -648,7 +648,7 @@ contains
          IMATDIM = IMATDIM*IMATDIM
       END IF
 !
-      END
+   end subroutine
       SUBROUTINE GETDIM_MMMAT(IMATDIM, SQFLAG)
 !
 ! Purpose:
@@ -676,7 +676,7 @@ contains
          IMATDIM = IMATDIM*IMATDIM
       END IF
 !
-      END
+   end subroutine
       SUBROUTINE COMP_RELMAT(FMAT,WORK,LWORK)
 !
 ! Purpose:
@@ -749,8 +749,10 @@ contains
          END IF
       END IF
 !
-      END
-      SUBROUTINE COMP_MMRELMAT(FMAT,WORK,LWORK)
+   end subroutine
+
+
+   SUBROUTINE COMP_MMRELMAT(FMAT,WORK,LWORK)
 !
 ! Purpose:
 !     Computes Relay matrix and inverts it or estimates initial
@@ -768,12 +770,14 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "qmnpmm.h"
 !
-      DIMENSION FMAT(*), WORK(LWORK)
+      real(8) :: FMAT(*), WORK(LWORK)
       integer, allocatable :: ipiv(:)
+      integer :: kfree, lfree, idim, ierror, lwork
 !
       KFREE = 1
       LFREE = LWORK
@@ -812,32 +816,28 @@ contains
          END IF
       END IF
 !
-      END
-      SUBROUTINE GET_AMAT(FMAT,IDIM)
-!
-! Purpose:
-!     Computes A matrix component of Relay matrix for NP and
-!     MM regions.
-!
-! Input:
-!   IDIM - Dimension of Relay matrix
-! Output:
-!   FMAT - Relay matrix with A matrix contribution added up
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
+   end subroutine
+
+
+   pure subroutine get_amat(fmat, idimension)
+      ! computes a matrix component of relay matrix for np and mm regions
+
+      implicit none
+
+      real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
+      integer, intent(in)    :: idimension
+
 #include "qmnpmm.h"
-!
-      DIMENSION FMAT(IDIM,IDIM)
-!
-      PARAMETER (D1 = 1.0D0, D3 = 3.0D0)
-!
-      DIMENSION RIJ(3)
+
+      integer :: i, j, k, l, m
+      integer :: joff, koff, loff
+      real(8) :: rij(3), rpol, rad, rad2, rad51, rval
+      real(8) :: facta, factb
+
 !     Set diagonal components
       IF (DONPPOL) THEN
          DO I=1,TNPATM
-            RPOL = D1/NPFPOL(NPFTYP(I))
+            RPOL = 1.0d0/NPFPOL(NPFTYP(I))
             DO J=1,3
                JOFF = (I-1)*3+J
                FMAT(JOFF,JOFF) = RPOL
@@ -854,14 +854,14 @@ contains
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
                RAD = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RAD2 = RAD*RAD
-               RAD51 = D1/(RAD2*RAD2*RAD)
+               RAD51 = 1.0d0/(RAD2*RAD2*RAD)
                IF (NPMQGAU) CALL GET_GG_AFACT(FACTA,FACTB,I,J,RAD)
 !              Distribute interaction tensor
                DO K=1,3
                   KOFF = (I-1)*3+K
                   DO L=1,3
                      LOFF = (J-1)*3+L
-                     RVAL = D3*RIJ(K)*RIJ(L)
+                     RVAL = 3.0d0*RIJ(K)*RIJ(L)
                      IF (K.EQ.L) RVAL = RVAL-RAD2
                      RVAL = RVAL*RAD51
                      IF (NPMQGAU) THEN
@@ -874,32 +874,29 @@ contains
             END DO
          END DO
       END IF
-      END
-      SUBROUTINE GET_MM_AMAT(FMAT,IDIM)
-!
-! Purpose:
-!     Computes A matrix component of Relay matrix for MM region.
-!
-! Input:
-!   IDIM - Dimension of Relay matrix
-! Output:
-!   FMAT - Relay matrix with A matrix contribution added up
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
+   end subroutine
+
+
+   pure subroutine get_mm_amat(fmat, idimension)
+      ! computes a matrix component of relay matrix for mm region
+
+      implicit none
+
+      real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
+      integer, intent(in)    :: idimension
+
 #include "qmnpmm.h"
-!
-      DIMENSION FMAT(IDIM,IDIM)
-!
-      PARAMETER (D1 = 1.0D0, D3 = 3.0D0)
-!
-      DIMENSION RIJ(3)
+
+      integer :: istart, i, j, k, l, m
+      integer :: ioff, joff, koff, loff
+      real(8) :: rij(3), rad, rad3, rval, fact
+      real(8) :: rpol, rad2, rad51
+
 !     Set diagonal components
        IOFF = 1
        DO I=1,TMMATM
          IF (MMSKIP(I) .EQ. 0) CYCLE
-         RPOL = D1/MMFPOL(MMFTYP(I))
+         RPOL = 1.0d0/MMFPOL(MMFTYP(I))
          DO J=1,3
             JOFF = (IOFF-1)*3+J
             FMAT(JOFF,JOFF) = RPOL
@@ -919,13 +916,13 @@ contains
             RIJ(3) = MMCORD(3,I)-MMCORD(3,J)
             RAD = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
             RAD2 = RAD*RAD
-            RAD51 = D1/(RAD2*RAD2*RAD)
+            RAD51 = 1.0d0/(RAD2*RAD2*RAD)
 !           Distribute interaction tensor
             DO K=1,3
                KOFF = (IOFF-1)*3+K
                DO L=1,3
                   LOFF = (JOFF-1)*3+L
-                  RVAL = D3*RIJ(K)*RIJ(L)
+                  RVAL = 3.0d0*RIJ(K)*RIJ(L)
                   IF (K.EQ.L) RVAL = RVAL-RAD2
                   RVAL = RVAL*RAD51
                   FMAT(KOFF,LOFF) = -RVAL
@@ -937,8 +934,10 @@ contains
          IOFF = IOFF+1
       END DO
 !
-      END
-      SUBROUTINE GET_GG_AFACT(FACTA,FACTB,IATM,JATM,RAD)
+   end subroutine
+
+
+   pure subroutine get_gg_afact(facta, factb, iatm, jatm, rad)
 !
 ! Purpose:
 !     Determines damping factors for T(2) operator for
@@ -954,48 +953,56 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+      implicit none
+
+      real(8), intent(out) :: facta
+      real(8), intent(out) :: factb
+      integer, intent(in)  :: iatm
+      integer, intent(in)  :: jatm
+      real(8), intent(in)  :: rad
+
 #include "pi.h"
 #include "qmnpmm.h"
-!
-      PARAMETER (D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0)
-      PARAMETER (D13 = 1.0D0/3.0D0)
+
+      real(8) :: ripol
+      real(8) :: rjpol
+      real(8) :: rdim
+      real(8) :: rim
+      real(8) :: rjm
+      real(8) :: rijm
+      real(8) :: rval
+
 !     Get polarizabilities
-      RIPOL = NPFPOL(NPFTYP(IATM))/D3
-      RJPOL = NPFPOL(NPFTYP(JATM))/D3
+      RIPOL = NPFPOL(NPFTYP(IATM))/3.0d0
+      RJPOL = NPFPOL(NPFTYP(JATM))/3.0d0
 !     Get damping radius
-      RDIM = SQRT(D2)/SQRTPI
-      RIM  = (RDIM*RIPOL)**D13
-      RJM  = (RDIM*RJPOL)**D13
+      RDIM = SQRT(2.0d0)/SQRTPI
+      RIM  = (RDIM*RIPOL)**(1.0d0/3.0d0)
+      RJM  = (RDIM*RJPOL)**(1.0d0/3.0d0)
       RIJM = SQRT(RIM*RIM+RJM*RJM)
       RVAL = RAD/RIJM
 !     Compute factors
-      FACTA = DERF(RVAL)-D2*RVAL*DEXP(-RVAL*RVAL)/SQRTPI
-      FACTB = D4*DEXP(-RVAL*RVAL)
+      FACTA = DERF(RVAL)-2.0d0*RVAL*DEXP(-RVAL*RVAL)/SQRTPI
+      FACTB = 4.0d0*DEXP(-RVAL*RVAL)
       FACTB = FACTB/(RAD*RAD*RIJM*RIJM*RIJM*SQRTPI)
 !
-      END
-      SUBROUTINE GET_CMAT(FMAT,IDIM)
-!
-! Purpose:
-!     Computes C matrix component of Relay matrix for NP and
-!     MM regions.
-!
-! Input:
-!   IDIM   - Dimension of Relay matrix
-! Output:
-!   FMAT   - Relay matrix with C matrix contribution added up.
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
+   end subroutine
+
+
+   pure subroutine get_cmat(fmat, idimension)
+      ! computes c matrix component of relay matrix for np and mm regions
+
+      implicit none
+
+      real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
+      integer, intent(in)    :: idimension
+
 #include "qmnpmm.h"
-!
-      DIMENSION FMAT(IDIM,IDIM)
-!
-      PARAMETER (D1 = 1.0D0)
-!
-      DIMENSION RIJ(3)
+
+      integer :: istart, i, j, m
+      integer :: ioff, joff
+      real(8) :: rij(3), rad, rad3, rval, fact
+
 !     Set diagonal components
       IF (DONPCAP) THEN
          ISTART = 0
@@ -1003,7 +1010,7 @@ contains
 !        Fix me: MM shift
          DO I=1,TNPATM
             IOFF = ISTART+I
-            FMAT(IOFF,IOFF) = -D1/NPFCAP(NPFTYP(I))
+            FMAT(IOFF,IOFF) = -1.0d0/NPFCAP(NPFTYP(I))
          END DO
       END IF
 !     Set off-diagonal components
@@ -1020,7 +1027,7 @@ contains
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
                RAD  = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
-               RVAL = D1/RAD
+               RVAL = 1.0d0/RAD
                IF (NPMQGAU) THEN
                   CALL GET_GG_CFACT(FACT,I,J,RAD)
                   RVAL = FACT*RVAL
@@ -1030,8 +1037,10 @@ contains
             END DO
          END DO
       END IF
-      END
-      SUBROUTINE GET_GG_CFACT(FACT,IATM,JATM,RAD)
+   end subroutine
+
+
+   pure subroutine get_gg_cfact(fact, iatm, jatm, rad)
 !
 ! Purpose:
 !     Determines damping factors for T(0) operator for
@@ -1046,41 +1055,45 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+      implicit none
+
+      real(8), intent(out) :: fact
+      integer, intent(in)  :: iatm
+      integer, intent(in)  :: jatm
+      real(8), intent(in)  :: rad
+
 #include "pi.h"
 #include "qmnpmm.h"
-!
-      PARAMETER (D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0)
-      PARAMETER (D21 = 1.41421356237309504880D0)
+
+      real(8) :: ricap
+      real(8) :: rjcap
+      real(8) :: rijm
+
 !     Get capacitancies
-      RICAP = D21*NPFCAP(NPFTYP(IATM))/SQRTPI
-      RJCAP = D21*NPFCAP(NPFTYP(JATM))/SQRTPI
+      RICAP = 1.41421356237309504880D0*NPFCAP(NPFTYP(IATM))/SQRTPI
+      RJCAP = 1.41421356237309504880D0*NPFCAP(NPFTYP(JATM))/SQRTPI
+
 !     Get damping radius & scalling factor
       RIJM = SQRT(RICAP*RICAP+RJCAP*RJCAP)
       FACT = DERF(RAD/RIJM)
-!
-      END
-      SUBROUTINE GET_MMAT(FMAT,IDIM)
-!
-! Purpose:
-!     Computes M matrix component of Relay matrix for NP and
-!     MM regions.
-!
-! Input:
-!   IDIM - Dimension of Relay matrix
-! Output:
-!   FMAT - Relay matrix with M matrix contribution added up
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
+
+   end subroutine
+
+
+   pure subroutine get_mmat(fmat, idimension)
+      ! computes m matrix component of relay matrix for np and mm regions
+
+      implicit none
+
+      real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
+      integer, intent(in)    :: idimension
+
 #include "qmnpmm.h"
-!
-      DIMENSION FMAT(IDIM,IDIM)
-!
-      PARAMETER (D1 = 1.0D0)
-!
-      DIMENSION RIJ(3)
+
+      integer :: istart, i, j, m
+      integer :: ioff, joff
+      real(8) :: rij(3), rad, rad3, rval, fact
+
 !     Set off-diagonal components
       IF (DONPPOL.AND.DONPCAP) THEN
          ISTART = 0
@@ -1093,7 +1106,7 @@ contains
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
                RAD  = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
-               RAD3 = D1/(RAD*RAD*RAD)
+               RAD3 = 1.0d0/(RAD*RAD*RAD)
 !              Get damping factor
                IF (NPMQGAU) CALL GET_GG_MFACT(FACT,I,J,RAD)
 !              Distribute contributions
@@ -1108,77 +1121,80 @@ contains
             END DO
          END DO
       END IF
-      END
-      SUBROUTINE GET_GG_MFACT(FACT,IATM,JATM,RAD)
-!
-! Purpose:
-!     Determines damping factors for T(1) operator for
-!     Gaussian/Gaussian dipole model.
-!
-! Input:
-!   IATM - I-th atom in NP region
-!   JATM - J-th atom in NP region
-!   RAD  - Distance between I and J atoms
-! Output:
-!   FACT  - Scalling factor
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
-#include "pi.h"
-#include "qmnpmm.h"
-!
-      PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
-      PARAMETER (D21 = 1.41421356237309504880D0)
-      PARAMETER (D13 = 1.0D0/3.0D0)
 
-!     Get polarizabilities
-      RIPOL = NPFPOL(NPFTYP(IATM))/D3
-!     Get damping radius
-      RDIM = D21/SQRTPI
-      RIM  = (RDIM*RIPOL)**D13
-!     Get j-th capacitancy
-      RJCAP = RDIM*NPFCAP(NPFTYP(JATM))
-!     Get damping radius & scalling factor
-      RIJM = SQRT(RIM*RIM+RJCAP*RJCAP)
-      RADX = RAD/RIJM
-      FACT = DERF(RADX)-D2*RADX*DEXP(-RADX*RADX)/SQRTPI
-!
-      END
-      SUBROUTINE GET_QLAG(FMAT,IDIM)
-!
-! Purpose:
-!     Sets charge constrain in Relay matrix for NP and
-!     MM regions.
-!
-! Input:
-!   IDIM   - Dimension of Relay matrix
-! Output:
-!   FMAT   - Relay matrix with C matrix contribution added up.
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
+   end subroutine
+
+
+   pure subroutine get_gg_mfact(fact, iatm, jatm, distance_i_j)
+      ! determines damping factors for t(1) operator for
+      ! gaussian/gaussian dipole model
+
+      implicit none
+
+      real(8), intent(inout) :: fact ! scaling factor
+      integer, intent(in)    :: iatm ! i-th atom in np region
+      integer, intent(in)    :: jatm ! j-th atom in np region
+      real(8), intent(in)    :: distance_i_j
+
+! sqrtpi
+#include "pi.h"
+
+! npftyp, npfpol, npfcap
 #include "qmnpmm.h"
-!
-      DIMENSION FMAT(IDIM,IDIM)
-!
-      PARAMETER (D1 = 1.0D0)
-!     Set diagonal components
-      IF (DONPCAP.OR.DOMMCAP) THEN
-         ISTART = 0
-         IF (DONPPOL) ISTART = ISTART+3*TNPATM
-!        Fix me: MM shift
-         IF (DONPCAP) THEN
-            DO I=1,TNPATM
-               IOFF = ISTART+I
-               FMAT(IOFF,IDIM) = D1
-               FMAT(IDIM,IOFF) = D1
-            END DO
-         END IF
-      END IF
-!
-      END
+
+      real(8) :: ripol
+      real(8) :: rdim
+      real(8) :: rim
+      real(8) :: rjcap
+      real(8) :: rijm
+      real(8) :: radx
+
+!     get polarizabilities
+      ripol = npfpol(npftyp(iatm))/3.0d0
+!     get damping radius
+      rdim = 1.41421356237309504880d0/sqrtpi
+      rim  = (rdim*ripol)**(1.0d0/3.0d0)
+!     get j-th capacitancy
+      rjcap = rdim*npfcap(npftyp(jatm))
+!     get damping radius & scalling factor
+      rijm = sqrt(rim*rim+rjcap*rjcap)
+      radx = distance_i_j/rijm
+      fact = derf(radx)-2.0d0*radx*dexp(-radx*radx)/sqrtpi
+
+   end subroutine
+
+
+   pure subroutine get_qlag(fmat, idimension)
+      ! sets charge constrain in relay matrix for np and mm regions
+
+      implicit none
+
+      real(8), intent(inout) :: fmat(idimension, idimension)
+      integer, intent(in)    :: idimension
+
+! donpcap, dommcap, donppol
+#include "qmnpmm.h"
+
+      integer :: i, istart, ioff
+
+      ! set diagonal components
+      if (donpcap .or. dommcap) then
+         istart = 0
+         if (donppol) istart = istart + 3*tnpatm
+!        fixme: mm shift
+         if (donpcap) then
+            do i = 1, tnpatm
+               ioff = istart + i
+               fmat(ioff, idimension) = 1.0d0
+               fmat(idimension, ioff) = 1.0d0
+            end do
+         end if
+      end if
+
+   end subroutine
+
+
+
       SUBROUTINE WRITE_RELMAT(FMAT)
 !
 ! Purpose:
@@ -1189,14 +1205,17 @@ contains
 !
 ! Last updated: 16/08/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "qmnpmm.h"
 #include "dummy.h"
 #include "iratdef.h"
 #include "inftap.h"
 !
-      DIMENSION FMAT(*)
+      real(8) :: fmat(*)
+      integer :: idim
+      integer :: luqmnp
 
 !     determine dimensions
       CALL GETDIM_RELMAT(IDIM,.TRUE.)
@@ -1219,21 +1238,24 @@ contains
 !
 ! Last updated: 16/08/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "qmnpmm.h"
 #include "dummy.h"
 #include "iratdef.h"
 #include "inftap.h"
 !
-      DIMENSION FMAT(*)
-!
-      LOGICAL FNDLAB
-!
+      real(8) :: fmat(*)
+      integer :: idim
+      integer :: luqmnp
+      logical :: fndlab
+
 !     determine dimensions
       CALL GETDIM_RELMAT(IDIM,.TRUE.)
+
 !     read inverted Relay matrix
-      LUQMNP = -1
+      LUQMNP=-1
       CALL GPOPEN(LUQMNP,'QMMMNP','UNKNOWN','SEQUENTIAL','UNFORMATTED', &
              IDUMMY,.FALSE.)
       REWIND(LUQMNP)
