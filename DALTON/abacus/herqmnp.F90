@@ -1243,67 +1243,65 @@ contains
       CALL GPCLOSE(LUQMNP,'KEEP')
 !
       END
-      SUBROUTINE COMP_DAMPVMAT(FCAO, MQVEC)
-!
-! Purpose:
-!     Computes damped potential matrix in AO basis.
-!
-! Input:
-!  FMAT   - Inverted Relay matrix
-!
-! Last updated: 16/08/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
+
+
+
+
+   subroutine comp_dampvmat(fmat, mqvec)
+      ! computes damped potential matrix in ao basis
+
+      implicit none
+
+      real(8), intent(in)    :: fmat(*) ! inverted relay matrix
+      real(8), intent(inout) :: mqvec(*)
+
 #include "priunit.h"
 #include "qmnpmm.h"
-#include "dummy.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "shells.h"
 #include "primit.h"
-!
+
       real(8), allocatable :: rdvec(:)
       real(8), allocatable :: rqvec(:)
-      DOUBLE PRECISION MQVEC 
-!
-      DIMENSION FCAO(*), MQVEC(*)
-!
-      PARAMETER (D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0)
-      PARAMETER (D13 = 1.0D0/3.0D0)
-!
-!     determine dimensions
-      CALL GETDIM_RELMAT(IDIM,.FALSE.)
-!
-!     allocate and set gaussian broadening paramenters
+      integer              :: idimension
+      integer              :: iprint
+
+      call getdim_relmat(idimension, .false.)
+
+      ! allocate and set gaussian broadening paramenters
 
       allocate(rdvec(tnpatm))
       allocate(rqvec(tnpatm))
-      CALL SET_DAMPARAM(RDVEC,RQVEC)
-      IF (IPRTLVL.GE.15) THEN 
-         WRITE(LUPRI,'(/,2X,A)') '*** Computed MQ vector ***'
-         CALL OUTPUT(MQVEC,1,IDIM,1,1,IDIM,1,1,LUPRI)
-      END IF     
-!
+
+      call set_damparam(rdvec, rqvec)
+
+      if (iprtlvl > 14) then
+         write(lupri, '(/,2x,a)') '*** Computed MQ vector ***'
+         call output(mqvec, 1, idimension, 1, 1, idimension, 1, 1, lupri)
+      end if
+
 #ifdef VAR_MPI
-           call mpixbcast (QMCMM_WORK  , 1, 'INTEGER', 0)
-           iprint = 0
-           call mpixbcast (iprint, 1, 'INTEGER', 0)
+      call mpixbcast(QMCMM_WORK, 1, 'INTEGER', 0)
+      iprint = 0
+      call mpixbcast(iprint, 1, 'INTEGER', 0)
 #endif
 
 #ifdef ENABLE_VPOTDAMP
-           call vpotdamped(kmax,nhkt,nuco,nrco,jstrt,cent,priccf,priexp,&
-                 fcao,                                                  &
-                 npcord,                                                &
-                 mqvec(3*tnpatm+1), rqvec,                              &
-                 mqvec            , rdvec,                              &
-                 tnpatm)
+      call vpotdamped(kmax, nhkt, nuco, nrco, jstrt, cent, priccf, priexp, &
+                      fmat,                                                &
+                      npcord,                                              &
+                      mqvec(3*tnpatm+1), rqvec,                            &
+                      mqvec            , rdvec,                            &
+                      tnpatm)
 #else
-            call quit('VPOTDAMP not compiled in this version')
+      call quit('VPOTDAMP not compiled in this version')
 #endif
+
       deallocate(rdvec)
       deallocate(rqvec)
-!
-      END
+
+   end subroutine
 
 
    pure subroutine set_damparam(rdvec, rqvec)
