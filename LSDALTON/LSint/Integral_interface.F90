@@ -507,7 +507,7 @@ deallocate(Point)
 !Reset molecule 
 call typedef_setMolecules(setting,molecule,1,2,3,4)
 
-CALL LSTIMER('ElPot',TS,TE,LUPRI)
+CALL LSTIMER('ep_ab  ',TS,TE,LUPRI)
 
 END SUBROUTINE II_get_ep_ab
 
@@ -835,6 +835,8 @@ TYPE(matrix)        :: D_AO
 Integer             :: nbast
 real(realk)         :: OLDTHRESH
 type(MOLECULE_PT)   :: temp,Point
+real(realk)         :: TS,TE
+CALL LSTIMER('START ',TS,TE,LUPRI)
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 nbast = D%nrow!Integral%nrow
@@ -863,6 +865,7 @@ ENDIF
 call free_Moleculeinfo(Point%p)
 setting%MOLECULE(1)%p => temp%p
 CALL retrieve_Output(lupri,setting,output,setting%IntegralTransformGC)
+CALL LSTIMER('ElPot ',TS,TE,LUPRI)
 !call print_mol(setting%MOLECULE(3)%p,lupri)
 END SUBROUTINE II_get_ep_integrals3
 
