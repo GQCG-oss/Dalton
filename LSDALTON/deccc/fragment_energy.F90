@@ -295,9 +295,11 @@ contains
 
     case(MODEL_MP2) ! MP2 calculation
 
-       if(DECinfo%first_order) then  ! calculate also MP2 density integrals
+       if(DECinfo%first_order .and. (.not. DECinfo%unrelaxed) ) then  
+          ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
-       else ! calculate only MP2 energy integrals and MP2 amplitudes
+       else 
+          ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
@@ -481,7 +483,7 @@ contains
 
     ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
     ! since they, "rather incoveniently", are required for the gradient but not for the energy
-    if(DECinfo%frozencore .and. DECinfo%first_order) then
+    if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
 
        call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
        if(pair) then
@@ -570,8 +572,10 @@ contains
              call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,&
                   & VOVV,VOVOocc,VOVOvirt,grad)
           end if
-          call tensor_free(VOOO)
-          call tensor_free(VOVV)
+          if(.not. DECinfo%unrelaxed) then
+             call tensor_free(VOOO)
+             call tensor_free(VOVV)
+          end if
        end if
     end if
     !
