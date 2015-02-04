@@ -173,6 +173,8 @@ contains
     DECinfo%FracOfOrbSpace_red     = 5.0E0_realk
     ! If this is set larger than 0. atomic fragments are initialized with this,
     DECinfo%all_init_radius        = -1.0E0_realk/bohr_to_angstrom 
+    !> use numerical integration info
+    DECinfo%use_abs_overlap        = .false.
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
@@ -560,7 +562,9 @@ contains
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
-       case('.FRAG_EXP_SCHEME');    read(input,*) DECinfo%Frag_Exp_Scheme
+       case('.FRAG_EXP_SCHEME');
+          read(input,*) DECinfo%Frag_Exp_Scheme
+          DECinfo%use_abs_overlap = (DECinfo%Frag_Exp_Scheme==3)
        case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
        case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
        case('.FRAG_INIT_SIZE');     read(input,*) DECinfo%Frag_Init_Size
@@ -658,6 +662,7 @@ contains
        case('.FRAGREDMODEL') 
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
+
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
