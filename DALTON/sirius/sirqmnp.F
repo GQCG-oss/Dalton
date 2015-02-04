@@ -69,6 +69,7 @@ C           Determine electric field/potential vector
             CALL GET_FVVEC(DCAO,DVAO,WORK(KFVVEC),IDIM,WORK(KFREE),
      &                     LFREE)
 C           Determine induced momemnts/charges 
+            ! rcpmat becomes complex -> complex fock operator
             CALL DGEMV('N',IDIM,IDIM,D1,RCPMAT,IDIM,WORK(KFVVEC),1,D0,
      &                 WORK(KMQVEC),1)
             IF (IPRTLVL.GE.15) THEN 

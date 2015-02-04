@@ -716,6 +716,7 @@ contains
          END IF
 !        Compute capacitancy dependent term
          IF (DONPCAP.OR.DOMMCAP) THEN
+           !todo adapt these routines to handle complex case
            CALL GET_CMAT(FMAT,IDIM)
            CALL GET_MMAT(FMAT,IDIM)
            CALL GET_QLAG(FMAT,IDIM)
@@ -729,6 +730,7 @@ contains
             CALL OUTPUT(FMAT,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
       END IF
 !     Invert Relay matrix
+      !todo adapt to complex case and invert that one
       IF (.NOT.MQITER) THEN
          allocate(ipiv(idim))
          CALL DGETRF(IDIM,IDIM,FMAT,IDIM,IPIV,IERROR)
