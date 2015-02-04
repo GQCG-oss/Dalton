@@ -486,6 +486,8 @@ REAL(realk)         :: charge(N)
 TYPE(LSSETTING)     :: SETTING
 !
 type(MOLECULEINFO),pointer :: molecule,Point
+real(realk)         :: TS,TE
+CALL LSTIMER('START ',TS,TE,LUPRI)
 
 !Build the point charges from the centers and charges
 allocate(Point)
@@ -504,6 +506,8 @@ deallocate(Point)
 
 !Reset molecule 
 call typedef_setMolecules(setting,molecule,1,2,3,4)
+
+CALL LSTIMER('ElPot',TS,TE,LUPRI)
 
 END SUBROUTINE II_get_ep_ab
 
