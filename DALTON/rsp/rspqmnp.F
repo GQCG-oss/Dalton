@@ -45,6 +45,9 @@ C   EVECS  - Response vectors (XY).
 C
 C Last updated: 22/03/2013 by Z. Rinkevicius.  
 C
+
+      use qmcmm, only: getdim_relmat, read_relmat
+
 #include "implicit.h"
 #include "inforb.h"
 #include "infdim.h"
@@ -137,6 +140,9 @@ C  /* Deck qmnpmmqro */
      &                     UDV,WORK,LWORK,KZYVR,KZYV1,KZYV2,
      &                     IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
      &                     ISPIN0,ISPIN1,ISPIN2)
+
+      use qmcmm, only: getdim_relmat, read_relmat
+
 #include "implicit.h"
 #include "dummy.h"
 #include "maxorb.h"

@@ -19,7 +19,23 @@
 !...
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
-!
+
+module qmcmm
+
+   public read_pot_qmnpmm
+   public qmnpinp
+   public getdim_relmat
+   public getdim_mmmat
+   public comp_relmat
+   public read_relmat
+   public write_relmat
+   public comp_mmrelmat
+   public comp_dampvmat
+
+   private
+
+contains
+
       SUBROUTINE QMNPINP(WORD)
 !
 ! Purpose:
@@ -1289,7 +1305,8 @@
 !
       END
 
-      pure subroutine set_damparam(rdvec, rqvec)
+
+   pure subroutine set_damparam(rdvec, rqvec)
       ! sets damping parameters vectors for dipoles and charges
       ! see Eqs 14 and 15 in J. Phys. Chem. C 112, 40 (2008)
 
@@ -1315,4 +1332,6 @@
          rqvec(i) = rdim*npfcap(npftyp(i))
       end do
 
-      end
+   end subroutine
+
+end module

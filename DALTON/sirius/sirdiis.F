@@ -87,6 +87,10 @@ C Copyright (c) 1993, 1997 Hans Joergen Aa. Jensen
 C
 C Driver for DIIS iterations in SIRIUS.
 C
+
+      use qmcmm, only: getdim_relmat, comp_relmat, write_relmat, 
+     &                 getdim_mmmat, comp_mmrelmat
+
 #include "implicit.h"
       DIMENSION CMO(*), WRK(*)
 C

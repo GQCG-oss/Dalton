@@ -40,6 +40,8 @@ C   FMAT   - QM/NP/MM contribution to Fock matrix
 C
 C Last updated: 22/03/2013 by Z. Rinkevicius.  
 C
+      use qmcmm, only: getdim_relmat
+
 #include "implicit.h"
 #include "dummy.h"
 #include "qmnpmm.h"
@@ -449,6 +451,8 @@ C   FCAO   - Computed Fock matrix (AO basis).
 C                                                                                                          
 C Last updated: 22/03/2013 by Z. Rinkevicius.                                                             
 C                                                                                                         
+      use qmcmm, only: comp_dampvmat
+
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
