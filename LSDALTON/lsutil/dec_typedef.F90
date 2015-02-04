@@ -437,6 +437,7 @@ module dec_typedef_module
      !> Note that scheme 2 is only meaningful for occupied partitioning scheme.
      integer :: CorrDensScheme
      ! --  
+     logical :: use_abs_overlap
 
      !> Pair fragments
      !> **************
@@ -665,6 +666,8 @@ module dec_typedef_module
      !> Overlap matrix (AO basis)
      real(realk), pointer :: overlap(:,:) => null()
 
+     !> Abs overlap information
+     real(realk), pointer :: ov_abs_overlap(:,:) => null()
      !> Occ-occ block of Fock matrix in MO basis
      real(realk), pointer :: ppfock(:,:) => null()
      !> Virt-virt block of Fock matrix in MO basis
