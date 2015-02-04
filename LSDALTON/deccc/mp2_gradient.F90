@@ -657,118 +657,139 @@ contains
   !> \author Kasper Kristensen
   !> \date October 2011
   subroutine pair_calculate_mp2gradient_driver(Fragment1,Fragment2,PairFragment,&
-        & t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
+       & t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
 
 
-     implicit none
-     !> Fragment 1 in the pair fragment
-     type(decfrag),intent(in) :: Fragment1
-     !> Fragment 2 in the pair fragment
-     type(decfrag),intent(in) :: Fragment2
-     !> Pair fragment
-     type(decfrag),intent(inout) :: pairfragment
-     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
-     type(tensor),intent(in) :: t2occ
-     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
-     type(tensor),intent(in) :: t2virt
-     !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
-     type(tensor),intent(in) :: VOOO
-     !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
-     type(tensor),intent(in) :: VOVV
-     !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
-     type(tensor),intent(inout) :: VOVOocc
-     !> (A K | B L) integrals stored as (A,K,B,L)   [using virt partitioning]
-     type(tensor),intent(in) :: VOVOvirt
-     type(array4) :: t2occ_arr4
-     type(array4) :: t2virt_arr4
-     type(array4) :: VOOO_arr4
-     type(array4) :: VOVV_arr4
-     type(array4) :: VOVOocc_arr4
-     type(array4) :: VOVOvirt_arr4
-     type(array4) :: ThetaOCC, ThetaVIRT
-     !> MP2 gradient structure for pair
-     type(mp2grad),intent(inout) :: grad
-     real(realk) :: tcpu,twall, tcpu1,tcpu2, twall1,twall2
+    implicit none
+    !> Fragment 1 in the pair fragment
+    type(decfrag),intent(in) :: Fragment1
+    !> Fragment 2 in the pair fragment
+    type(decfrag),intent(in) :: Fragment2
+    !> Pair fragment
+    type(decfrag),intent(inout) :: pairfragment
+    !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
+    type(tensor),intent(in) :: t2occ
+    !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
+    type(tensor),intent(in) :: t2virt
+    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
+    type(tensor),intent(in) :: VOOO
+    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
+    type(tensor),intent(in) :: VOVV
+    !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
+    type(tensor),intent(inout) :: VOVOocc
+    !> (A K | B L) integrals stored as (A,K,B,L)   [using virt partitioning]
+    type(tensor),intent(in) :: VOVOvirt
+    type(array4) :: t2occ_arr4
+    type(array4) :: t2virt_arr4
+    type(array4) :: VOOO_arr4
+    type(array4) :: VOVV_arr4
+    type(array4) :: VOVOocc_arr4
+    type(array4) :: VOVOvirt_arr4
+    type(array4) :: ThetaOCC, ThetaVIRT
+    !> MP2 gradient structure for pair
+    type(mp2grad),intent(inout) :: grad
+    real(realk) :: tcpu,twall, tcpu1,tcpu2, twall1,twall2
+    logical :: all_ok
 
-     call LSTIMER('START',tcpu,twall,DECinfo%output)
-     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-     if( t2occ%itype == TT_DENSE .and. t2virt%itype == TT_DENSE .and. VOOO%itype == TT_DENSE &
-        &.and.  VOVV%itype == TT_DENSE .and. VOVOocc%itype == TT_DENSE .and. VOVOvirt%itype == TT_DENSE ) then
+    ! Sanity check
+    all_ok=.false.
+    if( t2occ%itype == TT_DENSE .and. t2virt%itype == TT_DENSE .and. VOOO%itype == TT_DENSE .and.&
+         & VOVV%itype == TT_DENSE .and. VOVOocc%itype == TT_DENSE .and. VOVOvirt%itype == TT_DENSE ) then
+       all_ok=.true.
+    end if
+    ! Unrelaxed density, we don't use VOOO and VOVV so don't check those
+    if(DECinfo%unrelaxed) then
+       if( t2occ%itype == TT_DENSE .and. t2virt%itype == TT_DENSE .and.&
+            & VOVOocc%itype == TT_DENSE .and. VOVOvirt%itype == TT_DENSE ) then
+          all_ok=.true.
+       end if
+    end if
 
-        write(DECinfo%output,*) 'Calculating MP2 gradient for pair fragment', &
-           & PairFragment%EOSatoms
+    if(.not. all_ok) then
+       call lsquit("ERROR(pair_calculate_mp2gradient_driver) a PDM version needs to be implemented",-1)
+    endif
 
-        ! Init MP2 gradient structure
-        call init_mp2grad(PairFragment,grad)
 
-        !use the trick for arrays to just associate them
-        t2occ_arr4%val          => t2occ%elm4
-        t2occ_arr4%dims         =  t2occ%dims
-        t2occ_arr4%nelements    =  t2occ%nelms
-        t2virt_arr4%val         => t2virt%elm4
-        t2virt_arr4%dims        =  t2virt%dims
-        t2virt_arr4%nelements   =  t2virt%nelms
-        VOOO_arr4%val           => VOOO%elm4
-        VOOO_arr4%dims          =  VOOO%dims
-        VOOO_arr4%nelements     =  VOOO%nelms
-        VOVOocc_arr4%val        => VOVOocc%elm4
-        VOVOocc_arr4%dims       =  VOVOocc%dims
-        VOVOocc_arr4%nelements  =  VOVOocc%nelms
-        VOVOvirt_arr4%val       => VOVOvirt%elm4
-        VOVOvirt_arr4%dims      =  VOVOvirt%dims
-        VOVOvirt_arr4%nelements =  VOVOvirt%nelms
-        VOVV_arr4%val           => VOVV%elm4
-        VOVV_arr4%dims          =  VOVV%dims
-        VOVV_arr4%nelements     =  VOVV%nelms
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-        ! Get Theta arrays for occ and virt EOS
-        ! *************************************
-        call construct_theta_array(t2occ_arr4,ThetaOCC)
-        call construct_theta_array(t2virt_arr4,ThetaVIRT)
-        ! NOTE: It is not useful to reorder these arrays here as in done in single_calculate_mp2gradient_driver.
+    write(DECinfo%output,*) 'Calculating MP2 gradient for pair fragment', &
+         & PairFragment%EOSatoms
 
-        ! Calculate MP2 density contributions to gradient
-        ! ***********************************************
-        call pair_calculate_mp2density(fragment1,fragment2,PairFragment,t2occ_arr4,t2virt_arr4,&
-           & ThetaOCC, ThetaVIRT, VOOO_arr4,VOVV_arr4,grad%dens)
+    ! Init MP2 gradient structure
+    call init_mp2grad(PairFragment,grad)
 
-        ! Calculate remaining contributions to gradient (not used for MP2 density)
-        ! ************************************************************************
-        if(DECinfo%gradient) then
-           call pair_calculate_mp2gradient(fragment1,fragment2,pairfragment,&
-                & ThetaOCC,ThetaVIRT,VOVOocc_arr4,VOVOvirt_arr4,grad)
-        end if
+    !use the trick for arrays to just associate them
+    t2occ_arr4%val          => t2occ%elm4
+    t2occ_arr4%dims         =  t2occ%dims
+    t2occ_arr4%nelements    =  t2occ%nelms
+    t2virt_arr4%val         => t2virt%elm4
+    t2virt_arr4%dims        =  t2virt%dims
+    t2virt_arr4%nelements   =  t2virt%nelms
+    VOVOocc_arr4%val        => VOVOocc%elm4
+    VOVOocc_arr4%dims       =  VOVOocc%dims
+    VOVOocc_arr4%nelements  =  VOVOocc%nelms
+    VOVOvirt_arr4%val       => VOVOvirt%elm4
+    VOVOvirt_arr4%dims      =  VOVOvirt%dims
+    VOVOvirt_arr4%nelements =  VOVOvirt%nelms
+    if(.not. DECinfo%unrelaxed) then
+       VOOO_arr4%val           => VOOO%elm4
+       VOOO_arr4%dims          =  VOOO%dims
+       VOOO_arr4%nelements     =  VOOO%nelms
+       VOVV_arr4%val           => VOVV%elm4
+       VOVV_arr4%dims          =  VOVV%dims
+       VOVV_arr4%nelements     =  VOVV%nelms
+    end if
 
-        ! Free stuff
-        call array4_free(ThetaOCC)
-        call array4_free(ThetaVIRT)
+    ! Get Theta arrays for occ and virt EOS
+    ! *************************************
+    call construct_theta_array(t2occ_arr4,ThetaOCC)
+    call construct_theta_array(t2virt_arr4,ThetaVIRT)
+    ! NOTE: It is not useful to reorder these arrays here as in done in single_calculate_mp2gradient_driver.
 
-        t2occ_arr4%val          => null()
-        t2occ_arr4%dims         =  0
-        t2occ_arr4%nelements    =  0
-        t2virt_arr4%val         => null()
-        t2virt_arr4%dims        =  0
-        t2virt_arr4%nelements   =  0
-        VOOO_arr4%val           => null()
-        VOOO_arr4%dims          =  0
-        VOOO_arr4%nelements     =  0
-        VOVOocc_arr4%val        => null()
-        VOVOocc_arr4%dims       =  0
-        VOVOocc_arr4%nelements  =  0
-        VOVOvirt_arr4%val       => null()
-        VOVOvirt_arr4%dims      =  0
-        VOVOvirt_arr4%nelements =  0
-        VOVV_arr4%val           => null()
-        VOVV_arr4%dims          =  0
-        VOVV_arr4%nelements     =  0
+    ! Calculate MP2 density contributions to gradient
+    ! ***********************************************
+    call pair_calculate_mp2density(fragment1,fragment2,PairFragment,t2occ_arr4,t2virt_arr4,&
+         & ThetaOCC, ThetaVIRT, VOOO_arr4,VOVV_arr4,grad%dens)
 
-     else
-        call lsquit("ERROR(single_calculate_mp2gradient_driver) a PDM version needs to be implemented",-1)
-     endif
+    ! Calculate remaining contributions to gradient (not used for MP2 density)
+    ! ************************************************************************
+    if(DECinfo%gradient) then
+       call pair_calculate_mp2gradient(fragment1,fragment2,pairfragment,&
+            & ThetaOCC,ThetaVIRT,VOVOocc_arr4,VOVOvirt_arr4,grad)
+    end if
 
-     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-     call LSTIMER('PAIR MP2DENS',tcpu,twall,DECinfo%output)
+    ! Free stuff
+    call array4_free(ThetaOCC)
+    call array4_free(ThetaVIRT)
+
+    t2occ_arr4%val          => null()
+    t2occ_arr4%dims         =  0
+    t2occ_arr4%nelements    =  0
+    t2virt_arr4%val         => null()
+    t2virt_arr4%dims        =  0
+    t2virt_arr4%nelements   =  0
+    VOVOocc_arr4%val        => null()
+    VOVOocc_arr4%dims       =  0
+    VOVOocc_arr4%nelements  =  0
+    VOVOvirt_arr4%val       => null()
+    VOVOvirt_arr4%dims      =  0
+    VOVOvirt_arr4%nelements =  0
+    if(.not. DECinfo%unrelaxed) then
+       VOVV_arr4%val           => null()
+       VOVV_arr4%dims          =  0
+       VOVV_arr4%nelements     =  0
+       VOOO_arr4%val           => null()
+       VOOO_arr4%dims          =  0
+       VOOO_arr4%nelements     =  0
+    end if
+
+
+    call LSTIMER('START',tcpu2,twall2,DECinfo%output)
+    call LSTIMER('PAIR MP2DENS',tcpu,twall,DECinfo%output)
 
   end subroutine pair_calculate_mp2gradient_driver
 
@@ -1327,6 +1348,8 @@ contains
        call get_full_mp2density(MyMolecule,mylsitem,D,&
             & Phivo, Phiov, DMP2,rho)
     end if
+!!$    write(DECinfo%output,*) 'Final rho matrix in AO basis'
+!!$    call mat_print(rho, 1,rho%nrow, 1, rho%ncol,DECinfo%output)
     call mat_free(Phivo)
     call mat_free(Phiov)
     if(DECinfo%frozencore) call mat_free(Phioo)
@@ -2310,7 +2333,7 @@ contains
 
     ! number of occupied core+valence orbitals (only different from noccAOS for frozen approx)
     if(DECinfo%unrelaxed) then
-       nocctot = 0   ! not used for unrelaxed density
+       nocctot = dens%nocctot   ! not used for unrelaxed density
     else
        nocctot = VOOO%dims(4)   
     end if
@@ -2392,7 +2415,6 @@ contains
     ! X and Y matrices collected and transformed to AO basis (unrelaxed corr. density)
     call get_unrelaxed_corrdens_in_AO_basis(dens%nocc,dens%nunocc,dens%nbasis,MyFragment%Co,&
          & MyFragment%Cv,dens%X,dens%Y,dens%rho)
-
 
     UNRELAXED: if(DECinfo%unrelaxed) then
        ! Skip Phi matrix
@@ -2482,7 +2504,7 @@ contains
 
     ! number of occupied core+valence orbitals (only different from noccAOS for frozen approx)
     if(DECinfo%unrelaxed) then
-       nocctot = 0   ! not used for unrelaxed density
+       nocctot = dens%nocctot   ! not used for unrelaxed density
     else
        nocctot = VOOO%dims(4)   
     end if
@@ -2511,7 +2533,7 @@ contains
        write(DECinfo%output,*) 'dens%nocctot', dens%nocctot
        write(DECinfo%output,*) 'Amplitudes, occ AOS dimension ', noccAOS
        write(DECinfo%output,*) 'Amplitudes, virt AOS dimension', nvirtAOS
-       call lsquit('single_calculate_mp2density: &
+       call lsquit('pair_calculate_mp2density: &
             & Something wrong with input dimensions!',DECinfo%output)
     end if
 
@@ -4030,6 +4052,11 @@ end if UNRELAXED2
     real(realk) :: tcpu,twall
     real(realk),pointer :: kappabar(:,:),kappabarVC(:,:),rhoMO_relaxation(:,:),rhoAO_relaxation(:,:),C(:,:),tmp(:,:)
 
+    if(DECinfo%unrelaxed) then
+       ! Skipping calculation of relaxation part!
+       return
+    end if
+
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
@@ -4116,6 +4143,7 @@ end if UNRELAXED2
           enddo
        enddo
     end if
+
 
     call mem_dealloc(kappabar)
     if(DECinfo%frozencore) then

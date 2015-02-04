@@ -483,7 +483,7 @@ contains
 
     ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
     ! since they, "rather incoveniently", are required for the gradient but not for the energy
-    if(DECinfo%frozencore .and. DECinfo%first_order) then
+    if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
 
        call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
        if(pair) then
