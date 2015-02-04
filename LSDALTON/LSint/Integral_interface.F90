@@ -5671,15 +5671,19 @@ IF (printExchangeMetric) THEN
   call mat_init(Ftmp(1),nbast,nbast)
   call mat_zero(Ftmp(1))
   call set_default_AOs(AO3,AODFdefault)
+  setting%IntegralTransformGC = GC3
   call II_get_exchange_mat(lupri,luerr,setting,(/D/),1,Dsym,Ftmp)
+  setting%IntegralTransformGC =.FALSE.
   call set_default_AOs(AOadmm,AODFdefault)
   largeK = mat_trAB(Ftmp(1),D)
   write(*,*) 'debug:largeK',largeK
   call mat_zero(Ftmp(1))
   call II_get_exchange_mat_mixed(lupri,luerr,setting,D2,1,Dsym,Ftmp,AO3,AOadmm,AO3,AOadmm,coulombOperator)
+  IF (GC3) call AO2GCAO_transform_matrixF(Ftmp(1),setting,lupri)
   mixK   = sqrt(fac)*2.d0*mat_trAB(Ftmp(1),D)
   write(*,*) 'debug:mixK',mixK/2.d0
-  write(lupri,'(A,F18.12)') 'Exchange-metric error:',largeK+smallK-mixK
+  write(lupri,'(X,A,F18.12)') 'Exchange-metric error:',-(largeK+smallK-mixK)
+  write(*,'(X,A,F18.12)') 'Exchange-metric error:',-(largeK+smallK-mixK)
   call mat_free(Ftmp(1))
 ENDIF
 
