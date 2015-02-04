@@ -1329,9 +1329,6 @@ contains
     call mat_transpose(n31,n32, 1.0E0_realk,C3, 0.0E0_realk,C3T)
     call mat_transpose(n11,n12, 1.0E0_realk,C1, 0.0E0_realk,C1T)
 
-!!$    !For debugging purposes    
-    !call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
-    !call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
 
     ! ************************
     ! Determine AO batch sizes
@@ -1359,6 +1356,10 @@ contains
           BatchType(i) = 'C'
        endif
     enddo
+
+    !For debugging purposes    
+    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
+    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
 
     IF(DECinfo%useIchor)THEN
        iprint = 0           !print level for Ichor Integral code
