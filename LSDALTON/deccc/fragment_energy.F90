@@ -449,25 +449,25 @@ contains
 
 #ifdef MOD_UNRELEASED
        ! CCSD-F12 Code
-       if(DECinfo%F12) then
+       CCSDF12: if(DECinfo%F12) then
+
           call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2_occEOS)
-
-          CCSDF12: if(DECinfo%F12) then    
-             if(pair) then
-                if(MyFragment%isopt) then
-                   call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
-                end if
-             else
-                ! Calculate F12 only for optimized fragment or if it has been requested by input
-                if(MyFragment%isopt .or. DECinfo%F12fragopt) then
-                   call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
-                end if
+          if(pair) then
+             if(MyFragment%isopt) then
+                call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
              end if
+          else
+             ! Calculate F12 only for optimized fragment or if it has been requested by input
+             if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
+             end if
+          end if
 
-             !> Free cabs after each calculation
-             call tensor_free(t2_occEOS)
-             call free_cabs()
-          endif CCSDF12
+          !> Free cabs after each calculation
+          call tensor_free(t2_occEOS)
+          call free_cabs()
+
+       endif CCSDF12
 #endif
        ! free vovo integrals
        call tensor_free(VOVO)
