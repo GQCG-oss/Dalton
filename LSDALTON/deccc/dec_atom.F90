@@ -967,14 +967,11 @@ contains
    ! Purpose: Define how the fragment expansion should be done in function of the 
    !          chosen scheme:
    !
-   !          Scheme 1: (Default) The expansion include the next nexp_occ / nexp_vir 
-   !          orbitals with maximum overlap with the EOS orbitals
-   !
-   !          Scheme 2: The expansion include the next nexp_occ / nexp_vir closest
+   !          Scheme 1: (Default) The expansion include the next nexp_occ / nexp_vir closest
    !          orbitals from MyAtom where, nexp_*** is defined by Frag_Exp_Size times the 
    !          average number of occ/vir orbitals per atoms.
    !
-   !          Scheme 3: Same as scheme 2 but instead of taking the closest orbitals, we
+   !          Scheme 2: Same as scheme 1 but instead of taking the closest orbitals, we
    !          choose them based on their contribution to the Fock matrix.
    !
    ! Author:  Pablo Baudin
@@ -1025,13 +1022,7 @@ contains
 
       ! SCHEME 1:
       if (DECinfo%Frag_Exp_Scheme == 1) then
-         ! The priority list for scheme 1 is based on overlap of the orbitals:
-         call get_abs_overlap_priority_list(MyMolecule,MyFragment,&
-            &track_occ_priority_list,track_vir_priority_list)
-
-      ! SCHEME 2:
-      else if (DECinfo%Frag_Exp_Scheme == 2) then
-         ! The priority list for scheme 2 is based on distance:
+         ! The priority list for scheme one is based on distance:
          if (DECinfo%decco) then 
             ! Distances between occ and unocc orbitals
             call mem_alloc(DistVirOcc,nv_full,no_full)
@@ -1070,9 +1061,9 @@ contains
             call mem_dealloc(vir_priority_list)
          end if
 
-      ! SCHEME 3:
-      else if (DECinfo%Frag_Exp_Scheme == 3) then
-         ! The priority list for scheme 3 is based on contribution to the fock matrix:
+      ! SCHEME 2:
+      else if (DECinfo%Frag_Exp_Scheme == 2) then
+         ! The priority list for scheme 2 is based on contribution to the fock matrix:
          ! Get contribution from local occupied orbitals:
          call mem_alloc(occ_priority_list,no_full)
          call get_fock_priority_list(MyFragment,MyMolecule,no_full,.true., &
@@ -1085,6 +1076,10 @@ contains
             & track_vir_priority_list,vir_priority_list)
          call mem_dealloc(vir_priority_list)
 
+      ! SCHEME 3:
+      else if (DECinfo%Frag_Exp_Scheme == 3) then
+         call get_abs_overlap_priority_list(MyMolecule,MyFragment,&
+            &track_occ_priority_list,track_vir_priority_list)
       else
          call lsquit('ERROR FOP: Expansion Scheme not defined',DECinfo%output)
       end if
