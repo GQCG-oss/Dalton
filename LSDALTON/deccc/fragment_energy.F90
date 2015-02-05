@@ -4867,8 +4867,9 @@ contains
       call mem_alloc(exp_list_occ,no)
       call mem_alloc(exp_list_vir,nv)
 
+
       !Define the EOS spaces in the fragment to be able to calculate priority lists
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !============================================================================
 
       if(DECinfo%frozencore)then
          nc = MyMolecule%ncore
@@ -4910,6 +4911,7 @@ contains
       if(idx-1/=AtomicFragment%nunoccEOS)then
          call lsquit("ERROR finding the right amount of occupied EOS orbitals",-1)
       endif
+
 
       call define_frag_expansion(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
          & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,ninit_occ,ninit_vir)
