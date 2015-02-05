@@ -295,9 +295,11 @@ contains
 
     case(MODEL_MP2) ! MP2 calculation
 
-       if(DECinfo%first_order) then  ! calculate also MP2 density integrals
+       if(DECinfo%first_order .and. (.not. DECinfo%unrelaxed) ) then  
+          ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
-       else ! calculate only MP2 energy integrals and MP2 amplitudes
+       else 
+          ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
@@ -481,7 +483,7 @@ contains
 
     ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
     ! since they, "rather incoveniently", are required for the gradient but not for the energy
-    if(DECinfo%frozencore .and. DECinfo%first_order) then
+    if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
 
        call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
        if(pair) then
@@ -570,8 +572,10 @@ contains
              call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,&
                   & VOVV,VOVOocc,VOVOvirt,grad)
           end if
-          call tensor_free(VOOO)
-          call tensor_free(VOVV)
+          if(.not. DECinfo%unrelaxed) then
+             call tensor_free(VOOO)
+             call tensor_free(VOVV)
+          end if
        end if
     end if
     !
@@ -2250,6 +2254,7 @@ contains
            &AtomicFragment%ccmodel,'Fragment optmization')
         return
      end if
+
      IF(OrbDistanceSpec)THEN
         call mem_alloc(SortedDistanceTableOrbAtomOcc,nocc)
         call mem_alloc(OrbOccDistTrackMyAtom,nocc)
@@ -4803,6 +4808,8 @@ contains
       logical :: full_mol
       !> Timings for frag opt
       real(realk), pointer :: times_fragopt(:)  
+      !> number of core orbitals
+      integer :: nc,idx,i,a
 
 
       !==================================================================================!
@@ -4860,10 +4867,57 @@ contains
       call mem_alloc(exp_list_occ,no)
       call mem_alloc(exp_list_vir,nv)
 
+
+      !Define the EOS spaces in the fragment to be able to calculate priority lists
+      !============================================================================
+
+      if(DECinfo%frozencore)then
+         nc = MyMolecule%ncore
+      else
+         nc = 0
+      endif
+
+      ! Occ orbitals not in the core
+      idx = 0
+      do i=nc+1,MyMolecule%nocc
+         if(OccOrbitals(i)%centralatom == MyAtom)then
+            idx = idx + 1
+         endif
+      enddo
+
+      AtomicFragment%noccEOS   = idx
+      AtomicFragment%nunoccEOS = nvir_per_atom(MyAtom)
+      call mem_alloc(AtomicFragment%occEOSidx,AtomicFragment%noccEOS)
+      call mem_alloc(AtomicFragment%unoccEOSidx,AtomicFragment%nunoccEOS)
+
+      idx = 1
+      do i=nc+1,MyMolecule%nocc
+         if(OccOrbitals(i)%centralatom == MyAtom)then
+            AtomicFragment%occEOSidx(idx) = i
+            idx = idx + 1
+         endif
+      enddo
+      if(idx-1/=AtomicFragment%noccEOS)then
+         call lsquit("ERROR finding the right amount of occupied EOS orbitals",-1)
+      endif
+
+      idx = 1
+      do a=1,MyMolecule%nunocc
+         if(VirOrbitals(a)%centralatom == MyAtom)then
+            AtomicFragment%unoccEOSidx(idx) = a
+            idx = idx + 1
+         endif
+      enddo
+      if(idx-1/=AtomicFragment%nunoccEOS)then
+         call lsquit("ERROR finding the right amount of occupied EOS orbitals",-1)
+      endif
+
+
       call define_frag_expansion(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
          & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,ninit_occ,ninit_vir)
 
-
+      call mem_dealloc(AtomicFragment%occEOSidx)
+      call mem_dealloc(AtomicFragment%unoccEOSidx)
 
       !==================================================================================!
       !                               Initialize Fragment                                !

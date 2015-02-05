@@ -164,6 +164,7 @@ CALL retrieve_Output(lupri,setting,S,setting%IntegralTransformGC)
 IF(sameMolecule)THEN
    call util_get_symm_part(S)
 ENDIF
+IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Overlap-matrix dot product:',mat_dotproduct(S,S)
 CALL LSTIMER('OVERLAP',TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_overlap)
 END SUBROUTINE II_get_overlap
@@ -252,12 +253,18 @@ TYPE(MATRIX),target :: tmp
 Real(realk)         :: OLDTHRESH
 
 CALL II_get_nucel_mat(LUPRI,LUERR,SETTING,h)
-!write(lupri,*) 'QQQ New  h:',mat_dotproduct(h,h)
+IF (setting%scheme%intprint.GE.2) THEN
+  write(lupri,'(A46,F18.8)') 'Nuclear-electron-attraction-matrix dot product::',mat_dotproduct(h,h)
+  IF (setting%scheme%intprint.GE.10) THEN
+    write(lupri,'(A46)') 'Nuclear-electron-attraction matrix'
+    call mat_print(h,1,h%nrow,1,h%ncol,lupri)
+  ENDIF
+ENDIF
 
 nbast = h%nrow
 CALL mat_init(tmp,nbast,nbast)
 CALL II_get_kinetic(LUPRI,LUERR,SETTING,tmp)
-!write(lupri,*) 'QQQ New  K:',mat_dotproduct(tmp,tmp)
+IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Kinetic-energy-matrix dot product:',mat_dotproduct(tmp,tmp)
 
 call mat_daxpy(1E0_realk,tmp,h)
 CALL mat_free(tmp)
@@ -479,6 +486,8 @@ REAL(realk)         :: charge(N)
 TYPE(LSSETTING)     :: SETTING
 !
 type(MOLECULEINFO),pointer :: molecule,Point
+real(realk)         :: TS,TE
+CALL LSTIMER('START ',TS,TE,LUPRI)
 
 !Build the point charges from the centers and charges
 allocate(Point)
@@ -497,6 +506,8 @@ deallocate(Point)
 
 !Reset molecule 
 call typedef_setMolecules(setting,molecule,1,2,3,4)
+
+CALL LSTIMER('ep_ab  ',TS,TE,LUPRI)
 
 END SUBROUTINE II_get_ep_ab
 
@@ -824,6 +835,8 @@ TYPE(matrix)        :: D_AO
 Integer             :: nbast
 real(realk)         :: OLDTHRESH
 type(MOLECULE_PT)   :: temp,Point
+real(realk)         :: TS,TE
+CALL LSTIMER('START ',TS,TE,LUPRI)
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 nbast = D%nrow!Integral%nrow
@@ -852,6 +865,7 @@ ENDIF
 call free_Moleculeinfo(Point%p)
 setting%MOLECULE(1)%p => temp%p
 CALL retrieve_Output(lupri,setting,output,setting%IntegralTransformGC)
+CALL LSTIMER('ElPot ',TS,TE,LUPRI)
 !call print_mol(setting%MOLECULE(3)%p,lupri)
 END SUBROUTINE II_get_ep_integrals3
 
@@ -5567,7 +5581,7 @@ type(lssetting),intent(inout) :: setting
 logical,intent(in)            :: dsym,ADMMBASISFILE
 !
 logical             :: GC3
-TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33
+TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33,Ftmp(1)
 TYPE(Matrix)        :: S22
 real(realk)         :: var
 logical             :: ADMMexchange,testNelectrons,unres,grid_done
@@ -5575,9 +5589,9 @@ real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AORold,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
-real(realk)         :: constrain_factor, largeLambda
+real(realk)         :: constrain_factor, largeLambda,smallK,largeK,mixK
 logical             :: isADMMQ,separateX,DODISP
-logical             :: isADMMS, isADMMP,PRINT_EK3,saveDF
+logical             :: isADMMS, isADMMP,PRINT_EK3,saveDF,printExchangeMetric
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
 isADMMQ = setting%scheme%ADMMQ
@@ -5587,6 +5601,7 @@ PRINT_EK3 = setting%scheme%PRINT_EK3
 separateX = setting%scheme%admm_separateX
 separateX = separateX.OR.(.NOT.setting%do_dft) !Hack for HF - for now SR
 separateX = separateX.OR.setting%scheme%cam    !Hack for camb3lyp - for now SR
+printExchangeMetric = setting%scheme%ADMMexchangeMetric
 
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
@@ -5647,12 +5662,37 @@ CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(k2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,k2)
 
+
 call Transformed_F2_to_F3(TMPF,k2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AOadmm,AO3,.FALSE.,GC3,constrain_factor)
 fac = 1E0_realk
 IF (isADMMP) fac = constrain_factor**(4.E0_realk)
 call mat_daxpy(fac,TMPF,F)
 IF(ADMMBASISFILE)Econt(3) = mat_dotproduct(TMPF,D)
+
+!Prints the exchange-metric error between the regular and ADMM density
+!   int (rho(1,2)-fit(1,2))^2/r_12 dr_1 dr_2
+IF (printExchangeMetric) THEN
+  smallK = fac*mat_trAB(k2(1),d2(1))
+  write(*,*) 'debug:smallK',smallK
+  call mat_init(Ftmp(1),nbast,nbast)
+  call mat_zero(Ftmp(1))
+  call set_default_AOs(AO3,AODFdefault)
+  setting%IntegralTransformGC = GC3
+  call II_get_exchange_mat(lupri,luerr,setting,(/D/),1,Dsym,Ftmp)
+  setting%IntegralTransformGC =.FALSE.
+  call set_default_AOs(AOadmm,AODFdefault)
+  largeK = mat_trAB(Ftmp(1),D)
+  write(*,*) 'debug:largeK',largeK
+  call mat_zero(Ftmp(1))
+  call II_get_exchange_mat_mixed(lupri,luerr,setting,D2,1,Dsym,Ftmp,AO3,AOadmm,AO3,AOadmm,coulombOperator)
+  IF (GC3) call AO2GCAO_transform_matrixF(Ftmp(1),setting,lupri)
+  mixK   = sqrt(fac)*2.d0*mat_trAB(Ftmp(1),D)
+  write(*,*) 'debug:mixK',mixK/2.d0
+  write(lupri,'(X,A,F18.12)') 'Exchange-metric error:',-(largeK+smallK-mixK)
+  write(*,'(X,A,F18.12)') 'Exchange-metric error:',-(largeK+smallK-mixK)
+  call mat_free(Ftmp(1))
+ENDIF
 
 !Subtract XC-correction
 CALL lstimer('AUX-EX',ts,te,lupri)
@@ -6244,6 +6284,14 @@ ELSE
    IntegralTransformGC =.FALSE.
 ENDIF
 
+IF (setting%scheme%intprint.GT.10) THEN
+  write(lupri,'(A)') 'DMAT in II_get_coulomb_mat_mixed'
+  DO I=1,ndmat
+    write(lupri,'(1X,A,I3)')  'IDMAT',I
+    CALL mat_print(Dmat(I),1,Dmat(1)%ncol,1,Dmat(1)%nrow,lupri)
+  ENDDO
+ENDIF
+
 IF (SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J) THEN
   !Consistency testing
   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.(AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)&
@@ -6265,6 +6313,13 @@ IF(IntegralTransformGC)THEN
    setting%IntegralTransformGC = .TRUE. 
 ENDIF
 
+IF (setting%scheme%intprint.GT.10) THEN
+  write(lupri,'(A)') 'Fmat in II_get_coulomb_mat_mixed'
+  DO I=1,ndmat
+    write(lupri,'(1X,A,I3)')  'IDMAT',I
+    CALL mat_print(F(I),1,F(1)%ncol,1,F(1)%nrow,lupri)
+  ENDDO
+ENDIF
 
 IF (SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J) THEN
    IF (SETTING%SCHEME%PARI_J) THEN

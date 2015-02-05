@@ -669,6 +669,9 @@ contains
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags)
+       if(DECinfo%use_abs_overlap)then
+          call mem_alloc(MyMolecule%ov_abs_overlap,MyMolecule%nocc,MyMolecule%nunocc)
+       endif
     end if
 
 
@@ -719,6 +722,9 @@ contains
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags,&
          & master,MPI_COMM_LSDALTON)
+    if(DECinfo%use_abs_overlap)then
+       call ls_mpibcast(MyMolecule%ov_abs_overlap,MyMolecule%nocc,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
+    endif
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -2386,6 +2392,7 @@ contains
     call ls_mpi_buffer(DECitem%all_init_radius,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
+    call ls_mpi_buffer(DECitem%use_abs_overlap,Master)
     call ls_mpi_buffer(DECitem%pairestimateignore,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
@@ -2399,6 +2406,7 @@ contains
     call ls_mpi_buffer(DECitem%FOTscaling,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%density,Master)
+    call ls_mpi_buffer(DECitem%unrelaxed,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner_in_b,Master)

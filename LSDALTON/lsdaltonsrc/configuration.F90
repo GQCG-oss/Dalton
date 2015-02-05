@@ -503,6 +503,7 @@ DO
                config%skipscfloop =  .TRUE.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
             CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
+            CASE('.TESTABSVAL');    config%decomp%debugAbsOverlap=.true.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
             CASE('.REDO L2');    config%diag%cfg_redo_l2 = .true.
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
@@ -1520,6 +1521,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         ! calculate and print full Exchange when doing ADMM exchange approx.
         ! > Debugging purpose only
            INTEGRAL%PRINT_EK3       = .TRUE.
+        CASE ('.ADMM-K-METRIC'); ! EXPERIMENTAL
+        ! calculate and print the residual error in the exchange metric
+        ! > Development purpose only
+           INTEGRAL%ADMMexchangeMetric = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.

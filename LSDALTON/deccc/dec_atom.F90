@@ -1076,6 +1076,10 @@ contains
             & track_vir_priority_list,vir_priority_list)
          call mem_dealloc(vir_priority_list)
 
+      ! SCHEME 3:
+      else if (DECinfo%Frag_Exp_Scheme == 3) then
+         call get_abs_overlap_priority_list(MyMolecule,MyFragment,&
+            &track_occ_priority_list,track_vir_priority_list)
       else
          call lsquit('ERROR FOP: Expansion Scheme not defined',DECinfo%output)
       end if
@@ -1477,9 +1481,12 @@ contains
          ncore = 0
       end if
 
+      print *,"WE HAVE PABLO",MyFragment%noccEOS,MyFragment%nunoccEOS
+
       ! Get contribution to fock matrix for a given orbital as the maximum fock
       ! element between the given orbital and all the EOS orbitals.
       if (occ_list) then
+         ! core is excluded later
          do i=ncore+1,Nfull
             do j=1,MyFragment%noccEOS
                idx = MyFragment%occEOSidx(j)
@@ -1503,6 +1510,55 @@ contains
 
    end subroutine get_fock_priority_list
 
+   subroutine get_abs_overlap_priority_list(MyMolecule,MyFragment,o_list,v_list)
+      implicit none
+      type(fullmolecule), intent(in) :: MyMolecule
+      type(decfrag), intent(in) :: MyFragment
+      integer, intent(out) :: o_list(MyMolecule%nocc)
+      integer, intent(out) :: v_list(MyMolecule%nunocc)
+
+      real(realk), pointer :: list_to_sort(:)
+
+      integer :: no, nv, nc, nb, i, a, idx
+
+      if (DECinfo%frozencore) then
+         nc = MyMolecule%ncore
+      else
+         nc = 0
+      end if
+      
+      no = MyMolecule%nocc
+
+      nv = MyMolecule%nunocc
+
+      !alloc work space
+      call mem_alloc(list_to_sort,max(no,nv))
+
+      !Get virt list
+      list_to_sort = 0.0E0_realk
+      do a=1,nv
+         v_list(a) = a
+         do i=1,MyFragment%noccEOS
+            idx = MyFragment%occEOSidx(i)
+            list_to_sort(a) = max(list_to_sort(a), abs(MyMolecule%ov_abs_overlap(idx,a)))
+         end do
+      end do
+      call real_inv_sort_with_tracking(list_to_sort,v_list,nv)
+
+      !get occ list, core is excluded later
+      list_to_sort = 0.0E0_realk
+      do i=1,no
+         o_list(i) = i
+         do a=1,MyFragment%nunoccEOS
+            idx = MyFragment%unoccEOSidx(a)
+            list_to_sort(i) = max(list_to_sort(i), abs(MyMolecule%ov_abs_overlap(i,idx)))
+         end do
+      end do
+      call real_inv_sort_with_tracking(list_to_sort,o_list,no)
+
+      !done
+      call mem_dealloc(list_to_sort)
+   end subroutine get_abs_overlap_priority_list
 
   !> \brief Sanity check: The orbitals assigned to the central atom in the fragment should ALWAYS be included
   !> contributions according to the input threshold.
