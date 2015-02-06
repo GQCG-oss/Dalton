@@ -2145,7 +2145,7 @@ contains
           print *, " Inside get_max_batchsize summary "
           print *, "----------------------------------"
           print *, "MemAvailable: ", MemAvailable*UNIT
-          print *, "MAXstepmem: ", MAXstepmem
+          print *, "MAXstepmem: ", MAXstepmem*UNIT
 !!$       print *, "n11: ", n11
 !!$       print *, "n21: ", n21
 !!$       print *, "n31: ", n31
