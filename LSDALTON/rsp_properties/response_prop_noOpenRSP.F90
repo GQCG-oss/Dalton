@@ -656,9 +656,8 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   !real(realk), external, pointer :: mat_trAB  
   !Character(len=7),allocatable :: teb(3)
   real(realk)                  :: TS,TE
-  type(Matrix)     :: Dx(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1),RHSk(3),Xk(1),DXk(3),GbJ(3), GbK(3), Gm(3)
+  type(Matrix)     :: Dx(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1),RHSk(3),Xk(1),DXk(3),GbJ(3), GbK(3), Gm(3), NMST2(3)
   type(Matrix),pointer :: ChandanMat(:)
-  type(Matrix), allocatable ::  NMST2(:,:)
   integer              :: ntrial,nrhs,nsol,nomega,nstart
   character(len=1)        :: CHRXYZ(-3:3)
   DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
@@ -950,19 +949,19 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
 !
 !###########################################################################
   
-! allocate(NMST2(3*natoms,3))
-!   
-! do icoor = 1,3
-!    call mat_init(GbJ(icoor),nbast,nbast)
-! enddo
-! do icoor = 1,3
-!    call mat_init(GbK(icoor),nbast,nbast)
-! enddo
-! call II_get_magderivJ(LUPRI,LUERR,molcfg%SETTING,nbast,D,GbJ)
-! ! [JX,S]_D) 
-! 
-! call II_get_magderivK(LUPRI,LUERR,molcfg%SETTING,nbast,D,GbK)
-! ! [KX,S]_D) 
+!  allocate(NMST2(3*natoms,3))
+    
+  do icoor = 1,3
+     call mat_init(GbJ(icoor),nbast,nbast)
+  enddo
+  do icoor = 1,3
+     call mat_init(GbK(icoor),nbast,nbast)
+  enddo
+  call II_get_magderivJ(LUPRI,LUERR,molcfg%SETTING,nbast,D,GbJ)
+  ! [JX,S]_D) 
+  
+  call II_get_magderivK(LUPRI,LUERR,molcfg%SETTING,nbast,D,GbK)
+  ! [KX,S]_D) 
 
 !
 !  if(molcfg%setting%do_dft)then
@@ -972,24 +971,24 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
 !  endif
 
 !  
-! do icoor=1,3
-!    do jcoor=1,3
-!    call mat_init(Gm(icoor),nbast,nbast) 
-!    call mat_init(NMST2(icoor,jcoor),nbast,nbast)
-!    call mat_add(1.0E0_realk,GbJ(icoor),1.0E0_realk,GbK(icoor),Gm(icoor)) 
-!    call mat_mul(Dxk(icoor),Gm(icoor),'n','n',1.0E0_realk,0.0E0_realk,NMST2(icoor,jcoor))   
-!    enddo
-! enddo
-! 
-! do icoor = 1,3
-!    call mat_free(GbJ(icoor))
-! enddo
-! do icoor = 1,3
-!    call mat_free(GbK(icoor))
-! enddo
-! do icoor = 1,3
-!    call mat_free(Gm(icoor))
-! enddo
+  do icoor=1,3
+     
+     call mat_init(Gm(icoor),nbast,nbast) 
+     call mat_init(NMST2(icoor),nbast,nbast)
+     call mat_add(1.0E0_realk,GbJ(icoor),1.0E0_realk,GbK(icoor),Gm(icoor)) 
+     call mat_mul(Dxk(icoor),Gm(icoor),'n','n',1.0E0_realk,0.0E0_realk,NMST2(icoor))   
+    
+  enddo
+  
+  do icoor = 1,3
+     call mat_free(GbJ(icoor))
+  enddo
+  do icoor = 1,3
+     call mat_free(GbK(icoor))
+  enddo
+  do icoor = 1,3
+     call mat_free(Gm(icoor))
+  enddo
 !#####################################################################
 !     TR 
 !
