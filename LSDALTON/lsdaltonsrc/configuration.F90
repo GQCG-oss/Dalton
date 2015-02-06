@@ -2425,6 +2425,10 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                     !cfg_rsp_run_mag = .true.
                     !!Sonia: Make separate set of options: use_eq_79 etc..
                     !!cfg_rsp_run_hes = .true.
+       !CHANDAN_IANS       
+       CASE('*INASHIELD')
+          config%response%tasks%doNMRshield_selected=.true.
+          config%response%tasks%doResponse=.true.
        !THOMAS_NEW
        CASE('*SHIELD')
           config%response%tasks%doNMRshield=.true.

@@ -22,6 +22,8 @@ module lsdalton_response_type_mod
      logical :: doMCD
      !> NMR shield
      logical :: doNMRshield
+     !> NMR shield selected nuclei 
+     logical :: doNMRshield_selected    
      !> linear response
      logical :: dolinrsp
      !> Polarizability
@@ -60,6 +62,7 @@ contains
 #endif
     tasksitem%doMCD = .false.
     tasksitem%doNMRshield = .false.
+    tasksitem%doNMRshield_selected = .false.
     tasksitem%dolinrsp = .false.
     tasksitem%doAlpha = .false.
     tasksitem%doBeta = .false.
