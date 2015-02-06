@@ -305,16 +305,21 @@ contains
 
 #ifdef MOD_UNRELEASED
        ! MP2-F12 Code
-       if(DECinfo%F12) then    
+       MP2F12: if(DECinfo%F12) then    
           if(pair) then
-             call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
-                  &  Fragment1, Fragment2)
+             if(MyFragment%isopt) then
+                call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
+                     &  Fragment1, Fragment2)
+             end if
           else
-             call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
+             ! Calculate F12 only for optimized fragment or if it has been requested by input
+             if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
+             end if
           end if
-             !> Free cabs after each calculation
-             call free_cabs()
-       endif
+       !> Free cabs after each calculation
+       call free_cabs()
+    endif MP2F12
 #endif
 
     case(MODEL_RIMP2) ! RIMP2 calculation
@@ -444,14 +449,25 @@ contains
 
 #ifdef MOD_UNRELEASED
        ! CCSD-F12 Code
-       if(DECinfo%F12) then
+       CCSDF12: if(DECinfo%F12) then
+
           call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2_occEOS)
-          call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
+          if(pair) then
+             if(MyFragment%isopt) then
+                call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
+             end if
+          else
+             ! Calculate F12 only for optimized fragment or if it has been requested by input
+             if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
+             end if
+          end if
 
           !> Free cabs after each calculation
           call tensor_free(t2_occEOS)
           call free_cabs()
-       endif
+
+       endif CCSDF12
 #endif
        ! free vovo integrals
        call tensor_free(VOVO)
@@ -2541,6 +2557,9 @@ contains
      MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
      ! call lsquit('TEST DONE',-1)
 
+      ! Fragment has been optimized
+      AtomicFragment%isopt = .true.
+
   end subroutine optimize_atomic_fragment
 
   subroutine GetSortedFockMaxElements(FmaxOcc,FmaxVirt,nocc,nunocc,&
@@ -4101,6 +4120,7 @@ contains
     if(freebasisinfo) then
        call atomic_fragment_free_basis_info(AtomicFragment)
     end if
+    AtomicFragment%isopt=.true.
 
   end subroutine fragopt_include_fullmolecule
 
@@ -5019,6 +5039,9 @@ contains
       ! Restore the original CC model 
       ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
       MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
+
+      ! Fragment has been optimized
+      AtomicFragment%isopt = .true.
 
    end subroutine optimize_atomic_fragment_CLEAN
 

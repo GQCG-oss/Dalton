@@ -282,6 +282,8 @@ module dec_typedef_module
      !> ************
      !> Use F12 correction
      logical :: F12
+     !> Do F12 also for fragment optimization
+     logical :: F12fragopt
 
      !> F12 debug settings
      !> ************
@@ -747,6 +749,9 @@ module dec_typedef_module
      !> Total number of unoccupied orbitals (AOS)
      integer,pointer :: nunoccAOS
 
+     !> Has fragment been optimized
+     logical :: isopt
+
      !> Pair fragment?
      logical :: pairfrag
 
@@ -809,7 +814,7 @@ module dec_typedef_module
      !> ********************************************************
      !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
-
+     
      !> Information about fragment size always set, this is the maximum distance
      !between any two atoms in the fragment
      real(realk) :: RmaxAE,RmaxAOS,RaveAE,RaveAOS,RsdvAE,RsdvAOS

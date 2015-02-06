@@ -790,6 +790,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%PNOset,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
     CALL ls_mpi_buffer(MyFragment%pairfrag,master)
+    CALL ls_mpi_buffer(MyFragment%isopt,master)
 
     ! Reals that are not pointers
     ! ---------------------------
@@ -2335,6 +2336,7 @@ contains
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
+    call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)

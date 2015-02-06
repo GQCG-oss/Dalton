@@ -147,6 +147,9 @@ contains
        fragment%EOSatoms(1) = MyAtom
        fragment%pairfrag=.false.
     end if IsThisAPairFragment
+    
+    ! Fragment has not been optimized
+    fragment%isopt=.false.
 
     ! Set model to use for fragment calculation (see define_pair_calculations for details)
     if(fragment%pairfrag) then
@@ -2370,7 +2373,7 @@ contains
     ! Use estimated fragments?
     estimated_frags=.false.
     if(present(esti)) then
-       if(esti) estimated_frags=.true.
+       if(esti) estimated_frags=.true.          
     end if
 
     pairfrag=.true.
@@ -2496,6 +2499,13 @@ contains
     ! Distance between original fragments
     PairFragment%pairdist =  pairdist
     call mem_dealloc(EOSatoms)
+
+    ! Is pair fragment optimized?
+    if(Fragment1%isopt .and. fragment2%isopt) then
+       PairFragment%isopt=.true.
+    else
+       PairFragment%isopt=.false.
+    end if
 
     ! Print out summary
     if(DECinfo%PL>0) then

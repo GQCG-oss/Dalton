@@ -197,6 +197,7 @@ contains
     DECinfo%ccMaxDIIS                = 3
     DECinfo%ccModel                  = MODEL_MP2 ! see parameter-list in dec_typedef.f90
     DECinfo%F12                      = .false.
+    DECinfo%F12fragopt               = .false.
     DECinfo%F12debug                 = .false.
     DECinfo%SOS                      = .false.
     DECinfo%PureHydrogenDebug        = .false.
@@ -669,6 +670,10 @@ contains
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
        case('.F12')
           DECinfo%F12=.true.; doF12 = .TRUE.
+       case('.F12FRAGOPT')     
+          DECinfo%F12=.true.
+          DECinfo%F12fragopt=.true.
+          doF12 = .TRUE.
        case('.F12DEBUG')     
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
@@ -1145,6 +1150,7 @@ contains
 #ifdef MOD_UNRELEASED    
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
+    write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
 #endif
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
