@@ -62,8 +62,8 @@ contains
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 !
       DATA TABLE /'.QMNP  ', '.QMNPMM', '.QMMM  ', '.NPPOIN',           &
-             '.MMGAUS', '.PRINT ', '.MQITER', '.CMXPOL',                &
-             '.NONPCA', '.MMPOLA', '.MMCAPA', '.XXXXXX',                &
+             '.xxxxxx', '.PRINT ', '.MQITER', '.xxxxxx',                &
+             '.NONPCA', '.MMPOLA', '.xxxxxx', '.XXXXXX',                &
              '.DAMPED'/
 !
       CALL QENTER('QMNPINP')
@@ -100,7 +100,7 @@ contains
                             '" not recognized for *QMNPMM'
           CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
           CALL QUIT('Illegal keyword for *QMNPMM')
-!
+
 !         ".QMNP "
     1     CONTINUE
             QMNPMM  = .TRUE.
@@ -109,7 +109,7 @@ contains
             DONPCAP = .TRUE.
             DONPPOL = .TRUE.
           GO TO 100
-!
+
 !         ".QMNPMM"
     2     CONTINUE
             QMNPMM  = .TRUE.
@@ -118,63 +118,57 @@ contains
             DONPCAP = .TRUE.
             DONPPOL = .TRUE.
           GO TO 100
-!
+
 !         ".QMMM  "
     3     CONTINUE
             QMNPMM  = .TRUE.
             DONPSUB = .FALSE.
             DOMMSUB = .TRUE.
           GO TO 100
-!
+
 !         ".NPPOIN"
     4     CONTINUE
             NPMQGAU = .FALSE.
           GO TO 100
 !
-!         ".MMGAUS"
     5     CONTINUE
-            MMMQGAU = .TRUE.
           GO TO 100
-!
+
 !         ".PRINT "
     6     CONTINUE
             READ(LUCMD,*) IPRTLVL
           GO TO 100
-!
+
 !         ".MQITER"
     7     CONTINUE
             MQITER = .TRUE.
           GO TO 100
 !
-!         ".CMXPOL"
     8     CONTINUE
-            CMXPOL = .TRUE.
           GO TO 100
-!
+
 !         ".NONPCA"
     9     CONTINUE
             DONPCAP = .FALSE.
           GO TO 100
-!
+
 !         ".MMPOLA"
    10     CONTINUE
             DOMMPOL = .TRUE.
           GO TO 100
 !
-!         ".MMCAPA"
    11     CONTINUE
-            CMXPOL = .TRUE.
           GO TO 100
-!
+
 !         ".XXXXXX"
    12     CONTINUE
           GO TO 100
+
 !         ".DAMPED"
  13       CONTINUE
             NOVDAMP = .FALSE.
           GO TO 100
 
-!
         ELSE IF (PROMPT .EQ. '*') THEN
           GO TO 300
         ELSE
@@ -208,9 +202,7 @@ contains
       DONPPOL = .FALSE.
       DOMMPOL = .FALSE.
       NPMQGAU = .TRUE.
-      MMMQGAU = .FALSE.
       MQITER  = .FALSE.
-      CMXPOL  = .FALSE.
       NOVDAMP = .TRUE.
       TNPBLK  = 0
       TMMBLK  = 0

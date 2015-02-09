@@ -10,8 +10,8 @@
      &        MMATOM,  MMFTYP,  TNPFF,  TMMFF,                          &
      &        MMMOL,   TPOLATM, MMSKIP
 !
-      LOGICAL DONPSUB, DOMMSUB, NPMQGAU, MMMQGAU,                       &
-     &        MQITER,  CMXPOL,  DONPCAP, DOMMCAP,                       &
+      LOGICAL DONPSUB, DOMMSUB, NPMQGAU,                                &
+     &        MQITER,           DONPCAP, DOMMCAP,                       &
      &        DONPPOL, DOMMPOL, NOVDAMP
 !
       INTEGER MAXBLK,  MXNPATM, MXMMATM, MXNPFF, MXMMFF
@@ -35,6 +35,6 @@
      &                NPFTYP(MXNPATM),   TPOLATM, MMFTYP(MXMMATM),      &
      &                NPATOM(MAXBLK),    MMATOM(MAXBLK),                &
      &                MMMOL(MXMMATM),    MMSKIP(MXMMATM),               &
-     &                DONPSUB, DOMMSUB,  NPMQGAU, MMMQGAU,              &
-     &                MQITER,  CMXPOL,   DONPCAP, DOMMCAP,              &
+     &                DONPSUB, DOMMSUB,  NPMQGAU,                       &
+     &                MQITER,            DONPCAP, DOMMCAP,              &
      &                DONPPOL, DOMMPOL,  NOVDAMP
