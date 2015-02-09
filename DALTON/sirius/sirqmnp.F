@@ -40,6 +40,8 @@ C   FMAT   - QM/NP/MM contribution to Fock matrix
 C
 C Last updated: 22/03/2013 by Z. Rinkevicius.  
 C
+      use qmcmm, only: getdim_relmat
+
 #include "implicit.h"
 #include "dummy.h"
 #include "qmnpmm.h"
@@ -67,6 +69,7 @@ C           Determine electric field/potential vector
             CALL GET_FVVEC(DCAO,DVAO,WORK(KFVVEC),IDIM,WORK(KFREE),
      &                     LFREE)
 C           Determine induced momemnts/charges 
+            ! rcpmat becomes complex -> complex fock operator
             CALL DGEMV('N',IDIM,IDIM,D1,RCPMAT,IDIM,WORK(KFVVEC),1,D0,
      &                 WORK(KMQVEC),1)
             IF (IPRTLVL.GE.15) THEN 
@@ -399,9 +402,9 @@ C     Electric field due to point charges in MM region
          DO I=1,TNPATM 
             IOFF = 3*(I-1) 
             DO J=1,TMMATM 
-              RIJ(1) = NPCORD(1,I)-MMCORD(1,J) 
-              RIJ(2) = NPCORD(2,I)-MMCORD(2,J) 
-              RIJ(3) = NPCORD(3,I)-MMCORD(3,J)
+              RIJ(1) = NPCORD(1,I)-mm_cord(1,J) 
+              RIJ(2) = NPCORD(2,I)-mm_cord(2,J) 
+              RIJ(3) = NPCORD(3,I)-mm_cord(3,J)
               RAD = DSQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
               RAD3 = RAD*RAD*RAD 
               FACT = MMFM0(MMFTYP(J))/RAD3 
@@ -419,9 +422,9 @@ C        Fix me MM region shift
          DO I=1,TNPATM 
             IOFF = ISTART+I 
             DO J=1,TMMATM 
-              RIJ(1) = NPCORD(1,I)-MMCORD(1,J) 
-              RIJ(2) = NPCORD(2,I)-MMCORD(2,J) 
-              RIJ(3) = NPCORD(3,I)-MMCORD(3,J)
+              RIJ(1) = NPCORD(1,I)-mm_cord(1,J) 
+              RIJ(2) = NPCORD(2,I)-mm_cord(2,J) 
+              RIJ(3) = NPCORD(3,I)-mm_cord(3,J)
               RAD = DSQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
               FVVEC(IOFF) = FVVEC(IOFF)+MMFM0(MMFTYP(J))/RAD 
             END DO
@@ -449,6 +452,8 @@ C   FCAO   - Computed Fock matrix (AO basis).
 C                                                                                                          
 C Last updated: 22/03/2013 by Z. Rinkevicius.                                                             
 C                                                                                                         
+      use qmcmm, only: comp_dampvmat
+
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -617,7 +622,7 @@ C
 C     Induced dipole moment in NP region interaction (damped) with QM region 
       IF (DONPPOL.AND.(.NOT.NOVDAMP)) THEN
          CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
-         CALL COMP_DAMPVMAT(WORK(KINTAO), MQVEC, WORK(KFREE), LFREE)
+         CALL COMP_DAMPVMAT(WORK(KINTAO), MQVEC)
          IF (NISHT.GT.0) THEN
             EESOLQNP = EESOLQNP+DDOT(NNBASX,DCAO,1,WORK(KINTAO),1)    
          END IF 
@@ -734,9 +739,9 @@ C     Set integrals evaluation flags
       RUNQM3 = .TRUE. 
 C 
       DO I=1,TMMATM
-         DIPORG(1) = MMCORD(1,I) 
-         DIPORG(2) = MMCORD(2,I) 
-         DIPORG(3) = MMCORD(3,I) 
+         DIPORG(1) = mm_cord(1,I) 
+         DIPORG(2) = mm_cord(2,I) 
+         DIPORG(3) = mm_cord(3,I) 
          CALL DZERO(WORK(KINTAO),NNBASX) 
          CALL GET1IN(WORK(KINTAO),'NPETES ',NOCOMP,WORK(KFREE),
      &               LFREE,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,
@@ -755,9 +760,9 @@ C
 C     Nuclear interaction part   
       DO I=1,TMMATM
          DO J=1,NUCIND 
-            RIJ(1) = MMCORD(1,I)-CORD(1,J) 
-            RIJ(2) = MMCORD(2,I)-CORD(2,J) 
-            RIJ(3) = MMCORD(3,I)-CORD(3,J)
+            RIJ(1) = mm_cord(1,I)-CORD(1,J) 
+            RIJ(2) = mm_cord(2,I)-CORD(2,J) 
+            RIJ(3) = mm_cord(3,I)-CORD(3,J)
             RAD = DSQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
             ENSOLQMM = ENSOLQMM+MMFM0(MMFTYP(I))*CHARGE(J)/RAD 
          END DO   
