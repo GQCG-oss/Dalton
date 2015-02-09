@@ -864,7 +864,7 @@ enddo
 NULLIFY(FRAGMENT%INPUT%AUXMOLECULE)
 ALLOCATE(FRAGMENT%INPUT%AUXMOLECULE)
 CALL BUILD_FRAGMENT2(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
-     & fragment%input%BASIS,FullAtomList,natomsfull,LUPRI)
+     & lsfull%input%BASIS,FullAtomList,natomsfull,LUPRI)
 call mem_dealloc(FullAtomList)
 
 DO i=1,natoms
