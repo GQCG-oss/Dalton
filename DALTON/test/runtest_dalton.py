@@ -52,6 +52,7 @@ class TestRun(runtest.TestRun):
             launcher = '%s -nobackup %s' % (launch_script, args)
 
         commands = []
+        messages = []
         outputs_no_suffix = []
         for inp in inp_files:
             inp_no_suffix = os.path.splitext(inp)[0]
@@ -66,7 +67,7 @@ class TestRun(runtest.TestRun):
                             else:
                                 output_no_suffix = '%s_%s_%s' % (inp_no_suffix, mol_no_suffix, other_no_suffix)
                             outputs_no_suffix.append(output_no_suffix)
-                            sys.stdout.write('\nrunning test: %s %s %s\n' % (inp_no_suffix, mol_no_suffix, other_no_suffix))
+                            messages.append('\nrunning test: %s %s %s\n' % (inp_no_suffix, mol_no_suffix, other_no_suffix))
                             commands.append(launcher + ' %s %s %s' % (inp_no_suffix, mol_no_suffix, other_no_suffix))
                     else:
                         if inp_no_suffix == mol_no_suffix:
@@ -74,14 +75,15 @@ class TestRun(runtest.TestRun):
                         else:
                             output_no_suffix = '%s_%s' % (inp_no_suffix, mol_no_suffix)
                         outputs_no_suffix.append(output_no_suffix)
-                        sys.stdout.write('\nrunning test: %s %s\n' % (inp_no_suffix, mol_no_suffix))
+                        messages.append('\nrunning test: %s %s\n' % (inp_no_suffix, mol_no_suffix))
                         commands.append(launcher + ' %s %s' % (inp_no_suffix, mol_no_suffix))
             else:
                 outputs_no_suffix.append('%s' % (inp_no_suffix,))
-                sys.stdout.write('\nrunning test: %s\n' % (inp_no_suffix,))
+                messages.append('\nrunning test: %s\n' % (inp_no_suffix,))
                 commands.append(launcher + ' %s' % (inp_no_suffix,))
-        for output_no_suffix, command in zip(outputs_no_suffix, commands):
+        for output_no_suffix, message, command in zip(outputs_no_suffix, messages, commands):
             try:
+                sys.stdout.write(message)
                 runtest.TestRun.execute(self,
                                         command=command,
                                         stdout_file_name = '%s.stdout' % output_no_suffix,
