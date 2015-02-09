@@ -246,9 +246,9 @@ contains
          end do
       end do
 
-      print *,
+      print *, ""
       print *, "Dsd in MO DEBUG Print: "
-      print *,
+      print *, ""
       print *,no,nv
       write(*, *) ''
       do i=1,Dsd%dims(1)
@@ -257,7 +257,7 @@ contains
         end do
         write(*, *) ''
       end do
-      print *,
+      print *, ""
   
    end subroutine one_el_unrel_dens  
 
