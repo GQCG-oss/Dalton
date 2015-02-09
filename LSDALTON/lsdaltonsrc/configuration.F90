@@ -1521,6 +1521,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         ! calculate and print full Exchange when doing ADMM exchange approx.
         ! > Debugging purpose only
            INTEGRAL%PRINT_EK3       = .TRUE.
+        CASE ('.ADMM-K-METRIC'); ! EXPERIMENTAL
+        ! calculate and print the residual error in the exchange metric
+        ! > Development purpose only
+           INTEGRAL%ADMMexchangeMetric = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.

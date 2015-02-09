@@ -1894,6 +1894,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    case( MODEL_RIMP2 )
 
+      call lsquit("ERROR(ccsolver_par): RI-MP2 is not implemented iteratively",-1)
+
       use_singles = .false.
       atype = 'REAR'
 
@@ -2384,20 +2386,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          end do
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_mixing, &
-            &labelttot= 'CCIT: MIXING          :', output = DECinfo%output, twall = time_copy_opt ) 
-
-         ! if crop, put the optimal in place of trial (not for diis)
-         if(DECinfo%use_crop) then
-            if(use_singles) then
-               call tensor_cp_data( omega1_opt, omega1(iter_idx) )
-               call tensor_cp_data( t1_opt,     t1(iter_idx)     )
-            end if
-            call tensor_cp_data( omega2_opt, omega2(iter_idx) )
-            call tensor_cp_data( t2_opt,     t2(iter_idx)     )
-         end if
-
-         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_copy_opt, &
-            &labelttot= 'CCIT: COPY OPTIMALS   :', output = DECinfo%output, twall = time_norm ) 
+            &labelttot= 'CCIT: MIXING          :', output = DECinfo%output, twall = time_norm ) 
 
          ! check for the convergence
          one_norm1 = 0.0E0_realk
@@ -2480,7 +2469,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_energy, &
-            &labelttot= 'CCIT: GET ENERGY      :', output = DECinfo%output, twall = time_new_guess) 
+            &labelttot= 'CCIT: GET ENERGY      :', output = DECinfo%output, twall = time_copy_opt) 
+
+         ! if crop, put the optimal in place of trial (not for diis)
+         if(DECinfo%use_crop) then
+            if(use_singles) then
+               call tensor_cp_data( omega1_opt, omega1(iter_idx) )
+               call tensor_cp_data( t1_opt,     t1(iter_idx)     )
+            end if
+            call tensor_cp_data( omega2_opt, omega2(iter_idx) )
+            call tensor_cp_data( t2_opt,     t2(iter_idx)     )
+         end if
+
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_copy_opt, &
+            &labelttot= 'CCIT: COPY OPTIMALS   :', output = DECinfo%output, twall = time_new_guess ) 
+
 
          ! generate next trial vector if this is not the last iteration
          if(.not.break_iterations) then
