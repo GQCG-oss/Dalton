@@ -209,11 +209,9 @@ contains
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "DEC SINGLES: virt-virt block of unrel. one-el. dens."
+       print *, "";       print *, "DEC SINGLES: virt-virt block of unrel. one-el. dens."
        call print_matrix_real(grad%dens%Y,nvAOS,nvAOS)
-       print *,
-    endif
+       print *, "";    endif
 
     !time
     call LSTIMER('Y MATRIX',tcpu,twall,DECinfo%output)
@@ -251,14 +249,11 @@ contains
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, 'Xij intermediate'
+       print *, "";       print *, 'Xij intermediate'
        call print_matrix(Xij)
-       print *,
-       print *, "DEC SINGLES: occ-occ block of unrel. one-el. dens."
+       print *, "";       print *, "DEC SINGLES: occ-occ block of unrel. one-el. dens."
        call print_matrix_real(grad%dens%X,noAOS,noAOS)
-       print *,
-    endif
+       print *, "";    endif
 
     !clean up!
     call array2_free(Xij)
@@ -388,14 +383,10 @@ contains
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "DEC SINGLES: virt-occ block of unrel. one-el. dens."
-       print *,
-       print *,no,nv
-       print *,
-       call print_matrix_real(grad%dens%Phivo,nv,no)
-       print *,
-    endif
+       print *, "";       print *, "DEC SINGLES: virt-occ block of unrel. one-el. dens."
+       print *, "";       print *,no,nv
+       print *, "";       call print_matrix_real(grad%dens%Phivo,nv,no)
+       print *, "";    endif
 
     
     !clean up if needed
@@ -429,13 +420,10 @@ contains
     end do 
 
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "DEC SINGLES: occ-virt block of unrel. one-el. dens. "
+       print *, "";       print *, "DEC SINGLES: occ-virt block of unrel. one-el. dens. "
        call print_matrix(dia)
-       print *,
-       call print_matrix_real(grad%dens%Phiov,no,nv)
-       print *,
-    endif
+       print *, "";       call print_matrix_real(grad%dens%Phiov,no,nv)
+       print *, "";    endif
 
     !clean up!
 
@@ -663,11 +651,9 @@ contains
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "DEC PAIRS: virt-virt block of unrel. one-el. dens."
+       print *, "";       print *, "DEC PAIRS: virt-virt block of unrel. one-el. dens."
        call print_matrix_real(grad%dens%Y,nvAOS,nvAOS)
-       print *,
-    endif
+       print *, "";    endif
 
     !time
     call LSTIMER('Y MATRIX',tcpu,twall,DECinfo%output)
@@ -718,14 +704,11 @@ contains
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "DEC PAIR: Xij intermediate"
+       print *, "";       print *, "DEC PAIR: Xij intermediate"
        call print_matrix(Xij)
-       print *,
-       print *, "DEC PAIR: occ-occ block of unrel. one-el. dens."
+       print *, "";       print *, "DEC PAIR: occ-occ block of unrel. one-el. dens."
        call print_matrix_real(grad%dens%X,noAOS,noAOS)
-       print *,
-    endif
+       print *, "";    endif
 
     !clean up!
     call array2_free(dij)
@@ -881,14 +864,10 @@ contains
  
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "DEC PAIR: virt-occ block of unrel. one-el. dens. "
-       print *,
-       print *,no,nv
-       print *,
-       call print_matrix_real(grad%dens%Phivo,nv,no)
-       print *,
-    endif
+       print *, "";       print *, "DEC PAIR: virt-occ block of unrel. one-el. dens. "
+       print *, "";       print *,no,nv
+       print *, "";       call print_matrix_real(grad%dens%Phivo,nv,no)
+       print *, "";    endif
 
     
     !clean up if needed
@@ -926,12 +905,9 @@ contains
     end do
  
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "DEC PAIR: occ-virt block of unrel. one-el. dens. "
-       print *,
-       call print_matrix_real(grad%dens%rho,no+nv,no+nv)
-       print *,
-    endif
+       print *, "";       print *, "DEC PAIR: occ-virt block of unrel. one-el. dens. "
+       print *, "";       call print_matrix_real(grad%dens%rho,no+nv,no+nv)
+       print *, "";    endif
 
     !clean up!
 
@@ -1073,10 +1049,8 @@ contains
 !
 !    !Print just to see that it's nicely empty
 !    if( DECinfo%PL>2 )then
-!       print *,
-!       call print_matrix(Dsd)
-!       print *,
-!    endif
+!       print *, "";!       call print_matrix(Dsd)
+!       print *, "";!    endif
 
      ! Sanity check: This routine is not intended for MP2
      if(MyFragment%ccmodel == MODEL_MP2) then
@@ -1256,13 +1230,10 @@ contains
 
      !print debug info if needed
      if( DECinfo%PL>2 )then
-        print *,
-        print *, "Debug print Dsd virt-occ block: "
-        print *,
-        print *,no,nv
+        print *, "";        print *, "Debug print Dsd virt-occ block: "
+        print *, "";        print *,no,nv
         call print_matrix(Dsd)
-        print *,
-     endif
+        print *, "";     endif
 
      !2. virt-virt block
      !******************
@@ -1293,17 +1264,14 @@ contains
 
      !print debug info if needed
      if( DECinfo%PL>2 )then
-        print *,
-        print *, 'Yba intermediate'
+        print *, "";        print *, 'Yba intermediate'
         print *, no
         print *, nv
         print *, nb
         call print_matrix(Yba)
-        print *,
-        print *, "Debug print Dsd virt-virt block: "
+        print *, "";        print *, "Debug print Dsd virt-virt block: "
         call print_matrix(Dsd)
-        print *,
-     endif
+        print *, "";     endif
 
      !3. occ-occ block
      !****************
@@ -1336,14 +1304,11 @@ contains
 
      !print debug info if needed
      if( DECinfo%PL>2 )then
-        print *,
-        print *, 'Xij intermediate'
+        print *, "";        print *, 'Xij intermediate'
         call print_matrix(Xij)
-        print *,
-        print *, "Debug print Dsd occ-occ block: "
+        print *, "";        print *, "Debug print Dsd occ-occ block: "
         call print_matrix(Dsd)
-        print *,
-     endif
+        print *, "";     endif
 
      !4. occ-virt block
      !*****************
@@ -1392,8 +1357,7 @@ contains
 
      !print debug info if needed
      if( DECinfo%PL>2 )then
-        print *,
-        print *, "Tbar intermediate"
+        print *, "";        print *, "Tbar intermediate"
         k = 1
         do j=1,tbar%dims(4) 
          do b=1,tbar%dims(3) 
@@ -1408,15 +1372,12 @@ contains
          end do
         end do
 
-        print *,
-        print *, 'Eai intermediate'
+        print *, "";        print *, 'Eai intermediate'
         call print_matrix(Eai)
 
-        print *,
-        print *, "Debug print Dsd occ-virt block: "
+        print *, "";        print *, "Debug print Dsd occ-virt block: "
         call print_matrix(Dsd)
-        print *,
-     endif
+        print *, "";     endif
 
      !***************************************************************
      ! Construct the two-electron SD density
@@ -1499,8 +1460,7 @@ contains
      !print debug info if needed
      if( DECinfo%PL>2 )then
  
-      print *, 
-      print *, "Mbar intermediate "
+      print *, "";      print *, "Mbar intermediate "
       m = 1
       do l=1,no
         do k=1,no
@@ -1516,8 +1476,7 @@ contains
           end do
         end do
       end do
-      print *, 
-      print *, "occ-occ-occ-occ block of two-el density"
+      print *, "";      print *, "occ-occ-occ-occ block of two-el density"
       m = 1
       do l=1,no
         do k=1,no
@@ -1583,8 +1542,7 @@ contains
 
 !     !print debug info if needed
 !     if( DECinfo%PL>2 )then
-!     print *, 
-!     print *, "occ-occ-occ-virt block of two-el density"
+!     print *, "";!     print *, "occ-occ-occ-virt block of two-el density"
 !     m = 1
 !     do a=no+1,nb
 !       do k=1,no
@@ -1668,8 +1626,7 @@ contains
  
      !print debug info if needed
      if( DECinfo%PL>2 )then
-     print *, 
-     print *, "occ-occ-virt-virt block of two-el density"
+     print *, "";     print *, "occ-occ-virt-virt block of two-el density"
      m = 1
      do b=no+1,nb
        do a=no+1,nb
@@ -1999,8 +1956,7 @@ contains
 
      !print debug info if needed
      if( DECinfo%PL>2 )then
-     print *, 
-     print *, "virt-occ-virt-occ block of two-el density"
+     print *, "";     print *, "virt-occ-virt-occ block of two-el density"
      m = 1
      do j=1,no
        do b=no+1,nb
@@ -2045,8 +2001,7 @@ contains
  
      !print debug info if needed
      if( DECinfo%PL>2 )then
-     print *, 
-     print *, "virt-occ-occ-occ block of two-el density"
+     print *, "";     print *, "virt-occ-occ-occ block of two-el density"
      m = 1
      do k=1,no
        do j=1,no
@@ -2104,8 +2059,7 @@ contains
  
      !print debug info if needed
      if( DECinfo%PL>2 )then
-     print *, 
-     print *, "virt-occ-occ-virt block of two-el density"
+     print *, "";     print *, "virt-occ-occ-virt block of two-el density"
      m = 1
      do b=no+1,nb
        do j=1,no
@@ -2160,8 +2114,7 @@ contains
  
      !print debug info if needed
      if( DECinfo%PL>2 )then
-     print *, 
-     print *, "virt-virt-occ-virt block of two-el density"
+     print *, "";     print *, "virt-virt-occ-virt block of two-el density"
      m = 1
      do c=no+1,nb
        do i=1,no
@@ -2214,8 +2167,7 @@ contains
  
      !print debug info if needed
      if( DECinfo%PL>2 )then
-     print *, 
-     print *, "virt-virt-virt-virt block of two-el density"
+     print *, "";     print *, "virt-virt-virt-virt block of two-el density"
      m = 1
      do d=no+1,nb
        do c=no+1,nb
@@ -2389,8 +2341,7 @@ contains
          & h1%elms,nb,nb,AORdefault,AORdefault)
      !DEBUG
      write (*,*)'The one-electron integrals:'
-     print *, 
-     m = 1
+     print *, "";     m = 1
      do a=1,nb*nb
        if (ABS(h1%elms(a))>0.00000001)then 
          write (*,'(i5,i5,F12.8)') m,a, h1%elms(a)
@@ -2504,10 +2455,8 @@ contains
      Cv_dr%val(6,4) =  1.50858327
 
      !DEBUG
-     print *,
-     print *,MyFragment%ppfock(1,1)
-     print *,
-     write (*,*)'The MO coefficients:'
+     print *, "";     print *,MyFragment%ppfock(1,1)
+     print *, "";     write (*,*)'The MO coefficients:'
      m = 1
      do i=1,no
      do a=1,nb
@@ -2588,8 +2537,7 @@ contains
 
      call array4_read(gao)
 !     if( DECinfo%PL>2 )then
-!     print *, 
-!     print *, "AO INTEGRALS"
+!     print *, "";!     print *, "AO INTEGRALS"
 !     m = 1
 !     do d=1,nb
 !       do b=1,nb
@@ -2632,8 +2580,7 @@ contains
 !
 !     !print debug info if needed
 !     if( DECinfo%PL>2 )then
-!     print *, 
-!     print *, "ONLY virt-occ-virt-occ block of two-el density"
+!     print *, "";!     print *, "ONLY virt-occ-virt-occ block of two-el density"
 !     m = 1
 !     do b=no+1,nb
 !       do d=1,nb
@@ -3602,12 +3549,9 @@ call mem_TurnOffThread_Memory()
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Pairs: MP2 one-el density MO: "
-       print *,
-       call print_matrix_real(dens%Y,((noccAOS+nvirtAOS)/2),((noccAOS+nvirtAOS))/2)
-       print *,
-    endif
+       print *, "";       print *, "Pairs: MP2 one-el density MO: "
+       print *, "";       call print_matrix_real(dens%Y,((noccAOS+nvirtAOS)/2),((noccAOS+nvirtAOS))/2)
+       print *, "";    endif
 
 
 
@@ -3878,27 +3822,21 @@ call mem_TurnOffThread_Memory()
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "MP2 Y matrix SINGLE: "
-       print *,
-       write(*, *) ''
+       print *, "";       print *, "MP2 Y matrix SINGLE: "
+       print *, "";       write(*, *) ''
         do i=1,nvirtAOS
           do j=1,nvirtAOS
             write(*,'(f16.10)',advance='no') Y%val(i,j)
           end do
          write(*, *) ''
        end do
-       print *,
-    endif
+       print *, "";    endif
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Pairs: MP2 one-el density MO: "
-       print *,
-       call print_matrix_real(dens%Y,((noccAOS+nvirtAOS))/2,((noccAOS+nvirtAOS))/2)
-       print *,
-    endif
+       print *, "";       print *, "Pairs: MP2 one-el density MO: "
+       print *, "";       call print_matrix_real(dens%Y,((noccAOS+nvirtAOS))/2,((noccAOS+nvirtAOS))/2)
+       print *, "";    endif
 
     call array2_free(Y)
     call LSTIMER('Y MATRIX',tcpu,twall,DECinfo%output)
@@ -3925,18 +3863,15 @@ call mem_TurnOffThread_Memory()
 !
 !    !print debug info if needed
 !    if( DECinfo%PL>2 )then
-!       print *,
- !      print *, "MP2 Y+X  SINGLE: "
- !      print *,
- !      write(*, *) ''
+!       print *, ""; !      print *, "MP2 Y+X  SINGLE: "
+ !      print *, ""; !      write(*, *) ''
  !       do i=1,dens%nbasis
  !         do j=1,dens%nbasis
  !           write(*,'(f16.10)',advance='no') dens%rho(i,j)
  !         end do
  !        write(*, *) ''
  !      end do
- !      print *,
- !   endif
+ !      print *, ""; !   endif
 !
 !
 !    ! ****************************************************************************************
@@ -4327,11 +4262,9 @@ end subroutine get_CCSDgradient_main
     !DEBUG - everything in MO
     !Update the Dab matrix
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Dab before updating rho"
+       print *, "";       print *, "Dab before updating rho"
        call print_matrix_real(fraggrad%dens%rho,fraggrad%dens%nunocc,fraggrad%dens%nunocc)
-       print *,
-    endif
+       print *, "";    endif
 
     do i=1,fraggrad%dens%nunocc 
       iFull = fraggrad%dens%basis_idx(i)
@@ -4343,19 +4276,15 @@ end subroutine get_CCSDgradient_main
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Dab after updating rho"
+       print *, "";       print *, "Dab after updating rho"
        call print_matrix_real(fullgrad%rho,fullgrad%nbasis,fullgrad%nbasis)
-       print *,
-    endif
+       print *, "";    endif
 
 !    !Update the Dij matrix
 !    if( DECinfo%PL>2 )then
-!       print *,
-!       print *, "Dij before updating rho"
+!       print *, "";!       print *, "Dij before updating rho"
 !       call print_matrix_real(fraggrad%dens%Y,fraggrad%dens%nunocc,fraggrad%dens%nunocc)
-!       print *,
-!    endif
+!       print *, "";!    endif
 !    
 !    do i=1,fraggrad%dens%nunocc
 !      iFull = fraggrad%dens%basis_idx(i)
@@ -4367,11 +4296,9 @@ end subroutine get_CCSDgradient_main
 !    
 !    !print debug info if needed
 !    if( DECinfo%PL>2 )then
-!       print *,
-!       print *, "Dij after updating rho"
+!       print *, "";!       print *, "Dij after updating rho"
 !       call print_matrix_real(fullgrad%rho,fullgrad%nbasis,fullgrad%nbasis)
-!       print *,
-!    endif
+!       print *, "";!    endif
 
     ! Update full unrelaxed corr. density matrix rho in AO basis
     ! ----------------------------------------------------------
@@ -4431,11 +4358,9 @@ end subroutine get_CCSDgradient_main
     
     !Update the Dab matrix
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Ready to update Y:"
+       print *, "";       print *, "Ready to update Y:"
        call print_matrix_real(fraggrad%dens%Y,fraggrad%dens%nunocc,fraggrad%dens%nunocc)
-       print *,
-    endif
+       print *, "";    endif
 
     do i=1,fragment%nunoccAOS !fraggrad%dens%nunocc 
       iFull = fragment%UnOccAOSidx(i)
@@ -4448,19 +4373,15 @@ end subroutine get_CCSDgradient_main
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Here is what I've got for Y:"
+       print *, "";       print *, "Here is what I've got for Y:"
        call print_matrix_real(fullgrad%rho,fullgrad%nbasis,fullgrad%nbasis)
-       print *,
-    endif
+       print *, "";    endif
 
     !Update the Dij matrix
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Ready to update X:"
+       print *, "";       print *, "Ready to update X:"
        call print_matrix_real(fraggrad%dens%X,fraggrad%dens%nocc,fraggrad%dens%nocc)
-       print *,
-    endif
+       print *, "";    endif
 
     do i=1,fraggrad%dens%nocc
       iFull = fragment%OccAOSidx(i)
@@ -4472,21 +4393,16 @@ end subroutine get_CCSDgradient_main
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Here is what I've got for X:"
+       print *, "";       print *, "Here is what I've got for X:"
        call print_matrix_real(fullgrad%rho,fullgrad%nbasis,fullgrad%nbasis)
-       print *,
-    endif
+       print *, "";    endif
 
     !Update the Dai and Dia matricies
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Ready to update off-diagonal terms:"
+       print *, "";       print *, "Ready to update off-diagonal terms:"
        call print_matrix_real(fraggrad%dens%Phivo,fraggrad%dens%nunocc,fraggrad%dens%nocc)
-       print *,
-       call print_matrix_real(fraggrad%dens%Phiov,fraggrad%dens%nocc,fraggrad%dens%nunocc)
-       print *,
-    endif
+       print *, "";       call print_matrix_real(fraggrad%dens%Phiov,fraggrad%dens%nocc,fraggrad%dens%nunocc)
+       print *, "";    endif
 
     do i=1,fraggrad%dens%nocc
       iFull = fragment%OccAOSidx(i)
@@ -4509,11 +4425,9 @@ end subroutine get_CCSDgradient_main
 
     !print debug info if needed
     if( DECinfo%PL>2 )then
-       print *,
-       print *, "Here is what I've got for the full density:"
+       print *, "";       print *, "Here is what I've got for the full density:"
        call print_matrix_real(fullgrad%rho,fullgrad%nbasis,fullgrad%nbasis)
-       print *,
-    endif
+       print *, "";    endif
 
   end subroutine update_CCSDdensity
 

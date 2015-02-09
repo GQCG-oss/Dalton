@@ -117,7 +117,7 @@ contains
      call ccsolver_job(ccmodel,Co,Cv,fock,nb,no,nv,mylsitem,ccPrintLevel,&
         &oof,vvf,ccenergy,aibj,.false.,loc,t1f,t2f,m1f,m2f)
 
-     call one_el_unrel_dens(nb,no,nv,t1f,t2f,m1f,m2f) 
+     !call one_el_unrel_dens(nb,no,nv,t1f,t2f,m1f,m2f) 
 
      call tensor_free(t1f)
      call tensor_free(t2f)
@@ -182,6 +182,7 @@ contains
              Dsd%val(a,b) = 1.0*Yba%val(a-no,b-no)
          end do
       end do
+      call array2_free(Yba)
 
       !3. occ-occ block
       !****************
@@ -211,6 +212,7 @@ contains
             endif
          end do
       end do
+      call array2_free(Xij)
 
       !4. occ-virt block
       !*****************
@@ -238,6 +240,7 @@ contains
       temp = array2_init([nv,no],m1f%elm2)
       call array4_contract_array2(tbar,temp,Eai)
       call array2_free(temp)
+      call array4_free(tbar)
 
       !add to the SD density
       do a=no+1,nb
@@ -246,18 +249,18 @@ contains
          end do
       end do
 
-      print *,
-      print *, "Dsd in MO DEBUG Print: "
-      print *,
-      print *,no,nv
-      write(*, *) ''
-      do i=1,Dsd%dims(1)
-        do j=1,Dsd%dims(2)
-          write(*,'(f16.10)',advance='no') Dsd%val(i,j)
-        end do
-        write(*, *) ''
-      end do
-      print *,
+      !print *, ""
+      !print *, "Dsd in MO DEBUG Print: "
+      !print *, ""
+      !print *,no,nv
+      !write(*, *) ''
+      !do i=1,Dsd%dims(1)
+      !  do j=1,Dsd%dims(2)
+      !    write(*,'(f16.10)',advance='no') Dsd%val(i,j)
+      !  end do
+      !  write(*, *) ''
+      !end do
+      !print *, ""
   
    end subroutine one_el_unrel_dens  
 
