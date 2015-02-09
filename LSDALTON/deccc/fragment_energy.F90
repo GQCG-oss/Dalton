@@ -37,7 +37,9 @@ module fragment_energy_module
   use mp2_gradient_module ,only: single_calculate_mp2gradient_driver,&
        & pair_calculate_mp2gradient_driver
   use ccdriver, only: mp2_solver,fragment_ccsolver
-
+#ifdef MOD_UNRELEASED
+  use ccsd_gradient_module
+#endif
 public :: optimize_atomic_fragment, pair_driver_singles, atomic_driver, &
      & pair_driver,atomic_driver_advanced,plot_pair_energies,&
      & Full_DECMP2_calculation,estimate_energy_error
@@ -261,8 +263,10 @@ contains
     type(decfrag), intent(in),optional :: Fragment1, Fragment2
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-    type(tensor) :: t1, ccsdpt_t1, m1
+    type(tensor) :: t1, ccsdpt_t1, m1, eta
     type(tensor) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
+    type(tensor) :: t2occp,t2virtp
+    type(tensor) :: m2occ,m2virt
     type(tensor) :: t2_occEOS
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
@@ -338,6 +342,10 @@ contains
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order.or.DECinfo%CCSDmultipliers) then  
           call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
+          !extract the indices here for later use in CCSD first order properties
+          !note: the t2occp and t2virtp are the t2 without further addmixture of t1!
+          call tensor_extract_eos_indices(m2,MyFragment,tensor_occEOS=m2occ,tensor_virtEOS=m2virt)
+          call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2occp,tensor_virtEOS=t2virtp)
        else
 #endif
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
@@ -351,9 +359,9 @@ contains
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
-          !          call z_vec_rhs_ccsd(MyFragment,eta,m1_arr=m1,m2_arr=m2,t1_arr=t1,t2_arr=t2)
-          call tensor_free(m2)
-          call tensor_free(m1)
+          !call z_vec_rhs_ccsd(MyFragment,eta,m1_arr=m1,m2_arr=m2,t1_arr=t1,t2_arr=t2)
+          !call tensor_free(m2)
+          !call tensor_free(m1)
        endif
 #endif
 
@@ -575,7 +583,22 @@ contains
     if(DECinfo%first_order) then
 #ifdef MOD_UNRELEASED
        if(DECinfo%ccmodel == MODEL_CCSD)then
-          !first order properties
+         if(pair) then
+           ! Pair fragment
+           call pair_calculate_CCSDgradient_driver&
+                             &(Fragment1,Fragment2,MyFragment,t2occp,t2virtp,m2occ,m2virt,m1,&
+                                       &VOOO,VOVV,VOVOocc,VOVOvirt,grad)
+           call tensor_free(m2occ)
+           call tensor_free(m2virt) 
+           
+         else
+           ! Atomic fragment
+           call single_calculate_CCSDgradient_driver&
+                             &(MyFragment,t2occp,t2virtp,m2occ,m2virt,m1,&
+                                       &VOOO,VOVV,VOVOocc,VOVOvirt,grad)
+           call tensor_free(m2occ)
+           call tensor_free(m2virt)
+         endif
        endif
 #endif
        if(DECinfo%ccmodel == MODEL_MP2)then

@@ -32,6 +32,7 @@ F90_OBJS = dec_settings.o \
 	cc_driver.o \
 	dec_atom.o \
 	mp2_gradient.o \
+        ccsd_gradient.o \
 	fragment_energy.o \
 	dec_driver.o \
 	dec_driver_slave.o \

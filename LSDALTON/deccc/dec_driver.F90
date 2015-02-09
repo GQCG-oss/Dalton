@@ -32,6 +32,7 @@ module dec_driver_module
 !       & init_fullmp2grad,update_full_mp2gradient,get_mp2gradient_main,free_fullmp2grad,&
 !       & write_gradient_and_energies_for_restart,read_gradient_and_energies_for_restart
   use fragment_energy_module
+  use ccsd_gradient_module
 
 #ifdef VAR_MPI
   use infpar_module
@@ -541,9 +542,19 @@ contains
             & OF DENSITY/GRADIENT CALCULATION!'
     else
        if(DECinfo%first_order) then
-          fullgrad%EHF = EHF
-          ! Calculate MP2 density/gradient and save MP2 density matrices to file
-          call get_mp2gradient_main(MyMolecule,mylsitem,D,molgrad,fullgrad)
+#ifdef MOD_UNRELEASED
+         if(DECinfo%ccmodel == MODEL_CCSD)then
+           fullgrad%EHF = EHF
+           ! Calculate CCSD density/gradient and save density matrices to file
+           call get_CCSDgradient_main(MyMolecule,mylsitem,D,molgrad,fullgrad)
+         end if
+#endif
+         if(DECinfo%ccmodel == MODEL_MP2)then
+           fullgrad%EHF = EHF
+           ! Calculate MP2 density/gradient and save MP2 density matrices to file
+           call get_mp2gradient_main(MyMolecule,mylsitem,D,molgrad,fullgrad)
+         end if
+
        end if
     end if
 
@@ -1066,6 +1077,15 @@ subroutine print_dec_info()
              FragEnergies(atomA,atomA,j) = AtomicFragments(atomA)%energies(j)
           end do
 
+#ifdef MOD_UNRELEASED
+       if(DECinfo%first_order) then  ! density and/or gradient
+        !Update the CCSD density
+        if(DECinfo%ccmodel == MODEL_CCSD)then
+          call update_CCSDdensity(AtomicFragments(atomA),grad,fullgrad)
+        endif
+       endif
+#endif
+
           ! Copy fragment information into joblist
           call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
           singlejob%jobsdone(1) = .true.
@@ -1132,6 +1152,15 @@ subroutine print_dec_info()
           singlejob%esti(1) = jobs%esti(jobdone)
           singlejob%dofragopt(1) = jobs%dofragopt(jobdone)
 
+#ifdef MOD_UNRELEASED
+       if(DECinfo%first_order) then  ! density and/or gradient
+        !Update the CCSD density
+        if(DECinfo%ccmodel == MODEL_CCSD)then
+          call update_CCSDdensity(PairFragment,grad,fullgrad)
+        endif
+       endif
+#endif
+
           call atomic_fragment_free(PairFragment)
 
        end if
@@ -1139,8 +1168,16 @@ subroutine print_dec_info()
        ! Update stuff (same for single and pair)
        ! ***************************************
        if(DECinfo%first_order) then  ! density and/or gradient
+#ifdef MOD_UNRELEASED
+!        if(DECinfo%ccmodel == MODEL_CCSD)then
+!          call update_full_CCSDgradient(grad,fullgrad)
+!          call free_mp2grad(grad)
+!        endif
+#endif
+        if(DECinfo%ccmodel == MODEL_MP2)then
           call update_full_mp2gradient(grad,fullgrad)
           call free_mp2grad(grad)
+        end if
        end if
 
 #endif

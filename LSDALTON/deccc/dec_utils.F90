@@ -3355,6 +3355,96 @@ end function max_batch_dimension
 
   end subroutine which_pairs_unocc
 
+  !> \brief Construct logical array telling which unoccupied/occupied combinations should be
+  !> included when calculating pair interaction energies and other pair interaction
+  !> properties - to avoid double counting.
+  !> \author Dmytro Bykov
+  !> \date October 2014
+  subroutine which_pairs_occ_unocc(Fragment1,Fragment2,PairFragment,dopair)
+
+    implicit none
+    ! Fragment 1 in pair
+    type(decfrag),intent(in) :: Fragment1
+    ! Fragment 2 in pair
+    type(decfrag),intent(in) :: Fragment2
+    !> Pair fragment
+    type(decfrag),intent(inout) :: PairFragment
+    !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
+    logical,dimension(PairFragment%nunoccEOS,PairFragment%noccEOS),&
+         & intent(inout) :: dopair
+    integer :: a,b,ax,bx,p1,p2,i,ix,pox,pux
+
+    ! This is the same as which_pairs_unocc, but for the case where one needs 
+    ! unoccupied/occupied combination.
+
+    ! Set which atoms to consider for pair
+    dopair=.false.
+
+    ! occ fragment1 - unocc fragment2 part:
+    do a=1,fragment1%nunoccEOS   ! Unoccupied EOS for fragment 1
+      do i=1,fragment2%noccEOS   ! Occupied   EOS for fragment 2
+
+        ax=fragment1%unoccEOSidx(a)  ! index in full list orbitals
+        ix=fragment2%occEOSidx(i)    ! index in full list orbitals
+        p1=0                     ! pair unocc full list index
+        p2=0                     ! pair occ   full list index
+
+        ! loop to find pair indices  
+        do pux=1,PairFragment%nunoccEOS
+          do pox=1,PairFragment%noccEOS
+
+            if(PairFragment%unoccEOSidx(pux) == ax) p1 = pux
+            if(PairFragment%occEOSidx(pox)   == ix) p2 = pox
+
+          end do
+        end do
+
+        ! Sanity check
+!        if(p1==p2 .or. p1==0 .or. p2==0 ) then
+!          write(DECinfo%output,'(1X,a,4i6)') 'ax,ix,p1,p2', ax,ix,p1,p2
+!          call lsquit('which_pairs_occ_unocc: &
+!                     & Something wrong with indices in pair',DECinfo%output)
+!        end if
+
+        ! Pair interaction for (p1,p2) index pair
+        dopair(p1,p2)=.true.
+
+      end do
+    end do
+
+    ! occ fragment2 - unocc fragment1 part:
+    do a=1,fragment2%nunoccEOS   ! Unoccupied EOS for fragment 1
+      do i=1,fragment1%noccEOS   ! Occupied   EOS for fragment 2
+
+        ax=fragment2%unoccEOSidx(a)  ! index in full list orbitals
+        ix=fragment1%occEOSidx(i)    ! index in full list orbitals
+        p1=0                     ! pair unocc full list index
+        p2=0                     ! pair occ   full list index
+
+        ! loop to find pair indices  
+        do pux=1,PairFragment%nunoccEOS
+          do pox=1,PairFragment%noccEOS
+            
+            if(PairFragment%unoccEOSidx(pux) == ax) p1 = pux
+            if(PairFragment%occEOSidx(pox)   == ix) p2 = pox
+            
+          end do
+        end do
+        
+        ! Sanity check
+!        if(p1==p2 .or. p1==0 .or. p2==0 ) then
+!          write(DECinfo%output,'(1X,a,4i6)') 'ax,ix,p1,p2', ax,ix,p1,p2
+!          call lsquit('which_pairs_occ_unocc: &
+!                     & Something wrong with indices in pair',DECinfo%output)
+!        end if
+        
+        ! Pair interaction for (p1,p2) index pair
+        dopair(p1,p2)=.true.
+        
+      end do
+    end do
+
+  end subroutine which_pairs_occ_unocc
 
 
   !> Write fragment job list to file.
