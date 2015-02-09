@@ -216,7 +216,7 @@ contains
       TMMFF   = 0
 !
       CALL DZERO(NPCORD,3*MXNPATM)
-      CALL DZERO(MMCORD,3*MXMMATM)
+      CALL DZERO(mm_cord,3*MXMMATM)
       CALL DZERO(NPCHRG,MAXBLK)
       CALL DZERO(MMCHRG,MAXBLK)
       CALL IZERO(NPFTYP,MXNPATM)
@@ -402,8 +402,8 @@ contains
             DO J=1,MMATOM(I)
                JOFF = ISTART + J
                READ(LUQMNP,*) MMLBL(JOFF), MMMOL(JOFF),                 &
-                         MMCORD(1,JOFF), MMCORD(2,JOFF),                &
-                         MMCORD(3,JOFF), MMFTYP(JOFF)
+                         mm_cord(1,JOFF), mm_cord(2,JOFF),                &
+                         mm_cord(3,JOFF), MMFTYP(JOFF)
             END DO
             ISTART = ISTART + MMATOM(I)
             TMMATM = TMMATM + MMATOM(I)
@@ -418,7 +418,7 @@ contains
          END DO
 !        Convert to atomic units if neeeded
          IF (UNITS.EQ.'AA') THEN
-            CALL DSCAL(3*TMMATM,XFACT,MMCORD,1)
+            CALL DSCAL(3*TMMATM,XFACT,mm_cord,1)
          END IF
 !        Read force field data
          READ(LUQMNP,*) FFWORD, TMMFF
@@ -586,8 +586,8 @@ contains
          DO J=1,MMATOM(I)
             JOFF = ISTART+J
             WRITE(LUPRI,'(3X,A,1X,F11.5,1X,F11.5,1X,F11.5,3X,I4)')      &
-             ATMLBL(JOFF), MMCORD(1,JOFF), MMCORD(2,JOFF),              &
-             MMCORD(3,JOFF), MMFTYP(JOFF)
+             ATMLBL(JOFF), mm_cord(1,JOFF), mm_cord(2,JOFF),              &
+             mm_cord(3,JOFF), MMFTYP(JOFF)
          END DO
          WRITE(LUPRI, '(2X,A)')                                         &
           '=================================================='
@@ -919,9 +919,9 @@ contains
          DO J=I+1,TMMATM
             IF (MMSKIP(J) .EQ. 0) CYCLE
 !           Compute distance dependent parameters
-            RIJ(1) = MMCORD(1,I)-MMCORD(1,J)
-            RIJ(2) = MMCORD(2,I)-MMCORD(2,J)
-            RIJ(3) = MMCORD(3,I)-MMCORD(3,J)
+            RIJ(1) = mm_cord(1,I)-mm_cord(1,J)
+            RIJ(2) = mm_cord(2,I)-mm_cord(2,J)
+            RIJ(3) = mm_cord(3,I)-mm_cord(3,J)
             RAD = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
             RAD2 = RAD*RAD
             RAD51 = 1.0d0/(RAD2*RAD2*RAD)

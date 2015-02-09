@@ -1,4 +1,4 @@
-      REAL*8  NPCORD,  MMCORD,  NPCHRG,  MMCHRG,                        &
+      REAL*8  NPCORD,  mm_cord,  NPCHRG,  MMCHRG,                       &
      &        NPFPOL,  NPFCAP,  NPFOMG1, NPFGAM1,                       &
      &        NPFOMG2, NPFGAM2, NPFFAC,                                 &
      &        MMFM0,   MMFPOL,                                          &
@@ -21,7 +21,7 @@
       PARAMETER (MXNPFF = 5)
       PARAMETER (MXMMFF = 20)
 !
-      COMMON /QMNPIN/ NPCORD(3,MXNPATM), MMCORD(3,MXMMATM),             &
+      COMMON /QMNPIN/ NPCORD(3,MXNPATM), mm_cord(3,MXMMATM),            &
      &                NPCHRG(MAXBLK),    MMCHRG(MAXBLK),                &
      &                NPFPOL(MXNPFF),    NPFCAP(MXNPFF),                &
      &                NPFOMG1(MXNPFF),   NPFGAM1(MXNPFF),               &
