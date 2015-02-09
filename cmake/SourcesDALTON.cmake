@@ -166,8 +166,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/average.F
     DALTON/abacus/angpso.F
     DALTON/abacus/angkin.F
-    DALTON/qmcmm/rspqmnp.F
-    DALTON/qmcmm/sirqmnp.F
     DALTON/amfi/amfi.F
     DALTON/amfi/symtra.F
     DALTON/cc/asqr.F
@@ -764,6 +762,8 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/abacus/rma_windows.F90
     DALTON/cc/dyn_index.F90
     DALTON/qmcmm/herqmnp.F90
+    DALTON/qmcmm/sirqmnp.F90
+    DALTON/qmcmm/rspqmnp.F90
     )
 if(ENABLE_PCMSOLVER)
    set(DAL_PCM_SOURCES
