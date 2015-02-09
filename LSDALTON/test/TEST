@@ -6,7 +6,7 @@
 ################################################################################
 #
 # location of default lsdalton script
-LSDALTON_script="$PWD/../../gfortran_debug/lsdalton"
+LSDALTON_script="$PWD/../../../gfortran_debug/lsdalton"
 
 # radovan: this is to figure out the location of this script
 # http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
