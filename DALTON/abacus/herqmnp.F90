@@ -22,6 +22,8 @@
 
 module qmcmm
 
+   implicit none
+
    public read_pot_qmnpmm
    public qmnpinp
    public getdim_relmat
@@ -47,7 +49,7 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+
 #include "priunit.h"
 #include "gnrinf.h"
 #include "qmnpmm.h"
@@ -56,10 +58,10 @@ contains
 #include "iprtyp.h"
 #endif
 
-!
-      PARAMETER ( NTABLE = 13)
+      integer, parameter :: NTABLE = 13
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      integer :: ichang, i
 !
       DATA TABLE /'.QMNP  ', '.QMNPMM', '.QMMM  ', '.NPPOIN',           &
              '.xxxxxx', '.PRINT ', '.MQITER', '.xxxxxx',                &
@@ -191,7 +193,7 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+
 #include "priunit.h"
 #include "qmnpmm.h"
 !
@@ -244,6 +246,7 @@ contains
       EESOLMMM = 0.0D0
 !
    end subroutine
+
       SUBROUTINE READ_POT_QMNPMM()
 !
 ! Purpose:
@@ -252,12 +255,13 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+
 #include "codata.h"
 #include "priunit.h"
 #include "qmnpmm.h"
 !
-      PARAMETER (XFACT = 1.0D0/XTANG)
+      real(8), parameter :: xfact = 1.0d0/xtang
+      integer :: i, istart, j, joff, luqmnp, idummy
 !
       CHARACTER UNITS*2, NPWORD*2, FFWORD*4, NPLBL(MXNPATM)*2
       CHARACTER MMWORD*2, MMLBL(MXMMATM)*2
@@ -352,7 +356,7 @@ contains
              'Maximum number of NP force field types exceeded!'
             WRITE(LUPRI,'(2X,A,I3,2X,A,I3)')                            &
              'Input TNPFF=', TNPFF,                                     &
-             'Maximum allowed:', MXNFF
+             'Maximum allowed:', MXNPFF
             CALL QUIT('Increase MXNPFF in qmnpmm.h')
          END IF
 !        Read force field data
@@ -470,11 +474,12 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+
 #include "priunit.h"
 #include "qmnpmm.h"
 !
       CHARACTER ATMLBL(MXNPATM)*2
+      integer :: i, j, istart, joff
 !
       IF (DOMMSUB) THEN
          CALL TITLER('QM/NP/MM Embedding: Nanoparticle(s) data','*',103)
@@ -554,11 +559,11 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
 #include "priunit.h"
 #include "qmnpmm.h"
 !
       CHARACTER ATMLBL(MXNPATM)*2
+      integer :: i, istart, j, joff
 !
       IF (DOMMSUB) THEN
          CALL TITLER('QM/NP/MM Embedding: MM region(s) data','*',103)
@@ -606,7 +611,9 @@ contains
          WRITE(LUPRI, '(2X,A)') '================================'
       END IF
    end subroutine
-      SUBROUTINE GETDIM_RELMAT(IMATDIM, SQFLAG)
+
+
+   pure subroutine getdim_relmat(imatdim, sqflag)
 !
 ! Purpose:
 !     determines Relay matrix dimensions.
@@ -618,10 +625,11 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+
+      integer, intent(out) :: imatdim
+      logical, intent(in)  :: sqflag
+
 #include "qmnpmm.h"
-!
-      LOGICAL SQFLAG
 !
       IMATDIM = 0
 !     Add nanoparticle contribution
@@ -641,7 +649,9 @@ contains
       END IF
 !
    end subroutine
-      SUBROUTINE GETDIM_MMMAT(IMATDIM, SQFLAG)
+
+
+   pure subroutine getdim_mmmat(imatdim, sqflag)
 !
 ! Purpose:
 !     determines Relay matrix dimensions for MM region.
@@ -653,11 +663,12 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+
+      integer, intent(out) :: imatdim
+      logical, intent(in)  :: sqflag
+
 #include "qmnpmm.h"
-!
-      LOGICAL SQFLAG
-!
+
       IMATDIM = 0
 !     Add molecular contribution
       IF (DOMMSUB) THEN
@@ -669,6 +680,8 @@ contains
       END IF
 !
    end subroutine
+
+
       SUBROUTINE COMP_RELMAT(FMAT,WORK,LWORK)
 !
 ! Purpose:
@@ -687,12 +700,18 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+
+
 #include "priunit.h"
 #include "qmnpmm.h"
-!
-      DIMENSION FMAT(*), WORK(LWORK)
+
+      real(8) :: fmat(*)
+      integer :: lwork
+      real(8) :: work(lwork)
       integer, allocatable :: ipiv(:)
+
+      integer :: kfree, lfree
+      integer :: idim, ierror
 !
       KFREE = 1
       LFREE = LWORK
@@ -762,7 +781,6 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-      implicit none
 
 #include "priunit.h"
 #include "qmnpmm.h"
@@ -814,7 +832,6 @@ contains
    pure subroutine get_amat(fmat, idimension)
       ! computes a matrix component of relay matrix for np and mm regions
 
-      implicit none
 
       real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
       integer, intent(in)    :: idimension
@@ -872,7 +889,6 @@ contains
    pure subroutine get_mm_amat(fmat, idimension)
       ! computes a matrix component of relay matrix for mm region
 
-      implicit none
 
       real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
       integer, intent(in)    :: idimension
@@ -945,7 +961,6 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-      implicit none
 
       real(8), intent(out) :: facta
       real(8), intent(out) :: factb
@@ -984,7 +999,6 @@ contains
    pure subroutine get_cmat(fmat, idimension)
       ! computes c matrix component of relay matrix for np and mm regions
 
-      implicit none
 
       real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
       integer, intent(in)    :: idimension
@@ -1047,7 +1061,6 @@ contains
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-      implicit none
 
       real(8), intent(out) :: fact
       integer, intent(in)  :: iatm
@@ -1075,7 +1088,6 @@ contains
    pure subroutine get_mmat(fmat, idimension)
       ! computes m matrix component of relay matrix for np and mm regions
 
-      implicit none
 
       real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
       integer, intent(in)    :: idimension
@@ -1121,7 +1133,6 @@ contains
       ! determines damping factors for t(1) operator for
       ! gaussian/gaussian dipole model
 
-      implicit none
 
       real(8), intent(inout) :: fact ! scaling factor
       integer, intent(in)    :: iatm ! i-th atom in np region
@@ -1159,7 +1170,6 @@ contains
    pure subroutine get_qlag(fmat, idimension)
       ! sets charge constrain in relay matrix for np and mm regions
 
-      implicit none
 
       real(8), intent(inout) :: fmat(idimension, idimension)
       integer, intent(in)    :: idimension
@@ -1197,7 +1207,6 @@ contains
 !
 ! Last updated: 16/08/2013 by Z. Rinkevicius.
 !
-      implicit none
 
 #include "priunit.h"
 #include "qmnpmm.h"
@@ -1230,7 +1239,6 @@ contains
 !
 ! Last updated: 16/08/2013 by Z. Rinkevicius.
 !
-      implicit none
 
 #include "priunit.h"
 #include "qmnpmm.h"
@@ -1266,7 +1274,6 @@ contains
    subroutine comp_dampvmat(fmat, mqvec)
       ! computes damped potential matrix in ao basis
 
-      implicit none
 
       real(8), intent(in)    :: fmat(*) ! inverted relay matrix
       real(8), intent(inout) :: mqvec(*)
@@ -1324,7 +1331,6 @@ contains
       ! sets damping parameters vectors for dipoles and charges
       ! see Eqs 14 and 15 in J. Phys. Chem. C 112, 40 (2008)
 
-      implicit none
 
       real(8), intent(inout) :: rdvec(*)
       real(8), intent(inout) :: rqvec(*)
