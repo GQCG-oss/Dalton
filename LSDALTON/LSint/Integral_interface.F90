@@ -2885,7 +2885,8 @@ integer :: AO1,AO2,AO3,AO4
 dummy=1
 call time_II_operations1()
 
-dofit = SETTING%SCHEME%DENSFIT .OR. SETTING%SCHEME%PARI_J .OR. SETTING%SCHEME%PARI_K
+dofit = SETTING%SCHEME%DENSFIT .OR. SETTING%SCHEME%PARI_J .OR. &
+     SETTING%SCHEME%PARI_K .OR. SETTING%SCHEME%MOPARI_K
 
 IF(SETTING%SCHEME%saveGABtoMem)THEN
  IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN &
@@ -5497,10 +5498,10 @@ ELSE
 ENDIF
 
 IF (SETTING%SCHEME%DF_K) THEN
-   CALL LSQUIT('Error in II_get_exchange_mat1. DF_K and only implemented for MAT ',-1)
+   CALL LSQUIT('Error in II_get_exchange_mat1. DF_K is only implemented for MAT ',-1)
 
-ELSE IF (SETTING%SCHEME%PARI_K) THEN
-   CALL LSQUIT('Error in II_get_exchange_mat1. PARI_K and only implemented for MAT',-1)
+ELSE IF (SETTING%SCHEME%PARI_K.OR.SETTING%SCHEME%MOPARI_K) THEN
+   CALL LSQUIT('Error in II_get_exchange_mat1. PARI_K is only implemented for MAT',-1)
 ELSE
    CALL II_get_exchange_mat_regular_full(LUPRI,LUERR,SETTING,nbast,Dmat,F,ndmat,AO1,AO3,AO2,AO4,Oper)
 ENDIF
@@ -6665,19 +6666,21 @@ ELSE
 ENDIF
 
 IF (SETTING%SCHEME%DF_K) THEN
-   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.(AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)) &
-   & CALL LSQUIT('Error in II_get_exchange_mat1. DF_K and only implemented for regular AOs',-1)
+   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.&
+        (AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)) &
+        CALL LSQUIT('Error in II_get_exchange_mat1. DF_K is only implemented for regular AOs',-1)
 
    CALL II_get_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
-ELSE IF (SETTING%SCHEME%PARI_K) THEN
-   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.(AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)) &
-   & CALL LSQUIT('Error in II_get_exchange_mat1. PARI_K and only implemented for regular AOs',-1)
+ELSE IF (SETTING%SCHEME%PARI_K.OR.SETTING%SCHEME%MOPARI_K) THEN
+   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.&
+        (AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)) &
+        & CALL LSQUIT('Error in II_get_exchange_mat1. PARI_K is only implemented for regular AOs',-1)
    CALL II_get_pari_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
 ELSE
-   IF (((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.(AO3.NE.AORdefault).OR.(AO4.NE.AORdefault) &
-   & .OR.(Oper.NE.coulombOperator)).AND.setting%IntegralTransformGC) &
-   & CALL LSQUIT('Error in II_get_exchange_mat1. Mixed exchange does not work with GC basis',-1)
-
+   IF (((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.&
+        (AO3.NE.AORdefault).OR.(AO4.NE.AORdefault) &
+        & .OR.(Oper.NE.coulombOperator)).AND.setting%IntegralTransformGC) &
+        & CALL LSQUIT('Error in II_get_exchange_mat1. Mixed exchange does not work with GC basis',-1)
    CALL II_get_exchange_mat_regular(LUPRI,LUERR,SETTING,Dmat,ndmat,F,AO1,AO3,AO2,AO4,Oper)
 ENDIF
 

@@ -1544,6 +1544,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.PARI-J'); INTEGRAL%PARI_J=.TRUE.
         CASE ('.EASY-PARI'); INTEGRAL%SIMPLE_PARI=.TRUE.
         CASE ('.PARI-K');  INTEGRAL%PARI_K=.TRUE.
+        CASE ('.MOPARI-K'); INTEGRAL%MOPARI_K=.TRUE.
         CASE ('.DF-K');    INTEGRAL%DF_K=.TRUE.
         CASE ('.NR-PARI'); INTEGRAL%NON_ROBUST_PARI=.TRUE.
         CASE ('.PARI-UNCONSTRAINED');
@@ -3664,7 +3665,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       ENDIF
    endif
 
-   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K))then
+   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K.OR.config%integral%mopari_K))then
       WRITE(config%LUPRI,'(/A)') 'The Pari keywords do not currently work with response'
       WRITE(config%LUPRI,'(/A)') 'Please remove the Pari keywords'
       CALL lsQUIT('The Pari keywords do not currently work with response',config%lupri)
