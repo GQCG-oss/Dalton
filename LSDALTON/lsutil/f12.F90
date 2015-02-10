@@ -82,8 +82,7 @@ implicit none
    & 0.3303E+00_realk,0.2321E+01_realk,0.1628E+02_realk,0.0000E+00_realk,0.0000E+00_realk,0.0000E+00_realk,& 
    & 0.2783E+00_realk,0.1591E+01_realk,0.7637E+01_realk,0.4574E+02_realk,0.0000E+00_realk,0.0000E+00_realk,& 
    & 0.2447E+00_realk,0.1225E+01_realk,0.4924E+01_realk,0.1988E+02_realk,0.1127E+03_realk,0.0000E+00_realk,& 
-!   & 0.2209E+00_realk,0.1004E+01_realk,0.3622E+01_realk,0.1216E+02_realk,0.4587E+02_realk,0.2544E+03_realk & 
-   & 0.194845894087E+00_realk, 0.938703822655E+00_realk, 3.461035103363E+00_realk, 11.704980795466E+00_realk, 44.227609581295E+00_realk, 245.372154671074E+00_realk &
+   & 0.2209E+00_realk,0.1004E+01_realk,0.3622E+01_realk,0.1216E+02_realk,0.4587E+02_realk,0.2544E+03_realk & 
    & /
   data ggac / & 
    & 0.7354E+00_realk,0.0000E+00_realk,0.0000E+00_realk,0.0000E+00_realk,0.0000E+00_realk,0.0000E+00_realk,&
@@ -91,8 +90,7 @@ implicit none
    & 0.4683E+00_realk,0.3087E+00_realk,0.1529E+00_realk,0.0000E+00_realk,0.0000E+00_realk,0.0000E+00_realk,&
    & 0.4025E+00_realk,0.3090E+00_realk,0.1570E+00_realk,0.8898E-01_realk,0.0000E+00_realk,0.0000E+00_realk,&
    & 0.3532E+00_realk,0.3072E+00_realk,0.1629E+00_realk,0.9321E-01_realk,0.5619E-01_realk,0.0000E+00_realk,&
-!   & 0.3144E+00_realk,0.3037E+00_realk,0.1681E+00_realk,0.9811E-01_realk,0.6024E-01_realk,0.3726E-01_realk &
-   & -0.383775701238E+00_realk, -0.333401817264E+00_realk, -0.175394678412E+00_realk, -0.100640955274E+00_realk, -0.061447592383E+00_realk, -0.037942551957E+00_realk &
+   & 0.3144E+00_realk,0.3037E+00_realk,0.1681E+00_realk,0.9811E-01_realk,0.6024E-01_realk,0.3726E-01_realk &
    & /
 
 ! code:
