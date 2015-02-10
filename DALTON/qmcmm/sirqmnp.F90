@@ -52,6 +52,10 @@
      &          WORK(LWORK)
 !
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+
+      real(8), allocatable :: mqvec(:)
+      real(8), allocatable :: fvvec(:)
+      real(8), allocatable :: fao(:)
 !
       KFREE = 1
       LFREE = LWORK
@@ -62,62 +66,47 @@
 !
       IF (.NOT.MQITER) THEN
          IF (.NOT.(DOMMSUB.AND.DOMMPOL)) THEN
-            CALL MEMGET('REAL',KMQVEC,IDIM,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KFVVEC,IDIM,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KFAO,NNBASX,WORK,KFREE,LFREE)
+            allocate(mqvec(idim))
+            allocate(fvvec(idim))
+            allocate(fao(nnbasx))
 !           Determine electric field/potential vector
-            CALL GET_FVVEC(DCAO,DVAO,WORK(KFVVEC),IDIM,WORK(KFREE),     &
+            CALL GET_FVVEC(DCAO,DVAO,FVVEC,IDIM,WORK(KFREE),     &
      &                     LFREE)
 !           Determine induced momemnts/charges
             ! rcpmat becomes complex -> complex fock operator
-            CALL DGEMV('N',IDIM,IDIM,D1,RCPMAT,IDIM,WORK(KFVVEC),1,D0,  &
-     &                 WORK(KMQVEC),1)
+            CALL DGEMV('N',IDIM,IDIM,D1,RCPMAT,IDIM,FVVEC,1,D0,  &
+     &                 MQVEC,1)
+            deallocate(fvvec)
           if (iprtlvl > 14) then
              write(lupri, '(/,2x,a)') '*** Computed MQ vector start ***'
              do i = 1, idim
-                write(lupri, '(i8, f18.8)') i, WORK(KMQVEC - i + 1)
+                write(lupri, '(i8, f18.8)') i, mqvec(i)
              end do
              write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
           end if
 !           Compute induced dipoles & charges contribution to
 !           Fock/Kohn-Sham matrix
-            CALL GET_INDMQ_FOCK(DCAO,DVAO,WORK(KMQVEC),IDIM,WORK(KFAO), &
+            CALL GET_INDMQ_FOCK(DCAO,DVAO,MQVEC,IDIM,FAO, &
      &                          WORK(KFREE),LFREE)
+            deallocate(mqvec)
 !           Add energy contributions
             IF (DONPPOL) EQMNP = EQMNP+EESOLMNP+ENSOLMNP
             IF (DONPCAP) EQMNP = EQMNP+EESOLQNP+ENSOLQNP
 !           Computer permanent charges in MM region contribution to
 !           Fock/Kohn-Sham matrix and add energy contributions
             IF (DOMMSUB) THEN
-               CALL GET_PERMQ_FOCK(DCAO,DVAO,WORK(KFAO),WORK(KFREE),    &
+               CALL GET_PERMQ_FOCK(DCAO,DVAO,FAO,WORK(KFREE),    &
      &                             LFREE)
                EQMNP = EQMNP+EESOLQMM+ENSOLQMM
             END IF
          ELSE
-!            CALL MEMGET('REAL',KMQVEC,IDIM,WORK,KFREE,LFREE)
-!            CALL MEMGET('REAL',KFVVEC,IDIM,WORK,KFREE,LFREE)
-!C           Determine electric field/potential vector from QM
-!            CALL GET_FVVEC(DCAO,DVAO,WORK(KFVVEC),IDIM,WORK(KFREE),
-!     &                     LFREE)
-!           Determine guess for momemnts/charges
-!            CALL DGEMV('N',IDIM,IDIM,D1,RCPMAT,IDIM,WORK(KFVVEC),1,D0,
-!     &                 WORK(KMQVEC),1)
-!            IF (IPRTLVL.GE.15) THEN
-!               WRITE(LUPRI,'(/,2X,A)') '*** Guess for MQ(NP) vector ***'
-!               CALL OUTPUT(WORK(KMQVEC),1,IDIM,1,1,IDIM,1,1,LUPRI)
-!            END IF
-!            stop
-!           Compute permanent charges contribution to Fock/Kohn matrix
+             stop 'not implemented'
          END IF
 !        Pack matrix and add it to Fock matrix
-         CALL PKSYM1(WORK(KFAO),FMAT,NBAS,NSYM,+1)
-!        Compute induced dipoles contribution to Fock/Kohn-Sham matrix
-         CALL MEMREL('QMNPMM_FOCK',WORK,1,1,KFREE,LFREE)
-      ELSE
-
+         CALL PKSYM1(FAO,FMAT,NBAS,NSYM,+1)
+         if (allocated(fao)) deallocate(fao)
       END IF
-!
-      RETURN
+
       END
 !  /* Deck get_fvvec */
       SUBROUTINE GET_FVVEC(DCAO,DVAO,FVVEC,IDIM,WORK,LWORK)
