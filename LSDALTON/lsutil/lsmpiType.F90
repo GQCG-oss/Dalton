@@ -6420,35 +6420,37 @@ contains
 #endif
   end subroutine lsmpi_group_free
 
-  subroutine lsmpi_iprobe(comm,MessageRecieved,status)
+  subroutine lsmpi_iprobe(comm,MessageRecieved,lsmpi_status)
     implicit none
     integer(kind=ls_mpik), intent(in) :: comm
 #ifdef VAR_MPI
-    integer(kind=ls_mpik), intent(inout) :: status(MPI_STATUS_SIZE) 
+    integer(kind=ls_mpik), intent(inout) :: lsmpi_status(MPI_STATUS_SIZE) 
 #else
-    integer(kind=ls_mpik), intent(inout) :: status(:) 
+    integer(kind=ls_mpik), intent(inout) :: lsmpi_status(:) 
 #endif
     logical,intent(inout) :: MessageRecieved
     !local variable
     logical(kind=ls_mpik) :: flag
     integer(kind=ls_mpik) :: IERR
 #ifdef VAR_MPI
-    call MPI_IPROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,comm,flag,status,ierr)
+    call MPI_IPROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,comm,flag,lsmpi_status,ierr)
+#else
+    flag = .false.
 #endif
     MessageRecieved = flag
   end subroutine lsmpi_iprobe
 
-  subroutine lsmpi_probe(comm,status)
+  subroutine lsmpi_probe(comm,lsmpi_status)
     implicit none
     integer(kind=ls_mpik), intent(in) :: comm
 #ifdef VAR_MPI
-    integer(kind=ls_mpik), intent(inout) :: status(MPI_STATUS_SIZE) 
+    integer(kind=ls_mpik), intent(inout) :: lsmpi_status(MPI_STATUS_SIZE) 
 #else
-    integer(kind=ls_mpik), intent(inout) :: status(:) 
+    integer(kind=ls_mpik), intent(inout) :: lsmpi_status(:) 
 #endif
     integer(kind=ls_mpik) :: IERR
 #ifdef VAR_MPI
-    call MPI_PROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,comm,status,ierr)
+    call MPI_PROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,comm,lsmpi_status,ierr)
 #endif
   end subroutine lsmpi_probe
 
