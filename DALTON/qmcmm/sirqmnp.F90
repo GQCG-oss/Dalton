@@ -72,10 +72,13 @@
             ! rcpmat becomes complex -> complex fock operator
             CALL DGEMV('N',IDIM,IDIM,D1,RCPMAT,IDIM,WORK(KFVVEC),1,D0,  &
      &                 WORK(KMQVEC),1)
-            IF (IPRTLVL.GE.15) THEN
-               WRITE(LUPRI,'(/,2X,A)') '*** Computed MQ vector ***'
-               CALL OUTPUT(WORK(KMQVEC),1,IDIM,1,1,IDIM,1,1,LUPRI)
-            END IF
+          if (iprtlvl > 14) then
+             write(lupri, '(/,2x,a)') '*** Computed MQ vector start ***'
+             do i = 1, idim
+                write(lupri, '(i8, f18.8)') i, WORK(KMQVEC - i + 1)
+             end do
+             write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
+          end if
 !           Compute induced dipoles & charges contribution to
 !           Fock/Kohn-Sham matrix
             CALL GET_INDMQ_FOCK(DCAO,DVAO,WORK(KMQVEC),IDIM,WORK(KFAO), &
@@ -151,8 +154,11 @@
       CALL GET_QLAGRAN(FVVEC,IDIM)
 !     Print final FV vector
       IF ((IPRTLVL.GE.15).AND.(.NOT.MQITER)) THEN
-         WRITE(LUPRI,'(/,2X,A)') '*** Computed FV vector ***'
-         CALL OUTPUT(FVVEC,1,IDIM,1,1,IDIM,1,1,LUPRI)
+         write(lupri, '(/,2x,a)') '*** Computed FV vector start ***'
+         do i = 1, idim
+            write(lupri, '(i8, f18.8)') i, fvvec(i)
+         end do
+         write(lupri, '(/,2x,a)') '*** Computed FV vector end ***'
       END IF
 !     Add MM region contribution to FV vector
       IF (DOMMSUB.AND.(.NOT.DOMMPOL)) THEN

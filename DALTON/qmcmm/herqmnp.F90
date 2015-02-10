@@ -1281,7 +1281,7 @@ contains
 
       real(8), allocatable :: rdvec(:)
       real(8), allocatable :: rqvec(:)
-      integer              :: idimension
+      integer              :: idimension, i
       integer              :: iprint
 
       call getdim_relmat(idimension, .false.)
@@ -1294,8 +1294,11 @@ contains
       call set_damparam(rdvec, rqvec)
 
       if (iprtlvl > 14) then
-         write(lupri, '(/,2x,a)') '*** Computed MQ vector ***'
-         call output(mqvec, 1, idimension, 1, 1, idimension, 1, 1, lupri)
+         write(lupri, '(/,2x,a)') '*** Computed MQ vector start ***'
+         do i = 1, idimension
+            write(lupri, '(i8, f18.8)') i, mqvec(i)
+         end do
+         write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
       end if
 
 #ifdef VAR_MPI

@@ -1,0 +1,33 @@
+
+   ******************************************* 
+   **** OUTPUT FROM DALTON SHELL SCRIPT
+   ******************************************* 
+
+   DALTON release 2015.0
+
+   Invocation: /home/bast/devel/dalton/qmcmm/build_debug/dalton -noarch -nobackup -put POTENTIAL.INP qmcmm_nonpca qmcmm
+
+   Tue Feb 10 10:34:20 CET 2015
+
+   Calculation: qmcmm_nonpca_qmcmm  (input files: qmcmm_nonpca.dal and qmcmm.mol)
+   PID        : 3335
+   Input dir  : /home/bast/devel/dalton/qmcmm/DALTON/test/qmcmm
+   Scratch dir: /home/bast/tmp/dalton_scratch/DALTON_scratch_bast/qmcmm_nonpca_qmcmm_3335
+
+copying POTENTIAL.INP to scratch directory
+
+ INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:
+ INFO : gnu and intel compilers defaults to all available cores, 
+ INFO : whereas portland compilers defaults to one
+
+
+ DALTON: default work memory size used.            64000000
+
+ Work memory size (LMWORK+2):    64000002 =  488.28 megabytes; node   0
+
+   0: Directories for basis set searches:
+     /home/bast/devel/dalton/qmcmm/DALTON/test/qmcmm:/home/bast/devel/dalton/qmcmm/build_debug/basis
+qmcmm_nonpca_qmcmm.tar.gz has not been created and has thus not been copied to /home/bast/devel/dalton/qmcmm/DALTON/test/qmcmm
+
+   Tue Feb 10 10:34:20 CET 2015
+   ***************************************** 
