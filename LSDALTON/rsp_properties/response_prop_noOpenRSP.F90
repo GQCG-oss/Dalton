@@ -607,16 +607,17 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   !#############################################################################
 
   !expval(3,3*NATOM) (magnetic X,Y,Z, atomic moment X,Y,Z, for each Atom)
-  call mem_alloc(expval,3,3*NATOMS)
-  call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,expval,D,1,9*NATOMS,'NST    ')
+!  call mem_alloc(expval,3,3*NATOMS)
+!  call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,expval,D,1,9*NATOMS,'NST    ')
   do icoor=1,3
      do jcoor=1,3*natoms  ! magnetic moment koordinate
 !        WRITE(lupri,*)'NMST:',- 2*factor*NMST(jcoor,icoor), 2*factor*expval(icoor,jcoor),'=',&
 !             & 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor))
-        NMST(jcoor,icoor) = 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor))
+        NMST(jcoor,icoor) = 2*factor*(- NMST(jcoor,icoor)) 
+!+ expval(icoor,jcoor))
      enddo
   enddo
-  call mem_dealloc(expval)
+!  call mem_dealloc(expval)
 
   allocate(atomname(natoms))    
   do jcoor=1,natoms  
@@ -644,20 +645,24 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
 
 end subroutine NMRshieldresponse_noOpenRSP
 
+!  ##################################################
+!  Edit by Chandan Kumar
+!  Calculations of Nuclei Selected Shielding Tensor
+!  Date - Jan 2015 
+!  !Subroutine - NMRshieldresponse_IANS 
+!  ##################################################
 subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   implicit none
   type(rsp_molcfg), intent(inout) :: molcfg
   type(Matrix),intent(in) :: F(1),D(1),S
   !
-  real(realk),pointer          :: NMST(:,:),expval(:,:),NMST1(:,:)
+  real(realk),pointer          :: NMST(:,:),expval(:,:),NMST1(:,:), NMST2(:,:)
   real(realk)                  :: Factor,eival(1)
   integer                      :: natoms,icoor,jcoor,k,lupri,nbast,luerr,n_rhs
   Character(len=4),allocatable :: atomName(:)
-  !real(realk), external, pointer :: mat_trAB  
-  !Character(len=7),allocatable :: teb(3)
   real(realk)                  :: TS,TE
-  type(Matrix)     :: Dx(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1),RHSk(3),Xk(1),DXk(3),GbJ(3), GbK(3), Gm(3), NMST2(3)
-  type(Matrix),pointer :: ChandanMat(:)
+  type(Matrix)     :: Dx(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1),Xk(1),GbJ(3), GbK(3),Gm(3) 
+  type(Matrix),pointer ::  RHSk(:), DXk(:),hk(:)
   integer              :: ntrial,nrhs,nsol,nomega,nstart
   character(len=1)        :: CHRXYZ(-3:3)
   DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
@@ -878,60 +883,70 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
  
   ! Generation of hkDS   
    
-  allocate(ChandanMat(3*natoms))
-  do icoor = 1,3*NATOMS
-     call mat_init(ChandanMat(icoor),nbast,nbast)
-  enddo
-  call II_get_prop(LUPRI,LUERR,molcfg%SETTING,ChandanMat,3*NATOMS,'PSO    ')
-  call mat_init(tempm1,nbast,nbast) 
-  call mat_mul(D(1),S,'n','n',1.0E0_realk,0.0E0_realk,tempm1)
-  do icoor = 1,3*NATOMS
-     call mat_init(RHSk(icoor),nbast,nbast)
-     call mat_mul(ChandanMat(icoor),tempm1,'n','n',1.0E0_realk,1.0E0_realk,RHSk(icoor))
-  enddo
-  call mat_free(tempm1)
-!  #########################################################
+! allocate(hk(3*natoms))
+! allocate(RHSk(3*natoms))
+! allocate(Dxk(3*natoms))
+! do icoor = 1,3*NATOMS
+!    call mat_init(hk(icoor),nbast,nbast)
+! enddo
+! call II_get_prop(LUPRI,LUERR,molcfg%SETTING,hk,3*NATOMS,'PSO    ')
+! call mat_init(tempm1,nbast,nbast) 
+! call mat_mul(D(1),S,'n','n',1.0E0_realk,0.0E0_realk,tempm1)
+! do icoor = 1,3*NATOMS
+!    call mat_init(RHSk(icoor),nbast,nbast)
+!    call mat_mul(hk(icoor),tempm1,'n','n',1.0E0_realk,0.0E0_realk,RHSk(icoor))
+! enddo
+! 
+! do icoor = 1,3*NATOMS
+!    call mat_free(hk(icoor))
+! enddo
+! call mat_free(tempm1)
+!  
+! do icoor = 1,3*natoms 
+!    call mat_scal(-1.0d0,RHSk(icoor))
+!    !factor 1/2 outside is taken care of in util_get...
+!    call util_get_symm_part(RHSk(icoor))
+! enddo
+!###########################################################################
 !  Solve K([D,Xk]s) = RHS is now ready                                
 !  Solve to get Dk=[D,Xk]_S + D0^k --> Xk (Eq. 70)                    
 !  We can use the RSP solver, since K([D,Xk]s) = sigma = -1/2 * E[2]Xk
 !
-!  ########################################################
-  do icoor = 1,3
+!############################################################################
+! do icoor = 1,3*natoms
+!    eival(1)=0.0E0_realk
+!    write(lupri,*)'Calling rsp solver for Xk  '
+!    call mat_init(Xk(1),nbast,nbast)                            !# Matrices Allocated 7 (DXk,RHSk,Xk)
+!    if ( mat_dotproduct(RHSk(icoor),RHSk(icoor))>1.0d-10) then
+!       call util_scriptPx('T',D(1),S,RHSk(icoor))
 
-     eival(1)=0.0E0_realk
-     write(lupri,*)'Calling rsp solver for Xk  '
-     call mat_init(Xk(1),nbast,nbast)                            !# Matrices Allocated 7 (DXk,RHSk,Xk)
-     if ( mat_dotproduct(RHSk(icoor),RHSk(icoor))>1.0d-10) then
-        call util_scriptPx('T',D(1),S,RHSk(icoor))
-
-        ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
-        nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
-        nsol = 1   !# of solution (output) vectors
-        nomega = 1 !If lineq_x, number of laser freqs (input)
-                   !Otherwise number of excitation energies (output) 
-        nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
-        !ntrial and nstart seem to be obsolete 
-        call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
-        call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk(icoor:icoor),EIVAL,Xk)
-     else
-        write(lupri,*) 'WARNING: RHSk norm is less than threshold'
-        write(lupri,*) 'LIN RSP equations NOT solved for this RHS    '
-        call mat_zero(Xk(1))
-     end if
-     call mat_free(RHSk(icoor))
+!       ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
+!       nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
+!       nsol = 1   !# of solution (output) vectors
+!       nomega = 1 !If lineq_x, number of laser freqs (input)
+!                  !Otherwise number of excitation energies (output) 
+!       nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
+!       !ntrial and nstart seem to be obsolete 
+!       call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+!       call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk(icoor:icoor),EIVAL,Xk)
+!    else
+!       write(lupri,*) 'WARNING: RHSk norm is less than threshold'
+!       write(lupri,*) 'LIN RSP equations NOT solved for this RHS    '
+!       call mat_zero(Xk(1))
+!    end if
+!    call mat_free(RHSk(icoor))
   
-!############################################################################!##      
+
+!############################################################################    
 !           STEP 2: Make D^k=[D_0,X^k]_s
 !     
-!     !############################################################################   
-!     !Generate [D_0,X^k]_s
-!######################################################
-
-   call mat_init(DXk(icoor),nbast,nbast)
- !  call mat_init(DXk(icoor),nbast,nbast)
-   call ABCcommutator(nbast,D(1),Xk(1),S,DXk(icoor))        
-   call mat_free(Xk(1)) 
-  enddo
+!           !Generate [D_0,X^k]_s
+!############################################################################
+  
+!     call mat_init(DXk(icoor),nbast,nbast)
+!     call ABCcommutator(nbast,D(1),Xk(1),S,DXk(icoor))        
+!     call mat_free(Xk(1)) 
+! enddo
   !############################################################################
   !##      STEP 3: Make NMST = Tr D^b*h^k + Tr D*h^kb + Tr D^k*h^b           ## 
   !############################################################################
@@ -949,84 +964,52 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
 !
 !###########################################################################
   
-!  allocate(NMST2(3*natoms,3))
-    
-  do icoor = 1,3
-     call mat_init(GbJ(icoor),nbast,nbast)
-  enddo
-  do icoor = 1,3
-     call mat_init(GbK(icoor),nbast,nbast)
-  enddo
-  call II_get_magderivJ(LUPRI,LUERR,molcfg%SETTING,nbast,D,GbJ)
-  ! [JX,S]_D) 
-  
-  call II_get_magderivK(LUPRI,LUERR,molcfg%SETTING,nbast,D,GbK)
-  ! [KX,S]_D) 
-
-!
-!  if(molcfg%setting%do_dft)then
-!    !  Adding DFT contribution to G^x(D)  
-!     call II_get_xc_magderiv_kohnsham_mat(LUPRI,LUERR,molcfg%SETTING,nbast,D(1),Gbxc)
-!    ! [FxcX,S]_D) 
-!  endif
-
-!  
-  do icoor=1,3
-     
-     call mat_init(Gm(icoor),nbast,nbast) 
-     call mat_init(NMST2(icoor),nbast,nbast)
-     call mat_add(1.0E0_realk,GbJ(icoor),1.0E0_realk,GbK(icoor),Gm(icoor)) 
-     call mat_mul(Dxk(icoor),Gm(icoor),'n','n',1.0E0_realk,0.0E0_realk,NMST2(icoor))   
-    
-  enddo
-  
-  do icoor = 1,3
-     call mat_free(GbJ(icoor))
-  enddo
-  do icoor = 1,3
-     call mat_free(GbK(icoor))
-  enddo
-  do icoor = 1,3
-     call mat_free(Gm(icoor))
-  enddo
-!#####################################################################
-!     TR 
-!
-!#####################################################################
-! call mat_init(GbDs(1),nbast,nbast)
-! call mat_init(GbDs(2),nbast,nbast)
-! call mat_init(GbDs(3),nbast,nbast)                                   
-
-! ! Generate G(DX):  The 2-e contribution to sigma vector in RSP
-! ! G(DX) = J(DX) + K(DX)
-! call di_GET_GbDs(lupri,luerr,Dxk,GbDs,3,molcfg%setting)
-! !RHSX = G(D0X)DS
-! call mat_init(tempm1,nbast,nbast)                                     
-! call mat_mul(D(1),S,'n','n',1.0E0_realk,0.0E0_realk,tempm1)
-! do icoor = 1,3
-!    call mat_mul(GbDs(icoor),tempm1,'n','n',1.0E0_realk,1.0E0_realk,RHS(icoor))
+! do icoor=1,3
+!    do jcoor=1,3*natoms
+!    
+!    call mat_init(GbJ(icoor),nbast,nbast)
+! 
+! 
+!    call mat_init(GbK(icoor),nbast,nbast)
+! 
+!    call II_get_magderivJ(LUPRI,LUERR,molcfg%SETTING,nbast,D,GbJ)
+! 
+!    call II_get_magderivK(LUPRI,LUERR,molcfg%SETTING,nbast,D,GbK)
+!    call mat_init(Gm(icoor),nbast,nbast) 
+!    call mat_add(1.0E0_realk,GbJ(icoor),1.0E0_realk,GbK(icoor),Gm(icoor)) 
+!    call mem_alloc(nmst2,3,3*natoms)
+!    nmst2(icoor,jcoor)= mat_trAB(DXk(jcoor),Gm(icoor))
+!    enddo
 ! enddo
-! call mat_free(tempm1)
+! 
+! do icoor = 1,3
+!    call mat_free(GbJ(icoor))
+! enddo
+! do icoor = 1,3
+!    call mat_free(GbK(icoor))
+! enddo
+! do icoor = 1,3
+!    call mat_free(Gm(icoor))
+! enddo
 
 
-!#######################################################################
+
+!###########################################################################
 !      STEP for new terms Tr D^k*h^b=x4 
 !
 !
-!##############################################################
-  call mem_alloc(NMST1,3,3*NATOMS)
-  call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,NMST1,DXk,3,3*NATOMS,'MAGMOM     ')
-    
-  do icoor =1,3
-       call mat_free(DXk(icoor))
-  enddo
+!###########################################################################
+! call mem_alloc(NMST1,3,3*natoms)
+! call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,NMST1,DXk,3*NATOMS,3,'MAGMOM ')
+! 
+! do icoor =1,3*natoms
+!      call mat_free(DXk(icoor))
+! enddo
 
 
-
-
- !#############################################################################
-  !##     Tr D^b*h^k=X3
-  !#############################################################################
+!#############################################################################
+!##     Tr D^b*h^k=X3
+!#############################################################################
 
   !h^k er det det samme som (.PSO) paramagnetic spin-orbit integrals se ref. 61
   !jcp 96:6120, 1992 (PSO abc )
@@ -1038,23 +1021,29 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
      call mat_free(DX(icoor))
   enddo
 
-  !#############################################################################
-  !##      Tr D* h^kb =X1term
-  !#############################################################################
+!#############################################################################
+!##      Tr D* h^kb =X1term
+!#############################################################################
 
   !expval(3,3*NATOM) (magnetic X,Y,Z, atomic moment X,Y,Z, for each Atom)
-  call mem_alloc(expval,3,3*NATOMS)
-  call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,expval,D,1,9*NATOMS,'NST    ')
+! call mem_alloc(expval,3,3*NATOMS)
+! call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,expval,D,1,9*NATOMS,'NST    ')
   do jcoor=1,3*NATOMS
      do icoor=1,3  ! magnetic moment koordinate
 !        WRITE(lupri,*)'NMST:',- 2*factor*NMST(jcoor,icoor), 2*factor*expval(icoor,jcoor),'=',&
 !             & 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor))
-        NMST(jcoor,icoor) = 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor) +NMST1(icoor,jcoor))
-!                            &  + NMST2(icoor,jcoor)) 
+        NMST(jcoor,icoor) = 2*factor*(- NMST(jcoor,icoor)) 
+ !+ expval(icoor,jcoor)) 
+ !+NMST1(icoor,jcoor))
+!                              &  + NMST2(jcoor,icoor)
      enddo
   enddo
-  call mem_dealloc(expval)
-
+! call mem_dealloc(expval)
+! call mem_dealloc(NMST1)
+!  call mem_dealloc(NMST2)
+! call mem_dealloc(hk)
+! call mem_dealloc(RHSk)
+! call mem_dealloc(DXk)
   allocate(atomname(natoms))
   do jcoor=1,natoms  
      atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(jcoor)%Name
