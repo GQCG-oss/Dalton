@@ -2855,6 +2855,7 @@ C         NAORDR = 1; Analytical gradients available
 C         NAORDR = 2; Analytical gradients and hessians available.
 C
 
+      SAVE_PEQM = .FALSE.
       IF (PEQM .AND. INITHS) THEN
          SAVE_PEQM = PEQM
          PEQM = .FALSE.
