@@ -54,10 +54,6 @@ contains
 #include "gnrinf.h"
 #include "qmnpmm.h"
 
-#ifdef VAR_MPI
-#include "iprtyp.h"
-#endif
-
       integer, parameter :: NTABLE = 13
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -194,7 +190,6 @@ contains
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
 
-#include "priunit.h"
 #include "qmnpmm.h"
 !
       DONPSUB = .FALSE.
@@ -1204,7 +1199,6 @@ contains
 ! Last updated: 16/08/2013 by Z. Rinkevicius.
 !
 
-#include "priunit.h"
 #include "qmnpmm.h"
 #include "dummy.h"
 #include "iratdef.h"
@@ -1236,7 +1230,6 @@ contains
 ! Last updated: 16/08/2013 by Z. Rinkevicius.
 !
 
-#include "priunit.h"
 #include "qmnpmm.h"
 #include "dummy.h"
 #include "iratdef.h"
@@ -1280,6 +1273,11 @@ contains
 #include "aovec.h"
 #include "shells.h"
 #include "primit.h"
+
+#ifdef VAR_MPI
+! qmcmm_work
+#include "iprtyp.h"
+#endif
 
       real(8), allocatable :: rdvec(:)
       real(8), allocatable :: rqvec(:)
