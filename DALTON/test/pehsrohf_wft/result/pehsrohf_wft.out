@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2014.0
+    This is output from DALTON 2015.alpha
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2014.0 (2014), see http://daltonprogram.org
+       Release DALTON2015.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,45 +136,38 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed Nov 19 13:14:41 2014
-     Host name              : c23-1.local                             
+     Date and time (Linux)  : Wed Feb 11 20:54:05 2015
+     Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/dalton/build-release/test/pehsrohf_wft
-   2) /home/arnfinn/dalton/build-release/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build/test/pehsrohf_wft
+   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | arnfinn
- Host                     | c23-1.local
- System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-3.18.3-201.fc21.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
- Fortran compiler version | ifort (IFORT) 13.0.1 20121010
- C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
- C compiler version       | icc (ICC) 13.0.1 20121010
- C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
- C++ compiler version     | unknown
- BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
-                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
-                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
-                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
-                          | read.so;/usr/lib64/libm.so
- LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
-                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
-                          | ntel64/libmkl_intel_lp64.so
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
+ BLAS                     | /lib64/libopenblas.so
+ LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | d2d7688c97378c1130064d3ff3aa51dd9d3133eb
- Configuration time       | 2014-11-19 12:12:26.797893
-
- * Sequential calculation.
+ Last Git revision        | bef16b7f7b41ad5d88f242388f57080fa27ee10d
+ Git branch               | [32mpe/develop[m
+ Configuration time       | 2015-02-11 20:52:30.989974
 
 
    Content of the .dal input file
@@ -248,7 +241,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/arnfinn/dalton/build-release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -256,7 +249,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/arnfinn/dalton/build-release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -264,7 +257,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/dalton/build-release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -379,19 +372,20 @@ H           -2.508043   -1.382001     .040282
 
 @  Nuclear repulsion energy :   31.249215315972 Hartree
 
-  Reading potential input file
- 
-  Polarizable embedding information
-  ---------------------------------
+  Reading potential input file for polarizable embedding calculation
 
-    Number of classical sites:      6
+    .------------------------------------------------.
+    | Information from polarizable embedding library |
+    `------------------------------------------------´
 
-    Multipole moments upto 2nd order.
+      Number of classical sites:      6
 
-    Dipole-dipole polarizabilities.
+      Multipole moments upto 2nd order.
 
-    Iterative solver for induced moments will be used
-    with convergence threshold: 1.0E-08
+      Dipole-dipole polarizabilities.
+
+      Iterative solver for induced moments will be used
+      with convergence threshold: 1.0E-08
 
 
                      .---------------------------------------.
@@ -428,8 +422,8 @@ H           -2.508043   -1.382001     .040282
  HERMIT - Number of two-electron integrals written:        2907 ( 94.4% )
  HERMIT - Megabytes written:                              0.034
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -463,8 +457,8 @@ H           -2.508043   -1.382001     .040282
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Nov 19 13:14:41 2014
-     Host name              : c23-1.local                             
+     Date and time (Linux)  : Wed Feb 11 20:54:05 2015
+     Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
      Formaldehyde                                                            
@@ -499,14 +493,14 @@ H           -2.508043   -1.382001     .040282
 
      Orbital specifications
      ======================
-     Abelian symmetry species          All |    1
-                                           |  A  
+@    Abelian symmetry species          All |    1
+@                                          |  A  
                                        --- |  ---
 @    Occupied SCF orbitals               7 |    7
 @    Open shell SCF orbitals             2 |    2
-     Secondary orbitals                  3 |    3
-     Total number of orbitals           12 |   12
-     Number of basis functions          12 |   12
+@    Secondary orbitals                  3 |    3
+@    Total number of orbitals           12 |   12
+@    Number of basis functions          12 |   12
 
      Optimization information
      ========================
@@ -521,70 +515,190 @@ H           -2.508043   -1.382001     .040282
      Threshold for SCF convergence     1.00D-05
 
 
- *********************************************
- ***** DIIS optimization of Hartree-Fock *****
- *********************************************
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  8 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.21702720     0.42925660     0.00012364
+
 @  1  -112.137762693     -2.379013241829E-02    1.08190D+00   -1.12D+02
       Virial theorem: -V/T =      2.001982
 @      MULPOP C       0.44; O      -0.47; H       0.01; H       0.02; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.07571853     0.36711325     0.00059417
+
 @  2  -112.246190359     -2.868612068463E-03    5.71333D-01   -1.08D-01
       Virial theorem: -V/T =      2.008541
 @      MULPOP C      -0.40; O       0.19; H       0.12; H       0.09; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12543580     0.39391569     0.00036207
+
 @  3  -112.280959742     -1.071333845328E-02    1.10338D-01   -3.48D-02
       Virial theorem: -V/T =      2.005768
 @      MULPOP C      -0.11; O      -0.10; H       0.12; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12159886     0.39240407     0.00022723
+
 @  4  -112.286942814     -9.896291002893E-03    3.15451D-02   -5.98D-03
       Virial theorem: -V/T =      2.005307
 @      MULPOP C      -0.10; O      -0.10; H       0.12; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12678890     0.39506395     0.00020567
+
 @  5  -112.287399695     -1.077195925232E-02    2.44134D-02   -4.57D-04
       Virial theorem: -V/T =      2.004952
 @      MULPOP C      -0.09; O      -0.12; H       0.12; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  5 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12718893     0.39501343     0.00019924
+
 @  6  -112.287525533     -1.081415324099E-02    3.78644D-03   -1.26D-04
       Virial theorem: -V/T =      2.004908
 @      MULPOP C      -0.09; O      -0.12; H       0.13; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  5 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12748059     0.39504837     0.00019832
+
 @  7  -112.287529218     -1.085565215554E-02    4.39580D-04   -3.68D-06
       Virial theorem: -V/T =      2.004899
 @      MULPOP C      -0.09; O      -0.12; H       0.13; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12748831     0.39503189     0.00019518
+
 @  8  -112.287529312     -1.085424184067E-02    1.90271D-04   -9.42D-08
       Virial theorem: -V/T =      2.004900
 @      MULPOP C      -0.09; O      -0.12; H       0.13; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
-@  9  -112.287529362     -1.085720971512E-02    1.07614D-04   -4.97D-08
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12751547     0.39502767     0.00019095
+
+@  9  -112.287529362     -1.085720971510E-02    1.07614D-04   -4.97D-08
       Virial theorem: -V/T =      2.004901
 @      MULPOP C      -0.09; O      -0.12; H       0.13; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12753434     0.39502860     0.00018632
+
 @ 10  -112.287529385     -1.085955966619E-02    5.79899D-05   -2.31D-08
       Virial theorem: -V/T =      2.004900
 @      MULPOP C      -0.09; O      -0.12; H       0.13; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12753771     0.39502879     0.00018328
+
 @ 11  -112.287529393     -1.085997558251E-02    3.64689D-05   -7.56D-09
       Virial theorem: -V/T =      2.004900
 @      MULPOP C      -0.09; O      -0.12; H       0.13; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.12753383     0.39502953     0.00017945
+
 @ 12  -112.287529397     -1.085957295646E-02    6.04288D-06   -4.02D-09
 
 @ *** DIIS converged in  12 iterations !
@@ -599,8 +713,6 @@ H           -2.508043   -1.382001     .040282
  Orbital energies are not well-defined for open-shell systems
    here is used block diagonalization of the FD=FC+FV Fock matrix.
  NOTE that Koopmans' theorem is not fulfilled for this case.
-
- Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   14
  Orbital occupations :    7
@@ -624,42 +736,47 @@ and energy and symmetry of HSROHF open shell orbitals:
 
  Largest off-diagonal Fock matrix element is  5.28D-02
 
-      Polarizable embedding energy contributions:
-     ---------------------------------------------
+    .--------------------------------------------------.
+    | Final results from polarizable embedding library |
+    `--------------------------------------------------´
+
+        Polarizable embedding energy contributions:
+       ---------------------------------------------
 
        Electrostatic contributions:
-         Monopoles                 -0.004998970003
-         Dipoles                    0.001184806411
-         Quadrupoles               -0.001767775884
+            Electronic                -0.202082941447
+            Nuclear                    0.196501001970
+            Multipole                  0.000000000000
+            Total                     -0.005581939477
 
        Polarization contributions:
-         Electronic                -0.017230953017
-         Nuclear                    0.016434599203
-         Multipole                 -0.004481279665
+            Electronic                -0.017230953017
+            Nuclear                    0.016434599203
+            Multipole                 -0.004481279665
+            Total                     -0.005277633480
 
        Total PE energy:            -0.010859572956
 
-      Polarizable embedding information:
-     ------------------------------------
+               Polarizable embedding information:
+              ------------------------------------
 
-                         Induced dipole moments
-         site          X              Y              Z
-            1    -0.08635342     0.13380674    -0.00622634
-            2    -0.06285912     0.01129168    -0.00296705
-            3    -0.00514048     0.02622768     0.01785308
-            4     0.03291313     0.06422476    -0.00633224
-            5    -0.00512408     0.15117864     0.00506442
-            6    -0.00096987     0.00830003    -0.00721243
+                       Induced dipole moments
+       site          X              Y              Z
+          1    -0.08635342     0.13380674    -0.00622634
+          2    -0.06285912     0.01129168    -0.00296705
+          3    -0.00514048     0.02622768     0.01785308
+          4     0.03291313     0.06422476    -0.00633224
+          5    -0.00512408     0.15117864     0.00506442
+          6    -0.00096987     0.00830003    -0.00721243
 
-                        Total induced dipole moment
-                       X              Y              Z
-                 -0.12753383     0.39502953     0.00017945
+                      Total induced dipole moment
+                     X              Y              Z
+               -0.12753383     0.39502953     0.00017945
 
 
  >>> Writing SIRIFC interface file
-      Induced dipole moments converged in  1 iterations.
 
- >>>> CPU and wall time for SCF :       0.096       0.097
+ >>>> CPU and wall time for SCF :       0.084       0.084
 
 
                        .-----------------------------------.
@@ -679,8 +796,10 @@ and energy and symmetry of HSROHF open shell orbitals:
 @    Final gradient norm:           0.000006042885
 
  
-     Date and time (Linux)  : Wed Nov 19 13:14:41 2014
-     Host name              : c23-1.local                             
+     Date and time (Linux)  : Wed Feb 11 20:54:05 2015
+     Host name              : foeroyar                                
+
+File label for MO orbitals:  11Feb15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -701,28 +820,28 @@ and energy and symmetry of HSROHF open shell orbitals:
   11 H   :1s    -0.0002   0.0066   0.0284  -0.2312  -0.4313   0.0271  -0.0033
   12 H   :1s    -0.0003   0.0067   0.0306  -0.2546   0.2221  -0.3861   0.0048
 
-    Orbital         8        9       10       11
-   1 C   :1s     0.0010  -0.0000   0.2126   0.0173
-   2 C   :1s    -0.0016   0.0005  -1.3201  -0.1133
-   3 C   :2px    0.0714  -0.0087   0.0614  -1.1492
-   4 C   :2py   -0.0119   0.0304   0.4042  -0.0861
-   5 C   :2pz   -0.0015   0.9521  -0.0116  -0.0075
-   6 O   :1s    -0.0066   0.0000  -0.0302  -0.0067
-   7 O   :1s     0.0309  -0.0002   0.1843   0.0479
-   8 O   :2px   -0.9743   0.0036  -0.0059   0.2779
-   9 O   :2py   -0.0303  -0.0176  -0.2537  -0.0390
-  10 O   :2pz   -0.0098  -0.5666   0.0078   0.0037
-  11 H   :1s     0.2161  -0.0006   0.8316   0.9052
-  12 H   :1s    -0.2188  -0.0008   0.9285  -0.8005
+    Orbital         8        9       10       11       12
+   1 C   :1s     0.0010  -0.0000   0.2126   0.0173   0.0933
+   2 C   :1s    -0.0016   0.0005  -1.3201  -0.1133  -0.6270
+   3 C   :2px    0.0714  -0.0087   0.0614  -1.1492   0.1186
+   4 C   :2py   -0.0119   0.0304   0.4042  -0.0861  -1.1978
+   5 C   :2pz   -0.0015   0.9521  -0.0116  -0.0075   0.0393
+   6 O   :1s    -0.0066   0.0000  -0.0302  -0.0067  -0.1153
+   7 O   :1s     0.0309  -0.0002   0.1843   0.0479   0.8773
+   8 O   :2px   -0.9743   0.0036  -0.0059   0.2779   0.0408
+   9 O   :2py   -0.0303  -0.0176  -0.2537  -0.0390  -0.8913
+  10 O   :2pz   -0.0098  -0.5666   0.0078   0.0037   0.0285
+  11 H   :1s     0.2161  -0.0006   0.8316   0.9052  -0.1971
+  12 H   :1s    -0.2188  -0.0008   0.9285  -0.8005  -0.1104
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
- >>>> Total wall time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.09 seconds
+ >>>> Total wall time used in SIRIUS :      0.09 seconds
 
  
-     Date and time (Linux)  : Wed Nov 19 13:14:41 2014
-     Host name              : c23-1.local                             
+     Date and time (Linux)  : Wed Feb 11 20:54:05 2015
+     Host name              : foeroyar                                
 
 
                      .---------------------------------------.
@@ -752,8 +871,8 @@ and energy and symmetry of HSROHF open shell orbitals:
 
 
  
-     Date and time (Linux)  : Wed Nov 19 13:14:41 2014
-     Host name              : c23-1.local                             
+     Date and time (Linux)  : Wed Feb 11 20:54:05 2015
+     Host name              : foeroyar                                
 
 
    ***************************************************************************
@@ -762,8 +881,8 @@ and energy and symmetry of HSROHF open shell orbitals:
 
 
  
-     Date and time (Linux)  : Wed Nov 19 13:14:41 2014
-     Host name              : c23-1.local                             
+     Date and time (Linux)  : Wed Feb 11 20:54:05 2015
+     Host name              : foeroyar                                
 
 
                              Molecular geometry (au)
@@ -781,15 +900,20 @@ and energy and symmetry of HSROHF open shell orbitals:
                         Molecular wave function and energy
                         ----------------------------------
 
-     Spin multiplicity  3     State number       1     Total charge       0
+     Spatial symmetry   1 ( A   )
+     Spin multiplicity  3
+     2 * M_S            2
+     State number       1
+     Total charge       0
 
      Total energy       -112.2875293967 au (Hartrees)
                          -3055.49910440 eV
                            -294810.8630 kJ/mol
+                            -70461.4873 kcal/mol
 
 
-                             Relativistic corrections
-                             ------------------------
+                   Scalar Breit-Pauli relativistic corrections
+                   -------------------------------------------
 
      Darwin correction:                          0.1684188836 au
      Mass-velocity correction:                  -0.2161819833 au
@@ -798,6 +922,8 @@ and energy and symmetry of HSROHF open shell orbitals:
      Non-relativistic + relativistic energy:  -112.3352924963 au
 
 
+
+      (Note that these corrections are NOT included in the results below.)
 
 
                                   Dipole moment
@@ -870,8 +996,8 @@ and energy and symmetry of HSROHF open shell orbitals:
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.00 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.01 seconds
+ >>>> Total wall time used in ABACUS:   0.01 seconds
 
 
                    .-------------------------------------------.
@@ -882,5 +1008,5 @@ and energy and symmetry of HSROHF open shell orbitals:
  >>>> Total wall time used in DALTON:   0.13 seconds
 
  
-     Date and time (Linux)  : Wed Nov 19 13:14:41 2014
-     Host name              : c23-1.local                             
+     Date and time (Linux)  : Wed Feb 11 20:54:05 2015
+     Host name              : foeroyar                                

@@ -136,13 +136,13 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Jan 30 11:45:06 2015
+     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pdehf
+   1) /home/magnus/Projects/dalton_devel/dalton/build/test/pdehf
    2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
@@ -165,9 +165,9 @@ Compilation information
  BLAS                     | /lib64/libopenblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | ce1d872b879b22184308909860ac8a4794987da5
+ Last Git revision        | bef16b7f7b41ad5d88f242388f57080fa27ee10d
  Git branch               | [32mpe/develop[m
- Configuration time       | 2015-01-30 11:28:52.748550
+ Configuration time       | 2015-02-11 22:06:47.185885
 
 
    Content of the .dal input file
@@ -437,7 +437,7 @@ H   -0.784000   -0.554000    0.000000
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Jan 30 11:45:06 2015
+     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -557,17 +557,20 @@ H   -0.784000   -0.554000    0.000000
        Polarization contributions:
             Electronic                -0.087278820615
             Nuclear                    0.084453542292
+            Total                     -0.002825278323
 
        Fragment density contributions:
-            Electrostatic             -0.065080540349
+            Electronic                 0.586746907127
+            Nuclear                   -0.651827447475
             Polarization              -0.000000000000
             Repulsion                  0.182267467380
+            Total                      0.117186927031
 
        Total PE energy:             0.114361648708
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.010       0.011
+ >>>> CPU and wall time for SCF :       0.012       0.012
 
 
                        .-----------------------------------.
@@ -587,10 +590,10 @@ H   -0.784000   -0.554000    0.000000
 @    Final gradient norm:           0.000002094525
 
  
-     Date and time (Linux)  : Fri Jan 30 11:45:06 2015
+     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
      Host name              : foeroyar                                
 
-File label for MO orbitals:  30Jan15   FOCKDIIS
+File label for MO orbitals:  11Feb15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -612,7 +615,7 @@ File label for MO orbitals:  30Jan15   FOCKDIIS
  >>>> Total wall time used in SIRIUS :      0.01 seconds
 
  
-     Date and time (Linux)  : Fri Jan 30 11:45:06 2015
+     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
      Host name              : foeroyar                                
 
 
@@ -624,5 +627,5 @@ File label for MO orbitals:  30Jan15   FOCKDIIS
  >>>> Total wall time used in DALTON:   0.02 seconds
 
  
-     Date and time (Linux)  : Fri Jan 30 11:45:06 2015
+     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
      Host name              : foeroyar                                

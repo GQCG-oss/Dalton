@@ -140,12 +140,12 @@ fi
 #
 # Energies
 #
-CRIT1=`$GREP "Monopoles * \-0*\.004099......" $log | wc -l`
-CRIT2=`$GREP "Dipoles * \-0*\.000603......" $log | wc -l`
-CRIT3=`$GREP "Quadrupoles * 0*\.002062......" $log | wc -l`
-CRIT4=`$GREP "Electronic * 0*\.10723[45]......" $log | wc -l`
-CRIT5=`$GREP "Nuclear * \-0*\.115487......" $log | wc -l`
-CRIT6=`$GREP "Multipole * \-0*\.004264......" $log | wc -l`
+CRIT1=`$GREP "Electronic * \-0*\.19914......." $log | wc -l`
+CRIT2=`$GREP "Nuclear    *   0*\.19650......." $log | wc -l`
+CRIT3=`$GREP "Multipole  *   0*\.00000......." $log | wc -l`
+CRIT4=`$GREP "Electronic *   0*\.10723......." $log | wc -l`
+CRIT5=`$GREP "Nuclear    * \-0*\.11548......." $log | wc -l`
+CRIT6=`$GREP "Multipole  * \-0*\.00426......." $log | wc -l`
 CRIT7=`$GREP "Total PE energy: * \-0*\.015157......" $log | wc -l`
 CRIT8=`$GREP "Final HF energy: * \-112\.092713......" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 `
