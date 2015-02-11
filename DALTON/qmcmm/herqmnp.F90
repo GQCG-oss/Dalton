@@ -857,7 +857,7 @@ contains
                RIJ(1) = NPCORD(1,I)-NPCORD(1,J)
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
-               RAD = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+               RAD = dsqrt(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RAD2 = RAD*RAD
                RAD51 = 1.0d0/(RAD2*RAD2*RAD)
                IF (NPMQGAU) CALL GET_GG_AFACT(FACTA,FACTB,I,J,RAD)
@@ -918,7 +918,7 @@ contains
             RIJ(1) = mm_cord(1,I)-mm_cord(1,J)
             RIJ(2) = mm_cord(2,I)-mm_cord(2,J)
             RIJ(3) = mm_cord(3,I)-mm_cord(3,J)
-            RAD = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+            RAD = dsqrt(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
             RAD2 = RAD*RAD
             RAD51 = 1.0d0/(RAD2*RAD2*RAD)
 !           Distribute interaction tensor
@@ -979,10 +979,10 @@ contains
       RIPOL = NPFPOL(NPFTYP(IATM))/3.0d0
       RJPOL = NPFPOL(NPFTYP(JATM))/3.0d0
 !     Get damping radius
-      RDIM = SQRT(2.0d0)/SQRTPI
+      RDIM = dsqrt(2.0d0)/SQRTPI
       RIM  = (RDIM*RIPOL)**(1.0d0/3.0d0)
       RJM  = (RDIM*RJPOL)**(1.0d0/3.0d0)
-      RIJM = SQRT(RIM*RIM+RJM*RJM)
+      RIJM = dsqrt(RIM*RIM+RJM*RJM)
       RVAL = RAD/RIJM
 !     Compute factors
       FACTA = DERF(RVAL)-2.0d0*RVAL*DEXP(-RVAL*RVAL)/SQRTPI
@@ -1026,7 +1026,7 @@ contains
                RIJ(1) = NPCORD(1,I)-NPCORD(1,J)
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
-               RAD  = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+               RAD  = dsqrt(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RVAL = 1.0d0/RAD
                IF (NPMQGAU) THEN
                   CALL GET_GG_CFACT(FACT,I,J,RAD)
@@ -1073,7 +1073,7 @@ contains
       RJCAP = 1.41421356237309504880D0*NPFCAP(NPFTYP(JATM))/SQRTPI
 
 !     Get damping radius & scalling factor
-      RIJM = SQRT(RICAP*RICAP+RJCAP*RJCAP)
+      RIJM = dsqrt(RICAP*RICAP+RJCAP*RJCAP)
       FACT = DERF(RAD/RIJM)
 
    end subroutine
@@ -1101,7 +1101,7 @@ contains
                RIJ(1) = NPCORD(1,I)-NPCORD(1,J)
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
-               RAD  = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+               RAD  = dsqrt(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RAD3 = 1.0d0/(RAD*RAD*RAD)
 !              Get damping factor
                IF (NPMQGAU) CALL GET_GG_MFACT(FACT,I,J,RAD)
@@ -1152,7 +1152,7 @@ contains
 !     get j-th capacitancy
       rjcap = rdim*npfcap(npftyp(jatm))
 !     get damping radius & scalling factor
-      rijm = sqrt(rim*rim+rjcap*rjcap)
+      rijm = dsqrt(rim*rim+rjcap*rjcap)
       radx = distance_i_j/rijm
       fact = derf(radx)-2.0d0*radx*dexp(-radx*radx)/sqrtpi
 
@@ -1342,7 +1342,7 @@ contains
       real(8) :: ripol
       integer :: i
 
-      rdim = sqrt(2.0d0)/sqrtpi
+      rdim = dsqrt(2.0d0)/sqrtpi
       do i = 1, tnpatm
          ripol = npfpol(npftyp(i))/3.0d0
          rdvec(i) = (rdim*ripol)**(1.0d0/3.0d0)
