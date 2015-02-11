@@ -99,11 +99,14 @@
            IOFF = (I-1)*IDIM
            CALL DGEMV('N',IDIM,IDIM,D1,WORK(KRELMAT),IDIM,              &
      &                WORK(KFVVEC+IOFF),1,D0,WORK(KMQVEC+IOFF),1)
-           IF (IPRTLVL.GE.15) THEN
-              WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed MQ vector for',&
-     &              I,' perturbed first order density ***'
-              CALL OUTPUT(WORK(KMQVEC+IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-            END IF
+          if (iprtlvl > 14) then
+             write(lupri, '(/,2x,a,i0)') &
+                 '*** Computed MQ vector start 1st-order density ', i
+             do j = 1, idim
+                write(lupri, '(i8, f18.8)') j, WORK(KMQVEC+IOFF - 1 + j)
+             end do
+             write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
+          end if
         END DO
 !       Allocate temporary XY vector contributions
         CALL MEMGET('REAL',KRXY,NOSIM*N2ORBX,WORK,KFREE,LFREE)
@@ -485,12 +488,15 @@
       DIPORG(3) = RSAVORG(3)
 !     Print final FV vector
       DO I=1,NOSIM
-         IF ((IPRTLVL.GE.15).AND.(.NOT.MQITER)) THEN
-            WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed FV vector for ', &
-     &            I, ' pertubed first order density matrix ***'
+         if (iprtlvl > 14 .and. .not. mqiter) then
             IOFF = (I-1)*IDIM+1
-            CALL OUTPUT(FVVEC(IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-         END IF
+            write(lupri, '(/,2x,a,i0)') &
+                '*** Computed FV vector start 1st-order density ', i
+            do j = 1, idim
+               write(lupri, '(i8, f18.8)') j, fvvec(IOFF + j - 1)
+            end do
+            write(lupri, '(/,2x,a)') '*** Computed FV vector end ***'
+         end if
       END DO
 !
       RETURN
